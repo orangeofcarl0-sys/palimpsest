@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D1_P2D0_FORWARD_ERRATUM",
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "purpose": "forward-only errata: what the P2-D0 stage reported as complete but which the P2-D1 inspection shows remained incomplete. Historical P2-D0 evidence is NOT rewritten; this file records the correction forward.",
+  "entries": [
+    {
+      "id": "E1",
+      "p2d0Claim": "the recorder preserves every distinct valid IPC Session identity",
+      "p2d1Finding": "preservation is correct AT THE RECORDER, but the PRODUCT sink in src/composition/continuation.ts calls recordIdentity(entry) and DISCARDS the returned IngestionOutcome. A REJECTED or THROWN append therefore leaves no completeness marker anywhere, and the later finalization writes CLOSED from the STORE candidate count. F1.",
+      "severity": "correctness",
+      "correctedBy": "C2"
+    },
+    {
+      "id": "E2",
+      "p2d0Claim": "post-Event-Read currentness checking",
+      "p2d1Finding": "the post-read recheck compares only the SELECTED invocation event ids. It does not re-read the Attempt invocation set (F2) nor the cross-Attempt foreign creator claim set (F3), and it does not carry the qualifier basis across the handoff (F4).",
+      "severity": "correctness",
+      "correctedBy": "C3"
+    },
+    {
+      "id": "E3",
+      "p2d0Claim": "initial consumer-lineage authorization",
+      "p2d1Finding": "capsuleForConsumer() refuses only NO_DURABLE_EVIDENCE. An AMBIGUOUS / RACED / unread origin still returns AUTHORIZED with an unadmitted, empty-event Capsule (F5/F6). Consumer authorization is not separated from Origin execution admission.",
+      "severity": "correctness",
+      "correctedBy": "C4"
+    },
+    {
+      "id": "E4",
+      "p2d0Claim": "bounded read-only Trajectory Context Capsule",
+      "p2d1Finding": "the bound is CHARACTERS of event summaries, not the serialized Capsule BYTES. The whole Capsule is never measured against a hard ceiling (F7), and uncertainty fields (otherInvocationsUnresolved, durability, synthetic/inherited counts) are defaulted rather than derived (F8).",
+      "severity": "correctness",
+      "correctedBy": "C4"
+    },
+    {
+      "id": "E5",
+      "p2d0Claim": "a bounded read-only Capsule for an authorized consumer",
+      "p2d1Finding": "no shipped test demonstrates a REAL A0 -> Governed Rework -> A1 -> capsuleForConsumer(A1) === AUTHORIZED path (F11), and makeCapsuleAuthorization() maintains a SEPARATE event scan rather than reusing the Context Owner reworkProvenanceBefore semantics (F9).",
+      "severity": "integration",
+      "correctedBy": "C5"
+    },
+    {
+      "id": "E6",
+      "p2d0Claim": "non-model first-party cold-recovery Capsule evidence",
+      "p2d1Finding": "the Capsule is obtainable only by a DIRECT operator call to capsuleForConsumer(). No Capsule reaches Compiled Context, an Attempt-bound Handle, Context Pull or Host Prework, and no delivery digest/size is recorded (F12/F13). Delivery is not established.",
+      "severity": "integration",
+      "correctedBy": "C6"
+    }
+  ],
+  "note": "these are corrections of P2-D0 SCOPE completeness, not rewrites of P2-D0 evidence; every P2-D0 evidence file remains byte-identical.",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

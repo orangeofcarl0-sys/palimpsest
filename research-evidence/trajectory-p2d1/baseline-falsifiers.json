@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D1_BASELINE_FALSIFIERS",
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "method": "each finding is either EXECUTED against the shipped code (DYNAMICALLY_REPRODUCED) or READ from the actual source (SOURCE_DEMONSTRATED); static reasoning is never reported as a dynamic reproduction",
+  "testFile": "test/trajectory_p2d1_source_contract.test.ts",
+  "sourceMapFile": "scripts/trajectory_p2d1/source-map.mjs",
+  "classificationCounts": {
+    "DYNAMICALLY_REPRODUCED": 5,
+    "SOURCE_DEMONSTRATED": 14
+  },
+  "note": "5 findings are dynamically reproduced (F1, F2, F3, F6, F7); the remaining 9 (F4, F5, F8, F9, F10, F11, F12, F13, F14) are source-demonstrated. F1/F2/F3/F5/F6/F8 are corrected by C2/C3/C4; F4 by C3; F7/F8 by C4; F9/F10/F11 by C5; F12/F13 by C6; F14 by C7 readiness.",
+  "findings": {
+    "F1_failedAppendDisappearsFromCompleteness": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "recorderReturnsOutcomeNotPersisted": true,
+      "productSinkDiscardsOutcome": true,
+      "productSinkInspectsOutcome": true,
+      "finalizeWritesClosedFromStoreCount": true,
+      "windowValidatesClosedConsistentFromStore": true,
+      "noIngestionHealthState": true,
+      "note": "the Recorder returns an IngestionOutcome, but the PRODUCT sink (continuation.ts onCorrelatedSessionIdentity) discards it. A failed/rejected append therefore leaves no durable or in-memory completeness marker, and the later finalization records CLOSED from the STORE's own candidate count — so a durable {A} + CLOSED(count=1) is producible and validates CLOSED_CONSISTENT, and the Qualifier accepts A as the unique producer identity"
+    },
+    "F2_newInvocationDuringEventRead": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "postReadRecheckScopedToSelectedInvocation": true,
+      "postReadRecheckIncludesInvocationSet": true,
+      "note": "the post-read recheck compares ONLY the SELECTED invocation's event ids; a SECOND invocation appended to the SAME attempt during the read changes neither the selected invocation's ids nor the check, so SELECTED_UNIQUE is retained even though the Attempt's invocation set grew"
+    },
+    "F3_foreignCreatorDuringEventRead": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "qualifierRechecksForeignCreators": true,
+      "postReadRecheckIncludesForeignCreators": true,
+      "note": "the QUALIFIER rechecks foreign creators before it returns, but the ATTRIBUTED PREVIEW's post-read recheck (attributed_preview.ts) never re-reads the cross-Attempt creator claim set, so a competing source-scoped creation claim committed during readEvents() is invisible and the stale ownership is admitted"
+    },
+    "F4_qualificationToReadGap": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "headBeforeReadCapturedAfterQualification": true,
+      "qualificationBasisCarriedIntoRead": true,
+      "note": "the preview captures headBeforeRead AFTER the qualifier returned, and the qualifier's own currentness basis is not carried across the handoff; a relevant change committed between 'qualifier returned' and 'headBeforeRead' is absorbed into the new baseline and can never be detected"
+    },
+    "F5_authorizedConsumerWithAmbiguousOrigin": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleRequiresSelectedOrigin": true,
+      "capsuleHandlesAmbiguousOrigin": true,
+      "capsuleBuildsForNonSelectedSelection": false,
+      "note": "capsuleForConsumer() only refuses when the origin selection is NO_DURABLE_EVIDENCE. An AMBIGUOUS_REQUIRES_SELECTION / REQUESTED_NOT_QUALIFIED / RACED origin still falls through to buildTrajectoryContextCapsule and returns AUTHORIZED with an unadmitted (empty-event) Capsule"
+    },
+    "F6_authorizedConsumerWithFailedRead": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleChecksReadAdmission": true,
+      "note": "the Capsule is built from the Preview regardless of sessionReadAdmission; a READ_FAILED / READ_CAPABILITY_ABSENT origin page yields an AUTHORIZED Capsule whose historicalExecution.events is empty, presented as if it were admitted evidence"
+    },
+    "F7_wholeCapsuleBudget": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "budgetIsCharsOnly": true,
+      "budgetIsSerializedBytes": true,
+      "budgetCountsSerializedBytes": true,
+      "builderEnforcesWholeBytes": true,
+      "note": "the builder bounds only EVENT SUMMARY CHARS (usedChars accumulates summary length, not bytes). The complete serialized Capsule — attribution, provenance, caveats, project evolution, JSON overhead, multibyte Unicode — is never measured against a hard ceiling; trajectoryCapsuleBytes() exists but is a helper, not an enforced bound, and capsuleIsBounded() multiplies the CHAR limit by 4 as a heuristic"
+    },
+    "F8_uncertaintyPropagation": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "otherInvocationsUnresolvedHardcodedEmpty": true,
+      "syntheticRecoveryAlwaysNull": true,
+      "inheritedAlwaysNull": true,
+      "durabilityFromInputOrDefault": true,
+      "note": "otherInvocationsUnresolved is hard-coded [] in capsuleForConsumer (even when the origin Attempt has unresolved invocations), syntheticRecoveryEventCount and inheritedEventCount are always null, and durability is UNKNOWN unless the caller passes it — so the Capsule's uncertainty is NOT derived from the admission's own source evidence"
+    },
+    "F9_duplicateLineageSemantics": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleAuthScansEventsDirectly": false,
+      "contextOwnerUsesReworkProvenanceBefore": true,
+      "capsuleAuthUsesReworkProvenanceBefore": true,
+      "note": "makeCapsuleAuthorization() maintains its OWN event-log scan for the governed lineage, while the Context Owner resolves the SAME fact through ports.reworkProvenanceBefore() bounded by the attempt's creation event. The two are separate meanings of 'Governed Rework lineage', and the capsule path does not share the Context Owner's attempt-created bound"
+    },
+    "F10_consumerIdentitySpoofability": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleForConsumerTakesConsumerAttemptId": true,
+      "capsuleForConsumerIsPublicSurface": false,
+      "note": "capsuleForConsumer() accepts a caller-supplied consumerAttemptId and resolves that attempt's lineage. The existence of an attempt's legitimate lineage does not prove the CURRENT caller owns it; no Host/Context binding currently fixes the consumer identity to prepared.attemptId, so an Agent-facing wrapper could pass another valid consumer attempt id"
+    },
+    "F11_positiveGovernedConsumerPath": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "shippedTestDemonstratesNoLineage": true,
+      "shippedTestDemonstratesAuthorizedPath": true,
+      "coldCapsuleBuildsDirectlyNotViaApi": false,
+      "note": "the shipped P2-D0 tests demonstrate the NO_LINEAGE refusal, the CONSUMER_NOT_CANONICAL refusal and a DIRECT builder call. No shipped test drives a REAL A0 -> Governed Rework -> A1 chain and asserts capsuleForConsumer(A1).state === AUTHORIZED; the AUTHORIZED path is not demonstrated end to end at any level"
+    },
+    "F12_actualHostDelivery": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleReachesContextManifest": true,
+      "capsuleReachesWorkerPayload": true,
+      "priorResultReachesManifest": true,
+      "note": "no Capsule reaches Compiled Context, an Attempt-bound Handle, Context Pull or Host Prework. The only historical block that reaches the worker is the PriorResultContext continuation block; a Trajectory Capsule is obtainable ONLY by a direct operator call to capsuleForConsumer(), which is not Worker Context delivery"
+    },
+    "F13_deliveryProvenanceAndReadOnlyState": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleDigestRecorded": true,
+      "capsuleBytesRecordedOnDelivery": true,
+      "note": "the product records no Capsule content digest, no delivery byte count, no consumer-received marker and no before-first-turn fact; there is no delivery record at all because there is no delivery path (F12)"
+    },
+    "F14_benchmarkReadiness": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "d0PreparedProtocol": true,
+      "d0RanNoTrials": true,
+      "scenarioDWasSaturated": true,
+      "note": "D0 prepared a protocol and ran no trials. No EXISTING task fixture is yet qualified under R2-VR's law; R2-VR showed Scenario C/D saturated, so a D1 utility fixture must be newly constructed and calibrated baseline-only before any treatment trial"
+    }
+  },
+  "dynamicallyReproduced": {
+    "F1": true,
+    "F2": true,
+    "F3": true,
+    "F6": true,
+    "F7": true
+  },
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}
