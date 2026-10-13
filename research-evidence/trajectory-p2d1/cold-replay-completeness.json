@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_ingestion_health.test.ts",
+  "evidenceClass": "REAL_PARENT_IPC",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_COLD_REPLAY_COMPLETENESS",
+  "title": "Cold replay cannot recover a falsely complete association",
+  "method": "a FAILED append via one Recorder, then a FRESH Recorder instance over the same durable store reads ingestionHealthOf and finalizes",
+  "observed": "the fresh Recorder reports INGESTION_FAILED from the durable marker and writes UNKNOWN; the validator still refuses with INGESTION_INCOMPLETE",
+  "expectedInvariant": "cold replay cannot recover a false CLOSED window",
+  "verdict": "PASS",
+  "remainingUncertainty": "the store must be file-backed for a real restart; this test uses an in-memory store shared by two Recorder instances, which exercises the same durable-marker read path"
+}

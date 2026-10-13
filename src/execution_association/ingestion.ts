@@ -33,6 +33,8 @@ import type { ObservedIdentityInput } from "./contract.js";
 import {
   EXECUTION_ASSOCIATION_SCHEMA_VERSION,
   associationEventId,
+  type IngestionIncompleteReason,
+  type InvocationIngestionIncompletePayload,
   type ObservationWindowCloseReason,
   type SessionIdentityObservedPayload,
   type SourceKind,
@@ -68,9 +70,19 @@ export type IngestionOutcome =
   | { readonly state: "IDEMPOTENT"; readonly eventId: string }
   | { readonly state: "REJECTED"; readonly reason: string };
 
+/** P2-D1 §6.2: the per-Invocation ingestion health, as the Recorder tracks it. */
+export const INGESTION_HEALTH_STATES = ["COMPLETE_SO_FAR", "INGESTION_FAILED"] as const;
+export type IngestionHealthState = (typeof INGESTION_HEALTH_STATES)[number];
+
 export interface ExecutionAssociationRecorder {
   /** Record ONE correlated identity observation. Bound to this deployment's trusted basis. */
   recordIdentity(observation: ObservedIdentityInput): IngestionOutcome;
+  /**
+   * P2-D1 §6.2: the ingestion health for ONE invocation. `INGESTION_FAILED` means a valid report was
+   * received but could not be recorded, so the invocation's identity history is INCOMPLETE and no CLOSED
+   * window may be claimed for it.
+   */
+  ingestionHealthOf(input: { readonly attemptId: string; readonly invocationId: string }): IngestionHealthState;
   /**
    * §8.1: record that the Invocation's observation window reached a terminal boundary. `observedCandidateCount`
    * is how many distinct identities this recorder has already committed for the invocation.
@@ -109,10 +121,70 @@ export function createExecutionAssociationRecorder(input: {
 }): ExecutionAssociationRecorder {
   const candidateCounts = new Map<string, Set<string>>();
   const invocationsByAttempt = new Map<string, Set<string>>();
+  /**
+   * P2-D1 §6.2/§6.5: the per-Invocation ingestion health. It is keyed by `${attemptId}::${invocationId}`
+   * so two distinct Invocations can never share health state, and the failure is STICKY — once a valid
+   * report could not be recorded, a later success or a late child close cannot clear it.
+   *
+   * The in-memory map is a FAST PATH only. The AUTHORITY is the durable `INVOCATION_INGESTION_INCOMPLETE`
+   * marker, so the state survives a restart and a different Recorder instance cannot launder it.
+   */
+  const failedInvocations = new Set<string>();
+  const healthKey = (attemptId: string, invocationId: string): string => `${attemptId}::${invocationId}`;
+
+  /** §6.4: persist the durable incompleteness marker, so no future Recorder can claim a complete window. */
+  const markIncomplete = (input2: { readonly attemptId: string; readonly invocationId: string; readonly reason: IngestionIncompleteReason; readonly detail: string }): void => {
+    const eventId = associationEventId({
+      type: "INVOCATION_INGESTION_INCOMPLETE",
+      projectId: input.projectId,
+      attemptId: input2.attemptId,
+      invocationId: input2.invocationId,
+    });
+    const payload: InvocationIngestionIncompletePayload = Object.freeze({
+      schemaVersion: EXECUTION_ASSOCIATION_SCHEMA_VERSION,
+      projectId: input.projectId,
+      attemptId: input2.attemptId,
+      invocationId: input2.invocationId,
+      reason: input2.reason,
+      detail: input2.detail.slice(0, 400),
+    });
+    try {
+      input.store.append({ eventId, projectId: input.projectId, type: "INVOCATION_INGESTION_INCOMPLETE", payload });
+    } catch {
+      /**
+       * §6.4: if the STORE ITSELF is unavailable the marker cannot be written. That is safe: the ABSENCE
+       * of a valid CLOSED finalization still prevents qualification, and the in-memory health remains
+       * INGESTION_FAILED for this process.
+       */
+    }
+  };
+
+  /** §6.2: the health read, shared by the public method and the finalization guard. */
+  const ingestionHealthOf = (attemptId: string, invocationId: string): IngestionHealthState => {
+    if (failedInvocations.has(healthKey(attemptId, invocationId))) return "INGESTION_FAILED";
+    /**
+     * §6.5: the durable marker is the authority, so a DIFFERENT Recorder instance (or a restart) sees the
+     * same health. This is what makes a cold replay unable to recover a falsely complete association.
+     */
+    const durableMarker = input.store
+      .replayForAttempt({ projectId: input.projectId, attemptId })
+      .some((event) => event.type === "INVOCATION_INGESTION_INCOMPLETE" && event.payload.invocationId === invocationId);
+    return durableMarker ? "INGESTION_FAILED" : "COMPLETE_SO_FAR";
+  };
+
+  /** §6.4: a finalization is written CLOSED only when the invocation's history is not known incomplete. */
+  const finalizationVerdict = (attemptId: string, invocationId: string, requested: ObservationWindowCloseReason): { readonly windowState: "CLOSED" | "UNKNOWN"; readonly closeReason: ObservationWindowCloseReason } =>
+    ingestionHealthOf(attemptId, invocationId) === "INGESTION_FAILED"
+      ? { windowState: "UNKNOWN", closeReason: "INGESTION_INCOMPLETE" }
+      : { windowState: "CLOSED", closeReason: requested };
 
   return Object.freeze({
     sourceBasis: input.sourceBasis,
     sourceKind: input.sourceKind,
+
+    ingestionHealthOf(input2: { readonly attemptId: string; readonly invocationId: string }): IngestionHealthState {
+      return ingestionHealthOf(input2.attemptId, input2.invocationId);
+    },
 
     recordIdentity(observation: ObservedIdentityInput): IngestionOutcome {
       const { attemptId, hostLocalJobId, observation: identity } = observation;
@@ -157,14 +229,38 @@ export function createExecutionAssociationRecorder(input: {
         invocationId: identity.invocationId,
         dshSessionId: durableSessionId,
       });
-      const outcome = input.store.append({ eventId, projectId: input.projectId, type: "SESSION_IDENTITY_OBSERVED", payload });
-      const seen = candidateCounts.get(identity.invocationId) ?? new Set<string>();
-      seen.add(durableSessionId);
-      candidateCounts.set(identity.invocationId, seen);
-      const byAttempt = invocationsByAttempt.get(attemptId) ?? new Set<string>();
-      byAttempt.add(identity.invocationId);
-      invocationsByAttempt.set(attemptId, byAttempt);
-      return Object.freeze({ state: outcome.state, eventId }) as IngestionOutcome;
+      /**
+       * P2-D1 §6.3/§6.5: a VALID report whose durable append FAILS (thrown) or is REFUSED must leave a
+       * completeness uncertainty. The failure state is set BEFORE the append returns, and it is sticky: a
+       * later successful report does not erase it.
+       */
+      let outcome: { readonly state: string; readonly reason?: string };
+      try {
+        outcome = input.store.append({ eventId, projectId: input.projectId, type: "SESSION_IDENTITY_OBSERVED", payload });
+      } catch (error) {
+        failedInvocations.add(healthKey(attemptId, identity.invocationId));
+        markIncomplete({ attemptId, invocationId: identity.invocationId, reason: "APPEND_FAILED", detail: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
+      if (outcome.state === "APPENDED" || outcome.state === "IDEMPOTENT") {
+        // §6.5: a duplicate identical report is IDEMPOTENT and must NOT count as a failure, and it does not
+        // clear an earlier failure either (the sticky set is untouched).
+        const seen = candidateCounts.get(identity.invocationId) ?? new Set<string>();
+        seen.add(durableSessionId);
+        candidateCounts.set(identity.invocationId, seen);
+        const byAttempt = invocationsByAttempt.get(attemptId) ?? new Set<string>();
+        byAttempt.add(identity.invocationId);
+        invocationsByAttempt.set(attemptId, byAttempt);
+        return Object.freeze({ state: outcome.state, eventId }) as IngestionOutcome;
+      }
+      /**
+       * §6.3: an explicit refusal (a store that returned a REJECTED/unknown outcome) is the OTHER failure
+       * shape. It leaves the same durable incompleteness marker and the same sticky in-memory state.
+       */
+      const reason = outcome.reason ?? `the store returned an unrecognized outcome "${outcome.state}"`;
+      failedInvocations.add(healthKey(attemptId, identity.invocationId));
+      markIncomplete({ attemptId, invocationId: identity.invocationId, reason: "APPEND_REJECTED", detail: reason });
+      return Object.freeze({ state: "REJECTED" as const, reason }) as IngestionOutcome;
     },
 
     finalizeInvocation(input2: {
@@ -173,10 +269,12 @@ export function createExecutionAssociationRecorder(input: {
       readonly closeReason: ObservationWindowCloseReason;
     }): IngestionOutcome {
       /**
-       * The candidate count is read from the STORE rather than an in-memory map, so a finalization is
-       * correct even for a recorder that did not itself ingest the observations — and so the recorded
-       * count is a property of committed evidence rather than of this process's memory.
+       * §6.4: A PARENT-OBSERVED CHILD CLOSE IS NOT PROOF THAT EVERY IDENTITY OBSERVATION WAS PERSISTED.
+       * Before recording a qualified CLOSED window, check the ingestion health for THIS invocation. If a
+       * valid report could not be recorded, do NOT write a misleading CLOSED record — write an UNKNOWN
+       * window instead, which the validator refuses as a closure, and preserve the known durable candidates.
        */
+      const verdict = finalizationVerdict(input2.attemptId, input2.invocationId, input2.closeReason);
       const candidateCount = input.store
         .replayForAttempt({ projectId: input.projectId, attemptId: input2.attemptId })
         .filter((event) => event.type === "SESSION_IDENTITY_OBSERVED" && event.payload.invocationId === input2.invocationId)
@@ -196,8 +294,8 @@ export function createExecutionAssociationRecorder(input: {
           projectId: input.projectId,
           attemptId: input2.attemptId,
           invocationId: input2.invocationId,
-          windowState: "CLOSED" as const,
-          closeReason: input2.closeReason,
+          windowState: verdict.windowState,
+          closeReason: verdict.closeReason,
           observedCandidateCount: candidateCount,
         }),
       });

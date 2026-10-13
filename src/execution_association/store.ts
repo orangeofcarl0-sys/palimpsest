@@ -170,7 +170,6 @@ function canonicalEventIdOf(payload: ExecutionAssociationPayload, type: Executio
       })
     : associationEventId({ type, projectId: payload.projectId, attemptId: payload.attemptId, invocationId: (payload as { readonly invocationId: string }).invocationId });
 }
-
 export class SqliteExecutionAssociationStore implements ExecutionAssociationStore {
   readonly #database: DatabaseSync;
   readonly #selectAll: ReturnType<DatabaseSync["prepare"]>;

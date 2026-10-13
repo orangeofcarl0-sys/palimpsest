@@ -151,11 +151,13 @@ const QUALIFIER_PORTS = (installed: ReturnType<typeof installPalimpsest>, store:
 /* ================================================================== F1 */
 
 describe("F1 §6 — a failed durable append can disappear from the completeness judgment", () => {
-  it("DYNAMICALLY_REPRODUCED: A committed + B append FAILS + close ⇒ a durable CLOSED(count=1) window validates and the Qualifier accepts A as unique", async () => {
+  it("CHANGED ASSERTION (P2D1 C2): the baseline defect is FIXED — a failed append leaves a durable incompleteness marker and no qualification", async () => {
     /**
-     * §6.1: the invariant P2-D1 must establish is that a valid report whose append FAILED leaves a
-     * completeness uncertainty that prevents final qualification. This test reproduces the baseline defect:
-     * a store wrapper whose second append THROWS is exactly the "Recorder fails to commit B" case (§5 F1).
+     * BASELINE (205b413): a committed A + a FAILED B append + an observed close produced a durable
+     * {A} + CLOSED(count=1) window that validated CLOSED_CONSISTENT, so the Qualifier accepted A as the
+     * unique producer identity (F1). The C2 ingestion-health mechanism corrects this: the Recorder records a
+     * durable INGESTION-INCOMPLETE marker, the finalization is UNKNOWN rather than CLOSED, and the Qualifier
+     * refuses with OBSERVATION_INCOMPLETE.
      */
     const real = new SqliteExecutionAssociationStore(":memory:");
     let calls = 0;
@@ -175,23 +177,24 @@ describe("F1 §6 — a failed durable append can disappear from the completeness
     const observation = (sessionId: string) =>
       Object.freeze({ hostLocalJobId: "", attemptId: "attempt-f1", observation: Object.freeze({ invocationId: "wpi-1", dshSessionId: sessionId, reportedSessionId: sessionId, source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }) });
 
-    // A commits; B's append throws and the PRODUCT sink would discard the thrown error (F1).
+    // A commits; B's append throws.
     recorder.recordIdentity(observation("worker-A"));
     expect(() => recorder.recordIdentity(observation("worker-B"))).toThrow(/simulated durable append failure/u);
     // The parent then observes the real child close and finalizes.
-    const finalization = recorder.finalizeInvocation({ attemptId: "attempt-f1", invocationId: "wpi-1", closeReason: "CHILD_EXIT_OBSERVED" });
-    expect(finalization.state).toBe("APPENDED");
+    recorder.finalizeInvocation({ attemptId: "attempt-f1", invocationId: "wpi-1", closeReason: "CHILD_EXIT_OBSERVED" });
 
-    // The durable history is {A} + CLOSED(count=1), and it VALIDATES as consistent.
+    // The durable history now contains a durable incompleteness marker, and the window is NOT a closure.
     const events = real.replayForAttempt({ projectId: PROJECT, attemptId: "attempt-f1" });
+    expect(events.some((event) => event.type === "INVOCATION_INGESTION_INCOMPLETE")).toBe(true);
     const window = validateObservationWindow(events);
-    expect(window.state).toBe("CLOSED_CONSISTENT");
-    expect(window.candidateSessionIds).toEqual(["worker-A"]);
+    expect(window.state).toBe("CONTRADICTORY");
+    expect(window.reason).toBe("INGESTION_INCOMPLETE");
 
-    // The Qualifier accepts worker-A as the unique producer identity — the false-complete window is laundered.
+    // The Qualifier REFUSES: a known ingestion failure cannot be laundered into a verified binding.
     const qualifier = makeAssociationQualifier(QUALIFIER_PORTS({ controller: { attemptWorkRecord: () => ({ taskId: "t1", state: "RUNNING" }) } } as never, real));
     const qualification = await qualifier.qualifyAttempt({ projectId: PROJECT, attemptId: "attempt-f1" });
-    expect(qualification.qualifications[0]!.state).toBe("ASSOCIATION_QUALIFIED");
+    expect(qualification.qualifications[0]!.state).toBe("OBSERVATION_INCOMPLETE");
+    expect(qualification.summary.qualifiedCount).toBe(0);
     real.close();
   });
 });

@@ -38,6 +38,11 @@ export const WINDOW_INTEGRITY_REASONS = [
   "CANDIDATE_COUNT_MISMATCH",
   "FINALIZATION_BEFORE_FIRST_OBSERVATION",
   "MULTIPLE_FINALIZATIONS",
+  /**
+   * Trajectory-P2-D1 §6.4: a durable ingestion-incompleteness marker exists for this invocation, so its
+   * identity history is KNOWN INCOMPLETE and no closure can be established, whatever any finalization says.
+   */
+  "INGESTION_INCOMPLETE",
 ] as const;
 export type WindowIntegrityReason = (typeof WINDOW_INTEGRITY_REASONS)[number];
 
@@ -66,6 +71,22 @@ export function validateObservationWindow(events: readonly ExecutionAssociationE
   );
 
   const candidateSessionIds = [...new Set(observations.map((event) => event.payload.dshSessionId))];
+
+  /**
+   * Trajectory-P2-D1 §6.4: a durable INGESTION-INCOMPLETE marker means a valid report was received but
+   * could not be recorded, so the candidate set is KNOWN INCOMPLETE. This is checked FIRST: no finalization,
+   * whatever it says, can establish a closure over an incomplete candidate set.
+   */
+  const ingestionIncomplete = events.some((event) => event.type === "INVOCATION_INGESTION_INCOMPLETE");
+  if (ingestionIncomplete) {
+    return Object.freeze({
+      state: "CONTRADICTORY" as const,
+      reason: "INGESTION_INCOMPLETE" as const,
+      candidateSessionIds: Object.freeze(candidateSessionIds),
+      finalizationCount: finalizations.length,
+      detail: "a valid session-identity report for this invocation could not be durably recorded, so its identity history is incomplete and no window closure can be established",
+    });
+  }
 
   if (finalizations.length === 0) {
     return Object.freeze({

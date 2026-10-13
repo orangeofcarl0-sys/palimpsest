@@ -250,8 +250,21 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
           ...(options.sessionIdentityRecorder === undefined
             ? {}
             : {
+                /**
+                 * Trajectory-P2-D1 §6.3: the PRODUCT sink INSPECTS the Recorder's outcome. Before P2-D1 it
+                 * called `recordIdentity(entry)` and discarded the result, so a REJECTED append left no
+                 * completeness marker and a later finalization could record a CLOSED window over a
+                 * silently-truncated candidate set (F1). The Recorder now writes its own durable
+                 * INGESTION-INCOMPLETE marker, so this sink's job is to contain a THROW (a store failure)
+                 * so it cannot change the worker's outcome or the canonical Work state — the Recorder has
+                 * already recorded the incompleteness before the throw propagates.
+                 */
                 onCorrelatedSessionIdentity: (entry: import("../interaction/work_delegation.js").CorrelatedSessionIdentityObservation) => {
-                  options.sessionIdentityRecorder?.recordIdentity(entry);
+                  try {
+                    options.sessionIdentityRecorder?.recordIdentity(entry);
+                  } catch {
+                    /* §6.3: an ingestion failure is recorded by the Recorder and must not change the Work outcome */
+                  }
                 },
                 onCorrelatedObservation: (entry: import("../interaction/work_delegation.js").CorrelatedHostObservation) => {
                   /**
@@ -259,11 +272,15 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
                    * deliberately does not finalize: the window stays incomplete, which is the honest state.
                    */
                   if (entry.observation.eventKind !== "DIRECT_CHILD_EXIT_OBSERVED") return;
-                  options.sessionIdentityRecorder?.finalizeInvocation({
-                    attemptId: entry.attemptId,
-                    invocationId: entry.invocationId,
-                    closeReason: "CHILD_EXIT_OBSERVED",
-                  });
+                  try {
+                    options.sessionIdentityRecorder?.finalizeInvocation({
+                      attemptId: entry.attemptId,
+                      invocationId: entry.invocationId,
+                      closeReason: "CHILD_EXIT_OBSERVED",
+                    });
+                  } catch {
+                    /* §6.4: a finalization append failure leaves the window OPEN, which prevents qualification */
+                  }
                 },
               }),
           ...(options.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: options.sessionSourceQualification }),

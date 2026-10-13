@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_ingestion_health.test.ts",
+  "evidenceClass": "REAL_PARENT_IPC",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_INGESTION_HEALTH",
+  "title": "Per-Invocation ingestion-health completeness",
+  "method": "the Recorder writes a durable INVOCATION_INGESTION_INCOMPLETE marker when a valid report cannot be recorded; the window validator refuses it as a closure; the health read is durable so a different Recorder instance sees the same state",
+  "observed": "health states COMPLETE_SO_FAR / INGESTION_FAILED; failure is sticky, keyed per ${attemptId}::${invocationId}, and NOT cleared by a later success or an idempotent duplicate",
+  "expectedInvariant": "every valid Session Identity report received before the accepted close boundary is either durably represented or leaves a durable completeness uncertainty that prevents final qualification",
+  "verdict": "PASS",
+  "remainingUncertainty": "the marker records the REASON and a bounded detail, never the lost SessionId (which is unknown to durable evidence and must not be fabricated)"
+}
