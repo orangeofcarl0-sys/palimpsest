@@ -287,3 +287,29 @@ export type {
   CapsuleTruncation,
   CapsuleUncertainty,
 } from "./context_capsule.js";
+
+/**
+ * Trajectory-P2-D2 §7 — THE PRODUCT-OWNED MODEL-VISIBLE TRAJECTORY SECTION.
+ *
+ * A narrow, pure presentation adapter that renders an already-qualified Capsule into a bounded, deterministic
+ * text section with OFF / CONTROL / TREATMENT semantics. The PRODUCT decides what may be shown; the HOST
+ * decides only where it appears. It grants no authority and reads no owner.
+ */
+export {
+  TRAJECTORY_PRESENTATION_SCHEMA_VERSION,
+  TRAJECTORY_PRESENTATION_MODES,
+  TRAJECTORY_PRESENTATION_FRAMING,
+  TRAJECTORY_PRESENTATION_AUTHORITY,
+  TRAJECTORY_PRESENTATION_LIMITS,
+  TRAJECTORY_PRESENTATION_HARD_MAX_SECTION_BYTES,
+  TrajectoryPresentationRefusedError,
+  buildTrajectoryPresentation,
+  renderTrajectorySection,
+  validateTrajectoryPresentation,
+} from "./presentation.js";
+export type {
+  TrajectoryPresentation,
+  TrajectoryPresentationMode,
+  TrajectoryPresentationLimits,
+  TrajectoryPresentationOutcome,
+} from "./presentation.js";

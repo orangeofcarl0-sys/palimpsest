@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_OFF_BYTE_PARITY",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C3 §7.3",
+  "evidenceClass": "CONTROLLED_RENDERER",
+  "sourceReferences": ["src/trajectory/presentation.ts (OFF returns null)"],
+  "testFile": "test/trajectory_p2d2_presentation.test.ts",
+  "method": "buildTrajectoryPresentation({ mode: 'OFF' }) is called WITH and WITHOUT a Capsule; both return ok:true with presentation === null. Because the renderer produces no text at all in OFF, a Host that places nothing when the presentation is null leaves the composed UserMessage unchanged.",
+  "observedResults": {
+    "offWithCapsule": "presentation === null",
+    "offWithoutCapsule": "presentation === null"
+  },
+  "expectedInvariant": "an unset, absent or unsupported experimental configuration produces the original production Prompt exactly — no Trajectory section, no changed wording, no additional blank lines, no additional tools, no changed Context handles, no model execution, no new Work authority",
+  "byteIdentityEvidence": "test/trajectory_p2d2_host_delivery.test.ts captures the ACTUAL agent.followup() UserMessage under OFF and asserts it equals the baseline-composed text byte-for-byte",
+  "verdict": "PASS",
+  "remainingUncertainty": "byte identity is asserted at the Host-input level (L1); it does not require a model to run",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_PRESENTATION_CONTRACT",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C3 §7",
+  "evidenceClass": "CONTROLLED_RENDERER",
+  "sourceReferences": [
+    "src/trajectory/presentation.ts (buildTrajectoryPresentation, renderTrajectorySection, validateTrajectoryPresentation)",
+    "src/trajectory/index.ts (barrel export)"
+  ],
+  "testFile": "test/trajectory_p2d2_presentation.test.ts",
+  "ownership": {
+    "productDecides": ["whether the consumer is authorized (it is handed only an AUTHORIZED Capsule)", "which Origin the section names", "which events are shown", "what byte budget applies", "the frozen framing and authority"],
+    "hostDecides": ["only WHERE the already-qualified section appears in the actual UserMessage"],
+    "hostDoesNotDecide": ["its own historical Attempt or Session"]
+  },
+  "modes": {
+    "OFF": "no presentation at all (null); a default deployment's prompt is byte-identical to the baseline",
+    "CONTROL": "the SAME section boundary as TREATMENT and NO invented history — no SessionId, Result, Verification, Failure or Promotion",
+    "TREATMENT": "the ACTUAL qualified, Attempt-bound Capsule rendered under the frozen format"
+  },
+  "sectionStructure": [
+    "HISTORICAL EXECUTION CONTEXT boundary",
+    "SOURCE AND ORIGIN",
+    "EXECUTION OBSERVATION SUMMARY",
+    "CANONICAL WORK REALITY",
+    "PROJECT EVOLUTION",
+    "UNCERTAINTY AND UNREAD EXTENT",
+    "AUTHORITY LIMITATION (the Capsule's own doesNotAuthorize list)"
+  ],
+  "budgets": {
+    "maxSectionBytes": 24576,
+    "policy": "a caller may lower the section budget, never raise the ceiling; an over-budget TREATMENT is DELIVERY_PRECONDITION_NOT_MET rather than a truncated section",
+    "why": "a Capsule can satisfy its own serialized-byte limit while a verbose renderer produces a much larger section, so the section has its own measured budget"
+  },
+  "digests": {
+    "capsuleDigest": "canonical SHA-256 of the Capsule value",
+    "sectionDigest": "canonical SHA-256 of the rendered section text",
+    "distinct": true,
+    "note": "a Capsule digest does NOT prove section delivery, so the two are recorded separately and never conflated"
+  },
+  "malformedPresentationRefused": true,
+  "promptInjectionStaysData": true,
+  "expectedInvariant": "a pure controlled renderer produces stable, bounded OFF/CONTROL/TREATMENT behavior without changing any execution authority",
+  "verdict": "PASS",
+  "remainingUncertainty": "the renderer proves what the PRODUCT would place; it does not prove the Host placed it (C4) or that a model read it (out of scope, L3)",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}
