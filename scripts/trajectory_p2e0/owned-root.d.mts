@@ -31,6 +31,8 @@ export interface CleanupResult {
   readonly removedLinks?: readonly string[];
   readonly failedLinks?: readonly { readonly link: string; readonly detail: string }[];
   readonly descendantReparsePointsFound?: number;
+  readonly scanState?: "COMPLETE";
+  readonly scanErrors?: readonly { readonly path: string; readonly detail: string }[];
   readonly attempts?: number;
 }
 
@@ -50,10 +52,13 @@ export type OwnedRootOutcome<T> =
   | { readonly ok: false; readonly error: unknown; readonly report: OwnedRootReport };
 
 export declare function containedIn(parent: string, child: string): boolean;
-export declare function findDescendantReparsePoints(root: string): { readonly links: readonly string[]; readonly count: number };
+export type ReparseScan =
+  | { readonly state: "COMPLETE"; readonly links: readonly string[]; readonly count: number }
+  | { readonly state: "INCOMPLETE"; readonly errors: readonly { readonly path: string; readonly detail: string }[]; readonly links: readonly string[]; readonly count: number };
+export declare function findDescendantReparsePoints(root: string): ReparseScan;
 export declare function snapshotDependencyRoot(root: string): { readonly present: boolean; readonly canonical?: string; readonly entries?: number; readonly reparsePoints?: number; readonly entrypoints?: readonly string[] };
 export declare function freeBytesAt(path: string): number | null;
 export declare function allocateOwnedRoot(prefix: string, runIdentity?: string): OwnedRoot;
-export declare function safeCleanup(owned: OwnedRoot | undefined | null, options?: { readonly refuseOnLinkFailure?: boolean }): Promise<CleanupResult>;
+export declare function safeCleanup(owned: OwnedRoot | undefined | null): Promise<CleanupResult>;
 export declare function isOwnedByThisStage(path: string): boolean;
 export declare function withOwnedRoot<T>(prefix: string, runIdentity: string | undefined, body: (owned: OwnedRoot) => Promise<T> | T): Promise<OwnedRootOutcome<T>>;

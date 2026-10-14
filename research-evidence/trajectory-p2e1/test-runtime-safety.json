@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "kind": "TRAJECTORY_P2E1_TEST_RUNTIME_SAFETY",
+  "corrections": [
+    "F15 fail-closed descendant scan (COMPLETE|INCOMPLETE discriminated union)",
+    "F16 removed the bypassable refuseOnLinkFailure option",
+    "F17 shareDshModules performs a real preflighted copy or returns BLOCKED",
+    "F18 awaited installed.dispose() before filesystem cleanup",
+    "F19 prepareFixture releases its owned root on ANY preparation failure",
+    "F20 global hygiene lists with lstatSync and refuses reparse points"
+  ],
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "testsFile": "test/trajectory_p2e1_resource_safety.test.ts",
+  "testsPassing": 10,
+  "sentinelSurvives": true,
+  "mainDependencyRootUnchanged": true,
+  "ownedRootsAccumulate": false,
+  "realCanonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0,
+  "cleanupSucceeded": true
+}
