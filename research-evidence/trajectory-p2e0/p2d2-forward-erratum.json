@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_FORWARD_ERRATUM",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "note": "Corrections to P2-D2 claims belong HERE, in new E0 evidence. No historical P2-D2 artifact was rewritten.",
+  "erratum": [
+    {
+      "id": "E-1",
+      "p2d2Claim": "host-user-message-capture.json / dsh-user-message-qualification.json report evidenceLevel REAL_DSH_USER_MESSAGE for the L2 gate.",
+      "correction": "The REAL_DSH_USER_MESSAGE level is correctly established for what the gate actually did — placing an OPERATOR-AUTHORED section into a real DSH user/message — but the gate bypasses capsuleForConsumer(), buildTrajectoryPresentation() and any governed lineage (F7). The section text was hand-written and the capsuleDigest was the literal 'a'.repeat(64). The claim is therefore a HOST PLACEMENT proof, not a SOURCE-QUALIFIED DELIVERY proof.",
+      "evidence": "scripts/trajectory_p2d2/l2-gate.mjs lines 46-77 (SECTION_TEXT, treatmentPresentation) and the absence of capsuleForConsumer/buildTrajectoryPresentation imports.",
+      "impact": "P2-D2's D2-G0 verdict TRAJECTORY_MODEL_VISIBLE_DELIVERY_QUALIFIED stands for the model-visible BOUNDARY (a real DSH user/message did carry the intended section). It does NOT establish that a PRODUCT-MATERIALIZED Capsule reached that boundary. E0-C closes this at a controlled-fixture level and investigates the first-party level.",
+      "historicalArtifactRewritten": false
+    },
+    {
+      "id": "E-2",
+      "p2d2Claim": "delivery-precondition-failures.json distinguishes TREATMENT delivery failures from OFF/CONTROL.",
+      "correction": "The PRODUCT layer distinguishes them: buildTrajectoryPresentation returns DELIVERY_PRECONDITION_NOT_MET and the payload carries a deliveryState. But the PROVIDER (execution_association.ts) collapses EVERY capsuleForConsumer refusal to bare `null` before the presentation is ever built, so at the worker boundary a failed TREATMENT is indistinguishable from OFF (F4).",
+      "evidence": "src/composition/execution_association.ts line 427: `if (result.state !== \"AUTHORIZED\" || result.capsule === null) return null;`",
+      "impact": "P2-D2's delivery-precondition vocabulary exists but is unreachable for the most important failure class (a refused origin). E0-B makes assignment/eligibility/delivery independent so the failure survives.",
+      "historicalArtifactRewritten": false
+    },
+    {
+      "id": "E-3",
+      "p2d2Claim": "control-treatment-parity.json asserts CONTROL carries no historical content.",
+      "correction": "The RENDERED CONTROL PROMPT carries no historical content, which is what that artifact measured. The CONTROL WORKER ENVIRONMENT still ships the full historical Capsule body via `context.compiled.trajectoryCapsule.capsule` (F5/F12). Parity was measured on the prompt, not on the serialized worker payload.",
+      "evidence": "src/deployment/work_worker.ts lines 499-546 (payload = { context, ... }) and line 795 (JSON.stringify of the whole payload into worker-context.json).",
+      "impact": "E0-B must minimize the CONTROL child payload so the withheld body is not transported.",
+      "historicalArtifactRewritten": false
+    },
+    {
+      "id": "E-4",
+      "p2d2Claim": "regression.json reports three broad-run failures with two reproduced at baseline and one D2-introduced failure corrected.",
+      "correction": "That classification is CONFIRMED, not contradicted. The mass failures during the FIRST broad run were disk exhaustion on a full C: volume (not code), and the one genuine regression was P2-D2 C2's separated truncation metadata growing the Capsule essential floor past the P2-D1 real-integration fixture's 4096-byte budget. The gate's budget was raised to 8192 with an in-place §6.6 note; the test passes.",
+      "evidence": "test/trajectory_p2d1_real_integration.test.ts (8192 budget, §6.6 note).",
+      "impact": "No historical correction needed; recorded so E0's regression section can reconcile against it.",
+      "historicalArtifactRewritten": false
+    }
+  ]
+}

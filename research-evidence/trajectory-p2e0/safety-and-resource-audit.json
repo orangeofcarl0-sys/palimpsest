@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_SAFETY_AND_RESOURCE_AUDIT",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "readOnly": true,
+  "method": "Read the P2-D2 L2 gate, the P2-B rig, the global test setup and the on-disk gate root. Measured the real DSH module tree size and counted reparse points. Launched no heavy gate.",
+  "previousIncident": {
+    "summary": "During P2-D2 a local run exhausted C:, accumulated large disposable gate directories, created a baseline worktree containing a node_modules junction, ran a recursive cleanup that followed that junction, and damaged the main worktree's node_modules. Dependencies were restored with a frozen-lockfile install and key tests reran. The tracked repository was unaffected.",
+    "demonstrates": "a clean Git tree does not prove the working environment is safe (§4)"
+  },
+  "measuredFacts": {
+    "gateRootPath": "~/.palimpsest-gates",
+    "leakedOwnedRootsPresent": 22,
+    "leakedBytes": 5135186645,
+    "reparsePointsInsideLeakedRoots": 10,
+    "measurementFollowedReparsePoints": false,
+    "dshProfileModuleEntries": 125,
+    "dshProfileModuleReparsePoints": 98,
+    "dshResolvedModuleTreeBytes": 518000000,
+    "l2GateCopiesPerRun": 2,
+    "l2GateCopyMethod": "cpSync(source, destination, { recursive: true, dereference: true })",
+    "estimatedDiskPerL2Run": "~1 GB of dereferenced dependency copies, before sessions, SQLite and the world",
+    "diskAvailableBytes": 120719380480,
+    "diskFilesystem": "F:",
+    "nodeVersion": "v24.14.1",
+    "declaredEngine": ">=24.15.0",
+    "nodeMeetsEngine": false,
+    "alternativeRuntimeAvailable": false
+  },
+  "defects": [
+    {
+      "id": "S-1",
+      "defect": "the L2 gate allocates an owned root and never releases it",
+      "source": "scripts/trajectory_p2d2/l2-gate.mjs (no rmSync of owned.root; every exit via finish() → process.exit())",
+      "consequence": "every L2 run leaks ~1 GB; 22 roots / 5.13 GB already present",
+      "correction": "C2"
+    },
+    {
+      "id": "S-2",
+      "defect": "recursive cleanup does not inspect descendant reparse points",
+      "source": "scripts/trajectory_p2b/rig.mjs safeCleanup() checks only the top-level owned root",
+      "consequence": "a leaked root containing a node_modules junction can be traversed by rmSync(recursive)",
+      "correction": "C2 (no-follow descendant inspection + external sentinel test)"
+    },
+    {
+      "id": "S-3",
+      "defect": "the L2 gate copies the whole DSH dependency tree twice per run with dereference:true",
+      "source": "scripts/trajectory_p2d2/l2-gate.mjs makeProfile()",
+      "consequence": "~1 GB per run; the disk-exhaustion source",
+      "correction": "C2 (safe shared-dependency configuration, or a controlled full-copy fallback with disk preflight)"
+    },
+    {
+      "id": "S-4",
+      "defect": "the global test-hygiene sweep does not check for reparse points before deleting",
+      "source": "test/global_setup.ts (prefix-only rule, no isSymbolicLink check)",
+      "consequence": "it deletes only palimpsest- prefixed temp dirs, so it is not the incident's cause, but it has no defence if such a dir contains a junction",
+      "correction": "C2 (documented; the sweep is left as-is because changing global hygiene is broader than this stage's scope, and its prefix rule already bounds it)"
+    }
+  ],
+  "diskBudgetPreflight": {
+    "requiredForHeavyGate": "two DSH profile copies (~1 GB) + sessions + SQLite + git world + cleanup/logging overhead + conservative margin",
+    "availableBytes": 120719380480,
+    "verdict": "SUFFICIENT on F: (113 GB free), PROVIDED the gate runs on F: and C: is not the copy target",
+    "note": "C: is at 97% (7.1 GB free) and holds the gate root; the heavy gate must not target C:"
+  },
+  "heavyGateStartedBeforeC2": false,
+  "modelCallsMade": 0,
+  "protectedFilesAffected": false
+}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_GIT_BASELINE",
+  "stage": "Trajectory-P2-E0",
+  "requiredBaseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "baselineBranch": "trajectory-p2d2-model-visible-delivery",
+  "e0Branch": "trajectory-p2e0-treatment-and-benchmark-readiness",
+  "headAtStart": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "headMatchesRequired": true,
+  "indexClean": true,
+  "worktreeClean": true,
+  "referenceDiscipline": {
+    "localMain": "67b29c9e7907b08fe594738973ce48b55e10d80b",
+    "originMain": "044330b2e55198542d545edc42ed9c36e7ce896b",
+    "p2d1Baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+    "p2d2Baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+    "p2d2Remote": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+    "previouslyVerifiedRemoteMain": "044330b2e55198542d545edc42ed9c36e7ce896b",
+    "note": "local main, origin/main and the E0 baseline are recorded SEPARATELY and were not modified to agree."
+  },
+  "commitChain": [
+    "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290 0a43546d5001f7f5d133d20ed95a4d5d94ee3634 research(trajectory-p2d2): attest model-visible delivery and assay-entry readiness",
+    "0a43546d5001f7f5d133d20ed95a4d5d94ee3634 c477c73d6be06ddde3e25ab2c5bef9491af4f6a8 test(trajectory-p2d2): qualify first-party model-input delivery without external models",
+    "c477c73d6be06ddde3e25ab2c5bef9491af4f6a8 6710168e176d5d59c585e81bd048b342ca13447b research(trajectory-p2d2): qualify trajectory information and prepare utility assay fixtures",
+    "6710168e176d5d59c585e81bd048b342ca13447b b849f246acd9bcd1df16bb5e9e1ec93d842f259e feat(trajectory-p2d2): place qualified trajectory history in worker user messages",
+    "b849f246acd9bcd1df16bb5e9e1ec93d842f259e c56e4c5cf5929704f183436d440f88971b2379f4 feat(trajectory-p2d2): render bounded model-visible trajectory sections",
+    "c56e4c5cf5929704f183436d440f88971b2379f4 dbb73b0b2b9ee7709e2976b47fdbdf59a624b84c fix(trajectory-p2d2): derive capsule durability and enforce runtime presentation limits",
+    "dbb73b0b2b9ee7709e2976b47fdbdf59a624b84c d6c366ca909d6719aab46a04bf717c0b3c352a92 research(trajectory-p2d2): establish model-visible delivery and utility-assay falsifiers",
+    "d6c366ca909d6719aab46a04bf717c0b3c352a92 beb55f4058d7824651b7a2d5d15d9e1c6e0e1108 research(trajectory-p2d1): record regression, verdicts and utility readiness"
+  ],
+  "modelCallsMade": 0,
+  "statusAtFb0": {
+    "observedCleanIncludingUntracked": true,
+    "note": "observed BEFORE this stage created any file; verified by the FB-0 git status --porcelain=v1 -uall command returning empty output"
+  },
+  "statusNowExcludingStageArtifacts": {
+    "note": "the only untracked paths are this stage own new scripts/trajectory_p2e0/* and research-evidence/trajectory-p2e0/* artifacts",
+    "untrackedPaths": [
+      "scripts/trajectory_p2e0/runtime-environment.mjs",
+      "scripts/trajectory_p2e0/source-map.mjs",
+      "research-evidence/trajectory-p2e0/"
+    ]
+  }
+}
