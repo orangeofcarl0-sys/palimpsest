@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_CLEANUP_REPEATABILITY",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "modelCallsMade": 0,
+  "heavyDshGateRun": false,
+  "runs": 4,
+  "gateRoot": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates",
+  "preRun": {
+    "freeBytes": 120718495744,
+    "ownedRootsOwnedByThisStage": 0
+  },
+  "postRun": {
+    "freeBytes": 120718495744,
+    "ownedRootsOwnedByThisStage": 0
+  },
+  "peakAdditionalBytesObserved": 2101248,
+  "ownedRootsDidNotGrow": true,
+  "dependencyRootPreserved": {
+    "before": {
+      "present": true,
+      "canonical": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+      "entries": 17,
+      "reparsePoints": 5,
+      "entrypoints": [
+        "typescript/bin/tsc",
+        "vitest/vitest.mjs",
+        ".bin/tsc",
+        ".bin/vitest"
+      ]
+    },
+    "after": {
+      "present": true,
+      "canonical": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+      "entries": 17,
+      "reparsePoints": 5,
+      "entrypoints": [
+        "typescript/bin/tsc",
+        "vitest/vitest.mjs",
+        ".bin/tsc",
+        ".bin/vitest"
+      ]
+    },
+    "canonicalUnchanged": true,
+    "entryCountUnchanged": true,
+    "entrypointsUnchanged": true
+  },
+  "perRun": [
+    {
+      "run": 0,
+      "root": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-repeat-RYPMnL",
+      "freeAtStart": 120718491648,
+      "freeAtPeak": 120716390400,
+      "freeAfter": 120718495744,
+      "additionalBytesAtPeak": 2101248,
+      "cleanup": {
+        "cleaned": true,
+        "removedLinks": [],
+        "descendantReparsePointsFound": 0,
+        "attempts": 1
+      },
+      "rootGoneAfterCleanup": true,
+      "ownedRootsAfterRun": 0
+    },
+    {
+      "run": 1,
+      "root": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-repeat-QngxT5",
+      "freeAtStart": 120718491648,
+      "freeAtPeak": 120716390400,
+      "freeAfter": 120718495744,
+      "additionalBytesAtPeak": 2101248,
+      "cleanup": {
+        "cleaned": true,
+        "removedLinks": [],
+        "descendantReparsePointsFound": 0,
+        "attempts": 1
+      },
+      "rootGoneAfterCleanup": true,
+      "ownedRootsAfterRun": 0
+    },
+    {
+      "run": 2,
+      "root": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-repeat-oMtNzh",
+      "freeAtStart": 120718491648,
+      "freeAtPeak": 120716390400,
+      "freeAfter": 120718495744,
+      "additionalBytesAtPeak": 2101248,
+      "cleanup": {
+        "cleaned": true,
+        "removedLinks": [],
+        "descendantReparsePointsFound": 0,
+        "attempts": 1
+      },
+      "rootGoneAfterCleanup": true,
+      "ownedRootsAfterRun": 0
+    },
+    {
+      "run": 3,
+      "root": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-repeat-kzzGio",
+      "freeAtStart": 120718491648,
+      "freeAtPeak": 120716390400,
+      "freeAfter": 120718495744,
+      "additionalBytesAtPeak": 2101248,
+      "cleanup": {
+        "cleaned": true,
+        "removedLinks": [],
+        "descendantReparsePointsFound": 0,
+        "attempts": 1
+      },
+      "rootGoneAfterCleanup": true,
+      "ownedRootsAfterRun": 0
+    }
+  ],
+  "verdict": "REPEATABLE_NO_LEAK",
+  "note": "§4.7: this is a SAFE bounded workload, not a DSH gate. The DSH-home construction cost is measured separately in disk-and-resource-budget.json and is NOT inferred from this run."
+}

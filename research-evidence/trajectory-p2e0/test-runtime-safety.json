@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_TEST_RUNTIME_SAFETY",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "gate": "E0-A",
+  "verdict": "TEST_RUNTIME_SAFETY_QUALIFIED",
+  "modelCallsMade": 0,
+  "heavyDshGateRunBeforeQualification": false,
+  "requirements": [
+    {
+      "id": "A1",
+      "requirement": "owned-root containment",
+      "status": "PASS",
+      "evidence": "allocateOwnedRoot proves containment on canonical paths; test 1"
+    },
+    {
+      "id": "A2",
+      "requirement": "safe no-follow cleanup",
+      "status": "PASS",
+      "evidence": "findDescendantReparsePoints walks with lstat and never descends a link; safeCleanup removes links by name first; tests 3,4"
+    },
+    {
+      "id": "A3",
+      "requirement": "external sentinel survival",
+      "status": "PASS",
+      "evidence": "junction-sentinel.json: SENTINEL_SURVIVED, contents and identity unchanged, externalTargetTraversed false"
+    },
+    {
+      "id": "A4",
+      "requirement": "dependency-root preservation",
+      "status": "PASS",
+      "evidence": "snapshotDependencyRoot before/after: canonical, entry count and entrypoints unchanged; test 11"
+    },
+    {
+      "id": "A5",
+      "requirement": "disk preflight",
+      "status": "PASS",
+      "evidence": "diskPreflight uses the MEASURED 518 MB copy cost; test 9"
+    },
+    {
+      "id": "A6",
+      "requirement": "repeatability",
+      "status": "PASS",
+      "evidence": "cleanup-repeatability.json: REPEATABLE_NO_LEAK, owned roots did not grow, zero residual roots"
+    },
+    {
+      "id": "A7",
+      "requirement": "no uncontrolled global cleanup",
+      "status": "PASS",
+      "evidence": "ownership proven by on-disk marker; an unmarked sibling is never touched; tests 2,12"
+    },
+    {
+      "id": "A8",
+      "requirement": "failure paths release resources",
+      "status": "PASS",
+      "evidence": "withOwnedRoot finally; setup/reader/timeout failure tests 5,6,7"
+    }
+  ],
+  "measuredFacts": {
+    "leakedRootsAtBaseline": 22,
+    "leakedBytesAtBaseline": 5135186645,
+    "reparsePointsInsideLeakedRoots": 10
+  },
+  "cleanupRefusesOn": [
+    "containment not proven at allocation",
+    "the owned root is itself a reparse point",
+    "the on-disk ownership marker does not match the record",
+    "the root no longer resolves inside the gate root",
+    "a descendant reparse point could not be removed by name"
+  ],
+  "remainingUncertainty": [
+    "The global test-hygiene sweep (test/global_setup.ts) still has no reparse-point check; it deletes only palimpsest- prefixed temp dirs, which bounds the risk, and changing global hygiene is broader than this stage scope. Recorded as S-4 in the safety audit."
+  ],
+  "protectedFilesAffected": false,
+  "cleanupSucceeded": true
+}
