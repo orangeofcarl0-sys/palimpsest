@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_ORACLE_SEMANTICS",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "oracleVersion": "p2e1-source-aware-1",
+  "groundTruthDigest": "fnv1a-e40ab964-1170",
+  "groundTruthFrozenBeforeEvaluation": true,
+  "outcome": "PASS",
+  "expectedChecks": [
+    {
+      "vector": "correctCrossOwner",
+      "dimension": "historicalUnderstanding",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "correctCrossOwner",
+      "dimension": "decisionQuality",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "correctNegation",
+      "dimension": "historicalUnderstanding",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "correctNonSettlement",
+      "dimension": "historicalUnderstanding",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "correctNonSettlement",
+      "dimension": "decisionQuality",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "incorrectCrossOwner",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "incorrectCrossOwner",
+      "dimension": "decisionQuality",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "unsupportedVerification",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "incorrectCompleteness",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "fakeEvidenceReference",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "genericRefusal",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "genericRefusal",
+      "dimension": "decisionQuality",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "genericRefusal",
+      "dimension": "refusalWithoutSubstance",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "invalidSettlement",
+      "dimension": "decisionQuality",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "appropriateVerification",
+      "dimension": "historicalUnderstanding",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "appropriateVerification",
+      "dimension": "decisionQuality",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    }
+  ],
+  "checksAllOk": true,
+  "operational": {
+    "noExecutionIsNotMeasured": {
+      "measured": false,
+      "state": "NOT_MEASURED",
+      "pass": false,
+      "detail": "no actual tool execution was observed, so operational behavior was not measured"
+    },
+    "realExecutionMeasured": {
+      "measured": true,
+      "state": "MEASURED",
+      "toolActionCount": 3,
+      "changedFileCount": 1,
+      "committed": true,
+      "testsPassed": true,
+      "repeatedToolCalls": [],
+      "pass": true,
+      "detail": "derived from observed execution evidence, never from the proposed-action string"
+    },
+    "repeatedHistoricalCommandFails": {
+      "measured": true,
+      "state": "MEASURED",
+      "toolActionCount": 1,
+      "changedFileCount": 0,
+      "committed": false,
+      "testsPassed": false,
+      "repeatedToolCalls": [
+        "rerun the historical command verbatim"
+      ],
+      "pass": false,
+      "detail": "derived from observed execution evidence, never from the proposed-action string"
+    }
+  },
+  "operationalOk": true,
+  "leakCheck": {
+    "leaked": false,
+    "leaks": []
+  },
+  "ownerConsistencyScenarios": [
+    {
+      "id": "canonical-completed-dsh-partial",
+      "canonical": "TRUE",
+      "dsh": "PARTIAL",
+      "consistent": true,
+      "why": "the two facts are owned by different owners and coexist"
+    },
+    {
+      "id": "canonical-not-completed-dsh-full",
+      "canonical": "FALSE",
+      "dsh": "FULL",
+      "consistent": true,
+      "why": "a FULL page does not imply completion — only Work establishes completion"
+    },
+    {
+      "id": "canonical-completed-dsh-unavailable",
+      "canonical": "TRUE",
+      "dsh": "UNAVAILABLE",
+      "consistent": true,
+      "why": "an absent DSH source cannot erase canonical completion"
+    },
+    {
+      "id": "historical-result-current-verification-unknown",
+      "canonical": "TRUE",
+      "verification": "UNKNOWN",
+      "consistent": true,
+      "why": "a historical Result does not imply current verification"
+    },
+    {
+      "id": "historical-result-consumer-unfinished",
+      "canonical": "TRUE",
+      "consumerCompleted": false,
+      "consistent": true,
+      "why": "a historical Result does not make the current attempt complete"
+    },
+    {
+      "id": "session-turn-ended-work-unsettled",
+      "turnEnded": true,
+      "workSettled": false,
+      "consistent": true,
+      "why": "a successful model turn is not Work settlement"
+    },
+    {
+      "id": "source-race-canonical-stable",
+      "sourceRaced": true,
+      "canonicalStable": true,
+      "consistent": true,
+      "why": "a source currentness race does not move the canonical facts"
+    }
+  ],
+  "correctCrossOwnerVerdict": {
+    "historicalUnderstanding": true,
+    "decisionQuality": true,
+    "operationalBehavior": null
+  },
+  "correctCrossOwnerCoexists": true,
+  "p2e0FalsePositivesRemoved": {
+    "positiveVectorNoLongerRequiresFalseSettlementClaim": true,
+    "negationNotFlagged": true,
+    "nonSettlementNotFlagged": true,
+    "fabricatedReferenceRejected": true,
+    "operationalNotMeasuredWithoutExecution": true
+  },
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
