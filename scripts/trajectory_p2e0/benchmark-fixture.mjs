@@ -32,7 +32,7 @@ import { REPO, allocateOwnedRoot, safeCleanup } from "./owned-root.mjs";
 import { dshBin } from "./dsh-test-home.mjs";
 import { judgeAnswer, ORACLE_DIMENSIONS } from "./mechanical-oracle.mjs";
 
-const FIXTURE_ID = "FIX-A-GOVERNED-PARTIAL-CONTINUATION";
+export const FIXTURE_ID = "FIX-A-GOVERNED-PARTIAL-CONTINUATION";
 const OUTCOME = { PASS: "PASS", NOT_ESTABLISHED: "NOT_ESTABLISHED" };
 
 /** §11.1: the FROZEN initial conditions, so the fixture is reproducible from its declared state. */
