@@ -424,8 +424,11 @@ try {
     record("evidenceLevel", qualified ? "E0_L1_CONTROLLED_SOURCE_TO_DSH_INPUT" : "NOT_ESTABLISHED");
     finalOutcome = qualified ? "PASS" : "NOT_ESTABLISHED";
     } finally {
-      /** §7.2: dispose the install BEFORE the owned root is cleaned, so handles are closed first. */
-      installed.dispose();
+      /**
+       * P2-E1 §9.4: AWAIT the disposal. The install's reader close is asynchronous (it disposes a mounted
+       * Cordis fiber) and owns SQLite handles, so the filesystem cleanup must not begin until it resolves.
+       */
+      await installed.dispose();
     }
   } finally {
     if (previousHome === undefined) delete process.env.DSH_HOME;

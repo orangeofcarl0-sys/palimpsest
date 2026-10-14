@@ -20,7 +20,7 @@
  *
  * NOT a product component. PLAIN JAVASCRIPT (`.mjs`), bare node.
  */
-import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, rmSync, rmdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -84,36 +84,63 @@ export function installHostBundle(home, repo) {
  *   strategy "copy"      a controlled full dereferenced copy (the fallback, with the disk cost preflighted)
  *
  * Returns the strategy actually used, so the evidence records which one ran.
+ *
+ * P2-E1 §9.3 CORRECTION (F17). P2-E0 returned `{ strategy: "copy" }` when ANY junction failed WITHOUT
+ * performing the copy — the copy branch was a separate earlier `if` the junction path never reached, so the
+ * caller recorded COPY and then ran a gate against a half-populated module tree. This version does what it
+ * says: on a junction failure it removes ONLY the links it created, then performs a PREFLIGHTED COMPLETE COPY.
+ * If the copy cannot be completed it returns an explicit BLOCKED rather than a false COPY.
  */
 export function shareDshModules(home, { strategy = "junction" } = {}) {
   const target = join(home, "profiles", "node_modules");
   mkdirSync(target, { recursive: true });
-  if (strategy === "copy") {
-    for (const entry of readdirSync(REAL_MODULES)) {
+
+  const copyAll = () => {
+    /** §4.6: preflight the disk BEFORE a full dereferenced copy, so a full disk is refused not discovered. */
+    const preflight = diskPreflight(target, { strategy: "copy", copies: 1 });
+    if (preflight.sufficient === false) return { strategy: "BLOCKED", reason: `insufficient disk for a full module copy: ${String(preflight.freeBytes)} free, ${String(preflight.estimatedRequiredBytes)} required` };
+    const entries = readdirSync(REAL_MODULES);
+    for (const entry of entries) {
       const destination = join(target, entry);
       if (existsSync(destination)) continue;
       cpSync(join(REAL_MODULES, entry), destination, { recursive: true, dereference: true });
     }
+    /** §9.3: prove the copy actually happened — every real entry must now exist at the destination. */
+    const missing = readdirSync(REAL_MODULES).filter((entry) => !existsSync(join(target, entry)));
+    if (missing.length > 0) return { strategy: "BLOCKED", reason: `${String(missing.length)} module entries are absent after the copy` };
     return { strategy: "copy", entries: readdirSync(REAL_MODULES).length };
-  }
-  let linked = 0;
+  };
+
+  if (strategy === "copy") return copyAll();
+
+  const createdLinks = [];
   let failed = 0;
   for (const entry of readdirSync(REAL_MODULES)) {
     const destination = join(target, entry);
     if (existsSync(destination)) continue;
     try {
       symlinkSync(join(REAL_MODULES, entry), destination, "junction");
-      linked += 1;
+      createdLinks.push(destination);
     } catch {
       failed += 1;
     }
   }
   /**
-   * §7.3: if ANY link could not be created, the home is not demonstrably complete — fall back to the
-   * controlled full copy rather than run a gate against a half-populated module tree.
+   * §9.3: if ANY link could not be created, remove ONLY the links THIS invocation created, then perform a
+   * real, preflighted, verified copy. Never report COPY without having copied.
    */
-  if (failed > 0) return { strategy: "copy", entries: readdirSync(REAL_MODULES).length, reason: `${String(failed)} junctions could not be created` };
-  return { strategy: "junction", entries: linked };
+  if (failed > 0) {
+    for (const link of createdLinks) {
+      try {
+        rmdirSync(link);
+      } catch {
+        /* a link that cannot be removed by name is reported through the BLOCKED path below */
+      }
+    }
+    const copied = copyAll();
+    return copied.strategy === "copy" ? { ...copied, reason: `${String(failed)} junction(s) could not be created; a complete copy was performed instead` } : copied;
+  }
+  return { strategy: "junction", entries: createdLinks.length };
 }
 
 /** §7.3: write a test-owned profile that mounts the branch's host bundle and the deterministic adapter. */

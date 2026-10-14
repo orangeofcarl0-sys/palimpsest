@@ -39,18 +39,23 @@ function containedIn(parent, child) {
 }
 
 /**
- * §4.2/§4.3: find EVERY descendant reparse point WITHOUT following any of them.
+ * §4.2/§4.3: find EVERY descendant reparse point WITHOUT following any of them — FAIL-CLOSED (P2-E1 §9.1).
  *
  * The walk uses `lstat` (never `stat`) and NEVER recurses into a link, so a junction cannot lead it outside
- * the root. Returns the link paths plus a count, so a caller can decide before deleting anything.
+ * the root. P2-E1 §9.1 CORRECTION: a scan that could not read a directory or could not `lstat` an entry is
+ * INCOMPLETE, not empty. The result is a DISCRIMINATED UNION — `{state:"COMPLETE", links}` or
+ * `{state:"INCOMPLETE", errors}` — so an unreadable subtree can never be mistaken for a link-free one and the
+ * caller MUST refuse to delete. `links`/`count` remain on the COMPLETE arm for the existing callers.
  */
 export function findDescendantReparsePoints(root) {
   const links = [];
+  const errors = [];
   const walk = (dir) => {
     let entries;
     try {
       entries = readdirSync(dir);
-    } catch {
+    } catch (error) {
+      errors.push({ path: dir.replace(/\\/gu, "/"), detail: error?.message ?? String(error) });
       return;
     }
     for (const entry of entries) {
@@ -58,7 +63,8 @@ export function findDescendantReparsePoints(root) {
       let stat;
       try {
         stat = lstatSync(full);
-      } catch {
+      } catch (error) {
+        errors.push({ path: full.replace(/\\/gu, "/"), detail: error?.message ?? String(error) });
         continue;
       }
       if (stat.isSymbolicLink()) {
@@ -69,7 +75,8 @@ export function findDescendantReparsePoints(root) {
     }
   };
   walk(root);
-  return { links, count: links.length };
+  if (errors.length > 0) return { state: "INCOMPLETE", errors: Object.freeze(errors), links: Object.freeze([]), count: 0 };
+  return { state: "COMPLETE", links, count: links.length };
 }
 
 /** §4.5: a non-secret identity snapshot of a dependency root, to prove it is unchanged after cleanup. */
@@ -170,8 +177,14 @@ export function verifyOwnership(owned) {
  * so its target is untouched) → then remove the root recursively. If containment fails, the marker is
  * missing/mismatched, or the root itself is a reparse point, the directory is PRESERVED and the reason
  * reported — never deleted with a wider sweep.
+ *
+ * P2-E1 §9.1/§9.2 CORRECTIONS:
+ *   · an INCOMPLETE descendant scan BLOCKS deletion (the old code treated an unreadable subtree as link-free);
+ *   · the link-removal refusal is NOT bypassable by a routine option. There is no `refuseOnLinkFailure`
+ *     escape hatch: a failed link removal always preserves the root. A caller that genuinely needs a
+ *     different behaviour must use an independently-owned, no-follow-proven operation, not an option here.
  */
-export async function safeCleanup(owned, options = {}) {
+export async function safeCleanup(owned) {
   if (owned === undefined || owned === null) return { cleaned: false, reason: "no owned root was allocated" };
   if (!owned.containmentProven) return { cleaned: false, reason: "containment was not proven at allocation; preserving the directory" };
   if (owned.rootIsReparsePoint) return { cleaned: false, reason: "the owned root is itself a reparse point; preserving the directory" };
@@ -189,7 +202,12 @@ export async function safeCleanup(owned, options = {}) {
     return { cleaned: false, reason: "the owned root no longer resolves inside the gate root; preserving it" };
   }
 
-  const descendants = findDescendantReparsePoints(owned.root);
+  const scan = findDescendantReparsePoints(owned.root);
+  /** §9.1: an INCOMPLETE scan must NOT be read as "no links". Preserve and report the scan errors. */
+  if (scan.state === "INCOMPLETE") {
+    return { cleaned: false, reason: `the descendant reparse-point scan was INCOMPLETE (${String(scan.errors.length)} error(s)); preserving the root because a link could exist in an unreadable subtree`, scanErrors: scan.errors, preserved: true };
+  }
+  const descendants = scan;
   const removedLinks = [];
   const failedLinks = [];
   for (const link of descendants.links) {
@@ -202,7 +220,8 @@ export async function safeCleanup(owned, options = {}) {
       failedLinks.push({ link: link.replace(/\\/gu, "/"), detail: error?.message ?? String(error) });
     }
   }
-  if (failedLinks.length > 0 && options.refuseOnLinkFailure !== false) {
+  /** §9.2: NOT bypassable. A failed link removal always preserves the root. */
+  if (failedLinks.length > 0) {
     return { cleaned: false, reason: `could not remove ${failedLinks.length} descendant reparse point(s) by name; preserving the root`, removedLinks, failedLinks, preserved: true };
   }
 
@@ -210,7 +229,7 @@ export async function safeCleanup(owned, options = {}) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     try {
       rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      return { cleaned: true, removedLinks, descendantReparsePointsFound: descendants.count, attempts: attempt + 1 };
+      return { cleaned: true, removedLinks, descendantReparsePointsFound: descendants.count, scanState: "COMPLETE", attempts: attempt + 1 };
     } catch (error) {
       lastReason = error?.message ?? String(error);
       await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));

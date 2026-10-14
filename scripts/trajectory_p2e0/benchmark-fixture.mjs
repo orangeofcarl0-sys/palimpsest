@@ -84,216 +84,240 @@ export async function prepareFixture() {
   const canonical = await import(pathToFileURL(join(REPO, "dist", "src", "schema", "canonical.js")).href);
 
   const owned = allocateOwnedRoot("p2e0-fix-a-", "fixture-a");
-  const repoFix = join(owned.root, "repo");
-  const PROJECT_ID = "p2e0fixa";
-  const HEX = (seed) => seed.repeat(64).slice(0, 64);
-  const HEAD = "c".repeat(40);
-
-  mkdirSync(join(repoFix, "src"), { recursive: true });
-  const { writeFileSync } = await import("node:fs");
-  const { execFileSync } = await import("node:child_process");
-  writeFileSync(join(repoFix, "src", "a.ts"), "export const a = 1;\n");
   /**
-   * §11.1: a FROZEN initial git state. The world-preparation effect layer shells out to real `git`, so the
-   * fixture initializes a real repository at its declared H0 before any governed work runs.
+   * P2-E1 §9.5 (F19): GUARANTEED CLEANUP ON PREPARATION FAILURE. Every resource created below is registered
+   * here as it is created, and a `catch` releases them ALL before rethrowing — so a failure in the install,
+   * git setup, the governed chain, association setup, the reader, Capsule admission or rendering can never
+   * leak the owned root (the E0 code returned `cleanup` only on success, so any throw leaked it).
    */
-  execFileSync("git", ["init", "-q"], { cwd: repoFix });
-  execFileSync("git", ["add", "-A"], { cwd: repoFix });
-  execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "H0"], { cwd: repoFix });
+  const resources = { assocStore: null, installed: null };
+  const release = async () => {
+    if (resources.assocStore !== null) {
+      try { resources.assocStore.close(); } catch { /* already closed */ }
+    }
+    if (resources.installed !== null) {
+      try { await resources.installed.dispose(); } catch { /* already disposed */ }
+    }
+    return safeCleanup(owned);
+  };
 
-  const installed = install.installPalimpsest(
-    { tools: { register: () => () => undefined } },
-    {
+  try {
+    const repoFix = join(owned.root, "repo");
+    const PROJECT_ID = "p2e0fixa";
+    const HEX = (seed) => seed.repeat(64).slice(0, 64);
+    /**
+     * P2-E1 §13.2 (F10): THE REAL TEST-OWNED COMMIT. The E0 fixture seeded its git port with a synthetic
+     * `"c".repeat(40)` id that does not exist in the repository it had just created, so the declared HEAD, the
+     * Task Envelope base and the real repository disagreed. This reads the ACTUAL commit of the real test-owned
+     * repository, so the Fixture, the Work Basis and the Oracle reference ONE world.
+     */
+    mkdirSync(join(repoFix, "src"), { recursive: true });
+    const { writeFileSync } = await import("node:fs");
+    const { execFileSync } = await import("node:child_process");
+    writeFileSync(join(repoFix, "src", "a.ts"), "export const a = 1;\n");
+    execFileSync("git", ["init", "-q"], { cwd: repoFix });
+    execFileSync("git", ["add", "-A"], { cwd: repoFix });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "H0"], { cwd: repoFix });
+    const HEAD = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoFix, encoding: "utf8" }).trim();
+    if (!/^[0-9a-f]{40}$/u.test(HEAD)) throw new Error(`the test-owned repository produced no real commit id: ${HEAD}`);
+
+    resources.installed = install.installPalimpsest(
+      { tools: { register: () => () => undefined } },
+      {
+        projectId: PROJECT_ID,
+        databasePath: join(repoFix, ".palimpsest", "p.sqlite"),
+        ordariumDatabasePath: join(repoFix, ".palimpsest", "o.sqlite"),
+        repository: repoFix,
+        git: new effects.FakeGitPort(HEAD),
+        execution: "worktree",
+        standard: {
+          statement: "tests pass and scope respected",
+          clauses: [
+            { kind: "command_succeeds", command: ["node", "-e", "process.exit(0)"], predicate: "tests_pass" },
+            { kind: "scope_respected" },
+          ],
+          derivedFrom: ["p2e0 fixture A"],
+          confirmed: true,
+          notes: [],
+        },
+        policy: install.trustedDefaultPolicy({ allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] }),
+        /** §11.1: the HOST's own executable facts, so the install composes a real trusted basis. */
+        workWorkerBin: dshBin(),
+        workWorkerProfile: "p2e0-fixture-a",
+        executionAssociationSourceKind: "FIRST_PARTY_DSH_HOST",
+        experimentalTrajectoryContextDelivery: true,
+        trajectoryPresentationMode: "TREATMENT",
+      },
+    );
+    const installed = resources.installed;
+
+    const controller = installed.controller;
+    const store = controller.store;
+    const effectsRuntime = controller.effects;
+    controller.start({
       projectId: PROJECT_ID,
-      databasePath: join(repoFix, ".palimpsest", "p.sqlite"),
-      ordariumDatabasePath: join(repoFix, ".palimpsest", "o.sqlite"),
-      repository: repoFix,
-      git: new effects.FakeGitPort(HEAD),
-      execution: "worktree",
-      standard: {
-        statement: "tests pass and scope respected",
-        clauses: [
-          { kind: "command_succeeds", command: ["node", "-e", "process.exit(0)"], predicate: "tests_pass" },
-          { kind: "scope_respected" },
+      goal: "g",
+      headCommit: HEAD,
+      tasks: [
+        { task_id: "t1", objective: "tidy a", depends_on: [], write_paths: ["src/a.ts"], required_artifacts: [] },
+        { task_id: "t2", objective: "tidy b", depends_on: [], write_paths: ["src/b.ts"], required_artifacts: [] },
+      ],
+      stageGraph: {
+        stages: [
+          { id: "active", state: "ACTIVE", concurrency: 2 },
+          { id: "verifying", state: "VERIFYING", concurrency: 2 },
+          { id: "blocked", state: "BLOCKED" },
+          { id: "ready", state: "READY" },
         ],
-        derivedFrom: ["p2e0 fixture A"],
-        confirmed: true,
-        notes: [],
+        transitions: [
+          { from: "active", event: "TASK_VERIFYING", to: "VERIFYING", when: "batch-completed-candidate" },
+          { from: "active", event: "TASK_READY", to: "READY", when: "batch-failed-budget-remaining" },
+          { from: "active", event: "TASK_FAILED", to: "FAILED", when: "attempt-limit-exhausted" },
+          { from: "verifying", event: "TASK_SATISFIED", to: "SATISFIED", when: "promotion-committed" },
+          { from: "verifying", event: "TASK_READY", to: "READY", when: "rework-admitted" },
+          { from: "blocked", event: "TASK_READY", to: "READY", when: "dependencies-satisfied" },
+          { from: "ready", event: "TASK_STARTED", to: "ACTIVE", when: "always" },
+        ],
+        guards: {},
+        declared_by: `${PROJECT_ID}-spec`,
+        reason: "two tasks must reach VERIFYING together so one can be promoted while the other is reopened",
       },
-      policy: install.trustedDefaultPolicy({ allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] }),
-      /** §11.1: the HOST's own executable facts, so the install composes a real trusted basis. */
-      workWorkerBin: dshBin(),
-      workWorkerProfile: "p2e0-fixture-a",
-      executionAssociationSourceKind: "FIRST_PARTY_DSH_HOST",
-      experimentalTrajectoryContextDelivery: true,
-      trajectoryPresentationMode: "TREATMENT",
-    },
-  );
+    });
+    controller.declareRoleTable({ roles: [{ role: "implementer", slots: 2 }], hardCap: 2, declaredBy: `${PROJECT_ID}-spec` });
 
-  const controller = installed.controller;
-  const store = controller.store;
-  const effectsRuntime = controller.effects;
-  controller.start({
-    projectId: PROJECT_ID,
-    goal: "g",
-    headCommit: HEAD,
-    tasks: [
-      { task_id: "t1", objective: "tidy a", depends_on: [], write_paths: ["src/a.ts"], required_artifacts: [] },
-      { task_id: "t2", objective: "tidy b", depends_on: [], write_paths: ["src/b.ts"], required_artifacts: [] },
-    ],
-    stageGraph: {
-      stages: [
-        { id: "active", state: "ACTIVE", concurrency: 2 },
-        { id: "verifying", state: "VERIFYING", concurrency: 2 },
-        { id: "blocked", state: "BLOCKED" },
-        { id: "ready", state: "READY" },
-      ],
-      transitions: [
-        { from: "active", event: "TASK_VERIFYING", to: "VERIFYING", when: "batch-completed-candidate" },
-        { from: "active", event: "TASK_READY", to: "READY", when: "batch-failed-budget-remaining" },
-        { from: "active", event: "TASK_FAILED", to: "FAILED", when: "attempt-limit-exhausted" },
-        { from: "verifying", event: "TASK_SATISFIED", to: "SATISFIED", when: "promotion-committed" },
-        { from: "verifying", event: "TASK_READY", to: "READY", when: "rework-admitted" },
-        { from: "blocked", event: "TASK_READY", to: "READY", when: "dependencies-satisfied" },
-        { from: "ready", event: "TASK_STARTED", to: "ACTIVE", when: "always" },
-      ],
-      guards: {},
-      declared_by: `${PROJECT_ID}-spec`,
-      reason: "two tasks must reach VERIFYING together so one can be promoted while the other is reopened",
-    },
-  });
-  controller.declareRoleTable({ roles: [{ role: "implementer", slots: 2 }], hardCap: 2, declaredBy: `${PROJECT_ID}-spec` });
+    const row = (taskId) => store.connection.prepare("SELECT last_event_id, state_json FROM tasks WHERE project_id=? AND task_id=?").get(PROJECT_ID, taskId);
+    const activationOf = (taskId) => Number(JSON.parse(new TextDecoder().decode(row(taskId).state_json)).batch_activation_event_id);
+    const readEnvelope = (taskId) => {
+      const task = store.connection.prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?").get(PROJECT_ID, taskId);
+      return schema.parseTaskEnvelope(JSON.parse(new TextDecoder().decode(task.envelope_json)));
+    };
+    const drive = async (taskId) => {
+      controller.step();
+      const created = controller.step();
+      const attemptId = created.entity_id;
+      await controller.claim(attemptId);
+      const committed = await effectsRuntime.invoke(effectsRuntime.actions.gitCommit, { worktreeId: attemptId, message: "work" }, { scope: PROJECT_ID, revision: controller.promotions.projectRevision(), callId: `c:${attemptId}` });
+      controller.report(attemptId, { workerStatus: "completed", summary: "done", resultCommit: committed.commit });
+      await controller.gate({ attemptId, predicate: "tests_pass", command: ["node", "-e", "process.exit(0)"] });
+      controller.step();
+      return attemptId;
+    };
 
-  const row = (taskId) => store.connection.prepare("SELECT last_event_id, state_json FROM tasks WHERE project_id=? AND task_id=?").get(PROJECT_ID, taskId);
-  const activationOf = (taskId) => Number(JSON.parse(new TextDecoder().decode(row(taskId).state_json)).batch_activation_event_id);
-  const readEnvelope = (taskId) => {
-    const task = store.connection.prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?").get(PROJECT_ID, taskId);
-    return schema.parseTaskEnvelope(JSON.parse(new TextDecoder().decode(task.envelope_json)));
-  };
-  const drive = async (taskId) => {
+    const promoted = await drive("t1");
+    const a0 = await drive("t2");
+    const resultCommit = store.listEvents(PROJECT_ID).find((event) => event.event_type === "ATTEMPT_COMPLETED" && event.entity_id === promoted).payload.attempt_report.result_commit;
+    await controller.promote(promoted, resultCommit, HEAD);
     controller.step();
-    const created = controller.step();
-    const attemptId = created.entity_id;
-    await controller.claim(attemptId);
-    const committed = await effectsRuntime.invoke(effectsRuntime.actions.gitCommit, { worktreeId: attemptId, message: "work" }, { scope: PROJECT_ID, revision: controller.promotions.projectRevision(), callId: `c:${attemptId}` });
-    controller.report(attemptId, { workerStatus: "completed", summary: "done", resultCommit: committed.commit });
-    await controller.gate({ attemptId, predicate: "tests_pass", command: ["node", "-e", "process.exit(0)"] });
+
+    const activationId = activationOf("t2");
+    const request = schema.parseNewEvent({
+      schema_version: 1, project_id: PROJECT_ID, event_type: "TASK_READY", payload_version: 1, entity_type: "task", entity_id: "t2",
+      payload: schema.normalizeEventPayload("TASK_READY", { previous_state: "VERIFYING", new_state: "READY", reason: "rework-admitted", batch_activation_event_id: activationId }),
+      causation_id: Number(row("t2").last_event_id),
+      correlation_id: "task:t2:rework",
+      idempotency_key: domain.actionKey("task-batch-settle-v1", { project_id: PROJECT_ID, task_id: "t2", batch_activation_event_id: activationId, target_state: "READY" }),
+      expected_project_revision: 0,
+    });
+    const permit = rework.ReworkAdmissionPermit.issue({
+      projectId: PROJECT_ID, taskId: "t2", originResultSubjectKind: "attempt_result", originResultSubjectRef: a0,
+      originBasisDigest: HEX("a"), targetObservationDigest: HEX("b"),
+      currentEnvelopeId: readEnvelope("t2").envelope_id, batchActivationEventId: activationId, reason: "INCOMPATIBLE", targetFence: controller.reworkTargetFence(),
+    });
+    store.appendReworkReopening(request, permit, { assessmentDigest: HEX("d") });
     controller.step();
-    return attemptId;
-  };
+    const a1 = controller.step().entity_id;
 
-  const promoted = await drive("t1");
-  const a0 = await drive("t2");
-  const resultCommit = store.listEvents(PROJECT_ID).find((event) => event.event_type === "ATTEMPT_COMPLETED" && event.entity_id === promoted).payload.attempt_report.result_commit;
-  await controller.promote(promoted, resultCommit, HEAD);
-  controller.step();
+    /**
+     * §11.1/§11.2: THE ORIGIN'S PARTIAL PAGE.
+     *
+     * The origin association is recorded through the install's OWN Recorder against a session the CONTROLLED
+     * READER will serve as a genuinely PARTIAL page: `knownEventCount` is 8 while only the first 3 events are
+     * returned, so `eventPageCoverageOfPage` yields PARTIAL and the Capsule must state the unread extent.
+     */
+    const recorder = installed.executionAssociationRecorder;
+    recorder.recordIdentity(Object.freeze({
+      hostLocalJobId: "",
+      attemptId: a0,
+      observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: "origin-partial", reportedSessionId: "origin-partial", source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }),
+    }));
+    recorder.finalizeInvocation({ attemptId: a0, invocationId: "wpi-a0", closeReason: "CHILD_EXIT_OBSERVED" });
 
-  const activationId = activationOf("t2");
-  const request = schema.parseNewEvent({
-    schema_version: 1, project_id: PROJECT_ID, event_type: "TASK_READY", payload_version: 1, entity_type: "task", entity_id: "t2",
-    payload: schema.normalizeEventPayload("TASK_READY", { previous_state: "VERIFYING", new_state: "READY", reason: "rework-admitted", batch_activation_event_id: activationId }),
-    causation_id: Number(row("t2").last_event_id),
-    correlation_id: "task:t2:rework",
-    idempotency_key: domain.actionKey("task-batch-settle-v1", { project_id: PROJECT_ID, task_id: "t2", batch_activation_event_id: activationId, target_state: "READY" }),
-    expected_project_revision: 0,
-  });
-  const permit = rework.ReworkAdmissionPermit.issue({
-    projectId: PROJECT_ID, taskId: "t2", originResultSubjectKind: "attempt_result", originResultSubjectRef: a0,
-    originBasisDigest: HEX("a"), targetObservationDigest: HEX("b"),
-    currentEnvelopeId: readEnvelope("t2").envelope_id, batchActivationEventId: activationId, reason: "INCOMPATIBLE", targetFence: controller.reworkTargetFence(),
-  });
-  store.appendReworkReopening(request, permit, { assessmentDigest: HEX("d") });
-  controller.step();
-  const a1 = controller.step().entity_id;
+    /** The PARTIAL page: 3 of 8 known events, beginning at seq 0. */
+    const partialPage = {
+      schemaVersion: 1, readState: "READ_OK", sessionId: "origin-partial", header: null, sourceIdentity: "fixture",
+      sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE", throughSeq: 2, knownEventCount: 8, inheritedEventCount: 0,
+      requestedFromSeq: 0, requestedMaxEvents: 3, returnedCount: 3, pageBounded: true, diskIoBounded: true,
+      durabilityProvenance: "PERSISTED_AND_SYNTHETIC_SEPARATED", persistedEventCount: 8, syntheticRecoveryEventCount: 0,
+      events: [
+        { sessionId: "origin-partial", seq: 0, type: "turn/start", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 0, surface: null, summary: "turn started", durationMs: null, observedStatus: null },
+        { sessionId: "origin-partial", seq: 1, type: "tool/call", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 1, surface: null, summary: "tool call node at step 1", durationMs: null, observedStatus: null },
+        { sessionId: "origin-partial", seq: 2, type: "tool/result", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 2, surface: null, summary: "tool result at step 1", durationMs: null, observedStatus: "recorded" },
+      ],
+      knownParentSession: null, proves: [], doesNotProve: [], detail: "controlled PARTIAL fixture",
+    };
 
-  /**
-   * §11.1/§11.2: THE ORIGIN'S PARTIAL PAGE.
-   *
-   * The origin association is recorded through the install's OWN Recorder against a session the CONTROLLED
-   * READER will serve as a genuinely PARTIAL page: `knownEventCount` is 8 while only the first 3 events are
-   * returned, so `eventPageCoverageOfPage` yields PARTIAL and the Capsule must state the unread extent.
-   */
-  const recorder = installed.executionAssociationRecorder;
-  recorder.recordIdentity(Object.freeze({
-    hostLocalJobId: "",
-    attemptId: a0,
-    observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: "origin-partial", reportedSessionId: "origin-partial", source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }),
-  }));
-  recorder.finalizeInvocation({ attemptId: a0, invocationId: "wpi-a0", closeReason: "CHILD_EXIT_OBSERVED" });
-
-  /** The PARTIAL page: 3 of 8 known events, beginning at seq 0. */
-  const partialPage = {
-    schemaVersion: 1, readState: "READ_OK", sessionId: "origin-partial", header: null, sourceIdentity: "fixture",
-    sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE", throughSeq: 2, knownEventCount: 8, inheritedEventCount: 0,
-    requestedFromSeq: 0, requestedMaxEvents: 3, returnedCount: 3, pageBounded: true, diskIoBounded: true,
-    durabilityProvenance: "PERSISTED_AND_SYNTHETIC_SEPARATED", persistedEventCount: 8, syntheticRecoveryEventCount: 0,
-    events: [
-      { sessionId: "origin-partial", seq: 0, type: "turn/start", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 0, surface: null, summary: "turn started", durationMs: null, observedStatus: null },
-      { sessionId: "origin-partial", seq: 1, type: "tool/call", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 1, surface: null, summary: "tool call node at step 1", durationMs: null, observedStatus: null },
-      { sessionId: "origin-partial", seq: 2, type: "tool/result", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 2, surface: null, summary: "tool result at step 1", durationMs: null, observedStatus: "recorded" },
-    ],
-    knownParentSession: null, proves: [], doesNotProve: [], detail: "controlled PARTIAL fixture",
-  };
-
-  const { composeAttributedPreview } = await import(pathToFileURL(join(REPO, "dist", "src", "composition", "attributed_preview.js")).href);
-  const { makeCapsuleAuthorization } = await import(pathToFileURL(join(REPO, "dist", "src", "composition", "execution_association.js")).href);
-  const ea = await import(pathToFileURL(join(REPO, "dist", "src", "execution_association", "index.js")).href);
-  const assocStore = new ea.SqliteExecutionAssociationStore(":memory:");
-  const basis = ea.computeTrustedSourceBasis({ adapterId: "fixture-a", workerBin: dshBin(), nodeExecPath: process.execPath });
-  const rec2 = ea.createExecutionAssociationRecorder({ store: assocStore, projectId: PROJECT_ID, sourceBasis: basis, sourceKind: "FIRST_PARTY_DSH_HOST" });
-  rec2.recordIdentity(Object.freeze({ hostLocalJobId: "", attemptId: a0, observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: "origin-partial", reportedSessionId: "origin-partial", source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }) }));
-  rec2.finalizeInvocation({ attemptId: a0, invocationId: "wpi-a0", closeReason: "CHILD_EXIT_OBSERVED" });
-  const qualifier = ea.makeAssociationQualifier({
-    store: assocStore,
-    registry: ea.registryFromSingleBasis(basis, "FIRST_PARTY_DSH_HOST"),
-    work: {
-      readAttempt: ({ attemptId }) => {
-        const record = controller.attemptWorkRecord(attemptId);
-        return record === null ? { ok: false, reason: "no canonical attempt" } : { ok: true, taskId: record.taskId, state: record.state, creationEventId: "ev-1" };
+    const { composeAttributedPreview } = await import(pathToFileURL(join(REPO, "dist", "src", "composition", "attributed_preview.js")).href);
+    const { makeCapsuleAuthorization } = await import(pathToFileURL(join(REPO, "dist", "src", "composition", "execution_association.js")).href);
+    const ea = await import(pathToFileURL(join(REPO, "dist", "src", "execution_association", "index.js")).href);
+    const assocStore = new ea.SqliteExecutionAssociationStore(":memory:");
+    resources.assocStore = assocStore;
+    const basis = ea.computeTrustedSourceBasis({ adapterId: "fixture-a", workerBin: dshBin(), nodeExecPath: process.execPath });
+    const rec2 = ea.createExecutionAssociationRecorder({ store: assocStore, projectId: PROJECT_ID, sourceBasis: basis, sourceKind: "FIRST_PARTY_DSH_HOST" });
+    rec2.recordIdentity(Object.freeze({ hostLocalJobId: "", attemptId: a0, observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: "origin-partial", reportedSessionId: "origin-partial", source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }) }));
+    rec2.finalizeInvocation({ attemptId: a0, invocationId: "wpi-a0", closeReason: "CHILD_EXIT_OBSERVED" });
+    const qualifier = ea.makeAssociationQualifier({
+      store: assocStore,
+      registry: ea.registryFromSingleBasis(basis, "FIRST_PARTY_DSH_HOST"),
+      work: {
+        readAttempt: ({ attemptId }) => {
+          const record = controller.attemptWorkRecord(attemptId);
+          return record === null ? { ok: false, reason: "no canonical attempt" } : { ok: true, taskId: record.taskId, state: record.state, creationEventId: "ev-1" };
+        },
       },
-    },
-    dsh: { async readHeaderIdentity(sessionId) { return { readState: "READ_OK", header: { sessionId, version: 4, createdAt: 1, cwd: null, parentSession: null, isSeeded: false, origin: null, delegationDepth: null }, detail: "fixture" }; } },
-  });
-  const service = composeAttributedPreview({
-    projectId: PROJECT_ID,
-    controller,
-    promotions: controller.promotions,
-    qualifier,
-    store: assocStore,
-    sessionReader: { sourceIdentity: "fixture", evidenceClass: "DSH_QUERY_PORT_FIXTURE", async readEvents() { return partialPage; } },
-    capsuleAuthorization: makeCapsuleAuthorization({ projectId: PROJECT_ID, store, controller, contextService: controller.context }),
-    projectEvolutionOf: async () => ({ projectionRootId: null, projectionSemanticDigest: null, workSequence: null, workEventDigest: null, projectIrRevision: null, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [], basisCompleteness: null, failureOrigin: null, failureKind: null }),
-  });
+      dsh: { async readHeaderIdentity(sessionId) { return { readState: "READ_OK", header: { sessionId, version: 4, createdAt: 1, cwd: null, parentSession: null, isSeeded: false, origin: null, delegationDepth: null }, detail: "fixture" }; } },
+    });
+    const service = composeAttributedPreview({
+      projectId: PROJECT_ID,
+      controller,
+      promotions: controller.promotions,
+      qualifier,
+      store: assocStore,
+      sessionReader: { sourceIdentity: "fixture", evidenceClass: "DSH_QUERY_PORT_FIXTURE", async readEvents() { return partialPage; } },
+      capsuleAuthorization: makeCapsuleAuthorization({ projectId: PROJECT_ID, store, controller, contextService: controller.context }),
+      projectEvolutionOf: async () => ({ projectionRootId: null, projectionSemanticDigest: null, workSequence: null, workEventDigest: null, projectIrRevision: null, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [], basisCompleteness: null, failureOrigin: null, failureKind: null }),
+    });
 
-  const capsuleResult = await service.capsuleForConsumer({ consumerAttemptId: a1 });
-  if (capsuleResult.state !== "AUTHORIZED" || capsuleResult.capsule === null) {
-    throw new Error(`fixture could not materialize a Capsule: ${capsuleResult.state} — ${capsuleResult.detail}`);
+    const capsuleResult = await service.capsuleForConsumer({ consumerAttemptId: a1 });
+    if (capsuleResult.state !== "AUTHORIZED" || capsuleResult.capsule === null) {
+      throw new Error(`fixture could not materialize a Capsule: ${capsuleResult.state} — ${capsuleResult.detail}`);
+    }
+    const capsule = capsuleResult.capsule;
+
+    /** §11.3: CONTROL and TREATMENT differ ONLY by whether the qualified section is delivered. */
+    const controlOutcome = presentationModule.buildTrajectoryPresentation({ mode: "CONTROL", capsule: null, consumerBasisDigest: "" });
+    const treatmentOutcome = presentationModule.buildTrajectoryPresentation({ mode: "TREATMENT", capsule, consumerBasisDigest: canonical.canonicalDigest(capsule.authorizationBasis) });
+
+    return {
+      owned,
+      cleanup: release,
+      fixtureId: FIXTURE_ID,
+      consumerAttemptId: a1,
+      originAttemptId: a0,
+      gitHead: HEAD,
+      capsule,
+      capsuleDigest: canonical.canonicalDigest(capsule),
+      coverage: capsule.historicalExecution.coverage,
+      knownEventCount: capsule.historicalExecution.knownEventCount,
+      includedEventCount: capsule.historicalExecution.includedEventCount,
+      unreadHistory: capsule.uncertainty.unreadHistory,
+      control: controlOutcome.ok ? controlOutcome.presentation : null,
+      treatment: treatmentOutcome.ok ? treatmentOutcome.presentation : null,
+    };
+  } catch (thrown) {
+    /** §9.5: release EVERYTHING before rethrowing, so a preparation failure cannot leak the owned root. */
+    await release();
+    throw thrown;
   }
-  const capsule = capsuleResult.capsule;
-
-  /** §11.3: CONTROL and TREATMENT differ ONLY by whether the qualified section is delivered. */
-  const controlOutcome = presentationModule.buildTrajectoryPresentation({ mode: "CONTROL", capsule: null, consumerBasisDigest: "" });
-  const treatmentOutcome = presentationModule.buildTrajectoryPresentation({ mode: "TREATMENT", capsule, consumerBasisDigest: canonical.canonicalDigest(capsule.authorizationBasis) });
-
-  return {
-    owned,
-    cleanup: async () => {
-      try { assocStore.close(); } catch { /* closed */ }
-      try { installed.dispose(); } catch { /* disposed */ }
-      return safeCleanup(owned);
-    },
-    fixtureId: FIXTURE_ID,
-    consumerAttemptId: a1,
-    originAttemptId: a0,
-    capsule,
-    capsuleDigest: canonical.canonicalDigest(capsule),
-    coverage: capsule.historicalExecution.coverage,
-    knownEventCount: capsule.historicalExecution.knownEventCount,
-    includedEventCount: capsule.historicalExecution.includedEventCount,
-    unreadHistory: capsule.uncertainty.unreadHistory,
-    control: controlOutcome.ok ? controlOutcome.presentation : null,
-    treatment: treatmentOutcome.ok ? treatmentOutcome.presentation : null,
-  };
 }
 
 /** §11.2 step 8: evaluate a supplied structured answer with the mechanical oracle. */
