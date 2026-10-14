@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_DETERMINISTIC_PROVIDER_ACTIVITY",
+  "method": "Boot the real first-party DSH Host with the test-owned deterministic LOCAL adapter and inspect the persisted session event vocabulary plus the product own telemetry.",
+  "observedResults": {
+    "localAdapterIsOnlyProvider": true,
+    "externalProviderRequestOccurred": false,
+    "externalPaidModelCalled": false,
+    "providerRequestOccurred": false,
+    "generationOccurred": "yes — a local, test-owned deterministic adapter produced the turn (the session records turn/start, step/start, request/header, assistant/attempt, step/end, turn/end)",
+    "sessionEventsRecorded": true
+  },
+  "measuredAdapterConstraint": "MEASURED DSH 0.2.0-rc.2 BEHAVIOUR: adding an OPTIONAL adapter method named providerRetryPolicy caused the cordis plugin to FAIL ACTIVATION (1 entry did not activate); the agent then never reached a model turn and the session recorded no user/message. With the method absent the gate PASSes. The E0 adapter therefore declares no retry policy, matching the shape the shipped P2-D2 gate proved activatable.",
+  "whyNoneOfThisEstablishesStochasticUtility": [
+    "The adapter is deterministic: it answers every call with the SAME fixed tool call, so it cannot produce the run-to-run variation a utility assay requires.",
+    "No external provider was contacted and no paid model was called, so no real model behaviour was observed."
+  ],
+  "evidenceClass": "LOCAL_DETERMINISTIC_GENERATION",
+  "externalModelRequestOccurred": false,
+  "paidModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0,
+  "verdict": "PASS"
+}

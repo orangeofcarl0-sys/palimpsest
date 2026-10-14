@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_REAL_FIRST_PARTY_ORIGIN_FEASIBILITY",
+  "gate": "E0-C stronger level (E0-L2)",
+  "investigated": true,
+  "whatWasAttempted": [
+    "Run the ORIGIN turn through the real first-party DSH Host under the test-owned deterministic adapter, so the origin has a REAL DSH Session (achieved: the session id was captured from the host OWN IPC identity report and the product DSH reader read 18 real events from it).",
+    "Have that origin Result genuinely admitted by Work settlement so A0 is a real first-party origin."
+  ],
+  "whatWasEstablished": [
+    "The origin DSH Session IS genuinely first-party: the identity was observed on the child IPC channel and the session was persisted under the test-owned root.",
+    "The product Capsule for A1 read the ORIGIN REAL session through the product OWN reader (capsuleReadOriginSession matches originDshSessionId)."
+  ],
+  "whatWasNotEstablished": [
+    "A genuine canonical Origin Result. The deterministic adapter reports READY_FOR_SETTLEMENT but performs no Git modification, so settleMutatingWork would observe an unchanged world. §9.5 forbids fabricating a settlement or forging a Result to merge the rigs."
+  ],
+  "whyNotPursued": [
+    "Making the deterministic adapter perform real, allowed Git work and commit it through legitimate tooling is a MATERIAL change to the adapter beyond this stage slice; §9.5 explicitly permits recording E0-L2 as NOT_ESTABLISHED instead of weakening Work authority."
+  ],
+  "conclusion": "E0-L2 (real first-party ORIGIN chain) is NOT_ESTABLISHED. The origin SESSION is real first-party DSH; the origin RESULT is not genuinely admitted.",
+  "e0L1Established": true,
+  "e0L2Established": false,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "remainingUncertainty": [
+    "A future stage could extend the deterministic adapter to perform a real allowed Git modification, which would let the origin Result be genuinely settled and would qualify E0-L2."
+  ]
+}
