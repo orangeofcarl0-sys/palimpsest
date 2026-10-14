@@ -517,18 +517,24 @@ export function workWorkerEnvironmentPayload(context: WorkWorkerAttemptContext):
   /** The Palimpsest tool-name prefix a worker must not inherit (enumerated by the host at run time). */
   readonly deniedAuthorityPrefix: string;
   /**
-   * Trajectory-P2-D2 §7/§8.1: the PRODUCT-RENDERED, model-visible Trajectory presentation for THIS attempt's
-   * arm, or `null` when the arm renders no section. The host's ONLY job is to place this text; it never
-   * composes a section, reads a canonical owner or chooses an arm. An absent value is NOT forwarded, so a
-   * payload predating this field produces a byte-identical prompt to before.
+   * Trajectory-P2-E0 §8.6/§8.7/§8.9: THE TRIAL DELIVERY RECORD for THIS attempt.
+   *
+   * ONE object carrying the THREE INDEPENDENT DIMENSIONS (assigned arm, source-derived eligibility, actual
+   * delivery state), the failure reason when relevant, and the PRODUCT-RENDERED presentation the Host places
+   * — or `null` for the OFF arm, where there is nothing to deliver.
+   *
+   * WHY ONE OBJECT AND NOT THE RAW CAPSULE. P2-D2 shipped the WHOLE attempt context, whose
+   * `compiled.trajectoryCapsule.capsule` is the raw historical Capsule body — so a CONTROL arm, whose
+   * presentation deliberately carries no history, still transported the full body in the Worker Environment
+   * (F5/F12). The raw Capsule is now kept in the PARENT for diagnostics (§8.7) and is NOT copied into the
+   * child payload; the child receives only the bounded, product-rendered presentation plus the trial facts.
    */
-  readonly trajectoryPresentation: import("../context/service.js").TrajectoryPresentationDelivery | null;
-  /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is distinguishable from CONTROL. */
-  readonly trajectoryDeliveryState: import("../context/service.js").TrajectoryDeliveryState | null;
+  readonly trajectoryDelivery: import("../context/service.js").TrajectoryDeliveryRecord | null;
 } {
   const handles = context.compiled?.handles ?? [];
+  const capsule = context.compiled?.trajectoryCapsule;
   return Object.freeze({
-    context,
+    context: workerContextWithoutCapsuleBody(context),
     resultTool: workWorkerResultToolDefinition(),
     contextPullTool: workWorkerContextPullToolDefinition(),
     contextIndexText: renderWorkerTaskText(context),
@@ -536,13 +542,38 @@ export function workWorkerEnvironmentPayload(context: WorkWorkerAttemptContext):
     allowedPullHandles: Object.freeze(handles.map((entry: { readonly handle: string }) => entry.handle)),
     deniedAuthorityPrefix: "palimpsest_",
     /**
-     * §7/§8.1: the presentation the PRODUCT rendered for this attempt's arm, forwarded verbatim. It is
-     * `null` when the arm renders no section (OFF), and the runner then places nothing — so an OFF
-     * deployment's prompt is byte-identical to the pre-D2 baseline.
+     * §8.9: the trial record. `null` when the deployment composed no trajectory delivery at all, so a
+     * payload predating this field is byte-identical to before.
      */
-    trajectoryPresentation: context.compiled?.trajectoryCapsule?.presentation ?? null,
-    trajectoryDeliveryState: context.compiled?.trajectoryCapsule?.deliveryState ?? null,
+    trajectoryDelivery:
+      capsule === undefined
+        ? null
+        : Object.freeze({
+            assignedArm: capsule.assignedArm ?? "OFF",
+            eligibility: capsule.eligibility ?? "UNKNOWN",
+            deliveryState: capsule.deliveryState ?? "NOT_ATTEMPTED",
+            failureReason: capsule.failureReason ?? null,
+            presentation: capsule.presentation ?? null,
+          }),
   });
+}
+
+/**
+ * §8.6/§8.7: THE CHILD-PAYLOAD MINIMIZATION.
+ *
+ * The worker payload must NOT carry the historical Capsule body. `compiled.trajectoryCapsule.capsule` is the
+ * raw admitted history; the CHILD needs only the product-rendered presentation, which travels separately.
+ * The Parent keeps the Capsule for diagnostics. When the attempt has no trajectory delivery the context is
+ * returned UNCHANGED (the same object), so a default deployment's payload is byte-identical to before.
+ */
+function workerContextWithoutCapsuleBody(context: WorkWorkerAttemptContext): WorkWorkerAttemptContext {
+  const capsule = context.compiled?.trajectoryCapsule;
+  if (capsule === undefined) return context;
+  const { capsule: _withheld, ...compiledWithoutBody } = capsule;
+  return Object.freeze({
+    ...context,
+    compiled: Object.freeze({ ...context.compiled, trajectoryCapsule: Object.freeze(compiledWithoutBody) }),
+  }) as WorkWorkerAttemptContext;
 }
 
 /* ------------------------------------------------------------------ *

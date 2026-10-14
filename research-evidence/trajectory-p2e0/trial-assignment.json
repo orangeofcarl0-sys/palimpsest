@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_TRIAL_ASSIGNMENT",
+  "testFile": "test/trajectory_p2e0_trial_integrity.test.ts",
+  "sourceReferences": [
+    "src/composition/execution_association.ts (trajectoryCapsuleDelivery)",
+    "src/context/service.ts (TRAJECTORY_ASSIGNED_ARMS, TRAJECTORY_HISTORICAL_ELIGIBILITY)",
+    "src/deployment/work_worker.ts (trajectoryDelivery)"
+  ],
+  "method": "Drive the real product delivery provider over a controlled-fixture governed A0->A1 chain with the arm fixed as trusted configuration, then assert the three dimensions independently.",
+  "dimensions": {
+    "assignedArm": {
+      "values": [
+        "OFF",
+        "CONTROL",
+        "TREATMENT"
+      ],
+      "source": "trusted configuration (options.trajectoryPresentationMode); a model cannot supply it"
+    },
+    "eligibility": {
+      "values": [
+        "QUALIFIED",
+        "NOT_QUALIFIED",
+        "RACED",
+        "SOURCE_UNAVAILABLE",
+        "UNKNOWN"
+      ],
+      "source": "derived from the capsuleForConsumer refusal state, judged identically for both arms BEFORE delivery"
+    },
+    "deliveryState": {
+      "values": [
+        "DELIVERY_DISABLED",
+        "CONTROL_SECTION_RENDERED",
+        "SECTION_RENDERED",
+        "CAPSULE_NOT_AVAILABLE",
+        "DELIVERY_PRECONDITION_NOT_MET",
+        "NOT_ATTEMPTED",
+        "FAILED"
+      ],
+      "source": "what actually happened"
+    }
+  },
+  "observedResults": [
+    {
+      "case": "OFF",
+      "assignedArm": "OFF",
+      "delivery": "null (nothing delivered)",
+      "invariant": "byte-identical to production"
+    },
+    {
+      "case": "TREATMENT + unavailable origin Reader",
+      "assignedArm": "TREATMENT",
+      "eligibility": "SOURCE_UNAVAILABLE",
+      "deliveryState": "DELIVERY_PRECONDITION_NOT_MET",
+      "failureReason": "present",
+      "invariant": "assignment survives the refusal; NOT DELIVERY_DISABLED"
+    },
+    {
+      "case": "TREATMENT + budget refusal",
+      "assignedArm": "TREATMENT",
+      "eligibility": "QUALIFIED",
+      "invariant": "eligibility is a source fact; budget failure is a delivery fact"
+    },
+    {
+      "case": "CONTROL + unavailable origin Reader",
+      "assignedArm": "CONTROL",
+      "deliveryState": "CONTROL_SECTION_RENDERED",
+      "invariant": "CONTROL renders its boundary WITHOUT a materialized Capsule"
+    },
+    {
+      "case": "forged attempt id",
+      "eligibility": "NOT_QUALIFIED",
+      "capsule": "null",
+      "invariant": "eligibility cannot be forged"
+    },
+    {
+      "case": "delivery error (throw)",
+      "deliveryState": "FAILED",
+      "invariant": "an error is distinct from a clean refusal and from OFF"
+    }
+  ],
+  "expectedInvariant": "assigned arm, source eligibility and delivery outcome are independent and cannot be silently substituted for each other",
+  "verdict": "PASS",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "genuineOriginResult": false,
+  "realGovernedRework": true,
+  "productCapsuleAdmissionSucceeded": true,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "remainingUncertainty": [
+    "The origin Execution Association is a CONTROLLED FIXTURE, not a first-party DSH run (see governed-origin-chain.json)."
+  ]
+}

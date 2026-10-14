@@ -324,10 +324,9 @@ async function applyWork(ctx, palimpsest, workFile) {
        * section" rather than to "the worker sees a rendering of whatever object arrived". An ABSENT value is
        * likewise not forwarded, so a payload predating this field produces a byte-identical prompt to before.
        */
-      ...(raw.trajectoryPresentation !== null && typeof raw.trajectoryPresentation === 'object' && typeof raw.trajectoryPresentation.sectionText === 'string'
-        ? { trajectoryPresentation: raw.trajectoryPresentation }
+      ...(raw.trajectoryDelivery !== null && typeof raw.trajectoryDelivery === 'object'
+        ? { trajectoryDelivery: raw.trajectoryDelivery }
         : {}),
-      ...(typeof raw.trajectoryDeliveryState === 'string' ? { trajectoryDeliveryState: raw.trajectoryDeliveryState } : {}),
       // §17: the handles this worker actually pulled, for the runner's telemetry line.
       pulledHandles,
       deniedAuthorityPrefix: typeof raw.deniedAuthorityPrefix === 'string' ? raw.deniedAuthorityPrefix : 'palimpsest_',

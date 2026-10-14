@@ -127,7 +127,7 @@ export interface ExecutionAssociationCluster {
    * consumer attempt's own Capsule through the ordinary `capsuleForConsumer` path.
    */
   readonly trajectoryCapsuleDelivery:
-    | ((input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number; readonly presentation: import("../context/service.js").TrajectoryPresentationDelivery | null; readonly deliveryState: import("../context/service.js").TrajectoryDeliveryState } | null>)
+    | ((input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown | null; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string | null; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number; readonly presentation: import("../context/service.js").TrajectoryPresentationDelivery | null; readonly deliveryState: import("../context/service.js").TrajectoryDeliveryState; readonly assignedArm: import("../context/service.js").TrajectoryAssignedArm; readonly eligibility: import("../context/service.js").TrajectoryHistoricalEligibility; readonly failureReason: string | null } | null>)
     | undefined;
   /** §7.5: resources this cluster created and the install must close. */
   readonly ownedResources: readonly OwnedResource[];
@@ -145,6 +145,41 @@ function qualificationLabelOf(kind: SourceKind): "FIRST_PARTY_DSH_QUALIFIED" | "
   if (kind === "FIRST_PARTY_DSH_HOST") return "FIRST_PARTY_DSH_QUALIFIED";
   if (kind === "CONTROLLED_STUB") return "CONTROLLED_STUB";
   return "DIRECT_CHILD_IPC";
+}
+
+/**
+ * P2-E0 §8.1/§8.4: derive the SOURCE-DERIVED historical eligibility from the consumer admission's own
+ * refusal state.
+ *
+ * Eligibility is a fact about the SOURCE, not about the arm: it is judged from the same
+ * `capsuleForConsumer` result for both experimental arms, BEFORE the arm's delivery is attempted, so a
+ * candidate task qualifies on actual Work/Trajectory source facts rather than on which arm it drew (§8.4).
+ * A budget refusal is deliberately NOT an eligibility class — the history IS eligible, it simply did not fit
+ * the delivery budget — so it maps to `QUALIFIED` and the shortfall is reported through the delivery state.
+ */
+function eligibilityOfCapsuleState(state: string): import("../context/service.js").TrajectoryHistoricalEligibility {
+  switch (state) {
+    case "AUTHORIZED":
+    case "CAPSULE_BUDGET_EXCEEDED":
+    case "CAPSULE_LIMIT_INVALID":
+    case "CAPSULE_DURABILITY_MISMATCH":
+      /** The history qualified and was admitted; only the DELIVERY budget/precondition failed. */
+      return "QUALIFIED";
+    case "ORIGIN_NOT_SELECTED":
+      return "RACED";
+    case "ORIGIN_SOURCE_UNAVAILABLE":
+      return "SOURCE_UNAVAILABLE";
+    case "ORIGIN_PAGE_REFUSED":
+    case "NO_QUALIFIED_ORIGIN":
+      return "NOT_QUALIFIED";
+    case "NO_LINEAGE":
+    case "CONSUMER_NOT_CANONICAL":
+    case "ORIGIN_NOT_PERMITTED":
+      /** No permission or no lineage is a CONSUMER fact, not a source-eligibility fact. */
+      return "NOT_QUALIFIED";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 /**
@@ -409,56 +444,97 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
   };
 
   /**
-   * Trajectory-P2-D1 §11.5: the EXPERIMENTAL Attempt-bound delivery provider, DEFAULT OFF.
+   * Trajectory-P2-D1 §11.5 / P2-E0 §8: the EXPERIMENTAL Attempt-bound delivery provider, DEFAULT OFF.
    *
    * When enabled, the provider resolves the consumer attempt's OWN Capsule through the ordinary
    * `capsuleForConsumer` path — so the consumer identity is the attempt id the Host supplies (the attempt
    * being compiled), never a model choice — and returns a bounded, digest-carrying, read-only projection.
-   * Any refusal (no lineage, no qualified origin, over budget) returns null, so nothing is delivered rather
-   * than a fabricated or partial Capsule. It changes no authority.
+   *
+   * P2-E0 §8.1/§8.2 CORRECTION. The arm, the source-derived eligibility and the delivery outcome are now
+   * INDEPENDENT facts, and a refusal no longer erases the assignment:
+   *
+   *   · the ASSIGNED ARM is trusted configuration, known before the read, and is reported even when every
+   *     downstream step fails — so a TREATMENT whose Reader was unavailable stays TREATMENT;
+   *   · the ELIGIBILITY is derived from the SOURCE refusal state (RACED / SOURCE_UNAVAILABLE / NOT_QUALIFIED);
+   *   · the DELIVERY outcome records what actually happened (SECTION_RENDERED / CONTROL_SECTION_RENDERED /
+   *     DELIVERY_PRECONDITION_NOT_MET / FAILED);
+   *   · CONTROL renders its no-history boundary WITHOUT requiring a materialized Capsule (§8.8), so an
+   *     unavailable origin no longer deletes CONTROL's own section;
+   *   · `null` is returned ONLY for the OFF arm, where there is genuinely nothing to deliver.
+   *
+   * It changes no authority: the section is read-only historical data.
    */
   const trajectoryCapsuleDelivery =
     options.experimentalTrajectoryContextDelivery === true
       ? async (input2: { readonly attemptId: string }) => {
-          const result = await trajectory.attributedPreview.capsuleForConsumer({
-            consumerAttemptId: input2.attemptId,
-            ...(options.trajectoryCapsuleMaxSerializedBytes === undefined ? {} : { limits: { maxSerializedBytes: options.trajectoryCapsuleMaxSerializedBytes } }),
-          });
-          if (result.state !== "AUTHORIZED" || result.capsule === null) return null;
-          const bytes = Buffer.byteLength(JSON.stringify(result.capsule), "utf8");
+          /** §8.5: the arm is frozen configuration, fixed before the worker runs — a model cannot choose it. */
+          const assignedArm: import("../context/service.js").TrajectoryAssignedArm = options.trajectoryPresentationMode ?? "OFF";
+          /** §8.3: OFF delivers nothing at all, so an ordinary deployment is byte-identical to production. */
+          if (assignedArm === "OFF") return null;
+
+          const mode = assignedArm;
+          let result: Awaited<ReturnType<typeof trajectory.attributedPreview.capsuleForConsumer>> | null = null;
+          let eligibility: import("../context/service.js").TrajectoryHistoricalEligibility = "UNKNOWN";
+          let failureReason: string | null = null;
+          let deliveryFailed = false;
+          try {
+            result = await trajectory.attributedPreview.capsuleForConsumer({
+              consumerAttemptId: input2.attemptId,
+              ...(options.trajectoryCapsuleMaxSerializedBytes === undefined ? {} : { limits: { maxSerializedBytes: options.trajectoryCapsuleMaxSerializedBytes } }),
+            });
+            eligibility = eligibilityOfCapsuleState(result.state);
+            if (result.state !== "AUTHORIZED") failureReason = `${result.state}: ${result.detail}`;
+          } catch (error) {
+            /** §8.1: an ERROR is a distinct outcome from a clean refusal — recorded as FAILED, not as OFF. */
+            deliveryFailed = true;
+            eligibility = "UNKNOWN";
+            failureReason = `DELIVERY_ERROR: ${error instanceof Error ? error.message : String(error)}`;
+          }
+
+          const authorized = result !== null && result.state === "AUTHORIZED" && result.capsule !== null;
           /**
-           * Trajectory-P2-D2 §7/§8.6: THE PRODUCT RENDERS THE MODEL-VISIBLE SECTION.
-           *
-           * The arm is TRUSTED CONFIGURATION (never a model choice). The consumer-basis digest is the
-           * Capsule's own authorization basis, so the presentation is bound to the SAME permission that
-           * admitted the Capsule. A TREATMENT whose presentation cannot be built is reported as a
-           * DELIVERY PRECONDITION failure — never silently relabeled CONTROL.
+           * §8.6/§8.8: CONTROL receives NO historical Capsule body at all — it renders a fixed no-history
+           * boundary and never needed the history. Only TREATMENT carries the admitted body, and only for the
+           * bounded section plus Parent-side diagnostics.
            */
-          const mode = options.trajectoryPresentationMode ?? "OFF";
+          const capsule = authorized && result !== null && mode === "TREATMENT" ? result.capsule : null;
+          const permittedOriginAttemptId = result === null ? null : result.permittedOriginAttemptId;
+          /**
+           * §8.8: CONTROL renders its FIXED no-history boundary and needs NO Capsule, so it is built
+           * regardless of whether materialization succeeded. TREATMENT renders only an AUTHORIZED Capsule.
+           */
           const presentationOutcome = buildTrajectoryPresentation({
             mode,
-            capsule: result.capsule,
-            consumerBasisDigest: canonicalDigest(result.capsule.authorizationBasis),
+            capsule: mode === "TREATMENT" ? capsule : null,
+            consumerBasisDigest: capsule === null ? "" : canonicalDigest(capsule.authorizationBasis),
             ...(options.trajectorySectionMaxBytes === undefined ? {} : { limits: { maxSectionBytes: options.trajectorySectionMaxBytes } }),
           });
           const presentation = presentationOutcome.ok ? presentationOutcome.presentation : null;
-          const deliveryState: import("../context/service.js").TrajectoryDeliveryState = !presentationOutcome.ok
-            ? "DELIVERY_PRECONDITION_NOT_MET"
-            : presentation === null
-              ? "DELIVERY_DISABLED"
-              : presentation.mode === "CONTROL"
-                ? "CONTROL_SECTION_RENDERED"
-                : "SECTION_RENDERED";
+
+          const deliveryState: import("../context/service.js").TrajectoryDeliveryState = deliveryFailed
+            ? "FAILED"
+            : !presentationOutcome.ok
+              ? "DELIVERY_PRECONDITION_NOT_MET"
+              : presentation === null
+                ? "CAPSULE_NOT_AVAILABLE"
+                : presentation.mode === "CONTROL"
+                  ? "CONTROL_SECTION_RENDERED"
+                  : "SECTION_RENDERED";
+
+          const bytes = capsule === null ? 0 : Buffer.byteLength(JSON.stringify(capsule), "utf8");
           return Object.freeze({
-            schemaVersion: result.capsule.schemaVersion,
-            capsule: result.capsule,
+            schemaVersion: capsule?.schemaVersion ?? 1,
+            capsule,
             serializedBytes: bytes,
-            contentDigest: canonicalDigest(result.capsule),
-            originAttemptId: result.capsule.originAttemptId,
+            contentDigest: capsule === null ? "" : canonicalDigest(capsule),
+            originAttemptId: capsule?.originAttemptId ?? permittedOriginAttemptId ?? null,
             framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS" as const,
             authority: "READ_ONLY_INSPECTION" as const,
             presentation,
             deliveryState,
+            assignedArm,
+            eligibility,
+            failureReason,
           });
         }
       : undefined;
