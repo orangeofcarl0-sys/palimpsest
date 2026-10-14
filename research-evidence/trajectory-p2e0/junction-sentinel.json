@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_JUNCTION_SENTINEL",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "gateRoot": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates",
+  "modelCallsMade": 0,
+  "fixture": {
+    "candidate": "C:/Users/66494/AppData/Local/Temp/palimpsest-e0-sentinel-zUUVSQ/owned-test-root",
+    "external": "C:/Users/66494/AppData/Local/Temp/palimpsest-e0-sentinel-zUUVSQ/external-sentinel",
+    "junctionCreated": true,
+    "note": "the sentinel is outside the cleanup root and inside an explicitly test-owned safe parent"
+  },
+  "actualMechanism": {
+    "mechanism": "owned-root.safeCleanup (no-follow: descendant links removed by name, then recursive removal)",
+    "cleanup": {
+      "cleaned": true,
+      "removedLinks": [
+        "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-sentinel-1fQumU/dependency-link"
+      ],
+      "descendantReparsePointsFound": 1,
+      "attempts": 1
+    },
+    "sentinelContentsUnchanged": true,
+    "sentinelIdentityUnchanged": true,
+    "externalTargetTraversed": false,
+    "cleanupOutcomeReportedAccurately": true,
+    "verdict": "SENTINEL_SURVIVED"
+  },
+  "platformHazardProbe": {
+    "established": true,
+    "nodeVersion": "v24.14.1",
+    "platform": "win32",
+    "outcomes": {
+      "node-rmSync-recursive": {
+        "applicable": true,
+        "threw": false,
+        "sentinelSurvived": true
+      }
+    },
+    "observedConclusion": "node rmSync(recursive) did NOT traverse the junction on this platform; the trailing-separator shell form is the measured hazard (recorded in the design note) and is defeated by removing links by name first"
+  },
+  "trailingSeparatorHazard": {
+    "form": "rm -rf <dir>/<link>/ (trailing separator)",
+    "measured": true,
+    "traversedJunctionAndDestroyedExternalSentinel": true,
+    "recordedBy": "manual probe during C2 design (see docs/engineering/trajectory-p2e0.md)",
+    "mitigation": "safeCleanup removes every descendant reparse point BY NAME (rmdirSync/unlinkSync, non-recursive) BEFORE any recursive removal, so no trailing-separator form can be reached"
+  }
+}
