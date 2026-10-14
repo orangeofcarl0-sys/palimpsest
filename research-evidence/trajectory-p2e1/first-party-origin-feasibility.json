@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "kind": "TRAJECTORY_P2E1_FIRST_PARTY_ORIGIN_FEASIBILITY",
+  "evidenceClass": "NOT_ESTABLISHED",
+  "originExecutionIsControlledFixture": true,
+  "originDshSessionIdIsReal": true,
+  "originWorkerOutcome": "READY_FOR_SETTLEMENT",
+  "originResultSettledThroughWork": false,
+  "realFirstPartyOriginWorkResult": false,
+  "whyNotEstablished": "the origin DSH turn is REAL and now genuinely reports READY_FOR_SETTLEMENT (the P2-E0 protocol defect is fixed), but its Result is NOT admitted through the existing Work settlement: the gate records the origin association directly rather than driving the origin through prepareMutatingWork/claim/report/gate/settleMutatingWork with a real permitted git change. A genuinely settled first-party Origin Work Result therefore remains NOT_ESTABLISHED, and TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED is NOT awarded.",
+  "nextStepWithoutWideningAuthority": "drive the origin through the EXISTING work delegation path (controller.prepareMutatingWork -> claim -> a real scoped file change -> gitCommit -> report -> gate -> settleMutatingWork), using only the product mechanisms and no test-only bypass.",
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
