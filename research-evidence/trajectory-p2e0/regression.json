@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_REGRESSION",
+  "gates": {
+    "typescript": "PASS (tsc -b clean)",
+    "architecture": "PASS (0 violations, 9 accepted exceptions)",
+    "publicApi": "PASS (0 missing / 0 changed / 0 added)"
+  },
+  "focused": {
+    "suites": [
+      "trajectory_p2e0_test_runtime_safety (12)",
+      "trajectory_p2e0_trial_integrity (9)",
+      "trajectory_p2e0_source_to_dsh (5)",
+      "trajectory_p2e0_benchmark_fixture (10)",
+      "trajectory_p2e0_calibration_protocol (7)",
+      "P2-D2 presentation/capsule/source/deployment (all pass)",
+      "P2-D1 capsule admission/governed authorization/currentness/ingestion/source/prompt-injection (all pass)"
+    ],
+    "result": "ALL PASS"
+  },
+  "p2ChainBatch": {
+    "command": "vitest run test/trajectory_p2{a,b,c,d0}_*.test.ts --maxWorkers=1",
+    "testFiles": 20,
+    "tests": 193,
+    "passed": 193,
+    "failed": 0,
+    "note": "an EARLIER batch run with the default worker pool produced 2 spurious P2-B failures (canonical_correlation, cold_recovery). Both PASS in isolation AND in the bounded run: they each boot a real DSH subprocess and share the gate root, so unbounded parallelism is a RESOURCE-CONTENTION artifact, not a code regression."
+  },
+  "broad": {
+    "command": "vitest run --maxWorkers=2 --exclude **/r3l0ciarlcf_gates.test.ts",
+    "testFiles": 369,
+    "tests": 4987,
+    "passed": 4972,
+    "failed": 15,
+    "failingFiles": [
+      "r3l0ciarl_gates.test.ts",
+      "r3l0ciarlc_gates.test.ts",
+      "r3l0ciarlcfs_gates.test.ts",
+      "r3l0ciarlcfsh_persisted.test.ts",
+      "r3l0cr_contract.test.ts"
+    ],
+    "preExistingProof": "All 15 failures were re-run at the EXACT baseline 8ba9ca3 in a separate git worktree: the SAME 15 tests fail there (5 files, 15 failed | 151 passed). They are PRE-EXISTING and unrelated to E0.",
+    "whyExcluded": "§16.3: test/r3l0ciarlcf_gates.test.ts is an archived unsafe isolated-mutation test; it was excluded from the broad run and is NOT part of the 15."
+  },
+  "diskAndResource": {
+    "note": "the bounded run reported 1073 leaked temp dirs swept by the repository global hygiene; the E0 gates cleaned their own owned roots. F: had 112 GB free at start."
+  },
+  "historicalEvidence": {
+    "note": "all 51 protected evidence trees remain byte-identical; verified by git tree identity before and after."
+  },
+  "conclusion": "NO unexplained new regression. The only failures are 15 pre-existing r3l0c-family tests proven at the exact baseline.",
+  "modelCallsMade": 0,
+  "stochasticTrialOccurred": false
+}

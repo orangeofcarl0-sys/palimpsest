@@ -475,17 +475,20 @@ describe("F11–F14 §10–§13 — positive path, delivery, digest, qualified f
     expect(/capsuleForConsumer\([\s\S]{0,300}state\)\.toBe\("AUTHORIZED"\)/u.test(test)).toBe(true);
   });
 
-  it("CHANGED ASSERTION (P2D1 C6 / P2D2 C4) F12: a Capsule reaches the Worker Context boundary AND the payload now carries its rendered presentation", () => {
+  it("CHANGED ASSERTION (P2E0 C3) F12: a Capsule reaches the Worker Context boundary AND the payload carries the trial record", () => {
     const context = readRepo("src/context/service.ts")!;
     const worker = readRepo("src/deployment/work_worker.ts")!;
     // The Context Owner now carries the experimental Attempt-bound Capsule in the worker context.
     expect(context).toContain("trajectoryCapsule");
     expect(context).toContain("trajectoryCapsuleFor");
-    // P2-D2 C4 CORRECTION: at the P2-D1 baseline the worker payload shape was deliberately unchanged. P2-D2
-    // now forwards the PRODUCT-rendered presentation in the payload so the Host can place it in the actual
-    // UserMessage — the payload carries `trajectoryPresentation` (and its delivery state), nothing else.
-    expect(worker).toContain("trajectoryPresentation: context.compiled?.trajectoryCapsule?.presentation ?? null");
-    expect(worker).toContain("trajectoryDeliveryState");
+    // P2-E0 C3 CORRECTION: the payload no longer ships the raw Capsule body nor a bare presentation pair.
+    // It ships ONE `trajectoryDelivery` record (arm + eligibility + delivery state + presentation), and
+    // `workerContextWithoutCapsuleBody` strips `trajectoryCapsule.capsule` from the CHILD context, so a
+    // CONTROL arm cannot transport the withheld history.
+    expect(worker).toContain("trajectoryDelivery:");
+    expect(worker).toContain("workerContextWithoutCapsuleBody");
+    expect(worker).toContain("assignedArm");
+    expect(worker).toContain("eligibility");
   });
 
   it("CHANGED ASSERTION (P2D1 C6) F13: the delivery carries a digest and byte count", () => {
