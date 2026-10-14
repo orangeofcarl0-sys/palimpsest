@@ -19,6 +19,7 @@ export interface FrozenConditions {
   readonly oracle: string;
 }
 
+export declare const FIXTURE_ID: string;
 export declare const FROZEN_CONDITIONS: FrozenConditions;
 export declare const GROUND_TRUTH_KEY: GroundTruthKey;
 
@@ -35,6 +36,8 @@ export interface PreparedFixture {
   readonly fixtureId: string;
   readonly consumerAttemptId: string;
   readonly originAttemptId: string;
+  /** P2-E1 §13.2: the REAL commit of the fixture's own test-owned repository. */
+  readonly gitHead: string;
   readonly capsule: unknown;
   readonly capsuleDigest: string;
   readonly coverage: string;
