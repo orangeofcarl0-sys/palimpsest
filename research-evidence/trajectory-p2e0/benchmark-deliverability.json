@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_BENCHMARK_DELIVERABILITY",
+  "gate": "E0-D §10.2",
+  "method": "For each candidate family, call the ACTUAL product consumer API (capsuleForConsumer) and classify the result; a manually constructed Capsule is never sufficient.",
+  "familyA": {
+    "id": "FIX-A-GOVERNED-PARTIAL-CONTINUATION",
+    "result": "DELIVERABLE",
+    "evidence": "utility-candidate-fixtures.json: capsuleForConsumer returned AUTHORIZED with a bounded Capsule (coverage PARTIAL, 3 of 8 events), and both CONTROL and TREATMENT inputs were produced by the real product renderer."
+  },
+  "familyB": {
+    "id": "FIX-B-MULTI-INVOCATION-RECONSTRUCTION",
+    "result": "ORIGIN_NOT_SELECTED",
+    "evidence": "test/trajectory_p2d1_capsule_admission.test.ts test 17 and test/trajectory_p2d1_source_contract.test.ts F5: an Attempt with one qualified invocation beside an unresolved one yields AMBIGUOUS_REQUIRES_SELECTION and capsuleForConsumer refuses with ORIGIN_NOT_SELECTED.",
+    "whyIntentionallyFailClosed": "§10.1: the strict selection rule is a SAFETY property and must not be weakened merely to make a benchmark run.",
+    "options": {
+      "A_keepStrictRefusal": "a benchmark about RECOGNISING the ambiguity is possible but does not expose the qualified page as trusted evidence",
+      "B_trustedPreselectedInvocation": "a trusted Context/Experiment Owner could select one already-qualified invocation before the model turn; the existing requestedInvocationId selector is the mechanism. NOT implemented in E0.",
+      "C_defer": "chosen: Family B is reported NOT_DELIVERABLE as a MULTI-INVOCATION benchmark in this stage"
+    }
+  },
+  "verdict": "FAMILY_A_DELIVERABLE__FAMILY_B_NOT_DELIVERABLE_AS_SPECIFIED",
+  "modelCallsMade": 0,
+  "stochasticTrialOccurred": false
+}

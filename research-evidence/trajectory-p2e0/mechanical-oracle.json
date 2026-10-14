@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_MECHANICAL_ORACLE",
+  "gate": "E0-D §12",
+  "implementation": "scripts/trajectory_p2e0/mechanical-oracle.mjs (pure function over key and answer; no model, no owner read)",
+  "dimensions": [
+    "historicalUnderstanding",
+    "decisionQuality",
+    "operationalBehavior"
+  ],
+  "whyThreeDimensions": "§12.1: recall, decision quality and operational outcome are different things; a positive result on one does not establish the others, so the oracle reports them separately and never collapses them into a single score.",
+  "refusalHandling": "§12.3: detectRefusalWithoutSubstance flags an answer that relies on no fact, declares no justified unknown and proposes a vacuous action; such an answer FAILS the decision dimension rather than scoring as correct uncertainty.",
+  "testVectors": {
+    "positive": {
+      "answer": "distinguishes observed from unobserved, declares the remaining history unknown, chooses a current-authority-compatible action",
+      "verdict": {
+        "historicalUnderstanding": true,
+        "decisionQuality": true,
+        "operationalBehavior": true
+      }
+    },
+    "negative": {
+      "answer": "treats the partial page as the whole history and claims A0 completed",
+      "verdict": {
+        "historicalUnderstanding": false,
+        "decisionQuality": false,
+        "operationalBehavior": true
+      },
+      "forbiddenViolations": [
+        "origin-completed",
+        "history-exhausted"
+      ]
+    },
+    "vacuousRefusal": {
+      "answer": "relies on nothing, declares nothing, proposes no action",
+      "refusalWithoutSubstance": true,
+      "verdict": {
+        "historicalUnderstanding": false,
+        "decisionQuality": false,
+        "operationalBehavior": true
+      }
+    }
+  },
+  "positiveAndNegativeVectorsPresent": true,
+  "structuredOutputContract": "§12.2: factsReliedUpon, knownUnknowns, proposedNextAction, verificationRequired, sourceReferences, confidence — separate from canonical Work reporting and unable to authorize execution.",
+  "evidenceClass": "BENCHMARK_FIXTURE_EXECUTABLE",
+  "modelCallsMade": 0,
+  "stochasticTrialOccurred": false,
+  "verdict": "PASS"
+}

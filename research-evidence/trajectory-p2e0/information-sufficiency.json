@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_INFORMATION_SUFFICIENCY",
+  "gate": "E0-D §10.5",
+  "method": "Audit what the DELIVERED Capsule content can establish for the candidate task, using the real PARTIAL fixture, and answer the nine §10.5 questions.",
+  "questions": [
+    {
+      "q": "1. What actual historical fact is relevant?",
+      "a": "that the origin A0 execution was OBSERVED and its admitted page is PARTIAL (the source reports 8 known events while only 3 were admitted)."
+    },
+    {
+      "q": "2. Which source establishes it?",
+      "a": "the DSH Session page read through the official reader, validated by the page-integrity rules, which derive coverage from the source reported total."
+    },
+    {
+      "q": "3. Is that fact in the delivered Capsule?",
+      "a": "YES: coverage, knownEventCount, includedEventCount and unreadHistory are all Capsule fields."
+    },
+    {
+      "q": "4. Is it still present in the rendered Section?",
+      "a": "YES: the renderer emits observation coverage, events observed included/known, and unread history."
+    },
+    {
+      "q": "5. Does the chosen event window contain it?",
+      "a": "YES: coverage and unread extent are METADATA over the window, so they hold regardless of which events the window carries."
+    },
+    {
+      "q": "6. Is the fact new relative to PriorResultContext?",
+      "a": "YES: PriorResultContext carries the prior attempt self-report and world transition; it does NOT carry the historical session page coverage, the invocation selection state or the durability class."
+    },
+    {
+      "q": "7. What mistake might a baseline Agent make?",
+      "a": "treat the partial historical page as the whole history and conclude A0 completed, then act on that."
+    },
+    {
+      "q": "8. Why could the Treatment help avoid that mistake?",
+      "a": "the Section states the coverage and the unread extent, so the consumer can distinguish observed from unobserved."
+    },
+    {
+      "q": "9. What independent oracle will detect the difference?",
+      "a": "the mechanical oracle requiredUnknowns entry remaining-history-unknown plus the forbiddenClaims entry origin-completed."
+    }
+  ],
+  "targetA_supported": true,
+  "targetB_supported": false,
+  "targetB_statement": "§10.6: the current Capsule CANNOT establish a specific command failure CAUSE, because the sanitizer excludes raw tool results and the tool/result isError status. No benchmark may claim the Capsule prevents repeating a specific failed command.",
+  "eventLevelProvenanceGap": "§10.7: the Capsule carries per-event inherited/durability/truncated, but the renderer does not expose them. Family A does not depend on them, so no renderer change was made; a future fixture that needs them may add only those already-verified labels.",
+  "sanitizerBroadened": false,
+  "verdict": "TARGET_A_SUPPORTED__TARGET_B_NOT_SUPPORTED",
+  "modelCallsMade": 0,
+  "stochasticTrialOccurred": false
+}
