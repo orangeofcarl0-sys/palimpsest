@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "proposedBranch": "trajectory-p2e1-assay-integrity",
+  "targetA": {
+    "verdict": "TRAJECTORY_ASSAY_SEMANTICS_QUALIFIED",
+    "oracleOutcome": "PASS",
+    "groundTruthDigest": "fnv1a-e40ab964-1170",
+    "p2e0FalsePositivesRemoved": {
+      "positiveVectorNoLongerRequiresFalseSettlementClaim": true,
+      "negationNotFlagged": true,
+      "nonSettlementNotFlagged": true,
+      "fabricatedReferenceRejected": true,
+      "operationalNotMeasuredWithoutExecution": true
+    }
+  },
+  "targetB": {
+    "verdict": "TRAJECTORY_NORMAL_CONSUMER_DELIVERY_QUALIFIED",
+    "evidenceLevel": "CONTROLLED_ORIGIN_NORMAL_CONSUMER_DELIVERY",
+    "outcome": "PASS",
+    "realContextOwnerDelivery": true,
+    "realDshUserMessageInspected": true
+  },
+  "targetC": {
+    "verdict": "TRAJECTORY_BASELINE_CALIBRATION_READY",
+    "dryRunVerdict": "GO",
+    "failedChecks": [],
+    "stochasticCalibrationExecuted": false
+  },
+  "strongerOptional": {
+    "verdict": "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED",
+    "awarded": false,
+    "reason": "the origin DSH turn is REAL and now genuinely reports READY_FOR_SETTLEMENT (the P2-E0 protocol defect is fixed), but its Result is NOT admitted through the existing Work settlement: the gate records the origin association directly rather than driving the origin through prepareMutatingWork/claim/report/gate/settleMutatingWork with a real permitted git change. A genuinely settled first-party Origin Work Result therefore remains NOT_ESTABLISHED, and TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED is NOT awarded."
+  },
+  "notGranted": [
+    "BENCHMARK_QUALIFIED",
+    "UTILITY_POSITIVE_SIGNAL",
+    "UTILITY_NEGATIVE_SIGNAL",
+    "MODEL_CONSUMED_CAPSULE",
+    "AGENT_COOPERATION_IMPROVED"
+  ],
+  "falsifiers": {
+    "dynamicallyReproduced": 7,
+    "sourceDemonstrated": 17,
+    "forwardErratumCorrections": 7
+  },
+  "resourceSafety": {
+    "sentinelSurvives": true,
+    "incompleteScanBlocksDeletion": true,
+    "overrideRemoved": true,
+    "realCopyFallback": true,
+    "disposeAwaited": true,
+    "fixtureCleanupOnFailure": true,
+    "globalHygieneLinkAware": true
+  },
+  "trialState": {
+    "trustedArmPreserved": true,
+    "ambiguousNotRaced": true,
+    "sourceUnavailableDistinct": true
+  },
+  "workerResult": {
+    "previousOutcome": "HOST_FAILURE",
+    "correctedOutcome": "READY_FOR_SETTLEMENT",
+    "rootCauses": 4,
+    "strictParserWidened": false
+  },
+  "stageAnswers": {
+    "1_partialPageNegatesCanonicalCompletion": false,
+    "2_correctNegativeMisclassified": false,
+    "3_oracleValidatesSources": true,
+    "4_distinguishesFalseFromUnknown": true,
+    "5_unsupportedRefFullCredit": false,
+    "6_unobservedOperationalNotMeasured": true,
+    "7_e0MistakenPositiveCorrected": true,
+    "8_gitWorkBasesConsistent": true,
+    "9_prepareFixtureCleansUp": true,
+    "10_asyncDisposalsAwaited": true,
+    "11_scanFailurePreventsDeletion": true,
+    "12_failedJunctionRemovalBypassable": false,
+    "13_copyFallbackExecutedOrRefused": true,
+    "14_globalHygienePreservesExternalJunction": true,
+    "15_controlProviderFailureRemainsControl": true,
+    "16_ambiguousDistinctFromRaced": true,
+    "17_normalContextOwnerProducesDelivery": true,
+    "18_normalWorkerEnvCarriesPresentation": true,
+    "19_actualDshUserMessageContainsPresentation": true,
+    "20_harnessStillManuallyFabricatesConsumerContext": false,
+    "21_originSessionGenuinelyFirstParty": true,
+    "22_originResultGenuinelySettledThroughWork": false,
+    "23_workerResultDetailIssueIdentified": true,
+    "24_calibrationDryRunPasses": true,
+    "25_stochasticBaselineCalibrationExecuted": false,
+    "26_agentUtilityMeasured": false,
+    "27_paidExternalModelRequests": false,
+    "28_primaryEnabled": false,
+    "29_automaticHandoffImplemented": false
+  },
+  "runtimeCaveat": "Node 24.14.1 is below the declared minimum >=24.15.0; retained.",
+  "externalModelRequestOccurred": false,
+  "paidModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
