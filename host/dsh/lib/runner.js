@@ -733,14 +733,24 @@ async function runWorker(ctx, deps) {
          * than the intended ones, and the section digest proves WHICH section bytes entered that message.
          */
         const composedTaskText = workTask(environment.context, indexTextForPrompt);
-        const trajectoryPlacement = applyTrajectoryPresentation(composedTaskText, environment.trajectoryPresentation);
+        /**
+         * P2-E0 §8.6/§8.9: the trial delivery record carries the THREE INDEPENDENT DIMENSIONS. The
+         * presentation the host places is `record.presentation`; the arm, the eligibility and the delivery
+         * state are recorded even when no section was placed, so a failed TREATMENT is never counted as OFF.
+         */
+        const deliveryRecord = environment.trajectoryDelivery;
+        const presentation = deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.presentation ?? null;
+        const trajectoryPlacement = applyTrajectoryPresentation(composedTaskText, presentation);
         const placedTaskText = trajectoryPlacement.text;
         const finalUserMessageText = applyEfficacyReview(applyAffordance(placedTaskText, affordanceMode), efficacyReview);
         trajectoryDelivery = Object.freeze({
           state: trajectoryPlacement.state,
           placed: trajectoryPlacement.placed,
           detail: trajectoryPlacement.detail,
-          deliveryState: typeof environment.trajectoryDeliveryState === 'string' ? environment.trajectoryDeliveryState : null,
+          assignedArm: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.assignedArm ?? null,
+          eligibility: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.eligibility ?? null,
+          deliveryState: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.deliveryState ?? null,
+          failureReason: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.failureReason ?? null,
           sectionBytes: trajectoryPlacement.sectionBytes,
           sectionDigest: trajectoryPlacement.sectionDigest,
           userMessageDigest: userMessageDigest(finalUserMessageText),

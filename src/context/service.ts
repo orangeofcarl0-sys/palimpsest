@@ -99,10 +99,11 @@ export interface WorkWorkerTaskContext {
  */
 export interface TrajectoryCapsuleDelivery {
   readonly schemaVersion: number;
-  readonly capsule: unknown;
+  /** P2-E0 §8.1: the Capsule body, or `null` when delivery was assigned but no Capsule materialized. */
+  readonly capsule: unknown | null;
   readonly serializedBytes: number;
   readonly contentDigest: string;
-  readonly originAttemptId: string;
+  readonly originAttemptId: string | null;
   readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
   readonly authority: "READ_ONLY_INSPECTION";
   /**
@@ -115,7 +116,36 @@ export interface TrajectoryCapsuleDelivery {
   readonly presentation?: TrajectoryPresentationDelivery | null | undefined;
   /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is never counted as a CONTROL. */
   readonly deliveryState?: TrajectoryDeliveryState | undefined;
+  /**
+   * Trajectory-P2-E0 §8.1: THE ASSIGNED ARM. It is frozen by TRUSTED CONFIGURATION before the worker runs
+   * and is INDEPENDENT of whether delivery succeeded — a TREATMENT whose Reader was unavailable still
+   * reports `TREATMENT` here (§8.2). Optional so a P2-D1 delivery (which predates the arm) still type-checks.
+   */
+  readonly assignedArm?: TrajectoryAssignedArm | undefined;
+  /** P2-E0 §8.1: the source-derived historical eligibility, judged independently of the arm. */
+  readonly eligibility?: TrajectoryHistoricalEligibility | undefined;
+  /** P2-E0 §8.9: the failure reason, when delivery did not reach its outcome. Never a substitute for a fact. */
+  readonly failureReason?: string | null | undefined;
 }
+
+/**
+ * P2-E0 §8.1: THE THREE INDEPENDENT DIMENSIONS.
+ *
+ * A trial has an ASSIGNED ARM (trusted configuration), a HISTORICAL ELIGIBILITY (source-derived) and a
+ * DELIVERY OUTCOME (what actually happened). They cannot be silently substituted for each other: a
+ * TREATMENT whose history was unavailable must remain `TREATMENT` + `SOURCE_UNAVAILABLE` +
+ * `DELIVERY_PRECONDITION_NOT_MET`, never `OFF` + `DELIVERY_DISABLED` (§8.2).
+ */
+export const TRAJECTORY_ASSIGNED_ARMS = ["OFF", "CONTROL", "TREATMENT"] as const;
+export type TrajectoryAssignedArm = (typeof TRAJECTORY_ASSIGNED_ARMS)[number];
+
+/**
+ * P2-E0 §8.1: the historical eligibility, derived from the SOURCE (never from the arm). `QUALIFIED` means a
+ * single qualified, admitted historical execution exists; the delivery may still fail for a budget reason,
+ * which is a DELIVERY fact rather than an eligibility one.
+ */
+export const TRAJECTORY_HISTORICAL_ELIGIBILITY = ["QUALIFIED", "NOT_QUALIFIED", "RACED", "SOURCE_UNAVAILABLE", "UNKNOWN"] as const;
+export type TrajectoryHistoricalEligibility = (typeof TRAJECTORY_HISTORICAL_ELIGIBILITY)[number];
 
 /** P2-D2 §9.4: the small, source-grounded delivery-precondition vocabulary. */
 export const TRAJECTORY_DELIVERY_STATES = [
@@ -129,6 +159,10 @@ export const TRAJECTORY_DELIVERY_STATES = [
   "CAPSULE_NOT_AVAILABLE",
   /** TREATMENT was assigned but the Capsule was malformed or over budget. */
   "DELIVERY_PRECONDITION_NOT_MET",
+  /** P2-E0 §8.1: delivery was never attempted for this attempt. */
+  "NOT_ATTEMPTED",
+  /** P2-E0 §8.1: delivery was attempted and FAILED (an error, not a clean refusal). */
+  "FAILED",
 ] as const;
 export type TrajectoryDeliveryState = (typeof TRAJECTORY_DELIVERY_STATES)[number];
 
@@ -151,6 +185,22 @@ export interface TrajectoryPresentationDelivery {
 
 /** §11: the delivery provider. Given an attempt id, resolve its delivery or null (nothing authorized). */
 export type TrajectoryCapsuleDeliveryProvider = (input: { readonly attemptId: string }) => Promise<TrajectoryCapsuleDelivery | null>;
+
+/**
+ * P2-E0 §8.9: THE TRIAL DELIVERY RECORD the worker payload carries.
+ *
+ * ONE object with the THREE INDEPENDENT DIMENSIONS — assigned arm, source-derived eligibility and the actual
+ * delivery state — plus the failure reason and the product-rendered presentation. It deliberately does NOT
+ * carry the raw Capsule body: the child needs only the bounded presentation, and the Parent keeps the body
+ * for diagnostics (§8.7). Every field is a fact the trial record needs, and none is model-supplied.
+ */
+export interface TrajectoryDeliveryRecord {
+  readonly assignedArm: TrajectoryAssignedArm;
+  readonly eligibility: TrajectoryHistoricalEligibility;
+  readonly deliveryState: TrajectoryDeliveryState;
+  readonly failureReason: string | null;
+  readonly presentation: TrajectoryPresentationDelivery | null;
+}
 
 /**
  * The composed worker context D5-c3 delivers: the task half plus THIS attempt's compiled half.
@@ -191,6 +241,12 @@ export interface WorkWorkerAttemptContext {
           readonly presentation?: TrajectoryPresentationDelivery | null | undefined;
           /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is distinguishable. */
           readonly deliveryState?: TrajectoryDeliveryState | undefined;
+          /** P2-E0 §8.1: the TRUSTED assigned arm, independent of whether delivery succeeded. */
+          readonly assignedArm?: TrajectoryAssignedArm | undefined;
+          /** P2-E0 §8.1: the source-derived historical eligibility, judged independently of the arm. */
+          readonly eligibility?: TrajectoryHistoricalEligibility | undefined;
+          /** P2-E0 §8.9: the failure reason when delivery did not reach its outcome. */
+          readonly failureReason?: string | null | undefined;
         }
       | undefined;
   };
@@ -738,10 +794,14 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       const work = taskContextOf(attemptRow.taskId);
       const compiled = await compile(attemptId, options);
       /**
-       * §11: the EXPERIMENTAL Attempt-bound Trajectory Capsule, when the deployment composed the port. The
-       * attempt id is the consumer identity; a null return (no lineage, or no qualified origin) delivers
-       * nothing rather than a fabricated Capsule. A port that throws is contained: the worker context is
-       * still produced, without a Capsule.
+       * §11 / P2-E0 §8.2: the EXPERIMENTAL Attempt-bound Trajectory delivery, when the deployment composed
+       * the port. The attempt id is the consumer identity; a null return means the arm is OFF and there is
+       * genuinely nothing to deliver.
+       *
+       * P2-E0 §8.2 CORRECTION: a delivery that carries the three dimensions is recorded EVEN WHEN no Capsule
+       * materialized, so a TREATMENT whose origin was unavailable stays `TREATMENT` + `SOURCE_UNAVAILABLE` +
+       * `DELIVERY_PRECONDITION_NOT_MET` at the worker boundary instead of vanishing into OFF. A port that
+       * THROWS is still contained: the worker context is produced, and the arm is recorded as FAILED.
        */
       let trajectoryCapsule: WorkWorkerAttemptContext["compiled"]["trajectoryCapsule"];
       if (ports.trajectoryCapsuleFor !== undefined) {
@@ -753,15 +813,35 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
               capsule: delivered.capsule,
               serializedBytes: delivered.serializedBytes,
               contentDigest: delivered.contentDigest,
-              originAttemptId: delivered.originAttemptId,
+              originAttemptId: delivered.originAttemptId ?? "",
               framing: delivered.framing,
               authority: delivered.authority,
               presentation: delivered.presentation ?? null,
               deliveryState: delivered.deliveryState ?? "SECTION_RENDERED",
+              assignedArm: delivered.assignedArm,
+              eligibility: delivered.eligibility,
+              failureReason: delivered.failureReason ?? null,
             });
           }
-        } catch {
-          /* §11: a delivery failure never breaks context compilation; the worker simply receives no Capsule */
+        } catch (error) {
+          /**
+           * §8.1: an error is a DISTINCT outcome. The arm is not silently dropped; the delivery is recorded
+           * as FAILED with the reason, so the trial's assignment survives.
+           */
+          trajectoryCapsule = Object.freeze({
+            schemaVersion: 1,
+            capsule: null,
+            serializedBytes: 0,
+            contentDigest: "",
+            originAttemptId: "",
+            framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS" as const,
+            authority: "READ_ONLY_INSPECTION" as const,
+            presentation: null,
+            deliveryState: "FAILED" as const,
+            assignedArm: "TREATMENT" as const,
+            eligibility: "UNKNOWN" as const,
+            failureReason: `DELIVERY_ERROR: ${error instanceof Error ? error.message : String(error)}`,
+          });
         }
       }
       return Object.freeze({

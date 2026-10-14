@@ -102,7 +102,7 @@ export interface CoreComposition {
    * sees the binding when it happens. NEVER bound ⇒ the deployment delivers no Capsule (the default).
    */
   readonly trajectoryCapsuleDelivery: {
-    bind(provider: (input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number } | null>): void;
+    bind(provider: (input: { readonly attemptId: string }) => Promise<import("../context/service.js").TrajectoryCapsuleDelivery | null>): void;
   };
   readonly verificationCapabilities: {
     bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
@@ -223,7 +223,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
    * execution-association cluster binds, and the controller reads through it. Unbound ⇒ null ⇒ no delivery.
    */
   const trajectoryCapsuleHolder: {
-    current: ((input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number } | null>) | undefined;
+    current: ((input: { readonly attemptId: string }) => Promise<import("../context/service.js").TrajectoryCapsuleDelivery | null>) | undefined;
   } = { current: undefined };
 
   /**

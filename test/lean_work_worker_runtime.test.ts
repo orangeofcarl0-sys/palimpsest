@@ -144,10 +144,10 @@ describe("§D2-c 2/3. the context is sufficient, and the environment has no prin
     const payload = workWorkerEnvironmentPayload(CONTEXT);
     // R1-L §7: both worker-private tools are always present, so an attempt that selected no capital
     // still gets the same tool catalogue. That is what keeps the R1 conditions comparable.
-    // CHANGED ASSERTION (P2D2 C4): the payload now ALSO carries the PRODUCT-rendered Trajectory presentation
-    // (`trajectoryPresentation`, mirroring `contextIndexText`) and its delivery-precondition state. Neither is
-    // authority: they are the product's own bounded text plus a state label, and both are `null` in a default
-    // (OFF) deployment, so an ordinary worker's payload is byte-identical to before.
+    // CHANGED ASSERTION (P2E0 C3): the payload now carries ONE `trajectoryDelivery` record (the three
+    // independent dimensions plus the product-rendered presentation) in place of the P2-D2 pair
+    // `trajectoryPresentation`/`trajectoryDeliveryState`. It is `null` in a default (OFF) deployment, so an
+    // ordinary worker's payload is byte-identical to before.
     expect(Object.keys(payload).sort()).toEqual([
       "allowedPullHandles",
       "context",
@@ -156,12 +156,10 @@ describe("§D2-c 2/3. the context is sufficient, and the environment has no prin
       "contextPullTool",
       "deniedAuthorityPrefix",
       "resultTool",
-      "trajectoryDeliveryState",
-      "trajectoryPresentation",
+      "trajectoryDelivery",
     ]);
-    // A default deployment renders no presentation.
-    expect(payload.trajectoryPresentation).toBeNull();
-    expect(payload.trajectoryDeliveryState).toBeNull();
+    // A default deployment records no trajectory delivery at all.
+    expect(payload.trajectoryDelivery).toBeNull();
     // The authority surface is closed by PREFIX, enumerated by the host at run time — not by a
     // hard-coded list, which `restrict()` would reject the moment a deployment composed a different
     // Palimpsest surface, and which would silently stop covering tools added later.

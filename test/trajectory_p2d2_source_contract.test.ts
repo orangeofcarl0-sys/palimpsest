@@ -111,21 +111,29 @@ describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
     expect(outcome.capsule.truncation.eventOmittedCount).toBe(0);
   });
 
-  it("F1/F2/F11/F12 source pins (CHANGED ASSERTION P2D2 C4): the Capsule is now rendered and delivery is marked", () => {
+  it("F1/F2/F11/F12 source pins (CHANGED ASSERTION P2E0 C3): the section is rendered, the arm is recorded, the body is withheld", () => {
     const runner = readRepo("host/dsh/lib/runner.js")!;
     const workWorker = readRepo("src/deployment/work_worker.ts")!;
     const contextService = readRepo("src/context/service.ts")!;
     // F1 (CORRECTED): workTask() is composed, then the product section is placed into the SAME text.
     const workTaskBody = runner.slice(runner.indexOf("function workTask(context, indexText)"));
     expect(workTaskBody.slice(0, workTaskBody.indexOf("\n}"))).not.toMatch(/trajectoryCapsule/u);
-    expect(runner).toMatch(/applyTrajectoryPresentation\(composedTaskText, environment\.trajectoryPresentation\)/u);
+    // P2E0 C3: the host now reads the ONE delivery record's presentation, not a bare `trajectoryPresentation`.
+    expect(runner).toMatch(/applyTrajectoryPresentation\(composedTaskText, presentation\)/u);
+    expect(runner).toMatch(/const presentation = deliveryRecord[\s\S]{0,120}\.presentation \?\? null/u);
     expect(runner).toMatch(/agent\.followup\(\s*userMessage\(finalUserMessageText\),?\s*\)/u);
-    // F2: the raw context is STILL shipped as JSON, but now the rendered presentation is too, and the host
-    // places it — transport is no longer the whole story.
-    expect(workWorker).toMatch(/trajectoryPresentation: context\.compiled\?\.trajectoryCapsule\?\.presentation \?\? null/u);
-    // F11 (CORRECTED): a delivery failure now carries a delivery-precondition state.
-    expect(contextService).toMatch(/trajectoryDeliveryState|DELIVERY_PRECONDITION_NOT_MET/u);
-    // F12 (CORRECTED): the host now records the section digest and the full UserMessage digest.
+    // F2 (CORRECTED BY P2E0 C3): the CHILD payload no longer carries the raw Capsule body. The product
+    // ships ONE trial record, and `workerContextWithoutCapsuleBody` strips `trajectoryCapsule.capsule` from
+    // the context before serialization, so a CONTROL arm cannot transport the withheld history.
+    expect(workWorker).toMatch(/function workerContextWithoutCapsuleBody/u);
+    expect(workWorker).toMatch(/const \{ capsule: _withheld, \.\.\.compiledWithoutBody \} = capsule;/u);
+    expect(workWorker).toMatch(/context: workerContextWithoutCapsuleBody\(context\)/u);
+    expect(workWorker).toMatch(/trajectoryDelivery:/u);
+    // F11 (CORRECTED BY P2E0 C3): the trial record carries the arm, the eligibility and the delivery state.
+    expect(contextService).toMatch(/assignedArm/u);
+    expect(contextService).toMatch(/TRAJECTORY_HISTORICAL_ELIGIBILITY/u);
+    expect(contextService).toMatch(/DELIVERY_PRECONDITION_NOT_MET/u);
+    // F12 (CORRECTED): the host records the section digest and the full UserMessage digest.
     expect(runner).toMatch(/PALIMPSEST_WORKER_TRAJECTORY/u);
     expect(runner).toMatch(/userMessageDigest\(finalUserMessageText\)/u);
   });

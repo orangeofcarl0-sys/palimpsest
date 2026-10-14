@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_ELIGIBILITY_AND_DELIVERY",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "sourceReferences": [
+    "src/composition/execution_association.ts eligibilityOfCapsuleState()",
+    "src/context/service.ts TRAJECTORY_HISTORICAL_ELIGIBILITY"
+  ],
+  "method": "Read the capsuleForConsumer refusal state for the SAME attempt under both arms and map it to a source-derived eligibility class; the mapping is arm-independent.",
+  "mapping": {
+    "AUTHORIZED": "QUALIFIED",
+    "CAPSULE_BUDGET_EXCEEDED": "QUALIFIED (history eligible; delivery budget failed)",
+    "CAPSULE_LIMIT_INVALID": "QUALIFIED (history eligible; delivery precondition failed)",
+    "CAPSULE_DURABILITY_MISMATCH": "QUALIFIED (history eligible; caller/source disagreement)",
+    "ORIGIN_NOT_SELECTED": "RACED",
+    "ORIGIN_SOURCE_UNAVAILABLE": "SOURCE_UNAVAILABLE",
+    "ORIGIN_PAGE_REFUSED": "NOT_QUALIFIED",
+    "NO_QUALIFIED_ORIGIN": "NOT_QUALIFIED",
+    "NO_LINEAGE": "NOT_QUALIFIED (consumer fact)",
+    "CONSUMER_NOT_CANONICAL": "NOT_QUALIFIED (consumer fact)",
+    "ORIGIN_NOT_PERMITTED": "NOT_QUALIFIED (consumer fact)"
+  },
+  "keyProperty": "eligibility is judged from the SOURCE for both experimental arms before randomization, so a candidate task qualifies on actual Work/Trajectory facts rather than on which arm it drew (§8.4)",
+  "verdict": "PASS",
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "remainingUncertainty": [
+    "Eligibility classes are derived from the existing capsuleForConsumer refusal vocabulary; a future benchmark may need a finer-grained source fact, which would be added in a later stage."
+  ]
+}

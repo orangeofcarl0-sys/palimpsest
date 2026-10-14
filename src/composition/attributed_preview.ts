@@ -116,6 +116,10 @@ export interface AttributedPreviewService {
     /** §10.2: the historical Attempt the consumer believes it is continuing, if it names one. */
     readonly requestedOriginAttemptId?: string | undefined;
     readonly maxEvents?: number | undefined;
+    /** P2-D2 §6.1: deprecated as an upgrade knob; a disagreeing value is REFUSED, never applied. */
+    readonly durability?: "DURABLE" | "EPHEMERAL" | "UNKNOWN" | undefined;
+    /** P2-D1 §9.2: an optional LOWER budget. A caller may lower the product ceiling, never raise it. */
+    readonly limits?: Partial<import("../trajectory/index.js").TrajectoryCapsuleLimits> | undefined;
   }): Promise<CapsuleForConsumerResult>;
   readonly hasDshReader: boolean;
   readonly hasQualifier: boolean;

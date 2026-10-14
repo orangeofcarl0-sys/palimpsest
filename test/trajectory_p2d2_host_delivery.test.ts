@@ -135,8 +135,21 @@ async function captureUserMessage(runner: { runWorker: (ctx: unknown, deps: unkn
       pulledHandles: [],
       deniedAuthorityPrefix: "palimpsest_",
       principalTools: [],
-      trajectoryPresentation: presentation,
-      trajectoryDeliveryState: presentation === null || presentation === undefined ? null : "SECTION_RENDERED",
+      /**
+       * P2-E0 C3: the runner now reads the ONE `trajectoryDelivery` record (three independent dimensions +
+       * the product-rendered presentation) instead of the P2-D2 pair. The capture harness supplies the same
+       * record shape the product payload produces.
+       */
+      trajectoryDelivery:
+        presentation === null || presentation === undefined
+          ? null
+          : {
+              assignedArm: (presentation as { mode?: string }).mode === "CONTROL" ? "CONTROL" : "TREATMENT",
+              eligibility: "QUALIFIED",
+              deliveryState: "SECTION_RENDERED",
+              failureReason: null,
+              presentation,
+            },
     };
     await runner.runWorker(ctx, {
       host: { work: environment },
