@@ -682,6 +682,20 @@ export function renderWorkerTaskText(
   return renderWorkerContextIndex(context.compiled, toolName);
 }
 
+/**
+ * P2-E1 §12.3: read the worker's ONE outcome line, WITHOUT treating the HOST's own diagnostic as one.
+ *
+ * The runner prints exactly ONE line on this prefix: either the worker's canonical outcome, or — when the
+ * worker produced none — the HOST's own `{kind:"HOST_FAILURE", detail}` diagnostic (a statement about a
+ * process, not a work outcome). The two share the prefix by design, and many readers take the last such
+ * line. The P2-E0 parser did not distinguish them, so a host diagnostic was fed to the STRICT worker-result
+ * parser and rejected with `worker result has unknown argument "detail"` — an error that blames the worker
+ * for the host's own message.
+ *
+ * This does NOT widen the strict vocabulary (§12.3 forbids that): it refuses to read a HOST line as a worker
+ * outcome at all, so `parseWorkWorkerResult` still sees only genuine worker reports. A `HOST_FAILURE` line is
+ * skipped, and the caller reports the honest "exited without reporting an outcome" for it.
+ */
 function parseWorkerResultLine(stdout: string): WorkWorkerResultParse | undefined {
   const lines = stdout.split(/\r?\n/u);
   for (let index = lines.length - 1; index >= 0; index -= 1) {
@@ -690,6 +704,8 @@ function parseWorkerResultLine(stdout: string): WorkWorkerResultParse | undefine
     try {
       const parsed: unknown = JSON.parse(line.slice(WORK_WORKER_RESULT_PREFIX.length));
       if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+        /** The HOST's own diagnostic is not a worker outcome: never feed it to the strict worker parser. */
+        if ((parsed as { readonly kind?: unknown }).kind === "HOST_FAILURE") continue;
         return parseWorkWorkerResult(parsed);
       }
     } catch {
