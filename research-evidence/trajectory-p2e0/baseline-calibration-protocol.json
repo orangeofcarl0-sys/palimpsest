@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_BASELINE_CALIBRATION_PROTOCOL",
+  "gate": "E0-E §13",
+  "status": "PREPARED_NOT_RUN",
+  "estimand": {
+    "target": "Utility(Existing Context + Trajectory) - Utility(Existing Context)",
+    "explicitlyNotTheComparison": "Utility(All Context) - Utility(No Context)",
+    "control": "the EXISTING Canonical Work Context + the EXISTING PriorResultContext, with NO Trajectory Section",
+    "treatment": "the SAME existing Context + the source-qualified Trajectory Section, delivered through the attempt-bound boundary",
+    "frozenBy": "the benchmark fixture FIX-A-GOVERNED-PARTIAL-CONTINUATION (scripts/trajectory_p2e0/benchmark-fixture.mjs)"
+  },
+  "r2vrQualificationLaw": {
+    "source": "research-evidence/r2-vr/benchmark-qualification-law.json",
+    "requirements": {
+      "UQ-1": "baseline neither floor nor ceiling — the control must sit strictly between the worst and best outcomes",
+      "UQ-2": "at least two outcome dimensions must vary under repetition of the control",
+      "UQ-3": "at least one treatment-relevant failure class must vary",
+      "UQ-4": "the candidate capital addresses an outcome that can vary",
+      "UQ-5": "success cannot hinge entirely on one unrelated residual case"
+    },
+    "applied": false,
+    "appliedNote": "NOT yet applied: UQ-1..UQ-5 require stochastic baseline repetitions, which this stage does NOT run (§13.2).",
+    "mustNotBeGrantedInThisStage": "BENCHMARK_QUALIFIED"
+  },
+  "futureParameters": {
+    "provider": "REQUIRED from the operator; NOT hard-coded",
+    "modelAndVersion": "REQUIRED from the operator; NOT hard-coded",
+    "repetitionCount": "REQUIRED (the baseline needs enough repetitions to establish whether any dimension varies)",
+    "costBudget": "REQUIRED, with a hard stop",
+    "initialGitState": "the fixture frozen H0",
+    "taskFamily": "FIX-A-GOVERNED-PARTIAL-CONTINUATION (Governed Rework Continuation over a PARTIAL page)",
+    "toolAllowlist": "read, grep, glob, ls, str_replace_editor",
+    "writeScope": [
+      "src/a.ts"
+    ],
+    "timeout": "REQUIRED per trial",
+    "contextBudget": {
+      "capsuleMaxSerializedBytes": 16384,
+      "sectionMaxBytes": 16384
+    },
+    "randomSeed": "where the provider supports one, record it",
+    "failureClassification": "per-trial outcome vector plus the delivery-precondition class",
+    "perCaseOutcomeVector": "the three oracle dimensions per case, recorded separately",
+    "independentAcceptanceOracle": "scripts/trajectory_p2e0/mechanical-oracle.mjs",
+    "stopConditions": [
+      "provider error rate above a declared threshold",
+      "budget exhausted",
+      "a delivery-precondition failure rate that makes the treatment arm uninterpretable"
+    ]
+  },
+  "attritionDiscipline": {
+    "assignedArmIsTheDenominator": "a future TREATMENT trial with FAILED delivery remains in the ASSIGNED-arm record and is NOT counted as successfully delivered Treatment (§13.4)",
+    "neverSilentlyDiscarded": true,
+    "reportThese": {
+      "assignedTrials": true,
+      "eligibleTrials": true,
+      "materializedTrials": true,
+      "deliveredTrials": true,
+      "failedDeliveryTrials": true,
+      "completedTrials": true,
+      "independentlyJudgedTrials": true
+    },
+    "perProtocolVsAssignedArm": "any per-protocol analysis must be clearly distinguished from an assigned-arm analysis",
+    "doNotPrecomputeEffectFromDeliveredSurvivors": true
+  },
+  "refusalRule": {
+    "ifBaselineSaturatedOrVariesOnlyInIrrelevantClasses": "BENCHMARK_NOT_QUALIFIED",
+    "doNotAutomaticallyIncreaseTreatmentCount": true,
+    "doNotInferStochasticUtilityFromTheDeterministicAdapter": true
+  },
+  "authorizationRequirement": {
+    "beforeAnyModelTrialRequire": [
+      "provider and model",
+      "budget",
+      "trial count",
+      "permitted repositories",
+      "execution privileges",
+      "stop conditions"
+    ],
+    "stageEndsBeforeThatExecution": true
+  },
+  "stochasticTrialsRunInE0": 0,
+  "modelCallsMade": 0,
+  "permittedFinalStatements": [
+    "utility has NOT been measured",
+    "the benchmark infrastructure is executable",
+    "the treatment exposure path is source-qualified at the CONTROLLED level"
+  ],
+  "forbiddenFinalStatements": [
+    "Trajectory improved task success",
+    "the benchmark is qualified",
+    "a utility signal was observed"
+  ],
+  "evidenceClass": "NOT_ESTABLISHED",
+  "verdict": "PROTOCOL_PREPARED__NO_STOCHASTIC_TRIAL_RUN"
+}
