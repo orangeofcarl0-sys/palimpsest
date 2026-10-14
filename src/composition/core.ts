@@ -104,6 +104,13 @@ export interface CoreComposition {
   readonly trajectoryCapsuleDelivery: {
     bind(provider: (input: { readonly attemptId: string }) => Promise<import("../context/service.js").TrajectoryCapsuleDelivery | null>): void;
   };
+  /**
+   * P2-E1 §10.1: the trusted-assigned-arm binding, separate from the delivery provider so the Context
+   * Owner can report the frozen arm even when delivery throws.
+   */
+  readonly trajectoryAssignedArm: {
+    bind(arm: import("../context/service.js").TrajectoryAssignedArm): void;
+  };
   readonly verificationCapabilities: {
     bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
   };
@@ -225,6 +232,12 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
   const trajectoryCapsuleHolder: {
     current: ((input: { readonly attemptId: string }) => Promise<import("../context/service.js").TrajectoryCapsuleDelivery | null>) | undefined;
   } = { current: undefined };
+  /**
+   * P2-E1 §10.1: the TRUSTED ASSIGNED ARM holder, the same late-bind idiom. It holds the arm the trusted
+   * configuration froze, so the Context Owner can report it even when the delivery provider throws. Unbound ⇒
+   * `UNKNOWN`, the honest value when no experimental arm was composed.
+   */
+  const trajectoryAssignedArmHolder: { current: import("../context/service.js").TrajectoryAssignedArm } = { current: "UNKNOWN" };
 
   /**
    * §D2-LIVE: the capability statement is LATE-BOUND, exactly like `verificationAdmission` below.
@@ -317,6 +330,8 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
      * that resolves the provider at CALL time, so a binding made after construction is visible.
      */
     trajectoryCapsuleFor: () => trajectoryCapsuleHolder.current,
+    /** P2-E1 §10.1: the trusted arm, readable even when the delivery provider throws. */
+    trajectoryAssignedArm: () => trajectoryAssignedArmHolder.current,
     clock: options.clock,
   });
   // §D3-a: bind the Work owner the observation port reads through, ONCE, now that it exists.
@@ -367,6 +382,16 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
           throw new Error("the trajectory capsule delivery provider was already bound — a second binding would re-point reads a live context owner already depends on");
         }
         trajectoryCapsuleHolder.current = provider;
+      },
+    },
+    /**
+     * P2-E1 §10.1: the TRUSTED ASSIGNED ARM binding. The trusted configuration (the install's
+     * `trajectoryPresentationMode`) is the ONLY source of the arm; a model cannot reach it and a delivered
+     * payload cannot change it. It is bound separately from the provider so the error path can read it.
+     */
+    trajectoryAssignedArm: {
+      bind(arm: import("../context/service.js").TrajectoryAssignedArm) {
+        trajectoryAssignedArmHolder.current = arm;
       },
     },
     worldBasisStore,

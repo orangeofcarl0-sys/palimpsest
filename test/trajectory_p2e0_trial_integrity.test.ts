@@ -20,6 +20,8 @@ import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy, actionKey, type StageGraphDefinition } from "../src/domain/index.js";
 import { ReworkAdmissionPermit } from "../src/domain/rework_admission.js";
 import { normalizeEventPayload, parseNewEvent, parseTaskEnvelope } from "../src/schema/index.js";
+/** P2-E1 C5: the PRODUCT's own eligibility mapping, so this helper cannot drift from the shipped one. */
+import { eligibilityOfCapsuleState } from "../src/composition/execution_association.js";
 
 import { FakeClock, taskSpec } from "./helpers.js";
 
@@ -217,7 +219,10 @@ async function buildProvider(rig: Awaited<ReturnType<typeof governedRig>>, mode:
     let deliveryFailed = false;
     try {
       result = await rig.service.capsuleForConsumer({ consumerAttemptId: input.attemptId });
-      eligibility = result.state === "AUTHORIZED" ? "QUALIFIED" : result.state === "ORIGIN_SOURCE_UNAVAILABLE" || result.state === "ORIGIN_PAGE_REFUSED" ? "SOURCE_UNAVAILABLE" : result.state === "ORIGIN_NOT_SELECTED" ? "RACED" : "NOT_QUALIFIED";
+      // CHANGED ASSERTION (P2E1 C5): the eligibility now reads the STRUCTURED refusal reason through the
+      // PRODUCT's own mapping rather than a hand-copied stand-in, so an ambiguous/unbound origin is
+      // NOT_QUALIFIED and only a genuine read race is RACED.
+      eligibility = eligibilityOfCapsuleState(result);
       if (result.state !== "AUTHORIZED") failureReason = `${result.state}: ${result.detail}`;
     } catch (error) {
       deliveryFailed = true;

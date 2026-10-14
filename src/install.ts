@@ -343,6 +343,12 @@ export function installPalimpsest(
    */
   if (executionAssociationCluster.trajectoryCapsuleDelivery !== undefined) {
     core.trajectoryCapsuleDelivery.bind(executionAssociationCluster.trajectoryCapsuleDelivery);
+    /**
+     * P2-E1 §10.1: bind the TRUSTED ARM from the SAME frozen configuration. It is bound independently of the
+     * provider so the Context Owner's error path reports the real arm (a CONTROL failure stays CONTROL) rather
+     * than guessing one. `trajectoryPresentationMode` is trusted configuration the model cannot reach.
+     */
+    core.trajectoryAssignedArm.bind(options.trajectoryPresentationMode ?? "OFF");
   }
 
   /*
