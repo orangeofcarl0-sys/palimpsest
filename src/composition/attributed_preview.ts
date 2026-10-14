@@ -159,15 +159,11 @@ export const CAPSULE_AUTHORIZATION_STATES = [
 export type CapsuleAuthorizationState = (typeof CAPSULE_AUTHORIZATION_STATES)[number];
 
 /**
- * P2-E1 §10.2: THE STRUCTURED REFUSAL REASON.
- *
- * The authorization STATE is coarse — `ORIGIN_NOT_SELECTED` covers at least three distinct causes — so a
- * consumer that derived eligibility from the state alone could not tell an ambiguous source selection from a
- * genuine currentness RACE. This companion enum names the ACTUAL cause, so the source refusal reason is
- * preserved rather than manufactured. It is additive and defaults to `NONE` for an AUTHORIZED result.
+ * P2-E1 §10.2: THE STRUCTURED REFUSAL REASON. The authorization STATE is coarse — `ORIGIN_NOT_SELECTED`
+ * covers a race, an ambiguous selection AND an unbound session — so this companion enum names the ACTUAL
+ * cause, letting a consumer preserve the source's own refusal reason instead of manufacturing one.
  */
 export const CAPSULE_REFUSAL_REASONS = [
-  /** AUTHORIZED: no refusal. */
   "NONE",
   "CONSUMER_NOT_CANONICAL",
   "NO_LINEAGE",
@@ -177,7 +173,7 @@ export const CAPSULE_REFUSAL_REASONS = [
   "SOURCE_RACED",
   /** Several qualified invocations exist and none is uniquely selected: AMBIGUOUS, not raced. */
   "SOURCE_AMBIGUOUS",
-  /** No execution is bound to a verified session: the source is not usable, but it did not race. */
+  /** No execution is bound to a verified session: unusable, but not raced. */
   "SOURCE_UNBOUND",
   "SOURCE_UNAVAILABLE",
   "PAGE_REFUSED",

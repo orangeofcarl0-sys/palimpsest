@@ -125,18 +125,27 @@ describe("P2B C2 §5 B0-C2 — corrected first-party no-model gate", () => {
     expect(gate.testRootCleanup.cleaned).toBe(true);
   });
 
-  it("§5 B0-F4 — Host Failure, the Parent parse failure and the Host's own refusal reason stay DISTINCT", () => {
+  it("CHANGED ASSERTION (P2E1 C6b) §5 B0-F4 — Host Failure, the Parent outcome and the Host's own refusal reason stay DISTINCT", () => {
     if (gate === null || gate.outcome !== "PASS") return;
     // The Parent's structured outcome is a HOST_FAILURE.
     expect(gate.parentOutcomeKind).toBe("HOST_FAILURE");
     /**
-     * The Parent's failure detail names the PARSE failure ("worker result has unknown argument"), which
-     * is a DIFFERENT fact from the Host's own refusal reason. The gate must not conflate them.
+     * CHANGED ASSERTION (P2E1 C6b). At the P2-B baseline this asserted the Parent's detail contained
+     * "worker result has unknown argument" — i.e. it pinned the PRESENCE of the P2-E0 F14 defect: the parent
+     * re-read the HOST's own `{kind:"HOST_FAILURE", detail}` diagnostic line as if it were a worker outcome,
+     * and the strict parser then rejected the host's own `detail` field. P2-E1 fixed that by making the
+     * parent SKIP a HOST_FAILURE line rather than feed it to the worker parser, so the parent now reports the
+     * honest fact ("exited ... without reporting an outcome") and no longer conflates the host's refusal
+     * reason with a parse failure. The three facts (parent outcome, host refusal reason, session identity)
+     * remain DISTINCT — which is B0-F4's actual intent — now by construction rather than as a defect artifact.
      */
-    expect(gate.parentFailureDetail).toContain("unknown argument");
+    expect(gate.parentFailureDetail).not.toContain("unknown argument");
+    expect(gate.parentFailureDetail).toContain("without reporting an outcome");
     // The Host's OWN telemetry carries the actual refusal reason, observed as its own fact.
     expect(gate.hostOwnTelemetry.hostWorkerResultLine).toContain("refusing to run this worker");
     expect(gate.hostOwnTelemetry.hostWorkerResultLine).toContain("p2a_refusal_probe");
+    // The parent's detail does NOT leak the host's refusal reason: the two facts stay separate.
+    expect(gate.parentFailureDetail).not.toContain("p2a_refusal_probe");
     // And the Host's own identity report was attempted.
     expect(gate.hostOwnTelemetry.hostIdentityTelemetry).toContain('"reported":true');
   });
