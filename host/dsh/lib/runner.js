@@ -739,8 +739,8 @@ async function runWorker(ctx, deps) {
          * state are recorded even when no section was placed, so a failed TREATMENT is never counted as OFF.
          */
         const deliveryRecord = environment.trajectoryDelivery;
-        const presentation = deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.presentation ?? null;
-        const trajectoryPlacement = applyTrajectoryPresentation(composedTaskText, presentation);
+        const trajectorySection = deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.presentation ?? null;
+        const trajectoryPlacement = applyTrajectoryPresentation(composedTaskText, trajectorySection);
         const placedTaskText = trajectoryPlacement.text;
         const finalUserMessageText = applyEfficacyReview(applyAffordance(placedTaskText, affordanceMode), efficacyReview);
         trajectoryDelivery = Object.freeze({
