@@ -148,28 +148,40 @@ function qualificationLabelOf(kind: SourceKind): "FIRST_PARTY_DSH_QUALIFIED" | "
 }
 
 /**
- * P2-E0 §8.1/§8.4: derive the SOURCE-DERIVED historical eligibility from the consumer admission's own
- * refusal state.
+ * P2-E0 §8.1/§8.4 + P2-E1 §10.2: derive the SOURCE-DERIVED historical eligibility from the consumer
+ * admission's OWN refusal state and its STRUCTURED refusal reason.
  *
  * Eligibility is a fact about the SOURCE, not about the arm: it is judged from the same
  * `capsuleForConsumer` result for both experimental arms, BEFORE the arm's delivery is attempted, so a
  * candidate task qualifies on actual Work/Trajectory source facts rather than on which arm it drew (§8.4).
  * A budget refusal is deliberately NOT an eligibility class — the history IS eligible, it simply did not fit
  * the delivery budget — so it maps to `QUALIFIED` and the shortfall is reported through the delivery state.
+ *
+ * P2-E1 §10.2 CORRECTION (F22). P2-E0 mapped EVERY `ORIGIN_NOT_SELECTED` to `RACED`, but that state covers
+ * three distinct causes: a genuine currentness race during the read, an AMBIGUOUS source selection with no
+ * unique qualified invocation, and a missing verified session binding. Only the FIRST is a race. This reads
+ * the STRUCTURED `refusalReason` the admission now carries, so ambiguity, unbinding and racing are separate
+ * classes and the original reason is preserved. When a reason is absent (an older result shape) it falls back
+ * to the coarse state, which is the honest default rather than a manufactured race.
  */
-function eligibilityOfCapsuleState(state: string): import("../context/service.js").TrajectoryHistoricalEligibility {
-  switch (state) {
-    case "AUTHORIZED":
-    case "CAPSULE_BUDGET_EXCEEDED":
-    case "CAPSULE_LIMIT_INVALID":
-    case "CAPSULE_DURABILITY_MISMATCH":
+export function eligibilityOfCapsuleState(result: { readonly state: string; readonly refusalReason?: string | undefined }): import("../context/service.js").TrajectoryHistoricalEligibility {
+  const reason = result.refusalReason;
+  switch (reason) {
+    case "NONE":
+    case "CAPSULE_BUDGET":
+    case "CAPSULE_LIMIT":
+    case "CAPSULE_DURABILITY":
       /** The history qualified and was admitted; only the DELIVERY budget/precondition failed. */
       return "QUALIFIED";
-    case "ORIGIN_NOT_SELECTED":
+    case "SOURCE_RACED":
       return "RACED";
-    case "ORIGIN_SOURCE_UNAVAILABLE":
+    case "SOURCE_AMBIGUOUS":
+    case "SOURCE_UNBOUND":
+      /** §10.2: a source that is ambiguous or unbound is NOT racing — it is simply not selectable. */
+      return "NOT_QUALIFIED";
+    case "SOURCE_UNAVAILABLE":
       return "SOURCE_UNAVAILABLE";
-    case "ORIGIN_PAGE_REFUSED":
+    case "PAGE_REFUSED":
     case "NO_QUALIFIED_ORIGIN":
       return "NOT_QUALIFIED";
     case "NO_LINEAGE":
@@ -177,6 +189,20 @@ function eligibilityOfCapsuleState(state: string): import("../context/service.js
     case "ORIGIN_NOT_PERMITTED":
       /** No permission or no lineage is a CONSUMER fact, not a source-eligibility fact. */
       return "NOT_QUALIFIED";
+    default:
+      break;
+  }
+  /** §10.2: fall back to the coarse state ONLY when no structured reason is present. */
+  switch (result.state) {
+    case "AUTHORIZED":
+    case "CAPSULE_BUDGET_EXCEEDED":
+    case "CAPSULE_LIMIT_INVALID":
+    case "CAPSULE_DURABILITY_MISMATCH":
+      return "QUALIFIED";
+    case "ORIGIN_NOT_SELECTED":
+      return "NOT_QUALIFIED";
+    case "ORIGIN_SOURCE_UNAVAILABLE":
+      return "SOURCE_UNAVAILABLE";
     default:
       return "UNKNOWN";
   }
@@ -482,7 +508,7 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
               consumerAttemptId: input2.attemptId,
               ...(options.trajectoryCapsuleMaxSerializedBytes === undefined ? {} : { limits: { maxSerializedBytes: options.trajectoryCapsuleMaxSerializedBytes } }),
             });
-            eligibility = eligibilityOfCapsuleState(result.state);
+            eligibility = eligibilityOfCapsuleState(result);
             if (result.state !== "AUTHORIZED") failureReason = `${result.state}: ${result.detail}`;
           } catch (error) {
             /** §8.1: an ERROR is a distinct outcome from a clean refusal — recorded as FAILED, not as OFF. */

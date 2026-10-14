@@ -158,9 +158,40 @@ export const CAPSULE_AUTHORIZATION_STATES = [
 ] as const;
 export type CapsuleAuthorizationState = (typeof CAPSULE_AUTHORIZATION_STATES)[number];
 
+/**
+ * P2-E1 §10.2: THE STRUCTURED REFUSAL REASON.
+ *
+ * The authorization STATE is coarse — `ORIGIN_NOT_SELECTED` covers at least three distinct causes — so a
+ * consumer that derived eligibility from the state alone could not tell an ambiguous source selection from a
+ * genuine currentness RACE. This companion enum names the ACTUAL cause, so the source refusal reason is
+ * preserved rather than manufactured. It is additive and defaults to `NONE` for an AUTHORIZED result.
+ */
+export const CAPSULE_REFUSAL_REASONS = [
+  /** AUTHORIZED: no refusal. */
+  "NONE",
+  "CONSUMER_NOT_CANONICAL",
+  "NO_LINEAGE",
+  "ORIGIN_NOT_PERMITTED",
+  "NO_QUALIFIED_ORIGIN",
+  /** The qualification basis changed DURING the read: a real currentness race. */
+  "SOURCE_RACED",
+  /** Several qualified invocations exist and none is uniquely selected: AMBIGUOUS, not raced. */
+  "SOURCE_AMBIGUOUS",
+  /** No execution is bound to a verified session: the source is not usable, but it did not race. */
+  "SOURCE_UNBOUND",
+  "SOURCE_UNAVAILABLE",
+  "PAGE_REFUSED",
+  "CAPSULE_BUDGET",
+  "CAPSULE_LIMIT",
+  "CAPSULE_DURABILITY",
+] as const;
+export type CapsuleRefusalReason = (typeof CAPSULE_REFUSAL_REASONS)[number];
+
 export interface CapsuleForConsumerResult {
   readonly state: CapsuleAuthorizationState;
   readonly detail: string;
+  /** P2-E1 §10.2: the structured cause behind `state`, so a coarse state cannot lose the real reason. */
+  readonly refusalReason?: CapsuleRefusalReason | undefined;
   /** §10.6: present only when the state is AUTHORIZED. A refused Capsule is NOT fabricated. */
   readonly capsule: TrajectoryContextCapsule | null;
   /** P2-D1 §9.1: the serialized byte count of the delivered Capsule, when one was built. */
@@ -462,19 +493,20 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
        */
       const consumerRecord = controller.attemptWorkRecord(request.consumerAttemptId);
       if (consumerRecord === null) {
-        return Object.freeze({ state: "CONSUMER_NOT_CANONICAL" as const, detail: `attempt ${request.consumerAttemptId} is not a canonical attempt of this project`, capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
+        return Object.freeze({ state: "CONSUMER_NOT_CANONICAL" as const, refusalReason: "CONSUMER_NOT_CANONICAL" as const, detail: `attempt ${request.consumerAttemptId} is not a canonical attempt of this project`, capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
       }
       if (input.capsuleAuthorization === undefined) {
-        return Object.freeze({ state: "NO_LINEAGE" as const, detail: "this deployment composes no consumer-authorization port, so no historical Attempt may be inspected", capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
+        return Object.freeze({ state: "NO_LINEAGE" as const, refusalReason: "NO_LINEAGE" as const, detail: "this deployment composes no consumer-authorization port, so no historical Attempt may be inspected", capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
       }
       const permitted = input.capsuleAuthorization.resolvePermittedOrigin({ consumerAttemptId: request.consumerAttemptId });
       if (!permitted.ok) {
-        return Object.freeze({ state: permitted.reason, detail: permitted.detail, capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
+        return Object.freeze({ state: permitted.reason, refusalReason: permitted.reason as CapsuleRefusalReason, detail: permitted.detail, capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
       }
       /** §10.3: a named origin that disagrees with the lineage is refused; the lineage is the authority. */
       if (request.requestedOriginAttemptId !== undefined && request.requestedOriginAttemptId !== permitted.originAttemptId) {
         return Object.freeze({
           state: "ORIGIN_NOT_PERMITTED" as const,
+          refusalReason: "ORIGIN_NOT_PERMITTED" as const,
           detail: `the consumer's canonical lineage permits origin attempt ${permitted.originAttemptId}, not the requested ${request.requestedOriginAttemptId}`,
           capsule: null,
           originAttemptId: request.requestedOriginAttemptId,
@@ -490,10 +522,10 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       try {
         origin = await service.previewAttempt({ attemptId: permitted.originAttemptId, ...(request.maxEvents === undefined ? {} : { maxEvents: request.maxEvents }) });
       } catch (error) {
-        return Object.freeze({ state: "NO_QUALIFIED_ORIGIN" as const, detail: `the permitted origin attempt could not be admitted: ${error instanceof Error ? error.message : String(error)}`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state: "NO_QUALIFIED_ORIGIN" as const, refusalReason: "NO_QUALIFIED_ORIGIN" as const, detail: `the permitted origin attempt could not be admitted: ${error instanceof Error ? error.message : String(error)}`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
       if (origin.selection.state === "NO_DURABLE_EVIDENCE") {
-        return Object.freeze({ state: "NO_QUALIFIED_ORIGIN" as const, detail: `the permitted origin attempt ${permitted.originAttemptId} produced no qualified execution evidence`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state: "NO_QUALIFIED_ORIGIN" as const, refusalReason: "NO_QUALIFIED_ORIGIN" as const, detail: `the permitted origin attempt ${permitted.originAttemptId} produced no qualified execution evidence`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
 
       /**
@@ -506,19 +538,30 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
        * events.
        */
       if (origin.provenance.qualificationState === "RACED") {
-        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, detail: `the origin attempt ${permitted.originAttemptId}'s association raced during the read, so no specific execution is established`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, refusalReason: "SOURCE_RACED" as const, detail: `the origin attempt ${permitted.originAttemptId}'s association raced during the read, so no specific execution is established`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
       if (origin.selection.state !== "SELECTED_UNIQUE" && origin.selection.state !== "SELECTED_REQUESTED") {
-        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, detail: `the origin attempt ${permitted.originAttemptId} has no single selected execution (${origin.selection.state}): ${origin.selection.detail}`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, refusalReason: "SOURCE_AMBIGUOUS" as const, detail: `the origin attempt ${permitted.originAttemptId} has no single selected execution (${origin.selection.state}): ${origin.selection.detail}`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
       const originExecution = origin.preview.execution;
       if (originExecution.sessionBindingStatus !== "BOUND_VERIFIED") {
-        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, detail: `the origin attempt ${permitted.originAttemptId} has no verified session binding (${originExecution.sessionBindingStatus})`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, refusalReason: "SOURCE_UNBOUND" as const, detail: `the origin attempt ${permitted.originAttemptId} has no verified session binding (${originExecution.sessionBindingStatus})`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
       if (originExecution.sessionReadAdmission !== "ADMITTED_TO_ATTEMPT") {
-        const sourceUnavailable = originExecution.sessionReadState === "READ_CAPABILITY_ABSENT" || originExecution.sessionReadState === "SESSION_MISSING" || originExecution.sessionReadState === "BACKEND_UNAVAILABLE";
+        /**
+         * P2-E1 §10.2: SOURCE-UNAVAILABLE and PAGE-REFUSED are DISTINCT. An absent read capability (the
+         * deployment composed no reader, so no page was ever requested), a missing session and an unavailable
+         * backend are all SOURCE_UNAVAILABLE. A page that WAS read and failed integrity is PAGE_REFUSED. The
+         * P2-E0 code conflated the "no reader composed" case into PAGE_REFUSED, so an unavailable source was
+         * reported as an invalid page.
+         */
+        const sourceUnavailable =
+          originExecution.sessionReadAdmission === "NOT_REQUESTED" ||
+          originExecution.sessionReadState === "READ_CAPABILITY_ABSENT" ||
+          originExecution.sessionReadState === "SESSION_MISSING" ||
+          originExecution.sessionReadState === "BACKEND_UNAVAILABLE";
         const state = sourceUnavailable ? "ORIGIN_SOURCE_UNAVAILABLE" : "ORIGIN_PAGE_REFUSED";
-        return Object.freeze({ state: state as CapsuleAuthorizationState, detail: `the origin attempt ${permitted.originAttemptId}'s session page was not admitted (admission ${originExecution.sessionReadAdmission}, read ${String(originExecution.sessionReadState)})`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state: state as CapsuleAuthorizationState, refusalReason: (sourceUnavailable ? "SOURCE_UNAVAILABLE" : "PAGE_REFUSED") as CapsuleRefusalReason, detail: `the origin attempt ${permitted.originAttemptId}'s session page was not admitted (admission ${originExecution.sessionReadAdmission}, read ${String(originExecution.sessionReadState)})`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
 
       /**
@@ -530,7 +573,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
        */
       const sourceDurability: "DURABLE" | "EPHEMERAL" | "UNKNOWN" = origin.provenance.sourceDurability ?? "UNKNOWN";
       if (request.durability !== undefined && request.durability !== "UNKNOWN" && request.durability !== sourceDurability) {
-        return Object.freeze({ state: "CAPSULE_DURABILITY_MISMATCH" as const, detail: `the trusted source established durability "${sourceDurability}", so a caller may not present it as "${request.durability}"`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state: "CAPSULE_DURABILITY_MISMATCH" as const, refusalReason: "CAPSULE_DURABILITY" as const, detail: `the trusted source established durability "${sourceDurability}", so a caller may not present it as "${request.durability}"`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
 
       /**
@@ -559,9 +602,9 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       });
       if (!capsuleOutcome.ok) {
         const state: CapsuleAuthorizationState = capsuleOutcome.state === "CAPSULE_LIMIT_INVALID" ? "CAPSULE_LIMIT_INVALID" : "CAPSULE_BUDGET_EXCEEDED";
-        return Object.freeze({ state, detail: capsuleOutcome.detail, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        return Object.freeze({ state, refusalReason: (capsuleOutcome.state === "CAPSULE_LIMIT_INVALID" ? "CAPSULE_LIMIT" : "CAPSULE_BUDGET") as CapsuleRefusalReason, detail: capsuleOutcome.detail, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
-      return Object.freeze({ state: "AUTHORIZED" as const, detail: `the consumer's canonical lineage permits inspecting origin attempt ${permitted.originAttemptId}, whose execution is qualified and admitted`, capsule: capsuleOutcome.capsule, serializedBytes: capsuleOutcome.serializedBytes, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      return Object.freeze({ state: "AUTHORIZED" as const, refusalReason: "NONE" as const, detail: `the consumer's canonical lineage permits inspecting origin attempt ${permitted.originAttemptId}, whose execution is qualified and admitted`, capsule: capsuleOutcome.capsule, serializedBytes: capsuleOutcome.serializedBytes, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
     },
   };
   return Object.freeze(service);

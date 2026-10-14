@@ -129,14 +129,18 @@ export interface TrajectoryCapsuleDelivery {
 }
 
 /**
- * P2-E0 §8.1: THE THREE INDEPENDENT DIMENSIONS.
+ * P2-E0 §8.1 / P2-E1 §10.1: THE THREE INDEPENDENT DIMENSIONS.
  *
  * A trial has an ASSIGNED ARM (trusted configuration), a HISTORICAL ELIGIBILITY (source-derived) and a
  * DELIVERY OUTCOME (what actually happened). They cannot be silently substituted for each other: a
  * TREATMENT whose history was unavailable must remain `TREATMENT` + `SOURCE_UNAVAILABLE` +
  * `DELIVERY_PRECONDITION_NOT_MET`, never `OFF` + `DELIVERY_DISABLED` (§8.2).
+ *
+ * P2-E1 §10.1 adds `UNKNOWN` for the one case where the arm genuinely cannot be established on an error
+ * path — it is NEVER a substitute for a known arm, and it exists so the error path does not have to claim a
+ * specific arm it does not know (the P2-E0 code hard-coded TREATMENT there, mislabelling a CONTROL failure).
  */
-export const TRAJECTORY_ASSIGNED_ARMS = ["OFF", "CONTROL", "TREATMENT"] as const;
+export const TRAJECTORY_ASSIGNED_ARMS = ["OFF", "CONTROL", "TREATMENT", "UNKNOWN"] as const;
 export type TrajectoryAssignedArm = (typeof TRAJECTORY_ASSIGNED_ARMS)[number];
 
 /**
@@ -379,6 +383,16 @@ export interface ContextServicePorts {
    * choice — and the port is read-only.
    */
   trajectoryCapsuleFor?: TrajectoryCapsuleDeliveryProvider | undefined;
+  /**
+   * P2-E1 §10.1: THE TRUSTED ASSIGNED ARM, read independently of the delivery provider.
+   *
+   * The arm is frozen by TRUSTED CONFIGURATION before the worker runs, so the Context Owner must be able to
+   * report it EVEN WHEN the delivery provider throws — otherwise a CONTROL whose provider failed would be
+   * recorded as whatever the error path guessed (the P2-E0 code guessed `TREATMENT`). This read is a pure
+   * configuration fact: it consults no source, takes no argument a model could supply, and cannot be changed
+   * by a delivered payload. Absent ⇒ `UNKNOWN`, the honest value when no trusted arm was composed.
+   */
+  trajectoryAssignedArm?: (() => TrajectoryAssignedArm) | undefined;
   readonly clock?: (() => string) | undefined;
 }
 
@@ -825,9 +839,15 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
           }
         } catch (error) {
           /**
-           * §8.1: an error is a DISTINCT outcome. The arm is not silently dropped; the delivery is recorded
-           * as FAILED with the reason, so the trial's assignment survives.
+           * §8.1 / P2-E1 §10.1: an error is a DISTINCT outcome. The arm is not silently dropped; the delivery
+           * is recorded as FAILED with the reason, so the trial's assignment survives.
+           *
+           * P2-E1 CORRECTION: the arm is read from the TRUSTED CONFIGURATION (`ports.trajectoryAssignedArm`),
+           * never hard-coded. The P2-E0 code wrote `assignedArm: "TREATMENT"` here, so a CONTROL whose provider
+           * threw was recorded as a TREATMENT failure. When no trusted arm was composed the honest value is
+           * `UNKNOWN`, which is distinct from every real arm.
            */
+          const trustedArm = ports.trajectoryAssignedArm?.() ?? "UNKNOWN";
           trajectoryCapsule = Object.freeze({
             schemaVersion: 1,
             capsule: null,
@@ -838,7 +858,7 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
             authority: "READ_ONLY_INSPECTION" as const,
             presentation: null,
             deliveryState: "FAILED" as const,
-            assignedArm: "TREATMENT" as const,
+            assignedArm: trustedArm,
             eligibility: "UNKNOWN" as const,
             failureReason: `DELIVERY_ERROR: ${error instanceof Error ? error.message : String(error)}`,
           });

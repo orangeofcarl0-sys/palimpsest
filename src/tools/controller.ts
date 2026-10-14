@@ -685,6 +685,7 @@ export interface ProjectControllerOptions {
   budget?: BudgetLedger | undefined;
   contextKnowledge?: (() => ContextKnowledgePorts | undefined) | undefined; // E1-K §10.3 read-through provider
   trajectoryCapsuleFor?: (() => import("../context/service.js").TrajectoryCapsuleDeliveryProvider | undefined) | undefined; // P2-D1 §11
+  trajectoryAssignedArm?: (() => import("../context/service.js").TrajectoryAssignedArm) | undefined; // P2-E1 §10.1: readable even when the delivery provider throws
   clock?: (() => string) | undefined;
 }
 
@@ -845,6 +846,7 @@ export class ProjectController {
       ...(options.contextKnowledge === undefined ? {} : { contextKnowledge: options.contextKnowledge }), // E1-K §10.3
       // P2-D1 §11: late-bound capsule provider; unbound ⇒ no delivery, byte-identical to before.
       ...(options.trajectoryCapsuleFor === undefined ? {} : { trajectoryCapsuleFor: async (input: { readonly attemptId: string }) => (await options.trajectoryCapsuleFor?.()?.({ attemptId: input.attemptId })) ?? null }),
+      ...(options.trajectoryAssignedArm === undefined ? {} : { trajectoryAssignedArm: () => options.trajectoryAssignedArm?.() ?? "UNKNOWN" }), // P2-E1 §10.1: trusted arm; absent ⇒ UNKNOWN
       attempt: (attemptId) => {
         const row = this.work.attempt(attemptId);
         return row === null ? null : { attemptId: row.attemptId, taskId: row.taskId, state: row.state };
@@ -1427,9 +1429,7 @@ export class ProjectController {
     }));
     const openAttempts: ReconcileAttemptRow[] = (
       this.store.connection
-        .prepare(
-          "SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING')",
-        )
+        .prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING')")
         .all(this.projectId) as Array<Record<string, unknown>>
     ).map((row) => ({
       attemptId: String(row.attempt_id),
@@ -1888,9 +1888,7 @@ export class ProjectController {
     const affectedAttemptIds: string[] = [];
     for (const taskId of retiredTaskIds) {
       const attempts = this.store.connection
-        .prepare(
-          "SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=? ORDER BY attempt_id",
-        )
+        .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=? ORDER BY attempt_id")
         .all(this.projectId, taskId) as Array<{ attempt_id: string }>;
       for (const attempt of attempts) affectedAttemptIds.push(String(attempt.attempt_id));
     }
