@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "gates": {
+    "E0-A": {
+      "verdict": "TEST_RUNTIME_SAFETY_QUALIFIED",
+      "evidence": [
+        "test-runtime-safety.json",
+        "junction-sentinel.json",
+        "cleanup-repeatability.json",
+        "disk-and-resource-budget.json",
+        "test-home-construction.json"
+      ]
+    },
+    "E0-B": {
+      "verdict": "TREATMENT_ASSIGNMENT_QUALIFIED",
+      "evidence": [
+        "trial-assignment.json",
+        "eligibility-and-delivery.json",
+        "control-payload-isolation.json",
+        "treatment-failure-propagation.json"
+      ]
+    },
+    "E0-C-controlled": {
+      "verdict": "TRAJECTORY_CONTROLLED_SOURCE_TO_INPUT_QUALIFIED",
+      "evidenceLevel": "E0-L1",
+      "evidence": [
+        "source-to-dsh-input.json",
+        "governed-origin-chain.json"
+      ]
+    },
+    "E0-C-first-party-origin": {
+      "verdict": "NOT_ESTABLISHED",
+      "evidenceLevel": "E0-L2",
+      "evidence": [
+        "real-first-party-origin-feasibility.json"
+      ]
+    },
+    "E0-D": {
+      "verdict": "BENCHMARK_FIXTURE_EXECUTABLE",
+      "evidence": [
+        "utility-candidate-fixtures.json",
+        "mechanical-oracle.json",
+        "benchmark-deliverability.json",
+        "information-sufficiency.json"
+      ]
+    },
+    "E0-E": {
+      "verdict": "TRAJECTORY_UTILITY_BENCHMARK_CANDIDATE_READY",
+      "evidence": [
+        "baseline-calibration-protocol.json"
+      ]
+    }
+  },
+  "stageStatus": "STRONGEST_ESTABLISHED_RESULT_ASSEMBLED_FROM_INDEPENDENT_GATES",
+  "notGranted": [
+    "BENCHMARK_QUALIFIED",
+    "UTILITY_POSITIVE_SIGNAL",
+    "MODEL_CONSUMED_CAPSULE"
+  ],
+  "modelCallsMade": 0,
+  "externalModelRequestOccurred": false,
+  "paidModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "remainingLimitations": [
+    "E0-L2 not established: the origin Result is not genuinely admitted",
+    "no utility measured: the deterministic adapter cannot produce run-to-run variation",
+    "Node v24.14.1 is below the declared >=24.15.0",
+    "the global test-hygiene sweep has no reparse-point check"
+  ]
+}

@@ -118,9 +118,10 @@ describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
     // F1 (CORRECTED): workTask() is composed, then the product section is placed into the SAME text.
     const workTaskBody = runner.slice(runner.indexOf("function workTask(context, indexText)"));
     expect(workTaskBody.slice(0, workTaskBody.indexOf("\n}"))).not.toMatch(/trajectoryCapsule/u);
-    // P2E0 C3: the host now reads the ONE delivery record's presentation, not a bare `trajectoryPresentation`.
-    expect(runner).toMatch(/applyTrajectoryPresentation\(composedTaskText, presentation\)/u);
-    expect(runner).toMatch(/const presentation = deliveryRecord[\s\S]{0,120}\.presentation \?\? null/u);
+    // P2E0 C3/C4: the host reads the ONE delivery record's presentation into a LOCAL variable (named
+    // `trajectorySection` to avoid colliding with the R2-U `presentation` arm) and places that.
+    expect(runner).toMatch(/applyTrajectoryPresentation\(composedTaskText, trajectorySection\)/u);
+    expect(runner).toMatch(/const trajectorySection = deliveryRecord[\s\S]{0,120}\.presentation \?\? null/u);
     expect(runner).toMatch(/agent\.followup\(\s*userMessage\(finalUserMessageText\),?\s*\)/u);
     // F2 (CORRECTED BY P2E0 C3): the CHILD payload no longer carries the raw Capsule body. The product
     // ships ONE trial record, and `workerContextWithoutCapsuleBody` strips `trajectoryCapsule.capsule` from
