@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_EVIDENCE_AVAILABILITY_MATRIX",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "principle": "one objective ground truth does not imply both arms can see it; an arm is not penalised for a fact it was never given",
+  "rows": [
+    {
+      "proposition": "ORIGIN_CANONICAL_COMPLETED",
+      "groundTruth": "TRUE",
+      "authoritativeSource": "CANONICAL_WORK",
+      "controlEvidence": "AVAILABLE",
+      "treatmentEvidence": "AVAILABLE",
+      "why": "the prior-result continuation carries the canonical completion to both arms"
+    },
+    {
+      "proposition": "ORIGIN_HAS_HISTORICAL_RESULT",
+      "groundTruth": "TRUE",
+      "authoritativeSource": "CANONICAL_WORK",
+      "controlEvidence": "AVAILABLE",
+      "treatmentEvidence": "AVAILABLE",
+      "why": "the prior-result continuation names the historical result for both arms"
+    },
+    {
+      "proposition": "ORIGIN_DSH_PAGE_FULL",
+      "groundTruth": "FALSE",
+      "authoritativeSource": "DSH_SESSION",
+      "controlEvidence": "UNKNOWN",
+      "treatmentEvidence": "AVAILABLE",
+      "why": "only the qualified Capsule states page coverage"
+    },
+    {
+      "proposition": "ORIGIN_DSH_PAGE_PARTIAL",
+      "groundTruth": "TRUE",
+      "authoritativeSource": "DSH_SESSION",
+      "controlEvidence": "UNKNOWN",
+      "treatmentEvidence": "AVAILABLE",
+      "why": "only the qualified Capsule states page coverage"
+    },
+    {
+      "proposition": "ORIGIN_ALL_DSH_EVENTS_OBSERVED",
+      "groundTruth": "UNKNOWN",
+      "authoritativeSource": "DSH_SESSION",
+      "controlEvidence": "UNKNOWN",
+      "treatmentEvidence": "UNKNOWN",
+      "why": "unobserved events remain unobserved in BOTH arms"
+    },
+    {
+      "proposition": "ORIGIN_CURRENT_VERIFICATION_ESTABLISHED",
+      "groundTruth": "UNKNOWN",
+      "authoritativeSource": "VERIFICATION",
+      "controlEvidence": "UNKNOWN",
+      "treatmentEvidence": "UNKNOWN",
+      "why": "no Verification owner is composed for either arm"
+    },
+    {
+      "proposition": "CONSUMER_CAN_SETTLE",
+      "groundTruth": "FALSE",
+      "authoritativeSource": "CURRENT_WORK",
+      "controlEvidence": "AVAILABLE",
+      "treatmentEvidence": "AVAILABLE",
+      "why": "both arms see the same current Work authority"
+    }
+  ],
+  "controlPunishedForUnavailableFacts": false,
+  "treatmentMustUseDeliveredFactsCorrectly": true,
+  "trivialInformationAccessTest": false,
+  "whyNotTrivial": "the discriminating decision depends on understanding source LIMITATIONS while retaining the same current Work authority, not on recalling a SessionId"
+}

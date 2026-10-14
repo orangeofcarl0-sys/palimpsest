@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_OWNER_TRUTH_AUDIT",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "invariant": "one owner unavailable/incomplete evidence must not negate a fact another authoritative owner establishes",
+  "authoritativeSourceOf": {
+    "ORIGIN_CANONICAL_COMPLETED": "CANONICAL_WORK",
+    "ORIGIN_HAS_HISTORICAL_RESULT": "CANONICAL_WORK",
+    "ORIGIN_DSH_PAGE_FULL": "DSH_SESSION",
+    "ORIGIN_DSH_PAGE_PARTIAL": "DSH_SESSION",
+    "ORIGIN_ALL_DSH_EVENTS_OBSERVED": "DSH_SESSION",
+    "ORIGIN_CURRENT_VERIFICATION_ESTABLISHED": "VERIFICATION",
+    "CONSUMER_CAN_SETTLE": "CURRENT_WORK"
+  },
+  "groundTruthDigest": "fnv1a-e40ab964-1170",
+  "propositions": [
+    {
+      "id": "ORIGIN_CANONICAL_COMPLETED",
+      "truth": "TRUE",
+      "source": "CANONICAL_WORK",
+      "evidenceRef": "work-event:A0:ATTEMPT_COMPLETED"
+    },
+    {
+      "id": "ORIGIN_HAS_HISTORICAL_RESULT",
+      "truth": "TRUE",
+      "source": "CANONICAL_WORK",
+      "evidenceRef": "attempt-result:A0"
+    },
+    {
+      "id": "ORIGIN_DSH_PAGE_FULL",
+      "truth": "FALSE",
+      "source": "DSH_SESSION",
+      "evidenceRef": "dsh-page:origin-partial"
+    },
+    {
+      "id": "ORIGIN_DSH_PAGE_PARTIAL",
+      "truth": "TRUE",
+      "source": "DSH_SESSION",
+      "evidenceRef": "dsh-page:origin-partial"
+    },
+    {
+      "id": "ORIGIN_ALL_DSH_EVENTS_OBSERVED",
+      "truth": "UNKNOWN",
+      "source": "DSH_SESSION",
+      "evidenceRef": "dsh-page:origin-partial"
+    },
+    {
+      "id": "ORIGIN_CURRENT_VERIFICATION_ESTABLISHED",
+      "truth": "UNKNOWN",
+      "source": "VERIFICATION",
+      "evidenceRef": null
+    },
+    {
+      "id": "CONSUMER_CAN_SETTLE",
+      "truth": "FALSE",
+      "source": "CURRENT_WORK",
+      "evidenceRef": "current-work:A1"
+    }
+  ],
+  "coexistence": {
+    "canonicalCompleted": "TRUE",
+    "dshPagePartial": "TRUE",
+    "theyCoexist": true,
+    "why": "different owners: Work establishes completion, the DSH Session reports page coverage"
+  },
+  "ownerConsistencyScenarios": [
+    {
+      "id": "canonical-completed-dsh-partial",
+      "canonical": "TRUE",
+      "dsh": "PARTIAL",
+      "consistent": true,
+      "why": "the two facts are owned by different owners and coexist"
+    },
+    {
+      "id": "canonical-not-completed-dsh-full",
+      "canonical": "FALSE",
+      "dsh": "FULL",
+      "consistent": true,
+      "why": "a FULL page does not imply completion — only Work establishes completion"
+    },
+    {
+      "id": "canonical-completed-dsh-unavailable",
+      "canonical": "TRUE",
+      "dsh": "UNAVAILABLE",
+      "consistent": true,
+      "why": "an absent DSH source cannot erase canonical completion"
+    },
+    {
+      "id": "historical-result-current-verification-unknown",
+      "canonical": "TRUE",
+      "verification": "UNKNOWN",
+      "consistent": true,
+      "why": "a historical Result does not imply current verification"
+    },
+    {
+      "id": "historical-result-consumer-unfinished",
+      "canonical": "TRUE",
+      "consumerCompleted": false,
+      "consistent": true,
+      "why": "a historical Result does not make the current attempt complete"
+    },
+    {
+      "id": "session-turn-ended-work-unsettled",
+      "turnEnded": true,
+      "workSettled": false,
+      "consistent": true,
+      "why": "a successful model turn is not Work settlement"
+    },
+    {
+      "id": "source-race-canonical-stable",
+      "sourceRaced": true,
+      "canonicalStable": true,
+      "consistent": true,
+      "why": "a source currentness race does not move the canonical facts"
+    }
+  ],
+  "correctsP2E0AnswerKey": "P2-E0 forbade A0 completion because the DSH page was PARTIAL; the corrected key asserts canonical completion TRUE and page PARTIAL TRUE, with ORIGIN_ALL_DSH_EVENTS_OBSERVED UNKNOWN (never FALSE).",
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
