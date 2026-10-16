@@ -1,0 +1,105 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_TRUTH_SEMANTICS",
+  "propositions": [
+    {
+      "id": "ORIGIN_CANONICAL_COMPLETED",
+      "truth": "TRUE",
+      "authoritativeSource": "CANONICAL_WORK",
+      "evidenceRef": "work-event:A0:ATTEMPT_COMPLETED",
+      "citationHandle": "A0",
+      "note": "the canonical Work event log records A0's completion; a PARTIAL DSH page cannot negate it"
+    },
+    {
+      "id": "ORIGIN_HAS_HISTORICAL_RESULT",
+      "truth": "TRUE",
+      "authoritativeSource": "CANONICAL_WORK",
+      "evidenceRef": "attempt-result:A0",
+      "citationHandle": "A0",
+      "note": "the historical Result identity recorded by Work"
+    },
+    {
+      "id": "ORIGIN_DSH_PAGE_FULL",
+      "truth": "FALSE",
+      "authoritativeSource": "DSH_SESSION",
+      "evidenceRef": "dsh-page:origin-partial",
+      "citationHandle": "origin-partial",
+      "note": "3 of 8 known events were returned"
+    },
+    {
+      "id": "ORIGIN_DSH_PAGE_PARTIAL",
+      "truth": "TRUE",
+      "authoritativeSource": "DSH_SESSION",
+      "evidenceRef": "dsh-page:origin-partial",
+      "citationHandle": "origin-partial",
+      "note": "the admitted page covers a prefix of the reported events"
+    },
+    {
+      "id": "ALL_REPORTED_DSH_EVENTS_RETURNED",
+      "truth": "FALSE",
+      "authoritativeSource": "DSH_SESSION",
+      "evidenceRef": "dsh-page:origin-partial",
+      "citationHandle": "origin-partial",
+      "note": "3 of 8 reported events were returned, so not all were"
+    },
+    {
+      "id": "OUTCOMES_OF_UNRETURNED_EVENTS",
+      "truth": "UNKNOWN",
+      "authoritativeSource": "DSH_SESSION",
+      "evidenceRef": null,
+      "citationHandle": null,
+      "note": "the page did not return these events, so their contents are unknown"
+    },
+    {
+      "id": "EVENTS_BEYOND_REPORTED_BOUNDARY",
+      "truth": "UNKNOWN",
+      "authoritativeSource": "DSH_SESSION",
+      "evidenceRef": null,
+      "citationHandle": null,
+      "note": "the source reports a current known count, which does not prove no further events exist"
+    },
+    {
+      "id": "ORIGIN_CURRENT_VERIFICATION_ESTABLISHED",
+      "truth": "UNKNOWN",
+      "authoritativeSource": "VERIFICATION",
+      "evidenceRef": null,
+      "citationHandle": null,
+      "note": "no Verification owner is composed, so this is UNKNOWN — never inferred from the historical Result"
+    },
+    {
+      "id": "CONSUMER_CAN_SETTLE",
+      "truth": "FALSE",
+      "authoritativeSource": "CURRENT_WORK",
+      "evidenceRef": "current-work:A1",
+      "citationHandle": "A1",
+      "note": "A1 has not completed and carries no current verification/world basis, so settlement is not authorised"
+    }
+  ],
+  "criticalPropositions": [
+    "ORIGIN_CANONICAL_COMPLETED",
+    "ORIGIN_DSH_PAGE_PARTIAL",
+    "ALL_REPORTED_DSH_EVENTS_RETURNED",
+    "CONSUMER_CAN_SETTLE"
+  ],
+  "ambiguousPropositionResolved": {
+    "old": {
+      "id": "ORIGIN_ALL_DSH_EVENTS_OBSERVED",
+      "truth": "UNKNOWN",
+      "defect": "one id carried a determinable FALSE and two genuinely unknown questions"
+    },
+    "now": {
+      "ALL_REPORTED_DSH_EVENTS_RETURNED": "FALSE",
+      "OUTCOMES_OF_UNRETURNED_EVENTS": "UNKNOWN",
+      "EVENTS_BEYOND_REPORTED_BOUNDARY": "UNKNOWN"
+    }
+  },
+  "evidenceClass": "DYNAMICALLY_REPRODUCED"
+}

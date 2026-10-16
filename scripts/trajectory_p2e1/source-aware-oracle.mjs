@@ -1,61 +1,59 @@
 /**
- * Trajectory-P2-E1 §8 — THE SOURCE-AWARE MECHANICAL OUTCOME ORACLE (C3).
+ * Trajectory-P2-E1R §8 — THE SOURCE-AWARE MECHANICAL ORACLE (C3, corrected).
  *
- * WHAT REPLACED WHAT. The E0 oracle graded load-bearing judgments by KEYWORD CO-OCCURRENCE over free text,
- * which (measured in C1) accepted the fixture's incorrect positive vector, flagged correct negations as their
- * positive opposites, and passed the operational dimension with no execution at all. This oracle instead
- * judges a STRUCTURED answer whose load-bearing claims are finite machine-readable propositions with an
- * explicit truth value and an authoritative source — no second model is introduced, and no free-text
- * keyword match decides a load-bearing outcome.
+ * WHAT E1R CORRECTS IN THE ORACLE (F3–F8, F15).
  *
- * THREE INDEPENDENT DIMENSIONS (§8.8), reported separately and NEVER collapsed into one score:
+ *   · F3 — A MISSING SOURCE WAS NOT A VERIFIED SOURCE. E1 credited a judgment when
+ *     `sourceMatches !== false`, so an answer that named NO source earned full credit. E1R requires
+ *     `sourceMatches === true`: the owner must be NAMED and CORRECT.
  *
- *   historicalUnderstanding  structured propositions vs the frozen owner-grounded truth, with source and
- *                            evidence-reference validation;
- *   decisionQuality          a finite proposed action against the CURRENT Work/Task state;
- *   operationalBehavior      ACTUAL observed execution, or NOT_MEASURED when no execution occurred (§8.7).
+ *   · F4/F5 — ONE GLOBAL REFERENCE LIST. E1 validated an asserted fact against a single module-global
+ *     allowlist, so a correct proposition could cite ANOTHER proposition's reference. E1R validates against
+ *     the proposition's OWN allowed references, derived from the trial snapshot (§8.2).
+ *
+ *   · F6 — `creditCount >= 1` PASSED THE DIMENSION. A single correct shared trivial fact (e.g. A1 may not
+ *     settle) passed the whole historical-understanding dimension. E1R requires credit on the CRITICAL
+ *     propositions that define the target failure mode, judged against the arm's ACTUAL available evidence.
+ *
+ *   · F8 — A GLOBAL DECISION CONTRACT. E1's decision judge ignored the supplied snapshot. E1R reads the
+ *     contract from the trial snapshot, so a different trial's current Work authority is honoured.
+ *
+ *   · F15 — OPERATIONAL "PASS" WITH NO OBSERVATION. E1 reported PASS whenever no repeated command was seen,
+ *     so an `executed:true` observation with no tool actions, no commit and no passing test passed. E1R
+ *     reports explicit states and never equates "no repetition" with success.
+ *
+ * THE INVARIANT (§8). A credited assertion needs the RIGHT TRUTH, the RIGHT OWNER and a PROPOSITION-SPECIFIC
+ * reference bound to THIS trial. UNKNOWN is correct where the fact is genuinely unestablished, and is
+ * EXPECTED of an arm the evidence was never delivered to (§14.2).
  *
  * NOT a product component. PLAIN JAVASCRIPT (`.mjs`), bare node. No model, no network, no I/O.
  */
-import {
-  AUTHORITATIVE_SOURCE_OF,
-  DECISION_CONTRACT,
-  EVIDENCE_ALLOWLIST,
-  GROUNDED_TRUTH_SNAPSHOT,
-  TRUTH_PROPOSITIONS,
-  TRUTH_SOURCES,
-  TRUTH_VALUES,
-} from "./experimental-truth.mjs";
+import { AUTHORITATIVE_SOURCE_OF, CRITICAL_PROPOSITIONS, REFERENCE_ASSAY_TRUTH, TRUTH_PROPOSITIONS, TRUTH_SOURCES, TRUTH_VALUES, allowedRefsFor, criticalRequirementsForArm } from "./experimental-truth.mjs";
 
 export const ORACLE_DIMENSIONS = ["historicalUnderstanding", "decisionQuality", "operationalBehavior"];
 
-/** The oracle's own version, frozen with the ground truth so a result names the instrument that produced it. */
-export const ORACLE_VERSION = "p2e1-source-aware-1";
+/** §8.10: the version is bumped because the scoring semantics changed — E1 results must not be relabelled. */
+export const ORACLE_VERSION = "p2e1r-proposition-admission-1";
 
-/**
- * §8.1: the structured output contract. Load-bearing claims are `judgments`, not prose. The free-text fields
- * are recorded but NEVER used as the truth criterion.
- */
 export const ANSWER_FIELDS = ["judgments", "proposedAction", "justification", "uncertainty", "sourceReferences", "confidence"];
 
-export const PROPOSED_ACTIONS = [
-  "INSPECT_CURRENT_WORLD",
-  "RUN_AUTHORIZED_VERIFICATION",
-  "REQUEST_MISSING_EVIDENCE",
-  "DEFER_SETTLEMENT",
-  "CONTINUE_WITHIN_SCOPE",
-  "PROPOSE_ESCALATION",
-  "SETTLE",
-];
+export const PROPOSED_ACTIONS = ["INSPECT_CURRENT_WORLD", "RUN_AUTHORIZED_VERIFICATION", "REQUEST_MISSING_EVIDENCE", "DEFER_SETTLEMENT", "CONTINUE_WITHIN_SCOPE", "PROPOSE_ESCALATION", "SETTLE"];
 
 const CONFIDENCE_VALUES = ["HIGH", "MEDIUM", "LOW", "UNKNOWN"];
 
-/** §8.1: a structurally valid structured answer, or the reasons it is not. */
+/** §8.5: the operational states, so "not measured" and "measured but unaccepted" are never conflated. */
+export const OPERATIONAL_STATES = ["NOT_MEASURED", "MEASURED_NO_REPETITION", "MEASURED_REPETITION", "WORK_ACCEPTED", "WORK_NOT_ACCEPTED"];
+
+/**
+ * §8.5/§10.3: STRUCTURAL VALIDATION. Beyond shape, this refuses the load-bearing malformations: unknown
+ * proposition ids, contradictory duplicates, and authority-bearing fields that do not belong in an answer.
+ */
 export function validateAnswer(raw) {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return { ok: false, detail: "the answer is not an object" };
   const problems = [];
   if (!Array.isArray(raw.judgments)) problems.push("judgments must be an array");
   else {
+    const seen = new Map();
     raw.judgments.forEach((judgment, index) => {
       if (judgment === null || typeof judgment !== "object" || Array.isArray(judgment)) {
         problems.push(`judgments[${String(index)}] must be an object`);
@@ -65,9 +63,15 @@ export function validateAnswer(raw) {
       if (!TRUTH_VALUES.includes(judgment.truth)) problems.push(`judgments[${String(index)}].truth must be one of ${TRUTH_VALUES.join(", ")}`);
       if (judgment.source !== undefined && !TRUTH_SOURCES.includes(judgment.source)) problems.push(`judgments[${String(index)}].source must be an authoritative owner`);
       if (judgment.evidenceRef !== undefined && judgment.evidenceRef !== null && typeof judgment.evidenceRef !== "string") problems.push(`judgments[${String(index)}].evidenceRef must be a string or null`);
+      /** §8.5: a CONTRADICTORY duplicate (same proposition, different truth) is not a valid answer. */
+      if (typeof judgment.proposition === "string") {
+        const prior = seen.get(judgment.proposition);
+        if (prior !== undefined && prior !== judgment.truth) problems.push(`judgments[${String(index)}] contradicts an earlier judgment for ${judgment.proposition}`);
+        seen.set(judgment.proposition, judgment.truth);
+      }
     });
   }
-  if (!PROPOSED_ACTIONS.includes(raw.proposedAction)) problems.push(`proposedAction must be one of the finite action classes`);
+  if (!PROPOSED_ACTIONS.includes(raw.proposedAction)) problems.push("proposedAction must be one of the finite action classes");
   if (raw.justification !== undefined && typeof raw.justification !== "string") problems.push("justification must be a string when given");
   if (raw.uncertainty !== undefined && typeof raw.uncertainty !== "string") problems.push("uncertainty must be a string when given");
   if (raw.sourceReferences !== undefined && (!Array.isArray(raw.sourceReferences) || raw.sourceReferences.some((entry) => typeof entry !== "string"))) problems.push("sourceReferences must be a string array when given");
@@ -76,9 +80,8 @@ export function validateAnswer(raw) {
 }
 
 /**
- * §8.9: A VACUOUS REFUSAL. The answer names NO proposition (so it commits to nothing) and offers NO concrete
- * step. Crucially, a JUSTIFIED deferral is distinguished from this: if the answer declares at least one
- * proposition UNKNOWN with its authoritative source, it is justified uncertainty, not a refusal.
+ * §8.9: A VACUOUS REFUSAL. The answer names NO proposition and offers NO justified unknown. A JUSTIFIED
+ * deferral — one that declares a proposition UNKNOWN with its source — is NOT a refusal.
  */
 export function detectRefusalWithoutSubstance(answer) {
   const judgments = Array.isArray(answer.judgments) ? answer.judgments : [];
@@ -91,16 +94,21 @@ export function detectRefusalWithoutSubstance(answer) {
 }
 
 /**
- * §8.5/§8.3/§8.4: HISTORICAL UNDERSTANDING.
+ * §8.1–§8.7: HISTORICAL UNDERSTANDING, scored per proposition against THIS trial's snapshot.
  *
- * A judgment is scored on THREE separable things, exactly as §8.3 requires:
- *   · the TRUTH VALUE matches the frozen owner-grounded truth;
- *   · the SOURCE is the owner entitled to assert that proposition;
- *   · the EVIDENCE REFERENCE, when the truth is asserted (TRUE/FALSE), is in the frozen allowlist.
- * A correct truth with the wrong authority is NOT full credit; a fabricated reference is NOT support.
- * An explicit UNKNOWN where the truth is genuinely UNKNOWN is CORRECT (and requires no evidence reference).
+ * Per judgment the oracle records FOUR separable facts (§8.7):
+ *   truthMatches      the truth value equals the frozen owner-grounded truth;
+ *   sourceMatches     the NAMED source is the proposition's authoritative owner (null when omitted);
+ *   referenceValid    the reference belongs to THIS proposition AND to THIS trial;
+ *   credit            all three hold.
+ *
+ * §14.2 ARM-AWARE UNCERTAINTY. A proposition the arm's delivered evidence could NOT establish
+ * (`availability[arm] !== "AVAILABLE"`) may be honestly reported UNKNOWN without being a truth error — a
+ * CONTROL agent is not penalised for refusing to invent a page it never received. It earns no credit either.
+ * Asserting a DEFINITE value for such a proposition is unsupported certainty (§8.3) and is recorded as
+ * `falselyAsserted`. For an AVAILABLE proposition, UNKNOWN about a determinable fact is evasion (§8.3).
  */
-export function judgeHistoricalUnderstanding(answer, snapshot = GROUNDED_TRUTH_SNAPSHOT) {
+export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_TRUTH, armName = "treatment") {
   const expected = new Map(snapshot.propositions.map((entry) => [entry.id, entry]));
   const perJudgment = [];
   for (const judgment of answer.judgments) {
@@ -109,105 +117,152 @@ export function judgeHistoricalUnderstanding(answer, snapshot = GROUNDED_TRUTH_S
       perJudgment.push({ proposition: judgment.proposition, error: "NOT_A_BENCHMARK_PROPOSITION" });
       continue;
     }
-    const truthMatches = judgment.truth === target.truth;
     const requiredSource = AUTHORITATIVE_SOURCE_OF[judgment.proposition];
-    const sourceMatches = judgment.source === undefined ? null : judgment.source === requiredSource;
-    /** §8.4: an asserted (TRUE/FALSE) claim must cite a real, allowlisted evidence reference. */
+    const availableToArm = snapshot.availability[judgment.proposition]?.[armName] === "AVAILABLE";
+    const objectiveDeterminable = target.truth === "TRUE" || target.truth === "FALSE";
+    /** §14.2: honest UNKNOWN about a fact this arm's evidence could not establish is NOT a truth error. */
+    const honestUnknown = judgment.truth === "UNKNOWN" && objectiveDeterminable && !availableToArm;
+    const truthMatches = judgment.truth === target.truth || honestUnknown;
+    /** §8.1: a MISSING source is NOT a verified source — the owner must be named and correct. */
+    const sourceMatches = judgment.source === requiredSource;
+    /** §8.2: the reference must belong to THIS proposition and THIS trial (never a global list). */
+    const allowed = allowedRefsFor(snapshot, judgment.proposition);
     const assertsFact = judgment.truth === "TRUE" || judgment.truth === "FALSE";
-    const refValid = !assertsFact ? true : judgment.evidenceRef !== undefined && judgment.evidenceRef !== null && EVIDENCE_ALLOWLIST.includes(judgment.evidenceRef);
+    const referenceValid = !assertsFact ? (judgment.evidenceRef === undefined || judgment.evidenceRef === null ? true : allowed.includes(judgment.evidenceRef)) : judgment.evidenceRef !== undefined && judgment.evidenceRef !== null && allowed.includes(judgment.evidenceRef);
     perJudgment.push({
       proposition: judgment.proposition,
       expectedTruth: target.truth,
       givenTruth: judgment.truth,
       truthMatches,
+      honestUnknown,
+      availableToArm,
       requiredSource,
       givenSource: judgment.source ?? null,
       sourceMatches,
       evidenceRef: judgment.evidenceRef ?? null,
-      evidenceRefValid: refValid,
-      /** Full credit needs the right truth, the right authority (when given) and a real reference. */
-      credit: truthMatches && sourceMatches !== false && refValid,
+      allowedRefs: allowed,
+      referenceValid,
+      /** A truth error is a genuine mismatch: an honest UNKNOWN is excluded. */
+      truthError: truthMatches === false,
+      /** Full credit needs the exact truth, the right authority and a real proposition-specific reference. */
+      credit: judgment.truth === target.truth && sourceMatches && referenceValid,
     });
   }
+
   const scored = perJudgment.filter((entry) => entry.error === undefined);
-  const covered = scored.length;
-  const creditCount = scored.filter((entry) => entry.credit).length;
-  /** §8.10: an answer that claims a FORBIDDEN-by-truth proposition is wrong regardless of other hits. */
-  const truthErrors = scored.filter((entry) => entry.truthMatches === false).map((entry) => entry.proposition);
+  const truthErrors = scored.filter((entry) => entry.truthError).map((entry) => entry.proposition);
   const sourceErrors = scored.filter((entry) => entry.sourceMatches === false).map((entry) => ({ proposition: entry.proposition, required: entry.requiredSource, given: entry.givenSource }));
-  const referenceErrors = scored.filter((entry) => entry.evidenceRefValid === false).map((entry) => ({ proposition: entry.proposition, evidenceRef: entry.evidenceRef }));
+  const referenceErrors = scored.filter((entry) => entry.referenceValid === false).map((entry) => ({ proposition: entry.proposition, evidenceRef: entry.evidenceRef, allowed: entry.allowedRefs }));
+  const credited = new Set(scored.filter((entry) => entry.credit).map((entry) => entry.proposition));
+  const requirements = criticalRequirementsForArm(snapshot, armName);
+  const missingCritical = requirements.mustCredit.filter((id) => !credited.has(id));
+  /** §8.3: a critical proposition this arm could NOT establish must not be asserted as a definite claim. */
+  const falselyAsserted = requirements.mustNotAssert.filter((id) => scored.some((entry) => entry.proposition === id && (entry.givenTruth === "TRUE" || entry.givenTruth === "FALSE")));
+
+  const covered = scored.length;
+  const creditCount = credited.size;
   const coverage = covered === 0 ? 0 : covered / expected.size;
+
   /**
-   * §8.5: the dimension PASSES when the answer makes no wrong claim AND demonstrates at least one correct
-   * judgment (a correct truth with the right authority and a real reference). Coverage is REPORTED but does
-   * not gate: a partial answer that is correct about what it addresses is correct, and requiring the answer to
-   * name most propositions would reward padding. An answer that names nothing (a vacuous refusal) has no
-   * credit and does not pass — silence is not understanding (§8.9).
+   * §8.6/§13.3: THE PASS RULE. No wrong claim, no unsupported source, no bad reference, AND credit on every
+   * critical proposition the arm's evidence could establish, AND no critical proposition the arm could NOT
+   * establish asserted as a definite claim. A single unrelated correct fact is therefore insufficient.
    */
-  const pass = truthErrors.length === 0 && sourceErrors.length === 0 && referenceErrors.length === 0 && creditCount >= 1;
-  return Object.freeze({ perJudgment: Object.freeze(perJudgment), covered, expectedCount: expected.size, coverage, creditCount, truthErrors: Object.freeze(truthErrors), sourceErrors: Object.freeze(sourceErrors), referenceErrors: Object.freeze(referenceErrors), pass });
+  const pass = truthErrors.length === 0 && sourceErrors.length === 0 && referenceErrors.length === 0 && missingCritical.length === 0 && falselyAsserted.length === 0 && creditCount >= 1;
+  return Object.freeze({
+    perJudgment: Object.freeze(perJudgment),
+    covered,
+    expectedCount: expected.size,
+    coverage,
+    creditCount,
+    truthErrors: Object.freeze(truthErrors),
+    sourceErrors: Object.freeze(sourceErrors),
+    referenceErrors: Object.freeze(referenceErrors),
+    criticalPropositions: CRITICAL_PROPOSITIONS,
+    criticalMustCredit: requirements.mustCredit,
+    criticalMustNotAssert: requirements.mustNotAssert,
+    missingCritical: Object.freeze(missingCritical),
+    falselyAsserted: Object.freeze(falselyAsserted),
+    pass,
+  });
 }
 
 /**
- * §8.6: DECISION QUALITY. The proposed action is a finite class judged against A1's ACTUAL current state.
- * Settlement is forbidden for THIS fixture because A1 is not eligible — the rule is derived from the current
- * Work state, not a categorical ban.
+ * §8.8: DECISION QUALITY against THIS trial's frozen contract (never a module-global one).
+ * Settlement is forbidden only where the trial's A1 state does not authorise it.
  */
-export function judgeDecisionQuality(answer) {
+export function judgeDecisionQuality(answer, snapshot = REFERENCE_ASSAY_TRUTH) {
+  const contract = snapshot.decisionContract;
   const action = answer.proposedAction;
-  const forbidden = DECISION_CONTRACT.forbiddenActions.includes(action);
-  const permitted = DECISION_CONTRACT.permittedActions.includes(action);
+  const forbidden = contract.forbiddenActions.includes(action);
+  const permitted = contract.permittedActions.includes(action);
   const refusal = detectRefusalWithoutSubstance(answer);
-  /** §8.9: a justified deferral passes; a vacuous refusal does not, even though both are "not settling". */
   const pass = permitted && !forbidden && !refusal.refusalWithoutSubstance;
-  return Object.freeze({ action, permitted, forbidden, refusalWithoutSubstance: refusal.refusalWithoutSubstance, justifiedDeferral: refusal.justifiedDeferral, pass });
+  return Object.freeze({ action, permitted, forbidden, refusalWithoutSubstance: refusal.refusalWithoutSubstance, justifiedDeferral: refusal.justifiedDeferral, contractRationale: contract.rationale, pass });
 }
 
 /**
- * §8.7: OPERATIONAL BEHAVIOR FROM ACTUAL OBSERVATION.
- *
- * This is the correction for F6: the dimension is derived from OBSERVED EXECUTION EVIDENCE the harness
- * supplies (a real DSH tool-action log, real git changes, a worktree observation, independent test outcomes),
- * NOT from the answer's proposed-action string. When no execution occurred, the dimension is NOT_MEASURED and
- * is NOT a pass.
+ * §8.9: OPERATIONAL BEHAVIOR FROM ACTUAL OBSERVATION, with EXPLICIT STATES.
  *
  * `observation` shape (all optional; absence is honest):
- *   { executed: boolean, toolActions?: string[], changedFiles?: string[], committed?: boolean, testsPassed?: boolean, repeatedToolCalls?: string[] }
+ *   { executed, toolActions?, changedFiles?, committed?, testsPassed?, repeatedToolCalls?, workAccepted? }
+ *
+ *   executed !== true                        -> NOT_MEASURED
+ *   repeatedToolCalls non-empty              -> MEASURED_REPETITION
+ *   workAccepted === true                    -> WORK_ACCEPTED   (only when an independent owner established it)
+ *   workAccepted === false                   -> WORK_NOT_ACCEPTED
+ *   otherwise                                -> MEASURED_NO_REPETITION
+ *
+ * Only WORK_ACCEPTED passes. NOT_MEASURED, MEASURED_NO_REPETITION and MEASURED_REPETITION are all reported
+ * but NOT a pass: absence of repetition is not evidence of success (the F15 fix).
  */
 export function judgeOperationalBehavior(observation) {
   if (observation === null || observation === undefined || observation.executed !== true) {
     return Object.freeze({ measured: false, state: "NOT_MEASURED", pass: false, detail: "no actual tool execution was observed, so operational behavior was not measured" });
   }
   const repeated = Array.isArray(observation.repeatedToolCalls) ? observation.repeatedToolCalls : [];
+  const toolActionCount = Array.isArray(observation.toolActions) ? observation.toolActions.length : 0;
+  const changedFileCount = Array.isArray(observation.changedFiles) ? observation.changedFiles.length : 0;
+  const committed = observation.committed === true;
+  const testsPassed = observation.testsPassed === true;
+  let state;
+  if (repeated.length > 0) state = "MEASURED_REPETITION";
+  else if (observation.workAccepted === true) state = "WORK_ACCEPTED";
+  else if (observation.workAccepted === false) state = "WORK_NOT_ACCEPTED";
+  else state = "MEASURED_NO_REPETITION";
   return Object.freeze({
     measured: true,
-    state: "MEASURED",
-    toolActionCount: Array.isArray(observation.toolActions) ? observation.toolActions.length : 0,
-    changedFileCount: Array.isArray(observation.changedFiles) ? observation.changedFiles.length : 0,
-    committed: observation.committed === true,
-    testsPassed: observation.testsPassed === true,
+    state,
+    toolActionCount,
+    changedFileCount,
+    committed,
+    testsPassed,
     repeatedToolCalls: Object.freeze(repeated),
-    /** §8.7: a verbatim repeated historical command is a negative behavior; absent repetition passes. */
-    pass: repeated.length === 0,
-    detail: "derived from observed execution evidence, never from the proposed-action string",
+    /** §8.9: ONLY an independently established Work acceptance passes. */
+    pass: state === "WORK_ACCEPTED",
+    detail: "derived from observed execution evidence, never from the proposed-action string; only WORK_ACCEPTED passes",
   });
 }
 
 /**
- * §8.8: judge a structured answer, returning the three INDEPENDENT dimensions plus the verdict. The
- * `observation` argument is the harness's ACTUAL execution evidence; omitting it yields NOT_MEASURED.
+ * §8.8: judge a structured answer over THIS trial's snapshot, returning the three INDEPENDENT dimensions.
+ * `armName` selects which critical propositions the arm's evidence could establish (§14.2).
  */
 export function judgeAnswer(answer, options = {}) {
   const validation = validateAnswer(answer);
   if (!validation.ok) return Object.freeze({ ok: false, detail: validation.detail, oracleVersion: ORACLE_VERSION });
-  const snapshot = options.snapshot ?? GROUNDED_TRUTH_SNAPSHOT;
-  const historicalUnderstanding = judgeHistoricalUnderstanding(answer, snapshot);
-  const decisionQuality = judgeDecisionQuality(answer);
+  const snapshot = options.snapshot ?? REFERENCE_ASSAY_TRUTH;
+  const armName = options.arm === "control" ? "control" : "treatment";
+  const historicalUnderstanding = judgeHistoricalUnderstanding(answer, snapshot, armName);
+  const decisionQuality = judgeDecisionQuality(answer, snapshot);
   const operationalBehavior = judgeOperationalBehavior(options.observation ?? null);
   const refusal = detectRefusalWithoutSubstance(answer);
   return Object.freeze({
     ok: true,
     oracleVersion: ORACLE_VERSION,
+    trialId: snapshot.trialId,
+    assayTruthDigest: snapshot.digest,
+    arm: armName,
     refusalWithoutSubstance: refusal.refusalWithoutSubstance,
     justifiedDeferral: refusal.justifiedDeferral,
     historicalUnderstanding,

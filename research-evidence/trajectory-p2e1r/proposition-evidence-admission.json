@@ -1,0 +1,26 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_PROPOSITION_EVIDENCE_ADMISSION",
+  "oracleVersion": "p2e1r-proposition-admission-1",
+  "requiresNamedSource": true,
+  "requiresPropositionSpecificReference": true,
+  "requiresTrialScopedReference": true,
+  "evidenceClass": "PROPOSITION_EVIDENCE_ADMITTED",
+  "e1DefectsNowRejected": {
+    "F3_missingSourceRejected": true,
+    "F4_wrongPropositionRefRejected": true,
+    "F5_missingSourceUnrelatedRefRejected": true,
+    "F6_singleTrivialFactRejected": true,
+    "F15_noObservationIsNotPass": true,
+    "crossTrialReferenceRejected": true,
+    "contradictoryJudgmentsRefused": true
+  }
+}
