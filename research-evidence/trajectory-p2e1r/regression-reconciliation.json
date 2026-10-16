@@ -11,7 +11,7 @@
   "schemaVersion": 1,
   "kind": "TRAJECTORY_P2E1R_REGRESSION_RECONCILIATION",
   "testedCodeHead": "34544335d42ed35aec2724a2a571fcd035901918",
-  "finalEvidenceHead": null,
+  "finalEvidenceHead": "046c4a41ad27bcbb166a5a108fa002d31863746e",
   "baselineHead": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
   "priorEvidenceRecordedHead": "96ffeb3",
   "priorEvidenceHeadExplanation": "96ffeb3 is the commit at which the broad regression was RUN; 3454433 (recorded as 34544335) is the later commit that added only research-evidence/regression.json and final-verdicts.json, which changed no production or test behaviour",
@@ -19,105 +19,105 @@
   "testIdentityMatrix": [
     {
       "testFile": "r3l0ciarlcfsh_persisted.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan reports the four identity facts separately",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H \u00a711 T2 \u2014 the committed plan reports the four identity facts separately",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfsh_persisted.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan agrees with the current recomputed closure",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H \u00a711 T2 \u2014 the committed plan agrees with the current recomputed closure",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfsh_persisted.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H \u00a75 T2 \u2014 the persisted evidence seal seals the committed plan against the PERSISTED Qualification and Stage Result",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfsh_persisted.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal derives the final verdict from the persisted seal",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H \u00a75 T2 \u2014 the persisted evidence seal derives the final verdict from the persisted seal",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfsh_persisted.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H §8 T3 — the authoritative entry refuses a PRIMARY invocation at the prohibition, after the committed-plan guard passed",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S-H \u00a78 T3 \u2014 the authoritative entry refuses a PRIMARY invocation at the prohibition, after the committed-plan guard passed",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfs_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S §3 T1 — committed-plan identity reports the four identity facts separately",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S \u00a73 T1 \u2014 committed-plan identity reports the four identity facts separately",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfs_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S §3 T3 — the authoritative entry refuses a plan mismatch refuses a PRIMARY invocation at the prohibition, after the guard has passed",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S \u00a73 T3 \u2014 the authoritative entry refuses a plan mismatch refuses a PRIMARY invocation at the prohibition, after the guard has passed",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfs_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S §3/§14 — the persisted cross-artifact seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S \u00a73/\u00a714 \u2014 the persisted cross-artifact seal seals the committed plan against the PERSISTED Qualification and Stage Result",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfs_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan seals the committed plan against evidence built from its OWN identity",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S \u00a73 \u2014 the cross-artifact seal over the real plan seals the committed plan against evidence built from its OWN identity",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlcfs_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan is MISMATCH for the previous stage's real persisted pair",
+      "testIdentity": "R3-L0C-I-A-R-L-C-F-S \u00a73 \u2014 the cross-artifact seal over the real plan is MISMATCH for the previous stage's real persisted pair",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlc_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C — the PRIMARY launch boundary stays closed refuses a structurally complete but untrusted authorization at the launch boundary",
+      "testIdentity": "R3-L0C-I-A-R-L-C \u2014 the PRIMARY launch boundary stays closed refuses a structurally complete but untrusted authorization at the launch boundary",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarlc_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L-C — the closure covers the live path the plan binds the closure and the plan closure matches",
+      "testIdentity": "R3-L0C-I-A-R-L-C \u2014 the closure covers the live path the plan binds the closure and the plan closure matches",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0ciarl_gates.test.ts",
-      "testIdentity": "R3-L0C-I-A-R-L §3 — primary-only input discipline a fully-authorized PRIMARY run stops at the launch boundary with no model call",
+      "testIdentity": "R3-L0C-I-A-R-L \u00a73 \u2014 primary-only input discipline a fully-authorized PRIMARY run stops at the launch boundary with no model call",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0cr_contract.test.ts",
-      "testIdentity": "R3-L0C-R §10/§11 — the Run-1 baseline and the pressure gate §10 the calibration covers 16 sessions with every required metric",
+      "testIdentity": "R3-L0C-R \u00a710/\u00a711 \u2014 the Run-1 baseline and the pressure gate \u00a710 the calibration covers 16 sessions with every required metric",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
     },
     {
       "testFile": "r3l0cr_contract.test.ts",
-      "testIdentity": "R3-L0C-R §10/§11 — the Run-1 baseline and the pressure gate §10 the calibration does NOT group by the H/C labels",
+      "testIdentity": "R3-L0C-R \u00a710/\u00a711 \u2014 the Run-1 baseline and the pressure gate \u00a710 the calibration does NOT group by the H/C labels",
       "classification": "PRE_EXISTING_SAME_FAILURE",
       "why": "present in the same six r3l0c-family files at the exact baseline beec3cc (proved by P2-E1's baseline worktree: 15 failed | 168 passed, identical identities)",
       "evidence": "research-evidence/trajectory-p2e1/regression.json preExistingFailuresProvenAtBaseline"
