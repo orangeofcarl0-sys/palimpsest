@@ -1,0 +1,22 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_LEGACY_ORACLE_ISOLATION",
+  "module": "scripts/trajectory_p2e0/mechanical-oracle.mjs",
+  "classification": "LEGACY_REPRODUCTION_ONLY",
+  "usedByActiveAssay": false,
+  "why": "it graded load-bearing judgments by keyword co-occurrence and its answer key was cross-owner-broken; it exists only so the P2-E0 evidence can be reproduced byte-identically",
+  "activeAssayImportsLegacyOracle": false,
+  "officialOracle": {
+    "module": "scripts/trajectory_p2e1/source-aware-oracle.mjs",
+    "version": "p2e1r-proposition-admission-1",
+    "entry": "evaluateAssayResult"
+  }
+}

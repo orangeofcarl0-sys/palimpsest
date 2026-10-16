@@ -1,0 +1,32 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_AGENT_ANSWER_CONTRACT",
+  "answerFields": [
+    "judgments",
+    "proposedAction",
+    "justification",
+    "uncertainty",
+    "sourceReferences",
+    "confidence"
+  ],
+  "proposedActions": [
+    "INSPECT_CURRENT_WORLD",
+    "RUN_AUTHORIZED_VERIFICATION",
+    "REQUEST_MISSING_EVIDENCE",
+    "DEFER_SETTLEMENT",
+    "CONTINUE_WITHIN_SCOPE",
+    "PROPOSE_ESCALATION",
+    "SETTLE"
+  ],
+  "transport": "final visible assistant/message text of a real first-party DSH turn",
+  "workerResultToolWidened": false,
+  "reason": "the worker result tool carries a strict canonical Work outcome; the benchmark answer is decision data and travels as assistant text"
+}
