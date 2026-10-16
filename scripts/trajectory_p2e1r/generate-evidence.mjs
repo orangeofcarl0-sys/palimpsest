@@ -46,6 +46,14 @@ const git = (args) => {
 };
 
 const HEAD = git(["rev-parse", "HEAD"]);
+/**
+ * §14.3: THE TESTED-CODE HEAD is the last commit that changed anything OTHER than research evidence — the
+ * commit whose behaviour the gates actually exercised. It is computed from Git, not asserted.
+ */
+const TESTED_CODE_HEAD = (() => {
+  const last = git(["log", "-1", "--format=%H", "--", "src", "scripts", "test", "docs", "host"]);
+  return last ?? HEAD;
+})();
 const truth = await import(pathToFileURL(join(REPO, "scripts", "trajectory_p2e1", "experimental-truth.mjs")).href);
 const oracle = await import(pathToFileURL(join(REPO, "scripts", "trajectory_p2e1", "source-aware-oracle.mjs")).href);
 const evaluation = await import(pathToFileURL(join(REPO, "scripts", "trajectory_p2e1", "assay-evaluation.mjs")).href);
@@ -267,8 +275,8 @@ write("regression-reconciliation.json", { ...meta, ...reconciliation });
 write("regression.json", {
   ...meta,
   kind: "TRAJECTORY_P2E1R_REGRESSION",
-  testedCodeHead: HEAD,
-  finalEvidenceHead: null,
+  testedCodeHead: TESTED_CODE_HEAD,
+  finalEvidenceHead: "PENDING_STAMP",
   baselineHead: "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
   gates: { typescript: "PASS", architecture: "PASS", publicApi: "PASS" },
   reconciliationVerdict: reconciliation.verdict,
