@@ -1,0 +1,243 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1R_CALIBRATION_LAUNCH_GATE",
+  "mode": "dry-run",
+  "verdict": "DETERMINISTIC_ASSAY_GO",
+  "checks": [
+    {
+      "id": "oracle-version",
+      "statement": "the evaluation oracle names a frozen version",
+      "ok": true,
+      "detail": "p2e1r-proposition-admission-1"
+    },
+    {
+      "id": "official-oracle-declared",
+      "statement": "the active assay names ONE official oracle module",
+      "ok": true,
+      "detail": "scripts/trajectory_p2e1/source-aware-oracle.mjs"
+    },
+    {
+      "id": "legacy-oracle-isolated",
+      "statement": "the legacy keyword oracle is classified LEGACY_REPRODUCTION_ONLY and unused by the active assay",
+      "ok": true,
+      "detail": "LEGACY_REPRODUCTION_ONLY"
+    },
+    {
+      "id": "fixture-prepares",
+      "statement": "the benchmark fixture prepares deterministically",
+      "ok": true,
+      "detail": "fixtureId=FIX-A-GOVERNED-PARTIAL-CONTINUATION"
+    },
+    {
+      "id": "fixture-id-frozen",
+      "statement": "the fixture identity is the frozen Family A candidate",
+      "ok": true,
+      "detail": "FIX-A-GOVERNED-PARTIAL-CONTINUATION"
+    },
+    {
+      "id": "fixture-git-basis-real",
+      "statement": "the fixture's Git basis is a REAL commit of its own repository",
+      "ok": true,
+      "detail": "6634615c5e8fabc383875403f5fcbb376ec8d0b7"
+    },
+    {
+      "id": "fixture-partial-page",
+      "statement": "the origin page is genuinely PARTIAL",
+      "ok": true,
+      "detail": "3 of 8"
+    },
+    {
+      "id": "fixture-control-input",
+      "statement": "the CONTROL input renders a no-history boundary",
+      "ok": true,
+      "detail": "766c5539c44ed4196b382bd5584384dcae763d877867c9b75c6b8bfe8a499adb"
+    },
+    {
+      "id": "fixture-treatment-eligible",
+      "statement": "the TREATMENT input renders the qualified Capsule",
+      "ok": true,
+      "detail": "10d76890c02778e32a4b617c0b38e6952aae1a3cf38c6f25cc747ded327c1eac"
+    },
+    {
+      "id": "fixture-digests-differ",
+      "statement": "CONTROL and TREATMENT sections are DIFFERENT (the difference is the history)",
+      "ok": true,
+      "detail": "sections differ"
+    },
+    {
+      "id": "treatment-section-measured",
+      "statement": "the TREATMENT section is measured and within the declared budget",
+      "ok": true,
+      "detail": "3526 bytes"
+    },
+    {
+      "id": "treatment-relevance",
+      "statement": "the delivered TREATMENT history is relevant to the declared outcome (partial coverage, counts, unread extent)",
+      "ok": true,
+      "detail": "{\"statesPartial\":true,\"statesCounts\":true,\"statesUnread\":true}"
+    },
+    {
+      "id": "truth-instantiated-from-run",
+      "statement": "the Ground Truth is instantiated from the ACTUAL run's canonical identities",
+      "ok": true,
+      "detail": "DRYRUN-attempt-d9137334f71ecc6199367dd80d0b53d7"
+    },
+    {
+      "id": "truth-digest-is-sha256",
+      "statement": "the truth digest is SHA-256 over canonicalized JSON",
+      "ok": true,
+      "detail": "sha256-e89e25d8fa259e891275b27e74cd772d379a56927865c78b08e57ff476a97778"
+    },
+    {
+      "id": "truth-splits-the-ambiguous-proposition",
+      "statement": "the corrected truth answers 'all reported events returned' FALSE and keeps the unreturned contents UNKNOWN",
+      "ok": true,
+      "detail": "ALL_REPORTED_DSH_EVENTS_RETURNED=FALSE, OUTCOMES_OF_UNRETURNED_EVENTS=UNKNOWN"
+    },
+    {
+      "id": "positive-treatment-passes",
+      "statement": "the correct TREATMENT answer passes both scored dimensions",
+      "ok": true,
+      "detail": "hist=true decision=true"
+    },
+    {
+      "id": "positive-control-passes",
+      "statement": "the correct CONTROL answer passes with honest UNKNOWN about the page it never received",
+      "ok": true,
+      "detail": "hist=true decision=true"
+    },
+    {
+      "id": "negative-controls-rejected",
+      "statement": "every incorrect vector is rejected by the official oracle",
+      "ok": true,
+      "detail": "{\"wrongTruth\":true,\"missingSource\":true,\"wrongSource\":true,\"wrongPropositionRef\":true,\"crossTrialRef\":true,\"unsupportedCertainty\":true,\"invalidSettlement\":true,\"vacuousRefusal\":true,\"malformed\":true,\"contradictory\":true}"
+    },
+    {
+      "id": "control-cannot-see-hidden-history",
+      "statement": "CONTROL's honest UNKNOWN about the hidden page is NOT treated as a wrong claim",
+      "ok": true,
+      "detail": "no false assertion of an unavailable fact"
+    },
+    {
+      "id": "no-hidden-ground-truth",
+      "statement": "no oracle-internal token leaks into the delivered sections",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "id": "agent-cannot-supply-truth",
+      "statement": "the evaluation refuses when no per-run truth is supplied",
+      "ok": true,
+      "detail": "a per-run frozen assay truth is required; the evaluated agent may not supply its own truth"
+    },
+    {
+      "id": "oracle-version-is-e1r",
+      "statement": "the oracle version is the E1R proposition-admission version",
+      "ok": true,
+      "detail": "p2e1r-proposition-admission-1"
+    },
+    {
+      "id": "no-external-provider",
+      "statement": "the dry-run contacts no external provider",
+      "ok": true,
+      "detail": "no provider client is constructed; no credential is read"
+    },
+    {
+      "id": "no-stochastic-execution",
+      "statement": "the dry-run starts no stochastic trial",
+      "ok": true,
+      "detail": "no trial loop exists in this entry point"
+    },
+    {
+      "id": "no-credential-in-source",
+      "statement": "no credential is hard-coded in this entry point",
+      "ok": true,
+      "detail": "the source names parameters, never values"
+    },
+    {
+      "id": "future-parameters-declared",
+      "statement": "the future calibration parameters are declared explicitly",
+      "ok": true,
+      "detail": "provider, modelVersion, repetitionCount, costBudget, runtimeLimit, taskFixture, toolSet, initialGitState, workAuthority, evaluationOracle, stopRules"
+    },
+    {
+      "id": "r2vr-law-carried",
+      "statement": "the R2-VR qualification law is carried forward as requirements",
+      "ok": true,
+      "detail": "5 requirements, none marked completed"
+    },
+    {
+      "id": "baseline-only-declared",
+      "statement": "the first stochastic stage is declared CONTROL-only",
+      "ok": true,
+      "detail": "§15.4: Treatment must not run because a Capsule happens to be available"
+    }
+  ],
+  "failedChecks": [],
+  "oracleVersion": "p2e1r-proposition-admission-1",
+  "officialOracle": "scripts/trajectory_p2e1/source-aware-oracle.mjs",
+  "legacyOracle": {
+    "module": "scripts/trajectory_p2e0/mechanical-oracle.mjs",
+    "classification": "LEGACY_REPRODUCTION_ONLY",
+    "usedByActiveAssay": false,
+    "why": "it graded load-bearing judgments by keyword co-occurrence and its answer key was cross-owner-broken; it exists only so the P2-E0 evidence can be reproduced byte-identically"
+  },
+  "fixtureId": "FIX-A-GOVERNED-PARTIAL-CONTINUATION",
+  "r2vrQualificationRequirements": [
+    {
+      "id": "baseline-neither-floor-nor-ceiling",
+      "statement": "the CONTROL baseline must be neither at the floor nor at the ceiling of the outcome scale",
+      "statusInE1R": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "two-dimensions-vary",
+      "statement": "at least two outcome dimensions must vary across CONTROL repetitions",
+      "statusInE1R": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "treatment-relevant-failure-varies",
+      "statement": "at least one treatment-relevant failure class must vary across CONTROL repetitions",
+      "statusInE1R": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "trajectory-content-addresses-variation",
+      "statement": "the actual Trajectory content must address a varying outcome",
+      "statusInE1R": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "not-residual-case-determined",
+      "statement": "the apparent result must not be entirely determined by an unrelated residual case",
+      "statusInE1R": "REQUIREMENT_ONLY"
+    }
+  ],
+  "futureCalibrationParameters": [
+    "provider",
+    "modelVersion",
+    "repetitionCount",
+    "costBudget",
+    "runtimeLimit",
+    "taskFixture",
+    "toolSet",
+    "initialGitState",
+    "workAuthority",
+    "evaluationOracle",
+    "stopRules"
+  ],
+  "baselineOnlyDiscipline": "the first stochastic stage runs CONTROL only; Treatment is not enabled by the presence of a Capsule",
+  "stochasticCalibrationExecuted": false,
+  "treatmentTrialsExecuted": false,
+  "externalModelRequestOccurred": false,
+  "paidModelRequestOccurred": false,
+  "modelCallsMade": 0,
+  "elapsedMs": 1749,
+  "note": "§11: this is a COMPLETE DETERMINISTIC REHEARSAL of the assay chain. It measures no utility and awards no BENCHMARK_QUALIFIED. A future authorized stage runs the actual baseline calibration."
+}

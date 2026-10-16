@@ -1,0 +1,41 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_ASSAY_END_TO_END",
+  "evidenceClass": "DETERMINISTIC_ASSAY_EXECUTED",
+  "chain": [
+    "test-owned git world",
+    "canonical A0/A1 fixture",
+    "qualified historical source",
+    "real product Capsule",
+    "real CONTROL/TREATMENT presentations",
+    "per-run owner ground truth (frozen)",
+    "controlled agent answer",
+    "extraction from DSH persistence",
+    "official source-aware oracle",
+    "GO/NO-GO"
+  ],
+  "executedBy": [
+    "scripts/trajectory_p2e1r/assay-harness.mjs",
+    "scripts/trajectory_p2e1/calibrate.mjs --dry-run"
+  ],
+  "armsExercised": [
+    "treatment",
+    "control"
+  ],
+  "outcome": "DETERMINISTIC_ASSAY_GO",
+  "realCanonicalWorkRan": true,
+  "realFirstPartyDshHostRan": true,
+  "answerEmittedByRealDshTurn": true,
+  "realDshAssistantMessageInspected": true,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

@@ -1,0 +1,26 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_TREATMENT_RELEVANCE",
+  "evidenceClass": "DETERMINISTIC_ASSAY_EXECUTED",
+  "check": {
+    "id": "treatment-relevance",
+    "statement": "the delivered TREATMENT history is relevant to the declared outcome (partial coverage, counts, unread extent)",
+    "ok": true,
+    "detail": "{\"statesPartial\":true,\"statesCounts\":true,\"statesUnread\":true}"
+  },
+  "communicates": [
+    "DSH partial coverage",
+    "known versus included count",
+    "unread extent",
+    "historical source limitations"
+  ],
+  "sanitizerExplainsSpecificCommandFailureCauses": false
+}
