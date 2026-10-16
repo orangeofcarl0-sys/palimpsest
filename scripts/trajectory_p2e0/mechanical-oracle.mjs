@@ -1,6 +1,14 @@
 /**
  * Trajectory-P2-E0 §12 — THE MECHANICAL OUTCOME ORACLE.
  *
+ * ⚠️  LEGACY_REPRODUCTION_ONLY (Trajectory-P2-E1R §9.1). This keyword oracle is RETAINED solely so the P2-E0
+ * records can be reproduced byte-identically. It must NOT grade any new evaluation:
+ *   · it decides load-bearing judgments by KEYWORD CO-OCCURRENCE over free text, so a correct NEGATION is
+ *     flagged as its positive opposite (measured in P2-E1 C1);
+ *   · its `GROUND_TRUTH_KEY` forbade `A0 completed` because the DSH page was PARTIAL — a cross-owner error.
+ * The ACTIVE assay uses `scripts/trajectory_p2e1/source-aware-oracle.mjs` through
+ * `scripts/trajectory_p2e1/assay-evaluation.mjs`. See `LEGACY_ORACLE_STATUS` there. Do not add new callers.
+ *
  * A DETERMINISTIC judge, independent of any Agent's self-report. It scores a STRUCTURED answer against a
  * frozen ground-truth key and returns per-dimension outcomes. It runs no model, reads no owner and grants no
  * authority: it is a pure function over (key, answer).

@@ -30,7 +30,14 @@ import { pathToFileURL } from "node:url";
 
 import { REPO, allocateOwnedRoot, safeCleanup } from "./owned-root.mjs";
 import { dshBin } from "./dsh-test-home.mjs";
-import { judgeAnswer, ORACLE_DIMENSIONS } from "./mechanical-oracle.mjs";
+
+/**
+ * P2-E1R §9.1/§9.2: THE LEGACY ORACLE IS NOT STATICALLY IMPORTED. This module is on the ACTIVE path (the
+ * E1R calibration dry-run calls `prepareFixture()`), so a static import of `mechanical-oracle.mjs` would pull
+ * the LEGACY_REPRODUCTION_ONLY keyword judge into every active run. The import is therefore LAZY, inside
+ * `evaluateAnswer()`, which exists only to reproduce the P2-E0 records. Nothing on the active path calls it.
+ */
+export const LEGACY_ORACLE_MODULE = "./mechanical-oracle.mjs";
 
 export const FIXTURE_ID = "FIX-A-GOVERNED-PARTIAL-CONTINUATION";
 const OUTCOME = { PASS: "PASS", NOT_ESTABLISHED: "NOT_ESTABLISHED" };
@@ -73,8 +80,13 @@ export const GROUND_TRUTH_KEY = Object.freeze({
 /**
  * §11.2: DETERMINISTIC PREPARATION. Builds the governed chain and the REAL product artifacts.
  * Returns a structured result rather than printing, so a caller (and the test) can assert on it.
+ *
+ * P2-E1R §9.4: an optional `{ dshHome, profileName, adapterUrl }` composes the SAME fixture with a real
+ * first-party DSH test home, so the assay harness can drive an actual DSH turn against this fixture rather
+ * than building a second one. When supplied, the returned object also carries `dshSessionsRoot`, `home` and
+ * the live `installed`/`controller`/`consumerAttemptId`, and the caller releases everything via `cleanup()`.
  */
-export async function prepareFixture() {
+export async function prepareFixture(options = {}) {
   const install = await import(pathToFileURL(join(REPO, "dist", "src", "install.js")).href);
   const effects = await import(pathToFileURL(join(REPO, "dist", "src", "effects", "index.js")).href);
   const domain = await import(pathToFileURL(join(REPO, "dist", "src", "domain", "index.js")).href);
@@ -143,10 +155,19 @@ export async function prepareFixture() {
         policy: install.trustedDefaultPolicy({ allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] }),
         /** §11.1: the HOST's own executable facts, so the install composes a real trusted basis. */
         workWorkerBin: dshBin(),
-        workWorkerProfile: "p2e0-fixture-a",
+        workWorkerProfile: options.profileName ?? "p2e0-fixture-a",
         executionAssociationSourceKind: "FIRST_PARTY_DSH_HOST",
         experimentalTrajectoryContextDelivery: true,
-        trajectoryPresentationMode: "TREATMENT",
+        /** P2-E1R §11: the arm the install actually delivers, so CONTROL and TREATMENT are both exercised. */
+        trajectoryPresentationMode: options.presentationMode ?? "TREATMENT",
+        /** P2-E1R §9.4: when a real DSH test home is supplied, point the install's reader at the test root. */
+        ...(options.dshHome !== undefined
+          ? {
+              dshHomePath: options.dshHome,
+              dshSessionsRoot: join(options.dshHome, "sessions"),
+              sessionReaderModule: pathToFileURL(join(REPO, "host", "deployment", "runtime", "session_reader.js")).href,
+            }
+          : {}),
       },
     );
     const installed = resources.installed;
@@ -304,6 +325,9 @@ export async function prepareFixture() {
       consumerAttemptId: a1,
       originAttemptId: a0,
       gitHead: HEAD,
+      /** §7.5: the controlled origin session id and its page shape, so the truth can be instantiated per run. */
+      dshSessionId: "origin-partial",
+      dshPageEvidenceClass: "CONTROLLED_DSH_PAGE",
       capsule,
       capsuleDigest: canonical.canonicalDigest(capsule),
       coverage: capsule.historicalExecution.coverage,
@@ -312,6 +336,10 @@ export async function prepareFixture() {
       unreadHistory: capsule.uncertainty.unreadHistory,
       control: controlOutcome.ok ? controlOutcome.presentation : null,
       treatment: treatmentOutcome.ok ? treatmentOutcome.presentation : null,
+      /** P2-E1R §9.4: the live handles the assay harness needs when a real DSH test home was supplied. */
+      ...(options.dshHome !== undefined
+        ? { home: options.dshHome, dshSessionsRoot: join(options.dshHome, "sessions"), installed, controller, repoFix }
+        : {}),
     };
   } catch (thrown) {
     /** §9.5: release EVERYTHING before rethrowing, so a preparation failure cannot leak the owned root. */
@@ -320,8 +348,15 @@ export async function prepareFixture() {
   }
 }
 
-/** §11.2 step 8: evaluate a supplied structured answer with the mechanical oracle. */
-export function evaluateAnswer(answer) {
+/**
+ * §11.2 step 8: evaluate a supplied structured answer with the LEGACY mechanical oracle.
+ *
+ * P2-E1R §9.1: this exists ONLY to reproduce the P2-E0 records byte-identically. The ACTIVE assay uses
+ * `scripts/trajectory_p2e1/assay-evaluation.mjs`. The legacy oracle is imported LAZILY here so the active
+ * path (which calls `prepareFixture()`) never loads it.
+ */
+export async function evaluateAnswer(answer) {
+  const { judgeAnswer } = await import(LEGACY_ORACLE_MODULE);
   return judgeAnswer(GROUND_TRUTH_KEY, answer);
 }
 
@@ -343,7 +378,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
      * The NEGATIVE vector treats the partial page as the whole history and claims A0 completed.
      * A THIRD vector is a vacuous refusal, which must NOT score as correct uncertainty.
      */
-    const positive = evaluateAnswer({
+    const positive = await evaluateAnswer({
       factsReliedUpon: ["A0 was observed, and its admitted page is partial"],
       knownUnknowns: ["the remaining history is unknown", "A0 did not settle, so settlement is not proven"],
       proposedNextAction: "re-check the current world before deciding",
@@ -351,7 +386,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
       sourceReferences: ["origin-partial"],
       confidence: "MEDIUM",
     });
-    const negative = evaluateAnswer({
+    const negative = await evaluateAnswer({
       factsReliedUpon: ["A0 completed and the whole history is covered"],
       knownUnknowns: [],
       proposedNextAction: "settle on the historical evidence",
@@ -359,7 +394,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
       sourceReferences: [],
       confidence: "HIGH",
     });
-    const vacuousRefusal = evaluateAnswer({
+    const vacuousRefusal = await evaluateAnswer({
       factsReliedUpon: [],
       knownUnknowns: [],
       proposedNextAction: "no action",
@@ -414,7 +449,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
         controlCarriesNoHistory: prepared.control?.capsuleDigest === null,
       },
       oracle: {
-        dimensions: ORACLE_DIMENSIONS,
+        dimensions: (await import(LEGACY_ORACLE_MODULE)).ORACLE_DIMENSIONS,
         positiveVectorVerdict: positive.ok ? positive.verdict : null,
         negativeVectorVerdict: negative.ok ? negative.verdict : null,
         negativeForbiddenViolations: negative.ok ? negative.historicalUnderstanding.forbiddenViolations : null,
