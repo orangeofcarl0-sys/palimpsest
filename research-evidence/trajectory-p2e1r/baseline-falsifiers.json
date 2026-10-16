@@ -1,0 +1,366 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "pure functions RUN against the exact BASELINE modules (read from Git at beec3cc and imported); source inspected for the remainder; nothing modified",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1R_BASELINE_FALSIFIERS",
+  "branch": "trajectory-p2e1r-assay-validity",
+  "classificationCounts": {
+    "DYNAMICALLY_REPRODUCED": 8,
+    "SOURCE_DEMONSTRATED": 12
+  },
+  "sourceMap": {
+    "groundTruth": [
+      "scripts/trajectory_p2e1/experimental-truth.mjs",
+      "scripts/trajectory_p2e1/source-aware-oracle.mjs",
+      "scripts/trajectory_p2e1/oracle-proof.mjs",
+      "test/trajectory_p2e1_assay_semantics.test.ts"
+    ],
+    "activeAndLegacyBenchmark": [
+      "scripts/trajectory_p2e0/benchmark-fixture.mjs",
+      "scripts/trajectory_p2e0/mechanical-oracle.mjs",
+      "scripts/trajectory_p2e1/calibrate.mjs",
+      "test/trajectory_p2e1_calibration.test.ts"
+    ],
+    "productDelivery": [
+      "src/context/service.ts",
+      "src/composition/execution_association.ts",
+      "src/composition/attributed_preview.ts",
+      "src/deployment/work_worker.ts",
+      "src/trajectory/presentation.ts",
+      "host/dsh/lib/runner.js",
+      "scripts/trajectory_p2e1/normal-consumer-gate.mjs"
+    ],
+    "dshOutput": [
+      "host/deployment/runtime/session_reader.js",
+      "scripts/trajectory_p2e0/deterministic-llm-plugin.mjs",
+      "scripts/trajectory_p2e0/dsh-test-home.mjs"
+    ],
+    "research": [
+      "research-evidence/trajectory-p2e1/final-verdicts.json",
+      "research-evidence/trajectory-p2e1/regression.json",
+      "research-evidence/trajectory-p2e1/calibration-dry-run.json",
+      "research-evidence/trajectory-p2e1/evidence-availability-matrix.json",
+      "research-evidence/r2-vr/benchmark-qualification-law.json"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "question": "Does a known 3/8 partial page yield FALSE for 'all reported events returned'?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "propositionId": "ORIGIN_ALL_DSH_EVENTS_OBSERVED",
+        "snapshotTruth": "UNKNOWN",
+        "sourceBasis": {
+          "knownEventCount": 8,
+          "returnedCount": 3,
+          "coverage": "PARTIAL"
+        },
+        "literalAnswerIsDeterminable": true,
+        "literalAnswerWouldBe": "FALSE",
+        "defect": "the decisive FALSE is recorded as UNKNOWN because one proposition id carries two different questions"
+      },
+      "correction": "split the proposition: ALL_REPORTED_DSH_EVENTS_RETURNED (FALSE, determinable) and OUTCOMES_OF_UNRETURNED_EVENTS (UNKNOWN, genuinely unknown)",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F2",
+      "question": "Are 'were all reported events returned', 'what do the unreturned events contain' and 'might more events exist beyond the watermark' separately representable?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "questions": {
+          "allReportedEventsReturned": {
+            "determinable": true,
+            "value": "FALSE"
+          },
+          "contentsOfUnreturnedEvents": {
+            "determinable": false,
+            "value": "UNKNOWN"
+          },
+          "eventsBeyondReportedBoundary": {
+            "determinable": false,
+            "value": "UNKNOWN"
+          }
+        },
+        "baselineRepresents": [
+          "ORIGIN_ALL_DSH_EVENTS_OBSERVED=UNKNOWN"
+        ],
+        "defect": "one UNKNOWN id stands in for a determinable FALSE and for two genuinely unknown questions"
+      },
+      "correction": "the corrected vocabulary names each question separately, so the determinable FALSE is no longer hidden behind UNKNOWN",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F3",
+      "question": "Does a correct truth with a MISSING source receive full credit?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "pass": true,
+        "creditCount": 1,
+        "sourceErrors": 0
+      },
+      "correction": "require sourceMatches === true; a missing source is not a verified source",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F4",
+      "question": "Does a correct truth with another proposition's globally-allowlisted EvidenceRef receive credit?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "pass": true,
+        "evidenceRef": "work-event:A0:ATTEMPT_COMPLETED",
+        "assertedProposition": "ORIGIN_DSH_PAGE_PARTIAL"
+      },
+      "correction": "validate the reference against the PROPOSITION's own allowed references, not one global list",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F5",
+      "question": "Can a missing source combined with an unrelated allowed reference still pass Historical Understanding?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "pass": true
+      },
+      "correction": "both the required source and the proposition-specific reference are enforced",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F6",
+      "question": "Does one correct shared trivial fact pass the entire Historical Understanding dimension?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "pass": true,
+        "coverage": 0.14285714285714285,
+        "creditCount": 1,
+        "expectedCount": 7
+      },
+      "correction": "require credit on the frozen CRITICAL propositions that define the benchmark's target failure mode",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F7",
+      "question": "Does judgeHistoricalUnderstanding still use a module-global allowlist rather than the supplied snapshot's own references?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "usesModuleGlobalAllowlist": true,
+        "evidenceAllowlistSize": 6
+      },
+      "correction": "derive the allowed references from the supplied FrozenAssayTruth's per-proposition bindings",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F8",
+      "question": "Can a supplied per-fixture snapshot change current Work authority without changing the module-global DECISION_CONTRACT?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "judgeDecisionQualityTakesSnapshot": false,
+        "usesGlobalDecisionContract": true
+      },
+      "correction": "read the decision contract from the trial snapshot passed to the oracle",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F9",
+      "question": "Does the Ground Truth bind to the ACTUAL canonical Attempt and Session identities the fixture creates?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "staticSourceBasis": {
+          "canonicalAttemptId": "A0",
+          "consumerAttemptId": "A1",
+          "dshSessionId": "origin-partial",
+          "dshKnownEventCount": 8,
+          "dshReturnedCount": 3,
+          "dshPageCoverage": "PARTIAL"
+        },
+        "fixtureGeneratesIdsAtRuntime": true,
+        "fixtureSessionIdIsLiteral": true
+      },
+      "correction": "instantiate a per-run snapshot from the actual prepared fixture's identities",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F10",
+      "question": "Does calling groundTruthDigest() twice prove the snapshot belongs to THIS run?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "digestA": "fnv1a-e40ab964-1170",
+        "digestB": "fnv1a-e40ab964-1170",
+        "stableAcrossCalls": true,
+        "digestScheme": "fnv1a over a static constant"
+      },
+      "correction": "instantiate from the run's actual source basis and digest with SHA-256 over canonicalized JSON",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F11",
+      "question": "Does the E0 benchmark fixture still import and use the legacy keyword oracle?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "importsMechanicalOracle": true,
+        "hasLegacyKey": true,
+        "legacyOracleHasKeywordGrading": true
+      },
+      "correction": "mark the legacy oracle LEGACY_REPRODUCTION_ONLY and put the active E1R benchmark on the source-aware oracle",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F12",
+      "question": "Does calibrate.mjs --dry-run actually invoke judgeAnswer() on an answer produced from the current fixture?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "importsJudgeAnswer": false,
+        "importsFixture": true,
+        "runsOracleOverAnswer": false
+      },
+      "correction": "the corrected dry-run must run the official oracle over an extracted answer",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F13",
+      "question": "Can the current benchmark read and validate a structured answer from a first-party DSH session?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "hasAnswerExtraction": false,
+        "answerFieldsDeclared": [
+          "judgments",
+          "proposedAction",
+          "justification",
+          "uncertainty",
+          "sourceReferences",
+          "confidence"
+        ]
+      },
+      "correction": "establish a real, tested extraction path over DSH Session Persistence",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F14",
+      "question": "Are the Oracle's required EvidenceRefs actually present in the model-visible Control/Treatment input?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "internalRefs": [
+          "work-event:A0:ATTEMPT_COMPLETED",
+          "attempt-result:A0",
+          "dsh-page:origin-partial",
+          "dsh-page:origin-partial",
+          "dsh-page:origin-partial",
+          "current-work:A1"
+        ],
+        "controlSectionMentionsAnyInternalRef": false,
+        "treatmentSectionRendersInternalRefs": false,
+        "note": "the rendered section carries human-readable facts (coverage, counts), never the oracle's internal reference tokens"
+      },
+      "correction": "distinguish internal EvidenceRef from a model-visible Citation Handle that maps to evidence actually delivered",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F15",
+      "question": "Does an 'executed' observation with NO tool actions, no commit and no passing test report Operational PASS?",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observed": {
+        "state": "MEASURED",
+        "pass": true,
+        "toolActionCount": 0,
+        "committed": false,
+        "testsPassed": false
+      },
+      "correction": "distinguish NOT_MEASURED / MEASURED_NO_REPETITION / MEASURED_REPETITION / WORK_ACCEPTED / WORK_NOT_ACCEPTED, and never equate 'no repetition' with success",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F16",
+      "question": "Do the reported totals reconcile: 18 broad failures, 15 historical, 16 in six r3l0c files and 2 in two P2-B files?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "broadFailed": 18,
+        "perFileSum": 18,
+        "r3l0cBroad": 16,
+        "p2bBroad": 2,
+        "historicalClaimed": 15,
+        "arithmeticGap": 1,
+        "unexplained": "broad r3l0c failures (16) exceed the reproduced historical count (15) by 1"
+      },
+      "correction": "reconcile at exact TestId level: every failed test appears exactly once, classified PRE_EXISTING_SAME_FAILURE / NEW_REGRESSION / ENVIRONMENT_CONTENTION / FLAKY_UNRESOLVED / NOT_REPRODUCED / NOT_ESTABLISHED",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F17",
+      "question": "Why does regression.json record finalHead=96ffeb3 while the actual stage HEAD is 34544335?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "recordedFinalHead": "96ffeb3",
+        "finalVerdictFinalHead": "96ffeb3",
+        "actualStageHead": "34544335d42ed35aec2724a2a571fcd035901918",
+        "commitAfterTestedHeadTouchesOnlyEvidence": true
+      },
+      "correction": "record testedCodeHead and finalEvidenceHead as separate fields, proving from the Git diff that the evidence commit changed no production or test behaviour",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F18",
+      "question": "Does the dry-run contain checks that pass with a literal `true` without inspecting the fixture or execution state?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "declarativeCheckIds": [
+          "fixture-prepares",
+          "no-external-provider",
+          "no-stochastic-execution",
+          "no-credential-in-source",
+          "baseline-only-declared"
+        ],
+        "count": 5
+      },
+      "correction": "measure actual capsule bytes, section bytes, rendered digests, Git HEAD, source IDs, extracted answer and the oracle verdict",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F19",
+      "question": "Could a fixture whose history is irrelevant to the declared outcome still receive Dry-run GO?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "treatmentRelevanceOccurrences": 2,
+        "dryRunInspectsRenderedSectionFacts": true,
+        "dryRunHasRelevanceCheck": true
+      },
+      "correction": "gate GO on verified treatment relevance: the delivered TREATMENT section must communicate partial coverage, known-vs-included counts and unread extent",
+      "remainingUncertainty": null
+    },
+    {
+      "id": "F20",
+      "question": "Is the schema the Oracle accepts also the schema an evaluated agent emits and the harness extracts end-to-end?",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observed": {
+        "oracleAnswerFields": [
+          "judgments",
+          "proposedAction",
+          "justification",
+          "uncertainty",
+          "sourceReferences",
+          "confidence"
+        ],
+        "harnessExtractsFromDshOutput": false,
+        "adapterEmitsStructuredAnswer": false
+      },
+      "correction": "define one answer contract, emit it from a real DSH turn, extract it from persistence, and score it with the same oracle",
+      "remainingUncertainty": null
+    }
+  ],
+  "correctedInE1R": {
+    "F1_allReportedReturnedIsFalse": true,
+    "F3_missingSourceRejected": true,
+    "F4_wrongPropositionRefRejected": true,
+    "F6_singleTrivialFactRejected": true,
+    "F15_noObservationIsNotPass": true,
+    "F10_digestIsPerRunSha256": true
+  },
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
