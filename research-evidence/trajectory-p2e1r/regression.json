@@ -1,0 +1,31 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_REGRESSION",
+  "testedCodeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "finalEvidenceHead": null,
+  "baselineHead": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "gates": {
+    "typescript": "PASS",
+    "architecture": "PASS",
+    "publicApi": "PASS"
+  },
+  "reconciliationVerdict": "RECONCILED",
+  "classifications": {
+    "PRE_EXISTING_SAME_FAILURE": 15,
+    "ENVIRONMENT_CONTENTION": 3,
+    "NEW_REGRESSION": 0,
+    "UNRESOLVED": 0
+  },
+  "preExistingFailuresProvenAtBaseline": true,
+  "newRegressionsInThisStage": 0,
+  "unsafeTestExcluded": "test/r3l0ciarlcf_gates.test.ts (known unsafe isolated-mutation test against the shared Windows workspace)",
+  "historicalEvidenceByteIdentical": true
+}

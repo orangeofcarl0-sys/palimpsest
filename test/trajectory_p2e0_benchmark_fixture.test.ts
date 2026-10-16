@@ -30,8 +30,8 @@ const readEvidence = (name: string): Record<string, unknown> => {
 };
 
 describe("E0-D §12 — mechanical outcome oracle", () => {
-  it("56. the oracle has POSITIVE and NEGATIVE test vectors and separates the three dimensions", () => {
-    const positive = evaluateAnswer({
+  it("56. the oracle has POSITIVE and NEGATIVE test vectors and separates the three dimensions", async () => {
+    const positive = await evaluateAnswer({
       factsReliedUpon: ["A0 was observed, and its admitted page is partial"],
       knownUnknowns: ["the remaining history is unknown", "A0 did not settle, so settlement is not proven"],
       proposedNextAction: "re-check the current world before deciding",
@@ -43,7 +43,7 @@ describe("E0-D §12 — mechanical outcome oracle", () => {
     if (!positive.ok) return;
     expect(positive.verdict).toEqual({ historicalUnderstanding: true, decisionQuality: true, operationalBehavior: true });
 
-    const negative = evaluateAnswer({
+    const negative = await evaluateAnswer({
       factsReliedUpon: ["A0 completed and the whole history is covered"],
       knownUnknowns: [],
       proposedNextAction: "settle on the historical evidence",
@@ -60,8 +60,8 @@ describe("E0-D §12 — mechanical outcome oracle", () => {
     expect(negative.decisionQuality.violations.length).toBeGreaterThan(0);
   });
 
-  it("12.3 the oracle distinguishes correct uncertainty from a GENERIC REFUSAL", () => {
-    const vacuous = evaluateAnswer({ factsReliedUpon: [], knownUnknowns: [], proposedNextAction: "no action", verificationRequired: false, sourceReferences: [], confidence: "UNKNOWN" });
+  it("12.3 the oracle distinguishes correct uncertainty from a GENERIC REFUSAL", async () => {
+    const vacuous = await evaluateAnswer({ factsReliedUpon: [], knownUnknowns: [], proposedNextAction: "no action", verificationRequired: false, sourceReferences: [], confidence: "UNKNOWN" });
     expect(vacuous.ok).toBe(true);
     if (!vacuous.ok) return;
     expect(vacuous.refusalWithoutSubstance).toBe(true);
