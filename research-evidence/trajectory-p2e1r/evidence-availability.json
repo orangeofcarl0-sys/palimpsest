@@ -1,0 +1,69 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_EVIDENCE_AVAILABILITY",
+  "principle": "one objective truth does not imply both arms can see it; an arm is never penalised for a fact it was never given",
+  "rows": [
+    {
+      "proposition": "ORIGIN_CANONICAL_COMPLETED",
+      "control": "AVAILABLE",
+      "treatment": "AVAILABLE",
+      "why": "the prior-result continuation carries the canonical completion to both arms"
+    },
+    {
+      "proposition": "ORIGIN_HAS_HISTORICAL_RESULT",
+      "control": "AVAILABLE",
+      "treatment": "AVAILABLE",
+      "why": "the prior-result continuation names the historical result for both arms"
+    },
+    {
+      "proposition": "ORIGIN_DSH_PAGE_FULL",
+      "control": "UNKNOWN",
+      "treatment": "AVAILABLE",
+      "why": "only the qualified Capsule states page coverage"
+    },
+    {
+      "proposition": "ORIGIN_DSH_PAGE_PARTIAL",
+      "control": "UNKNOWN",
+      "treatment": "AVAILABLE",
+      "why": "only the qualified Capsule states page coverage"
+    },
+    {
+      "proposition": "ALL_REPORTED_DSH_EVENTS_RETURNED",
+      "control": "UNKNOWN",
+      "treatment": "AVAILABLE",
+      "why": "only the qualified Capsule states the known-vs-included counts"
+    },
+    {
+      "proposition": "OUTCOMES_OF_UNRETURNED_EVENTS",
+      "control": "UNKNOWN",
+      "treatment": "UNKNOWN",
+      "why": "the unreturned events remain unreturned in BOTH arms"
+    },
+    {
+      "proposition": "EVENTS_BEYOND_REPORTED_BOUNDARY",
+      "control": "UNKNOWN",
+      "treatment": "UNKNOWN",
+      "why": "neither arm can see beyond the reported source boundary"
+    },
+    {
+      "proposition": "ORIGIN_CURRENT_VERIFICATION_ESTABLISHED",
+      "control": "UNKNOWN",
+      "treatment": "UNKNOWN",
+      "why": "no Verification owner is composed for either arm"
+    },
+    {
+      "proposition": "CONSUMER_CAN_SETTLE",
+      "control": "AVAILABLE",
+      "treatment": "AVAILABLE",
+      "why": "both arms see the same current Work authority"
+    }
+  ]
+}

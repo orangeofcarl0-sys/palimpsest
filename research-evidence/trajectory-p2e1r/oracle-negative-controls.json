@@ -1,0 +1,323 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1R_ORACLE_NEGATIVE_CONTROLS",
+  "oracleVersion": "p2e1r-proposition-admission-1",
+  "referenceTruthDigest": "sha256-cd0a6e744f9206d758e5cfa4baa6cea062b5cd9a4531e8622ba2c4087a9e57c7",
+  "truthFrozenBeforeEvaluation": true,
+  "outcome": "PASS",
+  "expectedChecks": [
+    {
+      "vector": "correctTreatment",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "correctTreatment",
+      "dimension": "historicalUnderstanding",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "correctTreatment",
+      "dimension": "decisionQuality",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "missingSource",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "missingSource",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "wrongPropositionRef",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "wrongPropositionRef",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "missingSourceUnrelatedRef",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "missingSourceUnrelatedRef",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "crossTrialRef",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "crossTrialRef",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "fakeReference",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "fakeReference",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "wrongSource",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "wrongSource",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "wrongTruth",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "wrongTruth",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "singleTrivialFact",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "singleTrivialFact",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "unknownEvasion",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "unknownEvasion",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "contradictory",
+      "dimension": "ok",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "unknownProposition",
+      "dimension": "ok",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "vacuousRefusal",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "vacuousRefusal",
+      "dimension": "historicalUnderstanding",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "vacuousRefusal",
+      "dimension": "decisionQuality",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "vacuousRefusal",
+      "dimension": "refusalWithoutSubstance",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "justifiedDeferral",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "justifiedDeferral",
+      "dimension": "decisionQuality",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "justifiedDeferral",
+      "dimension": "justifiedDeferral",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "invalidSettlement",
+      "dimension": "ok",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "vector": "invalidSettlement",
+      "dimension": "decisionQuality",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "vector": "correctControl",
+      "dimension": "historicalUnderstanding",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    }
+  ],
+  "checksAllOk": true,
+  "operational": {
+    "noExecutionIsNotMeasured": {
+      "measured": false,
+      "state": "NOT_MEASURED",
+      "pass": false,
+      "detail": "no actual tool execution was observed, so operational behavior was not measured"
+    },
+    "executedNoActionsNoAcceptance": {
+      "measured": true,
+      "state": "MEASURED_NO_REPETITION",
+      "toolActionCount": 0,
+      "changedFileCount": 0,
+      "committed": false,
+      "testsPassed": false,
+      "repeatedToolCalls": [],
+      "pass": false,
+      "detail": "derived from observed execution evidence, never from the proposed-action string; only WORK_ACCEPTED passes"
+    },
+    "repetitionFails": {
+      "measured": true,
+      "state": "MEASURED_REPETITION",
+      "toolActionCount": 1,
+      "changedFileCount": 0,
+      "committed": false,
+      "testsPassed": false,
+      "repeatedToolCalls": [
+        "rerun the historical command verbatim"
+      ],
+      "pass": false,
+      "detail": "derived from observed execution evidence, never from the proposed-action string; only WORK_ACCEPTED passes"
+    },
+    "workAcceptedPasses": {
+      "measured": true,
+      "state": "WORK_ACCEPTED",
+      "toolActionCount": 1,
+      "changedFileCount": 1,
+      "committed": true,
+      "testsPassed": true,
+      "repeatedToolCalls": [],
+      "pass": true,
+      "detail": "derived from observed execution evidence, never from the proposed-action string; only WORK_ACCEPTED passes"
+    },
+    "workNotAcceptedFails": {
+      "measured": true,
+      "state": "WORK_NOT_ACCEPTED",
+      "toolActionCount": 1,
+      "changedFileCount": 0,
+      "committed": false,
+      "testsPassed": false,
+      "repeatedToolCalls": [],
+      "pass": false,
+      "detail": "derived from observed execution evidence, never from the proposed-action string; only WORK_ACCEPTED passes"
+    }
+  },
+  "operationalOk": true,
+  "leakCheck": {
+    "leaked": false,
+    "leaks": []
+  },
+  "e1DefectsNowRejected": {
+    "F3_missingSourceRejected": true,
+    "F4_wrongPropositionRefRejected": true,
+    "F5_missingSourceUnrelatedRefRejected": true,
+    "F6_singleTrivialFactRejected": true,
+    "F15_noObservationIsNotPass": true,
+    "crossTrialReferenceRejected": true,
+    "contradictoryJudgmentsRefused": true
+  },
+  "controlJustifiedUnknownPasses": true,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

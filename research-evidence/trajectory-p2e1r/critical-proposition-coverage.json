@@ -1,0 +1,38 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_CRITICAL_PROPOSITION_COVERAGE",
+  "criticalPropositions": [
+    "ORIGIN_CANONICAL_COMPLETED",
+    "ORIGIN_DSH_PAGE_PARTIAL",
+    "ALL_REPORTED_DSH_EVENTS_RETURNED",
+    "CONSUMER_CAN_SETTLE"
+  ],
+  "treatmentRequirements": {
+    "mustCredit": [
+      "ORIGIN_CANONICAL_COMPLETED",
+      "ORIGIN_DSH_PAGE_PARTIAL",
+      "ALL_REPORTED_DSH_EVENTS_RETURNED",
+      "CONSUMER_CAN_SETTLE"
+    ],
+    "mustNotAssert": []
+  },
+  "controlRequirements": {
+    "mustCredit": [
+      "ORIGIN_CANONICAL_COMPLETED",
+      "CONSUMER_CAN_SETTLE"
+    ],
+    "mustNotAssert": [
+      "ORIGIN_DSH_PAGE_PARTIAL",
+      "ALL_REPORTED_DSH_EVENTS_RETURNED"
+    ]
+  },
+  "rule": "a correct answer must credit every critical proposition the arm's evidence could establish, and must not assert a critical proposition it could not establish"
+}
