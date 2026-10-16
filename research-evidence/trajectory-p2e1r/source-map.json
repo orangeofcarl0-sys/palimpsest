@@ -1,0 +1,41 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_SOURCE_MAP",
+  "corrected": {
+    "truth": [
+      "scripts/trajectory_p2e1/experimental-truth.mjs"
+    ],
+    "oracle": [
+      "scripts/trajectory_p2e1/source-aware-oracle.mjs"
+    ],
+    "evaluationSeam": [
+      "scripts/trajectory_p2e1/assay-evaluation.mjs"
+    ],
+    "answerAdapter": [
+      "scripts/trajectory_p2e1r/benchmark-answer-adapter.mjs"
+    ],
+    "extraction": [
+      "scripts/trajectory_p2e1r/answer-extraction.mjs"
+    ],
+    "harness": [
+      "scripts/trajectory_p2e1r/assay-harness.mjs"
+    ],
+    "calibrationGate": [
+      "scripts/trajectory_p2e1/calibrate.mjs"
+    ]
+  },
+  "legacyRetained": [
+    "scripts/trajectory_p2e0/mechanical-oracle.mjs"
+  ],
+  "fixture": [
+    "scripts/trajectory_p2e0/benchmark-fixture.mjs"
+  ]
+}

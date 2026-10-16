@@ -1,0 +1,57 @@
+{
+  "stage": "Trajectory-P2-E1R",
+  "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "method": "deterministic run of the corrected E1R modules; no model, no network",
+  "realFirstPartyDshRan": false,
+  "externalProviderContacted": false,
+  "stochasticInference": false,
+  "agentBehaviorEvaluated": false,
+  "cleanupSucceeded": true,
+  "kind": "TRAJECTORY_P2E1R_FORWARD_ERRATUM",
+  "note": "corrections to P2-E1's claims, recorded forward-only; P2-E1's original evidence is NOT rewritten",
+  "corrections": [
+    {
+      "id": "E1R-ERR-1",
+      "p2e1Claim": "ORIGIN_ALL_DSH_EVENTS_OBSERVED = UNKNOWN",
+      "defect": "the id asked whether ALL REPORTED events were observed, which the fixture answers decisively (3 of 8), so the truth was FALSE, not UNKNOWN",
+      "correction": "split into ALL_REPORTED_DSH_EVENTS_RETURNED=FALSE, OUTCOMES_OF_UNRETURNED_EVENTS=UNKNOWN, EVENTS_BEYOND_REPORTED_BOUNDARY=UNKNOWN"
+    },
+    {
+      "id": "E1R-ERR-2",
+      "p2e1Claim": "the oracle requires a source (sourceMatches !== false)",
+      "defect": "a MISSING source was credited because undefined !== false",
+      "correction": "sourceMatches === true is now required"
+    },
+    {
+      "id": "E1R-ERR-3",
+      "p2e1Claim": "evidence references are validated against a frozen allowlist",
+      "defect": "the allowlist was module-global, so another proposition's reference was accepted",
+      "correction": "references are validated against the proposition's OWN allowed refs from the trial snapshot"
+    },
+    {
+      "id": "E1R-ERR-4",
+      "p2e1Claim": "the Ground Truth is frozen with a stable digest",
+      "defect": "the digest hashed a static constant, so it did not reconcile the run's identities",
+      "correction": "a per-run FrozenAssayTruth is instantiated from the actual identities and digested with SHA-256"
+    },
+    {
+      "id": "E1R-ERR-5",
+      "p2e1Claim": "the mechanical Oracle was replaced",
+      "defect": "the active E0 fixture still graded with the legacy keyword oracle",
+      "correction": "one official evaluation seam (assay-evaluation.mjs); the legacy oracle is marked LEGACY_REPRODUCTION_ONLY"
+    },
+    {
+      "id": "E1R-ERR-6",
+      "p2e1Claim": "the dry-run verifies the Oracle version",
+      "defect": "the dry-run never ran the oracle over a fixture-produced answer",
+      "correction": "the dry-run now rehearses the full chain with positive and negative controls"
+    },
+    {
+      "id": "E1R-ERR-7",
+      "p2e1Claim": "regression.json finalHead=96ffeb3",
+      "defect": "the field conflated the tested-code HEAD with the final evidence HEAD",
+      "correction": "testedCodeHead and finalEvidenceHead are now separate fields, with the evidence commit proven to touch only research-evidence/"
+    }
+  ]
+}
