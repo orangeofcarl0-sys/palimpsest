@@ -16,7 +16,7 @@
  *
  * Usage:  node scripts/trajectory_p2e1r/assay-falsifiers.mjs
  */
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -398,7 +398,7 @@ const report = {
   stage: "Trajectory-P2-E1R",
   baseline: "34544335d42ed35aec2724a2a571fcd035901918",
   branch: git(["branch", "--show-current"]),
-  method: "pure functions RUN against the exact BASELINE modules (read from Git at beec3cc and imported); source inspected for the remainder; nothing modified",
+  method: "pure functions RUN against the exact BASELINE modules (read from Git at 34544335 and imported); source inspected for the remainder; nothing modified",
   classificationCounts: counts,
   sourceMap,
   findings,
@@ -407,5 +407,12 @@ const report = {
   stochasticTrialOccurred: false,
   modelCallsMade: 0,
 };
+
+/** §17: remove the module-materialization temp dir this script created (regular files only; no links). */
+try {
+  rmSync(tmpDir, { recursive: true, force: true });
+} catch {
+  /* best-effort: a leftover temp dir is harmless and never contains a link */
+}
 
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);

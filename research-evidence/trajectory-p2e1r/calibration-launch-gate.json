@@ -1,7 +1,7 @@
 {
   "stage": "Trajectory-P2-E1R",
   "baseline": "34544335d42ed35aec2724a2a571fcd035901918",
-  "codeHead": "34544335d42ed35aec2724a2a571fcd035901918",
+  "codeHead": "9fb093d1448b447dc4628dc671d8e62135d68c2a",
   "method": "deterministic run of the corrected E1R modules; no model, no network",
   "realFirstPartyDshRan": false,
   "externalProviderContacted": false,
@@ -47,7 +47,7 @@
       "id": "fixture-git-basis-real",
       "statement": "the fixture's Git basis is a REAL commit of its own repository",
       "ok": true,
-      "detail": "6634615c5e8fabc383875403f5fcbb376ec8d0b7"
+      "detail": "301a80d4ff0f7c8697affcbea93fb6176786d4d3"
     },
     {
       "id": "fixture-partial-page",
@@ -65,7 +65,7 @@
       "id": "fixture-treatment-eligible",
       "statement": "the TREATMENT input renders the qualified Capsule",
       "ok": true,
-      "detail": "10d76890c02778e32a4b617c0b38e6952aae1a3cf38c6f25cc747ded327c1eac"
+      "detail": "53ec2c1b3ca6e0f8e05f8ebd53b80a9c0849270e2c179ea16f476330b002733f"
     },
     {
       "id": "fixture-digests-differ",
@@ -89,13 +89,13 @@
       "id": "truth-instantiated-from-run",
       "statement": "the Ground Truth is instantiated from the ACTUAL run's canonical identities",
       "ok": true,
-      "detail": "DRYRUN-attempt-d9137334f71ecc6199367dd80d0b53d7"
+      "detail": "DRYRUN-attempt-4ee7ad8b21f071b486dbdca1d96186f4"
     },
     {
       "id": "truth-digest-is-sha256",
       "statement": "the truth digest is SHA-256 over canonicalized JSON",
       "ok": true,
-      "detail": "sha256-e89e25d8fa259e891275b27e74cd772d379a56927865c78b08e57ff476a97778"
+      "detail": "sha256-7cb3ecccf6c98f130f0a3d8076fba3186e2e2cf84f2d72536691b5abcde7f907"
     },
     {
       "id": "truth-splits-the-ambiguous-proposition",
@@ -238,6 +238,6 @@
   "externalModelRequestOccurred": false,
   "paidModelRequestOccurred": false,
   "modelCallsMade": 0,
-  "elapsedMs": 1749,
+  "elapsedMs": 1317,
   "note": "§11: this is a COMPLETE DETERMINISTIC REHEARSAL of the assay chain. It measures no utility and awards no BENCHMARK_QUALIFIED. A future authorized stage runs the actual baseline calibration."
 }
