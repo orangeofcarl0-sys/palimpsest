@@ -67,7 +67,7 @@ describe("E1R-C §15 Group G — calibration launch gate", () => {
      */
     const E1R_ORACLE_VERSION = "p2e1r-proposition-admission-1";
     expect(ORACLE_VERSION).not.toBe(E1R_ORACLE_VERSION);
-    expect(ORACLE_VERSION).toBe("p2e1rc-arm-wide-admission-1");
+    expect(ORACLE_VERSION).toBe("p2e1rd-internal-citation-closed-1");
     expect(OFFICIAL_ORACLE.module).toBe("scripts/trajectory_p2e1/source-aware-oracle.mjs");
     const dry = readEvidence("calibration-launch-gate.json");
     expect(dry.oracleVersion).toBe(E1R_ORACLE_VERSION);

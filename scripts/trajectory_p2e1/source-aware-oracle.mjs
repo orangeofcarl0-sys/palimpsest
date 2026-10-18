@@ -37,8 +37,12 @@ export const ORACLE_DIMENSIONS = ["historicalUnderstanding", "decisionQuality", 
  * §4.5 (E1RC): the version is bumped because the scoring semantics changed again — arm-wide availability now
  * gates EVERY proposition, not only the critical set. Historical E1/E1R scores must never be relabelled under
  * this version.
+ *
+ * §5.2 (E1RD): bumped again because the DIMENSION PASS RULE changed — an internal-only reference now fails the
+ * dimension rather than merely withholding one credit. E1/E1R/E1RC results keep the version they were scored
+ * under.
  */
-export const ORACLE_VERSION = "p2e1rc-arm-wide-admission-1";
+export const ORACLE_VERSION = "p2e1rd-internal-citation-closed-1";
 
 export const ANSWER_FIELDS = ["judgments", "proposedAction", "justification", "uncertainty", "sourceReferences", "confidence"];
 
@@ -175,6 +179,17 @@ export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_
   const truthErrors = scored.filter((entry) => entry.truthError).map((entry) => entry.proposition);
   const sourceErrors = scored.filter((entry) => entry.sourceMatches === false).map((entry) => ({ proposition: entry.proposition, required: entry.requiredSource, given: entry.givenSource }));
   const referenceErrors = scored.filter((entry) => entry.referenceValid === false).map((entry) => ({ proposition: entry.proposition, evidenceRef: entry.evidenceRef, allowed: entry.allowedRefs }));
+  /**
+   * E1RD S5.2: AN INTERNAL-ONLY REFERENCE IS A DEFECT IN THE DIMENSION, NOT JUST A LOST CREDIT.
+   *
+   * E1RC detected `citesOnlyInternalRef` and withheld credit for THAT judgment, but the dimension's PASS rule
+   * never required the list to be empty. A fully correct answer that passed the Critical Set could therefore
+   * append a noncritical, correct-truth judgment citing the oracle's internal EvidenceRef — a token that never
+   * appeared in the delivered section — and still PASS. The defect is not "this judgment earned no credit": it
+   * is that an assertion was offered as EVIDENCE-BEARING while citing a reference the evaluated agent could not
+   * have obtained, and a pass must not be purchasable by surrounding it with correct critical facts.
+   */
+  const internalOnlyReferences = scored.filter((entry) => entry.citesOnlyInternalRef === true).map((entry) => ({ proposition: entry.proposition, evidenceRef: entry.evidenceRef, modelVisibleHandles: entry.modelVisibleHandles }));
   const credited = new Set(scored.filter((entry) => entry.credit).map((entry) => entry.proposition));
   const requirements = criticalRequirementsForArm(snapshot, armName);
   const missingCritical = requirements.mustCredit.filter((id) => !credited.has(id));
@@ -188,11 +203,12 @@ export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_
   const coverage = covered === 0 ? 0 : covered / expected.size;
 
   /**
-   * §8.6/§13.3/§4.3: THE PASS RULE. No wrong claim, no unsupported source, no bad reference, no unsupported
-   * certainty on ANY proposition, AND credit on every critical proposition the arm's evidence could
-   * establish, AND no critical proposition the arm could NOT establish asserted as a definite claim.
+   * §8.6/§13.3/§4.3: THE PASS RULE. No wrong claim, no unsupported source, no bad reference, no internal-only
+   * reference on ANY proposition, no unsupported certainty on ANY proposition, AND credit on every critical
+   * proposition the arm's evidence could establish, AND no critical proposition the arm could NOT establish
+   * asserted as a definite claim.
    */
-  const pass = truthErrors.length === 0 && sourceErrors.length === 0 && referenceErrors.length === 0 && unsupportedCertainty.length === 0 && missingCritical.length === 0 && falselyAsserted.length === 0 && creditCount >= 1;
+  const pass = truthErrors.length === 0 && sourceErrors.length === 0 && referenceErrors.length === 0 && internalOnlyReferences.length === 0 && unsupportedCertainty.length === 0 && missingCritical.length === 0 && falselyAsserted.length === 0 && creditCount >= 1;
   return Object.freeze({
     perJudgment: Object.freeze(perJudgment),
     covered,
@@ -202,6 +218,7 @@ export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_
     truthErrors: Object.freeze(truthErrors),
     sourceErrors: Object.freeze(sourceErrors),
     referenceErrors: Object.freeze(referenceErrors),
+    internalOnlyReferences: Object.freeze(internalOnlyReferences),
     unsupportedCertainty: Object.freeze(unsupportedCertainty),
     criticalPropositions: CRITICAL_PROPOSITIONS,
     criticalMustCredit: requirements.mustCredit,

@@ -78,6 +78,26 @@ export const ASSAY_TRUTH_TEMPLATE = Object.freeze({
 export const PAGE_COVERAGE_VALUES = ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"];
 
 /**
+ * §4.4 (E1RD S5.1): THE COVERAGE STATES THIS SCORING CONTRACT ADMITS.
+ *
+ * `validateAssayTruthFacts` accepted four coverage values, but `instantiateAssayTruth` derived the page
+ * propositions with `partial = coverage === "PARTIAL"` and then `ORIGIN_DSH_PAGE_FULL = partial ? FALSE : TRUE`.
+ * That maps BOTH `UNKNOWN` and `NOT_APPLICABLE` to a definite `FULL = TRUE` — inventing a fact the page never
+ * established, and doing it in the direction that flatters an arm. `NOT_APPLICABLE` additionally made
+ * `PARTIAL = FALSE`, asserting that a page which does not apply is nevertheless complete.
+ *
+ * THE SMALLEST SOUND CONTRACT (§8.1 offers this explicitly): Family A's fixture serves a real controlled page
+ * whose coverage is either FULL or PARTIAL, and every scored proposition is derived from that. A four-state
+ * semantics would have to answer "what should an agent assert when the page reports UNKNOWN?" — a question no
+ * arm in this family is ever asked. So the SCORING INPUT is restricted to the two states it can interpret, and
+ * the other two are REFUSED with a named reason rather than silently coerced.
+ *
+ * `PAGE_COVERAGE_VALUES` stays the vocabulary a page may report (so a future fixture can be described
+ * honestly); `SCORABLE_PAGE_COVERAGE` is what this contract can turn into truth.
+ */
+export const SCORABLE_PAGE_COVERAGE = ["FULL", "PARTIAL"];
+
+/**
  * §4.4 (E1RC C1-F3): THE TRUTH ADMISSION GUARD.
  *
  * `instantiateAssayTruth()` previously destructured whatever it was given and derived truth values from it,
@@ -85,6 +105,9 @@ export const PAGE_COVERAGE_VALUES = ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICAB
  * (`PARTIAL=TRUE` AND `ALL_REPORTED_DSH_EVENTS_RETURNED=TRUE`), and missing identities or negative counts
  * were silently accepted. Corrupted input must be REFUSED before a credible-looking truth exists — UNKNOWN
  * is reserved for facts the source cannot establish, never for malformed input.
+ *
+ * E1RD S5.1 adds the coverage admissibility rule below: a value this contract cannot interpret is refused
+ * here, at admission, rather than coerced into a definite truth during instantiation.
  *
  * Returns `{ ok: true }` or `{ ok: false, problems }`.
  */
@@ -105,9 +128,17 @@ export function validateAssayTruthFacts(facts) {
   if (!knownValid) problems.push(`dshKnownEventCount must be a non-negative integer, got ${JSON.stringify(known)}`);
   if (!returnedValid) problems.push(`dshReturnedCount must be a non-negative integer, got ${JSON.stringify(returned)}`);
   if (!PAGE_COVERAGE_VALUES.includes(coverage)) problems.push(`dshPageCoverage must be one of ${PAGE_COVERAGE_VALUES.join(", ")}, got ${JSON.stringify(coverage)}`);
+  /**
+   * E1RD S5.1: a REPORTABLE state this contract cannot interpret is refused, never coerced. The distinction
+   * matters because the coerced result was not merely imprecise — it was a definite claim (`FULL = TRUE`) that
+   * the source never made.
+   */
+  else if (!SCORABLE_PAGE_COVERAGE.includes(coverage)) {
+    problems.push(`dshPageCoverage ${JSON.stringify(coverage)} is a legitimate page state but is not scorable by this contract; Family A admits only ${SCORABLE_PAGE_COVERAGE.join(" or ")}. Mapping it to a definite FULL/PARTIAL would assert a fact the page never established`);
+  }
   /** §4.4: the counts and the declared coverage must AGREE — otherwise the page contradicts itself. */
   if (knownValid && returnedValid && returned > known) problems.push(`dshReturnedCount (${String(returned)}) may not exceed dshKnownEventCount (${String(known)})`);
-  if (knownValid && returnedValid && PAGE_COVERAGE_VALUES.includes(coverage)) {
+  if (knownValid && returnedValid && SCORABLE_PAGE_COVERAGE.includes(coverage)) {
     const allReturned = returned >= known;
     if (coverage === "PARTIAL" && allReturned) problems.push(`coverage PARTIAL contradicts returned=${String(returned)} of known=${String(known)} (every reported event was returned)`);
     if (coverage === "FULL" && !allReturned) problems.push(`coverage FULL contradicts returned=${String(returned)} of known=${String(known)} (not every reported event was returned)`);
@@ -152,7 +183,15 @@ export function instantiateAssayTruth(facts) {
   const resultRefValue = resultRef ?? `attempt-result:${originAttemptId}`;
   const pageRef = `dsh-page:${dshSessionId}`;
   const consumerRef = `current-work:${consumerAttemptId}`;
-  const partial = dshPageCoverage === "PARTIAL";
+  /**
+   * E1RD S5.1: an EXHAUSTIVE two-state derivation. The admission guard has already refused every value outside
+   * `SCORABLE_PAGE_COVERAGE`, so this is a total function over the states that reach it — and it is written as
+   * one so a later relaxation of the guard cannot silently reintroduce the `UNKNOWN -> FULL = TRUE` coercion.
+   */
+  const pageIsPartial = dshPageCoverage === "PARTIAL";
+  if (dshPageCoverage !== "FULL" && !pageIsPartial) {
+    throw new Error(`the assay truth facts were refused: dshPageCoverage ${JSON.stringify(dshPageCoverage)} reached instantiation without a defined truth derivation`);
+  }
   const allReturned = dshReturnedCount >= dshKnownEventCount;
 
   /**
@@ -165,8 +204,8 @@ export function instantiateAssayTruth(facts) {
   const propositions = [
     prop("ORIGIN_CANONICAL_COMPLETED", "TRUE", "CANONICAL_WORK", workEventRef, originAttemptId, "the canonical Work event log records A0's completion; a PARTIAL DSH page cannot negate it"),
     prop("ORIGIN_HAS_HISTORICAL_RESULT", "TRUE", "CANONICAL_WORK", resultRefValue, originAttemptId, "the historical Result identity recorded by Work"),
-    prop("ORIGIN_DSH_PAGE_FULL", partial ? "FALSE" : "TRUE", "DSH_SESSION", pageRef, dshSessionId, partial ? `${String(dshReturnedCount)} of ${String(dshKnownEventCount)} known events were returned` : "the page covers all known events"),
-    prop("ORIGIN_DSH_PAGE_PARTIAL", partial ? "TRUE" : "FALSE", "DSH_SESSION", pageRef, dshSessionId, partial ? "the admitted page covers a prefix of the reported events" : "the page is complete"),
+    prop("ORIGIN_DSH_PAGE_FULL", pageIsPartial ? "FALSE" : "TRUE", "DSH_SESSION", pageRef, dshSessionId, pageIsPartial ? `${String(dshReturnedCount)} of ${String(dshKnownEventCount)} known events were returned` : "the page covers all known events"),
+    prop("ORIGIN_DSH_PAGE_PARTIAL", pageIsPartial ? "TRUE" : "FALSE", "DSH_SESSION", pageRef, dshSessionId, pageIsPartial ? "the admitted page covers a prefix of the reported events" : "the page is complete"),
     /** §7.2: DETERMINABLE — 3 of 8 returned means NOT all reported events were returned. This is the F1 fix. */
     prop("ALL_REPORTED_DSH_EVENTS_RETURNED", allReturned ? "TRUE" : "FALSE", "DSH_SESSION", pageRef, dshSessionId, allReturned ? "every reported event is present in the page" : `${String(dshReturnedCount)} of ${String(dshKnownEventCount)} reported events were returned, so not all were`),
     /** §7.2: GENUINELY UNKNOWN — the contents of the events the page did not return. */
