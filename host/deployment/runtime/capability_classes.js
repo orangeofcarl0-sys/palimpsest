@@ -142,6 +142,56 @@ export const CAPABILITY_CLASSES = Object.freeze([
 const BY_NAME = new Map(CAPABILITY_CLASSES.map((entry) => [entry.name, entry]));
 
 /**
+ * CAPABILITIES A CONFIDENTIAL WORKER MUST NOT HAVE, AND WHY THEY ARE NOT CLASSIFIED EITHER.
+ *
+ * Trajectory-P2-E1RD §6 Option A. DSH 0.2.1-rc.2 added `working_directory`, a model-callable tool that changes
+ * the Session's effective directory. Every filesystem tool in that release resolves model paths through
+ * `ctx.workingDirectory.ensure(agent)` — a MUTABLE value — while the trusted read guard resolves against the
+ * fixed execution world. The two bases could therefore disagree, so a relative path the guard approved against
+ * the world could be opened somewhere else.
+ *
+ * THE WRONG FIX, EXPLICITLY REJECTED. Adding `working_directory -> NO_HOST_FILE_READ` would silence the gate:
+ * the tool returns only a path string, so on its immediate output alone the class looks defensible. It is not —
+ * the tool's effect is to change what every LATER call means, which is precisely the class of capability the
+ * classification exists to catch. `GUARDED_HOST_READ` would be equally wrong: guarding `cd`'s argument does not
+ * make the OTHER tools resolve against the guarded path.
+ *
+ * SO THE CAPABILITY IS WITHDRAWN, NOT CLASSIFIED. It is removed from the worker's visible registry, and it is
+ * deliberately left ABSENT from `CAPABILITY_CLASSES`. That absence is the second line of defence: if a future
+ * composition, preset or delegation route re-exposes it, `classifyWorkerCapabilities` refuses the worker start
+ * with `UNCLASSIFIED`, exactly as it refused the E1RC run. Withdrawal is a policy; the unclassified name is the
+ * fail-closed backstop if the policy is ever bypassed.
+ *
+ * Withdrawal alone is not sufficient — `subagent { cwd }` can move a CHILD's basis — which is why the basis
+ * fence in `cwd_fence.js` refuses any call whose effective directory is not the execution world.
+ */
+export const WITHDRAWN_CAPABILITIES = Object.freeze([
+  Object.freeze({
+    name: 'working_directory',
+    why: 'changes the basis every later filesystem call resolves against, so a path approved against the execution world could be opened elsewhere; it is withdrawn rather than classified, and its absence from the table makes a re-exposure refuse the worker',
+    seam: 'dsh-tool-working-directory -> ctx.workingDirectory.set(agent, cd)',
+  }),
+]);
+
+/**
+ * The withdrawal filter for one ACTUAL surface.
+ *
+ * Names are returned only when they are PRESENT in the surface, because `tools.restrict()` refuses unknown
+ * names — a filter that always named `working_directory` would throw on a release that never shipped it, and a
+ * host that crashes on a composition it cannot foresee is not fail-closed, it is broken.
+ *
+ * @param {readonly string[]} visibleNames
+ * @returns {{ withdraw: readonly string[], absent: readonly string[] }}
+ */
+export function withdrawalFilter(visibleNames) {
+  const present = new Set(visibleNames.filter((name) => typeof name === 'string'));
+  const withdraw = WITHDRAWN_CAPABILITIES.filter((entry) => present.has(entry.name)).map((entry) => entry.name);
+  const absent = WITHDRAWN_CAPABILITIES.filter((entry) => !present.has(entry.name)).map((entry) => entry.name);
+  return { withdraw, absent };
+}
+
+
+/**
  * The guard-argument map the read guard consumes, derived from the SAME table.
  *
  * Deriving it rather than maintaining a second list is the point: a tool cannot be GUARDED_HOST_READ here and

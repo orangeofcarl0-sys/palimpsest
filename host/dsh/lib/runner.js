@@ -330,6 +330,8 @@ async function runWorker(ctx, deps) {
   let failure = null;
   let offeredTools = [];
   let denied = [];
+  /** E1RD §6: the capabilities WITHDRAWN from this worker's registry, as measured at setup. */
+  let withdrawn = [];
   let presentation = null;
   /** R2-U §16: the ordered first-use log of the worker's tool actions. */
   let actionLog = { order: [], firstUse: {} };
@@ -467,17 +469,46 @@ async function runWorker(ctx, deps) {
             : undefined;
         /** Set inside `workerSetup` when the capability gate refuses; checked immediately after creation. */
         let capabilityRefusal = null;
-        const workerSetup = (agentCtx) => {
+        const workerSetup = (agentCtx, agent) => {
           setup(agentCtx);
           // Enumerate what this scope INHERITS, then close the authority surface. The prefix comes from
           // the composed environment (one place knows what Palimpsest's tools are called).
           const prefix = typeof environment.deniedAuthorityPrefix === 'string' ? environment.deniedAuthorityPrefix : 'palimpsest_';
           const keep = [resultToolName, pullToolName].filter((name) => typeof name === 'string');
-          const visible = typeof agentCtx.tools.schemas === 'function' ? agentCtx.tools.schemas() : [];
-          denied = visible
+          /**
+           * Trajectory-P2-E1RD: ENUMERATE THE AGENT'S OWN VIEW, NOT THE GLOBAL ONE.
+           *
+           * `tools.schemas()` with no scope returns the GLOBAL view, and a scope's `restrict()` filters only
+           * what that scope INHERITS — it never edits the global layer. Enumerating the global view therefore
+           * reports a surface the restriction cannot change, which made a withdrawal look applied while the
+           * gate still saw the tool. `tools.schemas(agent)` is the same projection the model-facing request
+           * uses (`sdkSchemas`/`schemas` are called with the agent as the scope key), so this is the surface
+           * that actually reaches the model.
+           */
+          const scopedNames = () => (typeof agentCtx.tools.schemas === 'function' ? agentCtx.tools.schemas(agent) : [])
             .map((entry) => (typeof entry?.name === 'string' ? entry.name : undefined))
-            .filter((name) => typeof name === 'string' && name.startsWith(prefix) && !keep.includes(name));
+            .filter((name) => typeof name === 'string');
+          const visible = scopedNames();
+          denied = visible.filter((name) => name.startsWith(prefix) && !keep.includes(name));
           if (denied.length > 0) agentCtx.tools.restrict({ deny: denied });
+          /**
+           * Trajectory-P2-E1RD §6 OPTION A — WITHDRAW THE MUTABLE-DIRECTORY CAPABILITY.
+           *
+           * DSH 0.2.1-rc.2 exposes `working_directory`, which moves the basis every later filesystem call
+           * resolves against. The trusted read guard resolves against the fixed execution world, so the two
+           * could disagree. The capability is removed from the ACTUAL registry this scope resolves, not merely
+           * hidden from a prompt — and it is removed BEFORE the gate below enumerates the surface, so the gate
+           * reports the surface the model will really see.
+           *
+           * The name stays absent from `CAPABILITY_CLASSES` on purpose: if a future composition re-exposes it,
+           * the gate refuses the worker instead of trusting it.
+           */
+          const withdrawal = boundaryLoad.module !== undefined && typeof boundaryLoad.module.withdrawalFilter === 'function'
+            ? boundaryLoad.module.withdrawalFilter(visible)
+            : { withdraw: [], absent: [] };
+          if (withdrawal.withdraw.length > 0) agentCtx.tools.restrict({ deny: [...withdrawal.withdraw] });
+          withdrawn = [...withdrawal.withdraw];
+          const surfaceAfter = [...scopedNames(), resultToolName, pullToolName].filter((name) => typeof name === 'string');
           /**
            * R1-HR §10/§11: THE FAIL-CLOSED CAPABILITY GATE.
            *
@@ -491,8 +522,7 @@ async function runWorker(ctx, deps) {
            * registered globally, so a per-agent registration is refused rather than silently leaving a hole.
            */
           if (boundaryLoad.module !== undefined && typeof boundaryLoad.module.admitWorker === 'function') {
-            const surface = [...visible.map((entry) => (typeof entry?.name === 'string' ? entry.name : undefined)), resultToolName, pullToolName].filter((name) => typeof name === 'string');
-            capability = boundaryLoad.module.admitWorker({ visibleNames: surface, guardScope: boundary?.guardScope });
+            capability = boundaryLoad.module.admitWorker({ visibleNames: surfaceAfter, guardScope: boundary?.guardScope });
             if (capability.allowed !== true) capabilityRefusal = capability.reason ?? 'the capability classification refused this worker';
           }
           // The worker's OWN layer: a restriction filters what a scope inherits and never what it
@@ -801,7 +831,7 @@ async function runWorker(ctx, deps) {
   // Noncanonical telemetry, exactly like PALIMPSEST_TURN: the worker's OWN recorded capability facts.
   // A reviewer (and the live gate) reads the firewall from here rather than from a prompt line.
   process.stdout.write(
-    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools, affordance: affordanceMode, index: indexMode })}
+    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, withdrawnTools: withdrawn, offeredTools, affordance: affordanceMode, index: indexMode })}
 `,
   );
   /**
