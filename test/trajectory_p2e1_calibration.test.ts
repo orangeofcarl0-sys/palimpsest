@@ -60,10 +60,17 @@ describe("E1R-C §15 Group G — calibration launch gate", () => {
   });
 
   it("70. the Ground Truth and Oracle are independent of the agent's answer", () => {
-    expect(ORACLE_VERSION).toBe("p2e1r-proposition-admission-1");
+    /**
+     * E1RC: this suite reads the FROZEN E1R evidence, which must never be rewritten. It therefore asserts the
+     * E1R-era oracle version that artifact recorded, and separately asserts that the CURRENT oracle has moved
+     * forward (so the historical score is not silently relabelled under the new semantics, §4.5).
+     */
+    const E1R_ORACLE_VERSION = "p2e1r-proposition-admission-1";
+    expect(ORACLE_VERSION).not.toBe(E1R_ORACLE_VERSION);
+    expect(ORACLE_VERSION).toBe("p2e1rc-arm-wide-admission-1");
     expect(OFFICIAL_ORACLE.module).toBe("scripts/trajectory_p2e1/source-aware-oracle.mjs");
     const dry = readEvidence("calibration-launch-gate.json");
-    expect(dry.oracleVersion).toBe(ORACLE_VERSION);
+    expect(dry.oracleVersion).toBe(E1R_ORACLE_VERSION);
     expect(dry.officialOracle).toBe(OFFICIAL_ORACLE.module);
     // The dry-run instantiates a per-run truth; its digest is SHA-256, not a static FNV constant.
     const instantiated = (dry.checks as { id: string; detail: string }[]).find((entry) => entry.id === "truth-digest-is-sha256");

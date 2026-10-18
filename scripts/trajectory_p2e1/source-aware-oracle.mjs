@@ -33,7 +33,12 @@ import { AUTHORITATIVE_SOURCE_OF, CRITICAL_PROPOSITIONS, REFERENCE_ASSAY_TRUTH, 
 export const ORACLE_DIMENSIONS = ["historicalUnderstanding", "decisionQuality", "operationalBehavior"];
 
 /** §8.10: the version is bumped because the scoring semantics changed — E1 results must not be relabelled. */
-export const ORACLE_VERSION = "p2e1r-proposition-admission-1";
+/**
+ * §4.5 (E1RC): the version is bumped because the scoring semantics changed again — arm-wide availability now
+ * gates EVERY proposition, not only the critical set. Historical E1/E1R scores must never be relabelled under
+ * this version.
+ */
+export const ORACLE_VERSION = "p2e1rc-arm-wide-admission-1";
 
 export const ANSWER_FIELDS = ["judgments", "proposedAction", "justification", "uncertainty", "sourceReferences", "confidence"];
 
@@ -127,8 +132,17 @@ export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_
     const sourceMatches = judgment.source === requiredSource;
     /** §8.2: the reference must belong to THIS proposition and THIS trial (never a global list). */
     const allowed = allowedRefsFor(snapshot, judgment.proposition);
+    /** §4.2 (E1RC): the model-visible handles, which are the ONLY references the agent could have seen. */
+    const modelVisibleHandles = [target.citationHandle].filter((ref) => ref !== null && ref !== undefined);
     const assertsFact = judgment.truth === "TRUE" || judgment.truth === "FALSE";
     const referenceValid = !assertsFact ? (judgment.evidenceRef === undefined || judgment.evidenceRef === null ? true : allowed.includes(judgment.evidenceRef)) : judgment.evidenceRef !== undefined && judgment.evidenceRef !== null && allowed.includes(judgment.evidenceRef);
+    /**
+     * §4.2: AN INTERNAL-ONLY REFERENCE IS UNAVAILABLE TO THE EVALUATED AGENT. The oracle's internal
+     * EvidenceRef (`work-event:A0:...`) never appears in the delivered section, so an answer citing ONLY that
+     * token cannot have been grounded in evidence the agent saw. It is recorded separately so a caller can
+     * distinguish "wrong reference" from "a reference the agent could not have obtained".
+     */
+    const citesOnlyInternalRef = assertsFact && typeof judgment.evidenceRef === "string" && !modelVisibleHandles.includes(judgment.evidenceRef) && allowed.includes(judgment.evidenceRef);
     perJudgment.push({
       proposition: judgment.proposition,
       expectedTruth: target.truth,
@@ -141,11 +155,19 @@ export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_
       sourceMatches,
       evidenceRef: judgment.evidenceRef ?? null,
       allowedRefs: allowed,
+      modelVisibleHandles,
       referenceValid,
+      citesOnlyInternalRef,
       /** A truth error is a genuine mismatch: an honest UNKNOWN is excluded. */
       truthError: truthMatches === false,
-      /** Full credit needs the exact truth, the right authority and a real proposition-specific reference. */
-      credit: judgment.truth === target.truth && sourceMatches && referenceValid,
+      /**
+       * E1RC C1-F2 (§4.3): ARM-WIDE AVAILABILITY. A definite assertion about a fact this arm's delivered
+       * evidence could NOT establish earns NO credit, even when it happens to be objectively true and cites a
+       * formally valid handle. Correct guessing is not evidence-grounded reasoning. (Credit also requires the
+       * exact truth, the right authority and a real proposition-specific reference.)
+       */
+      unsupportedCertainty: assertsFact && !availableToArm,
+      credit: judgment.truth === target.truth && sourceMatches && referenceValid && !citesOnlyInternalRef && (assertsFact ? availableToArm : true),
     });
   }
 
@@ -158,17 +180,19 @@ export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_
   const missingCritical = requirements.mustCredit.filter((id) => !credited.has(id));
   /** §8.3: a critical proposition this arm could NOT establish must not be asserted as a definite claim. */
   const falselyAsserted = requirements.mustNotAssert.filter((id) => scored.some((entry) => entry.proposition === id && (entry.givenTruth === "TRUE" || entry.givenTruth === "FALSE")));
+  /** E1RC §4.3: EVERY proposition, not just the critical set, must respect what the arm could establish. */
+  const unsupportedCertainty = scored.filter((entry) => entry.unsupportedCertainty === true).map((entry) => ({ proposition: entry.proposition, givenTruth: entry.givenTruth, why: "the arm's delivered evidence could not establish this fact, so a definite assertion earns no credit" }));
 
   const covered = scored.length;
   const creditCount = credited.size;
   const coverage = covered === 0 ? 0 : covered / expected.size;
 
   /**
-   * §8.6/§13.3: THE PASS RULE. No wrong claim, no unsupported source, no bad reference, AND credit on every
-   * critical proposition the arm's evidence could establish, AND no critical proposition the arm could NOT
-   * establish asserted as a definite claim. A single unrelated correct fact is therefore insufficient.
+   * §8.6/§13.3/§4.3: THE PASS RULE. No wrong claim, no unsupported source, no bad reference, no unsupported
+   * certainty on ANY proposition, AND credit on every critical proposition the arm's evidence could
+   * establish, AND no critical proposition the arm could NOT establish asserted as a definite claim.
    */
-  const pass = truthErrors.length === 0 && sourceErrors.length === 0 && referenceErrors.length === 0 && missingCritical.length === 0 && falselyAsserted.length === 0 && creditCount >= 1;
+  const pass = truthErrors.length === 0 && sourceErrors.length === 0 && referenceErrors.length === 0 && unsupportedCertainty.length === 0 && missingCritical.length === 0 && falselyAsserted.length === 0 && creditCount >= 1;
   return Object.freeze({
     perJudgment: Object.freeze(perJudgment),
     covered,
@@ -178,6 +202,7 @@ export function judgeHistoricalUnderstanding(answer, snapshot = REFERENCE_ASSAY_
     truthErrors: Object.freeze(truthErrors),
     sourceErrors: Object.freeze(sourceErrors),
     referenceErrors: Object.freeze(referenceErrors),
+    unsupportedCertainty: Object.freeze(unsupportedCertainty),
     criticalPropositions: CRITICAL_PROPOSITIONS,
     criticalMustCredit: requirements.mustCredit,
     criticalMustNotAssert: requirements.mustNotAssert,

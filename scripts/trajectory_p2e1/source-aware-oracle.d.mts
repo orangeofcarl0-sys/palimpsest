@@ -46,6 +46,7 @@ export interface HistoricalUnderstandingResult {
   readonly truthErrors: readonly string[];
   readonly sourceErrors: readonly Readonly<Record<string, unknown>>[];
   readonly referenceErrors: readonly Readonly<Record<string, unknown>>[];
+  readonly unsupportedCertainty: readonly Readonly<Record<string, unknown>>[];
   readonly criticalPropositions: readonly string[];
   readonly criticalMustCredit: readonly string[];
   readonly criticalMustNotAssert: readonly string[];

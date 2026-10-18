@@ -8,6 +8,8 @@ export declare const TRUTH_SOURCES: readonly string[];
 export declare const TRUTH_VALUES: readonly string[];
 export declare const AUTHORITATIVE_SOURCE_OF: Readonly<Record<string, string>>;
 export declare const CRITICAL_PROPOSITIONS: readonly string[];
+export declare const PAGE_COVERAGE_VALUES: readonly string[];
+export declare function validateAssayTruthFacts(facts: unknown): { readonly ok: true } | { readonly ok: false; readonly problems: readonly string[] };
 
 export interface AssayTruthTemplate {
   readonly scenarioId: string;
