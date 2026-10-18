@@ -301,20 +301,14 @@ write("dsh-execution-requalification.json", {
 
 /* ================================================================ G. identity and verdicts */
 
-const artifacts = [
-  "baseline-and-environment.json",
-  "dsh-version-semantics.json",
-  "capability-surface.json",
-  "cwd-security-falsifiers.json",
-  "host-security-conformance.json",
-  "assay-residual-corrections.json",
-  "dsh-execution-requalification.json",
-  "closure-gate.json",
-];
-const artifactDigests = Object.fromEntries(artifacts.filter((name) => existsSync(join(OUT, name))).map((name) => [name, digestOfFile(join(OUT, name))]));
-/** The digest over the artifacts themselves, computed from the REAL bytes just written. */
-const evidenceContentDigest = `sha256-${createHash("sha256").update(JSON.stringify(artifactDigests)).digest("hex")}`;
-
+/**
+ * §8.5: THE DIGEST COVERS EVERY ARTIFACT THIS GENERATOR PRODUCES, including the verdicts.
+ *
+ * The identity manifest is therefore written LAST: it hashes the real bytes of everything else, so a later edit
+ * to any artifact — including a verdict — is detectable from this one file. It deliberately does NOT hash
+ * itself, and it does NOT attempt to name its own commit: a commit cannot contain its own SHA. The final HEAD is
+ * reported externally, in the engineering document and the final report.
+ */
 const closureEstablished = closure?.verdict === "CLOSURE_ESTABLISHED";
 const runtimeConforms = (() => {
   const parse = (v) => {
@@ -327,27 +321,6 @@ const runtimeConforms = (() => {
   for (let i = 0; i < 3; i += 1) if (a[i] !== b[i]) return a[i] > b[i];
   return true;
 })();
-
-write("git-and-evidence-identity.json", {
-  schemaVersion: 1,
-  kind: "TRAJECTORY_P2E1RD_GIT_AND_EVIDENCE_IDENTITY",
-  stage: "Trajectory-P2-E1RD",
-  evidenceClass: "OBSERVED",
-  parent: PARENT,
-  codeFreezeHead: CODE_FREEZE,
-  codeFreezeTree: git(["rev-parse", `${CODE_FREEZE}^{tree}`]),
-  evidenceInputHead: HEAD,
-  evidenceInputTree: TREE,
-  /**
-   * §8.5: the evidence records the ACTUAL hashes of the artifact bytes. It does NOT attempt to name its own
-   * commit — a commit cannot contain its own SHA — so the final HEAD is reported externally, in the engineering
-   * document and the final report.
-   */
-  evidenceContentDigest,
-  artifactDigests,
-  evidenceSelfReferenceNote: "this artifact cannot contain the SHA of the commit that contains it; the final HEAD is reported in docs/engineering/trajectory-p2e1rd.md and the final engineering report",
-  protectedResearchEvidence: protectedTrees,
-});
 
 write("final-verdicts.json", {
   schemaVersion: 1,
@@ -414,5 +387,40 @@ write("final-verdicts.json", {
   note: "Every verdict above is a function of an observed artifact. None was written as a constant.",
 });
 
+/* ================================================================ H. the identity manifest, written LAST */
+
+const artifacts = [
+  "baseline-and-environment.json",
+  "dsh-version-semantics.json",
+  "capability-surface.json",
+  "cwd-security-falsifiers.json",
+  "host-security-conformance.json",
+  "assay-residual-corrections.json",
+  "dsh-execution-requalification.json",
+  "closure-gate.json",
+  "final-verdicts.json",
+];
+const artifactDigests = Object.fromEntries(artifacts.filter((name) => existsSync(join(OUT, name))).map((name) => [name, digestOfFile(join(OUT, name))]));
+/** SHA-256 over the per-artifact digests, so one value reconciles the whole set. */
+const evidenceContentDigest = `sha256-${createHash("sha256").update(JSON.stringify(artifactDigests)).digest("hex")}`;
+
+write("git-and-evidence-identity.json", {
+  schemaVersion: 1,
+  kind: "TRAJECTORY_P2E1RD_GIT_AND_EVIDENCE_IDENTITY",
+  stage: "Trajectory-P2-E1RD",
+  evidenceClass: "OBSERVED",
+  parent: PARENT,
+  codeFreezeHead: CODE_FREEZE,
+  codeFreezeTree: git(["rev-parse", `${CODE_FREEZE}^{tree}`]),
+  evidenceInputHead: HEAD,
+  evidenceInputTree: TREE,
+  evidenceContentDigest,
+  artifactDigests,
+  artifactCount: Object.keys(artifactDigests).length,
+  evidenceSelfReferenceNote: "this manifest hashes the real bytes of every OTHER artifact, including the verdicts. It does not hash itself and cannot name its own commit — a commit cannot contain its own SHA — so the final HEAD is reported in docs/engineering/trajectory-p2e1rd.md and the final engineering report.",
+  protectedResearchEvidence: protectedTrees,
+});
+
 process.stdout.write(`\nevidence written to ${OUT}\n`);
 process.stdout.write(`closure verdict: ${String(closure?.verdict)}\n`);
+process.stdout.write(`evidence content digest: ${evidenceContentDigest}\n`);
