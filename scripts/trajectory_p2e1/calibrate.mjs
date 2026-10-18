@@ -89,7 +89,7 @@ async function runDryRun() {
   const started = Date.now();
 
   // 1. The official oracle and the legacy oracle's status are declared (never inferred).
-  check("oracle-version", "the evaluation oracle names a frozen version", typeof ORACLE_VERSION === "string" && ORACLE_VERSION.startsWith("p2e1r-"), ORACLE_VERSION);
+  check("oracle-version", "the evaluation oracle names a frozen version", typeof ORACLE_VERSION === "string" && (ORACLE_VERSION.startsWith("p2e1r-") || ORACLE_VERSION.startsWith("p2e1rc-")), ORACLE_VERSION);
   check("official-oracle-declared", "the active assay names ONE official oracle module", OFFICIAL_ORACLE.module === "scripts/trajectory_p2e1/source-aware-oracle.mjs", OFFICIAL_ORACLE.module);
   check("legacy-oracle-isolated", "the legacy keyword oracle is classified LEGACY_REPRODUCTION_ONLY and unused by the active assay", LEGACY_ORACLE_STATUS.classification === "LEGACY_REPRODUCTION_ONLY" && LEGACY_ORACLE_STATUS.usedByActiveAssay === false, LEGACY_ORACLE_STATUS.classification);
 
@@ -160,7 +160,7 @@ async function runDryRun() {
     check("agent-cannot-supply-truth", "the evaluation refuses when no per-run truth is supplied", selfSupplied.ok === false, selfSupplied.detail);
 
     /** §11.9: a deliberately broken invariant must produce NO-GO — here, the oracle version must be the E1R one. */
-    check("oracle-version-is-e1r", "the oracle version is the E1R proposition-admission version", ORACLE_VERSION === "p2e1r-proposition-admission-1", ORACLE_VERSION);
+    check("oracle-version-is-current", "the oracle version is the current arm-wide admission version", ORACLE_VERSION === "p2e1rc-arm-wide-admission-1", ORACLE_VERSION);
   } catch (error) {
     check("fixture-prepares", "the benchmark fixture prepares deterministically", false, error instanceof Error ? error.message : String(error));
   } finally {

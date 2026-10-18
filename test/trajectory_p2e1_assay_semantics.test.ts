@@ -238,7 +238,7 @@ describe("E1R §8.7/§8.9 — operational measurement and refusal semantics", ()
   });
 
   it("29. the corrected positive answer passes and the oracle names the E1R version", () => {
-    expect(ORACLE_VERSION).toBe("p2e1r-proposition-admission-1");
+    expect(ORACLE_VERSION).toBe("p2e1rc-arm-wide-admission-1");
     expect([...ORACLE_DIMENSIONS]).toEqual(["historicalUnderstanding", "decisionQuality", "operationalBehavior"]);
     const result = judgeAnswer(correctTreatment, { snapshot: SNAP, arm: "treatment", observation: null });
     expect(result.ok).toBe(true);

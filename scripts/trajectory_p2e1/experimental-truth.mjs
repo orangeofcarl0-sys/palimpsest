@@ -74,14 +74,65 @@ export const ASSAY_TRUTH_TEMPLATE = Object.freeze({
   dshPageCoverage: "PARTIAL",
 });
 
+/** §4.4: the coverage values a page may legitimately report. */
+export const PAGE_COVERAGE_VALUES = ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"];
+
+/**
+ * §4.4 (E1RC C1-F3): THE TRUTH ADMISSION GUARD.
+ *
+ * `instantiateAssayTruth()` previously destructured whatever it was given and derived truth values from it,
+ * so a contradictory page (known=8, returned=8, coverage=PARTIAL) produced a self-contradictory truth
+ * (`PARTIAL=TRUE` AND `ALL_REPORTED_DSH_EVENTS_RETURNED=TRUE`), and missing identities or negative counts
+ * were silently accepted. Corrupted input must be REFUSED before a credible-looking truth exists — UNKNOWN
+ * is reserved for facts the source cannot establish, never for malformed input.
+ *
+ * Returns `{ ok: true }` or `{ ok: false, problems }`.
+ */
+export function validateAssayTruthFacts(facts) {
+  const problems = [];
+  if (facts === null || typeof facts !== "object" || Array.isArray(facts)) return { ok: false, problems: ["the facts are not an object"] };
+  const requiredString = (key) => {
+    const value = facts[key];
+    if (typeof value !== "string" || value.trim() === "") problems.push(`${key} must be a non-empty string`);
+  };
+  for (const key of ["trialId", "projectId", "originAttemptId", "consumerAttemptId", "dshSessionId", "gitHead"]) requiredString(key);
+  if (typeof facts.gitHead === "string" && facts.gitHead.trim() !== "" && !/^[0-9a-f]{40}$/u.test(facts.gitHead)) {
+    problems.push(`gitHead must be a 40-character lowercase hex commit id, got ${JSON.stringify(facts.gitHead)}`);
+  }
+  const { dshKnownEventCount: known, dshReturnedCount: returned, dshPageCoverage: coverage } = facts;
+  const knownValid = Number.isInteger(known) && known >= 0;
+  const returnedValid = Number.isInteger(returned) && returned >= 0;
+  if (!knownValid) problems.push(`dshKnownEventCount must be a non-negative integer, got ${JSON.stringify(known)}`);
+  if (!returnedValid) problems.push(`dshReturnedCount must be a non-negative integer, got ${JSON.stringify(returned)}`);
+  if (!PAGE_COVERAGE_VALUES.includes(coverage)) problems.push(`dshPageCoverage must be one of ${PAGE_COVERAGE_VALUES.join(", ")}, got ${JSON.stringify(coverage)}`);
+  /** §4.4: the counts and the declared coverage must AGREE — otherwise the page contradicts itself. */
+  if (knownValid && returnedValid && returned > known) problems.push(`dshReturnedCount (${String(returned)}) may not exceed dshKnownEventCount (${String(known)})`);
+  if (knownValid && returnedValid && PAGE_COVERAGE_VALUES.includes(coverage)) {
+    const allReturned = returned >= known;
+    if (coverage === "PARTIAL" && allReturned) problems.push(`coverage PARTIAL contradicts returned=${String(returned)} of known=${String(known)} (every reported event was returned)`);
+    if (coverage === "FULL" && !allReturned) problems.push(`coverage FULL contradicts returned=${String(returned)} of known=${String(known)} (not every reported event was returned)`);
+  }
+  return problems.length === 0 ? { ok: true } : { ok: false, problems };
+}
+
 /**
  * §7.4/§7.5: INSTANTIATE the frozen assay truth from the ACTUAL prepared fixture's Owner facts.
  *
  * Every identity here comes from the run: the canonical Attempt ids the controller minted, the source basis
  * the fixture actually served, and the real Git HEAD. The propositions' evidence references are derived from
  * those identities, so a reference from another run can never be valid here (§8.4).
+ *
+ * E1RC C1-F1: `dshSessionId` must ALREADY be trial-unique. The fixture derives it from the Origin Attempt
+ * identity, so the internal EvidenceRef and the model-visible CitationHandle both differ between trials —
+ * merely adding a `trialId` field while leaving a reusable `"origin-partial"` handle would not be a fix.
+ *
+ * E1RC C1-F3: the facts are validated FIRST; malformed input throws rather than producing a plausible truth.
  */
 export function instantiateAssayTruth(facts) {
+  const admission = validateAssayTruthFacts(facts);
+  if (!admission.ok) {
+    throw new Error(`the assay truth facts were refused: ${admission.problems.join("; ")}`);
+  }
   const {
     trialId,
     projectId,

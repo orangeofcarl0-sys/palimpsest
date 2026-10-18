@@ -254,25 +254,33 @@ export async function prepareFixture(options = {}) {
      * The origin association is recorded through the install's OWN Recorder against a session the CONTROLLED
      * READER will serve as a genuinely PARTIAL page: `knownEventCount` is 8 while only the first 3 events are
      * returned, so `eventPageCoverageOfPage` yields PARTIAL and the Capsule must state the unread extent.
+     *
+     * E1RC C1-F1 (§4.1): THE CONTROLLED ORIGIN SESSION ID IS TRIAL-UNIQUE. E1R hard-coded `"origin-partial"`,
+     * so every trial derived the SAME internal EvidenceRef and the SAME model-visible CitationHandle — which
+     * meant Trial A's DSH citation was accepted in Trial B, defeating the claimed trial scoping. The id is now
+     * derived from the ACTUAL Origin Attempt the controller minted (plus a per-run nonce), so two trials can
+     * never share a page identity. It remains explicitly a CONTROLLED page, never relabelled as first-party
+     * persisted origin evidence.
      */
+    const CONTROLLED_ORIGIN_SESSION_ID = `controlled-origin-${String(a0)}-${String(owned.root).split(/[\\/]/u).pop()}`;
     const recorder = installed.executionAssociationRecorder;
     recorder.recordIdentity(Object.freeze({
       hostLocalJobId: "",
       attemptId: a0,
-      observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: "origin-partial", reportedSessionId: "origin-partial", source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }),
+      observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: CONTROLLED_ORIGIN_SESSION_ID, reportedSessionId: CONTROLLED_ORIGIN_SESSION_ID, source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }),
     }));
     recorder.finalizeInvocation({ attemptId: a0, invocationId: "wpi-a0", closeReason: "CHILD_EXIT_OBSERVED" });
 
     /** The PARTIAL page: 3 of 8 known events, beginning at seq 0. */
     const partialPage = {
-      schemaVersion: 1, readState: "READ_OK", sessionId: "origin-partial", header: null, sourceIdentity: "fixture",
+      schemaVersion: 1, readState: "READ_OK", sessionId: CONTROLLED_ORIGIN_SESSION_ID, header: null, sourceIdentity: "fixture",
       sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE", throughSeq: 2, knownEventCount: 8, inheritedEventCount: 0,
       requestedFromSeq: 0, requestedMaxEvents: 3, returnedCount: 3, pageBounded: true, diskIoBounded: true,
       durabilityProvenance: "PERSISTED_AND_SYNTHETIC_SEPARATED", persistedEventCount: 8, syntheticRecoveryEventCount: 0,
       events: [
-        { sessionId: "origin-partial", seq: 0, type: "turn/start", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 0, surface: null, summary: "turn started", durationMs: null, observedStatus: null },
-        { sessionId: "origin-partial", seq: 1, type: "tool/call", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 1, surface: null, summary: "tool call node at step 1", durationMs: null, observedStatus: null },
-        { sessionId: "origin-partial", seq: 2, type: "tool/result", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 2, surface: null, summary: "tool result at step 1", durationMs: null, observedStatus: "recorded" },
+        { sessionId: CONTROLLED_ORIGIN_SESSION_ID, seq: 0, type: "turn/start", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 0, surface: null, summary: "turn started", durationMs: null, observedStatus: null },
+        { sessionId: CONTROLLED_ORIGIN_SESSION_ID, seq: 1, type: "tool/call", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 1, surface: null, summary: "tool call node at step 1", durationMs: null, observedStatus: null },
+        { sessionId: CONTROLLED_ORIGIN_SESSION_ID, seq: 2, type: "tool/result", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 2, surface: null, summary: "tool result at step 1", durationMs: null, observedStatus: "recorded" },
       ],
       knownParentSession: null, proves: [], doesNotProve: [], detail: "controlled PARTIAL fixture",
     };
@@ -284,7 +292,7 @@ export async function prepareFixture(options = {}) {
     resources.assocStore = assocStore;
     const basis = ea.computeTrustedSourceBasis({ adapterId: "fixture-a", workerBin: dshBin(), nodeExecPath: process.execPath });
     const rec2 = ea.createExecutionAssociationRecorder({ store: assocStore, projectId: PROJECT_ID, sourceBasis: basis, sourceKind: "FIRST_PARTY_DSH_HOST" });
-    rec2.recordIdentity(Object.freeze({ hostLocalJobId: "", attemptId: a0, observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: "origin-partial", reportedSessionId: "origin-partial", source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }) }));
+    rec2.recordIdentity(Object.freeze({ hostLocalJobId: "", attemptId: a0, observation: Object.freeze({ invocationId: "wpi-a0", dshSessionId: CONTROLLED_ORIGIN_SESSION_ID, reportedSessionId: CONTROLLED_ORIGIN_SESSION_ID, source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }) }));
     rec2.finalizeInvocation({ attemptId: a0, invocationId: "wpi-a0", closeReason: "CHILD_EXIT_OBSERVED" });
     const qualifier = ea.makeAssociationQualifier({
       store: assocStore,
@@ -326,7 +334,7 @@ export async function prepareFixture(options = {}) {
       originAttemptId: a0,
       gitHead: HEAD,
       /** §7.5: the controlled origin session id and its page shape, so the truth can be instantiated per run. */
-      dshSessionId: "origin-partial",
+      dshSessionId: CONTROLLED_ORIGIN_SESSION_ID,
       dshPageEvidenceClass: "CONTROLLED_DSH_PAGE",
       capsule,
       capsuleDigest: canonical.canonicalDigest(capsule),
@@ -383,7 +391,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
       knownUnknowns: ["the remaining history is unknown", "A0 did not settle, so settlement is not proven"],
       proposedNextAction: "re-check the current world before deciding",
       verificationRequired: true,
-      sourceReferences: ["origin-partial"],
+      sourceReferences: [prepared?.dshSessionId ?? "controlled-origin"],
       confidence: "MEDIUM",
     });
     const negative = await evaluateAnswer({
