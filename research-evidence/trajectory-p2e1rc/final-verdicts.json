@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RC_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-E1RC",
+  "baselineHead": "f78e7672441b1a970ed21f66435feb595c9401a3",
+  "codeFreezeHead": "50ae7fe1f482b9f28d09b649d60dd62e9ff63b9e",
+  "executedCodeTree": "7f453038e4452da9414a3ae12eecc1e95f995e95",
+  "evidenceInputHead": "50ae7fe1f482b9f28d09b649d60dd62e9ff63b9e",
+  "e1rcA": {
+    "verdict": "ASSAY_ADMISSION_INTEGRITY_QUALIFIED",
+    "sourceOwnedTruthInputConsistency": true,
+    "trialScopedCitationBinding": true,
+    "correctArmAvailability": true,
+    "correctCriticalCoverage": true,
+    "falseAssertionsRejected": true,
+    "unsupportedCitationsRejected": true,
+    "honestUncertaintyAccepted": true,
+    "noActiveLegacyOracle": true,
+    "dynamicNegativeControls": 17,
+    "evidenceClass": "DYNAMICALLY_VERIFIED"
+  },
+  "e1rcB": {
+    "verdict": "NOT_ESTABLISHED",
+    "reason": "no first-party DSH worker turn can complete: the installed DSH 0.2.1-rc.2 exposes an unclassified working_directory capability and the fail-closed capability gate refuses the worker. Without a completed turn there is no persisted assistant message, so no execution-derived answer exists.",
+    "actualFirstPartyDshConsumerTurn": false,
+    "actualPersistedAnswerExtraction": false,
+    "correctTrialAndArmAttribution": true,
+    "officialOracleConsumesExtractedOutput": false,
+    "integrityConditionsFailClosed": true,
+    "executionDerivedEvidenceFields": true,
+    "correctCodeFreezeBinding": true,
+    "successfulRequiredCleanup": true
+  },
+  "e1rcC": {
+    "verdict": "NOT_ESTABLISHED",
+    "reason": "E1RC-C requires E1RC-B, which is not established.",
+    "regressionScopeReconciled": true,
+    "protectedResearchEvidenceUnchanged": true,
+    "runtimeConformance": false,
+    "frozenBaselineCalibrationSpec": false
+  },
+  "notAwarded": {
+    "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+    "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+    "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+    "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+    "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+    "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+    "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED"
+  },
+  "closureGate": {
+    "verdict": "CLOSURE_NOT_ESTABLISHED",
+    "gateCount": 50,
+    "failedGates": [
+      "assay-control-exit-zero",
+      "assay-control-outcome-go",
+      "assay-control-answer-extracted",
+      "assay-control-answer-matches-emitted",
+      "assay-control-oracle-ok",
+      "assay-control-operational-not-measured",
+      "assay-treatment-exit-zero",
+      "assay-treatment-outcome-go",
+      "assay-treatment-answer-extracted",
+      "assay-treatment-answer-matches-emitted",
+      "assay-treatment-oracle-ok",
+      "assay-treatment-operational-not-measured"
+    ],
+    "exitCode": 1
+  },
+  "runtime": {
+    "node": "v24.14.1",
+    "declaredMinimum": ">=24.15.0",
+    "conforming": false
+  },
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
