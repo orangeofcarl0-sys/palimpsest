@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RD_ASSAY_RESIDUALS",
+  "stage": "Trajectory-P2-E1RD",
+  "evidenceClass": "OBSERVED",
+  "corrections": [
+    {
+      "id": "S5.1",
+      "defect": "validateAssayTruthFacts accepted UNKNOWN and NOT_APPLICABLE, and instantiation mapped both to ORIGIN_DSH_PAGE_FULL=TRUE (and NOT_APPLICABLE to PARTIAL=FALSE)",
+      "correction": "the scoring contract admits only FULL/PARTIAL and REFUSES the other two with a named reason; the derivation is exhaustive so a later relaxation cannot reintroduce the coercion",
+      "oracleVersionEffect": "none — truth admission, not scoring"
+    },
+    {
+      "id": "S5.2",
+      "defect": "citesOnlyInternalRef withheld one credit but was absent from the dimension PASS rule, so a correct answer could append a noncritical judgment citing an internal-only EvidenceRef and still pass",
+      "correction": "internalOnlyReferences is now part of the pass rule",
+      "oracleVersionEffect": "p2e1rc-arm-wide-admission-1 -> p2e1rd-internal-citation-closed-1"
+    },
+    {
+      "id": "S5.3",
+      "defect": "the closure gate recorded the Node version in prose but did not enforce it",
+      "correction": "runtime-node-conforms gate, numeric per-component comparison, blocks full qualification",
+      "oracleVersionEffect": "none"
+    },
+    {
+      "id": "S5.4",
+      "defect": "firstPartyDshTurnObserved could be true for a run whose worker returned HOST_FAILURE with no assistant message",
+      "correction": "seven separate execution stages; a HOST_FAILURE is part of the integrity gate and cannot produce GO",
+      "oracleVersionEffect": "none"
+    }
+  ]
+}

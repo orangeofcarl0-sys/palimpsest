@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RD_DSH_EXECUTION_REQUALIFICATION",
+  "stage": "Trajectory-P2-E1RD",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Copied from the closure gate's own report, which is the single place a verdict is derived. This artifact adds no claim of its own.",
+  "verdict": "CLOSURE_ESTABLISHED",
+  "gateCount": 53,
+  "failedGates": [],
+  "runtime": {
+    "platform": "win32",
+    "node": "v24.22.0",
+    "git": "git version 2.53.0.windows.2"
+  },
+  "derived": {
+    "firstPartyDshTurnObserved": true,
+    "answersExtractedFromPersistence": true,
+    "controlArmDelivered": true,
+    "treatmentArmDelivered": true,
+    "modelConsumedCapsule": false,
+    "modelConsumedCapsuleReason": "the deterministic adapter is SEEDED with the expected answer through profile configuration; it does not read the Capsule, so this run proves transport and persistence only",
+    "stochasticInference": false,
+    "externalModelRequest": false
+  },
+  "arms": {
+    "control": null,
+    "treatment": null
+  },
+  "modelCallsMade": 0,
+  "externalModelRequestOccurred": false
+}

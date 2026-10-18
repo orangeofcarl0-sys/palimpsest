@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RD_CAPABILITY_SURFACE",
+  "stage": "Trajectory-P2-E1RD",
+  "evidenceClass": "OBSERVED",
+  "note": "Read from the shipped classification table and the real first-party surface the worker receives. `working_directory` is deliberately ABSENT from the table: withdrawal is the policy and unclassified-refusal is the backstop.",
+  "classifiedCount": 41,
+  "withdrawn": [
+    {
+      "name": "working_directory",
+      "why": "changes the basis every later filesystem call resolves against, so a path approved against the execution world could be opened elsewhere; it is withdrawn rather than classified, and its absence from the table makes a re-exposure refuse the worker",
+      "seam": "dsh-tool-working-directory -> ctx.workingDirectory.set(agent, cd)"
+    }
+  ],
+  "isWithdrawnNameClassified": false,
+  "reExposureRefused": true,
+  "reExposureDetail": "UNCLASSIFIED worker-visible capability(ies): working_directory — an unknown capability is not assumed safe, so the worker must not start",
+  "withdrawalFilterOnPresentSurface": {
+    "withdraw": [
+      "working_directory"
+    ],
+    "absent": []
+  },
+  "withdrawalFilterOnAbsentSurface": {
+    "withdraw": [],
+    "absent": [
+      "working_directory"
+    ]
+  }
+}

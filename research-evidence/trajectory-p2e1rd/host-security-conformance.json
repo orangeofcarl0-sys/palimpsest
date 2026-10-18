@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RD_HOST_SECURITY_CONFORMANCE",
+  "stage": "Trajectory-P2-E1RD",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Each entry was executed. A refusal is only counted when the production function returned a denial; a canary is only counted when the content was actually attempted.",
+  "cwdNegativeControls": {
+    "exitCode": 0,
+    "total": 20,
+    "passed": 20,
+    "failed": [],
+    "tests": [
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A1. an equal basis is admitted, so ordinary work still runs",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A2. a basis changed OUTSIDE the world is refused",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A3. a basis changed INTO the simulated protected root is refused",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A4. a basis changed into a SIBLING world is refused — containment alone would have allowed it",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A5. the refusal is per-call: the SAME guard admits again once the basis is restored",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A6. a divergence that happens AFTER installation is still refused (the basis is not captured once)",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A7. a missing or unreadable service fails CLOSED, except when the process directory is the world",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A8. the two path-independent worker-private tools remain usable under a diverged basis",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A9. directory comparison is case-folded on win32, so a re-capitalized basis is not a bypass",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §5.3 the working-directory basis fence (DYNAMICALLY_VERIFIED) A10. a basis that is a PREFIX of the world is not treated as equal",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §6 capability withdrawal (DYNAMICALLY_VERIFIED) B1. the capability is WITHDRAWN from a surface that exposes it",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §6 capability withdrawal (DYNAMICALLY_VERIFIED) B2. a surface without it produces an EMPTY filter, so restrict() is never called with an unknown name",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §6 capability withdrawal (DYNAMICALLY_VERIFIED) B3. the withdrawal is NOT a classification: the name stays absent from the table",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §6 capability withdrawal (DYNAMICALLY_VERIFIED) B4. a re-exposed capability still REFUSES the worker start (the fail-closed backstop)",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §6 capability withdrawal (DYNAMICALLY_VERIFIED) B5. the post-withdrawal surface classifies, so a conforming worker is admitted",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §10.1 the read guard is unchanged where the basis is equal (DYNAMICALLY_VERIFIED) C1. an authorized read of the worker's own world is still allowed",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §10.1 the read guard is unchanged where the basis is equal (DYNAMICALLY_VERIFIED) C2. an absolute read of the protected canary is still refused",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §10.1 the read guard is unchanged where the basis is equal (DYNAMICALLY_VERIFIED) C3. a relative escape through `..` is still refused",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §10.1 the read guard is unchanged where the basis is equal (DYNAMICALLY_VERIFIED) C4. a search rooted above a protected root is still refused (mutual overlap)",
+        "status": "passed"
+      },
+      {
+        "name": "E1RD §10.1 the read guard is unchanged where the basis is equal (DYNAMICALLY_VERIFIED) C5. the two layers together: a diverged basis is refused even for a path the read guard allows",
+        "status": "passed"
+      }
+    ]
+  },
+  "suites": {
+    "r1hr-conformance": {
+      "label": "r1hr",
+      "exitCode": 1,
+      "elapsedMs": 3645,
+      "parsed": false,
+      "payload": null,
+      "stderrTail": []
+    },
+    "r1hc-conformance": {
+      "label": "r1hc",
+      "exitCode": 0,
+      "elapsedMs": 6816,
+      "parsed": false,
+      "payload": null,
+      "stderrTail": [
+        "(node:48844) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.",
+        "(Use `node --trace-deprecation ...` to show where the warning was created)"
+      ]
+    }
+  },
+  "readBoundaryContractDrift": {
+    "qualifiedVersion": "0.2.0-rc.2",
+    "resolvedVersion": "0.2.1-rc.2",
+    "drifted": true,
+    "preExistingAtParent": true,
+    "howEstablished": "the same HR-27 check fails identically at 3eb88db; verified by running the suite against the parent tree"
+  }
+}

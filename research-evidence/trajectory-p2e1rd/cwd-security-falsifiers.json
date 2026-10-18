@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RD_CWD_SOURCE_MAP",
+  "stage": "Trajectory-P2-E1RD",
+  "parent": "3eb88dba1420b9d13c32926e0e9c064a8533ae53",
+  "evidenceClass": "SOURCE_DERIVED",
+  "note": "A static source analysis. `S2-basis-can-diverge` states that two code paths CAN disagree; it does not assert that any live run did. The dynamic reproduction is separate and is reported separately.",
+  "installed": {
+    "dshToolFs": "0.2.1-rc.2",
+    "dshToolFsSearch": "0.2.1-rc.2",
+    "dshWorkingDirectory": "0.2.1-rc.2",
+    "dshToolWorkingDirectory": "0.2.1-rc.2",
+    "dshSubagent": "0.2.1-rc.2"
+  },
+  "invariant": "RealTarget(GuardCwd, modelPath) === RealTarget(EffectiveSessionCwd, modelPath)",
+  "findings": [
+    {
+      "id": "S1-executor-resolves-through-workingDirectory",
+      "statement": "the installed fs tools resolve model paths through ctx.workingDirectory.ensure(agent), not a fixed header",
+      "observed": true,
+      "detail": "dsh-tool-fs@0.2.1-rc.2 resolves via ctx.workingDirectory.ensure"
+    },
+    {
+      "id": "S1-search-resolves-through-workingDirectory",
+      "statement": "the installed search tools resolve their walk root through the same service",
+      "observed": true,
+      "detail": "dsh-tool-fs-search@0.2.1-rc.2"
+    },
+    {
+      "id": "S1-working-directory-service-exists",
+      "statement": "the installed release ships a mutable per-Session working-directory service",
+      "observed": true,
+      "detail": "dsh-working-directory@0.2.1-rc.2"
+    },
+    {
+      "id": "S1-model-facing-tool-exists",
+      "statement": "the installed release ships a model-callable `working_directory` tool with an optional absolute or relative `cd`",
+      "observed": true,
+      "detail": "dsh-tool-working-directory@0.2.1-rc.2"
+    },
+    {
+      "id": "S2-guard-uses-a-fixed-basis",
+      "statement": "the committed guard resolves model paths against a FIXED cwd (config.cwd or the worker world)",
+      "observed": true,
+      "detail": "createReadGuard resolves against config.cwd ?? config.world"
+    },
+    {
+      "id": "S2-guard-does-not-read-the-session-cwd",
+      "statement": "the committed guard never consults the Session's effective working directory",
+      "observed": true,
+      "detail": "no reference to workingDirectory appears in the guard"
+    },
+    {
+      "id": "S2-basis-can-diverge",
+      "statement": "the executor's basis is mutable while the guard's is fixed, so the two can resolve the same model path to different objects",
+      "observed": true,
+      "detail": "SOURCE-DEMONSTRATED HAZARD: `working_directory {cd: <dir>}` changes what every LATER tool call resolves, while the guard keeps resolving against the world"
+    },
+    {
+      "id": "S2-subagent-accepts-a-cwd",
+      "statement": "`subagent` takes a model-supplied `cwd` and applies it to the CHILD session, so the child's basis can move too",
+      "observed": true,
+      "detail": "dsh-tool-subagent declares `cwd`; dsh-subagent calls workingDirectory.set(child, create.cwd)"
+    },
+    {
+      "id": "S2-workflow-inherits-the-parent-basis",
+      "statement": "`workflow` children inherit the parent's effective directory rather than choosing one",
+      "observed": true,
+      "detail": "dsh-workflow-ptc resolves this.cwd from the PARENT session"
+    },
+    {
+      "id": "S2-tool-removal-alone-is-insufficient",
+      "statement": "removing the model-facing tool would NOT restore the equality, because delegation can still move a child's basis",
+      "observed": true,
+      "detail": "a child created with `subagent {cwd: <protected>}` resolves relative paths against that directory while a world-fixed guard still approves them"
+    },
+    {
+      "id": "S1-qualified-release-uses-the-header-cwd",
+      "statement": "0.2.0-rc.2 resolves model paths from the immutable Session Header cwd",
+      "observed": true,
+      "detail": "dsh-tool-fs@0.2.0-rc.2 reads exec.agent?.session.header.cwd"
+    },
+    {
+      "id": "S1-qualified-release-has-no-working-directory-service",
+      "statement": "0.2.0-rc.2 ships no working-directory service or tool at all",
+      "observed": true,
+      "detail": "no dsh-working-directory / dsh-tool-working-directory package exists at 0.2.0-rc.2"
+    },
+    {
+      "id": "S6-read-boundary-contract-is-version-pinned",
+      "statement": "the read-boundary contract names the release it was qualified against, and drift is reported",
+      "observed": true,
+      "detail": "DSH_CONTRACT.qualifiedVersion = 0.2.0-rc.2"
+    }
+  ],
+  "conclusion": "The guard's basis and the executor's basis are different values with different mutability. Restoring the invariant requires the guard to resolve against the SAME value the executor uses; removing the model-facing tool alone is insufficient while delegation can move a child's basis.",
+  "failedFindings": []
+}
