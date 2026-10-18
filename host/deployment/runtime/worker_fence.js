@@ -30,6 +30,7 @@ import { dirname, join, resolve } from 'node:path';
 import { admitWorldForFencing } from './alias_guard.js';
 import { GUARD_SCOPES, admitWorkerStart, classCounts } from './capability_classes.js';
 import { CONFIDENTIAL_PROFILE, admitConfidentialWorker, openConfidentialSlot } from './confidential_profile.js';
+import { createCwdFenceGuard } from './cwd_fence.js';
 import { applyReadFence, disclosedResiduals, isAncestorOf, protectedRootsFor, verifyTree } from './read_fence.js';
 import { createReadGuard, FENCED_READ_TOOLS } from './read_guard.js';
 
@@ -174,11 +175,27 @@ export function installWorkerReadBoundary(input = {}) {
    * guard installed" rather than as a crash.
    */
   const tools = context === undefined || typeof context?.get !== 'function' ? undefined : context.get('tools');
+  /**
+   * The working-directory service is resolved PER CALL, not captured here.
+   *
+   * The basis it reports is mutable, so a value read once at admission would be the basis at admission rather
+   * than the basis at dispatch — the check/use gap this fence exists to close. Resolving lazily also covers a
+   * service mounted after the boundary is installed.
+   */
+  const resolveDirectories = () => (context === undefined || typeof context?.get !== 'function' ? undefined : context.get('workingDirectory'));
   let guardScope = GUARD_SCOPES.WORKER_SCOPE;
   /** @type {undefined | (() => void)} */
   let guardDisposer;
+  /** @type {undefined | (() => void)} */
+  let cwdFenceDisposer;
   if (tools !== undefined && typeof tools.guard === 'function') {
     guardDisposer = tools.guard(createReadGuard({ roots: config.roots, world: config.world }));
+    /**
+     * Layer 3 — the basis fence (E1RD §5). Installed in the SAME global scope as the read guard, because the
+     * divergence it refuses is reachable through delegation: a `subagent { cwd }` child would otherwise resolve
+     * against a directory the worker chose while the read guard kept approving against the world.
+     */
+    cwdFenceDisposer = tools.guard(createCwdFenceGuard({ world: config.world, directories: resolveDirectories }));
     guardScope = GUARD_SCOPES.GLOBAL;
   }
   return {
@@ -190,6 +207,13 @@ export function installWorkerReadBoundary(input = {}) {
     guardInstalled: guardDisposer !== undefined,
     guardScope,
     ...(guardDisposer === undefined ? {} : { guardDisposer }),
+    /**
+     * Layer 3's own fact, reported separately from the read guard. A caller that requires a boundary must be
+     * able to tell "the content fence is installed" from "the content fence is installed AND its basis is
+     * pinned to the executor's" — they are different guarantees and only the second is sufficient here.
+     */
+    cwdFenceInstalled: cwdFenceDisposer !== undefined,
+    ...(cwdFenceDisposer === undefined ? {} : { cwdFenceDisposer }),
     fencedTools: FENCED_READ_TOOLS,
   };
 }
@@ -231,7 +255,7 @@ export function boundaryTelemetry(installed) {
       alreadyProtected: outcomes.filter((entry) => entry.alreadyProtected === true).length,
       skipped: (installed.kernel.skipped ?? []).length,
     },
-    guard: { installed: installed.guardInstalled, scope: installed.guardScope, tools: installed.fencedTools },
+    guard: { installed: installed.guardInstalled, scope: installed.guardScope, tools: installed.fencedTools, cwdBasisPinned: installed.cwdFenceInstalled === true },
     aliases: { clean: installed.aliasesClean === true, found: (installed.aliasScan?.aliases ?? []).length },
     residuals: installed.config.residuals.length,
     // The pinned DSH contract this run depended on, so evidence names the host it ran against (§9).
@@ -250,3 +274,12 @@ export { isAncestorOf };
  * confidential profile slot was not consulted" while the protection assertions passed.
  */
 export { CONFIDENTIAL_PROFILE, admitConfidentialWorker, openConfidentialSlot };
+
+/**
+ * Re-exported for the same reason, and for one more (E1RD §6).
+ *
+ * The runner must WITHDRAW `working_directory` before it enumerates the surface the gate classifies. That
+ * filter is derived from the classification table, so it lives beside it; surfacing it here keeps the runner's
+ * single dynamic import sufficient and prevents a second, hand-maintained withdrawal list.
+ */
+export { WITHDRAWN_CAPABILITIES, withdrawalFilter } from './capability_classes.js';
