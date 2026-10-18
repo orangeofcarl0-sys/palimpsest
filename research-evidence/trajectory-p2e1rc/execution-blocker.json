@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RC_EXECUTION_BLOCKER",
+  "stage": "Trajectory-P2-E1RC",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "blocker": "UNCLASSIFIED_WORKER_VISIBLE_CAPABILITY",
+  "observed": {
+    "workerResultLine": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"refusing to run this worker: UNCLASSIFIED worker-visible capability(ies): working_directory - an unknown capability is not assumed safe, so the worker must not start\"}",
+    "capabilitiesClassified": true,
+    "unclassified": [
+      "working_directory"
+    ],
+    "readBoundaryContract": {
+      "package": "@deepseek-ai/dsh-win32-process",
+      "resolvedVersion": "0.2.1-rc.2",
+      "qualifiedVersion": "0.2.0-rc.2",
+      "drifted": true
+    },
+    "provider": "@deepseek-ai/dsh-working-directory@0.2.1-rc.2",
+    "suppliedBy": "dsh-agent-instructions (a first-party dsh 0.2.1-rc.2 dependency)"
+  },
+  "whyThisIsCorrectBehaviour": "The capability gate is FAIL-CLOSED by design: an unclassified worker-visible capability refuses the worker rather than assuming it safe. The refusal is the mechanism working, not a defect in the assay.",
+  "rootCause": "The installed first-party DSH is 0.2.1-rc.2 while the product's read-boundary contract was qualified against 0.2.0-rc.2. That release added the `working_directory` user-context capability, which is absent from host/deployment/runtime/capability_classes.js.",
+  "whyNotFixedHere": "Classifying a new capability changes PRODUCTION security semantics (host/deployment/runtime/capability_classes.js), which E1RC explicitly forbids without a separate stop-and-report. Deciding whether `working_directory` is a filesystem disclosure route is a product-level authority decision, not an instrumentation repair.",
+  "consequences": {
+    "e1rcA": "unaffected - truth/oracle admission is verified by pure functions",
+    "e1rcB": "NOT ESTABLISHED - no first-party DSH turn can complete, so no persisted answer can exist",
+    "e1rcC": "NOT ESTABLISHED - it depends on E1RC-B"
+  },
+  "e1rEvidenceImplication": "E1R reported realFirstPartyDshHostRan=true and answerEmittedByRealDshTurn=true. Those fields were HARD-CODED, and the underlying turn cannot have completed under this DSH release: the reader also threw on every call (see measurement-falsifiers C1-F4/C1-F7 and the answer-extraction fix). The E1R GO was therefore not execution-derived.",
+  "nextSteps": [
+    "Decide at product level whether `working_directory` is a filesystem disclosure route and classify it accordingly",
+    "OR qualify the assay against the exact 0.2.0-rc.2 first-party DSH release",
+    "Then re-run the closure gate; no assay code change is required for that decision"
+  ]
+}

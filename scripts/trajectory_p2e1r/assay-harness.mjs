@@ -40,11 +40,16 @@ const record = (key, value) => {
 
 if (!hasBuiltDist(REPO)) {
   process.stdout.write(`${JSON.stringify({ schemaVersion: 1, kind: "TRAJECTORY_P2E1R_ASSAY", outcome: "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED", blocker: "dist/src/advanced.js is absent; build first" }, null, 2)}\n`);
-  process.exit(1);
+  process.exit(2);
 }
+/**
+ * E1RC §5.3 (C1-F6): A MISSING REQUIRED DEPENDENCY IS A FAILURE. E1R exited 0 here, so "not established"
+ * looked like success to any caller that only checked the exit status. It is now NONZERO (2 = prerequisite
+ * missing, distinct from 1 = ran but not established).
+ */
 if (!hasFirstPartyDsh()) {
-  process.stdout.write(`${JSON.stringify({ schemaVersion: 1, kind: "TRAJECTORY_P2E1R_ASSAY", outcome: "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED", blocker: "no installed first-party DSH tree" }, null, 2)}\n`);
-  process.exit(0);
+  process.stdout.write(`${JSON.stringify({ schemaVersion: 1, kind: "TRAJECTORY_P2E1R_ASSAY", outcome: "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED", blocker: "no installed first-party DSH tree", exitMeaning: "prerequisite missing" }, null, 2)}\n`);
+  process.exit(2);
 }
 
 const PROJECT_ID = "p2e1r-assay";
@@ -136,7 +141,13 @@ try {
      * as assistant text. The answer is fixed BEFORE the turn runs and BEFORE it is read back (§11.4).
      */
     const answerJson = JSON.stringify(controlledAnswerForArm(frozenTruth));
-    writeBenchmarkProfile({ home, repo: REPO, root: owned.root, profileName: PROFILE, adapterUrl, answerJson });
+    /**
+     * §5.5: the answer travels as a FILE PATH. Inlining JSON into the YAML patch made the patch parse the
+     * flow mapping as an OBJECT, so the plugin received a non-string config and the entry failed to load.
+     */
+    const answerPath = join(owned.root, `answer-${ARM}.json`);
+    writeFileSync(answerPath, `${answerJson}\n`);
+    writeBenchmarkProfile({ home, repo: REPO, root: owned.root, profileName: PROFILE, adapterUrl, answerPath });
     record("controlledAnswerFrozenBeforeTurn", true);
     record("controlledAnswerCitationHandles", controlledAnswerForArm(frozenTruth).judgments.map((entry) => entry.evidenceRef));
 
@@ -177,12 +188,19 @@ try {
       },
     });
     record("workerOutcome", outcome?.kind ?? null);
+    record("workerDetail", outcome?.detail ?? null);
     if (observedSession === null) throw new Error("the DSH turn reported no session identity");
     record("dshSessionIdIsReal", observedSession.startsWith("worker-"));
 
     /** §10.7: read the answer back from OFFICIAL DSH persistence, by EXACT SessionId. */
     const sessionFile = findSessionFile(join(home, "sessions"), observedSession);
     record("sessionFileFoundByExactId", sessionFile !== null);
+    /**
+     * §11.8: NO HIDDEN GROUND TRUTH — checked BEFORE the verdict is derived, because it is a gating condition.
+     */
+    const { detectGroundTruthLeak } = await import("../trajectory_p2e1/experimental-truth.mjs");
+    const leak = detectGroundTruthLeak({ taskSection: sectionText, taskText: JSON.stringify(context.work ?? {}) }, frozenTruth);
+    record("groundTruthLeak", leak.leaked);
     const events = await readSessionEventsByExactId({ sessionsRoot: join(home, "sessions"), sessionId: observedSession });
     const extraction = extractBenchmarkAnswer(events);
     record("answerExtraction", { ok: extraction.ok, assistantMessageCount: extraction.assistantMessageCount ?? 0, bytes: extraction.bytes ?? null, seq: extraction.seq ?? null });
@@ -206,18 +224,34 @@ try {
         record("operationalBehaviorPass", evaluation.verdict.operationalBehavior);
         record("criticalMissing", evaluation.historicalUnderstanding.missingCritical);
         record("truthErrors", evaluation.historicalUnderstanding.truthErrors);
-        finalOutcome = evaluation.verdict.historicalUnderstanding && evaluation.verdict.decisionQuality ? "DETERMINISTIC_ASSAY_GO" : "ORACLE_ADMISSION_FAILED";
+        record("unsupportedCertainty", evaluation.historicalUnderstanding.unsupportedCertainty ?? []);
+        /**
+         * E1RC §5.3 (C1-F5): THE GO DECISION IS FAIL-CLOSED ON INTEGRITY, NOT ONLY ON THE ORACLE.
+         *
+         * E1R set GO from the oracle verdict alone, so a run with the wrong arm, a missing section, a broken
+         * source basis, an unavailable citation, a leak, or a failed cleanup could still report GO. Every
+         * measured condition is now ANDed in; `integrity` is recorded so the closure gate can read exactly
+         * which condition failed.
+         */
+        const integrity = {
+          armDelivered: String(findings.contextAssignedArm ?? "").toLowerCase() === ARM,
+          presentationMode: String(findings.armPresentationMode ?? "").toLowerCase() === ARM,
+          sectionDelivered: Number(findings.armSectionBytes) > 0 && typeof findings.armSectionDigest === "string" && findings.armSectionDigest.length === 64,
+          sessionIdentity: findings.dshSessionIdIsReal === true && findings.sessionFileFoundByExactId === true,
+          answerExtracted: findings.answerExtraction?.ok === true,
+          answerMatchesEmitted: extractionMatchesIntended === true,
+          sourceBasisBound: findings.frozenTruthTrialId === frozenTruth.trialId && findings.frozenTruthDigest === frozenTruth.digest,
+          noGroundTruthLeak: findings.groundTruthLeak === false,
+        };
+        record("integrity", integrity);
+        const integrityOk = Object.values(integrity).every((value) => value === true);
+        finalOutcome = integrityOk && evaluation.verdict.historicalUnderstanding && evaluation.verdict.decisionQuality ? "DETERMINISTIC_ASSAY_GO" : integrityOk ? "ORACLE_ADMISSION_FAILED" : "INTEGRITY_FAILED";
       } else {
         record("oracleRefusal", evaluation.detail);
         finalOutcome = "ORACLE_ADMISSION_FAILED";
       }
       report = { extraction, evaluation };
     }
-
-    /** §11.8: NO HIDDEN GROUND TRUTH — the arm's section must not carry oracle-internal tokens. */
-    const { detectGroundTruthLeak } = await import("../trajectory_p2e1/experimental-truth.mjs");
-    const leak = detectGroundTruthLeak({ taskSection: sectionText, taskText: JSON.stringify(context.work ?? {}) }, frozenTruth);
-    record("groundTruthLeak", leak.leaked);
 
     record("legacyOracleUsed", false);
     record("legacyOracleStatus", LEGACY_ORACLE_STATUS.classification);
@@ -226,6 +260,9 @@ try {
   }
 } catch (error) {
   record("error", error instanceof Error ? error.message : String(error));
+  if (process.env.E1RC_TRACE === "1" && error instanceof Error) {
+    record("errorStack", String(error.stack ?? "").split(/\r?\n/u).slice(0, 10));
+  }
   finalOutcome = "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED";
 } finally {
   if (process.env.DSH_HOME === undefined) delete process.env.DSH_HOME;
@@ -234,11 +271,27 @@ try {
 const cleanup = await safeCleanup(owned);
 const depAfter = snapshotDependencyRoot(depRoot);
 
+/**
+ * §5.1 (E1RC C1-F4): EVERY EXECUTION ATTRIBUTE BELOW IS DERIVED FROM THIS RUN'S OWN OBSERVATIONS.
+ *
+ * E1R wrote `realFirstPartyDshHostRan: true` and friends unconditionally. These are now computed from the
+ * `findings` this invocation actually recorded, so a run that never started a DSH turn cannot claim one.
+ */
+const observed = {
+  realFirstPartyDshHostRan: typeof findings.dshSessionIdIsReal === "boolean" && findings.dshSessionIdIsReal === true,
+  answerEmittedByRealDshTurn: findings.answerExtraction?.ok === true && findings.extractedAnswerMatchesEmitted === true,
+  realDshAssistantMessageInspected: findings.answerExtraction?.ok === true && findings.sessionFileFoundByExactId === true,
+  realCanonicalWorkRan: typeof findings.canonicalConsumerAttemptId === "string" && findings.canonicalConsumerAttemptId.length > 0,
+  contextOwnerInvoked: findings.contextOwnerInvoked === true,
+  armDelivered: typeof findings.contextAssignedArm === "string",
+};
+
 const out = {
   schemaVersion: 1,
   kind: "TRAJECTORY_P2E1R_ASSAY",
-  stage: "Trajectory-P2-E1R",
-  baseline: "34544335d42ed35aec2724a2a571fcd035901918",
+  stage: "Trajectory-P2-E1RC",
+  /** The E1RC parent this harness was derived from; the ACTUAL executed head is recorded by the closure gate. */
+  derivedFromHead: "f78e7672441b1a970ed21f66435feb595c9401a3",
   arm: ARM,
   outcome: finalOutcome,
   permittedOutcomes: OUTCOMES,
@@ -248,16 +301,15 @@ const out = {
   dependencyRootPreserved: depBefore.canonical === depAfter.canonical && depBefore.entries === depAfter.entries,
   officialOracle: OFFICIAL_ORACLE.module,
   oracleVersion: ORACLE_VERSION,
-  realCanonicalWorkRan: true,
-  realFirstPartyDshHostRan: true,
-  realDshAssistantMessageInspected: true,
-  answerEmittedByRealDshTurn: true,
+  ...observed,
   legacyOracleUsedByActiveAssay: false,
   externalModelRequestOccurred: false,
   paidModelRequestOccurred: false,
   stochasticTrialOccurred: false,
   modelCallsMade: 0,
-  note: "§10/§11: the answer is the final assistant text of a REAL first-party DSH turn, read back from DSH persistence by exact SessionId and scored by the ONE official source-aware oracle against a per-run frozen truth.",
+  modelConsumedCapsule: false,
+  modelConsumedCapsuleReason: "the deterministic adapter is SEEDED with the expected answer through profile configuration; it does not read the Capsule, so this run proves transport and persistence only",
+  note: "§5.1: execution attributes are derived from this run's observations, not asserted. The answer is the final assistant text of a real first-party DSH turn, read back from DSH persistence by exact SessionId and scored by the official source-aware oracle against a per-run frozen truth.",
 };
 
 process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
@@ -268,7 +320,7 @@ process.exit(finalOutcome === "DETERMINISTIC_ASSAY_GO" ? 0 : 1);
  * writer here because the answer JSON must be injected as config, which the shared writer does not do.
  */
 function writeBenchmarkProfile(input) {
-  const { home, repo, root, profileName, adapterUrl, answerJson } = input;
+  const { home, repo, root, profileName, adapterUrl, answerPath } = input;
   const profileDir = join(home, "profiles", profileName);
   mkdirSync(profileDir, { recursive: true });
   writeFileSync(
@@ -294,7 +346,7 @@ function writeBenchmarkProfile(input) {
       "    - id: p2e1r-benchmark-answer",
       `      name: '${adapterUrl}'`,
       "      config:",
-      `        answerJson: ${JSON.stringify(answerJson)}`,
+      `        answerPath: '${String(answerPath).replace(/\\/gu, "/")}'`,
       "",
     ].join("\n"),
   );

@@ -23,11 +23,23 @@ import { REAL_MODULES } from "../trajectory_p2e0/dsh-test-home.mjs";
 export const BENCHMARK_ANSWER_SCHEMA_VERSION = 1;
 
 /**
- * §10.7: find the ONE session file for an exact SessionId under a TEST-OWNED root, refusing to guess.
- * `lstat` failures and directories are skipped explicitly; a junction is never traversed for a match.
+ * §5.5 (E1RC C1-F7): find the ONE session file for an exact SessionId under a TEST-OWNED root.
+ *
+ * E1R used `path.includes(sessionId)`, a SUBSTRING test: an id `worker-abc` could match
+ * `worker-abc-extra-session.v4.jsonl`, and two near-colliding ids made the lookup return null.
+ *
+ * DSH stores a session under a DIRECTORY named exactly by the SessionId, holding `session.vN.jsonl[.zstd]`.
+ * The match is therefore anchored to a PATH SEGMENT equal to the id — never a substring of a longer segment —
+ * so a near-collision cannot be mistaken for the requested session. `lstat` failures and directories are
+ * skipped explicitly; a junction is never traversed for a match.
+ *
+ * This remains a filesystem CROSS-CHECK. The authoritative read is `readSessionEventsByExactId()`, which
+ * opens the session through DSH's own persistence by exact SessionId (§5.5).
  */
 export function findSessionFile(sessionsRoot, sessionId) {
+  if (typeof sessionId !== "string" || sessionId.length === 0) return null;
   const matches = [];
+  const segmentIsExact = (path) => path.split(/[\\/]/u).includes(sessionId);
   const walk = (dir) => {
     if (!existsSync(dir)) return;
     let entries;
@@ -45,7 +57,7 @@ export function findSessionFile(sessionsRoot, sessionId) {
         continue;
       }
       if (stat.isDirectory()) walk(path);
-      else if (entry.includes("session.v") && entry.includes("jsonl") && path.includes(sessionId)) matches.push(path);
+      else if (entry.includes("session.v") && entry.includes("jsonl") && segmentIsExact(path)) matches.push(path);
     }
   };
   walk(sessionsRoot);
@@ -61,10 +73,20 @@ export async function readSessionEventsByExactId(input) {
   const { sessionsRoot, sessionId } = input;
   const base = pathToFileURL(`${join(REAL_MODULES, "@deepseek-ai")}/`).href;
   const { Context } = await import(`${base}cordis/lib/index.js`);
-  const JsonlSessionPersistence = (await import(`${base}dsh-session-persistence-jsonl/lib/index.js`)).default;
+  const persistenceModule = await import(`${base}dsh-session-persistence-jsonl/lib/index.js`);
   const { SessionId } = await import(`${base}dsh-session/lib/index.js`);
+  /**
+   * E1RC C1-F7: the installed persistence package exports the plugin as a NAMED `apply` (plus `name`), not as
+   * a `default`. E1R read `.default` and therefore passed `undefined` to `ctx.plugin`, which threw
+   * `invalid plugin, expect function or object with an "apply" method, received undefined` on EVERY read — so
+   * E1R's extraction path never actually worked. Accept the named plugin, falling back to a default export.
+   */
+  const persistencePlugin = persistenceModule.default ?? persistenceModule;
+  if (typeof persistencePlugin?.apply !== "function") {
+    throw new Error("the installed DSH persistence package exposes no apply() plugin; the exact-session read cannot be established");
+  }
   const ctx = new Context();
-  const fiber = await ctx.plugin(JsonlSessionPersistence, { root: sessionsRoot, compression: "zstd" });
+  const fiber = await ctx.plugin(persistencePlugin, { root: sessionsRoot, compression: "zstd" });
   try {
     const handle = await ctx.sessionPersistence.open(SessionId(sessionId), "read");
     const read = await handle.read(0, undefined);
