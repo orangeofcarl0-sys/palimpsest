@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RC_CLOSURE_GATE",
+  "stage": "Trajectory-P2-E1RC",
+  "verdict": "CLOSURE_NOT_ESTABLISHED",
+  "executedCodeHead": "50ae7fe1f482b9f28d09b649d60dd62e9ff63b9e",
+  "codeTreeIdentity": "7f453038e4452da9414a3ae12eecc1e95f995e95",
+  "environment": {
+    "platform": "win32",
+    "node": "v24.14.1",
+    "git": "git version 2.53.0.windows.2"
+  },
+  "gates": [
+    {
+      "id": "git-head-resolves",
+      "statement": "the working commit resolves to a real commit",
+      "ok": true,
+      "detail": "50ae7fe1f482b9f28d09b649d60dd62e9ff63b9e"
+    },
+    {
+      "id": "git-worktree-clean",
+      "statement": "no uncommitted executable source changes are present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "built-dist-present",
+      "statement": "the built distribution exists",
+      "ok": true,
+      "detail": "dist/src/advanced.js"
+    },
+    {
+      "id": "first-party-dsh-present",
+      "statement": "the installed first-party DSH tree is available",
+      "ok": true,
+      "detail": "dsh-session resolved"
+    },
+    {
+      "id": "dry-run-exit-zero",
+      "statement": "the semantic dry-run process exited 0",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "id": "dry-run-go",
+      "statement": "the semantic dry-run reported DETERMINISTIC_ASSAY_GO",
+      "ok": true,
+      "detail": "DETERMINISTIC_ASSAY_GO"
+    },
+    {
+      "id": "dry-run-no-external-provider",
+      "statement": "the dry-run contacted no external provider",
+      "ok": true,
+      "detail": "calls=0"
+    },
+    {
+      "id": "assay-control-exit-zero",
+      "statement": "the control assay process exited 0",
+      "ok": false,
+      "detail": 1
+    },
+    {
+      "id": "assay-control-payload",
+      "statement": "the control assay emitted a machine-readable receipt",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-control-outcome-go",
+      "statement": "the control assay reported DETERMINISTIC_ASSAY_GO",
+      "ok": false,
+      "detail": "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED"
+    },
+    {
+      "id": "assay-control-arm-matches",
+      "statement": "the control run delivered the CONTROL arm",
+      "ok": true,
+      "detail": "CONTROL"
+    },
+    {
+      "id": "assay-control-presentation-matches",
+      "statement": "the control run rendered the CONTROL presentation",
+      "ok": true,
+      "detail": "CONTROL"
+    },
+    {
+      "id": "assay-control-section-delivered",
+      "statement": "the control section was delivered with a positive byte count and digest",
+      "ok": true,
+      "detail": "384 bytes"
+    },
+    {
+      "id": "assay-control-session-real",
+      "statement": "the control turn produced a real DSH session identity",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-control-session-file",
+      "statement": "the control session file was found by exact identity",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-control-answer-extracted",
+      "statement": "the control answer was extracted from DSH persistence",
+      "ok": false,
+      "detail": "{\"ok\":false,\"assistantMessageCount\":0,\"bytes\":null,\"seq\":null}"
+    },
+    {
+      "id": "assay-control-answer-matches-emitted",
+      "statement": "the extracted control answer equals the emitted answer",
+      "ok": false
+    },
+    {
+      "id": "assay-control-truth-frozen-before-read",
+      "statement": "the control truth was frozen before the answer was read",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-control-truth-digest",
+      "statement": "the control truth digest is a per-run SHA-256",
+      "ok": true,
+      "detail": "sha256-27f60d9959a86bfba3d81e6d9a4d4f4694c314366c9b9d1e3edd66f2e9c8f71b"
+    },
+    {
+      "id": "assay-control-oracle-ok",
+      "statement": "the official oracle accepted the control answer",
+      "ok": false,
+      "detail": "hist=undefined decision=undefined"
+    },
+    {
+      "id": "assay-control-operational-not-measured",
+      "statement": "the control run reports operational behavior as NOT_MEASURED",
+      "ok": false
+    },
+    {
+      "id": "assay-control-no-leak",
+      "statement": "no oracle-internal token leaked into the control model-visible context",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "id": "assay-control-cleanup",
+      "statement": "the control owned root was removed",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-control-dependency-preserved",
+      "statement": "the control run preserved the main dependency root",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-control-legacy-oracle-unused",
+      "statement": "the control run used no legacy oracle",
+      "ok": true,
+      "detail": "LEGACY_REPRODUCTION_ONLY"
+    },
+    {
+      "id": "assay-control-no-model",
+      "statement": "the control run made no external model call",
+      "ok": true,
+      "detail": "calls=0"
+    },
+    {
+      "id": "assay-control-official-oracle",
+      "statement": "the control run used the official oracle",
+      "ok": true,
+      "detail": "scripts/trajectory_p2e1/source-aware-oracle.mjs"
+    },
+    {
+      "id": "assay-treatment-exit-zero",
+      "statement": "the treatment assay process exited 0",
+      "ok": false,
+      "detail": 1
+    },
+    {
+      "id": "assay-treatment-payload",
+      "statement": "the treatment assay emitted a machine-readable receipt",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-treatment-outcome-go",
+      "statement": "the treatment assay reported DETERMINISTIC_ASSAY_GO",
+      "ok": false,
+      "detail": "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED"
+    },
+    {
+      "id": "assay-treatment-arm-matches",
+      "statement": "the treatment run delivered the TREATMENT arm",
+      "ok": true,
+      "detail": "TREATMENT"
+    },
+    {
+      "id": "assay-treatment-presentation-matches",
+      "statement": "the treatment run rendered the TREATMENT presentation",
+      "ok": true,
+      "detail": "TREATMENT"
+    },
+    {
+      "id": "assay-treatment-section-delivered",
+      "statement": "the treatment section was delivered with a positive byte count and digest",
+      "ok": true,
+      "detail": "3650 bytes"
+    },
+    {
+      "id": "assay-treatment-session-real",
+      "statement": "the treatment turn produced a real DSH session identity",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-treatment-session-file",
+      "statement": "the treatment session file was found by exact identity",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-treatment-answer-extracted",
+      "statement": "the treatment answer was extracted from DSH persistence",
+      "ok": false,
+      "detail": "{\"ok\":false,\"assistantMessageCount\":0,\"bytes\":null,\"seq\":null}"
+    },
+    {
+      "id": "assay-treatment-answer-matches-emitted",
+      "statement": "the extracted treatment answer equals the emitted answer",
+      "ok": false
+    },
+    {
+      "id": "assay-treatment-truth-frozen-before-read",
+      "statement": "the treatment truth was frozen before the answer was read",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-treatment-truth-digest",
+      "statement": "the treatment truth digest is a per-run SHA-256",
+      "ok": true,
+      "detail": "sha256-7c708267d34e5739e570628839f064672cbfe7d3f31b24d587862340b7ee74a6"
+    },
+    {
+      "id": "assay-treatment-oracle-ok",
+      "statement": "the official oracle accepted the treatment answer",
+      "ok": false,
+      "detail": "hist=undefined decision=undefined"
+    },
+    {
+      "id": "assay-treatment-operational-not-measured",
+      "statement": "the treatment run reports operational behavior as NOT_MEASURED",
+      "ok": false
+    },
+    {
+      "id": "assay-treatment-no-leak",
+      "statement": "no oracle-internal token leaked into the treatment model-visible context",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "id": "assay-treatment-cleanup",
+      "statement": "the treatment owned root was removed",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-treatment-dependency-preserved",
+      "statement": "the treatment run preserved the main dependency root",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-treatment-legacy-oracle-unused",
+      "statement": "the treatment run used no legacy oracle",
+      "ok": true,
+      "detail": "LEGACY_REPRODUCTION_ONLY"
+    },
+    {
+      "id": "assay-treatment-no-model",
+      "statement": "the treatment run made no external model call",
+      "ok": true,
+      "detail": "calls=0"
+    },
+    {
+      "id": "assay-treatment-official-oracle",
+      "statement": "the treatment run used the official oracle",
+      "ok": true,
+      "detail": "scripts/trajectory_p2e1/source-aware-oracle.mjs"
+    },
+    {
+      "id": "assay-treatment-relevance",
+      "statement": "the TREATMENT section communicates partial coverage, counts and unread extent",
+      "ok": true,
+      "detail": "{\"statesPartial\":true,\"statesCounts\":true,\"statesUnread\":true,\"statesAuthorityLimitation\":true}"
+    },
+    {
+      "id": "arms-independently-instantiated",
+      "statement": "the CONTROL and TREATMENT runs were independently instantiated (their identities differ)",
+      "ok": true,
+      "detail": "ASSAY-control-attempt-575f62f71840b3f63c3e78a1ff0b3d29 vs ASSAY-treatment-attempt-3b54e1c0356dd4ffc955584110b58215"
+    },
+    {
+      "id": "arms-share-scenario",
+      "statement": "both arms used the same frozen scenario and oracle version",
+      "ok": true,
+      "detail": "p2e1rc-arm-wide-admission-1"
+    }
+  ],
+  "failedGates": [
+    "assay-control-exit-zero",
+    "assay-control-outcome-go",
+    "assay-control-answer-extracted",
+    "assay-control-answer-matches-emitted",
+    "assay-control-oracle-ok",
+    "assay-control-operational-not-measured",
+    "assay-treatment-exit-zero",
+    "assay-treatment-outcome-go",
+    "assay-treatment-answer-extracted",
+    "assay-treatment-answer-matches-emitted",
+    "assay-treatment-oracle-ok",
+    "assay-treatment-operational-not-measured"
+  ],
+  "gateCount": 50,
+  "receipts": {
+    "dryRun": {
+      "label": "dry-run",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1\\calibrate.mjs --dry-run",
+      "exitCode": 0,
+      "signal": null,
+      "timedOut": false,
+      "elapsedMs": 2125,
+      "parsed": true,
+      "stderrTail": [
+        "warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it"
+      ]
+    },
+    "control": {
+      "label": "assay-control",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1r\\assay-harness.mjs --arm control",
+      "exitCode": 1,
+      "signal": null,
+      "timedOut": false,
+      "elapsedMs": 19684,
+      "parsed": true,
+      "stderrTail": [
+        "  · sessionFileFoundByExactId: true",
+        "  · groundTruthLeak: false",
+        "  · answerExtraction: {\"ok\":false,\"assistantMessageCount\":0,\"bytes\":null,\"seq\":null}",
+        "  · extractionFailure: \"no assistant/message was persisted for this session\"",
+        "  · legacyOracleUsed: false",
+        "  · legacyOracleStatus: \"LEGACY_REPRODUCTION_ONLY\""
+      ]
+    },
+    "treatment": {
+      "label": "assay-treatment",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1r\\assay-harness.mjs --arm treatment",
+      "exitCode": 1,
+      "signal": null,
+      "timedOut": false,
+      "elapsedMs": 14247,
+      "parsed": true,
+      "stderrTail": [
+        "  · sessionFileFoundByExactId: true",
+        "  · groundTruthLeak: false",
+        "  · answerExtraction: {\"ok\":false,\"assistantMessageCount\":0,\"bytes\":null,\"seq\":null}",
+        "  · extractionFailure: \"no assistant/message was persisted for this session\"",
+        "  · legacyOracleUsed: false",
+        "  · legacyOracleStatus: \"LEGACY_REPRODUCTION_ONLY\""
+      ]
+    }
+  },
+  "derived": {
+    "firstPartyDshTurnObserved": true,
+    "answersExtractedFromPersistence": false,
+    "controlArmDelivered": true,
+    "treatmentArmDelivered": true,
+    "modelConsumedCapsule": false,
+    "modelConsumedCapsuleReason": "the deterministic adapter is SEEDED with the expected answer through profile configuration; it does not read the Capsule, so this run proves transport and persistence only",
+    "stochasticInference": false,
+    "externalModelRequest": false
+  },
+  "notAwarded": {
+    "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+    "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+    "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+    "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+    "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+    "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+    "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED"
+  },
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
