@@ -191,6 +191,32 @@ try {
     record("workerDetail", outcome?.detail ?? null);
     if (observedSession === null) throw new Error("the DSH turn reported no session identity");
     record("dshSessionIdIsReal", observedSession.startsWith("worker-"));
+    /**
+     * E1RD S5.4: SESSION CREATION IS NOT A COMPLETED TURN.
+     *
+     * Each stage is recorded SEPARATELY and in order. E1RC's receipt could report `firstPartyDshTurnObserved:
+     * true` for a run where the Session was created and the worker then returned HOST_FAILURE with no assistant
+     * message at all. A session id proves the Session Creation boundary was crossed; it proves nothing about
+     * the turn, so the two are never collapsed into one boolean.
+     */
+    const executionStages = {
+      sessionCreated: observedSession.startsWith("worker-"),
+      workerStartAttempted: true,
+      /** The worker's OWN outcome is the only evidence that capability admission let it start. */
+      capabilityAdmissionPassed: outcome?.kind !== "HOST_FAILURE",
+      /**
+       * §10.3: a COMPLETED worker is one that reported a Work outcome kind. `HOST_FAILURE` is the host's
+       * statement that no outcome was produced, and it is never a completion.
+       */
+      workerCompleted: outcome?.kind === "READY_FOR_SETTLEMENT" || outcome?.kind === "NEEDS_ESCALATION",
+      assistantPersisted: false,
+      answerExtracted: false,
+      officialOracleEvaluatedExtractedOutput: false,
+    };
+    if (executionStages.capabilityAdmissionPassed === false) {
+      /** The refusal is recorded verbatim, so a reader sees the mechanism rather than an inferred cause. */
+      record("workerRefusalDetail", typeof outcome?.detail === "string" ? outcome.detail : null);
+    }
 
     /** §10.7: read the answer back from OFFICIAL DSH persistence, by EXACT SessionId. */
     const sessionFile = findSessionFile(join(home, "sessions"), observedSession);
@@ -204,6 +230,9 @@ try {
     const events = await readSessionEventsByExactId({ sessionsRoot: join(home, "sessions"), sessionId: observedSession });
     const extraction = extractBenchmarkAnswer(events);
     record("answerExtraction", { ok: extraction.ok, assistantMessageCount: extraction.assistantMessageCount ?? 0, bytes: extraction.bytes ?? null, seq: extraction.seq ?? null });
+    executionStages.assistantPersisted = (extraction.assistantMessageCount ?? 0) >= 1;
+    executionStages.answerExtracted = extraction.ok === true;
+    record("executionStages", executionStages);
     if (!extraction.ok) {
       finalOutcome = "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED";
       record("extractionFailure", extraction.detail);
@@ -217,6 +246,9 @@ try {
       record("officialOracle", OFFICIAL_ORACLE.module);
       record("oracleVersion", ORACLE_VERSION);
       record("oracleOk", evaluation.ok);
+      /** E1RD S5.4: the LAST stage is a property of the OBSERVATION, not of the harness reaching a line. */
+      executionStages.officialOracleEvaluatedExtractedOutput = evaluation.ok === true && executionStages.answerExtracted === true;
+      record("executionStages", executionStages);
       if (evaluation.ok) {
         record("historicalUnderstanding", evaluation.verdict.historicalUnderstanding);
         record("decisionQuality", evaluation.verdict.decisionQuality);
@@ -242,6 +274,17 @@ try {
           answerMatchesEmitted: extractionMatchesIntended === true,
           sourceBasisBound: findings.frozenTruthTrialId === frozenTruth.trialId && findings.frozenTruthDigest === frozenTruth.digest,
           noGroundTruthLeak: findings.groundTruthLeak === false,
+          /**
+           * E1RD S5.4/§10.3: A HOST_FAILURE MUST NOT PASS.
+           *
+           * Measured: a run whose worker exited 1 still produced a persisted assistant message (the adapter
+           * emitted it before the host finished), so an oracle-only GO reported success for a turn whose host
+           * had failed. The completed-turn chain is now part of the integrity gate, and the worker's own
+           * outcome is required to be a reported outcome rather than a host failure.
+           */
+          workerCompleted: findings.executionStages?.workerCompleted === true,
+          capabilityAdmissionPassed: findings.executionStages?.capabilityAdmissionPassed === true,
+          completedTurnChain: findings.executionStages?.assistantPersisted === true && findings.executionStages?.answerExtracted === true && findings.executionStages?.officialOracleEvaluatedExtractedOutput === true,
         };
         record("integrity", integrity);
         const integrityOk = Object.values(integrity).every((value) => value === true);
@@ -278,7 +321,26 @@ const depAfter = snapshotDependencyRoot(depRoot);
  * `findings` this invocation actually recorded, so a run that never started a DSH turn cannot claim one.
  */
 const observed = {
+  /**
+   * E1RD S5.4: a CREATED SESSION is not a COMPLETED TURN, and the two are now separate fields.
+   *
+   * `realFirstPartyDshHostRan` means only that a real first-party DSH process created a Session — which is what
+   * it always measured, despite the name having been read as a completed turn. The completed-turn fact is
+   * `completedDshTurnProducedAnswer`, which requires the assistant message to have been persisted, extracted,
+   * matched, and scored.
+   */
   realFirstPartyDshHostRan: typeof findings.dshSessionIdIsReal === "boolean" && findings.dshSessionIdIsReal === true,
+  sessionCreated: findings.executionStages?.sessionCreated === true,
+  capabilityAdmissionPassed: findings.executionStages?.capabilityAdmissionPassed === true,
+  workerCompleted: findings.executionStages?.workerCompleted === true,
+  assistantPersisted: findings.executionStages?.assistantPersisted === true,
+  completedDshTurnProducedAnswer:
+    findings.executionStages?.sessionCreated === true &&
+    findings.executionStages?.capabilityAdmissionPassed === true &&
+    findings.executionStages?.assistantPersisted === true &&
+    findings.executionStages?.answerExtracted === true &&
+    findings.executionStages?.officialOracleEvaluatedExtractedOutput === true &&
+    findings.extractedAnswerMatchesEmitted === true,
   answerEmittedByRealDshTurn: findings.answerExtraction?.ok === true && findings.extractedAnswerMatchesEmitted === true,
   realDshAssistantMessageInspected: findings.answerExtraction?.ok === true && findings.sessionFileFoundByExactId === true,
   realCanonicalWorkRan: typeof findings.canonicalConsumerAttemptId === "string" && findings.canonicalConsumerAttemptId.length > 0,
@@ -347,6 +409,7 @@ function writeBenchmarkProfile(input) {
       `      name: '${adapterUrl}'`,
       "      config:",
       `        answerPath: '${String(answerPath).replace(/\\/gu, "/")}'`,
+      "        resultToolName: 'palimpsest_worker_result'",
       "",
     ].join("\n"),
   );

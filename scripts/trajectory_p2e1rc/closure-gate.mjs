@@ -83,6 +83,66 @@ gate("git-worktree-clean", "no uncommitted executable source changes are present
 const distPresent = existsSync(join(REPO, "dist", "src", "advanced.js"));
 gate("built-dist-present", "the built distribution exists", distPresent, "dist/src/advanced.js");
 
+/**
+ * E1RD S5.3: THE RUNTIME PREREQUISITE, ENFORCED RATHER THAN LOGGED.
+ *
+ * E1RC recorded the Node version in prose and awarded a closure a reader had to reconcile by hand. The package
+ * declares `engines.node >= 24.15.0`, so a runtime below it is a QUALIFICATION BLOCKER and belongs in the gate
+ * that decides the verdict.
+ *
+ * THE COMPARISON IS NUMERIC PER COMPONENT, never lexicographic: `"24.9.0" < "24.15.0"` is true as integers and
+ * FALSE as strings — exactly the direction that would admit a nonconforming runtime.
+ */
+const parseNodeVersion = (value) => {
+  const match = /^v?(\d+)\.(\d+)\.(\d+)$/u.exec(String(value ?? "").trim());
+  return match === null ? null : { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]) };
+};
+const compareNodeVersions = (left, right) => {
+  for (const key of ["major", "minor", "patch"]) {
+    if (left[key] !== right[key]) return left[key] < right[key] ? -1 : 1;
+  }
+  return 0;
+};
+const declaredEngine = (() => {
+  try {
+    return JSON.parse(readFileSync(join(REPO, "package.json"), "utf8")).engines?.node ?? null;
+  } catch {
+    return null;
+  }
+})();
+const declaredMinimum = typeof declaredEngine === "string" ? parseNodeVersion((/(\d+\.\d+\.\d+)/u.exec(declaredEngine) ?? [null, null])[1]) : null;
+const runningNode = parseNodeVersion(process.versions.node);
+const runtimeConforms = declaredMinimum !== null && runningNode !== null && compareNodeVersions(runningNode, declaredMinimum) >= 0;
+gate(
+  "runtime-node-conforms",
+  "the executing Node runtime satisfies the declared engine minimum",
+  runtimeConforms,
+  `running v${String(process.versions.node)}, declared ${String(declaredEngine)}${runtimeConforms ? "" : " — BELOW THE MINIMUM, which blocks full DSH execution qualification"}`,
+);
+gate("runtime-executable-identified", "the exact Node executable used for this run is identified", typeof process.execPath === "string" && process.execPath.length > 0, process.execPath);
+/**
+ * The DSH release the run actually used, read from the installed package rather than from a declaration — so
+ * the verdict names the release it is about.
+ */
+const installedDshRelease = (() => {
+  try {
+    const home = (process.env.DSH_HOME ?? join(process.env.USERPROFILE ?? process.env.HOME ?? "", ".dsh")).replace(/\\/gu, "/");
+    for (const root of [join(home, "profiles", "node_modules", "@deepseek-ai"), join(home, "profiles", "node_modules", "@deepseek-ai", "dsh", "node_modules", "@deepseek-ai")]) {
+      const path = join(root, "dsh-tool-fs", "package.json");
+      if (existsSync(path)) return JSON.parse(readFileSync(path, "utf8")).version ?? null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+})();
+gate(
+  "runtime-dsh-release-identified",
+  "the first-party DSH release used for this run is identified from the installed package",
+  typeof installedDshRelease === "string" && installedDshRelease.length > 0,
+  installedDshRelease,
+);
+
 const dshModule = pathToFileURL(join(REPO, "scripts", "trajectory_p2e0", "dsh-test-home.mjs")).href;
 const dshHome = await import(dshModule);
 const firstPartyDsh = dshHome.hasFirstPartyDsh();

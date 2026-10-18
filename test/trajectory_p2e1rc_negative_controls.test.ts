@@ -211,7 +211,7 @@ describe("E1RC §8 DSH-path controls", () => {
      * 0.2.1-rc.2, which exposes an unclassified `working_directory` capability, so the fail-closed capability
      * gate refuses every worker. See research-evidence/trajectory-p2e1rc/execution-blocker.json.
      */
-    expect(ORACLE_VERSION).toBe("p2e1rc-arm-wide-admission-1");
+    expect(ORACLE_VERSION).toBe("p2e1rd-internal-citation-closed-1");
   });
 });
 
