@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RC_MEASUREMENT_FALSIFIERS",
+  "stage": "Trajectory-P2-E1RC",
+  "parentHead": "f78e7672441b1a970ed21f66435feb595c9401a3",
+  "branch": "trajectory-p2e1rc-measurement-integrity",
+  "method": "pure functions RUN against the parent modules; script control flow SOURCE_DEMONSTRATED from the exact parent source read via git show",
+  "classificationCounts": {
+    "DYNAMICALLY_REPRODUCED": 5,
+    "SOURCE_DEMONSTRATED": 5
+  },
+  "findings": [
+    {
+      "id": "C1-F1",
+      "title": "Cross-Trial DSH citation reuse",
+      "sourcePath": "scripts/trajectory_p2e1/experimental-truth.mjs + scripts/trajectory_p2e0/benchmark-fixture.mjs",
+      "function": "instantiateAssayTruth() derives pageRef and citationHandle from the LITERAL dshSessionId 'origin-partial'; the fixture hard-codes that literal at every recording site",
+      "requiredInput": "two independently instantiated trials that both use the controlled origin session id 'origin-partial'",
+      "actualBaselineBehavior": {
+        "trialACitationHandle": "origin-partial",
+        "trialBCitationHandle": "origin-partial",
+        "handlesIdentical": true,
+        "internalRefsIdentical": true,
+        "trialBAcceptsTrialACitation": true,
+        "trialBHistoricalUnderstandingPass": true
+      },
+      "expectedCorrectedBehavior": "each trial's controlled origin page must carry a per-run session identity, so Trial A's DSH citation is NOT accepted in Trial B",
+      "reproductionMethod": "RUN: instantiate two truths and judge Trial A's citation against Trial B",
+      "evidenceClass": "DYNAMICALLY_REPRODUCED",
+      "detectedByE1RTests": false,
+      "detectedNote": "E1R tested stale CANONICAL WORK attempt ids only; the DSH handle was never varied across trials"
+    },
+    {
+      "id": "C1-F2",
+      "title": "Unsupported certainty on noncritical propositions",
+      "sourcePath": "scripts/trajectory_p2e1/source-aware-oracle.mjs",
+      "function": "judgeHistoricalUnderstanding() gates availability only through criticalRequirementsForArm(); noncritical propositions are credited on truth+source+reference alone",
+      "requiredInput": "CONTROL asserts ORIGIN_DSH_PAGE_FULL=FALSE, an objectively true DSH fact CONTROL never received, citing a formally accepted handle",
+      "actualBaselineBehavior": {
+        "availableToArm": false,
+        "credited": true,
+        "creditCount": 3,
+        "historicalUnderstandingPass": true
+      },
+      "expectedCorrectedBehavior": "a fact the arm's evidence could NOT establish must earn NO evidence credit even when guessed correctly; only honest UNKNOWN is acceptable",
+      "reproductionMethod": "RUN: judge a CONTROL answer asserting a hidden noncritical DSH fact",
+      "evidenceClass": "DYNAMICALLY_REPRODUCED",
+      "detectedByE1RTests": false,
+      "detectedNote": "E1R tested only CONTROL's honest UNKNOWN for CRITICAL propositions"
+    },
+    {
+      "id": "C1-F3",
+      "title": "Inconsistent Ground Truth inputs are silently accepted",
+      "sourcePath": "scripts/trajectory_p2e1/experimental-truth.mjs",
+      "function": "instantiateAssayTruth() destructures the facts and derives truth values without validating identity or coverage consistency",
+      "requiredInput": "contradictory or invalid source facts",
+      "actualBaselineBehavior": {
+        "returnedEqualsKnownButCoveragePartial": {
+          "accepted": true,
+          "partial": "TRUE",
+          "full": "FALSE",
+          "allReturned": "TRUE",
+          "selfContradictory": true
+        },
+        "returnedExceedsKnown": {
+          "accepted": true,
+          "partial": "TRUE",
+          "full": "FALSE",
+          "allReturned": "TRUE",
+          "selfContradictory": true
+        },
+        "unsupportedCoverage": {
+          "accepted": true,
+          "partial": "FALSE",
+          "full": "TRUE",
+          "allReturned": "FALSE",
+          "selfContradictory": false
+        },
+        "negativeKnownCount": {
+          "accepted": true,
+          "partial": "TRUE",
+          "full": "FALSE",
+          "allReturned": "TRUE",
+          "selfContradictory": true
+        },
+        "missingOriginAttemptId": {
+          "accepted": true,
+          "partial": "TRUE",
+          "full": "FALSE",
+          "allReturned": "FALSE",
+          "selfContradictory": false
+        },
+        "missingSessionId": {
+          "accepted": true,
+          "partial": "TRUE",
+          "full": "FALSE",
+          "allReturned": "FALSE",
+          "selfContradictory": false
+        },
+        "emptyOriginAttemptId": {
+          "accepted": true,
+          "partial": "TRUE",
+          "full": "FALSE",
+          "allReturned": "FALSE",
+          "selfContradictory": false
+        },
+        "nonNumericCounts": {
+          "accepted": true,
+          "partial": "TRUE",
+          "full": "FALSE",
+          "allReturned": "TRUE",
+          "selfContradictory": true
+        }
+      },
+      "expectedCorrectedBehavior": "refuse before instantiation when identity fields are missing, counts are non-integer/negative, returned > known, or coverage contradicts the counts",
+      "reproductionMethod": "RUN: instantiate the truth with each inconsistent input",
+      "evidenceClass": "DYNAMICALLY_REPRODUCED",
+      "detectedByE1RTests": false,
+      "detectedNote": "E1R tested only well-formed fixtures",
+      "selfContradictoryTruthProduced": true
+    },
+    {
+      "id": "C1-F4",
+      "title": "Evidence declares execution attributes without consuming execution output",
+      "sourcePath": "scripts/trajectory_p2e1r/generate-evidence.mjs",
+      "function": "the assay-end-to-end.json literal block",
+      "requiredInput": "none — the fields are written unconditionally",
+      "actualBaselineBehavior": {
+        "hardcodedSuccessFields": [
+          "realCanonicalWorkRan: true",
+          "realFirstPartyDshHostRan: true",
+          "answerEmittedByRealDshTurn: true",
+          "realDshAssistantMessageInspected: true"
+        ],
+        "generateEvidenceInvokesAssayHarness": true,
+        "generateEvidenceRunsDryRun": true,
+        "dryRunExtractsFromDshPersistence": false,
+        "dryRunPassesLocallyConstructedAnswer": true,
+        "harnessDoesExtract": true
+      },
+      "expectedCorrectedBehavior": "execution attributes must be derived from a captured harness receipt; the dry-run must not be described as performing DSH extraction",
+      "reproductionMethod": "SOURCE: read the exact parent scripts from Git",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "detectedByE1RTests": false,
+      "detectedNote": "E1R's own evidence asserted these fields; no test compared them to a receipt"
+    },
+    {
+      "id": "C1-F5",
+      "title": "Harness GO/NO-GO ignores measured integrity conditions",
+      "sourcePath": "scripts/trajectory_p2e1r/assay-harness.mjs",
+      "function": "the finalOutcome assignment after evaluation",
+      "requiredInput": "a run where a measured integrity condition fails but the oracle verdict is positive",
+      "actualBaselineBehavior": {
+        "goCondition": "evaluation.verdict.historicalUnderstanding && evaluation.verdict.decisionQuality",
+        "assignedArmGatesGo": false,
+        "sectionDigestGatesGo": false,
+        "sourceBasisIntegrityGatesGo": false,
+        "citationAvailabilityGatesGo": false,
+        "groundTruthLeakGatesGo": false,
+        "cleanupGatesGo": false,
+        "dependencyRootGatesGo": false
+      },
+      "expectedCorrectedBehavior": "every measured integrity condition must be able to force NO-GO, and the closure verdict must be derived from all of them",
+      "reproductionMethod": "SOURCE: read the exact parent harness from Git",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "detectedByE1RTests": false,
+      "detectedNote": "the conditions were recorded in findings but never ANDed into the verdict"
+    },
+    {
+      "id": "C1-F6",
+      "title": "Missing first-party DSH dependency exits successfully",
+      "sourcePath": "scripts/trajectory_p2e1r/assay-harness.mjs",
+      "function": "the top-level hasFirstPartyDsh() guard",
+      "requiredInput": "an environment with no installed first-party DSH tree",
+      "actualBaselineBehavior": {
+        "writesOutcome": "ASSAY_EXECUTION_PATH_NOT_ESTABLISHED",
+        "exitCode": 0,
+        "exitCodeIsZero": true
+      },
+      "expectedCorrectedBehavior": "a missing required dependency must exit NONZERO and report NOT_ESTABLISHED",
+      "reproductionMethod": "SOURCE: read the exact parent harness guard from Git",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "detectedByE1RTests": false
+    },
+    {
+      "id": "C1-F7",
+      "title": "Session lookup uses filename substring matching",
+      "sourcePath": "scripts/trajectory_p2e1r/answer-extraction.mjs",
+      "function": "findSessionFile()",
+      "requiredInput": "two sessions whose ids are near-collisions",
+      "actualBaselineBehavior": {
+        "exactIdMatched": null,
+        "exactIdReturnedNullBecauseTwoCandidatesMatch": true,
+        "extendedIdMatched": "worker-abc-extra-session.v4.jsonl",
+        "lookupIsSubstringBased": true,
+        "readerUsesExactSessionId": true,
+        "selectsLastAssistantMessage": true
+      },
+      "expectedCorrectedBehavior": "prefer the official persistence identity lookup; never accept a file merely because its path contains the id as a substring; bind the answer to the intended benchmark turn",
+      "reproductionMethod": "RUN: create near-collision session files and call findSessionFile",
+      "evidenceClass": "DYNAMICALLY_REPRODUCED",
+      "detectedByE1RTests": false
+    },
+    {
+      "id": "C1-F8",
+      "title": "Regression reconciler pre-classifies every HEAD failure as pre-existing",
+      "sourcePath": "scripts/trajectory_p2e1r/regression-reconcile.mjs",
+      "function": "the classification loop over headFailures",
+      "requiredInput": "a HEAD report containing a genuinely new failing TestId",
+      "actualBaselineBehavior": {
+        "everyHeadFailureHardcodedPreExisting": true,
+        "newRegressionsInitialisedToZero": true,
+        "unresolvedInitialisedToZero": true,
+        "contentionListHardcoded": true,
+        "tautologicalUniquenessCheck": true,
+        "readsBaselineReport": true
+      },
+      "expectedCorrectedBehavior": "classify from ACTUAL Baseline and HEAD reports by compound TestId; a missing report or a new TestId must change the verdict",
+      "reproductionMethod": "SOURCE: read the exact parent reconciler from Git",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "detectedByE1RTests": false
+    },
+    {
+      "id": "C1-F9",
+      "title": "Evidence records inconsistent tested-code HEADs",
+      "sourcePath": "research-evidence/trajectory-p2e1r/*.json",
+      "function": "testedCodeHead fields produced by different evidence writers",
+      "requiredInput": "none",
+      "actualBaselineBehavior": {
+        "headValues": {
+          "regression.json": "046c4a41ad27bcbb166a5a108fa002d31863746e",
+          "final-verdicts.json": "046c4a41ad27bcbb166a5a108fa002d31863746e",
+          "regression-reconciliation.json": "34544335d42ed35aec2724a2a571fcd035901918"
+        },
+        "distinctValues": 2,
+        "actualLastCodeTouchingCommit": "8779e484d0d15e4f64d463ee89e52801eccce600",
+        "commit046c4a4ChangedCode": true,
+        "commit8779e48ChangedCode": true,
+        "explanation": "046c4a4 was computed by the generator as the last commit touching src/scripts/test/docs/host at generation time; 8779e48 then changed scripts/ AFTER that, so the recorded value became stale; and regression-reconciliation.json was written by a separate script that never received the field, so it retained an older 34544335 value"
+      },
+      "expectedCorrectedBehavior": "one explicit freeze protocol: baselineHead, codeFreezeHead, executedCodeTree, evidenceInputHead and evidenceContentDigest, with no stale or divergent tested-code claims",
+      "reproductionMethod": "RUN: read the committed evidence and compare against git log",
+      "evidenceClass": "DYNAMICALLY_REPRODUCED",
+      "detectedByE1RTests": false
+    },
+    {
+      "id": "C1-F10",
+      "title": "Deterministic adapter receives its answer from configuration",
+      "sourcePath": "scripts/trajectory_p2e1r/benchmark-answer-adapter.mjs",
+      "function": "apply(ctx, config) -> makeAnswerAdapter(config.answerJson)",
+      "requiredInput": "none",
+      "actualBaselineBehavior": {
+        "answerComesFromConfig": true,
+        "adapterReadsCapsule": false,
+        "adapterPerformsReasoning": false,
+        "proves": "transport and persistence only",
+        "doesNotProve": "model interpretation, model consumption of the Capsule, or utility"
+      },
+      "expectedCorrectedBehavior": "evidence must state that the answer is seeded test configuration, and must never imply MODEL_CONSUMED_CAPSULE",
+      "reproductionMethod": "SOURCE: read the exact parent adapter from Git",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "detectedByE1RTests": false
+    }
+  ],
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}
