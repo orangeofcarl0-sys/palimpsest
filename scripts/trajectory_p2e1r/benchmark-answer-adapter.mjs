@@ -20,6 +20,8 @@
  * PLAIN JAVASCRIPT. `scripts/**` runs under bare node.
  */
 
+import { readFileSync } from "node:fs";
+
 export const name = "p2e1r-benchmark-answer-llm";
 export const inject = ["llm"];
 
@@ -53,7 +55,21 @@ function makeAnswerAdapter(answerText) {
 }
 
 export function apply(ctx, config) {
-  const answerText = typeof config?.answerJson === "string" && config.answerJson.length > 0 ? config.answerJson : '{"judgments":[],"proposedAction":"INSPECT_CURRENT_WORLD","confidence":"UNKNOWN"}';
+  /**
+   * §5.5: the answer is read from a FILE the harness wrote into its owned root. It is passed as a path rather
+   * than inline JSON because an inlined flow mapping made the YAML patch parse the config as an object and the
+   * entry failed to load. The path is a plain scalar, so the plugin always receives a string.
+   */
+  let answerText = '{"judgments":[],"proposedAction":"INSPECT_CURRENT_WORLD","confidence":"UNKNOWN"}';
+  if (typeof config?.answerPath === "string" && config.answerPath.length > 0) {
+    try {
+      answerText = readFileSync(config.answerPath, "utf8").trim();
+    } catch {
+      /* a missing file leaves the vacuous default, which the oracle rejects — never a silent pass */
+    }
+  } else if (typeof config?.answerJson === "string" && config.answerJson.length > 0) {
+    answerText = config.answerJson;
+  }
   ctx.llm.registerAdapter([BENCHMARK_PROVIDER], makeAnswerAdapter(answerText));
 }
 
