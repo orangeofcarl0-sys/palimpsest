@@ -117,7 +117,9 @@ describe("E1RF RF-B answer provenance (DYNAMICALLY_VERIFIED)", () => {
       /^sha256-[0-9a-f]{64}$/u.test(String(receipt.answerDigest ?? "")) && receipt.answerDigest !== NULL_PAYLOAD_DIGEST;
     expect(provenanceSatisfied({ answerDigest: null })).toBe(false);
     expect(provenanceSatisfied({})).toBe(false);
-    expect(provenanceSatisfied({ answerDigest: undefined })).toBe(false);
+    /** The absent-property case is the one that produced the defect, so it is exercised explicitly. */
+    const absent: { answerDigest?: string | null } = {};
+    expect(provenanceSatisfied(absent)).toBe(false);
     expect(provenanceSatisfied({ answerDigest: sha256(CONTROL_ANSWER) })).toBe(true);
   });
 
