@@ -18,6 +18,7 @@
  *
  * Usage:  node scripts/trajectory_p2e1r/assay-harness.mjs [--arm treatment|control]
  */
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -231,7 +232,44 @@ try {
     record("groundTruthLeak", leak.leaked);
     const events = await readSessionEventsByExactId({ sessionsRoot: join(home, "sessions"), sessionId: observedSession });
     const extraction = extractBenchmarkAnswer(events);
-    record("answerExtraction", { ok: extraction.ok, assistantMessageCount: extraction.assistantMessageCount ?? 0, bytes: extraction.bytes ?? null, seq: extraction.seq ?? null });
+    /**
+     * E1RF RF-B §5.2: THE RAW ANSWER DIGEST IS COMPUTED HERE, FROM THE BYTES THAT WERE READ.
+     *
+     * E1RE recorded only `ok`/`assistantMessageCount`/`bytes`/`seq`, and the closure gate then hashed
+     * `payload.answerExtraction?.answer ?? null` — a property the harness never recorded. Every per-arm digest
+     * was therefore SHA-256 of the literal string "null", identical for CONTROL and TREATMENT and unrelated to
+     * the text that was scored.
+     *
+     * The digest is taken at the ONE point where the persisted text exists, over its UTF-8 bytes exactly as
+     * `extractBenchmarkAnswer` read them. It is computed even when parsing FAILED (`rawText` is present on the
+     * parse-failure path), because "these were the bytes and they did not parse" is a different observation
+     * from "no bytes were read" — and the gate must be able to tell them apart.
+     *
+     * `emittedExpectedAnswerDigest` is recorded separately and named as CONFIGURATION: it is the digest of the
+     * answer the deterministic adapter was told to emit. For this deterministic assay the two must agree; a
+     * future stochastic trial has no predetermined output text, so it would carry only the persisted digest.
+     */
+    const rawText = typeof extraction.rawText === "string" ? extraction.rawText : null;
+    const persistedExtractedAnswerDigest = rawText === null ? null : `sha256-${createHash("sha256").update(Buffer.from(rawText, "utf8")).digest("hex")}`;
+    const emittedExpectedAnswerDigest = `sha256-${createHash("sha256").update(Buffer.from(answerJson, "utf8")).digest("hex")}`;
+    record("answerExtraction", {
+      ok: extraction.ok,
+      assistantMessageCount: extraction.assistantMessageCount ?? 0,
+      bytes: extraction.bytes ?? null,
+      seq: extraction.seq ?? null,
+      /** EXECUTION OBSERVATION: the SHA-256 of the persisted assistant bytes, or null when none were read. */
+      persistedExtractedAnswerDigest,
+      /** TEST CONFIGURATION: the SHA-256 of the text the deterministic adapter was told to emit. */
+      emittedExpectedAnswerDigest,
+      /** Whether the two agree. A mismatch means the persisted text is not what was emitted. */
+      persistedMatchesEmitted: persistedExtractedAnswerDigest !== null && persistedExtractedAnswerDigest === emittedExpectedAnswerDigest,
+    });
+    /** The RAW BYTES are not stored. Only the digest and the byte count survive into the receipt. */
+    record("answerDigestSource", {
+      source: "the UTF-8 bytes of the persisted final assistant message, read through official DSH persistence by exact SessionId",
+      hashedField: "extraction.rawText",
+      digestIsOfMissingField: false,
+    });
     executionStages.assistantPersisted = (extraction.assistantMessageCount ?? 0) >= 1;
     executionStages.answerExtracted = extraction.ok === true;
     record("executionStages", executionStages);

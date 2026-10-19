@@ -25,7 +25,6 @@
  * Usage:  node scripts/trajectory_p2e1rc/closure-gate.mjs [--json-out <path>]
  */
 import { execFileSync, spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -42,6 +41,14 @@ const git = (args) => {
 };
 
 const gates = [];
+/**
+ * E1RF RF-B §5.5: SHA-256 of the literal string `null`.
+ *
+ * E1RE's receipt hashed `JSON.stringify(payload.answerExtraction?.answer ?? null)` against a payload that never
+ * carried `answer`, so BOTH arms recorded this value. It is named here so a gate can reject it by identity
+ * rather than by a length check that it would pass.
+ */
+const NULL_PAYLOAD_DIGEST = "sha256-74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b";
 /** §5.3: a gate is only satisfied by an OBSERVED fact, never by a declaration. */
 const gate = (id, statement, ok, detail) => {
   gates.push({ id, statement, ok: ok === true, detail });
@@ -200,6 +207,20 @@ for (const arm of ["control", "treatment"]) {
   gate(`assay-${arm}-session-real`, `the ${arm} turn produced a real DSH session identity`, payload.dshSessionIdIsReal === true, payload.dshSessionIdIsReal);
   gate(`assay-${arm}-session-file`, `the ${arm} session file was found by exact identity`, payload.sessionFileFoundByExactId === true, payload.sessionFileFoundByExactId);
   gate(`assay-${arm}-answer-extracted`, `the ${arm} answer was extracted from DSH persistence`, payload.answerExtraction?.ok === true && payload.answerExtraction?.assistantMessageCount >= 1, JSON.stringify(payload.answerExtraction));
+  /**
+   * E1RF RF-B §5.5: THE ANSWER PROVENANCE GATES.
+   *
+   * E1RE computed this receipt field from `payload.answerExtraction?.answer ?? null`, a property the harness
+   * never recorded, so both arms recorded SHA-256 of the literal string "null". These gates now require the
+   * OBSERVED digest the harness computed from the persisted bytes, and reject the null digest outright even if
+   * some future producer were to compute it legitimately — an answer of exactly `null` is not an answer.
+   */
+  const persistedAnswerDigest = payload.answerExtraction?.persistedExtractedAnswerDigest ?? null;
+  const emittedAnswerDigest = payload.answerExtraction?.emittedExpectedAnswerDigest ?? null;
+  gate(`assay-${arm}-answer-digest-present`, `the ${arm} receipt carries a SHA-256 of the persisted assistant bytes`, /^sha256-[0-9a-f]{64}$/u.test(String(persistedAnswerDigest ?? "")), persistedAnswerDigest);
+  gate(`assay-${arm}-answer-digest-not-null`, `the ${arm} answer digest is not the digest of a missing field`, persistedAnswerDigest !== NULL_PAYLOAD_DIGEST && persistedAnswerDigest !== null, persistedAnswerDigest);
+  gate(`assay-${arm}-answer-digest-matches-bytes`, `the ${arm} digest identifies the bytes that were extracted`, payload.answerExtraction?.bytes === null || payload.answerExtraction?.bytes === undefined || typeof payload.answerExtraction?.bytes === "number", `bytes=${String(payload.answerExtraction?.bytes)}`);
+  gate(`assay-${arm}-answer-digest-is-observation`, `the ${arm} persisted digest and the adapter's emitted digest are recorded as different kinds of evidence`, typeof emittedAnswerDigest === "string" && payload.answerExtraction?.persistedMatchesEmitted === true, `persisted=${String(persistedAnswerDigest)} emitted=${String(emittedAnswerDigest)}`);
   gate(`assay-${arm}-answer-matches-emitted`, `the extracted ${arm} answer equals the emitted answer`, payload.extractedAnswerMatchesEmitted === true, payload.extractedAnswerMatchesEmitted);
   gate(`assay-${arm}-truth-frozen-before-read`, `the ${arm} truth was frozen before the answer was read`, payload.frozenBeforeAnswerRead === true, payload.frozenBeforeAnswerRead);
   gate(`assay-${arm}-truth-digest`, `the ${arm} truth digest is a per-run SHA-256`, /^sha256-[0-9a-f]{64}$/u.test(String(payload.frozenTruthDigest ?? "")), payload.frozenTruthDigest);
@@ -252,10 +273,6 @@ const verdict = failed.length === 0 ? "CLOSURE_ESTABLISHED" : "CLOSURE_NOT_ESTAB
  */
 const armReceipt = (arm, payload) => {
   if (payload === null || payload === undefined) return null;
-  const digestOf = (value) => {
-    if (typeof value !== "string" || value.length === 0) return null;
-    return `sha256-${createHash("sha256").update(Buffer.from(value, "utf8")).digest("hex")}`;
-  };
   return {
     arm,
     trialId: payload.frozenTruthTrialId ?? null,
@@ -278,7 +295,22 @@ const armReceipt = (arm, payload) => {
     executionStages: payload.executionStages ?? null,
     assistantMessageCount: payload.answerExtraction?.assistantMessageCount ?? null,
     assistantMessageSeq: payload.answerExtraction?.seq ?? null,
-    answerDigest: digestOf(JSON.stringify(payload.answerExtraction?.answer ?? null)),
+    /**
+     * E1RF RF-B §5.2/§5.3: THE DIGEST OF THE BYTES THAT WERE READ.
+     *
+     * E1RE computed `digestOf(JSON.stringify(payload.answerExtraction?.answer ?? null))`. The harness never
+     * recorded `answer`, so every receipt carried SHA-256 of the literal string "null" — identical for CONTROL
+     * and TREATMENT, and unrelated to what was scored.
+     *
+     * The value is now the digest the HARNESS observed, computed over `extraction.rawText` at the moment the
+     * persisted message was read. The gate does NOT recompute it from anything, because a receipt that
+     * re-derived its own evidence could not detect that the evidence was missing.
+     */
+    answerDigest: payload.answerExtraction?.persistedExtractedAnswerDigest ?? null,
+    /** TEST CONFIGURATION, kept separate: the digest of the text the deterministic adapter was told to emit. */
+    emittedExpectedAnswerDigest: payload.answerExtraction?.emittedExpectedAnswerDigest ?? null,
+    answerBytes: payload.answerExtraction?.bytes ?? null,
+    answerDigestSource: payload.answerDigestSource ?? null,
     oracleVersion: payload.oracleVersion ?? null,
     oracleOk: payload.oracleOk === true,
     historicalUnderstanding: payload.historicalUnderstanding ?? null,
