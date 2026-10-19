@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_WIN32_ABI_EQUIVALENCE",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "OBSERVED",
+  "note": "Source identity is strong compatibility evidence, not complete runtime qualification. The label behaviour is qualified separately in win32-security-conformance.json.",
+  "compared": {
+    "from": "0.2.0-rc.2 (registry tarball)",
+    "to": "0.2.1-rc.2 (installed profile modules)"
+  },
+  "equivalence": {
+    "established": true,
+    "sourceTree": "registry tarball, integrity-verified at fetch time",
+    "fileCount": {
+      "left": 13,
+      "right": 13,
+      "common": 13,
+      "executable": 8
+    },
+    "onlyLeft": [],
+    "onlyRight": [],
+    "differing": [
+      "README.i18n.yaml",
+      "README.md",
+      "README.zh.md",
+      "package.json"
+    ],
+    "differingExecutable": [],
+    "executableIdentical": true,
+    "manifests": {
+      "left": {
+        "name": "@deepseek-ai/dsh-win32-process",
+        "description": "Shared low-level Win32 process, stdio, and Job Object primitives",
+        "version": "0.2.0-rc.2",
+        "publishConfig": {
+          "access": "public"
+        },
+        "repository": {
+          "type": "git",
+          "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+          "directory": "packages/subprocess/win32-process"
+        },
+        "type": "module",
+        "main": "lib/index.js",
+        "types": "lib/types/index.d.ts",
+        "exports": {
+          ".": {
+            "types": "./lib/types/index.d.ts",
+            "default": "./lib/index.js"
+          },
+          "./src/*": "./src/*",
+          "./package.json": "./package.json"
+        },
+        "files": [
+          "lib/index.js",
+          "lib/types/**/*.d.ts"
+        ],
+        "license": "MIT",
+        "peerDependencies": {
+          "@deepseek-ai/cordis": "~4.0.4"
+        },
+        "dependencies": {
+          "koffi": "3.1.1",
+          "@deepseek-ai/dsh-lazy-require": "0.2.0-rc.2"
+        },
+        "devDependencies": {
+          "@deepseek-ai/cordis": "~4.0.4"
+        }
+      },
+      "right": {
+        "name": "@deepseek-ai/dsh-win32-process",
+        "description": "Shared low-level Win32 process, stdio, and Job Object primitives",
+        "version": "0.2.1-rc.2",
+        "publishConfig": {
+          "access": "public"
+        },
+        "repository": {
+          "type": "git",
+          "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+          "directory": "packages/subprocess/win32-process"
+        },
+        "type": "module",
+        "main": "lib/index.js",
+        "types": "lib/types/index.d.ts",
+        "exports": {
+          ".": {
+            "types": "./lib/types/index.d.ts",
+            "default": "./lib/index.js"
+          },
+          "./src/*": "./src/*",
+          "./package.json": "./package.json"
+        },
+        "files": [
+          "lib/index.js",
+          "lib/types/**/*.d.ts"
+        ],
+        "license": "MIT",
+        "peerDependencies": {
+          "@deepseek-ai/cordis": "~4.0.5"
+        },
+        "dependencies": {
+          "@deepseek-ai/dsh-lazy-require": "0.2.1-rc.2",
+          "koffi": "3.1.1"
+        },
+        "devDependencies": {
+          "@deepseek-ai/cordis": "~4.0.5"
+        }
+      }
+    }
+  },
+  "installedExportCount": 21,
+  "installedExports": [
+    "ERROR_INSUFFICIENT_BUFFER",
+    "Win32Error",
+    "allocPtrSlot",
+    "allocUint32",
+    "closeHandleChecked",
+    "decodePtr",
+    "decodeUint32",
+    "drainPipe",
+    "extendWin32ProcessBindings",
+    "isJobEmpty",
+    "isNullPtr",
+    "loadWin32ProcessBindings",
+    "pollProcessExit",
+    "probeCurrentTokenJobSupport",
+    "spawnCurrentTokenJobProcess",
+    "spawnInheritedJobProcess",
+    "spawnPipedProcess",
+    "terminateJob",
+    "throwLastError",
+    "throwWin32",
+    "waitForProcessExit"
+  ],
+  "seamAvailable": true,
+  "helperExportsPresent": [
+    "allocPtrSlot",
+    "allocUint32",
+    "decodePtr",
+    "decodeUint32",
+    "isNullPtr"
+  ],
+  "qualifiedVersion": "0.2.1-rc.2",
+  "previouslyQualifiedVersion": "0.2.0-rc.2"
+}

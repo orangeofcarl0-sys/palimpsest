@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_GIT_AND_EVIDENCE_IDENTITY",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "OBSERVED",
+  "e1rdIdentityDiscrepancy": {
+    "documentedCodeFreeze": "cf0128596547897a60d94afabd036b7d60ac2ae3",
+    "laterEvidenceToolCommit": "d8cc481253ccaef65b2ac347e87dd011b6af7bf2",
+    "finalExecutedEvidenceInput": "940c5fd5292e1a621da135a3fd67d5ed9b4cdefa",
+    "explanation": "cf01285 froze HOST and ASSAY behaviour; d8cc481 then changed only the evidence GENERATOR, so the evidence-input HEAD differs from the behaviour freeze. E1RD history is not rewritten."
+  },
+  "identities": {
+    "hostBehaviorFreeze": "29778dd705de13406e8755799c641ba93f0af643",
+    "assayBehaviorFreeze": "728ff3845ed52fa6ba08335387b5c036c142d86d",
+    "evidenceToolFreeze": "550c96e9e6aed55f1630e8d6124851178e38e8e6",
+    "executedCodeHead": "550c96e9e6aed55f1630e8d6124851178e38e8e6",
+    "executedGitTree": "8d2860fc5e7fc1e3ad5034722304006cddc044fa",
+    "evidenceFreezeHead": "550c96e9e6aed55f1630e8d6124851178e38e8e6"
+  },
+  "parent": "940c5fd5292e1a621da135a3fd67d5ed9b4cdefa",
+  "evidenceInputHead": "550c96e9e6aed55f1630e8d6124851178e38e8e6",
+  "evidenceInputTree": "8d2860fc5e7fc1e3ad5034722304006cddc044fa",
+  "evidenceContentDigest": "sha256-7e9b6bbed9aab57f33194567ffe5ea7c05ef6e60f8895aaed2fddbe3da379a22",
+  "artifactDigests": {
+    "baseline-and-environment.json": "sha256-ef67ec0888bf9810840415ffe78d741e26821bf9e3aff6a8e42be5600e585a38",
+    "pretool-source-map.json": "sha256-0e1a19b6cf30acb44dfbede6366b0d5137665b767d95f0f100553718b0e69517",
+    "pretool-first-party-falsifiers.json": "sha256-33e980f2469b0cfb0bd74ff427ab6e458a82b7d5669f0d7d650142eac7c5b138",
+    "cwd-boundary-qualification.json": "sha256-73b35c65fe02eade77c90639c1c25c29878e291fc50aec323871697cf85242b2",
+    "win32-abi-equivalence.json": "sha256-883e971381bebdf1e28df84bf66dc11d8357255213e2af5f620126c8a1e16c68",
+    "win32-security-conformance.json": "sha256-43fe1ccc709a05e08a8cbea289b541212f1e58d9b6f084e046685222c2f4a321",
+    "trajectory-execution-reconfirmation.json": "sha256-0231ce873314f031e866406a2446a7ed1c7f8364b09c6dce0ab494196bed8fb1",
+    "regression-reconciliation.json": "sha256-34ec21b40eb8eb2736c8681f3d6e063841add044519748e8b5c14bc711850b64",
+    "final-verdicts.json": "sha256-7dc3d8734dc2f6295f5312e8e83afcef5c6458805be497a32a6dea9f341642a7",
+    "closure-gate.json": "sha256-52d8b47ac7f7d7e6d933cdd4c713e3ab0e44833c56079a17353f24b85d31cbe7"
+  },
+  "artifactCount": 10,
+  "evidenceSelfReferenceNote": "this manifest hashes every other artifact including the verdicts; it cannot hash itself or name its own commit, so the final HEAD is reported in docs/engineering/trajectory-p2e1re.md and the final report",
+  "protectedResearchEvidence": {
+    "declared": 52,
+    "verified": 52,
+    "mismatched": []
+  }
+}

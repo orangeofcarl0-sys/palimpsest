@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_PRETOOL_SOURCE_MAP",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "SOURCE_DERIVED",
+  "note": "The ORDERING below is the claim that matters. It is stated from source, and separately REPRODUCED by pretool-first-party-falsifiers.json — a source reading alone is not evidence that a read happens before a guard.",
+  "ordering": [
+    {
+      "seq": 1,
+      "step": "parent tool dispatch",
+      "source": "dsh-tools/lib/index.js:3321 tools/pre-execute waterfall, then guardReason()"
+    },
+    {
+      "seq": 2,
+      "step": "delegation tool body",
+      "source": "dsh-tool-subagent/lib/index.js: startActivation({ cwd }) — the tool's own execute"
+    },
+    {
+      "seq": 3,
+      "step": "child directory resolution",
+      "source": "dsh-subagent/lib/index.js:1524 resolve(request.cwd) against workingDirectory.ensure(parent) unless absolute"
+    },
+    {
+      "seq": 4,
+      "step": "child Session created; basis applied",
+      "source": "dsh-subagent/lib/index.js:1803 workingDirectory.set(child, create.cwd, signal)"
+    },
+    {
+      "seq": 5,
+      "step": "child agent/pre-step",
+      "source": "dsh-agent-instructions/lib/index.js:1406 ctx.on('agent/pre-step')"
+    },
+    {
+      "seq": 6,
+      "step": "instruction discovery",
+      "source": "dsh-agent-instructions/lib/index.js:673 ancestorChain(projectRoot, cwd) over AGENTS.md / CLAUDE.md"
+    },
+    {
+      "seq": 7,
+      "step": "instruction content read",
+      "source": "dsh-agent-instructions/lib/index.js:646 discoverInstructionFiles -> fileSystem reads"
+    },
+    {
+      "seq": 8,
+      "step": "model-visible context",
+      "source": "the pre-step result splices the baseline as a user/message (source kind 'agent-instructions')"
+    },
+    {
+      "seq": 9,
+      "step": "child's first guarded tool call",
+      "source": "arrives AFTER steps 5-8"
+    }
+  ],
+  "hazard": "Steps 5-8 run INSIDE ctx.fs, not through tools.guard(). The read guard covers content-returning TOOLS; subagent returns no file content, so it was never fenced. A guard refusal at step 9 is therefore too late.",
+  "enforcement": {
+    "delegationTools": [
+      "subagent",
+      "subagent_fork"
+    ],
+    "enforcedAt": "the PARENT's dispatch of the delegation tool, before startActivation() — steps 1-2",
+    "invariant": "the resolved child directory must EQUAL the authorized execution world"
+  },
+  "classifiedCapabilities": 41,
+  "withdrawnCapabilities": [
+    "working_directory"
+  ]
+}

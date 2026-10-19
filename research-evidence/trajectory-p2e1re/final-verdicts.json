@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "DERIVED_FROM_THE_ABOVE",
+  "verdicts": {
+    "RE_A_PRE_TOOL_CONFIDENTIALITY_QUALIFIED": "QUALIFIED",
+    "RE_B_CWD_BOUNDARY_ADMISSION_QUALIFIED": "QUALIFIED",
+    "RE_C_WIN32_SEAM_REQUALIFIED": "QUALIFIED",
+    "RE_D_TRAJECTORY_EXECUTION_CHAIN_PRESERVED": "QUALIFIED"
+  },
+  "re_e_host_runtime_qualified": "DERIVED_FROM_THE_FOUR_ABOVE",
+  "basis": {
+    "RE_A": "6/6 real first-party cases matched their expected verdict, and 3 cases that leaked on the parent commit deliver nothing now",
+    "RE_B": "48/48 focused controls pass",
+    "RE_C": "executable files identical: true; R1-HR failed=[]; R1-HC failed=[]",
+    "RE_D": "closure CLOSURE_ESTABLISHED, both arms oracleOk=true/true"
+  },
+  "re_e": {
+    "qualified": true,
+    "components": {
+      "RE_A": true,
+      "RE_B": true,
+      "RE_C": true,
+      "RE_D": true,
+      "runtimeConforms": true
+    },
+    "note": "RE-E is not awarded merely because HR-27 passes; it requires all four components AND runtime conformance."
+  },
+  "separatelyTracked": {
+    "CONTROL_BASELINE_TECHNICALLY_READY": "NOT_ESTABLISHED — no frozen calibration specification and no external-model authorization exist; RE-E alone does not supply them"
+  },
+  "notAwarded": {
+    "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+    "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+    "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+    "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+    "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED",
+    "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+    "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED"
+  },
+  "modelCallsMade": 0,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false
+}
