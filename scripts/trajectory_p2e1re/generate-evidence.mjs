@@ -339,9 +339,19 @@ const runtimeConforms = (() => {
   return true;
 })();
 const closureEstablished = execution?.verdict === "CLOSURE_ESTABLISHED";
-/** The falsifier file records one verdict per case; RE-A needs every leak case to have been closed. */
+/**
+ * The falsifier artifact records one row per case plus a summary. RE-A needs BOTH:
+ *   · every case produced the verdict the corrected host is supposed to produce;
+ *   · NO case delivered an unauthorized token.
+ * Reading only one of them would let a case that was "expected to leak" pass as a match.
+ */
 const falsifierCases = falsifiers?.cases ?? [];
-const leaksClosed = falsifierCases.length > 0 && falsifierCases.every((c) => c.verdict === "NO_UNAUTHORIZED_DELIVERY_OBSERVED");
+const falsifierSummary = falsifiers?.summary ?? null;
+const leaksClosed =
+  falsifierCases.length > 0 &&
+  falsifierSummary?.allCasesClosed === true &&
+  falsifierSummary?.noLeakAfterFix === true &&
+  falsifierCases.every((entry) => entry.afterFix?.canaryDelivered !== true && entry.afterFix?.siblingTokenDelivered !== true);
 
 write("final-verdicts.json", {
   schemaVersion: 1,
@@ -380,7 +390,7 @@ write("final-verdicts.json", {
   re_e_host_runtime_qualified: "DERIVED_FROM_THE_FOUR_ABOVE",
   basis: {
     RE_A: leaksClosed
-      ? `${falsifierCases.length} real first-party cases; every one reports NO_UNAUTHORIZED_DELIVERY_OBSERVED`
+      ? `${falsifierCases.length}/${falsifierCases.length} real first-party cases matched their expected verdict, and ${String(falsifierSummary?.leakedBeforeFix?.length)} cases that leaked on the parent commit deliver nothing now`
       : "the first-party falsifier has not established closure",
     RE_B: `${vitestTests.filter((t) => t.status === "passed").length}/${vitestTests.length} focused controls pass`,
     RE_C: `executable files identical: ${String(equivalence.executableIdentical)}; R1-HR failed=${JSON.stringify(r1hr?.failed)}; R1-HC failed=${JSON.stringify(r1hc?.failed)}`,
