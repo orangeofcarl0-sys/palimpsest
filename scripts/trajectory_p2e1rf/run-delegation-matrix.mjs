@@ -70,6 +70,9 @@ for (const entry of CASES) {
     siblingTokenDelivered: probe?.observations?.siblingTokenDelivered === true,
     childSessionCreated: probe?.observations?.childSessionCreated === true,
     refusalObserved: probe?.observations?.refusalObserved === true,
+    /** E1RG RG-A: which layer refused — pre-create alias admission, or the delegation guard. */
+    preCreateRefused: probe?.observations?.preCreateRefused === true,
+    refusalPoint: probe?.observations?.refusalPoint ?? null,
     sessionCount: (probe?.observations?.sessionIds ?? []).length,
     /* --- hygiene ----------------------------------------------------------------------------------- */
     cleanup: probe?.cleanup ?? null,
