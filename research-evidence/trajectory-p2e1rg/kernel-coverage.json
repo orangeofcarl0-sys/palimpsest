@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RG_KERNEL_COVERAGE",
+  "stage": "Trajectory-P2-E1RG",
+  "evidenceClass": "FIRST_PARTY_DSH_VERIFIED",
+  "note": "The ancestor-root probe runs a real Low-token process through the DSH sandbox runner. The label-removal arm is a CAUSATION control: it proves which layer refuses the read.",
+  "runIdentity": {
+    "executedCodeHead": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+    "executedCodeTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+    "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1rg\\ancestor-root-probe.mjs --json-out F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rg\\.run\\ancestor-root.json",
+    "exitCode": 0,
+    "runtimeNode": "24.22.0",
+    "dshIdentity": "0.2.1-rc.2",
+    "selection": "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs",
+    "runId": "d5ef046f-abe1-4fc7-b752-7bf705e475ac",
+    "startedAt": null,
+    "elapsedMs": 1452,
+    "timestampIsNotFreshnessProof": true
+  },
+  "artifactDigest": "sha256-4d914909eb8979518b357aa8f244d51fd35f0e1a4f306fab1b60a2bcaebf661a",
+  "exitCode": 0,
+  "probeVerdict": "PROTECTED_ONLY_BY_THE_LABEL",
+  "rootPlan": {
+    "requestedRoots": [
+      ".palimpsest"
+    ],
+    "plannedRoots": 0,
+    "skippedRoots": [
+      {
+        "path": ".palimpsest",
+        "why": "contains the execution world: labelling an ancestor of the world refuses the traverse every process needs to start",
+        "derivedRoots": [
+          "repository/.palimpsest/durable-state"
+        ],
+        "enumerationFailed": false
+      }
+    ],
+    "note": "a skipped root is NOT a labelled root; its content is covered only by labels on derived descendants"
+  },
+  "kernelApplication": {
+    "supported": true,
+    "outcomes": [
+      {
+        "path": "repository/.palimpsest/durable-state",
+        "applied": true,
+        "verified": true,
+        "derivedFrom": ".palimpsest"
+      }
+    ],
+    "skipped": 1,
+    "coverage": {
+      "complete": true,
+      "planned": [],
+      "labelled": [
+        "repository/.palimpsest/durable-state"
+      ],
+      "verified": [
+        "repository/.palimpsest/durable-state"
+      ],
+      "skippedWithoutDerivedCoverage": 0,
+      "unresolved": 0
+    }
+  },
+  "ancestorException": {
+    "skippedRoot": ".palimpsest",
+    "why": "it contains the execution world, and labelling an ancestor of the world refuses the traverse every process needs to start",
+    "derivedCoverage": [
+      "repository/.palimpsest/durable-state"
+    ],
+    "durableReadableByLowTokenInProduction": false,
+    "canaryLeakedInProduction": false,
+    "canaryLeakedWithLabelRemoved": true,
+    "protectionBasis": "the Kernel label on the derived durable root; the sandbox write-grant ACL alone does NOT stop the read"
+  },
+  "coverageSemantics": {
+    "noUnprotectedEntryFound": "nothing EXAMINED was unprotected — true even for a truncated walk",
+    "verified": "every required entry was examined and nothing examined was unprotected",
+    "complete": "the admission field: no truncation, no enumeration failure, no reparse ambiguity, no unresolved root",
+    "stopReasons": [
+      "COMPLETE",
+      "ENTRY_LIMIT",
+      "DEPTH_LIMIT",
+      "INVALID_LIMIT",
+      "UNSUPPORTED"
+    ]
+  },
+  "controls": {
+    "suite": "test/trajectory_p2e1rg_kernel_coverage.test.ts",
+    "total": 14,
+    "passed": 14,
+    "failed": []
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RG_PRECREATE_ADMISSION",
+  "stage": "Trajectory-P2-E1RG",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "The receipt fields the runner now emits. Each is produced by the worker process itself; none is asserted here.",
+  "receiptFields": [
+    "requestedWorker",
+    "capacity",
+    "aliases",
+    "kernel",
+    "boundaryModule",
+    "refused",
+    "refusals",
+    "agentCreationAttempted",
+    "modelTurnAttempted",
+    "finalResult"
+  ],
+  "invariant": "PreCreateAdmissionRefused => NoAgentCreation => NoModelTurn => NoSuccessfulWorkerOutcome => HOST_FAILURE",
+  "telemetryLine": "PALIMPSEST_WORKER_PRECREATE",
+  "refusalPhases": [
+    "boundary-module",
+    "capacity",
+    "alias",
+    "kernel",
+    "kernel-coverage",
+    "kernel-drift"
+  ],
+  "controls": {
+    "suite": "test/trajectory_p2e1rg_precreate_admission.test.ts",
+    "total": 13,
+    "passed": 13,
+    "failed": []
+  },
+  "focusedSuites": {
+    "runIdentity": {
+      "executedCodeHead": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+      "executedCodeTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\node_modules\\vitest\\vitest.mjs run test/trajectory_p2e1rd_cwd_boundary.test.ts test/trajectory_p2e1re_pretool_boundary.test.ts test/trajectory_p2e1re_win32_fault.test.ts test/trajectory_p2e1rf_delegation_alias.test.ts test/trajectory_p2e1rf_answer_provenance.test.ts test/trajectory_p2e1rf_malformed_ace.test.ts test/trajectory_p2e1rf_evidence_freshness.test.ts test/trajectory_p2e1rg_precreate_admission.test.ts test/trajectory_p2e1rg_kernel_coverage.test.ts test/trajectory_p2e1rg_capacity_atomicity.test.ts --reporter=json --outputFile=F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rg\\.run\\focused.json",
+      "exitCode": 0,
+      "runtimeNode": "24.22.0",
+      "dshIdentity": "0.2.1-rc.2",
+      "selection": "focused-suites",
+      "runId": "d5ef046f-abe1-4fc7-b752-7bf705e475ac",
+      "startedAt": null,
+      "elapsedMs": 22859,
+      "timestampIsNotFreshnessProof": true
+    },
+    "admission": {
+      "admitted": true,
+      "reasons": []
+    },
+    "artifactDigest": "sha256-bba5628d0c71251b7e84a8d5b8a630b5c6369094c30b818d641ff75ac124fe35",
+    "totals": {
+      "files": 10,
+      "tests": 158,
+      "passed": 158,
+      "failed": []
+    }
+  }
+}

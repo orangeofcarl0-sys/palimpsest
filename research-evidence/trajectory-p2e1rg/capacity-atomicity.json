@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RG_CAPACITY_ATOMICITY",
+  "stage": "Trajectory-P2-E1RG",
+  "evidenceClass": "FIRST_PARTY_DSH_VERIFIED",
+  "note": "Both arms run the SAME harness against different source. A single-winner result alone would also be produced by a sequential implementation, so the parent-commit arm is required.",
+  "runIdentity": {
+    "executedCodeHead": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+    "executedCodeTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+    "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1rg\\capacity-race.mjs --json-out F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rg\\.run\\capacity-race.json",
+    "exitCode": 0,
+    "runtimeNode": "24.22.0",
+    "dshIdentity": "0.2.1-rc.2",
+    "selection": "scripts/trajectory_p2e1rg/capacity-race.mjs",
+    "runId": "d5ef046f-abe1-4fc7-b752-7bf705e475ac",
+    "startedAt": null,
+    "elapsedMs": 918,
+    "timestampIsNotFreshnessProof": true
+  },
+  "artifactDigest": "sha256-4822d4d5e7ba9b61e7341165788d67333b185ed026abfcb6f7dcc1fd88aa60eb",
+  "exitCode": 0,
+  "mechanism": "mkdir-exclusive-lock",
+  "mechanismWhy": "creating a directory is atomic on NTFS: exactly one caller succeeds and every other receives EEXIST, with no dependency, service or per-platform lock API",
+  "criticalSection": "mkdir(lock) -> read holders -> decide -> write holders -> rmdir(lock)",
+  "livenessRule": "a holder is evicted ONLY when its process is gone; a timestamp never evicts a live holder",
+  "releaseRule": "release is bound to the owner token this handle recorded, so a non-owner cannot remove an entry",
+  "recoveryRule": "a lock is removed only when its recorded owner is dead AND it is older than lockStaleMs",
+  "arms": {
+    "corrected": {
+      "racers": 6,
+      "collected": 6,
+      "granted": 1,
+      "grantedPids": [
+        33204
+      ],
+      "overlap": false,
+      "details": [
+        {
+          "granted": false,
+          "detail": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 33204). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and t"
+        },
+        {
+          "granted": false,
+          "detail": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 33204). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and t"
+        },
+        {
+          "granted": false,
+          "detail": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 33204). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and t"
+        },
+        {
+          "granted": false,
+          "detail": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 33204). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and t"
+        },
+        {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        {
+          "granted": false,
+          "detail": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 33204). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and t"
+        }
+      ]
+    },
+    "parentCommit": {
+      "racers": 6,
+      "collected": 6,
+      "granted": 6,
+      "grantedPids": [
+        36256,
+        47992,
+        40924,
+        52308,
+        53100,
+        16044
+      ],
+      "overlap": true,
+      "details": [
+        {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "correctedGrants": 1,
+    "parentGrants": 6,
+    "correctedOverlap": false,
+    "parentOverlap": true,
+    "correctionEstablished": true,
+    "note": "`correctionEstablished` requires the parent arm to have over-admitted; a single-winner result alone would also be produced by a sequential implementation."
+  },
+  "verdict": "ATOMIC_OWNERSHIP_ESTABLISHED",
+  "controls": {
+    "suite": "test/trajectory_p2e1rg_capacity_atomicity.test.ts",
+    "total": 13,
+    "passed": 13,
+    "failed": []
+  }
+}
