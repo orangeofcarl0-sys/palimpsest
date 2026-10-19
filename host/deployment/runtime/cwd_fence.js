@@ -38,7 +38,8 @@
 //
 // PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript.
 
-import { resolve } from 'node:path';
+import { realpathSync } from 'node:fs';
+import { isAbsolute, relative, resolve } from 'node:path';
 
 /**
  * The two capabilities that name no filesystem path, so a diverged basis cannot change their meaning.
@@ -47,6 +48,20 @@ import { resolve } from 'node:path';
  * question: not "can this tool disclose content" but "can a moving directory change what this call does".
  */
 export const BASIS_INDEPENDENT_TOOLS = Object.freeze(['palimpsest_worker_result', 'palimpsest_worker_context_pull']);
+
+/**
+ * THE DELEGATION TOOLS THAT ACCEPT A MODEL-SUPPLIED CHILD DIRECTORY (E1RE RE-A).
+ *
+ * WHY THIS LIST IS SEPARATE FROM THE READ GUARD. `read_guard.js` fences tools whose ARGUMENT names content to
+ * return. `subagent` returns no file content itself, so the read guard ignores it — and that was the gap:
+ * measured against the real first-party host, `subagent { cwd: <protected root> }` caused the child's
+ * `agent/pre-step` to read that directory's `AGENTS.md` through `ctx.fs` and inject it as a `user/message`
+ * BEFORE the child's first guarded tool call. A refusal after that read is too late.
+ *
+ * `subagent_fork` shares the same provider driver and the same `cwd` parameter. `workflow` children inherit the
+ * PARENT's effective directory rather than choosing one, so it is covered by the basis fence instead.
+ */
+export const DELEGATION_CWD_TOOLS = Object.freeze(['subagent', 'subagent_fork']);
 
 /**
  * Compare two absolute directories the way the containment test does: case-folded on win32.
@@ -142,9 +157,74 @@ export function createCwdFenceGuard(config) {
  * Register the basis fence for the lifetime of one worker.
  *
  * @param {{ tools: { guard: (guard: (execution: any) => string | undefined) => () => void } }} scope
- * @param {{ world: string, directories?: { get?: (session: unknown) => unknown } }} config
+ * @param {{ world: string, directories?: { get?: (session: unknown) => unknown } | (() => { get?: (session: unknown) => unknown } | undefined) }} config
  * @returns {() => void} the disposer the caller owns.
  */
 export function installCwdFence(scope, config) {
   return scope.tools.guard(createCwdFenceGuard(config));
+}
+
+/**
+ * Decide whether a DELEGATION call may create a child, BEFORE the child exists.
+ *
+ * THE ORDERING IS THE POINT (E1RE RE-A). This runs as a `tools.guard()` on the PARENT's dispatch of `subagent`.
+ * A guard is evaluated after `tools/pre-execute` and before the tool body, so it precedes `startActivation()`,
+ * child Session creation, `workingDirectory.set(child, ...)` and therefore the child's `agent/pre-step`
+ * instruction discovery. Refusing here is the earliest boundary that can be reached through a supported seam.
+ *
+ * THE SEMANTICS COPIED FROM DSH, not invented:
+ *   · an ABSENT `cwd` inherits the parent's effective directory, which the basis fence already pins to the
+ *     world — so it is admitted;
+ *   · a RELATIVE `cwd` is resolved against the parent's effective directory, exactly as
+ *     `SubagentManager.resolveDirectory` does (`resolve(await ensure(parent), request.cwd ?? ".")`);
+ *   · an ABSOLUTE `cwd` is used as given.
+ *
+ * The result must EQUAL the world. Containment is not enough: a child placed in a subdirectory of the world
+ * would resolve `../../durable-state/AGENTS.md` against a different ancestor chain, and a sibling world is a
+ * disclosed residual that containment would admit.
+ *
+ * A REPARSE POINT is refused on the path itself rather than followed, because a link can be re-pointed after
+ * any check and the child's discovery would then walk somewhere the check never saw.
+ *
+ * @param {{ world: string, directories?: unknown, realpath?: (path: string) => string | undefined }} config
+ * @returns {(execution: any) => string | undefined}
+ */
+export function createDelegationCwdGuard(config) {
+  const world = resolve(config.world);
+  const resolveDirectories = typeof config.directories === 'function' ? config.directories : () => config.directories;
+  const canonicalize = typeof config.realpath === 'function' ? config.realpath : (path) => {
+    try {
+      const native = realpathSync.native;
+      return typeof native === 'function' ? native(path) : realpathSync(path);
+    } catch {
+      return undefined;
+    }
+  };
+  return (execution) => {
+    const name = typeof execution?.name === 'string' ? execution.name : undefined;
+    if (name === undefined || !DELEGATION_CWD_TOOLS.includes(name)) return undefined;
+    const args = execution?.arguments;
+    const requested = typeof args === 'object' && args !== null ? args.cwd : undefined;
+    if (requested === undefined || requested === null) return undefined;
+    if (typeof requested !== 'string') return `${name}: "cwd" must be a string; the delegation fence cannot evaluate a non-string directory`;
+    if (requested.trim() === '') return `${name}: "cwd" is empty; an empty directory cannot be shown to be the execution world`;
+    /** The parent's effective directory is the resolution basis, exactly as DSH resolves it. */
+    const parent = execution?.agent === undefined ? undefined : effectiveDirectoryOf(resolveDirectories(), execution.agent.session);
+    if (parent !== undefined && parent.read === false) {
+      return `${name}: the parent Session's effective working directory could not be established (${parent.why}), so a relative child directory cannot be resolved`;
+    }
+    const basis = parent !== undefined && parent.read === true ? parent.cwd : world;
+    const absolute = isAbsolute(requested) ? resolve(requested) : resolve(basis, requested);
+    /**
+     * A link anywhere on the path is refused rather than followed: the child's discovery would traverse the
+     * real object, and a link that is re-pointed after this check would then reach a different tree.
+     */
+    const canonical = canonicalize(absolute);
+    const target = canonical ?? absolute;
+    if (!sameDirectory(target, world)) {
+      const shown = relative(world, target) === '' ? target : target;
+      return `${name}: the child working directory "${requested}" resolves to ${shown}, which is not the authorized execution world (${world}). A child created there would run its pre-step instruction discovery outside the world, and that read happens BEFORE any guarded tool call.`;
+    }
+    return undefined;
+  };
 }

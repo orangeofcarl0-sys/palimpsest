@@ -522,7 +522,20 @@ async function runWorker(ctx, deps) {
            * registered globally, so a per-agent registration is refused rather than silently leaving a hole.
            */
           if (boundaryLoad.module !== undefined && typeof boundaryLoad.module.admitWorker === 'function') {
-            capability = boundaryLoad.module.admitWorker({ visibleNames: surfaceAfter, guardScope: boundary?.guardScope });
+            /**
+             * E1RE RE-B: the INSTALLATION REPORT is passed with the surface, so the gate can require the whole
+             * boundary rather than only the capability classification. A missing basis fence or delegation
+             * fence refuses the worker instead of reading as "the read guard is installed, so this is safe".
+             */
+            capability = boundaryLoad.module.admitWorker({
+              visibleNames: surfaceAfter,
+              guardScope: boundary?.guardScope,
+              boundary: {
+                guardInstalled: boundary?.guardInstalled === true,
+                cwdFenceInstalled: boundary?.cwdFenceInstalled === true,
+                delegationFenceInstalled: boundary?.delegationFenceInstalled === true,
+              },
+            });
             if (capability.allowed !== true) capabilityRefusal = capability.reason ?? 'the capability classification refused this worker';
           }
           // The worker's OWN layer: a restriction filters what a scope inherits and never what it

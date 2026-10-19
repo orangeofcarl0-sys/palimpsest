@@ -125,7 +125,14 @@ export function applyReadFence(input) {
       contract: compatibility,
     };
   }
-  const resolved = win32LabelApi();
+  /**
+   * E1RE RE-C §5.4: `input.api` is a FAULT-INJECTION SEAM, not a production parameter.
+   *
+   * The unreadable-descriptor defect cannot be exercised against a real security descriptor without risking
+   * user state, so the conformance test supplies a stub table that returns a chosen failure code and records
+   * every call. Production callers omit it and the real binding table is resolved exactly as before.
+   */
+  const resolved = input.api !== undefined ? { api: input.api } : win32LabelApi();
   if (resolved.error !== undefined || resolved.api === undefined) {
     return {
       supported: false,
@@ -161,6 +168,16 @@ function ensureRoot(api, root) {
     return { path: root, applied: false, verified: false, detail: `the existing label could not be read, so the fence refuses to write over it: ${existing.detail}` };
   }
   const label = existing.label;
+  /**
+   * E1RE RE-C §5.4: AN UNPARSEABLE DESCRIPTOR IS ALSO UNKNOWN.
+   *
+   * `parseLabelAcl` reports `readable: false` when the descriptor was read but its ACL could not be parsed. That
+   * is NOT "no label exists": writing over it would compute the new policy mask from zero and discard whatever
+   * bits the object carried. The fence refuses instead, exactly as it does for an unreadable descriptor.
+   */
+  if (label?.readable === false) {
+    return { path: root, applied: false, verified: false, detail: 'the existing descriptor was read but its label ACL could not be parsed, so the prior state is UNKNOWN and the fence refuses to write over it' };
+  }
   const alreadyProtected =
     label?.present === true &&
     ((label.policyMask ?? 0) & MANDATORY_POLICIES.NO_READ_UP) !== 0 &&
@@ -211,7 +228,12 @@ export function verifyTree(input) {
     if (checked >= maxEntries || depth > maxDepth) return;
     checked += 1;
     const read = readMandatoryLabel(api, path);
-    if (!read.ok) {
+    if (!read.ok || read.label?.readable === false) {
+      /**
+       * E1RE RE-C §5.4: an UNPARSEABLE descriptor is UNVERIFIED, not "unlabelled". Both make the tree fail
+       * closed, but they are recorded separately because they call for different repairs: one is a read
+       * failure, the other a label that does not carry NO_READ_UP.
+       */
       unreadable.push(path);
     } else if (read.label?.present !== true || ((read.label.policyMask ?? 0) & MANDATORY_POLICIES.NO_READ_UP) === 0) {
       unlabelled.push(path);
@@ -289,7 +311,7 @@ export function snapshotLabels(input) {
     // An ABSENT label is snapshotted as the Windows baseline for a user-created object (Medium, no policy),
     // which is what a restore should write: deleting the SACL entry entirely could widen access on an object
     // whose baseline was never "no label".
-    if (!read.ok) {
+    if (!read.ok || read.label?.readable === false) {
       unreadable.push(root);
       continue;
     }
