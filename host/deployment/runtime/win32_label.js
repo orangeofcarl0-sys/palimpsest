@@ -81,11 +81,26 @@ const MANDATORY_LABEL_AUTHORITY = 16;
  *
  * A DSH whose seam differs fails closed here, with a named reason, instead of silently continuing to run a
  * worker without a boundary.
+ *
+ * REQUALIFICATION (Trajectory-P2-E1RE RE-C §5.6). The pin moved from `0.2.0-rc.2` to `0.2.1-rc.2` as the
+ * CONSEQUENCE of evidence, not as the reason for passing:
+ *
+ *   · every executable file in the two published packages is BYTE-IDENTICAL (13 files; only READMEs and
+ *     `package.json` differ), and both declare `koffi: 3.1.1`;
+ *   · the export statement is identical, so the 21-name surface — including `extendWin32ProcessBindings` and
+ *     all five helper exports this module uses — is unchanged;
+ *   · the label read/write/preservation behaviour was re-exercised, and the unreadable-descriptor defect that
+ *     the requalification found was REPAIRED before the pin moved (§5.4, `readMandatoryLabel`).
+ *
+ * The `qualifiedVersion` therefore names the release this code was actually qualified against, and
+ * `dshCompatibilityReport()` still reports drift for any OTHER release rather than assuming compatibility.
  */
 export const DSH_CONTRACT = Object.freeze({
   package: '@deepseek-ai/dsh-win32-process',
   /** The exact version the fence was qualified against. */
-  qualifiedVersion: '0.2.0-rc.2',
+  qualifiedVersion: '0.2.1-rc.2',
+  /** The release the earlier qualification was performed against, kept so the history stays legible. */
+  previouslyQualifiedVersion: '0.2.0-rc.2',
   /** The exported seam, and the two context members it must provide. */
   seam: 'extendWin32ProcessBindings',
   contextMembers: Object.freeze(['advapi32', 'bind']),
@@ -260,9 +275,20 @@ export function win32LabelApi() {
 /**
  * Read and PARSE the mandatory label on one path.
  *
- * `readable: false` means the descriptor could not be read at all — a different fact from "no label exists",
- * and the two are never collapsed: a caller that treated an unreadable descriptor as "no label" would
- * rewrite a label it never saw, which is the preservation bug §4 exists to prevent.
+ * E1RE RE-C §5.4: AN UNREADABLE DESCRIPTOR IS NOT AN ABSENT LABEL, AND THE CODE NOW AGREES WITH THAT.
+ *
+ * The comment below always said the two facts are never collapsed; the implementation did collapse them. A
+ * failed `GetNamedSecurityInfoW` returned `ok: true` with `label: { present: false }`, and `ensureRoot()`
+ * selects its write path on `existing.ok`. So an unreadable descriptor was read as "there is no label here",
+ * `planLabel()` computed the new policy mask from `existingMask = 0`, and every policy bit the object actually
+ * carried was silently discarded on write — the precise preservation failure this file exists to prevent.
+ *
+ * The failure is now `ok: false`, which every caller already treats as a refusal:
+ *   · `ensureRoot()` refuses to write over a label it could not read;
+ *   · `verifyTree()` records the path as UNREADABLE, so the tree is not verified;
+ *   · `writeAndVerifyLabel()`'s readback cannot report `verified`.
+ *
+ * `present: false` now means exactly one thing: the descriptor WAS read and carried no label.
  *
  * @param {any} api
  * @param {string} path
@@ -275,7 +301,7 @@ export function readMandatoryLabel(api, path) {
   const rc = api.getNamedSecurityInfoW(path, SE_FILE_OBJECT, LABEL_SECURITY_INFORMATION, owner, group, dacl, sacl, descriptor);
   if (rc !== 0) {
     free();
-    return { ok: true, label: { present: false, readable: false }, detail: `GetNamedSecurityInfoW returned ${String(rc)}` };
+    return { ok: false, detail: `GetNamedSecurityInfoW returned ${String(rc)}, so the existing label is UNKNOWN; an unreadable descriptor is not an absent label` };
   }
   const labelAcl = api.decode(sacl, api.pointer('void'));
   const parsed = parseLabelAcl(api, labelAcl);

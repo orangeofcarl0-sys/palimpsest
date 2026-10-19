@@ -30,7 +30,7 @@ import { dirname, join, resolve } from 'node:path';
 import { admitWorldForFencing } from './alias_guard.js';
 import { GUARD_SCOPES, admitWorkerStart, classCounts } from './capability_classes.js';
 import { CONFIDENTIAL_PROFILE, admitConfidentialWorker, openConfidentialSlot } from './confidential_profile.js';
-import { createCwdFenceGuard } from './cwd_fence.js';
+import { createCwdFenceGuard, createDelegationCwdGuard } from './cwd_fence.js';
 import { applyReadFence, disclosedResiduals, isAncestorOf, protectedRootsFor, verifyTree } from './read_fence.js';
 import { createReadGuard, FENCED_READ_TOOLS } from './read_guard.js';
 
@@ -188,6 +188,8 @@ export function installWorkerReadBoundary(input = {}) {
   let guardDisposer;
   /** @type {undefined | (() => void)} */
   let cwdFenceDisposer;
+  /** @type {undefined | (() => void)} */
+  let delegationFenceDisposer;
   if (tools !== undefined && typeof tools.guard === 'function') {
     guardDisposer = tools.guard(createReadGuard({ roots: config.roots, world: config.world }));
     /**
@@ -196,6 +198,13 @@ export function installWorkerReadBoundary(input = {}) {
      * against a directory the worker chose while the read guard kept approving against the world.
      */
     cwdFenceDisposer = tools.guard(createCwdFenceGuard({ world: config.world, directories: resolveDirectories }));
+    /**
+     * Layer 4 — the DELEGATION fence (E1RE RE-A). A `subagent { cwd: <elsewhere> }` child runs its own
+     * `agent/pre-step` instruction discovery through `ctx.fs`, which NO tool guard observes. Measured against the
+     * real host, that read delivered a protected canary as a `user/message` before the child's first guarded
+     * call. This guard runs on the PARENT's dispatch, before `startActivation()`, so the child is never created.
+     */
+    delegationFenceDisposer = tools.guard(createDelegationCwdGuard({ world: config.world, directories: resolveDirectories }));
     guardScope = GUARD_SCOPES.GLOBAL;
   }
   return {
@@ -214,6 +223,9 @@ export function installWorkerReadBoundary(input = {}) {
      */
     cwdFenceInstalled: cwdFenceDisposer !== undefined,
     ...(cwdFenceDisposer === undefined ? {} : { cwdFenceDisposer }),
+    /** Layer 4's fact, reported for the same reason: a missing delegation fence is a missing guarantee. */
+    delegationFenceInstalled: delegationFenceDisposer !== undefined,
+    ...(delegationFenceDisposer === undefined ? {} : { delegationFenceDisposer }),
     fencedTools: FENCED_READ_TOOLS,
   };
 }
@@ -225,12 +237,51 @@ export function installWorkerReadBoundary(input = {}) {
  * answer different questions — "is the boundary in force" and "may this worker run at all" — and a caller
  * that conflated them would start a worker whose surface it never checked.
  *
- * @param {{ visibleNames: readonly string[], guardScope?: string }} input
- * @returns {{ allowed: boolean, reason?: string, classification: ReturnType<typeof admitWorkerStart>['classification'], counts: ReturnType<typeof classCounts> }}
+ * E1RE RE-B §4.1: THE BOUNDARY IS NOW A PRECONDITION, NOT A SIBLING FIELD.
+ *
+ * `installWorkerReadBoundary` reports `cwdFenceInstalled` and `delegationFenceInstalled` independently, and the
+ * caller could previously ignore them: a missing basis fence read as "the read guard is installed, so the
+ * worker is safe". That inference is false for DSH 0.2.1, where the executor resolves against a mutable basis.
+ *
+ * The required condition for this profile is therefore explicit and ALL of it must hold:
+ *
+ *     ReadGuardInstalled && CwdFenceInstalled && DelegationFenceInstalled
+ *       && GlobalGuardScope && CapabilitySurfaceAdmitted
+ *
+ * Each part is reported separately in `boundary`, so a refusal names WHICH guarantee is missing rather than
+ * collapsing five distinct facts into one boolean.
+ *
+ * @param {{ visibleNames: readonly string[], guardScope?: string, boundary?: { guardInstalled?: boolean, cwdFenceInstalled?: boolean, delegationFenceInstalled?: boolean } }} input
+ * @returns {{ allowed: boolean, reason?: string, classification: ReturnType<typeof admitWorkerStart>['classification'], counts: ReturnType<typeof classCounts>, boundary: { required: Record<string, boolean>, satisfied: boolean } }}
  */
 export function admitWorker(input) {
   const verdict = admitWorkerStart(input.visibleNames, { ...(input.guardScope === undefined ? {} : { guardScope: input.guardScope }) });
-  return { ...verdict, counts: classCounts(verdict.classification.classified) };
+  /**
+   * The boundary conditions are evaluated ONLY when the caller supplies the installation report. A caller that
+   * omits it is not silently treated as satisfying them: the requirement is then reported as unsatisfied with
+   * a named reason, which is what makes the precondition real rather than advisory.
+   */
+  const installed = input.boundary;
+  const required = {
+    readGuardInstalled: installed?.guardInstalled === true,
+    cwdFenceInstalled: installed?.cwdFenceInstalled === true,
+    delegationFenceInstalled: installed?.delegationFenceInstalled === true,
+    globalGuardScope: input.guardScope === GUARD_SCOPES.GLOBAL,
+    capabilitySurfaceAdmitted: verdict.allowed === true,
+  };
+  const satisfied = Object.values(required).every((value) => value === true);
+  const counts = classCounts(verdict.classification.classified);
+  if (satisfied) return { ...verdict, counts, boundary: { required, satisfied } };
+  const missing = Object.entries(required).filter(([, ok]) => ok !== true).map(([key]) => key);
+  return {
+    ...verdict,
+    counts,
+    allowed: false,
+    reason: installed === undefined
+      ? `refusing to run this worker: the boundary installation report was not supplied, so the required boundary (${missing.join(', ')}) cannot be shown to be in force`
+      : `refusing to run this worker: the required boundary is not fully in force (${missing.join(', ')}). ${verdict.reason ?? ''}`.trim(),
+    boundary: { required, satisfied },
+  };
 }
 
 /**
