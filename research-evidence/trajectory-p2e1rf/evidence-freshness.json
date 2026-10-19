@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_EVIDENCE_FRESHNESS",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "OBSERVED",
+  "note": "The run identity of every authoritative input in this set, and the admission decision for each.",
+  "defect": {
+    "id": "D4",
+    "source": "scripts/trajectory_p2e1re/generate-evidence.mjs",
+    "reproduction": "conformance reports were read from a fixed user-wide path and a prior falsifier file was reused, with no binding to the code freeze; LIMIT rows were recorded as PASS",
+    "evidenceClass": "SOURCE_DEMONSTRATED"
+  },
+  "correction": {
+    "runScoped": "every suite runs into research-evidence/trajectory-p2e1rf/.run, created by this invocation",
+    "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+    "identityFields": [
+      "executedCodeHead",
+      "executedCodeTree",
+      "command",
+      "exitCode",
+      "runtimeNode",
+      "dshIdentity",
+      "selection",
+      "runId"
+    ],
+    "timestampIsNotFreshnessProof": true,
+    "limitHandling": "classifyCheck reads `limit` BEFORE `pass`",
+    "duplicateIds": "preserved and reported, never deduplicated"
+  },
+  "inputs": [
+    {
+      "artifact": "focused suites (vitest json)",
+      "runIdentity": {
+        "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+        "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\node_modules\\vitest\\vitest.mjs run test/trajectory_p2e1rd_cwd_boundary.test.ts test/trajectory_p2e1re_pretool_boundary.test.ts test/trajectory_p2e1re_win32_fault.test.ts test/trajectory_p2e1rf_delegation_alias.test.ts test/trajectory_p2e1rf_answer_provenance.test.ts test/trajectory_p2e1rf_malformed_ace.test.ts test/trajectory_p2e1rf_evidence_freshness.test.ts --reporter=json --outputFile=F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rf\\.run\\vitest.json",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "test/trajectory_p2e1rd_cwd_boundary.test.ts,test/trajectory_p2e1re_pretool_boundary.test.ts,test/trajectory_p2e1re_win32_fault.test.ts,test/trajectory_p2e1rf_delegation_alias.test.ts,test/trajectory_p2e1rf_answer_provenance.test.ts,test/trajectory_p2e1rf_malformed_ace.test.ts,test/trajectory_p2e1rf_evidence_freshness.test.ts",
+        "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+        "startedAt": "2026-10-19T09:12:24.149Z",
+        "elapsedMs": 4994,
+        "timestampIsNotFreshnessProof": true
+      },
+      "digest": "sha256-5d1c4468943a4538b1e760749801dd0857e812622334d86dd79865ae71293d1f",
+      "admitted": true,
+      "reasons": []
+    },
+    {
+      "artifact": "r1hr conformance",
+      "runIdentity": {
+        "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+        "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r1hr\\conformance.mjs --rig=C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rf-rig-0e20b718-36e6-48f2-ada1-f93a8400ebaf\\r1hr",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "r1hr-conformance",
+        "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+        "startedAt": "2026-10-19T09:12:24.149Z",
+        "elapsedMs": 3966,
+        "timestampIsNotFreshnessProof": true
+      },
+      "digest": "sha256-9f6be07e944af31192b9841effd79cca7bab298fa28878a70b25857747fec668",
+      "admitted": true,
+      "reasons": []
+    },
+    {
+      "artifact": "r1hc conformance",
+      "runIdentity": {
+        "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+        "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r1hc\\conformance.mjs --rig=C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rf-rig-0e20b718-36e6-48f2-ada1-f93a8400ebaf\\r1hc",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "r1hc-conformance",
+        "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+        "startedAt": "2026-10-19T09:12:24.149Z",
+        "elapsedMs": 7092,
+        "timestampIsNotFreshnessProof": true
+      },
+      "digest": "sha256-23be69fb72e62930f43a935db198895dfd493166f95a4d18c18a12302720af0e",
+      "admitted": true,
+      "reasons": []
+    },
+    {
+      "artifact": "evidence falsifiers",
+      "runIdentity": {
+        "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+        "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1rf\\evidence-falsifiers.mjs --json-out F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rf\\.run\\evidence-falsifiers.json",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "scripts/trajectory_p2e1rf/evidence-falsifiers.mjs",
+        "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+        "startedAt": "2026-10-19T09:12:24.149Z",
+        "elapsedMs": 93,
+        "timestampIsNotFreshnessProof": true
+      },
+      "digest": "sha256-66924eab04bfde0f03ccc78ec7b69363cbcc4b212d49780921e930d901455c5f",
+      "admitted": true,
+      "reasons": []
+    },
+    {
+      "artifact": "delegation matrix",
+      "runIdentity": {
+        "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+        "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1rf\\run-delegation-matrix.mjs --json-out F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rf\\.run\\delegation-matrix.json",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "scripts/trajectory_p2e1rf/run-delegation-matrix.mjs",
+        "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+        "startedAt": "2026-10-19T09:12:24.149Z",
+        "elapsedMs": 71376,
+        "timestampIsNotFreshnessProof": true
+      },
+      "digest": "sha256-2adb9f8f33f893a5b0632e6275e9a7ed8e57f135c8f14bda338daf96255960a4",
+      "admitted": true,
+      "reasons": []
+    }
+  ],
+  "historicalTranscriptions": [
+    {
+      "artifact": "research-evidence/trajectory-p2e1re/pretool-first-party-falsifiers.json :: beforeFix",
+      "evidenceClass": "HISTORICAL_OBSERVATION_TRANSCRIBED",
+      "note": "E1RE recorded its pre-fix observations as a transcription of earlier local runs. The original logs are NOT available to this stage, so they cannot be bound by digest and are not presented as dynamically re-executed. No vulnerable configuration was re-run to obtain a better-looking chain."
+    }
+  ]
+}

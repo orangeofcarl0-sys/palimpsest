@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_BASELINE_AND_FALSIFIERS",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "OBSERVED",
+  "parent": "2c3fbc60b1b8688ec067202256be65308c5e5cff",
+  "parentBranch": "trajectory-p2e1re-pretool-win32-qualification",
+  "branch": "trajectory-p2e1rf-final-security-evidence-closure",
+  "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+  "startedAt": "2026-10-19T09:12:24.149Z",
+  "codeFreezeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+  "codeFreezeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+  "headAtGeneration": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+  "headTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "windows": "Microsoft Windows [�汾 10.0.26200.9711]",
+    "node": "24.22.0",
+    "nodeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "pnpm": null,
+    "git": "git version 2.53.0.windows.2",
+    "declaredEngine": ">=24.15.0",
+    "diskFreeBytes": 123979370496
+  },
+  "dsh": {
+    "release": "0.2.1-rc.2",
+    "win32Process": "0.2.1-rc.2",
+    "koffi": null,
+    "packages": {
+      "dsh-tool-fs": "0.2.1-rc.2",
+      "dsh-working-directory": "0.2.1-rc.2",
+      "dsh-tool-working-directory": "0.2.1-rc.2",
+      "dsh-subagent": "0.2.1-rc.2",
+      "dsh-tool-subagent": "0.2.1-rc.2",
+      "dsh-agent-instructions": "0.2.1-rc.2",
+      "dsh-win32-process": "0.2.1-rc.2"
+    },
+    "moduleRoots": [
+      "C:\\Users\\66494\\.dsh\\profiles\\node_modules\\@deepseek-ai",
+      "C:\\Users\\66494\\.dsh\\profiles\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai"
+    ]
+  },
+  "protectedResearchEvidence": {
+    "declared": 52,
+    "verified": 52,
+    "mismatched": []
+  },
+  "rf0Reproduction": {
+    "schemaVersion": 1,
+    "kind": "TRAJECTORY_P2E1RF_DEFECT_REPRODUCTION",
+    "stage": "Trajectory-P2-E1RF",
+    "codeHead": "2c3fbc60b1b8688ec067202256be65308c5e5cff",
+    "fixtureRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rf-rf0-CTRCn7",
+    "defects": {
+      "D1": {
+        "id": "D1",
+        "target": "RF-A",
+        "source": "host/deployment/runtime/cwd_fence.js :: createDelegationCwdGuard()",
+        "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+        "baselineBehavior": {
+          "requested": "world/alias-to-world (a junction whose target is the world)",
+          "reparsePointCreated": true,
+          "isSymbolicLink": true,
+          "verdict": "ADMITTED"
+        },
+        "expectedBehavior": "REFUSED — lexical identity with the world is required, so a mutable indirection is never approved from its current target",
+        "securityImpact": "an admitted alias is a path whose meaning the model can change after the decision; the child's pre-step instruction discovery would then traverse a tree the guard never examined",
+        "detectedByExistingTests": false,
+        "fixtureFailure": null,
+        "reproductionInput": {
+          "tool": "subagent",
+          "cwd": "C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rf-rf0-CTRCn7\\world\\alias-to-world",
+          "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rf-rf0-CTRCn7\\world"
+        },
+        "contrast": {
+          "requested": "world/alias-to-protected",
+          "verdict": "REFUSED",
+          "note": "the current guard refuses THIS alias because its canonical target is outside the world; the defect is that the decision is made from the target at all"
+        }
+      },
+      "D2": {
+        "id": "D2",
+        "target": "RF-B",
+        "source": "scripts/trajectory_p2e1rc/closure-gate.mjs :: armReceipt().answerDigest, scripts/trajectory_p2e1r/assay-harness.mjs :: record(\"answerExtraction\")",
+        "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+        "baselineBehavior": {
+          "harnessRecordedFields": [
+            "ok",
+            "assistantMessageCount",
+            "bytes",
+            "seq"
+          ],
+          "controlDigest": "sha256-74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+          "treatmentDigest": "sha256-74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+          "digestsIdentical": true,
+          "equalsNullDigest": true
+        },
+        "expectedBehavior": "a digest of the UTF-8 bytes of the persisted assistant text actually extracted and scored",
+        "measurementImpact": "the receipt identifies no answer. Two different answers, and an absent answer, all hash to the same value, so the artifact cannot distinguish a real extraction from a missing one",
+        "detectedByExistingTests": false,
+        "nullDigest": "sha256-74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+        "reproductionInput": {
+          "payload": {
+            "answerExtraction": {
+              "ok": true,
+              "assistantMessageCount": 2,
+              "bytes": 218,
+              "seq": 17
+            }
+          }
+        }
+      },
+      "D3": {
+        "id": "D3",
+        "target": "RF-C",
+        "source": "host/deployment/runtime/win32_label.js :: parseLabelAcl() / planLabel()",
+        "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+        "baselineBehavior": {
+          "parsed": {
+            "present": true,
+            "readable": true,
+            "aceType": 17,
+            "aceFlags": 3,
+            "policyMask": null,
+            "integrityRid": 12288,
+            "integrityName": "High",
+            "policies": []
+          },
+          "plannedPolicyMask": 2,
+          "plannedIntegrityRid": 12288,
+          "plannedPreserved": []
+        },
+        "expectedBehavior": "a mandatory ACE whose policy mask could not be decoded is UNVERIFIED: parsing reports unreadable, ensureRoot refuses to write, and no policy bit is ever computed from an assumed zero mask",
+        "securityImpact": "the parser reported a trusted label, and the planned write replaced an unknown policy with NO_READ_UP alone — every pre-existing policy bit on the object would be discarded",
+        "detectedByExistingTests": false,
+        "reproductionInput": {
+          "aceType": 17,
+          "aceSize": 20,
+          "integrityRid": 12288,
+          "policyMask": "NaN"
+        }
+      },
+      "D4": {
+        "id": "D4",
+        "target": "RF-D",
+        "source": "scripts/trajectory_p2e1re/generate-evidence.mjs :: outcomes(), the conformance artifact producer",
+        "evidenceClass": "SOURCE_DEMONSTRATED",
+        "note": "This is a static property of the generator, NOT a live exploit. §7.7 requires the dynamic falsifiers to exercise the NEW admission code, which is where they run.",
+        "baselineBehavior": {
+          "readsFixedUserPath": true,
+          "conformanceOutcomeFields": [
+            "failed",
+            "limits",
+            "contract"
+          ],
+          "missingFreshnessFields": [
+            "executedCodeHead",
+            "codeTreeIdentity",
+            "reportDigest",
+            "command",
+            "exitCode",
+            "runtime",
+            "dshIdentity",
+            "runId",
+            "selection"
+          ],
+          "mapsLimitToPass": true,
+          "reusesPriorFalsifier": true,
+          "detectsDuplicateIds": false,
+          "duplicateIdInRealReport": "HR-25 appears twice in the R1-HR report with different statements; both rows are preserved, and no reconciliation is recorded"
+        },
+        "expectedBehavior": "each authoritative artifact is bound to a run identity (executed code HEAD, tree, command, exit code, runtime, DSH identity, selection, artifact digest) and the gate rejects missing, stale, tampered or LIMIT-relabelled input",
+        "measurementImpact": "a report produced against different code, or by a different DSH, or a disclosed LIMIT, can be recorded as a successful assertion about the code being qualified",
+        "detectedByExistingTests": false
+      }
+    },
+    "fixtureRemoved": true
+  }
+}

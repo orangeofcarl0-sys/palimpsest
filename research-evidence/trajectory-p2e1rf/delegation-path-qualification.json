@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_DELEGATION_PATH_QUALIFICATION",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "FIRST_PARTY_DSH_VERIFIED",
+  "note": "The unit controls prove the DECISION. These cases prove the ORDERING: a refused CWD creates no child Session, so nothing is read before the refusal.",
+  "defect": {
+    "id": "D1",
+    "source": "host/deployment/runtime/cwd_fence.js :: createDelegationCwdGuard()",
+    "reproduction": "world/alias-to-world was ADMITTED on the parent commit because its canonical target is the world"
+  },
+  "correction": {
+    "lexicalIdentityIsTheDecision": true,
+    "reparseScanOverTheSpelledPath": true,
+    "canonicalizationIsAConsistencyCheck": true,
+    "enforcedSurfaceDerivedFrom": "CAPABILITY_CLASSES where class === DELEGATED_SURFACE",
+    "declaredMinimum": [
+      "subagent",
+      "subagent_fork"
+    ],
+    "auditFinding": "DSH 0.2.1-rc.2 registers `subagent` and does not register `subagent_fork`; the E1RE list therefore named a capability this release does not have"
+  },
+  "unitControls": {
+    "suite": "test/trajectory_p2e1rf_delegation_alias.test.ts",
+    "total": 22,
+    "passed": 22,
+    "failed": []
+  },
+  "firstPartyCases": {
+    "runIdentity": {
+      "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+      "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1rf\\run-delegation-matrix.mjs --json-out F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rf\\.run\\delegation-matrix.json",
+      "exitCode": 0,
+      "runtimeNode": "24.22.0",
+      "dshIdentity": "0.2.1-rc.2",
+      "selection": "scripts/trajectory_p2e1rf/run-delegation-matrix.mjs",
+      "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+      "startedAt": "2026-10-19T09:12:24.149Z",
+      "elapsedMs": 71376,
+      "timestampIsNotFreshnessProof": true
+    },
+    "artifactDigest": "sha256-2adb9f8f33f893a5b0632e6275e9a7ed8e57f135c8f14bda338daf96255960a4",
+    "summary": {
+      "total": 8,
+      "matched": 8,
+      "mismatched": [],
+      "leaked": [],
+      "refusedWithChild": [],
+      "cleanupFailed": [],
+      "limits": [],
+      "noLeak": true,
+      "allCasesClosed": true
+    },
+    "cases": [
+      {
+        "case": "aliasToWorld",
+        "why": "RF-A: a junction whose current target is the world",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": false,
+        "refusalObserved": true,
+        "sessionCount": 1,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      },
+      {
+        "case": "aliasToProtected",
+        "why": "RF-A: a junction to a protected root",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": false,
+        "refusalObserved": true,
+        "sessionCount": 1,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      },
+      {
+        "case": "world",
+        "why": "legitimate in-world delegation must still work",
+        "expectedVerdict": "ALLOWED_NO_DELIVERY",
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": true,
+        "refusalObserved": false,
+        "sessionCount": 2,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      },
+      {
+        "case": "sibling",
+        "why": "a sibling attempt world",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": false,
+        "refusalObserved": true,
+        "sessionCount": 1,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      },
+      {
+        "case": "protected",
+        "why": "the simulated durable state",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": false,
+        "refusalObserved": true,
+        "sessionCount": 1,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      },
+      {
+        "case": "parentOfProtected",
+        "why": "the parent of the protected root",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": false,
+        "refusalObserved": true,
+        "sessionCount": 1,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      },
+      {
+        "case": "traversal",
+        "why": "relative traversal out of the world",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": false,
+        "refusalObserved": true,
+        "sessionCount": 1,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      },
+      {
+        "case": "production",
+        "why": "the real deployment layout",
+        "expectedVerdict": "ALLOWED_NO_DELIVERY",
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "matched": true,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "childSessionCreated": true,
+        "refusalObserved": false,
+        "sessionCount": 2,
+        "cleanup": {
+          "cleaned": true,
+          "reason": null
+        },
+        "fixtureLimit": null
+      }
+    ],
+    "exitCode": 0
+  }
+}

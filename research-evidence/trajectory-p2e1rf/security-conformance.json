@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_SECURITY_CONFORMANCE",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "The integrated security picture: which guarantees are in force, which are disclosed limits, and which are unverified.",
+  "guardLayers": {
+    "kernel": {
+      "installed": true,
+      "verifiedBy": "R1-HR HR-09..HR-12, HR-32"
+    },
+    "trustedReadGuard": {
+      "installed": "global scope",
+      "requiredBecause": "a delegation capability reaches other scopes"
+    },
+    "cwdBasisFence": {
+      "installed": true,
+      "invariant": "the effective Session directory must EQUAL the execution world"
+    },
+    "delegationFence": {
+      "installed": true,
+      "invariant": "a child directory must be the world, tested lexically and by reparse scan"
+    },
+    "admissionPrecondition": {
+      "required": [
+        "readGuardInstalled",
+        "cwdFenceInstalled",
+        "delegationFenceInstalled",
+        "globalGuardScope",
+        "capabilitySurfaceAdmitted"
+      ]
+    }
+  },
+  "capabilitySurface": {
+    "failClosed": true,
+    "withdrawn": [
+      "working_directory"
+    ],
+    "withdrawalBackstop": "the name stays absent from CAPABILITY_CLASSES, so a re-exposure refuses the worker start",
+    "delegationSurfaceDerivedFromTable": true
+  },
+  "confidentialProfile": {
+    "serializesActiveWorkers": true,
+    "disclosedLimitation": "HC-27"
+  },
+  "evidenceFalsifiers": {
+    "runIdentity": {
+      "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+      "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1rf\\evidence-falsifiers.mjs --json-out F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rf\\.run\\evidence-falsifiers.json",
+      "exitCode": 0,
+      "runtimeNode": "24.22.0",
+      "dshIdentity": "0.2.1-rc.2",
+      "selection": "scripts/trajectory_p2e1rf/evidence-falsifiers.mjs",
+      "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+      "startedAt": "2026-10-19T09:12:24.149Z",
+      "elapsedMs": 93,
+      "timestampIsNotFreshnessProof": true
+    },
+    "exitCode": 0,
+    "artifactDigest": "sha256-66924eab04bfde0f03ccc78ec7b69363cbcc4b212d49780921e930d901455c5f",
+    "summary": {
+      "total": 11,
+      "refused": 11,
+      "allRefused": true,
+      "positiveControlsPresent": true,
+      "weakerGuarantees": []
+    },
+    "cases": [
+      {
+        "case": "stale-code-head",
+        "injected": "the report was produced against a different commit than the code freeze",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "missing-report",
+        "injected": "the R1-HR report is absent (null content, which is what a failed read produces)",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "dsh-version-mismatch",
+        "injected": "the report was produced against DSH 0.2.0-rc.2 while the freeze names 0.2.1-rc.2",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "tampered-digest",
+        "injected": "the bytes no longer hash to the digest recorded for them",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "other-run-falsifier",
+        "injected": "a falsifier artifact whose runId is not this run's, so its observations belong to another execution",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "limit-relabelled-pass",
+        "injected": "a disclosed LIMIT whose row carries pass:true, which the E1RE summarizer recorded as PASS",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "nonzero-exit-success-body",
+        "injected": "the producing process exited 1 while its report lists no failures",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "absent-answer-digest",
+        "injected": "a receipt whose answerDigest is absent, and one carrying the SHA-256 of the literal string null",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "duplicate-check-id",
+        "injected": "two checks share the id HR-25 with different statements",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "empty-results",
+        "injected": "a report with no checks at all",
+        "refused": true,
+        "positiveControl": true
+      },
+      {
+        "case": "tally-disagreement",
+        "injected": "a row records FAIL while the report's own `failed` array is empty",
+        "refused": true,
+        "positiveControl": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_WIN32_PRESERVATION",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Read from the SUITES' OWN JSON produced in this run's rig, not from a user-wide path. PASS, LIMIT and FAIL are counted separately and a LIMIT is never recorded as a PASS.",
+  "defect": {
+    "id": "D3",
+    "source": "host/deployment/runtime/win32_label.js :: parseLabelAcl() / planLabel()",
+    "reproduction": "a mandatory ACE with an undecodable policy mask parsed as present:true/readable:true, and planLabel computed NaN | NO_READ_UP = 2, discarding every existing policy bit"
+  },
+  "correction": {
+    "validatedFields": [
+      "AclSize",
+      "AceCount",
+      "AceType",
+      "AceFlags",
+      "AceSize",
+      "policyMask",
+      "SidRevision",
+      "SubAuthorityCount",
+      "SidLength",
+      "IdentifierAuthority",
+      "IntegrityRid"
+    ],
+    "unverifiedState": "present:false, readable:false, unreadableField:<name>",
+    "absentLabelMeaning": "present:false, readable:true — the descriptor WAS read and carried no mandatory ACE",
+    "planLabelRefusesCoercion": true
+  },
+  "unitControls": {
+    "suite": "test/trajectory_p2e1rf_malformed_ace.test.ts",
+    "total": 19,
+    "passed": 19,
+    "failed": []
+  },
+  "suites": {
+    "r1hr": {
+      "runIdentity": {
+        "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+        "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r1hr\\conformance.mjs --rig=C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rf-rig-0e20b718-36e6-48f2-ada1-f93a8400ebaf\\r1hr",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "r1hr-conformance",
+        "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+        "startedAt": "2026-10-19T09:12:24.149Z",
+        "elapsedMs": 3966,
+        "timestampIsNotFreshnessProof": true
+      },
+      "admission": {
+        "admitted": true,
+        "reasons": []
+      },
+      "artifactDigest": "sha256-9f6be07e944af31192b9841effd79cca7bab298fa28878a70b25857747fec668",
+      "exitCode": 0,
+      "totals": {
+        "checks": 47,
+        "pass": 44,
+        "limit": 3,
+        "fail": 0
+      },
+      "verdict": "LIMIT",
+      "limits": [
+        {
+          "identity": "r1hr#18:HR-17:a PRE-EXISTING symlink to a protected file",
+          "id": "HR-17",
+          "statement": "a PRE-EXISTING symlink to a protected file",
+          "status": "LIMIT"
+        },
+        {
+          "identity": "r1hr#40:HR-39b:isolation between CONCURRENTLY ACTIVE worlds",
+          "id": "HR-39b",
+          "statement": "isolation between CONCURRENTLY ACTIVE worlds",
+          "status": "LIMIT"
+        },
+        {
+          "identity": "r1hr#46:HR-33:metadata confidentiality",
+          "id": "HR-33",
+          "statement": "metadata confidentiality",
+          "status": "LIMIT"
+        }
+      ],
+      "failures": [],
+      "duplicateIds": [
+        "HR-25"
+      ],
+      "declaredLimits": [
+        "HR-17",
+        "HR-39b",
+        "HR-33"
+      ]
+    },
+    "r1hc": {
+      "runIdentity": {
+        "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+        "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r1hc\\conformance.mjs --rig=C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rf-rig-0e20b718-36e6-48f2-ada1-f93a8400ebaf\\r1hc",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "r1hc-conformance",
+        "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+        "startedAt": "2026-10-19T09:12:24.149Z",
+        "elapsedMs": 7092,
+        "timestampIsNotFreshnessProof": true
+      },
+      "admission": {
+        "admitted": true,
+        "reasons": []
+      },
+      "artifactDigest": "sha256-23be69fb72e62930f43a935db198895dfd493166f95a4d18c18a12302720af0e",
+      "exitCode": 0,
+      "totals": {
+        "checks": 27,
+        "pass": 26,
+        "limit": 1,
+        "fail": 0
+      },
+      "verdict": "LIMIT",
+      "limits": [
+        {
+          "identity": "r1hc#26:HC-27:parallel ACTIVE confidential workers on the current Windows backend",
+          "id": "HC-27",
+          "statement": "parallel ACTIVE confidential workers on the current Windows backend",
+          "status": "LIMIT"
+        }
+      ],
+      "failures": [],
+      "duplicateIds": [],
+      "declaredLimits": [
+        "HC-27"
+      ]
+    }
+  },
+  "preservedConstraints": [
+    "a single ACTIVE confidential worker (HC-27, disclosed LIMIT)",
+    "concurrently active worlds are not isolated from each other's raw code (HR-39b, disclosed LIMIT)",
+    "the shared worlds parent is an ancestor of the world, so sibling world NAMES are enumerable (HR-33, disclosed LIMIT)"
+  ]
+}

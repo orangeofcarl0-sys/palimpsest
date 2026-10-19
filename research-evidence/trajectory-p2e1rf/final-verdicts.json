@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "DERIVED_FROM_THE_ABOVE",
+  "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+  "verdicts": {
+    "E1RF_A_DELEGATION_PATH_IDENTITY_QUALIFIED": "QUALIFIED",
+    "E1RF_B_ANSWER_PROVENANCE_QUALIFIED": "QUALIFIED",
+    "E1RF_C_WIN32_MALFORMED_ACE_PRESERVATION_QUALIFIED": "QUALIFIED",
+    "E1RF_D_EVIDENCE_FRESHNESS_QUALIFIED": "QUALIFIED",
+    "E1RF_RUNTIME_EXIT_TRAJECTORY_MEASUREMENT_INFRASTRUCTURE_QUALIFIED": "QUALIFIED"
+  },
+  "scope": {
+    "testedRuntime": {
+      "node": "24.22.0",
+      "platform": "win32",
+      "dsh": "0.2.1-rc.2",
+      "win32Process": "0.2.1-rc.2",
+      "koffi": null
+    },
+    "explicitlyNotGeneralized": "The runtime exit verdict is scoped to this tested runtime. It is NOT a claim about any future DSH release: the CWD semantics, the pre-step instruction discovery and the Win32 binding seam were qualified against 0.2.1-rc.2 only.",
+    "notAwarded": {
+      "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+      "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+      "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+      "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+      "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+      "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+      "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED",
+      "CONTROL_BASELINE_TECHNICALLY_READY": "NOT_ESTABLISHED"
+    },
+    "notAwardedReason": "A deterministic adapter emitting a correct answer is not evidence of model reasoning or utility. No stochastic trial and no external model request occurred in this stage."
+  },
+  "basis": {
+    "RF_A": "first-party matrix closed: 8/8 matched, leaked []; every refused case created no child session: true; legitimate in-world delegation still works: true",
+    "RF_B": "control digest sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725; treatment digest sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b; distinct=true",
+    "RF_C": "R1-HR 44 PASS/3 LIMIT/0 FAIL; R1-HC 26 PASS/1 LIMIT/0 FAIL; both admitted=true",
+    "RF_D": "falsifiers refused 11/11 with positive controls true; vitest admission true",
+    "runtimeExit": "all four components true; closure CLOSURE_ESTABLISHED; focused failures 0"
+  },
+  "disclosedLimits": [
+    "HR-17: the pre-existing symlink fixture cannot be built on this host; the junction fixture exercises the same reparse mechanism",
+    "HR-39b: concurrently ACTIVE worlds are not isolated from each other's raw code",
+    "HR-33: sibling world NAMES are enumerable because the worlds parent is an ancestor of the world",
+    "HC-27: parallel ACTIVE confidential workers are unsupported; the profile serializes them",
+    "Excluded test: test/r3l0ciarlcf_gates.test.ts, known unsafe against a shared working tree; its exclusion predates this stage"
+  ]
+}

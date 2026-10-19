@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_ANSWER_PROVENANCE",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Read from the closure gate's own receipts. The digest is the HARNESS's observation of the persisted bytes; the emitted digest is test configuration and is named separately.",
+  "defect": {
+    "id": "D2",
+    "source": "scripts/trajectory_p2e1rc/closure-gate.mjs :: armReceipt().answerDigest",
+    "reproduction": "both arms recorded sha256-74234e98…b90b, which is SHA-256 of the literal string \"null\"",
+    "nullPayloadDigest": "sha256-74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+  },
+  "correction": {
+    "digestComputedAt": "assay-harness.mjs, over extraction.rawText, the bytes read from official DSH persistence",
+    "observedField": "persistedExtractedAnswerDigest",
+    "configurationField": "emittedExpectedAnswerDigest",
+    "gateRejectsNullDigest": true
+  },
+  "unitControls": {
+    "suite": "test/trajectory_p2e1rf_answer_provenance.test.ts",
+    "total": 11,
+    "passed": 11,
+    "failed": []
+  },
+  "arms": {
+    "control": {
+      "arm": "control",
+      "trialId": "ASSAY-control-attempt-d097609a1766bda859aa5dd2ceb62ae6",
+      "frozenTruthDigest": "sha256-b9dba6720416f27319c8d21e7a13cf0267043cfcf601af6049ffcbaaf97fe9ea",
+      "assignedArm": "CONTROL",
+      "presentationMode": "CONTROL",
+      "sectionBytes": 384,
+      "sectionDigest": "766c5539c44ed4196b382bd5584384dcae763d877867c9b75c6b8bfe8a499adb",
+      "sessionId": "worker-f1dcb77d-e6bf-4058-bad7-945377157fe4",
+      "sessionIdentityReal": true,
+      "sessionFileFoundByExactId": true,
+      "workerOutcome": "READY_FOR_SETTLEMENT",
+      "capabilityAdmissionPassed": true,
+      "cwdBasisPinned": "NOT_SURFACED_BY_WORK_WORKER_PORT",
+      "executionStages": {
+        "sessionCreated": true,
+        "workerStartAttempted": true,
+        "capabilityAdmissionPassed": true,
+        "workerCompleted": true,
+        "assistantPersisted": true,
+        "answerExtracted": true,
+        "officialOracleEvaluatedExtractedOutput": true
+      },
+      "assistantMessageCount": 2,
+      "assistantMessageSeq": 22,
+      "answerDigest": "sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725",
+      "emittedExpectedAnswerDigest": "sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725",
+      "answerBytes": 721,
+      "answerDigestSource": {
+        "source": "the UTF-8 bytes of the persisted final assistant message, read through official DSH persistence by exact SessionId",
+        "hashedField": "extraction.rawText",
+        "digestIsOfMissingField": false
+      },
+      "oracleVersion": "p2e1rd-internal-citation-closed-1",
+      "oracleOk": true,
+      "historicalUnderstanding": true,
+      "decisionQuality": true,
+      "operationalBehavior": "NOT_MEASURED",
+      "groundTruthLeak": false,
+      "cleanupOk": true,
+      "dependencyRootPreserved": true,
+      "modelCallsMade": 0
+    },
+    "treatment": {
+      "arm": "treatment",
+      "trialId": "ASSAY-treatment-attempt-4e2dd0fb9429166fed6634c5e018be13",
+      "frozenTruthDigest": "sha256-10b7f56c77957a4ba74271994c1a1a9f8f8f77237a400c8594b45f36e7c4d02a",
+      "assignedArm": "TREATMENT",
+      "presentationMode": "TREATMENT",
+      "sectionBytes": 3650,
+      "sectionDigest": "3d3056e804d0ce2bde8da3ec8ef078d42d592ebe90557e13d28f530e424d6aad",
+      "sessionId": "worker-1df5d1d4-d5fc-4f05-8351-88af0e78e86f",
+      "sessionIdentityReal": true,
+      "sessionFileFoundByExactId": true,
+      "workerOutcome": "READY_FOR_SETTLEMENT",
+      "capabilityAdmissionPassed": true,
+      "cwdBasisPinned": "NOT_SURFACED_BY_WORK_WORKER_PORT",
+      "executionStages": {
+        "sessionCreated": true,
+        "workerStartAttempted": true,
+        "capabilityAdmissionPassed": true,
+        "workerCompleted": true,
+        "assistantPersisted": true,
+        "answerExtracted": true,
+        "officialOracleEvaluatedExtractedOutput": true
+      },
+      "assistantMessageCount": 2,
+      "assistantMessageSeq": 22,
+      "answerDigest": "sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b",
+      "emittedExpectedAnswerDigest": "sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b",
+      "answerBytes": 979,
+      "answerDigestSource": {
+        "source": "the UTF-8 bytes of the persisted final assistant message, read through official DSH persistence by exact SessionId",
+        "hashedField": "extraction.rawText",
+        "digestIsOfMissingField": false
+      },
+      "oracleVersion": "p2e1rd-internal-citation-closed-1",
+      "oracleOk": true,
+      "historicalUnderstanding": true,
+      "decisionQuality": true,
+      "operationalBehavior": "NOT_MEASURED",
+      "groundTruthLeak": false,
+      "cleanupOk": true,
+      "dependencyRootPreserved": true,
+      "modelCallsMade": 0
+    }
+  },
+  "closureVerdict": "CLOSURE_ESTABLISHED",
+  "closureGatesForProvenance": [
+    {
+      "id": "assay-control-answer-extracted",
+      "statement": "the control answer was extracted from DSH persistence",
+      "ok": true,
+      "detail": "{\"ok\":true,\"assistantMessageCount\":2,\"bytes\":721,\"seq\":22,\"persistedExtractedAnswerDigest\":\"sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725\",\"emittedExpectedAnswerDigest\":\"sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725\",\"persistedMatchesEmitted\":true}"
+    },
+    {
+      "id": "assay-control-answer-digest-present",
+      "statement": "the control receipt carries a SHA-256 of the persisted assistant bytes",
+      "ok": true,
+      "detail": "sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725"
+    },
+    {
+      "id": "assay-control-answer-digest-not-null",
+      "statement": "the control answer digest is not the digest of a missing field",
+      "ok": true,
+      "detail": "sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725"
+    },
+    {
+      "id": "assay-control-answer-digest-matches-bytes",
+      "statement": "the control digest identifies the bytes that were extracted",
+      "ok": true,
+      "detail": "bytes=721"
+    },
+    {
+      "id": "assay-control-answer-digest-is-observation",
+      "statement": "the control persisted digest and the adapter's emitted digest are recorded as different kinds of evidence",
+      "ok": true,
+      "detail": "persisted=sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725 emitted=sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725"
+    },
+    {
+      "id": "assay-control-answer-matches-emitted",
+      "statement": "the extracted control answer equals the emitted answer",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "id": "assay-treatment-answer-extracted",
+      "statement": "the treatment answer was extracted from DSH persistence",
+      "ok": true,
+      "detail": "{\"ok\":true,\"assistantMessageCount\":2,\"bytes\":979,\"seq\":22,\"persistedExtractedAnswerDigest\":\"sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b\",\"emittedExpectedAnswerDigest\":\"sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b\",\"persistedMatchesEmitted\":true}"
+    },
+    {
+      "id": "assay-treatment-answer-digest-present",
+      "statement": "the treatment receipt carries a SHA-256 of the persisted assistant bytes",
+      "ok": true,
+      "detail": "sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b"
+    },
+    {
+      "id": "assay-treatment-answer-digest-not-null",
+      "statement": "the treatment answer digest is not the digest of a missing field",
+      "ok": true,
+      "detail": "sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b"
+    },
+    {
+      "id": "assay-treatment-answer-digest-matches-bytes",
+      "statement": "the treatment digest identifies the bytes that were extracted",
+      "ok": true,
+      "detail": "bytes=979"
+    },
+    {
+      "id": "assay-treatment-answer-digest-is-observation",
+      "statement": "the treatment persisted digest and the adapter's emitted digest are recorded as different kinds of evidence",
+      "ok": true,
+      "detail": "persisted=sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b emitted=sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b"
+    },
+    {
+      "id": "assay-treatment-answer-matches-emitted",
+      "statement": "the extracted treatment answer equals the emitted answer",
+      "ok": true,
+      "detail": true
+    }
+  ]
+}
