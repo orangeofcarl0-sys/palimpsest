@@ -28,7 +28,7 @@
 //
 // PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript.
 
-import { readdirSync, statSync } from 'node:fs';
+import { lstatSync, readdirSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 
 import {
@@ -85,25 +85,81 @@ export function isAncestorOf(root, candidate) {
  * fence that breaks the runtime is an outage, not a boundary. The trusted-code guard in `read_guard.js` can
  * still deny paths inside such a root, because it works on names rather than on the kernel.
  *
+ * E1RG RG-0-F7 / RG-B §5.5: A SKIPPED ROOT IS NOT AN UNPROTECTED ROOT — BUT ONLY IF ITS CONTENT IS LABELLED.
+ *
+ * The skip reason is about the root ITSELF. It says nothing about the root's CHILDREN, and in the production
+ * layout most of them are ordinary durable state that must be protected:
+ *
+ *     <repository>/.palimpsest/            <- skipped: it is an ancestor of the world
+ *     <repository>/.palimpsest/worlds/     <- must ALSO be skipped: it contains the world
+ *     <repository>/.palimpsest/durable-state/   <- contains no world, so it CAN and MUST be labelled
+ *
+ * MEASURED, NOT ASSUMED. `scripts/trajectory_p2e1rg/ancestor-root-probe.mjs` runs a probe under the real DSH
+ * Low token in a production-shaped fixture. With no label on `durable-state` the synthetic canary is READABLE
+ * (the sandbox write-grant ACL does not protect it); with the label applied the read is EPERM. So the
+ * protection for a skipped ancestor's content is the Kernel label on that content, and nothing else.
+ *
+ * The derivation is deliberately ONE LEVEL and BOUNDED. Descending further would be a crawler (§5.1 forbids a
+ * new generic filesystem crawler), and one level is sufficient because a label is INHERITABLE: labelling
+ * `durable-state` covers everything beneath it, including future children.
+ *
+ * If the skipped root cannot be enumerated, that is NOT silently treated as "nothing to protect". The
+ * enumeration failure is recorded in `unresolved`, and `applyReadFence` reports coverage as incomplete — which
+ * the admission gate refuses (§5.6).
+ *
  * @param {{ roots: readonly string[], world: string }} input
  * @returns {ReadFencePlan}
  */
 export function planReadFence(input) {
   /** @type {string[]} */
   const protectedRoots = [];
-  /** @type {ReadFenceSkip[]} */
+  /** @type {{ path: string, derivedFrom: string }[]} */
+  const derivedRoots = [];
+  /** @type {(ReadFenceSkip & { derivedRoots?: readonly string[], enumerationFailed?: boolean })[]} */
   const skipped = [];
+  /** @type {string[]} */
+  const unresolved = [];
   for (const root of input.roots) {
-    if (isAncestorOf(root, input.world)) {
-      skipped.push({
-        path: root,
-        why: 'contains the execution world: labelling an ancestor of the world refuses the traverse every process needs to start',
-      });
+    if (!isAncestorOf(root, input.world)) {
+      protectedRoots.push(root);
       continue;
     }
-    protectedRoots.push(root);
+    /**
+     * THE ROOT CONTAINS THE WORLD. Skip the root, then derive the coverage its content still needs.
+     */
+    const derived = [];
+    let enumerationFailed = false;
+    let entries;
+    try {
+      entries = readdirSync(resolve(root), { withFileTypes: true });
+    } catch {
+      enumerationFailed = true;
+      entries = [];
+      unresolved.push(root);
+    }
+    for (const entry of entries) {
+      /** Only DIRECTORIES can carry an inheritable label meaningfully for a subtree; a loose file is labelled below. */
+      if (entry.isDirectory() !== true) {
+        derived.push(resolve(root, entry.name));
+        continue;
+      }
+      const child = resolve(root, entry.name);
+      /**
+       * A child that ALSO contains the world cannot be labelled for the same measured reason as its parent: the
+       * worker's own startup traverses it. That is the worlds directory, and it is the disclosed residual.
+       */
+      if (isAncestorOf(child, input.world)) continue;
+      derived.push(child);
+    }
+    for (const path of derived) derivedRoots.push({ path, derivedFrom: root });
+    skipped.push({
+      path: root,
+      why: 'contains the execution world: labelling an ancestor of the world refuses the traverse every process needs to start',
+      derivedRoots: derived,
+      enumerationFailed,
+    });
   }
-  return { protectedRoots, skipped };
+  return { protectedRoots, derivedRoots, skipped, unresolved };
 }
 
 /**
@@ -147,7 +203,70 @@ export function applyReadFence(input) {
   /** @type {ReadFenceOutcome[]} */
   const outcomes = [];
   for (const root of plan.protectedRoots) outcomes.push(ensureRoot(api, root));
-  return { supported: true, platform: process.platform, outcomes, skipped: plan.skipped, drifted: compatibility.drifted, contract: compatibility };
+  /**
+   * RG-B §5.5: THE CONTENT OF A SKIPPED ANCESTOR IS LABELLED THROUGH ITS CHILDREN.
+   *
+   * The root itself cannot carry the label (it is an ancestor of the world), but its non-world children can,
+   * and the probe in `ancestor-root-probe.mjs` shows that is what actually protects them: without it the Low
+   * token reads durable state, with it the read is EPERM.
+   */
+  for (const derived of plan.derivedRoots) outcomes.push({ ...ensureRoot(api, derived.path), derivedFrom: derived.derivedFrom });
+  const coverage = coverageOf(plan, outcomes);
+  return { supported: true, platform: process.platform, outcomes, skipped: plan.skipped, coverage, drifted: compatibility.drifted, contract: compatibility };
+}
+
+/**
+ * THE ROOT COVERAGE RESULT (§5.4/§5.6).
+ *
+ * `rootsVerified` alone is not the claim that matters. What a caller must be able to read is: which roots were
+ * PLANNED, which were deliberately SKIPPED and why, which actually received a verified label, whether the
+ * skipped roots' content was covered through derived children, and whether anything remains UNRESOLVED.
+ *
+ * `complete` is the single field an admission gate should require. It is false when a skipped root could not be
+ * enumerated, when any outcome failed verification, or when a skipped root produced no derived roots at all —
+ * because "the ancestor was skipped and nothing beneath it was labelled" is exactly the state the probe showed
+ * to be unprotected.
+ *
+ * @param {{ protectedRoots: readonly string[], derivedRoots: readonly { path: string, derivedFrom: string }[], skipped: readonly { path: string, why: string, derivedRoots?: readonly string[], enumerationFailed?: boolean }[], unresolved: readonly string[] }} plan
+ * @param {readonly ReadFenceOutcome[]} outcomes
+ * @returns {{
+ *   planned: readonly string[],
+ *   skipped: readonly { path: string, why: string, derivedRoots: readonly string[], enumerationFailed: boolean }[],
+ *   labelled: readonly string[],
+ *   verified: readonly string[],
+ *   unverified: readonly string[],
+ *   unresolved: readonly string[],
+ *   skippedWithoutDerivedCoverage: readonly string[],
+ *   complete: boolean,
+ * }}
+ */
+export function coverageOf(plan, outcomes) {
+  const verified = outcomes.filter((entry) => entry.verified === true).map((entry) => entry.path);
+  const unverified = outcomes.filter((entry) => entry.verified !== true).map((entry) => entry.path);
+  const skipped = plan.skipped.map((entry) => ({
+    path: entry.path,
+    why: entry.why,
+    derivedRoots: entry.derivedRoots ?? [],
+    enumerationFailed: entry.enumerationFailed === true,
+  }));
+  /**
+   * A SKIPPED ROOT WITH NOTHING DERIVED IS THE DANGEROUS CASE. It means the ancestor could not be labelled AND
+   * none of its content was labelled either, which is precisely the configuration the Low-token probe read
+   * through. It is reported as a coverage gap rather than as an empty skip.
+   */
+  const skippedWithoutDerivedCoverage = skipped.filter((entry) => entry.derivedRoots.length === 0).map((entry) => entry.path);
+  const enumerationFailed = skipped.filter((entry) => entry.enumerationFailed).map((entry) => entry.path);
+  const complete = unverified.length === 0 && (plan.unresolved ?? []).length === 0 && enumerationFailed.length === 0 && skippedWithoutDerivedCoverage.length === 0;
+  return {
+    planned: plan.protectedRoots,
+    skipped,
+    labelled: outcomes.filter((entry) => entry.applied === true).map((entry) => entry.path),
+    verified,
+    unverified,
+    unresolved: [...(plan.unresolved ?? [])],
+    skippedWithoutDerivedCoverage,
+    complete,
+  };
 }
 
 /**
@@ -211,21 +330,91 @@ function describe(/** @type {any} */ label) {
  */
 export function verifyTree(input) {
   const resolved = win32LabelApi();
-  if (resolved.error !== undefined || resolved.api === undefined) {
-    return { root: input.root, checked: 0, unlabelled: [], unreadable: [input.root], verified: false };
-  }
-  const api = resolved.api;
   const maxDepth = input.maxDepth ?? MAX_TREE_DEPTH;
   const maxEntries = input.maxEntries ?? MAX_TREE_ENTRIES;
+  /**
+   * E1RG RG-0-F5 / RG-B §5.1: RESOURCE LIMITS MUST NOT PRODUCE A VACUOUS PASS.
+   *
+   * The previous version stopped recursion at `maxEntries`/`maxDepth` and then computed `verified` from the two
+   * result arrays alone — so a walk that examined the root and nothing else reported `verified: true` while
+   * every descendant remained unexamined. "No unprotected entry was FOUND" is not "every required entry WAS
+   * verified", and a caller could not tell the two apart.
+   *
+   * The bounded walk is KEPT (§5.2): refusing a huge tree is the safe answer. What changes is that the walk now
+   * REPORTS how it ended, and `verified` requires COMPLETION. `noUnprotectedEntryFound` carries the weaker fact
+   * separately, so a reader can see exactly what was and was not established.
+   */
+  const invalidLimits = [];
+  if (!Number.isFinite(maxDepth) || maxDepth < 0) invalidLimits.push('maxDepth');
+  if (!Number.isFinite(maxEntries) || maxEntries < 1) invalidLimits.push('maxEntries');
+  if (invalidLimits.length > 0) {
+    /** An unusable limit cannot bound a traversal, so no claim about coverage is possible. */
+    return {
+      root: input.root,
+      checked: 0,
+      unlabelled: [],
+      unreadable: [],
+      verified: false,
+      complete: false,
+      noUnprotectedEntryFound: false,
+      stopReason: 'INVALID_LIMIT',
+      undetermined: [input.root],
+      invalidLimits,
+      truncated: false,
+      enumerationFailures: [],
+      reparsePoints: [],
+    };
+  }
+  if (resolved.error !== undefined || resolved.api === undefined) {
+    return {
+      root: input.root,
+      checked: 0,
+      unlabelled: [],
+      unreadable: [input.root],
+      verified: false,
+      complete: false,
+      noUnprotectedEntryFound: false,
+      stopReason: 'UNSUPPORTED',
+      undetermined: [input.root],
+      invalidLimits: [],
+      truncated: false,
+      enumerationFailures: [],
+      reparsePoints: [],
+    };
+  }
+  const api = resolved.api;
   /** @type {string[]} */
   const unlabelled = [];
   /** @type {string[]} */
   const unreadable = [];
+  /**
+   * OBJECTS THE WALK COULD NOT DECIDE ABOUT. Each is a required descendant that was NOT verified, and each
+   * keeps its own reason: an unexamined subtree, a directory that could not be enumerated, or a reparse point
+   * whose target was never established.
+   */
+  /** @type {string[]} */
+  const undetermined = [];
+  /** @type {string[]} */
+  const enumerationFailures = [];
+  /** @type {string[]} */
+  const reparsePoints = [];
   let checked = 0;
+  /** Why the walk stopped early, when it did. `COMPLETE` is the only value that permits `verified`. */
+  let stopReason = 'COMPLETE';
 
   /** @param {string} path @param {number} depth */
   const visit = (path, depth) => {
-    if (checked >= maxEntries || depth > maxDepth) return;
+    if (stopReason !== 'COMPLETE') return;
+    if (checked >= maxEntries) {
+      stopReason = 'ENTRY_LIMIT';
+      undetermined.push(path);
+      return;
+    }
+    if (depth > maxDepth) {
+      stopReason = 'DEPTH_LIMIT';
+      undetermined.push(path);
+      return;
+    }
     checked += 1;
     const read = readMandatoryLabel(api, path);
     if (!read.ok || read.label?.readable === false) {
@@ -238,18 +427,71 @@ export function verifyTree(input) {
     } else if (read.label?.present !== true || ((read.label.policyMask ?? 0) & MANDATORY_POLICIES.NO_READ_UP) === 0) {
       unlabelled.push(path);
     }
+    let stats;
+    try {
+      stats = statSync(path);
+    } catch {
+      /**
+       * THE OBJECT DISAPPEARED OR BECAME UNREADABLE DURING THE WALK. Its label state is unknown, so its subtree
+       * is unknown — recorded as an enumeration failure rather than silently skipped.
+       */
+      enumerationFailures.push(path);
+      undetermined.push(path);
+      return;
+    }
+    if (!stats.isDirectory()) return;
+    /**
+     * A REPARSE POINT IS NOT WALKED. Following it would verify a tree the root does not own, and a link that is
+     * re-pointed after the walk would make the verification describe a different set of objects.
+     */
+    /** `lstat` distinguishes a link from the directory it points at; `stat` above already followed it. */
+    let linkStats;
+    try {
+      linkStats = lstatSync(path);
+    } catch {
+      linkStats = undefined;
+    }
+    if (linkStats !== undefined && linkStats.isSymbolicLink()) {
+      reparsePoints.push(path);
+      undetermined.push(path);
+      return;
+    }
     let entries;
     try {
-      if (!statSync(path).isDirectory()) return;
       entries = readdirSync(path);
     } catch {
+      enumerationFailures.push(path);
+      undetermined.push(path);
       return;
     }
     for (const entry of entries) visit(resolve(path, entry), depth + 1);
   };
 
   visit(resolve(input.root), 0);
-  return { root: input.root, checked, unlabelled, unreadable, verified: unlabelled.length === 0 && unreadable.length === 0 };
+  /**
+   * THE TWO FACTS, COMPUTED SEPARATELY.
+   *
+   *   noUnprotectedEntryFound — nothing EXAMINED was unprotected. True even for a truncated walk, and that is
+   *                             exactly why it cannot be the admission claim.
+   *   verified               — every required entry was examined and nothing examined was unprotected.
+   */
+  const noUnprotectedEntryFound = unlabelled.length === 0 && unreadable.length === 0;
+  const complete = stopReason === 'COMPLETE' && enumerationFailures.length === 0 && reparsePoints.length === 0 && undetermined.length === 0;
+  return {
+    root: input.root,
+    checked,
+    unlabelled,
+    unreadable,
+    verified: complete && noUnprotectedEntryFound,
+    complete,
+    noUnprotectedEntryFound,
+    stopReason,
+    undetermined,
+    invalidLimits: [],
+    truncated: stopReason === 'ENTRY_LIMIT' || stopReason === 'DEPTH_LIMIT',
+    enumerationFailures,
+    reparsePoints,
+  };
 }
 
 /**

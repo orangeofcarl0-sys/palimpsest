@@ -27,7 +27,8 @@
 //
 // PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript.
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
 
 /**
@@ -154,81 +155,236 @@ export function admitConfidentialWorker(input) {
  * directory, and it is deliberately NOT canonical:
  *
  *   · it lives beside the host's session material, never in a Palimpsest store;
- *   · it carries no semantics — a pid and a timestamp, for staleness only;
- *   · nothing about Work reads it, and losing it changes no canonical fact;
- *   · a stale slot (a host that died) is reclaimed rather than blocking work forever.
+ *   · it carries no semantics — a pid and a timestamp, for identification only;
+ *   · nothing about Work reads it, and losing it changes no canonical fact.
  *
- * That last point is why the slot records a pid: an entry whose process is gone is not an active worker, and
- * treating it as one would turn a crash into a permanent capacity refusal. Where the platform cannot answer
- * "is that pid alive", the slot is reclaimed on age — erring toward running work, because a capacity refusal
- * is a statement about this machine, not a safety boundary that must never be crossed.
+ * E1RG RG-C §6.3: ACQUISITION IS NOW ATOMIC, AND THE MECHANISM IS AN OS PRIMITIVE.
  *
- * @param {{ home: string, maxActiveWorkers?: number, staleAfterMs?: number }} input
- * @returns {{ acquire: () => { granted: boolean, detail: string }, release: () => void, peek: () => { active: number, detail: string } }}
+ * MEASURED ON THE PARENT COMMIT (`rg0-findings.json` F6). `acquire()` read the slot file, compared the holder
+ * count, then OVERWROTE the file. Two processes that both read before either wrote both saw zero holders and
+ * both were granted the only slot. That is a read-check-write window with no exclusive step, and it is exactly
+ * the window a security limit cannot have: R1-HC established that two ACTIVE worlds cannot both be read-fenced
+ * on this backend, so admitting two is a confidentiality failure, not a throughput hiccup.
+ *
+ * THE PRIMITIVE: `mkdir`. Creating a directory is ATOMIC on NTFS — exactly one caller succeeds and every other
+ * receives EEXIST — and it needs no dependency, no service and no lock API that behaves differently per
+ * platform. The lock directory is `active.lock` beside the record; holding it is the exclusive right to read,
+ * decide and write the holder list. The critical section is therefore:
+ *
+ *     mkdir(lock) -> read holders -> decide -> write holders -> rmdir(lock)
+ *
+ * and two concurrent acquirers cannot both be inside it.
+ *
+ * E1RG RG-C §6.4: A LIVE HOLDER IS NEVER EVICTED BY A TIMESTAMP.
+ *
+ * The previous `staleAfterMs` dropped a holder whose record was older than a fixed age, even when the process
+ * was demonstrably alive. A long-running worker would silently lose its protection and a second worker would be
+ * admitted alongside it — the exact overlap the limit exists to prevent. Liveness is now decided ONLY by
+ * whether the pid still exists; `staleAfterMs` is retained in the signature for compatibility and is recorded,
+ * but it no longer evicts a live process.
+ *
+ * E1RG RG-C §6.5: CRASH RECOVERY IS SAFE AND EXPLICIT.
+ *
+ * A holder whose process is GONE is recovered — otherwise a crash would block work forever. The lock directory
+ * itself is recovered only when it is older than `lockStaleMs` AND its recorded owner is gone; a lock whose
+ * owner is still alive is never removed, because deleting a live lock would let two writers in.
+ *
+ * @param {{ home: string, maxActiveWorkers?: number, staleAfterMs?: number, lockStaleMs?: number, lockTimeoutMs?: number }} input
+ * @returns {{
+ *   acquire: () => { granted: boolean, detail: string },
+ *   release: () => { released: boolean, detail: string },
+ *   peek: () => { active: number, detail: string },
+ *   mechanism: string,
+ * }}
  */
 export function openConfidentialSlot(input) {
   const max = input.maxActiveWorkers ?? CONFIDENTIAL_PROFILE.maxActiveWorkers;
   const staleAfterMs = input.staleAfterMs ?? 6 * 60 * 60 * 1000;
+  /** How long a lock directory may exist before it is considered abandoned. */
+  const lockStaleMs = input.lockStaleMs ?? 30_000;
+  const lockTimeoutMs = input.lockTimeoutMs ?? 5_000;
   const slotDir = resolve(input.home, "confidential-workers");
   const slotPath = join(slotDir, "active.json");
+  const lockDir = join(slotDir, "active.lock");
+  /** A per-instance token, so a release can prove it refers to the holder it recorded. */
+  const ownerToken = `${String(process.pid)}-${randomUUID()}`;
   let held = false;
 
-  /** Read the current holders, dropping any whose process is gone or whose record is stale. */
-  const holders = () => {
-    let parsed;
+  /**
+   * IS A PID ALIVE? `kill(pid, 0)` sends no signal and reports whether the process exists. ESRCH means it is
+   * gone; EPERM means it exists but belongs to another user, which is still ALIVE. A pid of our own process is
+   * always alive.
+   */
+  const isAlive = (pid) => {
+    if (pid === process.pid) return true;
     try {
-      parsed = JSON.parse(readFileSync(slotPath, "utf8"));
-    } catch {
-      return [];
+      process.kill(pid, 0);
+      return true;
+    } catch (error) {
+      return error?.code === "EPERM";
     }
-    const list = Array.isArray(parsed?.holders) ? parsed.holders : [];
-    const now = Date.now();
-    return list.filter((entry) => {
-      if (typeof entry?.pid !== "number" || typeof entry?.at !== "number") return false;
-      if (now - entry.at > staleAfterMs) return false;
-      if (entry.pid === process.pid) return true;
-      try {
-        process.kill(entry.pid, 0);
-        return true;
-      } catch (error) {
-        // ESRCH means the process is gone; EPERM means it exists but is not ours — still alive.
-        return error?.code === "EPERM";
-      }
-    });
   };
 
-  /** Write the holder list, creating the directory on first use. */
+  /** Read the holders. An unreadable or malformed record is NOT evidence of zero holders (§6.4 fail-closed). */
+  const readHolders = () => {
+    let raw;
+    try {
+      raw = readFileSync(slotPath, "utf8");
+    } catch (error) {
+      if (error?.code === "ENOENT") return { ok: true, holders: [] };
+      return { ok: false, holders: [], detail: `the capacity record could not be read (${String(error?.code ?? error)})` };
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return { ok: false, holders: [], detail: "the capacity record is not valid JSON" };
+    }
+    if (parsed === null || typeof parsed !== "object" || !Array.isArray(parsed.holders)) {
+      return { ok: false, holders: [], detail: "the capacity record has no holders array" };
+    }
+    return { ok: true, holders: parsed.holders };
+  };
+
+  /** Keep only holders that are still ALIVE. Liveness is the only eviction rule. */
+  const liveHolders = (list) =>
+    list.filter((entry) => {
+      if (entry === null || typeof entry !== "object") return false;
+      if (typeof entry.pid !== "number") return false;
+      return isAlive(entry.pid);
+    });
+
+  /** Write the holder list atomically: a temp file then a rename, so a reader never sees a partial record. */
   const write = (list) => {
     mkdirSync(slotDir, { recursive: true });
-    writeFileSync(slotPath, JSON.stringify({ holders: list, profile: CONFIDENTIAL_PROFILE.id }), "utf8");
+    const temp = `${slotPath}.${ownerToken}.tmp`;
+    writeFileSync(temp, JSON.stringify({ holders: list, profile: CONFIDENTIAL_PROFILE.id }), "utf8");
+    renameSync(temp, slotPath);
+  };
+
+  /**
+   * TAKE THE EXCLUSIVE LOCK. `mkdir` is the atomic step: exactly one caller creates it.
+   *
+   * An existing lock is abandoned only when it is OLD and its recorded owner is GONE. A lock whose owner is
+   * alive is never removed — that would admit a second writer into the critical section.
+   */
+  const takeLock = () => {
+    /**
+     * THE LOCK LIVES INSIDE THE SLOT DIRECTORY, so that directory must exist before the atomic `mkdir`. Creating
+     * it with `recursive` is itself idempotent, and it happens OUTSIDE the critical section (the lock is what
+     * defines the section), so this cannot admit two writers.
+     */
+    mkdirSync(slotDir, { recursive: true });
+    const startedAt = Date.now();
+    for (;;) {
+      try {
+        mkdirSync(lockDir);
+        writeFileSync(join(lockDir, "owner.json"), JSON.stringify({ pid: process.pid, token: ownerToken, at: Date.now() }), "utf8");
+        return { acquired: true };
+      } catch (error) {
+        if (error?.code !== "EEXIST") return { acquired: false, detail: `the capacity lock could not be created (${String(error?.code ?? error)})` };
+      }
+      /** Somebody holds it. Decide whether it is abandoned. */
+      let owner = null;
+      let age = 0;
+      try {
+        owner = JSON.parse(readFileSync(join(lockDir, "owner.json"), "utf8"));
+      } catch {
+        owner = null;
+      }
+      try {
+        age = Date.now() - statSync(lockDir).mtimeMs;
+      } catch {
+        age = 0;
+      }
+      const ownerAlive = owner !== null && typeof owner.pid === "number" ? isAlive(owner.pid) : false;
+      if (!ownerAlive && age > lockStaleMs) {
+        /**
+         * ABANDONED: no live owner and older than the bound. Removed by name, and the removal is itself racy
+         * (two recoverers can both try), so a failure simply retries the loop.
+         */
+        try {
+          rmSync(lockDir, { recursive: true, force: true });
+        } catch {
+          /* another recoverer won */
+        }
+        continue;
+      }
+      if (Date.now() - startedAt > lockTimeoutMs) {
+        return { acquired: false, detail: `the capacity lock is held by a live owner (pid ${String(owner?.pid ?? "unknown")}) and was not acquired within ${String(lockTimeoutMs)}ms` };
+      }
+      /** Bounded wait: a short sleep keeps this synchronous, which is what the caller requires. */
+      const until = Date.now() + 10;
+      while (Date.now() < until) {
+        /* spin — the critical section is a few file operations */
+      }
+    }
+  };
+
+  const releaseLock = () => {
+    try {
+      /** Only remove OUR lock: a lock whose owner token differs belongs to someone else. */
+      const owner = JSON.parse(readFileSync(join(lockDir, "owner.json"), "utf8"));
+      if (owner?.token !== ownerToken) return;
+      rmSync(lockDir, { recursive: true, force: true });
+    } catch {
+      /* the lock is already gone */
+    }
   };
 
   return {
+    /** The ownership mechanism, stated as data so a receipt can name it. */
+    mechanism: "mkdir-exclusive-lock",
     acquire() {
-      const current = holders();
-      if (current.length >= max) {
-        return {
-          granted: false,
-          detail: `the ${CONFIDENTIAL_PROFILE.id} profile runs at most ${String(max)} ACTIVE work worker(s); ${String(current.length)} already active (pids ${current.map((entry) => String(entry.pid)).join(", ")}). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged.`,
-        };
+      const lock = takeLock();
+      if (lock.acquired !== true) {
+        return { granted: false, detail: `${lock.detail ?? "the capacity lock was not acquired"}. This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged.` };
       }
-      write([...current, { pid: process.pid, at: Date.now() }]);
-      held = true;
-      return { granted: true, detail: `${String(current.length + 1)}/${String(max)} confidential workers active; admission granted` };
+      try {
+        const read = readHolders();
+        if (read.ok !== true) {
+          /** §6.4: an unreadable or malformed record does not grant capacity. */
+          return { granted: false, detail: `${String(read.detail)}, so capacity cannot be established. This is a HOST CAPACITY fact: no attempt was failed and no authority was granted.` };
+        }
+        const live = liveHolders(read.holders);
+        if (live.length >= max) {
+          return {
+            granted: false,
+            detail: `the ${CONFIDENTIAL_PROFILE.id} profile runs at most ${String(max)} ACTIVE work worker(s); ${String(live.length)} already active (pids ${live.map((entry) => String(entry.pid)).join(", ")}). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged.`,
+          };
+        }
+        write([...live, { pid: process.pid, at: Date.now(), token: ownerToken }]);
+        held = true;
+        return { granted: true, detail: `${String(live.length + 1)}/${String(max)} confidential workers active; admission granted` };
+      } finally {
+        releaseLock();
+      }
     },
     release() {
-      if (!held) return;
+      if (!held) return { released: false, detail: "this handle holds no slot" };
       held = false;
-      const remaining = holders().filter((entry) => entry.pid !== process.pid);
+      const lock = takeLock();
+      if (lock.acquired !== true) return { released: false, detail: `the slot was not released: ${String(lock.detail)}` };
       try {
+        const read = readHolders();
+        /**
+         * §6.5: RELEASE REFERS TO THE HOLDER IT RECORDED. A release by a handle that did not record this token
+         * cannot remove somebody else's entry.
+         */
+        const remaining = (read.ok === true ? read.holders : []).filter((entry) => entry?.token !== ownerToken);
         write(remaining);
-      } catch {
-        /* a failed release must not fail the work; a stale slot is reclaimed on the next acquire */
+        return { released: true, detail: `${String(remaining.length)}/${String(max)} confidential workers remain active` };
+      } catch (error) {
+        return { released: false, detail: `the slot was not released: ${error?.message ?? String(error)}` };
+      } finally {
+        releaseLock();
       }
     },
     peek() {
-      const current = holders();
-      return { active: current.length, detail: `${String(current.length)}/${String(max)} confidential workers active` };
+      const read = readHolders();
+      if (read.ok !== true) return { active: -1, detail: `${String(read.detail)}; capacity is UNKNOWN` };
+      const live = liveHolders(read.holders);
+      return { active: live.length, detail: `${String(live.length)}/${String(max)} confidential workers active` };
     },
   };
 }

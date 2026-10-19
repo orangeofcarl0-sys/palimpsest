@@ -87,6 +87,22 @@ import { applyTrajectoryPresentation, userMessageDigest } from './trajectory-pre
  */
 let boundaryModule;
 let boundaryModuleError;
+/**
+ * E1RG RG-A §4.2: A PRE-CREATE REFUSAL IS A DISTINCT OUTCOME, NOT A MESSAGE.
+ *
+ * The class exists so the outer `catch` can tell "admission refused the worker" from "the worker ran and threw".
+ * Both end in HOST_FAILURE, but only the first must be impossible to override by a later Worker Result, and only
+ * the first carries the per-phase refusal list a receipt needs.
+ */
+class PreCreateRefusal extends Error {
+  /** @param {readonly { phase: string, detail: string }[]} refusals */
+  constructor(refusals) {
+    super(`refusing to run this worker: ${refusals.map((entry) => `${entry.phase}: ${entry.detail}`).join('; ')}`);
+    this.name = 'PreCreateRefusal';
+    this.refusals = refusals;
+    this.preCreateRefused = true;
+  }
+}
 async function loadBoundary() {
   if (boundaryModule !== undefined || boundaryModuleError !== undefined) return { module: boundaryModule, error: boundaryModuleError };
   try {
@@ -368,6 +384,14 @@ async function runWorker(ctx, deps) {
    * that the parent received anything.
    */
   let sessionIdentityReport = null;
+  /**
+   * E1RG RG-A §7.2: THE PRE-CREATE ADMISSION RECEIPT.
+   *
+   * Hoisted out of the `try` so the telemetry section — which runs after the catch — can report what admission
+   * decided. `null` until the phase runs, so a worker that failed before admission reports "not attempted"
+   * rather than a fabricated verdict.
+   */
+  let preCreate = null;
   /** @type {undefined | (() => void)} */
   let releaseCapacity;
   /**
@@ -418,6 +442,51 @@ async function runWorker(ctx, deps) {
        */
       const boundaryLoad = await loadBoundary();
       /**
+       * E1RG RG-A §4.1/§4.2: PRE-CREATE ADMISSION IS A CONTROL-FLOW DECISION, NOT AN ASSIGNMENT.
+       *
+       * WHAT WAS MEASURED ON THE PARENT COMMIT (`test/trajectory_p2e1rg_baseline_admission.test.ts` F1/F2).
+       * Each refusal below assigned `failure` and then execution continued to `agents.create()`. An Agent was
+       * composed, a model turn could follow, and — because a reported Worker Result was printed with exit 0
+       * BEFORE `failure` was ever consulted — a refused worker could still report `READY_FOR_SETTLEMENT`.
+       *
+       * The invariant this block enforces:
+       *
+       *     PreCreateAdmissionRefused => NoAgentCreation => NoModelTurn
+       *                               => NoSuccessfulWorkerOutcome => HOST_FAILURE
+       *
+       * `preCreate` collects a NAMED refusal for each phase property rather than overwriting one string, so a
+       * refusal reports every guarantee that failed and not only the last one checked. `refusal` is the first
+       * refusal in precedence order; the rest are kept in `preCreate.refusals` for the receipt.
+       *
+       * EVERY PHASE BELOW IS A REQUIRED METHOD (§4.3). A missing `openConfidentialSlot`, a missing
+       * `admitWorker`, or a missing boundary module is a REFUSAL, never "the optional mechanism is unavailable,
+       * so continue".
+       */
+      preCreate = {
+        requestedWorker: { cwd: process.cwd() },
+        capacity: null,
+        aliases: null,
+        kernel: null,
+        boundaryModule: boundaryLoad.module !== undefined ? 'available' : 'missing',
+        agentCreationAttempted: false,
+        modelTurnAttempted: false,
+        finalResult: null,
+        refusals: [],
+      };
+      /** @type {{ phase: string, detail: string }[]} */
+      const refusals = [];
+      const refuse = (phase, detail) => {
+        refusals.push({ phase, detail });
+        if (failure === null) failure = `refusing to run this worker (${phase}): ${detail}`;
+      };
+
+      if (boundaryLoad.module === undefined) {
+        /** §4.3: without the boundary module there is no kernel fence, no guard and no admission — refuse. */
+        refuse('boundary-module', boundaryLoad.error ?? 'the host boundary module is unavailable');
+        boundary = { unavailable: boundaryLoad.error };
+      }
+
+      /**
        * R1-HC §4/§5: THE CONFIDENTIAL PROFILE'S CAPACITY ADMISSION.
        *
        * This backend cannot read-fence two ACTIVE worlds at once — a running worker's own workspace write
@@ -427,17 +496,24 @@ async function runWorker(ctx, deps) {
        *
        * It is taken BEFORE the agent exists, so a refused worker never composes anything.
        */
-      if (boundaryLoad.module !== undefined && typeof boundaryLoad.module.openConfidentialSlot === 'function') {
-        const slot = boundaryLoad.module.openConfidentialSlot({ home: process.env.DSH_HOME ?? process.cwd() });
-        const acquired = slot.acquire();
-        capacity = { granted: acquired.granted, detail: acquired.detail };
-        if (acquired.granted) releaseCapacity = () => slot.release();
-        else failure = acquired.detail;
+      if (boundaryLoad.module !== undefined) {
+        if (typeof boundaryLoad.module.openConfidentialSlot === 'function') {
+          const slot = boundaryLoad.module.openConfidentialSlot({ home: process.env.DSH_HOME ?? process.cwd() });
+          const acquired = slot.acquire();
+          capacity = { granted: acquired.granted, detail: acquired.detail };
+          preCreate.capacity = { granted: acquired.granted === true, detail: acquired.detail };
+          if (acquired.granted) releaseCapacity = () => slot.release();
+          else refuse('capacity', acquired.detail);
+        } else {
+          /** §4.3: capacity is a security requirement for this profile, not a throughput preference. */
+          refuse('capacity', 'the boundary module exposes no openConfidentialSlot(), so the confidential capacity limit cannot be enforced');
+          preCreate.capacity = { granted: false, detail: 'the capacity mechanism is absent' };
+        }
       }
-      if (boundaryLoad.module === undefined) {
-        boundary = { unavailable: boundaryLoad.error };
-      } else {
+
+      if (boundaryLoad.module !== undefined) {
         boundary = boundaryLoad.module.installWorkerReadBoundary({ world: process.cwd(), context: ctx });
+        preCreate.aliases = { clean: boundary.aliasesClean === true, found: (boundary.aliasScan?.aliases ?? []).length };
         /**
          * R1-HR: AN ALIAS THAT REACHES PROTECTED CONTENT REFUSES THE WORKER.
          *
@@ -446,10 +522,60 @@ async function runWorker(ctx, deps) {
          * such an alias that grant overwrites the protected object's NO_READ_UP. The measurement is recorded
          * in `alias_guard.js`. Refusing here is the fail-closed answer — running anyway would produce a
          * worker that looks protected and is not.
+         *
+         * RG-0-F3: `installWorkerReadBoundary` now detects the alias BEFORE any label mutation, so a rejected
+         * world produces `kernel.applied: false` rather than writing through it.
          */
         if (boundary.aliasesClean === false) {
-          failure = `refusing to run this worker: ${boundary.aliasRefusal ?? 'the execution world can reach protected content by alias'}`;
+          refuse('alias', boundary.aliasRefusal ?? 'the execution world can reach protected content by alias');
         }
+        /**
+         * RG-B §5.6: THE KERNEL COVERAGE RESULT IS A REQUIRED ADMISSION INPUT.
+         *
+         * `kernel.supported` alone is not the claim. What matters is that every root that COULD be labelled was
+         * labelled and verified, and that every skipped ancestor's content was covered by a derived child. The
+         * Low-token probe measured why: without that coverage a synthetic canary is readable from the worker's
+         * own world.
+         */
+        const kernel = boundary.kernel ?? {};
+        const coverage = kernel.coverage ?? null;
+        preCreate.kernel = {
+          supported: kernel.supported === true,
+          unavailable: kernel.unavailable ?? null,
+          coverageComplete: coverage === null ? false : coverage.complete === true,
+          planned: coverage?.planned?.length ?? 0,
+          labelled: coverage?.labelled?.length ?? 0,
+          verified: coverage?.verified?.length ?? 0,
+          unverified: coverage?.unverified?.length ?? null,
+          skipped: coverage?.skipped?.length ?? (kernel.skipped?.length ?? 0),
+          skippedWithoutDerivedCoverage: coverage?.skippedWithoutDerivedCoverage?.length ?? null,
+          drift: kernel.contract?.drifted === true,
+        };
+        if (kernel.supported !== true) {
+          refuse('kernel', kernel.unavailable ?? 'the kernel fence could not be installed, so protected content is not enforced by process integrity');
+        } else if (coverage === null) {
+          refuse('kernel-coverage', 'the boundary reported no root coverage result, so complete protection cannot be demonstrated');
+        } else if (coverage.complete !== true) {
+          refuse(
+            'kernel-coverage',
+            `root coverage is INCOMPLETE: ${String(coverage.unverified.length)} unverified, ${String(coverage.unresolved.length)} unresolved, ${String(coverage.skippedWithoutDerivedCoverage.length)} skipped root(s) with no derived coverage`,
+          );
+        }
+        if (kernel.contract?.drifted === true) {
+          /** §4.3/§5.6: ABI drift means the fence ran against a seam it was not qualified for. */
+          refuse('kernel-drift', `the Win32 binding seam reports drift: resolved ${String(kernel.contract?.resolvedVersion)} against qualified ${String(kernel.contract?.qualifiedVersion)}`);
+        }
+      }
+      preCreate.refusals = refusals;
+      /**
+       * THE PRE-CREATE STOP. Execution does NOT continue to `agents.create()` when any phase refused.
+       *
+       * The refusal is reported as a HOST failure below — after the telemetry lines, so a reviewer can see WHICH
+       * phase refused — and the worker exits nonzero without ever creating an Agent.
+       */
+      if (refusals.length > 0) {
+        preCreate.finalResult = 'PRECREATE_REFUSED';
+        throw new PreCreateRefusal(refusals);
       }
       // The name comes from the environment's OWN definition — the data Palimpsest sent — never from a
       // literal here, so the two sides cannot disagree about what the worker answers through.
@@ -534,9 +660,27 @@ async function runWorker(ctx, deps) {
                 guardInstalled: boundary?.guardInstalled === true,
                 cwdFenceInstalled: boundary?.cwdFenceInstalled === true,
                 delegationFenceInstalled: boundary?.delegationFenceInstalled === true,
+                /**
+                 * E1RG RG-B §5.6: THE KERNEL FACTS ARE PASSED WITH THE GUARD FACTS. The gate already refused a
+                 * worker whose kernel coverage was incomplete at the pre-create phase; passing them again here
+                 * keeps the two phases consistent and makes the refusal visible in the capability receipt too.
+                 */
+                kernelSupported: preCreate?.kernel?.supported === true,
+                kernelRootsVerified: preCreate?.kernel?.coverageComplete === true && preCreate?.kernel?.verified > 0,
+                kernelCoverageComplete: preCreate?.kernel?.coverageComplete === true,
+                kernelContractNotDrifted: preCreate?.kernel?.drift !== true,
               },
             });
             if (capability.allowed !== true) capabilityRefusal = capability.reason ?? 'the capability classification refused this worker';
+          } else {
+            /**
+             * E1RG RG-A §4.3: A MISSING REQUIRED METHOD IS A REFUSAL, NOT "THE MECHANISM IS UNAVAILABLE".
+             *
+             * The previous shape skipped the gate entirely when `admitWorker` was absent, so a composition that
+             * lost the classification module ran a worker with an unclassified surface. The surface has already
+             * been enumerated above, so refusing here costs nothing and closes the hole.
+             */
+            capabilityRefusal = 'the boundary module exposes no admitWorker(), so the capability surface cannot be classified; an unclassified surface is not assumed safe';
           }
           // The worker's OWN layer: a restriction filters what a scope inherits and never what it
           // registers, so the two worker-private tools survive the deny above. The definitions arrive
@@ -554,6 +698,8 @@ async function runWorker(ctx, deps) {
           agentOptions,
           setup: workerSetup,
         });
+        /** §7.2: the Agent WAS created — recorded here so a receipt distinguishes the two admission phases. */
+        if (preCreate !== null) preCreate.agentCreationAttempted = true;
         /**
          * Trajectory-P2A §6.3: THE WORKER SESSION IDENTITY REPORT.
          *
@@ -799,6 +945,8 @@ async function runWorker(ctx, deps) {
           userMessageDigest: userMessageDigest(finalUserMessageText),
           userMessageBytes: Buffer.byteLength(finalUserMessageText, 'utf8'),
         });
+        /** §7.2: a MODEL TURN is about to run. Recorded so a refusal receipt proves no turn was attempted. */
+        if (preCreate !== null) preCreate.modelTurnAttempted = true;
         agent.followup(
           userMessage(finalUserMessageText),
         );
@@ -932,10 +1080,56 @@ async function runWorker(ctx, deps) {
     )}
 `,
   );
+  /**
+   * E1RG RG-A §7.2: THE PRE-CREATE ADMISSION RECEIPT.
+   *
+   * Which phase refused (if any), whether an Agent was created, whether a model turn was attempted, and the
+   * final host result. Counts and phases only — never a path body and never a capability body. A reviewer reads
+   * from here whether a refusal actually prevented execution, which is the claim this stage exists to make.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_PRECREATE ${JSON.stringify(
+      preCreate === null
+        ? { attempted: false }
+        : {
+            attempted: true,
+            boundaryModule: preCreate.boundaryModule,
+            capacity: preCreate.capacity,
+            aliases: preCreate.aliases,
+            kernel: preCreate.kernel,
+            refused: preCreate.refusals.length > 0,
+            refusals: preCreate.refusals,
+            agentCreationAttempted: preCreate.agentCreationAttempted,
+            modelTurnAttempted: preCreate.modelTurnAttempted,
+            finalResult: preCreate.finalResult ?? (preCreate.refusals.length > 0 ? 'PRECREATE_REFUSED' : 'ADMITTED'),
+          },
+    )}
+`,
+  );
 
   if (releaseCapacity !== undefined) {
     releaseCapacity();
     releaseCapacity = undefined;
+  }
+  /**
+   * E1RG RG-A §4.2: REFUSAL PRECEDENCE. A REFUSAL IS EVALUATED FIRST.
+   *
+   * MEASURED ON THE PARENT COMMIT. `failure` was assigned at the admission phases and then only consulted at
+   * the very end — AFTER this reported-result branch. So a worker whose capacity or alias admission was refused
+   * could still print a success-shaped `PALIMPSEST_WORK_RESULT` and exit 0. The refusal was recorded and
+   * discarded, which is the same as not having it.
+   *
+   * The order below is the invariant, not a style choice:
+   *
+   *     admission refused => HOST_FAILURE, regardless of what a reporter claims
+   *
+   * A refusal can only come from a phase that ran BEFORE the Agent existed or from a capability refusal that
+   * disposed it, so `reported` in this branch describes work that must never have started.
+   */
+  if (failure !== null) {
+    printWorkResult({ kind: 'HOST_FAILURE', detail: failure });
+    exitWith(1);
+    return;
   }
   if (reported !== null && reported !== undefined) {
     printWorkResult({
