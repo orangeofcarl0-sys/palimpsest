@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_TRAJECTORY_EXECUTION",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Copied from the closure gate's own report. This artifact adds no claim of its own.",
+  "closureVerdict": "CLOSURE_ESTABLISHED",
+  "gateCount": 61,
+  "failedGates": [],
+  "runtime": {
+    "platform": "win32",
+    "node": "v24.22.0",
+    "git": "git version 2.53.0.windows.2"
+  },
+  "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+  "receipts": {
+    "dryRun": {
+      "label": "dry-run",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1\\calibrate.mjs --dry-run",
+      "exitCode": 0,
+      "signal": null,
+      "timedOut": false,
+      "elapsedMs": 1234,
+      "parsed": true,
+      "stderrTail": [
+        "warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it"
+      ]
+    },
+    "control": {
+      "label": "assay-control",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1r\\assay-harness.mjs --arm control",
+      "exitCode": 0,
+      "signal": null,
+      "timedOut": false,
+      "elapsedMs": 8987,
+      "parsed": true,
+      "stderrTail": [
+        "  · criticalMissing: []",
+        "  · truthErrors: []",
+        "  · unsupportedCertainty: []",
+        "  · integrity: {\"armDelivered\":true,\"presentationMode\":true,\"sectionDelivered\":true,\"sessionIdentity\":true,\"answerExtracted\":true,\"answerMatchesEmitted\":true,\"sourceBasisBound\":true,\"noGroundTruthLeak\":true,\"workerCompleted\":true,\"capabilityAdmissionPassed\":true,\"completedTurnChain\":true}",
+        "  · legacyOracleUsed: false",
+        "  · legacyOracleStatus: \"LEGACY_REPRODUCTION_ONLY\""
+      ]
+    },
+    "treatment": {
+      "label": "assay-treatment",
+      "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\trajectory_p2e1r\\assay-harness.mjs --arm treatment",
+      "exitCode": 0,
+      "signal": null,
+      "timedOut": false,
+      "elapsedMs": 8561,
+      "parsed": true,
+      "stderrTail": [
+        "  · criticalMissing: []",
+        "  · truthErrors: []",
+        "  · unsupportedCertainty: []",
+        "  · integrity: {\"armDelivered\":true,\"presentationMode\":true,\"sectionDelivered\":true,\"sessionIdentity\":true,\"answerExtracted\":true,\"answerMatchesEmitted\":true,\"sourceBasisBound\":true,\"noGroundTruthLeak\":true,\"workerCompleted\":true,\"capabilityAdmissionPassed\":true,\"completedTurnChain\":true}",
+        "  · legacyOracleUsed: false",
+        "  · legacyOracleStatus: \"LEGACY_REPRODUCTION_ONLY\""
+      ]
+    }
+  },
+  "armReceipts": {
+    "control": {
+      "arm": "control",
+      "trialId": "ASSAY-control-attempt-d097609a1766bda859aa5dd2ceb62ae6",
+      "frozenTruthDigest": "sha256-b9dba6720416f27319c8d21e7a13cf0267043cfcf601af6049ffcbaaf97fe9ea",
+      "assignedArm": "CONTROL",
+      "presentationMode": "CONTROL",
+      "sectionBytes": 384,
+      "sectionDigest": "766c5539c44ed4196b382bd5584384dcae763d877867c9b75c6b8bfe8a499adb",
+      "sessionId": "worker-f1dcb77d-e6bf-4058-bad7-945377157fe4",
+      "sessionIdentityReal": true,
+      "sessionFileFoundByExactId": true,
+      "workerOutcome": "READY_FOR_SETTLEMENT",
+      "capabilityAdmissionPassed": true,
+      "cwdBasisPinned": "NOT_SURFACED_BY_WORK_WORKER_PORT",
+      "executionStages": {
+        "sessionCreated": true,
+        "workerStartAttempted": true,
+        "capabilityAdmissionPassed": true,
+        "workerCompleted": true,
+        "assistantPersisted": true,
+        "answerExtracted": true,
+        "officialOracleEvaluatedExtractedOutput": true
+      },
+      "assistantMessageCount": 2,
+      "assistantMessageSeq": 22,
+      "answerDigest": "sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725",
+      "emittedExpectedAnswerDigest": "sha256-40b257baff81e46976eeab8babe176bb1bbaab392f39b421682b5c2fb61a4725",
+      "answerBytes": 721,
+      "answerDigestSource": {
+        "source": "the UTF-8 bytes of the persisted final assistant message, read through official DSH persistence by exact SessionId",
+        "hashedField": "extraction.rawText",
+        "digestIsOfMissingField": false
+      },
+      "oracleVersion": "p2e1rd-internal-citation-closed-1",
+      "oracleOk": true,
+      "historicalUnderstanding": true,
+      "decisionQuality": true,
+      "operationalBehavior": "NOT_MEASURED",
+      "groundTruthLeak": false,
+      "cleanupOk": true,
+      "dependencyRootPreserved": true,
+      "modelCallsMade": 0
+    },
+    "treatment": {
+      "arm": "treatment",
+      "trialId": "ASSAY-treatment-attempt-4e2dd0fb9429166fed6634c5e018be13",
+      "frozenTruthDigest": "sha256-10b7f56c77957a4ba74271994c1a1a9f8f8f77237a400c8594b45f36e7c4d02a",
+      "assignedArm": "TREATMENT",
+      "presentationMode": "TREATMENT",
+      "sectionBytes": 3650,
+      "sectionDigest": "3d3056e804d0ce2bde8da3ec8ef078d42d592ebe90557e13d28f530e424d6aad",
+      "sessionId": "worker-1df5d1d4-d5fc-4f05-8351-88af0e78e86f",
+      "sessionIdentityReal": true,
+      "sessionFileFoundByExactId": true,
+      "workerOutcome": "READY_FOR_SETTLEMENT",
+      "capabilityAdmissionPassed": true,
+      "cwdBasisPinned": "NOT_SURFACED_BY_WORK_WORKER_PORT",
+      "executionStages": {
+        "sessionCreated": true,
+        "workerStartAttempted": true,
+        "capabilityAdmissionPassed": true,
+        "workerCompleted": true,
+        "assistantPersisted": true,
+        "answerExtracted": true,
+        "officialOracleEvaluatedExtractedOutput": true
+      },
+      "assistantMessageCount": 2,
+      "assistantMessageSeq": 22,
+      "answerDigest": "sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b",
+      "emittedExpectedAnswerDigest": "sha256-2e11675ccdab176e104de4428bc274942b6f586dedd7983ad5c11af7467ea88b",
+      "answerBytes": 979,
+      "answerDigestSource": {
+        "source": "the UTF-8 bytes of the persisted final assistant message, read through official DSH persistence by exact SessionId",
+        "hashedField": "extraction.rawText",
+        "digestIsOfMissingField": false
+      },
+      "oracleVersion": "p2e1rd-internal-citation-closed-1",
+      "oracleOk": true,
+      "historicalUnderstanding": true,
+      "decisionQuality": true,
+      "operationalBehavior": "NOT_MEASURED",
+      "groundTruthLeak": false,
+      "cleanupOk": true,
+      "dependencyRootPreserved": true,
+      "modelCallsMade": 0
+    }
+  },
+  "modelCallsMade": 0,
+  "externalModelRequestOccurred": false,
+  "notAwarded": {
+    "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+    "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+    "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+    "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+    "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+    "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+    "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED"
+  }
+}

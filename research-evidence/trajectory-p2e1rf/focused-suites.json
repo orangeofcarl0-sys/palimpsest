@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RF_FOCUSED_SUITES",
+  "stage": "Trajectory-P2-E1RF",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "These are the DECISION controls for RF-A/B/C/D. Ordering and first-party claims are established separately by the real-DSH cases.",
+  "runIdentity": {
+    "executedCodeHead": "b4d904b444df5f03ea3ad7471d5ed08f27ea3381",
+    "executedCodeTree": "705f50ffba2f5b64be76865fc3db63680c99523d",
+    "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\node_modules\\vitest\\vitest.mjs run test/trajectory_p2e1rd_cwd_boundary.test.ts test/trajectory_p2e1re_pretool_boundary.test.ts test/trajectory_p2e1re_win32_fault.test.ts test/trajectory_p2e1rf_delegation_alias.test.ts test/trajectory_p2e1rf_answer_provenance.test.ts test/trajectory_p2e1rf_malformed_ace.test.ts test/trajectory_p2e1rf_evidence_freshness.test.ts --reporter=json --outputFile=F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\trajectory-p2e1rf\\.run\\vitest.json",
+    "exitCode": 0,
+    "runtimeNode": "24.22.0",
+    "dshIdentity": "0.2.1-rc.2",
+    "selection": "test/trajectory_p2e1rd_cwd_boundary.test.ts,test/trajectory_p2e1re_pretool_boundary.test.ts,test/trajectory_p2e1re_win32_fault.test.ts,test/trajectory_p2e1rf_delegation_alias.test.ts,test/trajectory_p2e1rf_answer_provenance.test.ts,test/trajectory_p2e1rf_malformed_ace.test.ts,test/trajectory_p2e1rf_evidence_freshness.test.ts",
+    "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+    "startedAt": "2026-10-19T09:12:24.149Z",
+    "elapsedMs": 4994,
+    "timestampIsNotFreshnessProof": true
+  },
+  "runId": "0e20b718-36e6-48f2-ada1-f93a8400ebaf",
+  "admission": {
+    "admitted": true,
+    "reasons": []
+  },
+  "artifactDigest": "sha256-5d1c4468943a4538b1e760749801dd0857e812622334d86dd79865ae71293d1f",
+  "suites": [
+    "test/trajectory_p2e1rd_cwd_boundary.test.ts",
+    "test/trajectory_p2e1re_pretool_boundary.test.ts",
+    "test/trajectory_p2e1re_win32_fault.test.ts",
+    "test/trajectory_p2e1rf_delegation_alias.test.ts",
+    "test/trajectory_p2e1rf_answer_provenance.test.ts",
+    "test/trajectory_p2e1rf_malformed_ace.test.ts",
+    "test/trajectory_p2e1rf_evidence_freshness.test.ts"
+  ],
+  "totals": {
+    "files": 7,
+    "tests": 118,
+    "passed": 118,
+    "failed": []
+  },
+  "perSuite": {
+    "test/trajectory_p2e1rd_cwd_boundary.test.ts": {
+      "tests": 20,
+      "passed": 20,
+      "failed": 0
+    },
+    "test/trajectory_p2e1re_pretool_boundary.test.ts": {
+      "tests": 22,
+      "passed": 22,
+      "failed": 0
+    },
+    "test/trajectory_p2e1re_win32_fault.test.ts": {
+      "tests": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "test/trajectory_p2e1rf_delegation_alias.test.ts": {
+      "tests": 22,
+      "passed": 22,
+      "failed": 0
+    },
+    "test/trajectory_p2e1rf_answer_provenance.test.ts": {
+      "tests": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "test/trajectory_p2e1rf_malformed_ace.test.ts": {
+      "tests": 19,
+      "passed": 19,
+      "failed": 0
+    },
+    "test/trajectory_p2e1rf_evidence_freshness.test.ts": {
+      "tests": 18,
+      "passed": 18,
+      "failed": 0
+    }
+  }
+}
