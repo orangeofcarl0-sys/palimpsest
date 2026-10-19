@@ -179,47 +179,50 @@ write("cwd-boundary-qualification.json", {
  */
 const EQUIV_DIR = process.env.PALIMPSEST_WIN32_020_SOURCE ?? join(REPO, "..", ".runtimes", "dsh-020-win32", "pkg");
 const installedPkg = moduleRoots.map((root) => join(root, "dsh-win32-process")).find((p) => existsSync(p));
+/** Every file under `dir`, as paths relative to `base`, using a real directory read (never a swallowed error). */
 const walk = (dir, base) => {
   const out = [];
-  for (const entry of readdirSyncSafe(dir)) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...walk(full, base));
-    else out.push(join(full).slice(base.length + 1).replace(/\\/gu, "/"));
+    else out.push(full.slice(base.length + 1).replace(/\\/gu, "/"));
   }
   return out;
 };
-function readdirSyncSafe(dir) {
-  try {
-    return readdirSyncWithTypes(dir);
-  } catch {
-    return [];
-  }
-}
-function readdirSyncWithTypes(dir) {
-  // eslint-disable-next-line no-undef
-  return require("node:fs").readdirSync(dir, { withFileTypes: true });
-}
 
 const equivalence = (() => {
   if (!existsSync(EQUIV_DIR) || installedPkg === undefined) {
     return { established: false, detail: "one of the two package trees is not present locally; the comparison was NOT performed" };
   }
-  const left = walk(EQUIV_DIR, EQUIV_DIR);
-  const right = walk(installedPkg, installedPkg);
+  const left = walk(EQUIV_DIR, EQUIV_DIR).sort();
+  const right = walk(installedPkg, installedPkg).sort();
+  /**
+   * A VACUOUS COMPARISON IS NOT A PASS. An earlier version of this generator swallowed a directory-read error
+   * and compared two EMPTY lists, which reports `executableIdentical: true` while having inspected nothing.
+   * Both trees must be non-empty, and the executable subset must be non-empty too.
+   */
+  if (left.length === 0 || right.length === 0) {
+    return { established: false, detail: `a package tree was empty (left=${String(left.length)}, right=${String(right.length)}); no comparison was made`, fileCount: { left: left.length, right: right.length } };
+  }
   const onlyLeft = left.filter((f) => !right.includes(f));
   const onlyRight = right.filter((f) => !left.includes(f));
   const common = left.filter((f) => right.includes(f));
   const differing = common.filter((f) => digestOfFile(join(EQUIV_DIR, f)) !== digestOfFile(join(installedPkg, f)));
   const executable = (f) => f.startsWith("lib/");
+  const executableFiles = common.filter(executable);
   return {
     established: true,
     sourceTree: "registry tarball, integrity-verified at fetch time",
-    fileCount: { left: left.length, right: right.length },
+    fileCount: { left: left.length, right: right.length, common: common.length, executable: executableFiles.length },
     onlyLeft,
     onlyRight,
     differing,
     differingExecutable: differing.filter(executable),
-    executableIdentical: differing.filter(executable).length === 0 && onlyLeft.filter(executable).length === 0 && onlyRight.filter(executable).length === 0,
+    executableIdentical:
+      executableFiles.length > 0 &&
+      differing.filter(executable).length === 0 &&
+      onlyLeft.filter(executable).length === 0 &&
+      onlyRight.filter(executable).length === 0,
     manifests: {
       left: readJson(join(EQUIV_DIR, "package.json")),
       right: readJson(join(installedPkg, "package.json")),
