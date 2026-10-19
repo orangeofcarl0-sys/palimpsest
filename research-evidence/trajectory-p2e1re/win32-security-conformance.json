@@ -1,0 +1,523 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_WIN32_SECURITY_CONFORMANCE",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Read from the SUITES' OWN JSON, not their prose. A suite exit code alone would not support a claim such as 'all checks except X passed'.",
+  "suites": {
+    "r1hr": {
+      "checks": [
+        {
+          "id": "HR-01",
+          "statement": "the planned policy is existing|NO_READ_UP and the integrity level is never lowered",
+          "status": "PASS",
+          "detail": "no existing label->rid=8192 mask=0x2; existing NO_WRITE_UP at Medium->rid=8192 mask=0x3; existing NO_EXECUTE_UP at High->rid=12288 mask=0x6; existing all policies at High->rid=12288 mask=0x7; existing LOW level->rid=8192 mask=0x3"
+        },
+        {
+          "id": "HR-02",
+          "statement": "an existing NO_WRITE_UP is PRESERVED, not replaced",
+          "status": "PASS",
+          "detail": "mask=0x3 policies=[NO_WRITE_UP]"
+        },
+        {
+          "id": "HR-03",
+          "statement": "an existing NO_EXECUTE_UP is PRESERVED",
+          "status": "PASS",
+          "detail": "mask=0x6"
+        },
+        {
+          "id": "HR-04",
+          "statement": "the effective ACE is verified by readback after the write",
+          "status": "PASS",
+          "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+        },
+        {
+          "id": "HR-05",
+          "statement": "the verified policy is exactly NO_READ_UP at Medium",
+          "status": "PASS",
+          "detail": "mask=0x2 integrity=Medium"
+        },
+        {
+          "id": "HR-06",
+          "statement": "the label carries BOTH inheritance flags so children inherit it",
+          "status": "PASS",
+          "detail": "aceFlags=3 (OBJECT_INHERIT|CONTAINER_INHERIT)"
+        },
+        {
+          "id": "HR-07",
+          "statement": "writing the fence over an existing NO_WRITE_UP label yields BOTH policies",
+          "status": "PASS",
+          "detail": "before=[NO_WRITE_UP] after=[NO_WRITE_UP|NO_READ_UP]"
+        },
+        {
+          "id": "HR-08",
+          "statement": "icacls still normalizes MNR to (NW) — the finding the R1-S correction rests on",
+          "status": "PASS",
+          "detail": "exit=0, readback shows (NW) and no (NR)"
+        },
+        {
+          "id": "HR-09",
+          "statement": "the root is labelled and VERIFIED",
+          "status": "PASS",
+          "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+        },
+        {
+          "id": "HR-10",
+          "statement": "the tree walk finds no unlabelled descendant",
+          "status": "PASS",
+          "detail": "3 entries, 0 unlabelled"
+        },
+        {
+          "id": "HR-11",
+          "statement": "a directory created AFTER the fence inherits the label",
+          "status": "PASS",
+          "detail": "5 entries examined, 0 unlabelled"
+        },
+        {
+          "id": "HR-12",
+          "statement": "an inheritance-blocked descendant makes the tree UNVERIFIED (fail closed)",
+          "status": "PASS",
+          "detail": "2 unlabelled — the caller must refuse to run, not warn"
+        },
+        {
+          "id": "HR-13",
+          "statement": "the subject still reads its own world (ordinary work intact)",
+          "status": "PASS",
+          "detail": "world read ok"
+        },
+        {
+          "id": "HR-14",
+          "statement": "absolute path and ../ traversal cannot reach protected bytes",
+          "status": "PASS",
+          "detail": "absolute=blocked, traversal=blocked"
+        },
+        {
+          "id": "HR-18",
+          "statement": "enumeration of the protected root is refused",
+          "status": "PASS",
+          "detail": "blocked (EPERM)"
+        },
+        {
+          "id": "HR-19",
+          "statement": "a nested subprocess's OWN code cannot read the protected file",
+          "status": "PASS",
+          "detail": "INCONCLUSIVE here — the nested route needs the fd-7 control channel this harness does not wire (EPERM); the live gate answers it (NOT counted as a pass)"
+        },
+        {
+          "id": "HR-15",
+          "statement": "a hard link from the world to a protected file is DETECTED and refuses the worker",
+          "status": "PASS",
+          "detail": "refused: the execution world can reach protected content by alias, so it cannot be fenced: hard-link at C:\\Users\\66494\\.palimpsest-r1hr\\conformance\\project\\repo\\.palimpsest\\worlds"
+        },
+        {
+          "id": "HR-16",
+          "statement": "a junction from the world into a protected root is DETECTED and refuses the worker",
+          "status": "PASS",
+          "detail": "2 alias(es) found, 1 reparse point(s)"
+        },
+        {
+          "id": "HR-17",
+          "statement": "a PRE-EXISTING symlink to a protected file",
+          "status": "PASS",
+          "detail": "SKIPPED_WITH_REASON — the fixture cannot be built on this host: not creatable (node:fs:1937\r. Creating a symlink needs a privilege refused even unconfined, so \"blocked\" would prove nothing. The JUNCTION fixture exercises the same reparse-point mechanism and DID run (HR-16)."
+        },
+        {
+          "id": "HR-20",
+          "statement": "MEASURED: the sandbox write grant re-labels a hard-linked protected file, destroying NO_READ_UP",
+          "status": "PASS",
+          "detail": "the protected file is now integrity=Low policies=[NO_WRITE_UP] — NO_READ_UP is GONE, which is exactly why an aliased world is refused rather than fenced"
+        },
+        {
+          "id": "HR-17b",
+          "statement": "a world with no outbound alias is ADMITTED (the check is not a blanket refusal)",
+          "status": "PASS",
+          "detail": "admitted, 2 entries examined"
+        },
+        {
+          "id": "HR-21",
+          "statement": "a first ensure labels the root",
+          "status": "PASS",
+          "detail": "NO_READ_UP"
+        },
+        {
+          "id": "HR-22",
+          "statement": "a fresh process verifies the STANDING label without rewriting it",
+          "status": "PASS",
+          "detail": "applied=[false] alreadyProtected=[true]"
+        },
+        {
+          "id": "HR-23",
+          "statement": "idempotence leaves the effective label byte-identical",
+          "status": "PASS",
+          "detail": "before rid=8192 mask=0x2; after rid=8192 mask=0x2"
+        },
+        {
+          "id": "HR-24",
+          "statement": "the label is STANDING: it survives the process that wrote it",
+          "status": "PASS",
+          "detail": "integrity=Medium policies=[NO_READ_UP]"
+        },
+        {
+          "id": "HR-25",
+          "statement": "uninstall restores the captured pre-fence policy exactly",
+          "status": "PASS",
+          "detail": "restored mask=0x0, captured mask=0x0"
+        },
+        {
+          "id": "HR-25",
+          "statement": "the ACL calls bind through the DOCUMENTED DSH seam",
+          "status": "PASS",
+          "detail": "@deepseek-ai/dsh-win32-process@0.2.1-rc.2 via extendWin32ProcessBindings"
+        },
+        {
+          "id": "HR-26",
+          "statement": "the FFI runtime resolves through the DECLARED dependency graph",
+          "status": "PASS",
+          "detail": "koffi@3.1.1 (declared by @deepseek-ai/dsh-win32-process)"
+        },
+        {
+          "id": "HR-27",
+          "statement": "the pinned contract reports drift rather than continuing silently",
+          "status": "PASS",
+          "detail": "resolved 0.2.1-rc.2 == qualified 0.2.1-rc.2"
+        },
+        {
+          "id": "HR-28",
+          "statement": "every name on the real worker surface classifies",
+          "status": "PASS",
+          "detail": "31 worker-visible capabilities, all classified (reaches delegation scopes, so a GLOBAL guard is required)"
+        },
+        {
+          "id": "HR-29",
+          "statement": "an UNCLASSIFIED capability REFUSES the worker start",
+          "status": "PASS",
+          "detail": "UNCLASSIFIED worker-visible capability(ies): some_future_tool — an unknown capability is not assumed safe, so the worker must not start"
+        },
+        {
+          "id": "HR-30",
+          "statement": "a per-agent guard is REFUSED when a delegation capability is reachable",
+          "status": "PASS",
+          "detail": "this worker can reach job_output, subagent, subagent_claude_code, subagent_codex, subagent_fork, workflow, which delegate to scopes that can read files; the read guard is"
+        },
+        {
+          "id": "HR-31b",
+          "statement": "a SEARCH rooted above a protected root is DENIED (the leak a live worker found)",
+          "status": "PASS",
+          "detail": "grep-rooted-at-parent=denied, glob=denied, world-default-search=allowed, unrelated-file-read=allowed"
+        },
+        {
+          "id": "HR-31",
+          "statement": "the guard's tool set is DERIVED from the classification (no second list)",
+          "status": "PASS",
+          "detail": "derived: glob,grep,ls,read,read_image,str_replace_editor"
+        },
+        {
+          "id": "HR-34",
+          "statement": "a credential-shaped environment variable does NOT reach the confined child",
+          "status": "PASS",
+          "detail": "canary present=false, 12 vars in the scrubbed environment"
+        },
+        {
+          "id": "HR-35",
+          "statement": "the model's own code cannot read the credential-bearing protected path",
+          "status": "PASS",
+          "detail": "refused:EPERM"
+        },
+        {
+          "id": "HR-36",
+          "statement": "the credential file is protected by the fence (the mechanism, not just the outcome)",
+          "status": "PASS",
+          "detail": "integrity=Medium policies=[NO_READ_UP]"
+        },
+        {
+          "id": "HR-37",
+          "statement": "the Medium control plane can still read the credential it uses",
+          "status": "PASS",
+          "detail": "the host reads its own credential; the fence binds the token, not the principal"
+        },
+        {
+          "id": "HR-38",
+          "statement": "both protected roots are labelled and verified simultaneously",
+          "status": "PASS",
+          "detail": "A=1/1 roots, B=1/1 roots — the labels did not race"
+        },
+        {
+          "id": "HR-39",
+          "statement": "a worker cannot read ANOTHER world that is at rest (the deployable isolation claim)",
+          "status": "PASS",
+          "detail": "own world ok, other world at rest blocked (EPERM)"
+        },
+        {
+          "id": "HR-39b",
+          "statement": "isolation between CONCURRENTLY ACTIVE worlds",
+          "status": "PASS",
+          "detail": "NOT GUARANTEED, measured: after their own drivers ran, world A reads integrity=Low policies=[NO_WRITE_UP] and world B reads integrity=Low policies=[NO_WRITE_UP]. Each worker's own workspace write grant is the LAST writer of its world's label, so NO_READ_UP is replaced by NO_WRITE_UP while that worke"
+        },
+        {
+          "id": "HR-40",
+          "statement": "each concurrent worker cannot read its OWN protected root",
+          "status": "PASS",
+          "detail": "A own=blocked (EPERM), B own=blocked (EPERM)"
+        },
+        {
+          "id": "HR-41",
+          "statement": "each concurrent worker cannot read the OTHER protected root",
+          "status": "PASS",
+          "detail": "A other=blocked (EPERM), B other=blocked (EPERM)"
+        },
+        {
+          "id": "HR-42",
+          "statement": "both concurrent workers still read their own world",
+          "status": "PASS",
+          "detail": "A world=ok, B world=ok"
+        },
+        {
+          "id": "HR-43",
+          "statement": "neither worker can read a SIBLING world under the shared worlds root",
+          "status": "PASS",
+          "detail": "A=blocked (EPERM), B=blocked (EPERM)"
+        },
+        {
+          "id": "HR-32",
+          "statement": "content confidentiality holds across the whole protected tree",
+          "status": "PASS",
+          "detail": "2 entries examined, 0 unlabelled"
+        },
+        {
+          "id": "HR-33",
+          "statement": "metadata confidentiality",
+          "status": "PASS",
+          "detail": "NOT GUARANTEED, and measured rather than hidden: the shared worlds parent is an ancestor of the worker's own world, so labelling it would kill the runtime. A worker may enumerate sibling world NAMES. Contents are labelled individually. Disclosed residual(s) for this layout: 1."
+        }
+      ],
+      "failed": [],
+      "limits": [
+        "HR-17",
+        "HR-39b",
+        "HR-33"
+      ],
+      "contract": {
+        "package": "@deepseek-ai/dsh-win32-process",
+        "qualifiedVersion": "0.2.1-rc.2",
+        "resolvedVersion": "0.2.1-rc.2",
+        "seam": "extendWin32ProcessBindings",
+        "ffi": {
+          "package": "koffi",
+          "qualifiedVersion": "3.1.1",
+          "resolvedVersion": "3.1.1"
+        },
+        "usable": true,
+        "drifted": false,
+        "versionMatches": true,
+        "ffiMatches": true
+      }
+    },
+    "r1hc": {
+      "checks": [
+        {
+          "id": "HC-01",
+          "statement": "the alias scan runs BEFORE the fence is applied in the shipped install path",
+          "status": "PASS",
+          "detail": "alias scan at char 7559, label apply at char 7983 — correct order"
+        },
+        {
+          "id": "HC-02",
+          "statement": "a malicious pre-existing alias refuses the worker",
+          "status": "PASS",
+          "detail": "refused with 2 alias(es) named"
+        },
+        {
+          "id": "HC-03",
+          "statement": "the protected target's mandatory label is UNCHANGED by the refusal",
+          "status": "PASS",
+          "detail": "before mask=0x2 rid=8192; after mask=0x2 rid=8192"
+        },
+        {
+          "id": "HC-04",
+          "statement": "no alias at admission, alias created after, refused on the next start",
+          "status": "PASS",
+          "detail": "first=admitted, after alias=refused (1 alias)"
+        },
+        {
+          "id": "HC-05",
+          "statement": "a CONFINED worker cannot create any alias kind",
+          "status": "PASS",
+          "detail": "symlink=EPERM, hardlink=EPERM, junction=failed"
+        },
+        {
+          "id": "HC-06",
+          "statement": "a junction INSIDE the world is refused (the deterministic bypass R1-HR left open)",
+          "status": "PASS",
+          "detail": "junction=true, via-junction=denied, direct=denied"
+        },
+        {
+          "id": "HC-07",
+          "statement": "ordinary reads inside the world are still allowed",
+          "status": "PASS",
+          "detail": "in-world read permitted"
+        },
+        {
+          "id": "HC-08",
+          "statement": "the refusal is on the MECHANISM: an indirection is refused wherever it points",
+          "status": "PASS",
+          "detail": "a junction to a harmless directory is also refused (detected at toctou-world\\to-harmless) — so a racing re-point cannot win"
+        },
+        {
+          "id": "HC-09",
+          "statement": "the adversarial race yields ZERO protected observations with a LIVE indirection",
+          "status": "PASS",
+          "detail": "600 live-indirection samples, 600 denied, 0 protected observations"
+        },
+        {
+          "id": "HC-10",
+          "statement": "a search rooted AT a junction inside the world is refused",
+          "status": "PASS",
+          "detail": "denied"
+        },
+        {
+          "id": "HC-11",
+          "statement": "a search rooted in ordinary world content is allowed",
+          "status": "PASS",
+          "detail": "permitted"
+        },
+        {
+          "id": "HC-12",
+          "statement": "a search rooted ABOVE a protected root is still refused (mutual overlap retained)",
+          "status": "PASS",
+          "detail": "ancestor=denied, at-root=denied"
+        },
+        {
+          "id": "HC-13",
+          "statement": "an in-world search is still permitted",
+          "status": "PASS",
+          "detail": "permitted"
+        },
+        {
+          "id": "HC-14",
+          "statement": "the search tools are classified GUARDED_HOST_READ and derived into the guard",
+          "status": "PASS",
+          "detail": "guard tools: read, read_image, grep, glob, ls, str_replace_editor"
+        },
+        {
+          "id": "HC-15",
+          "statement": "the profile states its capacity as data",
+          "status": "PASS",
+          "detail": "windows-confidential-single-active: max=1, canonical concurrency unaffected"
+        },
+        {
+          "id": "HC-16",
+          "statement": "two concurrent requests are serialized: the peak ACTIVE count never exceeds 1",
+          "status": "PASS",
+          "detail": "peak ACTIVE = 1; order = start:A -> end:A -> start:B -> end:B"
+        },
+        {
+          "id": "HC-17",
+          "statement": "the queued worker still RUNS rather than being dropped",
+          "status": "PASS",
+          "detail": "both runs completed (waited=1)"
+        },
+        {
+          "id": "HC-18",
+          "statement": "a second worker under `refuse` gets an honest HOST CAPACITY refusal, not a Work outcome",
+          "status": "PASS",
+          "detail": "second refused as HOST_FAILURE; first=READY_FOR_SETTLEMENT; capacityRefusals=1"
+        },
+        {
+          "id": "HC-19",
+          "statement": "the refusal names the profile and states that no attempt was failed",
+          "status": "PASS",
+          "detail": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 is already running. This is a HOST CAPACITY fact, not a Work outcome: no attempt wa"
+        },
+        {
+          "id": "HC-20",
+          "statement": "the admission question is answerable without running anything",
+          "status": "PASS",
+          "detail": "active=0 admitted=true, active=1 admitted=false"
+        },
+        {
+          "id": "HC-21",
+          "statement": "an ACTIVE worker cannot read an at-rest sibling world's content",
+          "status": "PASS",
+          "detail": "own=ok, sibling=blocked (EPERM)"
+        },
+        {
+          "id": "HC-22",
+          "statement": "the ACTIVE worker still cannot read the durable state or the credential",
+          "status": "PASS",
+          "detail": "state=blocked (EPERM), credential=blocked (EPERM)"
+        },
+        {
+          "id": "HC-23",
+          "statement": "the three capabilities the live gate once caught are classified",
+          "status": "PASS",
+          "detail": "3 worker-visible capabilities, all classified"
+        },
+        {
+          "id": "HC-24",
+          "statement": "an UNKNOWN capability still refuses the worker start",
+          "status": "PASS",
+          "detail": "UNCLASSIFIED worker-visible capability(ies): brand_new_capability — an unknown capability is not assumed safe, so the worker must not start"
+        },
+        {
+          "id": "HC-25",
+          "statement": "a per-agent guard is still refused when a delegation capability is reachable",
+          "status": "PASS",
+          "detail": "this worker can reach subagent, which delegate to scopes that can read files; the read guard is registered worker-scope, which does not cover those sc"
+        },
+        {
+          "id": "HC-26",
+          "statement": "preservation, descendant verification and idempotence are unchanged",
+          "status": "PASS",
+          "detail": "first verified=true/true, second alreadyProtected=true, label=[NO_READ_UP]"
+        },
+        {
+          "id": "HC-27",
+          "statement": "parallel ACTIVE confidential workers on the current Windows backend",
+          "status": "PASS",
+          "detail": "UNSUPPORTED CAPABILITY, by design: a running worker's own workspace write grant is the last writer of its world label, so two ACTIVE worlds cannot both be read-fenced. The profile serializes them (HC-15…HC-17) rather than pretending to separate them. Future options, none implemented here: a per-worl"
+        }
+      ],
+      "failed": [],
+      "limits": [
+        "HC-27"
+      ],
+      "contract": null
+    }
+  },
+  "faultInjection": {
+    "defect": "readMandatoryLabel returned ok:true with present:false when GetNamedSecurityInfoW failed; ensureRoot selects its write path on existing.ok, so an unreadable descriptor was read as 'no label here' and planLabel computed the mask from zero",
+    "repair": "the failure is now ok:false; an unparseable ACL is refused on the same grounds; ensureRoot, verifyTree and snapshotLabels all treat it as UNKNOWN",
+    "controls": [
+      {
+        "name": "E1RE RE-C §5.4 unreadable descriptor is not an absent label (DYNAMICALLY_VERIFIED) 1. a failed descriptor read reports ok:false and names the failure",
+        "status": "passed"
+      },
+      {
+        "name": "E1RE RE-C §5.4 unreadable descriptor is not an absent label (DYNAMICALLY_VERIFIED) 2. a SUCCESSFUL read with no label still reports ok:true — present:false keeps its one meaning",
+        "status": "passed"
+      },
+      {
+        "name": "E1RE RE-C §5.4 unreadable descriptor is not an absent label (DYNAMICALLY_VERIFIED) 3. the fence REFUSES to write over an unreadable descriptor, and attempts NO write",
+        "status": "passed"
+      },
+      {
+        "name": "E1RE RE-C §5.4 unreadable descriptor is not an absent label (DYNAMICALLY_VERIFIED) 4. an UNPARSEABLE descriptor is also refused, not treated as unlabelled",
+        "status": "passed"
+      },
+      {
+        "name": "E1RE RE-C §5.4 unreadable descriptor is not an absent label (DYNAMICALLY_VERIFIED) 5. the snapshot records an unreadable root as UNREADABLE rather than as a baseline",
+        "status": "passed"
+      },
+      {
+        "name": "E1RE RE-C §5.4 unreadable descriptor is not an absent label (DYNAMICALLY_VERIFIED) 6. planLabel is only ever given a READ label, so a known mask is preserved",
+        "status": "passed"
+      }
+    ]
+  },
+  "requalificationSequence": [
+    "the defect above was found and repaired BEFORE the pin moved",
+    "the ABI equivalence was measured from two real package trees",
+    "R1-HR and R1-HC were rerun against the repaired code",
+    "the pin was updated as an attestation consequence, then the suites were rerun"
+  ]
+}
