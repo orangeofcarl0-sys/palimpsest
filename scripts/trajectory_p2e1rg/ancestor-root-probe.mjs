@@ -86,21 +86,38 @@ try {
   report.observations.rootPlan = {
     requestedRoots: [".palimpsest"],
     plannedRoots: plan.protectedRoots.length,
-    skippedRoots: plan.skipped.map((entry) => ({ path: ".palimpsest", why: entry.why })),
-    note: "a skipped root is NOT a labelled root; its descendants are covered only if they are separately labelled",
+    skippedRoots: plan.skipped.map((entry) => ({
+      path: ".palimpsest",
+      why: entry.why,
+      /** RG-B §5.5: which non-world children were derived from the skipped root, i.e. what actually gets labelled. */
+      derivedRoots: (entry.derivedRoots ?? []).map((path) => path.slice(ROOT.length + 1).split("\\").join("/")),
+      enumerationFailed: entry.enumerationFailed === true,
+    })),
+    note: "a skipped root is NOT a labelled root; its content is covered only by labels on derived descendants",
   };
 
   /**
-   * WHICH DESCENDANTS RECEIVE THEIR OWN LABEL. `applyReadFence` labels the PLANNED roots only. Because the
-   * ancestor was skipped, nothing under it is planned — so this reports what actually happens rather than
-   * assuming the durable state is covered.
+   * WHICH DESCENDANTS RECEIVE THEIR OWN LABEL.
+   *
+   * Before RG-B this labelled NOTHING: the ancestor was skipped and nothing beneath it was planned, so durable
+   * state carried no label and the Low-token probe read straight through it. The plan now derives the skipped
+   * root's non-world children, and `coverage.complete` is the single field admission must require.
    */
   const applied = fence.applyReadFence({ roots: [palimpsest], world });
   report.observations.kernelApplication = {
     supported: applied.supported === true,
-    outcomes: (applied.outcomes ?? []).map((entry) => ({ path: ".palimpsest", applied: entry.applied, verified: entry.verified, detail: String(entry.detail).slice(0, 200) })),
+    outcomes: (applied.outcomes ?? []).map((entry) => ({ path: entry.path.slice(ROOT.length + 1).split("\\").join("/"), applied: entry.applied, verified: entry.verified, derivedFrom: entry.derivedFrom === undefined ? null : ".palimpsest" })),
     skipped: (applied.skipped ?? []).length,
+    coverage: applied.coverage === undefined ? null : {
+      complete: applied.coverage.complete === true,
+      planned: applied.coverage.planned.map((path) => path.slice(ROOT.length + 1).split("\\").join("/")),
+      labelled: applied.coverage.labelled.map((path) => path.slice(ROOT.length + 1).split("\\").join("/")),
+      verified: applied.coverage.verified.map((path) => path.slice(ROOT.length + 1).split("\\").join("/")),
+      skippedWithoutDerivedCoverage: applied.coverage.skippedWithoutDerivedCoverage.length,
+      unresolved: applied.coverage.unresolved.length,
+    },
   };
+  report.observations.derivedCoverageProtectsDurableState = applied.coverage === undefined ? null : applied.coverage.verified.some((path) => path.toLowerCase() === durable.toLowerCase());
 
   if (!existsSync(aclIndex) || !existsSync(sandboxRunner)) {
     report.verdict = "NOT_ESTABLISHED";
@@ -202,32 +219,38 @@ try {
     };
 
     const labelledRead = labelled.probe?.DURABLE_UNDER_SKIPPED_ANCESTOR?.read === true;
+    const labelledLeaked = labelled.probe?.DURABLE_UNDER_SKIPPED_ANCESTOR?.content?.includes?.(CANARY) === true;
     const unlabelledRead = unlabelled.probe?.DURABLE_UNDER_SKIPPED_ANCESTOR?.read === true;
     const unlabelledLeaked = unlabelled.probe?.DURABLE_UNDER_SKIPPED_ANCESTOR?.content?.includes?.(CANARY) === true;
 
     report.observations.durableReadableByLowToken = labelledRead;
-    report.observations.canaryLeaked = unlabelledLeaked;
+    /**
+     * THE HEADLINE LEAK FACT IS ARM 1 — THE PRODUCTION PATH. Arm 2 is a deliberate causation control, so its
+     * leak is recorded as `canaryLeakedWithLabelRemoved` and must never be read as the production result. A
+     * reader who saw only `canaryLeaked: true` while production refused the read would draw the opposite
+     * conclusion from the measurement.
+     */
+    report.observations.canaryLeaked = labelledLeaked;
+    report.observations.canaryLeakedWithLabelRemoved = unlabelledLeaked;
     report.observations.worldStillReadable = labelled.probe?.WORLD?.read === true;
 
     /**
      * THE VERDICT NAMES THE LAYER, NOT A MOOD.
      *
-     *   CANARY_READABLE_BY_LOW_TOKEN       a verified confidentiality failure — §3-F7 requires it be reported.
-     *   PROTECTED_WITHOUT_THE_LABEL        the read was refused with NO label in place, so an independent
-     *                                      boundary (the sandbox write-grant ACL / Low token) provides it. This
-     *                                      is the STRONGEST available statement and it is still narrower than
-     *                                      "the Kernel fence protects durable state".
-     *   PROTECTED_ONLY_BY_THE_LABEL        the labelled arm refused and the unlabelled arm succeeded: the
-     *                                      protection IS the Kernel label, which is why durable state must be
-     *                                      labelled even though the ancestor root cannot be.
-     *   PROBE_INCONCLUSIVE                 neither arm produced a usable observation.
+     *   CANARY_READABLE_BY_LOW_TOKEN   PRODUCTION read the canary. A verified confidentiality failure; §3-F7
+     *                                  requires it be reported, and it is a stop condition.
+     *   PROTECTED_ONLY_BY_THE_LABEL    production refused the read AND the label-removal control succeeded.
+     *                                  This proves the Kernel label IS the protection — the sandbox ACL alone
+     *                                  does not stop the read — so the derived coverage is load-bearing.
+     *   PROTECTED_WITHOUT_THE_LABEL    both arms refused: something independent of the Kernel also protects
+     *                                  it, which is a STRONGER statement and is recorded as such.
+     *   PROBE_INCONCLUSIVE             the arms did not produce a usable comparison.
      */
-    if (unlabelledLeaked) report.verdict = "CANARY_READABLE_BY_LOW_TOKEN";
+    if (labelledLeaked) report.verdict = "CANARY_READABLE_BY_LOW_TOKEN";
+    else if (!labelledRead && unlabelledLeaked) report.verdict = "PROTECTED_ONLY_BY_THE_LABEL";
     else if (!labelledRead && !unlabelledRead) report.verdict = "PROTECTED_WITHOUT_THE_LABEL";
-    else if (!labelledRead && unlabelledRead) report.verdict = "PROTECTED_ONLY_BY_THE_LABEL";
+    else if (labelledRead && !labelledLeaked) report.verdict = "READ_SUCCEEDED_WITHOUT_CANARY";
     else report.verdict = "PROBE_INCONCLUSIVE";
-    /** Readable-but-not-leaking is its own state: the file opened and did not carry the token. */
-    if (unlabelledRead && !unlabelledLeaked) report.verdict = "READ_SUCCEEDED_WITHOUT_CANARY";
   }
   report.evidenceClass = report.verdict === "NOT_ESTABLISHED" || report.verdict === "PROBE_INCONCLUSIVE" ? "NOT_ESTABLISHED" : "FIRST_PARTY_DSH_VERIFIED";
 } catch (error) {

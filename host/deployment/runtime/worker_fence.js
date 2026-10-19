@@ -150,10 +150,44 @@ export function installWorkerReadBoundary(input = {}) {
    * the alias is refused instead.
    */
   const aliases = admitWorldForFencing({ world: config.world, protectedRoots: config.roots });
-  // Layer 1 — the kernel label. Applied by this process, which runs at Medium integrity precisely so it can
-  // still read what it fences. It is STANDING host security state (§3): the labels outlive this process, so a
-  // worker crash cannot leave the deployment unprotected, and the next host verifies what is already there.
-  const kernel = applyReadFence({ roots: config.roots, world: config.world });
+  /**
+   * E1RG RG-0-F3 / RG-A §4.4: A REJECTED WORLD MUST NOT TRIGGER A LABEL WRITE.
+   *
+   * MEASURED ON THE PARENT COMMIT (`test/trajectory_p2e1rg_baseline_admission.test.ts` F3). `applyReadFence()`
+   * ran unconditionally AFTER this scan had already refused the world, so a world holding a junction into a
+   * protected root still caused the protected root's descriptor to be written. The whole point of the alias
+   * scan is that such a world cannot be fenced — because the sandbox's write grant travels through the link and
+   * REPLACES the protected object's NO_READ_UP — so mutating through it is precisely the harm being avoided.
+   *
+   * The kernel result is therefore EMPTY on a rejected world, with a reason, rather than a real application.
+   * This is not a silent skip: `kernel.applied === false` and `coverage.complete === false` both follow, and the
+   * admission gate refuses.
+   */
+  /**
+   * THE KERNEL LAYER, GATED ON THE ALIAS VERDICT.
+   *
+   * The shape is deliberately `if` rather than a ternary so the shipped order is readable as code: the alias
+   * scan's result is consulted, and only then is `applyReadFence` reached at all. `R1-HC HC-01` asserts this
+   * order from the shipped source.
+   */
+  /** @type {ReturnType<typeof applyReadFence> | { supported: false, platform: string, outcomes: readonly never[], skipped: readonly never[], unavailable: string, coverage: Record<string, unknown>, noMutationPerformed: true }} */
+  let kernel;
+  if (aliases.allowed === true) {
+    // Layer 1 — the kernel label. Applied by this process, which runs at Medium integrity precisely so it can
+    // still read what it fences. It is STANDING host security state (§3): the labels outlive this process, so a
+    // worker crash cannot leave the deployment unprotected, and the next host verifies what is already there.
+    kernel = applyReadFence({ roots: config.roots, world: config.world });
+  } else {
+    kernel = {
+      supported: false,
+      platform: process.platform,
+      outcomes: [],
+      skipped: [],
+      unavailable: `the execution world was rejected by alias admission (${aliases.reason ?? 'a reparse point or shared file record reaches protected content'}), so no label was written through it`,
+      coverage: { planned: [], skipped: [], labelled: [], verified: [], unverified: [], unresolved: [], skippedWithoutDerivedCoverage: [], complete: false },
+      noMutationPerformed: true,
+    };
+  }
   /**
    * Layer 2 — the tool guard, registered GLOBALLY.
    *
@@ -264,7 +298,26 @@ export function installWorkerReadBoundary(input = {}) {
  * Each part is reported separately in `boundary`, so a refusal names WHICH guarantee is missing rather than
  * collapsing five distinct facts into one boolean.
  *
- * @param {{ visibleNames: readonly string[], guardScope?: string, boundary?: { guardInstalled?: boolean, cwdFenceInstalled?: boolean, delegationFenceInstalled?: boolean } }} input
+ * E1RG RG-0-F4 / RG-B §5.6: THE KERNEL COVERAGE RESULT IS NOW PART OF THE REQUIRED SET.
+ *
+ * MEASURED ON THE PARENT COMMIT. The required set contained only the three guard layers, the guard scope and
+ * the capability surface — so a worker was admitted with NO kernel input at all. A registered Tool Guard is not
+ * evidence that the kernel boundary exists: the guard runs in the Medium host and covers tool ARGUMENTS, while
+ * the kernel covers every PROCESS the model can start. `ancestor-root-probe.mjs` demonstrates the difference
+ * concretely: with the label removed, a Low-integrity process reads durable state that no tool guard was asked
+ * about.
+ *
+ * The kernel requirements are computed from the INSTALLATION REPORT, so they describe what actually happened:
+ *
+ *   kernelSupported         — the label binding table resolved and the mechanism is available
+ *   kernelRootsVerified     — every root that could be labelled was labelled and verified
+ *   kernelCoverageComplete  — no unresolved root, no skipped ancestor without derived coverage
+ *   kernelContractNotDrifted — the Win32 seam is the one this fence was qualified against
+ *
+ * `kernelCoverageComplete` is the load-bearing one. `supported === true` alone is satisfied by a plan that
+ * labels nothing, which is exactly the state the probe showed to be unprotected.
+ *
+ * @param {{ visibleNames: readonly string[], guardScope?: string, boundary?: { guardInstalled?: boolean, cwdFenceInstalled?: boolean, delegationFenceInstalled?: boolean, kernelSupported?: boolean, kernelRootsVerified?: boolean, kernelCoverageComplete?: boolean, kernelContractNotDrifted?: boolean } }} input
  * @returns {{ allowed: boolean, reason?: string, classification: ReturnType<typeof admitWorkerStart>['classification'], counts: ReturnType<typeof classCounts>, boundary: { required: Record<string, boolean>, satisfied: boolean } }}
  */
 export function admitWorker(input) {
@@ -281,6 +334,11 @@ export function admitWorker(input) {
     delegationFenceInstalled: installed?.delegationFenceInstalled === true,
     globalGuardScope: input.guardScope === GUARD_SCOPES.GLOBAL,
     capabilitySurfaceAdmitted: verdict.allowed === true,
+    /** RG-B §5.6: the kernel facts, each independently reported. */
+    kernelSupported: installed?.kernelSupported === true,
+    kernelRootsVerified: installed?.kernelRootsVerified === true,
+    kernelCoverageComplete: installed?.kernelCoverageComplete === true,
+    kernelContractNotDrifted: installed?.kernelContractNotDrifted === true,
   };
   const satisfied = Object.values(required).every((value) => value === true);
   const counts = classCounts(verdict.classification.classified);

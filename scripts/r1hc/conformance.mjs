@@ -141,8 +141,19 @@ writeFileSync(join(HOME, ".credentials.yaml"), `provider: synthetic${NL}apiKey: 
  */
 const fenceSource = readFileSync(join(RUNTIME, "worker_fence.js"), "utf8");
 const aliasIndex = fenceSource.indexOf("const aliases = admitWorldForFencing(");
-const labelIndex = fenceSource.indexOf("const kernel = applyReadFence(");
-check("HC-01", "the alias scan runs BEFORE the fence is applied in the shipped install path", aliasIndex !== -1 && labelIndex !== -1 && aliasIndex < labelIndex, `alias scan at char ${String(aliasIndex)}, label apply at char ${String(labelIndex)} — ${aliasIndex < labelIndex ? "correct order" : "WRONG ORDER: a grant could precede the scan"}`);
+/**
+ * E1RG RG-0-F3: THE LABEL IS NOW REACHED ONLY WHEN THE ALIAS VERDICT ALLOWS IT.
+ *
+ * This assertion used to look for a literal `const kernel = applyReadFence(`. The shipped code now assigns
+ * `kernel` first and calls `applyReadFence` INSIDE `if (aliases.allowed === true)`, because a rejected world
+ * must not trigger a label write at all. The PROPERTY asserted is unchanged — the scan precedes any label
+ * application — but the assertion now also requires the guarded form, which is the stronger fact.
+ */
+const aliasGuardIndex = fenceSource.indexOf("if (aliases.allowed === true)");
+const labelIndex = fenceSource.indexOf("kernel = applyReadFence(", aliasGuardIndex === -1 ? 0 : aliasGuardIndex);
+const labelIsGuardedByAlias = aliasGuardIndex !== -1 && labelIndex !== -1 && aliasGuardIndex < labelIndex;
+const orderCorrect = aliasIndex !== -1 && labelIndex !== -1 && aliasIndex < labelIndex && labelIsGuardedByAlias;
+check("HC-01", "the alias scan runs BEFORE the fence is applied in the shipped install path", orderCorrect, `alias scan at char ${String(aliasIndex)}, label apply at char ${String(labelIndex)}, guarded by the alias verdict=${String(labelIsGuardedByAlias)} — ${orderCorrect ? "correct order, and a rejected world reaches no label write" : "WRONG ORDER: a grant could precede the scan, or a rejected world could still be labelled"}`);
 
 /**
  * HC-02 — A MALICIOUS PRE-EXISTING ALIAS IS REFUSED, AND THE PROTECTED TARGET IS UNCHANGED.

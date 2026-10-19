@@ -141,7 +141,20 @@ describe("E1RE RE-A delegation CWD guard (DYNAMICALLY_VERIFIED)", () => {
 /* ================================================================ B. the boundary precondition */
 describe("E1RE RE-B boundary admission precondition (DYNAMICALLY_VERIFIED)", () => {
   const surface = ["run_code", "palimpsest_worker_result", "palimpsest_worker_context_pull", "read", "grep", "bash"];
-  const full = { guardInstalled: true, cwdFenceInstalled: true, delegationFenceInstalled: true };
+  /**
+   * E1RG RG-B §5.6 STRENGTHENED THE REQUIRED SET. The kernel facts are now admission inputs, so a "full"
+   * boundary in this suite must carry them — the E1RE assertion that the three guard flags alone were sufficient
+   * described the weaker contract this stage replaced, and keeping it would pin the defect.
+   */
+  const full = {
+    guardInstalled: true,
+    cwdFenceInstalled: true,
+    delegationFenceInstalled: true,
+    kernelSupported: true,
+    kernelRootsVerified: true,
+    kernelCoverageComplete: true,
+    kernelContractNotDrifted: true,
+  };
 
   it("B1. the FULL boundary is admitted", () => {
     const verdict = admission.admitWorker({ visibleNames: surface, guardScope: "global", boundary: full });
