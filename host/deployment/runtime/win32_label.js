@@ -349,9 +349,26 @@ function allocDescriptorSlots(api) {
  * carries `AclSize` at offset 2 and `AceCount` at offset 4, the first ACE begins at offset 8, and each ACE
  * carries `AceType`@0, `AceFlags`@1, `AceSize`@2, `AccessMask`@4, `SidStart`@8.
  *
- * Every bound is checked before it is used. A malformed ACL returns `present: false` with `readable: true`
- * rather than throwing, because the caller's next step is to WRITE a correct label — and a parser that threw
- * on a strange descriptor would leave the object unfenced.
+ * EVERY DECODED FIELD IS VALIDATED (E1RF RF-C §6.2). E1RE checked the ACL length, the ACE count, the ACE size
+ * and the bounds, but returned `present: true, readable: true` without checking the fields it had just read.
+ * A failed 32-bit read yields `NaN`, and `NaN` is not caught by any of those bound checks:
+ *
+ *   · `policyMask: NaN` → `planLabel()` computes `NaN | NO_READ_UP`, which is `2`, so EVERY policy bit the
+ *     object actually carried is discarded on write. An invalid field became zero through bitwise coercion.
+ *   · `integrityRid: NaN` → the planned level silently falls back to Medium, and the readback comparison can
+ *     never match.
+ *   · a non-finite `authority` or `subAuthorityCount` → a SID identity that describes no object.
+ *
+ * The parser therefore reports `readable: false` — with the field named — for ANY mandatory ACE whose identity
+ * or policy cannot be fully decoded. `readable: false` is what `ensureRoot()`, `verifyTree()` and
+ * `snapshotLabels()` already treat as UNKNOWN, so no caller needs a new branch: an unverified label is refused
+ * rather than overwritten.
+ *
+ * A GENUINELY ABSENT label keeps its one meaning. `present: false, readable: true` is returned only when the
+ * descriptor WAS read and contained no mandatory ACE at all.
+ *
+ * A malformed ACL never throws: the caller's next step may be to write a correct label, and a parser that threw
+ * would leave the object unfenced.
  *
  * @param {any} api
  * @param {unknown} labelAcl
@@ -375,19 +392,30 @@ export function parseLabelAcl(api, labelAcl) {
   const read8 = (/** @type {number} */ offset) => field(offset, 'uint8');
   const read16 = (/** @type {number} */ offset) => field(offset, 'uint16');
   const read32 = (/** @type {number} */ offset) => field(offset, 'uint32');
+  /** A field that failed to decode is UNVERIFIED, and the reason names it rather than reporting a bare false. */
+  const unverified = (/** @type {string} */ fieldName) => ({ present: false, readable: false, unreadableField: fieldName });
   const aclSize = read16(2);
   const aceCount = read16(4);
-  if (!Number.isFinite(aclSize) || aclSize < ACL_HEADER_BYTES || aclSize > 1_048_576) return { present: false, readable: false };
+  if (!Number.isFinite(aclSize) || aclSize < ACL_HEADER_BYTES || aclSize > 1_048_576) return unverified('AclSize');
   if (!Number.isFinite(aceCount) || aceCount < 1 || aceCount > 4096) return { present: false, readable: true };
   let offset = ACL_HEADER_BYTES;
   for (let index = 0; index < aceCount; index += 1) {
-    if (offset + 8 > aclSize) return { present: false, readable: false };
+    if (offset + 8 > aclSize) return unverified('AceHeader');
     const aceType = read8(offset);
     const aceFlags = read8(offset + 1);
     const aceSize = read16(offset + 2);
-    if (!Number.isFinite(aceSize) || aceSize < 8 || offset + aceSize > aclSize) return { present: false, readable: false };
+    if (!Number.isFinite(aceType)) return unverified('AceType');
+    if (!Number.isFinite(aceFlags)) return unverified('AceFlags');
+    if (!Number.isFinite(aceSize) || aceSize < 8 || offset + aceSize > aclSize) return unverified('AceSize');
     if (aceType === SYSTEM_MANDATORY_LABEL_ACE_TYPE) {
       const policyMask = read32(offset + 4);
+      /**
+       * THE POLICY MASK IS VALIDATED BEFORE IT CAN REACH `planLabel()`.
+       *
+       * This is the defect E1RF RF-C closed: `NaN | 2` is `2`, so an undecodable mask silently became "no
+       * existing policy" and the write discarded every bit the object carried.
+       */
+      if (!Number.isFinite(policyMask) || policyMask < 0 || policyMask > 0xffffffff) return unverified('policyMask');
       /**
        * The ACE's SID begins at offset+8. A SID is: Revision@0 (1 byte), SubAuthorityCount@1 (1 byte),
        * IdentifierAuthority@2 (SIX bytes, big-endian), then SubAuthority[]@8 (4 bytes each).
@@ -397,11 +425,37 @@ export function parseLabelAcl(api, labelAcl) {
        * report 0 for the integrity authority (16 = 0x10, which lives in the LAST byte).
        */
       const sidAt = offset + 8;
-      let authority = 0;
-      for (let byte = 0; byte < 6; byte += 1) authority = authority * 256 + read8(sidAt + 2 + byte);
+      const sidRevision = read8(sidAt);
+      if (!Number.isFinite(sidRevision) || sidRevision !== 1) return unverified('SidRevision');
       const subAuthorityCount = read8(sidAt + 1);
-      const rid = subAuthorityCount >= 1 ? read32(sidAt + 8) : undefined;
+      if (!Number.isFinite(subAuthorityCount) || subAuthorityCount < 1 || subAuthorityCount > 15) return unverified('SubAuthorityCount');
+      /**
+       * THE DECLARED ACE MUST BE LONG ENOUGH FOR THE SID IT DECLARES. Without this, a SID whose
+       * `SubAuthorityCount` runs past the ACE would read adjacent bytes as its RID and produce a plausible
+       * identity for an object that has no such identity.
+       */
+      const sidBytes = 8 + subAuthorityCount * 4;
+      if (offset + 8 + sidBytes > offset + aceSize) return unverified('SidLength');
+      let authority = 0;
+      let authorityReadable = true;
+      for (let byte = 0; byte < 6; byte += 1) {
+        const value = read8(sidAt + 2 + byte);
+        if (!Number.isFinite(value)) {
+          authorityReadable = false;
+          break;
+        }
+        authority = authority * 256 + value;
+      }
+      if (!authorityReadable || !Number.isFinite(authority)) return unverified('IdentifierAuthority');
+      const rid = read32(sidAt + 8);
+      if (!Number.isFinite(rid)) return unverified('IntegrityRid');
       const named = authority === MANDATORY_LABEL_AUTHORITY ? Object.entries(INTEGRITY_LEVELS).find(([, value]) => value === rid) : undefined;
+      /**
+       * AN UNKNOWN RID IS NOT A MALFORMED ONE. A structurally plausible SID from another authority, or an
+       * integrity level this build does not name, is reported with its numeric identity and treated
+       * CONSERVATIVELY: `planLabel()` keeps a level at or above Medium and never lowers it, so an unfamiliar
+       * level cannot be used to weaken an object.
+       */
       return {
         present: true,
         readable: true,
@@ -471,14 +525,23 @@ export function dshCompatibilityReport() {
  *     lower one becomes Medium (the Windows baseline for a user-created object);
  *   · the policy mask is `existing | NO_READ_UP`, so NO_WRITE_UP and NO_EXECUTE_UP already present survive.
  *
+ * A NON-FINITE OR NON-INTEGER FIELD IS TREATED AS ABSENT, NOT COERCED (E1RF RF-C §6.2).
+ *
+ * The previous version tested only `typeof … === 'number'`, so `NaN` passed that test and `NaN | 2` silently
+ * became `2`. The checks below are the last line of defence: even a caller that bypassed the parser cannot
+ * make an invalid mask look like a trusted one, because an invalid mask contributes NOTHING to the result.
+ * That is the conservative direction — the planned write then adds NO_READ_UP to a Medium baseline, which
+ * weakens no object, while the parser has already refused to write at all for such input.
+ *
  * @param {MandatoryLabel | undefined} existing
  * @returns {{ integrityRid: number, integrityName: string, policyMask: number, raisedIntegrity: boolean, preserved: readonly string[] }}
  */
 export function planLabel(existing) {
-  const currentRid = existing?.present === true && typeof existing.integrityRid === 'number' ? existing.integrityRid : 0;
+  const present = existing?.present === true;
+  const currentRid = present && Number.isInteger(existing.integrityRid) && existing.integrityRid > 0 ? existing.integrityRid : 0;
   const keep = currentRid >= INTEGRITY_LEVELS.Medium ? currentRid : INTEGRITY_LEVELS.Medium;
   const name = Object.entries(INTEGRITY_LEVELS).find(([, value]) => value === keep)?.[0] ?? `S-1-16-${String(keep)}`;
-  const existingMask = existing?.present === true && typeof existing.policyMask === 'number' ? existing.policyMask : 0;
+  const existingMask = present && Number.isInteger(existing.policyMask) && existing.policyMask >= 0 ? existing.policyMask : 0;
   return {
     integrityRid: keep,
     integrityName: name,
