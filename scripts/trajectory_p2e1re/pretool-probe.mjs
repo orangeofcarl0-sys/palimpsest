@@ -18,6 +18,13 @@
  * for the synthetic canary token. If the token appears, the content was read AND delivered before any tool
  * dispatch — a confidentiality failure that a later guard refusal cannot undo.
  *
+ * EVEN THE FIXED HOST IS MEASURED THE SAME WAY. After the delegation guard was installed, the same cases run
+ * again and are expected to refuse with an observable `ToolCallError` and NO child session. The verdict for a
+ * case is therefore one of:
+ *   · DELIVERED            the token reached a user/message — a leak
+ *   · REFUSED_BY_GUARD     the delegation call errored and no child session exists
+ *   · ALLOWED_NO_DELIVERY  the child was created (legitimately, inside the world) and no foreign token appeared
+ *
  * SAFETY. Every root is test-owned and allocated through `allocateOwnedRoot`. The canary is a harmless
  * synthetic token. No personal path, session, credential or project content is touched, and no external or
  * paid model is contacted (a deterministic local adapter serves every turn).
@@ -26,7 +33,7 @@
  */
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { REPO, allocateOwnedRoot, safeCleanup } from "../trajectory_p2e0/owned-root.mjs";
@@ -296,14 +303,25 @@ export function apply(ctx) {
     report.observations.canaryDelivered = canaryDelivered;
     report.observations.siblingTokenDelivered = siblingDelivered;
     report.observations.canaryEventTypes = [...new Set(perSession.flatMap((entry) => entry.canaryInEventTypes ?? []))];
-    report.verdict =
-      target.token === CANARY
-        ? canaryDelivered
-          ? "UNAUTHORIZED_CONTENT_DELIVERED"
-          : "NO_UNAUTHORIZED_DELIVERY_OBSERVED"
-        : siblingDelivered
-          ? "SIBLING_CONTENT_DELIVERED"
-          : "NO_UNAUTHORIZED_DELIVERY_OBSERVED";
+
+    /**
+     * THE THREE-WAY VERDICT. A refusal is only a PASS if it is OBSERVABLE and produced NO child session: a
+     * silent stall or a child that exists but was never used would be a different outcome, and both are recorded
+     * as such rather than as success.
+     */
+    const delivered = target.token === CANARY ? canaryDelivered : siblingDelivered;
+    /** A child session is any session that is NOT the worker's own. */
+    const childSessions = perSession.filter((entry) => !String(entry.sessionId).startsWith("worker-"));
+    const refusalText = perSession.flatMap((entry) => entry.toolResults ?? []).find((text) => /is not the authorized execution world|delegation fence|ToolCallError/u.test(text)) ?? null;
+    report.observations.childSessionCount = childSessions.length;
+    report.observations.refusalObserved = refusalText !== null;
+    report.observations.refusalDetail = refusalText === null ? null : refusalText.slice(0, 300);
+
+    if (delivered) report.verdict = target.token === CANARY ? "DELIVERED" : "SIBLING_DELIVERED";
+    else if (childSessions.length === 0 && refusalText !== null) report.verdict = "REFUSED_BY_GUARD";
+    else report.verdict = "ALLOWED_NO_DELIVERY";
+    /** The case is CLOSED when no unauthorized token was delivered, whether by refusal or by legitimate use. */
+    report.caseClosed = delivered === false;
     step("verdict", report.verdict);
   } finally {
     if (fixture !== null) await fixture.cleanup();
@@ -313,6 +331,7 @@ export function apply(ctx) {
 } catch (error) {
   report.error = error instanceof Error ? error.message : String(error);
   report.verdict = "PROBE_FAILED";
+  report.caseClosed = false;
   process.stderr.write(`  ! probe failed: ${report.error}\n`);
 } finally {
   const cleanup = await safeCleanup(owned);
@@ -322,8 +341,7 @@ export function apply(ctx) {
 
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (ARG_JSON_OUT !== null) {
-  const { dirname, resolve } = await import("node:path");
   mkdirSync(dirname(resolve(ARG_JSON_OUT)), { recursive: true });
   writeFileSync(resolve(ARG_JSON_OUT), `${JSON.stringify(report, null, 2)}\n`);
 }
-process.exit(report.verdict === "NO_UNAUTHORIZED_DELIVERY_OBSERVED" ? 0 : 1);
+process.exit(report.caseClosed === true ? 0 : 1);
