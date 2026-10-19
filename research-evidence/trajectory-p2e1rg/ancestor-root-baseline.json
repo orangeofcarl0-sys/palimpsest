@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RG_ANCESTOR_ROOT_PROBE",
+  "stage": "Trajectory-P2-E1RG",
+  "evidenceClass": "FIRST_PARTY_DSH_VERIFIED",
+  "question": "In the production-shaped layout, can a Low-integrity process started from the world read durable state beside it, under the skipped ancestor root?",
+  "canaryIsSynthetic": true,
+  "observations": {
+    "rootPlan": {
+      "requestedRoots": [
+        ".palimpsest"
+      ],
+      "plannedRoots": 0,
+      "skippedRoots": [
+        {
+          "path": ".palimpsest",
+          "why": "contains the execution world: labelling an ancestor of the world refuses the traverse every process needs to start"
+        }
+      ],
+      "note": "a skipped root is NOT a labelled root; its descendants are covered only if they are separately labelled"
+    },
+    "kernelApplication": {
+      "supported": true,
+      "outcomes": [],
+      "skipped": 1
+    },
+    "durableLabelledSeparately": {
+      "rootsVerified": true,
+      "treesVerified": true
+    },
+    "labelRemovedForControl": [
+      {
+        "restored": true,
+        "detail": "restored: integrity=Medium policies=[] flags=3 mask=0x0"
+      }
+    ],
+    "labelledArm": {
+      "lowToken": {
+        "status": 0,
+        "stderr": ""
+      },
+      "probe": {
+        "WORLD": {
+          "read": true,
+          "content": "WORLD-ORDINARY-WORK"
+        },
+        "DURABLE_UNDER_SKIPPED_ANCESTOR": {
+          "read": false,
+          "code": "EPERM"
+        },
+        "ANCESTOR_ITSELF": {
+          "read": true,
+          "content": "WORLD-ORDINARY-WORK"
+        }
+      },
+      "durableReadable": false,
+      "refusingCode": "EPERM"
+    },
+    "unlabelledArm": {
+      "lowToken": {
+        "status": 0,
+        "stderr": ""
+      },
+      "probe": {
+        "WORLD": {
+          "read": true,
+          "content": "WORLD-ORDINARY-WORK"
+        },
+        "DURABLE_UNDER_SKIPPED_ANCESTOR": {
+          "read": true,
+          "content": "P2E1RG-ANCESTOR-CANARY-5c7e2b91-SYNTHETIC-ONLY"
+        },
+        "ANCESTOR_ITSELF": {
+          "read": true,
+          "content": "WORLD-ORDINARY-WORK"
+        }
+      },
+      "durableReadable": true,
+      "refusingCode": null,
+      "canaryLeaked": true
+    },
+    "durableReadableByLowToken": false,
+    "canaryLeaked": true,
+    "worldStillReadable": true
+  },
+  "verdict": "CANARY_READABLE_BY_LOW_TOKEN"
+}
