@@ -361,7 +361,7 @@ write("answer-provenance.json", {
     const tests = vitestTests.filter((test) => test.file !== null && `${test.file}`.replace(/\\/gu, "/").endsWith("test/trajectory_p2e1rf_answer_provenance.test.ts"));
     return { suite: "test/trajectory_p2e1rf_answer_provenance.test.ts", total: tests.length, passed: tests.filter((test) => test.status === "passed").length, failed: tests.filter((test) => test.status !== "passed").map((test) => test.name) };
   })(),
-  arms: closure === null ? null : { control: closure.receipts?.control ?? null, treatment: closure.receipts?.treatment ?? null },
+  arms: closure === null ? null : { control: closure.armReceipts?.control ?? null, treatment: closure.armReceipts?.treatment ?? null },
   closureVerdict: closure?.verdict ?? "NOT_RUN",
   closureGatesForProvenance: closure?.gates?.filter((entry) => entry.id.includes("answer-digest") || entry.id.includes("answer-extracted") || entry.id.includes("answer-matches")) ?? null,
 });
@@ -525,6 +525,7 @@ write("trajectory-execution.json", {
   runtime: closure?.environment ?? null,
   executedCodeHead: closure?.executedCodeHead ?? null,
   receipts: closure?.receipts ?? null,
+  /** The DERIVED per-arm receipts: these are the ones that carry the answer digest. */
   armReceipts: closure?.armReceipts ?? null,
   modelCallsMade: closure?.modelCallsMade ?? null,
   externalModelRequestOccurred: closure?.externalModelRequestOccurred ?? null,
@@ -577,8 +578,8 @@ const delegationChildrenRefused = delegationRefusals.every((entry) => entry.chil
 const delegationLegitimate = (delegationMatrix?.cases ?? []).filter((entry) => entry.expectedVerdict === "ALLOWED_NO_DELIVERY");
 const delegationLegitimateWorks = delegationLegitimate.length > 0 && delegationLegitimate.every((entry) => entry.matched === true && entry.canaryDelivered === false);
 
-const controlReceipt = closure?.receipts?.control ?? null;
-const treatmentReceipt = closure?.receipts?.treatment ?? null;
+const controlReceipt = closure?.armReceipts?.control ?? null;
+const treatmentReceipt = closure?.armReceipts?.treatment ?? null;
 const digestPresent = (receipt) => /^sha256-[0-9a-f]{64}$/u.test(String(receipt?.answerDigest ?? "")) && receipt?.answerDigest !== "sha256-74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b";
 const provenanceEstablished = digestPresent(controlReceipt) && digestPresent(treatmentReceipt) && controlReceipt?.oracleOk === true && treatmentReceipt?.oracleOk === true && controlReceipt?.answerDigest !== treatmentReceipt?.answerDigest;
 
