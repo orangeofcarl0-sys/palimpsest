@@ -191,6 +191,8 @@ try {
     record("workerDetail", outcome?.detail ?? null);
     if (observedSession === null) throw new Error("the DSH turn reported no session identity");
     record("dshSessionIdIsReal", observedSession.startsWith("worker-"));
+    /** E1RE RE-D §6.2: the observed identity, so the per-arm receipt can name the Session it scored. */
+    record("dshSessionId", observedSession);
     /**
      * E1RD S5.4: SESSION CREATION IS NOT A COMPLETED TURN.
      *

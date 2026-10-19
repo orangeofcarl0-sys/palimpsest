@@ -25,6 +25,7 @@
  * Usage:  node scripts/trajectory_p2e1rc/closure-gate.mjs [--json-out <path>]
  */
 import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -239,6 +240,57 @@ if (controlPayload !== null && treatmentPayload !== null) {
 const failed = gates.filter((entry) => entry.ok !== true);
 const verdict = failed.length === 0 ? "CLOSURE_ESTABLISHED" : "CLOSURE_NOT_ESTABLISHED";
 
+/**
+ * E1RE RE-D §6.2: A COMPACT PER-ARM RECEIPT, DERIVED FROM THE RUN'S OWN PAYLOAD.
+ *
+ * E1RD's `dsh-execution-requalification.json` recorded `arms.control = null` because the evidence generator
+ * looked for payloads the gate never preserved. The fix is here, at the producer: each field below is read from
+ * the arm's actual output, and a field the run did not produce is `null` rather than a plausible default.
+ *
+ * NO BODY IS STORED. The extracted answer is represented by its digest, the delivered section by its digest,
+ * and the session by its identity — enough to reconcile the run without duplicating message content.
+ */
+const armReceipt = (arm, payload) => {
+  if (payload === null || payload === undefined) return null;
+  const digestOf = (value) => {
+    if (typeof value !== "string" || value.length === 0) return null;
+    return `sha256-${createHash("sha256").update(Buffer.from(value, "utf8")).digest("hex")}`;
+  };
+  return {
+    arm,
+    trialId: payload.frozenTruthTrialId ?? null,
+    frozenTruthDigest: payload.frozenTruthDigest ?? null,
+    assignedArm: payload.contextAssignedArm ?? null,
+    presentationMode: payload.armPresentationMode ?? null,
+    sectionBytes: payload.armSectionBytes ?? null,
+    sectionDigest: payload.armSectionDigest ?? null,
+    sessionId: payload.dshSessionId ?? null,
+    sessionIdentityReal: payload.dshSessionIdIsReal === true,
+    sessionFileFoundByExactId: payload.sessionFileFoundByExactId === true,
+    workerOutcome: payload.workerOutcome ?? null,
+    capabilityAdmissionPassed: payload.capabilityAdmissionPassed === true,
+    /**
+     * The boundary line is emitted by the worker process to ITS OWN stdout, which the work-worker port consumes
+     * rather than forwards. It is therefore NOT available per arm, and this field says so instead of guessing.
+     * The boundary installation is established separately, by the RE-B admission gate and R1-HC/R1-HR.
+     */
+    cwdBasisPinned: "NOT_SURFACED_BY_WORK_WORKER_PORT",
+    executionStages: payload.executionStages ?? null,
+    assistantMessageCount: payload.answerExtraction?.assistantMessageCount ?? null,
+    assistantMessageSeq: payload.answerExtraction?.seq ?? null,
+    answerDigest: digestOf(JSON.stringify(payload.answerExtraction?.answer ?? null)),
+    oracleVersion: payload.oracleVersion ?? null,
+    oracleOk: payload.oracleOk === true,
+    historicalUnderstanding: payload.historicalUnderstanding ?? null,
+    decisionQuality: payload.decisionQuality ?? null,
+    operationalBehavior: payload.operationalBehavior ?? null,
+    groundTruthLeak: payload.groundTruthLeak ?? null,
+    cleanupOk: payload.ownedRootRemoved === true,
+    dependencyRootPreserved: payload.dependencyRootPreserved === true,
+    modelCallsMade: payload.modelCallsMade ?? null,
+  };
+};
+
 const report = {
   schemaVersion: 1,
   kind: "TRAJECTORY_P2E1RC_CLOSURE_GATE",
@@ -251,6 +303,10 @@ const report = {
   gates,
   failedGates: failed.map((entry) => entry.id),
   gateCount: gates.length,
+  armReceipts: {
+    control: armReceipt("control", arms.control?.payload ?? null),
+    treatment: armReceipt("treatment", arms.treatment?.payload ?? null),
+  },
   receipts: {
     dryRun: dryRun.receipt,
     control: arms.control?.receipt ?? null,
