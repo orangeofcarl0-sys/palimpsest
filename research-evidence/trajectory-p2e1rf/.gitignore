@@ -1,0 +1,4 @@
+# Per-case probe outputs are scratch: they are regenerated from the frozen code by
+# `generate-evidence.mjs`, which hashes and summarizes them into the committed artifacts.
+# Keeping them out of Git prevents a stale run from being read as the current one.
+.run/

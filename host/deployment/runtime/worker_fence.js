@@ -28,9 +28,9 @@ import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 import { admitWorldForFencing } from './alias_guard.js';
-import { GUARD_SCOPES, admitWorkerStart, classCounts } from './capability_classes.js';
+import { CAPABILITY_CLASSES, GUARD_SCOPES, admitWorkerStart, classCounts } from './capability_classes.js';
 import { CONFIDENTIAL_PROFILE, admitConfidentialWorker, openConfidentialSlot } from './confidential_profile.js';
-import { createCwdFenceGuard, createDelegationCwdGuard } from './cwd_fence.js';
+import { createCwdFenceGuard, createDelegationCwdGuard, delegationCwdToolsFor } from './cwd_fence.js';
 import { applyReadFence, disclosedResiduals, isAncestorOf, protectedRootsFor, verifyTree } from './read_fence.js';
 import { createReadGuard, FENCED_READ_TOOLS } from './read_guard.js';
 
@@ -199,12 +199,25 @@ export function installWorkerReadBoundary(input = {}) {
      */
     cwdFenceDisposer = tools.guard(createCwdFenceGuard({ world: config.world, directories: resolveDirectories }));
     /**
-     * Layer 4 — the DELEGATION fence (E1RE RE-A). A `subagent { cwd: <elsewhere> }` child runs its own
-     * `agent/pre-step` instruction discovery through `ctx.fs`, which NO tool guard observes. Measured against the
-     * real host, that read delivered a protected canary as a `user/message` before the child's first guarded
-     * call. This guard runs on the PARENT's dispatch, before `startActivation()`, so the child is never created.
+     * Layer 4 — the DELEGATION fence (E1RE RE-A, extended by E1RF RF-A). A `subagent { cwd: <elsewhere> }`
+     * child runs its own `agent/pre-step` instruction discovery through `ctx.fs`, which NO tool guard observes.
+     * Measured against the real host, that read delivered a protected canary as a `user/message` before the
+     * child's first guarded call. This guard runs on the PARENT's dispatch, before `startActivation()`, so the
+     * child is never created.
+     *
+     * THE NAME SET IS DERIVED FROM THE CLASSIFICATION TABLE, not from a literal pair. E1RE enforced
+     * `subagent` and `subagent_fork`; the audit in RF-A §4.6 found `subagent_fork` is not registered by this
+     * release at all, which is how a hardcoded list reads as coverage while providing none. Every declared
+     * `DELEGATED_SURFACE` is now covered, so a delegated capability this module has never heard of is fenced
+     * by class rather than missed by name.
      */
-    delegationFenceDisposer = tools.guard(createDelegationCwdGuard({ world: config.world, directories: resolveDirectories }));
+    delegationFenceDisposer = tools.guard(
+      createDelegationCwdGuard({
+        world: config.world,
+        directories: resolveDirectories,
+        tools: delegationCwdToolsFor(undefined, CAPABILITY_CLASSES),
+      }),
+    );
     guardScope = GUARD_SCOPES.GLOBAL;
   }
   return {
