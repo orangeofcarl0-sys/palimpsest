@@ -71,15 +71,15 @@
     "roots": 2,
     "anyOverEntryLimit": false,
     "anyOverDepthLimit": false,
-    "totalEntries": 13178,
-    "totalElapsedMs": 349,
+    "totalEntries": 13189,
+    "totalElapsedMs": 367,
     "reparsePointsOutsideRoot": 1
   },
   "controls": {
     "id": "host-s1-spine",
     "command": "node node_modules/vitest/vitest.mjs run test/host_s1_spine_coverage.test.ts",
-    "runId": "7b0bb38f-1613-479e-97cb-364e130b922a",
-    "startedAt": "2026-10-20T20:56:58.400Z",
+    "runId": "3d6c5efc-f15f-43c9-a4b0-a42a51f302aa",
+    "startedAt": "2026-10-20T21:05:08.378Z",
     "exitCode": 0,
     "total": 14,
     "passed": 14,
@@ -93,7 +93,7 @@
       "id": "sibling-world",
       "command": "node scripts/host_s1/sibling-world-probe.mjs --json-out <rig>/sibling-world.json",
       "exitCode": 0,
-      "runId": "6736a49f-2789-4c71-a736-574ccd7dd111",
+      "runId": "d9822af3-5fab-411c-ac6f-0ac168daf944",
       "digest": "sha256-23bff0c027a0d394b2bb9bfbcd232de76f2c99609331424fe1460ecb9656fb4f",
       "verdict": "PASS"
     },
@@ -101,7 +101,7 @@
       "id": "junction-label",
       "command": "node scripts/host_s1/junction-label-probe.mjs --json-out <rig>/junction-label.json",
       "exitCode": 3,
-      "runId": "6aef821c-fbe6-4153-b876-15f85916f5a0",
+      "runId": "5bcb9f0e-be45-4b7b-b19f-20320d14a826",
       "digest": "sha256-bd50b3a84a5489078ad6fda925bc9281aff87fcbe0521bf33bc0019387150601",
       "verdict": "MEASURED(JUNCTION_LABEL_INSUFFICIENT)"
     },
@@ -109,15 +109,15 @@
       "id": "verify-cost",
       "command": "node scripts/host_s1/verify-cost-probe.mjs --json-out <rig>/verify-cost.json",
       "exitCode": 0,
-      "runId": "4ac4fc6e-eaed-4f27-91e5-4d3458165b66",
-      "digest": "sha256-10a15dccf733214d078a4e2fe24727fb770d368259c01e5953fdef07c2d9fdb0",
+      "runId": "c1a5f3ba-f08f-45ad-a2a0-5c21c6bf162f",
+      "digest": "sha256-f7faf63bf71e50d83b3834f2e68a51e1f9805fa9f3c58e1e686c19b4d81318d7",
       "verdict": "PASS"
     }
   ],
   "runIdentity": {
-    "codeFreezeHead": "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae",
-    "executedCodeTree": "1a6bc01638b4d0c0731d3de08ae439eddfef5500",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",

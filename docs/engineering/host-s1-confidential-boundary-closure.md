@@ -3,7 +3,7 @@
 **Stage:** `Palimpsest Host-S1`
 **Parent:** `e04211d2a2f52d05f2c248c3cc52257079b65a76` on `trajectory-p2e1rg-host-admission-closure`
 **Branch:** `host-s1-boundary-completeness-lock-recovery`
-**Code Freeze:** recorded in `research-evidence/host-s1/final-verdicts.json` (the commit that froze executable code)
+**Code Freeze:** `353b216000596e1475c1766c60d6682a400c633b` (tree `acbd06265d6d539c01ec8a320a042bbd0e5a5195`)
 **Evidence Freeze:** the commit containing this document; it changes no executable code
 
 ---
@@ -255,12 +255,12 @@ No change to Canonical Work authority, settlement, Project Intent, Collaboration
 | `test/host_s1_descendant_admission.test.ts` | 15 | 15 PASS |
 | `test/host_s1_descendant_phase.test.ts` | 12 | 12 PASS |
 | `test/host_s1_capacity_recovery.test.ts` | 26 | 26 PASS |
-| `test/host_s1_delegation_oracle.test.ts` | 18 | 18 PASS |
-| `test/trajectory_p2e1rg_*` (regression) | 48 | 48 PASS |
-| `test/trajectory_p2e1rf_*` (regression) | 70 | 70 PASS |
-| `test/trajectory_p2e1re_pretool_boundary.test.ts` | 22 | 22 PASS |
+| `test/host_s1_delegation_oracle.test.ts` | 19 | 19 PASS |
+| Host-affected regression suites (17 files, including E1RD/E1RE/E1RF/E1RG) | 257 | 257 PASS |
 | R1-HR conformance | 47 | 44 PASS / 3 LIMIT / 0 FAIL |
 | R1-HC conformance | 27 | 26 PASS / 1 LIMIT / 0 FAIL |
+
+The conformance counts are read from the runners' own receipts. A LIMIT entry also appears in `results` with `pass: true` (a disclosed limitation is not a failure), so the three classes are made mutually exclusive in `host-security-conformance.json` — without that, the artifact would report 47/47 for a suite the runner reports as 44 PASS / 3 LIMIT.
 
 `pnpm run build`, `architecture:check` (0 violations) and `architecture:check:public-api` (0 missing, 0 changed kind, 0 added) all pass.
 
@@ -274,7 +274,11 @@ Three suites encoded the **weaker** contract this stage replaced. Each was updat
 
 ### Whole-repository attribution
 
-A whole-repository run fails in suites that predate this stage. `scripts/host_s1/attribute-failures.mjs` compares two captured JSON reports per test. The result is recorded in `research-evidence/host-s1/host-security-conformance.json`: **no new failures**. The pre-existing failures fall into three classes, all outside Host security:
+A whole-repository run fails in suites that predate this stage. Three consecutive runs of the SAME code produced 53, 60 and 62 failures across the same 24 files, so a whole-run pass/fail delta is not attributable on its own.
+
+The attribution is therefore made **by scope**: every suite that imports `read_fence.js`, `worker_fence.js`, `confidential_profile.js` or the delegation probe was run, and all 257 tests across those 17 suites pass. `scripts/host_s1/attribute-failures.mjs` is provided for per-test comparison when two clean JSON reports are captured.
+
+**A whole-repository green result is NOT claimed.** The pre-existing failures fall into three classes, all outside Host security:
 
 1. `trajectory_v0_*` / `trajectory_h0_*` / `trajectory_h1_*` — `invalid plugin ... received undefined` from the cordis loader resolving the global npm DSH install;
 2. `r3l0c*` — assert on historical calibration evidence that requires a run root this checkout does not contain;
