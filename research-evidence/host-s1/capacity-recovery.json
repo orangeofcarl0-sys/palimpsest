@@ -1,0 +1,43 @@
+{
+  "kind": "HOST_S1_CAPACITY_RECOVERY",
+  "evidenceClass": "CROSS_PROCESS_RUNTIME_VERIFIED",
+  "note": "Normal acquisition is an exclusive mkdir critical section. Recovery claims by rename and verifies identity, so it cannot delete a successor. A malformed holder is unknown ownership; an unreadable record never authorises an empty rewrite.",
+  "mechanism": "mkdir-exclusive-lock",
+  "namespace": "protected-domain ( <domain>/.palimpsest/host-capacity/ )",
+  "recordClasses": [
+    "valid",
+    "malformed",
+    "unknown-liveness",
+    "unreadable",
+    "missing-with-known-init"
+  ],
+  "controls": {
+    "id": "host-s1-capacity",
+    "command": "node node_modules/vitest/vitest.mjs run test/host_s1_capacity_recovery.test.ts",
+    "runId": "ebbe11b1-7762-48cb-95ca-915fd466b40d",
+    "startedAt": "2026-10-20T20:57:03.428Z",
+    "exitCode": 0,
+    "total": 26,
+    "passed": 26,
+    "failed": 0,
+    "skipped": 0,
+    "observedVerdict": "PASS",
+    "failures": []
+  },
+  "limits": [
+    "the indeterminate-liveness path has no reproducible fixture on this host: every real pid answers ESRCH or EPERM, so the shipped tri-state rule is pinned from source and classified as such"
+  ],
+  "runIdentity": {
+    "codeFreezeHead": "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae",
+    "executedCodeTree": "1a6bc01638b4d0c0731d3de08ae439eddfef5500",
+    "workingTreeDirty": true,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1",
+  "schemaVersion": 1
+}
