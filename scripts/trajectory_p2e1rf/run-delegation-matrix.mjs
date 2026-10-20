@@ -70,9 +70,13 @@ for (const entry of CASES) {
     siblingTokenDelivered: probe?.observations?.siblingTokenDelivered === true,
     childSessionCreated: probe?.observations?.childSessionCreated === true,
     refusalObserved: probe?.observations?.refusalObserved === true,
-    /** E1RG RG-A: which layer refused — pre-create alias admission, or the delegation guard. */
+    /** HOST-S1 §9.4: the refusal phase from the STRUCTURED receipt, never from a substring. */
     preCreateRefused: probe?.observations?.preCreateRefused === true,
-    refusalPoint: probe?.observations?.refusalPoint ?? null,
+    refusalPhase: probe?.observations?.refusalPhase ?? "UNKNOWN",
+    receiptParsed: probe?.observations?.preCreateReceipt?.parsed === true,
+    /* --- HOST-S1 §9.2: the independent positive-execution observations ----------------------------- */
+    positiveObservations: probe?.observations?.positiveObservations ?? null,
+    missingObservations: probe?.observations?.missingObservations ?? null,
     sessionCount: (probe?.observations?.sessionIds ?? []).length,
     /* --- hygiene ----------------------------------------------------------------------------------- */
     cleanup: probe?.cleanup ?? null,
@@ -90,12 +94,28 @@ for (const entry of CASES) {
  *     that "expected" a refusal could otherwise be recorded as closed while leaking);
  *   · every refused case created no child session — the ordering claim, not just the decision;
  *   · every case cleaned up its owned root.
+ *
+ * HOST-S1 §9.6 — A ZERO-SESSION POSITIVE CASE MUST FAIL.
+ *
+ * The E1RG matrix closed the `production` case with `sessionCount: 0` and `preCreateRefused: true`, because the
+ * probe's positive branch only asked "was a token delivered?". That made the matrix a test of the ABSENCE of a
+ * leak rather than a test of delegation. The two additional predicates below make the positive case mean what it
+ * says:
+ *
+ *   positiveWithoutExecution — an expected ALLOWED_NO_DELIVERY case that produced no parent session, or whose
+ *                              independent positive observations were incomplete. §9.2/§9.6.
+ *   positiveWithRefusal      — an expected ALLOWED_NO_DELIVERY case that was refused at pre-create. A refusal is
+ *                              the RIGHT behaviour for an unsafe world, but it is NOT evidence that legitimate
+ *                              delegation works, and a positive case must not be satisfied by it.
  */
 const leaked = rows.filter((row) => row.canaryDelivered || row.siblingTokenDelivered);
 const mismatched = rows.filter((row) => !row.matched);
 const refusedWithChild = rows.filter((row) => row.expectedVerdict === "REFUSED_BY_GUARD" && row.childSessionCreated);
 const cleanupFailed = rows.filter((row) => !row.ownedRootRemoved);
 const limits = rows.filter((row) => row.fixtureLimit !== null);
+const positiveCases = rows.filter((row) => row.expectedVerdict === "ALLOWED_NO_DELIVERY");
+const positiveWithoutExecution = positiveCases.filter((row) => row.sessionCount === 0 || row.missingObservations === null || row.missingObservations.length > 0);
+const positiveWithRefusal = positiveCases.filter((row) => row.preCreateRefused === true);
 
 const summary = {
   total: rows.length,
@@ -105,8 +125,17 @@ const summary = {
   refusedWithChild: refusedWithChild.map((row) => row.case),
   cleanupFailed: cleanupFailed.map((row) => row.case),
   limits: limits.map((row) => ({ case: row.case, why: row.fixtureLimit })),
+  positiveCases: positiveCases.map((row) => row.case),
+  positiveWithoutExecution: positiveWithoutExecution.map((row) => ({ case: row.case, sessions: row.sessionCount, missing: row.missingObservations })),
+  positiveWithRefusal: positiveWithRefusal.map((row) => ({ case: row.case, phase: row.refusalPhase })),
   noLeak: leaked.length === 0,
-  allCasesClosed: mismatched.length === 0 && leaked.length === 0 && refusedWithChild.length === 0 && cleanupFailed.length === 0,
+  allCasesClosed:
+    mismatched.length === 0 &&
+    leaked.length === 0 &&
+    refusedWithChild.length === 0 &&
+    cleanupFailed.length === 0 &&
+    positiveWithoutExecution.length === 0 &&
+    positiveWithRefusal.length === 0,
 };
 
 const report = {
