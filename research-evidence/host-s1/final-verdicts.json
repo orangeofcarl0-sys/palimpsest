@@ -1,0 +1,97 @@
+{
+  "kind": "HOST_S1_FINAL_VERDICTS",
+  "evidenceClass": "DERIVED_FROM_EXECUTED_ARTIFACTS",
+  "note": "Each verdict is a conjunction of independent observations recorded in the named artifacts. No verdict is asserted from a single canary or a test count.",
+  "verdicts": {
+    "h1a": {
+      "id": "H1-A PROTECTED_CONTENT_COVERAGE_QUALIFIED",
+      "result": "QUALIFIED",
+      "unmet": [],
+      "evidence": {
+        "artifact": "protected-content-coverage.json",
+        "keyObservation": "the label-removal control read the canary while the covered arm was EPERM"
+      }
+    },
+    "h1b": {
+      "id": "H1-B PRODUCTION_TREE_ADMISSION_QUALIFIED",
+      "result": "QUALIFIED",
+      "unmet": [],
+      "evidence": {
+        "artifact": "production-tree-admission.json",
+        "keyObservation": "admitWorker refuses on kernelDescendantsQualified alone, and the refusal is a pre-create phase"
+      }
+    },
+    "h1c": {
+      "id": "H1-C CONFIDENTIAL_CAPACITY_RECOVERY_QUALIFIED",
+      "result": "QUALIFIED",
+      "unmet": [],
+      "evidence": {
+        "artifact": "capacity-recovery.json",
+        "keyObservation": "26 controls: malformed holder refuses, unreadable release preserves bytes, successor lock survives, one domain one slot"
+      }
+    },
+    "h1d": {
+      "id": "H1-D DELEGATION_POSITIVE_CONTROL_QUALIFIED",
+      "result": "QUALIFIED",
+      "unmet": [],
+      "evidence": {
+        "artifact": "delegation-positive-controls.json + trajectory-measurement-reconfirmation.json",
+        "keyObservation": "8/8 real DSH cases matched; both positive cases created a parent and a child session in the authorized world"
+      }
+    },
+    "h1e": {
+      "id": "H1-E HOST_SECURITY_EVIDENCE_RECONCILED",
+      "result": "QUALIFIED",
+      "unmet": [],
+      "evidence": {
+        "artifact": "git-and-evidence-identity.json + host-security-conformance.json",
+        "keyObservation": "52/52 protected trees unchanged; three errata recorded forward-only; R1-HR and R1-HC report 0 FAIL"
+      }
+    },
+    "integrated": {
+      "id": "HOST_CONFIDENTIAL_BOUNDARY_REQUALIFIED",
+      "result": "QUALIFIED",
+      "unmet": [],
+      "evidence": {
+        "artifact": "all of the above",
+        "keyObservation": "every constituent verdict qualified and both conformance suites report 0 FAIL"
+      }
+    },
+    "trajectory": {
+      "id": "TRAJECTORY_DSH_MEASUREMENT_CHAIN_PRESERVED",
+      "result": "QUALIFIED",
+      "unmet": [],
+      "evidence": {
+        "artifact": "trajectory-measurement-reconfirmation.json",
+        "keyObservation": "the deterministic assay and closure gate ran at this Code Freeze with modelCallsMade: 0"
+      }
+    }
+  },
+  "stillNotAwarded": {
+    "CONTROL_BASELINE_TECHNICALLY_READY": "NOT_ESTABLISHED",
+    "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+    "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+    "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+    "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+    "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+    "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+    "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED"
+  },
+  "stillNotAwardedReason": "No stochastic trial, no Treatment trial and no external model request occurred in this stage. CONTROL_BASELINE_TECHNICALLY_READY additionally requires a frozen experiment specification and explicit external-model authorisation with a cost bound.",
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0,
+  "runIdentity": {
+    "codeFreezeHead": "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae",
+    "executedCodeTree": "1a6bc01638b4d0c0731d3de08ae439eddfef5500",
+    "workingTreeDirty": true,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1",
+  "schemaVersion": 1
+}

@@ -1,0 +1,53 @@
+{
+  "kind": "HOST_S1_DELEGATION_POSITIVE_CONTROLS",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "The positive verdict is computed from eight independent observations. A zero-session case, a pre-create refusal, a parent-only case and a wrong-world child are all REJECTED. The matrix independently refuses a positive case that did not execute.",
+  "requiredObservations": [
+    "parentSessionCreated",
+    "preCreateAdmitted",
+    "delegationInvoked",
+    "childSessionCreated",
+    "childWorldAuthorized",
+    "authorizedContextDelivered",
+    "noCanaryDelivered",
+    "noSecurityRefusal"
+  ],
+  "rejectionVerdict": "POSITIVE_CASE_NOT_EXECUTED",
+  "refusalAttribution": "parsed from the structured PALIMPSEST_WORKER_PRECREATE receipt; an unparseable receipt yields UNKNOWN",
+  "historicalFalsePositive": {
+    "case": "production",
+    "recordedVerdict": "ALLOWED_NO_DELIVERY",
+    "recordedSessionCount": 0,
+    "recordedRefusalPoint": "PRE_CREATE_ALIAS_ADMISSION",
+    "correctedVerdictForThatObservationSet": "POSITIVE_CASE_NOT_EXECUTED"
+  },
+  "controls": {
+    "id": "host-s1-delegation",
+    "command": "node node_modules/vitest/vitest.mjs run test/host_s1_delegation_oracle.test.ts",
+    "runId": "5f7f2f82-d89d-4fd6-836e-c75504e3683d",
+    "startedAt": "2026-10-20T20:57:06.802Z",
+    "exitCode": 0,
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0,
+    "observedVerdict": "PASS",
+    "failures": []
+  },
+  "limits": [
+    "the decision function is tested exhaustively; the eight real DSH cases are executed separately and recorded in trajectory-measurement-reconfirmation.json"
+  ],
+  "runIdentity": {
+    "codeFreezeHead": "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae",
+    "executedCodeTree": "1a6bc01638b4d0c0731d3de08ae439eddfef5500",
+    "workingTreeDirty": true,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1",
+  "schemaVersion": 1
+}
