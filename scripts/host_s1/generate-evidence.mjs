@@ -377,14 +377,23 @@ const write = (name, payload) => {
         const raw = readFileSync(path, "utf8");
         const parsed = JSON.parse(raw);
         const checks = Array.isArray(parsed.checks) ? parsed.checks : Array.isArray(parsed.results) ? parsed.results : [];
+        /**
+         * THE RECEIPT SHAPE IS `{ id, statement, pass: boolean, detail }`, with LIMITs in a separate `limits`
+         * array and failures in `failed`. A count computed from a `verdict` field reported `pass: 0` for a suite
+         * that passed 44 of 47 — precisely the derived-from-the-wrong-field error E1RF §5.5 was about.
+         */
+        const limits = Array.isArray(parsed.limits) ? parsed.limits : [];
+        const failures = Array.isArray(parsed.failed) ? parsed.failed : [];
         out[key] = {
           path,
           read: true,
           digest: sha256(raw),
-          pass: checks.filter((entry) => entry.verdict === "PASS" || entry.status === "PASS").length,
-          limit: checks.filter((entry) => entry.verdict === "LIMIT" || entry.status === "LIMIT").length,
-          fail: checks.filter((entry) => entry.verdict === "FAIL" || entry.status === "FAIL").length,
+          pass: checks.filter((entry) => entry.pass === true).length,
+          limit: limits.length,
+          fail: failures.length,
           total: checks.length,
+          limitIds: limits.map((entry) => (typeof entry === "string" ? entry : entry?.id)).filter((entry) => entry !== undefined),
+          failureIds: failures.map((entry) => (typeof entry === "string" ? entry : entry?.id)).filter((entry) => entry !== undefined),
         };
       } catch (error) {
         out[key] = { path, read: false, detail: error instanceof Error ? error.message : String(error) };
