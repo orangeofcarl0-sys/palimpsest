@@ -166,20 +166,27 @@ async function driveWorker(options: { capacitySeeded?: boolean; cwd?: string; re
 
 const hasModules = () => runner !== null && boundaryModule !== null && capacityModule !== null && fenceModule !== null;
 
-describe("RG-0-F1 capacity refusal does not stop Agent creation (BASELINE)", () => {
-  it("F1. a refused capacity slot still reaches agents.create() and still reports success", async () => {
+describe("RG-0-F1 capacity refusal stops Agent creation (CORRECTED)", () => {
+  /**
+   * HOST-S1 RE-BASELINE. This case was written as a BASELINE falsifier: it asserted that a refused capacity slot
+   * still reached `agents.create()` and still printed `READY_FOR_SETTLEMENT`. E1RG RG-A corrected that
+   * (`460709d`), so the assertion is inverted here rather than deleted. The case keeps its identity so the
+   * historical claim and the current one remain comparable.
+   */
+  it("F1. a refused capacity slot prevents agents.create() and reports HOST_FAILURE", async () => {
     if (!hasModules()) return expect(moduleError).toBeTruthy();
     const observed = await driveWorker({ capacitySeeded: true });
-    /** THE DEFECT: the refusal is recorded, and the Agent is created anyway. */
+    /** The refusal is recorded... */
     expect(observed.capacityLine).toContain('"granted":false');
-    expect(observed.createCalled).toBe(true);
-    /** And a success-shaped Worker Result is printed despite the refusal. */
-    expect(observed.workResult?.kind).toBe("READY_FOR_SETTLEMENT");
+    /** ...and it is a CONTROL-FLOW decision: no Agent, no turn, no success shape. */
+    expect(observed.createCalled).toBe(false);
+    expect(observed.followupCalled).toBe(false);
+    expect(observed.workResult?.kind).toBe("HOST_FAILURE");
   });
 });
 
-describe("RG-0-F2 alias refusal does not stop Agent creation (BASELINE)", () => {
-  it("F2. a world holding a junction into protected content still reaches agents.create()", async () => {
+describe("RG-0-F2 alias refusal stops Agent creation (CORRECTED)", () => {
+  it("F2. a world holding a junction into protected content does NOT reach agents.create()", async () => {
     if (!hasModules()) return expect(moduleError).toBeTruthy();
     /** A junction inside the world that reaches the protected root: exactly what the alias scan refuses. */
     const link = join(WORLD, "to-protected");
@@ -191,15 +198,17 @@ describe("RG-0-F2 alias refusal does not stop Agent creation (BASELINE)", () => 
     }
     const observed = await driveWorker({ capacitySeeded: false });
     const aliasRefused = observed.printed.some((line) => line.startsWith("PALIMPSEST_WORKER_READ_BOUNDARY ") && line.includes('"clean":false'));
-    /** The scan DID refuse the world... */
+    /** The scan refused the world... */
     expect(aliasRefused).toBe(true);
-    /** ...and the Agent was created anyway. */
-    expect(observed.createCalled).toBe(true);
+    /** ...and HOST-S1/E1RG: that refusal now prevents Agent creation. */
+    expect(observed.createCalled).toBe(false);
+    expect(observed.followupCalled).toBe(false);
+    expect(observed.workResult?.kind).toBe("HOST_FAILURE");
   });
 });
 
-describe("RG-0-F3 alias refusal does not prevent Kernel label mutation (BASELINE)", () => {
-  it("F3. applyReadFence runs on a rejected world, so a protected root is still written", async () => {
+describe("RG-0-F3 alias refusal prevents Kernel label mutation (CORRECTED)", () => {
+  it("F3. applyReadFence does NOT run on a rejected world, so no protected root is written", async () => {
     if (!hasModules()) return expect(moduleError).toBeTruthy();
     const link = join(WORLD, "alias-for-label-test");
     try {
@@ -211,29 +220,33 @@ describe("RG-0-F3 alias refusal does not prevent Kernel label mutation (BASELINE
     const installed = boundaryModule!.installWorkerReadBoundary({ world: WORLD });
     /** The world was rejected... */
     expect(installed.aliasesClean).toBe(false);
-    /** ...and the kernel still attempted a mutation of the protected root. */
-    expect(installed.kernel.outcomes.length).toBeGreaterThan(0);
+    /** ...and the kernel performed NO mutation through it. */
+    expect(installed.kernel.outcomes).toHaveLength(0);
+    expect(installed.kernel.noMutationPerformed).toBe(true);
+    expect(installed.kernel.coverage?.complete).toBe(false);
   });
 });
 
-describe("RG-0-F4 kernel failure is not a mandatory admission condition (BASELINE)", () => {
-  it("F4. admitWorker is satisfied without any kernel coverage input", () => {
+describe("RG-0-F4 kernel failure IS a mandatory admission condition (CORRECTED)", () => {
+  it("F4. admitWorker is REFUSED without kernel coverage input", () => {
     if (!hasModules()) return expect(moduleError).toBeTruthy();
     const verdict = boundaryModule!.admitWorker({
       visibleNames: ["run_code", "palimpsest_worker_result", "palimpsest_worker_context_pull"],
       guardScope: "global",
       boundary: { guardInstalled: true, cwdFenceInstalled: true, delegationFenceInstalled: true },
     });
-    /** THE DEFECT: kernel support, root verification, drift and tree completeness are not inputs at all. */
-    expect(verdict.allowed).toBe(true);
-    expect(verdict.boundary.required).not.toHaveProperty("kernelSupported");
-    expect(verdict.boundary.required).not.toHaveProperty("rootsVerified");
-    expect(verdict.boundary.required).not.toHaveProperty("treesVerified");
+    /** CORRECTED: the kernel facts are now REQUIRED inputs, and their absence refuses the worker. */
+    expect(verdict.allowed).toBe(false);
+    expect(verdict.boundary.required).toHaveProperty("kernelSupported");
+    expect(verdict.boundary.required).toHaveProperty("kernelRootsVerified");
+    expect(verdict.boundary.required).toHaveProperty("kernelCoverageComplete");
+    /** HOST-S1 §7.2: and the descendant claim is required separately from the root claim. */
+    expect(verdict.boundary.required).toHaveProperty("kernelDescendantsQualified");
   });
 });
 
-describe("RG-0-F5 partial tree traversal can report Verified (BASELINE)", () => {
-  it("F5. maxEntries stops the walk and verified is still true", () => {
+describe("RG-0-F5 partial tree traversal CANNOT report Verified (CORRECTED)", () => {
+  it("F5. maxEntries stops the walk and verified is FALSE", () => {
     if (!hasModules()) return expect(moduleError).toBeTruthy();
     const tree = join(ROOT, "partial-tree");
     mkdirSync(join(tree, "a", "b"), { recursive: true });
@@ -245,15 +258,16 @@ describe("RG-0-F5 partial tree traversal can report Verified (BASELINE)", () => 
      */
     const outcome = fenceModule!.verifyTree({ root: tree, maxEntries: 1 });
     expect(outcome.checked).toBeLessThanOrEqual(1);
-    /** THE DEFECT: no field distinguishes "complete" from "stopped early", and verified is computed from the
-     *  two arrays only. */
-    expect(outcome).not.toHaveProperty("complete");
-    expect(outcome).not.toHaveProperty("limitReached");
+    /** CORRECTED (E1RG RG-B): the two facts are now separate and a truncated walk cannot be `verified`. */
+    expect(outcome).toHaveProperty("complete");
+    expect(outcome.complete).toBe(false);
+    expect(outcome.verified).toBe(false);
+    expect(outcome.stopReason).toBe("ENTRY_LIMIT");
   });
 });
 
-describe("RG-0-F6 Confidential Slot acquisition is non-atomic (BASELINE)", () => {
-  it("F6. two independent slot objects can both believe they own the only slot", () => {
+describe("RG-0-F6 Confidential Slot acquisition IS atomic and liveness-only (CORRECTED)", () => {
+  it("F6. a second slot object is refused through the exclusive lock", () => {
     if (!hasModules()) return expect(moduleError).toBeTruthy();
     const slotHome = join(ROOT, "slot-home");
     mkdirSync(slotHome, { recursive: true });
@@ -278,16 +292,15 @@ describe("RG-0-F6 Confidential Slot acquisition is non-atomic (BASELINE)", () =>
      * exclusive primitive, and the record is a plain overwrite rather than an atomic claim.
      */
     const source = readFileSync(join(ORIGINAL_CWD, "host", "deployment", "runtime", "confidential_profile.js"), "utf8");
-    expect(source).toContain("readFileSync(slotPath");
-    expect(source).toContain("writeFileSync(slotPath");
-    expect(source).not.toMatch(/flock|LockFileEx|openSync\([^)]*['"]wx['"]/u);
-    /** And the sequential observation: a second acquire is refused only because the first wrote first. */
+    /** CORRECTED (E1RG RG-C): the decision is taken inside an EXCLUSIVE critical section, not by read-check-write. */
+    expect(source).toContain("mkdirSync(lockDir)");
+    expect(source).toContain('mechanism: "mkdir-exclusive-lock"');
     expect(first.granted).toBe(true);
     expect(second.granted).toBe(false);
     expect(file.holders).toHaveLength(1);
   });
 
-  it("F6b. a live holder past the TTL is DROPPED, losing its protection", () => {
+  it("F6b. a live holder past the TTL KEEPS its protection", () => {
     if (!hasModules()) return expect(moduleError).toBeTruthy();
     const slotHome = join(ROOT, "slot-ttl");
     const dir = join(slotHome, "confidential-workers");
@@ -296,8 +309,10 @@ describe("RG-0-F6 Confidential Slot acquisition is non-atomic (BASELINE)", () =>
     const pid = liveHolder();
     writeFileSync(join(dir, "active.json"), JSON.stringify({ holders: [{ pid, at: Date.now() - 10_000 }], profile: "windows-confidential-single-active" }), "utf8");
     const slot = capacityModule!.openConfidentialSlot({ home: slotHome, staleAfterMs: 1_000 });
-    /** THE DEFECT: the holder is alive, and its slot is granted to someone else. */
-    expect(slot.acquire().granted).toBe(true);
+    /** CORRECTED (E1RG RG-C §6.4): liveness is the ONLY eviction rule, so a live holder keeps its slot. */
+    const granted = slot.acquire();
+    expect(granted.granted).toBe(false);
+    expect(granted.detail).toContain("at most 1");
   });
 });
 
