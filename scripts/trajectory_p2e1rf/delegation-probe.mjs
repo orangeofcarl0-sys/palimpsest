@@ -294,6 +294,106 @@ export function apply(ctx) {
      * every refused case there must be exactly one: the worker's own.
      */
     report.observations.childSessionCreated = ids.length > 1;
+    /**
+     * HOST-S1 §9.2 — A POSITIVE CASE MUST PROVE THAT A DELEGATION ACTUALLY HAPPENED.
+     *
+     * `childSessionCreated` is inferred from the session COUNT, which is a weaker observation than it looks: it
+     * cannot distinguish "the child ran" from "an unrelated second session exists", and — more importantly — it
+     * says nothing at all when the count is ZERO. The E1RG matrix recorded the `production` case as
+     * `ALLOWED_NO_DELIVERY` with `sessionCount: 0` and `refusalPoint: PRE_CREATE_ALIAS_ADMISSION`, i.e. a worker
+     * that was refused before it ever composed an Agent was scored as a successful legitimate delegation
+     * (`baseline-and-falsifiers.json` F8).
+     *
+     * The positive verdict now requires INDEPENDENT observations, each recorded separately so a reader can see
+     * exactly which one was missing:
+     *
+     *   parentSessionCreated  — the worker's own session exists (the Agent was composed);
+     *   preCreateAdmitted     — no pre-create refusal occurred (so the worker really ran);
+     *   delegationInvoked     — the model-visible delegation tool was CALLED (a `tool/call` naming it);
+     *   childSessionCreated   — a second session exists (the child was created);
+     *   childWorldAuthorized  — the child was associated with the intended authorized world;
+     *   authorizedContextDelivered — the authorized world's token reached the child's context;
+     *   noCanaryDelivered     — no protected token reached any session;
+     *   noSecurityRefusal     — the delegation was not refused.
+     */
+    const PARENT_SESSION_MIN_EVENTS = 2;
+
+    /**
+     * THE STRUCTURED PRE-CREATE RECEIPT (§9.4).
+     *
+     * The refusal phase is parsed from `PALIMPSEST_WORKER_PRECREATE`, never from a substring of the human message.
+     * A generic "refusing to run this worker" appears in several distinct refusals, and inferring
+     * `PRE_CREATE_ALIAS_ADMISSION` from it would attribute a capacity or kernel refusal to alias admission.
+     *
+     * An unparseable receipt yields `UNKNOWN`, which §9.4 says must NOT be represented as a verified phase.
+     */
+    const preCreateReceipt = (() => {
+      const line = stdout.split(/\r?\n/u).find((entry) => entry.startsWith("PALIMPSEST_WORKER_PRECREATE "));
+      if (typeof line !== "string") return { parsed: false, phase: "UNKNOWN", detail: "no PALIMPSEST_WORKER_PRECREATE line was emitted" };
+      try {
+        const payload = JSON.parse(line.slice("PALIMPSEST_WORKER_PRECREATE ".length));
+        const refusals = Array.isArray(payload?.refusals) ? payload.refusals : [];
+        const phases = refusals.map((entry) => (typeof entry?.phase === "string" ? entry.phase : "UNKNOWN"));
+        return {
+          parsed: true,
+          finalResult: payload?.finalResult ?? null,
+          refusalCount: phases.length,
+          /** The FIRST refusal in precedence order, which is the one that stopped the worker. */
+          phase: phases.length > 0 ? phases[0] : "NONE",
+          phases,
+          detail: refusals[0]?.detail ?? null,
+          boundaryModule: payload?.boundaryModule ?? null,
+          capacity: payload?.capacity ?? null,
+          kernel: payload?.kernel ?? null,
+        };
+      } catch (error) {
+        return { parsed: false, phase: "UNKNOWN", detail: `the pre-create receipt could not be parsed: ${error instanceof Error ? error.message : String(error)}` };
+      }
+    })();
+    report.observations.preCreateReceipt = preCreateReceipt;
+    report.observations.preCreateRefused = preCreateReceipt.parsed === true && preCreateReceipt.finalResult === "PRECREATE_REFUSED";
+    /** §9.4: the phase is named from the receipt, and only when the receipt parsed. */
+    report.observations.refusalPhase = preCreateReceipt.parsed === true ? preCreateReceipt.phase : "UNKNOWN";
+
+    /** Per-session: did a delegation tool call appear, and did the child carry the authorized world? */
+    const childEvidence = perSession.map((entry) => ({
+      sessionId: entry.sessionId,
+      delegationToolCall: (entry.eventTypes ?? []).includes("tool/call") && (entry.toolCalls ?? []).some((call) => typeof call?.name === "string" && call.name.includes("subagent")),
+      worldTokenPresent: entry.containsWorldToken === true,
+      canaryPresent: entry.containsCanary === true,
+    }));
+    report.observations.childEvidence = childEvidence;
+
+    /**
+     * THE POSITIVE-CASE OBSERVATION SET (§9.2). Each field is independent, and `missingObservations` names the
+     * ones that could not be established, so a failure explains itself instead of reporting a bare verdict.
+     */
+    const parentSessionCreated = ids.length >= 1;
+    const preCreateAdmitted = report.observations.preCreateRefused !== true;
+    const delegationInvoked = childEvidence.some((entry) => entry.delegationToolCall === true) || report.observations.refusalObserved === true;
+    const childCreated = ids.length > 1;
+    /**
+     * THE CHILD'S WORLD. The child session's own first user message is the instruction discovery for its cwd; the
+     * authorized-world token appearing there is the observation that the child was given the intended world.
+     */
+    const childWorldAuthorized = childCreated && childEvidence.slice(1).some((entry) => entry.worldTokenPresent === true);
+    const authorizedContextDelivered = childCreated && childEvidence.slice(1).some((entry) => entry.worldTokenPresent === true);
+    const noCanaryDelivered = perSession.every((entry) => entry.containsCanary !== true);
+
+    report.observations.positiveObservations = {
+      parentSessionCreated,
+      preCreateAdmitted,
+      delegationInvoked,
+      childSessionCreated: childCreated,
+      childWorldAuthorized,
+      authorizedContextDelivered,
+      noCanaryDelivered,
+      noSecurityRefusal: report.observations.refusalObserved !== true && report.observations.preCreateRefused !== true,
+    };
+    const missingObservations = Object.entries(report.observations.positiveObservations)
+      .filter(([, value]) => value !== true)
+      .map(([key]) => key);
+    report.observations.missingObservations = missingObservations;
 
     const perSession = [];
     for (const id of ids) {
@@ -308,10 +408,20 @@ export function apply(ctx) {
       const typesCarrying = (token) => [...new Set(events.filter((event) => JSON.stringify(event).includes(token)).map((event) => event?.type))];
       const userMessages = events.filter((event) => event?.type === "user/message");
       const toolResults = events.filter((event) => event?.type === "tool/result").map((event) => JSON.stringify(event.data ?? {}).slice(0, 600));
+      /**
+       * HOST-S1 §9.2: THE TOOL CALLS THEMSELVES. A positive delegation case must show that the model-visible
+       * delegation tool was INVOKED, not merely that no token leaked. The call name is recorded so the observation
+       * is checkable rather than inferred from a result string.
+       */
+      const toolCalls = events
+        .filter((event) => event?.type === "tool/call")
+        .map((event) => ({ name: typeof event?.data?.name === "string" ? event.data.name : null }))
+        .filter((call) => call.name !== null);
       perSession.push({
         sessionId: id,
         eventCount: events.length,
         eventTypes: [...new Set(events.map((event) => event?.type).filter((type) => typeof type === "string"))],
+        toolCalls,
         containsCanary: raw.includes(CANARY),
         containsSiblingToken: raw.includes(SIBLING_TOKEN),
         containsWorldToken: raw.includes(WORLD_TOKEN),
@@ -346,27 +456,52 @@ export function apply(ctx) {
      * either refusal point and records WHICH one occurred. Reporting this as a mismatch would punish the
      * stronger refusal.
      */
-    report.observations.preCreateRefused = (() => {
-      const line = report.observations.workerResultLine;
-      return typeof line === "string" && line.includes("refusing to run this worker");
-    })();
-    report.observations.refusalPoint = report.observations.preCreateRefused === true ? "PRE_CREATE_ALIAS_ADMISSION" : report.observations.refusalObserved === true ? "DELEGATION_GUARD" : "NONE";
-    report.observations.canaryEventTypes = [...new Set(perSession.flatMap((entry) => entry.canaryInEventTypes ?? []))];
-
+    /**
+     * HOST-S1 §9.3/§9.4 — THE VERDICT, WITH THE REFUSAL PHASE ATTRIBUTED FROM THE RECEIPT.
+     *
+     * The previous positive branch was `else verdict = "ALLOWED_NO_DELIVERY"`, taken for ANY non-refusal
+     * expectation when no token was delivered. It never required a session, an admission, a tool call or a child,
+     * so a worker refused at pre-create scored as a successful delegation. §9.6 states the rule directly: "The
+     * final Matrix must not qualify merely because no protected token was observed."
+     *
+     * The corrected verdict is computed from the INDEPENDENT observation set above.
+     *
+     *   REFUSED_BY_GUARD     the expected refusal occurred, no child was created, and no protected content was
+     *                        delivered. The refusal phase is recorded separately and is NOT part of this verdict.
+     *   ALLOWED_NO_DELIVERY  a legitimate delegation was OBSERVED: the parent session existed, admission passed,
+     *                        the delegation tool was invoked, the child was created in the authorized world with
+     *                        its context delivered, and no protected content was delivered.
+     *   UNAUTHORIZED_*_DELIVERED  a protected token reached a session — a security failure whatever else happened.
+     *   POSITIVE_CASE_NOT_EXECUTED  the case expected a legitimate delegation and the observations above do not
+     *                        support it. `missingObservations` names what was absent. This is the verdict the E1RG
+     *                        `production` case should have received.
+     */
     const leaked = target.token === CANARY ? canaryDelivered : siblingDelivered;
+    const observations = report.observations.positiveObservations;
     let verdict;
-    if (leaked) verdict = target.token === CANARY ? "UNAUTHORIZED_CONTENT_DELIVERED" : "SIBLING_CONTENT_DELIVERED";
-    else if (target.expect === "REFUSED_BY_GUARD") {
+    if (leaked) {
+      verdict = target.token === CANARY ? "UNAUTHORIZED_CONTENT_DELIVERED" : "SIBLING_CONTENT_DELIVERED";
+    } else if (target.expect === "REFUSED_BY_GUARD") {
       /**
-       * EITHER REFUSAL POINT SATISFIES THE CASE. Pre-create alias admission is the EARLIER and STRONGER
-       * refusal — no Agent, no turn — so a case that expected the delegation guard must accept it rather than
-       * reporting a mismatch.
+       * EITHER REFUSAL POINT SATISFIES THE CASE. Pre-create admission is the EARLIER and STRONGER refusal — no
+       * Agent, no turn — so a case that expected the delegation guard must accept it rather than reporting a
+       * mismatch. What it may NOT do is accept "nothing happened": the refusal itself must be observed.
        */
-      verdict = !report.observations.childSessionCreated && (report.observations.refusalObserved === true || report.observations.preCreateRefused === true) ? "REFUSED_BY_GUARD" : "ALLOWED_NO_DELIVERY";
-    } else verdict = "ALLOWED_NO_DELIVERY";
+      const refusalHappened = report.observations.refusalObserved === true || report.observations.preCreateRefused === true;
+      verdict = !childCreated && refusalHappened ? "REFUSED_BY_GUARD" : "REFUSAL_NOT_OBSERVED";
+    } else {
+      /** §9.2: EVERY positive observation is required. A missing one is named, not rounded up. */
+      verdict = missingObservations.length === 0 ? "ALLOWED_NO_DELIVERY" : "POSITIVE_CASE_NOT_EXECUTED";
+    }
     report.verdict = verdict;
     report.observations.canaryDeliveredByVerdict = verdict === "REFUSED_BY_GUARD" ? false : canaryDelivered;
     step("verdict", verdict);
+    if (verdict === "POSITIVE_CASE_NOT_EXECUTED") {
+      step("missing-observations", missingObservations.join(", "));
+    }
+    if (report.observations.refusalPhase !== "NONE") {
+      step("refusal-phase", `${report.observations.refusalPhase} (receipt parsed: ${String(preCreateReceipt.parsed)})`);
+    }
   } finally {
     if (fixture !== null) await fixture.cleanup();
     if (previousHome === undefined) delete process.env.DSH_HOME;
