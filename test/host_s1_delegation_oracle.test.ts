@@ -145,6 +145,23 @@ describe("H1-D refusal attribution (STATIC_ASSERTION)", () => {
   it("13. the receipt records the first refusal in precedence order", () => {
     expect(PROBE).toContain("phases[0]");
   });
+
+  /**
+   * HOST-S1 §9.2 — THE DISPATCH IS OBSERVED, NOT INFERRED FROM A TOOL NAME.
+   *
+   * The worker runs in PTC mode, so its only directly callable name is `run_code`; a delegation appears as a PTC
+   * DISPATCH inside that program. Measured on the `world` case: the parent records `tool/ptc-dispatch` and the
+   * child records `subagent/descriptor`, while the only `tool/call` name in either session is `run_code`.
+   *
+   * An observation that looked for a top-level `subagent` tool call would report "delegation never happened" for
+   * a delegation that demonstrably did — a false NEGATIVE, which is why this control exists separately from the
+   * false-positive controls above.
+   */
+  it("13b. delegation invocation is detected from PTC dispatch evidence", () => {
+    expect(PROBE).toContain("tool/ptc-dispatch");
+    expect(PROBE).toContain("subagent/catalog");
+    expect(PROBE).toContain("delegationEvidence");
+  });
 });
 
 describe("H1-D matrix closure predicate (STATIC_ASSERTION)", () => {
