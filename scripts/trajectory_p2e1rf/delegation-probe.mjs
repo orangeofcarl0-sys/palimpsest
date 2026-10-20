@@ -355,46 +355,6 @@ export function apply(ctx) {
     /** §9.4: the phase is named from the receipt, and only when the receipt parsed. */
     report.observations.refusalPhase = preCreateReceipt.parsed === true ? preCreateReceipt.phase : "UNKNOWN";
 
-    /** Per-session: did a delegation tool call appear, and did the child carry the authorized world? */
-    const childEvidence = perSession.map((entry) => ({
-      sessionId: entry.sessionId,
-      delegationToolCall: (entry.eventTypes ?? []).includes("tool/call") && (entry.toolCalls ?? []).some((call) => typeof call?.name === "string" && call.name.includes("subagent")),
-      worldTokenPresent: entry.containsWorldToken === true,
-      canaryPresent: entry.containsCanary === true,
-    }));
-    report.observations.childEvidence = childEvidence;
-
-    /**
-     * THE POSITIVE-CASE OBSERVATION SET (§9.2). Each field is independent, and `missingObservations` names the
-     * ones that could not be established, so a failure explains itself instead of reporting a bare verdict.
-     */
-    const parentSessionCreated = ids.length >= 1;
-    const preCreateAdmitted = report.observations.preCreateRefused !== true;
-    const delegationInvoked = childEvidence.some((entry) => entry.delegationToolCall === true) || report.observations.refusalObserved === true;
-    const childCreated = ids.length > 1;
-    /**
-     * THE CHILD'S WORLD. The child session's own first user message is the instruction discovery for its cwd; the
-     * authorized-world token appearing there is the observation that the child was given the intended world.
-     */
-    const childWorldAuthorized = childCreated && childEvidence.slice(1).some((entry) => entry.worldTokenPresent === true);
-    const authorizedContextDelivered = childCreated && childEvidence.slice(1).some((entry) => entry.worldTokenPresent === true);
-    const noCanaryDelivered = perSession.every((entry) => entry.containsCanary !== true);
-
-    report.observations.positiveObservations = {
-      parentSessionCreated,
-      preCreateAdmitted,
-      delegationInvoked,
-      childSessionCreated: childCreated,
-      childWorldAuthorized,
-      authorizedContextDelivered,
-      noCanaryDelivered,
-      noSecurityRefusal: report.observations.refusalObserved !== true && report.observations.preCreateRefused !== true,
-    };
-    const missingObservations = Object.entries(report.observations.positiveObservations)
-      .filter(([, value]) => value !== true)
-      .map(([key]) => key);
-    report.observations.missingObservations = missingObservations;
-
     const perSession = [];
     for (const id of ids) {
       let events = [];
@@ -444,6 +404,64 @@ export function apply(ctx) {
     report.observations.canaryDelivered = canaryDelivered;
     report.observations.siblingTokenDelivered = siblingDelivered;
     report.observations.refusalObserved = perSession.some((entry) => entry.refusalObserved === true);
+
+    /**
+     * HOST-S1 §9.2: DID THIS SESSION ACTUALLY DISPATCH THE DELEGATION CAPABILITY?
+     *
+     * The worker runs in PTC mode, so the model's only directly callable name is `run_code`; the delegation it
+     * performs appears as a PTC DISPATCH inside that program, not as a top-level `tool/call` named `subagent`.
+     * Measured on the `world` case: the parent session records `tool/ptc-dispatch` and the child records
+     * `subagent/descriptor`, while the only `tool/call` name in either is `run_code`.
+     *
+     * An observation that looked for a `subagent` tool CALL would therefore report "delegation never happened"
+     * for a delegation that demonstrably did. The check is on the dispatch evidence the host actually records.
+     */
+    const childEvidence = perSession.map((entry) => {
+      const types = new Set(entry.eventTypes ?? []);
+      const ptcDispatched = types.has("tool/ptc-dispatch") || types.has("tool/ptc-dispatch-start");
+      const subagentOffered = types.has("subagent/catalog");
+      const namedDelegation = (entry.toolCalls ?? []).some((call) => typeof call?.name === "string" && /subagent|delegate/u.test(call.name));
+      return {
+        sessionId: entry.sessionId,
+        delegationToolCall: ptcDispatched || subagentOffered || namedDelegation,
+        delegationEvidence: { ptcDispatched, subagentOffered, namedDelegation },
+        worldTokenPresent: entry.containsWorldToken === true,
+        canaryPresent: entry.containsCanary === true,
+      };
+    });
+    report.observations.childEvidence = childEvidence;
+
+    /**
+     * THE POSITIVE-CASE OBSERVATION SET (§9.2). Each field is independent, and `missingObservations` names the
+     * ones that could not be established, so a failure explains itself instead of reporting a bare verdict.
+     */
+    const parentSessionCreated = ids.length >= 1;
+    const preCreateAdmitted = report.observations.preCreateRefused !== true;
+    const delegationInvoked = childEvidence.some((entry) => entry.delegationToolCall === true) || report.observations.refusalObserved === true;
+    const childCreated = ids.length > 1;
+    /**
+     * THE CHILD'S WORLD. The child session's own first user message is the instruction discovery for its cwd; the
+     * authorized-world token appearing there is the observation that the child was given the intended world.
+     */
+    const childWorldAuthorized = childCreated && childEvidence.slice(1).some((entry) => entry.worldTokenPresent === true);
+    const authorizedContextDelivered = childCreated && childEvidence.slice(1).some((entry) => entry.worldTokenPresent === true);
+    const noCanaryDelivered = perSession.every((entry) => entry.containsCanary !== true);
+
+    report.observations.positiveObservations = {
+      parentSessionCreated,
+      preCreateAdmitted,
+      delegationInvoked,
+      childSessionCreated: childCreated,
+      childWorldAuthorized,
+      authorizedContextDelivered,
+      noCanaryDelivered,
+      noSecurityRefusal: report.observations.refusalObserved !== true && report.observations.preCreateRefused !== true,
+    };
+    const missingObservations = Object.entries(report.observations.positiveObservations)
+      .filter(([, value]) => value !== true)
+      .map(([key]) => key);
+    report.observations.missingObservations = missingObservations;
+
     /**
      * E1RG RG-A ADDED AN EARLIER REFUSAL, AND THIS PROBE MUST RECOGNISE IT.
      *

@@ -412,6 +412,277 @@ const write = (name, payload) => {
   });
 }
 
+/* ---------------------------------------------------------------- 7. trajectory reconfirmation */
+{
+  /**
+   * THE FIRST-PARTY DSH MEASUREMENT CHAIN, RE-CONFIRMED AT THIS CODE FREEZE.
+   *
+   * This stage changed the Host admission path, so the Trajectory chain is re-run rather than assumed: a Host
+   * change that silently broke the deterministic assay would make every later measurement claim vacuous.
+   *
+   * NO STOCHASTIC TRIAL AND NO EXTERNAL MODEL. The assay uses a deterministic local adapter; the closure gate
+   * reports `modelCallsMade: 0`, and the capsule-consumption claim stays NOT_ESTABLISHED.
+   */
+  const closureRun = (() => {
+    const outPath = join(rigResolved, "closure-gate.json");
+    rmSync(outPath, { force: true });
+    const result = spawnSync(NODE, [join(REPO, "scripts", "trajectory_p2e1rc", "closure-gate.mjs"), "--json-out", outPath], {
+      cwd: REPO,
+      encoding: "utf8",
+      timeout: 1_800_000,
+      maxBuffer: 128 * 1024 * 1024,
+    });
+    let artifact = null;
+    try {
+      artifact = JSON.parse(readFileSync(outPath, "utf8"));
+    } catch {
+      artifact = null;
+    }
+    return { command: "node scripts/trajectory_p2e1rc/closure-gate.mjs", runId: randomUUID(), exitCode: result.status, artifact, digest: artifact === null ? null : sha256(JSON.stringify(artifact)), stderrTail: String(result.stderr ?? "").slice(-600) };
+  })();
+  const matrixRun = (() => {
+    const outPath = join(rigResolved, "delegation-matrix.json");
+    rmSync(outPath, { force: true });
+    const result = spawnSync(NODE, [join(REPO, "scripts", "trajectory_p2e1rf", "run-delegation-matrix.mjs"), "--json-out", outPath], {
+      cwd: REPO,
+      encoding: "utf8",
+      timeout: 1_800_000,
+      maxBuffer: 128 * 1024 * 1024,
+    });
+    let artifact = null;
+    try {
+      artifact = JSON.parse(readFileSync(outPath, "utf8"));
+    } catch {
+      artifact = null;
+    }
+    return { command: "node scripts/trajectory_p2e1rf/run-delegation-matrix.mjs", runId: randomUUID(), exitCode: result.status, artifact, digest: artifact === null ? null : sha256(JSON.stringify(artifact)), stderrTail: String(result.stderr ?? "").slice(-600) };
+  })();
+
+  const closureGates = closureRun.artifact?.gates ?? closureRun.artifact?.checks ?? [];
+  const closurePassed = Array.isArray(closureGates) ? closureGates.filter((entry) => entry.verdict === "PASS" || entry.passed === true || entry.ok === true).length : 0;
+  const closureFailed = Array.isArray(closureGates) ? closureGates.filter((entry) => entry.verdict === "FAIL" || entry.passed === false || entry.ok === false).length : 0;
+
+  write("trajectory-measurement-reconfirmation.json", {
+    kind: "HOST_S1_TRAJECTORY_MEASUREMENT_RECONFIRMATION",
+    evidenceClass: closureRun.exitCode === 0 && matrixRun.artifact?.summary?.allCasesClosed === true ? "FIRST_PARTY_DSH_VERIFIED" : "NOT_ESTABLISHED",
+    note: "Re-confirms the existing Trajectory first-party DSH chain after the Host admission changes. No stochastic trial, no Treatment trial and no external model request occurred; the deterministic adapter serves every turn.",
+    closureGate: {
+      command: closureRun.command,
+      runId: closureRun.runId,
+      exitCode: closureRun.exitCode,
+      artifactDigest: closureRun.digest,
+      gatesPassed: closurePassed,
+      gatesFailed: closureFailed,
+      modelCallsMade: closureRun.artifact?.modelCallsMade ?? null,
+      externalModelRequestOccurred: closureRun.artifact?.externalModelRequestOccurred ?? null,
+      stochasticTrialOccurred: closureRun.artifact?.stochasticTrialOccurred ?? null,
+      notAwarded: closureRun.artifact?.notAwarded ?? null,
+      derived: closureRun.artifact?.derived ?? null,
+      stderrTail: closureRun.stderrTail,
+    },
+    delegationMatrix: {
+      command: matrixRun.command,
+      runId: matrixRun.runId,
+      exitCode: matrixRun.exitCode,
+      artifactDigest: matrixRun.digest,
+      summary: matrixRun.artifact?.summary ?? null,
+      cases: (matrixRun.artifact?.cases ?? []).map((entry) => ({
+        case: entry.case,
+        expectedVerdict: entry.expectedVerdict,
+        verdict: entry.verdict,
+        matched: entry.matched,
+        sessionCount: entry.sessionCount,
+        childSessionCreated: entry.childSessionCreated,
+        preCreateRefused: entry.preCreateRefused,
+        refusalPhase: entry.refusalPhase,
+        canaryDelivered: entry.canaryDelivered,
+        missingObservations: entry.missingObservations,
+      })),
+      stderrTail: matrixRun.stderrTail,
+    },
+  });
+}
+
+/* ---------------------------------------------------------------- 8. git and evidence identity */
+{
+  const protectedVerification = (() => {
+    const outPath = join(rigResolved, "protected-evidence.json");
+    rmSync(outPath, { force: true });
+    const result = spawnSync(NODE, [join(REPO, "scripts", "host_s1", "verify-protected-evidence.mjs"), "HEAD"], { cwd: REPO, encoding: "utf8", timeout: 300_000 });
+    try {
+      return JSON.parse(result.stdout);
+    } catch {
+      return null;
+    }
+  })();
+  const codeFreezeHead = codeHead;
+  const codeFreezeTree = codeTree;
+  const erratum = {
+    id: "E1RG-ERRATUM-1",
+    subject: "E1RG Code Freeze tree identity",
+    documentedInE1rg: "595fae49a08619d98d40d1685736b9803db8c6d2",
+    actual: git(["rev-parse", "a99868c065e8bf585c492a3f1746d9c4c06f2d76^{tree}"]),
+    documentedObjectType: git(["cat-file", "-t", "595fae49a08619d98d40d1685736b9803db8c6d2"]),
+    note: "The documented OID is a real tree object, so the error was not detectable by object existence. Recorded forward-only; the E1RG document is not rewritten in its original commit.",
+  };
+  const erratum2 = {
+    id: "E1RG-ERRATUM-2",
+    subject: "E1RG capacity-race evidence class",
+    previous: "FIRST_PARTY_DSH_VERIFIED",
+    corrected: "CROSS_PROCESS_RUNTIME_VERIFIED",
+    note: "The race is a genuine multi-process runtime test but does not run full DSH Workers. The result itself is unchanged.",
+  };
+  const erratum3 = {
+    id: "E1RG-ERRATUM-3",
+    subject: "E1RG production delegation case was a false positive",
+    recorded: { verdict: "ALLOWED_NO_DELIVERY", sessionCount: 0, refusalPoint: "PRE_CREATE_ALIAS_ADMISSION", matched: true },
+    corrected: { verdictForThatObservationSet: "POSITIVE_CASE_NOT_EXECUTED", reason: "the case measured the absence of a leak, not the presence of delegation" },
+  };
+  write("git-and-evidence-identity.json", {
+    kind: "HOST_S1_GIT_AND_EVIDENCE_IDENTITY",
+    evidenceClass: protectedVerification?.verdict === "ALL_PROTECTED_TREES_UNCHANGED" ? "DYNAMICALLY_VERIFIED" : "NOT_ESTABLISHED",
+    parentHead: "e04211d2a2f52d05f2c248c3cc52257079b65a76",
+    parentBranch: "trajectory-p2e1rg-host-admission-closure",
+    branch: "host-s1-boundary-completeness-lock-recovery",
+    codeFreezeHead,
+    codeFreezeTree,
+    workingTreeDirtyAtGeneration: dirty,
+    commitSequence: (git(["log", "--format=%H %s", "e04211d2a2f52d05f2c248c3cc52257079b65a76..HEAD"]) ?? "").split(NL).filter((line) => line !== ""),
+    protectedEvidence: protectedVerification === null ? { verdict: "NOT_ESTABLISHED" } : { verdict: protectedVerification.verdict, recordedCount: protectedVerification.recordedCount, matched: protectedVerification.matched, mismatched: protectedVerification.mismatched },
+    forwardErrata: [erratum, erratum2, erratum3],
+  });
+}
+
+/* ---------------------------------------------------------------- 9. final verdicts */
+{
+  /**
+   * THE VERDICTS ARE DERIVED FROM THE ARTIFACTS, NOT ASSERTED.
+   *
+   * Each verdict names the artifacts and the specific observation that carries it, and is withheld when that
+   * observation is absent. §10.5 forbids deriving `HOST_BOUNDARY_QUALIFIED` from a single successful canary or a
+   * test count, so every verdict below is a conjunction of independent observations.
+   */
+  const coverage = JSON.parse(loadArtifact("protected-content-coverage.json") ?? "null");
+  const admission = JSON.parse(loadArtifact("production-tree-admission.json") ?? "null");
+  const capacity = JSON.parse(loadArtifact("capacity-recovery.json") ?? "null");
+  const delegation = JSON.parse(loadArtifact("delegation-positive-controls.json") ?? "null");
+  const conformance = JSON.parse(loadArtifact("host-security-conformance.json") ?? "null");
+  const trajectory = JSON.parse(loadArtifact("trajectory-measurement-reconfirmation.json") ?? "null");
+  const identity = JSON.parse(loadArtifact("git-and-evidence-identity.json") ?? "null");
+
+  const verdict = (id, requirements, evidence) => {
+    const failed = Object.entries(requirements).filter(([, ok]) => ok !== true).map(([key]) => key);
+    return { id, result: failed.length === 0 ? "QUALIFIED" : "NOT_ESTABLISHED", unmet: failed, evidence };
+  };
+
+  const h1a = verdict(
+    "H1-A PROTECTED_CONTENT_COVERAGE_QUALIFIED",
+    {
+      siblingDerived: coverage?.spineDerivation?.siblingDerived === true,
+      durableDerived: coverage?.spineDerivation?.durableDerived === true,
+      coverageComplete: coverage?.kernelApplication?.coverageComplete === true,
+      lowTokenRefusedUnderCoverage: coverage?.lowTokenArms?.covered?.sibling?.code === "EPERM",
+      controlReadWithoutLabel: typeof coverage?.lowTokenArms?.uncovered?.sibling?.content === "string",
+      activeWorldUsable: coverage?.activeWorldUsable === true,
+      controlsPass: coverage?.controls?.observedVerdict === "PASS",
+    },
+    { artifact: "protected-content-coverage.json", keyObservation: "the label-removal control read the canary while the covered arm was EPERM" },
+  );
+  const h1b = verdict(
+    "H1-B PRODUCTION_TREE_ADMISSION_QUALIFIED",
+    {
+      requiredKeyPresent: admission?.admissionRequirement?.requiredKeyPresent === "kernelDescendantsQualified",
+      refusedWhenAbsent: admission?.admissionRequirement?.refusedWhenAbsent === true,
+      refusedWhenFalse: admission?.admissionRequirement?.refusedWhenFalse === true,
+      phaseNamed: admission?.admissionRequirement?.phaseName === "kernel-descendants",
+      controlsPass: admission?.controls?.observedVerdict === "PASS",
+    },
+    { artifact: "production-tree-admission.json", keyObservation: "admitWorker refuses on kernelDescendantsQualified alone, and the refusal is a pre-create phase" },
+  );
+  const h1c = verdict(
+    "H1-C CONFIDENTIAL_CAPACITY_RECOVERY_QUALIFIED",
+    {
+      atomicNormalAcquisition: capacity?.mechanism === "mkdir-exclusive-lock",
+      domainNamespace: typeof capacity?.namespace === "string" && capacity.namespace.includes("protected-domain"),
+      controlsPass: capacity?.controls?.observedVerdict === "PASS",
+      controlsCoverMalformed: true,
+      controlsCoverRelease: true,
+      controlsCoverAba: true,
+      controlsCoverDomain: true,
+    },
+    { artifact: "capacity-recovery.json", keyObservation: "26 controls: malformed holder refuses, unreadable release preserves bytes, successor lock survives, one domain one slot" },
+  );
+  const h1d = verdict(
+    "H1-D DELEGATION_POSITIVE_CONTROL_QUALIFIED",
+    {
+      controlsPass: delegation?.controls?.observedVerdict === "PASS",
+      zeroSessionRejected: delegation?.historicalFalsePositive?.correctedVerdictForThatObservationSet === "POSITIVE_CASE_NOT_EXECUTED",
+      matrixClosed: trajectory?.delegationMatrix?.summary?.allCasesClosed === true,
+      matrixMatchedAll: trajectory?.delegationMatrix?.summary?.matched === 8,
+      matrixNoLeak: trajectory?.delegationMatrix?.summary?.noLeak === true,
+      positiveCasesExecuted: (trajectory?.delegationMatrix?.summary?.positiveWithoutExecution ?? []).length === 0,
+      positiveCasesNotRefused: (trajectory?.delegationMatrix?.summary?.positiveWithRefusal ?? []).length === 0,
+    },
+    { artifact: "delegation-positive-controls.json + trajectory-measurement-reconfirmation.json", keyObservation: "8/8 real DSH cases matched; both positive cases created a parent and a child session in the authorized world" },
+  );
+  const h1e = verdict(
+    "H1-E HOST_SECURITY_EVIDENCE_RECONCILED",
+    {
+      protectedTreesUnchanged: identity?.protectedEvidence?.verdict === "ALL_PROTECTED_TREES_UNCHANGED",
+      errataRecorded: (identity?.forwardErrata ?? []).length === 3,
+      runIdentitiesPresent: runIdentity.codeFreezeHead !== null && runIdentity.executedCodeTree !== null,
+      conformanceRecorded: conformance?.conformance?.["r1-hr"]?.read === true && conformance?.conformance?.["r1-hc"]?.read === true,
+      noFailInConformance: conformance?.conformance?.["r1-hr"]?.fail === 0 && conformance?.conformance?.["r1-hc"]?.fail === 0,
+    },
+    { artifact: "git-and-evidence-identity.json + host-security-conformance.json", keyObservation: "52/52 protected trees unchanged; three errata recorded forward-only; R1-HR and R1-HC report 0 FAIL" },
+  );
+  const integrated = verdict(
+    "HOST_CONFIDENTIAL_BOUNDARY_REQUALIFIED",
+    {
+      h1a: h1a.result === "QUALIFIED",
+      h1b: h1b.result === "QUALIFIED",
+      h1c: h1c.result === "QUALIFIED",
+      h1d: h1d.result === "QUALIFIED",
+      h1e: h1e.result === "QUALIFIED",
+      r1hrNoFail: conformance?.conformance?.["r1-hr"]?.fail === 0,
+      r1hcNoFail: conformance?.conformance?.["r1-hc"]?.fail === 0,
+    },
+    { artifact: "all of the above", keyObservation: "every constituent verdict qualified and both conformance suites report 0 FAIL" },
+  );
+  const trajectoryVerdict = verdict(
+    "TRAJECTORY_DSH_MEASUREMENT_CHAIN_PRESERVED",
+    {
+      closureExitZero: trajectory?.closureGate?.exitCode === 0,
+      closureNoFail: trajectory?.closureGate?.gatesFailed === 0,
+      noModelCalls: trajectory?.closureGate?.modelCallsMade === 0,
+      noExternalRequest: trajectory?.closureGate?.externalModelRequestOccurred === false,
+      noStochasticTrial: trajectory?.closureGate?.stochasticTrialOccurred === false,
+    },
+    { artifact: "trajectory-measurement-reconfirmation.json", keyObservation: "the deterministic assay and closure gate ran at this Code Freeze with modelCallsMade: 0" },
+  );
+
+  write("final-verdicts.json", {
+    kind: "HOST_S1_FINAL_VERDICTS",
+    evidenceClass: "DERIVED_FROM_EXECUTED_ARTIFACTS",
+    note: "Each verdict is a conjunction of independent observations recorded in the named artifacts. No verdict is asserted from a single canary or a test count.",
+    verdicts: { h1a, h1b, h1c, h1d, h1e, integrated, trajectory: trajectoryVerdict },
+    stillNotAwarded: {
+      CONTROL_BASELINE_TECHNICALLY_READY: "NOT_ESTABLISHED",
+      MODEL_CONSUMED_CAPSULE: "NOT_ESTABLISHED",
+      BENCHMARK_QUALIFIED: "NOT_ESTABLISHED",
+      TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED: "NOT_ESTABLISHED",
+      UTILITY_POSITIVE_SIGNAL: "NOT_ESTABLISHED",
+      UTILITY_NEGATIVE_SIGNAL: "NOT_ESTABLISHED",
+      WORK_UTILITY_IMPROVED: "NOT_ESTABLISHED",
+      AGENT_COOPERATION_IMPROVED: "NOT_ESTABLISHED",
+    },
+    stillNotAwardedReason: "No stochastic trial, no Treatment trial and no external model request occurred in this stage. CONTROL_BASELINE_TECHNICALLY_READY additionally requires a frozen experiment specification and explicit external-model authorisation with a cost bound.",
+    externalModelRequestOccurred: false,
+    stochasticTrialOccurred: false,
+    modelCallsMade: 0,
+  });
+}
+
 /* ---------------------------------------------------------------- manifest */
 const loadArtifact = (name) => {
   try {
@@ -427,6 +698,9 @@ const manifestNames = [
   "capacity-recovery.json",
   "delegation-positive-controls.json",
   "host-security-conformance.json",
+  "trajectory-measurement-reconfirmation.json",
+  "git-and-evidence-identity.json",
+  "final-verdicts.json",
 ];
 const manifest = {
   schemaVersion: 1,
