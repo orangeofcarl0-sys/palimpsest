@@ -553,6 +553,14 @@ const write = (name, payload) => {
   });
 }
 
+const loadArtifact = (name) => {
+  try {
+    return readFileSync(join(EVIDENCE, name), "utf8");
+  } catch {
+    return null;
+  }
+};
+
 /* ---------------------------------------------------------------- 9. final verdicts */
 {
   /**
@@ -684,13 +692,6 @@ const write = (name, payload) => {
 }
 
 /* ---------------------------------------------------------------- manifest */
-const loadArtifact = (name) => {
-  try {
-    return readFileSync(join(EVIDENCE, name), "utf8");
-  } catch {
-    return null;
-  }
-};
 const manifestNames = [
   "baseline-and-falsifiers.json",
   "protected-content-coverage.json",
