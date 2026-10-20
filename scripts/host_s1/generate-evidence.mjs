@@ -381,19 +381,29 @@ const write = (name, payload) => {
          * THE RECEIPT SHAPE IS `{ id, statement, pass: boolean, detail }`, with LIMITs in a separate `limits`
          * array and failures in `failed`. A count computed from a `verdict` field reported `pass: 0` for a suite
          * that passed 44 of 47 — precisely the derived-from-the-wrong-field error E1RF §5.5 was about.
+         *
+         * A LIMIT ENTRY ALSO APPEARS IN `results` WITH `pass: true`, because a disclosed limitation is not a
+         * failure. Counting `pass: true` alone therefore reports 47/47 for a suite the runner itself reports as
+         * "44 PASS · 3 LIMIT". The three classes are made mutually exclusive here so the artifact agrees with the
+         * runner.
          */
         const limits = Array.isArray(parsed.limits) ? parsed.limits : [];
         const failures = Array.isArray(parsed.failed) ? parsed.failed : [];
+        const limitIds = limits.map((entry) => (typeof entry === "string" ? entry : entry?.id)).filter((entry) => entry !== undefined);
+        const limitSet = new Set(limitIds);
+        const failureIds = failures.map((entry) => (typeof entry === "string" ? entry : entry?.id)).filter((entry) => entry !== undefined);
+        const failureSet = new Set(failureIds);
+        const passed = checks.filter((entry) => entry.pass === true && !limitSet.has(entry.id) && !failureSet.has(entry.id)).length;
         out[key] = {
           path,
           read: true,
           digest: sha256(raw),
-          pass: checks.filter((entry) => entry.pass === true).length,
-          limit: limits.length,
-          fail: failures.length,
+          pass: passed,
+          limit: limitIds.length,
+          fail: failureIds.length,
           total: checks.length,
-          limitIds: limits.map((entry) => (typeof entry === "string" ? entry : entry?.id)).filter((entry) => entry !== undefined),
-          failureIds: failures.map((entry) => (typeof entry === "string" ? entry : entry?.id)).filter((entry) => entry !== undefined),
+          limitIds,
+          failureIds,
         };
       } catch (error) {
         out[key] = { path, read: false, detail: error instanceof Error ? error.message : String(error) };
