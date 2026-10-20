@@ -7,19 +7,29 @@
       "path": "C:\\Users\\66494\\.palimpsest-r1hr\\conformance\\conformance.json",
       "read": true,
       "digest": "sha256-cc2ce8472281d3bf511f37fce8dc348c4b48e080cb55ed81995a93807d4dded9",
-      "pass": 0,
-      "limit": 0,
+      "pass": 44,
+      "limit": 3,
       "fail": 0,
-      "total": 47
+      "total": 47,
+      "limitIds": [
+        "HR-17",
+        "HR-39b",
+        "HR-33"
+      ],
+      "failureIds": []
     },
     "r1-hc": {
       "path": "C:\\Users\\66494\\.palimpsest-r1hc\\conformance\\conformance.json",
       "read": true,
       "digest": "sha256-df6baf19bf987e4fac8b70482c415eebbde7ed65cb4081b443df9f748cdf3b12",
-      "pass": 0,
-      "limit": 0,
+      "pass": 26,
+      "limit": 1,
       "fail": 0,
-      "total": 27
+      "total": 27,
+      "limitIds": [
+        "HC-27"
+      ],
+      "failureIds": []
     }
   },
   "disclosedLimitsPreserved": [
@@ -31,8 +41,8 @@
   "hostAffectedRegressionSuites": {
     "id": "host-regression",
     "command": "node node_modules/vitest/vitest.mjs run test/trajectory_p2e1rg_baseline_admission.test.ts test/trajectory_p2e1rg_capacity_atomicity.test.ts test/trajectory_p2e1rg_kernel_coverage.test.ts test/trajectory_p2e1rg_precreate_admission.test.ts test/trajectory_p2e1re_pretool_boundary.test.ts test/trajectory_p2e1re_win32_fault.test.ts test/trajectory_p2e1rf_delegation_alias.test.ts test/trajectory_p2e1rf_answer_provenance.test.ts test/trajectory_p2e1rf_malformed_ace.test.ts test/trajectory_p2e1rf_evidence_freshness.test.ts",
-    "runId": "880d47f5-c3a8-4a33-abe8-ca456263c940",
-    "startedAt": "2026-10-20T20:57:08.928Z",
+    "runId": "fff52e38-be8c-4f2d-b3ac-6012c2533c87",
+    "startedAt": "2026-10-20T21:05:18.785Z",
     "exitCode": 0,
     "total": 146,
     "passed": 146,
@@ -47,9 +57,9 @@
     "note": "The regression claim covers every suite that imports read_fence.js, worker_fence.js, confidential_profile.js or the delegation probe. A whole-repository green result is NOT claimed and no pre-existing failing suite was modified."
   },
   "runIdentity": {
-    "codeFreezeHead": "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae",
-    "executedCodeTree": "1a6bc01638b4d0c0731d3de08ae439eddfef5500",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",

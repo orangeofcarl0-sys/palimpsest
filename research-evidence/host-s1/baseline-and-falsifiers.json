@@ -5,8 +5,8 @@
   "producer": {
     "command": "node scripts/host_s1/reproduce-baseline.mjs --json-out <rig>/baseline-falsifiers.json",
     "exitCode": 0,
-    "runId": "8f1729f2-2515-47f7-863e-31f8df38066f",
-    "artifactDigest": "sha256-8fa71811c1c403e382dabb2ae981ac7cfcb8d3f84c212325cf714329eaa665aa"
+    "runId": "e660e50d-4cf6-4a4e-b023-8daba0a22920",
+    "artifactDigest": "sha256-a5ad38548f9ab93188750b38b7e9c90ee99bf8b8fa53989f1e0e46013077b8a6"
   },
   "observations": {
     "schemaVersion": 1,
@@ -14,8 +14,8 @@
     "stage": "Palimpsest Host-S1",
     "evidenceClass": "DYNAMICALLY_VERIFIED",
     "note": "Each falsifier drives the shipped functions on the exact E1RG parent. A reproduced defect is the expected baseline; F2 is measured separately under a real Low-integrity token by sibling-world-probe.mjs.",
-    "executedCodeHead": "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae",
-    "executedCodeTree": "1a6bc01638b4d0c0731d3de08ae439eddfef5500",
+    "executedCodeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
     "parentHead": "e04211d2a2f52d05f2c248c3cc52257079b65a76",
     "runtime": {
       "node": "24.22.0",
@@ -102,7 +102,7 @@
         "observation": {
           "liveOwnerArm": {
             "acquired": false,
-            "detail": "the capacity lock is held by pid 6560 and was not acquired within 200ms. This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged.",
+            "detail": "the capacity lock is held by pid 27668 and was not acquired within 200ms. This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged.",
             "successorStillThere": true,
             "successorTokenAfter": "successor-live-owner",
             "expectedToken": "successor-live-owner",
@@ -133,15 +133,15 @@
         "title": "different DSH homes acquire separate capacity slots in one confidentiality domain",
         "observation": {
           "sameDomain": {
-            "identityA": "protected-domain:C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1-baseline-XR04T6\\f7\\repository-a",
-            "identityB": "protected-domain:C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1-baseline-XR04T6\\f7\\repository-a",
+            "identityA": "protected-domain:C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1-baseline-vGqCFc\\f7\\repository-a",
+            "identityB": "protected-domain:C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1-baseline-vGqCFc\\f7\\repository-a",
             "slotPathA": "f7/repository-a/.palimpsest/host-capacity/active.json",
             "slotPathB": "f7/repository-a/.palimpsest/host-capacity/active.json",
             "sharedSlot": true,
             "grantedA": true,
             "grantedB": false,
             "contended": true,
-            "detailB": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 6560). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged."
+            "detailB": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 27668). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged."
           },
           "crossDomain": {
             "grantedA": false,
@@ -213,9 +213,9 @@
     }
   },
   "runIdentity": {
-    "codeFreezeHead": "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae",
-    "executedCodeTree": "1a6bc01638b4d0c0731d3de08ae439eddfef5500",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",
