@@ -145,6 +145,10 @@ describe("E1RE RE-B boundary admission precondition (DYNAMICALLY_VERIFIED)", () 
    * E1RG RG-B §5.6 STRENGTHENED THE REQUIRED SET. The kernel facts are now admission inputs, so a "full"
    * boundary in this suite must carry them — the E1RE assertion that the three guard flags alone were sufficient
    * described the weaker contract this stage replaced, and keeping it would pin the defect.
+   *
+   * HOST-S1 §7.2 STRENGTHENED IT AGAIN. A verified ROOT label is not the claim that the CONTENT is protected, so
+   * `kernelDescendantsQualified` is now its own requirement. This fixture is updated for the same reason as
+   * above: it describes what a FULL boundary is, and a full boundary now includes the descendant claim.
    */
   const full = {
     guardInstalled: true,
@@ -154,6 +158,7 @@ describe("E1RE RE-B boundary admission precondition (DYNAMICALLY_VERIFIED)", () 
     kernelRootsVerified: true,
     kernelCoverageComplete: true,
     kernelContractNotDrifted: true,
+    kernelDescendantsQualified: true,
   };
 
   it("B1. the FULL boundary is admitted", () => {

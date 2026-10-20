@@ -28,8 +28,8 @@
 //
 // PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript.
 
-import { lstatSync, readdirSync, statSync } from 'node:fs';
-import { resolve, sep } from 'node:path';
+import { lstatSync, readdirSync, readlinkSync, statSync } from 'node:fs';
+import { relative, resolve, sep } from 'node:path';
 
 import {
   MANDATORY_POLICIES,
@@ -99,13 +99,31 @@ export function isAncestorOf(root, candidate) {
  * (the sandbox write-grant ACL does not protect it); with the label applied the read is EPERM. So the
  * protection for a skipped ancestor's content is the Kernel label on that content, and nothing else.
  *
- * The derivation is deliberately ONE LEVEL and BOUNDED. Descending further would be a crawler (§5.1 forbids a
- * new generic filesystem crawler), and one level is sufficient because a label is INHERITABLE: labelling
- * `durable-state` covers everything beneath it, including future children.
+ * HOST-S1 §6: ONE LEVEL WAS NOT ENOUGH. THE WALK FOLLOWS THE ACTIVE-WORLD SPINE.
  *
- * If the skipped root cannot be enumerated, that is NOT silently treated as "nothing to protect". The
- * enumeration failure is recorded in `unresolved`, and `applyReadFence` reports coverage as incomplete — which
- * the admission gate refuses (§5.6).
+ * The E1RG derivation examined the skipped root's children and stopped. In the production layout that leaves the
+ * WORLDS directory uncovered: `worlds/` contains the world, so it is skipped in turn, and nothing beneath it was
+ * ever considered. Every INACTIVE SIBLING WORLD under `worlds/` therefore carried no label at all while coverage
+ * reported itself complete — measured on the parent commit as `baseline-and-falsifiers.json` F1
+ * (`coverageComplete: true`, `siblingDerived: false`).
+ *
+ * The corrected derivation descends along the KNOWN PATH from the protected ancestor to the active world, and at
+ * every level on that path:
+ *
+ *   1. identifies the child that continues the spine toward the world;
+ *   2. records that child as the spine continuation (it is NOT labelled — it is an ancestor of the world);
+ *   3. classifies every OTHER child as content that needs confidentiality;
+ *   4. derives a protected root for each such child;
+ *   5. records anything it could not enumerate or could not classify.
+ *
+ * This is BOUNDED BY CONSTRUCTION. It never enumerates more than one directory per spine level, and the spine is
+ * the finite list of ancestors between the root and the world — it is not a crawler (§6.1). The descent also
+ * stops at `MAX_SPINE_DEPTH` and records the truncation as unresolved, so a pathological path cannot make the
+ * plan unbounded.
+ *
+ * AN EMPTY DERIVED SET IS NOT AUTOMATICALLY SAFE (§6.3). It is only legitimate when the enumeration that
+ * produced it was COMPLETE and the ancestor genuinely contains nothing but the spine. `planComplete` records
+ * that, and `coverageOf` refuses to call an incomplete plan covered.
  *
  * @param {{ roots: readonly string[], world: string }} input
  * @returns {ReadFencePlan}
@@ -113,9 +131,9 @@ export function isAncestorOf(root, candidate) {
 export function planReadFence(input) {
   /** @type {string[]} */
   const protectedRoots = [];
-  /** @type {{ path: string, derivedFrom: string }[]} */
+  /** @type {{ path: string, derivedFrom: string, depth: number, spineParent: string }[]} */
   const derivedRoots = [];
-  /** @type {(ReadFenceSkip & { derivedRoots?: readonly string[], enumerationFailed?: boolean })[]} */
+  /** @type {(ReadFenceSkip & { derivedRoots?: readonly string[], enumerationFailed?: boolean, spine?: readonly string[] })[]} */
   const skipped = [];
   /** @type {string[]} */
   const unresolved = [];
@@ -125,41 +143,168 @@ export function planReadFence(input) {
       continue;
     }
     /**
-     * THE ROOT CONTAINS THE WORLD. Skip the root, then derive the coverage its content still needs.
+     * THE ROOT CONTAINS THE WORLD. Walk the spine from this root toward the world, deriving coverage for every
+     * non-spine child at each level.
      */
-    const derived = [];
-    let enumerationFailed = false;
-    let entries;
-    try {
-      entries = readdirSync(resolve(root), { withFileTypes: true });
-    } catch {
-      enumerationFailed = true;
-      entries = [];
-      unresolved.push(root);
-    }
-    for (const entry of entries) {
-      /** Only DIRECTORIES can carry an inheritable label meaningfully for a subtree; a loose file is labelled below. */
-      if (entry.isDirectory() !== true) {
-        derived.push(resolve(root, entry.name));
-        continue;
-      }
-      const child = resolve(root, entry.name);
-      /**
-       * A child that ALSO contains the world cannot be labelled for the same measured reason as its parent: the
-       * worker's own startup traverses it. That is the worlds directory, and it is the disclosed residual.
-       */
-      if (isAncestorOf(child, input.world)) continue;
-      derived.push(child);
-    }
-    for (const path of derived) derivedRoots.push({ path, derivedFrom: root });
+    const walk = deriveAlongSpine(resolve(root), resolve(input.world));
+    for (const path of walk.derived) derivedRoots.push({ path, derivedFrom: root, depth: walk.depthOf.get(path) ?? 1, spineParent: root });
+    for (const path of walk.unresolved) unresolved.push(path);
     skipped.push({
       path: root,
       why: 'contains the execution world: labelling an ancestor of the world refuses the traverse every process needs to start',
-      derivedRoots: derived,
-      enumerationFailed,
+      derivedRoots: walk.derived,
+      enumerationFailed: walk.enumerationFailed,
+      spine: walk.spine,
+      /** §6.3: whether the walk that produced this skip examined every level it needed to. */
+      planComplete: walk.complete,
+      ...(walk.truncated ? { truncatedAt: walk.truncatedAt } : {}),
     });
   }
   return { protectedRoots, derivedRoots, skipped, unresolved };
+}
+
+/** How many levels below a skipped ancestor the spine walk may descend before it refuses to guess. */
+const MAX_SPINE_DEPTH = 12;
+
+/**
+ * Walk from a skipped protected ancestor along the ACTIVE-WORLD SPINE, deriving the coverage its content needs.
+ *
+ * The spine is the sequence of ancestors between the protected root and the world, exclusive of the world
+ * itself. Each spine node is an ancestor of the world and therefore cannot be labelled. Everything ELSE at each
+ * level is content that must be protected, and gets a derived root.
+ *
+ * Returns the derived paths, the spine, and — crucially — whether the walk was COMPLETE. An incomplete walk is
+ * reported rather than silently producing a shorter list, because "we found nothing to protect" and "we could
+ * not look" are the two states §6.3 insists must stay distinguishable.
+ *
+ * @param {string} root
+ * @param {string} world
+ * @returns {{ derived: string[], spine: string[], unresolved: string[], complete: boolean,
+ *   enumerationFailed: boolean, truncated: boolean, truncatedAt?: string, depthOf: Map<string, number> }}
+ */
+function deriveAlongSpine(root, world) {
+  /** @type {string[]} */
+  const derived = [];
+  /** @type {string[]} */
+  const spine = [];
+  /** @type {string[]} */
+  const unresolved = [];
+  /** @type {Map<string, number>} */
+  const depthOf = new Map();
+  let enumerationFailed = false;
+  let truncated = false;
+  /** @type {string | undefined} */
+  let truncatedAt;
+
+  /** The relative path from `root` to `world`, split into components. Empty when they are the same object. */
+  const relativePath = relative(root, world);
+  if (relativePath === '') {
+    /** The world IS the root. Nothing can be derived and nothing needs to be: the root is the world. */
+    return { derived, spine, unresolved, complete: true, enumerationFailed: false, truncated: false, depthOf };
+  }
+  const components = relativePath.split(/[\\/]/u).filter((entry) => entry !== '' && entry !== '.');
+  if (components.length > MAX_SPINE_DEPTH) {
+    return {
+      derived,
+      spine,
+      unresolved: [root],
+      complete: false,
+      enumerationFailed: false,
+      truncated: true,
+      truncatedAt: `${String(components.length)} levels exceeds the ${String(MAX_SPINE_DEPTH)}-level spine bound`,
+      depthOf,
+    };
+  }
+  /** A relative path that ESCAPES the root is not a spine — it is a world outside the protected ancestor. */
+  if (components.length === 0 || components[0] === '..') {
+    return { derived, spine, unresolved: [root], complete: false, enumerationFailed: true, truncated: false, depthOf };
+  }
+
+  let current = root;
+  let depth = 0;
+  /**
+   * AT EACH LEVEL: find the child that continues toward the world, then derive every other child.
+   *
+   * The loop walks `components.length` times, so it examines exactly one directory per spine level. The final
+   * component is the world itself; its parent is the last directory enumerated.
+   */
+  for (let index = 0; index < components.length; index += 1) {
+    const continuationName = components[index];
+    depth += 1;
+    let entries;
+    try {
+      entries = readdirSync(current, { withFileTypes: true });
+    } catch {
+      /** §6.1(6): an ancestor that cannot be enumerated cannot be shown to be covered. */
+      enumerationFailed = true;
+      unresolved.push(current);
+      break;
+    }
+    const fold = (value) => (process.platform === 'win32' ? value.toLowerCase() : value);
+    const continuationNameFolded = fold(continuationName);
+    let continuationFound = false;
+    for (const entry of entries) {
+      const child = resolve(current, entry.name);
+      if (fold(entry.name) === continuationNameFolded) {
+        /**
+         * THE SPINE CONTINUATION. It is an ancestor of the world (or the world itself at the final level), so it
+         * is NOT labelled. It is recorded so a reader can see the path the decision followed.
+         */
+        continuationFound = true;
+        spine.push(child);
+        continue;
+      }
+      /**
+       * §6.4: A REPARSE POINT IS NEVER DERIVED. Labelling through a link writes a security descriptor onto an
+       * object outside the intended protection domain — and the measurement in
+       * `scripts/host_s1/junction-label-probe.mjs` shows the reverse is also true: a label on the LINK does not
+       * protect the TARGET, because a Low-integrity process still read the canary through the labelled junction.
+       * So an aliased child is recorded as unresolved and the plan is incomplete.
+       */
+      let link;
+      try {
+        link = lstatSync(child);
+      } catch {
+        link = undefined;
+      }
+      if (link === undefined) {
+        enumerationFailed = true;
+        unresolved.push(child);
+        continue;
+      }
+      if (link.isSymbolicLink()) {
+        unresolved.push(child);
+        continue;
+      }
+      /**
+       * EVERY OTHER CHILD NEEDS CONFIDENTIALITY. A directory carries an inheritable label for its subtree; a
+       * loose file is labelled directly. Both are derived.
+       */
+      derived.push(child);
+      depthOf.set(child, depth);
+    }
+    if (!continuationFound) {
+      /**
+       * THE SPINE NAMES A CHILD THAT IS NOT THERE. The world cannot be reached from this root by the path that
+       * was spelled, so no claim about coverage is possible.
+       */
+      enumerationFailed = true;
+      unresolved.push(resolve(current, continuationName));
+      break;
+    }
+    current = resolve(current, continuationName);
+  }
+
+  return {
+    derived,
+    spine,
+    unresolved,
+    complete: !enumerationFailed && !truncated && unresolved.length === 0,
+    enumerationFailed,
+    truncated,
+    ...(truncatedAt === undefined ? {} : { truncatedAt }),
+    depthOf,
+  };
 }
 
 /**
@@ -216,27 +361,42 @@ export function applyReadFence(input) {
 }
 
 /**
- * THE ROOT COVERAGE RESULT (§5.4/§5.6).
+ * THE ROOT COVERAGE RESULT (§5.4/§5.6, extended by Host-S1 §6.2).
  *
  * `rootsVerified` alone is not the claim that matters. What a caller must be able to read is: which roots were
  * PLANNED, which were deliberately SKIPPED and why, which actually received a verified label, whether the
  * skipped roots' content was covered through derived children, and whether anything remains UNRESOLVED.
  *
- * `complete` is the single field an admission gate should require. It is false when a skipped root could not be
- * enumerated, when any outcome failed verification, or when a skipped root produced no derived roots at all —
- * because "the ancestor was skipped and nothing beneath it was labelled" is exactly the state the probe showed
- * to be unprotected.
+ * HOST-S1 §6.2 — THE LEDGER NAMES THE RELATIONSHIPS, NOT JUST THE COUNTS. Each skipped ancestor now reports:
  *
- * @param {{ protectedRoots: readonly string[], derivedRoots: readonly { path: string, derivedFrom: string }[], skipped: readonly { path: string, why: string, derivedRoots?: readonly string[], enumerationFailed?: boolean }[], unresolved: readonly string[] }} plan
+ *   requestedRoot   — the protected root that was asked for
+ *   spine           — the chain of ancestors from that root down toward the active world (never labelled)
+ *   derivedRoots    — the content beside the spine that received a protection requirement
+ *   planComplete    — whether the derivation examined every level it needed to
+ *   enumerationFailed — whether a level could not be read
+ *
+ * `complete` is the single field an admission gate should require. It is false when a skipped root could not be
+ * enumerated, when the spine walk was truncated or could not reach the world, when any outcome failed
+ * verification, or when a skipped root produced no derived roots at all — because "the ancestor was skipped and
+ * nothing beneath it was labelled" is exactly the state the Low-token probe showed to be unprotected.
+ *
+ * §6.3: AN EMPTY DERIVED SET IS NOT AUTOMATICALLY UNSAFE — it is unsafe only when the enumeration that produced
+ * it was incomplete, OR when the ancestor has content beside the spine. `skippedWithoutDerivedCoverage` is
+ * therefore computed from the walk's own verdict (`planComplete` plus the presence of non-spine children), not
+ * from the list being empty. An ancestor containing only the current world is legitimate; an ancestor that
+ * could not be read is not.
+ *
+ * @param {{ protectedRoots: readonly string[], derivedRoots: readonly { path: string, derivedFrom: string }[], skipped: readonly { path: string, why: string, derivedRoots?: readonly string[], enumerationFailed?: boolean, spine?: readonly string[], planComplete?: boolean, truncatedAt?: string }[], unresolved: readonly string[] }} plan
  * @param {readonly ReadFenceOutcome[]} outcomes
  * @returns {{
  *   planned: readonly string[],
- *   skipped: readonly { path: string, why: string, derivedRoots: readonly string[], enumerationFailed: boolean }[],
+ *   skipped: readonly { path: string, why: string, derivedRoots: readonly string[], enumerationFailed: boolean, spine: readonly string[], planComplete: boolean, truncatedAt?: string }[],
  *   labelled: readonly string[],
  *   verified: readonly string[],
  *   unverified: readonly string[],
  *   unresolved: readonly string[],
  *   skippedWithoutDerivedCoverage: readonly string[],
+ *   incompletePlans: readonly string[],
  *   complete: boolean,
  * }}
  */
@@ -248,15 +408,28 @@ export function coverageOf(plan, outcomes) {
     why: entry.why,
     derivedRoots: entry.derivedRoots ?? [],
     enumerationFailed: entry.enumerationFailed === true,
+    spine: entry.spine ?? [],
+    planComplete: entry.planComplete !== false,
+    ...(entry.truncatedAt === undefined ? {} : { truncatedAt: entry.truncatedAt }),
   }));
   /**
-   * A SKIPPED ROOT WITH NOTHING DERIVED IS THE DANGEROUS CASE. It means the ancestor could not be labelled AND
-   * none of its content was labelled either, which is precisely the configuration the Low-token probe read
-   * through. It is reported as a coverage gap rather than as an empty skip.
+   * A SKIPPED ROOT WITH NO COVERAGE BASIS IS THE DANGEROUS CASE. It means the ancestor could not be labelled AND
+   * no content beneath it was labelled either, which is precisely the configuration the Low-token probe read
+   * through. An ancestor whose walk FAILED is the same hazard even when the derived list happens to be non-empty,
+   * because an unexamined sibling is indistinguishable from an absent one.
    */
-  const skippedWithoutDerivedCoverage = skipped.filter((entry) => entry.derivedRoots.length === 0).map((entry) => entry.path);
+  const skippedWithoutDerivedCoverage = skipped
+    .filter((entry) => entry.derivedRoots.length === 0 || entry.enumerationFailed === true)
+    .map((entry) => entry.path);
   const enumerationFailed = skipped.filter((entry) => entry.enumerationFailed).map((entry) => entry.path);
-  const complete = unverified.length === 0 && (plan.unresolved ?? []).length === 0 && enumerationFailed.length === 0 && skippedWithoutDerivedCoverage.length === 0;
+  /** §6.3: a spine walk that could not complete is a plan gap even when nothing else looks wrong. */
+  const incompletePlans = skipped.filter((entry) => entry.planComplete !== true).map((entry) => entry.path);
+  const complete =
+    unverified.length === 0 &&
+    (plan.unresolved ?? []).length === 0 &&
+    enumerationFailed.length === 0 &&
+    skippedWithoutDerivedCoverage.length === 0 &&
+    incompletePlans.length === 0;
   return {
     planned: plan.protectedRoots,
     skipped,
@@ -265,6 +438,7 @@ export function coverageOf(plan, outcomes) {
     unverified,
     unresolved: [...(plan.unresolved ?? [])],
     skippedWithoutDerivedCoverage,
+    incompletePlans,
     complete,
   };
 }
@@ -325,7 +499,49 @@ function describe(/** @type {any} */ label) {
  * FAIL CLOSED: a descendant that is present but unlabelled makes the whole tree UNVERIFIED, and the caller
  * is expected to treat that as a refusal to run — not as a warning.
  *
- * @param {{ root: string, maxDepth?: number, maxEntries?: number }} input
+ * HOST-S1 §7.1 — A REPARSE POINT IS NOT AUTOMATICALLY UNVERIFIED, BUT IT IS NEVER ASSUMED PROTECTED.
+ *
+ * The E1RG version recorded every reparse point as `undetermined` and made `complete` false. That is the safe
+ * default, but it cannot be the FINAL rule: a real DSH home contains 98 junction entries in
+ * `profiles/node_modules` (the shipped installer links packages), so "no reparse points" would refuse every
+ * worker in every real deployment — an outage dressed as a boundary.
+ *
+ * What replaced the blanket rule is a MEASUREMENT. `scripts/host_s1/junction-label-probe.mjs` runs a real
+ * Low-integrity token against a labelled junction whose target is outside the protected root:
+ *
+ *   · listing the junction is refused (EPERM) — the label DOES reach the link object;
+ *   · reading a file THROUGH the junction SUCCEEDS and returns the canary.
+ *
+ * So a labelled junction is NOT a protection basis for its target. The link object is protected; the content it
+ * exposes is not. A reparse point therefore remains `undetermined` — it can never be counted as verified — and
+ * the caller is given the facts it needs to decide, rather than a boolean that hides them:
+ *
+ *   reparsePoints        — every link encountered (never followed, never counted as verified)
+ *   reparseWithinRoot    — links whose target is INSIDE the root being verified (the target is covered by the
+ *                          same root label, so the link exposes nothing the root does not already own)
+ *   reparseOutsideRoot   — links whose target is OUTSIDE the root: the target is NOT covered by this root's
+ *                          label, and the probe shows the label on the link does not protect it
+ *   reparseUnresolvable  — links whose target could not be established
+ *
+ * `complete` stays false whenever ANY link was found, because "every required entry was examined" cannot be
+ * claimed while a subtree behind a link was deliberately not examined. What changes is that the classification
+ * is now NAMED, and a separate `admissionEligible` field states whether the root's PROTECTED CONTENT is still
+ * fully accounted for despite the links:
+ *
+ *   within root              — the target is part of this root, so this walk already examines it by real path;
+ *   into another protected root — that root's own verification covers it, and a read through the link meets
+ *                              that root's label;
+ *   outside the protection domain — the target is not a protected object, so the link exposes nothing this
+ *                              fence claims to protect. DISCLOSED, not silently accepted;
+ *   unresolvable             — unknown is not safe, and admission refuses.
+ *
+ * The distinction is load-bearing rather than convenient. `scripts/host_s1/verify-cost-probe.mjs` measured a real
+ * DSH home at 20 000+ entries with 98 out-of-root junctions; a blanket "no reparse points" rule would refuse
+ * every worker in every real deployment while protecting nothing extra, and §7.3 forbids trading confidentiality
+ * for that. What the fence refuses on is now the thing that actually matters: an object that must be confidential
+ * and was not shown to be.
+ *
+ * @param {{ root: string, maxDepth?: number, maxEntries?: number, protectedRoots?: readonly string[] }} input
  * @returns {TreeOutcome}
  */
 export function verifyTree(input) {
@@ -363,6 +579,12 @@ export function verifyTree(input) {
       truncated: false,
       enumerationFailures: [],
       reparsePoints: [],
+      reparseWithinRoot: [],
+      reparseIntoProtectedRoot: [],
+      reparseOutsideProtectionDomain: [],
+      reparseUnresolvable: [],
+      reparseBasis: 'NO_REPARSE_POINTS',
+      admissionEligible: false,
     };
   }
   if (resolved.error !== undefined || resolved.api === undefined) {
@@ -380,6 +602,12 @@ export function verifyTree(input) {
       truncated: false,
       enumerationFailures: [],
       reparsePoints: [],
+      reparseWithinRoot: [],
+      reparseIntoProtectedRoot: [],
+      reparseOutsideProtectionDomain: [],
+      reparseUnresolvable: [],
+      reparseBasis: 'NO_REPARSE_POINTS',
+      admissionEligible: false,
     };
   }
   const api = resolved.api;
@@ -398,6 +626,17 @@ export function verifyTree(input) {
   const enumerationFailures = [];
   /** @type {string[]} */
   const reparsePoints = [];
+  /** §7.1: links whose target is inside this root — the root's own label covers the target too. */
+  /** @type {string[]} */
+  const reparseWithinRoot = [];
+  /** §7.1: links whose target is inside ANOTHER protected root, which is verified independently. */
+  /** @type {string[]} */
+  const reparseIntoProtectedRoot = [];
+  /** §7.1: links whose target is outside every protected root — not an object this fence claims. */
+  /** @type {string[]} */
+  const reparseOutsideProtectionDomain = [];
+  /** @type {string[]} */
+  const reparseUnresolvable = [];
   let checked = 0;
   /** Why the walk stopped early, when it did. `COMPLETE` is the only value that permits `verified`. */
   let stopReason = 'COMPLETE';
@@ -453,6 +692,24 @@ export function verifyTree(input) {
     }
     if (linkStats !== undefined && linkStats.isSymbolicLink()) {
       reparsePoints.push(path);
+      /**
+       * §7.1: CLASSIFY THE LINK BY WHERE IT LEADS. Every link is recorded and none is counted as verified, but a
+       * link whose target this fence does not claim to protect is a different fact from one that reaches a
+       * required protected object.
+       */
+      const target = resolveLinkTarget(path);
+      if (target === undefined) {
+        reparseUnresolvable.push(path);
+      } else if (isAncestorOf(resolve(input.root), target)) {
+        /** The target is part of this root, so this walk reaches it by its real path as well. */
+        reparseWithinRoot.push(path);
+      } else if ((input.protectedRoots ?? []).some((root) => isAncestorOf(resolve(root), target))) {
+        /** Another protected root owns the target, and that root is verified on its own. */
+        reparseIntoProtectedRoot.push(path);
+      } else {
+        /** The target is outside every protected root: it is not an object this fence claims. */
+        reparseOutsideProtectionDomain.push(path);
+      }
       undetermined.push(path);
       return;
     }
@@ -491,7 +748,62 @@ export function verifyTree(input) {
     truncated: stopReason === 'ENTRY_LIMIT' || stopReason === 'DEPTH_LIMIT',
     enumerationFailures,
     reparsePoints,
+    reparseWithinRoot,
+    reparseIntoProtectedRoot,
+    reparseOutsideProtectionDomain,
+    reparseUnresolvable,
+    /**
+     * §7.1: THE ADMISSION-RELEVANT SUMMARY, stated as a basis rather than a mood.
+     *
+     *   NO_REPARSE_POINTS               nothing to account for;
+     *   REPARSE_TARGETS_ACCOUNTED_FOR   every link leads to content this fence already covers (this root, or
+     *                                   another protected root) — the tree's protected content is accounted for,
+     *                                   so `admissionEligible` is true even though `complete` is false;
+     *   REPARSE_LEAVES_PROTECTION_DOMAIN at least one link leads outside every protected root, OR could not be
+     *                                   resolved. The target is not covered and is NOT claimed; admission still
+     *                                   proceeds only because the object is outside the domain — but the fact is
+     *                                   named so a reviewer can see it, and `unresolvable` refuses outright.
+     */
+    reparseBasis:
+      reparsePoints.length === 0
+        ? 'NO_REPARSE_POINTS'
+        : reparseUnresolvable.length > 0
+          ? 'REPARSE_UNRESOLVABLE'
+          : reparseOutsideProtectionDomain.length > 0
+            ? 'REPARSE_LEAVES_PROTECTION_DOMAIN'
+            : 'REPARSE_TARGETS_ACCOUNTED_FOR',
+    /**
+     * §7.1/§7.2: THE FIELD ADMISSION CONSUMES.
+     *
+     * True when every object that CAN be examined is protected AND every link either leads to content this
+     * fence already covers or leads outside the protection domain entirely. False when a required object is
+     * unprotected, unreadable, unexamined because of a resource limit, or behind a link that could not be
+     * resolved.
+     */
+    admissionEligible:
+      noUnprotectedEntryFound &&
+      enumerationFailures.length === 0 &&
+      stopReason === 'COMPLETE' &&
+      reparseUnresolvable.length === 0,
   };
+}
+
+/**
+ * Resolve one reparse point's target, or `undefined` when it cannot be established.
+ *
+ * `readlinkSync` on Windows returns the SUBSTITUTE NAME for a junction (`\\?\C:\target`), which is already an
+ * absolute path; for a relative symlink it is relative to the link's own directory. `resolve(path, '..', raw)`
+ * handles both, because an absolute second argument discards the prefix.
+ *
+ * @param {string} path
+ * @returns {string | undefined}
+ */
+function resolveLinkTarget(path) {
+  try {
+    return resolve(path, '..', readlinkSync(path));
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -501,16 +813,45 @@ export function verifyTree(input) {
  * the roots, `treesVerified` is about every descendant examined. A caller that requires a boundary must
  * require BOTH.
  *
+ * HOST-S1 §7.2 — THE DESCENDANT RESULT IS NOW A SEPARATE, CONSUMABLE QUALIFICATION.
+ *
+ * E1RG computed `treesVerified` here but nothing in the production path read it, so a worker was admitted on
+ * the ROOT outcome alone (`baseline-and-falsifiers.json` F3). Three facts are now returned so the admission gate
+ * can require the right one:
+ *
+ *   rootsVerified      — every planned root carries a verified label;
+ *   treesVerified      — every examined descendant is labelled AND no walk was truncated (the strict claim);
+ *   descendantsQualified — every required root's protected content is accounted for: no unlabelled or
+ *                        unreadable descendant, no truncated walk, no unresolvable link. A link that leads
+ *                        outside the protection domain is DISCLOSED and named rather than silently counted,
+ *                        because §7.1's measurement shows the label on a link does not protect its target.
+ *
+ * `descendantsQualified` is what admission requires. It is strictly stronger than `rootsVerified` and does not
+ * pretend that a deliberately-unfollowed link was examined.
+ *
  * @param {{ roots: readonly string[], world: string, verifyTrees?: boolean }} input
- * @returns {{ result: ReadFenceResult, trees: readonly TreeOutcome[], rootsVerified: boolean, treesVerified: boolean }}
+ * @returns {{ result: ReadFenceResult, trees: readonly TreeOutcome[], rootsVerified: boolean, treesVerified: boolean, descendantsQualified: boolean }}
  */
 export function ensureReadFence(input) {
   const result = applyReadFence({ roots: input.roots, world: input.world });
   const outcomes = result.outcomes ?? [];
   const rootsVerified = result.supported && outcomes.length > 0 && outcomes.every((entry) => entry.verified);
-  const trees = input.verifyTrees === false ? [] : outcomes.filter((entry) => entry.verified).map((entry) => verifyTree({ root: entry.path }));
+  const trees = input.verifyTrees === false ? [] : outcomes.filter((entry) => entry.verified).map((entry) => verifyTree({ root: entry.path, protectedRoots: input.roots }));
   const treesVerified = trees.length > 0 && trees.every((entry) => entry.verified);
-  return { result, trees, rootsVerified, treesVerified };
+  /**
+   * §7.2: THE QUALIFICATION THE ADMISSION GATE CONSUMES.
+   *
+   * An empty `trees` array is NOT a vacuous pass: when verification was explicitly disabled the qualification is
+   * false, because "nobody looked" is not "everything is protected". When there are no verified outcomes the
+   * qualification is likewise false — that is already covered by `rootsVerified`, but the descendant claim must
+   * not depend on the caller checking two fields.
+   */
+  const descendantsQualified =
+    trees.length > 0 &&
+    trees.every((entry) => entry.admissionEligible === true) &&
+    /** A truncated plan means a required root was never fully enumerated, so no content claim is possible. */
+    (result.coverage === undefined || result.coverage.complete === true);
+  return { result, trees, rootsVerified, treesVerified, descendantsQualified };
 }
 
 /**
