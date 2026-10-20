@@ -498,10 +498,28 @@ async function runWorker(ctx, deps) {
        */
       if (boundaryLoad.module !== undefined) {
         if (typeof boundaryLoad.module.openConfidentialSlot === 'function') {
-          const slot = boundaryLoad.module.openConfidentialSlot({ home: process.env.DSH_HOME ?? process.cwd() });
+          /**
+           * HOST-S1 §8.6: THE SLOT IS KEYED BY THE PROTECTED DOMAIN, NOT BY THE HOME ALONE.
+           *
+           * The capacity limit is a statement about worlds that cannot be read-fenced apart, so the unit is the
+           * repository whose `.palimpsest` holds them. The boundary module already derives that repository from
+           * the worker's position, so the domain root is taken from the SAME derivation rather than guessed here.
+           */
+          const domainRoot = boundaryLoad.module.findRepository?.(process.cwd()) ?? undefined;
+          const slot = boundaryLoad.module.openConfidentialSlot({
+            home: process.env.DSH_HOME ?? process.cwd(),
+            ...(domainRoot === undefined ? {} : { domain: domainRoot }),
+          });
           const acquired = slot.acquire();
           capacity = { granted: acquired.granted, detail: acquired.detail };
-          preCreate.capacity = { granted: acquired.granted === true, detail: acquired.detail };
+          preCreate.capacity = {
+            granted: acquired.granted === true,
+            detail: acquired.detail,
+            mechanism: slot.mechanism ?? null,
+            /** §8.6: which security domain this exclusion actually covers, and the assumption it rests on. */
+            domain: slot.domain?.identity ?? null,
+            domainAssumption: slot.domain?.assumption ?? null,
+          };
           if (acquired.granted) releaseCapacity = () => slot.release();
           else refuse('capacity', acquired.detail);
         } else {
@@ -539,6 +557,16 @@ async function runWorker(ctx, deps) {
          */
         const kernel = boundary.kernel ?? {};
         const coverage = kernel.coverage ?? null;
+        /**
+         * HOST-S1 §7.2: THE DESCENDANT QUALIFICATION IS ITS OWN REFUSAL PHASE.
+         *
+         * A verified root label is not the claim that the CONTENT is protected. E1RG computed a descendant result
+         * but nothing here consumed it, so a tree with a blocked-inheritance child was admitted on the root
+         * outcome alone (measured as `baseline-and-falsifiers.json` F3). It is a separate phase rather than part
+         * of `kernel-coverage` because the two failures call for different repairs: incomplete coverage means a
+         * root was not labelled, incomplete descendants means a labelled root's content is not covered.
+         */
+        const verification = boundary.verification ?? null;
         preCreate.kernel = {
           supported: kernel.supported === true,
           unavailable: kernel.unavailable ?? null,
@@ -549,7 +577,15 @@ async function runWorker(ctx, deps) {
           unverified: coverage?.unverified?.length ?? null,
           skipped: coverage?.skipped?.length ?? (kernel.skipped?.length ?? 0),
           skippedWithoutDerivedCoverage: coverage?.skippedWithoutDerivedCoverage?.length ?? null,
+          /** §6.2: the spine the derivation followed, so a receipt names the path and not only the count. */
+          spine: coverage?.skipped?.flatMap((entry) => entry.spine ?? []) ?? [],
+          incompletePlans: coverage?.incompletePlans?.length ?? null,
           drift: kernel.contract?.drifted === true,
+          /** §7.2: the content claim, reported separately from the root claim. */
+          descendantsQualified: verification?.descendantsQualified === true,
+          descendantTrees: verification?.trees?.length ?? 0,
+          descendantEntriesChecked: (verification?.trees ?? []).reduce((sum, entry) => sum + (entry.checked ?? 0), 0),
+          descendantUnverifiedRoots: verification?.unverifiedRoots?.length ?? null,
         };
         if (kernel.supported !== true) {
           refuse('kernel', kernel.unavailable ?? 'the kernel fence could not be installed, so protected content is not enforced by process integrity');
@@ -558,7 +594,14 @@ async function runWorker(ctx, deps) {
         } else if (coverage.complete !== true) {
           refuse(
             'kernel-coverage',
-            `root coverage is INCOMPLETE: ${String(coverage.unverified.length)} unverified, ${String(coverage.unresolved.length)} unresolved, ${String(coverage.skippedWithoutDerivedCoverage.length)} skipped root(s) with no derived coverage`,
+            `root coverage is INCOMPLETE: ${String(coverage.unverified.length)} unverified, ${String(coverage.unresolved.length)} unresolved, ${String(coverage.skippedWithoutDerivedCoverage.length)} skipped root(s) with no derived coverage, ${String((coverage.incompletePlans ?? []).length)} incomplete spine plan(s)`,
+          );
+        } else if (verification === null) {
+          refuse('kernel-descendants', 'the boundary reported no descendant verification, so a verified root label cannot be taken as content protection');
+        } else if (verification.descendantsQualified !== true) {
+          refuse(
+            'kernel-descendants',
+            `descendant verification is INCOMPLETE: ${String((verification.unverifiedRoots ?? []).length)} root(s) whose content was not shown to be covered${verification.reason === undefined ? '' : ` (${String(verification.reason)})`}`,
           );
         }
         if (kernel.contract?.drifted === true) {
@@ -669,6 +712,8 @@ async function runWorker(ctx, deps) {
                 kernelRootsVerified: preCreate?.kernel?.coverageComplete === true && preCreate?.kernel?.verified > 0,
                 kernelCoverageComplete: preCreate?.kernel?.coverageComplete === true,
                 kernelContractNotDrifted: preCreate?.kernel?.drift !== true,
+                /** HOST-S1 §7.2: the content claim, passed with the root claim so the two phases agree. */
+                kernelDescendantsQualified: preCreate?.kernel?.descendantsQualified === true,
               },
             });
             if (capability.allowed !== true) capabilityRefusal = capability.reason ?? 'the capability classification refused this worker';

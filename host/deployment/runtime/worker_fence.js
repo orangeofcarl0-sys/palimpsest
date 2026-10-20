@@ -33,7 +33,6 @@ import { CONFIDENTIAL_PROFILE, admitConfidentialWorker, openConfidentialSlot } f
 import { createCwdFenceGuard, createDelegationCwdGuard, delegationCwdToolsFor } from './cwd_fence.js';
 import { applyReadFence, disclosedResiduals, isAncestorOf, protectedRootsFor, verifyTree } from './read_fence.js';
 import { createReadGuard, FENCED_READ_TOOLS } from './read_guard.js';
-
 /** The marker directory that identifies a repository root from anywhere inside it. */
 const PALIMPSEST_DIR = '.palimpsest';
 
@@ -254,12 +253,42 @@ export function installWorkerReadBoundary(input = {}) {
     );
     guardScope = GUARD_SCOPES.GLOBAL;
   }
+  /**
+   * HOST-S1 §7.2 — THE DESCENDANT VERIFICATION IS COMPUTED HERE, IN THE PRODUCTION INSTALLATION PATH.
+   *
+   * A verified ROOT label is not the claim that the CONTENT is protected: a child can block inheritance, and a
+   * reparse point exposes a subtree the root's label never reaches. E1RG added `verifyTree` but nothing in the
+   * admission path consumed it (`baseline-and-falsifiers.json` F3 measured `admitWorker`'s required keys as
+   * containing no tree or descendant field at all).
+   *
+   * The walk runs over the roots that ACTUALLY received a verified label, because verifying an unlabelled root's
+   * descendants would report "unlabelled" for a root that is already known to be unprotected — a true statement
+   * that would obscure the real reason for the refusal. `rootsVerified` already fails in that case.
+   *
+   * BOUNDS ARE PRESERVED (§7.3). `verifyTree` keeps MAX_TREE_ENTRIES/MAX_TREE_DEPTH, and an incomplete walk makes
+   * `descendantsQualified` false rather than raising the limits. `scripts/host_s1/verify-cost-probe.mjs` records
+   * the measured cost on the real layout.
+   */
+  /** @type {{ roots: readonly string[], world: string, verifyTrees?: boolean }} */
+  const verification = aliases.allowed === true
+    ? verifyDescendants({ kernel, roots: config.roots })
+    : {
+        trees: [],
+        descendantsQualified: false,
+        unverifiedRoots: [],
+        reason: 'the execution world was rejected by alias admission, so no root was labelled and no descendant could be verified',
+      };
   return {
     config,
     kernel,
     aliasScan: aliases.scan,
     aliasesClean: aliases.allowed,
     ...(aliases.allowed ? {} : { aliasRefusal: aliases.reason }),
+    /**
+     * §7.2: the descendant qualification, reported alongside the root facts. A caller that requires a boundary
+     * must require this field, not `kernel.coverage.complete` alone.
+     */
+    verification,
     guardInstalled: guardDisposer !== undefined,
     guardScope,
     ...(guardDisposer === undefined ? {} : { guardDisposer }),
@@ -274,6 +303,46 @@ export function installWorkerReadBoundary(input = {}) {
     delegationFenceInstalled: delegationFenceDisposer !== undefined,
     ...(delegationFenceDisposer === undefined ? {} : { delegationFenceDisposer }),
     fencedTools: FENCED_READ_TOOLS,
+  };
+}
+
+/**
+ * Verify the CONTENT of every root that received a verified label.
+ *
+ * The question this answers is §7.1's: does the label actually reach the bytes? A root label is inherited by
+ * existing children at write time and by new children at creation, but inheritance can be BLOCKED on a child, and
+ * a reparse point is never walked. Either way the root's `verified: true` would be true while content it appears
+ * to cover is not covered.
+ *
+ * FAIL CLOSED, AND NAMED. The result carries the per-root outcomes so a refusal can name the root that failed
+ * rather than reporting a single boolean.
+ *
+ * @param {{ kernel: { outcomes?: readonly { path: string, verified?: boolean }[] }, roots: readonly string[] }} input
+ * @returns {{ trees: readonly any[], descendantsQualified: boolean, unverifiedRoots: readonly string[], reason?: string }}
+ */
+function verifyDescendants(input) {
+  const labelled = (input.kernel.outcomes ?? []).filter((entry) => entry.verified === true).map((entry) => entry.path);
+  if (labelled.length === 0) {
+    return {
+      trees: [],
+      descendantsQualified: false,
+      unverifiedRoots: [],
+      reason: 'no root received a verified label, so there is no protected content to verify',
+    };
+  }
+  /**
+   * EVERY ROOT IS VERIFIED WITH THE FULL PROTECTED ROOT SET, so a link into ANOTHER protected root is classified
+   * as covered by that root rather than as leaving the domain.
+   */
+  const trees = labelled.map((root) => verifyTree({ root, protectedRoots: input.roots }));
+  const unverifiedRoots = trees.filter((entry) => entry.admissionEligible !== true).map((entry) => entry.root);
+  return {
+    trees,
+    descendantsQualified: unverifiedRoots.length === 0,
+    unverifiedRoots,
+    ...(unverifiedRoots.length === 0
+      ? {}
+      : { reason: `${String(unverifiedRoots.length)} protected root(s) could not be shown to cover their content: ${unverifiedRoots.slice(0, 3).join(', ')}` }),
   };
 }
 
@@ -313,11 +382,17 @@ export function installWorkerReadBoundary(input = {}) {
  *   kernelRootsVerified     — every root that could be labelled was labelled and verified
  *   kernelCoverageComplete  — no unresolved root, no skipped ancestor without derived coverage
  *   kernelContractNotDrifted — the Win32 seam is the one this fence was qualified against
+ *   kernelDescendantsQualified — HOST-S1 §7.2: every verified root's CONTENT was verified, not only its root
  *
- * `kernelCoverageComplete` is the load-bearing one. `supported === true` alone is satisfied by a plan that
- * labels nothing, which is exactly the state the probe showed to be unprotected.
+ * `kernelCoverageComplete` is the load-bearing one for the ROOT claim. `supported === true` alone is satisfied by
+ * a plan that labels nothing, which is exactly the state the probe showed to be unprotected.
  *
- * @param {{ visibleNames: readonly string[], guardScope?: string, boundary?: { guardInstalled?: boolean, cwdFenceInstalled?: boolean, delegationFenceInstalled?: boolean, kernelSupported?: boolean, kernelRootsVerified?: boolean, kernelCoverageComplete?: boolean, kernelContractNotDrifted?: boolean } }} input
+ * HOST-S1 §7.1/§7.2: `kernelDescendantsQualified` is the load-bearing one for the CONTENT claim, and it is a
+ * SEPARATE requirement because they fail differently. A deployment can have every root labelled (coverage
+ * complete) and still have a child whose label inheritance is blocked; before Host-S1 that configuration was
+ * admitted, because nothing in the required set mentioned descendants at all.
+ *
+ * @param {{ visibleNames: readonly string[], guardScope?: string, boundary?: { guardInstalled?: boolean, cwdFenceInstalled?: boolean, delegationFenceInstalled?: boolean, kernelSupported?: boolean, kernelRootsVerified?: boolean, kernelCoverageComplete?: boolean, kernelContractNotDrifted?: boolean, kernelDescendantsQualified?: boolean } }} input
  * @returns {{ allowed: boolean, reason?: string, classification: ReturnType<typeof admitWorkerStart>['classification'], counts: ReturnType<typeof classCounts>, boundary: { required: Record<string, boolean>, satisfied: boolean } }}
  */
 export function admitWorker(input) {
@@ -339,6 +414,8 @@ export function admitWorker(input) {
     kernelRootsVerified: installed?.kernelRootsVerified === true,
     kernelCoverageComplete: installed?.kernelCoverageComplete === true,
     kernelContractNotDrifted: installed?.kernelContractNotDrifted === true,
+    /** HOST-S1 §7.2: the CONTENT claim, which a verified root does not imply. */
+    kernelDescendantsQualified: installed?.kernelDescendantsQualified === true,
   };
   const satisfied = Object.values(required).every((value) => value === true);
   const counts = classCounts(verdict.classification.classified);
@@ -367,6 +444,7 @@ export function admitWorker(input) {
 export function boundaryTelemetry(installed) {
   const outcomes = installed.kernel.outcomes ?? [];
   const contract = installed.kernel.contract ?? {};
+  const trees = installed.verification?.trees ?? [];
   return JSON.stringify({
     kernel: {
       supported: installed.kernel.supported,
@@ -376,6 +454,19 @@ export function boundaryTelemetry(installed) {
       unverified: outcomes.filter((entry) => !entry.verified).map((entry) => entry.path),
       alreadyProtected: outcomes.filter((entry) => entry.alreadyProtected === true).length,
       skipped: (installed.kernel.skipped ?? []).length,
+    },
+    /**
+     * §7.2: the descendant facts, kept distinct from the root facts. `qualified` is the admission-relevant one;
+     * the counts say what was actually examined, so a reader can see whether a pass came from a real walk.
+     */
+    descendants: {
+      qualified: installed.verification?.descendantsQualified === true,
+      trees: trees.length,
+      checked: trees.reduce((sum, entry) => sum + (entry.checked ?? 0), 0),
+      unverifiedRoots: (installed.verification?.unverifiedRoots ?? []).length,
+      reparseOutsideProtectionDomain: trees.reduce((sum, entry) => sum + (entry.reparseOutsideProtectionDomain?.length ?? 0), 0),
+      reparseUnresolvable: trees.reduce((sum, entry) => sum + (entry.reparseUnresolvable?.length ?? 0), 0),
+      truncated: trees.filter((entry) => entry.truncated === true).length,
     },
     guard: { installed: installed.guardInstalled, scope: installed.guardScope, tools: installed.fencedTools, cwdBasisPinned: installed.cwdFenceInstalled === true },
     aliases: { clean: installed.aliasesClean === true, found: (installed.aliasScan?.aliases ?? []).length },
