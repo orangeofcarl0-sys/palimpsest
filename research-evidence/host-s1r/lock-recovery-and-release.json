@@ -1,10 +1,36 @@
 {
   "kind": "HOST_S1R_LOCK_RECOVERY_AND_RELEASE",
   "evidenceClass": "CROSS_PROCESS_RUNTIME_VERIFIED",
-  "staleRecovery": null,
-  "staleRecoveryReproduced": false,
-  "releaseDefect": null,
-  "releaseDefectReproduced": false,
+  "staleRecovery": {
+    "successorInstalledBeforeRecoveryRename": true,
+    "recovererMovedTheSuccessor": true,
+    "thirdPartyAcquiredTheVacatedPathname": true,
+    "successorDisplacedFromPathname": true,
+    "childCompleted": false,
+    "childTimedOut": true,
+    "childExitCode": null,
+    "finalPathnameOwnerToken": "third-party"
+  },
+  "staleRecoveryReproduced": true,
+  "releaseDefect": {
+    "granted": true,
+    "writeFailureInjected": true,
+    "releaseResult": {
+      "released": false,
+      "detail": "the slot was not released: injected ENOSPC",
+      "retryable": true
+    },
+    "releaseThrew": null,
+    "retryResult": {
+      "released": false,
+      "detail": "this handle holds no slot",
+      "retryable": false
+    },
+    "holdersAfterFailedRelease": [
+      "47024-04040c9a-5759-4843-9922-0c0ce3cd3325"
+    ]
+  },
+  "releaseDefectReproduced": true,
   "policy": {
     "automaticReclamation": "DISABLED",
     "ambiguousLock": "REFUSED with a named operator action",
@@ -17,8 +43,8 @@
   "controls": {
     "id": "host-s1-capacity",
     "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_capacity_domain.test.ts",
-    "runId": "139d2646-fe4f-4a8e-9526-24acbe1c44ff",
-    "startedAt": "2026-10-21T07:21:47.283Z",
+    "runId": "5f84bfd5-a5df-446e-b806-923b283da44e",
+    "startedAt": "2026-10-21T07:38:38.693Z",
     "exitCode": 0,
     "total": 28,
     "passed": 28,
@@ -63,9 +89,9 @@
     "the indeterminate-liveness path has no reproducible fixture on this host: every real pid answers ESRCH or EPERM, so the tri-state rule is pinned from source"
   ],
   "runIdentity": {
-    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
-    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "5e2e882c5838184093a1f8b23a0448101393febd",
+    "executedCodeTree": "633b18daf562d759b19f04aeb68da802d18eb01a",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",

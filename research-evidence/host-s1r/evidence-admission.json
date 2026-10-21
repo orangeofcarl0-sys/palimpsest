@@ -6,7 +6,7 @@
     {
       "id": "host-s1-spine",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1_spine_coverage.test.ts",
-      "runId": "baa7861c-ebfc-40be-96b0-4b40548bf194",
+      "runId": "257328e8-f516-4421-836f-32a511ba4e14",
       "exitCode": 0,
       "total": 14,
       "passed": 14,
@@ -35,7 +35,7 @@
     {
       "id": "host-s1-descendant",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1_descendant_admission.test.ts test/host_s1_descendant_phase.test.ts",
-      "runId": "02fdda4e-b0ef-44da-9194-7bb546aa63fd",
+      "runId": "4d523f02-0821-41ea-8a10-1cd55f0c9a1a",
       "exitCode": 0,
       "total": 27,
       "passed": 27,
@@ -77,7 +77,7 @@
     {
       "id": "host-s1-capacity",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_capacity_domain.test.ts",
-      "runId": "139d2646-fe4f-4a8e-9526-24acbe1c44ff",
+      "runId": "5f84bfd5-a5df-446e-b806-923b283da44e",
       "exitCode": 0,
       "total": 28,
       "passed": 28,
@@ -120,7 +120,7 @@
     {
       "id": "host-s1-delegation",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1_delegation_oracle.test.ts",
-      "runId": "e1f02abf-ff52-431d-ac91-ae0fc7a63014",
+      "runId": "6b3c466f-529d-4b9e-b803-b4d27d8c0a75",
       "exitCode": 0,
       "total": 19,
       "passed": 19,
@@ -154,7 +154,7 @@
     {
       "id": "host-s1-reparse",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_reparse_boundary.test.ts",
-      "runId": "461a9ed0-1b5b-465c-b125-114edf77966c",
+      "runId": "6f8135c4-19ef-45b7-9171-bf91be89e741",
       "exitCode": 0,
       "total": 15,
       "passed": 15,
@@ -184,7 +184,7 @@
     {
       "id": "host-s1-evidence",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_evidence_admission.test.ts",
-      "runId": "a533948d-00f8-427e-8c5c-d110db3791ae",
+      "runId": "fabd671a-f249-4ab8-9117-3f9f38d635f3",
       "exitCode": 0,
       "total": 12,
       "passed": 12,
@@ -211,7 +211,7 @@
     {
       "id": "host-regression",
       "command": "node node_modules/vitest/vitest.mjs run test/trajectory_p2e1rg_baseline_admission.test.ts test/trajectory_p2e1rg_capacity_atomicity.test.ts test/trajectory_p2e1rg_kernel_coverage.test.ts test/trajectory_p2e1rg_precreate_admission.test.ts test/trajectory_p2e1re_pretool_boundary.test.ts test/trajectory_p2e1re_win32_fault.test.ts test/trajectory_p2e1rf_delegation_alias.test.ts test/trajectory_p2e1rf_answer_provenance.test.ts test/trajectory_p2e1rf_malformed_ace.test.ts test/trajectory_p2e1rf_evidence_freshness.test.ts",
-      "runId": "25048c93-58fa-41d7-b87e-917aeb9453e4",
+      "runId": "d0de98e8-2b59-4986-80df-aaa6ba6e9e2c",
       "exitCode": 0,
       "total": 146,
       "passed": 146,
@@ -374,7 +374,7 @@
     {
       "id": "baseline-falsifiers",
       "command": "node scripts/host_s1/reproduce-baseline.mjs --json-out <rig>/baseline-falsifiers.json",
-      "runId": "5378740f-0886-45c9-ae6d-fe28679e6e82",
+      "runId": "29f15e11-5bf3-407e-8a8d-5cbd154a7a1d",
       "exitCode": 2,
       "exitExpected": false,
       "artifactProduced": false,
@@ -384,7 +384,7 @@
     {
       "id": "sibling-world",
       "command": "node scripts/host_s1/sibling-world-probe.mjs --json-out <rig>/sibling-world.json",
-      "runId": "86b872e4-4d03-404c-867f-f88eb8dc1af7",
+      "runId": "0f6b4fd2-451c-418e-b7b4-d0068ec1c2cc",
       "exitCode": 0,
       "exitExpected": true,
       "artifactProduced": true,
@@ -394,7 +394,7 @@
     {
       "id": "junction-label",
       "command": "node scripts/host_s1/junction-label-probe.mjs --json-out <rig>/junction-label.json",
-      "runId": "4fd0cc3c-2294-46ac-80aa-5c4b069e5bd5",
+      "runId": "5be0b324-6885-4fc5-b5b9-c5762faa96e8",
       "exitCode": 3,
       "exitExpected": true,
       "artifactProduced": true,
@@ -404,22 +404,22 @@
     {
       "id": "verify-cost",
       "command": "node scripts/host_s1/verify-cost-probe.mjs --json-out <rig>/verify-cost.json",
-      "runId": "18397176-b2cd-4abb-a153-59cc2ce55aae",
+      "runId": "29774a05-a7a8-41ed-a526-daa6e7d3c289",
       "exitCode": 0,
       "exitExpected": true,
       "artifactProduced": true,
-      "artifactDigest": "sha256-5bdae76f10d28455694487b1ae84b6bdcf11d654f81e7564f7c9870f834ddf08",
+      "artifactDigest": "sha256-2b7cc5ef4e9a6e80fb3ad2c2127317f4f6a76b0e99ee79f92ac664db4a1f7bf9",
       "observedVerdict": "PASS"
     },
     {
       "id": "baseline-concerns",
       "command": "node <parent-worktree>/scripts/host_s1r/reproduce-concerns.mjs --json-out <rig>/baseline-concerns.json",
-      "runId": "c60de151-03ca-4fce-a0c8-6fdde85dd4e2",
-      "exitCode": null,
-      "exitExpected": false,
-      "artifactProduced": false,
-      "artifactDigest": null,
-      "observedVerdict": "MISSING"
+      "runId": "40bcaaff-4bca-4b43-8ff4-8f55307eb1a6",
+      "exitCode": 0,
+      "exitExpected": true,
+      "artifactProduced": true,
+      "artifactDigest": "sha256-145d5b15f711692992b8e5799e070afd8b63baf6f6d87045ec247c50cef4902a",
+      "observedVerdict": "PASS"
     }
   ],
   "conformance": {
@@ -427,15 +427,17 @@
     "receipts": {
       "r1-hr": {
         "id": "r1-hr",
-        "runId": "31396680-2e16-4173-9b92-893f8134d0ea",
-        "startedAt": "2026-10-21T07:22:20.992Z",
+        "runId": "63ec63be-a6d8-4c50-ac79-29f85005c86c",
+        "startedAt": "2026-10-21T07:39:15.362Z",
         "command": "node scripts/r1hr/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hr",
-        "rigPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hr",
+        "rigPath": "F:\\hosts1r-final\\conformance\\r1-hr",
+        "rigAclGrantedToCurrentUser": true,
+        "rigAclNote": "the rig root is granted (OI)(CI)F to the current user because a label write needs WRITE_OWNER, which the volume's inherited ACL does not give",
         "exitCode": 0,
         "reportProduced": true,
         "reportParsed": true,
-        "reportPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hr\\conformance.json",
-        "digest": "sha256-57192cc996a79d5dddebd862da81a63ba8d8e39d27114351a0bf728d47b84885",
+        "reportPath": "F:\\hosts1r-final\\conformance\\r1-hr\\conformance.json",
+        "digest": "sha256-128944fb11183f7dc2907dd766d484aecbebdaf1a4eca94a6401329aa39f10b6",
         "pass": 44,
         "limit": 3,
         "fail": 0,
@@ -452,14 +454,16 @@
       },
       "r1-hc": {
         "id": "r1-hc",
-        "runId": "e126cd9c-aa1f-43bc-977d-a6754b8e07bb",
-        "startedAt": "2026-10-21T07:22:25.463Z",
+        "runId": "d249cff7-39b9-40ff-8fd2-4a9167a92ab9",
+        "startedAt": "2026-10-21T07:39:21.047Z",
         "command": "node scripts/r1hc/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hc",
-        "rigPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hc",
+        "rigPath": "F:\\hosts1r-final\\conformance\\r1-hc",
+        "rigAclGrantedToCurrentUser": true,
+        "rigAclNote": "the rig root is granted (OI)(CI)F to the current user because a label write needs WRITE_OWNER, which the volume's inherited ACL does not give",
         "exitCode": 0,
         "reportProduced": true,
         "reportParsed": true,
-        "reportPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hc\\conformance.json",
+        "reportPath": "F:\\hosts1r-final\\conformance\\r1-hc\\conformance.json",
         "digest": "sha256-b3cbee22ea3578b34700e50c0a7b1084cc3f805a5d273d14fb44e0f63cf1eedc",
         "pass": 26,
         "limit": 1,
@@ -523,9 +527,9 @@
     "reportOnlyIsRecorded": true
   },
   "runIdentity": {
-    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
-    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "5e2e882c5838184093a1f8b23a0448101393febd",
+    "executedCodeTree": "633b18daf562d759b19f04aeb68da802d18eb01a",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",
