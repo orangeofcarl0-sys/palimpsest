@@ -108,3 +108,56 @@ experiment, not a general data-retention product.
 4. A stated stopping rule and trial count.
 
 Until all four exist, `CONTROL_BASELINE_TECHNICALLY_READY` remains **NOT_ESTABLISHED**.
+
+## 8. Host-S1R handoff (nonexecuting)
+
+Host-S1R re-qualified the Host boundary for the exact runtime in §4. Nothing here was executed.
+
+### 8.1 Precondition 3 is now satisfied, with a stated scope
+
+`S1R-E HOST_S1_SECURITY_RATIFIED` holds for **Windows x64 10.0.26200, Node 24.22.0, DSH 0.2.1-rc.2, koffi 3.1.1**.
+It is not a claim about any other version. Before the first CONTROL trial, confirm the installed runtime still
+matches; if it does not, precondition 3 fails again and the Host boundary must be re-measured.
+
+### 8.2 The five R2-VR informativeness conditions, restated as untested
+
+These remain conditions on the *experiment*, not on the Host, and none has been evaluated:
+
+1. CONTROL outcomes are not entirely at floor or ceiling.
+2. At least two relevant outcome dimensions vary.
+3. At least one treatment-relevant CONTROL failure varies.
+4. The missing CONTROL fact is specifically addressable by the proposed Trajectory Treatment.
+5. Treatment-irrelevant failures cannot manufacture benchmark qualification.
+
+No threshold may be relaxed after observing model results.
+
+### 8.3 Frozen now
+
+| Field | State |
+|---|---|
+| Evaluation units | Frozen (§2): trial validity, per-proposition epistemic correctness, source correctness, evidence availability, evidence uptake, decision quality, correct uncertainty/deferral, treatment-relevant failure, operational behaviour |
+| Oracle version | Frozen: `p2e1rd-internal-citation-closed-1` |
+| CONTROL context boundary | Frozen: no capsule section |
+| Allowed tools | Frozen by the E1RG-qualified worker profile, re-verified by S1R |
+| Work authority | Frozen: the answer is assistant text; a Worker Result is non-authoritative |
+| Trial validity | Frozen (§2/§3) |
+| Failure taxonomy | Frozen |
+| Re-scoring procedure | Frozen (§5) |
+| Exclusion rules | Frozen (§3 concern 5) |
+| Data retention | Frozen (§5): published / restricted / never-persisted tiers |
+| Fixture identity | **Candidate** — re-pin at execution time |
+
+### 8.4 Unresolved and not to be invented
+
+Provider · exact model identifier · maximum cost · trial count · maximum elapsed time · seed/temperature policy ·
+the actual stochastic adapter · stopping rule · raw structured answer retention controls.
+
+No external model call is authorized. `CONTROL_BASELINE_TECHNICALLY_READY` remains **NOT_ESTABLISHED** until
+every §7 precondition exists.
+
+### 8.5 The alternative epistemic-only study
+
+If tool-capable Host execution were blocked for security reasons, a tool-free read-only epistemic study could be
+considered separately. It would be a **different experimental condition**, must not claim equivalence to the
+normal Work Worker Port, must not measure Work Utility or Cooperation Utility through proxies, and would require
+its own provider/model/cost authorization. It is not created or executed by this stage.

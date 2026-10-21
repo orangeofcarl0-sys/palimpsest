@@ -6,7 +6,7 @@
     {
       "id": "host-s1-spine",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1_spine_coverage.test.ts",
-      "runId": "5b41592d-20a0-43ac-ac18-08f44d4d6034",
+      "runId": "d371e19a-a0ec-4375-b8b4-d7223bb4d286",
       "exitCode": 0,
       "total": 14,
       "passed": 14,
@@ -35,7 +35,7 @@
     {
       "id": "host-s1-descendant",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1_descendant_admission.test.ts test/host_s1_descendant_phase.test.ts",
-      "runId": "66faf071-0702-43dc-9bb7-c743143e3350",
+      "runId": "9df13dbf-ed44-4662-9a60-d8964c289e7b",
       "exitCode": 0,
       "total": 27,
       "passed": 27,
@@ -77,7 +77,7 @@
     {
       "id": "host-s1-capacity",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_capacity_domain.test.ts",
-      "runId": "d3d1cd82-44f4-4992-915e-a5224106621f",
+      "runId": "ab93f144-c74f-4874-958a-c34677e1d0f0",
       "exitCode": 0,
       "total": 28,
       "passed": 28,
@@ -120,7 +120,7 @@
     {
       "id": "host-s1-delegation",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1_delegation_oracle.test.ts",
-      "runId": "ab38cfbc-6b50-40a6-a568-2267831533f9",
+      "runId": "7aaa953e-b33e-4b02-882d-452df70ea0ad",
       "exitCode": 0,
       "total": 19,
       "passed": 19,
@@ -154,7 +154,7 @@
     {
       "id": "host-s1-reparse",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_reparse_boundary.test.ts",
-      "runId": "8e751198-5964-48a6-b329-c97fc9a5ec81",
+      "runId": "555963ff-8dee-4a5c-996b-39fb05e2b398",
       "exitCode": 0,
       "total": 15,
       "passed": 15,
@@ -184,7 +184,7 @@
     {
       "id": "host-s1-evidence",
       "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_evidence_admission.test.ts",
-      "runId": "a93513d9-f389-4ac0-8211-e1d9486ee3b8",
+      "runId": "cc1ef925-46bd-4434-b4ed-194a0edb53d9",
       "exitCode": 0,
       "total": 12,
       "passed": 12,
@@ -211,7 +211,7 @@
     {
       "id": "host-regression",
       "command": "node node_modules/vitest/vitest.mjs run test/trajectory_p2e1rg_baseline_admission.test.ts test/trajectory_p2e1rg_capacity_atomicity.test.ts test/trajectory_p2e1rg_kernel_coverage.test.ts test/trajectory_p2e1rg_precreate_admission.test.ts test/trajectory_p2e1re_pretool_boundary.test.ts test/trajectory_p2e1re_win32_fault.test.ts test/trajectory_p2e1rf_delegation_alias.test.ts test/trajectory_p2e1rf_answer_provenance.test.ts test/trajectory_p2e1rf_malformed_ace.test.ts test/trajectory_p2e1rf_evidence_freshness.test.ts",
-      "runId": "6362252f-bd65-45a7-8016-9800f7a458c4",
+      "runId": "96eeec08-be54-4222-ba40-fdcc9194924c",
       "exitCode": 0,
       "total": 146,
       "passed": 146,
@@ -372,19 +372,9 @@
   ],
   "producers": [
     {
-      "id": "baseline-falsifiers",
-      "command": "node scripts/host_s1/reproduce-baseline.mjs --json-out <rig>/baseline-falsifiers.json",
-      "runId": "7c7dacb0-da3c-4694-b135-07818b991378",
-      "exitCode": 2,
-      "exitExpected": false,
-      "artifactProduced": false,
-      "artifactDigest": null,
-      "observedVerdict": "MISSING"
-    },
-    {
       "id": "sibling-world",
       "command": "node scripts/host_s1/sibling-world-probe.mjs --json-out <rig>/sibling-world.json",
-      "runId": "f06eaefe-067c-41cd-b61b-13b590db644c",
+      "runId": "d5298df5-33b3-447c-b6b9-47257969c24c",
       "exitCode": 0,
       "exitExpected": true,
       "artifactProduced": true,
@@ -394,7 +384,7 @@
     {
       "id": "junction-label",
       "command": "node scripts/host_s1/junction-label-probe.mjs --json-out <rig>/junction-label.json",
-      "runId": "e064e8fe-d2b8-4d1d-8d51-740389f00444",
+      "runId": "0403a82a-d022-4acb-8b65-0472dfa75a70",
       "exitCode": 3,
       "exitExpected": true,
       "artifactProduced": true,
@@ -404,21 +394,21 @@
     {
       "id": "verify-cost",
       "command": "node scripts/host_s1/verify-cost-probe.mjs --json-out <rig>/verify-cost.json",
-      "runId": "eecad83e-ed29-43ea-ad32-85aef6664c57",
+      "runId": "641d4ff7-b2b0-4cf7-b8ee-81fd510f741a",
       "exitCode": 0,
       "exitExpected": true,
       "artifactProduced": true,
-      "artifactDigest": "sha256-a63ebc71a4ec6e03c52724b8f04f6edba6b95e3f8059298dd9cbad8cd0c69a9a",
+      "artifactDigest": "sha256-19de967d9518e450b518c97b9253a48c54f928685d7fabe8bfe392c6bf3114b0",
       "observedVerdict": "PASS"
     },
     {
       "id": "baseline-concerns",
       "command": "node <parent-worktree>/scripts/host_s1r/reproduce-concerns.mjs --json-out <rig>/baseline-concerns.json",
-      "runId": "2744459b-9b21-4144-8d4c-222e59d4c13d",
+      "runId": "4515d1ed-afe0-48c5-ba32-09efdd4aa4bb",
       "exitCode": 0,
       "exitExpected": true,
       "artifactProduced": true,
-      "artifactDigest": "sha256-b0fe80d93b153412b08191425c4b4ec63df525b03467c4d6dbd25e33f57718a2",
+      "artifactDigest": "sha256-688a79960f5918fae9d2387df0a1c0b7c503304010738e84133960231c346c74",
       "observedVerdict": "PASS"
     }
   ],
@@ -427,8 +417,8 @@
     "receipts": {
       "r1-hr": {
         "id": "r1-hr",
-        "runId": "616803b5-44b0-4a6f-a537-1f5b9a70c458",
-        "startedAt": "2026-10-21T19:07:41.205Z",
+        "runId": "fe8a2012-41a8-4172-b178-5a70373b5fa7",
+        "startedAt": "2026-10-21T19:27:44.616Z",
         "command": "node scripts/r1hr/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hr",
         "rigPath": "F:\\hosts1r-final\\conformance\\r1-hr",
         "rigAclGrantedToCurrentUser": true,
@@ -454,8 +444,8 @@
       },
       "r1-hc": {
         "id": "r1-hc",
-        "runId": "76d47a33-b5c6-4e9c-8f52-5c5b4f83a0a0",
-        "startedAt": "2026-10-21T19:07:45.396Z",
+        "runId": "f5a8f301-8cd3-42c0-a6ee-776b0bf324b2",
+        "startedAt": "2026-10-21T19:27:48.346Z",
         "command": "node scripts/r1hc/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hc",
         "rigPath": "F:\\hosts1r-final\\conformance\\r1-hc",
         "rigAclGrantedToCurrentUser": true,
@@ -527,9 +517,9 @@
     "reportOnlyIsRecorded": true
   },
   "runIdentity": {
-    "codeFreezeHead": "efa39345c3e8402989d5345e685868a75f436d78",
-    "executedCodeTree": "e8c547dad04b165c44dc95aa10a3bf0119d7897f",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "9df766fe66fa513ed99fcee394a6b28ce9f15d29",
+    "executedCodeTree": "34ddc209802f9cfa575b0a76602c231e4d136dc7",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",
