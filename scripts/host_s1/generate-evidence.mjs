@@ -20,7 +20,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const EVIDENCE = join(REPO, "research-evidence", "host-s1");
+const EVIDENCE = join(REPO, "research-evidence", "host-s1r");
 const NL = String.fromCharCode(10);
 
 const arg = (name) => {
@@ -78,13 +78,13 @@ const sha256 = (text) => `sha256-${createHash("sha256").update(Buffer.from(text,
  * `classify` maps the producer's own verdict onto PASS / LIMIT / FAIL. A producer that did not produce a
  * parseable artifact is MISSING — never PASS.
  */
-function produce({ id, command, args, expectedExit = [0], classify }) {
+function produce({ id, command, args, expectedExit = [0], classify, cwd = REPO }) {
   const startedAt = new Date().toISOString();
   const runId = randomUUID();
   const outPath = join(rigResolved, `${id}.json`);
   rmSync(outPath, { force: true });
   const result = spawnSync(NODE, [...args, "--json-out", outPath], {
-    cwd: REPO,
+    cwd,
     encoding: "utf8",
     timeout: 1_800_000,
     maxBuffer: 128 * 1024 * 1024,
@@ -157,22 +157,71 @@ const producers = [
   },
   {
     id: "baseline-concerns",
-    command: "node scripts/host_s1r/reproduce-concerns.mjs",
-    args: [join(REPO, "scripts", "host_s1r", "reproduce-concerns.mjs")],
     /**
-     * THE BASELINE IS EXPECTED TO REPRODUCE ALL NINE CONCERNS. This producer is run against the PARENT commit's
-     * behaviour only in the sense that its findings were measured there; on the corrected tree the F1/F2 halves
-     * (lock recovery and release) and F3–F6 (domain and reparse) still report `reproduced: true` because they
-     * describe the BASELINE, while the correction is asserted by the suites. The producer is therefore
-     * classified on whether every finding was recorded with an evidence class, never on a pass count.
+     * S1R-D §8.5 — THE BASELINE IS MEASURED AGAINST THE PARENT, NOT AGAINST THE CORRECTED TREE.
+     *
+     * The nine §4 hypotheses describe the PARENT's behaviour. Running the probe on the corrected tree would
+     * report only the findings that are still reproducible — which is a statement about the fix, not about the
+     * baseline, and it would silently turn a corrected defect into "not reproduced". The producer therefore
+     * checks out the parent commit into a detached worktree OUTSIDE the repository and runs the SAME probe
+     * there, so the finding and the correction are measured against different code and both are recorded.
+     *
+     * If the parent worktree cannot be prepared, the producer is MISSING and every dependent verdict is
+     * withheld — the baseline is never inferred from the corrected tree.
+     */
+    command: "node <parent-worktree>/scripts/host_s1r/reproduce-concerns.mjs",
+    args: [join(parentWorktree, "scripts", "host_s1r", "reproduce-concerns.mjs")],
+    cwd: parentWorktree,
+    /**
+     * THE BASELINE MUST REPRODUCE ALL NINE CONCERNS. This producer runs against the PARENT commit, so every
+     * hypothesis must be measured there; a finding that does NOT reproduce on the parent is a problem with the
+     * probe or with the parent selection, and it is reported as such rather than accepted.
      */
     classify: (artifact) => {
+      if (parentWorktreeState.prepared !== true) return `MISSING(${String(parentWorktreeState.detail)})`;
       const findings = Array.isArray(artifact?.findings) ? artifact.findings : [];
-      const classified = findings.every((entry) => typeof entry?.evidenceClass === "string");
-      return findings.length === 9 && classified ? "PASS" : `FAIL(${String(findings.length)} findings)`;
+      const reproduced = findings.filter((entry) => entry.reproduced === true).map((entry) => entry.id);
+      return findings.length === 9 && reproduced.length === 9 ? "PASS" : `FAIL(${String(reproduced.length)}/9 reproduced)`;
     },
   },
 ];
+
+/**
+ * THE PARENT WORKTREE. Prepared once, outside the repository, at the exact parent commit this stage declares.
+ * A failure here is recorded rather than fatal: the baseline producer then reports MISSING and the dependent
+ * verdicts are withheld, which is the fail-closed answer.
+ */
+const PARENT_HEAD = "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4";
+const parentWorktree = join(rigResolved, "parent-worktree");
+let parentWorktreeState = { prepared: false, detail: null };
+(() => {
+  try {
+    rmSync(parentWorktree, { recursive: true, force: true });
+    const added = spawnSync("git", ["worktree", "add", "--detach", parentWorktree, PARENT_HEAD], { cwd: REPO, encoding: "utf8", timeout: 600_000 });
+    if (added.status !== 0) {
+      parentWorktreeState = { prepared: false, detail: `git worktree add exited ${String(added.status)}: ${String(added.stderr ?? "").slice(0, 300)}` };
+      return;
+    }
+    /**
+     * THE MODULE GRAPH IS LINKED, NOT INSTALLED. A junction gives the same module identity without copying
+     * 30k+ files, and the probe only needs the runtime modules the repository already has.
+     */
+    const modules = join(parentWorktree, "node_modules");
+    if (!existsSync(modules)) {
+      const linked = spawnSync("cmd", ["/c", "mklink", "/J", modules, join(REPO, "node_modules")], { encoding: "utf8", timeout: 120_000 });
+      if (linked.status !== 0) {
+        parentWorktreeState = { prepared: false, detail: `the module link could not be created: ${String(linked.stdout ?? linked.stderr ?? "").slice(0, 200)}` };
+        return;
+      }
+    }
+    /** The probe itself must exist at the parent commit; it does not, so the CORRECTED copy is used there. */
+    mkdirSync(join(parentWorktree, "scripts", "host_s1r"), { recursive: true });
+    copyFileSync(join(REPO, "scripts", "host_s1r", "reproduce-concerns.mjs"), join(parentWorktree, "scripts", "host_s1r", "reproduce-concerns.mjs"));
+    parentWorktreeState = { prepared: true, detail: `detached at ${PARENT_HEAD}` };
+  } catch (error) {
+    parentWorktreeState = { prepared: false, detail: error instanceof Error ? error.message : String(error) };
+  }
+})();
 
 const results = [];
 for (const producer of producers) {
@@ -296,18 +345,6 @@ const write = (name, payload) => {
   writeFileSync(join(EVIDENCE, name), `${JSON.stringify(body, null, 2)}${NL}`, "utf8");
   process.stderr.write(`  → ${name}${NL}`);
 };
-
-/* ---------------------------------------------------------------- 1. baseline */
-{
-  const producer = byId("baseline-falsifiers");
-  write("baseline-and-falsifiers.json", {
-    kind: "HOST_S1R_BASELINE_SECURITY_FALSIFIERS",
-    evidenceClass: producer?.observedVerdict === "PASS" ? "DYNAMICALLY_VERIFIED" : "NOT_ESTABLISHED",
-    note: "F1-F8 reproduce on the E1RG parent and are CORRECTED by this stage; F9 is a documentation erratum recorded forward-only. Re-running this producer on the corrected code therefore reports F9 only, which is the expected post-correction state.",
-    producer: { command: producer?.command, exitCode: producer?.exitCode, runId: producer?.runId, artifactDigest: producer?.artifactDigest },
-    observations: producer?.artifact ?? null,
-  });
-}
 
 /* ---------------------------------------------------------------- 2. baseline falsifiers */
 {
