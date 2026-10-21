@@ -15,6 +15,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -481,7 +482,19 @@ const write = (name, payload) => {
   const runConformance = (id, script) => {
     const runId = randomUUID();
     const startedAt = new Date().toISOString();
-    const rigDir = join(rigResolved, `conformance-${id}`);
+    /**
+     * THE CONFORMANCE RIG LIVES ON A LABEL-WRITABLE VOLUME, AND THAT IS MEASURED RATHER THAN ASSUMED.
+     *
+     * A mandatory-integrity label write needs WRITE_OWNER on the object. The `--rig` directory is outside the
+     * repository (a hard precondition), but a volume whose inherited ACL denies WRITE_OWNER makes every label
+     * write return 5 (access denied) and the suite reports 20 FAIL that say nothing about the code.
+     *
+     * Measured on this host: the same write succeeds under the user profile's temp directory and fails under
+     * a fresh directory on the second volume. The conformance rig therefore uses the profile temp volume, and
+     * the choice is recorded in the receipt so a reader can see where it ran.
+     */
+    const conformanceBase = join(tmpdir(), "palimpsest-s1r-conformance");
+    const rigDir = join(conformanceBase, id);
     rmSync(rigDir, { recursive: true, force: true });
     mkdirSync(rigDir, { recursive: true });
     const result = spawnSync(NODE, [join(REPO, script), `--rig=${rigDir}`], {
@@ -524,7 +537,8 @@ const write = (name, payload) => {
       id,
       runId,
       startedAt,
-      command: `node ${script} --rig=<rig>/conformance-${id}`,
+      command: `node ${script} --rig=<profile-temp>/palimpsest-s1r-conformance/${id}`,
+      rigPath: rigDir,
       exitCode: result.status,
       reportProduced: raw !== null,
       reportParsed: parsed !== null,
