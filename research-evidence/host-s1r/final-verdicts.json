@@ -1,0 +1,106 @@
+{
+  "kind": "HOST_S1R_FINAL_VERDICTS",
+  "evidenceClass": "DERIVED_FROM_EXECUTED_ARTIFACTS",
+  "note": "Each verdict is a conjunction of independent observations recorded in the named artifacts. No verdict is asserted from a single canary or a test count.",
+  "verdicts": {
+    "s1ra": {
+      "id": "S1R-A CONFIDENTIAL_CAPACITY_DOMAIN_QUALIFIED",
+      "result": "NOT_ESTABLISHED",
+      "unmet": [
+        "domainIdentityNamesPrincipal",
+        "crossRepositoryMeasured"
+      ],
+      "evidence": {
+        "artifact": "capacity-domain-and-concurrency.json",
+        "keyObservation": "a Low token granted only repository A read repository B's ACTIVE-world canary; the slot is now keyed by the Windows principal"
+      }
+    },
+    "s1rb": {
+      "id": "S1R-B CONFIDENTIAL_LOCK_RECOVERY_QUALIFIED",
+      "result": "NOT_ESTABLISHED",
+      "unmet": [
+        "staleObservationMovedSuccessor",
+        "thirdPartyEnteredVacatedPath"
+      ],
+      "evidence": {
+        "artifact": "lock-recovery-and-release.json",
+        "keyObservation": "the recovery moved a live successor and a third party entered the vacated pathname; reclamation is now refused with an operator action"
+      }
+    },
+    "s1rc": {
+      "id": "S1R-C REPARSE_ACCESS_BASIS_QUALIFIED",
+      "result": "NOT_ESTABLISHED",
+      "unmet": [
+        "disclosedLimits"
+      ],
+      "evidence": {
+        "artifact": "reparse-protection-basis.json",
+        "keyObservation": "classification is lstat-first; the basis is the verified root set; an out-of-domain target must fall under the declared dependency contract"
+      }
+    },
+    "s1rd": {
+      "id": "S1R-D SECURITY_EVIDENCE_ADMISSION_QUALIFIED",
+      "result": "NOT_ESTABLISHED",
+      "unmet": [
+        "noStipulatedCoverageBooleans"
+      ],
+      "evidence": {
+        "artifact": "evidence-admission.json",
+        "keyObservation": "conformance runs against this freeze with command, exit code, run id and digest; a nonzero exit, a skipped test or a duplicate identity is never PASS"
+      }
+    },
+    "integrated": {
+      "id": "HOST_S1R_SECURITY_RATIFIED",
+      "result": "NOT_ESTABLISHED",
+      "unmet": [
+        "s1ra",
+        "s1rb",
+        "s1rc",
+        "s1rd"
+      ],
+      "evidence": {
+        "artifact": "all of the above",
+        "keyObservation": "every constituent verdict qualified, both conformance suites report 0 FAIL, and the Host regression suite passed"
+      }
+    },
+    "trajectory": {
+      "id": "TRAJECTORY_DSH_MEASUREMENT_CHAIN_PRESERVED",
+      "result": "NOT_ESTABLISHED",
+      "unmet": [
+        "closureExitZero",
+        "closureNoFail"
+      ],
+      "evidence": {
+        "artifact": "trajectory-execution-reconfirmation.json",
+        "keyObservation": "the deterministic assay and closure gate ran at this Code Freeze with modelCallsMade: 0"
+      }
+    }
+  },
+  "stillNotAwarded": {
+    "CONTROL_BASELINE_TECHNICALLY_READY": "NOT_ESTABLISHED",
+    "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+    "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+    "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+    "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+    "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+    "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+    "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED"
+  },
+  "stillNotAwardedReason": "No stochastic trial, no Treatment trial and no external model request occurred in this stage. CONTROL_BASELINE_TECHNICALLY_READY additionally requires a frozen experiment specification and explicit external-model authorisation with a cost bound.",
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0,
+  "runIdentity": {
+    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
+    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
+    "workingTreeDirty": true,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1R",
+  "schemaVersion": 1
+}

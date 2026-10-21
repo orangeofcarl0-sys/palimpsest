@@ -1,0 +1,86 @@
+{
+  "kind": "HOST_S1R_GIT_AND_EVIDENCE_IDENTITY",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "parentHead": "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4",
+  "parentBranch": "host-s1-boundary-completeness-lock-recovery",
+  "branch": "host-s1r-confidential-boundary-ratification",
+  "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
+  "codeFreezeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
+  "workingTreeDirtyAtGeneration": true,
+  "commitSequence": [
+    "549a167b7d0018a4046a5e8d44019d350f02ecf4 fix(host-s1r): measure the baseline against the parent and write S1R evidence separately",
+    "72a5a59251bdcf4d251743e56d757405c85cd0e5 fix(host-s1r): hoist the conformance receipts so the evidence block can read them",
+    "f76f376f63383a27e54eb41bc79bdb9d49a9ade6 fix(host-s1r): run conformance on a label-writable volume",
+    "ceccdfc4cf36fba832779c077217fe9da41a2783 fix(host-s1r): declare the verified-basis inputs in the descendant suite's type",
+    "d91348a487bab89d87755476c5a65fcc43371e37 fix(host-s1r): run conformance against this freeze and fail closed on the verdict",
+    "6e187c0ad826654a5d4e4abe4fb01abefc689a82 fix(host-s1r): classify links by identity first and require a VERIFIED basis",
+    "d47c3959648102879f31fa43e5feef7b7f07b404 fix(host-s1r): scope capacity to the principal and stop unsafe lock reclamation",
+    "47086be66f536ff01764ff29904cec5cdc29a571 test(host-s1r): reproduce the nine confidentiality concerns against the parent"
+  ],
+  "protectedEvidence": {
+    "verdict": "ALL_PROTECTED_TREES_UNCHANGED",
+    "recordedCount": 52,
+    "matched": 52,
+    "mismatched": 0
+  },
+  "forwardErrata": [
+    {
+      "id": "E1RG-ERRATUM-1",
+      "subject": "E1RG Code Freeze tree identity",
+      "documentedInE1rg": "595fae49a08619d98d40d1685736b9803db8c6d2",
+      "actual": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+      "documentedObjectType": "tree",
+      "note": "The documented OID is a real tree object, so the error was not detectable by object existence. Recorded forward-only; the E1RG document is not rewritten in its original commit."
+    },
+    {
+      "id": "E1RG-ERRATUM-2",
+      "subject": "E1RG capacity-race evidence class",
+      "previous": "FIRST_PARTY_DSH_VERIFIED",
+      "corrected": "CROSS_PROCESS_RUNTIME_VERIFIED",
+      "note": "The race is a genuine multi-process runtime test but does not run full DSH Workers. The result itself is unchanged."
+    },
+    {
+      "id": "E1RG-ERRATUM-3",
+      "subject": "E1RG production delegation case was a false positive",
+      "recorded": {
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "sessionCount": 0,
+        "refusalPoint": "PRE_CREATE_ALIAS_ADMISSION",
+        "matched": true
+      },
+      "corrected": {
+        "verdictForThatObservationSet": "POSITIVE_CASE_NOT_EXECUTED",
+        "reason": "the case measured the absence of a leak, not the presence of delegation"
+      }
+    },
+    {
+      "id": "S1R-ERRATUM-1",
+      "subject": "Host-S1 capacity namespace was repository-scoped",
+      "previous": "<repository>/.palimpsest/host-capacity/ — the slot was keyed by the protected repository",
+      "corrected": "%LOCALAPPDATA%/Palimpsest/host-capacity/ — the slot is keyed by the Windows principal on this machine",
+      "evidence": "baseline-security-falsifiers.json F3: a confined process granted only repository A's workspace read repository B's ACTIVE-world canary",
+      "note": "The repository-scoped design was never measured before Host-S1 shipped it. The measurement is what falsified it."
+    },
+    {
+      "id": "S1R-ERRATUM-2",
+      "subject": "Host-S1 automatic stale-lock reclamation was unsafe",
+      "previous": "an abandoned lock was reclaimed by rename-then-verify, and the Host-S1 evidence reported that as qualified",
+      "corrected": "automatic reclamation is DISABLED; an ambiguous lock refuses with a named operator action",
+      "evidence": "baseline-security-falsifiers.json F1: the recovery moved a live successor, a third party acquired the vacated pathname, and the recovery did not terminate",
+      "note": "§6.4 permits the fallback. Exclusive ownership is the security requirement; automatic recovery is an availability feature."
+    }
+  ],
+  "runIdentity": {
+    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
+    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
+    "workingTreeDirty": true,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1R",
+  "schemaVersion": 1
+}

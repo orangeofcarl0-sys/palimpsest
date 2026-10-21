@@ -1,0 +1,32 @@
+{
+  "kind": "HOST_S1R_BASELINE_SECURITY_FALSIFIERS",
+  "evidenceClass": "NOT_ESTABLISHED",
+  "note": "Nine §4 hypotheses measured against the Host-S1 parent. Each records its source, baseline behaviour, actual input, observed output, invariant, evidence class and what remains uncertain. A finding marked reproduced describes the PARENT's behaviour; the correction is asserted by the suites named in the corresponding S1R verdict.",
+  "parentHead": null,
+  "producer": {
+    "command": "node <parent-worktree>/scripts/host_s1r/reproduce-concerns.mjs --json-out <rig>/baseline-concerns.json",
+    "exitCode": null,
+    "runId": "c60de151-03ca-4fce-a0c8-6fdde85dd4e2",
+    "artifactDigest": null
+  },
+  "summary": null,
+  "findings": [],
+  "decisiveMeasurements": {
+    "f1": null,
+    "f3": null,
+    "f2": null
+  },
+  "runIdentity": {
+    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
+    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
+    "workingTreeDirty": true,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1R",
+  "schemaVersion": 1
+}

@@ -1,0 +1,85 @@
+{
+  "kind": "HOST_S1R_REPARSE_PROTECTION_BASIS",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "fileDirectedLinks": {
+    "finding": null,
+    "reproduced": false
+  },
+  "declaredVersusVerifiedBasis": {
+    "finding": null,
+    "reproduced": false
+  },
+  "unknownExternalTargets": {
+    "finding": null,
+    "reproduced": false
+  },
+  "junctionLabelMeasurement": {
+    "verdict": "JUNCTION_LABEL_INSUFFICIENT",
+    "canaryReadThroughLabelledJunction": true,
+    "note": "a label on a junction protects the LINK OBJECT, not its target; a link's own label is never accepted as coverage"
+  },
+  "realLayoutCost": {
+    "roots": 2,
+    "anyOverEntryLimit": false,
+    "anyOverDepthLimit": false,
+    "totalEntries": 13212,
+    "totalElapsedMs": 941,
+    "reparsePointsOutsideRoot": 1
+  },
+  "contract": {
+    "identityBeforeType": "lstat precedes any statSync type gate, so a file-directed link is classified rather than skipped",
+    "protectionBasis": "the set of roots whose label was VERIFIED, never the declared set",
+    "dependencyException": "an out-of-domain target is admitted only when it resolves under a declared dependency root (the DSH installation the host runs from); everything else refuses",
+    "noCatchAll": "there is deliberately no rule admitting arbitrary external paths",
+    "disclosure": "every out-of-domain link stays recorded and `reparseBasis` still reports REPARSE_LEAVES_PROTECTION_DOMAIN"
+  },
+  "controls": {
+    "id": "host-s1-reparse",
+    "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_reparse_boundary.test.ts",
+    "runId": "461a9ed0-1b5b-465c-b125-114edf77966c",
+    "startedAt": "2026-10-21T07:21:58.272Z",
+    "exitCode": 0,
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "duplicateTestIds": [],
+    "testIds": [
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 1. a NORMAL protected tree completes with no reparse points",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 2. a protected root with an UNLABELLED child is not admission-eligible",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 3. a DIRECTORY JUNCTION into protected content is classified by its target",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 4. a FILE-DIRECTED link is classified rather than gated out — F4",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 5. a link into another ACTUALLY VERIFIED root is accounted for",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 6. a link into a DECLARED BUT UNLABELLED root is NOT covered — F5",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 7. a link into a QUALIFIED dependency root is admitted, and reported as such",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 8. a link into an UNKNOWN external root refuses even when a dependency contract exists",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 9. a BROKEN link is unresolvable and refuses admission",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 10. a reparse target REPLACED after admission is caught by the next verification",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 11. the traversal depth and entry limits still bound the walk and never PASS",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 12. a FULLY ENUMERATED root with no derived siblings is not a confidentiality failure",
+      "S1R-C reparse classification (DYNAMICALLY_VERIFIED) 13. a REAL DSH dependency layout classifies installer junctions without refusing the tree",
+      "S1R-C descendant qualification consumes the corrected basis (DYNAMICALLY_VERIFIED) 14. ensureReadFence passes the VERIFIED roots as the basis, not the declared set",
+      "S1R-C descendant qualification consumes the corrected basis (DYNAMICALLY_VERIFIED) 15. an out-of-domain link makes descendantsQualified FALSE"
+    ],
+    "observedVerdict": "PASS",
+    "failures": []
+  },
+  "limits": [
+    "a file-directed symlink cannot be created on this host (EPERM: privilege not held, Developer Mode off); that case is SOURCE_DEMONSTRATED",
+    "a junction aimed at a file is created but is BROKEN (statSync ENOENT), so it cannot demonstrate a read-through",
+    "a reparse target replaced after admission is caught by the NEXT verification; the runtime basis is the kernel label and the alias scan, not this walk"
+  ],
+  "runIdentity": {
+    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
+    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
+    "workingTreeDirty": true,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1R",
+  "schemaVersion": 1
+}

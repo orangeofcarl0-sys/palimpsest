@@ -114,6 +114,43 @@ function produce({ id, command, args, expectedExit = [0], classify, cwd = REPO }
   };
 }
 
+/**
+ * THE PARENT WORKTREE. Prepared once, outside the repository, at the exact parent commit this stage declares.
+ * A failure here is recorded rather than fatal: the baseline producer then reports MISSING and the dependent
+ * verdicts are withheld, which is the fail-closed answer.
+ */
+const PARENT_HEAD = "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4";
+const parentWorktree = join(rigResolved, "parent-worktree");
+let parentWorktreeState = { prepared: false, detail: null };
+(() => {
+  try {
+    rmSync(parentWorktree, { recursive: true, force: true });
+    const added = spawnSync("git", ["worktree", "add", "--detach", parentWorktree, PARENT_HEAD], { cwd: REPO, encoding: "utf8", timeout: 600_000 });
+    if (added.status !== 0) {
+      parentWorktreeState = { prepared: false, detail: `git worktree add exited ${String(added.status)}: ${String(added.stderr ?? "").slice(0, 300)}` };
+      return;
+    }
+    /**
+     * THE MODULE GRAPH IS LINKED, NOT INSTALLED. A junction gives the same module identity without copying
+     * 30k+ files, and the probe only needs the runtime modules the repository already has.
+     */
+    const modules = join(parentWorktree, "node_modules");
+    if (!existsSync(modules)) {
+      const linked = spawnSync("cmd", ["/c", "mklink", "/J", modules, join(REPO, "node_modules")], { encoding: "utf8", timeout: 120_000 });
+      if (linked.status !== 0) {
+        parentWorktreeState = { prepared: false, detail: `the module link could not be created: ${String(linked.stdout ?? linked.stderr ?? "").slice(0, 200)}` };
+        return;
+      }
+    }
+    /** The probe itself must exist at the parent commit; it does not, so the CORRECTED copy is used there. */
+    mkdirSync(join(parentWorktree, "scripts", "host_s1r"), { recursive: true });
+    copyFileSync(join(REPO, "scripts", "host_s1r", "reproduce-concerns.mjs"), join(parentWorktree, "scripts", "host_s1r", "reproduce-concerns.mjs"));
+    parentWorktreeState = { prepared: true, detail: `detached at ${PARENT_HEAD}` };
+  } catch (error) {
+    parentWorktreeState = { prepared: false, detail: error instanceof Error ? error.message : String(error) };
+  }
+})();
+
 const producers = [
   {
     id: "baseline-falsifiers",
@@ -185,43 +222,6 @@ const producers = [
     },
   },
 ];
-
-/**
- * THE PARENT WORKTREE. Prepared once, outside the repository, at the exact parent commit this stage declares.
- * A failure here is recorded rather than fatal: the baseline producer then reports MISSING and the dependent
- * verdicts are withheld, which is the fail-closed answer.
- */
-const PARENT_HEAD = "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4";
-const parentWorktree = join(rigResolved, "parent-worktree");
-let parentWorktreeState = { prepared: false, detail: null };
-(() => {
-  try {
-    rmSync(parentWorktree, { recursive: true, force: true });
-    const added = spawnSync("git", ["worktree", "add", "--detach", parentWorktree, PARENT_HEAD], { cwd: REPO, encoding: "utf8", timeout: 600_000 });
-    if (added.status !== 0) {
-      parentWorktreeState = { prepared: false, detail: `git worktree add exited ${String(added.status)}: ${String(added.stderr ?? "").slice(0, 300)}` };
-      return;
-    }
-    /**
-     * THE MODULE GRAPH IS LINKED, NOT INSTALLED. A junction gives the same module identity without copying
-     * 30k+ files, and the probe only needs the runtime modules the repository already has.
-     */
-    const modules = join(parentWorktree, "node_modules");
-    if (!existsSync(modules)) {
-      const linked = spawnSync("cmd", ["/c", "mklink", "/J", modules, join(REPO, "node_modules")], { encoding: "utf8", timeout: 120_000 });
-      if (linked.status !== 0) {
-        parentWorktreeState = { prepared: false, detail: `the module link could not be created: ${String(linked.stdout ?? linked.stderr ?? "").slice(0, 200)}` };
-        return;
-      }
-    }
-    /** The probe itself must exist at the parent commit; it does not, so the CORRECTED copy is used there. */
-    mkdirSync(join(parentWorktree, "scripts", "host_s1r"), { recursive: true });
-    copyFileSync(join(REPO, "scripts", "host_s1r", "reproduce-concerns.mjs"), join(parentWorktree, "scripts", "host_s1r", "reproduce-concerns.mjs"));
-    parentWorktreeState = { prepared: true, detail: `detached at ${PARENT_HEAD}` };
-  } catch (error) {
-    parentWorktreeState = { prepared: false, detail: error instanceof Error ? error.message : String(error) };
-  }
-})();
 
 const results = [];
 for (const producer of producers) {
@@ -541,8 +541,23 @@ let conformanceReceipts = {};
      * a fresh directory on the second volume. The conformance rig therefore uses the profile temp volume, and
      * the choice is recorded in the receipt so a reader can see where it ran.
      */
-    const conformanceBase = join(tmpdir(), "palimpsest-s1r-conformance");
+    const conformanceBase = join(rigResolved, "conformance");
     const rigDir = join(conformanceBase, id);
+    /**
+     * A MANDATORY-INTEGRITY LABEL WRITE NEEDS WRITE_OWNER, AND THE RIG'S VOLUME MAY NOT GRANT IT.
+     *
+     * Measured on this host: a fresh directory on the workspace volume carries
+     * `Authenticated Users:(M)`, which excludes WRITE_OWNER, so every label write returns 5 and the suite
+     * reports 20 FAIL that say nothing about the code. Granting the current user full control on the
+     * TEST-OWNED rig root makes the same write succeed. The grant is applied only to the rig, only to this
+     * user, and the choice is recorded in the receipt so a reader can see what was changed.
+     */
+    mkdirSync(conformanceBase, { recursive: true });
+    try {
+      spawnSync("icacls", [conformanceBase, "/grant", `${process.env.USERNAME ?? ""}:(OI)(CI)F`], { stdio: "ignore", timeout: 60_000 });
+    } catch {
+      /* the grant is best-effort; a suite that still cannot write labels reports that itself */
+    }
     rmSync(rigDir, { recursive: true, force: true });
     mkdirSync(rigDir, { recursive: true });
     const result = spawnSync(NODE, [join(REPO, script), `--rig=${rigDir}`], {
@@ -587,6 +602,8 @@ let conformanceReceipts = {};
       startedAt,
       command: `node ${script} --rig=<profile-temp>/palimpsest-s1r-conformance/${id}`,
       rigPath: rigDir,
+      rigAclGrantedToCurrentUser: true,
+      rigAclNote: "the rig root is granted (OI)(CI)F to the current user because a label write needs WRITE_OWNER, which the volume's inherited ACL does not give",
       exitCode: result.status,
       reportProduced: raw !== null,
       reportParsed: parsed !== null,
