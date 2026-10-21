@@ -151,44 +151,63 @@ describe("H1-B verifyTree reparse classification (DYNAMICALLY_VERIFIED)", () => 
     expect(outcome.admissionEligible).toBe(true);
   });
 
-  it("3. a link INTO ANOTHER PROTECTED ROOT is accounted for by that root", () => {
+  it("3. a link INTO ANOTHER VERIFIED ROOT is accounted for by that root", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
     const tree = makeTree(["a.txt"]);
     const otherRoot = makeTree(["protected.txt"]);
-    fence!.ensureReadFence({ roots: [tree], world: join(ROOT, "elsewhere") });
-    fence!.ensureReadFence({ roots: [otherRoot], world: join(ROOT, "elsewhere") });
+    /**
+     * S1R-C §7.2 RE-BASE. Host-S1 passed `protectedRoots` — the DECLARED set — as the protection basis. S1R
+     * measured that a declaration is not evidence (F5: a link into a declared-but-unlabelled root read as
+     * covered), so `verifyTree` now takes `verifiedRoots`, which callers populate only from outcomes whose
+     * label was VERIFIED. Both roots are genuinely fenced here, so both qualify and the classification is
+     * unchanged — what changed is the basis the classification rests on.
+     */
+    const first = fence!.ensureReadFence({ roots: [tree], world: join(ROOT, "elsewhere") });
+    const second = fence!.ensureReadFence({ roots: [otherRoot], world: join(ROOT, "elsewhere") });
+    expect(first.rootsVerified).toBe(true);
+    expect(second.rootsVerified).toBe(true);
     const link = join(tree, "link-to-protected");
     try {
       symlinkSync(otherRoot, link, "junction");
     } catch {
       expect.fail("LIMIT — the junction fixture could not be created on this host");
     }
-    const outcome = fence!.verifyTree({ root: tree, protectedRoots: [tree, otherRoot] });
+    const verified = [...first.trees.map((entry) => entry.root), ...second.trees.map((entry) => entry.root)];
+    const outcome = fence!.verifyTree({ root: tree, verifiedRoots: verified });
     expect(outcome.reparseIntoProtectedRoot.length).toBeGreaterThan(0);
     expect(outcome.reparseBasis).toBe("REPARSE_TARGETS_ACCOUNTED_FOR");
     expect(outcome.admissionEligible).toBe(true);
   });
 
-  it("4. a link OUTSIDE every protected root is NAMED as leaving the protection domain", () => {
+  it("4. a link OUTSIDE every protected root is NAMED as leaving the protection domain — and REFUSES", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
     const tree = makeTree(["a.txt"]);
     const outside = makeTree(["unrelated.txt"]);
-    fence!.ensureReadFence({ roots: [tree], world: join(ROOT, "elsewhere") });
+    const ensured = fence!.ensureReadFence({ roots: [tree], world: join(ROOT, "elsewhere") });
     const link = join(tree, "link-outside");
     try {
       symlinkSync(outside, link, "junction");
     } catch {
       expect.fail("LIMIT — the junction fixture could not be created on this host");
     }
-    const outcome = fence!.verifyTree({ root: tree, protectedRoots: [tree] });
+    const outcome = fence!.verifyTree({ root: tree, verifiedRoots: ensured.trees.map((entry) => entry.root) });
     expect(outcome.reparseOutsideProtectionDomain.length).toBeGreaterThan(0);
     expect(outcome.reparseBasis).toBe("REPARSE_LEAVES_PROTECTION_DOMAIN");
     /**
-     * The target is not an object this fence claims, so the tree's own protected content IS accounted for. The
-     * fact is DISCLOSED rather than silently accepted — that is the difference between a measured limitation and
-     * an unexamined gap.
+     * S1R-C §7.3 RE-BASE — THE DECISIVE CHANGE.
+     *
+     * Host-S1 admitted this tree (`admissionEligible: true`) on the grounds that the target is not an object
+     * the fence claims. S1R measured that rule as F6: a junction to arbitrary external content produced
+     * `admissionEligible: true` at the same time as `REPARSE_LEAVES_PROTECTION_DOMAIN`. Resolution is not
+     * authorization, so an out-of-domain target now refuses UNLESS it falls under a declared dependency root.
      */
-    expect(outcome.admissionEligible).toBe(true);
+    expect(outcome.admissionEligible).toBe(false);
+    expect(outcome.unqualifiedExternalLinks.length).toBeGreaterThan(0);
+    /** With a dependency contract naming the target's tree, the SAME link is admitted — and still disclosed. */
+    const qualified = fence!.verifyTree({ root: tree, verifiedRoots: ensured.trees.map((entry) => entry.root), dependencyRoots: [outside] });
+    expect(qualified.admissionEligible).toBe(true);
+    expect(qualified.qualifiedDependencyLinks.length).toBeGreaterThan(0);
+    expect(qualified.reparseBasis).toBe("REPARSE_LEAVES_PROTECTION_DOMAIN");
   });
 
   it("5. an UNLABELLED child makes the tree NOT admission-eligible", () => {
