@@ -1,0 +1,89 @@
+{
+  "kind": "HOST_S1R_HOST_SECURITY_CONFORMANCE",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Conformance is RUN against the current Code Freeze, not read from a fixed user directory. Each receipt carries the Code Freeze HEAD and tree, the command, the exit code, a run id, PASS/LIMIT/FAIL identities and the artifact digest. PASS, LIMIT and FAIL stay distinct; the historical limits HR-17, HR-39b, HR-33 and HC-27 are preserved as LIMITs rather than being reported as solved.",
+  "codeFreezeHead": "f76f376f63383a27e54eb41bc79bdb9d49a9ade6",
+  "executedCodeTree": "918c32359b7adb9f055b2455997378af1d81a00b",
+  "workingTreeDirty": false,
+  "runtime": {
+    "node": "24.22.0",
+    "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2"
+  },
+  "conformance": {
+    "r1-hr": {
+      "id": "r1-hr",
+      "runId": "0a0467e8-b3e7-4ab5-af31-bca613842292",
+      "startedAt": "2026-10-21T07:11:08.838Z",
+      "command": "node scripts/r1hr/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hr",
+      "rigPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hr",
+      "exitCode": 0,
+      "reportProduced": true,
+      "reportParsed": true,
+      "reportPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hr\\conformance.json",
+      "digest": "sha256-57192cc996a79d5dddebd862da81a63ba8d8e39d27114351a0bf728d47b84885",
+      "pass": 44,
+      "limit": 3,
+      "fail": 0,
+      "total": 47,
+      "limitIds": [
+        "HR-17",
+        "HR-39b",
+        "HR-33"
+      ],
+      "failureIds": [],
+      "admitted": true,
+      "refusedBecause": [],
+      "stderrTail": ""
+    },
+    "r1-hc": {
+      "id": "r1-hc",
+      "runId": "5a3e6f27-c75f-4da5-9fea-92d1e42fde8b",
+      "startedAt": "2026-10-21T07:11:13.608Z",
+      "command": "node scripts/r1hc/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hc",
+      "rigPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hc",
+      "exitCode": 0,
+      "reportProduced": true,
+      "reportParsed": true,
+      "reportPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-s1r-conformance\\r1-hc\\conformance.json",
+      "digest": "sha256-b3cbee22ea3578b34700e50c0a7b1084cc3f805a5d273d14fb44e0f63cf1eedc",
+      "pass": 26,
+      "limit": 1,
+      "fail": 0,
+      "total": 27,
+      "limitIds": [
+        "HC-27"
+      ],
+      "failureIds": [],
+      "admitted": true,
+      "refusedBecause": [],
+      "stderrTail": ""
+    }
+  },
+  "disclosedLimitsPreserved": [
+    "HR-17",
+    "HR-39b",
+    "HR-33",
+    "HC-27"
+  ],
+  "requiredLimitsPresent": {
+    "r1-hr": true,
+    "r1-hc": true
+  },
+  "historicalReportPolicy": "A report produced by an earlier run may be compared against these receipts, never substituted for them. Nothing is read from a fixed user directory.",
+  "runIdentity": {
+    "codeFreezeHead": "f76f376f63383a27e54eb41bc79bdb9d49a9ade6",
+    "executedCodeTree": "918c32359b7adb9f055b2455997378af1d81a00b",
+    "workingTreeDirty": false,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1R",
+  "schemaVersion": 1
+}

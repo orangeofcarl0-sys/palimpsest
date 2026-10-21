@@ -460,6 +460,17 @@ const write = (name, payload) => {
     ],
   });
 }
+/**
+ * S1R-D: THE CONFORMANCE RECEIPTS, HOISTED.
+ *
+ * Section 6 runs the suites and section 8 records how the gate decided. Both need the receipts, so the
+ * declaration lives at module scope rather than inside a block — a block-scoped binding made the evidence
+ * receipt throw a ReferenceError, which is exactly the kind of self-inflicted gap a fail-closed gate must not
+ * have.
+ */
+/** @type {Record<string, any>} */
+let conformanceReceipts = {};
+
 /* ---------------------------------------------------------------- 6. conformance */
 {
   /**
@@ -563,10 +574,11 @@ const write = (name, payload) => {
       stderrTail: String(result.stderr ?? "").split(NL).slice(-4).join(NL).slice(0, 600),
     };
   };
-  const conformance = {
+  conformanceReceipts = {
     "r1-hr": runConformance("r1-hr", "scripts/r1hr/conformance.mjs"),
     "r1-hc": runConformance("r1-hc", "scripts/r1hc/conformance.mjs"),
   };
+  const conformance = conformanceReceipts;
   const suite = suiteById("host-regression");
   write("security-conformance.json", {
     kind: "HOST_S1R_HOST_SECURITY_CONFORMANCE",
@@ -795,7 +807,7 @@ const write = (name, payload) => {
     })),
     conformance: {
       policy: "run against this Code Freeze; a historical report is never substituted",
-      receipts: conformance,
+      receipts: conformanceReceipts,
     },
     /**
      * §8.5: THE REGRESSION SCOPE, RECONCILED FROM ACTUAL TEST IDENTITIES.
