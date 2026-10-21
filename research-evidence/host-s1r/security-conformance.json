@@ -2,9 +2,9 @@
   "kind": "HOST_S1R_HOST_SECURITY_CONFORMANCE",
   "evidenceClass": "DYNAMICALLY_VERIFIED",
   "note": "Conformance is RUN against the current Code Freeze, not read from a fixed user directory. Each receipt carries the Code Freeze HEAD and tree, the command, the exit code, a run id, PASS/LIMIT/FAIL identities and the artifact digest. PASS, LIMIT and FAIL stay distinct; the historical limits HR-17, HR-39b, HR-33 and HC-27 are preserved as LIMITs rather than being reported as solved.",
-  "codeFreezeHead": "3409bbbcd6fe62e352dc23bde0f0224965792352",
-  "executedCodeTree": "552d1c522e66530dea4ee2671ec1d1df2edc86a8",
-  "workingTreeDirty": false,
+  "codeFreezeHead": "efa39345c3e8402989d5345e685868a75f436d78",
+  "executedCodeTree": "e8c547dad04b165c44dc95aa10a3bf0119d7897f",
+  "workingTreeDirty": true,
   "runtime": {
     "node": "24.22.0",
     "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
@@ -15,8 +15,8 @@
   "conformance": {
     "r1-hr": {
       "id": "r1-hr",
-      "runId": "d64200f5-2eb2-4dba-aff0-d8ac4e1d9ef4",
-      "startedAt": "2026-10-21T07:44:40.661Z",
+      "runId": "616803b5-44b0-4a6f-a537-1f5b9a70c458",
+      "startedAt": "2026-10-21T19:07:41.205Z",
       "command": "node scripts/r1hr/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hr",
       "rigPath": "F:\\hosts1r-final\\conformance\\r1-hr",
       "rigAclGrantedToCurrentUser": true,
@@ -42,8 +42,8 @@
     },
     "r1-hc": {
       "id": "r1-hc",
-      "runId": "364af8be-dfc4-41a4-97da-beb7f0b00373",
-      "startedAt": "2026-10-21T07:44:47.402Z",
+      "runId": "76d47a33-b5c6-4e9c-8f52-5c5b4f83a0a0",
+      "startedAt": "2026-10-21T19:07:45.396Z",
       "command": "node scripts/r1hc/conformance.mjs --rig=<profile-temp>/palimpsest-s1r-conformance/r1-hc",
       "rigPath": "F:\\hosts1r-final\\conformance\\r1-hc",
       "rigAclGrantedToCurrentUser": true,
@@ -78,9 +78,9 @@
   },
   "historicalReportPolicy": "A report produced by an earlier run may be compared against these receipts, never substituted for them. Nothing is read from a fixed user directory.",
   "runIdentity": {
-    "codeFreezeHead": "3409bbbcd6fe62e352dc23bde0f0224965792352",
-    "executedCodeTree": "552d1c522e66530dea4ee2671ec1d1df2edc86a8",
-    "workingTreeDirty": false,
+    "codeFreezeHead": "efa39345c3e8402989d5345e685868a75f436d78",
+    "executedCodeTree": "e8c547dad04b165c44dc95aa10a3bf0119d7897f",
+    "workingTreeDirty": true,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",

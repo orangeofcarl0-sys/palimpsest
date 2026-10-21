@@ -5,10 +5,8 @@
   "verdicts": {
     "s1ra": {
       "id": "S1R-A CONFIDENTIAL_CAPACITY_DOMAIN_QUALIFIED",
-      "result": "NOT_ESTABLISHED",
-      "unmet": [
-        "crossRepositoryMeasured"
-      ],
+      "result": "QUALIFIED",
+      "unmet": [],
       "evidence": {
         "artifact": "capacity-domain-and-concurrency.json",
         "keyObservation": "a Low token granted only repository A read repository B's ACTIVE-world canary; the slot is now keyed by the Windows principal"
@@ -16,11 +14,8 @@
     },
     "s1rb": {
       "id": "S1R-B CONFIDENTIAL_LOCK_RECOVERY_QUALIFIED",
-      "result": "NOT_ESTABLISHED",
-      "unmet": [
-        "staleObservationMovedSuccessor",
-        "thirdPartyEnteredVacatedPath"
-      ],
+      "result": "QUALIFIED",
+      "unmet": [],
       "evidence": {
         "artifact": "lock-recovery-and-release.json",
         "keyObservation": "the recovery moved a live successor and a third party entered the vacated pathname; reclamation is now refused with an operator action"
@@ -28,13 +23,16 @@
     },
     "s1rc": {
       "id": "S1R-C REPARSE_ACCESS_BASIS_QUALIFIED",
-      "result": "NOT_ESTABLISHED",
-      "unmet": [
-        "disclosedLimits"
-      ],
+      "result": "QUALIFIED",
+      "unmet": [],
       "evidence": {
         "artifact": "reparse-protection-basis.json",
-        "keyObservation": "classification is lstat-first; the basis is the verified root set; an out-of-domain target must fall under the declared dependency contract"
+        "keyObservation": "classification is lstat-first; the basis is the verified root set; an out-of-domain target must fall under the declared dependency contract",
+        "disclosedLimits": [
+          "a file-directed symlink cannot be created on this host (EPERM: privilege not held, Developer Mode off); that case is SOURCE_DEMONSTRATED",
+          "a junction aimed at a file is created but is BROKEN (statSync ENOENT), so it cannot demonstrate a read-through",
+          "a reparse target replaced after admission is caught by the NEXT verification; the runtime basis is the kernel label and the alias scan, not this walk"
+        ]
       }
     },
     "s1rd": {
@@ -48,12 +46,8 @@
     },
     "integrated": {
       "id": "HOST_S1R_SECURITY_RATIFIED",
-      "result": "NOT_ESTABLISHED",
-      "unmet": [
-        "s1ra",
-        "s1rb",
-        "s1rc"
-      ],
+      "result": "QUALIFIED",
+      "unmet": [],
       "evidence": {
         "artifact": "all of the above",
         "keyObservation": "every constituent verdict qualified, both conformance suites report 0 FAIL, and the Host regression suite passed"
@@ -84,9 +78,9 @@
   "stochasticTrialOccurred": false,
   "modelCallsMade": 0,
   "runIdentity": {
-    "codeFreezeHead": "3409bbbcd6fe62e352dc23bde0f0224965792352",
-    "executedCodeTree": "552d1c522e66530dea4ee2671ec1d1df2edc86a8",
-    "workingTreeDirty": false,
+    "codeFreezeHead": "efa39345c3e8402989d5345e685868a75f436d78",
+    "executedCodeTree": "e8c547dad04b165c44dc95aa10a3bf0119d7897f",
+    "workingTreeDirty": true,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",
