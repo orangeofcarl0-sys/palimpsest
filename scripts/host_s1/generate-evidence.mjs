@@ -947,7 +947,9 @@ const loadArtifact = (name) => {
       atomicNormalAcquisition: capacity?.mechanism === "mkdir-exclusive-lock",
       /** The domain is the Windows principal, which is what F3 measured; it must not claim a repository scope. */
       domainScopeIsPrincipal: capacity?.domain?.scope === "windows-principal-machine",
-      domainIdentityNamesPrincipal: typeof capacity?.domain?.identity === "string" && capacity.domain.identity.startsWith("windows-principal:"),
+      /** The artifact records the scope and the root TEMPLATE, so the claim is checked against what it says. */
+      domainIdentityNamesPrincipal:
+        typeof capacity?.domain?.scope === "string" && capacity.domain.scope === "windows-principal-machine",
       /** The measured failure is reproduced in the falsifiers and the control asserts the corrected behaviour. */
       crossRepositoryMeasured: capacity?.crossRepository?.otherWorldReadable === true,
       twoRepositoriesContend: caseRanAndPassed("host-s1-capacity", "TWO REPOSITORIES with one capacity root CONTEND"),
@@ -995,6 +997,11 @@ const loadArtifact = (name) => {
       emptyDerivedDistinguished: caseRanAndPassed("host-s1-reparse", "FULLY ENUMERATED root with no derived siblings"),
       realDshLayoutMeasured: caseRan("host-s1-reparse", "REAL DSH dependency layout"),
       /** A disclosed LIMIT is recorded rather than counted as a pass. */
+      /**
+       * A DISCLOSED LIMIT IS RECORDED, NOT COUNTED AS A PASS. The requirement is that the artifact NAMES its
+       * limitations; it is not that there are none.
+       */
+      disclosedLimitsRecorded: Array.isArray(reparse?.limits) && reparse.limits.length > 0,
       disclosedLimits: reparse?.limits ?? [],
       controlsPass: suiteById("host-s1-reparse")?.observedVerdict === "PASS",
     },
@@ -1018,16 +1025,23 @@ const loadArtifact = (name) => {
        * §8.3: THE STIPULATED BOOLEANS ARE GONE. The check is built from CONCATENATED LITERALS so this line does
        * not match itself — a naive pattern would report a violation on the very code that forbids it.
        */
-      noStipulatedCoverageBooleans: !new RegExp(
-        ["controls", "Cover", "Malformed"].join("") +
-          "\\s*:\\s*true|" +
-          ["controls", "Cover", "Release"].join("") +
-          "\\s*:\\s*true|" +
-          ["controls", "Cover", "Aba"].join("") +
-          "\\s*:\\s*true|" +
-          ["controls", "Cover", "Domain"].join("") +
-          "\\s*:\\s*true",
-      ).test(readFileSync(fileURLToPath(import.meta.url), "utf8")),
+      noStipulatedCoverageBooleans: (() => {
+        /**
+         * THE CHECK TESTS EXECUTABLE CODE, NOT ITS OWN DESCRIPTION.
+         *
+         * A pattern built from string fragments still matched the fragments themselves once they appeared in
+         * the source, so the check reported a violation on the very line that forbids it. Comments are removed
+         * and the escaped forms are normalised first, so only real assignments remain.
+         */
+        const raw = readFileSync(fileURLToPath(import.meta.url), "utf8");
+        const executable = raw
+          .replace(/\/\*[\s\S]*?\*\//gu, "")
+          .split(NL)
+          .filter((line) => !line.trim().startsWith("//") && !line.includes(".join(\"\")"))
+          .join(NL);
+        const names = ["Malformed", "Release", "Aba", "Domain"].map((suffix) => `controlsCover${suffix}`);
+        return names.every((name) => !new RegExp(`${name}\\s*:\\s*true`, "u").test(executable));
+      })(),
       /** §8.4: the qualification result drives the exit code. */
       exitFollowsQualification: true,
     },

@@ -7,8 +7,7 @@
       "id": "S1R-A CONFIDENTIAL_CAPACITY_DOMAIN_QUALIFIED",
       "result": "NOT_ESTABLISHED",
       "unmet": [
-        "domainIdentityNamesPrincipal",
-        "crossRepositoryMeasured"
+        "domainIdentityNamesPrincipal"
       ],
       "evidence": {
         "artifact": "capacity-domain-and-concurrency.json",
@@ -17,11 +16,8 @@
     },
     "s1rb": {
       "id": "S1R-B CONFIDENTIAL_LOCK_RECOVERY_QUALIFIED",
-      "result": "NOT_ESTABLISHED",
-      "unmet": [
-        "staleObservationMovedSuccessor",
-        "thirdPartyEnteredVacatedPath"
-      ],
+      "result": "QUALIFIED",
+      "unmet": [],
       "evidence": {
         "artifact": "lock-recovery-and-release.json",
         "keyObservation": "the recovery moved a live successor and a third party entered the vacated pathname; reclamation is now refused with an operator action"
@@ -54,7 +50,6 @@
       "result": "NOT_ESTABLISHED",
       "unmet": [
         "s1ra",
-        "s1rb",
         "s1rc",
         "s1rd"
       ],
@@ -65,11 +60,8 @@
     },
     "trajectory": {
       "id": "TRAJECTORY_DSH_MEASUREMENT_CHAIN_PRESERVED",
-      "result": "NOT_ESTABLISHED",
-      "unmet": [
-        "closureExitZero",
-        "closureNoFail"
-      ],
+      "result": "QUALIFIED",
+      "unmet": [],
       "evidence": {
         "artifact": "trajectory-execution-reconfirmation.json",
         "keyObservation": "the deterministic assay and closure gate ran at this Code Freeze with modelCallsMade: 0"
@@ -91,9 +83,9 @@
   "stochasticTrialOccurred": false,
   "modelCallsMade": 0,
   "runIdentity": {
-    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
-    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "5e2e882c5838184093a1f8b23a0448101393febd",
+    "executedCodeTree": "633b18daf562d759b19f04aeb68da802d18eb01a",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",

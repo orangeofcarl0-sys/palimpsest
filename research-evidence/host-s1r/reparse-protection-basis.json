@@ -2,16 +2,166 @@
   "kind": "HOST_S1R_REPARSE_PROTECTION_BASIS",
   "evidenceClass": "DYNAMICALLY_VERIFIED",
   "fileDirectedLinks": {
-    "finding": null,
-    "reproduced": false
+    "finding": {
+      "id": "F4",
+      "title": "File-directed links are gated out before reparse classification",
+      "source": "host/deployment/runtime/read_fence.js :: verifyTree() — `statSync` then `if (!stats.isDirectory()) return;` then `lstatSync`",
+      "baselineBehavior": "The walk stats an entry and RETURNS when it is not a directory, so the lstat-based reparse classification below is never reached for a link whose target is a file. A DIRECTORY junction does reach it, so the omission is specific to the file-target class.",
+      "actualInput": {
+        "fixtures": {
+          "fileSymlink": {
+            "created": false,
+            "code": "EPERM"
+          },
+          "junctionToFile": {
+            "created": true
+          },
+          "directoryJunction": {
+            "created": true
+          },
+          "junctionToFileIdentity": {
+            "lstatIsSymbolicLink": true,
+            "stat": "ERR:ENOENT"
+          },
+          "directoryJunctionIdentity": {
+            "lstatIsSymbolicLink": true,
+            "statIsDirectory": true,
+            "statIsFile": false
+          }
+        },
+        "note": "a file symlink is refused (EPERM) here; a junction aimed at a file creates a BROKEN link (statSync ENOENT)"
+      },
+      "observed": {
+        "fileSymlinkCreatable": false,
+        "fileSymlinkCode": "EPERM",
+        "junctionToFileCreated": true,
+        "junctionToFileIdentity": {
+          "lstatIsSymbolicLink": true,
+          "stat": "ERR:ENOENT"
+        },
+        "directoryJunctionIdentity": {
+          "lstatIsSymbolicLink": true,
+          "statIsDirectory": true,
+          "statIsFile": false
+        },
+        "statBeforeDirectoryGate": true,
+        "lstatAfterDirectoryGate": true,
+        "reparsePoints": [
+          "f4-protected/dir-link"
+        ],
+        "reparseOutsideProtectionDomain": [
+          "f4-protected/dir-link"
+        ],
+        "undetermined": [
+          "f4-protected/dir-link",
+          "f4-protected/junction-file.txt"
+        ],
+        "complete": false,
+        "verified": false,
+        "admissionEligible": false,
+        "rootCoverageComplete": true,
+        "linkObjectLabel": {
+          "ok": true,
+          "present": true,
+          "integrity": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        },
+        "linkTargetLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        }
+      },
+      "invariant": "Every reparse point inside a protected tree is classified by its target, whatever the target's type; a link to content outside the protection domain is never silently counted as covered.",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "reproduced": true,
+      "fixtureLimit": "a file-directed symlink could not be created on this host (EPERM), so the FILE-link case is SOURCE_DEMONSTRATED rather than dynamically exercised",
+      "uncertain": "Whether a Low token could READ through a file-directed link is not measurable here, because no such fixture can be created. What is established is that the code would not classify it at all."
+    },
+    "reproduced": true
   },
   "declaredVersusVerifiedBasis": {
-    "finding": null,
-    "reproduced": false
+    "finding": {
+      "id": "F5",
+      "title": "A declared protected root is treated as a verified protection outcome",
+      "source": "host/deployment/runtime/read_fence.js :: verifyTree() — `reparseIntoProtectedRoot` uses `input.protectedRoots`",
+      "baselineBehavior": "A link whose target lies under any DECLARED protected root is classified as `reparseIntoProtectedRoot` and excluded from the unresolvable set, so it never makes the walk fail. The declaration is not evidence that the target object carries a verified label.",
+      "actualInput": {
+        "rootA": "f5-root-a",
+        "rootB": "f5-root-b",
+        "declaredRoots": [
+          "f5-root-a",
+          "f5-root-b"
+        ],
+        "rootBVerified": false
+      },
+      "observed": {
+        "rootALabelled": true,
+        "reparseIntoProtectedRoot": [
+          "f5-root-a/into-b"
+        ],
+        "reparseOutsideProtectionDomain": [],
+        "admissionEligible": true,
+        "targetLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        },
+        "rootBLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        }
+      },
+      "invariant": "A path being inside a DECLARED root is not sufficient; the protection basis must be an actual verified Kernel label on the target.",
+      "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+      "reproduced": true,
+      "uncertain": "The target here is unlabelled because it was never planned; the same classification would occur if labelling had been attempted and failed, which is the case that matters."
+    },
+    "reproduced": true
   },
   "unknownExternalTargets": {
-    "finding": null,
-    "reproduced": false
+    "finding": {
+      "id": "F6",
+      "title": "An unknown external reparse target receives an unconditional positive qualification",
+      "source": "host/deployment/runtime/read_fence.js :: verifyTree() — `admissionEligible` requires only `reparseUnresolvable.length === 0`",
+      "baselineBehavior": "A link that RESOLVES but points outside every protected root is recorded as `reparseOutsideProtectionDomain` and leaves `admissionEligible` true. Nothing distinguishes a qualified DSH dependency from an unknown external path or model-controlled content.",
+      "actualInput": {
+        "link": "junction -> an arbitrary directory outside every protected root, containing a synthetic canary"
+      },
+      "observed": {
+        "reparseBasis": "REPARSE_LEAVES_PROTECTION_DOMAIN",
+        "reparseOutsideProtectionDomain": [
+          "f6-protected/to-external"
+        ],
+        "admissionEligible": true,
+        "coverageComplete": true,
+        "targetLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        },
+        "linkObjectLabel": {
+          "ok": true,
+          "present": true,
+          "integrity": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        }
+      },
+      "invariant": "An unknown or mutable target must not receive an unconditional positive qualification; the exception must be a qualified, identified dependency contract.",
+      "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+      "reproduced": true,
+      "uncertain": "The measured fact that a labelled junction still delivers its target's bytes to a Low token is in junction-label-probe.mjs; this finding is about ADMISSION, not the read."
+    },
+    "reproduced": true
   },
   "junctionLabelMeasurement": {
     "verdict": "JUNCTION_LABEL_INSUFFICIENT",
@@ -22,8 +172,8 @@
     "roots": 2,
     "anyOverEntryLimit": false,
     "anyOverDepthLimit": false,
-    "totalEntries": 13212,
-    "totalElapsedMs": 941,
+    "totalEntries": 12318,
+    "totalElapsedMs": 1586,
     "reparsePointsOutsideRoot": 1
   },
   "contract": {
@@ -36,8 +186,8 @@
   "controls": {
     "id": "host-s1-reparse",
     "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_reparse_boundary.test.ts",
-    "runId": "461a9ed0-1b5b-465c-b125-114edf77966c",
-    "startedAt": "2026-10-21T07:21:58.272Z",
+    "runId": "6f8135c4-19ef-45b7-9171-bf91be89e741",
+    "startedAt": "2026-10-21T07:38:51.480Z",
     "exitCode": 0,
     "total": 15,
     "passed": 15,
@@ -70,9 +220,9 @@
     "a reparse target replaced after admission is caught by the NEXT verification; the runtime basis is the kernel label and the alias scan, not this walk"
   ],
   "runIdentity": {
-    "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
-    "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
-    "workingTreeDirty": true,
+    "codeFreezeHead": "5e2e882c5838184093a1f8b23a0448101393febd",
+    "executedCodeTree": "633b18daf562d759b19f04aeb68da802d18eb01a",
+    "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",
