@@ -14,7 +14,7 @@
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -124,6 +124,21 @@ const parentWorktree = join(rigResolved, "parent-worktree");
 let parentWorktreeState = { prepared: false, detail: null };
 (() => {
   try {
+    /**
+     * REMOVE THE MODULE JUNCTION BEFORE REMOVING THE TREE.
+     *
+     * `rmSync(..., { recursive: true })` on a directory that CONTAINS a junction FOLLOWS it on this platform.
+     * The parent worktree's `node_modules` is a junction to the repository's own `node_modules`, so removing
+     * the worktree deleted the REPOSITORY's installed modules — twice, during this stage. The junction is
+     * therefore unlinked first, by name, with `rmdir` (which removes a directory junction without traversing
+     * it). Only then is the worktree removed.
+     */
+    const parentModules = join(parentWorktree, "node_modules");
+    try {
+      if (lstatSync(parentModules).isSymbolicLink()) spawnSync("cmd", ["/c", "rmdir", parentModules], { encoding: "utf8", timeout: 60_000 });
+    } catch {
+      /* the junction is absent, which is the normal case on a first run */
+    }
     rmSync(parentWorktree, { recursive: true, force: true });
     /** A previous run that was interrupted leaves a registration behind; prune so add can succeed. */
     spawnSync("git", ["worktree", "prune"], { cwd: REPO, encoding: "utf8", timeout: 120_000 });
