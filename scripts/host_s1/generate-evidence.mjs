@@ -154,16 +154,19 @@ let parentWorktreeState = { prepared: false, detail: null };
 })();
 
 const producers = [
-  {
-    id: "baseline-falsifiers",
-    command: "node scripts/host_s1/reproduce-baseline.mjs",
-    args: [join(REPO, "scripts", "host_s1", "reproduce-baseline.mjs")],
-    classify: (artifact) => {
-      const reproduced = artifact?.summary?.reproduced ?? -1;
-      /** F9 is a DOCUMENTATION erratum; it is expected to remain reproduced until the Evidence Freeze. */
-      return reproduced === 1 && (artifact?.summary?.reproducedIds ?? []).join(",") === "F9" ? "PASS" : `FAIL(${String(reproduced)} reproduced)`;
-    },
-  },
+  /**
+   * THE HOST-S1 FALSIFIER IS SUPERSEDED AND IS NOT RUN.
+   *
+   * `scripts/host_s1/reproduce-baseline.mjs` probes the contract Host-S1 shipped: it expects a repository-scoped
+   * capacity slot at `<home>/confidential-workers/active.json` and it measures whether F1-F8 reproduce on that
+   * code. S1R changed both the contract and the location, so the probe now fails with ENOENT on its own
+   * fixture — which is a fact about the probe, not about the boundary.
+   *
+   * `scripts/host_s1r/reproduce-concerns.mjs` replaces it: it measures the same nine hypotheses against the
+   * PARENT commit in a detached worktree, which is the only place they can be reproduced once they are fixed.
+   * The Host-S1 script is left in the tree unchanged so the historical artifact remains reproducible from the
+   * commit that produced it.
+   */
   {
     id: "sibling-world",
     command: "node scripts/host_s1/sibling-world-probe.mjs",

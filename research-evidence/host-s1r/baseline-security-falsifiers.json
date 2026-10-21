@@ -1,25 +1,565 @@
 {
   "kind": "HOST_S1R_BASELINE_SECURITY_FALSIFIERS",
-  "evidenceClass": "NOT_ESTABLISHED",
+  "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
   "note": "Nine §4 hypotheses measured against the Host-S1 parent. Each records its source, baseline behaviour, actual input, observed output, invariant, evidence class and what remains uncertain. A finding marked reproduced describes the PARENT's behaviour; the correction is asserted by the suites named in the corresponding S1R verdict.",
-  "parentHead": null,
+  "parentHead": "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4",
   "producer": {
     "command": "node <parent-worktree>/scripts/host_s1r/reproduce-concerns.mjs --json-out <rig>/baseline-concerns.json",
-    "exitCode": null,
-    "runId": "e4090aa1-4a25-4846-9049-f2a7cfc8233e",
-    "artifactDigest": null
+    "exitCode": 0,
+    "runId": "2744459b-9b21-4144-8d4c-222e59d4c13d",
+    "artifactDigest": "sha256-b0fe80d93b153412b08191425c4b4ec63df525b03467c4d6dbd25e33f57718a2"
   },
-  "summary": null,
-  "findings": [],
+  "summary": {
+    "total": 9,
+    "reproduced": 9,
+    "reproducedIds": [
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5",
+      "F6",
+      "F7",
+      "F8",
+      "F9"
+    ],
+    "notReproducedIds": []
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "title": "Rename-before-verify exclusivity: a stale observation moves a newly installed live lock, and the recovery then livelocks",
+      "source": "host/deployment/runtime/confidential_profile.js :: takeLock() (recovery branch)",
+      "baselineBehavior": "Recovery reads the lock's owner, decides it is abandoned, then renames the PATHNAME to a private claim and verifies the token AFTERWARDS. The rename is unconditional on identity, so the object moved may be a successor installed after the observation. The claim name is `active.lock.claim-<ownerToken>`, deterministic per process, and the loop's timeout check is skipped on the abandoned path, so a second pass that collides with its own leftover claim does not terminate.",
+      "actualInput": {
+        "plantedLock": {
+          "owner": "observed-abandoned",
+          "pid": 999999999,
+          "ageMs": 600000
+        },
+        "interleaving": "a live successor (pid = recoverer process) installed immediately before the recoverer's rename; a third process attempts mkdir immediately after it",
+        "bound": "25s child-process timeout"
+      },
+      "observed": {
+        "successorInstalledBeforeRecoveryRename": true,
+        "recovererMovedTheSuccessor": true,
+        "thirdPartyAcquiredTheVacatedPathname": true,
+        "successorDisplacedFromPathname": true,
+        "childCompleted": false,
+        "childTimedOut": true,
+        "childExitCode": null,
+        "finalPathnameOwnerToken": "third-party"
+      },
+      "invariant": "At any instant within the exclusion domain, at most one owner holds execution authority, and a live owner's lock is never moved or deleted by a process acting on a different observation.",
+      "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+      "reproduced": true,
+      "violatesExclusivity": true,
+      "additionalDefect": "the recovery did not terminate within the bound after colliding with its own claim path",
+      "uncertain": "The successor here is a synthetic holder record, not a second real host process; what is demonstrated is that the object at the pathname can be replaced between observation and removal, which is the property, not the process identity."
+    },
+    {
+      "id": "F2",
+      "title": "Release recovery and unknown ownership",
+      "source": "host/deployment/runtime/confidential_profile.js :: readHolders(), acquire(), release()",
+      "baselineBehavior": "Malformed entries are classified before liveness; an unreadable record refuses acquisition and release; release removes only its own token and preserves the rest.",
+      "actualInput": {
+        "malformed": "pid is a string",
+        "unreadable": "invalid JSON",
+        "strangerToken": "someone-else",
+        "unrelatedToken": "unrelated-live"
+      },
+      "observed": {
+        "malformedAcquire": {
+          "granted": false,
+          "detail": "the capacity record contains 1 malformed holder entr(y/ies) (pid-not-a-positive-integer), so ownership is UNKNOWN and capacity cannot be gra"
+        },
+        "malformedBytesPreserved": "{\"holders\":[{\"pid\":\"not-a-pid\",\"token\":\"x\"}]}",
+        "unreadablePeek": {
+          "active": -1,
+          "detail": "the capacity record is not valid JSON; capacity is UNKNOWN",
+          "malformed": 0
+        },
+        "unreadableBytesPreserved": "{ this is not json",
+        "strangerRelease": {
+          "released": false,
+          "detail": "this handle holds no slot",
+          "retryable": false
+        },
+        "strangerBytesPreserved": "{\"holders\":[{\"pid\":2668,\"token\":\"someone-else\",\"at\":0}]}",
+        "selfRelease": {
+          "granted": true,
+          "released": true,
+          "remainingTokens": [
+            "unrelated-live"
+          ]
+        },
+        "failedWriteDuringRelease": {
+          "granted": true,
+          "writeFailureInjected": true,
+          "releaseResult": {
+            "released": false,
+            "detail": "the slot was not released: injected ENOSPC",
+            "retryable": true
+          },
+          "releaseThrew": null,
+          "retryResult": {
+            "released": false,
+            "detail": "this handle holds no slot",
+            "retryable": false
+          },
+          "holdersAfterFailedRelease": [
+            "2668-f5e708e4-fe05-449b-86c6-2fccc5c08ac2"
+          ]
+        }
+      },
+      "invariant": "Unknown ownership never becomes free capacity; a failed read never authorises rewriting an empty holder set; a release removes only the releasing handle's verified record.",
+      "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+      "reproduced": true,
+      "defects": [
+        "a retry after a failed write could not release the handle's own record"
+      ],
+      "uncertain": "A genuinely failed record WRITE (as opposed to an unreadable record) is exercised in the capacity suite with an injected filesystem boundary, not here."
+    },
+    {
+      "id": "F3",
+      "title": "Cross-repository capacity scope: two ACTIVE worlds in different repositories",
+      "source": "host/deployment/runtime/confidential_profile.js :: openConfidentialSlot() domain namespace",
+      "baselineBehavior": "The slot is keyed by <repository>/.palimpsest/host-capacity/, so two repositories never contend. The design assumes a repository is the confidentiality domain.",
+      "actualInput": {
+        "repositories": [
+          "f3-repo-a",
+          "f3-repo-b"
+        ],
+        "bothWorldsActive": true,
+        "canary": "synthetic, in repo B"
+      },
+      "observed": {
+        "aclAvailable": true,
+        "fenceA": {
+          "supported": true,
+          "complete": true
+        },
+        "fenceB": {
+          "supported": true,
+          "complete": true
+        },
+        "labelBeforeGrants": {
+          "worldA": {
+            "ok": true,
+            "present": false,
+            "integrity": null,
+            "policies": []
+          },
+          "worldB": {
+            "ok": true,
+            "present": false,
+            "integrity": null,
+            "policies": []
+          }
+        },
+        "driver": {
+          "status": 0,
+          "stderr": ""
+        },
+        "labelAfterGrants": {
+          "worldA": {
+            "ok": true,
+            "present": true,
+            "integrity": "Low",
+            "policies": [
+              "NO_WRITE_UP"
+            ]
+          },
+          "worldB": {
+            "ok": true,
+            "present": true,
+            "integrity": "Low",
+            "policies": [
+              "NO_WRITE_UP"
+            ]
+          }
+        },
+        "probe": {
+          "OWN_WORLD": {
+            "read": true,
+            "content": "WORLD-A-ORDINARY-WORK"
+          },
+          "OTHER_REPO_WORLD": {
+            "read": true,
+            "content": "HOSTS1R-CONCERN-CANARY-3f91ad07-SYNTHETIC-ONLY"
+          },
+          "OTHER_REPO_DURABLE": {
+            "read": false,
+            "code": "EPERM"
+          }
+        },
+        "otherWorldReadable": true,
+        "otherDurableReadable": false
+      },
+      "invariant": "No two Confidential Workers that lack mutual read isolation may simultaneously acquire execution authority; the exclusion scope must match the actual isolation scope.",
+      "evidenceClass": "FIRST_PARTY_DSH_VERIFIED",
+      "reproduced": true,
+      "ownWorldUsable": true,
+      "uncertain": "The probe runs under the real DSH ACL sandbox with both worlds granted, which is the measured ACTIVE state; it does not run two full agent sessions concurrently."
+    },
+    {
+      "id": "F4",
+      "title": "File-directed links are gated out before reparse classification",
+      "source": "host/deployment/runtime/read_fence.js :: verifyTree() — `statSync` then `if (!stats.isDirectory()) return;` then `lstatSync`",
+      "baselineBehavior": "The walk stats an entry and RETURNS when it is not a directory, so the lstat-based reparse classification below is never reached for a link whose target is a file. A DIRECTORY junction does reach it, so the omission is specific to the file-target class.",
+      "actualInput": {
+        "fixtures": {
+          "fileSymlink": {
+            "created": false,
+            "code": "EPERM"
+          },
+          "junctionToFile": {
+            "created": true
+          },
+          "directoryJunction": {
+            "created": true
+          },
+          "junctionToFileIdentity": {
+            "lstatIsSymbolicLink": true,
+            "stat": "ERR:ENOENT"
+          },
+          "directoryJunctionIdentity": {
+            "lstatIsSymbolicLink": true,
+            "statIsDirectory": true,
+            "statIsFile": false
+          }
+        },
+        "note": "a file symlink is refused (EPERM) here; a junction aimed at a file creates a BROKEN link (statSync ENOENT)"
+      },
+      "observed": {
+        "fileSymlinkCreatable": false,
+        "fileSymlinkCode": "EPERM",
+        "junctionToFileCreated": true,
+        "junctionToFileIdentity": {
+          "lstatIsSymbolicLink": true,
+          "stat": "ERR:ENOENT"
+        },
+        "directoryJunctionIdentity": {
+          "lstatIsSymbolicLink": true,
+          "statIsDirectory": true,
+          "statIsFile": false
+        },
+        "statBeforeDirectoryGate": true,
+        "lstatAfterDirectoryGate": true,
+        "reparsePoints": [
+          "f4-protected/dir-link"
+        ],
+        "reparseOutsideProtectionDomain": [
+          "f4-protected/dir-link"
+        ],
+        "undetermined": [
+          "f4-protected/dir-link",
+          "f4-protected/junction-file.txt"
+        ],
+        "complete": false,
+        "verified": false,
+        "admissionEligible": false,
+        "rootCoverageComplete": true,
+        "linkObjectLabel": {
+          "ok": true,
+          "present": true,
+          "integrity": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        },
+        "linkTargetLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        }
+      },
+      "invariant": "Every reparse point inside a protected tree is classified by its target, whatever the target's type; a link to content outside the protection domain is never silently counted as covered.",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "reproduced": true,
+      "fixtureLimit": "a file-directed symlink could not be created on this host (EPERM), so the FILE-link case is SOURCE_DEMONSTRATED rather than dynamically exercised",
+      "uncertain": "Whether a Low token could READ through a file-directed link is not measurable here, because no such fixture can be created. What is established is that the code would not classify it at all."
+    },
+    {
+      "id": "F5",
+      "title": "A declared protected root is treated as a verified protection outcome",
+      "source": "host/deployment/runtime/read_fence.js :: verifyTree() — `reparseIntoProtectedRoot` uses `input.protectedRoots`",
+      "baselineBehavior": "A link whose target lies under any DECLARED protected root is classified as `reparseIntoProtectedRoot` and excluded from the unresolvable set, so it never makes the walk fail. The declaration is not evidence that the target object carries a verified label.",
+      "actualInput": {
+        "rootA": "f5-root-a",
+        "rootB": "f5-root-b",
+        "declaredRoots": [
+          "f5-root-a",
+          "f5-root-b"
+        ],
+        "rootBVerified": false
+      },
+      "observed": {
+        "rootALabelled": true,
+        "reparseIntoProtectedRoot": [
+          "f5-root-a/into-b"
+        ],
+        "reparseOutsideProtectionDomain": [],
+        "admissionEligible": true,
+        "targetLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        },
+        "rootBLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        }
+      },
+      "invariant": "A path being inside a DECLARED root is not sufficient; the protection basis must be an actual verified Kernel label on the target.",
+      "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+      "reproduced": true,
+      "uncertain": "The target here is unlabelled because it was never planned; the same classification would occur if labelling had been attempted and failed, which is the case that matters."
+    },
+    {
+      "id": "F6",
+      "title": "An unknown external reparse target receives an unconditional positive qualification",
+      "source": "host/deployment/runtime/read_fence.js :: verifyTree() — `admissionEligible` requires only `reparseUnresolvable.length === 0`",
+      "baselineBehavior": "A link that RESOLVES but points outside every protected root is recorded as `reparseOutsideProtectionDomain` and leaves `admissionEligible` true. Nothing distinguishes a qualified DSH dependency from an unknown external path or model-controlled content.",
+      "actualInput": {
+        "link": "junction -> an arbitrary directory outside every protected root, containing a synthetic canary"
+      },
+      "observed": {
+        "reparseBasis": "REPARSE_LEAVES_PROTECTION_DOMAIN",
+        "reparseOutsideProtectionDomain": [
+          "f6-protected/to-external"
+        ],
+        "admissionEligible": true,
+        "coverageComplete": true,
+        "targetLabel": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        },
+        "linkObjectLabel": {
+          "ok": true,
+          "present": true,
+          "integrity": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        }
+      },
+      "invariant": "An unknown or mutable target must not receive an unconditional positive qualification; the exception must be a qualified, identified dependency contract.",
+      "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+      "reproduced": true,
+      "uncertain": "The measured fact that a labelled junction still delivers its target's bytes to a Low token is in junction-label-probe.mjs; this finding is about ADMISSION, not the read."
+    },
+    {
+      "id": "F7",
+      "title": "Conformance evidence is loaded from fixed user directories with no run relationship",
+      "source": "scripts/host_s1/generate-evidence.mjs :: conformance block (paths under USERPROFILE)",
+      "baselineBehavior": "The generator reads `<USERPROFILE>/.palimpsest-r1hr/conformance/conformance.json` and `.palimpsest-r1hc/...` and admits them with `read: true` and a pass count. The receipt carries no Code Freeze HEAD, run id, command, exit code or artifact digest, so a report from any earlier run is admitted identically.",
+      "actualInput": {
+        "staleReport": "stale-conformance/conformance.json",
+        "content": "two passing checks, no run identity",
+        "usesFixedHomePaths": true
+      },
+      "observed": {
+        "usesFixedHomePaths": true,
+        "admittedAsCurrent": {
+          "read": true,
+          "pass": 2,
+          "fail": 0,
+          "total": 2
+        },
+        "receiptFields": [
+          "path",
+          "read",
+          "digest",
+          "pass",
+          "limit",
+          "fail",
+          "total"
+        ]
+      },
+      "invariant": "Current-run conformance must be tied to the Code Freeze and the executed command; a historical report may be used for comparison, never as unqualified current execution evidence.",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "reproduced": true,
+      "uncertain": "The demonstration replays the loader's admission logic rather than invoking the whole generator; the negative controls in C4 exercise the corrected gate end to end."
+    },
+    {
+      "id": "F8",
+      "title": "The final exit code and suite verdicts are not driven by the qualification result",
+      "source": "scripts/host_s1/generate-evidence.mjs :: runSuite() and the final process.exit()",
+      "baselineBehavior": "`runSuite` computes PASS from the JSON report alone and ignores the child's exit code; skipped tests are counted but never block PASS; the final `process.exit` depends on producer and suite verdicts only, never on the derived final verdicts.",
+      "actualInput": {
+        "exitLine": "  process.exit(2);",
+        "suiteVerdictLine": "    observedVerdict: report === null ? \"MISSING\" : failed === 0 && passed > 0 ? \"PASS\" : \"FAIL\","
+      },
+      "observed": {
+        "suiteIgnoresExit": true,
+        "finalExitIgnoresVerdicts": true,
+        "skippedTreatedAsExecuted": true
+      },
+      "invariant": "RequiredVerdict NOT_ESTABLISHED => nonzero qualification exit; a nonzero child exit, a missing report, zero executed tests or a required skip is never PASS.",
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "reproduced": true,
+      "uncertain": "The negative controls are built and run in C4; this finding records the baseline control flow."
+    },
+    {
+      "id": "F9",
+      "title": "A fully enumerated skipped ancestor containing only the active world is refused",
+      "source": "host/deployment/runtime/read_fence.js :: coverageOf() — `skippedWithoutDerivedCoverage` from an empty derived list",
+      "baselineBehavior": "`coverageOf` marks any skipped ancestor with no derived roots as `skippedWithoutDerivedCoverage`, so `complete` is false even when the derivation enumerated every level and found nothing but the spine.",
+      "actualInput": {
+        "layout": ".palimpsest/worlds/attempt-A, with no sibling worlds and no durable state",
+        "planComplete": true
+      },
+      "observed": {
+        "planComplete": true,
+        "spine": [
+          "f9-repo/.palimpsest/worlds",
+          "f9-repo/.palimpsest/worlds/attempt-A"
+        ],
+        "derivedRoots": [],
+        "unresolved": [],
+        "skippedWithoutDerivedCoverage": [
+          "f9-repo/.palimpsest"
+        ],
+        "incompletePlans": [],
+        "coverageComplete": false,
+        "rootsVerified": true
+      },
+      "invariant": "Security failure and overconservative refusal must remain distinguishable: an ancestor that was fully enumerated and genuinely contains only the authorized world is not a confidentiality violation.",
+      "evidenceClass": "DYNAMIC_UNIT_VERIFIED",
+      "reproduced": true,
+      "uncertain": "Whether the refusal is acceptable as a permanent conservative policy is a product decision; §7.5 asks only that it be distinguishable from a security failure."
+    }
+  ],
   "decisiveMeasurements": {
-    "f1": null,
-    "f3": null,
-    "f2": null
+    "f1": {
+      "successorInstalledBeforeRecoveryRename": true,
+      "recovererMovedTheSuccessor": true,
+      "thirdPartyAcquiredTheVacatedPathname": true,
+      "successorDisplacedFromPathname": true,
+      "childCompleted": false,
+      "childTimedOut": true,
+      "childExitCode": null,
+      "finalPathnameOwnerToken": "third-party"
+    },
+    "f3": {
+      "aclAvailable": true,
+      "fenceA": {
+        "supported": true,
+        "complete": true
+      },
+      "fenceB": {
+        "supported": true,
+        "complete": true
+      },
+      "labelBeforeGrants": {
+        "worldA": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        },
+        "worldB": {
+          "ok": true,
+          "present": false,
+          "integrity": null,
+          "policies": []
+        }
+      },
+      "driver": {
+        "status": 0,
+        "stderr": ""
+      },
+      "labelAfterGrants": {
+        "worldA": {
+          "ok": true,
+          "present": true,
+          "integrity": "Low",
+          "policies": [
+            "NO_WRITE_UP"
+          ]
+        },
+        "worldB": {
+          "ok": true,
+          "present": true,
+          "integrity": "Low",
+          "policies": [
+            "NO_WRITE_UP"
+          ]
+        }
+      },
+      "probe": {
+        "OWN_WORLD": {
+          "read": true,
+          "content": "WORLD-A-ORDINARY-WORK"
+        },
+        "OTHER_REPO_WORLD": {
+          "read": true,
+          "content": "HOSTS1R-CONCERN-CANARY-3f91ad07-SYNTHETIC-ONLY"
+        },
+        "OTHER_REPO_DURABLE": {
+          "read": false,
+          "code": "EPERM"
+        }
+      },
+      "otherWorldReadable": true,
+      "otherDurableReadable": false
+    },
+    "f2": {
+      "malformedAcquire": {
+        "granted": false,
+        "detail": "the capacity record contains 1 malformed holder entr(y/ies) (pid-not-a-positive-integer), so ownership is UNKNOWN and capacity cannot be gra"
+      },
+      "malformedBytesPreserved": "{\"holders\":[{\"pid\":\"not-a-pid\",\"token\":\"x\"}]}",
+      "unreadablePeek": {
+        "active": -1,
+        "detail": "the capacity record is not valid JSON; capacity is UNKNOWN",
+        "malformed": 0
+      },
+      "unreadableBytesPreserved": "{ this is not json",
+      "strangerRelease": {
+        "released": false,
+        "detail": "this handle holds no slot",
+        "retryable": false
+      },
+      "strangerBytesPreserved": "{\"holders\":[{\"pid\":2668,\"token\":\"someone-else\",\"at\":0}]}",
+      "selfRelease": {
+        "granted": true,
+        "released": true,
+        "remainingTokens": [
+          "unrelated-live"
+        ]
+      },
+      "failedWriteDuringRelease": {
+        "granted": true,
+        "writeFailureInjected": true,
+        "releaseResult": {
+          "released": false,
+          "detail": "the slot was not released: injected ENOSPC",
+          "retryable": true
+        },
+        "releaseThrew": null,
+        "retryResult": {
+          "released": false,
+          "detail": "this handle holds no slot",
+          "retryable": false
+        },
+        "holdersAfterFailedRelease": [
+          "2668-f5e708e4-fe05-449b-86c6-2fccc5c08ac2"
+        ]
+      }
+    }
   },
   "runIdentity": {
-    "codeFreezeHead": "3409bbbcd6fe62e352dc23bde0f0224965792352",
-    "executedCodeTree": "552d1c522e66530dea4ee2671ec1d1df2edc86a8",
-    "workingTreeDirty": false,
+    "codeFreezeHead": "efa39345c3e8402989d5345e685868a75f436d78",
+    "executedCodeTree": "e8c547dad04b165c44dc95aa10a3bf0119d7897f",
+    "workingTreeDirty": true,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",

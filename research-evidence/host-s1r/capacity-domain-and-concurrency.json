@@ -1,8 +1,70 @@
 {
   "kind": "HOST_S1R_CAPACITY_DOMAIN_AND_CONCURRENCY",
   "evidenceClass": "CROSS_PROCESS_RUNTIME_VERIFIED",
-  "crossRepository": null,
-  "crossRepositoryReproduced": false,
+  "crossRepository": {
+    "aclAvailable": true,
+    "fenceA": {
+      "supported": true,
+      "complete": true
+    },
+    "fenceB": {
+      "supported": true,
+      "complete": true
+    },
+    "labelBeforeGrants": {
+      "worldA": {
+        "ok": true,
+        "present": false,
+        "integrity": null,
+        "policies": []
+      },
+      "worldB": {
+        "ok": true,
+        "present": false,
+        "integrity": null,
+        "policies": []
+      }
+    },
+    "driver": {
+      "status": 0,
+      "stderr": ""
+    },
+    "labelAfterGrants": {
+      "worldA": {
+        "ok": true,
+        "present": true,
+        "integrity": "Low",
+        "policies": [
+          "NO_WRITE_UP"
+        ]
+      },
+      "worldB": {
+        "ok": true,
+        "present": true,
+        "integrity": "Low",
+        "policies": [
+          "NO_WRITE_UP"
+        ]
+      }
+    },
+    "probe": {
+      "OWN_WORLD": {
+        "read": true,
+        "content": "WORLD-A-ORDINARY-WORK"
+      },
+      "OTHER_REPO_WORLD": {
+        "read": true,
+        "content": "HOSTS1R-CONCERN-CANARY-3f91ad07-SYNTHETIC-ONLY"
+      },
+      "OTHER_REPO_DURABLE": {
+        "read": false,
+        "code": "EPERM"
+      }
+    },
+    "otherWorldReadable": true,
+    "otherDurableReadable": false
+  },
+  "crossRepositoryReproduced": true,
   "isolationUnitEvidence": {
     "distinctWorkspaceWriteSids": true,
     "sharedIntegrityLevel": "Low",
@@ -19,8 +81,8 @@
   "controls": {
     "id": "host-s1-capacity",
     "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_capacity_domain.test.ts",
-    "runId": "e788208c-d331-4d0b-87dd-c5f0bc6c394d",
-    "startedAt": "2026-10-21T07:44:02.325Z",
+    "runId": "d3d1cd82-44f4-4992-915e-a5224106621f",
+    "startedAt": "2026-10-21T19:07:13.259Z",
     "exitCode": 0,
     "total": 28,
     "passed": 28,
@@ -65,9 +127,9 @@
     "different Windows principals are not covered by this slot and are separated by their own profile ACLs and integrity levels; that separation is asserted from the platform's default ACLs, not measured here"
   ],
   "runIdentity": {
-    "codeFreezeHead": "3409bbbcd6fe62e352dc23bde0f0224965792352",
-    "executedCodeTree": "552d1c522e66530dea4ee2671ec1d1df2edc86a8",
-    "workingTreeDirty": false,
+    "codeFreezeHead": "efa39345c3e8402989d5345e685868a75f436d78",
+    "executedCodeTree": "e8c547dad04b165c44dc95aa10a3bf0119d7897f",
+    "workingTreeDirty": true,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
     "platform": "win32",
