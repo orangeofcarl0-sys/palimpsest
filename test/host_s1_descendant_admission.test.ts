@@ -39,10 +39,20 @@ type TreeOutcome = {
   reparseIntoProtectedRoot: readonly string[];
   reparseOutsideProtectionDomain: readonly string[];
   reparseUnresolvable: readonly string[];
+  /** S1R-C: qualified versus unqualified out-of-domain links, and the bases used. */
+  unqualifiedExternalLinks: readonly string[];
+  qualifiedDependencyLinks: readonly string[];
   reparseBasis: string;
 };
 type FenceModule = {
-  verifyTree: (input: { root: string; maxDepth?: number; maxEntries?: number; protectedRoots?: readonly string[] }) => TreeOutcome;
+  verifyTree: (input: {
+    root: string;
+    maxDepth?: number;
+    maxEntries?: number;
+    /** S1R-C: the basis is the VERIFIED root set; the declared root list is no longer consulted. */
+    verifiedRoots?: readonly string[];
+    dependencyRoots?: readonly string[];
+  }) => TreeOutcome;
   ensureReadFence: (input: { roots: readonly string[]; world: string; verifyTrees?: boolean }) => {
     rootsVerified: boolean;
     treesVerified: boolean;
