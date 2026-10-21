@@ -31,6 +31,7 @@ const PROTECTED = join(ROOT, "durable-state");
 const ORIGINAL_CWD = process.cwd();
 const ORIGINAL_HOME = process.env.DSH_HOME;
 const ORIGINAL_ROOTS = process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS;
+const ORIGINAL_CAPACITY_ROOT = process.env.PALIMPSEST_HOST_CAPACITY_ROOT;
 /** Live child processes that hold a capacity slot; killed in teardown. */
 const children: Array<{ kill: () => void }> = [];
 
@@ -62,6 +63,12 @@ beforeAll(async () => {
     moduleError = error instanceof Error ? error.message : String(error);
   }
   process.env.DSH_HOME = HOME;
+  /**
+   * S1R-A: THE CAPACITY NAMESPACE IS NOW THE WINDOWS PRINCIPAL'S OWN LOCALAPPDATA. Driving the real runner
+   * without this seam would make this suite contend with — and potentially refuse — a real confidential
+   * worker on this machine. The seam is host configuration, the same kind as the protected-roots variable.
+   */
+  process.env.PALIMPSEST_HOST_CAPACITY_ROOT = join(HOME, "host-capacity");
   /** Keep the fence's derived roots test-owned: the protected root is ours, and the host home is ours. */
   process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS = PROTECTED;
 }, 300_000);
@@ -79,6 +86,8 @@ afterAll(() => {
   else process.env.DSH_HOME = ORIGINAL_HOME;
   if (ORIGINAL_ROOTS === undefined) delete process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS;
   else process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS = ORIGINAL_ROOTS;
+  if (ORIGINAL_CAPACITY_ROOT === undefined) delete process.env.PALIMPSEST_HOST_CAPACITY_ROOT;
+  else process.env.PALIMPSEST_HOST_CAPACITY_ROOT = ORIGINAL_CAPACITY_ROOT;
   try {
     rmSync(ROOT, { recursive: true, force: true });
   } catch {
@@ -98,7 +107,7 @@ function liveHolder(): number {
 
 /** Seed the slot file with one live holder, which is what a concurrently running worker leaves behind. */
 function seedLiveHolder(): void {
-  const dir = join(HOME, "confidential-workers");
+  const dir = join(HOME, "host-capacity");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "active.json"), JSON.stringify({ holders: [{ pid: liveHolder(), at: Date.now() }], profile: "windows-confidential-single-active" }), "utf8");
 }
@@ -111,7 +120,7 @@ async function driveWorker(options: { capacitySeeded?: boolean; cwd?: string; re
   const observed = { createCalled: false, followupCalled: false, disposeCalled: false, printed: [] as string[], threw: null as string | null };
   if (runner === null) throw new Error(`the runner module is unavailable: ${String(moduleError)}`);
   if (options.capacitySeeded === true) seedLiveHolder();
-  else rmSync(join(HOME, "confidential-workers"), { recursive: true, force: true });
+  else rmSync(join(HOME, "host-capacity"), { recursive: true, force: true });
   process.chdir(options.cwd ?? WORLD);
 
   const originalWrite = process.stdout.write.bind(process.stdout);
@@ -272,12 +281,16 @@ describe("RG-0-F6 Confidential Slot acquisition IS atomic and liveness-only (COR
     const slotHome = join(ROOT, "slot-home");
     mkdirSync(slotHome, { recursive: true });
     /**
+     * S1R-A: `capacityRoot` IS PASSED EXPLICITLY. The production namespace is the Windows principal's own
+     * LOCALAPPDATA, so a case that passed only `home` would contend with every other host on this machine.
+     */
+    /**
      * TWO SEPARATE HANDLES ON THE SAME FILE. `openConfidentialSlot` reads, checks, then writes — so two callers
      * that both read before either writes both see zero holders. This is the read-check-write window the
      * ruling names, reproduced in-process with the shipped code.
      */
-    const a = capacityModule!.openConfidentialSlot({ home: slotHome });
-    const b = capacityModule!.openConfidentialSlot({ home: slotHome });
+    const a = capacityModule!.openConfidentialSlot({ home: slotHome, capacityRoot: join(slotHome, "confidential-workers") });
+    const b = capacityModule!.openConfidentialSlot({ home: slotHome, capacityRoot: join(slotHome, "confidential-workers") });
     /** Interleave exactly as two processes would: both read, then both write. */
     const first = a.acquire();
     const second = b.acquire();
@@ -308,7 +321,7 @@ describe("RG-0-F6 Confidential Slot acquisition IS atomic and liveness-only (COR
     /** A live pid whose record is older than `staleAfterMs`: the process is running, the slot says it is not. */
     const pid = liveHolder();
     writeFileSync(join(dir, "active.json"), JSON.stringify({ holders: [{ pid, at: Date.now() - 10_000 }], profile: "windows-confidential-single-active" }), "utf8");
-    const slot = capacityModule!.openConfidentialSlot({ home: slotHome, staleAfterMs: 1_000 });
+    const slot = capacityModule!.openConfidentialSlot({ home: slotHome, capacityRoot: dir, staleAfterMs: 1_000 });
     /** CORRECTED (E1RG RG-C §6.4): liveness is the ONLY eviction rule, so a live holder keeps its slot. */
     const granted = slot.acquire();
     expect(granted.granted).toBe(false);

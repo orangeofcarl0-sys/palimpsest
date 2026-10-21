@@ -499,16 +499,21 @@ async function runWorker(ctx, deps) {
       if (boundaryLoad.module !== undefined) {
         if (typeof boundaryLoad.module.openConfidentialSlot === 'function') {
           /**
-           * HOST-S1 §8.6: THE SLOT IS KEYED BY THE PROTECTED DOMAIN, NOT BY THE HOME ALONE.
+           * S1R-A: THE SLOT IS KEYED BY THE WINDOWS PRINCIPAL, NOT BY THE REPOSITORY.
            *
-           * The capacity limit is a statement about worlds that cannot be read-fenced apart, so the unit is the
-           * repository whose `.palimpsest` holds them. The boundary module already derives that repository from
-           * the worker's position, so the domain root is taken from the SAME derivation rather than guessed here.
+           * Host-S1 keyed it by the protected repository. That premise was MEASURED and is false on this host:
+           * with two test-owned repositories whose worlds were both ACTIVE, a confined process granted only
+           * repository A's workspace read repository B's active-world canary (F3). The two worlds had different
+           * workspace write SIDs, so neither the workspace nor the repository is the isolation unit — what they
+           * share is the Low integrity level every confined process of this principal carries.
+           *
+           * The slot therefore lives in the principal's own local application data, and the repository is passed
+           * only as METADATA for the receipt. Passing it as a namespace key would re-create the defect.
            */
-          const domainRoot = boundaryLoad.module.findRepository?.(process.cwd()) ?? undefined;
+          const repositoryRoot = boundaryLoad.module.findRepository?.(process.cwd()) ?? undefined;
           const slot = boundaryLoad.module.openConfidentialSlot({
             home: process.env.DSH_HOME ?? process.cwd(),
-            ...(domainRoot === undefined ? {} : { domain: domainRoot }),
+            ...(repositoryRoot === undefined ? {} : { domain: repositoryRoot }),
           });
           const acquired = slot.acquire();
           capacity = { granted: acquired.granted, detail: acquired.detail };
@@ -516,9 +521,14 @@ async function runWorker(ctx, deps) {
             granted: acquired.granted === true,
             detail: acquired.detail,
             mechanism: slot.mechanism ?? null,
-            /** §8.6: which security domain this exclusion actually covers, and the assumption it rests on. */
+            /** S1R-A: which security domain this exclusion actually covers, and the assumption it rests on. */
             domain: slot.domain?.identity ?? null,
+            domainScope: slot.domain?.scope ?? null,
+            domainPrincipal: slot.domain?.principal ?? null,
+            capacityRoot: slot.domain?.capacityRoot ?? null,
             domainAssumption: slot.domain?.assumption ?? null,
+            /** A namespace reachable through a reparse point is refused rather than used. */
+            reparseAncestors: slot.domain?.reparseAncestors ?? [],
           };
           if (acquired.granted) releaseCapacity = () => slot.release();
           else refuse('capacity', acquired.detail);

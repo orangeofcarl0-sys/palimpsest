@@ -37,6 +37,7 @@ const PROTECTED = join(ROOT, "durable-state");
 const ORIGINAL_CWD = process.cwd();
 const ORIGINAL_HOME = process.env.DSH_HOME;
 const ORIGINAL_ROOTS = process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS;
+const ORIGINAL_CAPACITY_ROOT = process.env.PALIMPSEST_HOST_CAPACITY_ROOT;
 const ORIGINAL_DSH_ROOT = process.env.PALIMPSEST_DSH_ROOT;
 const children: Array<{ kill: () => void }> = [];
 
@@ -62,6 +63,12 @@ beforeAll(async () => {
     moduleError = error instanceof Error ? error.message : String(error);
   }
   process.env.DSH_HOME = HOME;
+  /**
+   * S1R-A: THE CAPACITY NAMESPACE IS THE WINDOWS PRINCIPAL'S OWN LOCALAPPDATA, so driving the real runner
+   * without this seam would contend with — and could refuse — a real confidential worker on this machine.
+   * The seam is host configuration, the same kind as the protected-roots variable.
+   */
+  process.env.PALIMPSEST_HOST_CAPACITY_ROOT = join(HOME, "host-capacity");
   /** The ABI seam resolves through this variable; without it `kernel.supported` is false for the wrong reason. */
   process.env.PALIMPSEST_DSH_ROOT = process.env.PALIMPSEST_DSH_ROOT ?? join(process.env.USERPROFILE ?? "", ".dsh", "profiles", "node_modules", "@deepseek-ai", "dsh").replace(/\\/gu, "/");
   /**
@@ -86,6 +93,7 @@ afterAll(() => {
   };
   restore("DSH_HOME", ORIGINAL_HOME);
   restore("PALIMPSEST_WORKER_PROTECTED_ROOTS", ORIGINAL_ROOTS);
+  restore("PALIMPSEST_HOST_CAPACITY_ROOT", ORIGINAL_CAPACITY_ROOT);
   restore("PALIMPSEST_DSH_ROOT", ORIGINAL_DSH_ROOT);
   try {
     rmSync(ROOT, { recursive: true, force: true });
@@ -101,13 +109,13 @@ function liveHolder(): number {
 }
 
 function seedSlot(holders: readonly { pid: number, at: number }[]): void {
-  const dir = join(HOME, "confidential-workers");
+  const dir = join(HOME, "host-capacity");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "active.json"), JSON.stringify({ holders, profile: "windows-confidential-single-active" }), "utf8");
 }
 
 function clearSlot(): void {
-  rmSync(join(HOME, "confidential-workers"), { recursive: true, force: true });
+  rmSync(join(HOME, "host-capacity"), { recursive: true, force: true });
 }
 
 /**
@@ -353,7 +361,7 @@ describe("RG-A pre-create refusal prevents Agent creation (DYNAMICALLY_VERIFIED)
     const observed = await driveWorker({ seed: null });
     expect(observed.workResult?.kind).toBe("READY_FOR_SETTLEMENT");
     /** The holder list is empty: the run's own slot was released and nothing was double-released into it. */
-    const file = join(HOME, "confidential-workers", "active.json");
+    const file = join(HOME, "host-capacity", "active.json");
     const parsed = JSON.parse(readFileSync(file, "utf8")) as { holders: unknown[] };
     expect(parsed.holders).toHaveLength(0);
   });

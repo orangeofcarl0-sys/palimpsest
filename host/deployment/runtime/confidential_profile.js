@@ -27,9 +27,10 @@
 //
 // PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript.
 
-import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
-import { join, resolve } from 'node:path';
+import { homedir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 
 /**
  * @typedef {{ readonly adapterId: string, readonly run: (input: any) => Promise<any> }} WorkWorkerPortLike
@@ -148,104 +149,170 @@ export function admitConfidentialWorker(input) {
 }
 
 /**
- * A HOST-LOCAL, CROSS-PROCESS admission slot for one confidential worker.
+ * THE CONFIDENTIAL CAPACITY SLOT: ONE ACTIVE CONFIDENTIAL WORKER PER SECURITY PRINCIPAL AND MACHINE.
  *
- * The in-process wrapper above is enough when one host process runs the workers, but a worker is its own OS
- * process, so the capacity claim has to survive across processes. This uses a single file in the HOST's own
- * directory, and it is deliberately NOT canonical:
+ * WHAT THE SLOT IS. A cross-process admission claim, held for the few milliseconds it takes to read and write
+ * the holder record. It carries no canonical semantics: a pid, a token and a timestamp, nothing about Work.
  *
- *   · it lives beside the host's session material, never in a Palimpsest store;
- *   · it carries no semantics — a pid and a timestamp, for identification only;
- *   · nothing about Work reads it, and losing it changes no canonical fact.
+ * ============================================================================
+ * S1R-A — THE EXCLUSION DOMAIN IS THE WINDOWS SECURITY PRINCIPAL ON THIS MACHINE.
+ * ============================================================================
  *
- * E1RG RG-C §6.3: ACQUISITION IS NOW ATOMIC, AND THE MECHANISM IS AN OS PRIMITIVE.
+ * WHY THE DOMAIN HAD TO CHANGE. Host-S1 keyed the slot by the protected repository
+ * (`<repository>/.palimpsest/host-capacity/`), on the premise that a repository is the confidentiality domain.
+ * That premise was never measured. It is false on this host.
  *
- * MEASURED ON THE PARENT COMMIT (`rg0-findings.json` F6). `acquire()` read the slot file, compared the holder
- * count, then OVERWROTE the file. Two processes that both read before either wrote both saw zero holders and
- * both were granted the only slot. That is a read-check-write window with no exclusive step, and it is exactly
- * the window a security limit cannot have: R1-HC established that two ACTIVE worlds cannot both be read-fenced
- * on this backend, so admitting two is a confidentiality failure, not a throughput hiccup.
+ * MEASURED (`baseline-security-falsifiers.json` F3, `scripts/host_s1r/reproduce-concerns.mjs`). Two independent
+ * test-owned repositories were each given their own `.palimpsest`, their own world and their own synthetic
+ * canary. BOTH worlds were made ACTIVE with the same first-party `AclWriteGrant` the sandbox applies on every
+ * confined spawn — that grant is the last writer of a world's label, which is the whole reason the capacity
+ * limit exists. A process running under the real DSH sandbox, granted ONLY repository A's workspace, read
+ * repository B's ACTIVE-world canary. B's durable state was refused (EPERM); B's ACTIVE WORLD was not.
  *
- * THE PRIMITIVE: `mkdir`. Creating a directory is ATOMIC on NTFS — exactly one caller succeeds and every other
- * receives EEXIST — and it needs no dependency, no service and no lock API that behaves differently per
- * platform. The lock directory is `active.lock` beside the record; holding it is the exclusive right to read,
- * decide and write the holder list. The critical section is therefore:
+ * The two worlds had DIFFERENT workspace write SIDs (`S-1-4-394482434-518543731` vs `S-1-4-938573126-899541022`),
+ * so the isolation is neither per-workspace nor per-repository. What they share is the LOW INTEGRITY LEVEL the
+ * backend assigns to every confined process of this principal, and a label is a level, not a compartment: two
+ * ACTIVE worlds are both at Low, so neither can refuse the other. The unit that must be serialized is therefore
+ * every confidential worker THIS PRINCIPAL can start ON THIS MACHINE — not the repository, not the DSH home.
  *
- *     mkdir(lock) -> read holders -> decide -> write holders -> rmdir(lock)
+ * THE NAMESPACE. `%LOCALAPPDATA%\Palimpsest\host-capacity\` is per-principal and per-machine by construction,
+ * and every host process of this principal resolves the same path regardless of which repository it serves or
+ * which DSH home it was given. That is the property Host-S1's home-keyed and domain-keyed designs both lacked:
+ * two hosts could each acquire a slot for the SAME worlds, or for DIFFERENT worlds they could each read.
  *
- * and two concurrent acquirers cannot both be inside it.
+ * WHY NOT MACHINE-WIDE. A path shared by every principal would need ACLs this stage is not authorised to
+ * design (§5.3 forbids inventing a new coordinator, and a machine-wide writable directory is a tampering
+ * surface). Different Windows principals are already separated by the default profile ACLs and by their own
+ * integrity levels, so the principal is the correct outer bound. `domain.assumption` states exactly this so no
+ * receipt can imply a stronger scope.
  *
- * E1RG RG-C §6.4: A LIVE HOLDER IS NEVER EVICTED BY A TIMESTAMP.
+ * THE ANCESTRY IS VERIFIED, NOT ASSUMED (§5.3). Every ancestor of the capacity root is inspected with `lstat`;
+ * if any is a reparse point the slot REFUSES to operate, because a junction would let the namespace be
+ * redirected to a path another principal controls. The result is reported in `domain.reparseAncestors`.
  *
- * The previous `staleAfterMs` dropped a holder whose record was older than a fixed age, even when the process
- * was demonstrably alive. A long-running worker would silently lose its protection and a second worker would be
- * admitted alongside it — the exact overlap the limit exists to prevent. Liveness is now decided ONLY by
- * whether the pid still exists; `staleAfterMs` is retained in the signature for compatibility and is recorded,
- * but it no longer evicts a live process.
+ * ============================================================================
+ * S1R-B — RECOVERY: SAFE EXCLUSION, AND AUTOMATIC RECLAMATION DELIBERATELY DISABLED.
+ * ============================================================================
  *
- * E1RG RG-C §6.5: CRASH RECOVERY IS SAFE AND EXPLICIT.
+ * THE ACHIEVEMENT KEPT. `mkdir` remains the acquisition primitive: creating a directory is atomic on NTFS, so
+ * exactly one caller wins. The read-check-write race E1RG closed stays closed.
  *
- * A holder whose process is GONE is recovered — otherwise a crash would block work forever. The lock directory
- * itself is recovered only when it is older than `lockStaleMs` AND its recorded owner is gone; a lock whose
- * owner is still alive is never removed, because deleting a live lock would let two writers in.
+ * WHAT WAS MEASURED ON THE PARENT (F1, and it is worse than the hypothesis). Recovery read the lock's owner,
+ * decided it was abandoned, then renamed the PATHNAME to a private claim and compared tokens AFTERWARDS. An
+ * instrumented interleaving — a live successor installed immediately before the recoverer's rename — showed:
  *
- * @param {{ home: string, maxActiveWorkers?: number, staleAfterMs?: number, lockStaleMs?: number, lockTimeoutMs?: number }} input
+ *   · the recoverer MOVED the live successor (`recovererMovedTheSuccessor: true`);
+ *   · a third process acquired the vacated pathname (`thirdPartyAcquiredTheVacatedPathname: true`);
+ *   · the successor was displaced and the third party held the lock;
+ *   · and the recovery then FAILED TO TERMINATE, because the abandoned branch `continue`s past the timeout
+ *     check and its claim name is deterministic per process, so the second pass collided with its own leftover
+ *     claim and looped forever (`childTimedOut: true`).
+ *
+ * WHY AUTOMATIC RECLAMATION IS NOW DISABLED RATHER THAN NARROWED. The window is structural. A recovery that
+ * removes a lock by PATHNAME frees that pathname between the removal and any re-publication, and the
+ * filesystem offers no compare-and-unlink: `rename`, `mkdir` and `rmdir` each act on whatever currently bears
+ * the name. Re-verifying the object's file index immediately before the rename shrinks the window but cannot
+ * close it — a replacement landing between the verification and the rename is still moved, and if a third party
+ * takes the freed pathname before the restore, the displaced owner believes it holds a lock it no longer holds.
+ * That is overlapping ownership, which §6.2 makes non-negotiable.
+ *
+ * §6.4 states the preference explicitly: "If the automatic stale-recovery algorithm cannot demonstrate
+ * object-identity-safe exclusion, disable automatic reclamation of ambiguous lock directories. Preserve a
+ * fail-closed refusal with explicit operator recovery requirements." That is what this module now does.
+ *
+ * THE AVAILABILITY COST IS SMALL AND IS MEASURED. The lock is held ONLY across the read-modify-write of the
+ * holder record — a handful of file operations. The long-lived claim is the HOLDER RECORD, and that is still
+ * recovered automatically: a holder whose pid is demonstrably gone is evicted, so a crashed worker frees
+ * capacity. Only a crash inside the millisecond critical section requires an operator, and the refusal names
+ * the exact path and the required action.
+ *
+ * AN UNREADABLE OWNER RECORD IS NEVER RECLAIMED (§6.5). "Publication in progress", "creator crashed" and
+ * "metadata unreadable" are indistinguishable from outside, and §6.5 forbids treating the third as the second.
+ *
+ * @param {{ home: string, domain?: string, capacityRoot?: string, maxActiveWorkers?: number, staleAfterMs?: number,
+ *   lockStaleMs?: number, lockTimeoutMs?: number }} input
  * @returns {{
  *   acquire: () => { granted: boolean, detail: string },
  *   release: () => { released: boolean, detail: string, retryable?: boolean },
  *   peek: () => { active: number, detail: string, malformed: number },
  *   mechanism: string,
- *   domain: { home: string, slotPath: string, identity: string, assumption: string },
+ *   domain: { scope: string, principal: string | null, capacityRoot: string, slotPath: string, lockPath: string,
+ *     key: string | null, home: string, root: string | null, identity: string, assumption: string,
+ *     reparseAncestors: readonly string[] },
  * }}
  */
 export function openConfidentialSlot(input) {
   const max = input.maxActiveWorkers ?? CONFIDENTIAL_PROFILE.maxActiveWorkers;
+  /** Retained for compatibility and recorded, but it never evicts a live holder (see `liveHolders`). */
   const staleAfterMs = input.staleAfterMs ?? 6 * 60 * 60 * 1000;
-  /** How long a lock directory may exist before it is considered abandoned. */
-  const lockStaleMs = input.lockStaleMs ?? 30_000;
   const lockTimeoutMs = input.lockTimeoutMs ?? 5_000;
+
   /**
-   * HOST-S1 §8.6 — THE NAMESPACE IS THE PROTECTED DOMAIN, NOT THE HOME.
-   *
-   * The capacity limit exists because two ACTIVE WORLDS cannot both be read-fenced. The unit of that statement is
-   * therefore the set of worlds a host can expose at once — the PROTECTED DOMAIN (the repository whose
-   * `.palimpsest` holds the worlds) — not the host's home directory.
-   *
-   * MEASURED ON THE PARENT COMMIT (`baseline-and-falsifiers.json` F7). The slot was
-   * `<DSH_HOME>/confidential-workers`, so two host instances with different homes each acquired their own slot
-   * and both were granted capacity for the SAME repository. That is a confidentiality failure: R1-HC established
-   * that two ACTIVE worlds cannot both be read-fenced, and nothing about the two hosts being different processes
-   * changes it. A home-local lock cannot provide host-wide exclusion, and §8.6 forbids claiming it does.
-   *
-   * THE CORRECTION: when a domain root is supplied, the slot lives INSIDE that domain, at
-   * `<domain>/.palimpsest/host-capacity/`. Every host capable of exposing the same worlds necessarily resolves
-   * the same domain root, so they necessarily contend for the same slot — which is the property that was
-   * missing.
-   *
-   * WHY THIS LOCATION, AND WHY IT IS NOT A STORAGE REDESIGN.
-   *
-   *   · It is HOST EXECUTION STATE, not canonical state. It lives in a single subdirectory that Palimpsest's
-   *     durable layout does not otherwise use, it carries no owner, event, task or asset semantics, and losing it
-   *     changes no canonical fact.
-   *   · It is NOT inside a worker's world, so the Low-integrity token cannot write it — a worker cannot forge or
-   *     release capacity.
-   *   · It is inside the protected root, so the read fence's derived coverage labels it along with the rest of
-   *     the skipped ancestor's non-spine content.
-   *   · It is NOT a change to any existing path: nothing that already reads `.palimpsest` looks at this name.
-   *
-   * A home-wide slot remains the behaviour when no domain is supplied (`openConfidentialSlot` is also used by
-   * tests and by callers that have no repository), and `domain.identity` states which scope is in force so a
-   * receipt can never imply the stronger one.
+   * THE PRINCIPAL. `USERDOMAIN\USERNAME@COMPUTERNAME` names the security context whose confined processes share
+   * one integrity level. It is reported so a receipt states the scope it actually had.
    */
-  const domainRoot = typeof input.domain === "string" && input.domain.trim() !== "" ? resolve(input.domain) : null;
-  const domainKey = domainRoot === null ? null : createHash("sha256").update(domainRoot.toLowerCase(), "utf8").digest("hex").slice(0, 24);
-  const slotDir = domainRoot === null ? resolve(input.home, "confidential-workers") : resolve(domainRoot, ".palimpsest", "host-capacity");
-  const slotPath = join(slotDir, "active.json");
-  const lockDir = join(slotDir, "active.lock");
+  const principal = (() => {
+    const user = typeof process.env.USERNAME === "string" ? process.env.USERNAME.trim() : "";
+    if (user === "") return null;
+    const domainName = typeof process.env.USERDOMAIN === "string" ? process.env.USERDOMAIN.trim() : "";
+    const machine = typeof process.env.COMPUTERNAME === "string" ? process.env.COMPUTERNAME.trim() : "";
+    return { domain: domainName, user, machine, identity: `${domainName}\\${user}@${machine}` };
+  })();
+
+  /**
+   * THE CAPACITY ROOT. Production resolves the per-principal, per-machine location.
+   *
+   * TWO EXPLICIT SEAMS, both the same kind as `input.api` in `read_fence.js` — a caller that needs a different
+   * location says so, and production callers say nothing:
+   *
+   *   `input.capacityRoot`                 an in-process caller (a conformance case) names its own root;
+   *   PALIMPSEST_HOST_CAPACITY_ROOT        a DEPLOYMENT names a root for every process it starts, which is how
+   *                                        a conformance rig drives the REAL runner without contending with the
+   *                                        machine's capacity state.
+   *
+   * The environment seam exists because the runner constructs the slot itself: without it, a suite that drives
+   * `runWorker` would contend with — and could refuse — a real confidential worker on this machine. It is
+   * HOST CONFIGURATION in the same sense as `PALIMPSEST_WORKER_PROTECTED_ROOTS`: it names a runtime location and
+   * carries no authority.
+   */
+  const configuredRoot = (() => {
+    if (typeof input.capacityRoot === "string" && input.capacityRoot.trim() !== "") return input.capacityRoot.trim();
+    const fromEnvironment = typeof process.env.PALIMPSEST_HOST_CAPACITY_ROOT === "string" ? process.env.PALIMPSEST_HOST_CAPACITY_ROOT.trim() : "";
+    return fromEnvironment === "" ? null : fromEnvironment;
+  })();
+  const capacityRoot =
+    configuredRoot !== null
+      ? resolve(configuredRoot)
+      : join(process.env.LOCALAPPDATA?.trim() || join(homedir(), "AppData", "Local"), "Palimpsest", "host-capacity");
+  const slotPath = join(capacityRoot, "active.json");
+  const lockDir = join(capacityRoot, "active.lock");
+  const slotDir = capacityRoot;
+
+  /** §5.3: the ancestry must not be reachable through a reparse point, or the namespace could be redirected. */
+  const reparseAncestors = (() => {
+    const findings = [];
+    const chain = [];
+    let current = resolve(capacityRoot);
+    for (;;) {
+      chain.push(current);
+      const parent = dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+    for (const path of chain.reverse()) {
+      try {
+        if (lstatSync(path).isSymbolicLink()) findings.push(path);
+      } catch {
+        /* a component that does not exist yet cannot be a link */
+      }
+    }
+    return findings;
+  })();
+
   /** A per-instance token, so a release can prove it refers to the holder it recorded. */
   const ownerToken = `${String(process.pid)}-${randomUUID()}`;
   let held = false;
-  /** §8.2: the last lock-release failure, so an unsuccessful release is observable rather than swallowed. */
+  /** The last lock-release failure, so an unsuccessful release is observable rather than swallowed (§6.6). */
   let lastLockRelease = null;
 
   /**
@@ -253,12 +320,8 @@ export function openConfidentialSlot(input) {
    * gone; EPERM means it exists but belongs to another user, which is still ALIVE. A pid of our own process is
    * always alive.
    *
-   * HOST-S1 §8.5: AMBIGUITY MUST NOT AUTHORIZE OVERLAP.
-   *
-   * The previous version returned `error?.code === "EPERM"` and therefore treated EVERY other error — including
-   * `EINVAL` for a pid outside the valid range — as "not alive". A liveness probe that fails for a reason other
-   * than a known process-not-found is UNKNOWN, not dead, and unknown must not free a slot. The distinction is
-   * returned rather than collapsed into a boolean.
+   * §8.5: ambiguity must not authorize overlap. Every other error — including EINVAL for an out-of-range pid —
+   * is UNKNOWN, not dead, and unknown must not free a slot.
    */
   const livenessOf = (pid) => {
     if (pid === process.pid) return { alive: true, basis: "self" };
@@ -274,27 +337,13 @@ export function openConfidentialSlot(input) {
     }
   };
 
-  /** The boolean form, for call sites that only need "definitely alive". An indeterminate answer is NOT alive. */
-  const isAlive = (pid) => livenessOf(pid).alive === true;
-
   /**
    * Read the holders. An unreadable or malformed record is NOT evidence of zero holders (§6.4 fail-closed).
    *
-   * HOST-S1 §8.1: THE RECORD IS VALIDATED BEFORE LIVENESS FILTERING.
-   *
-   * The previous version returned `parsed.holders` with only the ARRAY checked, so `liveHolders` then silently
-   * dropped every entry whose `pid` was not a number. A malformed holder therefore read as "not a holder", and a
-   * syntactically valid record containing one garbage entry was treated as FREE CAPACITY — measured as
-   * `baseline-and-falsifiers.json` F4, where a single malformed holder produced `granted: true`.
-   *
-   * The distinction §8.1 requires is now made explicitly, per holder:
-   *
-   *   VALID          — pid is a positive integer and (when present) token is a string;
-   *   MALFORMED      — the entry is not an object, or a required field has the wrong type;
-   *   UNKNOWN        — structurally valid but liveness could not be established.
-   *
-   * A malformed entry makes the whole record UNTRUSTWORTHY: capacity cannot be established from a record that
-   * contains an entry the host cannot interpret, because that entry might be the active worker.
+   * §6.6: THE RECORD IS VALIDATED BEFORE LIVENESS FILTERING, and each entry is classified:
+   *   VALID      — pid is a positive integer and (when present) token is a string;
+   *   MALFORMED  — not an object, or a required field has the wrong type.
+   * A malformed entry makes the whole record UNTRUSTWORTHY: it might be the active worker.
    */
   const readHolders = () => {
     let raw;
@@ -313,27 +362,32 @@ export function openConfidentialSlot(input) {
     if (parsed === null || typeof parsed !== "object" || !Array.isArray(parsed.holders)) {
       return { ok: false, holders: [], malformed: [], unreadable: true, detail: "the capacity record has no holders array" };
     }
-    /** §8.1: classify each entry BEFORE any liveness decision. */
     const valid = [];
     const malformed = [];
     for (const entry of parsed.holders) {
       const pidOk = entry !== null && typeof entry === "object" && Number.isInteger(entry.pid) && entry.pid > 0;
       const tokenOk = entry !== null && typeof entry === "object" && (entry.token === undefined || typeof entry.token === "string");
       if (!pidOk || !tokenOk) {
-        malformed.push(entry === null || typeof entry !== "object" ? { reason: "not-an-object" } : { reason: !pidOk ? "pid-not-a-positive-integer" : "token-not-a-string", pid: entry.pid, token: entry.token });
+        /** The RAW entry is kept, so a later release can write it back verbatim rather than laundering it. */
+        malformed.push(entry);
         continue;
       }
       valid.push(entry);
     }
-    return { ok: true, holders: valid, malformed, unreadable: false, detail: malformed.length === 0 ? "record is well formed" : `${String(malformed.length)} malformed holder entry(ies)` };
+    return {
+      ok: true,
+      holders: valid,
+      malformed,
+      unreadable: false,
+      detail: malformed.length === 0 ? "record is well formed" : `${String(malformed.length)} malformed holder entry(ies)`,
+    };
   };
 
   /**
    * Keep only holders that are DEFINITELY ALIVE. Liveness is the only eviction rule.
    *
    * §8.5: an INDETERMINATE liveness answer keeps the holder. Treating "I could not tell" as dead would admit a
-   * second worker beside a possibly-live one, which is the exact overlap this mechanism exists to prevent. The
-   * holder is counted and named as indeterminate so a refusal can explain itself.
+   * second worker beside a possibly-live one — the exact overlap this mechanism exists to prevent.
    */
   const liveHolders = (list) =>
     list
@@ -350,56 +404,68 @@ export function openConfidentialSlot(input) {
   };
 
   /**
+   * DESCRIBE THE CURRENT LOCK, so a refusal can explain itself without pretending to know whether it is
+   * abandoned. Nothing here reclaims.
+   */
+  const describeLock = () => {
+    let owner = null;
+    let readable = false;
+    try {
+      owner = JSON.parse(readFileSync(join(lockDir, "owner.json"), "utf8"));
+      readable = owner !== null && typeof owner === "object" && Number.isInteger(owner.pid) && typeof owner.token === "string";
+    } catch {
+      readable = false;
+    }
+    if (!readable) {
+      return {
+        readable: false,
+        owner: null,
+        liveness: null,
+        detail:
+          "the capacity lock exists but its owner record is not readable; an interrupted publication, a crashed owner and unreadable metadata are indistinguishable from outside, so it is NOT treated as abandoned",
+      };
+    }
+    const liveness = livenessOf(owner.pid);
+    if (liveness.alive === false) {
+      return {
+        readable: true,
+        owner,
+        liveness,
+        detail: `the capacity lock is held by pid ${String(owner.pid)}, which no longer exists; automatic reclamation is DISABLED because removing a lock by pathname cannot be proven to act on the observed object`,
+      };
+    }
+    return {
+      readable: true,
+      owner,
+      liveness,
+      detail: `the capacity lock is held by pid ${String(owner.pid)} (${liveness.basis})`,
+    };
+  };
+
+  /**
    * TAKE THE EXCLUSIVE LOCK. `mkdir` is the atomic step: exactly one caller creates it.
    *
-   * HOST-S1 §8.3 — THE ABA RACE IS CLOSED BY NEVER REMOVING A LOCK BY PATHNAME.
-   *
-   * The previous recovery read the lock's owner and age, decided it was abandoned, and then called
-   * `rmSync(lockDir, { recursive: true })`. That removal acts on the PATHNAME, not on the object that was
-   * observed. Between the observation and the removal another process can legitimately create a NEW lock at the
-   * same pathname — and the delayed remover deletes the successor. Measured as
-   * `baseline-and-falsifiers.json` F6: the successor, whose owner was the running process, was removed by a
-   * remover acting on an observation of a different object.
-   *
-   * A security limit cannot contain a window in which a live owner's exclusion is deleted by a process that was
-   * looking at something else. The corrected recovery therefore uses an operation that can only ever act on the
-   * OBJECT IT OBSERVED:
-   *
-   *   1. the abandoned lock is CLAIMED by renaming it to a private name that includes this process's owner
-   *      token. `rename` is atomic and acts on the directory entry: exactly one recoverer can win, and the
-   *      winner moves the OLD object out of the way;
-   *   2. the renamed object is verified to be the one observed — if its `owner.json` names a different token than
-   *      the one recorded in the observation, this process did not observe it and must not touch it;
-   *   3. only then is the claimed object removed, and it is removed BY ITS PRIVATE NAME, which no other process
-   *      can create.
-   *
-   * A successor created at `active.lock` after the rename is untouched: it is a different directory entry and no
-   * later step names it.
-   *
-   * §8.4 — INCOMPLETE OWNER PUBLICATION IS NOT AN ABANDONED LOCK.
-   *
-   * The lock directory is created by `mkdir` and the owner file is written immediately after. A process that
-   * observes the lock in that window sees EEXIST with no readable `owner.json`. It cannot distinguish
-   * "initialization in progress", "creator crashed", and "metadata is unreadable" — so it must not reclaim. Such
-   * a lock is waited on until `lockStaleMs` has passed SINCE THE DIRECTORY WAS CREATED, and only then, with the
-   * owner still unreadable, is it treated as abandoned. Before this correction the age was read as 0 on a stat
-   * failure, which made an unreadable lock look brand new forever and block every worker indefinitely.
+   * NO PATH IS TAKEN HERE THAT REMOVES OR RENAMES SOMEBODY ELSE'S LOCK. The loop only ever creates, waits and
+   * reports; the timeout bounds the wait on EVERY path, including the one where the observed owner is dead.
    */
   const takeLock = () => {
-    /**
-     * THE LOCK LIVES INSIDE THE SLOT DIRECTORY, so that directory must exist before the atomic `mkdir`. Creating
-     * it with `recursive` is itself idempotent, and it happens OUTSIDE the critical section (the lock is what
-     * defines the section), so this cannot admit two writers.
-     */
-    mkdirSync(slotDir, { recursive: true });
+    if (reparseAncestors.length > 0) {
+      return {
+        acquired: false,
+        detail: `the capacity namespace is reachable through a reparse point (${reparseAncestors.join(", ")}), so it cannot be shown to be this principal's own directory`,
+      };
+    }
+    try {
+      mkdirSync(slotDir, { recursive: true });
+    } catch (error) {
+      return { acquired: false, detail: `the capacity directory could not be created (${String(error?.code ?? error)})` };
+    }
     const startedAt = Date.now();
+    let lastDetail = "the capacity lock is held";
     for (;;) {
       try {
         mkdirSync(lockDir);
-        /**
-         * §8.4: PUBLISH THE OWNER BEFORE ANYTHING ELSE. The window between the two calls is unavoidable, but a
-         * failure here must remove OUR lock rather than leave an unowned one behind.
-         */
+        /** §6.5: publish the owner before anything else, and remove OUR lock if publication fails. */
         try {
           writeFileSync(join(lockDir, "owner.json"), JSON.stringify({ pid: process.pid, token: ownerToken, at: Date.now() }), "utf8");
         } catch (error) {
@@ -414,86 +480,14 @@ export function openConfidentialSlot(input) {
       } catch (error) {
         if (error?.code !== "EEXIST") return { acquired: false, detail: `the capacity lock could not be created (${String(error?.code ?? error)})` };
       }
-      /** Somebody holds it. Decide whether it is abandoned, using an observation that the removal will re-check. */
-      let owner = null;
-      let ownerReadable = false;
-      try {
-        owner = JSON.parse(readFileSync(join(lockDir, "owner.json"), "utf8"));
-        ownerReadable = owner !== null && typeof owner === "object" && Number.isInteger(owner.pid) && typeof owner.token === "string";
-      } catch {
-        owner = null;
-        ownerReadable = false;
-      }
-      let age = 0;
-      let ageReadable = true;
-      try {
-        age = Date.now() - statSync(lockDir).mtimeMs;
-      } catch {
-        age = 0;
-        ageReadable = false;
-      }
-      /**
-       * §8.4: an unreadable owner is only abandoned once the DIRECTORY is demonstrably old. If even the directory
-       * cannot be stat'd, the age is unknown and the lock is NOT reclaimed — a lock that cannot be observed
-       * cannot be shown to be abandoned.
-       */
-      const ownerAlive = ownerReadable ? livenessOf(owner.pid).alive !== false : null;
-      const abandoned = ageReadable && age > lockStaleMs && (ownerReadable ? ownerAlive === false : true);
-      if (abandoned) {
-        /**
-         * §8.3: CLAIM BY RENAME, THEN VERIFY, THEN REMOVE BY THE PRIVATE NAME.
-         *
-         * `claimPath` contains this process's token, so no other process can have created it. The rename is the
-         * exclusive step: of two recoverers, exactly one succeeds and the other sees ENOENT.
-         */
-        const claimPath = `${lockDir}.claim-${ownerToken}`;
-        let claimed = false;
-        try {
-          renameSync(lockDir, claimPath);
-          claimed = true;
-        } catch {
-          /** Another recoverer claimed it, or a new lock was installed. Re-examine from the top. */
-          claimed = false;
-        }
-        if (claimed) {
-          /**
-           * VERIFY THE CLAIMED OBJECT IS THE ONE OBSERVED. A rename that succeeded while the lock was replaced
-           * would have moved the SUCCESSOR; its token would differ from the observed one, so it is restored
-           * rather than deleted. This is the ABA guard: the removal is conditional on identity, not on name.
-           */
-          let claimedOwner = null;
-          try {
-            claimedOwner = JSON.parse(readFileSync(join(claimPath, "owner.json"), "utf8"));
-          } catch {
-            claimedOwner = null;
-          }
-          const sameObject = ownerReadable
-            ? claimedOwner !== null && claimedOwner?.token === owner.token
-            : claimedOwner === null || claimedOwner === undefined;
-          if (sameObject) {
-            try {
-              rmSync(claimPath, { recursive: true, force: true });
-            } catch {
-              /* the claimed object is already gone; the loop retries either way */
-            }
-          } else {
-            /**
-             * THE CLAIMED OBJECT WAS NOT THE OBSERVED LOCK. Put it back by name if the pathname is still free,
-             * and never delete it: deleting a live owner's lock is the failure this whole correction prevents.
-             */
-            try {
-              renameSync(claimPath, lockDir);
-            } catch {
-              /* the pathname was reoccupied; the displaced lock is left under its private name rather than lost */
-            }
-          }
-        }
-        continue;
-      }
+      lastDetail = describeLock().detail;
       if (Date.now() - startedAt > lockTimeoutMs) {
-        return { acquired: false, detail: `the capacity lock is held by ${ownerReadable ? `pid ${String(owner.pid)}` : "an owner whose record is not yet readable"} and was not acquired within ${String(lockTimeoutMs)}ms` };
+        return {
+          acquired: false,
+          detail: `${lastDetail}. It was not acquired within ${String(lockTimeoutMs)}ms. OPERATOR ACTION: confirm no confidential worker is active, then remove ${lockDir}`,
+        };
       }
-      /** Bounded wait: a short sleep keeps this synchronous, which is what the caller requires. */
+      /** Bounded wait: a short spin keeps this synchronous, which is what the caller requires. */
       const until = Date.now() + 10;
       while (Date.now() < until) {
         /* spin — the critical section is a few file operations */
@@ -504,9 +498,9 @@ export function openConfidentialSlot(input) {
   /**
    * RELEASE THE LOCK, BY TOKEN, WITHOUT DELETING A SUCCESSOR.
    *
-   * The previous version read `owner.json` and removed `lockDir` by pathname when the token matched. Between the
-   * read and the removal the lock could be replaced, so the removal could hit a different object. The rename-based
-   * release below moves the lock to a private name only if the token still matches, then removes THAT object.
+   * The rename-then-re-verify shape is kept: the lock is moved to a name that contains this handle's token, the
+   * moved object is confirmed to be ours, and only then is it removed. A release therefore never destroys a
+   * lock it did not create.
    */
   const releaseLock = () => {
     const claimPath = `${lockDir}.release-${ownerToken}`;
@@ -521,10 +515,6 @@ export function openConfidentialSlot(input) {
     } catch (error) {
       return { released: false, detail: `the lock could not be claimed for release (${String(error?.code ?? error)})` };
     }
-    /**
-     * RE-VERIFY AFTER THE RENAME. If the object that moved is not ours, restore it: a release must never destroy
-     * a lock it did not create.
-     */
     let claimedOwner = null;
     try {
       claimedOwner = JSON.parse(readFileSync(join(claimPath, "owner.json"), "utf8"));
@@ -558,28 +548,22 @@ export function openConfidentialSlot(input) {
       try {
         const read = readHolders();
         if (read.ok !== true) {
-          /** §6.4/§8.2: an unreadable record does not grant capacity. */
+          /** §6.4: an unreadable record does not grant capacity. */
           return { granted: false, detail: `${String(read.detail)}, so capacity cannot be established. This is a HOST CAPACITY fact: no attempt was failed and no authority was granted.` };
         }
         /**
-         * §8.1: A MALFORMED HOLDER IS UNKNOWN OWNERSHIP, NOT ABSENT OWNERSHIP.
-         *
-         * The record is structurally valid but contains an entry the host cannot interpret. That entry might be
-         * the active worker, so granting capacity would admit a second one beside it. The acquisition refuses and
-         * names the malformed field; the repair is explicit (an operator inspects the record) rather than
-         * speculative (the host guesses the entry is dead).
+         * §6.6: A MALFORMED HOLDER IS UNKNOWN OWNERSHIP, NOT ABSENT OWNERSHIP. That entry might be the active
+         * worker, so granting capacity would admit a second one beside it. The repair is explicit, not
+         * speculative.
          */
         if (read.malformed.length > 0) {
           return {
             granted: false,
-            detail: `the capacity record contains ${String(read.malformed.length)} malformed holder entr(y/ies) (${read.malformed.slice(0, 3).map((entry) => String(entry.reason)).join(", ")}), so ownership is UNKNOWN and capacity cannot be granted. This is a HOST CAPACITY fact: no attempt was failed and no authority was granted.`,
+            detail: `the capacity record contains ${String(read.malformed.length)} malformed holder entr(y/ies), so ownership is UNKNOWN and capacity cannot be granted. This is a HOST CAPACITY fact: no attempt was failed and no authority was granted.`,
           };
         }
         const live = liveHolders(read.holders);
-        /**
-         * §8.5: AN INDETERMINATE LIVENESS ANSWER COUNTS AS A HOLDER. It is reported separately so an operator can
-         * see that the refusal rests on an unreadable process rather than on a demonstrably running one.
-         */
+        /** §8.5: an indeterminate liveness answer COUNTS AS A HOLDER, and is reported separately. */
         const indeterminate = live.filter((entry) => entry.livenessCertain !== true);
         if (live.length >= max) {
           return {
@@ -587,19 +571,18 @@ export function openConfidentialSlot(input) {
             detail: `the ${CONFIDENTIAL_PROFILE.id} profile runs at most ${String(max)} ACTIVE work worker(s); ${String(live.length)} already active (pids ${live.map((entry) => String(entry.pid)).join(", ")}${indeterminate.length > 0 ? `; ${String(indeterminate.length)} whose liveness could not be established` : ""}). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged.`,
           };
         }
-        /**
-         * §8.2: THE WRITE PRESERVES UNRELATED HOLDERS. `live` contains every holder that was read and not shown
-         * to be dead, including any whose liveness was indeterminate, so a grant never discards another owner.
-         */
+        /** §6.6: the write preserves unrelated holders, including any whose liveness was indeterminate. */
         write([...live.map((entry) => ({ pid: entry.pid, at: entry.at, token: entry.token })), { pid: process.pid, at: Date.now(), token: ownerToken }]);
+        /** `held` becomes true ONLY after the record is durably written. */
         held = true;
         return { granted: true, detail: `${String(live.length + 1)}/${String(max)} confidential workers active; admission granted` };
+      } catch (error) {
+        return {
+          granted: false,
+          detail: `the capacity record could not be written (${String(error?.code ?? error?.message ?? error)}), so the grant was not recorded and capacity is UNKNOWN. This is a HOST CAPACITY fact: no attempt was failed and no authority was granted.`,
+        };
       } finally {
         const released = releaseLock();
-        /**
-         * A FAILED LOCK RELEASE IS OBSERVABLE (§8.2/§8.5). It does not undo the grant — the holder record is
-         * already written — but it is recorded so a caller can see that the critical section may still be held.
-         */
         if (released.released !== true) lastLockRelease = released.detail;
       }
     },
@@ -607,42 +590,47 @@ export function openConfidentialSlot(input) {
       if (!held) return { released: false, detail: "this handle holds no slot", retryable: false };
       const lock = takeLock();
       if (lock.acquired !== true) {
-        /**
-         * §8.2: AN UNSUCCESSFUL RELEASE REMAINS OBSERVABLE AND THE HANDLE REMAINS RETRYABLE. `held` is NOT
-         * cleared, so a caller that retries after the lock frees will still release its own record.
-         */
+        /** §6.6: an unsuccessful release remains observable and the handle remains retryable. */
         return { released: false, detail: `the slot was not released: ${String(lock.detail)}`, retryable: true };
       }
       try {
         const read = readHolders();
         /**
-         * §8.2 — A FAILED READ MUST NOT AUTHORISE REWRITING AN EMPTY OWNERSHIP SET.
-         *
-         * The previous version wrote `(read.ok === true ? read.holders : []).filter(...)`, so an unreadable record
-         * was replaced with an EMPTY holder list — destroying every other holder's record. Measured as
-         * `baseline-and-falsifiers.json` F5: an unrelated holder was silently erased by a release.
-         *
-         * The release now refuses, keeps `held` true so it can be retried, and leaves the record untouched.
+         * §6.6 — A FAILED READ MUST NOT AUTHORISE REWRITING AN EMPTY OWNERSHIP SET. The record is left untouched
+         * and `held` stays true so the caller can retry.
          */
         if (read.ok !== true) {
           return { released: false, detail: `the slot was not released: ${String(read.detail)}, so the ownership record is UNKNOWN and was not rewritten`, retryable: true };
         }
         /**
-         * §8.2: RELEASE REFERS TO THE HOLDER IT RECORDED. A release by a handle that did not record this token
-         * cannot remove somebody else's entry. A malformed entry is also PRESERVED verbatim: the release removes
-         * only its own token and must not launder an entry it does not understand.
+         * §6.6: A RELEASE REFERS TO THE HOLDER IT RECORDED. If this handle's token is not in the actual record,
+         * there is nothing of ours to remove — and somebody else's entry must not be touched to make the call
+         * look successful.
          */
+        if (!read.holders.some((entry) => entry?.token === ownerToken)) {
+          held = false;
+          return { released: false, detail: "this handle's record is not present in the capacity record, so nothing was removed", retryable: false };
+        }
         const remaining = read.holders.filter((entry) => entry?.token !== ownerToken);
-        const preservedMalformed = read.malformed.length;
+        /**
+         * §6.6: MALFORMED ENTRIES ARE WRITTEN BACK VERBATIM. Dropping or repairing an entry this module cannot
+         * interpret would be exactly the laundering §6.6 forbids.
+         */
+        write([...remaining, ...read.malformed]);
+        /** `held` becomes false ONLY after the reduced record is durably written. */
         held = false;
-        write([...remaining, ...read.malformed.filter((entry) => entry.token !== undefined && entry.token !== ownerToken && Number.isInteger(entry.pid) && entry.pid > 0)]);
         return {
           released: true,
-          detail: `${String(remaining.length)}/${String(max)} confidential workers remain active${preservedMalformed === 0 ? "" : `; ${String(preservedMalformed)} malformed entr(y/ies) were present and are reported rather than dropped`}`,
+          detail: `${String(remaining.length)}/${String(max)} confidential workers remain active${read.malformed.length === 0 ? "" : `; ${String(read.malformed.length)} malformed entr(y/ies) were preserved`}`,
           retryable: false,
         };
       } catch (error) {
-        return { released: false, detail: `the slot was not released: ${error?.message ?? String(error)}`, retryable: true };
+        /**
+         * THE WRITE FAILED. `held` stays true, the record on disk is unchanged, and the caller may retry — the
+         * previous version cleared `held` before writing, so a failed write left a phantom holder that no later
+         * release could remove (measured as F2).
+         */
+        return { released: false, detail: `the slot was not released: ${String(error?.code ?? error?.message ?? error)}, so this handle still holds its record and the release is retryable`, retryable: true };
       } finally {
         const releasedLock = releaseLock();
         if (releasedLock.released !== true) lastLockRelease = releasedLock.detail;
@@ -655,23 +643,25 @@ export function openConfidentialSlot(input) {
       const live = liveHolders(read.holders);
       return { active: live.length, detail: `${String(live.length)}/${String(max)} confidential workers active`, malformed: 0 };
     },
+    /** The last failed lock release, or null. §6.6: a failed Lock release must remain observable. */
+    lastLockRelease: () => lastLockRelease,
     /**
-     * §8.6: THE SECURITY DOMAIN THIS SLOT BELONGS TO, stated as data.
-     *
-     * The slot namespace is derived from `DSH_HOME`, and two homes produce two namespaces. That is only sound if
-     * every host process capable of exposing the same protected execution assets shares one home. This field
-     * makes the assumption explicit and checkable rather than implied by the path.
+     * THE SECURITY DOMAIN THIS SLOT BELONGS TO, stated as data so no receipt can overclaim the scope.
      */
     domain: {
-      home: resolve(input.home),
-      root: domainRoot,
-      key: domainKey,
+      scope: "windows-principal-machine",
+      principal: principal === null ? null : principal.identity,
+      capacityRoot,
       slotPath,
-      identity: domainRoot === null ? `dsh-home:${resolve(input.home)}` : `protected-domain:${domainRoot}`,
+      lockPath: lockDir,
+      key: principal === null ? null : createHash("sha256").update(principal.identity.toLowerCase(), "utf8").digest("hex").slice(0, 24),
+      /** Retained for receipt compatibility: the home and the requested domain are METADATA, not the namespace. */
+      home: resolve(input.home),
+      root: typeof input.domain === "string" && input.domain.trim() !== "" ? resolve(input.domain) : null,
+      identity: principal === null ? `capacity-root:${capacityRoot}` : `windows-principal:${principal.identity}`,
       assumption:
-        domainRoot === null
-          ? "capacity exclusion is scoped to this DSH home; hosts with different homes do not share it, and the slot carries no domain identity"
-          : "capacity exclusion is scoped to this protected domain; every host that can expose the same worlds must pass the same domain root",
+        "capacity exclusion is scoped to this Windows principal on this machine: every confidential worker this principal can start contends for one slot, whatever repository or DSH home it serves. Different principals are not covered and are separated by their own profile ACLs and integrity levels.",
+      reparseAncestors,
     },
   };
 }
