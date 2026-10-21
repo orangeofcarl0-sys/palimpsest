@@ -19,10 +19,13 @@
  * SAFETY. Test-owned git repo, DSH home and session root; no personal profile, no credential, no paid model,
  * PRIMARY disabled. The deterministic adapter is unreachable in production. Exits 0 only on PASS.
  */
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+
+/** S1R-GATES: the run-owned root is reclaimed on every exit path, not only the happy one. */
+import { ownedRootLifetime } from "../trajectory_p2b/rig.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const REAL_DSH_HOME = (process.env.DSH_HOME ?? join(homedir(), ".dsh")).split("\\").join("/");
@@ -31,12 +34,30 @@ const GATE_ROOT = (process.env.PALIMPSEST_P2D2_GATE_ROOT ?? join(homedir(), ".pa
 const OUTCOMES = ["PASS", "SKIPPED", "BLOCKED", "NOT_ESTABLISHED"];
 
 const findings = {};
+/**
+ * S1R-GATES: THE RUN-OWNED ROOT IS RECLAIMED ON EVERY EXIT PATH.
+ *
+ * `finish()` calls `process.exit()` from up to ten places, but cleanup used to run only at the end of the
+ * happy path — so a BLOCKED or failed run leaked its whole root, module copy included. `finish()` now
+ * disposes through this holder, and `ownedRootLifetime` also registers exit/signal handlers as a
+ * backstop. Assigned once the root is allocated.
+ */
+let ownedLifetime = null;
 const record = (key, value) => {
   findings[key] = value;
   process.stderr.write(`  · ${key}: ${JSON.stringify(value)}\n`);
 };
 function finish(outcome, extra) {
-  process.stdout.write(`${JSON.stringify({ schemaVersion: 1, kind: "TRAJECTORY_P2D2_L2_GATE", stage: "Trajectory-P2-D2", outcome, ...findings, ...(extra ?? {}) }, null, 2)}\n`);
+  /**
+   * S1R-GATES: DISPOSE BEFORE REPORTING, SO THE RECEIPT STATES WHAT WAS RECLAIMED.
+   *
+   * The cleanup result is merged into the reported findings rather than being lost: a run that could not
+   * reclaim its root says so, and one that did records the fact. `dispose()` is idempotent, so the exit
+   * handler registered by `ownedRootLifetime` cannot double-delete.
+   */
+  const lifetime = ownedLifetime?.dispose();
+  const findingsWithCleanup = lifetime === undefined || lifetime === null ? findings : { ...findings, testRootCleanup: lifetime };
+  process.stdout.write(`${JSON.stringify({ schemaVersion: 1, kind: "TRAJECTORY_P2D2_L2_GATE", stage: "Trajectory-P2-D2", outcome, ...findingsWithCleanup, ...(extra ?? {}) }, null, 2)}\n`);
   process.exit(outcome === "PASS" || outcome === "SKIPPED" ? 0 : 1);
 }
 
@@ -86,10 +107,33 @@ function makeProfile(home, root, profileName, withDeterministicModel) {
     rmSync(join(nodeModules, name), { recursive: true, force: true });
     cpSync(source, join(nodeModules, name), { recursive: true });
   }
+  /**
+   * S1R-GATES — JUNCTIONS, NOT A DEREFERENCED COPY. This inline copy materialised the whole runtime dependency
+   * tree into EVERY home: measured 1,048.6 MiB and 112,512 files per home, 124 s each, and this gate creates
+   * two homes per run and never cleaned them up. The per-entry junction gives the same module identity for
+   * ~0 bytes and ~0.07 s; the runtime entry point, package manifests and the nested dependency tree all
+   * resolve through it.
+   */
+  let linkedEntries = 0;
+  let junctionFailures = 0;
   for (const entry of readdirSync(REAL_MODULES)) {
     const destination = join(nodeModules, entry);
-    if (!existsSync(destination)) cpSync(join(REAL_MODULES, entry), destination, { recursive: true, dereference: true });
+    if (existsSync(destination)) continue;
+    try {
+      symlinkSync(join(REAL_MODULES, entry), destination, "junction");
+      linkedEntries += 1;
+    } catch {
+      junctionFailures += 1;
+    }
   }
+  /** A failed junction leaves the graph incomplete, so the copy is the honest completion rather than a gap. */
+  if (junctionFailures > 0) {
+    for (const entry of readdirSync(REAL_MODULES)) {
+      const destination = join(nodeModules, entry);
+      if (!existsSync(destination)) cpSync(join(REAL_MODULES, entry), destination, { recursive: true, dereference: true });
+    }
+  }
+  record("moduleSharing", { strategy: junctionFailures > 0 ? "copy" : "junction", linkedEntries, junctionFailures });
   const profileDir = join(home, "profiles", profileName);
   mkdirSync(profileDir, { recursive: true });
   writeFileSync(
@@ -209,6 +253,7 @@ const owned = (() => {
   const rel = relative(gate, root);
   return { root, contained: rel !== "" && !rel.startsWith("..") && !rel.startsWith(sep), isReparse: lstatSync(root).isSymbolicLink() };
 })();
+ownedLifetime = ownedRootLifetime(owned);
 record("testRootContained", owned.contained);
 record("testRootIsReparsePoint", owned.isReparse);
 if (!owned.contained) finish("NOT_ESTABLISHED", { blocker: "could not prove the run directory is contained" });

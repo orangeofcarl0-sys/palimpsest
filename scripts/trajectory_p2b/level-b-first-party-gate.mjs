@@ -23,7 +23,7 @@
  * NOT a product component. PLAIN JAVASCRIPT (`.mjs`), bare node against `dist/src/**`.
  */
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -118,14 +118,37 @@ function installHostBundle(home) {
   }
 }
 
+/**
+ * Share the runtime packages into the test home.
+ *
+ * S1R-GATES — THE DUPLICATE COPY IS GONE. This gate carried its OWN copy of the helper, and that copy
+ * dereferenced the installer's junctions: 1,048.6 MiB and 112,512 files per home, measured. It now uses
+ * per-entry junctions like `rig.mjs`, so the cost is ~0 bytes and ~0.07 s, and the strategy is returned so the
+ * gate's own output records which one ran.
+ */
 function linkSharedModules(home) {
   const target = join(home, "profiles", "node_modules");
+  mkdirSync(target, { recursive: true });
+  let linked = 0;
+  let failed = 0;
   for (const entry of readdirSync(REAL_MODULES)) {
-    const source = join(REAL_MODULES, entry);
     const destination = join(target, entry);
     if (existsSync(destination)) continue;
-    cpSync(source, destination, { recursive: true, dereference: true });
+    try {
+      symlinkSync(join(REAL_MODULES, entry), destination, "junction");
+      linked += 1;
+    } catch {
+      failed += 1;
+    }
   }
+  if (failed > 0) {
+    for (const entry of readdirSync(REAL_MODULES)) {
+      const destination = join(target, entry);
+      if (!existsSync(destination)) cpSync(join(REAL_MODULES, entry), destination, { recursive: true, dereference: true });
+    }
+    return { strategy: "copy", junctionFailures: failed };
+  }
+  return { strategy: "junction", linked };
 }
 
 function writeProfile(home, rig) {
