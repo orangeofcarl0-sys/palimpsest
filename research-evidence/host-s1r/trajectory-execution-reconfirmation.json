@@ -4,9 +4,9 @@
   "note": "Re-confirms the existing Trajectory first-party DSH chain after the Host admission changes. No stochastic trial, no Treatment trial and no external model request occurred; the deterministic adapter serves every turn.",
   "closureGate": {
     "command": "node scripts/trajectory_p2e1rc/closure-gate.mjs",
-    "runId": "f5b41943-b759-4a42-a6e6-76642cb5600b",
+    "runId": "ef088a7a-e8d5-40d7-9e84-4aeb4d4ebe8d",
     "exitCode": 0,
-    "artifactDigest": "sha256-9f75cde36929da13e3047590a1ff9801d3a91dfd17de877cea7d8a4686963ae4",
+    "artifactDigest": "sha256-20a9a178c47fb18005ceca8e282aa8f694d9c3015f7ce4d601f3a6fbc83549a0",
     "gatesPassed": 61,
     "gatesFailed": 0,
     "modelCallsMade": 0,
@@ -31,13 +31,13 @@
       "stochasticInference": false,
       "externalModelRequest": false
     },
-    "stderrTail": "treatment-dependency-preserved: ok — true\n  · assay-treatment-legacy-oracle-unused: ok — LEGACY_REPRODUCTION_ONLY\n  · assay-treatment-no-model: ok — calls=0\n  · assay-treatment-official-oracle: ok — scripts/trajectory_p2e1/source-aware-oracle.mjs\n  · assay-treatment-relevance: ok — {\"statesPartial\":true,\"statesCounts\":true,\"statesUnread\":true,\"statesAuthorityLimitation\":true}\n  · arms-independently-instantiated: ok — ASSAY-control-attempt-7822de0d8031e839534b8fad94527f37 vs ASSAY-treatment-attempt-7c90e7bc73cac85a850c4f4d28e62d81\n  · arms-share-scenario: ok — p2e1rd-internal-citation-closed-1\n"
+    "stderrTail": "treatment-dependency-preserved: ok — true\n  · assay-treatment-legacy-oracle-unused: ok — LEGACY_REPRODUCTION_ONLY\n  · assay-treatment-no-model: ok — calls=0\n  · assay-treatment-official-oracle: ok — scripts/trajectory_p2e1/source-aware-oracle.mjs\n  · assay-treatment-relevance: ok — {\"statesPartial\":true,\"statesCounts\":true,\"statesUnread\":true,\"statesAuthorityLimitation\":true}\n  · arms-independently-instantiated: ok — ASSAY-control-attempt-586c6723575c754b23de9a919d590c04 vs ASSAY-treatment-attempt-825e3a022134a3e01b688ee0bb02eee3\n  · arms-share-scenario: ok — p2e1rd-internal-citation-closed-1\n"
   },
   "delegationMatrix": {
     "command": "node scripts/trajectory_p2e1rf/run-delegation-matrix.mjs",
-    "runId": "b7a00f1d-54e4-4847-b636-0f05dc039915",
+    "runId": "162590e4-b8ed-47df-8b4a-0d0cb74da4cd",
     "exitCode": 0,
-    "artifactDigest": "sha256-384d7e11586e62f494e58985657a88613eae2c5c3cd8bbd73ec8d37719d363ec",
+    "artifactDigest": "sha256-e72be2a7fc23245ed84c62c288491248fb4eae0edfca6619de136982a57612d0",
     "summary": {
       "total": 8,
       "matched": 8,
@@ -189,8 +189,8 @@
     "stderrTail": "\n=== aliasToWorld (RF-A: a junction whose current target is the world) ===\n\n=== aliasToProtected (RF-A: a junction to a protected root) ===\n\n=== world (legitimate in-world delegation must still work) ===\n\n=== sibling (a sibling attempt world) ===\n\n=== protected (the simulated durable state) ===\n\n=== parentOfProtected (the parent of the protected root) ===\n\n=== traversal (relative traversal out of the world) ===\n\n=== production (the real deployment layout) ===\n\n8/8 matched · leaked [] · limits []\n"
   },
   "runIdentity": {
-    "codeFreezeHead": "9df766fe66fa513ed99fcee394a6b28ce9f15d29",
-    "executedCodeTree": "34ddc209802f9cfa575b0a76602c231e4d136dc7",
+    "codeFreezeHead": "414d84dc34cd23cca861a35816a08b524df93bdb",
+    "executedCodeTree": "6541a1ccee3157fdf12d57deaeb76a617ba27531",
     "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
