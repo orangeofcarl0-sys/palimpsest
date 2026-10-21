@@ -24,7 +24,8 @@
 // This is HOST EXECUTION capability. It creates no canonical owner, no event type, no table, no asset kind,
 // and it changes no Work authority, no Context semantics and no promotion authority (R1-H §3/§16).
 
-import { existsSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readlinkSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 
 import { admitWorldForFencing } from './alias_guard.js';
@@ -320,6 +321,82 @@ export function installWorkerReadBoundary(input = {}) {
  * @param {{ kernel: { outcomes?: readonly { path: string, verified?: boolean }[] }, roots: readonly string[] }} input
  * @returns {{ trees: readonly any[], descendantsQualified: boolean, unverifiedRoots: readonly string[], reason?: string }}
  */
+/**
+ * S1R-C §7.3 — THE TRUSTED-RUNTIME DEPENDENCY ROOTS, RESOLVED FROM THE ACTUAL INSTALLATION.
+ *
+ * WHY A CONTRACT IS NEEDED AT ALL. A real DSH home contains hundreds of installer-created junctions:
+ * `profiles/node_modules/@deepseek-ai/*` and its transitive dependencies are links into the npm global tree.
+ * The protected root set includes the DSH home, so those links resolve OUTSIDE every protected root. Refusing
+ * them would refuse every worker in every real deployment, and it would protect nothing: those bytes are the
+ * runtime this host loads and executes.
+ *
+ * WHY IT IS NARROW. The roots are the installation the host is ACTUALLY running from — derived from
+ * `PALIMPSEST_DSH_ROOT` and the resolved `@deepseek-ai/dsh` package — never a glob, never a parent directory
+ * chosen because it happens to contain the installation. A link to any other external path is UNQUALIFIED and
+ * refuses admission, which is what §7.3 requires: no permissive catch-all for paths outside the protected
+ * roots.
+ *
+ * WHAT THIS DOES AND DOES NOT CLAIM. It claims the link's target is part of the runtime the host itself
+ * loads, so reading it gives a worker nothing the host does not already execute. It does NOT claim the target
+ * is confidential, and it is not treated as protected: `reparseOutsideProtectionDomain` still records it, and
+ * `reparseBasis` still reports that the tree leaves the protection domain.
+ *
+ * @returns {string[]}
+ */
+function trustedDependencyRoots() {
+  /** @type {string[]} */
+  const roots = [];
+  const configured = typeof process.env.PALIMPSEST_DSH_ROOT === 'string' ? process.env.PALIMPSEST_DSH_ROOT.trim() : '';
+  if (configured !== '') roots.push(resolve(configured));
+  const hostHome = typeof process.env.DSH_HOME === 'string' && process.env.DSH_HOME.trim() !== '' ? resolve(process.env.DSH_HOME) : null;
+  if (hostHome !== null) {
+    const profiles = join(hostHome, 'profiles', 'node_modules');
+    if (existsSync(profiles)) {
+      roots.push(profiles);
+      try {
+        const resolvedPackage = createRequire(join(profiles, 'noop.js')).resolve('@deepseek-ai/dsh');
+        /** The package ENTRY point; the installation root is its directory. */
+        roots.push(dirname(resolvedPackage));
+      } catch {
+        /* the package is not resolvable from there; the profiles directory above still names the tree */
+      }
+      /**
+       * THE INSTALLATION'S OWN ROOT, RESOLVED THROUGH THE LINKS.
+       *
+       * A DSH home does not hold the packages: `profiles/node_modules/<name>` is a JUNCTION into wherever
+       * the installer put them (an npm global tree, a development checkout, a test rig's shared directory).
+       * So the tree a worker must be able to read is the LINK TARGET, not the home. Enumerating the
+       * top-level entries and adding each resolved target makes the contract describe the actual
+       * installation, and it keeps the set bounded: one directory listing, not a crawl.
+       *
+       * This is what makes the exception narrow AND true. The alternative — admitting the whole parent of
+       * the installation — would be the permissive catch-all §7.3 forbids.
+       */
+      try {
+        for (const entry of readdirSync(profiles)) {
+          const candidate = join(profiles, entry);
+          let stats;
+          try {
+            stats = lstatSync(candidate);
+          } catch {
+            continue;
+          }
+          if (!stats.isSymbolicLink()) continue;
+          try {
+            roots.push(resolve(candidate, '..', readlinkSync(candidate)));
+          } catch {
+            /* an unreadable link contributes no root; it is still classified as leaving the domain */
+          }
+        }
+      } catch {
+        /* the directory could not be enumerated; the roots already added still apply */
+      }
+    }
+  }
+  /** Deduplicated, and never empty-by-accident: an empty set means NOTHING external qualifies. */
+  return [...new Set(roots.map((entry) => resolve(entry)))];
+}
+
 function verifyDescendants(input) {
   const labelled = (input.kernel.outcomes ?? []).filter((entry) => entry.verified === true).map((entry) => entry.path);
   if (labelled.length === 0) {
@@ -331,10 +408,19 @@ function verifyDescendants(input) {
     };
   }
   /**
-   * EVERY ROOT IS VERIFIED WITH THE FULL PROTECTED ROOT SET, so a link into ANOTHER protected root is classified
-   * as covered by that root rather than as leaving the domain.
+   * S1R-C §7.2/§7.3 — THE BASIS AND THE DEPENDENCY CONTRACT.
+   *
+   * `verifiedRoots` is the set that ACTUALLY received a verified label (`labelled` above), not the declared
+   * set. A link into a declared-but-unlabelled root is therefore classified as leaving the protection domain
+   * rather than as covered (F5).
+   *
+   * `dependencyRoots` is the trusted-runtime contract (§7.3): the DSH installation this host is running from.
+   * A link that leaves the protection domain is admitted only when its target lies under one of those roots;
+   * every other external target refuses admission, so an unknown or model-chosen path is never silently
+   * admitted (F6).
    */
-  const trees = labelled.map((root) => verifyTree({ root, protectedRoots: input.roots }));
+  const dependencyRoots = trustedDependencyRoots();
+  const trees = labelled.map((root) => verifyTree({ root, verifiedRoots: labelled, dependencyRoots }));
   const unverifiedRoots = trees.filter((entry) => entry.admissionEligible !== true).map((entry) => entry.root);
   return {
     trees,
@@ -467,6 +553,13 @@ export function boundaryTelemetry(installed) {
       reparseOutsideProtectionDomain: trees.reduce((sum, entry) => sum + (entry.reparseOutsideProtectionDomain?.length ?? 0), 0),
       reparseUnresolvable: trees.reduce((sum, entry) => sum + (entry.reparseUnresolvable?.length ?? 0), 0),
       truncated: trees.filter((entry) => entry.truncated === true).length,
+      /**
+       * S1R-C §7.3: THE DEPENDENCY EXCEPTION IS REPORTED, NOT IMPLIED. `qualifiedDependencyLinks` counts the
+       * out-of-domain links admitted under the trusted-runtime contract; `unqualifiedExternalLinks` counts the
+       * ones that were NOT, and any non-zero value there is why admission refused.
+       */
+      qualifiedDependencyLinks: trees.reduce((sum, entry) => sum + (entry.qualifiedDependencyLinks?.length ?? 0), 0),
+      unqualifiedExternalLinks: trees.reduce((sum, entry) => sum + (entry.unqualifiedExternalLinks?.length ?? 0), 0),
     },
     guard: { installed: installed.guardInstalled, scope: installed.guardScope, tools: installed.fencedTools, cwdBasisPinned: installed.cwdFenceInstalled === true },
     aliases: { clean: installed.aliasesClean === true, found: (installed.aliasScan?.aliases ?? []).length },

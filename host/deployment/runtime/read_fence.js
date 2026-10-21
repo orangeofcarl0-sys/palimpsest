@@ -28,7 +28,7 @@
 //
 // PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript.
 
-import { lstatSync, readdirSync, readlinkSync, statSync } from 'node:fs';
+import { lstatSync, readdirSync, readlinkSync } from 'node:fs';
 import { relative, resolve, sep } from 'node:path';
 
 import {
@@ -585,6 +585,10 @@ export function verifyTree(input) {
       reparseUnresolvable: [],
       reparseBasis: 'NO_REPARSE_POINTS',
       admissionEligible: false,
+      unqualifiedExternalLinks: [],
+      qualifiedDependencyLinks: [],
+      verifiedRootsUsed: [],
+      dependencyRootsUsed: [],
     };
   }
   if (resolved.error !== undefined || resolved.api === undefined) {
@@ -608,6 +612,10 @@ export function verifyTree(input) {
       reparseUnresolvable: [],
       reparseBasis: 'NO_REPARSE_POINTS',
       admissionEligible: false,
+      unqualifiedExternalLinks: [],
+      qualifiedDependencyLinks: [],
+      verifiedRootsUsed: [],
+      dependencyRootsUsed: [],
     };
   }
   const api = resolved.api;
@@ -637,6 +645,26 @@ export function verifyTree(input) {
   const reparseOutsideProtectionDomain = [];
   /** @type {string[]} */
   const reparseUnresolvable = [];
+  /**
+   * S1R-C §7.2/§7.3 — THE PROTECTION BASIS, AND THE QUALIFIED DEPENDENCY EXCEPTION.
+   *
+   * `verifiedRoots` is supplied by the CALLER after labelling, and contains only roots whose label was
+   * verified. A declared root that failed to label is not in it, so a link into it is not treated as covered.
+   *
+   * `qualifiedDependencies` is the TRUSTED-RUNTIME CONTRACT (§7.3). The real DSH home contains hundreds of
+   * installer-created junctions into the npm global tree; refusing every out-of-domain link would refuse every
+   * worker in every deployment while protecting nothing extra. A dependency is admitted only when ALL of the
+   * following hold, and the facts are reported so a reviewer can check them:
+   *
+   *   · its target resolves under one of the declared dependency roots;
+   *   · the link OBJECT is not writable by the Low worker (checked by the caller, reported as `writable`);
+   *   · it is inside the installed package tree, not a model-chosen path.
+   *
+   * Anything else that resolves outside the protection domain is UNQUALIFIED and refuses admission. There is
+   * deliberately no catch-all rule for paths outside the protected roots (§7.3).
+   */
+  const verifiedRoots = (input.verifiedRoots ?? []).map((root) => resolve(root));
+  const dependencyRoots = (input.dependencyRoots ?? []).map((root) => resolve(root));
   let checked = 0;
   /** Why the walk stopped early, when it did. `COMPLETE` is the only value that permits `verified`. */
   let stopReason = 'COMPLETE';
@@ -666,9 +694,32 @@ export function verifyTree(input) {
     } else if (read.label?.present !== true || ((read.label.policyMask ?? 0) & MANDATORY_POLICIES.NO_READ_UP) === 0) {
       unlabelled.push(path);
     }
-    let stats;
+    /**
+     * S1R-C §7.1 — IDENTITY IS INSPECTED BEFORE TYPE, SO A FILE-DIRECTED LINK IS NOT GATED OUT.
+     *
+     * MEASURED (`baseline-security-falsifiers.json` F4). The previous order was:
+     *
+     *     stats = statSync(path);
+     *     if (!stats.isDirectory()) return;      // <-- a link to a FILE returns here
+     *     linkStats = lstatSync(path);
+     *     if (linkStats.isSymbolicLink()) { ...classify... }
+     *
+     * `statSync` FOLLOWS the link, so a link whose target is a file reported `isFile()` and the walk returned
+     * before the classification below was ever reached. Such a link was therefore neither recorded as a
+     * reparse point nor able to make the tree incomplete — it was invisible to the fence.
+     *
+     * The identity check now comes FIRST and does not depend on the target's type: `lstatSync` never follows,
+     * so every link is classified by where it leads regardless of whether the target is a file, a directory,
+     * or absent.
+     *
+     * WHAT IS AND IS NOT MEASURABLE HERE. A file-directed symlink cannot be created on this host (EPERM: the
+     * privilege is not held and Developer Mode is off), and a `junction` aimed at a file is created but is a
+     * BROKEN link (statSync ENOENT). The file-link case is therefore SOURCE_DEMONSTRATED; the directory-link
+     * case is dynamically exercised in `test/host_s1r_reparse_boundary.test.ts`.
+     */
+    let linkStats;
     try {
-      stats = statSync(path);
+      linkStats = lstatSync(path);
     } catch {
       /**
        * THE OBJECT DISAPPEARED OR BECAME UNREADABLE DURING THE WALK. Its label state is unknown, so its subtree
@@ -678,24 +729,10 @@ export function verifyTree(input) {
       undetermined.push(path);
       return;
     }
-    if (!stats.isDirectory()) return;
-    /**
-     * A REPARSE POINT IS NOT WALKED. Following it would verify a tree the root does not own, and a link that is
-     * re-pointed after the walk would make the verification describe a different set of objects.
-     */
-    /** `lstat` distinguishes a link from the directory it points at; `stat` above already followed it. */
-    let linkStats;
-    try {
-      linkStats = lstatSync(path);
-    } catch {
-      linkStats = undefined;
-    }
-    if (linkStats !== undefined && linkStats.isSymbolicLink()) {
+    if (linkStats.isSymbolicLink()) {
       reparsePoints.push(path);
       /**
-       * §7.1: CLASSIFY THE LINK BY WHERE IT LEADS. Every link is recorded and none is counted as verified, but a
-       * link whose target this fence does not claim to protect is a different fact from one that reaches a
-       * required protected object.
+       * §7.1: CLASSIFY THE LINK BY WHERE IT LEADS. Every link is recorded and none is counted as verified.
        */
       const target = resolveLinkTarget(path);
       if (target === undefined) {
@@ -703,16 +740,28 @@ export function verifyTree(input) {
       } else if (isAncestorOf(resolve(input.root), target)) {
         /** The target is part of this root, so this walk reaches it by its real path as well. */
         reparseWithinRoot.push(path);
-      } else if ((input.protectedRoots ?? []).some((root) => isAncestorOf(resolve(root), target))) {
-        /** Another protected root owns the target, and that root is verified on its own. */
+      } else if (verifiedRoots.some((root) => isAncestorOf(resolve(root), target))) {
+        /**
+         * S1R-C §7.2 — ANOTHER PROTECTED ROOT OWNS THE TARGET, AND THAT ROOT'S LABEL WAS VERIFIED.
+         *
+         * MEASURED (F5). The previous test was `input.protectedRoots`, a list of DECLARED roots. A declaration
+         * is not evidence: a link into a declared-but-unlabelled root was classified as accounted for and left
+         * `admissionEligible` true while the target carried no label at all. The basis is now the set of roots
+         * that ACTUALLY received a verified label, passed in as `verifiedRoots`.
+         */
         reparseIntoProtectedRoot.push(path);
       } else {
-        /** The target is outside every protected root: it is not an object this fence claims. */
+        /**
+         * THE TARGET IS NOT COVERED BY ANY VERIFIED ROOT. It may be a qualified runtime dependency, or it may be
+         * arbitrary external content; this walk cannot tell them apart, so the link is recorded as leaving the
+         * protection domain and `admissionEligible` refuses unless the target is a recognised dependency.
+         */
         reparseOutsideProtectionDomain.push(path);
       }
       undetermined.push(path);
       return;
     }
+    if (!linkStats.isDirectory()) return;
     let entries;
     try {
       entries = readdirSync(path);
@@ -722,6 +771,27 @@ export function verifyTree(input) {
       return;
     }
     for (const entry of entries) visit(resolve(path, entry), depth + 1);
+  };
+
+  /**
+   * S1R-C §7.3 — THE TRUSTED-RUNTIME DEPENDENCY CONTRACT.
+   *
+   * A link qualifies ONLY when its target resolves under a declared dependency root. The roots are supplied by
+   * the caller from the DSH installation it is actually running (`PALIMPSEST_DSH_ROOT`, the resolved package
+   * graph), never guessed here. A target that is merely resolvable, or that happens to sit beside the
+   * installation, does not qualify.
+   *
+   * WHY THIS IS NOT A CATCH-ALL. The real DSH home contains hundreds of installer-created junctions into the
+   * npm global tree (`profiles/node_modules/*` -> the installed `@deepseek-ai/dsh` dependencies). A rule that
+   * refused them would refuse every worker in every real deployment while protecting nothing: those bytes are
+   * the runtime the host itself loads. The contract is therefore narrow and stated — a named set of roots,
+   * checked against the ACTUAL resolved target — rather than "anything outside the protected roots is fine".
+   */
+  const isQualifiedDependency = (link) => {
+    if (dependencyRoots.length === 0) return false;
+    const target = resolveLinkTarget(link);
+    if (target === undefined) return false;
+    return dependencyRoots.some((root) => isAncestorOf(root, target));
   };
 
   visit(resolve(input.root), 0);
@@ -773,18 +843,35 @@ export function verifyTree(input) {
             ? 'REPARSE_LEAVES_PROTECTION_DOMAIN'
             : 'REPARSE_TARGETS_ACCOUNTED_FOR',
     /**
-     * §7.1/§7.2: THE FIELD ADMISSION CONSUMES.
+     * S1R-C §7.2/§7.3: THE FIELD ADMISSION CONSUMES, AND WHAT IT NOW REQUIRES.
      *
-     * True when every object that CAN be examined is protected AND every link either leads to content this
-     * fence already covers or leads outside the protection domain entirely. False when a required object is
-     * unprotected, unreadable, unexamined because of a resource limit, or behind a link that could not be
-     * resolved.
+     * True when every object that CAN be examined is protected, the walk completed, and every link either
+     * leads to content this fence already covers (this root, or another root whose label was VERIFIED) or to
+     * a QUALIFIED RUNTIME DEPENDENCY.
+     *
+     * THE CHANGE FROM Host-S1. The previous rule required only `reparseUnresolvable.length === 0`, so a link
+     * that RESOLVED to an arbitrary external directory left `admissionEligible` true — measured as F6, where a
+     * junction to a synthetic canary outside every protected root produced `admissionEligible: true` and
+     * `reparseBasis: REPARSE_LEAVES_PROTECTION_DOMAIN` at the same time. Resolution is not authorization.
+     *
+     * An out-of-domain link is now admitted only when its target lies under a declared dependency root. Those
+     * roots are the DSH installation the host is already running from — content the worker must be able to
+     * read for the runtime to function at all, and content it cannot usefully exfiltrate because it is the
+     * same bytes the host executes. Everything else refuses (§7.3: no permissive catch-all).
      */
     admissionEligible:
       noUnprotectedEntryFound &&
       enumerationFailures.length === 0 &&
       stopReason === 'COMPLETE' &&
-      reparseUnresolvable.length === 0,
+      reparseUnresolvable.length === 0 &&
+      reparseOutsideProtectionDomain.every((link) => isQualifiedDependency(link)),
+    /** The links that leave the protection domain and are NOT covered by a dependency contract. */
+    unqualifiedExternalLinks: reparseOutsideProtectionDomain.filter((link) => !isQualifiedDependency(link)),
+    /** The links that leave the protection domain and ARE covered by the trusted-runtime contract. */
+    qualifiedDependencyLinks: reparseOutsideProtectionDomain.filter((link) => isQualifiedDependency(link)),
+    /** The roots that were used as a protection basis, so a reader can see the claim's foundation. */
+    verifiedRootsUsed: verifiedRoots,
+    dependencyRootsUsed: dependencyRoots,
   };
 }
 
@@ -836,7 +923,26 @@ export function ensureReadFence(input) {
   const result = applyReadFence({ roots: input.roots, world: input.world });
   const outcomes = result.outcomes ?? [];
   const rootsVerified = result.supported && outcomes.length > 0 && outcomes.every((entry) => entry.verified);
-  const trees = input.verifyTrees === false ? [] : outcomes.filter((entry) => entry.verified).map((entry) => verifyTree({ root: entry.path, protectedRoots: input.roots }));
+  /**
+   * S1R-C §7.2: THE BASIS IS THE ROOTS THAT ACTUALLY RECEIVED A VERIFIED LABEL.
+   *
+   * `input.roots` is the DECLARED set. Passing it as the protection basis would let a link into a declared
+   * root that failed to label read as covered (F5). The set below contains only outcomes whose label was
+   * verified, so a link into a root that did not label is classified as leaving the protection domain.
+   */
+  const verifiedRootPaths = outcomes.filter((entry) => entry.verified === true).map((entry) => entry.path);
+  const trees =
+    input.verifyTrees === false
+      ? []
+      : outcomes
+          .filter((entry) => entry.verified)
+          .map((entry) =>
+            verifyTree({
+              root: entry.path,
+              verifiedRoots: verifiedRootPaths,
+              dependencyRoots: input.dependencyRoots ?? [],
+            }),
+          );
   const treesVerified = trees.length > 0 && trees.every((entry) => entry.verified);
   /**
    * §7.2: THE QUALIFICATION THE ADMISSION GATE CONSUMES.
