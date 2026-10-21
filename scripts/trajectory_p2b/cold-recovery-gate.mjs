@@ -31,18 +31,36 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { REAL_DSH_HOME, REPO, allocateOwnedRoot, dshBin, hasBuiltDist, hasFirstPartyDsh, installHostBundle, linkSharedModules, measureSessionThroughOfficialReader, safeCleanup, writeProbeProfile } from "./rig.mjs";
+import { ownedRootLifetime, REAL_DSH_HOME, REPO, allocateOwnedRoot, dshBin, hasBuiltDist, hasFirstPartyDsh, installHostBundle, linkSharedModules, measureSessionThroughOfficialReader, safeCleanup, writeProbeProfile } from "./rig.mjs";
 
 const OUTCOMES = ["PASS", "SKIPPED", "BLOCKED", "NOT_ESTABLISHED"];
 const PHASE = process.argv.find((arg) => arg.startsWith("--phase="))?.slice("--phase=".length) ?? "orchestrate";
 const findings = {};
+/**
+ * S1R-GATES: THE RUN-OWNED ROOT IS RECLAIMED ON EVERY EXIT PATH.
+ *
+ * `finish()` calls `process.exit()` from up to ten places, but cleanup used to run only at the end of the
+ * happy path — so a BLOCKED or failed run leaked its whole root, module copy included. `finish()` now
+ * disposes through this holder, and `ownedRootLifetime` also registers exit/signal handlers as a
+ * backstop. Assigned once the root is allocated.
+ */
+let ownedLifetime = null;
 const record = (key, value) => {
   findings[key] = value;
   process.stderr.write(`  · ${key}: ${JSON.stringify(value)}\n`);
 };
 function finish(outcome, extra) {
+  /**
+   * S1R-GATES: DISPOSE BEFORE REPORTING, SO THE RECEIPT STATES WHAT WAS RECLAIMED.
+   *
+   * The cleanup result is merged into the reported findings rather than being lost: a run that could not
+   * reclaim its root says so, and one that did records the fact. `dispose()` is idempotent, so the exit
+   * handler registered by `ownedRootLifetime` cannot double-delete.
+   */
+  const lifetime = ownedLifetime?.dispose();
+  const findingsWithCleanup = lifetime === undefined || lifetime === null ? findings : { ...findings, testRootCleanup: lifetime };
   process.stdout.write(
-    `${JSON.stringify({ schemaVersion: 1, kind: `TRAJECTORY_P2B_COLD_RECOVERY_${PHASE.toUpperCase()}`, stage: "Trajectory-P2-B", phase: PHASE, outcome, ...findings, ...(extra ?? {}) }, null, 2)}\n`,
+    `${JSON.stringify({ schemaVersion: 1, kind: `TRAJECTORY_P2B_COLD_RECOVERY_${PHASE.toUpperCase()}`, stage: "Trajectory-P2-B", phase: PHASE, outcome, ...findingsWithCleanup, ...(extra ?? {}) }, null, 2)}\n`,
   );
   process.exit(outcome === "PASS" || outcome === "SKIPPED" ? 0 : 1);
 }
@@ -121,7 +139,8 @@ if (PHASE === "record") {
   const PROFILE = "p2b-c6";
   const head = prepareFixture(REPO_FIX);
   installHostBundle(HOME);
-  linkSharedModules(HOME);
+  /** S1R-GATES: the strategy is recorded, so a silent fallback to a gigabyte copy cannot pass unnoticed. */
+  record("moduleSharing", linkSharedModules(HOME));
   writeProbeProfile(HOME, rig, PROFILE, PROJECT_ID);
 
   const installed = installStack(REPO_FIX);
@@ -273,6 +292,7 @@ if (PHASE === "recover") {
 
 if (PHASE === "orchestrate") {
   const owned = allocateOwnedRoot("p2b-c6-");
+ownedLifetime = ownedRootLifetime(owned);
   record("testRootContained", owned.contained);
   record("testRootIsReparsePoint", owned.isReparse);
   if (!owned.contained) finish("NOT_ESTABLISHED", { blocker: "could not prove the run directory is contained" });
@@ -301,6 +321,8 @@ if (PHASE === "orchestrate") {
 
   const phaseA = runPhase("record");
   const phaseB = runPhase("recover");
+  /** S1R-GATES: surfaced from the record phase, so the receipt states which strategy actually ran. */
+  record("moduleSharing", phaseA.moduleSharing ?? null);
   record("processA", { outcome: phaseA.outcome, recordedSessionId: phaseA.recordedSessionId ?? null, durableEventCount: phaseA.durableEventCount ?? null });
   record("processB", { outcome: phaseB.outcome, recoveredSessionId: phaseB.recoveredSessionId ?? null, matches: phaseB.recoveredIdentityMatchesRecorded ?? null });
 
