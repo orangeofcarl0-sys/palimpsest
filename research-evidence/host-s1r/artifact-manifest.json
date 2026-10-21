@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1R_ARTIFACT_MANIFEST",
+  "stage": "Palimpsest Host-S1",
+  "note": "Hashes the actual bytes of every load-bearing artifact. The manifest does not hash itself; no self-referential Git SHA stamping is attempted.",
+  "codeFreezeHead": "549a167b7d0018a4046a5e8d44019d350f02ecf4",
+  "executedCodeTree": "7fd61442c53fa0f193f2265e2dfcbbf9d66393d5",
+  "artifacts": [
+    {
+      "name": "baseline-security-falsifiers.json",
+      "present": true,
+      "bytes": 1314,
+      "digest": "sha256-4480aeee468727575c58e39169c51c0b5455d3e7a309b2e525f14f2088a8fe2e"
+    },
+    {
+      "name": "capacity-domain-and-concurrency.json",
+      "present": true,
+      "bytes": 6182,
+      "digest": "sha256-d7adbaf450409eda01f60747bc4fd5cf2e916726a818dd5dbff91953a029047e"
+    },
+    {
+      "name": "lock-recovery-and-release.json",
+      "present": true,
+      "bytes": 5924,
+      "digest": "sha256-a6364eeb1a1fc13f8d49023aeb13049b1fae8cdb46698e0c779b3c4fb16a0190"
+    },
+    {
+      "name": "reparse-protection-basis.json",
+      "present": true,
+      "bytes": 4866,
+      "digest": "sha256-a7c67fe8cc4579e7d59e711e9b9b0ac19148df15875265b97841cdb9aa3ab310"
+    },
+    {
+      "name": "evidence-admission.json",
+      "present": true,
+      "bytes": 45676,
+      "digest": "sha256-3f0bfe0291523e7bedf05861f7831b3f5a6c5011937d67252db022fd15b20e36"
+    },
+    {
+      "name": "security-conformance.json",
+      "present": true,
+      "bytes": 3454,
+      "digest": "sha256-00b810782d97fdf50f4db08b253b6277e369e91866901147bac3aec4d7604f57"
+    },
+    {
+      "name": "trajectory-execution-reconfirmation.json",
+      "present": true,
+      "bytes": 7872,
+      "digest": "sha256-a8807fcbfeac1aa4cb9cc9ace8a947e713572ff828a2a355545f0c108a9786ff"
+    },
+    {
+      "name": "git-and-evidence-identity.json",
+      "present": true,
+      "bytes": 4716,
+      "digest": "sha256-8d0a0f04f5710686828b198d72200c17a735b85282792acf5391fe0bcbe078ca"
+    },
+    {
+      "name": "final-verdicts.json",
+      "present": true,
+      "bytes": 4185,
+      "digest": "sha256-ed36b744948e40cf0dde9c390259006dd46b2704530e252d2df15030f5d9add2"
+    }
+  ]
+}
