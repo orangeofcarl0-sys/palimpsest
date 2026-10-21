@@ -125,7 +125,9 @@ let parentWorktreeState = { prepared: false, detail: null };
 (() => {
   try {
     rmSync(parentWorktree, { recursive: true, force: true });
-    const added = spawnSync("git", ["worktree", "add", "--detach", parentWorktree, PARENT_HEAD], { cwd: REPO, encoding: "utf8", timeout: 600_000 });
+    /** A previous run that was interrupted leaves a registration behind; prune so add can succeed. */
+    spawnSync("git", ["worktree", "prune"], { cwd: REPO, encoding: "utf8", timeout: 120_000 });
+    const added = spawnSync("git", ["worktree", "add", "--detach", "-f", parentWorktree, PARENT_HEAD], { cwd: REPO, encoding: "utf8", timeout: 600_000 });
     if (added.status !== 0) {
       parentWorktreeState = { prepared: false, detail: `git worktree add exited ${String(added.status)}: ${String(added.stderr ?? "").slice(0, 300)}` };
       return;
@@ -1002,10 +1004,13 @@ const loadArtifact = (name) => {
        * limitations; it is not that there are none.
        */
       disclosedLimitsRecorded: Array.isArray(reparse?.limits) && reparse.limits.length > 0,
-      disclosedLimits: reparse?.limits ?? [],
       controlsPass: suiteById("host-s1-reparse")?.observedVerdict === "PASS",
     },
-    { artifact: "reparse-protection-basis.json", keyObservation: "classification is lstat-first; the basis is the verified root set; an out-of-domain target must fall under the declared dependency contract" },
+    {
+      artifact: "reparse-protection-basis.json",
+      keyObservation: "classification is lstat-first; the basis is the verified root set; an out-of-domain target must fall under the declared dependency contract",
+      disclosedLimits: reparse?.limits ?? [],
+    },
   );
   const s1rd = verdict(
     "S1R-D SECURITY_EVIDENCE_ADMISSION_QUALIFIED",

@@ -7,7 +7,7 @@
       "id": "S1R-A CONFIDENTIAL_CAPACITY_DOMAIN_QUALIFIED",
       "result": "NOT_ESTABLISHED",
       "unmet": [
-        "domainIdentityNamesPrincipal"
+        "crossRepositoryMeasured"
       ],
       "evidence": {
         "artifact": "capacity-domain-and-concurrency.json",
@@ -16,8 +16,11 @@
     },
     "s1rb": {
       "id": "S1R-B CONFIDENTIAL_LOCK_RECOVERY_QUALIFIED",
-      "result": "QUALIFIED",
-      "unmet": [],
+      "result": "NOT_ESTABLISHED",
+      "unmet": [
+        "staleObservationMovedSuccessor",
+        "thirdPartyEnteredVacatedPath"
+      ],
       "evidence": {
         "artifact": "lock-recovery-and-release.json",
         "keyObservation": "the recovery moved a live successor and a third party entered the vacated pathname; reclamation is now refused with an operator action"
@@ -36,10 +39,8 @@
     },
     "s1rd": {
       "id": "S1R-D SECURITY_EVIDENCE_ADMISSION_QUALIFIED",
-      "result": "NOT_ESTABLISHED",
-      "unmet": [
-        "noStipulatedCoverageBooleans"
-      ],
+      "result": "QUALIFIED",
+      "unmet": [],
       "evidence": {
         "artifact": "evidence-admission.json",
         "keyObservation": "conformance runs against this freeze with command, exit code, run id and digest; a nonzero exit, a skipped test or a duplicate identity is never PASS"
@@ -50,8 +51,8 @@
       "result": "NOT_ESTABLISHED",
       "unmet": [
         "s1ra",
-        "s1rc",
-        "s1rd"
+        "s1rb",
+        "s1rc"
       ],
       "evidence": {
         "artifact": "all of the above",
@@ -83,8 +84,8 @@
   "stochasticTrialOccurred": false,
   "modelCallsMade": 0,
   "runIdentity": {
-    "codeFreezeHead": "5e2e882c5838184093a1f8b23a0448101393febd",
-    "executedCodeTree": "633b18daf562d759b19f04aeb68da802d18eb01a",
+    "codeFreezeHead": "3409bbbcd6fe62e352dc23bde0f0224965792352",
+    "executedCodeTree": "552d1c522e66530dea4ee2671ec1d1df2edc86a8",
     "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
