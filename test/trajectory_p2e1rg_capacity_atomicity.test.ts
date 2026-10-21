@@ -67,12 +67,33 @@ afterAll(() => {
 
 const ready = () => profile !== null;
 let counter = 0;
-/** A fresh test-owned slot home per case, so no case inherits another's holder record. */
+/**
+ * A fresh test-owned slot home per case, so no case inherits another's holder record.
+ *
+ * S1R-A: THE CAPACITY NAMESPACE IS NOW THE WINDOWS PRINCIPAL, NOT THE HOME OR THE REPOSITORY. A case that
+ * passed only `home` would resolve the MACHINE-WIDE slot and contend with every other host on this machine —
+ * including a real confidential worker. `capacityRoot` is the explicit test seam, so every case passes one.
+ */
 function slotHome(): string {
   counter += 1;
   const home = join(ROOT, `home-${String(counter)}`);
-  mkdirSync(home, { recursive: true });
+  mkdirSync(join(home, "confidential-workers"), { recursive: true });
   return home;
+}
+/** The capacity root a case must pass, derived from the same per-case home. */
+function slotRoot(home: string): string {
+  /**
+   * THE LEGACY LOCATION, DELIBERATELY. These cases plant holder records and lock directories by hand, and
+   * S1R moved the namespace to an explicit `capacityRoot`. Pointing the root at the directory the cases
+   * already use keeps their fixtures meaningful without rewriting every path they construct.
+   */
+  return join(home, "confidential-workers");
+}
+
+/** One fresh home plus its capacity root, so a case cannot accidentally use two different roots. */
+function slotArgs(): { home: string; capacityRoot: string } {
+  const home = slotHome();
+  return { home, capacityRoot: slotRoot(home) };
 }
 function liveHolder(): number {
   const child = spawn(process.execPath, ["-e", "setTimeout(() => {}, 600000)"], { stdio: "ignore" });
@@ -99,7 +120,7 @@ async function raceAcquire(home: string, count: number, modulePath: string): Pro
       [
         "import { existsSync, writeFileSync } from 'node:fs';",
         `const mod = await import(${JSON.stringify(pathToFileURL(modulePath).href)});`,
-        `const slot = mod.openConfidentialSlot({ home: ${JSON.stringify(home)} });`,
+        `const slot = mod.openConfidentialSlot({ home: ${JSON.stringify(home)}, capacityRoot: ${JSON.stringify(join(home, "confidential-workers"))} });`,
         /** Signal readiness, then spin until the barrier appears. */
         `writeFileSync(${JSON.stringify(join(ready, `r-${String(index)}`))}, "1");`,
         `while (!existsSync(${JSON.stringify(barrier)})) { /* spin */ }`,
@@ -156,7 +177,7 @@ const PROFILE_PATH = join(process.cwd(), "host", "deployment", "runtime", "confi
 describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)", () => {
   it("1. a single process acquires one slot", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
-    const slot = profile!.openConfidentialSlot({ home: slotHome() });
+    const slot = profile!.openConfidentialSlot(slotArgs());
     expect(slot.acquire().granted).toBe(true);
     expect(slot.peek().active).toBe(1);
   });
@@ -164,8 +185,8 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
   it("2. a second acquire while one is held is refused", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
     const home = slotHome();
-    const first = profile!.openConfidentialSlot({ home });
-    const second = profile!.openConfidentialSlot({ home });
+    const first = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
+    const second = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
     expect(first.acquire().granted).toBe(true);
     expect(second.acquire().granted).toBe(false);
   });
@@ -188,7 +209,7 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
     const home = slotHome();
     mkdirSync(join(home, "confidential-workers"), { recursive: true });
     writeFileSync(join(home, "confidential-workers", "active.json"), "{not json", "utf8");
-    const verdict = profile!.openConfidentialSlot({ home }).acquire();
+    const verdict = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) }).acquire();
     expect(verdict.granted).toBe(false);
     expect(verdict.detail).toContain("not valid JSON");
   });
@@ -199,7 +220,7 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
     mkdirSync(join(home, "confidential-workers"), { recursive: true });
     /** A directory where the file should be: reading it yields EISDIR, not ENOENT. */
     mkdirSync(join(home, "confidential-workers", "active.json"), { recursive: true });
-    const verdict = profile!.openConfidentialSlot({ home }).acquire();
+    const verdict = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) }).acquire();
     expect(verdict.granted).toBe(false);
   });
 
@@ -210,7 +231,7 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
     mkdirSync(join(home, "confidential-workers"), { recursive: true });
     /** A live process whose record is far older than any TTL a caller might pass. */
     writeFileSync(join(home, "confidential-workers", "active.json"), JSON.stringify({ holders: [{ pid, at: Date.now() - 10_000_000, token: "old" }], profile: "windows-confidential-single-active" }), "utf8");
-    const verdict = profile!.openConfidentialSlot({ home, staleAfterMs: 1 }).acquire();
+    const verdict = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) }).acquire();
     expect(verdict.granted).toBe(false);
     expect(verdict.detail).toContain(String(pid));
   });
@@ -223,17 +244,17 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
     const deadPid = exited.pid ?? 999_999;
     mkdirSync(join(home, "confidential-workers"), { recursive: true });
     writeFileSync(join(home, "confidential-workers", "active.json"), JSON.stringify({ holders: [{ pid: deadPid, at: Date.now(), token: "dead" }], profile: "windows-confidential-single-active" }), "utf8");
-    const verdict = profile!.openConfidentialSlot({ home }).acquire();
+    const verdict = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) }).acquire();
     expect(verdict.granted).toBe(true);
   });
 
   it("8. RELEASE by a non-owner is refused", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
     const home = slotHome();
-    const owner = profile!.openConfidentialSlot({ home });
+    const owner = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
     owner.acquire();
     /** A different handle never acquired, so it holds nothing to release. */
-    const other = profile!.openConfidentialSlot({ home });
+    const other = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
     const released = other.release();
     expect(released.released).toBe(false);
     /** And the owner's entry survives. */
@@ -243,7 +264,7 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
   it("9. REPEATED release is safe", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
     const home = slotHome();
-    const slot = profile!.openConfidentialSlot({ home });
+    const slot = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
     slot.acquire();
     expect(slot.release().released).toBe(true);
     expect(slot.release().released).toBe(false);
@@ -259,7 +280,7 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
       script,
       [
         `const mod = await import(${JSON.stringify(pathToFileURL(PROFILE_PATH).href)});`,
-        `const slot = mod.openConfidentialSlot({ home: ${JSON.stringify(home)} });`,
+        `const slot = mod.openConfidentialSlot({ home: ${JSON.stringify(home)}, capacityRoot: ${JSON.stringify(join(home, "confidential-workers"))} });`,
         "process.stdout.write(JSON.stringify(slot.acquire()) + String.fromCharCode(10));",
         "setTimeout(() => {}, 600000);",
       ].join("\n"),
@@ -277,14 +298,14 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
     while (Date.now() < deadline && !output.includes("granted")) await new Promise((resolve) => setTimeout(resolve, 25));
     expect(output).toContain('"granted":true');
     /** While it lives, the slot is NOT available. */
-    const blocked = profile!.openConfidentialSlot({ home }).acquire();
+    const blocked = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) }).acquire();
     expect(blocked.granted).toBe(false);
     /** After it dies, the slot IS available. */
     child.kill();
     const recoveredDeadline = Date.now() + 20_000;
     let recovered = { granted: false } as { granted: boolean };
     while (Date.now() < recoveredDeadline) {
-      recovered = profile!.openConfidentialSlot({ home }).acquire();
+      recovered = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) }).acquire();
       if (recovered.granted === true) break;
       /** Await the reaping rather than blocking it. */
       await new Promise((resolve) => setTimeout(resolve, 25));
@@ -299,7 +320,7 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
     const pid = liveHolder();
     mkdirSync(join(home, "confidential-workers"), { recursive: true });
     writeFileSync(join(home, "confidential-workers", "active.json"), JSON.stringify({ holders: [{ pid, at: Date.now(), token: "holder" }], profile: "windows-confidential-single-active" }), "utf8");
-    const refused = profile!.openConfidentialSlot({ home });
+    const refused = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
     expect(refused.acquire().granted).toBe(false);
     expect(refused.release().released).toBe(false);
     /** The holder's entry is untouched. */
@@ -312,21 +333,21 @@ describe("RG-C atomic capacity ownership (CROSS-PROCESS, DYNAMICALLY VERIFIED)",
      * `serializeConfidentialWorkers` is the in-process wrapper. It must never report more than `max` ACTIVE.
      */
     const home = slotHome();
-    const slot = profile!.openConfidentialSlot({ home });
+    const slot = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
     slot.acquire();
     /** A second handle is refused, so the configured capacity of 1 is not exceeded. */
-    expect(profile!.openConfidentialSlot({ home }).acquire().granted).toBe(false);
+    expect(profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) }).acquire().granted).toBe(false);
     expect(slot.peek().active).toBe(1);
   });
 
   it("14. the ownership MECHANISM is an OS primitive, not a read-check-write", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
-    const slot = profile!.openConfidentialSlot({ home: slotHome() });
+    const slot = profile!.openConfidentialSlot(slotArgs());
     expect(slot.mechanism).toBe("mkdir-exclusive-lock");
     /** And the lock directory is removed after a successful acquire, so it is not leaked. */
     const home = join(ROOT, "mechanism-check");
     mkdirSync(home, { recursive: true });
-    const probe = profile!.openConfidentialSlot({ home });
+    const probe = profile!.openConfidentialSlot({ home: home, capacityRoot: slotRoot(home) });
     probe.acquire();
     expect(existsSync(join(home, "confidential-workers", "active.lock"))).toBe(false);
   });
