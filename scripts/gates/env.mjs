@@ -36,6 +36,8 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { runtimeHomePath } from "./runtime-home.mjs";
+
 /** This repository's root — `scripts/gates/` → the checkout. */
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -54,10 +56,16 @@ export function gateRoot() {
   return explicit !== undefined && explicit !== "" ? explicit : join(homedir(), ".palimpsest-gates");
 }
 
-/** The REAL DSH home: credentials and the shared `profiles/node_modules`. */
+/**
+ * The REAL runtime home: credentials and the shared `profiles/node_modules`.
+ *
+ * RA-A/F8 - THE NAME IS RESOLVED THROUGH ONE MODULE, NOT SPELLED HERE. RA-0 measured a homoglyph collision in
+ * which the harness assigned one variable and the gates read a different one that renders identically, so every
+ * gate silently used the `homedir()` default. `runtime-home.mjs` accepts BOTH names and is the only place the
+ * value is derived, which makes a caller's assignment effective whichever spelling it used.
+ */
 export function dshHome() {
-  const explicit = process.env.DSH_HOME?.trim();
-  return explicit !== undefined && explicit !== "" ? explicit : join(homedir(), ".dsh");
+  return runtimeHomePath();
 }
 
 /**

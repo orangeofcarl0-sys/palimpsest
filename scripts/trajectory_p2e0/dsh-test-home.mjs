@@ -26,8 +26,9 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { freeBytesAt } from "./owned-root.mjs";
+import { runtimeHomePath } from "../gates/runtime-home.mjs";
 
-export const REAL_DSH_HOME = (process.env.DSH_HOME ?? join(homedir(), ".dsh")).replace(/\\/gu, "/");
+export const REAL_DSH_HOME = (runtimeHomePath()).replace(/\\/gu, "/");
 export const REAL_MODULES = join(REAL_DSH_HOME, "profiles", "node_modules");
 
 export const hasFirstPartyDsh = () => existsSync(join(REAL_MODULES, "@deepseek-ai", "dsh-session"));

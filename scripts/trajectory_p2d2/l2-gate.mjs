@@ -26,9 +26,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 /** S1R-GATES: the run-owned root is reclaimed on every exit path, not only the happy one. */
 import { ownedRootLifetime } from "../trajectory_p2b/rig.mjs";
+import { runtimeHomePath } from "../gates/runtime-home.mjs";
+import { linkModuleGraph } from "../trajectory_p2b/module-sharing.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const REAL_DSH_HOME = (process.env.DSH_HOME ?? join(homedir(), ".dsh")).split("\\").join("/");
+const REAL_DSH_HOME = (runtimeHomePath()).split("\\").join("/");
 const REAL_MODULES = join(REAL_DSH_HOME, "profiles", "node_modules");
 const GATE_ROOT = (process.env.PALIMPSEST_P2D2_GATE_ROOT ?? join(homedir(), ".palimpsest-gates")).split("\\").join("/");
 const OUTCOMES = ["PASS", "SKIPPED", "BLOCKED", "NOT_ESTABLISHED"];
@@ -108,32 +110,21 @@ function makeProfile(home, root, profileName, withDeterministicModel) {
     cpSync(source, join(nodeModules, name), { recursive: true });
   }
   /**
-   * S1R-GATES — JUNCTIONS, NOT A DEREFERENCED COPY. This inline copy materialised the whole runtime dependency
-   * tree into EVERY home: measured 1,048.6 MiB and 112,512 files per home, 124 s each, and this gate creates
-   * two homes per run and never cleaned them up. The per-entry junction gives the same module identity for
-   * ~0 bytes and ~0.07 s; the runtime entry point, package manifests and the nested dependency tree all
-   * resolve through it.
+   * RA-A - DESTINATION ADMISSION IS SHARED, NOT REIMPLEMENTED.
+   *
+   * This block used to link entries itself with `existsSync` as the occupancy test and complete a partial link
+   * set with a `dereference: true` copy. RA-0/F1 measured what `existsSync` does to a dangling junction, and
+   * RA-0/F2 measured the copy reporting success over an incomplete graph. The shared implementation refuses
+   * every destination it cannot prove absent and fails the whole operation rather than completing it by copying.
+   *
+   * The result is RECORDED, and a graph that could not be established is a BLOCKED outcome for this gate: a
+   * partial module graph cannot run the runtime, so continuing would measure something other than the gate.
    */
-  let linkedEntries = 0;
-  let junctionFailures = 0;
-  for (const entry of readdirSync(REAL_MODULES)) {
-    const destination = join(nodeModules, entry);
-    if (existsSync(destination)) continue;
-    try {
-      symlinkSync(join(REAL_MODULES, entry), destination, "junction");
-      linkedEntries += 1;
-    } catch {
-      junctionFailures += 1;
-    }
+  const sharing = linkModuleGraph(home, { sourceModules: REAL_MODULES });
+  record("moduleSharing", sharing);
+  if (sharing.established !== true) {
+    record("moduleSharingFailure", sharing.reason ?? "MODULE_SHARING_NOT_ESTABLISHED");
   }
-  /** A failed junction leaves the graph incomplete, so the copy is the honest completion rather than a gap. */
-  if (junctionFailures > 0) {
-    for (const entry of readdirSync(REAL_MODULES)) {
-      const destination = join(nodeModules, entry);
-      if (!existsSync(destination)) cpSync(join(REAL_MODULES, entry), destination, { recursive: true, dereference: true });
-    }
-  }
-  record("moduleSharing", { strategy: junctionFailures > 0 ? "copy" : "junction", linkedEntries, junctionFailures });
   const profileDir = join(home, "profiles", profileName);
   mkdirSync(profileDir, { recursive: true });
   writeFileSync(

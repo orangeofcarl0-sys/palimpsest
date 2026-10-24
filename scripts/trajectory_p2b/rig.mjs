@@ -12,8 +12,12 @@ import { homedir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import * as ownedResource from "./owned-resource.mjs";
+import * as moduleSharing from "./module-sharing.mjs";
+import { runtimeHomePath } from "../gates/runtime-home.mjs";
+
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-export const REAL_DSH_HOME = (process.env.DSH_HOME ?? join(homedir(), ".dsh")).replace(/\\/g, "/");
+export const REAL_DSH_HOME = (runtimeHomePath()).replace(/\\/g, "/");
 export const REAL_MODULES = join(REAL_DSH_HOME, "profiles", "node_modules");
 export const GATE_ROOT = (process.env.PALIMPSEST_P2B_GATE_ROOT ?? join(homedir(), ".palimpsest-gates")).replace(/\\/g, "/");
 
@@ -22,39 +26,53 @@ export const hasBuiltDist = () => existsSync(join(REPO, "dist", "src", "advanced
 export const dshBin = () => process.env.PALIMPSEST_DSH_BIN ?? join(REAL_MODULES, "@deepseek-ai", "dsh", "lib", "bin.js");
 
 /** §5 B0-F3: allocate a UNIQUE per-run directory inside the gate root and PROVE containment. */
-export function allocateOwnedRoot(prefix) {
-  if (!existsSync(GATE_ROOT)) mkdirSync(GATE_ROOT, { recursive: true });
-  const root = mkdtempSync(join(GATE_ROOT, prefix));
-  const resolvedRoot = realpathSync(root);
-  const resolvedGate = realpathSync(GATE_ROOT);
-  const rel = relative(resolvedGate, resolvedRoot);
-  const contained = rel !== "" && !rel.startsWith("..") && !rel.startsWith(sep);
-  const isReparse = lstatSync(root).isSymbolicLink();
-  return { root: resolvedRoot, contained, isReparse };
+export function allocateOwnedRoot(prefix, gateRoot = GATE_ROOT) {
+  /**
+   * RA-B — ALLOCATION NOW RECORDS AN IDENTITY AND A MARKER.
+   *
+   * The superseded version returned only `contained` and `isReparse`, both computed once. A later cleanup could
+   * not tell "the directory I created" from "a directory now at the same path", and RA-0/F3 measured that a
+   * foreign directory's contents were deleted as a result. The record now carries the object identity captured
+   * here, plus a marker naming this run, so deletion can re-prove rather than trust.
+   */
+  return ownedResource.allocateOwnedRoot(gateRoot, prefix);
 }
 
 /**
  * Delete ONLY the directory this run created, after re-proving containment.
  *
- * ASYNC on purpose. Windows releases SQLite and DSH handles slightly AFTER `close()`/`dispose()` resolve,
+ * ASYNC on purpose. Windows releases SQLite and runtime handles slightly AFTER `close()`/`dispose()` resolve,
  * and a synchronous sleep would BLOCK the event loop so those pending closes never run — the cause of the
  * first measured EPERM. Awaiting a real timer lets the loop drain them. Bounded retries are the
  * repository's established idiom (`test/global_setup.ts`). If every retry fails, the directory is
  * PRESERVED and the reason reported, rather than deleted with a wider sweep (§5 B0-F3).
  */
 export async function safeCleanup(owned) {
-  if (!owned.contained || owned.isReparse) return { cleaned: false, reason: "containment or reparse check failed; preserving the directory" };
+  /**
+   * RA-B — THE CHECKS ARE RE-PROVED, NOT READ FROM THE RECORD.
+   *
+   * `owned.contained` and `owned.isReparse` describe the path AT ALLOCATION. Consulting them here is what let a
+   * replaced path be deleted. The revalidation below inspects the path now, and a record that cannot be
+   * revalidated is preserved.
+   */
+  let proof = ownedResource.revalidateOwnership(owned);
+  if (proof.owned !== true) {
+    /** A record predating the identity model still gets the containment check, but never a silent deletion. */
+    const legacyOk = owned?.contained === true && owned?.isReparse === false;
+    if (!legacyOk) return { cleaned: false, reason: proof.reason, checks: proof.checks, preserved: true };
+    proof = { owned: true, checks: [{ check: "legacyRecord", passed: true, detail: "no identity was recorded at allocation; containment only" }] };
+  }
   let lastReason = "";
   for (let attempt = 0; attempt < 8; attempt += 1) {
     try {
       rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      return { cleaned: true };
+      return { cleaned: true, checks: proof.checks };
     } catch (error) {
       lastReason = error?.message ?? String(error);
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
-  return { cleaned: false, reason: `preserved after retries: ${lastReason}`, preserved: true };
+  return { cleaned: false, reason: `preserved after retries: ${lastReason}`, preserved: true, checks: proof.checks };
 }
 
 /**
@@ -69,60 +87,28 @@ export async function safeCleanup(owned) {
  * process reclaims the directory: normal return, `process.exit()`, Ctrl-C, or a signal. It is idempotent, so an
  * explicit `dispose()` before `finish()` is still the primary path and the handlers become the backstop.
  *
- * THE SAFETY RULES ARE UNCHANGED. Containment and reparse checks are re-proved before any deletion, a root that
- * fails them is PRESERVED, and the outcome is returned so a caller can record it. Nothing here widens the
- * deletion surface: it only guarantees the narrow deletion actually happens.
+ * THE SAFETY RULES ARE NOW RE-PROVED RATHER THAN TRUSTED. The superseded version deleted whatever occupied
+ * `owned.root` as long as the booleans cached at allocation still said "contained" and "not a reparse point".
+ * RA-0/F3 measured the consequence: a foreign directory placed at that path had its contents removed. The
+ * implementation now lives in `owned-resource.mjs`, which re-checks containment, reparse status and object
+ * identity immediately before deleting, keeps a failed attempt RETRYABLE (RA-0/F4), and removes every listener it
+ * installed (RA-0/F5).
  *
- * Synchronous on the exit path BY NECESSITY: an exit handler cannot await. The retry loop is therefore a short
- * synchronous one; if it fails, the directory is preserved and named, exactly as `safeCleanup` does.
+ * Synchronous on the exit path BY NECESSITY: an exit handler cannot await.
  *
- * @param {{ root: string, contained: boolean, isReparse: boolean }} owned
- * @returns {{ dispose: () => { cleaned: boolean, reason?: string }, status: () => { cleaned: boolean, reason?: string } | null }}
+ * @param {{ root: string, gateRoot?: string, contained?: boolean, isReparse?: boolean, identity?: object, runId?: string }} owned
+ * @returns {{ dispose: () => { cleaned: boolean, reason?: string }, retry: () => object, status: () => object | null, listenerCount: () => number }}
  */
 export function ownedRootLifetime(owned) {
-  let outcome = null;
-  let disposed = false;
-
-  const reclaim = () => {
-    if (disposed) return outcome ?? { cleaned: false, reason: "already disposed" };
-    disposed = true;
-    if (!owned.contained || owned.isReparse) {
-      outcome = { cleaned: false, reason: "containment or reparse check failed; preserving the directory" };
-      return outcome;
-    }
-    let lastReason = "";
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      try {
-        rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-        outcome = { cleaned: true };
-        return outcome;
-      } catch (error) {
-        lastReason = error?.message ?? String(error);
-      }
-    }
-    outcome = { cleaned: false, reason: `preserved after retries: ${lastReason}`, preserved: true };
-    return outcome;
-  };
-
-  /** Every way out of the process reclaims. `process.once` keeps a repeated exit from re-entering. */
-  process.once("exit", reclaim);
-  for (const signal of ["SIGINT", "SIGTERM"]) {
-    process.once(signal, () => {
-      reclaim();
-      process.exit(signal === "SIGINT" ? 130 : 143);
-    });
-  }
-
-  return {
-    /** The primary path: call this before reporting, and record the outcome. */
-    dispose: () => {
-      const result = reclaim();
-      process.removeListener("exit", reclaim);
-      return result;
-    },
-    /** What happened, for a receipt written after disposal. */
-    status: () => outcome,
-  };
+  /**
+   * A LEGACY RECORD (one without `identity` or `gateRoot`) is upgraded here rather than silently trusted, so an
+   * un-migrated caller still gets revalidation instead of the old cached-boolean deletion.
+   */
+  const record =
+    owned?.gateRoot !== undefined && owned?.identity !== undefined
+      ? owned
+      : { ...owned, gateRoot: owned?.gateRoot ?? GATE_ROOT, identity: owned?.identity ?? null, runId: owned?.runId ?? `legacy-${String(process.pid)}` };
+  return ownedResource.ownedRootLifetime(record);
 }
 
 /**
@@ -135,90 +121,26 @@ export function ownedRootLifetime(owned) {
  *   · a child must match one of the caller's own prefixes — never "everything in the directory";
  *   · a child that is a reparse point is SKIPPED, because deleting it could reach outside the root;
  *   · a child modified within `minAgeMs` is SKIPPED, so a concurrent run is never pulled out from under itself;
- *   · the resolved child must be INSIDE the resolved gate root.
+ *   · the resolved child must be INSIDE the resolved gate root;
+ *   · AND the child must carry a recognisable ownership marker whose owner is not still running.
  *
- * Returns what was removed and what was kept, so the caller records the decision instead of a bare count.
+ * RA-B — THE MARKER REQUIREMENT IS THE CORRECTION FOR RA-0/F6. The superseded version selected a directory on
+ * prefix and age alone, and RA-0 measured it selecting a directory that carried ANOTHER run's marker — and one
+ * with no marker at all. Age and a name are not ownership. A directory without a verifiable record is now
+ * PRESERVED, and the reason is reported so an operator can inspect it instead of losing it.
+ *
+ * Report-only by DEFAULT: `dryRun` defaults to true, so a caller must ask explicitly before anything is removed.
  *
  * @param {{ gateRoot: string, prefixes: readonly string[], minAgeMs?: number, dryRun?: boolean }} input
- * @returns {{ removed: readonly { name: string, bytes: number }[], kept: readonly { name: string, reason: string }[], reclaimedBytes: number }}
+ * @returns {{ removed: readonly { name: string, bytes: number }[], kept: readonly { name: string, reason: string }[], reclaimedBytes: number, dryRun: boolean }}
  */
 export function reapAbandonedRoots(input) {
-  const gateRoot = resolve(input.gateRoot);
-  const minAgeMs = input.minAgeMs ?? 6 * 60 * 60 * 1000;
-  const removed = [];
-  const kept = [];
-  let reclaimedBytes = 0;
-  if (!existsSync(gateRoot)) return { removed, kept, reclaimedBytes };
-
-  const resolvedGate = realpathSync(gateRoot);
-  const now = Date.now();
-  for (const name of readdirSync(gateRoot)) {
-    const child = join(gateRoot, name);
-    if (!input.prefixes.some((prefix) => name.startsWith(prefix))) continue;
-    let stats;
-    try {
-      stats = lstatSync(child);
-    } catch {
-      continue;
-    }
-    /** A reparse point is never a deletion target: removing it could reach outside the root. */
-    if (stats.isSymbolicLink()) {
-      kept.push({ name, reason: "reparse point" });
-      continue;
-    }
-    if (!stats.isDirectory()) continue;
-    const relativePath = relative(resolvedGate, realpathSync(child));
-    if (relativePath === "" || relativePath.startsWith("..") || relativePath.startsWith(sep)) {
-      kept.push({ name, reason: "resolves outside the gate root" });
-      continue;
-    }
-    if (now - stats.mtimeMs < minAgeMs) {
-      kept.push({ name, reason: `modified ${String(Math.round((now - stats.mtimeMs) / 60000))} min ago; a concurrent run may own it` });
-      continue;
-    }
-    const bytes = directoryBytes(child);
-    if (input.dryRun === true) {
-      removed.push({ name, bytes });
-      reclaimedBytes += bytes;
-      continue;
-    }
-    try {
-      rmSync(child, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      removed.push({ name, bytes });
-      reclaimedBytes += bytes;
-    } catch (error) {
-      kept.push({ name, reason: `removal failed: ${String(error?.message ?? error)}` });
-    }
-  }
-  return { removed, kept, reclaimedBytes };
+  return ownedResource.reapAbandonedRoots({ ...input, dryRun: input.dryRun !== false });
 }
 
 /** Physical bytes under a directory, counting a junction as zero and never following one. */
 export function directoryBytes(root) {
-  let bytes = 0;
-  const stack = [root];
-  while (stack.length > 0) {
-    const current = stack.pop();
-    let entries;
-    try {
-      entries = readdirSync(current, { withFileTypes: true });
-    } catch {
-      continue;
-    }
-    for (const entry of entries) {
-      const path = join(current, entry.name);
-      let stats;
-      try {
-        stats = lstatSync(path);
-      } catch {
-        continue;
-      }
-      if (stats.isSymbolicLink()) continue;
-      if (stats.isDirectory()) stack.push(path);
-      else bytes += stats.size;
-    }
-  }
-  return bytes;
+  return ownedResource.directoryBytes(root);
 }
 
 /** §9.1: install the CURRENT branch's host bundle where the DSH profile loader resolves it. */
@@ -259,47 +181,115 @@ export function installHostBundle(home) {
  * `git clean` all leave a junction's target intact. The shared install therefore cannot be damaged by a
  * cleanup, which is the property that makes this strategy safe.
  *
+ * RA-A — DESTINATION ADMISSION IS NOW PROVEN, AND A FAILED LINK IS NO LONGER "COMPLETED" BY A COPY.
+ *
+ * The superseded version decided occupancy with `existsSync`, which FOLLOWS a reparse point. RA-0/F1 measured the
+ * consequence: a junction whose target had gone read as unoccupied, and the helper then ABORTED with ENOENT
+ * instead of reporting a result. RA-0/F2 measured the second consequence: with an ordinary occupant the graph came
+ * out INCOMPLETE while the return value still claimed a successful copy.
+ *
+ * The corrected contract, in `module-sharing.mjs`:
+ *
+ *   · every destination is classified with `lstat` (which never follows) before anything is written;
+ *   · only a PROVABLY ABSENT destination is created;
+ *   · an existing link is accepted only when its RESOLVED target is the intended source;
+ *   · every other state is REFUSED, and one refusal fails the whole operation with
+ *     `MODULE_SHARING_NOT_ESTABLISHED` — because a partially linked graph is not a usable module tree;
+ *   · the dereferencing copy is available ONLY as an explicitly requested strategy, never as an automatic
+ *     fallback, so an incomplete graph can never be reported as a complete one.
+ *
  * Returns the strategy actually used, so evidence records which one ran rather than assuming.
  *
  * @param {string} home
  * @param {{ strategy?: "junction" | "copy" }} [options]
- * @returns {{ strategy: string, entries?: number, linked?: number, junctionFailures?: number }}
+ * @returns {{ established?: boolean, strategy: string, entries?: number, linked?: number|string[], refused?: object[], reason?: string }}
  */
 export function linkSharedModules(home, options = {}) {
   const strategy = options.strategy ?? "junction";
-  const target = join(home, "profiles", "node_modules");
-  mkdirSync(target, { recursive: true });
-
-  /**
-   * THE FALLBACK IS A REAL, COMPLETE COPY. Kept for a filesystem that refuses junctions; it REPORTS that it
-   * copied, so a gigabyte is never spent silently.
-   */
-  const copyAll = () => {
-    const entries = readdirSync(REAL_MODULES);
-    for (const entry of entries) {
-      const destination = join(target, entry);
-      if (existsSync(destination)) continue;
-      cpSync(join(REAL_MODULES, entry), destination, { recursive: true, dereference: true });
-    }
-    return { strategy: "copy", entries: entries.length };
+  if (strategy === "copy") return copyModuleGraph(home);
+  const result = moduleSharing.linkModuleGraph(home, { sourceModules: REAL_MODULES });
+  return {
+    ...result,
+    /** `linked` was a count before; a list is returned so evidence can name WHICH entries were linked. */
+    linked: result.linked ?? [],
   };
-  if (strategy === "copy") return copyAll();
+}
 
-  let linked = 0;
-  let failed = 0;
-  for (const entry of readdirSync(REAL_MODULES)) {
+/**
+ * THE COPY STRATEGY, EXPLICIT ONLY.
+ *
+ * §4.3 permits a copy fallback only as a separate, explicitly selected path with a fresh empty destination, full
+ * ownership verification, no pre-existing reparse objects, and an actual record of what was copied. This function
+ * enforces those conditions instead of documenting them:
+ *
+ *   · the destination must be empty — a partially populated graph is refused, not completed;
+ *   · the source and destination must not overlap;
+ *   · the byte and file count actually copied is returned, so a gigabyte is never spent silently.
+ *
+ * It is NOT reachable from `linkSharedModules` unless the caller passes `{ strategy: "copy" }`.
+ */
+export function copyModuleGraph(home) {
+  const target = join(home, "profiles", "node_modules");
+  const prepared = moduleSharing.prepareModuleDirectory(home);
+  if (prepared.prepared !== true) {
+    return { established: false, strategy: "copy", reason: "MODULE_SHARING_NOT_ESTABLISHED", detail: prepared.reason };
+  }
+
+  const existing = readdirSync(target);
+  if (existing.length > 0) {
+    return {
+      established: false,
+      strategy: "copy",
+      reason: "MODULE_SHARING_NOT_ESTABLISHED",
+      detail: `the destination is not empty (${String(existing.length)} entries); a copy is not a repair for a partial graph`,
+    };
+  }
+
+  /** Overlap would make the copy write into its own source. */
+  const sourceResolved = resolve(REAL_MODULES).toLowerCase();
+  const targetResolved = resolve(target).toLowerCase();
+  if (sourceResolved === targetResolved || targetResolved.startsWith(`${sourceResolved}${sep}`) || sourceResolved.startsWith(`${targetResolved}${sep}`)) {
+    return { established: false, strategy: "copy", reason: "MODULE_SHARING_NOT_ESTABLISHED", detail: "the source and destination overlap" };
+  }
+
+  const entries = readdirSync(REAL_MODULES);
+  let bytes = 0;
+  let files = 0;
+  for (const entry of entries) {
+    const source = join(REAL_MODULES, entry);
     const destination = join(target, entry);
-    if (existsSync(destination)) continue;
+    /**
+     * `dereference: true` is KEPT here deliberately: a copy that preserved the installer's junctions would not be
+     * an independent copy. Its cost is the reason this path is explicit rather than automatic.
+     */
+    cpSync(source, destination, { recursive: true, dereference: true });
+    const measured = ownedResource.directoryBytes(destination);
+    bytes += measured;
+    files += countFiles(destination);
+  }
+  return { established: true, strategy: "copy", entries: entries.length, copiedBytes: bytes, copiedFiles: files, dereferenced: true };
+}
+
+/** File count under a root, counting a junction as zero. Used only to REPORT what a copy spent. */
+function countFiles(root) {
+  let files = 0;
+  const stack = [root];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    let entries;
     try {
-      symlinkSync(join(REAL_MODULES, entry), destination, "junction");
-      linked += 1;
+      entries = readdirSync(current, { withFileTypes: true });
     } catch {
-      failed += 1;
+      continue;
+    }
+    for (const entry of entries) {
+      if (entry.isSymbolicLink()) continue;
+      const path = join(current, entry.name);
+      if (entry.isDirectory()) stack.push(path);
+      else files += 1;
     }
   }
-  /** If ANY junction failed the module graph is incomplete; a copy is the honest completion, not a silent gap. */
-  if (failed > 0) return { ...copyAll(), junctionFailures: failed };
-  return { strategy: "junction", linked };
+  return files;
 }
 
 /**
