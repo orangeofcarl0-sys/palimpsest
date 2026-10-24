@@ -33,6 +33,7 @@ import { createHash } from "node:crypto";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runtimeHomePath } from "../gates/runtime-home.mjs";
 
 const NL = String.fromCharCode(10);
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -46,7 +47,7 @@ const REPO = resolve(argOf("--repo") ?? join(HERE, "..", ".."));
 const JSON_OUT = argOf("--json-out");
 
 /** The real runtime home, read the same way the gate scripts read it. */
-const runtimeHome = (process.env.runtime_HOME ?? join(homedir(), ".dsh")).replace(/\\/gu, "/");
+const runtimeHome = runtimeHomePath();
 
 const digest = (value) => `sha256-${createHash("sha256").update(value).digest("hex")}`;
 const rel = (path) => String(path).replace(/\\/gu, "/");

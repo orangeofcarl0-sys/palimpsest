@@ -45,6 +45,7 @@ import {
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { runtimeHomePath } from "../gates/runtime-home.mjs";
 
 const NL = String.fromCharCode(10);
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -961,7 +962,7 @@ await guard("F12", "The real runtime home is a junction whose target protection 
    * METADATA ONLY, as §7.1 requires: path relationship, object kinds, and the security descriptor's integrity
    * level. No session content, no credential, and no descriptor write.
    */
-  const runtimeHome = (process.env.runtime_HOME ?? join(process.env.USERPROFILE ?? "", ".dsh")).replace(/\\/gu, "/");
+  const runtimeHome = runtimeHomePath();
   const homeStats = lstatSync(runtimeHome);
   const resolvedTarget = realpathSync(runtimeHome);
 
