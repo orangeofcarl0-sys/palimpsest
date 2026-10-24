@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_ARTIFACT_MANIFEST",
+  "stage": "Palimpsest Host-S1RA",
+  "measuredAt": "2026-10-24T18:26:26.760Z",
+  "codeFreezeHead": "0ef556e316673b206bec6812ae5b7754250ee31b",
+  "artifacts": [
+    {
+      "name": "affected-gates-and-conformance.json",
+      "bytes": 3063,
+      "digest": "sha256-5e4f4ff7656df33ca055ddce2a10828a7b884fc6d1fc9a81bdacece7bc5477b5"
+    },
+    {
+      "name": "baseline-environment-falsifiers.json",
+      "bytes": 28059,
+      "digest": "sha256-202e8c768bdea7d2c796c1ba37ad7818446514a1a39fdc53521795b06a2f47f1"
+    },
+    {
+      "name": "dsh-home-boundary-adjudication.json",
+      "bytes": 8530,
+      "digest": "sha256-773917261b01d9a5890572f67ba22de7c8f0c90518e31113579cb9665746228f"
+    },
+    {
+      "name": "environment-integrity-baseline.json",
+      "bytes": 8865,
+      "digest": "sha256-fd57c06a3fb0af5cdcb2a29ad3908e1f6eb13cb7f58b816d9abfe4f5dd7e30a0"
+    },
+    {
+      "name": "final-verdicts.json",
+      "bytes": 5458,
+      "digest": "sha256-a8e4b3c2b98d342fad498ab9170364bd87beac1664abb9ce068a12eb745bf586"
+    },
+    {
+      "name": "gate-execution-blocker.json",
+      "bytes": 2268,
+      "digest": "sha256-50be267e8ea14564e0d8ec75496fc5b6e2c4652c9b6a89b6d7d5b9086f49b4d7"
+    },
+    {
+      "name": "git-and-evidence-identity.json",
+      "bytes": 3901,
+      "digest": "sha256-5f0e8bd45d8610c4193e0c6f7ca74e6010f131da06096c69496d167e8772700e"
+    }
+  ],
+  "producers": {
+    "environment-integrity-baseline.json": "scripts/host_s1ra/measure-environment.mjs",
+    "baseline-environment-falsifiers.json": "scripts/host_s1ra/reproduce-environment-defects.mjs",
+    "dsh-home-boundary-adjudication.json": "scripts/host_s1ra/adjudicate-runtime-home.mjs",
+    "gate-execution-blocker.json": "scripts/host_s1ra/adjudicate-runtime-home.mjs and the gate run itself",
+    "affected-gates-and-conformance.json": "the acceptance run recorded in §H of the engineering document",
+    "final-verdicts.json": "derived from the above"
+  }
+}

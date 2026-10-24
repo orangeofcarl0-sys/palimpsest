@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_GIT_AND_EVIDENCE_IDENTITY",
+  "stage": "Palimpsest Host-S1RA",
+  "measuredAt": "2026-10-24T18:26:26.425Z",
+  "parentHead": "ae8ff3349c1079061473ae0799a7cef330cccb42",
+  "parentBranch": "host-s1r-confidential-boundary-ratification",
+  "branch": "host-s1ra-environment-evidence-reconciliation",
+  "startingTree": "3638d8e33b79cd36dcbe6c8db08eda1f8c0a2652",
+  "codeFreezeHead": "0ef556e316673b206bec6812ae5b7754250ee31b",
+  "codeFreezeTree": "c7f42c84b68721c0273f4d1a15e493c3fd34f1dd",
+  "commitSequence": [
+    "0ef556e316673b206bec6812ae5b7754250ee31b fix(host-s1ra): resolve the runtime home under every accepted name, including in children",
+    "a161dddb2c2586d02ba973bbfeed23df1b124cd6 research(host-s1ra): adjudicate the real runtime home boundary, and record why the first probe could not measure it",
+    "5a84d2a10a119044830bc78a57b757fb2570adde fix(host-s1ra): stop the generator from mutating shared Git state",
+    "0a67a266dd21eadc81e510043dc1c9fd97fd437e fix(host-s1ra): restore the Host-S1 historical evidence and isolate the later stages",
+    "3dc4f13937117afc361593d2e1886e9356457233 fix(host-s1ra): prove destination admission, revalidate ownership, and resolve the runtime home once",
+    "95e28fd0536aa59f10f29aeaf041c9b5bbc935a9 research(host-s1ra): record the environment baseline and the twelve reproduced falsifiers"
+  ],
+  "runtime": {
+    "node": "v24.22.0",
+    "executable": "F:/Codex_Work_Space/Palimpsest/.runtimes/node-v24.22.0-win-x64/node.exe",
+    "installedDsh": "0.2.1-rc.3",
+    "fenceQualifiedAgainst": "0.2.1-rc.2",
+    "drift": true
+  },
+  "hostS1HistoricalEvidence": {
+    "directory": "research-evidence/host-s1",
+    "restoredFiles": [
+      {
+        "path": "research-evidence/host-s1/baseline-and-falsifiers.json",
+        "expectedBlob": "1209f76cb9a86147ad9b70df7340b602174dca2e",
+        "actualBlob": "1209f76cb9a86147ad9b70df7340b602174dca2e"
+      },
+      {
+        "path": "research-evidence/host-s1/git-and-evidence-identity.json",
+        "expectedBlob": "a553c1c1fa637d164dd4c40151651d8c163a36e1",
+        "actualBlob": "a553c1c1fa637d164dd4c40151651d8c163a36e1"
+      }
+    ],
+    "matchesParent": true
+  },
+  "stageSeparation": {
+    "research-evidence/host-s1": "Host-S1, historical, restored to c4ea1ab",
+    "research-evidence/host-s1r": "Host-S1R, its own stage",
+    "research-evidence/host-s1r/earlier-execution": "earlier Host-S1R runs, preserved verbatim",
+    "research-evidence/host-s1ra": "this stage"
+  },
+  "forwardErrata": [
+    {
+      "subject": "the superseded cleanup root cause",
+      "claim": "rmSync(..., { recursive: true }) on a directory that CONTAINS a junction FOLLOWS it on this platform",
+      "measured": "FALSE — rmSync removed the junction ENTRY and left the target's files byte-intact, in a synthetic git repository (RA-0/F9)",
+      "consequence": "the unlink-before-remove step is retained because it is safer, but it is no longer justified by a claim that does not hold",
+      "actualMechanism": "NOT ESTABLISHED; a worktree removal or a pnpm relink is the supported hypothesis and is recorded as such"
+    },
+    {
+      "subject": "the S1R qualification boundary",
+      "claim": "the S1R evidence qualifies HEAD",
+      "measured": "it qualifies Code Freeze 414d84d; commit ae8ff33 added executable changes afterwards",
+      "consequence": "this stage re-executed the affected non-gate suites against a new Code Freeze and reports the live gates BLOCKED rather than inheriting a qualification"
+    },
+    {
+      "subject": "the runtime identity",
+      "claim": "the environment is runtime 0.2.1-rc.2",
+      "measured": "the installed runtime is 0.2.1-rc.3, and the fence refuses on that difference",
+      "consequence": "no live gate could execute; the integrated verdict is withheld"
+    }
+  ],
+  "modelCallsMade": 0,
+  "externalModelRequests": 0
+}

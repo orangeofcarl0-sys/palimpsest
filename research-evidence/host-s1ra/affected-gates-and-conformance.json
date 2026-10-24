@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_AFFECTED_GATES_AND_CONFORMANCE",
+  "stage": "Palimpsest Host-S1RA",
+  "measuredAt": "2026-10-24T18:25:30.182Z",
+  "runtime": {
+    "node": "v24.22.0",
+    "executable": "F:/Codex_Work_Space/Palimpsest/.runtimes/node-v24.22.0-win-x64/node.exe",
+    "dshVersion": "0.2.1-rc.3",
+    "dshQualifiedAgainst": "0.2.1-rc.2"
+  },
+  "commands": [
+    {
+      "command": "tsc -b",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "node scripts/audit/module-architecture.mjs --check",
+      "exitCode": 0,
+      "result": "PASS",
+      "violations": 0,
+      "acceptedBaselineExceptions": 9
+    },
+    {
+      "command": "node scripts/audit/module-architecture.mjs --check-public-api",
+      "exitCode": 0,
+      "result": "PASS",
+      "missing": 0,
+      "changedKind": 0,
+      "added": 0
+    },
+    {
+      "command": "vitest run (non-gate suites)",
+      "exitCode": 0,
+      "result": "PASS",
+      "suites": {
+        "total": 1439,
+        "passed": 1439,
+        "failed": 0
+      },
+      "tests": {
+        "total": 3690,
+        "passed": 3690,
+        "failed": 0
+      }
+    },
+    {
+      "command": "vitest run (host_s1r + storage suites)",
+      "exitCode": 0,
+      "result": "PASS",
+      "tests": {
+        "total": 77,
+        "passed": 77
+      }
+    },
+    {
+      "command": "node scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+      "exitCode": 1,
+      "result": "NOT_ESTABLISHED",
+      "reason": "kernel-drift at pre-create"
+    },
+    {
+      "command": "vitest run (live gate suites)",
+      "exitCode": 1,
+      "result": "FAIL",
+      "reason": "every gate that boots a real worker refuses at pre-create; see gate-execution-blocker.json"
+    }
+  ],
+  "conformance": {
+    "r1Hr": {
+      "result": "NOT_RUN",
+      "reason": "the conformance suite boots real workers and refuses at pre-create on kernel-drift"
+    },
+    "r1Hc": {
+      "result": "NOT_RUN",
+      "reason": "same"
+    }
+  },
+  "observationClasses": {
+    "PASS": [
+      "build",
+      "architecture:check",
+      "check-public-api",
+      "1439 non-gate suites",
+      "77 host-s1r and storage tests"
+    ],
+    "BLOCKED": [
+      "all live first-party gates",
+      "R1-HR conformance",
+      "R1-HC conformance"
+    ],
+    "NOT_RUN": [
+      "Trajectory CONTROL/TREATMENT closure (no model requests authorized)",
+      "stochastic calibration (not authorized)"
+    ]
+  },
+  "testCountReconciliation": {
+    "previousStage": "261 of 261 across seven suites at Code Freeze 414d84d",
+    "thisStage": {
+      "nonGateSuites": 1439,
+      "nonGateTests": 3690,
+      "storageTests": 22,
+      "hostS1rTests": 55
+    },
+    "note": "the previous count is NOT reused; these are the counts this run actually executed, and the live gates are reported BLOCKED rather than folded into a pass."
+  },
+  "qualificationDependency": "Every PASS above is attributed to runtime 0.2.1-rc.3 as measured. The BLOCKED gates are attributed to the same runtime and to the drift against the 0.2.1-rc.2 qualification."
+}

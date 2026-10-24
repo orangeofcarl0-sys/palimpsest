@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_GATE_EXECUTION_BLOCKER",
+  "stage": "Palimpsest Host-S1RA",
+  "measuredAt": "2026-10-24T18:25:11.163Z",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "summary": "The live first-party gates cannot execute on this machine: the installed Win32 binding seam is 0.2.1-rc.3 while the shipped fence is qualified against 0.2.1-rc.2, so every worker refuses at pre-create with kernel-drift.",
+  "blocker": {
+    "phase": "pre-create",
+    "refusalKind": "kernel-drift",
+    "refusalMessage": "the Win32 binding seam reports drift: resolved 0.2.1-rc.3 against qualified 0.2.1-rc.2",
+    "source": "host/dsh/lib/runner.js refuses when kernel.contract.drifted === true",
+    "contract": {
+      "package": "@deepseek-ai/dsh-win32-process",
+      "qualifiedVersion": "0.2.1-rc.2",
+      "resolvedVersion": "0.2.1-rc.3",
+      "versionMatches": false,
+      "ffi": {
+        "package": "koffi",
+        "qualifiedVersion": "3.1.1",
+        "resolvedVersion": "3.1.1",
+        "matches": true
+      },
+      "drifted": true
+    }
+  },
+  "provenance": {
+    "recordedByHostS1R": "research-evidence/host-s1r/security-conformance.json records runtime.dshVersion 0.2.1-rc.2 at Code Freeze 414d84d",
+    "installedNow": "0.2.1-rc.3",
+    "conclusion": "the runtime moved AFTER Host-S1R qualified against it; this stage did not change the runtime and did not change the qualified version"
+  },
+  "affected": {
+    "gateSuitesFailing": 33,
+    "cause": "every gate that boots a real worker refuses at pre-create",
+    "notAffected": {
+      "suites": 1439,
+      "tests": 3690,
+      "result": "PASS"
+    }
+  },
+  "whyNotWorkedAround": [
+    "Raising qualifiedVersion to match the installed runtime would assert a qualification that was never performed, which is the false positive the stage forbids.",
+    "Downgrading the installed runtime would change the user global installation, which the stage forbids.",
+    "Disabling the drift check would remove the protection it exists to provide."
+  ],
+  "requiredToProceed": "Reinstall the runtime at 0.2.1-rc.2, or perform a fresh first-party qualification of the fence against 0.2.1-rc.3 and move the pinned qualifiedVersion in a separate authorized stage.",
+  "verdict": "BLOCKED_KERNEL_DRIFT"
+}

@@ -18,13 +18,19 @@ the earlier Trajectory engineering history.
 | RA-A — Shared dependency integrity | `SHARED_DEPENDENCY_INTEGRITY_QUALIFIED` |
 | RA-B — Test resource lifecycle | `TEST_RESOURCE_LIFECYCLE_QUALIFIED` |
 | RA-C — Historical evidence lineage | `HISTORICAL_EVIDENCE_LINEAGE_RESTORED` |
-| RA-D — Latest executable tree | `LATEST_EXECUTABLE_TREE_REQUALIFIED` |
+| RA-D — Latest executable tree | `LATEST_EXECUTABLE_TREE_NOT_REQUALIFIED` |
 | RA-E — Real runtime Home boundary | `REAL_runtime_HOME_BOUNDARY_ADJUDICATED` |
-| Integrated engineering integrity | `HOST_S1RA_ENGINEERING_INTEGRITY_QUALIFIED` |
+| Integrated engineering integrity | `HOST_S1RA_ENGINEERING_INTEGRITY_NOT_QUALIFIED` |
 | Real runtime Home confidentiality | `REAL_runtime_HOME_CONTENT_BOUNDARY_NOT_ESTABLISHED` |
-| Trajectory measurement chain | `TRAJECTORY_runtime_MEASUREMENT_CHAIN_PRESERVED` |
+| Trajectory measurement chain | `TRAJECTORY_runtime_MEASUREMENT_CHAIN_NOT_RECONFIRMED` |
 
-The last two are reported separately and deliberately. The adjudication can succeed — and does — while the
+**The integrated verdict is withheld, and that is the finding.** RA-D requires the affected Gates to execute
+against a new Code Freeze. They could not: every live gate refuses at pre-create because the installed Win32
+binding seam is `0.2.1-rc.3` while the shipped fence is qualified against `0.2.1-rc.2`. That refusal is the code
+under test behaving correctly. Awarding the integrated verdict on the strength of 3,690 passing non-gate tests
+would report a qualification this run did not measure, which is precisely what §15 forbids.
+
+The last two rows are reported separately and deliberately. The adjudication succeeds — and does — while the
 stronger confidentiality qualification remains unestablished. Conflating them is what §9 forbids.
 
 ---
@@ -287,9 +293,16 @@ All commands run under the pinned runtime `F:\Codex_Work_Space\Palimpsest\.runti
 | `tsc -b` | exit 0 |
 | `module-architecture.mjs --check` | PASS, 0 violations, 9 accepted baseline exceptions |
 | `module-architecture.mjs --check-public-api` | PASS, 0 missing, 0 changed, 0 added |
-| Full vitest suite | see `affected-gates-and-conformance.json` |
+| Non-gate suites (vitest) | **1439 of 1439 suites, 3690 of 3690 tests PASS** |
+| Host-S1R + storage suites | **77 of 77 PASS** |
+| Live first-party gates | **BLOCKED** — kernel-drift at pre-create, 33 suites |
+| R1-HR / R1-HC conformance | **NOT_RUN** — same refusal |
 | Dependency integrity after all phases | 7 of 7 invariants unchanged |
 | Protected historical evidence | 52 of 52 trees unchanged |
+
+The only new entry under `node_modules` after the whole stage is `.cache` (4 KB, gitignored), a vitest fixture
+cache the R3 suites create. It is a test byproduct, not a dependency change, and it is recorded rather than
+quietly removed.
 
 The runtime installed on this machine is **0.2.1-rc.3**, not the `0.2.1-rc.2` the handoff records. Every
 first-party result in this stage is attributed to the measured version.
@@ -347,18 +360,30 @@ Every success claim names the producer and the Code Freeze it measured.
 
 ## K. E2 decision
 
-**The engineering environment is stable and the Host security qualification is bounded. Proceeding to a
-CONTROL experimental authorization is NOT permitted on this machine's Tool-capable production profile.**
+**Proceeding to a CONTROL experimental authorization is NOT permitted. Two independent blockers stand, and the
+first is environmental rather than a property of the code.**
 
-The minimum actual blocker is item J.2: descendant admission reports `admissionEligible: false` for the real
-runtime installation, because its dependency junctions resolve outside the runtime Home and the target carries no
-label that establishes a content boundary. That is a Host security property, not an engineering-integrity defect,
-and correcting it requires a production Host change rather than another reconciliation stage.
+**Blocker 1 — kernel drift, and it blocks every live gate.**
+The installed `@deepseek-ai/dsh-win32-process` is `0.2.1-rc.3`. The shipped fence pins `qualifiedVersion`
+`0.2.1-rc.2` and refuses when the resolved version differs, so every worker exits nonzero at pre-create with
+`kernel-drift` before an Agent is created. Host-S1R's own evidence records that it qualified against
+`0.2.1-rc.2`; the runtime moved afterwards, and this stage neither changed it nor changed the pin.
+
+This must not be worked around by editing `qualifiedVersion` — that would assert a qualification nobody performed.
+The two legitimate resolutions are to restore the runtime at `0.2.1-rc.2`, or to perform a fresh first-party
+qualification of the fence against `0.2.1-rc.3` and move the pin in a separately authorized stage.
+
+**Blocker 2 — descendant admission refuses the real installation.**
+`admissionEligible: false` with 234 unqualified external links, because 98 of the 98 dependency junctions in
+`profiles/node_modules` resolve outside the runtime Home and the target carries no label establishing a content
+boundary. That is a Host security property, and correcting it requires a production Host change rather than
+another reconciliation stage.
 
 What the environment **does** support:
 
 - The engineering Agent can run, fail, recover, clean up and attest its tests without damaging the project assets
-  those tests depend on. That is the stage's success criterion and it holds.
+  those tests depend on. That is the stage's success criterion and it holds: 3,690 tests across 1,439 suites ran
+  to completion with zero dependency damage, zero protected-tree changes and zero leaked test roots.
 - A tool-free epistemic study could be considered independently: it needs no worker filesystem boundary, so the
   blocker above does not apply to it.
 
