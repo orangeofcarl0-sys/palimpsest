@@ -76,6 +76,20 @@ export function applyRuntimeHome(value, environment = process.env) {
 }
 
 /**
+ * A COPY OF THE ENVIRONMENT WITH EVERY ACCEPTED HOME NAME SET.
+ *
+ * A child process gets a fresh environment, so setting the value in the parent does not reach it. Passing a
+ * single key is what produced the measured failure: the parent set one spelling, the child's fence read the other,
+ * and the worker booted against the developer's real home.
+ */
+export function runtimeHomeEnvironment(value, base = process.env) {
+  const environment = { ...base };
+  const normalised = String(value).split(String.fromCharCode(92)).join("/");
+  for (const name of RUNTIME_HOME_ENV_NAMES) environment[name] = normalised;
+  return environment;
+}
+
+/**
  * Restore whatever was present before `applyRuntimeHome`, so a test can leave the environment as it found it.
  * Returns the values it restored, including the ones it had to DELETE because they were absent originally.
  */

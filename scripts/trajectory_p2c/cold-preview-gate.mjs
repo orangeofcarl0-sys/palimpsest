@@ -29,6 +29,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { ownedRootLifetime, REAL_DSH_HOME, REPO, allocateOwnedRoot, dshBin, hasBuiltDist, hasFirstPartyDsh, installHostBundle, linkSharedModules, safeCleanup, writeProbeProfile } from "../trajectory_p2b/rig.mjs";
+import { applyRuntimeHome, captureRuntimeHome, restoreRuntimeHome } from "../gates/runtime-home.mjs";
 
 const OUTCOMES = ["PASS", "SKIPPED", "BLOCKED", "NOT_ESTABLISHED"];
 const PHASE = process.argv.find((arg) => arg.startsWith("--phase="))?.slice("--phase=".length) ?? "orchestrate";
@@ -134,8 +135,8 @@ if (PHASE === "record") {
   record("moduleSharing", linkSharedModules(HOME));
   writeProbeProfile(HOME, rig, PROFILE, PROJECT_ID);
 
-  const previousHome = process.env.DSH_HOME;
-  process.env.DSH_HOME = HOME;
+  const previousHome = captureRuntimeHome();
+  applyRuntimeHome(HOME);
   let attemptId = null;
   let sessionId = null;
   let eventCount = 0;
@@ -189,8 +190,7 @@ if (PHASE === "record") {
     record("promotionCount", promotion);
     installed.dispose();
   } finally {
-    if (previousHome === undefined) delete process.env.DSH_HOME;
-    else process.env.DSH_HOME = previousHome;
+    restoreRuntimeHome(previousHome);
   }
 
   /**
@@ -211,7 +211,7 @@ if (PHASE === "recover") {
   const rig = process.env.P2C_RIG;
   const handoff = JSON.parse(readFileSync(join(rig, "handoff.json"), "utf8"));
 
-  const previousHome = process.env.DSH_HOME;
+  const previousHome = captureRuntimeHome();
   process.env.DSH_HOME = handoff.home;
   try {
     /**
@@ -248,8 +248,7 @@ if (PHASE === "recover") {
       result.preview.canonical.promotionState === "NOT_PROMOTED";
     finish(qualified ? "PASS" : "NOT_ESTABLISHED", { qualified });
   } finally {
-    if (previousHome === undefined) delete process.env.DSH_HOME;
-    else process.env.DSH_HOME = previousHome;
+    restoreRuntimeHome(previousHome);
   }
 }
 

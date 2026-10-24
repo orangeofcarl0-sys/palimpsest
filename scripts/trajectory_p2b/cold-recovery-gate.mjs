@@ -32,6 +32,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { ownedRootLifetime, REAL_DSH_HOME, REPO, allocateOwnedRoot, dshBin, hasBuiltDist, hasFirstPartyDsh, installHostBundle, linkSharedModules, measureSessionThroughOfficialReader, safeCleanup, writeProbeProfile } from "./rig.mjs";
+import { applyRuntimeHome, captureRuntimeHome, restoreRuntimeHome } from "../gates/runtime-home.mjs";
 
 const OUTCOMES = ["PASS", "SKIPPED", "BLOCKED", "NOT_ESTABLISHED"];
 const PHASE = process.argv.find((arg) => arg.startsWith("--phase="))?.slice("--phase=".length) ?? "orchestrate";
@@ -156,8 +157,8 @@ if (PHASE === "record") {
   const recorder = association.createExecutionAssociationRecorder({ store, projectId: PROJECT_ID, sourceBasis, sourceKind: "FIRST_PARTY_DSH_HOST" });
 
   const correlated = [];
-  const previousHome = process.env.DSH_HOME;
-  process.env.DSH_HOME = HOME;
+  const previousHome = captureRuntimeHome();
+  applyRuntimeHome(HOME);
   try {
     const service = delegation.makeWorkDelegationService({
       controller: installed.controller,
@@ -175,8 +176,7 @@ if (PHASE === "record") {
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
   } finally {
-    if (previousHome === undefined) delete process.env.DSH_HOME;
-    else process.env.DSH_HOME = previousHome;
+    restoreRuntimeHome(previousHome);
   }
 
   /* §8.1 / P2-D0 §7.1: finalize THIS Invocation from its own observed terminal boundary. */

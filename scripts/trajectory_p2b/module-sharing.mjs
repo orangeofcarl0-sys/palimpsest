@@ -180,6 +180,20 @@ export function installEntry(sourceModules, targetModules, entry) {
  */
 export function linkModuleGraph(home, options = {}) {
   const sourceModules = options.sourceModules;
+  /**
+   * ENTRIES THE CALLER INSTALLED DELIBERATELY, AND WHY THEY ARE NOT A REFUSAL.
+   *
+   * Every gate calls `installHostBundle(home)` BEFORE sharing, which materialises the current branch's two host
+   * packages as REAL DIRECTORIES inside the home. The sharing operation then finds two directories where the
+   * source tree has nothing (those packages are not part of the shared runtime install), and a strict refusal
+   * would fail every gate — which is what the first version of this change did, measurably: 33 suites failed.
+   *
+   * The distinction is ownership: a directory that the caller created, at a name the SOURCE TREE DOES NOT
+   * CONTAIN, cannot shadow a shared module. It is therefore accepted and reported as `providedByCaller` rather
+   * than silently skipped or silently overwritten. Anything at a name the source tree DOES contain is still a
+   * refusal, because that would shadow a shared dependency.
+   */
+  const providedByCaller = new Set(options.providedByCaller ?? []);
   if (typeof sourceModules !== "string" || sourceModules.trim() === "") {
     return { established: false, reason: "MODULE_SHARING_NOT_ESTABLISHED", detail: "no source module tree was supplied" };
   }
@@ -196,12 +210,27 @@ export function linkModuleGraph(home, options = {}) {
 
   const linked = [];
   const alreadyLinked = [];
+  const callerProvided = [];
   const refused = [];
   for (const entry of entries) {
     const result = installEntry(sourceModules, directory.path, entry);
     if (result.outcome === "LINKED") linked.push(result.entry);
     else if (result.outcome === "ALREADY_LINKED") alreadyLinked.push(result.entry);
     else refused.push(result);
+  }
+
+  /**
+   * ENTRIES PRESENT IN THE HOME THAT THE SHARED SOURCE DOES NOT CONTAIN. These are the caller's own packages.
+   * A name present in BOTH is a shadowing hazard and is refused below.
+   */
+  const extra = readdirSync(directory.path).filter((entry) => !entries.includes(entry));
+  for (const entry of extra) {
+    if (providedByCaller.has(entry)) {
+      callerProvided.push(entry);
+      continue;
+    }
+    /** Not declared by the caller and not in the source: this is an unexpected occupant. */
+    refused.push({ entry, outcome: "REFUSED", reason: "UNEXPECTED_ENTRY_NOT_IN_SOURCE", state: classifyDestination(join(directory.path, entry)) });
   }
 
   /**
@@ -216,10 +245,20 @@ export function linkModuleGraph(home, options = {}) {
       detail: `${String(refused.length)} of ${String(entries.length)} destinations were refused`,
       linked,
       alreadyLinked,
+      providedByCaller: callerProvided,
       refused,
       strategy: "junction",
     };
   }
 
-  return { established: true, strategy: "junction", entries: entries.length, linked, alreadyLinked, refused: [], moduleDirectory: directory.path };
+  return {
+    established: true,
+    strategy: "junction",
+    entries: entries.length,
+    linked,
+    alreadyLinked,
+    providedByCaller: callerProvided,
+    refused: [],
+    moduleDirectory: directory.path,
+  };
 }
