@@ -1,0 +1,1429 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE2_NON_GATE_TEST_RUN",
+  "stage": "Palimpsest Host-S1RA-E2",
+  "measuredAt": "2026-10-24T20:14:28.474Z",
+  "command": "node node_modules/vitest/vitest.mjs run --exclude test/r3l0*.test.ts --exclude test/trajectory_*.test.ts --reporter=json --outputFile <path>",
+  "exitCodeCapturedDirectly": 0,
+  "note": "the exit code was captured from the vitest process itself, never from a pipeline consumer",
+  "selection": {
+    "includedFiles": 279,
+    "excludedByR3Ruling": 39,
+    "excludedTrajectoryGateSuites": 78,
+    "exclusionAuthority": "the stage ruling forbids rerunning the R3 shared-worktree mutation suites; the trajectory_* suites are the live gates that refuse on kernel drift",
+    "totalTestFilesRecursive": 396,
+    "reconciliation": "396 recursive test files - 39 r3l0* - 78 trajectory_* = 279 included; an earlier count of 258 came from a NON-recursive listing and was corrected here"
+  },
+  "result": {
+    "suites": {
+      "total": 1439,
+      "passed": 1439,
+      "failed": 0
+    },
+    "tests": {
+      "total": 3690,
+      "passed": 3690,
+      "failed": 0,
+      "skipped": 0
+    },
+    "success": true
+  },
+  "perFileStatus": [
+    {
+      "file": "test/aa_adversarial.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/aa_terminal_admission.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/ab_adversarial.test.ts",
+      "status": "passed",
+      "tests": 18
+    },
+    {
+      "file": "test/ab_operating_posture.test.ts",
+      "status": "passed",
+      "tests": 26
+    },
+    {
+      "file": "test/acceptance.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/ac_monitor_runtime.test.ts",
+      "status": "passed",
+      "tests": 30
+    },
+    {
+      "file": "test/ac_r_install_lifecycle.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/ac_r_product.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/advanced_runtime.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/ad_verification_integration.test.ts",
+      "status": "passed",
+      "tests": 32
+    },
+    {
+      "file": "test/ad_verification_runtime.test.ts",
+      "status": "passed",
+      "tests": 37
+    },
+    {
+      "file": "test/aer_scope_isolation.test.ts",
+      "status": "passed",
+      "tests": 24
+    },
+    {
+      "file": "test/ae_external_assets.test.ts",
+      "status": "passed",
+      "tests": 70
+    },
+    {
+      "file": "test/ae_integration.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "test/allocate_slot.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/allocator.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/application_projections.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/architecture_definition.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "test/architecture_modes.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/binding_compiler.test.ts",
+      "status": "passed",
+      "tests": 33
+    },
+    {
+      "file": "test/binding_conformance.test.ts",
+      "status": "passed",
+      "tests": 32
+    },
+    {
+      "file": "test/binding_digest.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/binding_freshness.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/binding_grounded.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/binding_observation.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/binding_parser.test.ts",
+      "status": "passed",
+      "tests": 21
+    },
+    {
+      "file": "test/binding_resolver.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "test/canvas.test.ts",
+      "status": "passed",
+      "tests": 40
+    },
+    {
+      "file": "test/cli_project_scoping.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/collaboration_events.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/command_automation.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/commitment_handoff.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/context_brief.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/context_distribution.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/context_retrieval.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/context_semantic.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/contracts.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/debugger_controls.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/definition_lineage.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/descriptor.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "test/durable_declarations.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/e-live_derivation.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "test/e0_authority_closure.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/e1k_knowledge_context.test.ts",
+      "status": "passed",
+      "tests": 22
+    },
+    {
+      "file": "test/e1_preview_run.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/e2i_intent_reconciliation.test.ts",
+      "status": "passed",
+      "tests": 29
+    },
+    {
+      "file": "test/e2_equipped.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/e2_host_demo.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "test/e3c_sovereign_collaboration.test.ts",
+      "status": "passed",
+      "tests": 35
+    },
+    {
+      "file": "test/e3_resume.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/e4l_institutional_learning.test.ts",
+      "status": "passed",
+      "tests": 23
+    },
+    {
+      "file": "test/e4_modes.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/e5p_procedural_capitalization.test.ts",
+      "status": "passed",
+      "tests": 33
+    },
+    {
+      "file": "test/effects.crash.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/evidence_graph.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/f0_coordination_integrity.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "test/f1_coalition.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/f2_organization.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "test/f3_transformation.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/f4_institution.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/f5_integration.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/f6_campaign_review.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/federated_workforce.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/federation_campaign_review.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/g0_governance_closure.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/g1_campaign_identity.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/g2_epistemic_continuity.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/g3_epistemic_intervention.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/g4_prospective_memory.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/g5_lifecycle_wake.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/g6_campaign_compiler.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/g7_pag_loop_integration.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/gate_dsl.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/gate_root_storage_discipline.test.ts",
+      "status": "passed",
+      "tests": 22
+    },
+    {
+      "file": "test/gate_tool.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/gc0_history_hardening.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/gc1_institution_grounding.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/gc2h_crash_matrix.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/gc2i_genuine_e2e.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "test/gc2_production_loop.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/gc2_provenance_closure.test.ts",
+      "status": "passed",
+      "tests": 28
+    },
+    {
+      "file": "test/gc3_crash_recovery.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/gc3_unified_admission.test.ts",
+      "status": "passed",
+      "tests": 21
+    },
+    {
+      "file": "test/gc3_unified_e2e.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/gc8_wake_e2e.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/graph.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/graph_identity.test.ts",
+      "status": "passed",
+      "tests": 35
+    },
+    {
+      "file": "test/graph_patch.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/graph_patch_hardening.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "test/h1_gate_runner.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/h1_recovery.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/h1_selection.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/h1_stagegraph.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/host_browser.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/host_cmdline.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/host_conformance.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/host_s1r_capacity_domain.test.ts",
+      "status": "passed",
+      "tests": 28
+    },
+    {
+      "file": "test/host_s1r_evidence_admission.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/host_s1r_reparse_boundary.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/host_s1_delegation_oracle.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "test/host_s1_descendant_admission.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/host_s1_descendant_phase.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/host_s1_spine_coverage.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "test/h_holon_view.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/h_runtime_scope_core.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/h_runtime_scope_e2e.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/inplace_execution.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/invalidation.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/i_dynamics_core.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/i_dynamics_e2e.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/j_governed_evolution.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/k_boundary_memory.test.ts",
+      "status": "passed",
+      "tests": 18
+    },
+    {
+      "file": "test/k_formalization.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/k_golden_e2e.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/lean_admission_bridge.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/lean_attempt_result_materialization.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/lean_attempt_result_runtime.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/lean_attempt_result_subject.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/lean_attempt_result_verifier.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/lean_begin.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/lean_branch_capability.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/lean_branch_seam.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/lean_compatibility.test.ts",
+      "status": "passed",
+      "tests": 35
+    },
+    {
+      "file": "test/lean_compatibility_composition.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/lean_completion_contract.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "test/lean_cross_basis_admission.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "test/lean_cross_basis_composition.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/lean_d2_live_composition.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/lean_d3d_composition.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/lean_d3r_hardening.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/lean_d4c_read_evidence.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/lean_d5a_continuation_assessment.test.ts",
+      "status": "passed",
+      "tests": 23
+    },
+    {
+      "file": "test/lean_d5a_continuation_composition.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/lean_d5b1_attempt_authorization.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/lean_d5b2_governed_rework.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/lean_d5b_lifecycle_audit.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/lean_d5c1_head_sync_composition.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/lean_d5c2_prior_result_context.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/lean_d5c3_current_basis_reexecution.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/lean_d5d_result_continuation_service.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/lean_d5_0_effect_authority.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "test/lean_delegation_orthogonality.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/lean_delegation_runtime.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "test/lean_delegation_snapshot.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/lean_delegation_surface.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/lean_derived_result_verification.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "test/lean_execution_world.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/lean_finish.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/lean_finish_integrity.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/lean_governance.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/lean_mutating_bootstrap.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/lean_promotion_readiness.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/lean_result_rematerialization.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/lean_serializable_composition.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/lean_settlement_closure.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/lean_speculative_authority.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "test/lean_work_delegation_transport.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/lean_work_execution_world.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/lean_work_worker_runtime.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/lean_world_basis.test.ts",
+      "status": "passed",
+      "tests": 28
+    },
+    {
+      "file": "test/lean_world_basis_runtime.test.ts",
+      "status": "passed",
+      "tests": 24
+    },
+    {
+      "file": "test/live_observation.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/l_boundary_dynamics.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/l_cross_host_e2e.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/l_federated_boundary.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/model_advisory.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/m_organization_retirement.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/m_runtime_structural_evolution.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/n_reasoning_cell.test.ts",
+      "status": "passed",
+      "tests": 18
+    },
+    {
+      "file": "test/ordarium_ledger.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/o_application_surface.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/parallel.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/parity.fixture.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/participation.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/paths.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/peer_identity.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/performance_table.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/persistent_continuity.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/preset_library.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/promotion.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/promotion_gate.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/proposal_parse.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/p_adversarial.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/p_attention.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/p_deployment.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/p_live_federation.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/p_transport.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "test/q_remote_submission.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/r1l_pull_boundary.test.ts",
+      "status": "passed",
+      "tests": 18
+    },
+    {
+      "file": "test/r1l_pull_transport.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/r1l_worker_context_pull.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/r1r_harness.test.ts",
+      "status": "passed",
+      "tests": 40
+    },
+    {
+      "file": "test/r1_harness.test.ts",
+      "status": "passed",
+      "tests": 18
+    },
+    {
+      "file": "test/r2e_harness.test.ts",
+      "status": "passed",
+      "tests": 32
+    },
+    {
+      "file": "test/r2lr_last_mile.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/r2m_harness.test.ts",
+      "status": "passed",
+      "tests": 40
+    },
+    {
+      "file": "test/r2s_selectivity.test.ts",
+      "status": "passed",
+      "tests": 38
+    },
+    {
+      "file": "test/r2u_harness.test.ts",
+      "status": "passed",
+      "tests": 50
+    },
+    {
+      "file": "test/r2vr_factorial.test.ts",
+      "status": "passed",
+      "tests": 28
+    },
+    {
+      "file": "test/r2v_utility.test.ts",
+      "status": "passed",
+      "tests": 36
+    },
+    {
+      "file": "test/r3ae_engine.test.ts",
+      "status": "passed",
+      "tests": 35
+    },
+    {
+      "file": "test/r3a_qualification.test.ts",
+      "status": "passed",
+      "tests": 33
+    },
+    {
+      "file": "test/r3s0_contract.test.ts",
+      "status": "passed",
+      "tests": 57
+    },
+    {
+      "file": "test/r3s0_systemic.test.ts",
+      "status": "passed",
+      "tests": 47
+    },
+    {
+      "file": "test/r3spec_contract.test.ts",
+      "status": "passed",
+      "tests": 24
+    },
+    {
+      "file": "test/r3wr2_lifetime_recovery.test.ts",
+      "status": "passed",
+      "tests": 22
+    },
+    {
+      "file": "test/r3wr3_world_identity.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "test/r3wr4_unobservable_terminal.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/r3wr4_world_effect_identity.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "test/r3wr5_authorized_reuse.test.ts",
+      "status": "passed",
+      "tests": 21
+    },
+    {
+      "file": "test/r3wr_object_store.test.ts",
+      "status": "passed",
+      "tests": 20
+    },
+    {
+      "file": "test/rc1e_intent_handoff.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/rc1e_oracle_routes.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/rc1r_oracle_replay.test.ts",
+      "status": "passed",
+      "tests": 50
+    },
+    {
+      "file": "test/ready_set.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/runtime_identity.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/runtime_realization.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/runtime_subgraph.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/runtime_view.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/run_configuration.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/run_definition.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/r_adversarial.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/r_experiment_evaluation.test.ts",
+      "status": "passed",
+      "tests": 23
+    },
+    {
+      "file": "test/r_organization_memory.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "test/scheduler.replay.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/schema_audit.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/select_promote.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "test/serve_ephemeral_port.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/state.replay.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/s_adversarial.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "test/s_advisor.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/s_recipes.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/telemetry_allocation.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/telemetry_state.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/tools.endtoend.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/tournament.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "test/tui.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "test/t_adversarial.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/t_disclosure.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/t_proof_asset.test.ts",
+      "status": "passed",
+      "tests": 21
+    },
+    {
+      "file": "test/uxa_collaboration.test.ts",
+      "status": "passed",
+      "tests": 39
+    },
+    {
+      "file": "test/uxb_cross_project.test.ts",
+      "status": "passed",
+      "tests": 42
+    },
+    {
+      "file": "test/uxc_host_runtime.test.ts",
+      "status": "passed",
+      "tests": 23
+    },
+    {
+      "file": "test/visual_orchestration.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "test/v_adversarial.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/v_management_autonomy.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/v_project_workspace.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "test/web_channel.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/web_contract.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/w_adversarial.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/w_revision_safe.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/x_adversarial.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/x_multi_promotion.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/x_project_head.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/y_adversarial.test.ts",
+      "status": "passed",
+      "tests": 28
+    },
+    {
+      "file": "test/y_evidence_authority.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "test/z_adversarial.test.ts",
+      "status": "passed",
+      "tests": 21
+    },
+    {
+      "file": "test/z_promotion_authority.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "test/architecture/application_parity.test.ts",
+      "status": "passed",
+      "tests": 29
+    },
+    {
+      "file": "test/architecture/change_radius.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/architecture/composition_root_rules.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "test/architecture/dsh_adapter_clusters.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/architecture/e0e_knowledge_boundary.test.ts",
+      "status": "passed",
+      "tests": 30
+    },
+    {
+      "file": "test/architecture/http_adapter_clusters.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "test/architecture/module_architecture_rules.test.ts",
+      "status": "passed",
+      "tests": 26
+    },
+    {
+      "file": "test/architecture/public_api_parity.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/architecture/r0_package_exports.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "test/architecture/sr2a_continuation_port_wall.test.ts",
+      "status": "passed",
+      "tests": 18
+    },
+    {
+      "file": "test/architecture/sr2b1_work_read_owner.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/architecture/sr2b2_head_owner.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/architecture/sr2b3_attempt_execution_owner.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "test/architecture/sr2b4_context_owner.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/architecture/sr2c_world_result_boundaries.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/architecture/sr2d1_projection_cycle.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "test/architecture/sr2d2_promotion_recovery_cycle.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "test/architecture/sr2d3_collaboration_substrate.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "test/architecture/sr2e_architecture_ratchets.test.ts",
+      "status": "passed",
+      "tests": 22
+    },
+    {
+      "file": "test/architecture/sr2_architecture_constitution.test.ts",
+      "status": "passed",
+      "tests": 21
+    },
+    {
+      "file": "test/composition/lifecycle_ownership.test.ts",
+      "status": "passed",
+      "tests": 8
+    }
+  ],
+  "codeFreeze": "85161eee5c5a25011a9a1c8747bb53ae57d1953f"
+}

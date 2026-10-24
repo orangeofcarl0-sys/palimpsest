@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE2_ASSET_PRESERVATION",
+  "stage": "Palimpsest Host-S1RA-E2",
+  "measuredAt": "2026-10-24T20:13:38.610Z",
+  "hostS1HistoricalEvidence": {
+    "restoredFiles": [
+      {
+        "path": "research-evidence/host-s1/baseline-and-falsifiers.json",
+        "authoritativeBlob": "1209f76cb9a86147ad9b70df7340b602174dca2e",
+        "currentBlob": "1209f76cb9a86147ad9b70df7340b602174dca2e",
+        "matches": true
+      },
+      {
+        "path": "research-evidence/host-s1/git-and-evidence-identity.json",
+        "authoritativeBlob": "a553c1c1fa637d164dd4c40151651d8c163a36e1",
+        "currentBlob": "a553c1c1fa637d164dd4c40151651d8c163a36e1",
+        "matches": true
+      }
+    ],
+    "directoryDiffersFromParent": []
+  },
+  "misplacedS1rArtifacts": [
+    {
+      "name": "baseline-security-falsifiers.json",
+      "originalPath": "research-evidence/host-s1/baseline-security-falsifiers.json",
+      "finalPath": "research-evidence/host-s1r/earlier-execution/baseline-security-falsifiers.json",
+      "sourceBlob": "c8a42563d1bd2b5b6f024f7c4aa7850d0a0d32d8",
+      "finalBlob": "c8a42563d1bd2b5b6f024f7c4aa7850d0a0d32d8",
+      "bytesPreserved": true,
+      "justification": "the file carried evidence not present in the canonical host-s1r copy (an earlier conformance run, and a falsifier run reproducing 4 of 9 where the canonical reproduces 9 of 9), so it was preserved verbatim before removal from the historical directory"
+    },
+    {
+      "name": "capacity-domain-and-concurrency.json",
+      "originalPath": "research-evidence/host-s1/capacity-domain-and-concurrency.json",
+      "finalPath": "research-evidence/host-s1r/earlier-execution/capacity-domain-and-concurrency.json",
+      "sourceBlob": "911dab4ec72e3b3ca26ec561ac98e4c945e77200",
+      "finalBlob": "911dab4ec72e3b3ca26ec561ac98e4c945e77200",
+      "bytesPreserved": true,
+      "justification": "the file carried evidence not present in the canonical host-s1r copy (an earlier conformance run, and a falsifier run reproducing 4 of 9 where the canonical reproduces 9 of 9), so it was preserved verbatim before removal from the historical directory"
+    },
+    {
+      "name": "lock-recovery-and-release.json",
+      "originalPath": "research-evidence/host-s1/lock-recovery-and-release.json",
+      "finalPath": "research-evidence/host-s1r/earlier-execution/lock-recovery-and-release.json",
+      "sourceBlob": "06f6ed95ad551e96472bbf5f9f2fc529d98a47f9",
+      "finalBlob": "06f6ed95ad551e96472bbf5f9f2fc529d98a47f9",
+      "bytesPreserved": true,
+      "justification": "the file carried evidence not present in the canonical host-s1r copy (an earlier conformance run, and a falsifier run reproducing 4 of 9 where the canonical reproduces 9 of 9), so it was preserved verbatim before removal from the historical directory"
+    },
+    {
+      "name": "reparse-protection-basis.json",
+      "originalPath": "research-evidence/host-s1/reparse-protection-basis.json",
+      "finalPath": "research-evidence/host-s1r/earlier-execution/reparse-protection-basis.json",
+      "sourceBlob": "c08a3336e60921a1322566eec98f84eb2551573e",
+      "finalBlob": "c08a3336e60921a1322566eec98f84eb2551573e",
+      "bytesPreserved": true,
+      "justification": "the file carried evidence not present in the canonical host-s1r copy (an earlier conformance run, and a falsifier run reproducing 4 of 9 where the canonical reproduces 9 of 9), so it was preserved verbatim before removal from the historical directory"
+    },
+    {
+      "name": "security-conformance.json",
+      "originalPath": "research-evidence/host-s1/security-conformance.json",
+      "finalPath": "research-evidence/host-s1r/earlier-execution/security-conformance.json",
+      "sourceBlob": "488a33d382dfa2c104560534f8ed6893d3da87c6",
+      "finalBlob": "488a33d382dfa2c104560534f8ed6893d3da87c6",
+      "bytesPreserved": true,
+      "justification": "the file carried evidence not present in the canonical host-s1r copy (an earlier conformance run, and a falsifier run reproducing 4 of 9 where the canonical reproduces 9 of 9), so it was preserved verbatim before removal from the historical directory"
+    },
+    {
+      "name": "trajectory-execution-reconfirmation.json",
+      "originalPath": "research-evidence/host-s1/trajectory-execution-reconfirmation.json",
+      "finalPath": "research-evidence/host-s1r/earlier-execution/trajectory-execution-reconfirmation.json",
+      "sourceBlob": "24392ca2a0270ef4cf31a6a73370ad6d6e805981",
+      "finalBlob": "24392ca2a0270ef4cf31a6a73370ad6d6e805981",
+      "bytesPreserved": true,
+      "justification": "the file carried evidence not present in the canonical host-s1r copy (an earlier conformance run, and a falsifier run reproducing 4 of 9 where the canonical reproduces 9 of 9), so it was preserved verbatim before removal from the historical directory"
+    }
+  ],
+  "dependencyInvariants": {
+    "note": "the seven recorded invariants. ONE IS CHANGED and the change is named rather than waived: node_modules/.cache appeared during the R3 test runs.",
+    "changed": "topLevelNames / topLevelTargets gained .cache",
+    "cacheDetail": {
+      "path": "node_modules/.cache/r3l0c-fixtures/h0.mjs",
+      "bytes": 4096,
+      "gitignored": true,
+      "producer": "test/r3l0c_contract.test.ts writes it deliberately, so a concurrent temp-hygiene sweep cannot delete a live fixture",
+      "classification": "test byproduct, not a dependency mutation"
+    },
+    "verdict": "6 of 7 identical; the 7th differs by a gitignored test fixture cache whose producer is identified"
+  },
+  "protectedTrees": {
+    "verdict": "ALL_PROTECTED_TREES_UNCHANGED",
+    "matched": 52,
+    "recorded": 52
+  }
+}

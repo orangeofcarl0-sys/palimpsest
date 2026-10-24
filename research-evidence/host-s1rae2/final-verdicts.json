@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE2_FINAL_VERDICTS",
+  "stage": "Palimpsest Host-S1RA-E2",
+  "measuredAt": "2026-10-24T20:14:06.655Z",
+  "codeFreeze": {
+    "sha": "85161eee5c5a25011a9a1c8747bb53ae57d1953f",
+    "tree": "b76635da37e544ea7f5d065d094703243a4e2dbd"
+  },
+  "runtime": {
+    "installed": "0.2.1-rc.3",
+    "qualifiedAgainst": "0.2.1-rc.2",
+    "drift": true,
+    "qualifiedArtifactAvailableLocally": false
+  },
+  "verdicts": {
+    "freezeIntegrity": {
+      "verdict": "CODE_FREEZE_INTEGRITY_VERIFIED",
+      "basis": [
+        "the prior freeze 0ef556e is an ancestor of HEAD, its tree c7f42c8 matches the recorded tree exactly, and NO executable path differs between it and the commit that followed it",
+        "the later fixes the ruling asked about — linkModuleGraph installed-host-bundle handling, allocateOwnedRoot compatibility, runtimeHomePath/applyRuntimeHome, child environment propagation, generated worker source scope — are all INSIDE 0ef556e, not after it",
+        "the chain from 9df766f to HEAD is linear with zero merge commits"
+      ],
+      "caveat": "this stage nevertheless changed executable code, so the prior freeze is superseded by a NEW one rather than inherited"
+    },
+    "historicalEvidence": {
+      "verdict": "HISTORICAL_EVIDENCE_IMMUTABLE",
+      "basis": [
+        "both restored Host-S1 blobs hash to their authoritative values 1209f76... and a553c1c...",
+        "research-evidence/host-s1/ has an empty diff against c4ea1ab",
+        "all six misplaced S1R artifacts are preserved byte-identically under host-s1r/earlier-execution/",
+        "52 of 52 protected trees unchanged"
+      ]
+    },
+    "moduleSharingAdmission": {
+      "verdict": "MODULE_SHARING_ADMISSION_QUALIFIED_WITH_LIMITS",
+      "basis": [
+        "the last unconverted gate (p2a level-c) now delegates to the single implementation",
+        "a caller-declared name is accepted only as a plain DIRECTORY, refused as a FILE or reparse point, and falls through to ordinary linking when ABSENT",
+        "an entry neither declared nor present in the source is refused as UNEXPECTED_ENTRY_NOT_IN_SOURCE"
+      ],
+      "limits": [
+        "trajectory_p2e0/dsh-test-home.mjs still decides occupancy with existsSync; its copy is preflighted, verified and reached only on junction failure, but the occupancy test itself was not converted"
+      ]
+    },
+    "ownedResourceLifecycle": {
+      "verdict": "OWNED_RESOURCE_LIFECYCLE_QUALIFIED_WITH_MEASURED_GAPS",
+      "basis": [
+        "replacement of an owned path by a foreign directory is now refused, not deleted",
+        "dev/ino ARE usable on this platform, so the identity comparison is strong rather than weak",
+        "cleanup of a live process's resource is refused",
+        "listeners are removed on success and failure; a failed cleanup remains retryable"
+      ],
+      "measuredGaps": [
+        "TOCTOU: revalidateOwnership() and rmSync() are separate statements, and a directory swapped between them IS deleted — measured",
+        "a MISSING marker is treated as a pass and falls back to the captured identity",
+        "revalidateOwnership checks the marker's runId but NOT its ownedRoot, so a marker naming a different root still passes, while the reaper does check it"
+      ],
+      "assessment": "these are bounded gaps in a test-harness helper, not a product boundary; they are reported rather than papered over"
+    },
+    "runtimeHomePropagation": {
+      "verdict": "RUNTIME_HOME_PROPAGATION_QUALIFIED",
+      "basis": [
+        "byte-level audit over 947 source files: the fence reads an 8-code-point name, the resolver accepts both spellings and sets both",
+        "the two names are 'runtime_HOME' (8) and 'runtime_HOME' (12) — genuinely different identifiers that a rendered view cannot distinguish",
+        "three audit scripts read only the 12-code-point name and silently fell back to ~/.dsh; all three are corrected to use the resolver",
+        "the child-environment helper sets every accepted name, so a spawned worker cannot boot against the developer's real home"
+      ]
+    },
+    "generatorSafety": {
+      "verdict": "GENERATOR_WORKTREE_SAFETY_QUALIFIED",
+      "basis": [
+        "no global `git worktree prune` remains",
+        "no `worktree add -f` remains",
+        "the worktree path is unique per run and removal is gated on registeredByThisRun",
+        "cleanup is recorded in the identity artifact and a cleanup failure cannot read as success"
+      ]
+    },
+    "testEvidence": {
+      "verdict": "TEST_EVIDENCE_RECONCILED",
+      "basis": [
+        "at the new freeze: tsc -b exit 0; architecture:check PASS; check-public-api PASS",
+        "non-gate selection: 1439 of 1439 suites, 3690 of 3690 tests, real exit code 0, captured without a pipeline",
+        "the selection is reproducible: 39 r3l0* files and 78 trajectory_* files excluded, 258 files included",
+        "R3 mutation suites are excluded by the stage ruling, not by convenience"
+      ],
+      "correctedFinding": "the previously reported 1439/1439 was NOT a stable result. It failed on the first re-run of this stage (4 suites, 2 tests) because test/paths.test.ts deleted a runtime-home variable it had not set, breaking host_s1r_reparse_boundary case 13 in the same worker. The snapshot is now taken per test, and the reparse case is stable across three consecutive runs.",
+      "residualFlake": {
+        "suite": "test/ordarium_ledger.test.ts",
+        "assertion": "elapsed >= 200ms against a ~300ms lock release",
+        "behaviour": "passes 5 of 5 in isolation, failed once under full-suite load",
+        "attribution": "pre-existing timing sensitivity, unrelated to this stage's changes"
+      },
+      "observationClasses": {
+        "PASS": [
+          "build",
+          "architecture",
+          "public API",
+          "1439 non-gate suites"
+        ],
+        "BLOCKED": [
+          "all live first-party gates",
+          "R1-HR conformance",
+          "R1-HC conformance"
+        ],
+        "NOT_RUN": [
+          "CONTROL/TREATMENT closure (no model request authorized)"
+        ]
+      }
+    },
+    "isolatedQualifiedReplay": {
+      "verdict": "BLOCKED_QUALIFIED_RUNTIME_UNAVAILABLE",
+      "basis": [
+        "no artifact at 0.2.1-rc.2 exists on this machine: the three candidates are 0.2.0-rc.2, 0.2.1-alpha.2 and 0.2.1-rc.3",
+        "the npm cache and pnpm store hold no rc.2 tarball",
+        "the drift refusal has no override and adding one is forbidden"
+      ],
+      "noLiveGateWasInvoked": true,
+      "reason": "§7 permits replay only when §6 establishes a safe and verifiable route; it did not, so invoking a Live Gate would have measured an unqualified runtime"
+    },
+    "realRuntimeHomeBoundary": {
+      "verdict": "REAL_runtime_HOME_CONTENT_BOUNDARY_NOT_ESTABLISHED",
+      "basis": [
+        "~/.dsh is a junction to D:/dsh and neither object carries an observable Mandatory Label",
+        "98 of 98 dependency junctions resolve outside the examined target",
+        "verifyTree reports admissionEligible false with 234 unqualified external links"
+      ],
+      "notUpgradedBy": "any test result in this stage; no isolated gate passed and none was run",
+      "note": "an EPERM refusal alone would not prove the Mandatory Integrity mechanism, which is why the synthetic arm distinguishes LABEL_NOT_APPLIED from PROTECTED"
+    }
+  },
+  "integrated": {
+    "verdict": "HOST_S1RAE2_NOT_QUALIFIED",
+    "reason": "no required Live Gate executed. A blocked qualification is an acceptable outcome, but it is not a qualification, and the integrated verdict is withheld rather than awarded on non-gate results.",
+    "whatIsEstablished": "the code was audited, the defects found were corrected, a new freeze was established, and every authorized non-gate check passes against that exact tree",
+    "whatIsNotEstablished": "that the affected Live Gates run correctly against a qualified runtime on this machine"
+  },
+  "modelCallsMade": 0,
+  "externalModelRequests": 0,
+  "protectedTreesUnchanged": 52
+}

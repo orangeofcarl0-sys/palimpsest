@@ -1,0 +1,280 @@
+{
+  "baseline": {
+    "schemaVersion": 1,
+    "kind": "HOST_S1RAE2_GIT_BASELINE",
+    "stage": "Palimpsest Host-S1RA-E2",
+    "measuredAt": "2026-10-24T20:13:36.944Z",
+    "branch": "host-s1rae2-freeze-audit",
+    "head": "15a1961655d70fcbdeb20b5db3cada9ac8f5b8c7",
+    "tree": "eb0e82fa4e5f8d68882e8baf96fac0887dd8b80e",
+    "parentOfStage": "309be74061b04babf5452f727391d89045e6f544",
+    "priorFreeze": "9df766fe66fa513ed99fcee394a6b28ce9f15d29",
+    "hostS1raParent": "ae8ff3349c1079061473ae0799a7cef330cccb42",
+    "remoteTracking": "309be74061b04babf5452f727391d89045e6f544",
+    "workingTreeClean": false,
+    "stashCount": 0,
+    "ancestry": {
+      "priorFreezeIsAncestor": true,
+      "hostS1raParentIsAncestor": true,
+      "commitsBetweenPriorFreezeAndParent": "4",
+      "mergeCommitsInRange": 0,
+      "linear": true
+    },
+    "worktrees": {
+      "registered": 95,
+      "prunable": 83,
+      "note": "reported, not cleaned; pruning is a mutation of shared Git administrative state"
+    }
+  },
+  "freeze": {
+    "schemaVersion": 1,
+    "kind": "HOST_S1RAE2_CODE_FREEZE_CHAIN",
+    "stage": "Palimpsest Host-S1RA-E2",
+    "measuredAt": "2026-10-24T20:13:38.395Z",
+    "note": "C1..C7 are the previous stage's labels; this stage adds C8. The labels do not map one-to-one onto commits, and the mapping below was derived from each commit's own changed paths.",
+    "chain": [
+      {
+        "sha": "95e28fd0536aa59f10f29aeaf041c9b5bbc935a9",
+        "parents": "ae8ff3349c1079061473ae0799a7cef330cccb42",
+        "tree": "2b490fcb1f37d460ccda8d22bfd2c39e91424783",
+        "subject": "research(host-s1ra): record the environment baseline and the twelve reproduced falsifiers",
+        "changedPaths": 5,
+        "executableChanged": true,
+        "executablePaths": [
+          "scripts/host_s1ra/dependency-manifest.mjs",
+          "scripts/host_s1ra/measure-environment.mjs",
+          "scripts/host_s1ra/reproduce-environment-defects.mjs"
+        ],
+        "historicalEvidenceChanged": false,
+        "historicalEvidencePaths": [],
+        "generatedEvidenceChanged": true,
+        "testLogicChanged": false,
+        "testPaths": []
+      },
+      {
+        "sha": "3dc4f13937117afc361593d2e1886e9356457233",
+        "parents": "95e28fd0536aa59f10f29aeaf041c9b5bbc935a9",
+        "tree": "430f53c26dd0404facfd800a8fd7d533acc65e78",
+        "subject": "fix(host-s1ra): prove destination admission, revalidate ownership, and resolve the runtime home once",
+        "changedPaths": 10,
+        "executableChanged": true,
+        "executablePaths": [
+          "scripts/gates/env.mjs",
+          "scripts/gates/reap-gate-roots.mjs",
+          "scripts/gates/runtime-home.mjs",
+          "scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+          "scripts/trajectory_p2b/module-sharing.mjs",
+          "scripts/trajectory_p2b/owned-resource.mjs",
+          "scripts/trajectory_p2b/rig.mjs",
+          "scripts/trajectory_p2d2/l2-gate.mjs",
+          "scripts/trajectory_p2e0/dsh-test-home.mjs",
+          "test/gate_root_storage_discipline.test.ts"
+        ],
+        "historicalEvidenceChanged": false,
+        "historicalEvidencePaths": [],
+        "generatedEvidenceChanged": false,
+        "testLogicChanged": true,
+        "testPaths": [
+          "test/gate_root_storage_discipline.test.ts"
+        ]
+      },
+      {
+        "sha": "0a67a266dd21eadc81e510043dc1c9fd97fd437e",
+        "parents": "3dc4f13937117afc361593d2e1886e9356457233",
+        "tree": "0647a281c322ebb1931943fd9ffaf942cbf89221",
+        "subject": "fix(host-s1ra): restore the Host-S1 historical evidence and isolate the later stages",
+        "changedPaths": 14,
+        "executableChanged": false,
+        "executablePaths": [],
+        "historicalEvidenceChanged": true,
+        "historicalEvidencePaths": [
+          "research-evidence/host-s1/baseline-and-falsifiers.json",
+          "research-evidence/host-s1/baseline-security-falsifiers.json",
+          "research-evidence/host-s1/capacity-domain-and-concurrency.json",
+          "research-evidence/host-s1/git-and-evidence-identity.json",
+          "research-evidence/host-s1/lock-recovery-and-release.json",
+          "research-evidence/host-s1/reparse-protection-basis.json",
+          "research-evidence/host-s1/security-conformance.json",
+          "research-evidence/host-s1/trajectory-execution-reconfirmation.json"
+        ],
+        "generatedEvidenceChanged": true,
+        "testLogicChanged": false,
+        "testPaths": []
+      },
+      {
+        "sha": "5a84d2a10a119044830bc78a57b757fb2570adde",
+        "parents": "0a67a266dd21eadc81e510043dc1c9fd97fd437e",
+        "tree": "172931214fd8a93b4277fe604e925d80725d9623",
+        "subject": "fix(host-s1ra): stop the generator from mutating shared Git state",
+        "changedPaths": 1,
+        "executableChanged": true,
+        "executablePaths": [
+          "scripts/host_s1/generate-evidence.mjs"
+        ],
+        "historicalEvidenceChanged": false,
+        "historicalEvidencePaths": [],
+        "generatedEvidenceChanged": false,
+        "testLogicChanged": false,
+        "testPaths": []
+      },
+      {
+        "sha": "a161dddb2c2586d02ba973bbfeed23df1b124cd6",
+        "parents": "5a84d2a10a119044830bc78a57b757fb2570adde",
+        "tree": "812e7c036bbb749cc20c7665227197f1629f0888",
+        "subject": "research(host-s1ra): adjudicate the real runtime home boundary, and record why the first probe could not measure it",
+        "changedPaths": 2,
+        "executableChanged": true,
+        "executablePaths": [
+          "scripts/host_s1ra/adjudicate-runtime-home.mjs"
+        ],
+        "historicalEvidenceChanged": false,
+        "historicalEvidencePaths": [],
+        "generatedEvidenceChanged": true,
+        "testLogicChanged": false,
+        "testPaths": []
+      },
+      {
+        "sha": "0ef556e316673b206bec6812ae5b7754250ee31b",
+        "parents": "a161dddb2c2586d02ba973bbfeed23df1b124cd6",
+        "tree": "c7f42c84b68721c0273f4d1a15e493c3fd34f1dd",
+        "subject": "fix(host-s1ra): resolve the runtime home under every accepted name, including in children",
+        "changedPaths": 10,
+        "executableChanged": true,
+        "executablePaths": [
+          "scripts/gates/runtime-home.mjs",
+          "scripts/trajectory_p2b/canonical-correlation-gate.mjs",
+          "scripts/trajectory_p2b/cold-recovery-gate.mjs",
+          "scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+          "scripts/trajectory_p2b/module-sharing.mjs",
+          "scripts/trajectory_p2b/rig.mjs",
+          "scripts/trajectory_p2c/cold-preview-gate.mjs",
+          "scripts/trajectory_p2d0/cold-capsule-gate.mjs",
+          "scripts/trajectory_p2d1/real-integration-gate.mjs"
+        ],
+        "historicalEvidenceChanged": false,
+        "historicalEvidencePaths": [],
+        "generatedEvidenceChanged": false,
+        "testLogicChanged": false,
+        "testPaths": []
+      },
+      {
+        "sha": "309be74061b04babf5452f727391d89045e6f544",
+        "parents": "0ef556e316673b206bec6812ae5b7754250ee31b",
+        "tree": "c6e352c4dfa80947063f0f0cecea5559b5e1cf40",
+        "subject": "research(host-s1ra): report the kernel-drift blocker and withhold the integrated verdict",
+        "changedPaths": 7,
+        "executableChanged": false,
+        "executablePaths": [],
+        "historicalEvidenceChanged": false,
+        "historicalEvidencePaths": [],
+        "generatedEvidenceChanged": true,
+        "testLogicChanged": false,
+        "testPaths": []
+      },
+      {
+        "sha": "15a1961655d70fcbdeb20b5db3cada9ac8f5b8c7",
+        "parents": "309be74061b04babf5452f727391d89045e6f544",
+        "tree": "eb0e82fa4e5f8d68882e8baf96fac0887dd8b80e",
+        "subject": "fix(host-s1rae2): convert the last unconverted sharing gate, fix a cross-file env leak, and add the audit producers",
+        "changedPaths": 9,
+        "executableChanged": true,
+        "executablePaths": [
+          "scripts/host_s1ra/audit-env-vars.mjs",
+          "scripts/host_s1ra/audit-owned-resource-toctou.mjs",
+          "scripts/host_s1ra/audit-runtime-version.mjs",
+          "scripts/host_s1ra/dependency-manifest.mjs",
+          "scripts/host_s1ra/measure-environment.mjs",
+          "scripts/host_s1ra/reproduce-environment-defects.mjs",
+          "scripts/trajectory_p2a/level-c-first-party-gate.mjs",
+          "scripts/trajectory_p2b/module-sharing.mjs",
+          "test/paths.test.ts"
+        ],
+        "historicalEvidenceChanged": false,
+        "historicalEvidencePaths": [],
+        "generatedEvidenceChanged": false,
+        "testLogicChanged": true,
+        "testPaths": [
+          "test/paths.test.ts"
+        ]
+      }
+    ],
+    "derivedLabels": [
+      {
+        "label": "C1 baseline + falsifiers",
+        "sha": "95e28fd0536aa59f10f29aeaf041c9b5bbc935a9"
+      },
+      {
+        "label": "C2 module sharing + cleanup",
+        "sha": "3dc4f13937117afc361593d2e1886e9356457233"
+      },
+      {
+        "label": "C3 evidence lineage",
+        "sha": "0a67a266dd21eadc81e510043dc1c9fd97fd437e"
+      },
+      {
+        "label": "C4 generator safety",
+        "sha": "5a84d2a10a119044830bc78a57b757fb2570adde"
+      },
+      {
+        "label": "C5 runtime home adjudication",
+        "sha": "a161dddb2c2586d02ba973bbfeed23df1b124cd6"
+      },
+      {
+        "label": "C6 live-gate fixes (RA-D corrections)",
+        "sha": "0ef556e316673b206bec6812ae5b7754250ee31b"
+      },
+      {
+        "label": "C7 evidence freeze",
+        "sha": "309be74061b04babf5452f727391d89045e6f544"
+      }
+    ],
+    "supersededFreezeAnalysis": {
+      "priorReportedFreeze": "0ef556e316673b206bec6812ae5b7754250ee31b",
+      "priorReportedTree": "c7f42c84b68721c0273f4d1a15e493c3fd34f1dd",
+      "actualTreeOfThatCommit": "c7f42c84b68721c0273f4d1a15e493c3fd34f1dd",
+      "treeMatches": true,
+      "executablePathsDifferingBetweenFreezeAndPriorHead": [],
+      "laterEditsInsideTheFreeze": {
+        "linkModuleGraphInstalledHostBundles": "present in 0ef556e",
+        "allocateOwnedRootCompatibility": "present in 0ef556e",
+        "runtimeHomePathAndHelpers": "present in 0ef556e",
+        "childProcessEnvironmentPropagation": "present in 0ef556e",
+        "generatedWorkerSourceScope": "present in 0ef556e"
+      },
+      "conclusion": "the prior freeze was correctly bound and NOT superseded; the C7 commit that followed it changed documentation and evidence only, which is verified by an empty executable diff between the two"
+    },
+    "currentFreeze": {
+      "sha": "85161eee5c5a25011a9a1c8747bb53ae57d1953f",
+      "tree": "b76635da37e544ea7f5d065d094703243a4e2dbd",
+      "isThisStagesFreeze": true,
+      "supersedes": "0ef556e316673b206bec6812ae5b7754250ee31b",
+      "reason": "this stage changed executable code (the p2a gate, module-sharing admission, paths.test.ts, three audit scripts), which invalidates the prior freeze by the stage's own rule"
+    },
+    "lastExecutableCommit": {
+      "sha": "15a1961655d70fcbdeb20b5db3cada9ac8f5b8c7",
+      "parents": "309be74061b04babf5452f727391d89045e6f544",
+      "tree": "eb0e82fa4e5f8d68882e8baf96fac0887dd8b80e",
+      "subject": "fix(host-s1rae2): convert the last unconverted sharing gate, fix a cross-file env leak, and add the audit producers",
+      "changedPaths": 9,
+      "executableChanged": true,
+      "executablePaths": [
+        "scripts/host_s1ra/audit-env-vars.mjs",
+        "scripts/host_s1ra/audit-owned-resource-toctou.mjs",
+        "scripts/host_s1ra/audit-runtime-version.mjs",
+        "scripts/host_s1ra/dependency-manifest.mjs",
+        "scripts/host_s1ra/measure-environment.mjs",
+        "scripts/host_s1ra/reproduce-environment-defects.mjs",
+        "scripts/trajectory_p2a/level-c-first-party-gate.mjs",
+        "scripts/trajectory_p2b/module-sharing.mjs",
+        "test/paths.test.ts"
+      ],
+      "historicalEvidenceChanged": false,
+      "historicalEvidencePaths": [],
+      "generatedEvidenceChanged": false,
+      "testLogicChanged": true,
+      "testPaths": [
+        "test/paths.test.ts"
+      ]
+    }
+  }
+}
