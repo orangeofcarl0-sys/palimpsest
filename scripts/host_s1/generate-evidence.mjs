@@ -118,55 +118,112 @@ function produce({ id, command, args, expectedExit = [0], classify, cwd = REPO }
  * THE PARENT WORKTREE. Prepared once, outside the repository, at the exact parent commit this stage declares.
  * A failure here is recorded rather than fatal: the baseline producer then reports MISSING and the dependent
  * verdicts are withheld, which is the fail-closed answer.
+ *
+ * RA-C — THE SUPERSEDED PREPARATION WAS DESTRUCTIVE AND IS GONE. It performed, in this order:
+ *
+ *   · `rmSync(<rig>/parent-worktree, { recursive: true, force: true })` on a FIXED path, deleting whatever was
+ *     there regardless of who created it;
+ *   · `git worktree prune`, which mutates the repository's shared administrative state and removes EVERY stale
+ *     registration, including ones belonging to other checkouts;
+ *   · `git worktree add --detach -f`, where `-f` suppresses exactly the conflict that should be reported;
+ *   · a junction from the worktree's `node_modules` into the repository's installed modules;
+ *   · a `copyFileSync` INTO that checkout, so the worktree no longer matched the commit it claimed.
+ *
+ * WHAT REPLACES IT. A UNIQUELY NAMED worktree inside this run's own rig, whose creation is recorded, with NO
+ * `-f`, NO prune, and NO pre-existing path to delete. The registration is checked after creation and the
+ * removal is limited to the worktree this run registered. The corrected probe is supplied by an explicit,
+ * recorded copy into a directory the parent commit does not contain — the one unavoidable deviation, named as
+ * such rather than hidden.
  */
 const PARENT_HEAD = "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4";
-const parentWorktree = join(rigResolved, "parent-worktree");
-let parentWorktreeState = { prepared: false, detail: null };
+/** Unique per run: the rig is already per-run, and the suffix makes a collision visible rather than destructive. */
+const parentWorktree = join(rigResolved, `parent-worktree-${String(process.pid)}-${Date.now().toString(36)}`);
+let parentWorktreeState = { prepared: false, detail: null, path: parentWorktree, registeredByThisRun: false, deviations: [] };
 (() => {
   try {
-    /**
-     * REMOVE THE MODULE JUNCTION BEFORE REMOVING THE TREE.
-     *
-     * `rmSync(..., { recursive: true })` on a directory that CONTAINS a junction FOLLOWS it on this platform.
-     * The parent worktree's `node_modules` is a junction to the repository's own `node_modules`, so removing
-     * the worktree deleted the REPOSITORY's installed modules — twice, during this stage. The junction is
-     * therefore unlinked first, by name, with `rmdir` (which removes a directory junction without traversing
-     * it). Only then is the worktree removed.
-     */
-    const parentModules = join(parentWorktree, "node_modules");
-    try {
-      if (lstatSync(parentModules).isSymbolicLink()) spawnSync("cmd", ["/c", "rmdir", parentModules], { encoding: "utf8", timeout: 60_000 });
-    } catch {
-      /* the junction is absent, which is the normal case on a first run */
-    }
-    rmSync(parentWorktree, { recursive: true, force: true });
-    /** A previous run that was interrupted leaves a registration behind; prune so add can succeed. */
-    spawnSync("git", ["worktree", "prune"], { cwd: REPO, encoding: "utf8", timeout: 120_000 });
-    const added = spawnSync("git", ["worktree", "add", "--detach", "-f", parentWorktree, PARENT_HEAD], { cwd: REPO, encoding: "utf8", timeout: 600_000 });
-    if (added.status !== 0) {
-      parentWorktreeState = { prepared: false, detail: `git worktree add exited ${String(added.status)}: ${String(added.stderr ?? "").slice(0, 300)}` };
+    /** NO PRE-DELETION. A fresh unique path cannot collide, so there is nothing to remove first. */
+    if (existsSync(parentWorktree)) {
+      parentWorktreeState = { ...parentWorktreeState, detail: "the unique worktree path already exists; refusing to touch it" };
       return;
     }
     /**
+     * NO `-f` AND NO `prune`. If the registration conflicts, the failure is the correct outcome: this run must
+     * not mutate shared Git state to make its own convenience succeed.
+     */
+    const added = spawnSync("git", ["worktree", "add", "--detach", parentWorktree, PARENT_HEAD], { cwd: REPO, encoding: "utf8", timeout: 600_000 });
+    if (added.status !== 0) {
+      parentWorktreeState = {
+        ...parentWorktreeState,
+        detail: `git worktree add exited ${String(added.status)}: ${String(added.stderr ?? "").slice(0, 300)}`,
+      };
+      return;
+    }
+    /** RECORD THAT THIS RUN REGISTERED IT, so removal can be limited to what this run created. */
+    parentWorktreeState.registeredByThisRun = true;
+
+    /**
      * THE MODULE GRAPH IS LINKED, NOT INSTALLED. A junction gives the same module identity without copying
      * 30k+ files, and the probe only needs the runtime modules the repository already has.
+     *
+     * The link is created only at a path the parent commit left empty, and its presence is checked with `lstat`
+     * so an existing object is reported rather than replaced.
      */
     const modules = join(parentWorktree, "node_modules");
     if (!existsSync(modules)) {
       const linked = spawnSync("cmd", ["/c", "mklink", "/J", modules, join(REPO, "node_modules")], { encoding: "utf8", timeout: 120_000 });
       if (linked.status !== 0) {
-        parentWorktreeState = { prepared: false, detail: `the module link could not be created: ${String(linked.stdout ?? linked.stderr ?? "").slice(0, 200)}` };
+        parentWorktreeState = { ...parentWorktreeState, detail: `the module link could not be created: ${String(linked.stdout ?? linked.stderr ?? "").slice(0, 200)}` };
         return;
       }
     }
-    /** The probe itself must exist at the parent commit; it does not, so the CORRECTED copy is used there. */
+    /**
+     * THE PROBE ITSELF MUST EXIST AT THE PARENT COMMIT; IT DOES NOT, so the CORRECTED copy is used there. This is
+     * the one place the checkout is deliberately modified, it is recorded as a deviation, and it touches ONLY a
+     * directory the parent commit does not contain.
+     */
     mkdirSync(join(parentWorktree, "scripts", "host_s1r"), { recursive: true });
     copyFileSync(join(REPO, "scripts", "host_s1r", "reproduce-concerns.mjs"), join(parentWorktree, "scripts", "host_s1r", "reproduce-concerns.mjs"));
-    parentWorktreeState = { prepared: true, detail: `detached at ${PARENT_HEAD}` };
+    parentWorktreeState.deviations.push({
+      path: "scripts/host_s1r/reproduce-concerns.mjs",
+      reason: "the corrected probe does not exist at the parent commit, so it is supplied to measure the parent's behaviour",
+      affectsCommitIdentity: false,
+      note: "the directory does not exist at the parent commit, so no tracked file is modified",
+    });
+    parentWorktreeState.prepared = true;
+    parentWorktreeState.detail = `detached at ${PARENT_HEAD} in a run-owned worktree`;
   } catch (error) {
-    parentWorktreeState = { prepared: false, detail: error instanceof Error ? error.message : String(error) };
+    parentWorktreeState = { ...parentWorktreeState, prepared: false, detail: error instanceof Error ? error.message : String(error) };
   }
 })();
+
+/**
+ * REMOVE THE RUN-OWNED WORKTREE, AND ONLY IF THIS RUN REGISTERED IT.
+ *
+ * The junction is unlinked by name FIRST. The recorded justification for that step was that `rmSync` follows a
+ * contained junction; RA-0/F9 re-measured that claim in a synthetic repository and it is FALSE — `rmSync` removed
+ * the link entry and left the target intact. The unlink is retained anyway because it is strictly safer and
+ * costs nothing, and the superseded claim is corrected here rather than left standing in a comment.
+ *
+ * Removal uses `git worktree remove` for a registration this run created, so Git's own bookkeeping stays
+ * consistent, and falls back to `rmSync` only after the junction is gone.
+ */
+function disposeParentWorktree() {
+  if (parentWorktreeState.registeredByThisRun !== true) return { removed: false, reason: "this run did not register a worktree" };
+  const modules = join(parentWorktree, "node_modules");
+  try {
+    if (lstatSync(modules).isSymbolicLink()) spawnSync("cmd", ["/c", "rmdir", modules], { encoding: "utf8", timeout: 60_000 });
+  } catch {
+    /* absent, which is the normal case after a failed link */
+  }
+  const removed = spawnSync("git", ["worktree", "remove", "--force", parentWorktree], { cwd: REPO, encoding: "utf8", timeout: 300_000 });
+  if (removed.status === 0) return { removed: true, via: "git worktree remove" };
+  try {
+    rmSync(parentWorktree, { recursive: true, force: true });
+    return { removed: true, via: "rmSync after unlink", gitStatus: String(removed.stderr ?? "").slice(0, 200) };
+  } catch (error) {
+    return { removed: false, reason: error?.message ?? String(error), preservedPath: parentWorktree };
+  }
+}
 
 const producers = [
   /**
@@ -248,6 +305,17 @@ for (const producer of producers) {
   process.stderr.write(`  · ${producer.id}${NL}`);
   results.push(produce(producer));
 }
+
+/**
+ * THE RUN-OWNED WORKTREE IS DISPOSED AS SOON AS THE PRODUCERS ARE DONE.
+ *
+ * It exists only to measure the parent commit, so holding it through the suite runs would keep a registration
+ * alive for no reason — and a run that failed later would leave it behind. The outcome is RECORDED, and it is
+ * written into the identity artifact below so a reader can see that the registration was removed rather than
+ * assumed to be.
+ */
+const worktreeCleanup = disposeParentWorktree();
+process.stderr.write(`  → parent worktree: ${JSON.stringify(worktreeCleanup)}${NL}`);
 
 /**
  * THE TEST SUITES. Each is run and its PASS/LIMIT/FAIL counts are read from the runner's own output, so a suite
@@ -837,6 +905,20 @@ let conformanceReceipts = {};
      * three corrections so the historical record stays traceable, and adds its own below.
      */
     forwardErrata: [erratum, erratum2, erratum3, erratum4, erratum5],
+    /**
+     * THE PARENT WORKTREE THIS RUN CREATED, AND WHETHER IT WAS REMOVED. The superseded generator used a fixed path,
+     * pruned the whole registry and forced the add; this records that the run-owned worktree was registered by
+     * this run and disposed by this run, so a reader can tell a clean run from one that leaked.
+     */
+    parentWorktree: {
+      path: parentWorktreeState.path,
+      prepared: parentWorktreeState.prepared,
+      registeredByThisRun: parentWorktreeState.registeredByThisRun,
+      deviations: parentWorktreeState.deviations ?? [],
+      cleanup: worktreeCleanup,
+      pruneWasRun: false,
+      forceFlagWasUsed: false,
+    },
   });
 }
 
