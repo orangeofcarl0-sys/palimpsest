@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_E2_RUNTIME_ADJUDICATION",
+  "stage": "Palimpsest Host-S1RA-E2",
+  "measuredAt": "2026-10-24T20:14:21.710Z",
+  "contract": {
+    "package": "@deepseek-ai/dsh-win32-process",
+    "qualifiedVersion": "0.2.1-rc.2",
+    "previouslyQualifiedVersion": "0.2.0-rc.2",
+    "ffi": {
+      "package": "koffi",
+      "qualifiedVersion": "3.1.1"
+    },
+    "source": "host/deployment/runtime/win32_label.js"
+  },
+  "installed": {
+    "resolved": "0.2.1-rc.3",
+    "path": "C:/Users/66494/.dsh/profiles/node_modules/@deepseek-ai/dsh-win32-process (junction into the npm global tree)",
+    "note": "the junction path is the configured one; the version is read from the manifest it resolves to"
+  },
+  "search": {
+    "rootsCovered": [
+      "F:/Codex_Work_Space/Palimpsest/.runtimes",
+      "F:/Codex_Work_Space/DSH plugin/dsh-meld/node_modules",
+      "C:/Users/66494/AppData/Roaming/npm/node_modules",
+      "C:/Users/66494/AppData/Local/npm-cache/_cacache",
+      "C:/Users/66494/AppData/Local/pnpm/store/v11"
+    ],
+    "candidates": [
+      {
+        "path": "F:/Codex_Work_Space/Palimpsest/.runtimes/dsh-020-win32/pkg/package.json",
+        "name": "@deepseek-ai/dsh-win32-process",
+        "version": "0.2.0-rc.2",
+        "isRequiredVersion": false,
+        "dependencies": {
+          "koffi": "3.1.1",
+          "@deepseek-ai/dsh-lazy-require": "0.2.0-rc.2"
+        },
+        "sha256OfManifest": "0e73e116cc0730d6"
+      },
+      {
+        "path": "F:/Codex_Work_Space/DSH plugin/dsh-meld/node_modules/@deepseek-ai/dsh-win32-process/package.json",
+        "name": "@deepseek-ai/dsh-win32-process",
+        "version": "0.2.1-alpha.2",
+        "isRequiredVersion": false,
+        "dependencies": {
+          "@deepseek-ai/dsh-lazy-require": "0.2.1-alpha.2",
+          "koffi": "3.1.1"
+        },
+        "sha256OfManifest": "bef5cbff0d60a32e"
+      },
+      {
+        "path": "C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-win32-process/package.json",
+        "name": "@deepseek-ai/dsh-win32-process",
+        "version": "0.2.1-rc.3",
+        "isRequiredVersion": false,
+        "dependencies": {
+          "@deepseek-ai/dsh-lazy-require": "0.2.1-rc.3",
+          "koffi": "3.1.1"
+        },
+        "sha256OfManifest": "44fc05024aa24012"
+      }
+    ],
+    "requiredVersionFound": false,
+    "note": "a directory NAMED 0.2.1-rc.2 was never accepted as evidence; only a package manifest reporting that version would have counted, and none does"
+  },
+  "enforcement": {
+    "refusalSourceLine": "          refuse('kernel-drift', `the Win32 binding seam reports drift: resolved ${String(kernel.contract?.resolvedVersion)} against qualified ${String(kernel.contract?.qualifiedVersion)}`);",
+    "refusalIsUnconditional": true,
+    "condition": "kernel.contract?.drifted === true",
+    "overrideAvailable": false,
+    "consequence": "every worker exits nonzero at pre-create, before an Agent exists"
+  },
+  "verdicts": {
+    "safeReplayAvailable": false,
+    "reason": "no artifact at the qualified version exists on this machine, and the drift check has no supported override",
+    "isolatedReplayAttempted": false,
+    "isolatedReplayJustification": "§7 requires §6 to establish a safe and verifiable route first; it did not, so no Live Gate was invoked against an unqualified runtime"
+  },
+  "forbiddenAlternatives": [
+    {
+      "action": "raise qualifiedVersion to 0.2.1-rc.3",
+      "why": "asserts a qualification nobody performed"
+    },
+    {
+      "action": "disable the drift check",
+      "why": "removes the protection it exists to provide"
+    },
+    {
+      "action": "downgrade the global runtime",
+      "why": "changes the user's installation"
+    },
+    {
+      "action": "modify ~/.dsh or D:\\dsh",
+      "why": "out of scope and would alter the real installation"
+    },
+    {
+      "action": "substitute 0.2.0-rc.2 or 0.2.1-alpha.2",
+      "why": "neither is the pinned version; a name match is not a qualification"
+    }
+  ]
+}
