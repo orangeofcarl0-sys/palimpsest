@@ -1,0 +1,722 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_BASELINE_SECURITY_FALSIFIERS",
+  "stage": "Palimpsest Host-S1RA",
+  "phase": "RA-0",
+  "measuredAt": "2026-10-24T17:41:07.702Z",
+  "note": "Each finding records the source it measures, the input actually supplied, the observed output, the invariant it violates, its evidence class, and what remains uncertain. A `not_reproduced` finding is a measured negative, not a skipped test.",
+  "codeUnderTest": {
+    "commit": "ae8ff3349c1079061473ae0799a7cef330cccb42",
+    "files": [
+      "scripts/trajectory_p2b/rig.mjs",
+      "scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+      "test/gate_root_storage_discipline.test.ts",
+      "scripts/host_s1/generate-evidence.mjs",
+      "scripts/gates/reap-gate-roots.mjs"
+    ]
+  },
+  "scratchRoot": "",
+  "findings": [
+    {
+      "id": "F1",
+      "title": "An existing destination junction is invisible to existsSync, so the fallback can write through it",
+      "status": "reproduced",
+      "durationMs": 20,
+      "hypothesis": "`existsSync` reports a dangling junction as unoccupied even though `lstat` shows a reparse point, so occupancy is decided on a false premise.",
+      "invariant": "A destination that is a reparse object must never be treated as free.",
+      "arms": {
+        "absent": {
+          "occupancyBefore": {
+            "path": "home-1-f1-absent/profiles/node_modules/pkg-alpha",
+            "existsSync": false,
+            "existsError": null,
+            "lstat": null,
+            "lstatError": "ENOENT",
+            "realpath": "UNRESOLVED(ENOENT)"
+          },
+          "result": {
+            "strategy": "junction",
+            "linked": 2
+          },
+          "entryAfter": {
+            "path": "home-1-f1-absent/profiles/node_modules/pkg-alpha",
+            "existsSync": true,
+            "existsError": null,
+            "lstat": {
+              "isSymbolicLink": true,
+              "isDirectory": false,
+              "isFile": false
+            },
+            "lstatError": null,
+            "realpath": "synthetic-runtime-home/profiles/node_modules/pkg-alpha"
+          },
+          "linkedReadable": true
+        },
+        "liveJunction": {
+          "occupancyBefore": {
+            "path": "home-2-f1-live/profiles/node_modules/pkg-alpha",
+            "existsSync": true,
+            "existsError": null,
+            "lstat": {
+              "isSymbolicLink": true,
+              "isDirectory": false,
+              "isFile": false
+            },
+            "lstatError": null,
+            "realpath": "shared-target"
+          },
+          "result": {
+            "strategy": "junction",
+            "linked": 1
+          },
+          "sharedTargetAfter": {
+            "names": [
+              "canary.txt",
+              "keep.txt"
+            ],
+            "canaryIntact": true,
+            "bytes": 80
+          },
+          "sharedTargetMutated": false
+        },
+        "danglingJunction": {
+          "occupancyBefore": {
+            "path": "home-3-f1-dangling/profiles/node_modules/pkg-alpha",
+            "existsSync": false,
+            "existsError": null,
+            "lstat": {
+              "isSymbolicLink": true,
+              "isDirectory": false,
+              "isFile": false
+            },
+            "lstatError": null,
+            "realpath": "UNRESOLVED(ENOENT)"
+          },
+          "result": null,
+          "thrown": {
+            "code": "ENOENT",
+            "message": "ENOENT, The system cannot find the file specified. 'F:\\s1ra-ra0-5xv7fd\\home-3-f1-dangling\\profiles\\node_modules\\pkg-alpha'",
+            "syscall": "cp",
+            "path": "F:/s1ra-ra0-5xv7fd/home-3-f1-dangling/profiles/node_modules/pkg-alpha"
+          },
+          "targetRecreatedOutsideHome": false,
+          "targetRecreatedContents": null,
+          "entryAfter": {
+            "path": "home-3-f1-dangling/profiles/node_modules/pkg-alpha",
+            "existsSync": false,
+            "existsError": null,
+            "lstat": {
+              "isSymbolicLink": true,
+              "isDirectory": false,
+              "isFile": false
+            },
+            "lstatError": null,
+            "realpath": "UNRESOLVED(ENOENT)"
+          }
+        }
+      },
+      "observedDefect": "OCCUPANCY_MISREAD_ON_REPARSE_POINT",
+      "consequence": "SHARING_HELPER_THROWS_ON_A_DANGLING_LINK",
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "Measured: the helper aborts with ENOENT instead of reporting MODULE_SHARING_NOT_ESTABLISHED. Whether a copy would have written through the link is therefore not observable in this arm, because the copy never ran."
+    },
+    {
+      "id": "F2",
+      "title": "A partially installed graph is completed by a dereferencing copy",
+      "status": "reproduced",
+      "durationMs": 10,
+      "hypothesis": "A failed junction install silently degrades into a full dereferencing copy over a partially populated graph.",
+      "invariant": "A partial install must fail closed with an explicit MODULE_SHARING_NOT_ESTABLISHED result, not be completed by a copy into an unverified destination.",
+      "arms": {
+        "ordinaryFileOccupant": {
+          "occupancyBefore": {
+            "path": "home-4-f2-file-occupant/profiles/node_modules/pkg-beta",
+            "existsSync": true,
+            "existsError": null,
+            "lstat": {
+              "isSymbolicLink": false,
+              "isDirectory": false,
+              "isFile": true
+            },
+            "lstatError": null,
+            "realpath": "home-4-f2-file-occupant/profiles/node_modules/pkg-beta"
+          },
+          "result": {
+            "strategy": "junction",
+            "linked": 1
+          },
+          "graphComplete": true,
+          "occupantPreserved": true
+        },
+        "danglingJunctionOccupant": {
+          "occupancyBefore": {
+            "path": "home-5-f2-dangling-occupant/profiles/node_modules/pkg-beta",
+            "existsSync": false,
+            "existsError": null,
+            "lstat": {
+              "isSymbolicLink": true,
+              "isDirectory": false,
+              "isFile": false
+            },
+            "lstatError": null,
+            "realpath": "UNRESOLVED(ENOENT)"
+          },
+          "result": null,
+          "thrown": {
+            "code": "ENOENT",
+            "message": "ENOENT, The system cannot find the file specified. 'F:\\s1ra-ra0-5xv7fd\\home-5-f2-dangling-occupant\\profiles\\node_modules\\pkg-beta'",
+            "path": "F:/s1ra-ra0-5xv7fd/home-5-f2-dangling-occupant/profiles/node_modules/pkg-beta"
+          },
+          "targetRecreatedOutsideHome": false,
+          "targetRecreatedContents": null,
+          "entryAfter": {
+            "path": "home-5-f2-dangling-occupant/profiles/node_modules/pkg-beta",
+            "existsSync": false,
+            "existsError": null,
+            "lstat": {
+              "isSymbolicLink": true,
+              "isDirectory": false,
+              "isFile": false
+            },
+            "lstatError": null,
+            "realpath": "UNRESOLVED(ENOENT)"
+          },
+          "sharedTargetUnchanged": true
+        }
+      },
+      "observedDefect": "DANGLING_OCCUPANT_ABORTS_OR_WRITES_OUTSIDE",
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "The ordinary-file arm is the narrower case: the occupant survives, but the returned strategy claims a copy succeeded while an entry is missing, so a caller cannot tell an incomplete graph from a complete one."
+    },
+    {
+      "id": "F3",
+      "title": "Cleanup deletes from CACHED ownership flags and never re-validates the path identity",
+      "status": "reproduced",
+      "durationMs": 9,
+      "hypothesis": "Deletion trusts the containment flag cached at allocation, so a path replaced after allocation is still deleted.",
+      "invariant": "Ownership must be re-proved at deletion time against the identity recorded at allocation; a replaced path must be preserved.",
+      "arms": {
+        "foreignReplacement": {
+          "cachedOwnership": {
+            "contained": true,
+            "isReparse": false
+          },
+          "disposeOutcome": {
+            "cleaned": true
+          },
+          "foreignContentSurvived": false,
+          "rootStillExists": false,
+          "identityRevalidatedAtDelete": false
+        },
+        "junctionReplacement": {
+          "cachedOwnership": {
+            "contained": true,
+            "isReparse": false
+          },
+          "disposeOutcome": {
+            "cleaned": true
+          },
+          "linkRemoved": true,
+          "sharedTargetAfter": {
+            "names": [
+              "canary.txt",
+              "keep.txt"
+            ],
+            "canaryIntact": true,
+            "bytes": 80
+          },
+          "sharedTargetSurvived": true
+        }
+      },
+      "observedDefect": "FOREIGN_DIRECTORY_DELETED",
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "Arm (b) shows the junction case is NOT destructive on this platform: `rmSync` removed the link and left the target byte-identical. The defect is the missing identity re-check, which arm (a) demonstrates."
+    },
+    {
+      "id": "F4",
+      "title": "A failed cleanup cannot be retried, and the failure is not distinguishable from success by the caller",
+      "status": "reproduced",
+      "durationMs": 3291,
+      "hypothesis": "One failed deletion permanently marks the root disposed, so a later safe retry is impossible.",
+      "invariant": "A failed cleanup must stay retryable while ownership holds, must report the original reason, and must never be reported as success.",
+      "firstDispose": {
+        "cleaned": false,
+        "reason": "preserved after retries: EPERM, Permission denied: 'F:\\s1ra-ra0-5xv7fd\\gate-root\\ra0-f4-locked-fH0Pbf'",
+        "preserved": true
+      },
+      "secondDispose": {
+        "cleaned": false,
+        "reason": "preserved after retries: EPERM, Permission denied: 'F:\\s1ra-ra0-5xv7fd\\gate-root\\ra0-f4-locked-fH0Pbf'",
+        "preserved": true
+      },
+      "thirdDisposeAfterLockReleased": {
+        "cleaned": false,
+        "reason": "preserved after retries: EPERM, Permission denied: 'F:\\s1ra-ra0-5xv7fd\\gate-root\\ra0-f4-locked-fH0Pbf'",
+        "preserved": true
+      },
+      "rootSurvivedFirstFailure": true,
+      "thirdAttemptActuallyRetried": false,
+      "manualCleanupSucceeded": {
+        "cleaned": true
+      },
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "The lock is a process CWD, which is one of several Windows handle kinds; other lock kinds were not enumerated."
+    },
+    {
+      "id": "F5",
+      "title": "Signal listeners installed by the lifetime helper are never removed",
+      "status": "reproduced",
+      "durationMs": 115,
+      "hypothesis": "`dispose()` leaves the SIGINT and SIGTERM listeners registered, so they accumulate and stay able to exit the process.",
+      "invariant": "Explicit disposal must remove every listener the helper installed.",
+      "listenerCounts": {
+        "before": {
+          "exit": 0,
+          "SIGINT": 0,
+          "SIGTERM": 0
+        },
+        "afterAlloc": {
+          "exit": 3,
+          "SIGINT": 3,
+          "SIGTERM": 3
+        },
+        "afterDispose": {
+          "exit": 0,
+          "SIGINT": 3,
+          "SIGTERM": 3
+        }
+      },
+      "leakedPerAllocation": {
+        "SIGINT": 3,
+        "SIGTERM": 3
+      },
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "Listener accumulation is measured; the consequence of a stale handler calling process.exit was not exercised on a live gate."
+    },
+    {
+      "id": "F6",
+      "title": "The reaper selects by name prefix and modification time, not by proven ownership",
+      "status": "reproduced",
+      "durationMs": 8,
+      "hypothesis": "Prefix plus age is sufficient for the reaper to select a directory it does not own.",
+      "invariant": "A candidate without a verifiable ownership record must be preserved; age alone cannot establish ownership.",
+      "dryRunOnly": true,
+      "unownedWithQualifyingPrefixSelected": true,
+      "markedButForeignSelected": true,
+      "selection": {
+        "removed": [
+          {
+            "name": "p2b-unowned-by-this-run",
+            "bytes": 21
+          }
+        ],
+        "kept": []
+      },
+      "directoryStillPresent": true,
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "Report-only. The consequence of `--apply` was not exercised against the real gate root, per §5.5."
+    },
+    {
+      "id": "F7",
+      "title": "The storage suite passes when its module import fails",
+      "status": "reproduced",
+      "durationMs": 4040,
+      "hypothesis": "A suite whose module import fails reports success because every control asserts only that an error message exists.",
+      "invariant": "A test whose module could not be imported must fail or remain explicitly unestablished; it must not count as PASS.",
+      "exitCode": 0,
+      "numPassedTests": 14,
+      "numFailedTests": 0,
+      "moduleErrorWasPresent": true,
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "The reproduction used a copy of the suite with one constant changed; the shipped file is unmodified by this arm."
+    },
+    {
+      "id": "F8",
+      "title": "Two identifiers that render identically name different environment variables",
+      "status": "reproduced",
+      "durationMs": 101,
+      "hypothesis": "The test manipulates one variable name while the implementation reads another. MEASURED: two distinct identifiers render identically and differ in their first code point.",
+      "invariant": "A test must configure the value the module actually reads.",
+      "productionHomeNames": [
+        {
+          "file": "scripts/trajectory_p2b/rig.mjs",
+          "homeNames": [
+            {
+              "codePoints": [
+                68,
+                83,
+                72,
+                95,
+                72,
+                79,
+                77,
+                69
+              ],
+              "rebuiltFromIntegers": "DSH_HOME",
+              "occurrences": 1
+            }
+          ]
+        },
+        {
+          "file": "scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+          "homeNames": [
+            {
+              "codePoints": [
+                68,
+                83,
+                72,
+                95,
+                72,
+                79,
+                77,
+                69
+              ],
+              "rebuiltFromIntegers": "DSH_HOME",
+              "occurrences": 5
+            }
+          ]
+        },
+        {
+          "file": "scripts/gates/env.mjs",
+          "homeNames": [
+            {
+              "codePoints": [
+                68,
+                83,
+                72,
+                95,
+                72,
+                79,
+                77,
+                69
+              ],
+              "rebuiltFromIntegers": "DSH_HOME",
+              "occurrences": 1
+            }
+          ]
+        },
+        {
+          "file": "scripts/trajectory_p2d2/l2-gate.mjs",
+          "homeNames": [
+            {
+              "codePoints": [
+                68,
+                83,
+                72,
+                95,
+                72,
+                79,
+                77,
+                69
+              ],
+              "rebuiltFromIntegers": "DSH_HOME",
+              "occurrences": 5
+            }
+          ]
+        },
+        {
+          "file": "scripts/trajectory_p2e0/dsh-test-home.mjs",
+          "homeNames": [
+            {
+              "codePoints": [
+                68,
+                83,
+                72,
+                95,
+                72,
+                79,
+                77,
+                69
+              ],
+              "rebuiltFromIntegers": "DSH_HOME",
+              "occurrences": 1
+            }
+          ]
+        }
+      ],
+      "testHomeNames": [
+        {
+          "codePoints": [
+            114,
+            117,
+            110,
+            116,
+            105,
+            109,
+            101,
+            95,
+            72,
+            79,
+            77,
+            69
+          ],
+          "rebuiltFromIntegers": "runtime_HOME",
+          "occurrences": 4
+        }
+      ],
+      "namesOnlyInProduction": [
+        {
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ],
+          "rebuiltFromIntegers": "DSH_HOME"
+        }
+      ],
+      "namesOnlyInTest": [
+        {
+          "codePoints": [
+            114,
+            117,
+            110,
+            116,
+            105,
+            109,
+            101,
+            95,
+            72,
+            79,
+            77,
+            69
+          ],
+          "rebuiltFromIntegers": "runtime_HOME"
+        }
+      ],
+      "consequence": {
+        "assignedName": "runtime_HOME",
+        "resolvedModules": "F:\\s1ra-ra0-5xv7fd\\synthetic-runtime-home\\profiles\\node_modules",
+        "assignmentTookEffect": false
+      },
+      "observedDefect": "HOMOGLYPH_NAME_COLLISION_MAKES_TEST_REDIRECTION_INERT",
+      "renderedFormIsUnreliable": true,
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "The collision is established from the files' own bytes and from the observed resolution. Whether the PRODUCTION variable is set correctly in a real deployment was not measured here."
+    },
+    {
+      "id": "F9",
+      "title": "The evidence generator performs destructive worktree operations on a fixed path",
+      "status": "reproduced",
+      "durationMs": 539,
+      "hypothesis": "The generator prepares a parent checkout with destructive operations on a fixed, unowned path.",
+      "invariant": "A qualification run must not mutate shared Git administrative state or delete a path whose ownership it did not record.",
+      "operations": [
+        {
+          "call": "rmSync(parentWorktree, { recursive: true, force: true })",
+          "path": "<rig>/parent-worktree (FIXED name)",
+          "classification": "DESTRUCTIVE",
+          "affects": "the rig directory; also any pre-existing directory at that path, whoever created it",
+          "ownershipCheck": "none — the path is derived from the rig, not from a recorded allocation"
+        },
+        {
+          "call": "git worktree prune",
+          "path": "the repository's shared administrative state",
+          "classification": "SHARED_STATE_MUTATION",
+          "affects": "ALL stale worktree registrations, including ones belonging to other checkouts and other runs",
+          "ownershipCheck": "none — prunes indiscriminately"
+        },
+        {
+          "call": "git worktree add --detach -f <path> <PARENT_HEAD>",
+          "path": "the same fixed path",
+          "classification": "SHARED_STATE_MUTATION",
+          "affects": "the worktree registry; `-f` bypasses a conflict that would otherwise be reported",
+          "ownershipCheck": "none — `-f` explicitly suppresses the check"
+        },
+        {
+          "call": "mklink /J <worktree>/node_modules <repo>/node_modules",
+          "path": "a junction into the repository's installed modules",
+          "classification": "SHARED_TARGET_EXPOSURE",
+          "affects": "creates a path from a disposable checkout into the shared install",
+          "ownershipCheck": "the link is verified to be absent before creation, but its target is not re-verified afterwards"
+        },
+        {
+          "call": "copyFileSync(<corrected probe>, <worktree>/scripts/host_s1r/...)",
+          "path": "a checkout of a DIFFERENT commit",
+          "classification": "DIRTY_WORKTREE",
+          "affects": "the worktree no longer matches the commit it claims to be detached at",
+          "ownershipCheck": "none"
+        }
+      ],
+      "platformClaimMeasured": {
+        "worktreeAdded": true,
+        "junctionCreated": true,
+        "targetBefore": true,
+        "targetAfterRmSyncRecursive": true,
+        "rmSyncFollowedTheJunction": false
+      },
+      "sourceCommentClaim": "`rmSync(..., { recursive: true })` on a directory that CONTAINS a junction FOLLOWS it on this platform",
+      "sourceCommentSupported": false,
+      "evidenceClass": "SOURCE_DEMONSTRATED",
+      "uncertainty": "The operations were classified from source and NOT executed against this repository. The platform claim was measured in a synthetic repository, so it carries no risk to the real one."
+    },
+    {
+      "id": "F10",
+      "title": "Host-S1 historical evidence was overwritten and Host-S1R artifacts were placed inside it",
+      "status": "reproduced",
+      "durationMs": 2545,
+      "hypothesis": "A later stage wrote into the historical Host-S1 evidence directory, overwriting two files and adding six.",
+      "invariant": "A stage's generator must write only to its own evidence directory, and historical evidence must stay byte-identical.",
+      "parentHead": "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4",
+      "currentHead": "ae8ff3349c1079061473ae0799a7cef330cccb42",
+      "modified": [
+        {
+          "path": "research-evidence/host-s1/baseline-and-falsifiers.json",
+          "beforeBlob": "1209f76cb9a86147ad9b70df7340b602174dca2e",
+          "afterBlob": "86af6f3782b1f7a360c487cf2638d304d09dafd5",
+          "kind": "MODIFIED"
+        },
+        {
+          "path": "research-evidence/host-s1/git-and-evidence-identity.json",
+          "beforeBlob": "a553c1c1fa637d164dd4c40151651d8c163a36e1",
+          "afterBlob": "534bedb084180e7daf4b00bf15d54be7db36ba71",
+          "kind": "MODIFIED"
+        }
+      ],
+      "added": [
+        {
+          "path": "research-evidence/host-s1/baseline-security-falsifiers.json",
+          "afterBlob": "c8a42563d1bd2b5b6f024f7c4aa7850d0a0d32d8",
+          "kind": "ADDED_BY_LATER_STAGE",
+          "canonicalS1rBlob": "bc9e057c3af8fb07c4f563abe63399b70801ecfe",
+          "identicalToCanonical": false
+        },
+        {
+          "path": "research-evidence/host-s1/capacity-domain-and-concurrency.json",
+          "afterBlob": "911dab4ec72e3b3ca26ec561ac98e4c945e77200",
+          "kind": "ADDED_BY_LATER_STAGE",
+          "canonicalS1rBlob": "f5a61fe1b748dfe3f40fbc451bab3b0c2d719710",
+          "identicalToCanonical": false
+        },
+        {
+          "path": "research-evidence/host-s1/lock-recovery-and-release.json",
+          "afterBlob": "06f6ed95ad551e96472bbf5f9f2fc529d98a47f9",
+          "kind": "ADDED_BY_LATER_STAGE",
+          "canonicalS1rBlob": "650498c3964c9135216421f77e337db4897a14ac",
+          "identicalToCanonical": false
+        },
+        {
+          "path": "research-evidence/host-s1/reparse-protection-basis.json",
+          "afterBlob": "c08a3336e60921a1322566eec98f84eb2551573e",
+          "kind": "ADDED_BY_LATER_STAGE",
+          "canonicalS1rBlob": "161d6d79b98abfb51c209aaf650a76523a36293a",
+          "identicalToCanonical": false
+        },
+        {
+          "path": "research-evidence/host-s1/security-conformance.json",
+          "afterBlob": "488a33d382dfa2c104560534f8ed6893d3da87c6",
+          "kind": "ADDED_BY_LATER_STAGE",
+          "canonicalS1rBlob": "0273e02c70fde3311176bb6be8481ca29857a1a7",
+          "identicalToCanonical": false
+        },
+        {
+          "path": "research-evidence/host-s1/trajectory-execution-reconfirmation.json",
+          "afterBlob": "24392ca2a0270ef4cf31a6a73370ad6d6e805981",
+          "kind": "ADDED_BY_LATER_STAGE",
+          "canonicalS1rBlob": "c835366219cfb3b6ca89ee31e1619a7b8e2aaa9a",
+          "identicalToCanonical": false
+        }
+      ],
+      "uniqueEvidenceAtRisk": [
+        "research-evidence/host-s1/baseline-security-falsifiers.json",
+        "research-evidence/host-s1/capacity-domain-and-concurrency.json",
+        "research-evidence/host-s1/lock-recovery-and-release.json",
+        "research-evidence/host-s1/reparse-protection-basis.json",
+        "research-evidence/host-s1/security-conformance.json",
+        "research-evidence/host-s1/trajectory-execution-reconfirmation.json"
+      ],
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "Blob identity proves the content changed; which stage wrote each blob was established from the commit history, not from the blobs themselves."
+    },
+    {
+      "id": "F11",
+      "title": "The Host-S1R qualification evidence is bound to a Code Freeze that predates current HEAD",
+      "status": "reproduced",
+      "durationMs": 215,
+      "hypothesis": "The evidence's declared Code Freeze is not the current HEAD, so the executable changes after it are unqualified.",
+      "invariant": "A success claim must identify the code it actually measured; executable changes after the freeze require requalification.",
+      "recordedCodeFreeze": "414d84dc34cd23cca861a35816a08b524df93bdb",
+      "recordedExecutedTree": "6541a1ccee3157fdf12d57deaeb76a617ba27531",
+      "currentHead": "ae8ff3349c1079061473ae0799a7cef330cccb42",
+      "currentTree": "3638d8e33b79cd36dcbe6c8db08eda1f8c0a2652",
+      "filesChangedSinceFreeze": 21,
+      "executableFilesChangedSinceFreeze": [
+        "scripts/gates/reap-gate-roots.mjs",
+        "scripts/trajectory_p2b/canonical-correlation-gate.mjs",
+        "scripts/trajectory_p2b/cold-recovery-gate.mjs",
+        "scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+        "scripts/trajectory_p2b/rig.mjs",
+        "scripts/trajectory_p2c/cold-preview-gate.mjs",
+        "scripts/trajectory_p2d0/cold-capsule-gate.mjs",
+        "scripts/trajectory_p2d1/real-integration-gate.mjs",
+        "scripts/trajectory_p2d2/l2-gate.mjs",
+        "test/gate_root_storage_discipline.test.ts"
+      ],
+      "verdictCount": 6,
+      "evidenceClass": "DYNAMICALLY_VERIFIED",
+      "uncertainty": "This establishes the binding gap, not that any specific verdict is wrong — the gap is what requires requalification."
+    },
+    {
+      "id": "F12",
+      "title": "The real runtime home is a junction whose target protection is not established by the junction's own label",
+      "status": "measured",
+      "durationMs": 261,
+      "hypothesis": "The configured runtime home is a junction, and a label on the link is not a label on the target's contents.",
+      "invariant": "A confidentiality claim about the runtime home must name which object carries the protection.",
+      "home": {
+        "path": "C:/Users/66494/.dsh",
+        "isReparsePoint": true,
+        "resolvedTarget": "D:/dsh",
+        "targetKind": "directory"
+      },
+      "homeDescriptorQuery": {
+        "status": 0,
+        "output": "C:/Users/66494/.dsh NT AUTHORITY\\SYSTEM:(I)(OI)(CI)(F)\n                    BUILTIN\\Administrators:(I)(OI)(CI)(F)\n                    ORANGEOFCARL0\\66494:(I)(OI)(CI)(F)\n\n�ѳɹ����� 1 ���ļ�; ���� 0 ���ļ�ʱʧ��\r\n"
+      },
+      "targetDescriptorQuery": {
+        "status": 0,
+        "mandatoryLabelPresent": false,
+        "sample": "D:\\dsh BUILTIN\\Administrators:(I)(F)\n       BUILTIN\\Administrators:(I)(OI)(CI)(IO)(F)\n       NT AUTHORITY\\SYSTEM:(I)(F)\n       NT AUTHORITY\\SYSTEM:(I)(OI)(CI)(IO)(F)\n       NT AUTHORITY\\Authenticated Users:(I)(M)\n       NT AUTHORITY\\Authenticated Users:(I)(OI)(CI)(IO)(M)"
+      },
+      "evidenceClass": "READ_ONLY_RUNTIME_OBSERVATION",
+      "uncertainty": "A missing Mandatory Label line means the label could not be read OR is absent; the two are not distinguished by this query. §7's synthetic first-party arm is what separates them."
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "byStatus": {
+      "reproduced": 11,
+      "measured": 1
+    },
+    "reproducedIds": [
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5",
+      "F6",
+      "F7",
+      "F8",
+      "F9",
+      "F10",
+      "F11"
+    ],
+    "notReproducedIds": [],
+    "harnessErrorIds": []
+  },
+  "fixtureIntegrity": {
+    "sharedTarget": {
+      "names": [
+        "canary.txt",
+        "keep.txt"
+      ],
+      "canaryIntact": true,
+      "bytes": 80
+    },
+    "sharedTargetExpectedIntact": true
+  }
+}
