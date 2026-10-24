@@ -1,17 +1,220 @@
 {
-  "kind": "HOST_S1R_BASELINE_SECURITY_FALSIFIERS",
-  "evidenceClass": "NOT_ESTABLISHED",
+  "kind": "HOST_S1_BASELINE_AND_FALSIFIERS",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
   "note": "F1-F8 reproduce on the E1RG parent and are CORRECTED by this stage; F9 is a documentation erratum recorded forward-only. Re-running this producer on the corrected code therefore reports F9 only, which is the expected post-correction state.",
   "producer": {
     "command": "node scripts/host_s1/reproduce-baseline.mjs --json-out <rig>/baseline-falsifiers.json",
-    "exitCode": 2,
-    "runId": "c00b426f-5e9e-4d0f-9882-10c728f66235",
-    "artifactDigest": null
+    "exitCode": 0,
+    "runId": "e660e50d-4cf6-4a4e-b023-8daba0a22920",
+    "artifactDigest": "sha256-a5ad38548f9ab93188750b38b7e9c90ee99bf8b8fa53989f1e0e46013077b8a6"
   },
-  "observations": null,
+  "observations": {
+    "schemaVersion": 1,
+    "kind": "HOST_S1_H1_0_BASELINE_FALSIFIERS",
+    "stage": "Palimpsest Host-S1",
+    "evidenceClass": "DYNAMICALLY_VERIFIED",
+    "note": "Each falsifier drives the shipped functions on the exact E1RG parent. A reproduced defect is the expected baseline; F2 is measured separately under a real Low-integrity token by sibling-world-probe.mjs.",
+    "executedCodeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
+    "parentHead": "e04211d2a2f52d05f2c248c3cc52257079b65a76",
+    "runtime": {
+      "node": "24.22.0",
+      "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+      "platform": "win32",
+      "arch": "x64"
+    },
+    "dshHome": "C:/Users/66494/.dsh",
+    "findings": [
+      {
+        "id": "F1",
+        "title": "sibling world omitted by derived kernel coverage",
+        "observation": {
+          "palimpsestSkipped": true,
+          "worldsSkipped": false,
+          "derivedRoots": [
+            "f1/repository/.palimpsest/durable-state",
+            "f1/repository/.palimpsest/worlds/attempt-B"
+          ],
+          "durableDerived": true,
+          "siblingDerived": true,
+          "siblingReceivedLabel": true,
+          "coverageComplete": true,
+          "coverageSkippedWithoutDerived": []
+        },
+        "verdict": "NOT_REPRODUCED"
+      },
+      {
+        "id": "F3",
+        "title": "descendant verification not consumed by production admission",
+        "observation": {
+          "truncatedTree": {
+            "verified": false,
+            "complete": false,
+            "noUnprotectedEntryFound": true,
+            "stopReason": "ENTRY_LIMIT"
+          },
+          "admitWorkerRequiredKeys": [
+            "readGuardInstalled",
+            "cwdFenceInstalled",
+            "delegationFenceInstalled",
+            "globalGuardScope",
+            "capabilitySurfaceAdmitted",
+            "kernelSupported",
+            "kernelRootsVerified",
+            "kernelCoverageComplete",
+            "kernelContractNotDrifted",
+            "kernelDescendantsQualified"
+          ],
+          "admitWorkerHasTreeKey": true,
+          "runnerCallsVerifyTree": false,
+          "runnerConsumesTreesVerified": false,
+          "workerFenceComputesTreesVerified": false
+        },
+        "verdict": "NOT_REPRODUCED"
+      },
+      {
+        "id": "F4",
+        "title": "malformed holder entry treated as free capacity",
+        "observation": {
+          "holdersOnDisk": 1,
+          "malformed": true,
+          "granted": false,
+          "detail": "the capacity record contains 1 malformed holder entr(y/ies) (pid-not-a-positive-integer), so ownership is UNKNOWN and capacity cannot be granted. This is a HOST CAPACITY fact: no attempt was failed and no authority was granted."
+        },
+        "verdict": "NOT_REPRODUCED"
+      },
+      {
+        "id": "F5",
+        "title": "release on an unreadable record rewrites the ownership set as empty",
+        "observation": {
+          "acquired": true,
+          "released": false,
+          "detail": "the slot was not released: the capacity record is not valid JSON, so the ownership record is UNKNOWN and was not rewritten",
+          "recordAfterRelease": "{ this is not json",
+          "holdersAfterRelease": null,
+          "unrelatedHolderPreserved": null
+        },
+        "verdict": "NOT_REPRODUCED"
+      },
+      {
+        "id": "F6",
+        "title": "stale-lock recovery can remove a successor lock occupying the same pathname",
+        "observation": {
+          "liveOwnerArm": {
+            "acquired": false,
+            "detail": "the capacity lock is held by pid 27668 and was not acquired within 200ms. This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged.",
+            "successorStillThere": true,
+            "successorTokenAfter": "successor-live-owner",
+            "expectedToken": "successor-live-owner",
+            "evictedLiveOwner": false
+          },
+          "abaArm": {
+            "interleaving": "recoverer sees an abandoned backdated lock; a successor is installed at the same pathname from a second process before the recoverer's removal step",
+            "recovererAcquired": null,
+            "successorInstalled": true,
+            "successorPresentAtEnd": true,
+            "successorTokenAtEnd": "successor-live-owner",
+            "slotDirEntries": [
+              "active.lock"
+            ],
+            "detail": null,
+            "recovererError": null,
+            "recovererStderr": null,
+            "installerError": null,
+            "installerStderr": null,
+            "readError": null
+          },
+          "successorSurvivedRecovery": true
+        },
+        "verdict": "NOT_REPRODUCED"
+      },
+      {
+        "id": "F7",
+        "title": "different DSH homes acquire separate capacity slots in one confidentiality domain",
+        "observation": {
+          "sameDomain": {
+            "identityA": "protected-domain:C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1-baseline-vGqCFc\\f7\\repository-a",
+            "identityB": "protected-domain:C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1-baseline-vGqCFc\\f7\\repository-a",
+            "slotPathA": "f7/repository-a/.palimpsest/host-capacity/active.json",
+            "slotPathB": "f7/repository-a/.palimpsest/host-capacity/active.json",
+            "sharedSlot": true,
+            "grantedA": true,
+            "grantedB": false,
+            "contended": true,
+            "detailB": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 already active (pids 27668). This is a HOST CAPACITY fact: no attempt was failed, no authority was granted, and the task is unchanged."
+          },
+          "crossDomain": {
+            "grantedA": false,
+            "grantedB": true,
+            "separateSlots": true
+          },
+          "domainIdentityRecorded": true
+        },
+        "verdict": "NOT_REPRODUCED"
+      },
+      {
+        "id": "F8",
+        "title": "positive delegation case can pass with zero sessions and a pre-create refusal",
+        "observation": {
+          "committedProduction": {
+            "expectedVerdict": "ALLOWED_NO_DELIVERY",
+            "verdict": "ALLOWED_NO_DELIVERY",
+            "childSessionCreated": false,
+            "sessionCount": 0,
+            "preCreateRefused": true,
+            "matched": true
+          },
+          "productionObservations": {
+            "parentSessionCreated": false,
+            "preCreateAdmitted": false,
+            "delegationInvoked": false,
+            "childSessionCreated": false,
+            "childWorldAuthorized": false,
+            "authorizedContextDelivered": false,
+            "noCanaryDelivered": true,
+            "noSecurityRefusal": false
+          },
+          "productionVerdictUnderCorrectedOracle": "POSITIVE_CASE_NOT_EXECUTED",
+          "parentOnlyVerdict": "POSITIVE_CASE_NOT_EXECUTED",
+          "fullExecutionVerdict": "ALLOWED_NO_DELIVERY",
+          "probeRequiresPositiveObservations": true,
+          "matrixEnforcesPositiveExecution": true
+        },
+        "verdict": "NOT_REPRODUCED"
+      },
+      {
+        "id": "F9",
+        "title": "E1RG document associates the Code Freeze commit with the wrong tree",
+        "observation": {
+          "codeFreezeHead": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+          "actualTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+          "documentedTree": "595fae49a08619d98d40d1685736b9803db8c6d2",
+          "documentedTreeObjectType": "tree",
+          "mismatch": true
+        },
+        "verdict": "DEFECT_REPRODUCED"
+      }
+    ],
+    "summary": {
+      "total": 8,
+      "reproduced": 1,
+      "reproducedIds": [
+        "F9"
+      ],
+      "notReproduced": [
+        "F1",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8"
+      ]
+    }
+  },
   "runIdentity": {
-    "codeFreezeHead": "f76f376f63383a27e54eb41bc79bdb9d49a9ade6",
-    "executedCodeTree": "918c32359b7adb9f055b2455997378af1d81a00b",
+    "codeFreezeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
     "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
@@ -20,6 +223,6 @@
     "dshVersion": "0.2.1-rc.2",
     "timestampIsNotFreshnessProof": true
   },
-  "stage": "Palimpsest Host-S1R",
+  "stage": "Palimpsest Host-S1",
   "schemaVersion": 1
 }
