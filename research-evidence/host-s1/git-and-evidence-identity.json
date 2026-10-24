@@ -1,19 +1,23 @@
 {
-  "kind": "HOST_S1R_GIT_AND_EVIDENCE_IDENTITY",
+  "kind": "HOST_S1_GIT_AND_EVIDENCE_IDENTITY",
   "evidenceClass": "DYNAMICALLY_VERIFIED",
-  "parentHead": "c4ea1ab6090163f951941c0ab0d9794c6e0f8df4",
-  "parentBranch": "host-s1-boundary-completeness-lock-recovery",
-  "branch": "host-s1r-confidential-boundary-ratification",
-  "codeFreezeHead": "f76f376f63383a27e54eb41bc79bdb9d49a9ade6",
-  "codeFreezeTree": "918c32359b7adb9f055b2455997378af1d81a00b",
+  "parentHead": "e04211d2a2f52d05f2c248c3cc52257079b65a76",
+  "parentBranch": "trajectory-p2e1rg-host-admission-closure",
+  "branch": "host-s1-boundary-completeness-lock-recovery",
+  "codeFreezeHead": "353b216000596e1475c1766c60d6682a400c633b",
+  "codeFreezeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
   "workingTreeDirtyAtGeneration": false,
   "commitSequence": [
-    "f76f376f63383a27e54eb41bc79bdb9d49a9ade6 fix(host-s1r): run conformance on a label-writable volume",
-    "ceccdfc4cf36fba832779c077217fe9da41a2783 fix(host-s1r): declare the verified-basis inputs in the descendant suite's type",
-    "d91348a487bab89d87755476c5a65fcc43371e37 fix(host-s1r): run conformance against this freeze and fail closed on the verdict",
-    "6e187c0ad826654a5d4e4abe4fb01abefc689a82 fix(host-s1r): classify links by identity first and require a VERIFIED basis",
-    "d47c3959648102879f31fa43e5feef7b7f07b404 fix(host-s1r): scope capacity to the principal and stop unsafe lock reclamation",
-    "47086be66f536ff01764ff29904cec5cdc29a571 test(host-s1r): reproduce the nine confidentiality concerns against the parent"
+    "353b216000596e1475c1766c60d6682a400c633b fix(host-s1): keep PASS, LIMIT and FAIL mutually exclusive in the conformance receipt",
+    "8e622494503cf95b15f93d7e0c275b6cf1aa05c4 fix(host-s1): read the conformance receipt's actual pass/limits/failed fields",
+    "482b5ab2266119b42857b93ec126b0b5f82abb8b research(host-s1): record the boundary, capacity and delegation evidence",
+    "155a9a56fb948fc99f2c1c8bdec21bdc5cc942ae fix(host-s1): declare the artifact loader before the verdict derivation",
+    "ef3197a2978b9efed7dc9b0557786b9dcca7d44d feat(host-s1): derive verdicts from executed artifacts and detect PTC delegation dispatch",
+    "29b29149932e5b5842629287cd8df2dcea38fc10 feat(host-s1): add the sibling-world probe, failure attribution and run-scoped evidence",
+    "d2ae5ddaa9fc405882ba27efbfe8dabab5832220 fix(host-s1): require observed execution for a positive delegation case",
+    "35d5150aa800224fa03c682b08a082cb359dc737 fix(host-s1): validate capacity ownership and make lock recovery identity-based",
+    "87fe92073d1a0e0d4a79ed132ee90ba5c4651b46 feat(host-s1): cover the active-world spine and require descendant verification",
+    "6706d2bf8747b15b77af6a9392788e57f7f28db1 test(host-s1): reproduce the eight boundary, capacity and delegation defects"
   ],
   "protectedEvidence": {
     "verdict": "ALL_PROTECTED_TREES_UNCHANGED",
@@ -50,27 +54,11 @@
         "verdictForThatObservationSet": "POSITIVE_CASE_NOT_EXECUTED",
         "reason": "the case measured the absence of a leak, not the presence of delegation"
       }
-    },
-    {
-      "id": "S1R-ERRATUM-1",
-      "subject": "Host-S1 capacity namespace was repository-scoped",
-      "previous": "<repository>/.palimpsest/host-capacity/ — the slot was keyed by the protected repository",
-      "corrected": "%LOCALAPPDATA%/Palimpsest/host-capacity/ — the slot is keyed by the Windows principal on this machine",
-      "evidence": "baseline-security-falsifiers.json F3: a confined process granted only repository A's workspace read repository B's ACTIVE-world canary",
-      "note": "The repository-scoped design was never measured before Host-S1 shipped it. The measurement is what falsified it."
-    },
-    {
-      "id": "S1R-ERRATUM-2",
-      "subject": "Host-S1 automatic stale-lock reclamation was unsafe",
-      "previous": "an abandoned lock was reclaimed by rename-then-verify, and the Host-S1 evidence reported that as qualified",
-      "corrected": "automatic reclamation is DISABLED; an ambiguous lock refuses with a named operator action",
-      "evidence": "baseline-security-falsifiers.json F1: the recovery moved a live successor, a third party acquired the vacated pathname, and the recovery did not terminate",
-      "note": "§6.4 permits the fallback. Exclusive ownership is the security requirement; automatic recovery is an availability feature."
     }
   ],
   "runIdentity": {
-    "codeFreezeHead": "f76f376f63383a27e54eb41bc79bdb9d49a9ade6",
-    "executedCodeTree": "918c32359b7adb9f055b2455997378af1d81a00b",
+    "codeFreezeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
     "workingTreeDirty": false,
     "runtimeNode": "24.22.0",
     "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
@@ -79,6 +67,6 @@
     "dshVersion": "0.2.1-rc.2",
     "timestampIsNotFreshnessProof": true
   },
-  "stage": "Palimpsest Host-S1R",
+  "stage": "Palimpsest Host-S1",
   "schemaVersion": 1
 }
