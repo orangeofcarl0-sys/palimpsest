@@ -24,6 +24,7 @@ import { existsSync, lstatSync, readFileSync, readdirSync, realpathSync, statSyn
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runtimeHomePath } from "../gates/runtime-home.mjs";
 
 const NL = String.fromCharCode(10);
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -126,7 +127,7 @@ const staleWorktreePaths = worktreePorcelain
   .filter((path) => path !== null);
 
 /* ------------------------------------------------------------------ runtime ---- */
-const runtimeHome = (process.env.runtime_HOME ?? join(homedir(), ".dsh")).replace(/\\/gu, "/");
+const runtimeHome = runtimeHomePath();
 const runtimeModules = join(runtimeHome, "profiles", "node_modules");
 const runtimeManifestPath = join(runtimeModules, "@deepseek-ai", "dsh", "package.json");
 let installedRuntime = null;

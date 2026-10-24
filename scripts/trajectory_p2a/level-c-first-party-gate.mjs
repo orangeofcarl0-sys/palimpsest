@@ -36,15 +36,30 @@ import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFile
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import * as moduleSharing from "../trajectory_p2b/module-sharing.mjs";
+import * as ownedResource from "../trajectory_p2b/owned-resource.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const REAL_DSH_HOME = (process.env.DSH_HOME ?? join(homedir(), ".dsh")).replace(/\\/g, "/");
 const REAL_MODULES = join(REAL_DSH_HOME, "profiles", "node_modules");
 const GATE_ROOT = (process.env.PALIMPSEST_P2A_GATE_ROOT ?? join(homedir(), ".palimpsest-gates")).replace(/\\/g, "/");
-const RIG = join(GATE_ROOT, "p2a-level-c");
+/**
+ * RA-B — THE RIG IS UNIQUE PER RUN AND RECLAIMED ON EVERY EXIT PATH.
+ *
+ * The superseded gate used a FIXED path and deleted it unconditionally at startup. Two consequences were
+ * measured in the Host-S1RA audit: a concurrent run and this one destroyed each other's fixture, and a run
+ * that exited before the single end-of-script path left its whole tree behind — the 14 MiB `p2a-level-c`
+ * directory found in the gate root.
+ *
+ * The allocation is now owned, marker-carrying and identity-checked, and the lifetime helper reclaims it on
+ * normal return, on `process.exit()`, and on SIGINT/SIGTERM.
+ */
+const owned = ownedResource.allocateOwnedRoot(GATE_ROOT, "p2a-level-c-");
+const RIG = owned.root;
 const HOME = join(RIG, "home");
 const WORLD = join(RIG, "world");
 const PROFILE = "p2a-level-c";
+const lifetime = ownedResource.ownedRootLifetime(owned);
 
 const findings = {};
 const record = (key, value) => {
@@ -67,18 +82,24 @@ function installHostBundle() {
 }
 
 /**
- * §9.1: link the SHARED first-party DSH packages into the test home. The packages are read-only
- * dependencies; the test home is disposable, and the link is what lets the profile boot the real DSH
- * without copying 60k files.
+ * RA-A — THIS GATE CARRIED THE LAST UNCONVERTED COPY OF THE DEFECTIVE SHARING HELPER.
+ *
+ * It decided occupancy with `existsSync`, which FOLLOWS a reparse point, and it completed the graph with
+ * `cpSync(..., { dereference: true })`. RA-0/F1 and F2 measured both consequences: a dangling junction reads as
+ * free, and a partial link set is "completed" by a copy that can materialise ~1 GiB per home. Every other gate was
+ * converted in the previous stage; this one was missed, and `test/trajectory_p2a_first_party_gate.test.ts` still
+ * executes it.
+ *
+ * It now delegates to the single corrected implementation.
  */
 function linkSharedModules() {
-  const target = join(HOME, "profiles", "node_modules");
-  for (const entry of readdirSync(REAL_MODULES)) {
-    const source = join(REAL_MODULES, entry);
-    const destination = join(target, entry);
-    if (existsSync(destination)) continue;
-    cpSync(source, destination, { recursive: true, dereference: true });
-  }
+  const result = moduleSharing.linkModuleGraph(HOME, {
+    sourceModules: REAL_MODULES,
+    /** The host bundle packages are installed by `installHostBundle()` immediately before this call. */
+    providedByCaller: ["palimpsest-dsh-host", "palimpsest-host-deployment"],
+  });
+  record("moduleSharing", result);
+  return result;
 }
 
 function writeProfile() {
@@ -172,7 +193,7 @@ function inspectSessions() {
 const advanced = await import(pathToFileURL(join(REPO, "dist", "src", "advanced.js")).href);
 const workWorker = await import(pathToFileURL(join(REPO, "dist", "src", "deployment", "work_worker.js")).href);
 
-rmSync(RIG, { recursive: true, force: true });
+/** No pre-deletion: the root is unique to this run, so there is nothing of anyone else's to remove. */
 mkdirSync(WORLD, { recursive: true });
 mkdirSync(join(HOME, "profiles"), { recursive: true });
 installHostBundle();
@@ -337,6 +358,13 @@ const qualified =
   sessions.sessionIds.includes(identity.dshSessionId) &&
   sessions.turnEventCount === 0;
 result.verdict = qualified ? "REAL_HOST_PARENT_IDENTITY_ROUTE_QUALIFIED_NO_MODEL" : "NOT_ESTABLISHED";
+
+/**
+ * RA-B — THE CLEANUP OUTCOME IS PART OF THE RESULT, and it is disposed BEFORE the process exits so a failure
+ * is visible in the receipt rather than inferred from a directory that may or may not still exist.
+ */
+const cleanup = lifetime.dispose();
+result.testRootCleanup = cleanup;
 
 process.stdout.write(JSON.stringify(result, null, 2) + "\n");
 process.exit(qualified ? 0 : 1);

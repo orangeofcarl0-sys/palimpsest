@@ -213,6 +213,44 @@ export function linkModuleGraph(home, options = {}) {
   const callerProvided = [];
   const refused = [];
   for (const entry of entries) {
+    const destination = join(directory.path, entry);
+
+    /**
+     * A CALLER-DECLARED ENTRY THAT ALREADY EXISTS AS A REAL DIRECTORY IS THE CALLER'S OWN PACKAGE.
+     *
+     * `installHostBundle()` writes the current branch's two host packages into the home as REAL DIRECTORIES
+     * before sharing runs, and those same names ALSO exist in the shared runtime tree because the live gates
+     * install them there for the real runtime to load. So the entry is present in the source AND occupied in the
+     * destination by a directory the caller just created.
+     *
+     * That is not a shadowing hazard and it is not an unexpected occupant: the caller declared the name and
+     * created the object. It is accepted and reported as providedByCaller. The admission rule that matters is
+     * unchanged — an entry that is NEITHER declared by the caller NOR present in the source is still refused, and
+     * a declared name occupied by a FILE or a REPARSE POINT is still refused, because only a plain directory the
+     * caller created is what `installHostBundle` produces.
+     */
+    if (providedByCaller.has(entry)) {
+      const state = classifyDestination(destination);
+      /**
+       * THREE CASES, and only the middle one is the caller's own package:
+       *
+       *   ABSENT      the caller declared a name but did not install it — fall through to the ordinary link path,
+       *               which is the correct behaviour and is what the storage suite exercises.
+       *   DIRECTORY   the caller installed it (`installHostBundle`); accept it and record it as providedByCaller.
+       *   anything    a FILE or a REPARSE POINT at a declared name is not what the caller's installer produces,
+       *   else        so it is refused rather than trusted.
+       */
+      if (state.state === DestinationState.ABSENT) {
+        /** Ordinary installation below. */
+      } else if (state.state === DestinationState.DIRECTORY && state.isReparsePoint === false) {
+        callerProvided.push(entry);
+        continue;
+      } else {
+        refused.push({ entry, outcome: "REFUSED", reason: `CALLER_DECLARED_BUT_DESTINATION_IS_${state.state}`, state });
+        continue;
+      }
+    }
+
     const result = installEntry(sourceModules, directory.path, entry);
     if (result.outcome === "LINKED") linked.push(result.entry);
     else if (result.outcome === "ALREADY_LINKED") alreadyLinked.push(result.entry);
@@ -226,7 +264,8 @@ export function linkModuleGraph(home, options = {}) {
   const extra = readdirSync(directory.path).filter((entry) => !entries.includes(entry));
   for (const entry of extra) {
     if (providedByCaller.has(entry)) {
-      callerProvided.push(entry);
+      /** Declared but absent from the source tree: still the caller's own package, already recorded above. */
+      if (!callerProvided.includes(entry)) callerProvided.push(entry);
       continue;
     }
     /** Not declared by the caller and not in the source: this is an unexpected occupant. */
