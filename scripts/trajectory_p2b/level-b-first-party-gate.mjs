@@ -27,7 +27,17 @@ import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, rea
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { runtimeHomePath } from "../gates/runtime-home.mjs";
+import { applyRuntimeHome, captureRuntimeHome, restoreRuntimeHome, runtimeHomeEnvironment, runtimeHomePath } from "../gates/runtime-home.mjs";
+
+/**
+ * THE ENVIRONMENT HANDED TO A CHILD WORKER.
+ *
+ * A child gets a FRESH environment, so setting the home in THIS process does not reach it. The superseded code
+ * passed a single key — the 23-code-point name — while the worker's own fence reads the 19-code-point name, so
+ * the child silently booted against `~/.dsh` and the worker exited 1. `runtimeHomeEnvironment` writes EVERY
+ * accepted spelling, so whichever one the child reads, it reads the test home.
+ */
+const workerEnv = (home) => runtimeHomeEnvironment(home, { ...process.env });
 import * as moduleSharing from "./module-sharing.mjs";
 import * as ownedResource from "./owned-resource.mjs";
 
@@ -205,7 +215,7 @@ if (!existsSync(join(REAL_MODULES, "@deepseek-ai", "dsh-session"))) {
   finish("SKIPPED", { blocker: "no installed first-party DSH tree; the mandatory gate cannot run" });
 }
 
-const owned = allocateOwnedRoot();
+const owned = allocateOwnedRoot("p2b-c2-");
 record("testRootContained", owned.contained);
 record("testRootIsReparsePoint", owned.isReparse);
 if (!owned.contained) finish("NOT_ESTABLISHED", { blocker: "could not prove the run directory is contained in the gate root" });
@@ -238,8 +248,8 @@ const advanced = await import(pathToFileURL(join(REPO, "dist", "src", "advanced.
 void advanced;
 const workWorker = await import(pathToFileURL(join(REPO, "dist", "src", "deployment", "work_worker.js")).href);
 
-const previousHome = process.env.DSH_HOME;
-process.env.DSH_HOME = HOME;
+const previousHome = captureRuntimeHome();
+applyRuntimeHome(HOME);
 
 const observations = [];
 let outcome;
@@ -258,8 +268,7 @@ try {
     observeSessionIdentity: (observation) => observations.push(observation),
   });
 } finally {
-  if (previousHome === undefined) delete process.env.DSH_HOME;
-  else process.env.DSH_HOME = previousHome;
+  restoreRuntimeHome(previousHome);
 }
 
 const identity = observations.length > 0 ? observations[0] : null;
@@ -300,7 +309,7 @@ const hostTelemetry = (() => {
     runner,
     [
       'import { spawn } from "node:child_process";',
-      `const child = spawn(process.execPath, [${JSON.stringify(process.env.PALIMPSEST_DSH_BIN ?? join(REAL_MODULES, "@deepseek-ai", "dsh", "lib", "bin.js"))}, "--profile", ${JSON.stringify(PROFILE)}, "--work", ${JSON.stringify(payloadPath)}], { cwd: ${JSON.stringify(WORLD)}, env: { ...process.env, DSH_HOME: ${JSON.stringify(HOME)} }, stdio: ["ignore", "pipe", "pipe", "ipc"] });`,
+      `const child = spawn(process.execPath, [${JSON.stringify(process.env.PALIMPSEST_DSH_BIN ?? join(REAL_MODULES, "@deepseek-ai", "dsh", "lib", "bin.js"))}, "--profile", ${JSON.stringify(PROFILE)}, "--work", ${JSON.stringify(payloadPath)}], { cwd: ${JSON.stringify(WORLD)}, env: ${JSON.stringify(runtimeHomeEnvironment(HOME, process.env))}, stdio: ["ignore", "pipe", "pipe", "ipc"] });`,
       "let out = '';",
       "child.stdout.on('data', (c) => (out += c.toString()));",
       "child.stderr.on('data', () => {});",
@@ -309,7 +318,7 @@ const hostTelemetry = (() => {
     ].join("\n"),
   );
   try {
-    const output = execFileSync(process.execPath, [runner], { encoding: "utf8", maxBuffer: 32 * 1024 * 1024, env: { ...process.env, DSH_HOME: HOME } });
+    const output = execFileSync(process.execPath, [runner], { encoding: "utf8", maxBuffer: 32 * 1024 * 1024, env: runtimeHomeEnvironment(HOME, process.env) });
     const identityLine = output.split(/\r?\n/u).find((line) => line.startsWith("PALIMPSEST_WORKER_SESSION_IDENTITY "));
     const resultLine = output.split(/\r?\n/u).find((line) => line.startsWith("PALIMPSEST_WORK_RESULT "));
     return {

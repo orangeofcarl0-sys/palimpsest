@@ -30,6 +30,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { ownedRootLifetime, REAL_DSH_HOME, REPO, allocateOwnedRoot, dshBin, hasBuiltDist, hasFirstPartyDsh, installHostBundle, linkSharedModules, measureSessionThroughOfficialReader, safeCleanup, writeProbeProfile } from "./rig.mjs";
+import { applyRuntimeHome, captureRuntimeHome, restoreRuntimeHome } from "../gates/runtime-home.mjs";
 
 const OUTCOMES = ["PASS", "SKIPPED", "BLOCKED", "NOT_ESTABLISHED"];
 const findings = {};
@@ -144,8 +145,8 @@ const recorder = association.createExecutionAssociationRecorder({
 });
 
 const correlated = [];
-const previousHome = process.env.DSH_HOME;
-process.env.DSH_HOME = HOME;
+const previousHome = captureRuntimeHome();
+applyRuntimeHome(HOME);
 
 let startResult;
 try {
@@ -167,8 +168,7 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 } finally {
-  if (previousHome === undefined) delete process.env.DSH_HOME;
-  else process.env.DSH_HOME = previousHome;
+  restoreRuntimeHome(previousHome);
 }
 
 /* §8.1: finalize the observation window — the delegation boundary returned, so the Parent stopped waiting. */

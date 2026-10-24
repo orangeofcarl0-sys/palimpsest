@@ -207,7 +207,18 @@ export function installHostBundle(home) {
 export function linkSharedModules(home, options = {}) {
   const strategy = options.strategy ?? "junction";
   if (strategy === "copy") return copyModuleGraph(home);
-  const result = moduleSharing.linkModuleGraph(home, { sourceModules: REAL_MODULES });
+  /**
+   * THE HOST BUNDLE PACKAGES ARE INSTALLED BY THE CALLER, NOT SHARED FROM THE RUNTIME.
+   *
+   * `installHostBundle(home)` copies the current branch's two host packages into the home as real directories,
+   * and every gate calls it before this function. They are declared here so the sharing operation can tell them
+   * apart from an unexpected occupant — a directory at a name the shared source does not contain, created by the
+   * caller on purpose.
+   */
+  const result = moduleSharing.linkModuleGraph(home, {
+    sourceModules: REAL_MODULES,
+    providedByCaller: ["palimpsest-dsh-host", "palimpsest-host-deployment"],
+  });
   return {
     ...result,
     /** `linked` was a count before; a list is returned so evidence can name WHICH entries were linked. */
