@@ -27,9 +27,12 @@ import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, rea
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { runtimeHomePath } from "../gates/runtime-home.mjs";
+import * as moduleSharing from "./module-sharing.mjs";
+import * as ownedResource from "./owned-resource.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const REAL_DSH_HOME = (process.env.DSH_HOME ?? join(homedir(), ".dsh")).replace(/\\/g, "/");
+const REAL_DSH_HOME = (runtimeHomePath()).replace(/\\/g, "/");
 const REAL_MODULES = join(REAL_DSH_HOME, "profiles", "node_modules");
 const GATE_ROOT = (process.env.PALIMPSEST_P2B_GATE_ROOT ?? join(homedir(), ".palimpsest-gates")).replace(/\\/g, "/");
 const PROFILE = "p2b-level-b";
@@ -61,51 +64,46 @@ function finish(outcome, extra) {
  * ------------------------------------------------------------------ */
 
 /**
- * Allocate a UNIQUE per-run directory inside the gate root and PROVE it is contained.
+ * RA-B - THE LOCAL OWNERSHIP HELPERS ARE GONE.
  *
- * The P2-A gate deleted a FIXED directory under a caller-controllable root. This one refuses to delete
- * anything it did not create: the path is returned by `mkdtempSync`, and containment is asserted against
- * the resolved gate root before the caller may clean it up.
+ * This gate carried its OWN `allocateOwnedRoot` and `safeCleanup`, which cached `contained`/`isReparse` at
+ * allocation and deleted whatever occupied the path afterwards. RA-0/F3 measured the consequence on the shared
+ * implementation: a foreign directory's contents were removed. Rather than fix the defect twice and let the two
+ * copies drift, both now delegate to `scripts/trajectory_p2b/owned-resource.mjs`, which re-proves containment,
+ * reparse status and object identity immediately before deleting and keeps a failed attempt retryable.
  */
-function allocateOwnedRoot() {
-  if (!existsSync(GATE_ROOT)) mkdirSync(GATE_ROOT, { recursive: true });
-  const root = mkdtempSync(join(GATE_ROOT, "p2b-level-b-"));
-  const resolvedRoot = realpathSync(root);
-  const resolvedGate = realpathSync(GATE_ROOT);
-  const rel = relative(resolvedGate, resolvedRoot);
-  const contained = rel !== "" && !rel.startsWith("..") && !rel.startsWith(sep) && !resolve(resolvedRoot).startsWith(`${resolve(resolvedGate)}${sep}..`);
-  // Refuse a reparse point (Windows junction/symlink) as a cleanup target.
-  const isReparse = lstatSync(root).isSymbolicLink();
-  return { root: resolvedRoot, contained, isReparse };
-}
+const allocateOwnedRoot = (prefix) => ownedResource.allocateOwnedRoot(GATE_ROOT, prefix);
 
-/**
- * Delete ONLY the directory this run created, after re-proving containment.
- *
- * ASYNC: Windows releases the DSH/SQLite handles slightly after the child exits, and a synchronous sleep
- * would block the event loop so those closes never drain. Bounded retries; if all fail, the directory is
- * PRESERVED and the reason reported (§5 B0-F3) rather than deleted with a wider sweep.
- */
-async function safeCleanup(owned) {
-  if (!owned.contained || owned.isReparse) return { cleaned: false, reason: "containment or reparse check failed; preserving the directory" };
-  let lastReason = "";
+const safeCleanup = async (owned) => {
+  const proof = ownedResource.revalidateOwnership(owned);
+  if (proof.owned !== true) return { cleaned: false, reason: proof.reason, checks: proof.checks, preserved: true };
   for (let attempt = 0; attempt < 8; attempt += 1) {
     try {
       rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      return { cleaned: true };
+      return { cleaned: true, checks: proof.checks };
     } catch (error) {
-      lastReason = error?.message ?? String(error);
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      await new Promise((done) => setTimeout(done, 250));
+      if (attempt === 7) return { cleaned: false, reason: String(error?.message ?? error), preserved: true };
     }
   }
-  return { cleaned: false, reason: `preserved after retries: ${lastReason}`, preserved: true };
-}
+  return { cleaned: false, reason: "attempt budget exhausted", preserved: true };
+};
+
 
 /* ------------------------------------------------------------------ *
  * §5 B0-C2 — the no-model first-party run
  * ------------------------------------------------------------------ */
 
-function installHostBundle(home) {
+
+/**
+ * RA-A - THE LOCAL MODULE-SHARING COPIES ARE GONE.
+ *
+ * This gate carried its own `installHostBundle` and `linkSharedModules`. The second one had the SAME defect the
+ * shared rig had: occupancy decided by `existsSync`, and a dereferencing copy as the automatic completion for a
+ * partial link set. RA-0/F1 and F2 measured both consequences. It now delegates, so there is exactly ONE
+ * implementation of destination admission in the tree.
+ */
+const installHostBundle = (home) => {
   const nodeModules = join(home, "profiles", "node_modules");
   mkdirSync(nodeModules, { recursive: true });
   for (const [source, name] of [
@@ -116,40 +114,10 @@ function installHostBundle(home) {
     rmSync(target, { recursive: true, force: true });
     cpSync(source, target, { recursive: true });
   }
-}
+};
 
-/**
- * Share the runtime packages into the test home.
- *
- * S1R-GATES — THE DUPLICATE COPY IS GONE. This gate carried its OWN copy of the helper, and that copy
- * dereferenced the installer's junctions: 1,048.6 MiB and 112,512 files per home, measured. It now uses
- * per-entry junctions like `rig.mjs`, so the cost is ~0 bytes and ~0.07 s, and the strategy is returned so the
- * gate's own output records which one ran.
- */
-function linkSharedModules(home) {
-  const target = join(home, "profiles", "node_modules");
-  mkdirSync(target, { recursive: true });
-  let linked = 0;
-  let failed = 0;
-  for (const entry of readdirSync(REAL_MODULES)) {
-    const destination = join(target, entry);
-    if (existsSync(destination)) continue;
-    try {
-      symlinkSync(join(REAL_MODULES, entry), destination, "junction");
-      linked += 1;
-    } catch {
-      failed += 1;
-    }
-  }
-  if (failed > 0) {
-    for (const entry of readdirSync(REAL_MODULES)) {
-      const destination = join(target, entry);
-      if (!existsSync(destination)) cpSync(join(REAL_MODULES, entry), destination, { recursive: true, dereference: true });
-    }
-    return { strategy: "copy", junctionFailures: failed };
-  }
-  return { strategy: "junction", linked };
-}
+const linkSharedModules = (home) => moduleSharing.linkModuleGraph(home, { sourceModules: REAL_MODULES });
+
 
 function writeProfile(home, rig) {
   const profileDir = join(home, "profiles", PROFILE);
