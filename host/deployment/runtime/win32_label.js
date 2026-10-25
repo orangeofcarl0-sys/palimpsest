@@ -92,15 +92,34 @@ const MANDATORY_LABEL_AUTHORITY = 16;
  *   · the label read/write/preservation behaviour was re-exercised, and the unreadable-descriptor defect that
  *     the requalification found was REPAIRED before the pin moved (§5.4, `readMandatoryLabel`).
  *
+ * REQUALIFICATION (Host-S1RA-E4 §C1). The pin moved from `0.2.1-rc.2` to `0.2.1-rc.3` under the same rule, and the
+ * project owner authorised rc.3 as the current baseline. The evidence is in
+ * `docs/engineering/host-s1rae4-rc3-adoption.md` and `research-evidence/host-s1rae4/`:
+ *
+ *   · the seam resolves at `0.2.1-rc.3` from a run-owned test home, and `koffi` still resolves to `3.1.1` through
+ *     the seam package's OWN declared dependency graph — the FFI runtime did not move;
+ *   · all six symbols this module binds are present and are FUNCTIONS, measured by type rather than by name;
+ *   · the label WRITE was applied through the rc.3 seam, read back as `integrity=Medium`, and a REAL Low-integrity
+ *     process was REFUSED (`EPERM`) while an unlabelled control read succeeded. That distinction — refusal of the
+ *     labelled object, success on the control, from a Low token — is what separates the Mandatory Integrity
+ *     mechanism from an incidental ACL effect or an unapplied label.
+ *
+ * WHAT THIS DOES **NOT** CLAIM. It does not establish that every Win32 call behaves identically to rc.2, that the
+ * ACL binding signatures marshal identically in untested paths, or that the real runtime Home boundary is now
+ * protected — E2 measured that it is not, and nothing here changes it. The pin names the release this code was
+ * qualified against for the operations it performs; it is not a general statement about rc.3.
+ *
  * The `qualifiedVersion` therefore names the release this code was actually qualified against, and
  * `dshCompatibilityReport()` still reports drift for any OTHER release rather than assuming compatibility.
  */
 export const DSH_CONTRACT = Object.freeze({
   package: '@deepseek-ai/dsh-win32-process',
   /** The exact version the fence was qualified against. */
-  qualifiedVersion: '0.2.1-rc.2',
+  qualifiedVersion: '0.2.1-rc.3',
   /** The release the earlier qualification was performed against, kept so the history stays legible. */
-  previouslyQualifiedVersion: '0.2.0-rc.2',
+  previouslyQualifiedVersion: '0.2.1-rc.2',
+  /** The release before that, retained because the E2 requalification evidence names it. */
+  firstQualifiedVersion: '0.2.0-rc.2',
   /** The exported seam, and the two context members it must provide. */
   seam: 'extendWin32ProcessBindings',
   contextMembers: Object.freeze(['advapi32', 'bind']),

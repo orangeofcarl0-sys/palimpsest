@@ -252,11 +252,33 @@ async function readStoredPrefix(persistence, sessionId, SessionId, interruptedTu
 }
 
 /**
- * §4: build a REAL DSH-backed reader.
+ * E4-C1 — RESOLVE THE PERSISTENCE PLUGIN ACROSS rc.2 AND rc.3.
  *
- * `sessionsRoot` is the DSH session root (e.g. `<dshHome>/sessions`). The reader mounts the JSONL
+ * rc.2's `dsh-session-persistence-jsonl` exported the plugin as `default`. rc.3 exports `apply`, `name` and `Config`
+ * as NAMED exports and has NO `default`, so the previous `.default` access produced `undefined` and Cordis refused it
+ * with `invalid plugin, expect function or object with an "apply" method, received undefined`.
+ *
+ * THAT FAILURE IS WHY THE PIN MOVE MATTERED. It appeared only AFTER the drift refusal was resolved: the gate got past
+ * pre-create, reached the session measurement, and crashed on a real API change. A stage that had merely flipped the
+ * version string without running the path would never have found it.
+ *
+ * Cordis accepts a function or an object carrying `apply`, so the namespace object is a valid plugin. `default` is
+ * still preferred when it exists, so the reader keeps working against rc.2 sessions — a reader that understood only
+ * the newest shape would make the historical record unreadable.
+ */
+async function resolvePersistencePlugin(base) {
+  const module = await import(base + 'dsh-session-persistence-jsonl/lib/index.js');
+  const candidate = module.default;
+  if (typeof candidate === 'function' || (candidate !== null && typeof candidate === 'object' && typeof candidate.apply === 'function')) return candidate;
+  return module;
+}
+
+/**
+ * §4: build a REAL runtime-backed reader.
+ *
+ * `sessionsRoot` is the runtime session root (e.g. `<dshHome>/sessions`). The reader mounts the JSONL
  * backend in a bare Cordis context — no agent, no tools, no provider — and reads through
- * an official read handle, which DSH documents as never making a session live.
+ * an official read handle, which runtime documents as never making a session live.
  */
 export async function makeRealDshSessionReader(input) {
   const { dshHomePath, sessionsRoot } = input;
@@ -266,7 +288,7 @@ export async function makeRealDshSessionReader(input) {
 
   const base = pathToFileURL(packageRoot + '/').href;
   const { Context } = await import(base + 'cordis/lib/index.js');
-  const JsonlSessionPersistence = (await import(base + 'dsh-session-persistence-jsonl/lib/index.js')).default;
+  const JsonlSessionPersistence = await resolvePersistencePlugin(base);
   /**
    * H1 §6.1: `interruptedTurnClosers` is DSH's OWN recovery helper, exported by `@deepseek-ai/dsh-session`
    * and used by `readColdSessionLog` itself. Reusing it — rather than reimplementing the recovery state
@@ -469,7 +491,7 @@ export async function listSessionIds(input) {
   if (packageRoot === null) return null;
   const base = pathToFileURL(packageRoot + '/').href;
   const { Context } = await import(base + 'cordis/lib/index.js');
-  const JsonlSessionPersistence = (await import(base + 'dsh-session-persistence-jsonl/lib/index.js')).default;
+  const JsonlSessionPersistence = await resolvePersistencePlugin(base);
   const ctx = new Context();
   const fiber = await ctx.plugin(JsonlSessionPersistence, { root: sessionsRoot, compression: 'zstd' });
   try {

@@ -24,11 +24,30 @@ import { join } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { GATE_ROOT, allocateOwnedRoot, findDescendantReparsePoints, safeCleanup, snapshotDependencyRoot, withOwnedRoot } from "../scripts/trajectory_p2e0/owned-root.mjs";
+import { GATE_ROOT, allocateOwnedRoot as allocateUnderSharedRoot, findDescendantReparsePoints, safeCleanup, snapshotDependencyRoot, withOwnedRoot as withSharedOwnedRoot } from "../scripts/trajectory_p2e0/owned-root.mjs";
 import { REAL_MODULES, shareDshModules } from "../scripts/trajectory_p2e0/dsh-test-home.mjs";
 
 let sandbox: string;
 const made: string[] = [];
+
+/**
+ * E4-A3 — THIS SUITE'S OWN GATE ROOT, ALLOCATED ONCE AND REMOVED WITH THE SANDBOX.
+ *
+ * WHY. Every case below used the shared `GATE_ROOT` (`~/.palimpsest-gates`) for its fixtures, and case 35 asserted
+ * that the ENTRY COUNT of that shared directory was unchanged. `test/trajectory_p2e0_test_runtime_safety.test.ts`
+ * allocates and disposes in the same directory, so under parallel execution one suite's legitimate work landed
+ * inside the other's observation window. E4-A2 reproduced it deterministically: an external process allocating one
+ * root moved the count from 19 to 20 while the observer was parked at a barrier, and the assertion failed for a
+ * reason the observer did not cause.
+ *
+ * The fix is not to filter the count. It is to observe a directory this suite owns and nothing else writes to.
+ */
+let fixtureGateRoot: string;
+
+/** Allocate under THIS SUITE'S private gate root, so no other suite can move what this one observes. */
+const allocateOwnedRoot = (prefix: string, runIdentity: string) => allocateUnderSharedRoot(prefix, runIdentity, fixtureGateRoot);
+const withOwnedRoot = <T,>(prefix: string, runIdentity: string, body: (owned: { root: string }) => Promise<T> | T) =>
+  withSharedOwnedRoot(prefix, runIdentity, body, fixtureGateRoot);
 
 function makeJunction(link: string, target: string): boolean {
   try {
@@ -41,6 +60,9 @@ function makeJunction(link: string, target: string): boolean {
 
 beforeAll(() => {
   sandbox = mkdtempSync(join(tmpdir(), "palimpsest-e1-safety-"));
+  /** The private gate root lives INSIDE the sandbox, so the existing sandbox removal disposes of it. */
+  fixtureGateRoot = join(sandbox, "gate-root");
+  mkdirSync(fixtureGateRoot, { recursive: true });
 });
 afterAll(() => {
   for (const dir of made) {
@@ -219,6 +241,28 @@ describe("E1 §9 Group C — resource safety closeout", () => {
     }
     expect(countGateRoots()).toBe(before);
   });
+
+  /**
+   * E4-A3 — THE ISOLATION CONTROL THAT REPLACES THE OLD IMPLICIT ASSUMPTION.
+   *
+   * Case 35 above now proves accumulation against this suite's OWN gate root. This case proves the other half: the
+   * suite's fixtures really are private, so the SHARED root is not being used as scratch space. Without it, the
+   * correction could be "observe a private root while still writing to the shared one", which would pass case 35 and
+   * still contaminate other runs.
+   */
+  it("36. this suite's fixtures live in a PRIVATE gate root, and the shared root is untouched by them", async () => {
+    const sharedBefore = countSharedGateRoots();
+    const owned = allocateOwnedRoot("p2e1-private-", "run-private");
+    /** The fixture must be inside the private root, and NOT inside the shared one. */
+    expect(owned.root.startsWith(fixtureGateRoot.replace(/\\/gu, "/"))).toBe(true);
+    expect(owned.gateRoot.replace(/\\/gu, "/")).toBe(fixtureGateRoot.replace(/\\/gu, "/"));
+    expect(owned.root.startsWith(GATE_ROOT.replace(/\\/gu, "/"))).toBe(false);
+    /** The shared root's entry set is unchanged by an allocation and a disposal in the private root. */
+    expect(countSharedGateRoots()).toBe(sharedBefore);
+    const result = await safeCleanup(owned);
+    expect(result.cleaned).toBe(true);
+    expect(countSharedGateRoots()).toBe(sharedBefore);
+  });
 });
 
 function readdirSafe(dir: string): string[] {
@@ -229,8 +273,23 @@ function readdirSafe(dir: string): string[] {
   }
 }
 
-/** Count the owned roots currently present under the gate root. */
+/**
+ * Count the owned roots present under THIS SUITE'S private gate root.
+ *
+ * E4-A3 — THE SCOPE IS THE FIX. This counted `GATE_ROOT`, the shared `~/.palimpsest-gates`, which another suite
+ * mutates legitimately. A test that wants to prove "my allocations do not accumulate" must observe a directory only
+ * its own allocations write to, or the measurement cannot distinguish its own leak from someone else's work.
+ */
 function countGateRoots(): number {
+  try {
+    return readdirSync(fixtureGateRoot).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Count the SHARED gate root, used only by the control that asserts this suite leaves it alone. */
+function countSharedGateRoots(): number {
   try {
     return readdirSync(GATE_ROOT).length;
   } catch {
