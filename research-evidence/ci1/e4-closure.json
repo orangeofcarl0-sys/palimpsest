@@ -1,0 +1,856 @@
+{
+  "schemaVersion": 1,
+  "kind": "PALIMPSEST_CI1_E4_CLOSURE",
+  "stage": "Palimpsest-CI1",
+  "measuredAt": "2026-10-25T17:27:41.717Z",
+  "node": {
+    "version": "v24.22.0",
+    "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe"
+  },
+  "baseline": {
+    "head": "95ce9b843948085f7a02fa86f62e867300440fc1",
+    "headTree": "954a6be45d10e866f8f1a36d4ca69448e1eb9127",
+    "e3CodeFreeze": "bf4e8af",
+    "e3EvidenceFreeze": "da568e6",
+    "e4CodeFreeze": "05aa9d2",
+    "e4EvidenceFreeze": "95ce9b8"
+  },
+  "findings": {
+    "selectionDerived": {
+      "allTestFiles": 396,
+      "excludedR3l0": 39,
+      "excludedTrajectory": 78,
+      "included": 279,
+      "formulaHolds": true
+    },
+    "frozenEnumeration": {
+      "enumeratedFrom": "working tree at 95ce9b843948085f7a02fa86f62e867300440fc1",
+      "workingTreeTestSubtreeMatchesE4EvidenceFreeze": true,
+      "totalTests": 3701,
+      "filesWithTests": 279,
+      "matchesE3Reported3701": true,
+      "matchesE4Reported3691": false
+    },
+    "c0a": {
+      "question": "why did E3 record 3701 tests and E4 record 3691 on the same 279-file selection?",
+      "frozenTreeTestCount": 3701,
+      "e3Reported": 3701,
+      "e4Reported": 3691,
+      "difference": 10,
+      "e4CollectedFiles": "278 of 279 (the E4 report's own figure)",
+      "filesWhoseCountEqualsTheDifference": [
+        "test/architecture/change_radius.test.ts",
+        "test/architecture/sr2b2_head_owner.test.ts",
+        "test/architecture/sr2b4_context_owner.test.ts",
+        "test/architecture/sr2d3_collaboration_substrate.test.ts",
+        "test/binding_freshness.test.ts",
+        "test/g1_campaign_identity.test.ts",
+        "test/h_runtime_scope_core.test.ts",
+        "test/i_dynamics_core.test.ts",
+        "test/l_federated_boundary.test.ts",
+        "test/lean_work_delegation_transport.test.ts",
+        "test/p_adversarial.test.ts",
+        "test/peer_identity.test.ts",
+        "test/persistent_continuity.test.ts",
+        "test/preset_library.test.ts",
+        "test/s_advisor.test.ts",
+        "test/w_adversarial.test.ts"
+      ],
+      "fileCountDifferenceExplainsTestCountDifference": true,
+      "testTreeIdenticalBetweenFreezes": false,
+      "testFilesChangedBetweenFreezes": [
+        "test/trajectory_p2e0_test_runtime_safety.test.ts",
+        "test/trajectory_p2e1_resource_safety.test.ts"
+      ],
+      "skipOrTodoConstructsInSelection": {
+        "filesWithSkipConstructs": [],
+        "count": 0
+      },
+      "conclusion": "3701 is the frozen tree's collection count; 3691 is a run in which one 10-test file did not contribute. No per-file manifest survives, so the mechanism is established and the specific file is not.",
+      "specificFileRecovered": false
+    },
+    "c0b": {
+      "question": "what was the non-gate runner's Exit 1, and is it a product regression?",
+      "reportedCause": "Timeout terminating forks worker",
+      "assertionsFailed": 0,
+      "unhandledErrorsReported": 0,
+      "runnerExit": 1,
+      "adjudication": "the exit status belongs to the runner's process teardown, not to any assertion; it is NOT a pass and NOT a product regression",
+      "reclassifiedAsPass": false,
+      "whyNotReclassified": "a nonzero runner exit is a failure of the exit-status contract regardless of assertion outcomes; calling it a pass because assertions were green is exactly the substitution the ruling forbids",
+      "childProcessSurfaces": {
+        "filesCreatingChildProcesses": 65,
+        "sample": [
+          {
+            "file": "test/ad_verification_integration.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          },
+          {
+            "file": "test/architecture/sr2_architecture_constitution.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          },
+          {
+            "file": "test/architecture/sr2b1_work_read_owner.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          },
+          {
+            "file": "test/architecture/sr2b2_head_owner.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          },
+          {
+            "file": "test/architecture/sr2b3_attempt_execution_owner.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          },
+          {
+            "file": "test/architecture/sr2b4_context_owner.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          },
+          {
+            "file": "test/cli_project_scoping.test.ts",
+            "kinds": [
+              "spawnSync"
+            ]
+          },
+          {
+            "file": "test/e-live_derivation.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          },
+          {
+            "file": "test/e2_host_demo.test.ts",
+            "kinds": [
+              "execFileSync",
+              "execSync"
+            ]
+          },
+          {
+            "file": "test/e2i_intent_reconciliation.test.ts",
+            "kinds": [
+              "execFileSync"
+            ]
+          }
+        ]
+      },
+      "poolConfiguration": {
+        "pool": "forks (vitest default)",
+        "hookTimeout": true,
+        "globalSetupSweepsTemp": true
+      },
+      "survivingChildrenInventoried": false,
+      "evidenceSufficientForNarrowConclusion": "sufficient to say the exit came from worker teardown and not from an assertion; insufficient to name which child failed to exit",
+      "remainsUnresolved": "the specific child process whose termination timed out"
+    },
+    "c0cCleanup": {
+      "cleaned": true,
+      "quarantined": true,
+      "reason": null
+    },
+    "c0c": {
+      "question": "which modules did the REAL Worker import for its critical dependencies?",
+      "method": "resolution recorded INSIDE the real first-party worker child, from four anchors, not by a standalone probe from the repo root",
+      "traced": true,
+      "gateRoot": "C:/Users/66494/AppData/Local/Temp/ci1-gates",
+      "rig": "C:/Users/66494/AppData/Local/Temp/ci1-gates/ci1-c0c-tUHowv",
+      "profile": "ci1-trace",
+      "moduleSharing": {
+        "established": true,
+        "strategy": "junction",
+        "entries": 125,
+        "linked": [
+          "@agentclientprotocol",
+          "@anthropic-ai",
+          "@aws",
+          "@aws-sdk",
+          "@babel",
+          "@deepseek-ai",
+          "@earendil-works",
+          "@google",
+          "@hono",
+          "@img",
+          "@joplin",
+          "@lexical",
+          "@mixmark-io",
+          "@modelcontextprotocol",
+          "@octokit",
+          "@opentelemetry",
+          "@preact",
+          "@protobufjs",
+          "@smithy",
+          "@stablelib",
+          "@standard-schema",
+          "@tanstack",
+          "@types",
+          "@vscode",
+          "@xterm",
+          "agent-base",
+          "ajv",
+          "argparse",
+          "base64-js",
+          "bignumber.js",
+          "bowser",
+          "buffer-equal-constant-time",
+          "bundle-name",
+          "bytes",
+          "chokidar",
+          "commander",
+          "compressible",
+          "compression",
+          "content-type",
+          "cross-spawn",
+          "data-uri-to-buffer",
+          "default-browser",
+          "default-browser-id",
+          "define-lazy-prop",
+          "destroy",
+          "detect-libc",
+          "diff",
+          "ecdsa-sig-formatter",
+          "eventsource",
+          "eventsource-parser",
+          "extend",
+          "fast-deep-equal",
+          "fast-sha256",
+          "fast-uri",
+          "fetch-blob",
+          "fflate",
+          "formdata-polyfill",
+          "gaxios",
+          "gcp-metadata",
+          "google-auth-library",
+          "google-logging-utils",
+          "http-proxy-agent",
+          "https-proxy-agent",
+          "ipaddr.js",
+          "is-docker",
+          "is-in-ssh",
+          "is-inside-container",
+          "is-wsl",
+          "isexe",
+          "jose",
+          "js-tokens",
+          "js-yaml",
+          "json-bigint",
+          "json-schema-to-ts",
+          "json-schema-traverse",
+          "jwa",
+          "jws",
+          "koffi",
+          "long",
+          "mime-db",
+          "mime-types",
+          "negotiator",
+          "node-addon-api",
+          "node-addon-native-custom-loader",
+          "node-addon-require-builtin",
+          "node-domexception",
+          "node-fetch",
+          "node-pty",
+          "on-headers",
+          "open",
+          "openai",
+          "p-retry",
+          "partial-json",
+          "path-key",
+          "picocolors",
+          "picomatch",
+          "pkce-challenge",
+          "powershell-utils",
+          "protobufjs",
+          "readdirp",
+          "require-from-string",
+          "resolve.exports",
+          "retry",
+          "run-applescript",
+          "safe-buffer",
+          "semver",
+          "sharp",
+          "shebang-command",
+          "shebang-regex",
+          "standardwebhooks",
+          "ts-algebra",
+          "tslib",
+          "turndown",
+          "typebox",
+          "undici",
+          "undici-types",
+          "vary",
+          "web-streams-polyfill",
+          "which",
+          "ws",
+          "wsl-utils",
+          "yaml",
+          "zod"
+        ],
+        "refused": [],
+        "provenance": [
+          {
+            "entry": "palimpsest-dsh-host",
+            "provenance": "VERIFIED_AGAINST_EXPECTED_FINGERPRINT"
+          },
+          {
+            "entry": "palimpsest-host-deployment",
+            "provenance": "VERIFIED_AGAINST_EXPECTED_FINGERPRINT"
+          }
+        ]
+      },
+      "parentOutcomeKind": "HOST_FAILURE",
+      "parentFailureDetail": "the worker exited 1 without reporting an outcome",
+      "identityObservationCount": 1,
+      "observedSessionId": "worker-00b945bd-cc62-4bab-aa29-7e42307c0108",
+      "observedInvocationId": "wpi-0bbaa6fb-2d94-475d-817e-3bbbfed12c7e",
+      "observedState": "OBSERVED",
+      "traceRecordedInsideWorker": true,
+      "tracePid": 15888,
+      "workerEntry": "C:\\Users\\66494\\.dsh\\profiles\\node_modules\\@deepseek-ai\\dsh\\lib\\bin.js",
+      "workerHome": "C:/Users/66494/AppData/Local/Temp/ci1-gates/ci1-c0c-tUHowv/home",
+      "anchors": [
+        {
+          "anchor": "worker-executable",
+          "path": "C:\\Users\\66494\\.dsh\\profiles\\node_modules\\@deepseek-ai\\dsh\\lib\\bin.js",
+          "modules": [
+            {
+              "specifier": "palimpsest-dsh-host",
+              "resolved": "D:\\dsh\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "exists": true,
+              "realpath": "D:\\dsh\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "package": {
+                "name": "palimpsest-dsh-host",
+                "version": "0.1.0",
+                "manifest": "D:\\dsh\\profiles\\node_modules\\palimpsest-dsh-host\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "palimpsest-host-deployment",
+              "resolved": null,
+              "exists": null,
+              "realpath": null,
+              "package": null,
+              "error": "No \"exports\" main defined in C:\\Users\\66494\\.dsh\\profiles\\node_modules\\palimpsest-host-deployment\\package.json",
+              "tree": "UNRESOLVED"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-win32-process",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-win32-process",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session-persistence-jsonl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-sandbox-windows-acl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-sandbox-windows-acl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "koffi",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "package": {
+                "name": "koffi",
+                "version": "3.1.1",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            }
+          ]
+        },
+        {
+          "anchor": "profile",
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\ci1-trace\\package.json",
+          "modules": [
+            {
+              "specifier": "palimpsest-dsh-host",
+              "resolved": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "package": {
+                "name": "palimpsest-dsh-host",
+                "version": "0.1.0",
+                "manifest": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\package.json"
+              },
+              "error": null,
+              "tree": "RUN_OWNED_TEST_HOME"
+            },
+            {
+              "specifier": "palimpsest-host-deployment",
+              "resolved": null,
+              "exists": null,
+              "realpath": null,
+              "package": null,
+              "error": "No \"exports\" main defined in C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\package.json",
+              "tree": "UNRESOLVED"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-win32-process",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-win32-process",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session-persistence-jsonl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-sandbox-windows-acl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-sandbox-windows-acl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "koffi",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "package": {
+                "name": "koffi",
+                "version": "3.1.1",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            }
+          ]
+        },
+        {
+          "anchor": "mounted-host-bundle",
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+          "modules": [
+            {
+              "specifier": "palimpsest-dsh-host",
+              "resolved": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "package": {
+                "name": "palimpsest-dsh-host",
+                "version": "0.1.0",
+                "manifest": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\package.json"
+              },
+              "error": null,
+              "tree": "RUN_OWNED_TEST_HOME"
+            },
+            {
+              "specifier": "palimpsest-host-deployment",
+              "resolved": null,
+              "exists": null,
+              "realpath": null,
+              "package": null,
+              "error": "No \"exports\" main defined in C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\package.json",
+              "tree": "UNRESOLVED"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-win32-process",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-win32-process",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session-persistence-jsonl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-sandbox-windows-acl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-sandbox-windows-acl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "koffi",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "package": {
+                "name": "koffi",
+                "version": "3.1.1",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            }
+          ]
+        },
+        {
+          "anchor": "mounted-host-runner",
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\runner.js",
+          "modules": [
+            {
+              "specifier": "palimpsest-dsh-host",
+              "resolved": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\index.js",
+              "package": {
+                "name": "palimpsest-dsh-host",
+                "version": "0.1.0",
+                "manifest": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\package.json"
+              },
+              "error": null,
+              "tree": "RUN_OWNED_TEST_HOME"
+            },
+            {
+              "specifier": "palimpsest-host-deployment",
+              "resolved": null,
+              "exists": null,
+              "realpath": null,
+              "package": null,
+              "error": "No \"exports\" main defined in C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\package.json",
+              "tree": "UNRESOLVED"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-win32-process",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-win32-process",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session-persistence-jsonl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session-persistence-jsonl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-session",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-session",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-session\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "@deepseek-ai/dsh-sandbox-windows-acl",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\lib\\index.js",
+              "package": {
+                "name": "@deepseek-ai/dsh-sandbox-windows-acl",
+                "version": "0.2.1-rc.3",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-sandbox-windows-acl\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            },
+            {
+              "specifier": "koffi",
+              "resolved": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\index.cjs",
+              "package": {
+                "name": "koffi",
+                "version": "3.1.1",
+                "manifest": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\koffi\\package.json"
+              },
+              "error": null,
+              "tree": "EXTERNAL_RUNTIME_INSTALL"
+            }
+          ]
+        },
+        {
+          "anchor": "fence:runtime/win32_label.js",
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\runner.js",
+          "modules": [
+            {
+              "specifier": "palimpsest-host-deployment/runtime/win32_label.js",
+              "resolved": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\win32_label.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\win32_label.js",
+              "package": {
+                "name": "palimpsest-host-deployment",
+                "version": "0.1.0",
+                "manifest": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\package.json"
+              },
+              "error": null,
+              "tree": "RUN_OWNED_TEST_HOME"
+            }
+          ]
+        },
+        {
+          "anchor": "fence:runtime/worker_fence.js",
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\runner.js",
+          "modules": [
+            {
+              "specifier": "palimpsest-host-deployment/runtime/worker_fence.js",
+              "resolved": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\worker_fence.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\worker_fence.js",
+              "package": {
+                "name": "palimpsest-host-deployment",
+                "version": "0.1.0",
+                "manifest": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\package.json"
+              },
+              "error": null,
+              "tree": "RUN_OWNED_TEST_HOME"
+            }
+          ]
+        },
+        {
+          "anchor": "fence:runtime/session_reader.js",
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-dsh-host\\lib\\runner.js",
+          "modules": [
+            {
+              "specifier": "palimpsest-host-deployment/runtime/session_reader.js",
+              "resolved": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\session_reader.js",
+              "exists": true,
+              "realpath": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\session_reader.js",
+              "package": {
+                "name": "palimpsest-host-deployment",
+                "version": "0.1.0",
+                "manifest": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\package.json"
+              },
+              "error": null,
+              "tree": "RUN_OWNED_TEST_HOME"
+            }
+          ]
+        }
+      ],
+      "fence": {
+        "anchor": "mounted-host-bundle",
+        "module": {
+          "specifier": "palimpsest-host-deployment/runtime/win32_label.js",
+          "resolved": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\win32_label.js",
+          "exists": true,
+          "realpath": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\runtime\\win32_label.js",
+          "package": {
+            "name": "palimpsest-host-deployment",
+            "version": "0.1.0",
+            "manifest": "C:\\Users\\66494\\AppData\\Local\\Temp\\ci1-gates\\ci1-c0c-tUHowv\\home\\profiles\\node_modules\\palimpsest-host-deployment\\package.json"
+          },
+          "error": null,
+          "tree": "RUN_OWNED_TEST_HOME"
+        },
+        "pin": {
+          "path": "C:/Users/66494/AppData/Local/Temp/ci1-gates/ci1-c0c-tUHowv/home/profiles/node_modules/palimpsest-host-deployment/runtime/win32_label.js",
+          "declaredQualifiedVersion": "0.2.1-rc.3",
+          "declaredPreviouslyQualifiedVersion": "0.2.1-rc.2",
+          "siblingSessionReader": "C:/Users/66494/AppData/Local/Temp/ci1-gates/ci1-c0c-tUHowv/home/profiles/node_modules/palimpsest-host-deployment/runtime/session_reader.js",
+          "carriesResolvePersistencePlugin": true
+        }
+      },
+      "facts": {
+        "traceWasProducedByTheChild": true,
+        "runtimeResolvedFromExternalInstall": true,
+        "hostBundleResolvedFromRunOwnedHome": true,
+        "fenceLoadsFromRunOwnedHome": true,
+        "fenceLoadsFromRealRuntimeHome": false,
+        "fenceDeclaredPin": "0.2.1-rc.3",
+        "enforcedPinMatchesAdoptedPin": true
+      },
+      "volumeBoundary": {
+        "observation": "the label write succeeds under %TEMP% (C:) and is refused on the repository volume (F:)",
+        "refusalSeenOnRepositoryVolume": "kernel-coverage: root coverage is INCOMPLETE: 1 unverified",
+        "refusedBy": "the SHIPPED pre-create gate (host/dsh/lib/runner.js), fail-closed",
+        "consequence": "live Worker experiments run under %TEMP%, and the gate root volume is recorded with the evidence"
+      }
+    },
+    "c0d": {
+      "question": "was the E4 broad non-gate regression actually bound to Code Freeze 05aa9d2?",
+      "codeFreeze": {
+        "sha": "05aa9d2250906b3a70fabd38a1fe180becdbd698",
+        "tree": "cfcaaf75ca2c0e1bec02a58910f737716f875be7"
+      },
+      "evidenceFreeze": {
+        "sha": "95ce9b843948085f7a02fa86f62e867300440fc1",
+        "tree": "954a6be45d10e866f8f1a36d4ca69448e1eb9127"
+      },
+      "codeToEvidenceDiff": {
+        "files": [
+          {
+            "status": "A",
+            "path": "research-evidence/host-s1rae4/two-run-smoke-at-freeze.json"
+          },
+          {
+            "status": "A",
+            "path": "research-evidence/host-s1rae4/win32-seam-controls-at-freeze.json"
+          }
+        ],
+        "executableChanges": 0
+      },
+      "testedTreeVsFrozenTree": {
+        "lastExecutableCommit": "af112bf",
+        "modifiedFiles": [],
+        "addedFiles": [
+          "0",
+          "docs/engineering/host-s1rae4-rc3-adoption.md",
+          "docs/engineering/host-s1rae4-test-isolation-real-host.md",
+          "research-evidence/host-s1rae4/isolation-negative-control.json",
+          "research-evidence/host-s1rae4/isolation-red-control.json",
+          "research-evidence/host-s1rae4/label-write-feasibility.json",
+          "research-evidence/host-s1rae4/runtime-seam-probe.json",
+          "research-evidence/host-s1rae4/two-run-smoke.json",
+          "research-evidence/host-s1rae4/win32-seam-controls.json",
+          "scripts/host_s1rae4/two-run-smoke.mjs"
+        ],
+        "executableAdded": [
+          "scripts/host_s1rae4/two-run-smoke.mjs"
+        ],
+        "executableModified": false
+      },
+      "binding": "the regression's source is byte-identical to the frozen source (zero modified executable files); the regression itself was not rerun after the freeze commit, and this report does not claim it was",
+      "rerunAfterFreeze": false,
+      "liveGateAtFreeze": true,
+      "twoRunSmokeAtFreeze": true,
+      "broadRegressionAtFreeze": false
+    }
+  },
+  "adjudication": {
+    "qualified": [
+      "C0-A: the frozen tree's test count is 3701, established by collection without execution; the 3691 figure is a run property, not a tree property",
+      "C0-B: the runner exit came from forks-pool worker teardown, with zero assertion failures and zero unhandled errors",
+      "C0-C: the Worker's effective module identity is measured inside the child rather than inferred",
+      "C0-D: the regression's source is byte-identical to the Code Freeze source"
+    ],
+    "preservedLimitations": [
+      "C0-A: which specific 10-test file did not contribute to the 3691 run is UNRECOVERED; no per-file manifest survives",
+      "C0-B: which specific child process failed to exit is UNRECOVERED, and surviving children were not inventoried",
+      "C0-D: the broad regression was not rerun at the freeze; source identity is established, temporal binding is not"
+    ],
+    "notEstablished": [
+      "a clean full-selection runner exit 0 on this machine"
+    ],
+    "historicalEvidenceRewritten": false
+  }
+}
