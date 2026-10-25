@@ -135,7 +135,12 @@ interface Rig {
   readonly run: (taskId: string) => Promise<{ attemptId: string; resultCommit: string }>;
   readonly taskState: (taskId: string) => string;
   readonly head: () => string;
-  readonly evidenceFor: (attemptId: string) => readonly { predicate: string; status: string }[];
+  readonly evidenceFor: (attemptId: string) => readonly {
+    predicate: string;
+    status: string;
+    evidence_id: string;
+    value: Record<string, unknown>;
+  }[];
 }
 
 function makeRig(projectId: string): Rig {
@@ -246,10 +251,19 @@ function makeRig(projectId: string): Rig {
   const evidenceFor = (attemptId: string) => {
     const rows = connection
       .prepare(
-        "SELECT status, json_extract(evidence_json, '$.predicate') AS predicate FROM evidence WHERE project_id=? AND json_extract(evidence_json, '$.subject_id')=?",
+        "SELECT evidence_id, status, json_extract(evidence_json, '$.predicate') AS predicate, json_extract(evidence_json, '$.value') AS value FROM evidence WHERE project_id=? AND json_extract(evidence_json, '$.subject_id')=?",
       )
-      .all(projectId as never, attemptId as never) as { status: string; predicate: string }[];
-    return rows.map((row) => ({ predicate: row.predicate, status: row.status }));
+      .all(projectId as never, attemptId as never) as { evidence_id: string; status: string; predicate: string; value: string }[];
+    /**
+     * CI2 widened this projection: the atoms now carry the evaluated candidate in `value`, which is what makes
+     * "this atom is about THAT candidate" assertable. Before CI2 there was nothing here to project.
+     */
+    return rows.map((row) => ({
+      evidence_id: row.evidence_id,
+      predicate: row.predicate,
+      status: row.status,
+      value: JSON.parse(row.value) as Record<string, unknown>,
+    }));
   };
 
   return { repo, projectId, installed, bind: (scope, next) => void bound.set(scope, next), start, run, taskState, head, evidenceFor };
@@ -306,27 +320,35 @@ describe("CI1 §12 C4 — two locally valid candidates are not an automatically 
     expect(a1.resultCommit).not.toBe(b1.resultCommit);
 
     /**
-     * A REAL FINDING: THE DELEGATED SETTLEMENT PATH RECORDS NO COMPLETION-CONTRACT EVIDENCE.
+     * THE GAP THIS FILE ORIGINALLY MEASURED, AND WHAT CHANGED.
      *
-     * This was measured, not assumed. The event log for a fully settled delegated attempt is
-     * `PROJECT_CREATED, GATE_DEFINED, ROLE_TABLE_DEFINED, STAGE_GRAPH_DEFINED, TASK_CREATED, TASK_STARTED,
-     * ATTEMPT_CREATED, ATTEMPT_STARTED, CONTEXT_MANIFEST_ADDED, ATTEMPT_COMPLETED` — and the `evidence` table is
-     * EMPTY.
+     * At CI1's freeze (`334d040`) the delegated settlement path recorded NO completion-contract evidence, and this
+     * assertion read `expect(evidenceA).toEqual([])`. That was the measured finding, and it is preserved in
+     * `docs/engineering/ci1-two-owner-causal-integration.md` and in `research-evidence/ci1/`.
      *
-     * The reason is structural: `makeMutatingAttemptService(...).settle(...)` (`src/work/attempt_execution.ts:330`)
-     * observes the world, enforces scope and exports the commit, but it does NOT run the completion contract. The
-     * mechanical checks that produce `write_scope_valid` / `expected_files_exist` evidence live in
-     * `ProjectController.report`'s finish path (`src/tools/controller.ts:3184-3215`), which the delegated kernel does
-     * not call.
+     * CI2 CLOSED IT (`cb11799`): `makeMutatingAttemptService.settle` now evaluates the contract between export and
+     * report, so a delegated candidate acquires real atoms. The old assertion therefore no longer describes the
+     * product, and keeping it would be asserting a defect that has been fixed.
      *
-     * So a delegated Worker settles without evidence atoms. That is a GAP between the two settlement routes, and it
-     * is reported rather than papered over. It also bounds what C4 can claim: the gate machinery is real and works
-     * over real evidence, but the two-owner delegated path produces none.
+     * WHAT IS ASSERTED INSTEAD, AND WHY IT IS NOT A WEAKENING.
+     *
+     * The atoms now exist — and the point of THIS file is the COMBINATION question, which is unaffected: each
+     * candidate's evidence is scoped to its own attempt in its own project, and there is still no combination
+     * subject. So the local evidence is asserted as present-and-candidate-bound, and the combination assertions
+     * below are left exactly as CI1 wrote them. The gate declared here (`COMBINATION_GATE`) requires
+     * `write_scope_valid`, which the standard's `scope_respected` clause now produces, so the local verdict is a
+     * REAL pass rather than a vacuous INCOMPLETE — which makes the combination negative stronger, not weaker.
      */
     const evidenceA = rigA.evidenceFor(a1.attemptId);
     const evidenceB = rigB.evidenceFor(b1.attemptId);
-    expect(evidenceA).toEqual([]);
-    expect(evidenceB).toEqual([]);
+    expect(evidenceA.length).toBeGreaterThan(0);
+    expect(evidenceB.length).toBeGreaterThan(0);
+    /** Every atom is bound to ITS OWN candidate, so neither project's evidence can stand in for the other's. */
+    for (const atom of evidenceA) expect((atom.value as Record<string, unknown>).result_commit).toBe(a1.resultCommit);
+    for (const atom of evidenceB) expect((atom.value as Record<string, unknown>).result_commit).toBe(b1.resultCommit);
+    /** And the two attempts are different subjects, so the projections are disjoint. */
+    const idsA = new Set(evidenceA.map((atom) => atom.evidence_id));
+    for (const atom of evidenceB) expect(idsA.has(atom.evidence_id)).toBe(false);
 
     /**
      * THE LOCAL GATE, EVALUATED PER SUBJECT IN ITS OWN PROJECT.
@@ -340,16 +362,21 @@ describe("CI1 §12 C4 — two locally valid candidates are not an automatically 
     expect(localB.subject_id).toBe(b1.attemptId);
     expect(localA.subject_id).not.toBe(localB.subject_id);
     /**
-     * BOTH LOCAL VERDICTS ARE `INCOMPLETE`, AND THAT IS THE CORRECT ANSWER GIVEN THE GAP.
+     * BOTH LOCAL VERDICTS, AND WHY THE COMBINATION ONE IS THE LOAD-BEARING ONE.
      *
-     * `INCOMPLETE` means "no evidence bears on this subject" — which is exactly true here. It is NOT `PASS`, so no
-     * candidate is falsely qualified; and it is not `FAIL`, so absence of evidence is not read as evidence of a
-     * defect. The engine's three-valued semantics is what makes the honest answer expressible.
+     * CI2 closed the evidence gap, so a local verdict is now a REAL verdict over real atoms — `COMBINATION_GATE`
+     * requires `write_scope_valid`, which the delegated route now records. Asserted as a property rather than a
+     * fixed value, because what this file is about is the COMBINATION, not the local verdict: whatever the local
+     * answer is, it may not transfer.
      */
-    expect(localA.verdict).toBe("INCOMPLETE");
-    expect(localB.verdict).toBe("INCOMPLETE");
-    expect(localA.evidence_used).toEqual([]);
-    expect(localB.evidence_used).toEqual([]);
+    expect(localA.subject_id).toBe(a1.attemptId);
+    expect(localB.subject_id).toBe(b1.attemptId);
+    expect(localA.verdict).not.toBe("INCOMPLETE");
+    expect(localB.verdict).not.toBe("INCOMPLETE");
+    expect(localA.evidence_used.length).toBeGreaterThan(0);
+    expect(localB.evidence_used.length).toBeGreaterThan(0);
+    /** Neither local evaluation used the other project's evidence. */
+    expect(localA.evidence_used.some((id) => evidenceB.some((atom) => atom.evidence_id === id))).toBe(false);
 
     /**
      * THE COMBINATION QUESTION HAS NO SUBJECT.
