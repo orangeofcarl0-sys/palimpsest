@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE3_MUTATION_CONTROLS",
+  "stage": "Palimpsest Host-S1RA-E3",
+  "measuredAt": "2026-10-25T09:04:29.992Z",
+  "method": "each guard is removed in a COPY inside a run-owned sandbox; the production tree is hashed before and after and was not modified",
+  "productionTreeUnchanged": true,
+  "productionDigests": {
+    "before": {
+      "ownedResource": "7d3c1f8cdb23cb6686dd13c9a1cfe2c015473854bd26edcb8d553197d0ae1adc",
+      "rig": "19ec5f507700bfd29bc51e4e0abc9f8b027d99a8b3549e7fc1acd6952741b47b",
+      "sharing": "b12d72e8e43e46956698cdf1e19653315724a6520873d399028fc9a40938f8f4"
+    },
+    "after": {
+      "ownedResource": "7d3c1f8cdb23cb6686dd13c9a1cfe2c015473854bd26edcb8d553197d0ae1adc",
+      "rig": "19ec5f507700bfd29bc51e4e0abc9f8b027d99a8b3549e7fc1acd6952741b47b",
+      "sharing": "b12d72e8e43e46956698cdf1e19653315724a6520873d399028fc9a40938f8f4"
+    }
+  },
+  "sandbox": {
+    "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-mutation-P35SB2",
+    "removed": true
+  },
+  "summary": {
+    "arms": 8,
+    "loadBearing": 8,
+    "observed": 0,
+    "loadBearingIds": [
+      "M1-marker-required",
+      "M2-marker-binds-root",
+      "M3-generation-enforced",
+      "M4-identity-match",
+      "M5-quarantine-recheck",
+      "M6-extra-loop-classification",
+      "M7-fingerprint-provenance",
+      "M8-observed-completion"
+    ],
+    "notLoadBearingIds": []
+  },
+  "results": [
+    {
+      "id": "M1-marker-required",
+      "guard": "a missing ownership marker refuses",
+      "mutation": "the missing-marker refusal is replaced by an affirmative result",
+      "controlFailed": true,
+      "observation": "the F1 control now passes a directory with no ownership record, so the guard is load-bearing",
+      "evidence": {
+        "proofOwnedAfterMutation": true
+      }
+    },
+    {
+      "id": "M2-marker-binds-root",
+      "guard": "a marker naming a different root refuses",
+      "mutation": "the ownedRoot comparison is deleted",
+      "controlFailed": true,
+      "observation": "the F2 control now accepts a marker that names another directory, so the guard is load-bearing",
+      "evidence": {
+        "proofOwnedAfterMutation": true,
+        "proofReason": null
+      }
+    },
+    {
+      "id": "M3-generation-enforced",
+      "guard": "a superseded generation refuses",
+      "mutation": "the generation comparison is deleted",
+      "controlFailed": true,
+      "observation": "the F8 control now lets a superseded record authorize disposal, so the guard is load-bearing",
+      "evidence": {
+        "proofOwnedAfterMutation": true
+      }
+    },
+    {
+      "id": "M4-identity-match",
+      "guard": "a substituted object refuses even when its marker is a valid copy",
+      "mutation": "the identity comparison is replaced by a weak pass",
+      "controlFailed": true,
+      "observation": "the F4A control now accepts a replaced object carrying a copied valid marker, so the identity guard is the only thing that caught it and is load-bearing",
+      "evidence": {
+        "proofOwnedAfterMutation": true,
+        "proofReason": null,
+        "replacementStillPresent": true
+      }
+    },
+    {
+      "id": "M5-quarantine-recheck",
+      "guard": "the object at the quarantine name is re-verified before deletion",
+      "mutation": "a substitution is injected at the exact point the identity re-check reads the object",
+      "controlFailed": true,
+      "observation": "the mutant deleted a foreign directory substituted at the quarantine name, so the re-check is load-bearing",
+      "evidence": {
+        "mutantOutcome": {
+          "cleaned": true,
+          "reason": null
+        },
+        "baselineOutcome": {
+          "cleaned": true,
+          "reason": null
+        }
+      }
+    },
+    {
+      "id": "M6-extra-loop-classification",
+      "guard": "a junction at a declared name outside the source tree is refused",
+      "mutation": "the destination classification in the extra loop is removed",
+      "controlFailed": true,
+      "observation": "the sharing case-4/5 control now admits a dangling junction, so the guard is load-bearing",
+      "evidence": {
+        "admitted": true,
+        "established": true
+      }
+    },
+    {
+      "id": "M7-fingerprint-provenance",
+      "guard": "a declared directory whose content does not match the expected install is refused",
+      "mutation": "the fingerprint comparison is deleted",
+      "controlFailed": true,
+      "observation": "the sharing case-3 control now admits content that does not match the install, so the guard is load-bearing",
+      "evidence": {
+        "admitted": true,
+        "established": true
+      }
+    },
+    {
+      "id": "M8-observed-completion",
+      "guard": "cleaned=true requires the quarantine name to be observed absent",
+      "mutation": "the post-removal existence check is deleted, and the removal is made a no-op that reports success",
+      "controlFailed": true,
+      "observation": "the mutant reported a completed disposal while the object was still on disk, so the observation check is load-bearing",
+      "evidence": {
+        "mutantOutcome": {
+          "cleaned": true,
+          "reason": null
+        },
+        "baselineOutcome": {
+          "cleaned": true,
+          "reason": null
+        },
+        "note": "the baseline arm ran WITHOUT the no-op injection, so it disposes normally; the mutant arm is the one that measures the check"
+      }
+    }
+  ]
+}

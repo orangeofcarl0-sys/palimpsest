@@ -1,0 +1,3948 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE3_RUNTIME_HOME_AUDIT",
+  "stage": "Palimpsest Host-S1RA-E3",
+  "measuredAt": "2026-10-25T09:33:25.211Z",
+  "filesScanned": 1236,
+  "method": "every identifier is discovered from source and reported as integer code points; no name is compared as rendered text",
+  "distinctIdentifiers": 13,
+  "identifiers": [
+    {
+      "name": "runtime_HOME",
+      "codePoints": [
+        114,
+        117,
+        110,
+        116,
+        105,
+        109,
+        101,
+        95,
+        72,
+        79,
+        77,
+        69
+      ],
+      "length": 12,
+      "count": 3,
+      "files": [
+        "test/paths.test.ts"
+      ]
+    },
+    {
+      "name": "DSH_HOME",
+      "codePoints": [
+        68,
+        83,
+        72,
+        95,
+        72,
+        79,
+        77,
+        69
+      ],
+      "length": 8,
+      "count": 148,
+      "files": [
+        "host/deployment/runtime/worker_fence.js",
+        "host/dsh/lib/index.js",
+        "host/dsh/lib/runner.js",
+        "scripts/dogfood/real-host-federation.mjs",
+        "scripts/experiments/lib/host.mjs",
+        "scripts/gates/d2-live-gate.mjs",
+        "scripts/gates/d4-live-gate.mjs",
+        "scripts/gates/d5-live-gate.mjs",
+        "scripts/gates/r1h-live-gate.mjs",
+        "scripts/gates/r1hc-live-gate.mjs",
+        "scripts/gates/r1l-live-gate.mjs",
+        "scripts/gates/r1s-live-gate.mjs",
+        "scripts/host_s1/generate-evidence.mjs",
+        "scripts/host_s1/junction-label-probe.mjs",
+        "scripts/host_s1/reproduce-baseline.mjs",
+        "scripts/host_s1/sibling-world-probe.mjs",
+        "scripts/host_s1/verify-cost-probe.mjs",
+        "scripts/host_s1r/reproduce-concerns.mjs",
+        "scripts/interaction/uxc-dsh-cross-project-dogfood.mjs",
+        "scripts/interaction/uxc-dsh-local-dogfood.mjs",
+        "scripts/management/delegate-continuity.mjs",
+        "scripts/management/dogfood.mjs",
+        "scripts/management/multi-promotion.mjs",
+        "scripts/proof/real-extraction-e2e.mjs",
+        "scripts/r1/probe-capital-delivery.mjs",
+        "scripts/r1r/trial.mjs",
+        "scripts/r1s/credential-reach.mjs",
+        "scripts/r1s/env-audit.mjs",
+        "scripts/r2e/trial.mjs",
+        "scripts/r2lr/last-mile-proof.mjs",
+        "scripts/r2m/trial.mjs",
+        "scripts/r2s/trial.mjs",
+        "scripts/r2u/trial.mjs",
+        "scripts/r2v/trial.mjs",
+        "scripts/r3a/trial.mjs",
+        "scripts/r3l0/dummy-child.mjs",
+        "scripts/r3l0/generation-child.mjs",
+        "scripts/r3l0c/generation-child.mjs",
+        "scripts/r3l0c/plumbing.mjs",
+        "scripts/recipes/explore-e2e.mjs",
+        "scripts/release/rc1-evidence-bundle.mjs",
+        "scripts/release/rc1-live-cross-project.mjs",
+        "scripts/release/rc1-live-local.mjs",
+        "scripts/trajectory_p2a/level-c-first-party-gate.mjs",
+        "scripts/trajectory_p2c/cold-preview-gate.mjs",
+        "scripts/trajectory_p2d0/cold-capsule-gate.mjs",
+        "scripts/trajectory_p2d1/real-integration-gate.mjs",
+        "scripts/trajectory_p2d2/l2-gate.mjs",
+        "scripts/trajectory_p2d2/runtime-environment.mjs",
+        "scripts/trajectory_p2e0/runtime-environment.mjs",
+        "scripts/trajectory_p2e0/source-to-dsh-gate.mjs",
+        "scripts/trajectory_p2e1/normal-consumer-gate.mjs",
+        "scripts/trajectory_p2e1r/assay-harness.mjs",
+        "scripts/trajectory_p2e1rc/closure-gate.mjs",
+        "scripts/trajectory_p2e1rd/cwd-source-map.mjs",
+        "scripts/trajectory_p2e1rd/generate-evidence.mjs",
+        "scripts/trajectory_p2e1rd/worker-probe.mjs",
+        "scripts/trajectory_p2e1re/generate-evidence.mjs",
+        "scripts/trajectory_p2e1re/pretool-probe.mjs",
+        "scripts/trajectory_p2e1rf/delegation-probe.mjs",
+        "scripts/trajectory_p2e1rf/generate-evidence.mjs",
+        "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs",
+        "scripts/trajectory_p2e1rg/generate-evidence.mjs",
+        "test/host_s1r_reparse_boundary.test.ts",
+        "test/paths.test.ts",
+        "test/trajectory_p2d0_cold_capsule.test.ts",
+        "test/trajectory_p2d2_host_delivery.test.ts",
+        "test/trajectory_p2e1rg_baseline_admission.test.ts",
+        "test/trajectory_p2e1rg_precreate_admission.test.ts"
+      ]
+    },
+    {
+      "name": "HOME",
+      "codePoints": [
+        72,
+        79,
+        77,
+        69
+      ],
+      "length": 4,
+      "count": 14,
+      "files": [
+        "host/dsh/lib/browser.js",
+        "scripts/host_s1/junction-label-probe.mjs",
+        "scripts/host_s1/reproduce-baseline.mjs",
+        "scripts/host_s1/sibling-world-probe.mjs",
+        "scripts/host_s1/verify-cost-probe.mjs",
+        "scripts/host_s1r/reproduce-concerns.mjs",
+        "scripts/r2u/gate-a.mjs",
+        "scripts/release/consumer-smoke.mjs",
+        "scripts/trajectory_p2e1rc/closure-gate.mjs",
+        "scripts/trajectory_p2e1rd/cwd-source-map.mjs",
+        "scripts/trajectory_p2e1rd/generate-evidence.mjs",
+        "scripts/trajectory_p2e1re/generate-evidence.mjs",
+        "scripts/trajectory_p2e1rf/generate-evidence.mjs",
+        "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_DSH_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        68,
+        83,
+        72,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 19,
+      "count": 76,
+      "files": [
+        "host/deployment/runtime/win32_label.js",
+        "host/deployment/runtime/worker_fence.js",
+        "scripts/host_s1/generate-evidence.mjs",
+        "scripts/host_s1/junction-label-probe.mjs",
+        "scripts/host_s1/reproduce-baseline.mjs",
+        "scripts/host_s1/sibling-world-probe.mjs",
+        "scripts/host_s1r/reproduce-concerns.mjs",
+        "scripts/r1h/conformance.mjs",
+        "scripts/r1h/ffi-reach.mjs",
+        "scripts/r1h/no-read-up-experiment.mjs",
+        "scripts/r1h/qualify.mjs",
+        "scripts/r1hc/conformance.mjs",
+        "scripts/r1hr/clean-env.mjs",
+        "scripts/r1hr/conformance.mjs",
+        "scripts/r1s/capability-audit.mjs",
+        "scripts/r1s/capability-sid-experiment.mjs",
+        "scripts/r1s/conformance.mjs",
+        "scripts/r1s/credential-reach.mjs",
+        "scripts/r1s/deny-ace-experiment.mjs",
+        "scripts/r1s/ffi-deny-route.mjs",
+        "scripts/r1s/integrity-label-experiment.mjs",
+        "scripts/r3l0b/canaries.mjs",
+        "scripts/r3l0b/mutations.mjs",
+        "scripts/r3l0cf/closure.mjs",
+        "scripts/r3l0cia/confinement.mjs",
+        "scripts/r3l0ciar/confinement.mjs",
+        "scripts/r3wr2/worker-parity.mjs",
+        "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs",
+        "scripts/trajectory_p2e1rg/generate-evidence.mjs",
+        "test/host_s1_descendant_admission.test.ts",
+        "test/host_s1_spine_coverage.test.ts",
+        "test/host_s1r_reparse_boundary.test.ts",
+        "test/r3l0c_containment.test.ts",
+        "test/trajectory_p2e1rg_kernel_coverage.test.ts",
+        "test/trajectory_p2e1rg_precreate_admission.test.ts"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 20,
+      "count": 2,
+      "files": [
+        "scripts/gates/env.mjs",
+        "scripts/host_s1ra/measure-environment.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_HOST_CAPACITY_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        72,
+        79,
+        83,
+        84,
+        95,
+        67,
+        65,
+        80,
+        65,
+        67,
+        73,
+        84,
+        89,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 29,
+      "count": 8,
+      "files": [
+        "host/deployment/runtime/confidential_profile.js",
+        "test/trajectory_p2e1rg_baseline_admission.test.ts",
+        "test/trajectory_p2e1rg_precreate_admission.test.ts"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2A_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        65,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 24,
+      "count": 1,
+      "files": [
+        "scripts/trajectory_p2a/level-c-first-party-gate.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2B_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        66,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 24,
+      "count": 3,
+      "files": [
+        "scripts/host_s1ra/reproduce-environment-defects.mjs",
+        "scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+        "scripts/trajectory_p2b/rig.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2D2_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        68,
+        50,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 25,
+      "count": 1,
+      "files": [
+        "scripts/trajectory_p2d2/l2-gate.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2E0_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        69,
+        48,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 25,
+      "count": 2,
+      "files": [
+        "scripts/trajectory_p2e0/owned-root.mjs",
+        "scripts/trajectory_p2e0/runtime-environment.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_R3L0_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        82,
+        51,
+        76,
+        48,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 20,
+      "count": 1,
+      "files": [
+        "scripts/r3l0b/evidence.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        87,
+        79,
+        82,
+        75,
+        69,
+        82,
+        95,
+        80,
+        82,
+        79,
+        84,
+        69,
+        67,
+        84,
+        69,
+        68,
+        95,
+        82,
+        79,
+        79,
+        84,
+        83
+      ],
+      "length": 33,
+      "count": 21,
+      "files": [
+        "scripts/gates/r1h-live-gate.mjs",
+        "scripts/gates/r1hc-live-gate.mjs",
+        "scripts/gates/r1l-live-gate.mjs",
+        "scripts/r3l0c/generation-child.mjs",
+        "scripts/r3l0c/plumbing.mjs",
+        "test/trajectory_p2e1rg_baseline_admission.test.ts",
+        "test/trajectory_p2e1rg_precreate_admission.test.ts"
+      ]
+    },
+    {
+      "name": "SystemRoot",
+      "codePoints": [
+        83,
+        121,
+        115,
+        116,
+        101,
+        109,
+        82,
+        111,
+        111,
+        116
+      ],
+      "length": 10,
+      "count": 1,
+      "files": [
+        "host/dsh/lib/browser.js"
+      ]
+    }
+  ],
+  "characterisation": {
+    "asciiOnly": true,
+    "nfkcStable": true,
+    "trueConfusablePairs": [],
+    "sameRenderedTextPairs": [],
+    "identifiersIndistinguishableAfterNormalisation": 0,
+    "finding": "NO Unicode homoglyph collision exists. The two runtime-home identifiers are pure ASCII, are unchanged by NFKC, differ at all eight positions of the shorter name, and differ visibly in length. The earlier description was wrong. What is real is a DISPLAY-LEVEL LOSS: evidence that records only rendered text cannot tell a reader which identifier a line refers to, and that is what caused a caller's redirection to be inert.",
+    "evidence": {
+      "acceptedPair": [
+        {
+          "length": 8,
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "length": 12,
+          "codePoints": [
+            114,
+            117,
+            110,
+            116,
+            105,
+            109,
+            101,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ],
+      "differingPositions": {
+        "positions": [
+          {
+            "position": 0,
+            "shorter": 68,
+            "longer": 114
+          },
+          {
+            "position": 1,
+            "shorter": 83,
+            "longer": 117
+          },
+          {
+            "position": 2,
+            "shorter": 72,
+            "longer": 110
+          },
+          {
+            "position": 3,
+            "shorter": 95,
+            "longer": 116
+          },
+          {
+            "position": 4,
+            "shorter": 72,
+            "longer": 105
+          },
+          {
+            "position": 5,
+            "shorter": 79,
+            "longer": 109
+          },
+          {
+            "position": 6,
+            "shorter": 77,
+            "longer": 101
+          },
+          {
+            "position": 7,
+            "shorter": 69,
+            "longer": 95
+          }
+        ],
+        "differingCount": 8,
+        "shorterLength": 8,
+        "allDiffer": true
+      }
+    }
+  },
+  "resolver": {
+    "acceptedNames": [
+      {
+        "name": "DSH_HOME",
+        "codePoints": [
+          68,
+          83,
+          72,
+          95,
+          72,
+          79,
+          77,
+          69
+        ],
+        "length": 8,
+        "occursInSource": true,
+        "occurrences": 148,
+        "files": [
+          "host/deployment/runtime/worker_fence.js",
+          "host/dsh/lib/index.js",
+          "host/dsh/lib/runner.js",
+          "scripts/dogfood/real-host-federation.mjs",
+          "scripts/experiments/lib/host.mjs",
+          "scripts/gates/d2-live-gate.mjs",
+          "scripts/gates/d4-live-gate.mjs",
+          "scripts/gates/d5-live-gate.mjs",
+          "scripts/gates/r1h-live-gate.mjs",
+          "scripts/gates/r1hc-live-gate.mjs",
+          "scripts/gates/r1l-live-gate.mjs",
+          "scripts/gates/r1s-live-gate.mjs",
+          "scripts/host_s1/generate-evidence.mjs",
+          "scripts/host_s1/junction-label-probe.mjs",
+          "scripts/host_s1/reproduce-baseline.mjs",
+          "scripts/host_s1/sibling-world-probe.mjs",
+          "scripts/host_s1/verify-cost-probe.mjs",
+          "scripts/host_s1r/reproduce-concerns.mjs",
+          "scripts/interaction/uxc-dsh-cross-project-dogfood.mjs",
+          "scripts/interaction/uxc-dsh-local-dogfood.mjs",
+          "scripts/management/delegate-continuity.mjs",
+          "scripts/management/dogfood.mjs",
+          "scripts/management/multi-promotion.mjs",
+          "scripts/proof/real-extraction-e2e.mjs",
+          "scripts/r1/probe-capital-delivery.mjs",
+          "scripts/r1r/trial.mjs",
+          "scripts/r1s/credential-reach.mjs",
+          "scripts/r1s/env-audit.mjs",
+          "scripts/r2e/trial.mjs",
+          "scripts/r2lr/last-mile-proof.mjs",
+          "scripts/r2m/trial.mjs",
+          "scripts/r2s/trial.mjs",
+          "scripts/r2u/trial.mjs",
+          "scripts/r2v/trial.mjs",
+          "scripts/r3a/trial.mjs",
+          "scripts/r3l0/dummy-child.mjs",
+          "scripts/r3l0/generation-child.mjs",
+          "scripts/r3l0c/generation-child.mjs",
+          "scripts/r3l0c/plumbing.mjs",
+          "scripts/recipes/explore-e2e.mjs",
+          "scripts/release/rc1-evidence-bundle.mjs",
+          "scripts/release/rc1-live-cross-project.mjs",
+          "scripts/release/rc1-live-local.mjs",
+          "scripts/trajectory_p2a/level-c-first-party-gate.mjs",
+          "scripts/trajectory_p2c/cold-preview-gate.mjs",
+          "scripts/trajectory_p2d0/cold-capsule-gate.mjs",
+          "scripts/trajectory_p2d1/real-integration-gate.mjs",
+          "scripts/trajectory_p2d2/l2-gate.mjs",
+          "scripts/trajectory_p2d2/runtime-environment.mjs",
+          "scripts/trajectory_p2e0/runtime-environment.mjs",
+          "scripts/trajectory_p2e0/source-to-dsh-gate.mjs",
+          "scripts/trajectory_p2e1/normal-consumer-gate.mjs",
+          "scripts/trajectory_p2e1r/assay-harness.mjs",
+          "scripts/trajectory_p2e1rc/closure-gate.mjs",
+          "scripts/trajectory_p2e1rd/cwd-source-map.mjs",
+          "scripts/trajectory_p2e1rd/generate-evidence.mjs",
+          "scripts/trajectory_p2e1rd/worker-probe.mjs",
+          "scripts/trajectory_p2e1re/generate-evidence.mjs",
+          "scripts/trajectory_p2e1re/pretool-probe.mjs",
+          "scripts/trajectory_p2e1rf/delegation-probe.mjs",
+          "scripts/trajectory_p2e1rf/generate-evidence.mjs",
+          "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs",
+          "scripts/trajectory_p2e1rg/generate-evidence.mjs",
+          "test/host_s1r_reparse_boundary.test.ts",
+          "test/paths.test.ts",
+          "test/trajectory_p2d0_cold_capsule.test.ts",
+          "test/trajectory_p2d2_host_delivery.test.ts",
+          "test/trajectory_p2e1rg_baseline_admission.test.ts",
+          "test/trajectory_p2e1rg_precreate_admission.test.ts"
+        ]
+      },
+      {
+        "name": "runtime_HOME",
+        "codePoints": [
+          114,
+          117,
+          110,
+          116,
+          105,
+          109,
+          101,
+          95,
+          72,
+          79,
+          77,
+          69
+        ],
+        "length": 12,
+        "occursInSource": true,
+        "occurrences": 3,
+        "files": [
+          "test/paths.test.ts"
+        ]
+      }
+    ],
+    "defaultWhenUnset": "C:/Users/66494/.dsh",
+    "acceptsBothSpellings": true,
+    "note": "the resolver sets EVERY accepted name, so a spawned child cannot boot against a different home than its parent"
+  },
+  "unacceptedHomeLikeIdentifiers": [
+    {
+      "name": "HOME",
+      "codePoints": [
+        72,
+        79,
+        77,
+        69
+      ],
+      "length": 4,
+      "count": 14,
+      "files": [
+        "host/dsh/lib/browser.js",
+        "scripts/host_s1/junction-label-probe.mjs",
+        "scripts/host_s1/reproduce-baseline.mjs",
+        "scripts/host_s1/sibling-world-probe.mjs",
+        "scripts/host_s1/verify-cost-probe.mjs",
+        "scripts/host_s1r/reproduce-concerns.mjs",
+        "scripts/r2u/gate-a.mjs",
+        "scripts/release/consumer-smoke.mjs",
+        "scripts/trajectory_p2e1rc/closure-gate.mjs",
+        "scripts/trajectory_p2e1rd/cwd-source-map.mjs",
+        "scripts/trajectory_p2e1rd/generate-evidence.mjs",
+        "scripts/trajectory_p2e1re/generate-evidence.mjs",
+        "scripts/trajectory_p2e1rf/generate-evidence.mjs",
+        "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_DSH_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        68,
+        83,
+        72,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 19,
+      "count": 76,
+      "files": [
+        "host/deployment/runtime/win32_label.js",
+        "host/deployment/runtime/worker_fence.js",
+        "scripts/host_s1/generate-evidence.mjs",
+        "scripts/host_s1/junction-label-probe.mjs",
+        "scripts/host_s1/reproduce-baseline.mjs",
+        "scripts/host_s1/sibling-world-probe.mjs",
+        "scripts/host_s1r/reproduce-concerns.mjs",
+        "scripts/r1h/conformance.mjs",
+        "scripts/r1h/ffi-reach.mjs",
+        "scripts/r1h/no-read-up-experiment.mjs",
+        "scripts/r1h/qualify.mjs",
+        "scripts/r1hc/conformance.mjs",
+        "scripts/r1hr/clean-env.mjs",
+        "scripts/r1hr/conformance.mjs",
+        "scripts/r1s/capability-audit.mjs",
+        "scripts/r1s/capability-sid-experiment.mjs",
+        "scripts/r1s/conformance.mjs",
+        "scripts/r1s/credential-reach.mjs",
+        "scripts/r1s/deny-ace-experiment.mjs",
+        "scripts/r1s/ffi-deny-route.mjs",
+        "scripts/r1s/integrity-label-experiment.mjs",
+        "scripts/r3l0b/canaries.mjs",
+        "scripts/r3l0b/mutations.mjs",
+        "scripts/r3l0cf/closure.mjs",
+        "scripts/r3l0cia/confinement.mjs",
+        "scripts/r3l0ciar/confinement.mjs",
+        "scripts/r3wr2/worker-parity.mjs",
+        "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs",
+        "scripts/trajectory_p2e1rg/generate-evidence.mjs",
+        "test/host_s1_descendant_admission.test.ts",
+        "test/host_s1_spine_coverage.test.ts",
+        "test/host_s1r_reparse_boundary.test.ts",
+        "test/r3l0c_containment.test.ts",
+        "test/trajectory_p2e1rg_kernel_coverage.test.ts",
+        "test/trajectory_p2e1rg_precreate_admission.test.ts"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 20,
+      "count": 2,
+      "files": [
+        "scripts/gates/env.mjs",
+        "scripts/host_s1ra/measure-environment.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_HOST_CAPACITY_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        72,
+        79,
+        83,
+        84,
+        95,
+        67,
+        65,
+        80,
+        65,
+        67,
+        73,
+        84,
+        89,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 29,
+      "count": 8,
+      "files": [
+        "host/deployment/runtime/confidential_profile.js",
+        "test/trajectory_p2e1rg_baseline_admission.test.ts",
+        "test/trajectory_p2e1rg_precreate_admission.test.ts"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2A_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        65,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 24,
+      "count": 1,
+      "files": [
+        "scripts/trajectory_p2a/level-c-first-party-gate.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2B_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        66,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 24,
+      "count": 3,
+      "files": [
+        "scripts/host_s1ra/reproduce-environment-defects.mjs",
+        "scripts/trajectory_p2b/level-b-first-party-gate.mjs",
+        "scripts/trajectory_p2b/rig.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2D2_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        68,
+        50,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 25,
+      "count": 1,
+      "files": [
+        "scripts/trajectory_p2d2/l2-gate.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_P2E0_GATE_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        80,
+        50,
+        69,
+        48,
+        95,
+        71,
+        65,
+        84,
+        69,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 25,
+      "count": 2,
+      "files": [
+        "scripts/trajectory_p2e0/owned-root.mjs",
+        "scripts/trajectory_p2e0/runtime-environment.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_R3L0_ROOT",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        82,
+        51,
+        76,
+        48,
+        95,
+        82,
+        79,
+        79,
+        84
+      ],
+      "length": 20,
+      "count": 1,
+      "files": [
+        "scripts/r3l0b/evidence.mjs"
+      ]
+    },
+    {
+      "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+      "codePoints": [
+        80,
+        65,
+        76,
+        73,
+        77,
+        80,
+        83,
+        69,
+        83,
+        84,
+        95,
+        87,
+        79,
+        82,
+        75,
+        69,
+        82,
+        95,
+        80,
+        82,
+        79,
+        84,
+        69,
+        67,
+        84,
+        69,
+        68,
+        95,
+        82,
+        79,
+        79,
+        84,
+        83
+      ],
+      "length": 33,
+      "count": 21,
+      "files": [
+        "scripts/gates/r1h-live-gate.mjs",
+        "scripts/gates/r1hc-live-gate.mjs",
+        "scripts/gates/r1l-live-gate.mjs",
+        "scripts/r3l0c/generation-child.mjs",
+        "scripts/r3l0c/plumbing.mjs",
+        "test/trajectory_p2e1rg_baseline_admission.test.ts",
+        "test/trajectory_p2e1rg_precreate_admission.test.ts"
+      ]
+    },
+    {
+      "name": "SystemRoot",
+      "codePoints": [
+        83,
+        121,
+        115,
+        116,
+        101,
+        109,
+        82,
+        111,
+        111,
+        116
+      ],
+      "length": 10,
+      "count": 1,
+      "files": [
+        "host/dsh/lib/browser.js"
+      ]
+    }
+  ],
+  "directReadSites": [
+    {
+      "file": "scripts/dogfood/real-host-federation.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/experiments/lib/host.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/gates/d2-live-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/gates/d4-live-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/gates/d5-live-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/gates/r1h-live-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            87,
+            79,
+            82,
+            75,
+            69,
+            82,
+            95,
+            80,
+            82,
+            79,
+            84,
+            69,
+            67,
+            84,
+            69,
+            68,
+            95,
+            82,
+            79,
+            79,
+            84,
+            83
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/gates/r1hc-live-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            87,
+            79,
+            82,
+            75,
+            69,
+            82,
+            95,
+            80,
+            82,
+            79,
+            84,
+            69,
+            67,
+            84,
+            69,
+            68,
+            95,
+            82,
+            79,
+            79,
+            84,
+            83
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/gates/r1l-live-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            87,
+            79,
+            82,
+            75,
+            69,
+            82,
+            95,
+            80,
+            82,
+            79,
+            84,
+            69,
+            67,
+            84,
+            69,
+            68,
+            95,
+            82,
+            79,
+            79,
+            84,
+            83
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/gates/r1s-live-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/host_s1/generate-evidence.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/host_s1/junction-label-probe.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/host_s1/reproduce-baseline.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/host_s1/sibling-world-probe.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/host_s1/verify-cost-probe.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/host_s1r/reproduce-concerns.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/interaction/uxc-dsh-cross-project-dogfood.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/interaction/uxc-dsh-local-dogfood.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/management/delegate-continuity.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/management/dogfood.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/management/multi-promotion.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/proof/real-extraction-e2e.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1/probe-capital-delivery.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1h/conformance.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1h/ffi-reach.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1h/no-read-up-experiment.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1h/qualify.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1hc/conformance.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1hr/clean-env.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1hr/conformance.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1r/trial.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/capability-audit.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/capability-sid-experiment.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/conformance.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/credential-reach.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        },
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/deny-ace-experiment.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/env-audit.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/ffi-deny-route.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r1s/integrity-label-experiment.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r2e/trial.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r2lr/last-mile-proof.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r2m/trial.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r2s/trial.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r2u/gate-a.mjs",
+      "names": [
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r2u/trial.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r2v/trial.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3a/trial.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0/dummy-child.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0/generation-child.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0b/canaries.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0b/evidence.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_R3L0_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            82,
+            51,
+            76,
+            48,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0b/mutations.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0c/generation-child.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            87,
+            79,
+            82,
+            75,
+            69,
+            82,
+            95,
+            80,
+            82,
+            79,
+            84,
+            69,
+            67,
+            84,
+            69,
+            68,
+            95,
+            82,
+            79,
+            79,
+            84,
+            83
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0c/plumbing.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            87,
+            79,
+            82,
+            75,
+            69,
+            82,
+            95,
+            80,
+            82,
+            79,
+            84,
+            69,
+            67,
+            84,
+            69,
+            68,
+            95,
+            82,
+            79,
+            79,
+            84,
+            83
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0cf/closure.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0cia/confinement.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3l0ciar/confinement.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/r3wr2/worker-parity.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/recipes/explore-e2e.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/release/consumer-smoke.mjs",
+      "names": [
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/release/rc1-evidence-bundle.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/release/rc1-live-cross-project.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/release/rc1-live-local.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2a/level-c-first-party-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_P2A_GATE_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            80,
+            50,
+            65,
+            95,
+            71,
+            65,
+            84,
+            69,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2d2/runtime-environment.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e0/owned-root.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_P2E0_GATE_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            80,
+            50,
+            69,
+            48,
+            95,
+            71,
+            65,
+            84,
+            69,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e0/runtime-environment.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_P2E0_GATE_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            80,
+            50,
+            69,
+            48,
+            95,
+            71,
+            65,
+            84,
+            69,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e0/source-to-dsh-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1/normal-consumer-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1r/assay-harness.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rc/closure-gate.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rd/cwd-source-map.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rd/generate-evidence.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rd/worker-probe.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1re/generate-evidence.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1re/pretool-probe.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rf/delegation-probe.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rf/generate-evidence.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rg/ancestor-root-probe.mjs",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "scripts/trajectory_p2e1rg/generate-evidence.mjs",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        },
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/host_s1r_reparse_boundary.test.ts",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        },
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/host_s1_descendant_admission.test.ts",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/host_s1_spine_coverage.test.ts",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/paths.test.ts",
+      "names": [
+        {
+          "name": "runtime_HOME",
+          "codePoints": [
+            114,
+            117,
+            110,
+            116,
+            105,
+            109,
+            101,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/r3l0c_containment.test.ts",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/trajectory_p2d0_cold_capsule.test.ts",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/trajectory_p2d2_host_delivery.test.ts",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/trajectory_p2e1rg_baseline_admission.test.ts",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            87,
+            79,
+            82,
+            75,
+            69,
+            82,
+            95,
+            80,
+            82,
+            79,
+            84,
+            69,
+            67,
+            84,
+            69,
+            68,
+            95,
+            82,
+            79,
+            79,
+            84,
+            83
+          ]
+        },
+        {
+          "name": "PALIMPSEST_HOST_CAPACITY_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            72,
+            79,
+            83,
+            84,
+            95,
+            67,
+            65,
+            80,
+            65,
+            67,
+            73,
+            84,
+            89,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/trajectory_p2e1rg_kernel_coverage.test.ts",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/trajectory_p2e1rg_precreate_admission.test.ts",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_WORKER_PROTECTED_ROOTS",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            87,
+            79,
+            82,
+            75,
+            69,
+            82,
+            95,
+            80,
+            82,
+            79,
+            84,
+            69,
+            67,
+            84,
+            69,
+            68,
+            95,
+            82,
+            79,
+            79,
+            84,
+            83
+          ]
+        },
+        {
+          "name": "PALIMPSEST_HOST_CAPACITY_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            72,
+            79,
+            83,
+            84,
+            95,
+            67,
+            65,
+            80,
+            65,
+            67,
+            73,
+            84,
+            89,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "host/deployment/runtime/confidential_profile.js",
+      "names": [
+        {
+          "name": "PALIMPSEST_HOST_CAPACITY_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            72,
+            79,
+            83,
+            84,
+            95,
+            67,
+            65,
+            80,
+            65,
+            67,
+            73,
+            84,
+            89,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "host/deployment/runtime/win32_label.js",
+      "names": [
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "host/deployment/runtime/worker_fence.js",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        },
+        {
+          "name": "PALIMPSEST_DSH_ROOT",
+          "codePoints": [
+            80,
+            65,
+            76,
+            73,
+            77,
+            80,
+            83,
+            69,
+            83,
+            84,
+            95,
+            68,
+            83,
+            72,
+            95,
+            82,
+            79,
+            79,
+            84
+          ]
+        }
+      ]
+    },
+    {
+      "file": "host/dsh/lib/browser.js",
+      "names": [
+        {
+          "name": "SystemRoot",
+          "codePoints": [
+            83,
+            121,
+            115,
+            116,
+            101,
+            109,
+            82,
+            111,
+            111,
+            116
+          ]
+        },
+        {
+          "name": "HOME",
+          "codePoints": [
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "host/dsh/lib/index.js",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    },
+    {
+      "file": "host/dsh/lib/runner.js",
+      "names": [
+        {
+          "name": "DSH_HOME",
+          "codePoints": [
+            68,
+            83,
+            72,
+            95,
+            72,
+            79,
+            77,
+            69
+          ]
+        }
+      ]
+    }
+  ],
+  "directReadSiteCount": 95,
+  "realInstallation": {
+    "path": "C:\\Users\\66494\\.dsh",
+    "present": true,
+    "isReparsePoint": true,
+    "resolved": "D:/dsh"
+  },
+  "verdict": {
+    "unicodeHomoglyphCollisionPresent": false,
+    "displayLevelAmbiguityPresent": true,
+    "resolverAcceptsBothSpellings": true,
+    "unacceptedNamesPresent": true,
+    "unexpectedFallbackSites": 95,
+    "assessment": "the pair is not a Unicode collision; it is two distinct ASCII identifiers whose difference a text-only evidence artefact cannot express. The shared resolver accepts and sets both, which makes a caller's assignment effective either way."
+  }
+}

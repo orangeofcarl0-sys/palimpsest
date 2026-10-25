@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE3_MODULE_SHARING_AUDIT",
+  "stage": "Palimpsest Host-S1RA-E3",
+  "measuredAt": "2026-10-25T09:01:25.600Z",
+  "implementation": "scripts/trajectory_p2b/module-sharing.mjs",
+  "implementationDigest": "b12d72e8e43e46956698cdf1e19653315724a6520873d399028fc9a40938f8f4",
+  "sandbox": {
+    "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-sharing-kQHDN4",
+    "containment": {
+      "proven": true,
+      "problems": [],
+      "sandbox": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-sharing-kQHDN4",
+      "gateRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-sharing-kQHDN4\\gate"
+    },
+    "removed": true
+  },
+  "summary": {
+    "total": 10,
+    "safe": 10,
+    "unsafe": 0,
+    "unsafeCases": []
+  },
+  "cases": [
+    {
+      "id": "1-caller-declared-destination-absent",
+      "question": "a declared name that does not exist falls through to ordinary linking",
+      "expectedSafe": "established: the shared entries are linked and nothing is refused",
+      "result": {
+        "established": true,
+        "linked": [
+          "shared-a",
+          "shared-b"
+        ],
+        "refused": []
+      },
+      "observation": "ESTABLISHED: ordinary linking ran for every source entry",
+      "safe": true
+    },
+    {
+      "id": "2-correctly-installed-package",
+      "question": "a declared name occupied by a plain directory the caller installed is admitted",
+      "expectedSafe": "established, with the entry recorded as providedByCaller",
+      "result": {
+        "established": true,
+        "providedByCaller": [
+          "host-pkg"
+        ],
+        "refused": []
+      },
+      "observation": "ADMITTED: recorded as providedByCaller",
+      "safe": true
+    },
+    {
+      "id": "3-foreign-directory-at-a-source-name",
+      "question": "is a pre-existing directory at a declared name admitted when its content does not match the expected install?",
+      "expectedSafe": "REFUSED: the declaration is an intention, the fingerprint is the provenance",
+      "result": {
+        "established": false,
+        "providedByCaller": [],
+        "provenance": [],
+        "refused": [
+          {
+            "entry": "host-pkg",
+            "outcome": "REFUSED",
+            "reason": "CALLER_DECLARED_BUT_CONTENT_DOES_NOT_MATCH_THE_EXPECTED_INSTALL",
+            "state": {
+              "state": "DIRECTORY",
+              "existsSync": true,
+              "isReparsePoint": false
+            }
+          }
+        ]
+      },
+      "observation": "REFUSED: the content did not match the expected install, so the declaration was not sufficient",
+      "safe": true
+    },
+    {
+      "id": "3b-matching-install-is-verified",
+      "question": "is a directory that matches the expected install admitted WITH verified provenance?",
+      "expectedSafe": "established, recorded as VERIFIED_AGAINST_EXPECTED_FINGERPRINT — the liveness control for case 3",
+      "result": {
+        "established": true,
+        "providedByCaller": [
+          "host-pkg"
+        ],
+        "provenance": [
+          {
+            "entry": "host-pkg",
+            "provenance": "VERIFIED_AGAINST_EXPECTED_FINGERPRINT"
+          }
+        ],
+        "refused": []
+      },
+      "observation": "ADMITTED WITH VERIFIED PROVENANCE",
+      "safe": true
+    },
+    {
+      "id": "4-dangling-junction-at-declared-name",
+      "question": "is a dangling junction at a declared name refused?",
+      "expectedSafe": "REFUSED: a link at a declared name is not what the caller's installer produces",
+      "result": {
+        "established": false,
+        "refused": [
+          {
+            "entry": "host-pkg",
+            "outcome": "REFUSED",
+            "reason": "CALLER_DECLARED_BUT_DESTINATION_IS_BROKEN_LINK",
+            "state": {
+              "state": "BROKEN_LINK",
+              "existsSync": false,
+              "isReparsePoint": true,
+              "targetResolves": false,
+              "target": null
+            }
+          }
+        ]
+      },
+      "observation": "REFUSED: the dangling junction was not admitted",
+      "safe": true
+    },
+    {
+      "id": "5-junction-outside-boundary",
+      "question": "is a junction resolving outside the test home refused at a declared name?",
+      "expectedSafe": "REFUSED: a link at a declared name is refused regardless of where it resolves",
+      "result": {
+        "established": false,
+        "refused": [
+          {
+            "entry": "host-pkg",
+            "outcome": "REFUSED",
+            "reason": "CALLER_DECLARED_BUT_DESTINATION_IS_JUNCTION_OR_SYMLINK",
+            "state": {
+              "state": "JUNCTION_OR_SYMLINK",
+              "existsSync": true,
+              "isReparsePoint": true,
+              "targetResolves": true,
+              "target": "C:/Users/66494/AppData/Local/Temp/s1rae3-sharing-kQHDN4/c5-outside-target"
+            }
+          }
+        ]
+      },
+      "observation": "REFUSED: the outbound junction was not admitted",
+      "safe": true
+    },
+    {
+      "id": "6-regular-file-occupant",
+      "question": "is a regular file at a shared module name refused?",
+      "expectedSafe": "REFUSED, and the file is left untouched",
+      "result": {
+        "established": false,
+        "refused": [
+          {
+            "entry": "koffi",
+            "outcome": "REFUSED",
+            "reason": "DESTINATION_IS_FILE",
+            "state": {
+              "state": "FILE",
+              "existsSync": true,
+              "isReparsePoint": false
+            }
+          }
+        ]
+      },
+      "fileSurvived": true,
+      "observation": "REFUSED: the file occupant was not overwritten",
+      "safe": true
+    },
+    {
+      "id": "7-same-name-in-source-and-destination",
+      "question": "is an undeclared pre-existing directory at a source name refused?",
+      "expectedSafe": "REFUSED: it would shadow the shared module",
+      "result": {
+        "established": false,
+        "refused": [
+          {
+            "entry": "shared-a",
+            "outcome": "REFUSED",
+            "reason": "DESTINATION_IS_DIRECTORY",
+            "state": {
+              "state": "DIRECTORY",
+              "existsSync": true,
+              "isReparsePoint": false
+            }
+          }
+        ]
+      },
+      "observation": "REFUSED: the shadowing directory was not accepted",
+      "safe": true
+    },
+    {
+      "id": "8-conflicting-link-identity",
+      "question": "is an existing junction that resolves to a DIFFERENT source refused?",
+      "expectedSafe": "REFUSED as EXISTING_LINK_POINTS_ELSEWHERE",
+      "result": {
+        "established": false,
+        "refused": [
+          {
+            "entry": "shared-a",
+            "outcome": "REFUSED",
+            "reason": "EXISTING_LINK_POINTS_ELSEWHERE",
+            "expected": "c:/users/66494/appdata/local/temp/s1rae3-sharing-kqhdn4/c8/source-modules/shared-a",
+            "actual": "C:/Users/66494/AppData/Local/Temp/s1rae3-sharing-kQHDN4/c8/wrong-source",
+            "state": {
+              "state": "JUNCTION_OR_SYMLINK",
+              "existsSync": true,
+              "isReparsePoint": true,
+              "targetResolves": true,
+              "target": "C:/Users/66494/AppData/Local/Temp/s1rae3-sharing-kQHDN4/c8/wrong-source"
+            }
+          }
+        ]
+      },
+      "observation": "REFUSED: the wrong-target link was detected by resolved-target comparison",
+      "safe": true
+    },
+    {
+      "id": "9-correct-link-is-idempotent",
+      "question": "is a second run over a correctly linked graph accepted without rewriting it?",
+      "expectedSafe": "ALREADY_LINKED, established true — a liveness control, so 'refuse everything' does not pass",
+      "first": {
+        "established": true,
+        "linked": [
+          "shared-a"
+        ]
+      },
+      "second": {
+        "established": true,
+        "alreadyLinked": [
+          "shared-a"
+        ]
+      },
+      "observation": "ALREADY_LINKED: the idempotent case works",
+      "safe": true
+    }
+  ]
+}
