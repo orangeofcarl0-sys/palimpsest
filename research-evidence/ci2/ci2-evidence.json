@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "kind": "PALIMPSEST_CI2_EVIDENCE_MANIFEST",
+  "stage": "Palimpsest-CI2 — Delegated Completion Evidence & Qualification Continuity",
+  "measuredAt": "2026-10-25T20:50:00.000Z",
+  "node": {
+    "version": "v24.22.0",
+    "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe"
+  },
+  "baseline": {
+    "branch": "palimpsest-ci2-delegated-completion-qualification",
+    "parent": "334d04082a1e6328c018e05ff49a32851df048e4",
+    "parentTree": "58699372664b686d76f4b83dc435c2af5295536f",
+    "ci1CodeFreeze": "b8013f62b23b2ffa50a3ae2cc27aa7fe4a2413a0",
+    "ci1EvidenceFreeze": "334d04082a1e6328c018e05ff49a32851df048e4",
+    "runtime": "0.2.1-rc.3",
+    "workingTreeCleanAtStart": true
+  },
+  "codeFreeze": {
+    "commit": "bd1ff8d0f9f04befd5f05f5040dee9930f2a118e",
+    "tree": "3629a5c3d7be1713901fbce2ff87139d648ef9ca",
+    "changedPaths": [
+      "A\tdocs/engineering/ci2-a1-completion-architecture.md",
+      "A\tdocs/engineering/ci2-a4-implementation-decision.md",
+      "M\tsrc/tools/controller.ts",
+      "A\tsrc/tools/work_evidence.ts",
+      "M\tsrc/work/attempt_execution.ts",
+      "A\tsrc/work/completion_evaluation.ts",
+      "M\ttest/ci1_bounded_synthesis.test.ts",
+      "A\ttest/ci2_delegated_qualification.test.ts",
+      "A\ttest/ci2_finish_reference.test.ts",
+      "A\ttest/ci2_idempotency_recovery.test.ts",
+      "A\ttest/ci2_mutation_controls.test.ts",
+      "A\ttest/ci2_negative_controls.test.ts",
+      "A\ttest/ci2_project_continuity.test.ts",
+      "A\ttest/ci2_red_delegated_evidence.test.ts",
+      "M\ttools/architecture/layers.ts",
+      "A\tscripts/ci2/derive-selection.mjs"
+    ]
+  },
+  "evidenceFreeze": {
+    "commit": "cf06aab686cdd4d73aa19957c62942f4f02e305e",
+    "tree": "e4ad3e193c9e61e40d389449323fe3e060138173",
+    "changedPaths": [
+      "A\tdocs/engineering/ci2-delegated-completion-qualification.md",
+      "A\tresearch-evidence/ci2/ci2-evidence.json"
+    ],
+    "executableFilesInDiff": 0
+  },
+  "redReproduction": {
+    "measuredAt": "334d04082a1e6328c018e05ff49a32851df048e4",
+    "test": "test/ci2_red_delegated_evidence.test.ts",
+    "attemptState": "COMPLETED",
+    "candidateExportedAndResolvable": true,
+    "evidenceAtomsForAttempt": 0,
+    "eventsContainingEVIDENCE_ADDED": 0,
+    "gateVerdict": "INCOMPLETE",
+    "rootCause": "makeMutatingAttemptService.settle observed the world, enforced scope and exported the commit, but never derived or executed the Completion Contract. Evidence becomes durable only through an EVIDENCE_ADDED event built by ProjectController, and src/work/ may not import the controller (firewall work-not-host)."
+  },
+  "greenAfterCorrection": {
+    "test": "test/ci2_delegated_qualification.test.ts",
+    "attemptState": "COMPLETED",
+    "evidenceAtoms": 3,
+    "predicates": ["expected_files_exist", "process_exit_zero", "write_scope_valid"],
+    "producer": "palimpsest-delegated-settlement",
+    "everyAtomNamesCandidate": true,
+    "gateVerdict": "PASS",
+    "gateEvidenceUsed": 3,
+    "promoted": false
+  },
+  "runs": {
+    "source": "CALLER_SUPPLIED_FROM_ACTUAL_RUNS",
+    "typescriptBuild": { "command": "tsc -b", "exitCode": 0 },
+    "moduleArchitecture": { "command": "module-architecture.mjs --check", "verdict": "PASS", "violations": 0, "baselineExceptions": 9 },
+    "publicApi": { "command": "module-architecture.mjs --check-public-api", "verdict": "PASS", "missing": 0, "changedKind": 0, "added": 0 },
+    "ci1AndCi2": {
+      "files": 12,
+      "tests": 38,
+      "passed": 38,
+      "exitCode": 0,
+      "note": "five CI1 files plus seven CI2 files, run together at the Code Freeze"
+    },
+    "finishAndGateRegression": {
+      "files": 15,
+      "tests": 155,
+      "passed": 155,
+      "exitCode": 0,
+      "note": "lean_finish, lean_completion_contract, gate_tool, gate_dsl, lean_governance, evidence_graph, acceptance, y_evidence_authority, w_revision_safe, lean_settlement_closure, lean_work_delegation_transport, lean_d2_live_composition, lean_promotion_readiness, lean_speculative_authority, lean_d5d_result_continuation_service"
+    },
+    "broadNonGate": {
+      "selection": "every recursive test/**/*.test.ts minus r3l0* minus trajectory_*",
+      "allTestFiles": 408,
+      "excludedR3l0": 39,
+      "excludedTrajectory": 78,
+      "includedFiles": 291,
+      "files": 291,
+      "tests": 3739,
+      "passed": 3739,
+      "failed": 0,
+      "exitCode": 0,
+      "maxConcurrency": 2,
+      "note": "The first clean broad non-gate runner exit 0 recorded in this line of stages. E4 and CI1 both carried an unresolved runner-exit defect; it did not reproduce here. One vitest forks-worker termination timeout was reported AFTER all 291 files and 3739 tests had passed and the process had already exited 0; it is recorded rather than omitted."
+    }
+  },
+  "claims": {
+    "established": [
+      "the delegated settlement route evaluates the Completion Contract it derives, between candidate export and the completion report, and records real evidence for every check that held",
+      "a legitimate delegated candidate reaches the product's own release gate and PASSES, with the gate's evidence_used naming exactly the three atoms the route recorded",
+      "every delegated atom names the candidate it was produced about (result_commit, candidate_tree, base_commit in the atom's open value map) and carries a content-addressed dependency_digest over (base, result, tree)",
+      "a write-scope violation, a missing required artifact, a failing standard command and an unobservable command each refuse the settlement and record no passing atom",
+      "evidence from one attempt does not satisfy a gate over another attempt, over another candidate, or over a commit subject",
+      "a repeated settlement converges: no second set of atoms, no second ATTEMPT_COMPLETED, no second head advance",
+      "two different candidates for one attempt are distinguished by dependency_digest and are NOT converged into one qualification",
+      "a qualified delegated candidate promotes through promoteWhenGatePasses, the head reconciles, and a dependent task is admitted with its frozen base equal to the promoted head",
+      "the Finish route's behaviour is unchanged: same atoms, same predicates, same values, same refusal behaviour"
+    ],
+    "notEstablished": [
+      "two real runtime subprocess Workers: the RuntimeCarrierPort and WorkWorkerRunPort remain test-owned, as the ruling permits; this is not a claim of live model-driven agents",
+      "L2 hostile same-user isolation: all execution is L1 cooperative",
+      "a cross-Owner dependency relation in the Trajectory vocabulary: CI1 found none exists and CI2 did not add one",
+      "crash recovery that survives a real process kill between export and evaluation: the windows were measured as re-derivability properties, not by killing a process mid-write",
+      "the full 279-file E4 selection reproducing its historical 3691 count: the selection is now 291 files because CI1 and CI2 added twelve"
+    ],
+    "limitationsCarried": [
+      "E3 quarantine residual TOCTOU is unchanged",
+      "module-sharing provenance is structural (paths and sizes), not content-addressed",
+      "rc.3 is qualified for the operations exercised, not every Win32 path",
+      "the real runtime Home content boundary remains unestablished",
+      "the stale deployment copy in the real runtime home is unchanged and still not on the executed path"
+    ]
+  },
+  "protectedAssets": {
+    "evidenceTrees": 67,
+    "preExistingTreesUnchanged": true,
+    "worktreesRegistered": 95,
+    "gateRoot": { "path": "C:/Users/66494/.palimpsest-gates", "entries": 19 },
+    "runtimeModules": 125
+  }
+}
