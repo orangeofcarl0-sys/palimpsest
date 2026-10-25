@@ -125,12 +125,26 @@ export function freeBytesAt(path) {
  * E3-B — AN OBJECT IDENTITY IS NOW ALSO CAPTURED. The marker alone is COPYABLE: E3 measured that a marker carrying
  * the same `runIdentity` and `root` was accepted for a directory it did not describe. `dev`/`ino` are recorded here
  * and compared at disposal, so the record binds the OBJECT and not only the marker text.
+ *
+ * E4-A3 — THE GATE ROOT IS NOW AN EXPLICIT PARAMETER.
+ *
+ * `GATE_ROOT` was the only possible parent, resolved once at module load from the environment or the user profile.
+ * That made every caller share one mutable directory, including callers that only wanted a private fixture root.
+ * `test/trajectory_p2e1_resource_safety.test.ts` consequently observed the REAL `~/.palimpsest-gates` entry count
+ * while `test/trajectory_p2e0_test_runtime_safety.test.ts` legitimately allocated and disposed inside it, and E4-A2
+ * reproduced that interference deterministically (19 -> 20 entries from an external process, assertion fails).
+ *
+ * A caller may now pass its own `gateRoot`. The default is unchanged, so no existing production consumer changes
+ * behaviour: `scripts/trajectory_p2e0/*`, `scripts/trajectory_p2e1/*` and the gates still allocate under the shared
+ * root, which is what they are for. Only a caller that wants an isolated fixture passes one — and the record then
+ * carries THAT root, so containment is proved against the parent the caller actually chose.
  */
-export function allocateOwnedRoot(prefix, runIdentity) {
-  if (!existsSync(GATE_ROOT)) mkdirSync(GATE_ROOT, { recursive: true });
-  const created = mkdtempSync(join(GATE_ROOT, prefix));
+export function allocateOwnedRoot(prefix, runIdentity, gateRoot = GATE_ROOT) {
+  if (typeof gateRoot !== "string" || gateRoot.trim() === "") throw new Error("allocateOwnedRoot requires a non-empty gate root");
+  if (!existsSync(gateRoot)) mkdirSync(gateRoot, { recursive: true });
+  const created = mkdtempSync(join(gateRoot, prefix));
   const root = realpathSync(created);
-  const gate = realpathSync(GATE_ROOT);
+  const gate = realpathSync(gateRoot);
   const marker = join(root, OWNERSHIP_MARKER);
   const stats = lstatSync(created);
   const record = {
@@ -236,8 +250,17 @@ export async function safeCleanup(owned) {
     if (present) return { cleaned: false, reason: "the owned root could not be resolved but is still present; preserving it", preserved: true };
     return { cleaned: true, reason: "the owned root was already gone" };
   }
-  if (!containedIn(realpathSync(GATE_ROOT), canonicalNow)) {
-    return { cleaned: false, reason: "the owned root no longer resolves inside the gate root; preserving it" };
+  /**
+   * §4.2 / E4-A3: re-prove containment RIGHT BEFORE deleting, against the parent THIS RECORD was allocated under.
+   *
+   * The previous version compared against the module-level `GATE_ROOT`. That is wrong once a caller may pass its own
+   * gate root: a fixture allocated under a private parent would be measured against the shared one and refused, or —
+   * worse — a record whose own parent had changed would be checked against an unrelated constant. The record carries
+   * `gateRoot`, so that is what containment is proved against.
+   */
+  const parentRoot = typeof owned.gateRoot === "string" && owned.gateRoot !== "" ? owned.gateRoot : GATE_ROOT;
+  if (!containedIn(realpathSync(parentRoot), canonicalNow)) {
+    return { cleaned: false, reason: "the owned root no longer resolves inside the gate root it was allocated under; preserving it" };
   }
 
   /**
@@ -370,8 +393,8 @@ export function isOwnedByThisStage(path) {
  * The cleanup runs in `finally`, so a throw, a refusal or an early return all release the root. The body
  * receives the owned root; whatever it returns is returned alongside the cleanup report.
  */
-export async function withOwnedRoot(prefix, runIdentity, body) {
-  const owned = allocateOwnedRoot(prefix, runIdentity);
+export async function withOwnedRoot(prefix, runIdentity, body, gateRoot = GATE_ROOT) {
+  const owned = allocateOwnedRoot(prefix, runIdentity, gateRoot);
   let result;
   let error;
   try {

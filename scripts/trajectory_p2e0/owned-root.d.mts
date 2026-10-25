@@ -58,7 +58,14 @@ export type ReparseScan =
 export declare function findDescendantReparsePoints(root: string): ReparseScan;
 export declare function snapshotDependencyRoot(root: string): { readonly present: boolean; readonly canonical?: string; readonly entries?: number; readonly reparsePoints?: number; readonly entrypoints?: readonly string[] };
 export declare function freeBytesAt(path: string): number | null;
-export declare function allocateOwnedRoot(prefix: string, runIdentity?: string): OwnedRoot;
+/**
+ * E4-A3 — `gateRoot` is an explicit optional parent.
+ *
+ * Omitting it preserves the previous behaviour exactly (the shared `GATE_ROOT`), so every production consumer is
+ * unaffected. Supplying it allocates under that parent instead, which is what an isolated test fixture needs: a suite
+ * that observes its own allocation count must not share a mutable directory with another suite.
+ */
+export declare function allocateOwnedRoot(prefix: string, runIdentity?: string, gateRoot?: string): OwnedRoot;
 export declare function safeCleanup(owned: OwnedRoot | undefined | null): Promise<CleanupResult>;
 export declare function isOwnedByThisStage(path: string): boolean;
-export declare function withOwnedRoot<T>(prefix: string, runIdentity: string | undefined, body: (owned: OwnedRoot) => Promise<T> | T): Promise<OwnedRootOutcome<T>>;
+export declare function withOwnedRoot<T>(prefix: string, runIdentity: string | undefined, body: (owned: OwnedRoot) => Promise<T> | T, gateRoot?: string): Promise<OwnedRootOutcome<T>>;

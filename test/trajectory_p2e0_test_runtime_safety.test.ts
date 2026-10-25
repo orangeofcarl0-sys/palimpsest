@@ -16,18 +16,33 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   OWNERSHIP_MARKER,
-  allocateOwnedRoot,
+  allocateOwnedRoot as allocateUnderSharedRoot,
   findDescendantReparsePoints,
   freeBytesAt,
   isOwnedByThisStage,
   safeCleanup,
   snapshotDependencyRoot,
-  withOwnedRoot,
+  withOwnedRoot as withSharedOwnedRoot,
 } from "../scripts/trajectory_p2e0/owned-root.mjs";
 
 /** A test-owned parent that holds both the candidate cleanup root and the external sentinel. */
 let sandbox: string;
 const made: string[] = [];
+
+/**
+ * E4-A3 — THIS SUITE'S OWN GATE ROOT.
+ *
+ * The fixtures below used the shared `~/.palimpsest-gates`, which `trajectory_p2e1_resource_safety` also mutates.
+ * E4-A2 reproduced the consequence deterministically: an external allocation moved the shared entry count inside
+ * another suite's observation window, and that suite's assertion failed for a reason it did not cause. Both suites
+ * now allocate under private roots, so neither can disturb the other and neither writes scratch fixtures into the
+ * directory the real gates use.
+ */
+let fixtureGateRoot: string;
+
+const allocateOwnedRoot = (prefix: string, runIdentity: string) => allocateUnderSharedRoot(prefix, runIdentity, fixtureGateRoot);
+const withOwnedRoot = <T,>(prefix: string, runIdentity: string, body: (owned: { root: string }) => Promise<T> | T) =>
+  withSharedOwnedRoot(prefix, runIdentity, body, fixtureGateRoot);
 
 function newSandbox(): { candidate: string; external: string } {
   const base = mkdtempSync(join(sandbox, "fixture-"));
@@ -61,6 +76,9 @@ function sentinelIntact(external: string): boolean {
 
 beforeAll(() => {
   sandbox = mkdtempSync(join(tmpdir(), "palimpsest-e0-safety-"));
+  /** The private gate root lives INSIDE the sandbox, so the existing sandbox removal disposes of it. */
+  fixtureGateRoot = join(sandbox, "gate-root");
+  mkdirSync(fixtureGateRoot, { recursive: true });
 });
 afterAll(() => {
   for (const dir of made) {
