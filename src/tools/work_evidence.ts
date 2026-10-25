@@ -175,6 +175,28 @@ export interface CompletionAttachmentPorts {
   readonly changedFiles: readonly string[];
   readonly writePaths: readonly string[];
   readonly runCommand: (command: readonly string[]) => Promise<number | null>;
+  /**
+   * The evidence already recorded for this attempt, as `(predicate → dependency_digest)`.
+   *
+   * A REPEATED settlement must CONVERGE, not duplicate. The atom's idempotency key is
+   * `(project, attempt, predicate)` and deliberately carries no candidate, so a second settlement of the
+   * same attempt addresses the same key — but the atom's bytes differ (`created_at` moves), and the store
+   * refuses a key reused for different bytes with `IdempotencyConflict`. That refusal is the STORE being
+   * correct: it cannot tell "the same qualification, recorded twice" from "a different qualification
+   * smuggled under one key".
+   *
+   * So the decision is made HERE, where the candidate identity is known: if an atom for this predicate
+   * already exists with THIS candidate's dependency digest, the qualification is already recorded and
+   * nothing is appended. If it exists with a DIFFERENT digest, that is the W5 conflict and it must not
+   * silently converge — the caller is told, and the settlement refuses.
+   */
+  readonly existing: (predicate: EvidencePredicate) => string | null;
+}
+
+/** One recorded qualification's identity, as the attachment step needs to compare it. */
+export interface RecordedQualification {
+  readonly predicate: EvidencePredicate;
+  readonly dependencyDigest: string | null;
 }
 
 /**
@@ -193,6 +215,7 @@ export async function attachCompletionEvidence(
 ): Promise<
   | { readonly outcome: "PASSED"; readonly evidenceRecorded: readonly string[]; readonly detail: string }
   | { readonly outcome: "FAILED" | "NOT_EVALUABLE"; readonly detail: string }
+  | { readonly outcome: "CANDIDATE_CONFLICT"; readonly detail: string }
 > {
   const evaluation = await evaluateCompletionContract({
     contract: ports.contract,
@@ -203,14 +226,44 @@ export async function attachCompletionEvidence(
     runCommand: ports.runCommand,
   });
   if (evaluation.outcome !== "PASSED") return { outcome: evaluation.outcome, detail: evaluation.detail };
-  const attribution = {
-    dependencyDigest: candidateDependencyDigest(ports.candidate),
-    producer: "palimpsest-delegated-settlement",
-  } as const;
+  const dependencyDigest = candidateDependencyDigest(ports.candidate);
+  const attribution = { dependencyDigest, producer: "palimpsest-delegated-settlement" } as const;
+
+  /**
+   * THE CONVERGENCE / CONFLICT DECISION, MADE BEFORE ANY WRITE.
+   *
+   * Both outcomes are decided from the atoms already recorded, so a repeat neither appends a duplicate
+   * nor is refused by the store for reusing a key with new bytes. Nothing is written until every
+   * predicate has been classified, so a conflict leaves the ledger untouched.
+   */
+  const toRecord: Array<(typeof evaluation.observations)[number]> = [];
   const recorded: string[] = [];
   for (const observation of evaluation.observations) {
     const { predicate, value } = observation;
     if (observation.outcome !== "PASSED" || predicate === null || value === null) continue;
+    const existingDigest = ports.existing(predicate);
+    if (existingDigest !== null) {
+      if (existingDigest === dependencyDigest) {
+        /** Already qualified, for THIS candidate: converge. */
+        recorded.push(predicate);
+        continue;
+      }
+      /**
+       * W5: an atom for this predicate already exists and names a DIFFERENT candidate. That is not a
+       * replay of one immutable result, and silently converging would let a second result inherit the
+       * first's qualification. Refuse, and name both.
+       */
+      return {
+        outcome: "CANDIDATE_CONFLICT",
+        detail: `this attempt already holds ${predicate} evidence for a different candidate (recorded dependency ${existingDigest.slice(0, 12)}, this result ${dependencyDigest.slice(0, 12)}) — two different results for one attempt are not a replay of one immutable result, so the second is not qualified by the first`,
+      };
+    }
+    toRecord.push(observation);
+  }
+
+  for (const observation of toRecord) {
+    const { predicate, value } = observation;
+    if (predicate === null || value === null) continue;
     if (observation.command !== null && observation.exitCode !== null) {
       recordCommandEvidence(ports.context, predicate, observation.command, observation.exitCode, value, attribution);
     } else {
