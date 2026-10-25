@@ -39,8 +39,7 @@
     ]
   },
   "evidenceFreeze": {
-    "commit": "a0d9a819df2754cd21bb91bf4e3257a1b1034b86",
-    "tree": "fe90c343ec4babc14b2925b4398ac1408ae9a85b",
+    "identification": "the branch tip: the commit adding only the report and this manifest on top of the Code Freeze. A commit cannot contain its own hash, so the SHA is recorded in the delivery record rather than inside the tree it identifies.",
     "changedPaths": [
       "A\tdocs/engineering/ci2-delegated-completion-qualification.md",
       "A\tresearch-evidence/ci2/ci2-evidence.json"
@@ -61,7 +60,11 @@
     "test": "test/ci2_delegated_qualification.test.ts",
     "attemptState": "COMPLETED",
     "evidenceAtoms": 3,
-    "predicates": ["expected_files_exist", "process_exit_zero", "write_scope_valid"],
+    "predicates": [
+      "expected_files_exist",
+      "process_exit_zero",
+      "write_scope_valid"
+    ],
     "producer": "palimpsest-delegated-settlement",
     "everyAtomNamesCandidate": true,
     "gateVerdict": "PASS",
@@ -70,9 +73,23 @@
   },
   "runs": {
     "source": "CALLER_SUPPLIED_FROM_ACTUAL_RUNS",
-    "typescriptBuild": { "command": "tsc -b", "exitCode": 0 },
-    "moduleArchitecture": { "command": "module-architecture.mjs --check", "verdict": "PASS", "violations": 0, "baselineExceptions": 9 },
-    "publicApi": { "command": "module-architecture.mjs --check-public-api", "verdict": "PASS", "missing": 0, "changedKind": 0, "added": 0 },
+    "typescriptBuild": {
+      "command": "tsc -b",
+      "exitCode": 0
+    },
+    "moduleArchitecture": {
+      "command": "module-architecture.mjs --check",
+      "verdict": "PASS",
+      "violations": 0,
+      "baselineExceptions": 9
+    },
+    "publicApi": {
+      "command": "module-architecture.mjs --check-public-api",
+      "verdict": "PASS",
+      "missing": 0,
+      "changedKind": 0,
+      "added": 0
+    },
     "ci1AndCi2": {
       "files": 12,
       "tests": 38,
@@ -133,7 +150,10 @@
     "evidenceTrees": 67,
     "preExistingTreesUnchanged": true,
     "worktreesRegistered": 95,
-    "gateRoot": { "path": "C:/Users/66494/.palimpsest-gates", "entries": 19 },
+    "gateRoot": {
+      "path": "C:/Users/66494/.palimpsest-gates",
+      "entries": 19
+    },
     "runtimeModules": 125
   }
 }
