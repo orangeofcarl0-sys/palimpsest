@@ -53,7 +53,7 @@ import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService } from "../work/attempt_execution.js";
-import { attachCompletionEvidence, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
+import { attachCompletionEvidence, findRecordedEvidence, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
@@ -1054,12 +1054,10 @@ export class ProjectController {
       },
       hasExecutionWorldPort: () => this.#executionWorldPort !== undefined,
       /**
-       * CI2 §7/§9/§10 — the delegated route's completion evaluation.
-       *
-       * The contract comes from the product's own derivation over the SAME envelope `finish` derives it
-       * from, so the bar cannot differ between the two routes. The candidate is the EXPORTED commit —
-       * already admitted into the canonical object database by the export step that precedes this call
-       * — and its tree is read through git plumbing rather than a shell string.
+       * CI2 §7/§9/§10 — the delegated route's completion evaluation. The contract comes from the product's
+       * own derivation over the SAME envelope `finish` derives it from, so the bar cannot differ between the
+       * two routes. The candidate is the EXPORTED commit — already admitted into the canonical object
+       * database by the export step that precedes this call — and its tree is read through git plumbing.
        */
       evaluateCompletion: async (input) => {
         const [row, envelope] = this.#attemptContext(input.attemptId);
@@ -2631,10 +2629,11 @@ export class ProjectController {
   ): SchedulerEvent {
     const [row, envelope] = this.#attemptContext(attemptId);
     return recordCommandEvidence(
-      { ...this.#evidenceContext(attemptId, row, envelope), requiredArtifacts: observedArtifacts ?? envelope.required_artifacts },
+      this.#evidenceContext(attemptId, row, envelope),
       predicate,
       command,
       exitCode,
+      observedArtifacts,
       value,
       candidate,
     );
@@ -2655,6 +2654,7 @@ export class ProjectController {
       projectDigest: envelope.project_digest,
       requiredArtifacts: envelope.required_artifacts,
       now: () => this.#now(),
+      findExisting: (idempotencyKey) => findRecordedEvidence(this.store, this.projectId, idempotencyKey),
     };
   }
 

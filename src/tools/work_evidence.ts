@@ -55,6 +55,35 @@ export interface WorkEvidenceContext {
   readonly projectDigest: string;
   readonly requiredArtifacts: readonly string[];
   readonly now: () => string;
+  /**
+   * The already-recorded atom for one evidence idempotency key, when there is one.
+   *
+   * Supplied by the caller because only it can read the log; used to converge a repeated observation
+   * instead of failing the store's digest check on a moved `created_at`. `undefined` means "no atom
+   * for this key", which is the ordinary first-write case.
+   */
+  readonly findExisting?: ((idempotencyKey: string) => { readonly event: SchedulerEvent; readonly exitCode: number | null } | undefined) | undefined;
+}
+
+/**
+ * Read the already-recorded atom for one evidence idempotency key, or `undefined`.
+ *
+ * Exported so the controller's context builder stays a flat literal — its LOC ceiling is a real
+ * constraint, and this lookup is the writer's own concern rather than the caller's.
+ */
+export function findRecordedEvidence(
+  store: EventStore,
+  projectId: string,
+  idempotencyKey: string,
+): { readonly event: SchedulerEvent; readonly exitCode: number | null } | undefined {
+  const found = store.connection
+    .prepare("SELECT event_id FROM events WHERE project_id=? AND idempotency_key=?")
+    .get(projectId, idempotencyKey) as { event_id: number } | undefined;
+  if (found === undefined) return undefined;
+  const event = store.getEvent(Number(found.event_id));
+  if (event === undefined) return undefined;
+  const atom = (event.payload as { evidence?: { exit_code?: number | null } }).evidence;
+  return { event, exitCode: atom?.exit_code ?? null };
 }
 
 /** An observed, non-command fact: `write_scope_valid`, `expected_files_exist`. */
@@ -69,6 +98,9 @@ export function recordObservedEvidence(
     attempt_id: context.attemptId,
     predicate,
   });
+  /** Same convergence rule as a command observation: the same observed fact recorded twice is one atom. */
+  const existing = context.findExisting?.(key);
+  if (existing !== undefined) return existing.event;
   const evidenceId = stableEntityId("evidence", key);
   const evidence: EvidenceAtom = {
     schema_version: 1,
@@ -113,12 +145,19 @@ export function recordObservedEvidence(
  * The exit code is never a caller's. That is the constitution `palimpsest_report` states — claims are
  * never evidence, only deterministic observation is — and it is why this function takes a number the
  * caller must have obtained by running the command, not a boolean it decided.
+ *
+ * `observedArtifacts` and `value` are separate parameters ON PURPOSE, and `value` is LAST-BUT-ONE with
+ * `candidate` after it, so the positional call `gate()` makes — `(attempt, predicate, command, exit,
+ * observedArtifacts)` — keeps meaning what it always meant. Collapsing them would silently reinterpret
+ * an artifact list as an evidence payload, which is exactly the kind of quiet shape change the
+ * extraction was supposed to avoid.
  */
 export function recordCommandEvidence(
   context: WorkEvidenceContext,
   predicate: EvidencePredicate,
   command: readonly string[],
   exitCode: number,
+  observedArtifacts?: readonly string[] | undefined,
   value?: Record<string, unknown> | undefined,
   candidate?: { readonly dependencyDigest: string; readonly producer: string } | undefined,
 ): SchedulerEvent {
@@ -128,6 +167,29 @@ export function recordCommandEvidence(
     predicate,
     command,
   });
+  /**
+   * CONVERGENCE BEFORE APPEND, AND ONLY FOR THE SAME OBSERVATION.
+   *
+   * The key identifies ONE observation — this attempt, this predicate, this command — and the store
+   * already returns the existing event when the request digest matches. It does not match here for two
+   * legitimate reasons: `created_at` moves on every call, and a repeat through a different ROUTE may
+   * carry a candidate attribution the first did not. Neither difference means a different fact was
+   * observed, so the existing atom is returned as-is.
+   *
+   * IT IS NOT A LICENCE TO OVERWRITE. The caller hands back the previously recorded exit code, and if
+   * it differs from the one being recorded this does NOT converge — the store then raises its own
+   * `IdempotencyConflict`, which is the correct answer: two different exit codes for one command are
+   * two different observations competing for one identity, and neither may silently win.
+   */
+  const existing = context.findExisting?.(key);
+  if (existing !== undefined) {
+    if (existing.exitCode !== exitCode) {
+      throw new Error(
+        `evidence ${predicate} for attempt ${context.attemptId} was already recorded with exit code ${String(existing.exitCode)}, and this observation is ${String(exitCode)} — two different observations cannot share one evidence identity`,
+      );
+    }
+    return existing.event;
+  }
   const evidenceId = stableEntityId("evidence", key);
   const evidence: EvidenceAtom = {
     schema_version: 1,
@@ -144,7 +206,7 @@ export function recordCommandEvidence(
     exit_code: exitCode,
     environment_digest: "e".repeat(64),
     dependency_digest: candidate?.dependencyDigest ?? null,
-    observed_artifacts: [...context.requiredArtifacts],
+    observed_artifacts: [...(observedArtifacts ?? context.requiredArtifacts)],
     producer: candidate?.producer ?? "palimpsest-gate",
     created_at: context.now(),
     status: "active",
@@ -265,7 +327,7 @@ export async function attachCompletionEvidence(
     const { predicate, value } = observation;
     if (predicate === null || value === null) continue;
     if (observation.command !== null && observation.exitCode !== null) {
-      recordCommandEvidence(ports.context, predicate, observation.command, observation.exitCode, value, attribution);
+      recordCommandEvidence(ports.context, predicate, observation.command, observation.exitCode, undefined, value, attribution);
     } else {
       recordObservedEvidence(
         ports.context,
