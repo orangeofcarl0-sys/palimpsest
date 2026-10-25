@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE3_FINAL_VERDICTS",
+  "stage": "Palimpsest Host-S1RA-E3",
+  "measuredAt": "2026-10-25T09:52:00.000Z",
+  "branch": "host-s1rae3-resource-ownership-integrity",
+  "parent": {
+    "commit": "b6ee03cd77f726eb1b97a7c191ff5a0f5f6b9354",
+    "tree": "3adb3a5f97685fab35ebc175d5bf2fa838abd4c2",
+    "stage": "Palimpsest Host-S1RA-E2 Evidence Freeze"
+  },
+  "codeFreeze": {
+    "commit": "bf4e8af83c4b55761053e245d1b5daa1dc1e877c",
+    "tree": "b548e7c0ceb94f2bf3c466d609e9b25b0234657a"
+  },
+  "commitChain": [
+    { "commit": "8db947d", "executable": true, "subject": "audit the destructive call paths and reproduce ten unsafe arms" },
+    { "commit": "902bf3b", "executable": true, "subject": "require ownership evidence, bind it to the object, and quarantine before deleting" },
+    { "commit": "bf4e8af", "executable": false, "subject": "record the resource ownership integrity stage" }
+  ],
+  "runtime": {
+    "installed": "0.2.1-rc.3",
+    "qualifiedAgainst": "0.2.1-rc.2",
+    "drift": true,
+    "pinChangedByThisStage": false
+  },
+  "verdicts": {
+    "ownershipAdmission": {
+      "verdict": "OWNERSHIP_ADMISSION_QUALIFIED",
+      "basis": [
+        "a missing marker refuses (I1); F1 and F1C measured a deletion before the correction and a preservation after it",
+        "the marker must name THIS root and THIS generation (I2); F2 measured a marker naming another directory being accepted, F3 a marker copied from a sibling",
+        "a record carrying no generation authorizes nothing",
+        "mutation control M1 removes the missing-marker refusal and the F1 control passes, so the guard is load-bearing; M2 does the same for the root binding, M3 for the generation"
+      ]
+    },
+    "safeDisposal": {
+      "verdict": "SAFE_DISPOSAL_QUALIFIED_WITH_REPORTED_RESIDUAL",
+      "basis": [
+        "disposal renames to a quarantine name, re-verifies the object there, deletes, and confirms the name is gone",
+        "F4C measured a substituted object surviving the production disposal; F4D measured a later occupant at the original path surviving a repeated disposal",
+        "mutation controls M4, M5 and M8 each produce a failing control when the corresponding guard is removed"
+      ],
+      "residual": [
+        "a substitution between the quarantine re-check and the recursive removal, on a name the substituting process must guess, is NOT closed",
+        "a rename-back that is itself raced is NOT closed",
+        "Strategy C (handle-based deletion) was not attempted: it requires a new native binding, which this stage may not ship"
+      ],
+      "threatModel": "L1 cooperative same-user actors. Ordinary ACLs are not isolation from a process running as the same principal, and no verdict here claims otherwise."
+    },
+    "lifecycleRecovery": {
+      "verdict": "LIFECYCLE_RECOVERY_QUALIFIED",
+      "basis": [
+        "a real lock (a live child process with its working directory inside the root) made the first removal fail; the retry after release succeeded (F7)",
+        "a failed removal reports cleaned=false and stays retryable; a refusal is final and reports retryable=false",
+        "a superseded generation is refused at the boundary and the object survives (F8)",
+        "all listeners are installed and removed by dispose"
+      ],
+      "notClaimed": "recovery after SIGKILL; no code can run then, and the reaper is the answer for what it leaves"
+    },
+    "moduleSharingAdmission": {
+      "verdict": "MODULE_SHARING_ADMISSION_QUALIFIED_WITH_VERIFIED_PROVENANCE",
+      "basis": [
+        "all ten audit cases pass, including a dangling junction and an outbound junction at a declared name (cases 4 and 5), which were ADMITTED before the correction",
+        "a declared host bundle is now verified against the fingerprint of the tree the installer produces (case 3 refuses mismatched content, case 3b admits matching content with VERIFIED_AGAINST_EXPECTED_FINGERPRINT)",
+        "the correct-link idempotent case still works (case 9), so 'refuse everything' does not pass"
+      ],
+      "limits": [
+        "the fingerprint compares paths and sizes, not contents, and is not a defence against an adversary who knows the expected shape",
+        "trajectory_p2e0/dsh-test-home.mjs still decides occupancy with existsSync; unchanged by this stage"
+      ]
+    },
+    "consumerPropagation": {
+      "verdict": "CONSUMER_PROPAGATION_QUALIFIED",
+      "basis": [
+        "the rig.safeCleanup 'legacyOk' branch converted every ownership refusal into an authorization; it is deleted",
+        "that branch was measured deleting a foreign canary in F4A, F5 and F10, and in F5 the helper had correctly refused first",
+        "level-b's local safeCleanup, which repeated the proof-then-delete shape, now delegates to the shared implementation"
+      ]
+    },
+    "historicalAssetIntegrity": {
+      "verdict": "HISTORICAL_ASSETS_UNCHANGED",
+      "basis": [
+        "64 of 64 protected evidence trees unchanged",
+        "research-evidence/host-s1/ has an empty diff against c4ea1ab",
+        "95 worktree registrations before and after; the historical r3lcfsh-worktree-SMlvwB registration is untouched",
+        "the gate root holds 19 entries before and after, including all five p2b-c3-OWNED-* directories this stage was told not to reclaim",
+        "the real ~/.dsh is still a junction to D:/dsh and was not written"
+      ]
+    },
+    "realHostRuntimeIntegration": {
+      "verdict": "BLOCKED_QUALIFIED_RUNTIME_UNAVAILABLE",
+      "basis": [
+        "the installed runtime is 0.2.1-rc.3 and the fence is qualified against 0.2.1-rc.2",
+        "the drift refusal is unconditional and has no override",
+        "the refusal was reproduced identically on the unmodified baseline"
+      ],
+      "noLiveGateWasInvoked": true
+    }
+  },
+  "falsifiers": {
+    "arms": 17,
+    "safe": 16,
+    "unsafe": 1,
+    "deliberatelyUnsafe": {
+      "arm": "F4B",
+      "reason": "it reproduces the SUPERSEDED proof-then-rmSync shape, and the stage ruling forbids dropping the original deterministic path-swap experiment. It is labelled shape=SUPERSEDED and no longer describes the production path; F4C and F4D measure that path."
+    },
+    "before": "research-evidence/host-s1rae3/falsifiers-before-fix.json",
+    "after": "research-evidence/host-s1rae3/falsifiers-after-fix.json",
+    "atFreeze": "research-evidence/host-s1rae3/falsifiers-at-freeze.json"
+  },
+  "mutationControls": {
+    "arms": 8,
+    "loadBearing": 8,
+    "productionTreeUnchanged": true,
+    "artifact": "research-evidence/host-s1rae3/mutation-controls.json"
+  },
+  "testEvidence": {
+    "selection": {
+      "recursiveTestFiles": 396,
+      "excludedR3L0": 39,
+      "excludedTrajectory": 78,
+      "included": 279
+    },
+    "atCodeFreeze": {
+      "tsc": { "exit": 0 },
+      "architectureCheck": { "result": "PASS", "violations": 0, "acceptedBaselineExceptions": 9 },
+      "publicApiCheck": { "result": "PASS", "missing": 0, "changedKind": 0, "added": 0 },
+      "storageDiscipline": { "suites": 1, "tests": 33, "passed": 33, "exit": 0 },
+      "nonGateSelection": { "files": 279, "tests": 3701, "passed": 3701, "exit": 0 }
+    },
+    "everyFullSelectionRun": [
+      { "run": 1, "tree": "this stage", "tests": "3700/3701", "failing": "host_s1r_reparse_boundary", "error": "Test timed out in 30000ms (elapsed 52.8s)" },
+      { "run": 2, "tree": "this stage", "tests": "3701/3701", "exit": 0, "failing": null },
+      { "run": 3, "tree": "this stage", "tests": "3700/3701", "failing": "serve_ephemeral_port", "error": "Test timed out in 30000ms" },
+      { "run": 4, "tree": "unmodified baseline", "tests": "3690/3690", "exit": 0, "failing": null },
+      { "run": 5, "tree": "unmodified baseline", "tests": "3689/3690", "failing": "architecture/sr2b3_attempt_execution_owner", "error": "assertion" },
+      { "run": 6, "tree": "this stage (at freeze)", "tests": "3700/3701 + 1", "failing": "lean_d5d_result_continuation_service, r3wr5_authorized_reuse", "error": "git clone --shared failed under load" },
+      { "run": 7, "tree": "this stage (at freeze)", "tests": "26 files failed", "failing": "many", "error": "spawnSync UNKNOWN / worker forks emitted error — machine exhausted by repeated full runs" },
+      { "run": 8, "tree": "this stage (at freeze)", "tests": "3701/3701", "exit": 0, "failing": null }
+    ],
+    "attribution": "the unmodified baseline fails too, on a different test, with no stage changes present. Every failing test passes in isolation and imports nothing this stage modified. The failures are different files each time and are timeouts or process-creation errors, not assertions about behaviour. This is the same class as the ordarium_ledger timing sensitivity E2 recorded. It is NOT kernel drift and NOT a product regression.",
+    "testCountDelta": "3690 -> 3701 because this stage added 11 controls",
+    "preExistingDefect": {
+      "suite": "test/trajectory_p2e1_resource_safety.test.ts",
+      "case": "35. repeated owned-root allocations and cleanups do not accumulate roots",
+      "detail": "it counts entries in the REAL ~/.palimpsest-gates and asserts the count is unchanged; run in parallel with trajectory_p2e0_test_runtime_safety both mutate that shared directory",
+      "measured": "fails 3 of 3 in parallel, passes 3 of 3 with --no-file-parallelism, and fails identically on the unmodified baseline",
+      "disposition": "reported, not fixed: converting that suite to a sandbox gate root is a separate change"
+    }
+  },
+  "runtimeHomeAudit": {
+    "artifact": "research-evidence/host-s1rae3/runtime-home-audit.json",
+    "filesScanned": 1235,
+    "distinctIdentifiers": 13,
+    "correction": {
+      "previousClaim": "a homoglyph collision whose members render identically and differ only in the first code point",
+      "measured": [
+        "both names are pure ASCII and normalize('NFKC') changes neither",
+        "they differ at all EIGHT positions of the shorter name, not one",
+        "they do not render identically: they differ in length (8 vs 12)"
+      ],
+      "whatIsReal": "a DISPLAY-LEVEL LOSS: evidence that records only rendered text cannot express which identifier a line refers to. The practical consequence stands - a caller assigning the name the fence does not read leaves its redirection inert - but the mechanism is misreading, not Unicode substitution.",
+      "correctedIn": "scripts/gates/runtime-home.mjs"
+    }
+  },
+  "integrated": {
+    "verdict": "HOST_S1RAE3_NOT_QUALIFIED",
+    "reason": "no required Live Gate executed, because the installed runtime is 0.2.1-rc.3 while the fence is qualified against 0.2.1-rc.2 and the drift refusal has no override. A blocked qualification is an acceptable engineering outcome, but it is not a qualification.",
+    "whatIsEstablished": "ownership admission refuses insufficient evidence, the refusals propagate to the real consumers, disposal is bound to the object and quarantined, recovery works, module-sharing admission verifies provenance, eight guards are proven load-bearing, and every authorized non-gate check passes against the frozen tree",
+    "whatIsNotEstablished": "that the affected Live Gates run correctly against a qualified runtime on this machine, and that the TOCTOU residual against an arbitrary same-user process is closed"
+  },
+  "modelCallsMade": 0,
+  "externalModelRequests": 0,
+  "protectedTreesUnchanged": 64
+}

@@ -1,0 +1,730 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE3_FALSIFIERS",
+  "stage": "Palimpsest Host-S1RA-E3",
+  "measuredAt": "2026-10-25T09:52:38.884Z",
+  "implementation": {
+    "ownershipModule": "scripts/trajectory_p2b/owned-resource.mjs",
+    "consumerModule": "scripts/trajectory_p2b/rig.mjs",
+    "ownershipModuleDigest": "7d3c1f8cdb23cb6686dd13c9a1cfe2c015473854bd26edcb8d553197d0ae1adc",
+    "consumerModuleDigest": "19ec5f507700bfd29bc51e4e0abc9f8b027d99a8b3549e7fc1acd6952741b47b"
+  },
+  "sandbox": {
+    "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys",
+    "gateRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\gate",
+    "containment": {
+      "proven": true,
+      "problems": [],
+      "sandbox": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys",
+      "gateRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\gate"
+    },
+    "removed": true,
+    "teardownReason": null
+  },
+  "summary": {
+    "total": 17,
+    "safe": 16,
+    "unsafe": 1,
+    "unmeasured": 0,
+    "unsafeArms": [
+      "F4B"
+    ]
+  },
+  "results": [
+    {
+      "arm": "F1",
+      "case": "F1",
+      "measurement": "HELPER",
+      "question": "does a missing ownership marker still authorize deletion?",
+      "fixture": {
+        "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f1-gate\\f1-Asx6GR",
+        "markerExisted": true,
+        "markerRemoved": true
+      },
+      "expectedSafe": "REFUSED — missing evidence is not positive evidence",
+      "observedProof": {
+        "owned": false,
+        "reason": "the ownership marker is absent; a missing record is not positive evidence",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": false,
+            "detail": "the ownership marker is absent; a missing record is not positive evidence"
+          }
+        ]
+      },
+      "observation": "REFUSED: the ownership marker is absent; a missing record is not positive evidence",
+      "safe": true
+    },
+    {
+      "arm": "F1C",
+      "case": "F1C",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup propagate the missing-marker answer?",
+      "helperVerdict": "REFUSED",
+      "consumerOutcome": {
+        "cleaned": false,
+        "reason": "the ownership marker is absent; a missing record is not positive evidence",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": false,
+            "detail": "the ownership marker is absent; a missing record is not positive evidence"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "observation": "PRESERVED: the ownership marker is absent; a missing record is not positive evidence",
+      "safe": true,
+      "rootStillPresent": true
+    },
+    {
+      "arm": "F2",
+      "case": "F2",
+      "measurement": "HELPER",
+      "question": "does a marker with the correct runId but a different ownedRoot authorize deletion?",
+      "fixture": {
+        "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f2-gate\\f2-xvRPlP",
+        "markerNames": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f2-gate\\f2-a-different-root",
+        "runIdPreserved": true
+      },
+      "expectedSafe": "REFUSED — runId alone does not bind the resource",
+      "observedProof": {
+        "owned": false,
+        "reason": "the marker names a different root, so it does not bind this resource",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": false,
+            "detail": "the marker names a different root, so it does not bind this resource"
+          }
+        ]
+      },
+      "observation": "REFUSED: the marker names a different root, so it does not bind this resource",
+      "safe": true
+    },
+    {
+      "arm": "F2C",
+      "case": "F2C",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup propagate a wrong-root refusal?",
+      "helperVerdict": "REFUSED",
+      "consumerOutcome": {
+        "cleaned": false,
+        "reason": "the marker names a different root, so it does not bind this resource",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": false,
+            "detail": "the marker names a different root, so it does not bind this resource"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "observation": "PRESERVED: the marker names a different root, so it does not bind this resource",
+      "safe": true,
+      "rootStillPresent": true
+    },
+    {
+      "arm": "F3",
+      "case": "F3",
+      "measurement": "HELPER",
+      "question": "does resource B accept resource A's marker?",
+      "fixture": {
+        "a": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f3-gate\\f3-a-qOEYvp",
+        "b": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f3-gate\\f3-b-82nxfc",
+        "aMarkerCopiedIntoB": true,
+        "sameRunId": true
+      },
+      "expectedSafe": "REFUSED for B — a marker binds the resource it was written for",
+      "observedB": {
+        "owned": false,
+        "reason": "the marker names a different root, so it does not bind this resource"
+      },
+      "observation": "REFUSED for B: the marker names a different root, so it does not bind this resource",
+      "safe": true,
+      "note": "A and B share a runId by construction, which is the point: runId is not resource identity"
+    },
+    {
+      "arm": "F3C",
+      "case": "F3C",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup propagate the copied-marker answer for B?",
+      "consumerOutcome": {
+        "cleaned": false,
+        "reason": "the marker names a different root, so it does not bind this resource",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": false,
+            "detail": "the marker names a different root, so it does not bind this resource"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "observation": "PRESERVED: the marker names a different root, so it does not bind this resource",
+      "safe": true,
+      "bStillPresent": true,
+      "aStillPresent": true
+    },
+    {
+      "arm": "F4A",
+      "case": "F4A",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "when the substitution lands BEFORE the consumer's proof, is the replacement preserved?",
+      "identities": {
+        "original": {
+          "dev": 3765034766,
+          "ino": 105553116267023000,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "replacement": {
+          "dev": 3765034766,
+          "ino": 45035996274238840,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "identityChanged": true
+      },
+      "consumerOutcome": {
+        "cleaned": false,
+        "reason": "the directory at this path is not the object that was allocated",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": false,
+            "detail": "the directory at this path is not the object that was allocated"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "canary": {
+        "exists": true,
+        "digest": "6d326e4b33107f04bc19d610428552fb58d944308dbb5372380ef66c2c9fde61",
+        "intact": true
+      },
+      "expectedSafe": "PRESERVED — the identity check sees the substitution",
+      "observation": "PRESERVED: the consumer refused and the replacement survived",
+      "safe": true
+    },
+    {
+      "arm": "F4B",
+      "case": "F4B",
+      "measurement": "AT_THE_WINDOW",
+      "shape": "SUPERSEDED",
+      "fidelity": "this reproduces the OLD disposal shape exactly: production revalidateOwnership, then a bare path-based rmSync with the options the superseded consumer used. It is retained because the stage ruling forbids dropping the original deterministic path-swap experiment. It no longer describes the production code path — see F4C for that.",
+      "question": "under the SUPERSEDED path-based disposal, is a directory substituted after a successful proof preserved?",
+      "fixture": {
+        "originalRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f4b-gate\\f4b-gE5rrz",
+        "parkedOriginal": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f4b-parked-original",
+        "substitutionIsSyntheticForeignCanary": true
+      },
+      "proofBeforeSubstitution": {
+        "owned": true,
+        "reason": null
+      },
+      "identities": {
+        "original": {
+          "dev": 3765034766,
+          "ino": 27584547718056104,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "replacement": {
+          "dev": 3765034766,
+          "ino": 46724846134503010,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "identityChanged": true
+      },
+      "destructiveOutcome": {
+        "attempted": true,
+        "completed": true
+      },
+      "canary": {
+        "exists": false,
+        "digest": null,
+        "intact": false
+      },
+      "expectedSafe": "the replacement and its canary survive",
+      "observation": "DELETED: the synthetic foreign canary at the owned path was destroyed after a proof taken on the previous object",
+      "safe": false,
+      "originalSurvived": true,
+      "note": "expected to remain UNSAFE: this is the recorded counterexample, not a test of the correction"
+    },
+    {
+      "arm": "F4C",
+      "case": "F4C",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "shape": "PRODUCTION",
+      "fidelity": "the substitution is made, then the production consumer disposes. This is the window that a caller can actually create against the current code.",
+      "question": "does the production disposal preserve a substituted object?",
+      "identities": {
+        "original": {
+          "dev": 3765034766,
+          "ino": 25332747904493180,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "replacement": {
+          "dev": 3765034766,
+          "ino": 29836347531866892,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "identityChanged": true
+      },
+      "consumerOutcome": {
+        "cleaned": false,
+        "reason": "the directory at this path is not the object that was allocated",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": false,
+            "detail": "the directory at this path is not the object that was allocated"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "canary": {
+        "exists": true,
+        "digest": "981a679368989fa613a8e6dba86111b85663cfdcbd00ed4851f5ea24928f92f3",
+        "intact": true
+      },
+      "expectedSafe": "PRESERVED",
+      "observation": "PRESERVED: the substituted object survived the production disposal",
+      "safe": true,
+      "originalSurvived": true
+    },
+    {
+      "arm": "F4D",
+      "case": "F4D",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "shape": "PRODUCTION",
+      "question": "can an object placed at the original path AFTER disposal be reached by a repeated disposal?",
+      "firstDisposal": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 8"
+          }
+        ],
+        "quarantined": true
+      },
+      "repeatOutcome": {
+        "cleaned": false,
+        "reason": "the directory at this path is not the object that was allocated",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": false,
+            "detail": "the directory at this path is not the object that was allocated"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "canary": {
+        "exists": true,
+        "digest": "9531d6267f2544b9b6971b4bc9170627536640b562f47330a78a8bffc0f3d1eb",
+        "intact": true
+      },
+      "expectedSafe": "PRESERVED — the delete address is a quarantine name, not the original path",
+      "observation": "PRESERVED: the later occupant was untouched",
+      "safe": true
+    },
+    {
+      "arm": "F5",
+      "case": "F5",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "is an altered parent component detected before deletion?",
+      "fixture": {
+        "gateRootRenamedTo": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f5-outer\\gate-parked",
+        "junctionAt": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f5-outer\\gate",
+        "junctionTarget": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f5-elsewhere",
+        "impostorRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f5-elsewhere\\f5-OnPFF0"
+      },
+      "expectedSafe": "REFUSED — the containment relationship changed",
+      "observedProof": {
+        "owned": false,
+        "reason": "the directory at this path is not the object that was allocated",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": false,
+            "detail": "the directory at this path is not the object that was allocated"
+          }
+        ]
+      },
+      "consumerOutcome": {
+        "cleaned": false,
+        "reason": "the directory at this path is not the object that was allocated",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": false,
+            "detail": "the directory at this path is not the object that was allocated"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "canary": {
+        "exists": true,
+        "digest": "76a9d892817f3f4f2c85316abe60099e03970510ccc50e25bd3f5cb997a495bc",
+        "intact": true
+      },
+      "observation": "PRESERVED: the impostor survived; the consumer refused",
+      "safe": true,
+      "note": "the original gate root is preserved at the parked path, so nothing real is lost by this arm"
+    },
+    {
+      "arm": "F6",
+      "case": "F6",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does a junction INSIDE the owned root let a recursive deletion reach the external target?",
+      "fixture": {
+        "ownedRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f6-gate\\f6-G6XLgj",
+        "junction": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f6-gate\\f6-G6XLgj\\escape-link",
+        "externalTarget": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f6-external-target"
+      },
+      "expectedSafe": "the external target survives",
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 10"
+          }
+        ],
+        "quarantined": true
+      },
+      "canary": {
+        "exists": true,
+        "digest": "9706a6d2bd51df2b523342bc381a2974446c65f782de72e9f5ec890b33263856",
+        "intact": true
+      },
+      "observation": "PRESERVED: the external target survived the recursive removal",
+      "safe": true,
+      "note": "measured, not assumed: an earlier observation of this platform's junction behaviour does not settle it"
+    },
+    {
+      "arm": "F7",
+      "case": "F7",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does a real removal failure latch a false disposed state, and can it be retried after release?",
+      "injection": "a live child process whose working directory is inside the owned root",
+      "injectionWorked": true,
+      "firstAttempt": {
+        "cleaned": false,
+        "reason": "the quarantine rename failed: EPERM: operation not permitted, rename 'C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f7-gate\\f7-hrv1mu' -> 'C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f7-gate\\.q-f7-hrv1m",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 11"
+          }
+        ],
+        "preserved": true,
+        "retryable": true,
+        "lastError": "EPERM: operation not permitted, rename 'C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f7-gate\\f7-hrv1mu' -> 'C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f7-gate\\.q-f7-hrv1mu-043164-vn7vh2lk'",
+        "attempts": 1
+      },
+      "rootPresentAfterFailure": true,
+      "secondAttempt": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 11"
+          }
+        ],
+        "quarantined": true,
+        "attempts": 2
+      },
+      "rootPresentAfterRetry": false,
+      "expectedSafe": "the first attempt reports failure and does not latch success; a retry after release succeeds",
+      "observation": "first attempt reported failure then retry succeeded",
+      "safe": true,
+      "latchedFalseSuccess": false
+    },
+    {
+      "arm": "F8",
+      "case": "F8",
+      "measurement": "STRUCTURAL",
+      "shape": "PRODUCTION",
+      "question": "does a SUPERSEDED authorization get refused at the destructive boundary?",
+      "markerFields": [
+        "active",
+        "createdAt",
+        "gateRoot",
+        "generation",
+        "ownedRoot",
+        "pid",
+        "prefix",
+        "runId",
+        "schemaVersion"
+      ],
+      "operationGenerationPresent": true,
+      "generationInRecord": 12,
+      "generationInMarkerAfterHandoff": 13,
+      "staleProof": {
+        "owned": false,
+        "reason": "the marker names generation 13, not 12; this record is superseded"
+      },
+      "staleDisposal": {
+        "cleaned": false,
+        "reason": "the marker names generation 13, not 12; this record is superseded"
+      },
+      "recordWithoutGeneration": {
+        "owned": false,
+        "reason": "the record carries no operation generation, so it cannot authorize a destructive effect"
+      },
+      "objectSurvivedStaleAttempt": true,
+      "expectedSafe": "the superseded record is refused and the object survives; a record with no generation authorizes nothing",
+      "observation": "REFUSED: the superseded record could not authorize a destructive effect, and a generation-less record was refused too",
+      "safe": true
+    },
+    {
+      "arm": "F9",
+      "case": "F9",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "is a legitimate run-owned resource disposed normally?",
+      "expectedSafe": "DISPOSED — a design that refuses every cleanup does not satisfy the stage",
+      "presentBefore": true,
+      "presentAfter": false,
+      "outcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 13"
+          }
+        ],
+        "quarantined": true,
+        "attempts": 1
+      },
+      "observation": "DISPOSED: the legitimate resource was reclaimed",
+      "safe": true
+    },
+    {
+      "arm": "F9B",
+      "case": "F9B",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does a repeated disposal delete a NEW occupant at the reused path?",
+      "repeatOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 43164-mvnnfwra-oyfdq74h"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 13"
+          }
+        ],
+        "quarantined": true,
+        "attempts": 1
+      },
+      "newOccupant": {
+        "exists": true,
+        "digest": "ea7fad9b5060242aae8a68bc3a85d02916730f86b184d50c9744fd84809bac40",
+        "intact": true
+      },
+      "expectedSafe": "the new occupant survives",
+      "observation": "PRESERVED: the new occupant survived a repeated disposal",
+      "safe": true
+    },
+    {
+      "arm": "F10",
+      "case": "F10",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup convert an ownership refusal into a deletion for a legacy-shaped record?",
+      "fixture": {
+        "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-ApH0Ys\\f10-gate\\f10-legacy-shaped",
+        "recordShape": [
+          "root",
+          "contained",
+          "isReparse"
+        ]
+      },
+      "expectedSafe": "REFUSED — a record with no identity cannot authorize deletion",
+      "consumerOutcome": {
+        "cleaned": false,
+        "reason": "the record carries no operation generation, so it cannot authorize a destructive effect",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run undefined"
+          },
+          {
+            "check": "generation",
+            "passed": false,
+            "detail": "the record carries no operation generation, so it cannot authorize a destructive effect"
+          }
+        ],
+        "preserved": true,
+        "refused": true
+      },
+      "canary": {
+        "exists": true,
+        "digest": "ea368b8632f2e000ad60e5e832ac67e0083a8d6848142c598927d35459dbfd47",
+        "intact": true
+      },
+      "observation": "PRESERVED: the legacy-shaped record was refused",
+      "safe": true
+    }
+  ]
+}
