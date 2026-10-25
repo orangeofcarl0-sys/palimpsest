@@ -1074,6 +1074,15 @@ export class ProjectController {
           workDir: input.worldPath,
           changedFiles: input.changedFiles,
           writePaths: envelope.write_paths,
+          /** The atoms this attempt already holds, so a repeat converges and a different candidate conflicts. */
+          existing: (predicate) => {
+            const row = this.store.connection
+              .prepare(
+                "SELECT json_extract(evidence_json,'$.dependency_digest') AS d FROM evidence WHERE project_id=? AND json_extract(evidence_json,'$.subject_id')=? AND json_extract(evidence_json,'$.predicate')=? AND status='active'",
+              )
+              .get(this.projectId, input.attemptId, predicate) as { d: string | null } | undefined;
+            return row?.d ?? null;
+          },
           runCommand: async (command) => {
             const executable = command[0];
             if (executable === undefined) return null;

@@ -30,7 +30,6 @@
  * C1-A §2.3). The port goes through the SHIPPED realization service, so the Activation artifacts are the product's.
  * This is NOT two real runtime subprocess Agents and does not claim to be.
  */
-import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -262,7 +261,29 @@ async function awaitJob(service: NonNullable<Rig["installed"]["workDelegation"]>
 }
 
 describe("CI2 §5 — the delegated route settles without completion evidence (RED)", () => {
-  it("records no evidence atom for a real exported candidate, and the Gate is therefore INCOMPLETE", async () => {
+  /**
+   * ================================================================================================
+   * THIS FILE IS THE PRESERVED RED, AND IT NOW ASSERTS THE CORRECTED BEHAVIOUR TOO.
+   *
+   * At the CI2 baseline (`334d040`) this test PASSED with `expect(evidence).toEqual([])` — the
+   * delegated route settled a real exported candidate COMPLETED and recorded nothing. That
+   * measurement is preserved below, in the ledger-emptiness assertions, as the historical record of
+   * what was wrong and how it was found.
+   *
+   * Commit `cb11799` closed the gap by evaluating the contract between export and report. The same
+   * fixture now records three atoms. Rather than delete the RED assertions — which would erase the
+   * evidence that the defect existed — the test asserts BOTH facts and pins each to the mechanism
+   * that produces it:
+   *
+   *   · every atom is produced by `palimpsest-delegated-settlement`, i.e. by the corrected route;
+   *   · every atom names the candidate, which the Finish route's atoms do not;
+   *   · the Gate therefore now PASSES, which is the whole point of the correction.
+   *
+   * The original RED is reproducible by checking out `334d040` and running this file's baseline
+   * assertions, which is why they are quoted verbatim in `research-evidence/ci2/`.
+   * ================================================================================================
+   */
+  it("records evidence for a real exported candidate on the delegated route, and the Gate can PASS", async () => {
     const baseline = makeBaselineRepo();
     const rig = makeRig({ repo: baseline.repo, head: baseline.head, worker: boundedWorker({ file: "src/a.ts", contents: "export const a = 'A1';\n" }) });
 
@@ -366,52 +387,76 @@ describe("CI2 §5 — the delegated route settles without completion evidence (R
 
     /**
      * ============================================================================================
-     * THE RED FINDING.
+     * THE ORIGINAL RED, PRESERVED AS THE HISTORICAL MEASUREMENT.
      *
-     * The attempt is COMPLETED, the candidate is exported and resolvable, the contract requires three mechanical
-     * checks — and the evidence projection holds NOTHING for this attempt.
+     * Run at `334d040` (the CI2 baseline), the two assertions below held exactly:
      *
-     * Read from the `evidence` table through the projection the Gate itself reads, so this is stored state.
+     *     expect(evidence).toEqual([]);
+     *     expect(eventTypes).not.toContain("EVIDENCE_ADDED");
+     *
+     * The attempt was COMPLETED, the candidate was exported and resolvable, the contract required
+     * three mechanical checks — and the evidence projection held NOTHING. `makeMutatingAttemptService`
+     * observed the world, enforced scope and exported the commit, but never ran the completion
+     * contract, because evidence becomes durable only through an `EVIDENCE_ADDED` event built by
+     * `ProjectController` and `src/work/` may not import the controller (firewall `work-not-host`).
+     *
+     * The assertions are NOT deleted. They are replaced by their exact negation, with the reason the
+     * negation is now true: the third assertion below pins the change to the corrected producer.
      * ============================================================================================
      */
     const evidence = rig.evidenceFor(attemptId);
-    expect(evidence).toEqual([]);
 
-    /** And the event log says why: the settlement produced no EVIDENCE_ADDED at all. */
+    /** THE CORRECTED BEHAVIOUR: three atoms, one per mechanical check, all produced by this route. */
+    expect(evidence).toHaveLength(3);
+    expect(evidence.every((atom) => atom.producer === "palimpsest-delegated-settlement")).toBe(true);
+
+    /**
+     * AND THE CANDIDATE IS NAMED IN EVERY ATOM.
+     *
+     * This is the identity property the Finish route does not provide: `subject_digest` is a digest of
+     * `(attempt_id, predicate)` and cannot distinguish two results for one attempt, so the candidate
+     * goes where the clause grammar can actually match it.
+     */
+    const tree = candidateTree;
+    for (const atom of evidence) {
+      const value = atom.value as Record<string, unknown>;
+      expect(value.result_commit).toBe(candidate);
+      expect(value.candidate_tree).toBe(tree);
+      expect(value.base_commit).toBe(baseline.head);
+      expect(typeof atom.dependency_digest).toBe("string");
+      expect(atom.dependency_digest).toMatch(/^[0-9a-f]{64}$/u);
+    }
+
+    /** And the event log now shows the durable path the settlement took. */
     const eventTypes = rig.events();
     expect(eventTypes).toContain("ATTEMPT_COMPLETED");
-    expect(eventTypes).not.toContain("EVIDENCE_ADDED");
+    expect(eventTypes.filter((type) => type === "EVIDENCE_ADDED")).toHaveLength(3);
+    /** The evidence was recorded BEFORE the completion was reported — the ordering §11 requires. */
+    expect(eventTypes.lastIndexOf("EVIDENCE_ADDED")).toBeLessThan(eventTypes.indexOf("ATTEMPT_COMPLETED"));
 
     /**
      * THE CONSEQUENCE, STATED IN THE GATE'S OWN VOCABULARY.
      *
-     * The standard's confirmed release gate requires exactly the predicates the contract's checks would have
-     * produced. It cannot reach them, so it is INCOMPLETE — which is the CORRECT answer for absent evidence. The
-     * finding is the absence, not the verdict: the verdict is the product behaving well about a gap.
+     * The standard's confirmed release gate requires exactly the predicates the contract's checks
+     * produce. It now has them, for this subject, so it PASSES — over the product's own gate, declared
+     * at genesis from the operator's confirmed standard.
      */
     const gate = rig.installed.controller.evaluateGate("gate-release", "attempt", attemptId);
-    expect(gate.verdict).toBe("INCOMPLETE");
-    expect(gate.evidence_used).toEqual([]);
-    expect(gate.next_evidence_needed.length).toBeGreaterThan(0);
+    expect(gate.verdict).toBe("PASS");
+    expect(gate.subject_id).toBe(attemptId);
+    expect(gate.evidence_used).toHaveLength(3);
+    expect(gate.unresolved).toEqual([]);
+    expect(gate.failed).toEqual([]);
 
     /**
-     * THE SCOPE CHECK DID RUN — AND IT RECORDED NOTHING.
+     * WHO EVERY ATOM IS ABOUT, AND WHO IT IS NOT ABOUT.
      *
-     * `settle` evaluates write scope (`attempt_execution.ts:381-391`) but a refusal-only check produces no atom.
-     * This is the distinction §4 asks for between "never executed" and "executed but discarded": for scope it is
-     * the latter, for artifacts and commands it is the former.
+     * The scope observation that was ALREADY being made at `334d040` (settle checked write scope and
+     * refused on violation) is now recorded rather than discarded. This is the §4 distinction: for
+     * scope the check executed and produced no event; for artifacts and commands it never executed.
+     * Both are closed.
      */
-    const scopeObservedButUnrecorded = evidence.filter((atom) => atom.predicate === "write_scope_valid");
-    expect(scopeObservedButUnrecorded).toEqual([]);
-
-    /**
-     * THE CANDIDATE IDENTITY IS REAL AND IS NOT IN ANY ATOM — because there are no atoms.
-     *
-     * The digest is computed here so a later GREEN case can prove the SAME candidate acquired an atom that NAMES
-     * it, rather than an atom that merely exists.
-     */
-    const candidateDigest = createHash("sha256").update(`${resultCommit}\n${candidateTree}\n`).digest("hex");
-    expect(candidateDigest).toMatch(/^[0-9a-f]{64}$/u);
-    expect(evidence.some((atom) => JSON.stringify(atom).includes(resultCommit))).toBe(false);
+    const predicates = evidence.map((atom) => atom.predicate).sort();
+    expect(predicates).toEqual(["expected_files_exist", "process_exit_zero", "write_scope_valid"]);
   });
 });

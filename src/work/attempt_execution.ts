@@ -73,7 +73,9 @@ export type MutatingWorkSettlement =
  */
 export type CompletionEvaluationOutcome =
   | { readonly outcome: "PASSED"; readonly evidenceRecorded: readonly string[]; readonly detail: string }
-  | { readonly outcome: "FAILED" | "NOT_EVALUABLE"; readonly detail: string };
+  | { readonly outcome: "FAILED" | "NOT_EVALUABLE"; readonly detail: string }
+  /** W5: an atom for this attempt already names a different candidate. Never converged away. */
+  | { readonly outcome: "CANDIDATE_CONFLICT"; readonly detail: string };
 
 /** The observed facts about one attempt's execution world. */
 export interface AttemptResultObservation {
@@ -497,7 +499,12 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         return Object.freeze({
           state: "NOT_READY" as const,
           attemptId,
-          reason: evaluation.outcome === "FAILED" ? "COMPLETION_CONTRACT_FAILED" : "COMPLETION_NOT_EVALUABLE",
+          reason:
+            evaluation.outcome === "FAILED"
+              ? "COMPLETION_CONTRACT_FAILED"
+              : evaluation.outcome === "CANDIDATE_CONFLICT"
+                ? "CANDIDATE_IDENTITY_CONFLICT"
+                : "COMPLETION_NOT_EVALUABLE",
           detail: `${evaluation.detail} — the attempt is still running and its result stays in its world, so the work can be corrected and reported again`,
         });
       }
