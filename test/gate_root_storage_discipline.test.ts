@@ -65,10 +65,12 @@ type OwnedRecord = Record<string, unknown> & { root: string };
 type RigModule = {
   linkSharedModules: (home: string, options?: { strategy?: "junction" | "copy" }) => SharingResult;
   copyModuleGraph: (home: string) => SharingResult;
-  ownedRootLifetime: (owned: OwnedRecord) => Lifetime;
+  ownedRootLifetime: (owned: OwnedRecord, options?: { maxAttempts?: number }) => Lifetime;
   allocateOwnedRoot: (prefix: string, gateRoot?: string) => OwnedRecord;
   reapAbandonedRoots: (input: { gateRoot: string; prefixes: readonly string[]; minAgeMs?: number; dryRun?: boolean }) => ReapResult;
   directoryBytes: (root: string) => number;
+  /** E3-B: the consumer whose refusal-override was removed. */
+  safeCleanup: (owned: OwnedRecord) => Promise<{ cleaned: boolean; reason?: string; refused?: boolean; retryable?: boolean; preserved?: boolean }>;
 };
 
 type SharingModule = {
@@ -505,9 +507,10 @@ describe("gate root: the abandoned-root reaper refuses what it does not own (Cau
       join(foreignMarker, resource.MARKER_NAME),
       `${JSON.stringify(
         {
-          schemaVersion: 1,
+          schemaVersion: 2,
           runId: "another-run",
           pid: 999999,
+          generation: 1,
           createdAt: new Date().toISOString(),
           ownedRoot: join(gateRoot, "a-root-this-is-not").replace(/\\/gu, "/"),
           gateRoot: gateRoot.replace(/\\/gu, "/"),
@@ -604,9 +607,10 @@ describe("gate root: the abandoned-root reaper refuses what it does not own (Cau
       join(live, resource.MARKER_NAME),
       `${JSON.stringify(
         {
-          schemaVersion: 1,
+          schemaVersion: 2,
           runId: "live",
           pid: process.pid,
+          generation: 1,
           createdAt: new Date().toISOString(),
           ownedRoot: live.replace(/\\/gu, "/"),
           gateRoot: gateRoot.replace(/\\/gu, "/"),
@@ -634,5 +638,168 @@ describe("gate root: the abandoned-root reaper refuses what it does not own (Cau
     symlinkSync(target, join(base, "link"), "junction");
     /** The junction contributes nothing, so a shared module tree costs zero. */
     expect(rig.directoryBytes(base)).toBe(1000);
+  });
+});
+
+/**
+ * ============================================================================
+ * HOST-S1RA-E3 — OWNERSHIP ADMISSION AND SAFE DISPOSAL
+ * ============================================================================
+ *
+ * Every control here corresponds to a falsifier that was measured UNSAFE before the E3 corrections
+ * (`research-evidence/host-s1rae3/falsifiers-before-fix.json`). They are negative controls: each one FAILS if the
+ * corresponding guard is removed.
+ *
+ * The three E2 gaps are pinned first, then the consumer defect that was not in the reported list, then the
+ * liveness controls that stop "refuse everything" from passing as a fix.
+ */
+describe("E3: ownership admission refuses insufficient evidence (I1, I2)", () => {
+  function allocatedIn(name: string): { gateRoot: string; owned: Record<string, unknown> & { root: string } } {
+    counter += 1;
+    const gateRoot = join(ROOT, `${name}-${String(counter)}`);
+    mkdirSync(gateRoot, { recursive: true });
+    return { gateRoot, owned: rig.allocateOwnedRoot(`${name}-`, gateRoot) };
+  }
+
+  it("23. a MISSING marker REFUSES, because absent evidence is not positive evidence", () => {
+    const { owned } = allocatedIn("e3-nomarker");
+    rmSync(join(owned.root, resource.MARKER_NAME));
+    const proof = resource.revalidateOwnership(owned);
+    expect(proof.owned).toBe(false);
+    expect(proof.reason).toContain("absent");
+    /** And the consumer must not delete on the strength of a refusal. */
+    expect(existsSync(owned.root)).toBe(true);
+  });
+
+  it("24. a marker naming a DIFFERENT root REFUSES, because runId alone does not bind the resource", () => {
+    const { gateRoot, owned } = allocatedIn("e3-wrongroot");
+    const markerPath = join(owned.root, resource.MARKER_NAME);
+    const marker = JSON.parse(readFileSync(markerPath, "utf8"));
+    const elsewhere = join(gateRoot, "a-different-root");
+    mkdirSync(elsewhere, { recursive: true });
+    writeFileSync(markerPath, `${JSON.stringify({ ...marker, ownedRoot: elsewhere.replace(/\\/gu, "/") }, null, 2)}\n`, "utf8");
+    const proof = resource.revalidateOwnership(owned);
+    expect(proof.owned).toBe(false);
+    expect(proof.reason).toContain("different root");
+    expect(existsSync(owned.root)).toBe(true);
+  });
+
+  it("25. a marker COPIED from a sibling resource REFUSES for the resource that received it", () => {
+    const { gateRoot, owned } = allocatedIn("e3-copied");
+    const sibling = rig.allocateOwnedRoot("e3-copied-sibling-", gateRoot);
+    /** A's marker copied into B: same runId, same schema, different root. */
+    writeFileSync(join(owned.root, resource.MARKER_NAME), readFileSync(join(sibling.root, resource.MARKER_NAME), "utf8"), "utf8");
+    const proof = resource.revalidateOwnership(owned);
+    expect(proof.owned).toBe(false);
+    expect(existsSync(owned.root)).toBe(true);
+  });
+
+  it("26. a record with NO generation authorizes nothing", () => {
+    const { owned } = allocatedIn("e3-nogen");
+    const { generation: _omitted, ...withoutGeneration } = owned;
+    const proof = resource.revalidateOwnership(withoutGeneration);
+    expect(proof.owned).toBe(false);
+    expect(proof.reason).toContain("generation");
+  });
+
+  it("27. a SUPERSEDED generation refuses at the destructive boundary", () => {
+    const { owned } = allocatedIn("e3-superseded");
+    const markerPath = join(owned.root, resource.MARKER_NAME);
+    const marker = JSON.parse(readFileSync(markerPath, "utf8"));
+    /** The marker advances, as it would after an ownership handoff; the held record does not. */
+    writeFileSync(markerPath, `${JSON.stringify({ ...marker, generation: Number(marker.generation) + 1 }, null, 2)}\n`, "utf8");
+    const lifetime = rig.ownedRootLifetime(owned);
+    const outcome = lifetime.dispose();
+    expect(outcome.cleaned).toBe(false);
+    expect(existsSync(owned.root)).toBe(true);
+  });
+});
+
+describe("E3: the consumer may not convert a refusal into a deletion (I3)", () => {
+  it("28. rig.safeCleanup refuses a record whose identity does not match, and the object survives", async () => {
+    counter += 1;
+    const gateRoot = join(ROOT, `e3-consumer-${String(counter)}`);
+    mkdirSync(gateRoot, { recursive: true });
+    const owned = rig.allocateOwnedRoot("e3-consumer-", gateRoot);
+    const rootPath = owned.root;
+    /** A different object at the same path. */
+    rmSync(rootPath, { recursive: true, force: true });
+    mkdirSync(rootPath, { recursive: true });
+    writeFileSync(join(rootPath, "foreign.txt"), "MUST SURVIVE\n", "utf8");
+    const result = await rig.safeCleanup(owned);
+    expect(result.cleaned).toBe(false);
+    expect(existsSync(join(rootPath, "foreign.txt"))).toBe(true);
+  });
+
+  it("29. rig.safeCleanup refuses a LEGACY-SHAPED record instead of trusting its cached booleans", async () => {
+    counter += 1;
+    const gateRoot = join(ROOT, `e3-legacy-${String(counter)}`);
+    mkdirSync(gateRoot, { recursive: true });
+    const root = join(gateRoot, "looks-contained");
+    mkdirSync(root, { recursive: true });
+    writeFileSync(join(root, "foreign.txt"), "MUST SURVIVE\n", "utf8");
+    /**
+     * THE EXACT SHAPE THE SUPERSEDED `legacyOk` BRANCH ACCEPTED: `contained: true` and `isReparse: false`, no
+     * identity, no marker, no generation. It authorized a deletion; it must now be refused.
+     */
+    const result = await rig.safeCleanup({ root, contained: true, isReparse: false });
+    expect(result.cleaned).toBe(false);
+    expect(existsSync(join(root, "foreign.txt"))).toBe(true);
+  });
+});
+
+describe("E3: disposal is bound to the object, and completion is observed (I4, I5)", () => {
+  function allocatedForDisposal(name: string): { gateRoot: string; owned: Record<string, unknown> & { root: string } } {
+    counter += 1;
+    const gateRoot = join(ROOT, `${name}-${String(counter)}`);
+    mkdirSync(gateRoot, { recursive: true });
+    return { gateRoot, owned: rig.allocateOwnedRoot(`${name}-`, gateRoot) };
+  }
+
+  it("30. a legitimate owned root is DISPOSED — a design that refuses everything does not pass", () => {
+    const { owned } = allocatedForDisposal("e3-liveness");
+    writeFileSync(join(owned.root, "work.txt"), "legitimate\n", "utf8");
+    const lifetime = rig.ownedRootLifetime(owned);
+    const outcome = lifetime.dispose();
+    expect(outcome.cleaned).toBe(true);
+    expect(existsSync(owned.root)).toBe(false);
+  });
+
+  it("31. an object placed at the original path AFTER disposal survives a repeated disposal", async () => {
+    const { owned } = allocatedForDisposal("e3-reuse");
+    const rootPath = owned.root;
+    expect((await rig.safeCleanup(owned)).cleaned).toBe(true);
+    mkdirSync(rootPath, { recursive: true });
+    writeFileSync(join(rootPath, "later-occupant.txt"), "MUST SURVIVE\n", "utf8");
+    const again = await rig.safeCleanup(owned);
+    expect(again.cleaned).toBe(false);
+    expect(existsSync(join(rootPath, "later-occupant.txt"))).toBe(true);
+  });
+
+  it("32. no quarantine directory is left behind by a successful disposal", () => {
+    const { gateRoot, owned } = allocatedForDisposal("e3-quarantine");
+    writeFileSync(join(owned.root, "work.txt"), "x\n", "utf8");
+    expect(rig.ownedRootLifetime(owned).dispose().cleaned).toBe(true);
+    /**
+     * The disposal renames to `.q-<name>-<pid>-<random>` before deleting. A successful disposal must leave neither
+     * the original name nor the quarantine name, or the gate root slowly fills with `.q-` debris.
+     */
+    const leftovers = readdirSync(gateRoot).filter((entry) => entry.startsWith(".q-"));
+    expect(leftovers).toEqual([]);
+  });
+
+  it("33. a FAILED removal does not report completion, and the root is still there to retry", () => {
+    const { owned } = allocatedForDisposal("e3-failure");
+    writeFileSync(join(owned.root, "work.txt"), "x\n", "utf8");
+    const lifetime = rig.ownedRootLifetime(owned, { maxAttempts: 1 });
+    /**
+     * THE MARKER IS REMOVED so revalidation refuses. That is a REFUSAL, not a transient failure: it must be reported
+     * as cleaned=false and must not be retried into a success.
+     */
+    rmSync(join(owned.root, resource.MARKER_NAME));
+    const outcome = lifetime.dispose();
+    expect(outcome.cleaned).toBe(false);
+    expect(existsSync(owned.root)).toBe(true);
+    expect(outcome.retryable).toBe(false);
   });
 });

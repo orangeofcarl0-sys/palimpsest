@@ -172,6 +172,66 @@ export function installEntry(sourceModules, targetModules, entry) {
 }
 
 /**
+ * A CONTENT FINGERPRINT for a directory tree: the sorted list of relative paths with their sizes.
+ *
+ * WHY THIS EXISTS. E3 measured that `providedByCaller` was the ONLY provenance test for a declared package: the
+ * audit could not distinguish a directory `installHostBundle` had just written from one that was already there,
+ * because both are plain directories at a declared name (audit-module-sharing case 3). A declaration is an
+ * INTENTION. This function lets a caller supply the EXPECTATION, so the destination can be checked against what the
+ * caller's own installer would have produced.
+ *
+ * It is a structural comparison, not a cryptographic one: paths and sizes, never contents. That is sufficient to
+ * separate "the tree my installer wrote" from "a different directory with the same name", which is the question
+ * being asked. It is NOT a defence against an adversary who knows the expected shape.
+ */
+export function directoryFingerprint(root) {
+  const entries = [];
+  const walk = (dir, prefix) => {
+    let names;
+    try {
+      names = readdirSync(dir).sort();
+    } catch {
+      return null;
+    }
+    for (const name of names) {
+      const full = join(dir, name);
+      const rel = prefix === "" ? name : `${prefix}/${name}`;
+      let stats;
+      try {
+        stats = lstatSync(full);
+      } catch {
+        return null;
+      }
+      /** A link is recorded AS a link and never followed: a fingerprint must not describe a target. */
+      if (stats.isSymbolicLink()) {
+        entries.push(`${rel}:LINK`);
+        continue;
+      }
+      if (stats.isDirectory()) {
+        const nested = walk(full, rel);
+        if (nested === null) return null;
+        continue;
+      }
+      entries.push(`${rel}:${String(stats.size)}`);
+    }
+    return entries;
+  };
+  const result = walk(root, "");
+  if (result === null) return null;
+  return entries.sort().join("\n");
+}
+
+/** Does the directory at `path` match the fingerprint the caller says its installer produces? */
+export function matchesFingerprint(path, expectedFingerprint) {
+  if (typeof expectedFingerprint !== "string" || expectedFingerprint === "") return false;
+  const state = classifyDestination(path);
+  if (state.state !== DestinationState.DIRECTORY || state.isReparsePoint !== false) return false;
+  const actual = directoryFingerprint(path);
+  if (actual === null) return false;
+  return actual === expectedFingerprint;
+}
+
+/**
  * THE SHARING OPERATION, WITH NO FALLBACK THAT CAN WIDEN THE WRITE SURFACE.
  *
  * §4.3: if a required junction cannot be created, the result is an explicit MODULE_SHARING_NOT_ESTABLISHED. There
@@ -194,6 +254,15 @@ export function linkModuleGraph(home, options = {}) {
    * refusal, because that would shadow a shared dependency.
    */
   const providedByCaller = new Set(options.providedByCaller ?? []);
+  /**
+   * E3-B — THE DECLARATION IS NOW BACKED BY AN EXPECTATION WHERE THE CALLER CAN SUPPLY ONE.
+   *
+   * `providedByCaller` alone was measured as the WHOLE provenance test: a plain directory at a declared name was
+   * admitted whether the caller's installer had written it or not. `expectedFingerprints` maps a declared package
+   * name to the structural fingerprint of the tree the caller's installer produces. When a fingerprint is supplied
+   * the destination must MATCH it; when none is supplied the record says so rather than implying verification.
+   */
+  const expectedFingerprints = options.expectedFingerprints ?? {};
   if (typeof sourceModules !== "string" || sourceModules.trim() === "") {
     return { established: false, reason: "MODULE_SHARING_NOT_ESTABLISHED", detail: "no source module tree was supplied" };
   }
@@ -211,6 +280,7 @@ export function linkModuleGraph(home, options = {}) {
   const linked = [];
   const alreadyLinked = [];
   const callerProvided = [];
+  const provenance = [];
   const refused = [];
   for (const entry of entries) {
     const destination = join(directory.path, entry);
@@ -243,7 +313,29 @@ export function linkModuleGraph(home, options = {}) {
       if (state.state === DestinationState.ABSENT) {
         /** Ordinary installation below. */
       } else if (state.state === DestinationState.DIRECTORY && state.isReparsePoint === false) {
+        /**
+         * A PLAIN DIRECTORY AT A DECLARED NAME. Where the caller supplied an expected fingerprint, the tree must
+         * match it — that is the difference between "the caller says it installed this" and "the caller's install is
+         * what is actually here". Where no fingerprint was supplied the admission is recorded as UNVERIFIED rather
+         * than as verified, so a reader of the result cannot mistake a declaration for provenance.
+         */
+        const expected = expectedFingerprints[entry];
+        if (typeof expected === "string") {
+          if (!matchesFingerprint(destination, expected)) {
+            refused.push({
+              entry,
+              outcome: "REFUSED",
+              reason: "CALLER_DECLARED_BUT_CONTENT_DOES_NOT_MATCH_THE_EXPECTED_INSTALL",
+              state,
+            });
+            continue;
+          }
+          callerProvided.push(entry);
+          provenance.push({ entry, provenance: "VERIFIED_AGAINST_EXPECTED_FINGERPRINT" });
+          continue;
+        }
         callerProvided.push(entry);
+        provenance.push({ entry, provenance: "DECLARED_ONLY_UNVERIFIED" });
         continue;
       } else {
         refused.push({ entry, outcome: "REFUSED", reason: `CALLER_DECLARED_BUT_DESTINATION_IS_${state.state}`, state });
@@ -264,8 +356,38 @@ export function linkModuleGraph(home, options = {}) {
   const extra = readdirSync(directory.path).filter((entry) => !entries.includes(entry));
   for (const entry of extra) {
     if (providedByCaller.has(entry)) {
-      /** Declared but absent from the source tree: still the caller's own package, already recorded above. */
-      if (!callerProvided.includes(entry)) callerProvided.push(entry);
+      /**
+       * E3-B — A DECLARED NAME OUTSIDE THE SOURCE TREE STILL HAS TO BE A PLAIN DIRECTORY.
+       *
+       * The source-entry loop above refuses a FILE or a REPARSE POINT at a declared name. This loop did not classify
+       * anything at all: it admitted whatever occupied the name, so a DANGLING JUNCTION and a JUNCTION RESOLVING
+       * OUTSIDE THE TEST HOME were both accepted for any declared package the shared source does not carry. E3
+       * measured both (audit-module-sharing cases 4 and 5). A link at a module destination is a write-through
+       * surface, and `installHostBundle` never produces one — it produces a plain directory.
+       *
+       * The two loops now apply the SAME admission rule, which is the point: there is one rule, evaluated wherever a
+       * destination is considered.
+       */
+      const state = classifyDestination(join(directory.path, entry));
+      if (state.state !== DestinationState.DIRECTORY || state.isReparsePoint !== false) {
+        refused.push({ entry, outcome: "REFUSED", reason: `CALLER_DECLARED_BUT_DESTINATION_IS_${state.state}`, state });
+        continue;
+      }
+      /**
+       * THE SAME FINGERPRINT RULE APPLIES HERE. A declared name outside the source tree is still admitted only as a
+       * plain directory, and when an expected fingerprint is supplied it must match. This loop previously classified
+       * nothing at all, so a dangling junction and an outbound junction were both admitted.
+       */
+      const expected = expectedFingerprints[entry];
+      if (typeof expected === "string" && !matchesFingerprint(join(directory.path, entry), expected)) {
+        refused.push({ entry, outcome: "REFUSED", reason: "CALLER_DECLARED_BUT_CONTENT_DOES_NOT_MATCH_THE_EXPECTED_INSTALL", state });
+        continue;
+      }
+      /** Declared, absent from the source tree, and a plain directory: the caller's own package. */
+      if (!callerProvided.includes(entry)) {
+        callerProvided.push(entry);
+        provenance.push({ entry, provenance: typeof expected === "string" ? "VERIFIED_AGAINST_EXPECTED_FINGERPRINT" : "DECLARED_ONLY_UNVERIFIED" });
+      }
       continue;
     }
     /** Not declared by the caller and not in the source: this is an unexpected occupant. */
@@ -285,6 +407,7 @@ export function linkModuleGraph(home, options = {}) {
       linked,
       alreadyLinked,
       providedByCaller: callerProvided,
+      provenance,
       refused,
       strategy: "junction",
     };
@@ -297,6 +420,7 @@ export function linkModuleGraph(home, options = {}) {
     linked,
     alreadyLinked,
     providedByCaller: callerProvided,
+    provenance,
     refused: [],
     moduleDirectory: directory.path,
   };

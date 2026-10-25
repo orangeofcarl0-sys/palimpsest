@@ -39,40 +39,50 @@ export function allocateOwnedRoot(prefix, gateRoot = GATE_ROOT) {
 }
 
 /**
- * Delete ONLY the directory this run created, after re-proving containment.
+ * Delete ONLY the directory this run created, after re-proving ownership.
  *
- * ASYNC on purpose. Windows releases SQLite and runtime handles slightly AFTER `close()`/`dispose()` resolve,
- * and a synchronous sleep would BLOCK the event loop so those pending closes never run — the cause of the
- * first measured EPERM. Awaiting a real timer lets the loop drain them. Bounded retries are the
- * repository's established idiom (`test/global_setup.ts`). If every retry fails, the directory is
- * PRESERVED and the reason reported, rather than deleted with a wider sweep (§5 B0-F3).
+ * E3-B — THE LEGACY OVERRIDE IS GONE, AND THAT WAS THE STAGE'S CENTRAL CONSUMER DEFECT.
+ *
+ * The previous version did this:
+ *
+ *     if (proof.owned !== true) {
+ *       const legacyOk = owned?.contained === true && owned?.isReparse === false;
+ *       if (!legacyOk) return { cleaned: false, ... };
+ *       proof = { owned: true, ... };          // ← the refusal is discarded
+ *     }
+ *
+ * It was named for records predating the identity model, but `allocateOwnedRoot` sets `contained` and `isReparse`
+ * on EVERY record it produces. `legacyOk` was therefore true for every record the allocator can create, and the
+ * branch converted EVERY refusal into an authorization. E3 F4A/F5/F10 measured the consequence: a refused identity
+ * check, a refused parent redirection, and a record with no identity at all were each deleted. In F5 the helper
+ * correctly answered "the directory at this path is not the object that was allocated" and this function deleted it
+ * anyway.
+ *
+ * A refusal is now returned as a refusal. There is no shape of record that makes a failed ownership proof sufficient.
+ *
+ * Disposal itself goes through `disposeOwnedRoot`, which renames to a quarantine name, verifies the object at that
+ * name, deletes, and verifies it is gone. The bounded retry loop lives there now, so both consumers share one
+ * implementation and one set of semantics.
  */
 export async function safeCleanup(owned) {
+  const result = ownedResource.disposeOwnedRoot(owned);
+  if (result.cleaned === true) return result;
   /**
-   * RA-B — THE CHECKS ARE RE-PROVED, NOT READ FROM THE RECORD.
-   *
-   * `owned.contained` and `owned.isReparse` describe the path AT ALLOCATION. Consulting them here is what let a
-   * replaced path be deleted. The revalidation below inspects the path now, and a record that cannot be
-   * revalidated is preserved.
+   * ASYNC RETRY ON PURPOSE. Windows releases SQLite and runtime handles slightly AFTER `close()`/`dispose()`
+   * resolve, and a synchronous sleep would BLOCK the event loop so those pending closes never run. Awaiting a real
+   * timer lets the loop drain them. Only a RETRYABLE failure is retried: a refusal is final, because re-proving
+   * ownership cannot succeed by waiting.
    */
-  let proof = ownedResource.revalidateOwnership(owned);
-  if (proof.owned !== true) {
-    /** A record predating the identity model still gets the containment check, but never a silent deletion. */
-    const legacyOk = owned?.contained === true && owned?.isReparse === false;
-    if (!legacyOk) return { cleaned: false, reason: proof.reason, checks: proof.checks, preserved: true };
-    proof = { owned: true, checks: [{ check: "legacyRecord", passed: true, detail: "no identity was recorded at allocation; containment only" }] };
+  if (result.retryable !== true) return result;
+  let last = result;
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    await new Promise((done) => setTimeout(done, 250));
+    const retried = ownedResource.disposeOwnedRoot(owned);
+    if (retried.cleaned === true) return retried;
+    if (retried.retryable !== true) return retried;
+    last = retried;
   }
-  let lastReason = "";
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    try {
-      rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      return { cleaned: true, checks: proof.checks };
-    } catch (error) {
-      lastReason = error?.message ?? String(error);
-      await new Promise((resolve) => setTimeout(resolve, 250));
-    }
-  }
-  return { cleaned: false, reason: `preserved after retries: ${lastReason}`, preserved: true, checks: proof.checks };
+  return { ...last, reason: `preserved after retries: ${String(last.reason)}`, preserved: true };
 }
 
 /**
@@ -101,14 +111,17 @@ export async function safeCleanup(owned) {
  */
 export function ownedRootLifetime(owned) {
   /**
-   * A LEGACY RECORD (one without `identity` or `gateRoot`) is upgraded here rather than silently trusted, so an
-   * un-migrated caller still gets revalidation instead of the old cached-boolean deletion.
+   * E3-B — A RECORD WITHOUT AN IDENTITY IS NOT UPGRADED INTO ONE.
+   *
+   * The previous version filled the missing fields with `gateRoot: GATE_ROOT`, `identity: null` and a synthetic
+   * `runId`, which produced a record that LOOKED complete. `revalidateOwnership` then refused it for the identity
+   * mismatch, so the outcome was fail-closed — but the record was fabricated, and a caller reading the result could
+   * not tell "this allocation was never owned" from "this allocation lost its identity".
+   *
+   * The record is now passed through unchanged. `revalidateOwnership` refuses a record with no generation, no
+   * identity or no gate root, and says which of those it was. Fail-closed either way; honest about why.
    */
-  const record =
-    owned?.gateRoot !== undefined && owned?.identity !== undefined
-      ? owned
-      : { ...owned, gateRoot: owned?.gateRoot ?? GATE_ROOT, identity: owned?.identity ?? null, runId: owned?.runId ?? `legacy-${String(process.pid)}` };
-  return ownedResource.ownedRootLifetime(record);
+  return ownedResource.ownedRootLifetime(owned);
 }
 
 /**
@@ -214,10 +227,21 @@ export function linkSharedModules(home, options = {}) {
    * and every gate calls it before this function. They are declared here so the sharing operation can tell them
    * apart from an unexpected occupant — a directory at a name the shared source does not contain, created by the
    * caller on purpose.
+   *
+   * E3-B — THE DECLARATION IS NOW ACCOMPANIED BY THE EXPECTED CONTENT.
+   *
+   * A declaration alone was the whole provenance test, so a directory at a declared name was admitted whether or not
+   * `installHostBundle` had written it (audit-module-sharing case 3). The fingerprints below are computed from the
+   * SAME source trees `installHostBundle` copies from, so the destination is checked against what the installer
+   * would have produced. Both host bundles are small (12 and 10 files), so this costs nothing measurable.
    */
   const result = moduleSharing.linkModuleGraph(home, {
     sourceModules: REAL_MODULES,
     providedByCaller: ["palimpsest-dsh-host", "palimpsest-host-deployment"],
+    expectedFingerprints: {
+      "palimpsest-dsh-host": moduleSharing.directoryFingerprint(join(REPO, "host", "dsh")) ?? "",
+      "palimpsest-host-deployment": moduleSharing.directoryFingerprint(join(REPO, "host", "deployment")) ?? "",
+    },
   });
   return {
     ...result,

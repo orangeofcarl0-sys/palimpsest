@@ -1,22 +1,33 @@
 /**
  * Host-S1RA — THE ONE PLACE THE RUNTIME HOME IS RESOLVED.
  *
- * WHY THIS MODULE EXISTS. RA-0/F8 measured a HOMOGLYPH COLLISION in the test harness: the production gate
- * scripts read one environment variable and the storage suite assigned a DIFFERENT one, and the two render
- * identically in every editor and terminal. Their first code points differ, so `process.env[assigned]` was
- * `undefined` for the production code, which then silently used its `homedir()` default while the test believed
- * it had redirected the home. The falsifier confirmed the consequence dynamically: the assignment had no effect
- * on the resolved module tree.
+ * WHY THIS MODULE EXISTS. RA-0/F8 measured that the production gate scripts read one environment variable and the
+ * storage suite assigned a DIFFERENT one, and the difference was invisible in the evidence. The two identifiers are:
  *
- * HOW THIS PREVENTS A RECURRENCE. The accepted names are built from INTEGER CODE POINTS, so no copy-paste, font,
- * or renderer can silently substitute one for the other. Both names are accepted, the first is preferred, and
- * `applyRuntimeHome()` sets EVERY accepted name — which makes any caller's assignment effective regardless of
- * which spelling it used.
+ *   [68,83,72,95,72,79,77,69]                       8 code points
+ *   [114,117,110,116,105,109,101,95,72,79,77,69]   12 code points
+ *
+ * THE NATURE OF THE COLLISION, CORRECTED BY MEASUREMENT. An earlier version of this comment — and the E2 report —
+ * described the pair as differing "only in the first character" and as rendering identically. BOTH STATEMENTS ARE
+ * WRONG, and the correction is recorded rather than quietly applied:
+ *
+ *   · they differ at EIGHT positions, not one: every one of the eight code points of the shorter name differs;
+ *   · they are not Unicode confusables. They are pure ASCII, and `normalize("NFKC")` leaves both unchanged;
+ *   · they do NOT render identically. A terminal shows `runtime_HOME` and `runtime_HOME`, which differ in length.
+ *
+ * What actually happened is a DISPLAY-LEVEL LOSS: a report that printed only the rendered text, and a reader (this
+ * agent) who trusted the rendering, could not tell which identifier a line referred to. That is a documentation and
+ * evidence defect, not a Unicode trick. The practical consequence is unchanged and still real — a caller that assigns
+ * the name the fence does not read leaves its redirection inert, and the production code silently falls back to
+ * `homedir()` — but the mechanism is misreading, not homoglyph substitution.
+ *
+ * HOW THIS PREVENTS A RECURRENCE. The accepted names are built from INTEGER CODE POINTS, so no copy-paste or renderer
+ * can substitute one for the other, and both are accepted. `applyRuntimeHome()` sets EVERY accepted name, so a
+ * caller's assignment is effective regardless of which spelling it used.
  *
  * WHICH NAME IS CANONICAL. The eight-code-point name is the one the shipped gate scripts already read and the one
  * `scripts/gates/README.md` documents, so it stays first for compatibility. The twelve-code-point name is accepted
- * because the storage suite and several probes use it, and refusing it would leave their redirection inert —
- * exactly the defect being corrected.
+ * because the storage suite and several probes use it, and refusing it would leave their redirection inert.
  *
  * NOT A PRODUCT COMPONENT. PLAIN JAVASCRIPT (`.mjs`), bare node.
  */
@@ -29,8 +40,8 @@ import { join } from "node:path";
  *   [68,83,72,95,72,79,77,69]                          the canonical name used by the shipped gates
  *   [114,117,110,116,105,109,101,95,72,79,77,69]       the name the storage suite and probes assign
  *
- * They differ ONLY in the first character, and they are not interchangeable as identifiers — that is the whole
- * point of writing them this way.
+ * THEY DIFFER AT EVERY ONE OF THE EIGHT POSITIONS. They are not interchangeable as identifiers, which is the whole
+ * point of writing them as code points rather than as text.
  */
 export const RUNTIME_HOME_ENV_NAMES = Object.freeze([
   String.fromCharCode(68, 83, 72, 95, 72, 79, 77, 69),
