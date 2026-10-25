@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE4_ISOLATION_NEGATIVE_CONTROL",
+  "stage": "Palimpsest Host-S1RA-E4",
+  "measuredAt": "2026-10-25T11:30:11.870Z",
+  "question": "does the corrected observation pass BECAUSE the interference is handled, or merely because nothing interfered?",
+  "sharedGateRoot": "C:/Users/66494/.palimpsest-gates",
+  "privateGateRoot": "C:/Users/66494/AppData/Local/Temp/s1rae4-negative-xhzKQ6/gate-root",
+  "arms": {
+    "arm1_oldSemanticsSharedRoot": {
+      "before": 19,
+      "after": 20,
+      "delta": 1,
+      "assertionWouldPass": false,
+      "verdict": "FAILS AS ORIGINALLY OBSERVED"
+    },
+    "arm2_newSemanticsPrivateRoot": {
+      "before": 0,
+      "after": 0,
+      "delta": 0,
+      "assertionWouldPass": true,
+      "verdict": "PASSES: the private root is not moved by external work"
+    },
+    "arm3_interferenceIsReal": {
+      "sharedMoved": true,
+      "detail": "the shared root moved during arm 2's window, so arm 2 passed while genuine interference was present"
+    }
+  },
+  "mutator": {
+    "mechanism": "separate node process using the real allocateOwnedRoot and safeCleanup",
+    "lines": [
+      "READY",
+      "ALLOCATED 20"
+    ],
+    "disposal": {
+      "cleaned": true,
+      "reason": null,
+      "exited": 0
+    }
+  },
+  "sharedGateRootRestored": true,
+  "sharedGateRootEntriesBefore": 19,
+  "sharedGateRootEntriesAfter": 19,
+  "verdict": "NEGATIVE CONTROL HOLDS: the old observation fails under real interference, the new observation passes under the same interference, and the interference was independently shown to be present",
+  "privateSandboxRemoved": true
+}
