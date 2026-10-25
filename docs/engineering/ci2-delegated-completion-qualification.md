@@ -4,7 +4,7 @@
 **Branch:** `palimpsest-ci2-delegated-completion-qualification`
 **Parent:** `334d04082a1e6328c018e05ff49a32851df048e4` (CI1 Evidence Freeze)
 **Code Freeze:** `bd1ff8d0f9f04befd5f05f5040dee9930f2a118e` (tree `3629a5c3d7be1713901fbce2ff87139d648ef9ca`)
-**Evidence Freeze:** `a0d9a819df2754cd21bb91bf4e3257a1b1034b86` (tree `fe90c343ec4babc14b2925b4398ac1408ae9a85b`)
+**Evidence Freeze:** the commit that adds only this report and `research-evidence/ci2/ci2-evidence.json` on top of the Code Freeze — i.e. the branch tip, whose SHA is necessarily not written inside it (a commit cannot contain its own hash). The Code-Freeze-to-Evidence-Freeze diff is what identifies it, and that diff is recorded verbatim in §11.
 **Runtime:** `0.2.1-rc.3` (unchanged; the rc.2 decision was not reopened)
 
 ---
@@ -39,9 +39,9 @@ process mid-write.
 | | |
 |---|---|
 | Parent | `334d04082a1e6328c018e05ff49a32851df048e4` (CI1 Evidence Freeze) |
-| Code Freeze | `0335e355dd5eac7764c113a7ede83778821c126c` |
-| Code Tree | `8327abf5e8fc4c569e791e50339d391ee145f1fd` |
-| Evidence Freeze | recorded in §11 |
+| Code Freeze | `bd1ff8d0f9f04befd5f05f5040dee9930f2a118e` |
+| Code Tree | `3629a5c3d7be1713901fbce2ff87139d648ef9ca` |
+| Evidence Freeze | the branch tip above the Code Freeze (§11 identifies it by its diff) |
 
 **Changed files at the Code Freeze** (production marked ★):
 
@@ -346,7 +346,7 @@ the forks pool under load, not a test result.
 **The selection grew from 279 to 291 files** because CI1 added five and CI2 added seven. The formula
 `408 − 39 r3l0 − 78 trajectory_ = 291` holds, and is asserted by `scripts/ci2/derive-selection.mjs`.
 
-**Evidence Freeze:** `a0d9a819df2754cd21bb91bf4e3257a1b1034b86`, adding exactly two non-executable files —
+**Evidence Freeze:** the branch tip on top of the Code Freeze, adding exactly two non-executable files —
 `docs/engineering/ci2-delegated-completion-qualification.md` and `research-evidence/ci2/ci2-evidence.json`.
 **No executable file is added or modified in it**, verified by classifying every path in the
 Code-Freeze-to-Evidence-Freeze diff:
