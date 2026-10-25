@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE4_WIN32_SEAM_CONTROLS",
+  "stage": "Palimpsest Host-S1RA-E4",
+  "measuredAt": "2026-10-25T12:08:33.874Z",
+  "method": "the host bundle is installed into a run-owned test home and the shared runtime modules are linked into it, so the fence resolves the seam from the same base a real worker uses",
+  "testHome": "C:/Users/66494/AppData/Local/Temp/s1rae4-seam-gate/e4-seam-0qzoVB",
+  "runtime": {
+    "resolvedVersion": "0.2.1-rc.3",
+    "qualifiedVersion": "0.2.1-rc.3",
+    "drifted": false,
+    "ffi": {
+      "package": "koffi",
+      "qualifiedVersion": "3.1.1",
+      "resolvedVersion": "3.1.1"
+    }
+  },
+  "outcome": "PROTECTED",
+  "outcomeMeaning": {
+    "LIMIT_NO_LABEL_WRITE": "the seam resolved but no label could be written on this volume; behavioural compatibility is NOT established",
+    "LABEL_NOT_APPLIED": "the write claimed success and left no label; this is the silent no-op the plan warns about",
+    "LIMIT_NO_LOW_INTEGRITY_MECHANISM": "a label was written but no Low-integrity process was available to test the refusal, so the enforcement question is UNTESTED rather than failed",
+    "LIMIT_LOW_DRIVER_FAILED": "the Low-integrity driver failed before the probe executed, so nothing was read and neither a refusal nor a disclosure is claimed",
+    "LIMIT_LOW_CONTROL_UNREADABLE": "the Low process could not read the unlabelled control either, so a refusal cannot be attributed to the label",
+    "PROTECTED": "the label was written through rc.3, read back, and a LOW-integrity read was refused while the unlabelled control succeeded",
+    "NOT_REFUSED": "a Low-integrity process read the labelled content; a disclosure, never a pass"
+  },
+  "arms": [
+    {
+      "id": "arm0-module-sharing",
+      "question": "is the module graph established so the seam can resolve from the test home?",
+      "established": true,
+      "linked": 123,
+      "alreadyLinked": 0,
+      "provenance": [
+        {
+          "entry": "palimpsest-dsh-host",
+          "provenance": "VERIFIED_AGAINST_EXPECTED_FINGERPRINT"
+        },
+        {
+          "entry": "palimpsest-host-deployment",
+          "provenance": "VERIFIED_AGAINST_EXPECTED_FINGERPRINT"
+        }
+      ],
+      "refused": [],
+      "observation": "the module graph is established"
+    },
+    {
+      "id": "arm1-compatibility",
+      "question": "does the fence resolve the seam from the test home, and what version does it report?",
+      "compatibility": {
+        "package": "@deepseek-ai/dsh-win32-process",
+        "qualifiedVersion": "0.2.1-rc.3",
+        "resolvedVersion": "0.2.1-rc.3",
+        "seam": "extendWin32ProcessBindings",
+        "ffi": {
+          "package": "koffi",
+          "qualifiedVersion": "3.1.1",
+          "resolvedVersion": "3.1.1"
+        },
+        "usable": true,
+        "drifted": false,
+        "versionMatches": true,
+        "ffiMatches": true
+      },
+      "observation": "resolved 0.2.1-rc.3 against qualified 0.2.1-rc.3; drifted=false"
+    },
+    {
+      "id": "arm1b-label-api",
+      "question": "is the bound Win32 label API usable?",
+      "usable": true,
+      "error": null,
+      "contractVersion": "0.2.1-rc.3",
+      "ffiVersion": "3.1.1",
+      "apiMembers": {
+        "alloc": "function",
+        "decode": "function",
+        "encode": "function",
+        "pointer": "function",
+        "isNullPtr": "function",
+        "createWellKnownSid": "function",
+        "getLengthSid": "function",
+        "initializeAcl": "function",
+        "addMandatoryAce": "function",
+        "setNamedSecurityInfoW": "function",
+        "getNamedSecurityInfoW": "function"
+      },
+      "observation": "the label API is usable"
+    },
+    {
+      "id": "arm1a-fixture-grant",
+      "question": "was an explicit DACL grant applied to the labelled fixtures?",
+      "principal": "66494",
+      "grants": [
+        {
+          "path": "C:/Users/66494/AppData/Local/Temp/s1rae4-seam-gate/e4-seam-0qzoVB/fixture-labelled",
+          "status": 0
+        },
+        {
+          "path": "C:/Users/66494/AppData/Local/Temp/s1rae4-seam-gate/e4-seam-0qzoVB/fixture-link-holder",
+          "status": 0
+        }
+      ],
+      "observation": "the grants were applied"
+    },
+    {
+      "id": "arm2-label-write",
+      "question": "can a mandatory label be written through the installed rc.3 seam?",
+      "writeOutcome": {
+        "applied": true,
+        "verified": true,
+        "label": {
+          "present": true,
+          "readable": true,
+          "aceType": 17,
+          "aceFlags": 3,
+          "policyMask": 2,
+          "integrityRid": 8192,
+          "integrityName": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        },
+        "planned": {
+          "integrityRid": 8192,
+          "integrityName": "Medium",
+          "policyMask": 2,
+          "raisedIntegrity": false,
+          "preserved": []
+        },
+        "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+      },
+      "observation": "the write reported success"
+    },
+    {
+      "id": "arm3-read-back",
+      "question": "does the label read back after the write?",
+      "readBack": {
+        "ok": true,
+        "label": {
+          "present": true,
+          "readable": true,
+          "aceType": 17,
+          "aceFlags": 3,
+          "policyMask": 2,
+          "integrityRid": 8192,
+          "integrityName": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        },
+        "detail": "integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+      },
+      "observation": "the label reads back (integrity=Medium)"
+    },
+    {
+      "id": "arm4-unlabelled-control",
+      "question": "is the UNLABELLED control readable, so a refused read elsewhere is meaningful?",
+      "controlRead": {
+        "content": "CONTROL-CONTENT"
+      },
+      "observation": "the control read SUCCEEDS"
+    },
+    {
+      "id": "arm5-low-integrity-read",
+      "question": "is a LOW-integrity process refused when it reads the labelled directory?",
+      "mechanismAvailable": true,
+      "lowRead": {
+        "available": true,
+        "driverStatus": 0,
+        "driverStderr": "S1RAE4_LOW_DRIVER {\"status\":0,\"stderr\":\"\"}\n",
+        "probeResult": {
+          "LABELLED": {
+            "read": false,
+            "code": "EPERM"
+          },
+          "UNLABELLED_CONTROL": {
+            "read": true,
+            "content": "CONTROL-CONTENT"
+          }
+        }
+      },
+      "lowRan": true,
+      "lowLabelledRefused": true,
+      "lowControlSucceeded": true,
+      "observation": "REFUSED at Low integrity (EPERM) while the unlabelled control read succeeded — this is the Mandatory Integrity mechanism"
+    },
+    {
+      "id": "arm5b-medium-integrity-read",
+      "question": "does the SAME-integrity read succeed? (it must, and that is not a disclosure)",
+      "labelledRead": {
+        "content": "LABELLED-CONTENT"
+      },
+      "labelWasPresent": true,
+      "observation": "the Medium-integrity read SUCCEEDS, which is expected: NO_READ_UP forbids reads by LOWER integrity, not equal"
+    },
+    {
+      "id": "arm6-labelled-link",
+      "question": "is a labelled LINK treated as coverage of its unlabelled target?",
+      "linkOutcome": {
+        "supported": true,
+        "verified": 1,
+        "admissionEligible": false,
+        "unqualifiedExternalLinks": 1,
+        "externalRead": {
+          "content": "EXTERNAL-CONTENT"
+        }
+      },
+      "observation": "the external target is still readable, so the link is not coverage"
+    },
+    {
+      "id": "arm7-ffi",
+      "question": "does koffi resolve from the seam package's declared graph at the qualified version?",
+      "koffi": {
+        "package": "koffi",
+        "qualifiedVersion": "3.1.1",
+        "resolvedVersion": "3.1.1"
+      },
+      "observation": "koffi resolves at 3.1.1"
+    },
+    {
+      "id": "arm8-fixture-integrity",
+      "question": "is the fixture still the object this run created?",
+      "rootIsInsideTestHome": true,
+      "realHomeTouched": false,
+      "observation": "every fixture is inside the run-owned test home"
+    }
+  ],
+  "cleanup": {
+    "cleaned": true,
+    "checks": [
+      {
+        "check": "record",
+        "passed": true,
+        "detail": "run 60292-mvnsaoyr-drs73auf"
+      },
+      {
+        "check": "identityMatch",
+        "passed": true,
+        "detail": "dev/ino match the allocation"
+      },
+      {
+        "check": "marker",
+        "passed": true,
+        "detail": "marker binds this root at generation 1"
+      }
+    ],
+    "quarantined": true,
+    "attempts": 1
+  },
+  "realHomeTouched": false
+}

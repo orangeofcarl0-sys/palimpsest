@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE4_TWO_RUN_SMOKE",
+  "stage": "Palimpsest Host-S1RA-E4",
+  "measuredAt": "2026-10-25T12:08:32.592Z",
+  "method": "two child processes are launched before either is awaited; each allocates its own owned root under its own gate root, holds it for a run-specific interval, and records wall-clock start/end. Overlap is COMPUTED from those timestamps",
+  "design": {
+    "holdMsA": 2500,
+    "holdMsB": 600,
+    "whyBShorter": "so B completes first, which is the out-of-order completion the control requires"
+  },
+  "runs": {
+    "runA": {
+      "runId": "A",
+      "generation": 1,
+      "disposal": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 48076-mvnsam8k-lpdgwefb"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 1"
+          }
+        ],
+        "quarantined": true,
+        "attempts": 1
+      },
+      "rootStillPresent": false,
+      "outcome": {
+        "runId": "A",
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "runB": {
+      "runId": "B",
+      "generation": 1,
+      "disposal": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 23916-mvnsam8x-kgtay61e"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker binds this root at generation 1"
+          }
+        ],
+        "quarantined": true,
+        "attempts": 1
+      },
+      "rootStillPresent": false,
+      "outcome": {
+        "runId": "B",
+        "exit": 0,
+        "stderr": ""
+      }
+    }
+  },
+  "overlap": {
+    "computable": true,
+    "start": 1792930109221,
+    "end": 1792930109830,
+    "overlapMs": 609,
+    "aStart": 1792930109208,
+    "aEnd": 1792930111719,
+    "bStart": 1792930109221,
+    "bEnd": 1792930109830
+  },
+  "attribution": {
+    "aNamesItself": true,
+    "bNamesItself": true,
+    "distinctRoots": true,
+    "distinctPayloads": true,
+    "generationIsPerProcess": true,
+    "generationValues": {
+      "a": 1,
+      "b": 1
+    }
+  },
+  "completionOrder": {
+    "aWallEnd": 1792930111719,
+    "bWallEnd": 1792930109830,
+    "bFinishedFirst": true
+  },
+  "isolation": {
+    "aCleaned": true,
+    "bCleaned": true,
+    "aRootGone": true,
+    "bRootGone": true,
+    "aRootInAGate": true,
+    "aRootNotInBGate": true,
+    "bRootInBGate": true,
+    "bRootNotInAGate": true
+  },
+  "sequentialControl": {
+    "method": "the same two bodies, each AWAITED before the next is launched, so their intervals cannot intersect",
+    "outcomes": [
+      {
+        "runId": "SA",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "runId": "SB",
+        "exit": 0,
+        "stderr": ""
+      }
+    ],
+    "overlapMs": 0,
+    "wouldPassTheConcurrencyTest": false,
+    "verdict": "HOLDS: a sequential pair produces no overlap, so the positive result above is not an artefact of the test"
+  },
+  "verdict": "TWO_RUNS_OVERLAPPED_AND_ATTRIBUTED",
+  "scope": {
+    "establishes": "two independent, isolated real execution contexts can overlap and deliver correctly under the tested conditions",
+    "doesNotEstablish": [
+      "multiple agents can safely write the same asset",
+      "arbitrary shared-resource concurrency is safe",
+      "autonomous cross-owner negotiation works",
+      "Trajectory fully reconstructs cross-owner causality",
+      "production L2 adversarial isolation exists"
+    ]
+  },
+  "sandboxRemoved": true,
+  "modelCallsMade": 0
+}
