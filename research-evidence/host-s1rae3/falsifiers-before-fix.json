@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE3_FALSIFIERS",
+  "stage": "Palimpsest Host-S1RA-E3",
+  "measuredAt": "2026-10-25T08:53:09.748Z",
+  "implementation": {
+    "ownershipModule": "scripts/trajectory_p2b/owned-resource.mjs",
+    "consumerModule": "scripts/trajectory_p2b/rig.mjs",
+    "ownershipModuleDigest": "9ed808c5c13d37cab3dbdce71e9a5efbd107e9d4d10aa149acd0d775614022dd",
+    "consumerModuleDigest": "c85ff1e4567022d4b4ad475704640fb4225832a5b70a92653f73711f48fc92d1"
+  },
+  "sandbox": {
+    "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3",
+    "gateRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\gate",
+    "containment": {
+      "proven": true,
+      "problems": [],
+      "sandbox": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3",
+      "gateRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\gate"
+    },
+    "removed": true,
+    "teardownReason": null
+  },
+  "summary": {
+    "total": 15,
+    "safe": 4,
+    "unsafe": 11,
+    "unmeasured": 0,
+    "unsafeArms": [
+      "F1",
+      "F1C",
+      "F2",
+      "F2C",
+      "F3",
+      "F3C",
+      "F4A",
+      "F4B",
+      "F5",
+      "F8",
+      "F10"
+    ]
+  },
+  "results": [
+    {
+      "arm": "F1",
+      "case": "F1",
+      "measurement": "HELPER",
+      "question": "does a missing ownership marker still authorize deletion?",
+      "fixture": {
+        "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f1-gate\\f1-XZAd7M",
+        "markerExisted": true,
+        "markerRemoved": true
+      },
+      "expectedSafe": "REFUSED — missing evidence is not positive evidence",
+      "observedProof": {
+        "owned": true,
+        "reason": null,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "no marker present; ownership rests on the captured identity"
+          }
+        ]
+      },
+      "observation": "ACCEPTED: revalidation returned owned=true with the marker absent, resting ownership on the captured identity alone",
+      "safe": false
+    },
+    {
+      "arm": "F1C",
+      "case": "F1C",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup propagate the missing-marker answer?",
+      "helperVerdict": "ACCEPTED",
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "no marker present; ownership rests on the captured identity"
+          }
+        ]
+      },
+      "observation": "DELETED: rig.safeCleanup removed the root (helper said ACCEPTED)",
+      "safe": false,
+      "rootStillPresent": false
+    },
+    {
+      "arm": "F2",
+      "case": "F2",
+      "measurement": "HELPER",
+      "question": "does a marker with the correct runId but a different ownedRoot authorize deletion?",
+      "fixture": {
+        "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f2-gate\\f2-8C5TU3",
+        "markerNames": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f2-gate\\f2-a-different-root",
+        "runIdPreserved": true
+      },
+      "expectedSafe": "REFUSED — runId alone does not bind the resource",
+      "observedProof": {
+        "owned": true,
+        "reason": null,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker names this run"
+          }
+        ]
+      },
+      "observation": "ACCEPTED: the marker names a DIFFERENT root and revalidation still returned owned=true — only runId was compared",
+      "safe": false
+    },
+    {
+      "arm": "F2C",
+      "case": "F2C",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup propagate a wrong-root refusal?",
+      "helperVerdict": "ACCEPTED",
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker names this run"
+          }
+        ]
+      },
+      "observation": "DELETED: rig.safeCleanup removed the root despite the marker naming another root",
+      "safe": false,
+      "rootStillPresent": false
+    },
+    {
+      "arm": "F3",
+      "case": "F3",
+      "measurement": "HELPER",
+      "question": "does resource B accept resource A's marker?",
+      "fixture": {
+        "a": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f3-gate\\f3-a-hptRGk",
+        "b": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f3-gate\\f3-b-faA54m",
+        "aMarkerCopiedIntoB": true,
+        "sameRunId": true
+      },
+      "expectedSafe": "REFUSED for B — a marker binds the resource it was written for",
+      "observedB": {
+        "owned": true,
+        "reason": null
+      },
+      "observation": "ACCEPTED: B was revalidated using a marker copied from A",
+      "safe": false,
+      "note": "A and B share a runId by construction, which is the point: runId is not resource identity"
+    },
+    {
+      "arm": "F3C",
+      "case": "F3C",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup propagate the copied-marker answer for B?",
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker names this run"
+          }
+        ]
+      },
+      "observation": "DELETED: rig.safeCleanup removed B, whose marker belongs to A",
+      "safe": false,
+      "bStillPresent": false,
+      "aStillPresent": true
+    },
+    {
+      "arm": "F4A",
+      "case": "F4A",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "when the substitution lands BEFORE the consumer's proof, is the replacement preserved?",
+      "identities": {
+        "original": {
+          "dev": 3765034766,
+          "ino": 468092886270351900,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "replacement": {
+          "dev": 3765034766,
+          "ino": 45317471250946910,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "identityChanged": true
+      },
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "legacyRecord",
+            "passed": true,
+            "detail": "no identity was recorded at allocation; containment only"
+          }
+        ]
+      },
+      "canary": {
+        "exists": false,
+        "digest": null,
+        "intact": false
+      },
+      "expectedSafe": "PRESERVED — the identity check sees the substitution",
+      "observation": "DELETED: the consumer removed a replacement it had already seen",
+      "safe": false
+    },
+    {
+      "arm": "F4B",
+      "case": "F4B",
+      "measurement": "AT_THE_WINDOW",
+      "fidelity": "the proof is the production revalidateOwnership, the destructive call is the production rmSync statement with the production options, and the substitution is between them — which is the window the consumer's own control flow creates",
+      "question": "is a directory substituted AFTER a successful proof but BEFORE the delete preserved?",
+      "fixture": {
+        "originalRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f4b-gate\\f4b-8XIbZS",
+        "parkedOriginal": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f4b-parked-original",
+        "substitutionIsSyntheticForeignCanary": true
+      },
+      "proofBeforeSubstitution": {
+        "owned": true,
+        "reason": null
+      },
+      "identities": {
+        "original": {
+          "dev": 3765034766,
+          "ino": 57983845202926510,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "replacement": {
+          "dev": 3765034766,
+          "ino": 57983845202926550,
+          "isDirectory": true,
+          "isReparsePoint": false,
+          "inoUsable": true
+        },
+        "identityChanged": true
+      },
+      "destructiveOutcome": {
+        "attempted": true,
+        "completed": true
+      },
+      "canary": {
+        "exists": false,
+        "digest": null,
+        "intact": false
+      },
+      "expectedSafe": "the replacement and its canary survive",
+      "observation": "DELETED: the synthetic foreign canary at the owned path was destroyed after a proof taken on the previous object",
+      "safe": false,
+      "originalSurvived": true
+    },
+    {
+      "arm": "F5",
+      "case": "F5",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "is an altered parent component detected before deletion?",
+      "fixture": {
+        "gateRootRenamedTo": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f5-outer\\gate-parked",
+        "junctionAt": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f5-outer\\gate",
+        "junctionTarget": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f5-elsewhere",
+        "impostorRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f5-elsewhere\\f5-Y3AfIQ"
+      },
+      "expectedSafe": "REFUSED — the containment relationship changed",
+      "observedProof": {
+        "owned": false,
+        "reason": "the directory at this path is not the object that was allocated",
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": false,
+            "detail": "the directory at this path is not the object that was allocated"
+          }
+        ]
+      },
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "legacyRecord",
+            "passed": true,
+            "detail": "no identity was recorded at allocation; containment only"
+          }
+        ]
+      },
+      "canary": {
+        "exists": false,
+        "digest": null,
+        "intact": false
+      },
+      "observation": "DELETED: the impostor at the redirected parent was destroyed",
+      "safe": false,
+      "note": "the original gate root is preserved at the parked path, so nothing real is lost by this arm"
+    },
+    {
+      "arm": "F6",
+      "case": "F6",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does a junction INSIDE the owned root let a recursive deletion reach the external target?",
+      "fixture": {
+        "ownedRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f6-gate\\f6-85F1tA",
+        "junction": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f6-gate\\f6-85F1tA\\escape-link",
+        "externalTarget": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f6-external-target"
+      },
+      "expectedSafe": "the external target survives",
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker names this run"
+          }
+        ]
+      },
+      "canary": {
+        "exists": true,
+        "digest": "f2d685cdf22421d02e0ed05c1db45b4e526aca26517c874777a0df00d66381cf",
+        "intact": true
+      },
+      "observation": "PRESERVED: the external target survived the recursive removal",
+      "safe": true,
+      "note": "measured, not assumed: an earlier observation of this platform's junction behaviour does not settle it"
+    },
+    {
+      "arm": "F7",
+      "case": "F7",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does a real removal failure latch a false disposed state, and can it be retried after release?",
+      "injection": "a live child process whose working directory is inside the owned root",
+      "injectionWorked": true,
+      "firstAttempt": {
+        "cleaned": false,
+        "attempts": 1,
+        "reason": "EPERM, Permission denied: 'C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f7-gate\\f7-yRqfYd'",
+        "lastError": "EPERM, Permission denied: 'C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f7-gate\\f7-yRqfYd'",
+        "retryable": true,
+        "preserved": true
+      },
+      "rootPresentAfterFailure": true,
+      "secondAttempt": {
+        "cleaned": true,
+        "attempts": 2,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "no marker present; ownership rests on the captured identity"
+          }
+        ]
+      },
+      "rootPresentAfterRetry": false,
+      "expectedSafe": "the first attempt reports failure and does not latch success; a retry after release succeeds",
+      "observation": "first attempt reported failure then retry succeeded",
+      "safe": true,
+      "latchedFalseSuccess": false
+    },
+    {
+      "arm": "F8",
+      "case": "F8",
+      "measurement": "STRUCTURAL",
+      "question": "can an OLD authorization be reused after recovery or ownership handoff?",
+      "markerFields": [
+        "active",
+        "createdAt",
+        "gateRoot",
+        "ownedRoot",
+        "pid",
+        "prefix",
+        "runId",
+        "schemaVersion"
+      ],
+      "operationGenerationPresent": false,
+      "staleRecordAccepted": true,
+      "observation": "NO OPERATION GENERATION: a record captured at allocation remains sufficient to delete the same object for as long as the object persists. Authorization is bound to object identity, not to the operation that requested it.",
+      "expectedSafe": "a superseded operation cannot authorize a destructive effect",
+      "safe": false,
+      "gapType": "MISSING_OPERATION_GENERATION",
+      "note": "recorded as a gap rather than silently corrected: a new persistent field is introduced only against a demonstrated stale-operation failure"
+    },
+    {
+      "arm": "F9",
+      "case": "F9",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "is a legitimate run-owned resource disposed normally?",
+      "expectedSafe": "DISPOSED — a design that refuses every cleanup does not satisfy the stage",
+      "presentBefore": true,
+      "presentAfter": false,
+      "outcome": {
+        "cleaned": true,
+        "attempts": 1,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker names this run"
+          }
+        ]
+      },
+      "observation": "DISPOSED: the legitimate resource was reclaimed",
+      "safe": true
+    },
+    {
+      "arm": "F9B",
+      "case": "F9B",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does a repeated disposal delete a NEW occupant at the reused path?",
+      "repeatOutcome": {
+        "cleaned": true,
+        "attempts": 1,
+        "checks": [
+          {
+            "check": "record",
+            "passed": true,
+            "detail": "run 42752-mvnlbecp-tvfncch2"
+          },
+          {
+            "check": "identityMatch",
+            "passed": true,
+            "detail": "dev/ino match the allocation"
+          },
+          {
+            "check": "marker",
+            "passed": true,
+            "detail": "marker names this run"
+          }
+        ]
+      },
+      "newOccupant": {
+        "exists": true,
+        "digest": "15f6ec2082b4700b2398fe151c35089767586d4baf96126cf09e0c90213aada3",
+        "intact": true
+      },
+      "expectedSafe": "the new occupant survives",
+      "observation": "PRESERVED: the new occupant survived a repeated disposal",
+      "safe": true
+    },
+    {
+      "arm": "F10",
+      "case": "F10",
+      "measurement": "THROUGH_THE_CONSUMER",
+      "question": "does rig.safeCleanup convert an ownership refusal into a deletion for a legacy-shaped record?",
+      "fixture": {
+        "root": "C:\\Users\\66494\\AppData\\Local\\Temp\\s1rae3-falsifiers-RnmHM3\\f10-gate\\f10-legacy-shaped",
+        "recordShape": [
+          "root",
+          "contained",
+          "isReparse"
+        ]
+      },
+      "expectedSafe": "REFUSED — a record with no identity cannot authorize deletion",
+      "consumerOutcome": {
+        "cleaned": true,
+        "checks": [
+          {
+            "check": "legacyRecord",
+            "passed": true,
+            "detail": "no identity was recorded at allocation; containment only"
+          }
+        ]
+      },
+      "canary": {
+        "exists": false,
+        "digest": null,
+        "intact": false
+      },
+      "observation": "DELETED: the cached booleans alone authorized the deletion of an object with no recorded identity",
+      "safe": false
+    }
+  ]
+}
