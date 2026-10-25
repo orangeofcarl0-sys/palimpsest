@@ -53,6 +53,7 @@ import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService } from "../work/attempt_execution.js";
+import { attachCompletionEvidence, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
@@ -1052,6 +1053,45 @@ export class ProjectController {
         return await port.exportResultCommit({ attemptId, commit });
       },
       hasExecutionWorldPort: () => this.#executionWorldPort !== undefined,
+      /**
+       * CI2 §7/§9/§10 — the delegated route's completion evaluation.
+       *
+       * The contract comes from the product's own derivation over the SAME envelope `finish` derives it
+       * from, so the bar cannot differ between the two routes. The candidate is the EXPORTED commit —
+       * already admitted into the canonical object database by the export step that precedes this call
+       * — and its tree is read through git plumbing rather than a shell string.
+       */
+      evaluateCompletion: async (input) => {
+        const [row, envelope] = this.#attemptContext(input.attemptId);
+        const candidateTree = execFileSync("git", ["rev-parse", `${input.resultCommit}^{tree}`], {
+          cwd: this.#canonicalRepository(),
+          encoding: "utf8",
+        }).trim();
+        return attachCompletionEvidence({
+          context: this.#evidenceContext(input.attemptId, row, envelope),
+          contract: this.#completionContractForEnvelope(envelope),
+          candidate: { baseCommit: envelope.base_commit, resultCommit: input.resultCommit, candidateTree },
+          workDir: input.worldPath,
+          changedFiles: input.changedFiles,
+          writePaths: envelope.write_paths,
+          runCommand: async (command) => {
+            const executable = command[0];
+            if (executable === undefined) return null;
+            this.#assertGateCommandAllowed(envelope, command);
+            const observation = (await runGateCommand(this.effects, {
+              worktreeId: input.attemptId,
+              executable,
+              argv: command.slice(1),
+              /** The attempt's WORLD, because that is the tree the candidate came from. */
+              cwd: input.worldPath,
+              scope: this.projectId,
+              callId: `delegated-completion:${input.attemptId}:${canonicalDigest({ command }).slice(0, 16)}`,
+              revision: this.promotions.projectRevision(),
+            })) as { exitCode: number | null; outputTail: string };
+            return observation.exitCode;
+          },
+        });
+      },
       report: (attemptId: string) => {
         this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" });
       },
@@ -2567,6 +2607,9 @@ export class ProjectController {
    * cannot drift apart: `gate` runs the caller's command and hands the observed exit code here,
    * and `finish` does the same after running the project standard's own commands. The exit code is
    * always an OBSERVATION — no caller-supplied value reaches this point (SR-1 #134).
+   *
+   * CI2 §10: the builder moved to `work_evidence.ts` so the delegated settlement route could reach
+   * the same one. This entry point and every existing atom shape are unchanged.
    */
   #recordCommandEvidence(
     attemptId: string,
@@ -2574,50 +2617,36 @@ export class ProjectController {
     command: readonly string[],
     exitCode: number,
     observedArtifacts?: readonly string[] | undefined,
+    value?: Record<string, unknown> | undefined,
+    candidate?: { readonly dependencyDigest: string; readonly producer: string } | undefined,
   ): SchedulerEvent {
     const [row, envelope] = this.#attemptContext(attemptId);
-    const key = actionKey("evidence-v1", {
-      project_id: this.projectId,
-      attempt_id: attemptId,
+    return recordCommandEvidence(
+      { ...this.#evidenceContext(attemptId, row, envelope), requiredArtifacts: observedArtifacts ?? envelope.required_artifacts },
       predicate,
       command,
-    });
-    const evidenceId = stableEntityId("evidence", key);
-    const evidence: EvidenceAtom = {
-      schema_version: 1,
-      project_id: this.projectId,
-      evidence_id: evidenceId,
-      subject_type: "attempt",
-      subject_id: attemptId,
-      subject_digest: canonicalDigest({ attempt_id: attemptId, command }),
-      predicate,
-      value: { exit_code: exitCode },
-      project_revision: envelope.project_revision,
-      input_fingerprint: envelope.project_digest,
-      command: [...command],
-      exit_code: exitCode,
-      environment_digest: "e".repeat(64),
-      dependency_digest: null,
-      observed_artifacts: [...(observedArtifacts ?? envelope.required_artifacts)],
-      producer: "palimpsest-gate",
-      created_at: this.#now(),
-      status: "active",
-    };
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "EVIDENCE_ADDED",
-        payload_version: 1,
-        entity_type: "evidence",
-        entity_id: evidenceId,
-        payload: { evidence },
-        causation_id: row.last_event_id,
-        correlation_id: `evidence:${evidenceId}`,
-        idempotency_key: key,
-        expected_project_revision: envelope.project_revision,
-      }),
+      exitCode,
+      value,
+      candidate,
     );
+  }
+
+  /** The parts of the shared writer's context that come from the attempt's own recorded authorization. */
+  #evidenceContext(
+    attemptId: string,
+    row: Record<string, unknown>,
+    envelope: TaskEnvelope,
+  ): WorkEvidenceContext {
+    return {
+      store: this.store,
+      projectId: this.projectId,
+      attemptId,
+      causationId: Number(row.last_event_id),
+      projectRevision: envelope.project_revision,
+      projectDigest: envelope.project_digest,
+      requiredArtifacts: envelope.required_artifacts,
+      now: () => this.#now(),
+    };
   }
 
   /**
@@ -2628,54 +2657,17 @@ export class ProjectController {
    * contract already permits exactly that — its "requires command and exit_code" rule is scoped to
    * the four process predicates (src/schema/models.ts) — so scope evidence stops being a caller's
    * label stuck onto somebody else's command, which is what it was in the first live session.
+   *
+   * CI2 §10: the builder moved to `work_evidence.ts`; this entry point is unchanged.
    */
   #recordObservedEvidence(
     attemptId: string,
-    predicate: EvidenceAtom["predicate"],
+    predicate: Extract<EvidenceAtom["predicate"], "write_scope_valid" | "expected_files_exist">,
     value: EvidenceAtom["value"],
+    candidate?: { readonly dependencyDigest: string; readonly producer: string } | undefined,
   ): SchedulerEvent {
     const [row, envelope] = this.#attemptContext(attemptId);
-    const key = actionKey("evidence-observed-v1", {
-      project_id: this.projectId,
-      attempt_id: attemptId,
-      predicate,
-    });
-    const evidenceId = stableEntityId("evidence", key);
-    const evidence: EvidenceAtom = {
-      schema_version: 1,
-      project_id: this.projectId,
-      evidence_id: evidenceId,
-      subject_type: "attempt",
-      subject_id: attemptId,
-      subject_digest: canonicalDigest({ attempt_id: attemptId, predicate }),
-      predicate,
-      value,
-      project_revision: envelope.project_revision,
-      input_fingerprint: envelope.project_digest,
-      command: null,
-      exit_code: null,
-      environment_digest: "e".repeat(64),
-      dependency_digest: null,
-      observed_artifacts: [...envelope.required_artifacts],
-      producer: "palimpsest-finish",
-      created_at: this.#now(),
-      status: "active",
-    };
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "EVIDENCE_ADDED",
-        payload_version: 1,
-        entity_type: "evidence",
-        entity_id: evidenceId,
-        payload: { evidence },
-        causation_id: row.last_event_id,
-        correlation_id: `evidence:${evidenceId}`,
-        idempotency_key: key,
-        expected_project_revision: envelope.project_revision,
-      }),
-    );
+    return recordObservedEvidence(this.#evidenceContext(attemptId, row, envelope), predicate, value, candidate);
   }
 
   /**

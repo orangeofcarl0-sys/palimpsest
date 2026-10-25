@@ -190,6 +190,20 @@ const FILE_LAYER_OVERRIDES: Readonly<Record<string, { readonly layer: LogicalLay
       layer: "L2",
       why: "role-slot and budget policy for parallel work (semantic policy, no durable store)",
     },
+    /**
+     * CI2 §10: the single Work-evidence writer.
+     *
+     * It sits beside `gate_runner.ts` for the same reason: a semantic helper that appends a canonical
+     * `EVIDENCE_ADDED` event through the store it is handed, not a host adapter. It was EXTRACTED from
+     * `ProjectController`'s two private builders — one implementation, moved rather than duplicated — so
+     * the delegated settlement route could reach the same writer without `src/work/` importing the
+     * controller, which firewall `work-not-host` forbids. Classifying it L5 would make its use by an L2
+     * owner a violation and would push the writer back into the controller: back to the gap.
+     */
+    "src/tools/work_evidence.ts": {
+      layer: "L2",
+      why: "the single Work-evidence event writer, extracted from the controller so both settlement routes share one implementation",
+    },
     "src/tools/graph.ts": {
       layer: "L3",
       why: "orchestration graph projection (derived view, consumed by façades and the control surface)",

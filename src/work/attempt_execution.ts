@@ -59,15 +59,35 @@ export interface PreparedMutatingWork {
 
 /** The outcome of closing one worker's result into canonical Work. */
 export type MutatingWorkSettlement =
-  | { readonly state: "SETTLED"; readonly attemptId: string; readonly resultCommit: string; readonly changedFiles: readonly string[]; readonly exported: boolean; readonly detail: string }
+  | { readonly state: "SETTLED"; readonly attemptId: string; readonly resultCommit: string; readonly changedFiles: readonly string[]; readonly exported: boolean; readonly evidenceRecorded: readonly string[]; readonly detail: string }
   | { readonly state: "NOT_READY"; readonly attemptId: string; readonly reason: string; readonly detail: string }
   | { readonly state: "BASE_DRIFT"; readonly attemptId: string; readonly resultCommit: string; readonly worldRetained: true; readonly detail: string };
+
+/**
+ * What the completion evaluator answered for one candidate.
+ *
+ * `FAILED` and `NOT_EVALUABLE` are separate outcomes because they are separate facts: "the candidate
+ * contradicts the contract" is a defect in the work, while "the contract could not be evaluated" is a
+ * defect in the observation. Neither is a pass, and collapsing them would let a missing input read as
+ * a found problem.
+ */
+export type CompletionEvaluationOutcome =
+  | { readonly outcome: "PASSED"; readonly evidenceRecorded: readonly string[]; readonly detail: string }
+  | { readonly outcome: "FAILED" | "NOT_EVALUABLE"; readonly detail: string };
 
 /** The observed facts about one attempt's execution world. */
 export interface AttemptResultObservation {
   readonly observedHead: string;
   readonly changedFiles: readonly string[];
   readonly uncommittedChanges: readonly string[];
+  /**
+   * The tree the observation was taken in.
+   *
+   * The controller's own observation already carries it (`AttemptResultObservation.workDir` in
+   * `src/tools/controller.ts`); this port's shape declares it because the delegated route needs to
+   * hand it to the completion evaluator, which reads artifacts and runs commands IN that tree.
+   */
+  readonly workDir: string;
 }
 
 /**
@@ -121,6 +141,23 @@ export interface MutatingExecutionPorts {
   exportResultCommit(input: { readonly attemptId: string; readonly commit: string }): Promise<{ readonly imported: boolean; readonly detail: string }>;
   /** Whether an execution-world port is composed at all. */
   hasExecutionWorldPort(): boolean;
+  /**
+   * Evaluate the attempt's Completion Contract against its EXPORTED candidate, recording real evidence.
+   *
+   * This is the CI2 seam. It exists because evidence becomes durable through exactly one path — an
+   * `EVIDENCE_ADDED` event built by `ProjectController` — and this owner may not name the controller
+   * (firewall `work-not-host`). The port is the same shape as every other member here: a capability
+   * the controller already had, composed by the owner that knows the ORDER.
+   *
+   * Returns a typed outcome. It must never report PASSED without having observed every check, and it
+   * must never record evidence for a check it could not evaluate.
+   */
+  evaluateCompletion(input: {
+    readonly attemptId: string;
+    readonly resultCommit: string;
+    readonly changedFiles: readonly string[];
+    readonly worldPath: string;
+  }): Promise<CompletionEvaluationOutcome>;
   /** Record the attempt's report (the observation is the product's, never the worker's word). */
   report(attemptId: string): void;
   /** The §D2-b projection of a prepared position. */
@@ -430,6 +467,41 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
 
       // NOW the ledger. `report` re-observes independently — this call supplied no claim, and passing
       // none is the point: nothing here can smuggle a caller's word into the attempt's record.
+      /**
+       * ==========================================================================================
+       * CI2 §7/§9/§10 — EVALUATE THE CONTRACT, BETWEEN EXPORT AND REPORT.
+       *
+       * WHY HERE. The existing ordering is "export before report, because the report is about to name
+       * `result_commit = R`, and R must be resolvable in the canonical object database". Evaluation is
+       * about the candidate, so the candidate must exist first: evaluating before export would produce
+       * evidence about a commit the project cannot materialize, and a crash between the two would leave
+       * exactly the unresolvable name the ordering above exists to prevent.
+       *
+       * WHY IT IS NOT BEFORE THE HEAD-BASIS ADMISSION. That check decides whether this result may
+       * become canonical AT ALL. A result computed at a base the project has left is `BASE_DRIFT`, and
+       * running commands for it would spend real work on a candidate that is already refused.
+       *
+       * WHAT IT DOES NOT DO. It does not complete the attempt. `ATTEMPT_COMPLETED` is still appended by
+       * `report` below, and it still means "the execution finished" — never "the contract passed". A
+       * candidate that fails its contract is a true completed execution whose qualification reflects
+       * the failure independently (§10).
+       * ==========================================================================================
+       */
+      const evaluation = await ports.evaluateCompletion({
+        attemptId,
+        resultCommit: observed.observedHead,
+        changedFiles: observed.changedFiles,
+        worldPath: observed.workDir,
+      });
+      if (evaluation.outcome !== "PASSED") {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: evaluation.outcome === "FAILED" ? "COMPLETION_CONTRACT_FAILED" : "COMPLETION_NOT_EVALUABLE",
+          detail: `${evaluation.detail} — the attempt is still running and its result stays in its world, so the work can be corrected and reported again`,
+        });
+      }
+
       ports.report(attemptId);
       return Object.freeze({
         state: "SETTLED" as const,
@@ -437,7 +509,8 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         resultCommit: observed.observedHead,
         changedFiles: observed.changedFiles,
         exported,
-        detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}`,
+        evidenceRecorded: evaluation.evidenceRecorded,
+        detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}; ${evaluation.detail}`,
       });
     },
   });
