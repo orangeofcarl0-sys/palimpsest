@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "kind": "PALIMPSEST_CI1_EVIDENCE_MANIFEST",
+  "stage": "Palimpsest-CI1 — Two-Owner Causal Integration",
+  "measuredAt": "2026-10-25T18:51:40.784Z",
+  "node": {
+    "version": "v24.22.0",
+    "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe"
+  },
+  "e4": {
+    "codeFreeze": "05aa9d2250906b3a70fabd38a1fe180becdbd698",
+    "codeTree": "cfcaaf75ca2c0e1bec02a58910f737716f875be7",
+    "evidenceFreeze": "95ce9b843948085f7a02fa86f62e867300440fc1",
+    "evidenceTree": "954a6be45d10e866f8f1a36d4ca69448e1eb9127"
+  },
+  "findings": {
+    "baseline": {
+      "ci1Branch": "palimpsest-ci1-two-owner-causal-integration",
+      "parent": "95ce9b843948085f7a02fa86f62e867300440fc1",
+      "parentTree": "954a6be45d10e866f8f1a36d4ca69448e1eb9127",
+      "head": "b8013f62b23b2ffa50a3ae2cc27aa7fe4a2413a0",
+      "headTree": "1d3a9202aa6139e49ff8e3d4a81c4e34be5aeec3",
+      "runtime": "0.2.1-rc.3",
+      "changedPaths": [
+        "A\tdocs/engineering/ci1-c0-e4-evidence-closure.md",
+        "A\tdocs/engineering/ci1-c1a-architecture-map.md",
+        "A\tresearch-evidence/ci1/e4-closure.json",
+        "A\tscripts/ci1/close-e4-evidence.mjs",
+        "A\tscripts/ci1/worker-module-trace.mjs",
+        "A\tscripts/ci1/worker-trace-plugin.mjs",
+        "A\tscripts/ci1/write-evidence.mjs",
+        "A\ttest/ci1_bounded_synthesis.test.ts",
+        "A\ttest/ci1_causal_oracle.test.ts",
+        "A\ttest/ci1_dependency_staleness.test.ts",
+        "A\ttest/ci1_stale_and_duplicate.test.ts",
+        "A\ttest/ci1_two_owner_causal.test.ts"
+      ]
+    },
+    "protectedAssets": {
+      "evidenceTrees": 66,
+      "worktreesRegistered": 95,
+      "historicalWorktreePresent": false,
+      "gateRoot": {
+        "path": "C:/Users/66494/.palimpsest-gates",
+        "entries": 19,
+        "present": true
+      }
+    },
+    "ci1Tests": {
+      "source": "CALLER_SUPPLIED_FROM_ACTUAL_RUNS",
+      "files": [
+        "test/ci1_two_owner_causal.test.ts",
+        "test/ci1_causal_oracle.test.ts",
+        "test/ci1_dependency_staleness.test.ts",
+        "test/ci1_stale_and_duplicate.test.ts",
+        "test/ci1_bounded_synthesis.test.ts"
+      ],
+      "combinedRun": {
+        "exitCode": 0,
+        "tests": 8,
+        "passed": 8,
+        "files": 5
+      },
+      "selectionFile": "C:/Users/66494/AppData/Local/Temp/ci1-selection-final.txt",
+      "selectionSize": 279
+    },
+    "claims": {
+      "established": [
+        "two distinct real Activations are created by the shipped realization service from one immutable baseline, and both attempts settle to COMPLETED with distinct result commits",
+        "the real Trajectory projection contains both attempts and emits NO causal cross-attempt edge; the only cross-attempt edge it emits is SAME_OWNER_SEQUENCE_SUCCESSOR labelled TEMPORAL_ONLY",
+        "observation order does not change the verified relations: the (relation, evidenceState) multiset is identical under both orders",
+        "a cross-Owner dependency is measured on BYTES: B records the digest it read, and B1 still names A1's digest after A2 rewrote the same path",
+        "a misbound dependency (claiming A1, reading A2) fails hard and records no COMPLETED attempt",
+        "promotion authority is a head comparison: a caller naming an unproven head is refused, and the refusal writes nothing",
+        "a duplicate delivery converges: same promotionId, no second PROMOTION_COMMITTED, no second head advance",
+        "a declared gate cannot qualify a combination, because the gate vocabulary has no combination subject and an unevidenced subject is INCOMPLETE",
+        "the Worker's effective module identity is measured inside the child at three anchors; the enforced pin is rc.3 and the fence loads from the run-owned test home"
+      ],
+      "notEstablished": [
+        "a locally PASSING candidate on the delegated settlement route: that route records no completion-contract evidence at all (measured: empty evidence table after ATTEMPT_COMPLETED)",
+        "the late-result path (ATTEMPT_LATE_RESULT): it is only legal from EXPIRED (state_machine.ts:61), so a COMPLETED attempt cannot exercise it, and the test does not fake it",
+        "a clean full-selection runner exit 0 on this machine (carried from E4)",
+        "two real DSH subprocess Workers running concurrently: the subprocess port needs a model and cannot complete a deterministic bounded task; its identity and delivery are separately qualified",
+        "any cross-Owner relation the existing Trajectory vocabulary can express: no SAME_BASIS or SHARED_BASELINE edge kind exists"
+      ],
+      "limitationsCarried": [
+        "E3 quarantine residual TOCTOU is unchanged",
+        "L1 cooperative same-user execution only; no L2 hostile-isolation claim",
+        "module-sharing provenance is structural (paths and sizes), not content-addressed",
+        "rc.3 is qualified for the operations exercised, not every Win32 path",
+        "the real runtime Home content boundary remains unestablished",
+        "the stale deployment copy in the real runtime home differs from the repo in exactly the two files E4 changed; it is NOT on the executed path, but it is a latent hazard"
+      ]
+    }
+  }
+}
