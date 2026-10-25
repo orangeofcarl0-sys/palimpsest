@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE4_ISOLATION_RED_CONTROL",
+  "stage": "Palimpsest Host-S1RA-E4",
+  "measuredAt": "2026-10-25T11:25:32.509Z",
+  "method": "a child process performs one legitimate allocation in the shared gate root; the observer records the count BEFORE releasing it, then records it again. The observer is parked at a barrier, so the ordering is deterministic rather than a race",
+  "gateRoot": "C:/Users/66494/.palimpsest-gates",
+  "gateRootIsShared": true,
+  "gateRootResolution": "scripts/trajectory_p2e0/owned-root.mjs resolves GATE_ROOT once at module load from PALIMPSEST_P2E0_GATE_ROOT or the user profile",
+  "sequence": [
+    "mutator READY with nothing allocated",
+    "observer records the count (this is case 35's `before`)",
+    "mutator performs one legitimate allocation",
+    "observer records the count again (this is the value case 35 asserts against)",
+    "mutator disposes through the real quarantine path"
+  ],
+  "observation": {
+    "observerRecordedBefore": 19,
+    "afterExternalAllocation": 20,
+    "delta": 1,
+    "movedByExternalActor": true,
+    "originalAssertionWouldPass": false,
+    "case35WouldCompare": {
+      "before": 19,
+      "after": 20
+    }
+  },
+  "mutator": {
+    "mechanism": "a separate node process calling the real allocateOwnedRoot and safeCleanup",
+    "childLines": [
+      "READY",
+      "ALLOCATED 20"
+    ],
+    "readyBeforeAllocating": true,
+    "allocatedLine": "ALLOCATED 20",
+    "disposal": {
+      "cleaned": true,
+      "reason": null,
+      "exited": 0
+    }
+  },
+  "redVerdict": "REPRODUCED: a legitimate allocation by an external process moved the count inside the observation window, so case 35's assertion fails for a reason case 35 did not cause",
+  "gateRootRestored": true,
+  "gateRootEntriesBefore": 19,
+  "gateRootEntriesAfter": 19,
+  "residualDifference": null
+}

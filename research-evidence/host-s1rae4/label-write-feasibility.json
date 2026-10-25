@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE4_LABEL_WRITE_FEASIBILITY",
+  "stage": "Palimpsest Host-S1RA-E4",
+  "measuredAt": "2026-10-25T11:38:23.966Z",
+  "outcome": "WRITE_SUCCEEDS_AFTER_GRANT",
+  "principal": "66494",
+  "integrityLevel": "unknown",
+  "securityPrivilege": {
+    "present": false,
+    "enabled": false
+  },
+  "interpretation": "the failure was DACL-related, and the seam works when the principal holds full control",
+  "arms": [
+    {
+      "id": "arm0-principal",
+      "question": "which principal is running, and does it hold the privilege that governs SACL writes?",
+      "principal": "66494",
+      "integrityLevel": "unknown",
+      "securityPrivilegePresent": false,
+      "securityPrivilegeEnabled": false,
+      "observation": "principal=66494 integrity=unknown SeSecurityPrivilege present=false enabled=false"
+    },
+    {
+      "id": "arm1-write-before-grant",
+      "question": "does the label write succeed on a freshly created directory in a test home?",
+      "writeOutcome": {
+        "applied": false,
+        "verified": false,
+        "label": {
+          "present": false,
+          "readable": true
+        },
+        "planned": {
+          "integrityRid": 8192,
+          "integrityName": "Medium",
+          "policyMask": 2,
+          "raisedIntegrity": false,
+          "preserved": []
+        },
+        "detail": "the write returned 5 but the effective label is absent — expected integrity=Medium mask=0x2"
+      },
+      "observation": "NOT APPLIED: the write returned 5 but the effective label is absent — expected integrity=Medium mask=0x2"
+    },
+    {
+      "id": "arm2-dacl-grant",
+      "question": "can an explicit DACL grant be applied to the fixture?",
+      "status": 0,
+      "stdout": "�Ѵ������ļ�: F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.e4-seam-gate\\e4-lblfeas-yMxtbh\\labelled\r\n�ѳɹ����� 1 ���ļ�; ���� 0 ���ļ�ʱʧ��",
+      "stderr": "",
+      "observation": "the grant was applied"
+    },
+    {
+      "id": "arm3-write-after-grant",
+      "question": "does the label write succeed once the principal holds explicit full control on the object?",
+      "writeOutcome": {
+        "applied": true,
+        "verified": true,
+        "label": {
+          "present": true,
+          "readable": true,
+          "aceType": 17,
+          "aceFlags": 3,
+          "policyMask": 2,
+          "integrityRid": 8192,
+          "integrityName": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        },
+        "planned": {
+          "integrityRid": 8192,
+          "integrityName": "Medium",
+          "policyMask": 2,
+          "raisedIntegrity": false,
+          "preserved": []
+        },
+        "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+      },
+      "observation": "the write was applied after the grant"
+    },
+    {
+      "id": "arm4-read-back",
+      "question": "is a label present after the attempts?",
+      "readBack": {
+        "ok": true,
+        "label": {
+          "present": true,
+          "readable": true,
+          "aceType": 17,
+          "aceFlags": 3,
+          "policyMask": 2,
+          "integrityRid": 8192,
+          "integrityName": "Medium",
+          "policies": [
+            "NO_READ_UP"
+          ]
+        },
+        "detail": "integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+      },
+      "observation": "present: integrity=Medium"
+    }
+  ],
+  "cleanup": {
+    "cleaned": true,
+    "checks": [
+      {
+        "check": "record",
+        "passed": true,
+        "detail": "run 46864-mvnr7wx7-5ydpehor"
+      },
+      {
+        "check": "identityMatch",
+        "passed": true,
+        "detail": "dev/ino match the allocation"
+      },
+      {
+        "check": "marker",
+        "passed": true,
+        "detail": "marker binds this root at generation 1"
+      }
+    ],
+    "quarantined": true,
+    "attempts": 1
+  },
+  "realHomeTouched": false
+}

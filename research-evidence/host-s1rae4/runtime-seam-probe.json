@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RAE4_RUNTIME_SEAM_PROBE",
+  "stage": "Palimpsest Host-S1RA-E4",
+  "measuredAt": "2026-10-25T11:31:59.576Z",
+  "node": {
+    "version": "v24.22.0",
+    "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "argv1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\host_s1rae4\\runtime-seam-probe.mjs"
+  },
+  "platform": "win32",
+  "arch": "x64",
+  "fence": {
+    "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/host/deployment/runtime/win32_label.js",
+    "declaredQualifiedVersion": "0.2.1-rc.2",
+    "declaredFfiQualified": "3.1.1"
+  },
+  "candidates": [
+    {
+      "label": "runtime-home-profiles",
+      "path": "C:/Users/66494/.dsh/profiles",
+      "realpath": "D:/dsh/profiles",
+      "exists": true
+    },
+    {
+      "label": "runtime-home-profiles-node_modules",
+      "path": "C:/Users/66494/.dsh/profiles/node_modules",
+      "realpath": "D:/dsh/profiles/node_modules",
+      "exists": true
+    },
+    {
+      "label": "repo-node_modules",
+      "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+      "realpath": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+      "exists": true
+    }
+  ],
+  "resolutions": [
+    {
+      "label": "runtime-home-profiles",
+      "path": "C:/Users/66494/.dsh/profiles",
+      "realpath": "D:/dsh/profiles",
+      "exists": true,
+      "base": "C:/Users/66494/.dsh/profiles/",
+      "resolves": true,
+      "resolveError": null,
+      "entry": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+      "manifestVersion": "0.2.1-rc.3",
+      "exports": {
+        "extendWin32ProcessBindings": "function",
+        "allocPtrSlot": "function",
+        "allocUint32": "function",
+        "decodePtr": "function",
+        "decodeUint32": "function",
+        "isNullPtr": "function"
+      },
+      "koffiVersion": "3.1.1"
+    },
+    {
+      "label": "runtime-home-profiles-node_modules",
+      "path": "C:/Users/66494/.dsh/profiles/node_modules",
+      "realpath": "D:/dsh/profiles/node_modules",
+      "exists": true,
+      "base": "C:/Users/66494/.dsh/profiles/node_modules/",
+      "resolves": true,
+      "resolveError": null,
+      "entry": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh\\node_modules\\@deepseek-ai\\dsh-win32-process\\lib\\index.js",
+      "manifestVersion": "0.2.1-rc.3",
+      "exports": {
+        "extendWin32ProcessBindings": "function",
+        "allocPtrSlot": "function",
+        "allocUint32": "function",
+        "decodePtr": "function",
+        "decodeUint32": "function",
+        "isNullPtr": "function"
+      },
+      "koffiVersion": "3.1.1"
+    },
+    {
+      "label": "repo-node_modules",
+      "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+      "realpath": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+      "exists": true,
+      "base": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules/",
+      "resolves": false,
+      "resolveError": "MODULE_NOT_FOUND Cannot find module '@deepseek-ai/dsh-win32-process'\nRequire stack:\n- F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\node_modules\\noop.js",
+      "entry": null,
+      "manifestVersion": null,
+      "exports": {},
+      "koffiVersion": null
+    }
+  ],
+  "fenceReport": {
+    "package": "@deepseek-ai/dsh-win32-process",
+    "qualifiedVersion": "0.2.1-rc.2",
+    "resolvedVersion": "unresolved",
+    "seam": "extendWin32ProcessBindings",
+    "ffi": {
+      "package": "koffi",
+      "qualifiedVersion": "3.1.1",
+      "resolvedVersion": "unresolved"
+    },
+    "usable": false,
+    "drifted": false,
+    "versionMatches": false,
+    "ffiMatches": false,
+    "error": "the DSH binding seam (@deepseek-ai/dsh-win32-process) could not be resolved; the read fence cannot install and the worker must not start unprotected"
+  },
+  "verdict": {
+    "seamResolvableFromSomeCandidate": true,
+    "seamVersionsFound": [
+      "0.2.1-rc.3"
+    ],
+    "allSixSymbolsAreFunctions": true,
+    "ffiVersionsFound": [
+      "3.1.1"
+    ],
+    "fenceResolvedVersion": "unresolved",
+    "fenceDrifted": false,
+    "fenceUsable": false,
+    "fenceError": "the DSH binding seam (@deepseek-ai/dsh-win32-process) could not be resolved; the read fence cannot install and the worker must not start unprotected"
+  },
+  "resolutionBasesSource": "function resolutionBases() {\n  /** @type {string[]} */\n  const bases = [import.meta.url];\n  const asUrl = (/** @type {string} */ p) => `file:///${p.replace(/\\\\/gu, '/')}`;\n  const dshRoot = process.env.PALIMPSEST_DSH_ROOT?.trim();\n  if (dshRoot !== undefined && dshRoot !== '') bases.unshift(asUrl(`${dshRoot}/node_modules/@deepseek-ai/dsh-win32-process/lib/index.js`));\n  const entry = process.argv[1];\n  if (typeof entry === 'string' && entry.length > 0) bases.unshift(asUrl(entry));\n  return bases;\n}"
+}
