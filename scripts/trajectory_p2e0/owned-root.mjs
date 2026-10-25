@@ -22,7 +22,7 @@
  *
  * NOT a product component. PLAIN JAVASCRIPT (`.mjs`), bare node.
  */
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, rmdirSync, statfsSync, unlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, rmdirSync, statfsSync, unlinkSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -121,6 +121,10 @@ export function freeBytesAt(path) {
  *
  * Ownership is established by a WRITTEN MARKER carrying the run identity, not by a path prefix. The
  * containment proof compares CANONICAL paths, so a symlinked gate root cannot smuggle the root elsewhere.
+ *
+ * E3-B — AN OBJECT IDENTITY IS NOW ALSO CAPTURED. The marker alone is COPYABLE: E3 measured that a marker carrying
+ * the same `runIdentity` and `root` was accepted for a directory it did not describe. `dev`/`ino` are recorded here
+ * and compared at disposal, so the record binds the OBJECT and not only the marker text.
  */
 export function allocateOwnedRoot(prefix, runIdentity) {
   if (!existsSync(GATE_ROOT)) mkdirSync(GATE_ROOT, { recursive: true });
@@ -128,8 +132,9 @@ export function allocateOwnedRoot(prefix, runIdentity) {
   const root = realpathSync(created);
   const gate = realpathSync(GATE_ROOT);
   const marker = join(root, OWNERSHIP_MARKER);
+  const stats = lstatSync(created);
   const record = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     kind: "PALIMPSEST_E0_OWNED_ROOT",
     root: root.replace(/\\/gu, "/"),
     canonicalRoot: root.replace(/\\/gu, "/"),
@@ -140,7 +145,9 @@ export function allocateOwnedRoot(prefix, runIdentity) {
     createdAt: new Date().toISOString(),
     markerFile: marker.replace(/\\/gu, "/"),
     containmentProven: containedIn(gate, root),
-    rootIsReparsePoint: lstatSync(created).isSymbolicLink(),
+    rootIsReparsePoint: stats.isSymbolicLink(),
+    /** E3-B: the object identity, so a copied marker cannot stand in for the object it describes. */
+    objectIdentity: { dev: stats.dev, ino: stats.ino, inoUsable: stats.ino !== 0 },
   };
   writeFileSync(marker, `${JSON.stringify(record, null, 2)}\n`, "utf8");
   const owned = {
@@ -158,6 +165,10 @@ export function allocateOwnedRoot(prefix, runIdentity) {
  *
  * A caller that presents a record whose `runIdentity` or `root` disagrees with the marker it points at is
  * refused: the marker is the authority, and a spread/copy of a record cannot forge it.
+ *
+ * E3-B — THE MARKER IS NO LONGER SUFFICIENT ON ITS OWN. A marker file can be copied into another directory, and a
+ * marker carrying the right `runIdentity` and `root` would then verify. The object identity captured at allocation
+ * must also match the object at that path, which a copy cannot reproduce.
  */
 export function verifyOwnership(owned) {
   if (owned === undefined || owned === null || typeof owned.root !== "string") return false;
@@ -167,7 +178,22 @@ export function verifyOwnership(owned) {
   } catch {
     return false;
   }
-  return read?.kind === "PALIMPSEST_E0_OWNED_ROOT" && read.runIdentity === owned.runIdentity && read.root === owned.root;
+  if (read?.kind !== "PALIMPSEST_E0_OWNED_ROOT" || read.runIdentity !== owned.runIdentity || read.root !== owned.root) return false;
+  /**
+   * A RECORD FROM SCHEMA 1 HAS NO IDENTITY. It is refused rather than accepted on the marker alone: the whole point
+   * of this correction is that the marker text is not proof of the object.
+   */
+  const expected = owned.objectIdentity ?? read.objectIdentity;
+  if (expected === undefined || expected === null) return false;
+  let stats;
+  try {
+    stats = lstatSync(owned.root);
+  } catch {
+    return false;
+  }
+  if (expected.inoUsable === true && stats.ino !== 0) return stats.dev === expected.dev && stats.ino === expected.ino;
+  /** The platform supplied no usable inode; the marker remains the only available evidence and is reported as such. */
+  return read.root === owned.root;
 }
 
 /**
@@ -196,15 +222,72 @@ export async function safeCleanup(owned) {
   try {
     canonicalNow = realpathSync(owned.root);
   } catch {
+    /**
+     * E3-B — "ALREADY GONE" IS NOW OBSERVED, NOT INFERRED. `realpathSync` failing could mean the path is absent OR
+     * that it is unreadable, and the previous version reported `cleaned: true` for both. The path object is
+     * inspected without following it, so the answer is a measurement.
+     */
+    let present = true;
+    try {
+      lstatSync(owned.root);
+    } catch {
+      present = false;
+    }
+    if (present) return { cleaned: false, reason: "the owned root could not be resolved but is still present; preserving it", preserved: true };
     return { cleaned: true, reason: "the owned root was already gone" };
   }
   if (!containedIn(realpathSync(GATE_ROOT), canonicalNow)) {
     return { cleaned: false, reason: "the owned root no longer resolves inside the gate root; preserving it" };
   }
 
-  const scan = findDescendantReparsePoints(owned.root);
+  /**
+   * E3-B — THE DELETE IS ADDRESSED BY A QUARANTINE NAME, NOT BY THE ORIGINAL PATH.
+   *
+   * `verifyOwnership` and the recursive removal were separate statements on a PATH, so a directory substituted
+   * between them was deleted. The rename is one directory-entry operation, and the identity is re-checked at the
+   * quarantine name before anything is removed: a substituted object fails that check and is renamed back.
+   *
+   * The descendant link scan and the link-by-name removal then run against the QUARANTINE name. The link objects
+   * move with the directory, their targets do not, so the no-follow property is unchanged.
+   */
+  const parent = dirname(owned.root);
+  const quarantine = join(parent, `.q-${basename(owned.root)}-${String(process.pid).padStart(6, "0")}-${Math.random().toString(36).slice(2, 10)}`);
+  try {
+    renameSync(owned.root, quarantine);
+  } catch (error) {
+    return { cleaned: false, reason: `the quarantine rename failed: ${String(error?.message ?? error).slice(0, 200)}`, preserved: true };
+  }
+
+  const expected = owned.objectIdentity;
+  if (expected !== undefined && expected !== null && expected.inoUsable === true) {
+    let actual;
+    try {
+      actual = lstatSync(quarantine);
+    } catch {
+      return { cleaned: false, reason: "the quarantined root could not be inspected; preserving it", preserved: true, quarantinePath: quarantine.replace(/\\/gu, "/") };
+    }
+    if (actual.dev !== expected.dev || actual.ino !== expected.ino) {
+      let restored = false;
+      try {
+        renameSync(quarantine, owned.root);
+        restored = true;
+      } catch {
+        restored = false;
+      }
+      return {
+        cleaned: false,
+        reason: "a substituted object was detected at the quarantine name; it was preserved",
+        preserved: true,
+        restored,
+        quarantinePath: restored ? null : quarantine.replace(/\\/gu, "/"),
+      };
+    }
+  }
+
+  const scan = findDescendantReparsePoints(quarantine);
   /** §9.1: an INCOMPLETE scan must NOT be read as "no links". Preserve and report the scan errors. */
   if (scan.state === "INCOMPLETE") {
+    renameSyncSafe(quarantine, owned.root);
     return { cleaned: false, reason: `the descendant reparse-point scan was INCOMPLETE (${String(scan.errors.length)} error(s)); preserving the root because a link could exist in an unreadable subtree`, scanErrors: scan.errors, preserved: true };
   }
   const descendants = scan;
@@ -222,27 +305,58 @@ export async function safeCleanup(owned) {
   }
   /** §9.2: NOT bypassable. A failed link removal always preserves the root. */
   if (failedLinks.length > 0) {
-    return { cleaned: false, reason: `could not remove ${failedLinks.length} descendant reparse point(s) by name; preserving the root`, removedLinks, failedLinks, preserved: true };
+    renameSyncSafe(quarantine, owned.root);
+    return { cleaned: false, reason: `could not remove ${String(failedLinks.length)} descendant reparse point(s) by name; preserving the root`, removedLinks, failedLinks, preserved: true };
   }
 
   let lastReason = "";
   for (let attempt = 0; attempt < 8; attempt += 1) {
     try {
-      rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      return { cleaned: true, removedLinks, descendantReparsePointsFound: descendants.count, scanState: "COMPLETE", attempts: attempt + 1 };
+      rmSync(quarantine, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
+      /** E3-B: completion is OBSERVED. A removal that reported success but left the name behind is a failure. */
+      let survives = true;
+      try {
+        lstatSync(quarantine);
+      } catch {
+        survives = false;
+      }
+      if (survives) {
+        lastReason = "the removal reported success but the quarantine name still exists";
+        break;
+      }
+      return { cleaned: true, removedLinks, descendantReparsePointsFound: descendants.count, scanState: "COMPLETE", attempts: attempt + 1, quarantined: true };
     } catch (error) {
       lastReason = error?.message ?? String(error);
       await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
     }
   }
+  renameSyncSafe(quarantine, owned.root);
   return { cleaned: false, reason: `preserved after retries: ${lastReason}`, removedLinks, descendantReparsePointsFound: descendants.count, preserved: true };
 }
 
-/** §7.6: is a leaked root demonstrably OURS (carries this stage's marker), so a sweep is never a blind delete? */
+/** Restore a quarantine name to the original path, reporting whether it worked rather than throwing. */
+function renameSyncSafe(from, to) {
+  try {
+    renameSync(from, to);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** §7.6: is a leaked root demonstrably OURS, so a sweep is never a blind delete? */
 export function isOwnedByThisStage(path) {
   try {
     const read = JSON.parse(readFileSync(join(path, OWNERSHIP_MARKER), "utf8"));
-    return read?.kind === "PALIMPSEST_E0_OWNED_ROOT";
+    if (read?.kind !== "PALIMPSEST_E0_OWNED_ROOT") return false;
+    /**
+     * E3-B — A MARKER OF THE RIGHT KIND IS NOT ENOUGH. A marker can be copied into any directory. Where the marker
+     * records an object identity, the object at this path must match it.
+     */
+    if (read.objectIdentity === undefined || read.objectIdentity === null) return false;
+    if (read.objectIdentity.inoUsable !== true) return true;
+    const stats = lstatSync(path);
+    return stats.dev === read.objectIdentity.dev && stats.ino === read.objectIdentity.ino;
   } catch {
     return false;
   }

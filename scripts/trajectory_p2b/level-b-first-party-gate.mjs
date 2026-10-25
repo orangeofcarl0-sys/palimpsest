@@ -84,19 +84,26 @@ function finish(outcome, extra) {
  */
 const allocateOwnedRoot = (prefix) => ownedResource.allocateOwnedRoot(GATE_ROOT, prefix);
 
+/**
+ * E3-B — THIS LOCAL COPY IS NOW A DELEGATION, FOR THE SAME REASON THE SHARING HELPERS WERE.
+ *
+ * It performed `revalidateOwnership()` and then `rmSync(owned.root)` as two statements on a PATH, which is the
+ * measured TOCTOU window. Fixing that shape in one module while leaving a second copy of it here is exactly how the
+ * two drift apart, and this gate is one of the ones that can actually run. The retry loop and the quarantine rename
+ * live in the shared module, so there is one disposal semantics in the tree rather than two.
+ */
 const safeCleanup = async (owned) => {
-  const proof = ownedResource.revalidateOwnership(owned);
-  if (proof.owned !== true) return { cleaned: false, reason: proof.reason, checks: proof.checks, preserved: true };
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    try {
-      rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      return { cleaned: true, checks: proof.checks };
-    } catch (error) {
-      await new Promise((done) => setTimeout(done, 250));
-      if (attempt === 7) return { cleaned: false, reason: String(error?.message ?? error), preserved: true };
-    }
+  const result = ownedResource.disposeOwnedRoot(owned);
+  if (result.cleaned === true || result.retryable !== true) return result;
+  let last = result;
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    await new Promise((done) => setTimeout(done, 250));
+    const retried = ownedResource.disposeOwnedRoot(owned);
+    if (retried.cleaned === true) return retried;
+    if (retried.retryable !== true) return retried;
+    last = retried;
   }
-  return { cleaned: false, reason: "attempt budget exhausted", preserved: true };
+  return { ...last, reason: `preserved after retries: ${String(last.reason)}`, preserved: true };
 };
 
 

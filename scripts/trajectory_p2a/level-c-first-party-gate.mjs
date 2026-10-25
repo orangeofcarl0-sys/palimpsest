@@ -97,6 +97,17 @@ function linkSharedModules() {
     sourceModules: REAL_MODULES,
     /** The host bundle packages are installed by `installHostBundle()` immediately before this call. */
     providedByCaller: ["palimpsest-dsh-host", "palimpsest-host-deployment"],
+    /**
+     * E3-B — THE DECLARATION IS BACKED BY THE EXPECTED CONTENT.
+     *
+     * A declared name alone was measured as insufficient provenance: a plain directory at that name was admitted
+     * whether `installHostBundle` had written it or not. These fingerprints come from the same source trees the
+     * installer copies, so an unexpected directory at a declared name is now refused instead of trusted.
+     */
+    expectedFingerprints: {
+      "palimpsest-dsh-host": moduleSharing.directoryFingerprint(join(REPO, "host", "dsh")) ?? "",
+      "palimpsest-host-deployment": moduleSharing.directoryFingerprint(join(REPO, "host", "deployment")) ?? "",
+    },
   });
   record("moduleSharing", result);
   return result;

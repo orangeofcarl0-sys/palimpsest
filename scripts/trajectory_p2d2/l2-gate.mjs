@@ -237,13 +237,15 @@ async function runTurn(root, label, presentation) {
 
 /* ------------------------------------------------------------------ run */
 
-const owned = (() => {
-  if (!existsSync(GATE_ROOT)) mkdirSync(GATE_ROOT, { recursive: true });
-  const root = realpathSync(mkdtempSync(join(GATE_ROOT, "p2d2-l2-")));
-  const gate = realpathSync(GATE_ROOT);
-  const rel = relative(gate, root);
-  return { root, contained: rel !== "" && !rel.startsWith("..") && !rel.startsWith(sep), isReparse: lstatSync(root).isSymbolicLink() };
-})();
+/**
+ * E3-B — THIS WAS THE LAST HAND-ROLLED ALLOCATION IN THE TREE.
+ *
+ * It built `{ root, contained, isReparse }` inline with `mkdtempSync`: no ownership marker and no object identity.
+ * `ownedRootLifetime` refused it, so the outcome was fail-closed, but the root was then never reclaimed — which is
+ * the `p2d2-l2-u4RMdw` directory left in the gate root. It now allocates through the shared allocator, so it carries
+ * a marker, an identity and a generation, and the lifetime helper can actually dispose of it.
+ */
+const owned = allocateOwnedRoot("p2d2-l2-", GATE_ROOT);
 ownedLifetime = ownedRootLifetime(owned);
 record("testRootContained", owned.contained);
 record("testRootIsReparsePoint", owned.isReparse);

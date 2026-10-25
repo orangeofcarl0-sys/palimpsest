@@ -1,40 +1,69 @@
 /**
- * Host-S1RA RA-B — OWNED TEST RESOURCES: ALLOCATION, REVALIDATION, RETRY AND REAPING.
+ * Host-S1RA RA-B / E3-B — OWNED TEST RESOURCES: ALLOCATION, REVALIDATION AND SAFE DISPOSAL.
  *
- * FOUR MEASURED DEFECTS MOTIVATE THIS MODULE (RA-0, all reproduced):
+ * THE INVARIANTS THIS MODULE NOW ENFORCES, each tied to a measured failure:
  *
- *   F3  A root replaced after allocation was still deleted. `allocateOwnedRoot` computed `contained` and
- *       `isReparse` ONCE and the lifetime helper trusted those cached booleans, so a foreign directory placed at
- *       the same path had its contents removed.
- *   F4  One EPERM marked the root disposed FOREVER. The third call after the Windows handle was released did not
- *       retry, converting a transient lock into a permanent leak.
- *   F5  `dispose()` removed the `exit` listener but left SIGINT and SIGTERM registered: three allocations leaked
- *       three of each.
- *   F6  The reaper selected a directory on name prefix and modification time alone, including one carrying
- *       ANOTHER run's ownership marker.
+ *   I1  MISSING EVIDENCE IS NOT POSITIVE EVIDENCE. A missing, unreadable or malformed marker REFUSES. The previous
+ *       version pushed `marker, passed: true` for an absent marker and fell back to the captured identity, so a
+ *       directory whose marker had been removed was deleted (E3 F1).
  *
- * THE MODEL THIS MODULE IMPLEMENTS.
+ *   I2  THE MARKER MUST BIND THE RESOURCE. `runId` alone was compared, so a marker naming a DIFFERENT root was
+ *       accepted (E3 F2), and a marker copied from another resource of the same run was accepted (E3 F3). The
+ *       marker's `ownedRoot` and `generation` must now agree with the record.
  *
- *   ALLOCATION writes a marker recording the run, the process, the timestamp and the resolved root. The marker is
- *   an aid to diagnosis; it is NEVER sufficient on its own, because a marker file can be copied.
+ *   I3  REFUSAL PROPAGATES. `revalidateOwnership` returns structured reasons; no caller may convert them into a
+ *       deletion. The consumer that did (`rig.safeCleanup`'s legacy fallback) is corrected separately.
  *
- *   IDENTITY is captured at allocation as the object's `dev`/`ino` pair where the platform supplies them. This is
- *   the part the cached booleans lacked: it answers "is this still the same directory object", not "was the path
- *   once inside the root".
+ *   I4  COMPLETION INTENT IS NOT COMPLETION EVIDENCE. `cleaned: true` is returned only after the object is
+ *       OBSERVED gone. A failed removal never latches a disposed state.
  *
- *   DELETION re-proves, immediately before removing anything: the path is still inside the gate root, it is not a
- *   reparse point NOW, and its `dev`/`ino` still match the recorded identity. Any mismatch PRESERVES the directory
- *   and says why.
+ *   I5  REPEATED CLEANUP IS NOT A BLIND PATH DELETE. Disposal is bound to the allocated object, so a new occupant
+ *       at a reused path is preserved.
  *
- *   RETRY is allowed while ownership still holds, is BOUNDED, and never rewrites the original failure reason.
+ *   I6  BOUNDED. No database, no transaction manager, no service. One added persistent field, justified below.
+ *
+ * THE TOCTOU WINDOW, AND WHAT REPLACES THE OLD SHAPE.
+ *
+ * The previous disposal was `revalidateOwnership()` followed by `rmSync()` — two statements on a PATH. A directory
+ * substituted between them was deleted (E3 F4B, and E2's own audit). Path-based validation and path-based deletion
+ * cannot be made atomic with the Node APIs this project ships, and this stage may not add a native binding.
+ *
+ * Disposal therefore uses a QUARANTINE RENAME, which changes which object the delete acts on rather than trying to
+ * make the check atomic:
+ *
+ *   1. revalidate ownership of the path;
+ *   2. rename the directory entry to a unique quarantine name in the SAME parent (one directory-entry operation);
+ *   3. verify the identity of the object now AT the quarantine name — if it is not the allocated object, rename it
+ *      back and refuse, so a substituted object is preserved;
+ *   4. remove the quarantine name recursively;
+ *   5. verify the quarantine name is gone before reporting success.
+ *
+ * What this closes: a substitution between the proof and the rename is DETECTED at step 3 and reversed, because the
+ * substituted object fails the identity comparison. What it does not close: a substitution between step 3 and step 4
+ * on a name the substituting process must guess, and a rename-back that is itself raced. That residual is reported
+ * rather than claimed closed, and it is why the verdict for physical disposal is bounded rather than absolute.
  *
  * NOT A PRODUCT COMPONENT. PLAIN JAVASCRIPT (`.mjs`), bare node.
  */
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join, relative, resolve, sep } from "node:path";
 
 export const MARKER_NAME = ".palimpsest-owned.json";
-export const MARKER_SCHEMA = 1;
+export const MARKER_SCHEMA = 2;
+
+/**
+ * THE ONE NEW PERSISTENT FIELD. `generation` exists because E3 F8 measured an actual stale-authorization failure:
+ * a record captured at allocation stayed sufficient to delete the same object indefinitely, so nothing distinguished
+ * "this operation is current" from "this operation was captured before a handoff". It is a monotonically increasing
+ * counter owned by the allocating process, recorded in both the record and the marker, and compared at the
+ * destructive boundary. It is deliberately NOT a durable operation log: no schema beyond the integer, no history,
+ * no replay.
+ */
+let GENERATION_COUNTER = 0;
+const nextGeneration = () => {
+  GENERATION_COUNTER += 1;
+  return GENERATION_COUNTER;
+};
 
 /** A stable per-process run identity. Recorded so a reaper can tell "mine" from "someone else's". */
 const RUN_ID = `${String(process.pid)}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -77,8 +106,8 @@ export function isStrictlyInside(root, path) {
 /**
  * Allocate a uniquely named, test-owned root inside the gate root.
  *
- * The returned record is what the lifetime helper consumes. It carries the identity captured HERE so a later
- * deletion can compare, and it records whether that identity is strong enough to be decisive.
+ * The returned record carries the identity captured HERE, the generation that authorizes ITS disposal, and whether
+ * that identity is strong enough to be decisive.
  */
 export function allocateOwnedRoot(gateRoot, prefix) {
   if (typeof prefix !== "string" || prefix.trim() === "") throw new Error("allocateOwnedRoot requires a non-empty prefix");
@@ -90,11 +119,13 @@ export function allocateOwnedRoot(gateRoot, prefix) {
   const rel = relative(resolvedGate, resolvedRoot);
   const contained = rel !== "" && !rel.startsWith("..") && !rel.startsWith(sep);
   const identity = objectIdentity(resolvedRoot);
+  const generation = nextGeneration();
 
   const marker = {
     schemaVersion: MARKER_SCHEMA,
     runId: RUN_ID,
     pid: process.pid,
+    generation,
     createdAt: new Date().toISOString(),
     ownedRoot: resolvedRoot.replace(/\\/gu, "/"),
     gateRoot: resolvedGate.replace(/\\/gu, "/"),
@@ -106,18 +137,31 @@ export function allocateOwnedRoot(gateRoot, prefix) {
     writeFileSync(join(resolvedRoot, MARKER_NAME), `${JSON.stringify(marker, null, 2)}\n`, "utf8");
     markerWritten = true;
   } catch {
-    /** A root that cannot carry its marker is still owned by THIS process, but a reaper could never prove it. */
+    /**
+     * A root that cannot carry its marker can no longer be disposed by the normal path, because I1 requires the
+     * marker. The record SAYS SO rather than pretending the allocation is complete.
+     */
     markerWritten = false;
   }
 
-  return { root: resolvedRoot, gateRoot: resolvedGate, contained, isReparse: identity?.isReparsePoint === true, identity, marker, markerWritten, runId: RUN_ID };
+  return {
+    root: resolvedRoot,
+    gateRoot: resolvedGate,
+    contained,
+    isReparse: identity?.isReparsePoint === true,
+    identity,
+    marker,
+    markerWritten,
+    generation,
+    runId: RUN_ID,
+  };
 }
 
 /**
  * Re-prove ownership immediately before deleting.
  *
- * Returns `{ owned: true }` only when every check passes. The `checks` array is returned in all cases so a receipt
- * can record WHY a directory was preserved instead of a bare boolean.
+ * Returns `{ owned: true }` only when every check passes. `checks` is returned in all cases so a receipt can record
+ * WHY a directory was preserved instead of a bare boolean.
  */
 export function revalidateOwnership(owned) {
   const checks = [];
@@ -128,6 +172,11 @@ export function revalidateOwnership(owned) {
 
   if (owned === null || typeof owned !== "object") return fail("record", "no ownership record was supplied");
   checks.push({ check: "record", passed: true, detail: `run ${String(owned.runId)}` });
+
+  /** 0. THE GENERATION. A record whose generation no longer matches the marker is a superseded operation. */
+  if (!Number.isInteger(owned.generation)) {
+    return fail("generation", "the record carries no operation generation, so it cannot authorize a destructive effect");
+  }
 
   /** 1. The path must still be inside the gate root, resolved NOW rather than as recorded. */
   if (!existsSync(owned.gateRoot)) return fail("gateRootExists", "the gate root no longer exists");
@@ -145,49 +194,160 @@ export function revalidateOwnership(owned) {
   if (comparison?.weak === true) {
     /**
      * A WEAK COMPARISON IS RECORDED, NOT TREATED AS A PASS. The remaining checks still run, and the deletion is
-     * allowed only because containment and the absence of a reparse point were proved directly. Saying so is the
-     * difference between a bounded limitation and a silent assumption.
+     * allowed only because containment and the absence of a reparse point were proved directly.
      */
     checks.push({ check: "identityMatch", passed: true, detail: "WEAK: the platform did not supply a usable inode, so identity is limited to object kind at the same path" });
   } else {
     checks.push({ check: "identityMatch", passed: true, detail: "dev/ino match the allocation" });
   }
 
-  /** 4. A marker, if present, must name THIS run. A foreign marker is a refusal, not a re-allocation. */
+  /**
+   * 4. THE MARKER IS REQUIRED, AND IT MUST BIND THIS RESOURCE.
+   *
+   * I1: an absent marker refuses. The previous version passed this check when the marker was missing, which is what
+   * E3 F1 measured as a deletion of a directory whose evidence had been removed.
+   *
+   * I2: the marker's `ownedRoot` must name THIS root and its `generation` must match the record. Comparing `runId`
+   * alone accepted a marker naming a different root (F2) and a marker copied from a sibling resource (F3).
+   */
   const markerPath = join(owned.root, MARKER_NAME);
-  if (existsSync(markerPath)) {
-    try {
-      const marker = JSON.parse(readFileSync(markerPath, "utf8"));
-      if (marker?.runId !== owned.runId) return fail("marker", `the marker names run ${String(marker?.runId)}, not this run`);
-      checks.push({ check: "marker", passed: true, detail: `marker names this run` });
-    } catch {
-      return fail("marker", "the marker is unreadable or malformed");
-    }
-  } else {
-    checks.push({ check: "marker", passed: true, detail: "no marker present; ownership rests on the captured identity" });
+  if (!existsSync(markerPath)) return fail("marker", "the ownership marker is absent; a missing record is not positive evidence");
+  let marker;
+  try {
+    marker = JSON.parse(readFileSync(markerPath, "utf8"));
+  } catch {
+    return fail("marker", "the marker is unreadable or malformed");
   }
+  if (marker?.schemaVersion !== MARKER_SCHEMA) return fail("marker", `unrecognised marker schema ${String(marker?.schemaVersion)}`);
+  if (marker?.runId !== owned.runId) return fail("marker", `the marker names run ${String(marker?.runId)}, not this run`);
+  /**
+   * THE ROOT IS CHECKED BEFORE THE GENERATION so the refusal names the actual defect. A marker copied from a sibling
+   * resource differs in BOTH fields, and "it names a different root" is the more precise statement about why it
+   * cannot authorize this deletion.
+   */
+  if (!sameResolvedPath(marker?.ownedRoot, owned.root)) {
+    return fail("marker", "the marker names a different root, so it does not bind this resource");
+  }
+  if (marker?.generation !== owned.generation) {
+    return fail("marker", `the marker names generation ${String(marker?.generation)}, not ${String(owned.generation)}; this record is superseded`);
+  }
+  checks.push({ check: "marker", passed: true, detail: `marker binds this root at generation ${String(owned.generation)}` });
 
   return { owned: true, checks };
 }
 
+/** A unique quarantine name in the SAME parent, so the rename is a single directory-entry operation. */
+function quarantineName(parent, base) {
+  const suffix = `${String(process.pid).padStart(6, "0")}-${Math.random().toString(36).slice(2, 10)}`;
+  return join(parent, `.q-${base}-${suffix}`);
+}
+
 /**
- * A run-owned root that reclaims itself on every exit path, with revalidated deletion and bounded retry.
+ * Dispose of an owned root: rename to quarantine, verify the object, delete, verify it is gone.
  *
- * DIFFERENCES FROM THE SUPERSEDED HELPER, each tied to a measured defect:
- *
- *   · `disposed` no longer latches on failure (F4). A failed attempt leaves the record RETRYABLE while ownership
- *     still holds, up to `maxAttempts`, and the FIRST failure reason is preserved.
- *   · every listener installed is removed by `dispose()`, including SIGINT and SIGTERM (F5).
- *   · deletion revalidates identity rather than trusting cached booleans (F3).
+ * Returns `{ cleaned: true }` ONLY when the quarantine name is observed absent afterwards (I4). Every other outcome
+ * carries a structured reason and leaves the object either untouched or restored.
+ */
+export function disposeOwnedRoot(owned, options = {}) {
+  const proof = revalidateOwnership(owned);
+  if (proof.owned !== true) {
+    /** A refused disposal is FINAL. Ownership cannot be re-established by retrying. */
+    return { cleaned: false, reason: proof.reason, checks: proof.checks, preserved: true, refused: true };
+  }
+
+  const parent = resolve(owned.root, "..");
+  const quarantine = quarantineName(parent, basename(owned.root));
+  const expected = objectIdentity(owned.root);
+
+  try {
+    renameSync(owned.root, quarantine);
+  } catch (error) {
+    return {
+      cleaned: false,
+      reason: `the quarantine rename failed: ${String(error?.message ?? error).slice(0, 200)}`,
+      checks: proof.checks,
+      preserved: true,
+      retryable: true,
+      lastError: String(error?.message ?? error).slice(0, 300),
+    };
+  }
+
+  /**
+   * STEP 3 — THE OBJECT THAT WILL BE DELETED IS THE OBJECT THAT WAS PROVEN.
+   *
+   * If a substitution landed between the proof and the rename, the object at the quarantine name is the SUBSTITUTED
+   * one and its identity differs. It is renamed back and preserved, which is the difference between detecting the
+   * race and deleting through it.
+   */
+  const quarantined = objectIdentity(quarantine);
+  const comparison = sameIdentity(expected, quarantined);
+  if (comparison === false) {
+    try {
+      renameSync(quarantine, owned.root);
+    } catch {
+      /** Restoration failed; the object is still PRESERVED, just at the quarantine name. */
+      return {
+        cleaned: false,
+        reason: "a substituted object was detected at the quarantine name and could not be restored to its original path; it was preserved",
+        checks: proof.checks,
+        preserved: true,
+        substitutedObjectPreservedAt: quarantine.replace(/\\/gu, "/"),
+        refused: true,
+      };
+    }
+    return {
+      cleaned: false,
+      reason: "a substituted object was detected at the quarantine name; it was restored and preserved",
+      checks: proof.checks,
+      preserved: true,
+      refused: true,
+    };
+  }
+
+  try {
+    rmSync(quarantine, { recursive: true, force: true, maxRetries: options.maxRetries ?? 2, retryDelay: options.retryDelay ?? 100 });
+  } catch (error) {
+    const reason = String(error?.message ?? error).slice(0, 300);
+    /**
+     * A FAILED REMOVAL LEAVES THE OBJECT AT THE QUARANTINE NAME. It is restored when possible so a retry starts from
+     * the same place, and `cleaned` is NOT true either way.
+     */
+    let restored = false;
+    try {
+      if (existsSync(quarantine)) {
+        renameSync(quarantine, owned.root);
+        restored = true;
+      }
+    } catch {
+      restored = false;
+    }
+    return {
+      cleaned: false,
+      reason: `the removal failed: ${reason}`,
+      lastError: reason,
+      checks: proof.checks,
+      preserved: true,
+      retryable: true,
+      restored,
+      quarantineSurvivesAt: restored ? null : quarantine.replace(/\\/gu, "/"),
+    };
+  }
+
+  /** STEP 5 — COMPLETION IS OBSERVED, NOT ASSUMED. */
+  if (existsSync(quarantine)) {
+    return { cleaned: false, reason: "the removal reported success but the quarantine name still exists", checks: proof.checks, preserved: false, retryable: true };
+  }
+  return { cleaned: true, checks: proof.checks, quarantined: true };
+}
+
+/**
+ * A run-owned root that reclaims itself on every exit path, with revalidated quarantine disposal and bounded retry.
  *
  * Signal handling is a best-effort reclamation on this process's own exit. It cannot run after SIGKILL, and this
  * comment is the honest statement of that limit rather than a claim of guaranteed cleanup.
  */
 export function ownedRootLifetime(owned, options = {}) {
   const maxAttempts = options.maxAttempts ?? 3;
-  const retryDelayMs = options.retryDelayMs ?? 0;
-  const preserveOnFailure = options.preserveOnFailure ?? true;
-
   let attempts = 0;
   let outcome = null;
   let firstFailureReason = null;
@@ -196,32 +356,23 @@ export function ownedRootLifetime(owned, options = {}) {
   const attemptReclaim = () => {
     if (outcome?.cleaned === true) return outcome;
     if (attempts >= maxAttempts) {
-      outcome = { cleaned: false, attempts, reason: firstFailureReason ?? "attempt budget exhausted", preserved: preserveOnFailure };
+      outcome = { cleaned: false, attempts, reason: firstFailureReason ?? "attempt budget exhausted", preserved: true };
       return outcome;
     }
     attempts += 1;
 
-    const proof = revalidateOwnership(owned);
-    if (proof.owned !== true) {
-      /** A refused deletion is FINAL: ownership cannot be re-established by retrying. */
-      outcome = { cleaned: false, attempts, reason: proof.reason, checks: proof.checks, preserved: true, refused: true };
+    const result = disposeOwnedRoot(owned, options);
+    if (result.cleaned === true) {
+      outcome = { ...result, attempts };
       return outcome;
     }
-
-    try {
-      rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      outcome = { cleaned: true, attempts, checks: proof.checks };
-      return outcome;
-    } catch (error) {
-      const reason = String(error?.message ?? error).slice(0, 300);
-      if (firstFailureReason === null) firstFailureReason = reason;
-      /**
-       * RETRYABLE, NOT DISPOSED. The record is left in a state a later call can retry, which is what F4 measured
-       * as missing. `outcome` still reports failure so no caller can mistake this for success.
-       */
-      outcome = { cleaned: false, attempts, reason: firstFailureReason, lastError: reason, retryable: attempts < maxAttempts, preserved: true };
-      return outcome;
-    }
+    if (firstFailureReason === null) firstFailureReason = result.reason;
+    /**
+     * RETRYABLE, NOT DISPOSED. A failed attempt leaves the record in a state a later call can retry, and `cleaned`
+     * stays false so no caller can mistake this for success.
+     */
+    outcome = { ...result, attempts, reason: firstFailureReason, retryable: result.refused !== true && attempts < maxAttempts, preserved: true };
+    return outcome;
   };
 
   const onExit = () => {
@@ -232,7 +383,7 @@ export function ownedRootLifetime(owned, options = {}) {
     process.exit(signal === "SIGINT" ? 130 : 143);
   };
 
-  /** `process.on` (not `once`) so `dispose()` can remove them by reference; removal is what F5 required. */
+  /** `process.on` (not `once`) so `dispose()` can remove them by reference. */
   const sigintHandler = () => onSignal("SIGINT");
   const sigtermHandler = () => onSignal("SIGTERM");
   process.on("exit", onExit);
@@ -245,24 +396,13 @@ export function ownedRootLifetime(owned, options = {}) {
   ];
 
   return {
-    /**
-     * Reclaim now and REMOVE EVERY LISTENER INSTALLED. Idempotent: a second call returns the recorded outcome
-     * without deleting twice, but a FAILED first attempt can still be retried by calling again.
-     */
+    /** Reclaim now and remove every listener installed. A failed attempt can still be retried. */
     dispose: () => {
       const result = attemptReclaim();
       for (const [event, handler] of listenersInstalled) process.removeListener(event, handler);
       listenersInstalled = [];
-      if (retryDelayMs > 0 && result.cleaned !== true && result.retryable === true) {
-        /** Synchronous disposal cannot await; the delay is a spin, bounded by `maxAttempts`. */
-        const until = Date.now() + retryDelayMs;
-        while (Date.now() < until) {
-          /* bounded spin, deliberately */
-        }
-      }
       return result;
     },
-    /** Retry explicitly, for a caller that has released whatever held the handle. */
     retry: () => attemptReclaim(),
     status: () => outcome,
     listenerCount: () => listenersInstalled.length,
@@ -278,11 +418,9 @@ export function ownedRootLifetime(owned, options = {}) {
  *   · its name matches one of the caller's own prefixes;
  *   · it is not a reparse point;
  *   · it resolves inside the gate root;
- *   · it is older than `minAgeMs` (a concurrent run must not be pulled out from under itself);
- *   · AND it carries a marker whose schema is recognised and whose `runId` is not a live process.
- *
- * The last condition is what F6 measured as absent: prefix plus age selected a directory carrying ANOTHER run's
- * marker. A directory with NO marker is now PRESERVED, because there is no ownership record to verify.
+ *   · it is older than `minAgeMs`;
+ *   · it carries a marker of the current schema whose `ownedRoot` names IT, whose owner is not a live process, and
+ *     which is not active under this process.
  */
 export function reapAbandonedRoots(input) {
   const gateRoot = resolve(input.gateRoot);
@@ -327,10 +465,6 @@ export function reapAbandonedRoots(input) {
       continue;
     }
 
-    /**
-     * OWNERSHIP. This is the precondition F6 lacked. No marker means no verifiable ownership, so the candidate is
-     * PRESERVED — being old and correctly named is not evidence that this project created it.
-     */
     const markerPath = join(child, MARKER_NAME);
     if (!existsSync(markerPath)) {
       kept.push({ name, reason: "NO_OWNERSHIP_MARKER: age and a name prefix cannot establish ownership" });
@@ -351,7 +485,6 @@ export function reapAbandonedRoots(input) {
       kept.push({ name, reason: "the marker names a different root" });
       continue;
     }
-    /** A marker written by a process that is still alive belongs to a live run. */
     if (Number.isInteger(marker.pid) && marker.pid !== process.pid && processIsAlive(marker.pid)) {
       kept.push({ name, reason: `the owning process ${String(marker.pid)} is still running` });
       continue;
@@ -363,16 +496,21 @@ export function reapAbandonedRoots(input) {
 
     const bytes = directoryBytes(child);
     if (dryRun) {
-      removed.push({ name, bytes, marker: { runId: marker.runId, createdAt: marker.createdAt } });
+      removed.push({ name, bytes, marker: { runId: marker.runId, generation: marker.generation, createdAt: marker.createdAt } });
       reclaimedBytes += bytes;
       continue;
     }
-    try {
-      rmSync(child, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
-      removed.push({ name, bytes, marker: { runId: marker.runId, createdAt: marker.createdAt } });
+    /**
+     * THE REAPER DISPOSES THROUGH THE SAME QUARANTINE PATH as a live consumer. A record is reconstructed from the
+     * marker so the identity comparison binds the object the marker names.
+     */
+    const record = { root: child, gateRoot, runId: marker.runId, generation: marker.generation, identity: objectIdentity(child) };
+    const result = disposeOwnedRoot(record);
+    if (result.cleaned === true) {
+      removed.push({ name, bytes, marker: { runId: marker.runId, generation: marker.generation, createdAt: marker.createdAt } });
       reclaimedBytes += bytes;
-    } catch (error) {
-      kept.push({ name, reason: `removal failed: ${String(error?.message ?? error).slice(0, 160)}` });
+    } else {
+      kept.push({ name, reason: `removal refused: ${String(result.reason).slice(0, 160)}` });
     }
   }
 
@@ -392,12 +530,8 @@ function processIsAlive(pid) {
 /**
  * Compare a path recorded in a marker against a path on disk.
  *
- * BOTH SIDES ARE RESOLVED BEFORE COMPARING, which is the part that was wrong: `allocateOwnedRoot` records
- * `realpathSync(root)`, so a lexical comparison against the unresolved child fails even when they name the same
- * directory — and a `mkdtemp` name under a redirected gate root is exactly such a case. Separators and case are
- * normalised as well.
- *
- * A path that cannot be resolved falls back to its lexical form. Resolution failure never becomes a MATCH.
+ * BOTH SIDES ARE RESOLVED BEFORE COMPARING. A path that cannot be resolved falls back to its lexical form, and
+ * resolution failure never becomes a MATCH.
  */
 function sameResolvedPath(recorded, actual) {
   if (typeof recorded !== "string" || recorded === "") return false;
@@ -440,12 +574,13 @@ export function directoryBytes(root) {
   return bytes;
 }
 
-/** The marker a reaper reads, exposed so a caller can write one deliberately rather than by accident. */
+/** The marker a caller can rewrite deliberately rather than by accident. */
 export function writeOwnershipMarker(owned, extra = {}) {
   const marker = {
     schemaVersion: MARKER_SCHEMA,
     runId: owned.runId ?? RUN_ID,
     pid: process.pid,
+    generation: owned.generation ?? nextGeneration(),
     createdAt: new Date().toISOString(),
     ownedRoot: owned.root.replace(/\\/gu, "/"),
     gateRoot: owned.gateRoot.replace(/\\/gu, "/"),

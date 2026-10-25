@@ -242,7 +242,7 @@ if (wants("F4A")) {
 }
 
 /* ------------------------------------------------------------------ *
- * F4b — SUBSTITUTION AFTER THE PROOF, BEFORE THE DELETE (the TOCTOU window)
+ * F4B — THE SUPERSEDED SHAPE, PRESERVED AS THE RECORDED COUNTEREXAMPLE
  * ------------------------------------------------------------------ */
 if (wants("F4B")) {
   const owned = resource.allocateOwnedRoot(gateFor("f4b"), "f4b-");
@@ -254,7 +254,7 @@ if (wants("F4B")) {
   /** Step 2: replacement of the directory entry. */
   const parked = join(sandbox.root, "f4b-parked-original");
   const substitution = substituteDirectory(owned.root, parked, "F4B-REPLACEMENT");
-  /** Step 3: the destructive statement the production consumer executes. */
+  /** Step 3: the destructive statement the SUPERSEDED consumer executed: a bare path-based rmSync. */
   let destructive;
   try {
     productionDelete(owned.root);
@@ -267,9 +267,10 @@ if (wants("F4B")) {
   record("F4B", {
     case: "F4B",
     measurement: "AT_THE_WINDOW",
+    shape: "SUPERSEDED",
     fidelity:
-      "the proof is the production revalidateOwnership, the destructive call is the production rmSync statement with the production options, and the substitution is between them — which is the window the consumer's own control flow creates",
-    question: "is a directory substituted AFTER a successful proof but BEFORE the delete preserved?",
+      "this reproduces the OLD disposal shape exactly: production revalidateOwnership, then a bare path-based rmSync with the options the superseded consumer used. It is retained because the stage ruling forbids dropping the original deterministic path-swap experiment. It no longer describes the production code path — see F4C for that.",
+    question: "under the SUPERSEDED path-based disposal, is a directory substituted after a successful proof preserved?",
     fixture: { originalRoot: owned.root, parkedOriginal: parked, substitutionIsSyntheticForeignCanary: true },
     proofBeforeSubstitution: { owned: proof.owned, reason: proof.reason ?? null },
     identities: { original: substitution.originalIdentity, replacement: substitution.replacementIdentity, identityChanged: substitution.identityChanged },
@@ -281,6 +282,68 @@ if (wants("F4B")) {
       : "DELETED: the synthetic foreign canary at the owned path was destroyed after a proof taken on the previous object",
     safe: canary.intact,
     originalSurvived: pathObjectExists(join(parked, "owned-payload.txt")),
+    note: "expected to remain UNSAFE: this is the recorded counterexample, not a test of the correction",
+  });
+  lifetime.dispose();
+}
+
+/* ------------------------------------------------------------------ *
+ * F4C — THE PRODUCTION SHAPE: SUBSTITUTION BEFORE THE DISPOSAL CALL
+ * ------------------------------------------------------------------ */
+if (wants("F4C")) {
+  const owned = resource.allocateOwnedRoot(gateFor("f4c"), "f4c-");
+  const lifetime = track(resource.ownedRootLifetime(owned));
+  writeFileSync(join(owned.root, "owned-payload.txt"), "the object this run allocated\n", "utf8");
+  const parked = join(sandbox.root, "f4c-parked-original");
+  const substitution = substituteDirectory(owned.root, parked, "F4C-REPLACEMENT");
+
+  const result = await rig.safeCleanup(owned);
+  const canary = canaryIntact(substitution.canary);
+  record("F4C", {
+    case: "F4C",
+    measurement: "THROUGH_THE_CONSUMER",
+    shape: "PRODUCTION",
+    fidelity: "the substitution is made, then the production consumer disposes. This is the window that a caller can actually create against the current code.",
+    question: "does the production disposal preserve a substituted object?",
+    identities: { original: substitution.originalIdentity, replacement: substitution.replacementIdentity, identityChanged: substitution.identityChanged },
+    consumerOutcome: result,
+    canary,
+    expectedSafe: "PRESERVED",
+    observation: canary.intact ? "PRESERVED: the substituted object survived the production disposal" : "DELETED: the production disposal removed a substituted object",
+    safe: canary.intact,
+    originalSurvived: pathObjectExists(join(parked, "owned-payload.txt")),
+  });
+  lifetime.dispose();
+}
+
+/* ------------------------------------------------------------------ *
+ * F4D — THE PRODUCTION SHAPE: A NEW OBJECT AT THE ORIGINAL PATH AFTER DISPOSAL
+ * ------------------------------------------------------------------ */
+if (wants("F4D")) {
+  const owned = resource.allocateOwnedRoot(gateFor("f4d"), "f4d-");
+  const lifetime = track(resource.ownedRootLifetime(owned));
+  writeFileSync(join(owned.root, "owned-payload.txt"), "the object this run allocated\n", "utf8");
+  const rootPath = owned.root;
+  const disposed = await rig.safeCleanup(owned);
+  /**
+   * THE STRUCTURAL CLAIM, MEASURED. Disposal now addresses the delete by a QUARANTINE NAME created after the proof,
+   * not by the original path. So an object placed at the original path after disposal cannot be reached by it.
+   */
+  mkdirSync(rootPath, { recursive: true });
+  const laterOccupant = writeForeignCanary(rootPath, "F4D-LATER-OCCUPANT");
+  const again = await rig.safeCleanup(owned);
+  const canary = canaryIntact(laterOccupant);
+  record("F4D", {
+    case: "F4D",
+    measurement: "THROUGH_THE_CONSUMER",
+    shape: "PRODUCTION",
+    question: "can an object placed at the original path AFTER disposal be reached by a repeated disposal?",
+    firstDisposal: disposed,
+    repeatOutcome: again,
+    canary,
+    expectedSafe: "PRESERVED — the delete address is a quarantine name, not the original path",
+    observation: canary.intact ? "PRESERVED: the later occupant was untouched" : "DELETED: a repeated disposal reached a new object at the original path",
+    safe: canary.intact,
   });
   lifetime.dispose();
 }
@@ -412,32 +475,52 @@ if (wants("F7")) {
 }
 
 /* ------------------------------------------------------------------ *
- * F8 — ACTIVE OWNER AND STALE OPERATION
+ * F8 — STALE OPERATION AUTHORITY
  * ------------------------------------------------------------------ */
 if (wants("F8")) {
   const owned = resource.allocateOwnedRoot(gateFor("f8"), "f8-");
   const lifetime = track(resource.ownedRootLifetime(owned));
   const marker = JSON.parse(readFileSync(join(owned.root, resource.MARKER_NAME), "utf8"));
-  const staleRecord = { ...owned };
-  const staleProof = resource.revalidateOwnership(staleRecord);
   const hasGeneration =
     ["generation", "operationEpoch", "operationId"].some(
       (field) => Object.prototype.hasOwnProperty.call(owned, field) || Object.prototype.hasOwnProperty.call(marker, field),
     );
+
+  /**
+   * A SUPERSEDED RECORD. The marker on disk has advanced to a NEWER generation — which is what an ownership handoff
+   * looks like — while this record still carries the older one. The question is whether the destructive boundary
+   * refuses it.
+   */
+  const superseded = { ...owned, generation: owned.generation };
+  writeFileSync(join(owned.root, resource.MARKER_NAME), `${JSON.stringify({ ...marker, generation: owned.generation + 1 }, null, 2)}\n`, "utf8");
+  const staleProof = resource.revalidateOwnership(superseded);
+  const staleDisposal = resource.disposeOwnedRoot(superseded);
+  const survivedStale = pathObjectExists(owned.root);
+
+  /** A record with NO generation at all: the pre-E3 shape. It must not authorize anything. */
+  const { generation: _omitted, ...noGeneration } = owned;
+  const noGenerationProof = resource.revalidateOwnership(noGeneration);
+
   record("F8", {
     case: "F8",
     measurement: "STRUCTURAL",
-    question: "can an OLD authorization be reused after recovery or ownership handoff?",
+    shape: "PRODUCTION",
+    question: "does a SUPERSEDED authorization get refused at the destructive boundary?",
     markerFields: Object.keys(marker).sort(),
     operationGenerationPresent: hasGeneration,
-    staleRecordAccepted: staleProof.owned === true,
-    observation: hasGeneration
-      ? "an operation generation exists; whether it is enforced at the destructive boundary is measured separately"
-      : "NO OPERATION GENERATION: a record captured at allocation remains sufficient to delete the same object for as long as the object persists. Authorization is bound to object identity, not to the operation that requested it.",
-    expectedSafe: "a superseded operation cannot authorize a destructive effect",
-    safe: false,
-    gapType: "MISSING_OPERATION_GENERATION",
-    note: "recorded as a gap rather than silently corrected: a new persistent field is introduced only against a demonstrated stale-operation failure",
+    generationInRecord: owned.generation,
+    generationInMarkerAfterHandoff: marker.generation + 1,
+    staleProof: { owned: staleProof.owned, reason: staleProof.reason ?? null },
+    staleDisposal: { cleaned: staleDisposal.cleaned, reason: staleDisposal.reason ?? null },
+    recordWithoutGeneration: { owned: noGenerationProof.owned, reason: noGenerationProof.reason ?? null },
+    objectSurvivedStaleAttempt: survivedStale,
+    expectedSafe: "the superseded record is refused and the object survives; a record with no generation authorizes nothing",
+    observation: !hasGeneration
+      ? "NO OPERATION GENERATION EXISTS"
+      : staleDisposal.cleaned === false && survivedStale
+        ? "REFUSED: the superseded record could not authorize a destructive effect, and a generation-less record was refused too"
+        : "ACCEPTED: a superseded record still authorized disposal",
+    safe: hasGeneration && staleDisposal.cleaned === false && survivedStale && noGenerationProof.owned !== true,
   });
   lifetime.dispose();
 }
