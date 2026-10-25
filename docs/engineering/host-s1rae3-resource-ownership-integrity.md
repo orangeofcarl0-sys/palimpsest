@@ -255,6 +255,13 @@ fence is qualified against `0.2.1-rc.2`. That is the same blocker E2 reported, a
 | 3 | this stage | 3700/3701 | `serve_ephemeral_port` — timeout at 30 s |
 | 4 | **unmodified baseline** | **3690/3690, exit 0** | — |
 | 5 | **unmodified baseline** | 3689/3690 | `architecture/sr2b3_attempt_execution_owner` |
+| 6 | this stage, at freeze | 3700/3701 + 1 | `lean_d5d_result_continuation_service`, `r3wr5_authorized_reuse` — `git clone --shared` failed under load |
+| 7 | this stage, at freeze | 26 files failed | many — `spawnSync UNKNOWN` and worker forks crashing; the machine was exhausted by the repeated full runs |
+| 8 | this stage, at freeze | **3701/3701, exit 0** | — |
+
+Runs 6 and 7 are the reason a machine-state check is part of the evidence: run 7's log shows
+`Error: spawnSync git UNKNOWN` twenty-one times and `[vitest-pool]: Worker forks emitted error` four times, which is
+process creation failing, not a test asserting something false. Run 8, after the system settled, passes everything.
 
 **Attribution.** The baseline fails too, on a *different* test, with no stage changes present. Each failing test:
 
