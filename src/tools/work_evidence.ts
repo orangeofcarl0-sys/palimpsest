@@ -61,8 +61,16 @@ export interface WorkEvidenceContext {
    * Supplied by the caller because only it can read the log; used to converge a repeated observation
    * instead of failing the store's digest check on a moved `created_at`. `undefined` means "no atom
    * for this key", which is the ordinary first-write case.
+   *
+   * `active` is the atom's CURRENT AUTHORITY, read from the evidence projection. It is not the same fact
+   * as "the atom exists": a revoked atom stays in the log forever, and returning it as the observation
+   * just taken would report a qualification that no longer exists.
    */
-  readonly findExisting?: ((idempotencyKey: string) => { readonly event: SchedulerEvent; readonly exitCode: number | null } | undefined) | undefined;
+  readonly findExisting?:
+    | ((idempotencyKey: string) =>
+        | { readonly event: SchedulerEvent; readonly exitCode: number | null; readonly active: boolean }
+        | undefined)
+    | undefined;
 }
 
 /**
@@ -70,12 +78,15 @@ export interface WorkEvidenceContext {
  *
  * Exported so the controller's context builder stays a flat literal — its LOC ceiling is a real
  * constraint, and this lookup is the writer's own concern rather than the caller's.
+ *
+ * The event log answers "was this observation recorded"; only the projection answers "does it still
+ * carry authority". Both are read here so the writer can tell a REPLAY from a REVOKED record.
  */
 export function findRecordedEvidence(
   store: EventStore,
   projectId: string,
   idempotencyKey: string,
-): { readonly event: SchedulerEvent; readonly exitCode: number | null } | undefined {
+): { readonly event: SchedulerEvent; readonly exitCode: number | null; readonly active: boolean } | undefined {
   const found = store.connection
     .prepare("SELECT event_id FROM events WHERE project_id=? AND idempotency_key=?")
     .get(projectId, idempotencyKey) as { event_id: number } | undefined;
@@ -83,7 +94,38 @@ export function findRecordedEvidence(
   const event = store.getEvent(Number(found.event_id));
   if (event === undefined) return undefined;
   const atom = (event.payload as { evidence?: { exit_code?: number | null } }).evidence;
-  return { event, exitCode: atom?.exit_code ?? null };
+  const row = store.connection
+    .prepare("SELECT status FROM evidence WHERE project_id=? AND evidence_id=?")
+    .get(projectId, event.entity_id) as { status: string } | undefined;
+  return {
+    event,
+    exitCode: atom?.exit_code ?? null,
+    active: row !== undefined && String(row.status) === "active",
+  };
+}
+
+/**
+ * Converge on an existing atom, or refuse because its authority has expired.
+ *
+ * THE ONE RULE THIS ADDS. A repeated observation is the SAME fact, so its recorded atom is returned
+ * unchanged. A REVOKED atom is not the same fact: `EVIDENCE_STALE` retired its gate authority, and the
+ * bytes in the log are history, not current evidence. Returning it would let a route report a successful
+ * qualification while the projection says the opposite — measured in `test/ci3_revoked_convergence.test.ts`,
+ * where a repeated settlement claimed three recorded predicates and every one of them was stale.
+ *
+ * It refuses rather than re-recording because the two honest answers to "record this again" are "it is
+ * already recorded" and "this identity is spent". Writing a fresh atom under a spent identity would give
+ * one idempotency key two authorities, which is precisely what the key exists to prevent.
+ */
+function requireActive(
+  existing: { readonly event: SchedulerEvent; readonly active: boolean },
+  predicate: EvidencePredicate,
+  attemptId: string,
+): SchedulerEvent {
+  if (existing.active) return existing.event;
+  throw new Error(
+    `evidence ${predicate} for attempt ${attemptId} was recorded and then revoked (its current authority is stale), so this observation cannot be answered from it and cannot reuse its identity — the work has to be qualified again under current conditions, which is a NEW evaluation, not a replay`,
+  );
 }
 
 /** An observed, non-command fact: `write_scope_valid`, `expected_files_exist`. */
@@ -98,9 +140,12 @@ export function recordObservedEvidence(
     attempt_id: context.attemptId,
     predicate,
   });
-  /** Same convergence rule as a command observation: the same observed fact recorded twice is one atom. */
+  /**
+   * Same convergence rule as a command observation: the same observed fact recorded twice is one atom.
+   * A REVOKED atom is not that fact — it is a record whose authority has expired — so it does not converge.
+   */
   const existing = context.findExisting?.(key);
-  if (existing !== undefined) return existing.event;
+  if (existing !== undefined) return requireActive(existing, predicate, context.attemptId);
   const evidenceId = stableEntityId("evidence", key);
   const evidence: EvidenceAtom = {
     schema_version: 1,
@@ -188,7 +233,7 @@ export function recordCommandEvidence(
         `evidence ${predicate} for attempt ${context.attemptId} was already recorded with exit code ${String(existing.exitCode)}, and this observation is ${String(exitCode)} — two different observations cannot share one evidence identity`,
       );
     }
-    return existing.event;
+    return requireActive(existing, predicate, context.attemptId);
   }
   const evidenceId = stableEntityId("evidence", key);
   const evidence: EvidenceAtom = {
