@@ -114,7 +114,7 @@ watchdog to manufacture the missing behaviour.
 | Minimal implementation | one conditional sentence with the journal count; no title, body, kind, id or tool name |
 | Positive control | CSEAM 0 → 3 calls; P2SEAM 0 → 1 call and the plan uses the finding |
 | Negative control | NEGSEAM 0 calls, 14 s; no unnecessary work |
-| Regression selection | 71 tests in 6 files, including the new 5-test contract and COG-1's surfaces |
+| Regression selection | the new 5-test contract and COG-1's surfaces; the authoritative suite later passed 21 files / 76 tests |
 | Post-correction behaviour | selection changed; plan quality did not measurably improve |
 | Cost/complexity | one extra read at launch; no store, owner, schema, authority or new service |
 
