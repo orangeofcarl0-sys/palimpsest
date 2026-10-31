@@ -1,0 +1,1791 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-31T15:19:16.176Z",
+  "envelope": 48000,
+  "conditions": {
+    "A": {
+      "condition": "A",
+      "present": true,
+      "missing": [],
+      "currentRound": 2,
+      "rounds": {
+        "one": {
+          "condition": "A",
+          "round": 1,
+          "finishedAt": "2026-10-31T13:51:15.835Z",
+          "wallClockMs": 720756,
+          "exitCode": 0,
+          "timedOut": false,
+          "ready": null,
+          "turns": [],
+          "deliverables": {
+            "deliverables/assessment.md": {
+              "present": true,
+              "bytes": 18568,
+              "digest": "2b06d56de48bda431ba5d3951af960ddb8a0840a1b2c8278b5b62e7a69aef61a"
+            },
+            "deliverables/options.md": {
+              "present": true,
+              "bytes": 12827,
+              "digest": "9a99e118ba01a14d41b0d7fbb06da8c3e03696f32120cea9381febe28a42a15e"
+            },
+            "deliverables/pilot.md": {
+              "present": true,
+              "bytes": 17055,
+              "digest": "6329afb0caf59777c695dfcbfad995f7bb19785c825e5305932e4acd333b9729"
+            },
+            "deliverables/budget.md": {
+              "present": true,
+              "bytes": 11559,
+              "digest": "f53a92345c0ae8ec18ed8f9091415acc63e5e327774e50bd5b51578acb5f16d4"
+            },
+            "deliverables/metrics.md": {
+              "present": true,
+              "bytes": 13587,
+              "digest": "27ea35254a98de5dea81cd94e4dbdb03935b3e72d7455af08b08d4d3b561f182"
+            },
+            "deliverables/plan.md": {
+              "present": true,
+              "bytes": 22141,
+              "digest": "403f4575019dac904568b811df3bbb47aed8be1101f0771bb3744f267972e048"
+            },
+            "deliverables/uncertainties.md": {
+              "present": true,
+              "bytes": 23839,
+              "digest": "b3f7ed6300c6bfab78fefb0266d6058b12aee6ac4748b2a5b534bf931e44813b"
+            },
+            "deliverables/decisions.json": {
+              "present": true,
+              "bytes": 12591,
+              "digest": "ee2fbf428b8c94f3d0e28c0d974b9f2f5f6fef93911fbcd1c144c7a5cf98e28c"
+            }
+          },
+          "sessions": [
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-a-work--\\session-32d66da6-cb7f-4f4a-b960-504d2da2203f\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 700188
+            }
+          ],
+          "stdoutTail": "The chosen pilot is **After Hours: Thursday evening opening with a late minibus** — 13 Thursday evenings with a named responsible person plus a 19:15/21:30 minibus on the Northside–Kiln Field loop, targeting the two priority estates and public-transport-dependent evening attendees. Its core cost is **£24,000** (£9,600 evening opening + £14,400 late bus); the full quarterly plan, including additional Youth Studio sessions, a targeted mailer and access training, totals **£37,500** within the £48,000 envelope. All eight deliverables are in `deliverables/`.\n",
+          "stderrTail": "— if the capital decision isn't made by week 1, the 6-week lead slips. We say decision in week 1; good. If approved later, completion later. The plan doesn't schedule first-floor activity anyway. Fine.\n\nPotential issue: The plan's \"Option B fallback\" cost 46,000 leaves only 2,000; if the lift is approved separately (22,000) and the revenue plan is 37,500, total 59,500; the envelope is 48,000. But if the lift is funded from a separate capital source, not the envelope, then no breach. The plan says \"separate capital decision/variation,\" so the £22,000 would be outside the £48,000 revenue envelope. Is that legitimate? The source says \"Capital and revenue cannot be swapped without a council variation.\" A council variation could add capital or allow swap. We say \"separate capital decision/variation.\" Good. But the task says \"respecting a fixed resource envelope\" — if the lift is funded outside the envelope, the total resource use exceeds £48,000, but the envelope is fixed for the quarter; a council variation would change it. We are not assuming it; we recommend a separate decision. The committed plan stays within £48,000. Good.\n\nPotential issue: If the £48,000 envelope is total (capital + revenue), then a separate capital variation would increase the envelope; the plan says \"without a variation\" not assumed. Good.\n\nNow, let's consider if the plan should explicitly say \"the £10,500 headroom is not used because no quoted item fits without violating evidence or constraints.\" Budget section 4 covers. Good.\n\nPotential issue: The plan's \"Options\" table Option B \"Fallback only if step-free access is the board's overriding condition.\" Good.\n\nPotential issue: The plan's \"Options\" table Option C \"Not recommended: leaves youth and communication gaps, and half the envelope uncommitted.\" Good.\n\nPotential issue: The plan's \"Options\" table Option D \"Contradicted by the 2023 post-bus collapse.\" Good.\n\nPotential issue: The plan's \"Options\" table Option E \"Contradicted by the 2022 campaign.\" Good.\n\nPotential issue: The plan's \"Options\" table Option F \"No participation mechanism.\" Good.\n\nPotential issue: The plan's \"Options\" table Option G \"Declining/uneven\" — is participation declining? Total visits Q1 2025 3,193 vs Q1 2024? Let's check Q1 2024 total: Jan 1,008 + Feb 1,056 + Mar 1,209 = 3,273. Q1 2025 3,193, down 2.4%. \"Declining/uneven\" is fair. Youth visits down; evening recovering; family seasonal. Good.\n\nPotential issue: The plan's \"Status quo\" rejection says \"forgoes the quarter's only opportunity\" — rhetorical; okay.\n\nNow, let's maybe run a simple check that all Markdown headings are sequential. Not necessary.\n\nPotential issue: The task says \"Write ALL of these files (create the deliverables/ directory).\" We did. Good.\n\nNow, final answer. But first, maybe check the final `decisions.json` parse and sum one last time, and verify file list.\ndsh: reasoning:\nAll good.\n\nNow, final response: one short paragraph. Must name chosen pilot and total cost. Let's craft:\n\n\"The chosen pilot is **After Hours: Thursday evening opening with a late minibus** — 13 Thursday evenings with a named responsible person plus a 19:15/21:30 minibus on the Northside–Kiln Field loop, targeting the two priority estates and public-transport-dependent evening attendees. Its core cost is **£24,000** (£9,600 evening opening + £14,400 late bus); the full quarterly plan, including additional Youth Studio sessions, a targeted mailer and access training, totals **£37,500** within the £48,000 envelope.\"\n\nThis is one paragraph, concise. Mentioning both numbers could be seen as not \"one total cost,\" but it's clear. The phrase \"its core cost\" and \"full quarterly plan\" distinguishes. Good.\n\nShould I mention the link? The user asked one short paragraph; no need for links. We can mention deliverables written. But keep short. Maybe \"All eight deliverables are written to deliverables/.\" Could add a second sentence, but \"one short paragraph\" allows. Let's keep to two sentences.\n\nFinal answer.\n"
+        },
+        "two": {
+          "condition": "A",
+          "round": 2,
+          "finishedAt": "2026-10-31T14:47:26.166Z",
+          "wallClockMs": 839601,
+          "exitCode": 0,
+          "timedOut": false,
+          "ready": null,
+          "turns": [],
+          "deliverables": {
+            "deliverables/assessment.md": {
+              "present": true,
+              "bytes": 29532,
+              "digest": "234bf33c7d08af4f65e8ac2c2f016666b6c4ac2fbe6f1976ab9ca7a5f088369c"
+            },
+            "deliverables/options.md": {
+              "present": true,
+              "bytes": 18171,
+              "digest": "836e62321cf5c5752ab133e4948a70d20a8a7d57bb5f0bf2f73aa1ab1e26e82e"
+            },
+            "deliverables/pilot.md": {
+              "present": true,
+              "bytes": 26634,
+              "digest": "ef0b4937c7d57dd44abfb966a474592b3b51e22bf744c3f153b81cecf72b768d"
+            },
+            "deliverables/budget.md": {
+              "present": true,
+              "bytes": 16920,
+              "digest": "50f64210e8a28e10219666cb4f473251cf0bcf0330c3b9628fdcb0f3daa6a2b2"
+            },
+            "deliverables/metrics.md": {
+              "present": true,
+              "bytes": 20772,
+              "digest": "09b93f2e9840148361ba90e64216beb5fbc1320274900f2f6a978b422bb243fe"
+            },
+            "deliverables/plan.md": {
+              "present": true,
+              "bytes": 32258,
+              "digest": "9a4c670cb7f7130a626c0e79c6416a8e4a7c31b823a07e54b8c622347b058f1b"
+            },
+            "deliverables/uncertainties.md": {
+              "present": true,
+              "bytes": 34352,
+              "digest": "cbf26149bb0d1d281c1865d77b1cb4d1267e983a0d01605ca819ee41db57725e"
+            },
+            "deliverables/decisions.json": {
+              "present": true,
+              "bytes": 23408,
+              "digest": "36744c60914ae6e0566d5bf302d7f24ad4337b3f7130b36bb4dfb4805c075177"
+            }
+          },
+          "sessions": [
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-a-work--\\session-32d66da6-cb7f-4f4a-b960-504d2da2203f\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 700188
+            },
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-a-work--\\session-f3c384e1-033b-4293-9b75-756973eb696f\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 1001024
+            }
+          ],
+          "stdoutTail": "The current pilot is **After Hours: Thursday evening opening with a late minibus, capped at 60 attendees**; the full plan costs **£37,500** within the £48,000 envelope (pilot core £24,000). The most important change is the hard 60-attendee cap with booking, waitlist and door-count control: the revised £27,500/8-week lift quote and the new rule requiring an operable accessible entrance for any evening event above 60 made round 1's uncapped 180-seat design non-compliant, while lift + evening + bus at £51,500 no longer fits, so the pilot is capped and the lift remains a separate capital decision.\n",
+          "stderrTail": "60 attendees\" — good.\n\nNow, let's think about whether the plan's \"60 cap\" could be seen as avoiding the accessibility issue rather than addressing it. The plan explicitly says it's a licensing condition, not an accessibility solution, and records unmet access requests, and offers access-first option. That's honest.\n\nPotential issue: The plan's `assessment.md` bottom line says \"The best-evidenced participation lever is evening opening with a late minibus ... now operated within a 60-attendee cap because the accessible entrance cannot be repaired alongside this participation plan.\" Good.\n\nNow, maybe the final answer should mention that the plan leaves the lift as a separate capital decision and expands Youth; but the prompt asks one short paragraph with pilot, total cost, single most important change. Keep focused.\n\nLet's ensure the final answer is one paragraph, not multiple. We'll write something like:\n\n\"The current pilot is **After Hours: Thursday evening opening with a late minibus, capped at 60 attendees**; the full plan costs **£37,500** (pilot core £24,000) within the £48,000 envelope. The single most important change is the hard 60-attendee cap, with booking, waitlist and door-count control: the revised lift quote (£27,500, 8-week lead) and the new rule that the accessible entrance must be operable before any evening event above 60 is licensed made the round-1 uncapped/180-seat design non-compliant, while lift + evening + bus (£51,500) no longer fits, so the pilot is capped and the lift remains a separate capital decision.\"\n\nThat's one paragraph. It names pilot, total cost, most important change. Good.\n\nBefore final, let's maybe check `git diff --stat` and status one more time; all 8 modified. Done.\n\nOne more thought: The user asked \"Rewrite ALL of these files so they describe the CURRENT plan.\" Did we rewrite metrics.md? Yes. It has no budget, but describes current metrics. Good.\n- assessment.md current.\n- options.md current.\n- pilot.md current.\n- budget.md current.\n- metrics.md current.\n- plan.md current.\n- uncertainties.md current.\n- decisions.json current.\n\nPotential issue: `assessment.md` still says \"Round 1 assumed ... main hall's 180 seats were available\" — historical. Fine.\n`options.md` still says \"round-1 fallback at £46,000\" — historical. Fine.\n`plan.md` still says \"old lift+evening+bus\" — historical. Fine.\n`budget.md` still says \"old £46,000\" — historical. Fine.\n`uncertainties.md` still says \"round 1's fallback...\" — historical. Fine.\n`decisions.json` changed list historical. Fine.\n\nNow, let's think if the plan's `assessment.md` table 1.1 U4 says \"café refresh removed as an available option; it was already excluded in round 1.\" Good.\n\nPotential issue: The plan's `options.md` section 9 says \"removes the line from the option set entirely\" but the café refresh was never in the options table in round 1? It was Option F. Now it's not in table. Good.\n\nPotential issue: The plan's `budget.md` section 4 still includes café refresh as \"not funded\" even though unavailable; that's fine, it explains.\n\nPotential issue: The plan's `decisions.json` allocations include no café; good.\n\nNow, maybe the `metrics.md` metric 5 general awareness target 62% is not tied to the mailer sample; it says \"comparable week-12 sample.\" Good.\n\nPotential issue: The plan's `pilot.md` says \"the general baseline is 52% heard / 48% never heard (estate survey, n=120); the specific-offer baseline is established in week 1.\" Good.\n\nPotential issue: The plan's `plan.md` says \"awareness among mailer recipients improves by at least 10 pp on the specific offer, or the mailer is stopped; general awareness moves in the same direction.\" Good.\n\nNow, final validation and answer. Let's maybe run `python3 -m json.tool` to ensure formatting valid. Already parsed. Good.\n\nLet's update todo list to completed.\ndsh: reasoning:\nNow final answer one short paragraph. Ensure no citations needed (no web). Mention £37,500 total, pilot name, most important change. Keep short.\n"
+        }
+      },
+      "budget": {
+        "ok": true,
+        "failures": [],
+        "lines": [
+          {
+            "item": "Evening opening, 13 weeks (responsible person + utilities + cleaning), hard-capped at 60 attendees per evening",
+            "cost": 9600,
+            "quoted": "EVENING_OPENING",
+            "expected": 9600,
+            "ok": true
+          },
+          {
+            "item": "Late bus subsidy: one minibus on the Northside–Kiln Field loop, 13 weeks",
+            "cost": 14400,
+            "quoted": "LATE_BUS",
+            "expected": 14400,
+            "ok": true
+          },
+          {
+            "item": "Additional Youth Studio sessions: quoted at 2 per month for the quarter; partner confirms up to 4 additional sessions a month at the same £6,500",
+            "cost": 6500,
+            "quoted": "YOUTH_STUDIO_SESSIONS",
+            "expected": 6500,
+            "ok": true
+          },
+          {
+            "item": "Targeted mailer to priority-neighbourhood households",
+            "cost": 4200,
+            "quoted": "MAILER",
+            "expected": 4200,
+            "ok": true
+          },
+          {
+            "item": "Staff training: welcome and access awareness, 2 days",
+            "cost": 2800,
+            "quoted": "STAFF_TRAINING",
+            "expected": 2800,
+            "ok": true
+          }
+        ],
+        "total": 37500,
+        "sum": 37500
+      },
+      "consistency": {
+        "ok": true,
+        "failures": []
+      },
+      "rubric": {
+        "items": [
+          {
+            "id": "SURVEY_SAMPLE",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 4,
+            "of": 4,
+            "require": 2,
+            "question": "Does the plan refuse to generalize the 92% satisfaction figure beyond the people surveyed?",
+            "evidence": [
+              "sample",
+              "self-selected",
+              "non-attender",
+              "weekend"
+            ]
+          },
+          {
+            "id": "YOUTH_SUPPLY",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan explain the Youth Studio fall as a supply/session-frequency change rather than lost interest?",
+            "evidence": [
+              "session",
+              "supply",
+              "interest has not"
+            ]
+          },
+          {
+            "id": "EVENING_TRANSPORT",
+            "weight": 3,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan treat transport as the active ingredient of the 2023 evening success?",
+            "evidence": [
+              "minibus",
+              "stopped",
+              "necessary"
+            ]
+          },
+          {
+            "id": "POSTER_EVIDENCE",
+            "weight": 1,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan avoid repeating the 2022 print campaign as a primary intervention, citing the evidence?",
+            "evidence": [
+              "2022",
+              "no measurable",
+              "specific offer"
+            ]
+          },
+          {
+            "id": "LIFT_SEQUENCING",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan respect the capital lead time and the first-floor restriction?",
+            "evidence": [
+              "lift",
+              "capital",
+              "first floor"
+            ]
+          },
+          {
+            "id": "ENVELOPE",
+            "weight": 1,
+            "pass": true,
+            "hitFamilies": 2,
+            "of": 2,
+            "require": 2,
+            "question": "Does the plan stay inside the fixed envelope and use only quoted costs?",
+            "evidence": [
+              "48,000",
+              "quote"
+            ]
+          }
+        ],
+        "achieved": 11,
+        "weight": 11,
+        "ratio": 1
+      },
+      "rubricRound2": {
+        "items": [
+          {
+            "id": "LIFT_REQUOTE",
+            "weight": 3,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 1,
+            "question": "Was the revised lift quote (£27,500, 8 weeks, entrance required before evening events over 60) incorporated?",
+            "evidence": [
+              "27,500",
+              "8 week",
+              "60"
+            ]
+          },
+          {
+            "id": "ESTATES_SURVEY",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Was the estates survey used, including the awareness finding that contradicts the old board minute?",
+            "evidence": [
+              "120",
+              "48%",
+              "57%"
+            ]
+          },
+          {
+            "id": "CAFE_NO_CHANGE",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 2,
+            "of": 2,
+            "require": 2,
+            "question": "Did the plan correctly treat the café notice as NOT changing the plan?",
+            "evidence": [
+              "café",
+              "does not change"
+            ]
+          },
+          {
+            "id": "CHANGED_DECLARED",
+            "weight": 1,
+            "pass": null,
+            "hitFamilies": 0,
+            "of": 0,
+            "require": 0,
+            "question": "Does decisions.json declare concrete round-2 changes?",
+            "evidence": []
+          }
+        ],
+        "achieved": 7,
+        "weight": 7,
+        "ratio": 1
+      },
+      "changedSinceRound1": {
+        "count": 8,
+        "changes": [
+          {
+            "change": "Hard-capped every evening event at 60 attendees and added booking, waitlist, door-count reconciliation and a zero-tolerance compliance metric.",
+            "why": "U2 introduces a new building-control condition: the accessible entrance must be operable before any evening event with more than 60 attendees is licensed. The lift is not funded in this plan, so the round-1 design, which assumed the main hall's 180 seats were available, would have been non-compliant if attendance exceeded 60."
+          },
+          {
+            "change": "Dropped the round-1 'lift + evening + bus' fallback as unaffordable, updated the lift figures to £27,500 and an 8-week lead, and reworked the access-first alternative to lift + Youth Studio + mailer + training (£41,000), with a lift + evening package identified as a sequencing trap.",
+            "why": "U2 raises the lift from £22,000/6 weeks to £27,500/8 weeks. Lift + evening + bus is now £51,500, over the £48,000 envelope by £3,500; full plan + lift is £65,000, over by £17,000. The old £46,000 option no longer exists. A lift + evening + Youth + training package at £46,400 is affordable but is a sequencing trap: if step-free access is the precondition, the evening cannot start until the lift is certified around week 9. The coherent access-first package therefore drops the evening and bus."
+          },
+          {
+            "change": "Expanded the Youth Studio from two additional sessions a month (12 total sessions) to four additional sessions a month (18 total sessions) at the same £6,500, and raised the targets to 18 sessions, 1,200 visits, 150 monthly unique participants and 65 visits/session.",
+            "why": "U3 confirms the partner can supply up to four extra sessions a month at the same quote, has a waiting list of 40 and that its own funding change caused the earlier reduction. Round 1's 12-session/850-visit/125-unique targets under-used the confirmed offer."
+          },
+          {
+            "change": "Revised the awareness diagnosis and mailer metrics using the new estate survey: 48% never heard, 37% heard but never attended, 15% attended; among aware, 57% transport, 22% cost and 11% programme content. Kept the targeted mailer but paired it explicitly with the bus and added general and specific-offer awareness measures.",
+            "why": "U1 shows awareness is not uniform, which qualifies the 2022 'awareness exists' conclusion, but the council has not tested whether awareness alone converts. The mailer is better justified than in round 1, but it is not a stand-alone conversion strategy."
+          },
+          {
+            "change": "Updated the assessment and answers to the board's open questions, including qualifying the 2022 'awareness exists' conclusion and noting that Q1 and Q5 are now partly informed by household data but still not answered at programme level.",
+            "why": "U1 provides the first non-attender household evidence and changes how the 2022 campaign and the 92% satisfaction figure should be read. It does not provide a programme-level estate baseline."
+          },
+          {
+            "change": "Removed the café equipment refresh as an available option and noted that the coffee supplier change has no programming budget effect.",
+            "why": "U4 defers the café refresh to the next financial year, so it is no longer an available option. Round 1 already excluded it as unrelated to programming, so this changes the options list but not the committed budget."
+          },
+          {
+            "change": "Updated all deliverables to agree on the current figures: £37,500 committed, £10,500 headroom, £24,000 pilot core, 60-attendee cap, 18 Youth Studio sessions, £27,500/8-week lift outside the plan, and £65,000/£51,500 capital comparisons.",
+            "why": "The round-1 files contained the old £22,000/6-week lift, the old 12-session Youth Studio target and uncapped evening capacity. Leaving any of those in place would have made the deliverables contradict each other and the current constraints."
+          },
+          {
+            "change": "Checked U4 and confirmed no change to the programming envelope or the other quoted costs; retained the 15% sensitivity and the stop/scale order.",
+            "why": "U4 says the café refresh is deferred, prices are unchanged and the programming budget is unaffected. The only quoted-cost change in the new material is the lift (U2), which remains outside this revenue plan; the five committed programming lines and the £48,000 envelope are unchanged."
+          }
+        ]
+      },
+      "declaredPilot": {
+        "name": "After Hours: Thursday evening opening with a late minibus, capped at 60 attendees",
+        "why": "The 2023 pilot produced 38% higher evening attendance with a late minibus, with most new attendees from Northside and Kiln Field; attendance fell back to pre-pilot levels when the minibus stopped. The current last weekday bus from the centre is 19:10, so after-19:00 events are effectively inaccessible from the two estates, and the new estate survey finds that 57% of residents who have heard of the centre name getting home after an evening event as the main barrier. The revised lift quote is now £27,500 with an 8-week lead, and the council requires the accessible entrance to be operable before any evening event with more than 60 attendees is licensed. The plan therefore repeats the proven evening-plus-bus combination for 13 weeks under a hard 60-attendee cap, with booking, waitlist and door-count control, and measures estate reach, bus use, turnaways and cap compliance. The wider plan adds the expanded Youth Studio supply correction (up to 4 extra sessions a month at the same £6,500), a targeted mailer and access training within the same £48,000 envelope.",
+        "target_segments": [
+          "Northside estate residents",
+          "Kiln Field estate residents",
+          "public-transport-dependent evening attendees",
+          "former Evening Talks attendees who lapsed during the 2024 pause",
+          "existing evening talks/film audience"
+        ]
+      },
+      "declaredRound": 2
+    },
+    "B": {
+      "condition": "B",
+      "present": true,
+      "missing": [],
+      "currentRound": 2,
+      "rounds": {
+        "one": {
+          "condition": "B",
+          "round": 1,
+          "finishedAt": "2026-10-31T14:08:51.124Z",
+          "wallClockMs": 737210,
+          "exitCode": 0,
+          "timedOut": false,
+          "ready": null,
+          "turns": [],
+          "deliverables": {
+            "deliverables/assessment.md": {
+              "present": true,
+              "bytes": 13716,
+              "digest": "454988f19de74550a0a1fd59c987c4b495cf4d6be633b582913a8333f023387b"
+            },
+            "deliverables/options.md": {
+              "present": true,
+              "bytes": 10093,
+              "digest": "1b2dd698acca8ebbd447f94fb1e3efbf1a5ed2bdee7a8b70c9889b5cec816901"
+            },
+            "deliverables/pilot.md": {
+              "present": true,
+              "bytes": 15700,
+              "digest": "6761343b4a77a21aa9dbe99f89f6dc9cd604c83fd04ffdde8ca8bf3edcf3e234"
+            },
+            "deliverables/budget.md": {
+              "present": true,
+              "bytes": 7959,
+              "digest": "ca2f2860f37f829461cb655823cc1f68ef2183b2b687d297ca05876ce109810b"
+            },
+            "deliverables/metrics.md": {
+              "present": true,
+              "bytes": 12997,
+              "digest": "8227d837fc64115718a427f7222b15ff1d2e41f5517afdb2c64f201a5a67ab88"
+            },
+            "deliverables/plan.md": {
+              "present": true,
+              "bytes": 22321,
+              "digest": "9110d9bd4ce624b86b0b3aa9c4abfcd15c1b62242f30f2a85f819c5e26074873"
+            },
+            "deliverables/uncertainties.md": {
+              "present": true,
+              "bytes": 23403,
+              "digest": "341674ab4adfb9685f23d3042930de7c029c5d60e25ccfda7d8254a9b442c73b"
+            },
+            "deliverables/decisions.json": {
+              "present": true,
+              "bytes": 12876,
+              "digest": "2804438f91959b129f962c73e1a46ec740b254f8b7091d5d2618d6f3676a99f2"
+            }
+          },
+          "sessions": [
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-b-work--\\session-8d007e62-8d01-4532-81ef-4ed8866947ba\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 699336
+            }
+          ],
+          "stdoutTail": "The chosen pilot is the **Transport-linked evening opening pilot** — 13 weeks of weekly evening opening plus the Northside–Kiln Field late minibus — costed at **£24,000**. It sits within a **£46,000** quarterly plan alongside the **£22,000** lift and accessible-entrance repair, leaving £2,000 of the £48,000 envelope uncommitted.\n",
+          "stderrTail": "g for a \"quarterly plan\" but includes reasoning and answers to board questions. Fine.\n\nPotential issue: The plan's `uncertainties.md` is 3.7k words; maybe too long, but the prompt asks to say where evidence insufficient; thoroughness is good.\n\nPotential issue: The plan's `assessment.md` is 2.2k; good.\n\nPotential issue: The plan's `options.md` is 1.65k; good.\n\nPotential issue: The plan's `pilot.md` is 2.57k; good.\n\nPotential issue: The plan's `budget.md` is 1.27k; good.\n\nPotential issue: The plan's `metrics.md` is 2.09k; good.\n\nNow, let's do a final check for any accidental contradictions about the 2k \"committed\" vs \"uncommitted\":\n- budget.md: \"uncommitted headroom\"; \"not a budget line\"; \"held as bounded headroom\"; \"lapses.\"\n- plan.md: \"Uncommitted headroom\"; \"no quoted line fits; not a carry-over.\"\n- pilot.md: \"uncommitted headroom\"; \"not a pilot activity line; held against overruns.\"\n- options.md: \"leaving £2,000 headroom\"; \"holding the headroom\" (for B).\n- uncertainties.md: \"headroom\"; \"uncommitted.\"\n- JSON: \"leaves £2,000 uncommitted\"; \"deliberate headroom.\"\nConsistent. Good.\n\nPotential issue: The plan's `budget.md` says \"The £2,000 is therefore held as bounded headroom against the three committed lines and lapses if unused; it is not carried forward.\" If it's \"held against overruns,\" it's not exactly \"uncommitted\"; but \"uncommitted to an activity\" is clear. Good.\n\nPotential issue: The plan's `options.md` Option B says \"It leaves £10,500 uncommitted\" and \"No remaining quoted line can absorb it...\" For A, the 2k is also uncommitted; the difference is A uses 96% vs B 78%. Fine.\n\nPotential issue: The plan's `options.md` comparison table says A \"96%\" and B \"78%\"; consistent.\n\nPotential issue: The plan's `options.md` Option A \"It uses 96% of the money\" — 95.8%; rounding. Fine.\n\nPotential issue: The plan's `budget.md` \"Envelope utilisation 95.8%\" — exact.\n\nPotential issue: The plan's `plan.md` \"Total committed £46,000\" and \"Uncommitted headroom £2,000\" — 46+2=48. Good.\n\nPotential issue: The plan's `pilot.md` \"Whole-plan total £46,000 against £48,000 envelope; £2,000 uncommitted headroom\" — 46+2=48. Good.\n\nPotential issue: The plan's `options.md` Option A \"£46,000 of £48,000 (96%), leaving £2,000\" — 46+2=48. Good.\n\nPotential issue: The plan's `budget.md` \"Pilot subtotal £24,000; Access subtotal £22,000\" — 24+22=46. Good.\n\nPotential issue: The plan's `pilot.md` \"Pilot total £24,000; Whole-plan total £46,000\" — 24+22=46. Good.\n\nPotential issue: The plan's `decisions.json` total 46k; allocations 22+9.6+14.4=46. Good.\n\nNow, let's maybe run a quick check for \"48,000\" and \"46,000\" arithmetic in all docs with a simple script; not necessary.\n\nI think we're done. But let's consider if the plan's chosen pilot should be named exactly in the final answer and include \"total cost\" as £24,000. Yes.\n\nLet's formulate the final answer:\n\"The chosen pilot is the **Transport-linked evening opening pilot**: 13 weeks of weekly evening opening plus the Northside–Kiln Field late minibus, costed at **£24,000**. It sits within a **£46,000** quarterly plan alongside the **£22,000** lift/accessible-entrance repair, leaving £2,000 of the £48,000 envelope uncommitted.\"\n\nThis is one short paragraph, names pilot and total cost, and gives context. Good.\n\nBefore final, let's ensure no need to call a goal tool. The user didn't ask for a goal; this is a single-turn task. We didn't create a goal. Fine.\n\nLet's also maybe update the todo list to completed. The instructions say to keep todos updated. We should mark all completed. Use todo_write with all completed.\ndsh: reasoning:\nOne final check: The prompt says \"When you are done, reply with one short paragraph naming your chosen pilot and its total cost.\" We'll comply. Ensure we don't include too much extra. Maybe mention the plan total as context. One paragraph.\n\nLet's double-check the final JSON after the last edits (why string, evidence addition, reorder).\ndsh: reasoning:\nAll good. Final answer one short paragraph.\n"
+        },
+        "two": {
+          "condition": "B",
+          "round": 2,
+          "finishedAt": "2026-10-31T15:01:17.743Z",
+          "wallClockMs": 752564,
+          "exitCode": 0,
+          "timedOut": false,
+          "ready": null,
+          "turns": [],
+          "deliverables": {
+            "deliverables/assessment.md": {
+              "present": true,
+              "bytes": 21868,
+              "digest": "88a02ed3286457a05018d856fbbae5680bae0cb417419d120e061857421146a9"
+            },
+            "deliverables/options.md": {
+              "present": true,
+              "bytes": 15833,
+              "digest": "5b3a77aff22c63f19a53a812d2efa5480fbf3bc31886e488a2e0792c7db6e31d"
+            },
+            "deliverables/pilot.md": {
+              "present": true,
+              "bytes": 22996,
+              "digest": "0390d8cfe62fb94093e02d7f53bb16fe451e71984f440702258b0d9b3559952b"
+            },
+            "deliverables/budget.md": {
+              "present": true,
+              "bytes": 12579,
+              "digest": "c751f9ee1235266797e87fdf2e3e2d1da488f54770b680fdcd7ca378372702b4"
+            },
+            "deliverables/metrics.md": {
+              "present": true,
+              "bytes": 19647,
+              "digest": "1ea6dbe85f3cc2b11135a577a76e37e338a86490854be4a1a783b5c382039877"
+            },
+            "deliverables/plan.md": {
+              "present": true,
+              "bytes": 30867,
+              "digest": "f8322dd87e5e5f2069a086a22a20bfdd09ac5436b454a5def1955d38c5098587"
+            },
+            "deliverables/uncertainties.md": {
+              "present": true,
+              "bytes": 35157,
+              "digest": "4e4ecb66d845686579b6469c519c4ccf2bb99da1034ba084ec80dbf4fd060c77"
+            },
+            "deliverables/decisions.json": {
+              "present": true,
+              "bytes": 25213,
+              "digest": "5d6a1ba5e7b03e609f8e383248024ff0d5f38e8b75dab1450af94d8efa47e9ac"
+            }
+          },
+          "sessions": [
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-b-work--\\session-8198f594-9922-4b13-939b-988d8bea2e1e\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 950434
+            },
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-b-work--\\session-8d007e62-8d01-4532-81ef-4ed8866947ba\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 699336
+            }
+          ],
+          "stdoutTail": "Our current pilot is **Thursday Lates**, the 13-week transport-linked evening programme, at **£24,000** (evening opening £9,600 + late minibus £14,400); the whole quarter plan, including the Youth Studio expansion, targeted mailer and access training, is **£37,500** against the £48,000 envelope. The single most important change is that the revised **£27,500** lift quote and eight-week lead made the round-1 lift + evening + bus plan **£51,500 — £3,500 over budget**, so I deferred the lift to a separate capital bid, kept the transport link, and capped evening events at **60** to meet the new accessible-entrance licensing condition.\n",
+          "stderrTail": "\nNow, let's consider whether the plan should mention the \"equalities team\" as a partner for the mailer/household list. We say \"the council's equalities team\" in assessment; plan says \"new doorstep survey.\" The mailer household list could come from the council/equalities team; not specified. We say \"prepare mailer and household list\" in timeline. Good.\n\nPotential issue: The plan's \"mailer\" response code/QR may not work for all residents; we also record \"how did you hear?\" Good.\n\nNow, let's check for any remaining \"the plan assumes the envelope can carry £22,000 capital and £24,000 revenue\" as current. Budget line 98 says \"This is a change from round 1...\" past. Good.\n\nNow, let's think about whether the plan should explicitly say \"the lift is not funded because the envelope cannot carry both; this is a deliberate choice, not an oversight.\" We say it in assessment/options/budget/plan/uncertainties. Good.\n\nNow, let's run a final grep for \"46,000\" in plan.md: only historical \"round-1 £46,000 plan.\" Good.\n\nNow, let's check the final document sizes and ensure no truncation. All >12k. Good.\n\nNow, let's update the todo list to completed. But before, maybe run a final `git diff --check` to catch whitespace errors.\ndsh: reasoning:\nGood.\n\nNow, let's do a final scan for \"TODO\", \"TBD\", \"round 1\" placeholders, or contradictory \"current plan.\"\ndsh: reasoning:\nNo placeholders. 10 round-1 references are historical/comparisons; okay.\n\nNow, let's think about whether the final answer should mention the key change as \"deferring the lift\" or \"capping at 60.\" The single most important change is definitely removing the lift from the funded plan because it became unaffordable. The 60 cap is a consequence. In the final paragraph, say: \"The single most important change was to defer the lift to a separate £27,500 capital bid: with the new quote and eight-week lead, the round-1 lift+evening+bus plan became £51,500, £3,500 over the £48,000 envelope. We kept the transport-linked pilot, capped events at 60 to satisfy the new licensing condition, and used the freed money for the youth expansion, targeted mailer, and access training.\" That's the key change and consequences. The pilot is £24,000; whole plan £37,500. Good.\n\nBefore final, let's update the todo list to completed.\ndsh: reasoning:\nNow, let's do one final sanity check of the JSON and maybe print the final allocations. Already done. Let's also verify no file has an unclosed code block? Markdown code block in plan theory of change is closed. Options code blocks closed. Budget code block closed. Good.\n\nLet's check the final answer wording. The user wants \"one short paragraph naming your current pilot, its total cost, and the single most important change you made.\" Keep it concise. Maybe:\n\n\"Our current pilot is **Thursday Lates**, the 13-week transport-linked evening programme, at **£24,000** (evening opening £9,600 + late minibus £14,400); the whole quarter plan, including the Youth Studio expansion, targeted mailer and access training, is **£37,500** against the £48,000 envelope. The single biggest change is that the revised **£27,500** lift quote and eight-week lead made the round-1 lift + evening + bus plan **£51,500 — £3,500 over budget**, so I deferred the lift to a separate capital bid, kept the transport link, and capped evening events at **60** to meet the new accessible-entrance licensing condition.\"\n\nThat's one paragraph, 2 sentences. Good. It mentions pilot, total cost, key change. Maybe add \"all eight deliverables rewritten to match\" but that would be a third sentence; the instruction says one short paragraph, not necessarily one sentence. Could add \"All eight deliverables now reflect this.\" But not needed. Keep it short.\n\nLet's ensure the final answer doesn't overstate \"total cost\" — we give both pilot and whole plan. Good.\n\nOne last thought: The user might expect the pilot total to be £37,500 (whole plan). By saying \"pilot £24,000; whole plan £37,500,\" we cover both. Good.\n\nLet's finalize.\n"
+        }
+      },
+      "budget": {
+        "ok": true,
+        "failures": [],
+        "lines": [
+          {
+            "item": "Evening opening, 13 weeks (responsible person + utilities + cleaning)",
+            "cost": 9600,
+            "quoted": "EVENING_OPENING",
+            "expected": 9600,
+            "ok": true
+          },
+          {
+            "item": "Late bus subsidy: one minibus on the Northside–Kiln Field loop, 13 weeks",
+            "cost": 14400,
+            "quoted": "LATE_BUS",
+            "expected": 14400,
+            "ok": true
+          },
+          {
+            "item": "Additional Youth Studio sessions (partner can supply up to 4 extra sessions per month at the quoted price)",
+            "cost": 6500,
+            "quoted": "YOUTH_STUDIO_SESSIONS",
+            "expected": 6500,
+            "ok": true
+          },
+          {
+            "item": "Targeted mailer to priority-neighbourhood households",
+            "cost": 4200,
+            "quoted": "MAILER",
+            "expected": 4200,
+            "ok": true
+          },
+          {
+            "item": "Staff training: welcome and access awareness, 2 days",
+            "cost": 2800,
+            "quoted": "STAFF_TRAINING",
+            "expected": 2800,
+            "ok": true
+          }
+        ],
+        "total": 37500,
+        "sum": 37500
+      },
+      "consistency": {
+        "ok": true,
+        "failures": []
+      },
+      "rubric": {
+        "items": [
+          {
+            "id": "SURVEY_SAMPLE",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 4,
+            "require": 2,
+            "question": "Does the plan refuse to generalize the 92% satisfaction figure beyond the people surveyed?",
+            "evidence": [
+              "sample",
+              "self-selected",
+              "weekend"
+            ]
+          },
+          {
+            "id": "YOUTH_SUPPLY",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan explain the Youth Studio fall as a supply/session-frequency change rather than lost interest?",
+            "evidence": [
+              "session",
+              "supply",
+              "not interest"
+            ]
+          },
+          {
+            "id": "EVENING_TRANSPORT",
+            "weight": 3,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan treat transport as the active ingredient of the 2023 evening success?",
+            "evidence": [
+              "minibus",
+              "stopped",
+              "necessary"
+            ]
+          },
+          {
+            "id": "POSTER_EVIDENCE",
+            "weight": 1,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan avoid repeating the 2022 print campaign as a primary intervention, citing the evidence?",
+            "evidence": [
+              "2022",
+              "no measurable",
+              "specific offer"
+            ]
+          },
+          {
+            "id": "LIFT_SEQUENCING",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan respect the capital lead time and the first-floor restriction?",
+            "evidence": [
+              "lift",
+              "capital",
+              "first floor"
+            ]
+          },
+          {
+            "id": "ENVELOPE",
+            "weight": 1,
+            "pass": true,
+            "hitFamilies": 2,
+            "of": 2,
+            "require": 2,
+            "question": "Does the plan stay inside the fixed envelope and use only quoted costs?",
+            "evidence": [
+              "48,000",
+              "quote"
+            ]
+          }
+        ],
+        "achieved": 11,
+        "weight": 11,
+        "ratio": 1
+      },
+      "rubricRound2": {
+        "items": [
+          {
+            "id": "LIFT_REQUOTE",
+            "weight": 3,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 1,
+            "question": "Was the revised lift quote (£27,500, 8 weeks, entrance required before evening events over 60) incorporated?",
+            "evidence": [
+              "27,500",
+              "8 week",
+              "60"
+            ]
+          },
+          {
+            "id": "ESTATES_SURVEY",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Was the estates survey used, including the awareness finding that contradicts the old board minute?",
+            "evidence": [
+              "120",
+              "48%",
+              "57%"
+            ]
+          },
+          {
+            "id": "CAFE_NO_CHANGE",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 2,
+            "of": 2,
+            "require": 2,
+            "question": "Did the plan correctly treat the café notice as NOT changing the plan?",
+            "evidence": [
+              "café",
+              "does not change"
+            ]
+          },
+          {
+            "id": "CHANGED_DECLARED",
+            "weight": 1,
+            "pass": null,
+            "hitFamilies": 0,
+            "of": 0,
+            "require": 0,
+            "question": "Does decisions.json declare concrete round-2 changes?",
+            "evidence": []
+          }
+        ],
+        "achieved": 7,
+        "weight": 7,
+        "ratio": 1
+      },
+      "changedSinceRound1": {
+        "count": 11,
+        "changes": [
+          {
+            "change": "Removed the lift repair from the funded plan and deferred it to a separate £27,500 capital bid.",
+            "why": "The lift was re-quoted from £22,000 to £27,500 and its lead time rose from six to eight weeks. The round-1 three-line plan (lift + evening opening + minibus) would now cost £51,500, which is £3,500 over the £48,000 envelope. The lift cannot be phased (a part-share would not buy a usable repair), and capital cannot be swapped with revenue without a council variation, so the only compliant choice was to drop the lift or the transport link. The plan keeps the transport link because the 2023 pilot and the new estates survey identify transport as the dominant barrier among residents who know the centre."
+          },
+          {
+            "change": "Capped every evening event at 60 attendees and kept the first floor closed.",
+            "why": "The new building-control condition requires the accessible entrance to be operable before any evening event with more than 60 attendees is licensed, whether or not it uses the first floor. With the lift deferred, the cap is the lawful way to run a ground-floor evening programme. The first floor has no costed programme and remains closed."
+          },
+          {
+            "change": "Added the £4,200 targeted mailer to Northside and Kiln Field households.",
+            "why": "The new doorstep survey finds 48% of estate households have never heard of the centre, so awareness is a real barrier for about half. Among residents who have heard, 57% name getting home after an evening event as the main barrier. The mailer is a specific audience with a specific offer (weekly evening programme plus late minibus), which meets the board's 2022 test, and is not a repeat of the £9,000 borough-wide print campaign."
+          },
+          {
+            "change": "Funded the Youth Studio expansion at £6,500, now described as up to four additional sessions a month rather than two.",
+            "why": "The partner's written clarification confirms supply fell, not interest: unique participants rose from 71 to 115 and there is a 40-name waiting list. The partner can supply staff for up to four extra sessions a month for the same £6,500. The interview speculation that young people had 'moved on' is withdrawn."
+          },
+          {
+            "change": "Added the £2,800 welcome and access training.",
+            "why": "The 60-attendee cap, the accessible entrance still being out, and the need to record access needs all depend on front-of-house confidence. The training was deferred in round 1 for lack of budget room; deferring the lift freed room for it."
+          },
+          {
+            "change": "Recomputed the budget to £37,500 committed across five quoted revenue lines, with £10,500 uncommitted.",
+            "why": "The five lines are the maximum defensible commitment under the current evidence. The lift (£27,500) cannot be phased and a part-share would not buy a usable repair, the print campaign (£9,000) is rejected on the 2022 evidence, and the café refresh (£7,500) is no longer available this quarter (U4). The £10,500 lapses, not carried."
+          },
+          {
+            "change": "Removed the lift workstream from the pilot and replaced it with a week-1 ground-floor access gate and the 60-attendee cap.",
+            "why": "The pilot no longer waits for a lift handover. It can run only if the ground floor has an independent step-free route and accessible toilet; if it does not, the pilot does not start and the board must re-plan. The first floor stays closed all quarter."
+          },
+          {
+            "change": "Replaced the lift-commissioning metric with an access-compliance and 60-cap metric, and added metrics for the youth expansion, the mailer, and the training.",
+            "why": "The lift is no longer a plan milestone, so reporting it as one would overstate what the plan delivers. The new metrics match the five funded lines and the current licensing condition. The attendance, estate-share, bus-use, end-time and equalities thresholds are unchanged."
+          },
+          {
+            "change": "Updated the next-quarter-cut analysis.",
+            "why": "The £37,500 revenue plan would fit inside a 15%-reduced £40,800 envelope if the quotes hold, with £3,300 headroom, whereas the round-1 £46,000 plan would not. The lift would still not fit and remains a separate capital decision."
+          },
+          {
+            "change": "Removed the café equipment refresh from the option set.",
+            "why": "U4 defers it to the next financial year, so it is no longer available this quarter. The supplier change from Bean & Co to Harbour Roasters has no programming budget effect, and the refresh was already rejected as unrelated to programming."
+          },
+          {
+            "change": "Rewrote all eight deliverables so the pilot, options, budget, metrics, plan, uncertainties and decisions describe the same £37,500 plan.",
+            "why": "The new material changes the budget and the access position, so leaving any round-1 figure in place would create inconsistency. The transport priority, the 92% survey caveat, the rejection of the borough-wide print campaign, the 2023 evidence, and the no-new-post rule are preserved because the new material does not change them."
+          }
+        ]
+      },
+      "declaredPilot": {
+        "name": "Thursday Lates — transport-linked evening opening pilot",
+        "why": "In the 2023 pilot, evening attendance was 38% higher than the same weeks the previous year and most new evening attendees came from Northside and Kiln Field; attendance fell back when the minibus stopped. The new doorstep survey confirms transport is the dominant barrier among residents who know the centre (57%), while 48% of estate households have never heard of it. This plan replicates the evening-plus-transport bundle for 13 weeks, caps every evening event at 60 to comply with the new accessible-entrance licensing condition, and adds a targeted mailer, the Youth Studio expansion (40-name waiting list; up to 4 extra sessions a month for the same £6,500), and welcome/access training. The lift is deferred to a separate £27,500 capital bid because lift + evening + bus would cost £51,500, £3,500 over the £48,000 envelope.",
+        "target_segments": [
+          "Northside residents",
+          "Kiln Field residents",
+          "people without a car",
+          "evening and weekend workers",
+          "existing and lapsed Evening Talks attendees",
+          "disabled visitors and people with access needs"
+        ]
+      },
+      "declaredRound": 2
+    },
+    "C": {
+      "condition": "C",
+      "present": true,
+      "missing": [],
+      "currentRound": 2,
+      "rounds": {
+        "one": {
+          "condition": "C",
+          "round": 1,
+          "finishedAt": "2026-10-31T14:22:13.955Z",
+          "wallClockMs": 443738,
+          "exitCode": 0,
+          "timedOut": false,
+          "ready": {
+            "sessionId": "session-b51f2e85-f295-4a21-bcbd-770ee59635d0",
+            "mode": "create",
+            "localPeer": "peer-riversdale",
+            "persistentPoint": "pp-riversdale",
+            "transportAdapter": "ordarium-durable",
+            "attentionAdapter": "dsh-agents",
+            "attentionFormat": "product (cross-project formatter + default)",
+            "application": "full",
+            "collaboration": {
+              "advisor": "AVAILABLE",
+              "localExplore": "AVAILABLE",
+              "branchAdapter": "dsh-subprocess-branch:cog1-c",
+              "reasoningStore": "CONFIGURED",
+              "projectVerification": "AVAILABLE",
+              "crossProject": "UNAVAILABLE",
+              "inboundPump": "CONFIGURED",
+              "attention": "PULL",
+              "coldResume": "UNAVAILABLE"
+            },
+            "toolNames": [
+              "palimpsest_start",
+              "palimpsest_plan",
+              "palimpsest_next",
+              "palimpsest_preview",
+              "palimpsest_run",
+              "palimpsest_claim",
+              "palimpsest_report",
+              "palimpsest_gate",
+              "palimpsest_status",
+              "palimpsest_surfaces",
+              "palimpsest_finish",
+              "palimpsest_begin",
+              "palimpsest_attention",
+              "palimpsest_federation",
+              "palimpsest_boundary",
+              "palimpsest_runtime_view",
+              "palimpsest_reasoning",
+              "palimpsest_recipes",
+              "palimpsest_advisor",
+              "palimpsest_recipe",
+              "palimpsest_collaborate",
+              "palimpsest_delegate",
+              "palimpsest_project",
+              "palimpsest_manage",
+              "palimpsest_verification",
+              "palimpsest_graph"
+            ],
+            "url": null
+          },
+          "turns": [
+            {
+              "text": "All eight deliverables are written and mutually consistent (verified: allocations sum to £37,500 within the £48,000 envelope; metric names, pilot name, and uncertainty IDs match across `decisions.json` and the Markdown).\n\nThe chosen pilot is the **Evening Access Pilot** — thirteen Thursday openings coupled with the Northside–Kiln Field late minibus, at **£24,000** (£9,600 evening opening + £14,400 bus subsidy), sitting inside a **£37,500** committed plan with the rest of the envelope left unspent and lapsing. It is chosen because the 2023 pilot is the only quasi-experiment in the pack — +38% evening attendance with the minibus, back to baseline within six weeks of it stopping — which isolates transport rather than programme or awareness as the binding constraint, and because the budget reflects that opening and transport are worthless and actively misleading when funded alone. I deliberately excluded the £22,000 lift repair (capital, six-week lead, no costed first-floor programme, and unaffordable alongside the evidenced core), the £9,000 borough print campaign (tested and failed in 2022, and forbidden by board minute), and the £7,500 café refresh (unrelated to programming), and I left £10,500 uncommitted rather than fill the number with spend the evidence does not support.",
+              "toolCalls": [
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result"
+              ]
+            }
+          ],
+          "deliverables": {
+            "deliverables/assessment.md": {
+              "present": true,
+              "bytes": 15105,
+              "digest": "f2174685a8e2877450557f98a1440c68834bf1d5dc07344c56bfac3a51416c86"
+            },
+            "deliverables/options.md": {
+              "present": true,
+              "bytes": 9868,
+              "digest": "0bf3c7a93a140897d2be2d513ac9a20980c4c5bce70c7f55cc3fb070d029d142"
+            },
+            "deliverables/pilot.md": {
+              "present": true,
+              "bytes": 17284,
+              "digest": "c2483e11a4f4ad89fd83345800e06bbf46a4837f809a6a7c69d007cc4487e392"
+            },
+            "deliverables/budget.md": {
+              "present": true,
+              "bytes": 10188,
+              "digest": "6e0a1c8ad1a647ab5a87e997de47dad7f7ef88326d3808c6c36ca0f42728d5a1"
+            },
+            "deliverables/metrics.md": {
+              "present": true,
+              "bytes": 12172,
+              "digest": "a6f071aedc35edfc93b34d85ff1069a7d86e93b6cd7f98986024ff358d15fdf1"
+            },
+            "deliverables/plan.md": {
+              "present": true,
+              "bytes": 12820,
+              "digest": "dc2a9fbdc5dbf92d9e4beb5b5a0fd8dc3850d59630eadcb8ea35037579bcd9a1"
+            },
+            "deliverables/uncertainties.md": {
+              "present": true,
+              "bytes": 14959,
+              "digest": "8b2a2bfcfff3012d5ac8730b50105465d4c409b3c9104a5c8d8e49ff02456499"
+            },
+            "deliverables/decisions.json": {
+              "present": true,
+              "bytes": 14180,
+              "digest": "a059bb794333d216277b0fed2e92d8dd90a4f6f7a175b6fc554a49f718423a28"
+            }
+          },
+          "sessions": [
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-c-work--\\session-b51f2e85-f295-4a21-bcbd-770ee59635d0\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 412236
+            }
+          ],
+          "stdoutTail": "PALIMPSEST_HOST_READY {\"sessionId\":\"session-b51f2e85-f295-4a21-bcbd-770ee59635d0\",\"mode\":\"create\",\"localPeer\":\"peer-riversdale\",\"persistentPoint\":\"pp-riversdale\",\"transportAdapter\":\"ordarium-durable\",\"attentionAdapter\":\"dsh-agents\",\"attentionFormat\":\"product (cross-project formatter + default)\",\"application\":\"full\",\"collaboration\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-subprocess-branch:cog1-c\",\"reasoningStore\":\"CONFIGURED\",\"projectVerification\":\"AVAILABLE\",\"crossProject\":\"UNAVAILABLE\",\"inboundPump\":\"CONFIGURED\",\"attention\":\"PULL\",\"coldResume\":\"UNAVAILABLE\"},\"toolNames\":[\"palimpsest_start\",\"palimpsest_plan\",\"palimpsest_next\",\"palimpsest_preview\",\"palimpsest_run\",\"palimpsest_claim\",\"palimpsest_report\",\"palimpsest_gate\",\"palimpsest_status\",\"palimpsest_surfaces\",\"palimpsest_finish\",\"palimpsest_begin\",\"palimpsest_attention\",\"palimpsest_federation\",\"palimpsest_boundary\",\"palimpsest_runtime_view\",\"palimpsest_reasoning\",\"palimpsest_recipes\",\"palimpsest_advisor\",\"palimpsest_recipe\",\"palimpsest_collaborate\",\"palimpsest_delegate\",\"palimpsest_project\",\"palimpsest_manage\",\"palimpsest_verification\",\"palimpsest_graph\"],\"url\":null}\nPALIMPSEST_TURN {\"text\":\"All eight deliverables are written and mutually consistent (verified: allocations sum to £37,500 within the £48,000 envelope; metric names, pilot name, and uncertainty IDs match across `decisions.json` and the Markdown).\\n\\nThe chosen pilot is the **Evening Access Pilot** — thirteen Thursday openings coupled with the Northside–Kiln Field late minibus, at **£24,000** (£9,600 evening opening + £14,400 bus subsidy), sitting inside a **£37,500** committed plan with the rest of the envelope left unspent and lapsing. It is chosen because the 2023 pilot is the only quasi-experiment in the pack — +38% evening attendance with the minibus, back to baseline within six weeks of it stopping — which isolates transport rather than programme or awareness as the binding constraint, and because the budget reflects that opening and transport are worthless and actively misleading when funded alone. I deliberately excluded the £22,000 lift repair (capital, six-week lead, no costed first-floor programme, and unaffordable alongside the evidenced core), the £9,000 borough print campaign (tested and failed in 2022, and forbidden by board minute), and the £7,500 café refresh (unrelated to programming), and I left £10,500 uncommitted rather than fill the number with spend the evidence does not support.\",\"toolCalls\":[\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\"]}\n",
+          "stderrTail": "(node:43952) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\ndsh: warning: 1 entry did not activate\npermission (@deepseek-ai/dsh-permission-presets): Error: permission: the mounted bash executor does not confine (no sandboxMode) — presets bundle a sandbox mode, so composing this plugin over an unconfined executor is a misconfiguration\n    at new PermissionPresetService (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-permission-presets/lib/index.js:177:48)\n    at Fiber.execute (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1068:24)\n    at file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1142:34\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog1-rig/c/home/profiles/cog1-c/#permission\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog1-rig/c/home/profiles/cog1-c/#include\n[llm-deepseek-api-key] model listing from https://api.deepseek.com/models loaded 2 model(s), skipped 0 row(s)\n"
+        },
+        "two": {
+          "condition": "C",
+          "round": 2,
+          "finishedAt": "2026-10-31T15:16:49.866Z",
+          "wallClockMs": 900210,
+          "exitCode": 0,
+          "timedOut": false,
+          "ready": {
+            "sessionId": "session-2808d48f-9455-49e0-9209-27ed447769d8",
+            "mode": "create",
+            "localPeer": "peer-riversdale",
+            "persistentPoint": "pp-riversdale",
+            "transportAdapter": "ordarium-durable",
+            "attentionAdapter": "dsh-agents",
+            "attentionFormat": "product (cross-project formatter + default)",
+            "application": "full",
+            "collaboration": {
+              "advisor": "AVAILABLE",
+              "localExplore": "AVAILABLE",
+              "branchAdapter": "dsh-subprocess-branch:cog1-c",
+              "reasoningStore": "CONFIGURED",
+              "projectVerification": "AVAILABLE",
+              "crossProject": "UNAVAILABLE",
+              "inboundPump": "CONFIGURED",
+              "attention": "PULL",
+              "coldResume": "UNAVAILABLE"
+            },
+            "toolNames": [
+              "palimpsest_start",
+              "palimpsest_plan",
+              "palimpsest_next",
+              "palimpsest_preview",
+              "palimpsest_run",
+              "palimpsest_claim",
+              "palimpsest_report",
+              "palimpsest_gate",
+              "palimpsest_status",
+              "palimpsest_surfaces",
+              "palimpsest_finish",
+              "palimpsest_begin",
+              "palimpsest_attention",
+              "palimpsest_federation",
+              "palimpsest_boundary",
+              "palimpsest_runtime_view",
+              "palimpsest_reasoning",
+              "palimpsest_recipes",
+              "palimpsest_advisor",
+              "palimpsest_recipe",
+              "palimpsest_collaborate",
+              "palimpsest_delegate",
+              "palimpsest_project",
+              "palimpsest_manage",
+              "palimpsest_verification",
+              "palimpsest_graph"
+            ],
+            "url": null
+          },
+          "turns": [
+            {
+              "text": "The current pilot is the **Evening Access Pilot** — thirteen Thursday openings plus the Northside–Kiln Field minibus — costing **£24,000** within the £37,500 quarterly plan. The single most important change is the new **60-attendee licensing cap**: because the accessible entrance cannot be repaired inside the revenue envelope (£27,500, eight-week lead), every evening is now pre-booked, counted and hard-stopped at 60, with turnaways logged as evidence for a separate capital bid. That cap, rather than the programme, is now the binding constraint on the pilot, and the plan says so throughout.",
+              "toolCalls": [
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:glob",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:todo_write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:write",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/call:read",
+                "tool/result",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:todo_write",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:edit",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:read",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result",
+                "tool/call:bash",
+                "tool/result"
+              ]
+            }
+          ],
+          "deliverables": {
+            "deliverables/assessment.md": {
+              "present": true,
+              "bytes": 24360,
+              "digest": "0afa880c2487d40dd2e4b8c03030d29e2d43bcb3ba081589377fa0975bd6fe1d"
+            },
+            "deliverables/options.md": {
+              "present": true,
+              "bytes": 14965,
+              "digest": "951074a9afdec890ad34ff0d844b126c2977d8a2a645305f1f64e56f91feaa8e"
+            },
+            "deliverables/pilot.md": {
+              "present": true,
+              "bytes": 25730,
+              "digest": "20e283f50a81cf3fcc7fea78eba777102a7cd75b99c7dd17a9293e926975e0d9"
+            },
+            "deliverables/budget.md": {
+              "present": true,
+              "bytes": 14235,
+              "digest": "118f109db0bd5870790fc9f0f62ccd7e21853bac935e2459161b66c702b9aebf"
+            },
+            "deliverables/metrics.md": {
+              "present": true,
+              "bytes": 16328,
+              "digest": "80c04b368554e95b6e5d67586e7ac59cb0d43bff0f3bfc4d38c481dba6eb9855"
+            },
+            "deliverables/plan.md": {
+              "present": true,
+              "bytes": 20611,
+              "digest": "3e484fe6d53d9a13a32b332f5c9e4f36fd09003232128bf96b4c3616eb164b9f"
+            },
+            "deliverables/uncertainties.md": {
+              "present": true,
+              "bytes": 21318,
+              "digest": "95c7fc7d4ad972e4360061af0ea9b9d1ad2c93b6a3f5766f71153d14308b62d2"
+            },
+            "deliverables/decisions.json": {
+              "present": true,
+              "bytes": 27709,
+              "digest": "481c8c63fe5a5ccb67d46040ea0f059f86020cf4665d111860707213c2330928"
+            }
+          },
+          "sessions": [
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-c-work--\\session-2808d48f-9455-49e0-9209-27ed447769d8\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 1081735
+            },
+            {
+              "file": "\\--F-Codex_Work_Space-Palimpsest-.cog1-rig-c-work--\\session-b51f2e85-f295-4a21-bcbd-770ee59635d0\\session.v4.jsonl.zstd",
+              "events": 1,
+              "toolStarts": 0,
+              "tools": {},
+              "assistantMessages": 0,
+              "promptChars": 0,
+              "bytes": 412236
+            }
+          ],
+          "stdoutTail": "ication\",\"palimpsest_graph\"],\"url\":null}\nPALIMPSEST_TURN {\"text\":\"The current pilot is the **Evening Access Pilot** — thirteen Thursday openings plus the Northside–Kiln Field minibus — costing **£24,000** within the £37,500 quarterly plan. The single most important change is the new **60-attendee licensing cap**: because the accessible entrance cannot be repaired inside the revenue envelope (£27,500, eight-week lead), every evening is now pre-booked, counted and hard-stopped at 60, with turnaways logged as evidence for a separate capital bid. That cap, rather than the programme, is now the binding constraint on the pilot, and the plan says so throughout.\",\"toolCalls\":[\"tool/call:bash\",\"tool/result\",\"tool/call:glob\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:todo_write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:todo_write\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\"]}\n",
+          "stderrTail": "(node:26720) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\ndsh: warning: 1 entry did not activate\npermission (@deepseek-ai/dsh-permission-presets): Error: permission: the mounted bash executor does not confine (no sandboxMode) — presets bundle a sandbox mode, so composing this plugin over an unconfined executor is a misconfiguration\n    at new PermissionPresetService (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-permission-presets/lib/index.js:177:48)\n    at Fiber.execute (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1068:24)\n    at file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1142:34\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog1-rig/c/home/profiles/cog1-c/#permission\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog1-rig/c/home/profiles/cog1-c/#include\n[llm-deepseek-api-key] model listing from https://api.deepseek.com/models loaded 2 model(s), skipped 0 row(s)\n[llm-deepseek-api-key] model listing from https://api.deepseek.com/models loaded 2 model(s), skipped 0 row(s)\n"
+        }
+      },
+      "budget": {
+        "ok": true,
+        "failures": [],
+        "lines": [
+          {
+            "item": "Evening opening, 13 weeks (responsible person + utilities + cleaning)",
+            "cost": 9600,
+            "quoted": "EVENING_OPENING",
+            "expected": 9600,
+            "ok": true
+          },
+          {
+            "item": "Late bus subsidy: one minibus on the Northside-Kiln Field loop, 13 weeks",
+            "cost": 14400,
+            "quoted": "LATE_BUS",
+            "expected": 14400,
+            "ok": true
+          },
+          {
+            "item": "Additional Youth Studio sessions: up to 4 per month for the quarter (12 sessions, same £6,500 block price)",
+            "cost": 6500,
+            "quoted": "YOUTH_STUDIO_SESSIONS",
+            "expected": 6500,
+            "ok": true
+          },
+          {
+            "item": "Staff training: welcome and access awareness, 2 days",
+            "cost": 2800,
+            "quoted": "STAFF_TRAINING",
+            "expected": 2800,
+            "ok": true
+          },
+          {
+            "item": "Targeted mailer to priority-neighbourhood households (two dated evenings, booking route)",
+            "cost": 4200,
+            "quoted": "MAILER",
+            "expected": 4200,
+            "ok": true
+          }
+        ],
+        "total": 37500,
+        "sum": 37500
+      },
+      "consistency": {
+        "ok": true,
+        "failures": []
+      },
+      "rubric": {
+        "items": [
+          {
+            "id": "SURVEY_SAMPLE",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 4,
+            "of": 4,
+            "require": 2,
+            "question": "Does the plan refuse to generalize the 92% satisfaction figure beyond the people surveyed?",
+            "evidence": [
+              "sample",
+              "self-selected",
+              "non-attender",
+              "weekend"
+            ]
+          },
+          {
+            "id": "YOUTH_SUPPLY",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan explain the Youth Studio fall as a supply/session-frequency change rather than lost interest?",
+            "evidence": [
+              "session",
+              "supply",
+              "not lost interest"
+            ]
+          },
+          {
+            "id": "EVENING_TRANSPORT",
+            "weight": 3,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan treat transport as the active ingredient of the 2023 evening success?",
+            "evidence": [
+              "minibus",
+              "stopped",
+              "active ingredient"
+            ]
+          },
+          {
+            "id": "POSTER_EVIDENCE",
+            "weight": 1,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan avoid repeating the 2022 print campaign as a primary intervention, citing the evidence?",
+            "evidence": [
+              "2022",
+              "no measurable",
+              "specific offer"
+            ]
+          },
+          {
+            "id": "LIFT_SEQUENCING",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Does the plan respect the capital lead time and the first-floor restriction?",
+            "evidence": [
+              "lift",
+              "capital",
+              "first floor"
+            ]
+          },
+          {
+            "id": "ENVELOPE",
+            "weight": 1,
+            "pass": true,
+            "hitFamilies": 2,
+            "of": 2,
+            "require": 2,
+            "question": "Does the plan stay inside the fixed envelope and use only quoted costs?",
+            "evidence": [
+              "48,000",
+              "quote"
+            ]
+          }
+        ],
+        "achieved": 11,
+        "weight": 11,
+        "ratio": 1
+      },
+      "rubricRound2": {
+        "items": [
+          {
+            "id": "LIFT_REQUOTE",
+            "weight": 3,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 1,
+            "question": "Was the revised lift quote (£27,500, 8 weeks, entrance required before evening events over 60) incorporated?",
+            "evidence": [
+              "27,500",
+              "8 week",
+              "60"
+            ]
+          },
+          {
+            "id": "ESTATES_SURVEY",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 3,
+            "of": 3,
+            "require": 2,
+            "question": "Was the estates survey used, including the awareness finding that contradicts the old board minute?",
+            "evidence": [
+              "120",
+              "48%",
+              "57%"
+            ]
+          },
+          {
+            "id": "CAFE_NO_CHANGE",
+            "weight": 2,
+            "pass": true,
+            "hitFamilies": 2,
+            "of": 2,
+            "require": 2,
+            "question": "Did the plan correctly treat the café notice as NOT changing the plan?",
+            "evidence": [
+              "café",
+              "no change"
+            ]
+          },
+          {
+            "id": "CHANGED_DECLARED",
+            "weight": 1,
+            "pass": null,
+            "hitFamilies": 0,
+            "of": 0,
+            "require": 0,
+            "question": "Does decisions.json declare concrete round-2 changes?",
+            "evidence": []
+          }
+        ],
+        "achieved": 7,
+        "weight": 7,
+        "ratio": 1
+      },
+      "changedSinceRound1": {
+        "count": 14,
+        "changes": [
+          {
+            "change": "Doubled the Youth Studio block from 2 to 4 additional sessions a month (6 to 12 sessions for the quarter) at the same £6,500.",
+            "why": "updates/U3 is a written clarification from the partner: its own funding cut halved delivery in June 2024, it holds a 40-name waiting list, and it can supply staff for up to four extra sessions a month at the same £6,500. Round 1 bought only half of what the same money now buys. The £6,500 line and the total are unchanged."
+          },
+          {
+            "change": "Raised the Youth Studio targets from 780 to 1,000 visits and from 120 to 140 monthly unique participants.",
+            "why": "18 sessions instead of 12. 1,000 visits is 55.6 per session, a 25% discount to the current 74 per session, because the block is not linear: the first six extra sessions draw on the waitlist, the second six have to fill from the same base. 140 is 115 current participants plus 25 of the 40-name waitlist."
+          },
+          {
+            "change": "Added a hard 60-attendee cap to every evening event, with pre-booking, a door count, a hard stop at 60, a turnaway log, and a new metric (M13).",
+            "why": "updates/U2 adds a building-control condition: the accessible entrance must be operable before any evening event with more than 60 attendees is licensed, whether or not it uses the first floor. The entrance is not operable and the repair is capital, so the cap is a licence condition, not a target. The 180-seat hall is no longer the binding capacity."
+          },
+          {
+            "change": "Changed the mailer from one dated evening to two dated evenings with a booking route, reserved half of each mailed date's places for Northside and Kiln Field bookings until 48 hours before, and removed the mailer from the G0 fallback package.",
+            "why": "Under a 60-attendee cap, a single dated offer risks turning away the estate residents the pilot exists to reach. Two dates spread demand; the reservation protects the priority audience from the cap. The mailer cost is unchanged at £4,200. Because it is now built around two dated pilot evenings, it is not committed if the pilot is not; the fallback is Studio + training (£9,300)."
+          },
+          {
+            "change": "Retained the 640 evening-visit target but added a cap-constrained reading rule: attendance plus recorded turnaways counts as the demand floor.",
+            "why": "640 is 49.2 per opening across 13 openings (82% of the cap) or 53.3 across 12 programmed sessions (89% of the cap); the 2023 effect of +38% would be 54.9 per session, or 91.4% of the cap. The cap can censor a successful result, so turnaways must be counted and reported alongside attendance rather than treated as an anecdote."
+          },
+          {
+            "change": "Updated the lift everywhere to £27,500 and an 8-week lead, and revised the capital recommendation: the cheapest coherent package containing the lift is now £51,500, £3,500 over the envelope.",
+            "why": "updates/U2 re-quoted the work and added the 60-attendee condition. Round 1 could describe a lift + evening + bus package at £46,000 that fitted by deleting the Studio; the re-quote removes that option. Lift + evening + bus + Studio is £58,000, £10,000 over. The lift must be a separate capital bid, instructed as early as possible so the 8-week lead does not consume a programme quarter."
+          },
+          {
+            "change": "Revised the assessment's awareness finding from 'awareness is not the binding constraint' to 'awareness is uneven, not absent'.",
+            "why": "updates/U1 finds that 48% of households across Northside and Kiln Field have never heard of the centre, 37% have heard but never attended, and only 15% have attended at least once. Round 1's claim was based on the 2022 borough print null, which did not measure estate awareness. The 2022 null still stands for borough-wide print; it does not support the stronger claim that awareness is irrelevant."
+          },
+          {
+            "change": "Upgraded the targeted mailer from the weakest line in the budget to the evidenced response to a measured awareness gap, while keeping its week-4 stop rule.",
+            "why": "updates/U1 gives the mailer a specific audience and a measured gap. It remains a test, not a certainty: the equalities team says it has not tested whether awareness alone converts, and the 2022 package already included a mail-drop that produced no detectable effect. Hence one wave, two dates, and S5 (fewer than 30 registrations means no repeat)."
+          },
+          {
+            "change": "Recorded cost as an unaddressed barrier: 22% of aware estate households name cost as the main barrier, and the quoted menu contains no ticket or fare subsidy.",
+            "why": "updates/U1's barrier split is 57% transport, 22% cost, 11% programme content. The plan can act on transport and awareness, but it cannot invent a subsidy. Recording it prevents the report from claiming that access has been improved across the board."
+          },
+          {
+            "change": "Removed the café equipment refresh from the option set as no longer available, rather than as rejected on merit.",
+            "why": "updates/U4 defers the refresh to the next financial year and says it is no longer available this quarter. The supplier change has no programming or budget effect and prices to visitors are unchanged. The café was already unfunded, so the revenue plan and total are unchanged."
+          },
+          {
+            "change": "Renamed uncertainty IDs to UNC- to avoid collision with the update file IDs, resolved the old partner-capacity uncertainty, and added new uncertainties for the 60-cap scope and the cost barrier.",
+            "why": "Updates are numbered U1-U4; the round-1 uncertainties were also U1-U14, which made references ambiguous. UNC-4 is now largely resolved by updates/U3; UNC-3 covers whether the 60 condition catches the Youth Studio; UNC-10 covers cost; UNC-7 now includes cap censoring."
+          },
+          {
+            "change": "Revised cost-effectiveness: Youth Studio about £14 per additional visit (was £25); blended about £59 (was £90); evening unchanged at about £147.",
+            "why": "The same £6,500 now buys 12 sessions and a target of 476 additional visits rather than 6 sessions and 256. The Studio target is not doubled because the marginal sessions are harder to fill. The evening ratio is unchanged because both its cost and its target are unchanged."
+          },
+          {
+            "change": "Revised stop rule S6, added S7 (cap saturation) and added a cap-breach incident rule (C1).",
+            "why": "The partner has already confirmed the block in writing, so the old S6 (partner cannot confirm 3 sessions a month) is obsolete; the new failure mode is a delivery shortfall against a block price. The 60 cap creates two new failure modes: saturation, which should trigger the capital case, and breach, which is a licensing incident rather than a missed target."
+          },
+          {
+            "change": "Kept the revenue allocation and the £37,500 total unchanged; the £10,500 headroom still lapses.",
+            "why": "Every changed item either costs the same (Studio, mailer) or is outside the revenue envelope (lift). No new quoted item became available and the café left the menu. A second mailer wave (£4,200, taking the total to £41,700) was considered and not committed because it would have to be bought before the week-4 result exists. The plan still fits a 15% reduced envelope of £40,800 with £3,300 to spare."
+          }
+        ]
+      },
+      "declaredPilot": {
+        "name": "Evening Access Pilot",
+        "why": "It remains the only intervention in the pack that has already been tested at this venue, and it was tested in the most informative way available: the 2023 evening programme drew 38% more attendance year-on-year with a minibus, then fell back to pre-pilot level within six weeks of the minibus stopping, with the new estate attendees gone. Same building, same programme, same staff, weeks apart - that isolates transport rather than programme or awareness as the binding constraint. updates/U1 sharpens the case: among estate households that have heard of the centre, 57% name getting home after an evening event as the main barrier, while 48% have never heard of it at all, which is why the pilot pairs transport with a targeted, dated offer. It is also the only instrument that reaches Northside and Kiln Field by construction, because the minibus goes to them and nowhere else, and the only proposal whose failure would teach the board something before it commits to a recurrent transport line. Opening and transport are funded as one unit because funding either alone reproduces a known failure: opening without the bus is the six weeks of 2023 that did not work, and the bus without opening delivers people to a closed door. The pilot now runs under a hard 60-attendee cap until the accessible entrance is operable (updates/U2); it complies by pre-booking, counting at the door, stopping entry at 60 and logging turnaways, and it treats those turnaways as evidence for the separate capital bid rather than as a reason to breach the licence.",
+        "target_segments": [
+          "Northside estate residents",
+          "Kiln Field estate residents",
+          "Estate households that have never heard of the centre (48% of the two estates)",
+          "Lapsed Evening Talks attendees from the pre-July-2024 cohort",
+          "Public-transport-dependent working adults excluded by the 19:10 last bus"
+        ]
+      },
+      "declaredRound": 2
+    }
+  }
+}
