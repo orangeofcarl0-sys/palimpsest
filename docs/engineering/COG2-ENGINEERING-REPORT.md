@@ -62,8 +62,8 @@ The hint is presentation, not semantics:
 
 - `scripts/cog2/rig.mjs`, `seed.mjs`, `run_condition.mjs`, `run_inheritance.mjs`,
   `oracle.mjs`, `task_text.mjs`, `collaboration_probe.mjs`, `collect_evidence.mjs`
-  (1,353 lines total, including the scenario).
-- `scripts/cog2/scenario/sources/*` (10 files) and `scenario/updates/*` (4 files).
+  (1,328 lines) and the scenario (342 lines).
+- `scripts/cog2/scenario/sources/*` (9 files) and `scenario/updates/*` (4 files).
 - `scripts/bgc0/branch_census.mjs` (the read-only BGC-0 producer).
 
 No core domain, ProjectIR, project workspace, controller or tool contract was changed. The COG-1
@@ -94,8 +94,7 @@ files by default; the project workspace is not a file and was never mentioned.
 **Negative control.** The self-contained rewrite made 0 calls and answered in 14 s, both with and
 without the seam. The hint did not create unnecessary work.
 
-**What improved.** Selection, discovery and re-derivation cost. The seam run used a third of the
-tool calls and a quarter of the tokens of the same task without it.
+**What improved.** Selection, discovery and re-derivation cost. The seam run used 35 tool calls instead of 50 and a quarter of the tokens (1.06M vs 4.04M) of the same task without it.
 
 **What did not improve.** Decision quality relative to the strong file baseline. Every condition
 passed the same rubric, and the file baseline was cheaper in the cold continuation.

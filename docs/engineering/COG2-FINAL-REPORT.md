@@ -126,7 +126,7 @@ Full detail: [`COG2-ENGINEERING-REPORT.md`](COG2-ENGINEERING-REPORT.md).
   condition passed the same rubric. In the cold continuation the file baseline was cheaper and at
   least as effective.
 - **At what cost?** The cheapest high-quality product run was the seam run: 35 tool calls, 304 s,
-  1.06M tokens. The most expensive was the plain file-native baseline at 102 calls and 7.56M tokens;
+  1.06M tokens. The most expensive plan run was the cold Palimpsest continuation without the seam (95 calls, 10.37M tokens); the plain file-native baseline used 102 calls and 7.56M tokens;
   the cold Palimpsest continuation without the seam was 95 calls and 10.37M tokens.
 - **Did human coordination decrease?** The seam replaces a human-written invitation with a product
   fact. That is a real reduction in task-author coordination for making the product reachable. It
