@@ -1,0 +1,1033 @@
+{
+  "schema": "cog2-run/v1",
+  "condition": "B",
+  "finishedAt": "2026-10-31T18:39:49.541Z",
+  "task": "Produce a six-month programme plan for January to June 2026 for Harrowgate Community Trust.\n\nUse the material in the working directory. The programming budget is £60,000. Write the plan to\ndeliverables/plan.md. It must contain:\n\n1. a month-by-month schedule;\n2. a budget table that adds up to no more than £60,000;\n3. a short rationale that states which evidence you relied on and what you are uncertain about.\n\nDo not write any other files.",
+  "carrier": "ordinary-file",
+  "palimpsestToolsAvailable": true,
+  "projectInitialized": false,
+  "exitCode": 0,
+  "timedOut": false,
+  "wallClockMs": 308942,
+  "stdoutTail": "PALIMPSEST_HOST_READY {\"sessionId\":\"session-3ff92cfb-afed-483e-97f3-9f00dd8cb9bc\",\"mode\":\"create\",\"localPeer\":\"peer-harrowgate\",\"persistentPoint\":\"pp-harrowgate\",\"transportAdapter\":\"ordarium-durable\",\"attentionAdapter\":\"dsh-agents\",\"attentionFormat\":\"product (cross-project formatter + default)\",\"application\":\"full\",\"collaboration\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-subprocess-branch:cog2-b\",\"reasoningStore\":\"CONFIGURED\",\"projectVerification\":\"AVAILABLE\",\"crossProject\":\"UNAVAILABLE\",\"inboundPump\":\"CONFIGURED\",\"attention\":\"PULL\",\"coldResume\":\"UNAVAILABLE\"},\"toolNames\":[\"palimpsest_start\",\"palimpsest_plan\",\"palimpsest_next\",\"palimpsest_preview\",\"palimpsest_run\",\"palimpsest_claim\",\"palimpsest_report\",\"palimpsest_gate\",\"palimpsest_status\",\"palimpsest_surfaces\",\"palimpsest_finish\",\"palimpsest_begin\",\"palimpsest_attention\",\"palimpsest_federation\",\"palimpsest_boundary\",\"palimpsest_runtime_view\",\"palimpsest_reasoning\",\"palimpsest_recipes\",\"palimpsest_advisor\",\"palimpsest_recipe\",\"palimpsest_collaborate\",\"palimpsest_delegate\",\"palimpsest_project\",\"palimpsest_manage\",\"palimpsest_verification\",\"palimpsest_graph\"],\"url\":null}\nPALIMPSEST_TURN {\"text\":\"Written to `deliverables/plan.md` — no other files created.\\n\\n**What the plan contains**\\n\\n- **Month-by-month schedule** (Jan–Jun 2026) with actual dates and weekdays, room allocation, milestones and decision gates. 26 Tuesday craft sessions, 26 Saturday family workshops, 13 film nights + 6 talks (19 evenings), 6 Sunday afternoon events, a five-week east hall exhibition (18 Apr–17 May), a 6 June festival, and two three-day holiday intensives.\\n- **Budget table** phased by month: £54,680 direct + £5,000 contingency = **£59,680**, leaving £320 against the £60,000 ceiling. Line items reconcile to the monthly columns, which reconcile to the total (verified programmatically). Childcare (£4,680) sits in the family fund, outside the budget, and is not assumed anywhere.\\n- **Rationale** naming each source file, and a numbered list of eleven uncertainties.\\n\\n**The main evidence judgments**\\n\\n- Recomputing the attendance file changes the story: the 2024 childcare \\\"27 → 42\\\" is really 27.9 → 40.0 once the August trough is removed, the gain is real but eroding (43 in Jan 2025 to 39 in Dec), and **every strand finished 2025 below its December 2024 level**. The 3% headline fall masks a composition effect.\\n- `PRIOR-NOTES.md` is treated as claims to check, not facts. Its note 3 (east hall climate-controlled) is contradicted by the January 2025 HVAC failure — so nothing sensitive is hung until the repair is commissioned *and* logged for four to six weeks. Its note 4 overreads the survey (44% yes / 35% no, self-selected members, explicitly a stated preference).\\n- The 2023 pilot (60 booked / 37 attended, 48 / 23) is consistent with the transport explanation but doesn't prove it, so the plan re-runs the test with the missing ingredient — a minibus on every evening — with a 27 February stop rule.\\n- The cycle-time risk is flagged honestly: the attendance file records one figure per strand per month and doesn't say whether strands ran weekly or monthly, so cadence is presented as my planning choice, not a fact from the pack.\\n\\nI also flagged two things a reviewer would otherwise catch late: the craft group is costed as volunteer-run (£6,500 exposure if it isn't), and several line items (exhibition fees, display, refreshments, evaluation) are my estimates rather than the pack's unit costs — marked † in the table.\",\"toolCalls\":[\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:read\",\"tool/call:read\",\"tool/result\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:write\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:edit\",\"tool/result\",\"tool/call:read\",\"tool/result\",\"tool/call:bash\",\"tool/result\"]}\n",
+  "stderrTail": "(node:4352) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\ndsh: warning: 2 entries did not activate\npermission (@deepseek-ai/dsh-permission-presets): Error: permission: the mounted bash executor does not confine (no sandboxMode) — presets bundle a sandbox mode, so composing this plugin over an unconfined executor is a misconfiguration\n    at new PermissionPresetService (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-permission-presets/lib/index.js:177:48)\n    at Fiber.execute (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1068:24)\n    at file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1142:34\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog2-rig/matrix/B/home/profiles/cog2-b/#permission\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog2-rig/matrix/B/home/profiles/cog2-b/#include\ntool-subagent-list-agents (@deepseek-ai/dsh-tool-subagent-control/list-agents): pending (waiting for service: subagents)\n[llm-deepseek-api-key] model listing from https://api.deepseek.com/models loaded 2 model(s), skipped 0 row(s)\n",
+  "telemetry": {
+    "home": "F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\home",
+    "sessionCount": 1,
+    "mainSession": {
+      "file": "\\--F-Codex_Work_Space-Palimpsest-.cog2-rig-matrix-B-work--\\session-3ff92cfb-afed-483e-97f3-9f00dd8cb9bc\\session.v4.jsonl.zstd",
+      "cwd": "F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work",
+      "createdAt": 1793471692112,
+      "events": 275,
+      "bytes": 1191424,
+      "steps": 34,
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "toolCalls": 50,
+      "tools": {
+        "bash": 12,
+        "read": 17,
+        "write": 1,
+        "edit": 20
+      },
+      "palimpsestCalls": 0,
+      "palimpsestToolNames": [],
+      "toolCallDetails": [
+        {
+          "name": "bash",
+          "callId": "call_00_ET_6o3RdFuJv8PVCIrQJpsB2256",
+          "arguments": {
+            "command": "ls -la; echo \"---\"; find . -type f -not -path './.git/*' | head -100",
+            "description": "List working directory contents"
+          },
+          "step": 1
+        },
+        {
+          "name": "read",
+          "callId": "call_00_NpBGT7F2IWI59W6OysSf0555",
+          "arguments": {
+            "file_path": "sources/brief.md"
+          },
+          "step": 2
+        },
+        {
+          "name": "read",
+          "callId": "call_01_nfZrJfd9JenuGfrLzt5p0674",
+          "arguments": {
+            "file_path": "sources/constraints.md"
+          },
+          "step": 2
+        },
+        {
+          "name": "read",
+          "callId": "call_00_ET_iodkczwWmnQpaKoReupE0834",
+          "arguments": {
+            "file_path": "sources/member-survey-2025.md"
+          },
+          "step": 3
+        },
+        {
+          "name": "read",
+          "callId": "call_01_ET_pnSEcceQnQjiQOwvwKqt0607",
+          "arguments": {
+            "file_path": "sources/staff-interviews.md"
+          },
+          "step": 3
+        },
+        {
+          "name": "read",
+          "callId": "call_00_ET_pBEpMifCAUDwHmgAPvq39017",
+          "arguments": {
+            "file_path": "sources/open-questions.md"
+          },
+          "step": 4
+        },
+        {
+          "name": "read",
+          "callId": "call_01_ET_J14TpwtioC9RqaZOkfKE6899",
+          "arguments": {
+            "file_path": "sources/prior-interventions.md"
+          },
+          "step": 4
+        },
+        {
+          "name": "read",
+          "callId": "call_00_ET_AsaJV5gclW5FxZir01VU7591",
+          "arguments": {
+            "file_path": "sources/spaces-and-costs.md"
+          },
+          "step": 5
+        },
+        {
+          "name": "read",
+          "callId": "call_01_ET_bCdZ0OpLYjJBrMtPP9NI2066",
+          "arguments": {
+            "file_path": "sources/PRIOR-NOTES.md"
+          },
+          "step": 5
+        },
+        {
+          "name": "bash",
+          "callId": "call_00_Bk199kcJXgua11DSn8o00531",
+          "arguments": {
+            "command": "wc -l sources/attendance-2024-2025.csv; echo \"---\"; head -20 sources/attendance-2024-2025.csv",
+            "description": "Inspect attendance CSV size and header"
+          },
+          "step": 6
+        },
+        {
+          "name": "read",
+          "callId": "call_00_ET_MZBZzOqXTmqMHoDEs0Br6838",
+          "arguments": {
+            "file_path": "sources/attendance-2024-2025.csv"
+          },
+          "step": 7
+        },
+        {
+          "name": "bash",
+          "callId": "call_00_1iX75vaOsOkuMq4RDrDd3176",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport csv, statistics, datetime, calendar\nrows=list(csv.DictReader(open('sources/attendance-2024-2025.csv')))\nfor r in rows: r['attendances']=int(r['attendances'])\nfrom collections import defaultdict\nby=defaultdict(dict)\nfor r in rows: by[r['session']][r['month']]=r['attendances']\nfor s,d in by.items():\n    m24=[v for k,v in d.items() if k.startswith('2024')]\n    m25=[v for k,v in d.items() if k.startswith('2025')]\n    print(s, 'n=',len(d), '2024 avg %.1f'%statistics.mean(m24), '2025 avg %.1f'%statistics.mean(m25))\n    print('  2024:', m24)\n    print('  2025:', m25)\nprint()\n# prior note claims\nfam=by['Saturday family workshop']\nfirst8=[fam[f'2024-{m:02d}'] for m in range(1,9)]\nlast4=[fam[f'2024-{m:02d}'] for m in range(9,13)]\nprint('family Jan-Aug24 avg %.2f, Sep-Dec24 avg %.2f'%(statistics.mean(first8),statistics.mean(last4)))\nprint('family Sep-Dec24 %.2f vs Jan-Apr25 %.2f'%(statistics.mean(last4), statistics.mean([fam[f'2025-{m:02d}'] for m in range(1,5)])))\nprint('family Dec24 %d Dec25 %d'%(fam['2024-12'],fam['2025-12']))\nprint('family 2025 H1 %.2f H2 %.2f'%(statistics.mean([fam[f'2025-{m:02d}'] for m in range(1,7)]),statistics.mean([fam[f'2025-{m:02d}'] for m in range(7,13)])))\nprint()\nfor s,d in by.items():\n    aug=[d['2024-08'],d['2025-08']]\n    print(s,'Aug values',aug,'other-month 2025 avg %.1f'%statistics.mean([v for k,v in d.items() if k.startswith('2025') and k!='2025-08']))\nprint()\ntot25=sum(v for r in rows if r['month'].startswith('2025') for v in [r['attendances']])\ntot24=sum(v for r in rows if r['month'].startswith('2024') for v in [r['attendances']])\nprint('total 2024',tot24,'total 2025',tot25)\n\"\n",
+            "description": "Analyse attendance trends and test prior-note claims"
+          },
+          "step": 8
+        },
+        {
+          "name": "bash",
+          "callId": "call_01_uuxugiCW9m7QdoERaa7x6068",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport calendar, datetime\nfor m in range(1,7):\n    print('2026-%02d'%m)\n    for d in ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']:\n        days=[x for x in range(1,calendar.monthrange(2026,m)[1]+1) if datetime.date(2026,m,x).strftime('%A')==d]\n        print('  ',d[:3], days)\n\"\n",
+            "description": "List weekday dates Jan-Jun 2026"
+          },
+          "step": 8
+        },
+        {
+          "name": "bash",
+          "callId": "call_00_tj9yQbev4CraEGisGpST6791",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nrows=[\n('Marketing and print','600/mo',[600]*6),\n('Craft group materials','30 x 6 x 26',[720,720,900,720,720,900]),\n('Craft guest artists','6 x 250',[250]*6),\n('Family workshop leader','26 x 250',[1250,1000,1000,1000,1250,1000]),\n('Family workshop materials','40 x 6 x 26',[1200,960,960,960,1200,960]),\n('Film licence','13 x 120',[240,240,240,360,240,240]),\n('Film technician','13 x 150',[300,300,300,450,300,300]),\n('Evening staffing','19 x 220',[660,660,660,880,660,660]),\n('Minibus and driver','19 x 240',[720,720,720,960,720,720]),\n('Talk speakers','6 x 250',[250]*6),\n('Talk refreshments','6 x 120',[120]*6),\n('Sunday artists','6 x 250',[0,0,500,500,250,250]),\n('Sunday materials','30 x 6 x 6',[0,0,360,360,180,180]),\n('Sunday staffing','6 x 220',[0,0,440,440,220,220]),\n('Exhibition artist fees','8 x 250',[0,0,0,2000,0,0]),\n('Exhibition install technician','6 x 150',[0,0,0,600,300,0]),\n('Exhibition display and materials','estimate',[0,0,0,1000,500,0]),\n('Exhibition opening','estimate',[0,0,0,400,0,0]),\n('Exhibition workshops','4 x (250+120)',[0,0,0,740,740,0]),\n('Holiday intensives','6 x (250+120)',[0,0,0,1110,1110,0]),\n('Spring festival','8x250+200x6+3x150+2x220',[0,0,0,0,0,4090]),\n('Evaluation','estimate',[0,0,0,0,0,1200]),\n]\ntot=[0]*6\nfor n,b,m in rows:\n    assert len(m)==6\n    for i,v in enumerate(m): tot[i]+=v\n    print('| %s | %s | %s | %s |'%(n,b,' | '.join(f'{v:,}' for v in m),f'{sum(m):,}'))\nd=sum(tot)\nprint('| **Direct programme costs** | | %s | **%s** |'%(' | '.join(f'**{v:,}**' for v in tot),f'{d:,}'))\nprint('monthly',tot,'direct',d)\nfor n,b,m in rows:\n    assert sum(m)==sum(m)\nprint('festival check',8*250+200*6+3*150+2*220)\nprint('minibus 19',19*240,'evening staffing',19*220)\nprint('contingency 5000 -> total',d+5000,'headroom',60000-(d+5000))\n\"\n",
+            "description": "Compute and verify budget rows and monthly totals"
+          },
+          "step": 9
+        },
+        {
+          "name": "write",
+          "callId": "call_00_87kug2ESv7h2Un6dJxXY3747",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "content": "# Harrowgate Community Trust — Programme Plan, January–June 2026\n\n**Prepared for:** the board\n**Programming budget:** £60,000 (artists, materials, bought-in staff hours, marketing, event costs)\n**Excluded from this budget:** building repairs (east hall HVAC, capital grant) and the family fund (capped separately at £9,000)\n\n---\n\n## 1. Summary\n\nThe plan keeps the three existing sessions running, adds two low-cost tests of the explanations the board has not chosen between, and puts the east hall to work from the moment it is genuinely usable. It spends **£59,680** of the £60,000, leaves £320 unallocated, and holds £5,000 in contingency.\n\nThree things drive the design:\n\n- **The decline is real in every strand, including the one that was growing.** In 2025 the craft group averaged 29.2 (down from 33.9), the film club 16.2 (down from 20.7) and the family workshop 37.8 (up from 31.2) — but the family workshop has been sliding since January 2025 and finished 2025 below its 2024 level. The 2024 childcare gain was real; it is now eroding.\n- **The board has three competing explanations and no test that separates them.** So the plan buys evidence as well as activity: an evening season with transport actually provided (the one condition the 2023 pilot never met), and a Sunday afternoon series in the slot the trust has never tried.\n- **The east hall cannot be used as the 2019 survey describes.** The HVAC failed in January 2025. Nothing sensitive goes in until the repair is commissioned *and* has been monitored.\n\n---\n\n## 2. The programme\n\n| Strand | What it is | Cadence | Room | Sessions |\n| --- | --- | --- | --- | --- |\n| **Craft group** (continuing) | Led by volunteers, materials provided; a guest artist leads one session a month | Weekly, Tuesdays 10:00–12:00 | West hall | 26 |\n| **Family workshop** (continuing) | Paid workshop leader plus materials; free childcare alongside it if the family fund is released | Weekly, Saturdays 10:00–12:00 | West hall | 26 |\n| **Evening season** (test) | 13 film nights and 6 talks, every one with a booked minibus from the square | 19 Thursdays, 19:00–21:30 | West hall | 19 |\n| **Sunday series** (test) | Artist-led afternoon sessions; no evening staffing, no transport needed | 6 Sundays, 14:00–16:00, from March | West hall | 6 |\n| **East hall exhibition** | Eight artists, five weeks, public programme of four workshops | 18 April – 17 May | East hall | 1 show |\n| **Spring festival** | Day-to-evening festival across all three public rooms | Saturday 6 June | East hall + west hall + café | 1 |\n| **Holiday intensives** | Three-day family making blocks in the Easter and half-term weeks | 2 blocks of 3 days | Workshop room | 6 days |\n\nThe craft group moves to the west hall: it averages 29–30 and the workshop room holds 24. The workshop room stays in use for glazing and kiln work in small groups, and for the holiday intensives (capped at 20).\n\n---\n\n## 3. Month-by-month schedule\n\n### January 2026 — restart, baseline, first transport test\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Thu 1 | Closed (New Year's Day) | — |\n| Sat 3, 10, 17, 24, 31 | Family workshop, 10:00–12:00; childcare 10:00–14:00 if the fund is released | West hall |\n| Tue 6, 13, 20, 27 | Craft group, 10:00–12:00; guest artist Tue 13 | West hall |\n| Thu 8, 22 | Film nights 1–2, 19:00–21:30; minibus picks up 18:30, returns 21:45 | West hall |\n| Thu 15 | Talk 1, 19:00–20:30, with minibus | West hall |\n| Thu 29 | No event — evening review pack prepared | — |\n\n**Milestones:** baseline pack to the board Fri 9 (2025 averages by strand, bookings and no-shows, membership 610). Board decisions due Fri 30: success measures, release of the family fund, and confirmation of the minibus trial to the end of February.\n\n### February 2026 — test continues; the decision point\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Sat 7, 14, 21, 28 | Family workshop | West hall |\n| Tue 3, 10, 17, 24 | Craft group; guest artist Tue 10 | West hall |\n| Thu 5, 19 | Film nights 3–4, with minibus | West hall |\n| Thu 12 | Talk 2, with minibus | West hall |\n| Thu 26 | No event — evening review | — |\n\n**Milestone:** Fri 27, evening-season review. Six evenings of data (4 films, 2 talks). **Stop rule:** continue the minibus only if average attendance is at least 20 and at least a quarter of attenders arrive by minibus. If not, the minibus stops and the £3,120 budgeted for the remaining 13 evenings moves to the Sunday series and the exhibition public programme. Also on 27 Feb: confirmation that the HVAC grant is approved and the repair is on schedule.\n\n### March 2026 — the east hall opens; the Sunday test begins\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Mon 2 | East hall handover check; temperature and humidity logging begins | East hall |\n| Sat 7, 14, 21, 28 | Family workshop | West hall |\n| Tue 3, 10, 17, 24, 31 | Craft group; guest artist Tue 10 | West hall |\n| Thu 5, 19 | Film nights 5–6, with minibus | West hall |\n| Thu 12 | Talk 3 — first event in the east hall (west hall if commissioning slips) | East hall |\n| Sun 8, 22 | Sunday series 1–2 | West hall |\n| Thu 26 | No event | — |\n\n**Milestone:** the east hall is used for the first time on Thu 12, at low risk and low cost, before anything is hung in it.\n\n### April 2026 — exhibition, Easter intensive, peak spend\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Tue 7 – Thu 9 | Easter family intensive, 10:00–13:00 | Workshop room |\n| Sat 4, 11 | Family workshop | West hall |\n| Tue 7, 14, 21, 28 | Craft group; guest artist Tue 14 | West hall |\n| Thu 2, 16, 30 | Film nights 7–9, with minibus | West hall |\n| Thu 9 | Talk 4, with minibus | West hall |\n| Mon 13 – Fri 17 | Exhibition install | East hall |\n| Fri 17 | Exhibition opening evening, 18:30 | East hall |\n| Sat 18 | **Exhibition opens** (Wed–Sun, 11:00–16:00) | East hall |\n| Sat 18, 25 | Family workshop; exhibition workshop Sat 25, 13:00–15:00 | West hall / East hall |\n| Sun 12, 26 | Sunday series 3–4 | West hall |\n\n**Milestone:** Fri 24, mid-point review — first two Sunday events, first exhibition week, and the first full month with the east hall open.\n\n### May 2026 — exhibition closes; half-term; festival build\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Sat 2, 9, 16, 23, 30 | Family workshop; exhibition workshops Sat 2, 9, 16 at 13:00–15:00 | West hall / East hall |\n| Tue 5, 12, 19, 26 | Craft group; guest artist Tue 12 | West hall |\n| Thu 7 | Talk 5, with minibus | West hall |\n| Thu 14, 28 | Film nights 10–11, with minibus | West hall |\n| Sun 10 | Sunday series 5 | West hall |\n| Sun 17 | **Exhibition closes** | East hall |\n| Mon 18 – Tue 19 | Exhibition deinstall | East hall |\n| Tue 26 – Thu 28 | Half-term family intensive, 10:00–13:00 | Workshop room |\n\n**Milestone:** exhibition visitor count and workshop bookings reported to the board; festival programme and artist contracts confirmed.\n\n### June 2026 — festival, evaluation, decisions for the second half\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Tue 2, 9, 16, 23, 30 | Craft group; guest artist Tue 9 | West hall |\n| Thu 4 | Talk 6, with minibus | West hall |\n| Sat 6 | **Spring festival**, 11:00–22:30; family workshop runs inside it at 10:00 | All rooms |\n| Sat 13, 20, 27 | Family workshop | West hall |\n| Thu 11, 25 | Film nights 12–13, with minibus | West hall |\n| Sun 14 | Sunday series 6 | West hall |\n| W/c Mon 15 | Member survey re-run (same questions as October 2025) | Online and paper |\n\n**Milestone:** Fri 26, evaluation report and recommendations for July–December to the board.\n\n---\n\n## 4. Budget\n\nAll figures in £. Unit costs are taken from the pack's cost schedule except where marked †, which are planning estimates.\n\n| Item | Basis | Jan | Feb | Mar | Apr | May | Jun | Total |\n| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| Marketing and print | £600 × 6 months | 600 | 600 | 600 | 600 | 600 | 600 | 3,600 |\n| Craft group materials | 30 × £6 × 26 | 720 | 720 | 900 | 720 | 720 | 900 | 4,680 |\n| Craft guest artists | 6 × £250 | 250 | 250 | 250 | 250 | 250 | 250 | 1,500 |\n| Family workshop leader | 26 × £250 | 1,250 | 1,000 | 1,000 | 1,000 | 1,250 | 1,000 | 6,500 |\n| Family workshop materials | 40 × £6 × 26 | 1,200 | 960 | 960 | 960 | 1,200 | 960 | 6,240 |\n| Film licence | 13 × £120 | 240 | 240 | 240 | 360 | 240 | 240 | 1,560 |\n| Film technician | 13 × £150 | 300 | 300 | 300 | 450 | 300 | 300 | 1,950 |\n| Evening staffing (two staff) | 19 × £220 | 660 | 660 | 660 | 880 | 660 | 660 | 4,180 |\n| Minibus and driver | 19 × £240 | 720 | 720 | 720 | 960 | 720 | 720 | 4,560 |\n| Talk speakers | 6 × £250 | 250 | 250 | 250 | 250 | 250 | 250 | 1,500 |\n| Talk refreshments † | 6 × £120 | 120 | 120 | 120 | 120 | 120 | 120 | 720 |\n| Sunday series artists | 6 × £250 | 0 | 0 | 500 | 500 | 250 | 250 | 1,500 |\n| Sunday series materials | 30 × £6 × 6 | 0 | 0 | 360 | 360 | 180 | 180 | 1,080 |\n| Sunday staffing (two staff) † | 6 × £220 | 0 | 0 | 440 | 440 | 220 | 220 | 1,320 |\n| Exhibition artist fees † | 8 × £250 | 0 | 0 | 0 | 2,000 | 0 | 0 | 2,000 |\n| Exhibition install technician | 6 × £150 | 0 | 0 | 0 | 600 | 300 | 0 | 900 |\n| Exhibition display and materials † | estimate | 0 | 0 | 0 | 1,000 | 500 | 0 | 1,500 |\n| Exhibition opening † | staffing + refreshments | 0 | 0 | 0 | 400 | 0 | 0 | 400 |\n| Exhibition workshops | 4 × (£250 + 20 × £6) | 0 | 0 | 0 | 740 | 740 | 0 | 1,480 |\n| Holiday intensives | 6 × (£250 + 20 × £6) | 0 | 0 | 0 | 1,110 | 1,110 | 0 | 2,220 |\n| Spring festival | 8 × £250 + 200 × £6 + 3 × £150 + 2 × £220 | 0 | 0 | 0 | 0 | 0 | 4,090 | 4,090 |\n| Evaluation — survey and data † | estimate | 0 | 0 | 0 | 0 | 0 | 1,200 | 1,200 |\n| **Direct programme costs** | | **6,310** | **5,820** | **7,300** | **13,700** | **9,610** | **11,940** | **54,680** |\n| Contingency | HVAC delay, minibus price, weather, low uptake | — | — | — | — | — | — | 5,000 |\n| **Total** | | | | | | | | **59,680** |\n\n**Within the £60,000 ceiling by £320.**\n\n**Not in this budget:**\n\n- **Family fund (separate, capped at £9,000):** 26 Saturdays × £180 = **£4,680** for childcare, if the trustees release it. It is not assumed anywhere above. If it is not released, the family workshop still runs — same leader, same materials — and on the 2024 pre-childcare level we should expect around 30 rather than 40.\n- **Building repairs:** the east hall HVAC repair (quoted £18,000) is a capital grant application and is not a programming cost.\n\n**Notes on the numbers.** The minibus is budgeted inside the programming budget rather than through a separate grant, because in 2023 the pilot failed when the driver funding fell through. Evening and Sunday staffing is bought in at the pack's four-hour rate of £220 for two staff; volunteer hours are not costed. Contingency is 9% of direct costs and is the first place to look if the HVAC schedule slips.\n\n---\n\n## 5. Rationale: what I relied on, and what I am uncertain about\n\n### The evidence I relied on\n\n**The attendance record is the strongest evidence in the pack,** because it is the only source that measures what people did rather than what they say.\n\n| Strand | 2024 average | 2025 average | Change |\n| --- | ---: | ---: | ---: |\n| Tuesday craft group | 33.9 | 29.2 | −14% |\n| Thursday film club | 20.7 | 16.2 | −22% |\n| Saturday family workshop | 31.2 | 37.8 | +21% |\n\nThree things follow. First, the decline is not confined to one badly programmed strand — it runs through all three. Second, the family workshop's gain is genuine: comparing like with like (excluding the August trough, which appears in both years) the pre-childcare level was 27.9 and the post-childcare level 40.0, a step of about twelve people, not the fifteen the prior notes claim. Third, that gain is eroding — 43 in January 2025 down to 39 in December, and every strand finished 2025 below its December 2024 figure (craft 30 v 35, film 17 v 22, family 39 v 42). Overall attendances fell only 3% (1,030 to 997) because the family growth masked the other two. That mask is now coming off.\n\n**The 2025 survey** explains why we test rather than assume. Transport is the most-cited barrier (61%), then programme (34%), cost (29%) and caring responsibilities (27%). Saturday morning is the preferred slot (38%) and Sunday afternoon the least favoured (12%). That is enough to justify a Saturday-based family strand and a cheap Sunday test, but not enough to justify a large evening bet on its own.\n\n**The staff interviews** supply the mechanism and the prices: the last scheduled bus leaves the square at 18:40, a taxi is about £14 return, the 2023 minibus quote was £240 a night and the pilot ran without one when the driver funding failed. They also supply the two facts that overrule the prior notes — the HVAC failed in January 2025, and the east hall is usable from 1 March only if the capital grant is approved and the unit is commissioned.\n\n**The 2023 pilot** is consistent with the transport explanation but does not prove it: 60 seats were reserved for the first night and 37 people came; 48 were reserved for the second and 23 came. A no-show rate rising from 38% to 52% fits people discovering they could not get home. It equally fits a weak second film. Three nights with no transport and no price test cannot settle it, which is why the plan repeats the test with the missing ingredient present.\n\n**I treated `PRIOR-NOTES.md` as claims to be checked, not facts.** Note 3 (east hall climate-controlled) is out of date and would have put sensitive work at risk. Note 4 (members want evening events) overreads the survey: 44% said yes, 21% maybe and 35% no, among 240 self-selected members, and the survey volunteer explicitly warns the figure is a stated preference with no price test. Note 1 is directionally right and the plan follows its condition — no evening opening without transport. Note 2 is right in direction, overstated in size. Note 5 (website traffic) shows no attendance effect and is not relied on.\n\nI did **not** fund a repeat of the 2022 outreach van: it reached 11 people a visit, no evaluation survives, and staff remember it as \"not a substitute for the building\".\n\n### What I am uncertain about\n\n1. **The cause of the decline is still unidentified.** The plan is a set of tests, not a bet. If transport is not the reason, the main loss is the minibus line (£4,560), and the 27 February stop rule caps it at about £1,440.\n2. **The survey cannot see the people who left.** It is members only, 39% response, self-selected. Lapsed attenders — the group the plan most needs to reach — are absent from it by construction.\n3. **Stated preference is not behaviour.** \"Would you come if transport were available?\" was asked without a price. The 44% may overstate real uptake, which is exactly what the minibus trial measures.\n4. **The attendance file does not record frequency.** It gives one figure per strand per month and does not say whether each strand ran weekly or monthly. I have used the figures as indicative per-session levels and set the cadence explicitly in the schedule; the cost of the plan depends on that choice, which is mine, not the pack's.\n5. **The east hall date is contingent.** 1 March depends on a capital grant not yet approved and a repair not yet let. If commissioning slips, the exhibition moves to the west hall with five artists and no sensitive works, and the festival stays in the west and west hall and café. Even on time, nothing sensitive is hung until four to six weeks of logger data confirm the hall holds stable conditions — the 2019 survey is not evidence about 2026.\n6. **Costs may have moved.** The pack's figures are described as typical; the minibus quote dates from 2023. The £5,000 contingency is sized for that.\n7. **The childcare money is not committed.** Trustees have not decided whether the family fund can be used every Saturday. The core family session does not depend on it, which also satisfies the board's wish not to depend on a single funder for core sessions.\n8. **Six months cannot separate a trend from a season.** August is the trough in both years and the plan does not run into August, so the strongest seasonality effect is outside the window — but a spring-only comparison will still be noisy, and a single term is a small sample.\n9. **There is no revenue data in the pack.** The plan therefore forecasts attendance and behaviour, not income; the café and ticket income should be reported alongside it but cannot be projected from what we have.\n10. **Some figures are my estimates, not the pack's:** exhibition artist fees (using the per-session rate as a proxy), display materials, the opening event, talk refreshments, Sunday staffing and evaluation. They are marked † and are the lines most likely to move.\n\n---\n\n## 6. How success will be judged\n\nThe board has not chosen a measure (open question 6), so this is a proposal for confirmation on 30 January. Whatever is chosen, the data collection is the same; only the headline changes.\n\n**Primary:** average attendance per session for each strand, against its 2025 average — craft 29.2, film 16.2, family 37.8. Success is arresting the decline, not restoring 2024 in one term.\n\n**Secondary:**\n\n- share of evening attenders arriving by minibus (target 25% or more) and the no-show rate against the 2023 pilot's 38–52%;\n- Sunday series at 25 or more per event, talks at 30 or more;\n- exhibition at 600 visits over five weeks; festival at 400 attendances;\n- net change in membership against the 610 baseline;\n- café takings on event days, which the pack does not currently record and which the plan would start recording in January.\n\nA single number — \"did more people come, and did they come from outside the current membership\" — is the one I would put in front of the board in June.\n"
+          },
+          "step": 10
+        },
+        {
+          "name": "bash",
+          "callId": "call_00_omPBR6l2gJPIKBKG2Gsw2873",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\nrows=[]\nfor L in lines:\n    if L.startswith('| ') and ' | ' in L:\n        cells=[c.strip() for c in L.strip().strip('|').split('|')]\n        if len(cells)==9 and re.fullmatch(r'[\\d,]*',cells[2] or '0'):\n            rows.append(cells)\ntot=[0]*6\nfor c in rows:\n    vals=[int(x.replace(',','') or 0) for x in c[2:8]]\n    s=sum(vals)\n    assert s==int(c[8].replace(',','') or 0), (c[0], s, c[8])\n    for i,v in enumerate(vals): tot[i]+=v\nprint('rows',len(rows))\nprint('col totals',tot,'sum',sum(tot))\nprint('last rows:',[c[0] for c in rows][-3:])\nprint('grand total cell',rows[-1][8])\n\"\n",
+            "description": "Verify budget table row and column sums in plan.md"
+          },
+          "step": 11
+        },
+        {
+          "name": "bash",
+          "callId": "call_01_hmIjpTRunuiiM5eg9syp6084",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && git status --porcelain && echo \"---\" && ls -R deliverables",
+            "description": "Confirm only plan.md was created"
+          },
+          "step": 11
+        },
+        {
+          "name": "bash",
+          "callId": "call_00_au2Wfszh8MbPeikXgfwP0385",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\nrows=[]\nfor L in lines:\n    if L.startswith('| '):\n        cells=[c.strip().replace('**','') for c in L.strip().strip('|').split('|')]\n        if len(cells)==9 and re.fullmatch(r'[\\d,]*',cells[2] or '0'):\n            rows.append(cells)\ntot=[0]*6\nfor c in rows:\n    vals=[int(x.replace(',','') or 0) for x in c[2:8]]\n    s=sum(vals)\n    assert s==int(c[8].replace(',','') or 0), (c[0], s, c[8])\n    for i,v in enumerate(vals): tot[i]+=v\nprint('rows',len(rows))\nprint('col totals',tot,'sum',sum(tot))\nfor c in rows[-3:]: print(c)\n\"\n",
+            "description": "Re-verify budget table sums ignoring bold markers"
+          },
+          "step": 12
+        },
+        {
+          "name": "bash",
+          "callId": "call_00_7oBNwYA5FdYtDX8HkJWY0137",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\ntot=[0]*6; direct=None; cont=None\nfor L in lines:\n    if not L.startswith('| '): continue\n    cells=[c.strip().replace('**','') for c in L.strip().strip('|').split('|')]\n    name=cells[0]\n    if name=='Total':\n        continue\n    if len(cells)==9 and all(re.fullmatch(r'[\\d,]*',x or '0') for x in cells[2:9]):\n        vals=[int(x.replace(',','') or 0) for x in cells[2:8]]\n        assert sum(vals)==int(cells[8].replace(',','') or 0), (name, sum(vals), cells[8])\n        if name.startswith('Direct'):\n            direct=vals\n        elif name=='Contingency':\n            cont=int(cells[8].replace(',','') or 0)\n        else:\n            for i,v in enumerate(vals): tot[i]+=v\nprint('line totals',tot,'sum',sum(tot))\nprint('direct row in doc',direct,'sum',sum(direct) if direct else None)\nprint('contingency',cont)\nprint('direct+cont',sum(direct)+cont)\nprint('months sum equals direct sum:',sum(direct)==sum(tot))\n\"\n",
+            "description": "Verify line items, direct row, contingency and grand total"
+          },
+          "step": 13
+        },
+        {
+          "name": "read",
+          "callId": "call_00_F9hNjZvK3LrWzODYetWO5684",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "offset": 150,
+            "limit": 60
+          },
+          "step": 14
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_AFQuePxh7QNxO2qeozbw9643",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "old_string": "and the festival stays in the west and west hall and café.",
+            "new_string": "and the festival stays in the west hall and café."
+          },
+          "step": 15
+        },
+        {
+          "name": "read",
+          "callId": "call_01_AvvrxDDZOrLobNEmb9Oj2853",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "limit": 100
+          },
+          "step": 15
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_UGz4A3uXC5iMSz3oH9qu7276",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "old_string": "The plan keeps the three existing sessions running, adds two low-cost tests of the explanations the board has not chosen between, and puts the east hall to work from the moment it is genuinely usable.",
+            "new_string": "The plan keeps the three existing sessions running, adds two tests of the explanations the board has not chosen between, and puts the east hall to work from the moment it is genuinely usable."
+          },
+          "step": 16
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_cuGscO5J546no0fEjgWT8134",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "old_string": "- **The decline is real in every strand, including the one that was growing.** In 2025 the craft group averaged 29.2 (down from 33.9), the film club 16.2 (down from 20.7) and the family workshop 37.8 (up from 31.2) — but the family workshop has been sliding since January 2025 and finished 2025 below its 2024 level. The 2024 childcare gain was real; it is now eroding.",
+            "new_string": "- **The decline is real in every strand, including the one that was growing.** In 2025 the craft group averaged 29.2 (down from 33.9), the film club 16.2 (down from 20.7) and the family workshop 37.8 (up from 31.2) — but the family workshop peaked at 44 in November 2024 and has drifted down since: December 2025 was 39 against 42 a year earlier. The 2024 childcare gain was real; it is now eroding."
+          },
+          "step": 16
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_ET_9KTEd7g1VA3qbHxAdW2s2736",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "| **East hall exhibition** | Eight artists, four and a half weeks, public programme of four workshops | 18 April – 17 May | East hall | 1 show |",
+            "old_string": "| **East hall exhibition** | Eight artists, five weeks, public programme of four workshops | 18 April – 17 May | East hall | 1 show |"
+          },
+          "step": 17
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_ET_gENaXdBWIJKPRRULm5D72449",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "**Milestone:** Fri 24, mid-point review — the first Sunday event, the first exhibition week, and the first full month with the east hall open.",
+            "old_string": "**Milestone:** Fri 24, mid-point review — first two Sunday events, first exhibition week, and the first full month with the east hall open."
+          },
+          "step": 17
+        },
+        {
+          "name": "read",
+          "callId": "call_00_ET_qwNwKvXLbCZeUyLhsElQ1170",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "offset": 100,
+            "limit": 30
+          },
+          "step": 18
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_ET_4TqVWkuNK9lf9m7cKxVz9775",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "| Sat 6 | **Spring festival**, 10:00–22:30; the family workshop runs inside it at 10:00 | All rooms |",
+            "old_string": "| Sat 6 | **Spring festival**, 11:00–22:30; family workshop runs inside it at 10:00 | All rooms |"
+          },
+          "step": 19
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_ET_A7bqyDI0rNfGejvfMYji6401",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "| **Craft group** (continuing) | Run by the existing volunteer team, materials provided; a guest artist leads one session a month | Weekly, Tuesdays 10:00–12:00 | West hall | 26 |",
+            "old_string": "| **Craft group** (continuing) | Led by volunteers, materials provided; a guest artist leads one session a month | Weekly, Tuesdays 10:00–12:00 | West hall | 26 |"
+          },
+          "step": 19
+        },
+        {
+          "name": "read",
+          "callId": "call_00_xmAUU6kI0OLWc3cZFPig6701",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "offset": 194
+          },
+          "step": 20
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_ET_PPsmG71QsxV6Iyvn82cU5492",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "- exhibition at 600 visits across the 30 open days (about 25–30 a day); festival at 400 attendances;",
+            "old_string": "- exhibition at 600 visits over five weeks; festival at 400 attendances;"
+          },
+          "step": 21
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_ET_CrZM7koNDEiVaDojMpT85590",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "10. **Some figures are my estimates, not the pack's:** exhibition artist fees (using the per-session rate as a proxy), display materials, the opening event, talk refreshments, Sunday staffing and evaluation. They are marked † and are the lines most likely to move.\n11. **The craft group is costed as volunteer-run.** The pack does not say who leads it. If it is in fact a paid leader, that is £6,500 (26 × £250) not currently in the budget, and the choice would be between using the contingency and dropping the guest-artist line.",
+            "old_string": "10. **Some figures are my estimates, not the pack's:** exhibition artist fees (using the per-session rate as a proxy), display materials, the opening event, talk refreshments, Sunday staffing and evaluation. They are marked † and are the lines most likely to move."
+          },
+          "step": 21
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_Hs2vw2KPG4i5eXo8nGPU7877",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "**The attendance record (`attendance-2024-2025.csv`) is the strongest evidence in the pack,** because it is the only source that measures what people did rather than what they say.",
+            "old_string": "**The attendance record is the strongest evidence in the pack,** because it is the only source that measures what people did rather than what they say."
+          },
+          "step": 22
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_yzD3deRDNDruNUJHeKsU5957",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "**The 2025 member survey (`member-survey-2025.md`)** explains why we test rather than assume.",
+            "old_string": "**The 2025 survey** explains why we test rather than assume."
+          },
+          "step": 22
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_ET_Tmq8a7Xg5YZG9qBNm1DR3766",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "**The staff interviews (`staff-interviews.md`)** supply the mechanism and the prices:",
+            "old_string": "**The staff interviews** supply the mechanism and the prices:"
+          },
+          "step": 23
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_ET_vkiOKvYu5kleNhEGgjcc2218",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "**The 2023 pilot (`prior-interventions.md`)** is consistent with the transport explanation but does not prove it:",
+            "old_string": "**The 2023 pilot** is consistent with the transport explanation but does not prove it:"
+          },
+          "step": 23
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_Vbqj6yECZy7XYP9CFp9m0555",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "**Room capacities, costs and staffing rules (`spaces-and-costs.md`, `constraints.md`)** set the shape rather than the content: the craft group has outgrown the workshop room's 24, the west hall's 60 suits a film audience of 16–24, and the east hall is the only room that can hold a festival. Every evening is staffed by two bought-in people, volunteers are never left alone after 18:00, and the building is clear well before 23:30. The family fund is treated as optional throughout — which is also how the plan meets the board's wish not to depend on a single funder for core sessions.\n\n**I treated `PRIOR-NOTES.md` as claims to be checked, not facts.**",
+            "old_string": "**I treated `PRIOR-NOTES.md` as claims to be checked, not facts.**"
+          },
+          "step": 24
+        },
+        {
+          "name": "read",
+          "callId": "call_00_Cd0FN6iaTlAbQBNshf9i6881",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "offset": 126,
+            "limit": 50
+          },
+          "step": 25
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_aB5KAweeKFcHENspqeMj9904",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "| Exhibition workshops | 4 × (£250 + 20 × £6) | 0 | 0 | 0 | 370 | 1,110 | 0 | 1,480 |",
+            "old_string": "| Exhibition workshops | 4 × (£250 + 20 × £6) | 0 | 0 | 0 | 740 | 740 | 0 | 1,480 |"
+          },
+          "step": 26
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_pPZ9bsEiiWkMidBSnh3E7384",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "| **Direct programme costs** | | **6,310** | **5,820** | **7,300** | **13,330** | **9,980** | **11,940** | **54,680** |",
+            "old_string": "| **Direct programme costs** | | **6,310** | **5,820** | **7,300** | **13,700** | **9,610** | **11,940** | **54,680** |"
+          },
+          "step": 26
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_ET_kumpvGlbRLhFDVjbI6h25991",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "| Mon 13 – Thu 16 | Exhibition install | East hall |",
+            "old_string": "| Mon 13 – Fri 17 | Exhibition install | East hall |"
+          },
+          "step": 27
+        },
+        {
+          "name": "bash",
+          "callId": "call_01_ET_OwibLHh8sdaiBP8w3TVH9976",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\ntot=[0]*6; direct=None\nfor L in lines:\n    if not L.startswith('| '): continue\n    c=[x.strip().replace('**','') for x in L.strip().strip('|').split('|')]\n    if c[0] in ('Total','Contingency') or c[0].startswith('Item') or c[0].startswith('---'): continue\n    if len(c)==9 and all(re.fullmatch(r'[\\d,]*',x or '0') for x in c[2:9]):\n        v=[int(x.replace(',','') or 0) for x in c[2:8]]\n        assert sum(v)==int(c[8].replace(',','') or 0), (c[0], sum(v), c[8])\n        if c[0].startswith('Direct'): direct=v\n        else:\n            for i,x in enumerate(v): tot[i]+=x\nprint('items',tot,sum(tot))\nprint('direct',direct,sum(direct), 'match', tot==direct)\nprint('total with 5000:',sum(direct)+5000,'<=60000:',sum(direct)+5000<=60000)\n\"",
+            "description": "Final verification of budget integrity"
+          },
+          "step": 27
+        },
+        {
+          "name": "read",
+          "callId": "call_00_7dA2xJCLhcvMDU535gft1541",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "offset": 176,
+            "limit": 30
+          },
+          "step": 28
+        },
+        {
+          "name": "bash",
+          "callId": "call_01_5NEU03Phqg4ciqe4gQhI8815",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && git status --porcelain --untracked-files=all",
+            "description": "Confirm only plan.md exists as a new file"
+          },
+          "step": 28
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_XjC556HJ3QO5iX1PHChc9426",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "the pre-childcare level was 27.9 and the post-childcare level 40.0, a step of about twelve people rather than the thirteen to fifteen the prior notes claim.",
+            "old_string": "the pre-childcare level was 27.9 and the post-childcare level 40.0, a step of about twelve people, not the fifteen the prior notes claim."
+          },
+          "step": 29
+        },
+        {
+          "name": "edit",
+          "callId": "call_01_TEOsUdKCqqZ524fHLKJq8895",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "set the shape rather than the content: the craft group's recorded 29–30 does not fit the workshop room's 24, the west hall's 60 suits a film audience of 16–24, and the east hall is the only room that can hold a festival.",
+            "old_string": "set the shape rather than the content: the craft group has outgrown the workshop room's 24, the west hall's 60 suits a film audience of 16–24, and the east hall is the only room that can hold a festival."
+          },
+          "step": 29
+        },
+        {
+          "name": "read",
+          "callId": "call_00_ET_jRYbTLwlGfoUrMVqwa5t5187",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "offset": 78,
+            "limit": 25
+          },
+          "step": 30
+        },
+        {
+          "name": "edit",
+          "callId": "call_00_Hz0q14fWygMuM95KU2po1587",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "new_string": "| Thu 2, 16, 30 | Film nights 7–9, with minibus | West hall |\n| Sat 4, 11 | Family workshop | West hall |\n| Tue 7 – Thu 9 | Easter family intensive, 10:00–13:00 | Workshop room |\n| Tue 7, 14, 21, 28 | Craft group; guest artist Tue 14 | West hall |\n| Thu 9 | Talk 4, with minibus | West hall |\n| Sun 12, 26 | Sunday series 3–4 | West hall |\n| Mon 13 – Thu 16 | Exhibition install | East hall |\n| Fri 17 | Exhibition opening evening, 18:30 | East hall |\n| Sat 18 | **Exhibition opens** (Wed–Sun, 11:00–16:00) | East hall |\n| Sat 18, 25 | Family workshop; exhibition workshop Sat 25, 13:00–15:00 | West hall / East hall |",
+            "old_string": "| Tue 7 – Thu 9 | Easter family intensive, 10:00–13:00 | Workshop room |\n| Sat 4, 11 | Family workshop | West hall |\n| Tue 7, 14, 21, 28 | Craft group; guest artist Tue 14 | West hall |\n| Thu 2, 16, 30 | Film nights 7–9, with minibus | West hall |\n| Thu 9 | Talk 4, with minibus | West hall |\n| Mon 13 – Thu 16 | Exhibition install | East hall |\n| Fri 17 | Exhibition opening evening, 18:30 | East hall |\n| Sat 18 | **Exhibition opens** (Wed–Sun, 11:00–16:00) | East hall |\n| Sat 18, 25 | Family workshop; exhibition workshop Sat 25, 13:00–15:00 | West hall / East hall |\n| Sun 12, 26 | Sunday series 3–4 | West hall |"
+          },
+          "step": 31
+        },
+        {
+          "name": "read",
+          "callId": "call_00_ET_cBbi9YRpcElzLOIWpqkX9517",
+          "arguments": {
+            "file_path": "deliverables/plan.md",
+            "offset": 78,
+            "limit": 18
+          },
+          "step": 32
+        },
+        {
+          "name": "bash",
+          "callId": "call_00_m7M9bnzMZxKhxxDQYJOd6877",
+          "arguments": {
+            "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && wc -w deliverables/plan.md && grep -n \"west and west\\|TODO\\|  \" deliverables/plan.md | head -5; echo \"checks done\"; git status --porcelain --untracked-files=all",
+            "description": "Final lint and file inventory check"
+          },
+          "step": 33
+        }
+      ],
+      "userChars": 0,
+      "assistantChars": 2524,
+      "usage": {
+        "inputTokens": 22977,
+        "outputTokens": 52084,
+        "cacheReadTokens": 1875328,
+        "cacheWriteTokens": 0,
+        "totalTokens": 1950389
+      },
+      "finalAssistantText": "I'll start by exploring the working directory to understand what material is available.\nNow let me verify the budget arithmetic and monthly phasing before writing.\nData confirmed. Now I'll write the plan.\nWritten to `deliverables/plan.md` — no other files created.\n\n**What the plan contains**\n\n- **Month-by-month schedule** (Jan–Jun 2026) with actual dates and weekdays, room allocation, milestones and decision gates. 26 Tuesday craft sessions, 26 Saturday family workshops, 13 film nights + 6 talks (19 evenings), 6 Sunday afternoon events, a five-week east hall exhibition (18 Apr–17 May), a 6 June festival, and two three-day holiday intensives.\n- **Budget table** phased by month: £54,680 direct + £5,000 contingency = **£59,680**, leaving £320 against the £60,000 ceiling. Line items reconcile to the monthly columns, which reconcile to the total (verified programmatically). Childcare (£4,680) sits in the family fund, outside the budget, and is not assumed anywhere.\n- **Rationale** naming each source file, and a numbered list of eleven uncertainties.\n\n**The main evidence judgments**\n\n- Recomputing the attendance file changes the story: the 2024 childcare \"27 → 42\" is really 27.9 → 40.0 once the August trough is removed, the gain is real but eroding (43 in Jan 2025 to 39 in Dec), and **every strand finished 2025 below its December 2024 level**. The 3% headline fall masks a composition effect.\n- `PRIOR-NOTES.md` is treated as claims to check, not facts. Its note 3 (east hall climate-controlled) is contradicted by the January 2025 HVAC failure — so nothing sensitive is hung until the repair is commissioned *and* logged for four to six weeks. Its note 4 overreads the survey (44% yes / 35% no, self-selected members, explicitly a stated preference).\n- The 2023 pilot (60 booked / 37 attended, 48 / 23) is consistent with the transport explanation but doesn't prove it, so the plan re-runs the test with the missing ingredient — a minibus on every evening — with a 27 February stop rule.\n- The cycle-time risk is flagged honestly: the attendance file records one figure per strand per month and doesn't say whether strands ran weekly or monthly, so cadence is presented as my planning choice, not a fact from the pack.\n\nI also flagged two things a reviewer would otherwise catch late: the craft group is costed as volunteer-run (£6,500 exposure if it isn't), and several line items (exhibition fees, display, refreshments, evaluation) are my estimates rather than the pack's unit costs — marked † in the table."
+    },
+    "sessions": [
+      {
+        "file": "\\--F-Codex_Work_Space-Palimpsest-.cog2-rig-matrix-B-work--\\session-3ff92cfb-afed-483e-97f3-9f00dd8cb9bc\\session.v4.jsonl.zstd",
+        "cwd": "F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work",
+        "createdAt": 1793471692112,
+        "events": 275,
+        "bytes": 1191424,
+        "steps": 34,
+        "provider": "deepseek-official",
+        "model": "deepseek-flash",
+        "toolCalls": 50,
+        "tools": {
+          "bash": 12,
+          "read": 17,
+          "write": 1,
+          "edit": 20
+        },
+        "palimpsestCalls": 0,
+        "palimpsestToolNames": [],
+        "toolCallDetails": [
+          {
+            "name": "bash",
+            "callId": "call_00_ET_6o3RdFuJv8PVCIrQJpsB2256",
+            "arguments": {
+              "command": "ls -la; echo \"---\"; find . -type f -not -path './.git/*' | head -100",
+              "description": "List working directory contents"
+            },
+            "step": 1
+          },
+          {
+            "name": "read",
+            "callId": "call_00_NpBGT7F2IWI59W6OysSf0555",
+            "arguments": {
+              "file_path": "sources/brief.md"
+            },
+            "step": 2
+          },
+          {
+            "name": "read",
+            "callId": "call_01_nfZrJfd9JenuGfrLzt5p0674",
+            "arguments": {
+              "file_path": "sources/constraints.md"
+            },
+            "step": 2
+          },
+          {
+            "name": "read",
+            "callId": "call_00_ET_iodkczwWmnQpaKoReupE0834",
+            "arguments": {
+              "file_path": "sources/member-survey-2025.md"
+            },
+            "step": 3
+          },
+          {
+            "name": "read",
+            "callId": "call_01_ET_pnSEcceQnQjiQOwvwKqt0607",
+            "arguments": {
+              "file_path": "sources/staff-interviews.md"
+            },
+            "step": 3
+          },
+          {
+            "name": "read",
+            "callId": "call_00_ET_pBEpMifCAUDwHmgAPvq39017",
+            "arguments": {
+              "file_path": "sources/open-questions.md"
+            },
+            "step": 4
+          },
+          {
+            "name": "read",
+            "callId": "call_01_ET_J14TpwtioC9RqaZOkfKE6899",
+            "arguments": {
+              "file_path": "sources/prior-interventions.md"
+            },
+            "step": 4
+          },
+          {
+            "name": "read",
+            "callId": "call_00_ET_AsaJV5gclW5FxZir01VU7591",
+            "arguments": {
+              "file_path": "sources/spaces-and-costs.md"
+            },
+            "step": 5
+          },
+          {
+            "name": "read",
+            "callId": "call_01_ET_bCdZ0OpLYjJBrMtPP9NI2066",
+            "arguments": {
+              "file_path": "sources/PRIOR-NOTES.md"
+            },
+            "step": 5
+          },
+          {
+            "name": "bash",
+            "callId": "call_00_Bk199kcJXgua11DSn8o00531",
+            "arguments": {
+              "command": "wc -l sources/attendance-2024-2025.csv; echo \"---\"; head -20 sources/attendance-2024-2025.csv",
+              "description": "Inspect attendance CSV size and header"
+            },
+            "step": 6
+          },
+          {
+            "name": "read",
+            "callId": "call_00_ET_MZBZzOqXTmqMHoDEs0Br6838",
+            "arguments": {
+              "file_path": "sources/attendance-2024-2025.csv"
+            },
+            "step": 7
+          },
+          {
+            "name": "bash",
+            "callId": "call_00_1iX75vaOsOkuMq4RDrDd3176",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport csv, statistics, datetime, calendar\nrows=list(csv.DictReader(open('sources/attendance-2024-2025.csv')))\nfor r in rows: r['attendances']=int(r['attendances'])\nfrom collections import defaultdict\nby=defaultdict(dict)\nfor r in rows: by[r['session']][r['month']]=r['attendances']\nfor s,d in by.items():\n    m24=[v for k,v in d.items() if k.startswith('2024')]\n    m25=[v for k,v in d.items() if k.startswith('2025')]\n    print(s, 'n=',len(d), '2024 avg %.1f'%statistics.mean(m24), '2025 avg %.1f'%statistics.mean(m25))\n    print('  2024:', m24)\n    print('  2025:', m25)\nprint()\n# prior note claims\nfam=by['Saturday family workshop']\nfirst8=[fam[f'2024-{m:02d}'] for m in range(1,9)]\nlast4=[fam[f'2024-{m:02d}'] for m in range(9,13)]\nprint('family Jan-Aug24 avg %.2f, Sep-Dec24 avg %.2f'%(statistics.mean(first8),statistics.mean(last4)))\nprint('family Sep-Dec24 %.2f vs Jan-Apr25 %.2f'%(statistics.mean(last4), statistics.mean([fam[f'2025-{m:02d}'] for m in range(1,5)])))\nprint('family Dec24 %d Dec25 %d'%(fam['2024-12'],fam['2025-12']))\nprint('family 2025 H1 %.2f H2 %.2f'%(statistics.mean([fam[f'2025-{m:02d}'] for m in range(1,7)]),statistics.mean([fam[f'2025-{m:02d}'] for m in range(7,13)])))\nprint()\nfor s,d in by.items():\n    aug=[d['2024-08'],d['2025-08']]\n    print(s,'Aug values',aug,'other-month 2025 avg %.1f'%statistics.mean([v for k,v in d.items() if k.startswith('2025') and k!='2025-08']))\nprint()\ntot25=sum(v for r in rows if r['month'].startswith('2025') for v in [r['attendances']])\ntot24=sum(v for r in rows if r['month'].startswith('2024') for v in [r['attendances']])\nprint('total 2024',tot24,'total 2025',tot25)\n\"\n",
+              "description": "Analyse attendance trends and test prior-note claims"
+            },
+            "step": 8
+          },
+          {
+            "name": "bash",
+            "callId": "call_01_uuxugiCW9m7QdoERaa7x6068",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport calendar, datetime\nfor m in range(1,7):\n    print('2026-%02d'%m)\n    for d in ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']:\n        days=[x for x in range(1,calendar.monthrange(2026,m)[1]+1) if datetime.date(2026,m,x).strftime('%A')==d]\n        print('  ',d[:3], days)\n\"\n",
+              "description": "List weekday dates Jan-Jun 2026"
+            },
+            "step": 8
+          },
+          {
+            "name": "bash",
+            "callId": "call_00_tj9yQbev4CraEGisGpST6791",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nrows=[\n('Marketing and print','600/mo',[600]*6),\n('Craft group materials','30 x 6 x 26',[720,720,900,720,720,900]),\n('Craft guest artists','6 x 250',[250]*6),\n('Family workshop leader','26 x 250',[1250,1000,1000,1000,1250,1000]),\n('Family workshop materials','40 x 6 x 26',[1200,960,960,960,1200,960]),\n('Film licence','13 x 120',[240,240,240,360,240,240]),\n('Film technician','13 x 150',[300,300,300,450,300,300]),\n('Evening staffing','19 x 220',[660,660,660,880,660,660]),\n('Minibus and driver','19 x 240',[720,720,720,960,720,720]),\n('Talk speakers','6 x 250',[250]*6),\n('Talk refreshments','6 x 120',[120]*6),\n('Sunday artists','6 x 250',[0,0,500,500,250,250]),\n('Sunday materials','30 x 6 x 6',[0,0,360,360,180,180]),\n('Sunday staffing','6 x 220',[0,0,440,440,220,220]),\n('Exhibition artist fees','8 x 250',[0,0,0,2000,0,0]),\n('Exhibition install technician','6 x 150',[0,0,0,600,300,0]),\n('Exhibition display and materials','estimate',[0,0,0,1000,500,0]),\n('Exhibition opening','estimate',[0,0,0,400,0,0]),\n('Exhibition workshops','4 x (250+120)',[0,0,0,740,740,0]),\n('Holiday intensives','6 x (250+120)',[0,0,0,1110,1110,0]),\n('Spring festival','8x250+200x6+3x150+2x220',[0,0,0,0,0,4090]),\n('Evaluation','estimate',[0,0,0,0,0,1200]),\n]\ntot=[0]*6\nfor n,b,m in rows:\n    assert len(m)==6\n    for i,v in enumerate(m): tot[i]+=v\n    print('| %s | %s | %s | %s |'%(n,b,' | '.join(f'{v:,}' for v in m),f'{sum(m):,}'))\nd=sum(tot)\nprint('| **Direct programme costs** | | %s | **%s** |'%(' | '.join(f'**{v:,}**' for v in tot),f'{d:,}'))\nprint('monthly',tot,'direct',d)\nfor n,b,m in rows:\n    assert sum(m)==sum(m)\nprint('festival check',8*250+200*6+3*150+2*220)\nprint('minibus 19',19*240,'evening staffing',19*220)\nprint('contingency 5000 -> total',d+5000,'headroom',60000-(d+5000))\n\"\n",
+              "description": "Compute and verify budget rows and monthly totals"
+            },
+            "step": 9
+          },
+          {
+            "name": "write",
+            "callId": "call_00_87kug2ESv7h2Un6dJxXY3747",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "content": "# Harrowgate Community Trust — Programme Plan, January–June 2026\n\n**Prepared for:** the board\n**Programming budget:** £60,000 (artists, materials, bought-in staff hours, marketing, event costs)\n**Excluded from this budget:** building repairs (east hall HVAC, capital grant) and the family fund (capped separately at £9,000)\n\n---\n\n## 1. Summary\n\nThe plan keeps the three existing sessions running, adds two low-cost tests of the explanations the board has not chosen between, and puts the east hall to work from the moment it is genuinely usable. It spends **£59,680** of the £60,000, leaves £320 unallocated, and holds £5,000 in contingency.\n\nThree things drive the design:\n\n- **The decline is real in every strand, including the one that was growing.** In 2025 the craft group averaged 29.2 (down from 33.9), the film club 16.2 (down from 20.7) and the family workshop 37.8 (up from 31.2) — but the family workshop has been sliding since January 2025 and finished 2025 below its 2024 level. The 2024 childcare gain was real; it is now eroding.\n- **The board has three competing explanations and no test that separates them.** So the plan buys evidence as well as activity: an evening season with transport actually provided (the one condition the 2023 pilot never met), and a Sunday afternoon series in the slot the trust has never tried.\n- **The east hall cannot be used as the 2019 survey describes.** The HVAC failed in January 2025. Nothing sensitive goes in until the repair is commissioned *and* has been monitored.\n\n---\n\n## 2. The programme\n\n| Strand | What it is | Cadence | Room | Sessions |\n| --- | --- | --- | --- | --- |\n| **Craft group** (continuing) | Led by volunteers, materials provided; a guest artist leads one session a month | Weekly, Tuesdays 10:00–12:00 | West hall | 26 |\n| **Family workshop** (continuing) | Paid workshop leader plus materials; free childcare alongside it if the family fund is released | Weekly, Saturdays 10:00–12:00 | West hall | 26 |\n| **Evening season** (test) | 13 film nights and 6 talks, every one with a booked minibus from the square | 19 Thursdays, 19:00–21:30 | West hall | 19 |\n| **Sunday series** (test) | Artist-led afternoon sessions; no evening staffing, no transport needed | 6 Sundays, 14:00–16:00, from March | West hall | 6 |\n| **East hall exhibition** | Eight artists, five weeks, public programme of four workshops | 18 April – 17 May | East hall | 1 show |\n| **Spring festival** | Day-to-evening festival across all three public rooms | Saturday 6 June | East hall + west hall + café | 1 |\n| **Holiday intensives** | Three-day family making blocks in the Easter and half-term weeks | 2 blocks of 3 days | Workshop room | 6 days |\n\nThe craft group moves to the west hall: it averages 29–30 and the workshop room holds 24. The workshop room stays in use for glazing and kiln work in small groups, and for the holiday intensives (capped at 20).\n\n---\n\n## 3. Month-by-month schedule\n\n### January 2026 — restart, baseline, first transport test\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Thu 1 | Closed (New Year's Day) | — |\n| Sat 3, 10, 17, 24, 31 | Family workshop, 10:00–12:00; childcare 10:00–14:00 if the fund is released | West hall |\n| Tue 6, 13, 20, 27 | Craft group, 10:00–12:00; guest artist Tue 13 | West hall |\n| Thu 8, 22 | Film nights 1–2, 19:00–21:30; minibus picks up 18:30, returns 21:45 | West hall |\n| Thu 15 | Talk 1, 19:00–20:30, with minibus | West hall |\n| Thu 29 | No event — evening review pack prepared | — |\n\n**Milestones:** baseline pack to the board Fri 9 (2025 averages by strand, bookings and no-shows, membership 610). Board decisions due Fri 30: success measures, release of the family fund, and confirmation of the minibus trial to the end of February.\n\n### February 2026 — test continues; the decision point\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Sat 7, 14, 21, 28 | Family workshop | West hall |\n| Tue 3, 10, 17, 24 | Craft group; guest artist Tue 10 | West hall |\n| Thu 5, 19 | Film nights 3–4, with minibus | West hall |\n| Thu 12 | Talk 2, with minibus | West hall |\n| Thu 26 | No event — evening review | — |\n\n**Milestone:** Fri 27, evening-season review. Six evenings of data (4 films, 2 talks). **Stop rule:** continue the minibus only if average attendance is at least 20 and at least a quarter of attenders arrive by minibus. If not, the minibus stops and the £3,120 budgeted for the remaining 13 evenings moves to the Sunday series and the exhibition public programme. Also on 27 Feb: confirmation that the HVAC grant is approved and the repair is on schedule.\n\n### March 2026 — the east hall opens; the Sunday test begins\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Mon 2 | East hall handover check; temperature and humidity logging begins | East hall |\n| Sat 7, 14, 21, 28 | Family workshop | West hall |\n| Tue 3, 10, 17, 24, 31 | Craft group; guest artist Tue 10 | West hall |\n| Thu 5, 19 | Film nights 5–6, with minibus | West hall |\n| Thu 12 | Talk 3 — first event in the east hall (west hall if commissioning slips) | East hall |\n| Sun 8, 22 | Sunday series 1–2 | West hall |\n| Thu 26 | No event | — |\n\n**Milestone:** the east hall is used for the first time on Thu 12, at low risk and low cost, before anything is hung in it.\n\n### April 2026 — exhibition, Easter intensive, peak spend\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Tue 7 – Thu 9 | Easter family intensive, 10:00–13:00 | Workshop room |\n| Sat 4, 11 | Family workshop | West hall |\n| Tue 7, 14, 21, 28 | Craft group; guest artist Tue 14 | West hall |\n| Thu 2, 16, 30 | Film nights 7–9, with minibus | West hall |\n| Thu 9 | Talk 4, with minibus | West hall |\n| Mon 13 – Fri 17 | Exhibition install | East hall |\n| Fri 17 | Exhibition opening evening, 18:30 | East hall |\n| Sat 18 | **Exhibition opens** (Wed–Sun, 11:00–16:00) | East hall |\n| Sat 18, 25 | Family workshop; exhibition workshop Sat 25, 13:00–15:00 | West hall / East hall |\n| Sun 12, 26 | Sunday series 3–4 | West hall |\n\n**Milestone:** Fri 24, mid-point review — first two Sunday events, first exhibition week, and the first full month with the east hall open.\n\n### May 2026 — exhibition closes; half-term; festival build\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Sat 2, 9, 16, 23, 30 | Family workshop; exhibition workshops Sat 2, 9, 16 at 13:00–15:00 | West hall / East hall |\n| Tue 5, 12, 19, 26 | Craft group; guest artist Tue 12 | West hall |\n| Thu 7 | Talk 5, with minibus | West hall |\n| Thu 14, 28 | Film nights 10–11, with minibus | West hall |\n| Sun 10 | Sunday series 5 | West hall |\n| Sun 17 | **Exhibition closes** | East hall |\n| Mon 18 – Tue 19 | Exhibition deinstall | East hall |\n| Tue 26 – Thu 28 | Half-term family intensive, 10:00–13:00 | Workshop room |\n\n**Milestone:** exhibition visitor count and workshop bookings reported to the board; festival programme and artist contracts confirmed.\n\n### June 2026 — festival, evaluation, decisions for the second half\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Tue 2, 9, 16, 23, 30 | Craft group; guest artist Tue 9 | West hall |\n| Thu 4 | Talk 6, with minibus | West hall |\n| Sat 6 | **Spring festival**, 11:00–22:30; family workshop runs inside it at 10:00 | All rooms |\n| Sat 13, 20, 27 | Family workshop | West hall |\n| Thu 11, 25 | Film nights 12–13, with minibus | West hall |\n| Sun 14 | Sunday series 6 | West hall |\n| W/c Mon 15 | Member survey re-run (same questions as October 2025) | Online and paper |\n\n**Milestone:** Fri 26, evaluation report and recommendations for July–December to the board.\n\n---\n\n## 4. Budget\n\nAll figures in £. Unit costs are taken from the pack's cost schedule except where marked †, which are planning estimates.\n\n| Item | Basis | Jan | Feb | Mar | Apr | May | Jun | Total |\n| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| Marketing and print | £600 × 6 months | 600 | 600 | 600 | 600 | 600 | 600 | 3,600 |\n| Craft group materials | 30 × £6 × 26 | 720 | 720 | 900 | 720 | 720 | 900 | 4,680 |\n| Craft guest artists | 6 × £250 | 250 | 250 | 250 | 250 | 250 | 250 | 1,500 |\n| Family workshop leader | 26 × £250 | 1,250 | 1,000 | 1,000 | 1,000 | 1,250 | 1,000 | 6,500 |\n| Family workshop materials | 40 × £6 × 26 | 1,200 | 960 | 960 | 960 | 1,200 | 960 | 6,240 |\n| Film licence | 13 × £120 | 240 | 240 | 240 | 360 | 240 | 240 | 1,560 |\n| Film technician | 13 × £150 | 300 | 300 | 300 | 450 | 300 | 300 | 1,950 |\n| Evening staffing (two staff) | 19 × £220 | 660 | 660 | 660 | 880 | 660 | 660 | 4,180 |\n| Minibus and driver | 19 × £240 | 720 | 720 | 720 | 960 | 720 | 720 | 4,560 |\n| Talk speakers | 6 × £250 | 250 | 250 | 250 | 250 | 250 | 250 | 1,500 |\n| Talk refreshments † | 6 × £120 | 120 | 120 | 120 | 120 | 120 | 120 | 720 |\n| Sunday series artists | 6 × £250 | 0 | 0 | 500 | 500 | 250 | 250 | 1,500 |\n| Sunday series materials | 30 × £6 × 6 | 0 | 0 | 360 | 360 | 180 | 180 | 1,080 |\n| Sunday staffing (two staff) † | 6 × £220 | 0 | 0 | 440 | 440 | 220 | 220 | 1,320 |\n| Exhibition artist fees † | 8 × £250 | 0 | 0 | 0 | 2,000 | 0 | 0 | 2,000 |\n| Exhibition install technician | 6 × £150 | 0 | 0 | 0 | 600 | 300 | 0 | 900 |\n| Exhibition display and materials † | estimate | 0 | 0 | 0 | 1,000 | 500 | 0 | 1,500 |\n| Exhibition opening † | staffing + refreshments | 0 | 0 | 0 | 400 | 0 | 0 | 400 |\n| Exhibition workshops | 4 × (£250 + 20 × £6) | 0 | 0 | 0 | 740 | 740 | 0 | 1,480 |\n| Holiday intensives | 6 × (£250 + 20 × £6) | 0 | 0 | 0 | 1,110 | 1,110 | 0 | 2,220 |\n| Spring festival | 8 × £250 + 200 × £6 + 3 × £150 + 2 × £220 | 0 | 0 | 0 | 0 | 0 | 4,090 | 4,090 |\n| Evaluation — survey and data † | estimate | 0 | 0 | 0 | 0 | 0 | 1,200 | 1,200 |\n| **Direct programme costs** | | **6,310** | **5,820** | **7,300** | **13,700** | **9,610** | **11,940** | **54,680** |\n| Contingency | HVAC delay, minibus price, weather, low uptake | — | — | — | — | — | — | 5,000 |\n| **Total** | | | | | | | | **59,680** |\n\n**Within the £60,000 ceiling by £320.**\n\n**Not in this budget:**\n\n- **Family fund (separate, capped at £9,000):** 26 Saturdays × £180 = **£4,680** for childcare, if the trustees release it. It is not assumed anywhere above. If it is not released, the family workshop still runs — same leader, same materials — and on the 2024 pre-childcare level we should expect around 30 rather than 40.\n- **Building repairs:** the east hall HVAC repair (quoted £18,000) is a capital grant application and is not a programming cost.\n\n**Notes on the numbers.** The minibus is budgeted inside the programming budget rather than through a separate grant, because in 2023 the pilot failed when the driver funding fell through. Evening and Sunday staffing is bought in at the pack's four-hour rate of £220 for two staff; volunteer hours are not costed. Contingency is 9% of direct costs and is the first place to look if the HVAC schedule slips.\n\n---\n\n## 5. Rationale: what I relied on, and what I am uncertain about\n\n### The evidence I relied on\n\n**The attendance record is the strongest evidence in the pack,** because it is the only source that measures what people did rather than what they say.\n\n| Strand | 2024 average | 2025 average | Change |\n| --- | ---: | ---: | ---: |\n| Tuesday craft group | 33.9 | 29.2 | −14% |\n| Thursday film club | 20.7 | 16.2 | −22% |\n| Saturday family workshop | 31.2 | 37.8 | +21% |\n\nThree things follow. First, the decline is not confined to one badly programmed strand — it runs through all three. Second, the family workshop's gain is genuine: comparing like with like (excluding the August trough, which appears in both years) the pre-childcare level was 27.9 and the post-childcare level 40.0, a step of about twelve people, not the fifteen the prior notes claim. Third, that gain is eroding — 43 in January 2025 down to 39 in December, and every strand finished 2025 below its December 2024 figure (craft 30 v 35, film 17 v 22, family 39 v 42). Overall attendances fell only 3% (1,030 to 997) because the family growth masked the other two. That mask is now coming off.\n\n**The 2025 survey** explains why we test rather than assume. Transport is the most-cited barrier (61%), then programme (34%), cost (29%) and caring responsibilities (27%). Saturday morning is the preferred slot (38%) and Sunday afternoon the least favoured (12%). That is enough to justify a Saturday-based family strand and a cheap Sunday test, but not enough to justify a large evening bet on its own.\n\n**The staff interviews** supply the mechanism and the prices: the last scheduled bus leaves the square at 18:40, a taxi is about £14 return, the 2023 minibus quote was £240 a night and the pilot ran without one when the driver funding failed. They also supply the two facts that overrule the prior notes — the HVAC failed in January 2025, and the east hall is usable from 1 March only if the capital grant is approved and the unit is commissioned.\n\n**The 2023 pilot** is consistent with the transport explanation but does not prove it: 60 seats were reserved for the first night and 37 people came; 48 were reserved for the second and 23 came. A no-show rate rising from 38% to 52% fits people discovering they could not get home. It equally fits a weak second film. Three nights with no transport and no price test cannot settle it, which is why the plan repeats the test with the missing ingredient present.\n\n**I treated `PRIOR-NOTES.md` as claims to be checked, not facts.** Note 3 (east hall climate-controlled) is out of date and would have put sensitive work at risk. Note 4 (members want evening events) overreads the survey: 44% said yes, 21% maybe and 35% no, among 240 self-selected members, and the survey volunteer explicitly warns the figure is a stated preference with no price test. Note 1 is directionally right and the plan follows its condition — no evening opening without transport. Note 2 is right in direction, overstated in size. Note 5 (website traffic) shows no attendance effect and is not relied on.\n\nI did **not** fund a repeat of the 2022 outreach van: it reached 11 people a visit, no evaluation survives, and staff remember it as \"not a substitute for the building\".\n\n### What I am uncertain about\n\n1. **The cause of the decline is still unidentified.** The plan is a set of tests, not a bet. If transport is not the reason, the main loss is the minibus line (£4,560), and the 27 February stop rule caps it at about £1,440.\n2. **The survey cannot see the people who left.** It is members only, 39% response, self-selected. Lapsed attenders — the group the plan most needs to reach — are absent from it by construction.\n3. **Stated preference is not behaviour.** \"Would you come if transport were available?\" was asked without a price. The 44% may overstate real uptake, which is exactly what the minibus trial measures.\n4. **The attendance file does not record frequency.** It gives one figure per strand per month and does not say whether each strand ran weekly or monthly. I have used the figures as indicative per-session levels and set the cadence explicitly in the schedule; the cost of the plan depends on that choice, which is mine, not the pack's.\n5. **The east hall date is contingent.** 1 March depends on a capital grant not yet approved and a repair not yet let. If commissioning slips, the exhibition moves to the west hall with five artists and no sensitive works, and the festival stays in the west and west hall and café. Even on time, nothing sensitive is hung until four to six weeks of logger data confirm the hall holds stable conditions — the 2019 survey is not evidence about 2026.\n6. **Costs may have moved.** The pack's figures are described as typical; the minibus quote dates from 2023. The £5,000 contingency is sized for that.\n7. **The childcare money is not committed.** Trustees have not decided whether the family fund can be used every Saturday. The core family session does not depend on it, which also satisfies the board's wish not to depend on a single funder for core sessions.\n8. **Six months cannot separate a trend from a season.** August is the trough in both years and the plan does not run into August, so the strongest seasonality effect is outside the window — but a spring-only comparison will still be noisy, and a single term is a small sample.\n9. **There is no revenue data in the pack.** The plan therefore forecasts attendance and behaviour, not income; the café and ticket income should be reported alongside it but cannot be projected from what we have.\n10. **Some figures are my estimates, not the pack's:** exhibition artist fees (using the per-session rate as a proxy), display materials, the opening event, talk refreshments, Sunday staffing and evaluation. They are marked † and are the lines most likely to move.\n\n---\n\n## 6. How success will be judged\n\nThe board has not chosen a measure (open question 6), so this is a proposal for confirmation on 30 January. Whatever is chosen, the data collection is the same; only the headline changes.\n\n**Primary:** average attendance per session for each strand, against its 2025 average — craft 29.2, film 16.2, family 37.8. Success is arresting the decline, not restoring 2024 in one term.\n\n**Secondary:**\n\n- share of evening attenders arriving by minibus (target 25% or more) and the no-show rate against the 2023 pilot's 38–52%;\n- Sunday series at 25 or more per event, talks at 30 or more;\n- exhibition at 600 visits over five weeks; festival at 400 attendances;\n- net change in membership against the 610 baseline;\n- café takings on event days, which the pack does not currently record and which the plan would start recording in January.\n\nA single number — \"did more people come, and did they come from outside the current membership\" — is the one I would put in front of the board in June.\n"
+            },
+            "step": 10
+          },
+          {
+            "name": "bash",
+            "callId": "call_00_omPBR6l2gJPIKBKG2Gsw2873",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\nrows=[]\nfor L in lines:\n    if L.startswith('| ') and ' | ' in L:\n        cells=[c.strip() for c in L.strip().strip('|').split('|')]\n        if len(cells)==9 and re.fullmatch(r'[\\d,]*',cells[2] or '0'):\n            rows.append(cells)\ntot=[0]*6\nfor c in rows:\n    vals=[int(x.replace(',','') or 0) for x in c[2:8]]\n    s=sum(vals)\n    assert s==int(c[8].replace(',','') or 0), (c[0], s, c[8])\n    for i,v in enumerate(vals): tot[i]+=v\nprint('rows',len(rows))\nprint('col totals',tot,'sum',sum(tot))\nprint('last rows:',[c[0] for c in rows][-3:])\nprint('grand total cell',rows[-1][8])\n\"\n",
+              "description": "Verify budget table row and column sums in plan.md"
+            },
+            "step": 11
+          },
+          {
+            "name": "bash",
+            "callId": "call_01_hmIjpTRunuiiM5eg9syp6084",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && git status --porcelain && echo \"---\" && ls -R deliverables",
+              "description": "Confirm only plan.md was created"
+            },
+            "step": 11
+          },
+          {
+            "name": "bash",
+            "callId": "call_00_au2Wfszh8MbPeikXgfwP0385",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\nrows=[]\nfor L in lines:\n    if L.startswith('| '):\n        cells=[c.strip().replace('**','') for c in L.strip().strip('|').split('|')]\n        if len(cells)==9 and re.fullmatch(r'[\\d,]*',cells[2] or '0'):\n            rows.append(cells)\ntot=[0]*6\nfor c in rows:\n    vals=[int(x.replace(',','') or 0) for x in c[2:8]]\n    s=sum(vals)\n    assert s==int(c[8].replace(',','') or 0), (c[0], s, c[8])\n    for i,v in enumerate(vals): tot[i]+=v\nprint('rows',len(rows))\nprint('col totals',tot,'sum',sum(tot))\nfor c in rows[-3:]: print(c)\n\"\n",
+              "description": "Re-verify budget table sums ignoring bold markers"
+            },
+            "step": 12
+          },
+          {
+            "name": "bash",
+            "callId": "call_00_7oBNwYA5FdYtDX8HkJWY0137",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\ntot=[0]*6; direct=None; cont=None\nfor L in lines:\n    if not L.startswith('| '): continue\n    cells=[c.strip().replace('**','') for c in L.strip().strip('|').split('|')]\n    name=cells[0]\n    if name=='Total':\n        continue\n    if len(cells)==9 and all(re.fullmatch(r'[\\d,]*',x or '0') for x in cells[2:9]):\n        vals=[int(x.replace(',','') or 0) for x in cells[2:8]]\n        assert sum(vals)==int(cells[8].replace(',','') or 0), (name, sum(vals), cells[8])\n        if name.startswith('Direct'):\n            direct=vals\n        elif name=='Contingency':\n            cont=int(cells[8].replace(',','') or 0)\n        else:\n            for i,v in enumerate(vals): tot[i]+=v\nprint('line totals',tot,'sum',sum(tot))\nprint('direct row in doc',direct,'sum',sum(direct) if direct else None)\nprint('contingency',cont)\nprint('direct+cont',sum(direct)+cont)\nprint('months sum equals direct sum:',sum(direct)==sum(tot))\n\"\n",
+              "description": "Verify line items, direct row, contingency and grand total"
+            },
+            "step": 13
+          },
+          {
+            "name": "read",
+            "callId": "call_00_F9hNjZvK3LrWzODYetWO5684",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "offset": 150,
+              "limit": 60
+            },
+            "step": 14
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_AFQuePxh7QNxO2qeozbw9643",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "old_string": "and the festival stays in the west and west hall and café.",
+              "new_string": "and the festival stays in the west hall and café."
+            },
+            "step": 15
+          },
+          {
+            "name": "read",
+            "callId": "call_01_AvvrxDDZOrLobNEmb9Oj2853",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "limit": 100
+            },
+            "step": 15
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_UGz4A3uXC5iMSz3oH9qu7276",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "old_string": "The plan keeps the three existing sessions running, adds two low-cost tests of the explanations the board has not chosen between, and puts the east hall to work from the moment it is genuinely usable.",
+              "new_string": "The plan keeps the three existing sessions running, adds two tests of the explanations the board has not chosen between, and puts the east hall to work from the moment it is genuinely usable."
+            },
+            "step": 16
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_cuGscO5J546no0fEjgWT8134",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "old_string": "- **The decline is real in every strand, including the one that was growing.** In 2025 the craft group averaged 29.2 (down from 33.9), the film club 16.2 (down from 20.7) and the family workshop 37.8 (up from 31.2) — but the family workshop has been sliding since January 2025 and finished 2025 below its 2024 level. The 2024 childcare gain was real; it is now eroding.",
+              "new_string": "- **The decline is real in every strand, including the one that was growing.** In 2025 the craft group averaged 29.2 (down from 33.9), the film club 16.2 (down from 20.7) and the family workshop 37.8 (up from 31.2) — but the family workshop peaked at 44 in November 2024 and has drifted down since: December 2025 was 39 against 42 a year earlier. The 2024 childcare gain was real; it is now eroding."
+            },
+            "step": 16
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_ET_9KTEd7g1VA3qbHxAdW2s2736",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "| **East hall exhibition** | Eight artists, four and a half weeks, public programme of four workshops | 18 April – 17 May | East hall | 1 show |",
+              "old_string": "| **East hall exhibition** | Eight artists, five weeks, public programme of four workshops | 18 April – 17 May | East hall | 1 show |"
+            },
+            "step": 17
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_ET_gENaXdBWIJKPRRULm5D72449",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "**Milestone:** Fri 24, mid-point review — the first Sunday event, the first exhibition week, and the first full month with the east hall open.",
+              "old_string": "**Milestone:** Fri 24, mid-point review — first two Sunday events, first exhibition week, and the first full month with the east hall open."
+            },
+            "step": 17
+          },
+          {
+            "name": "read",
+            "callId": "call_00_ET_qwNwKvXLbCZeUyLhsElQ1170",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "offset": 100,
+              "limit": 30
+            },
+            "step": 18
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_ET_4TqVWkuNK9lf9m7cKxVz9775",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "| Sat 6 | **Spring festival**, 10:00–22:30; the family workshop runs inside it at 10:00 | All rooms |",
+              "old_string": "| Sat 6 | **Spring festival**, 11:00–22:30; family workshop runs inside it at 10:00 | All rooms |"
+            },
+            "step": 19
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_ET_A7bqyDI0rNfGejvfMYji6401",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "| **Craft group** (continuing) | Run by the existing volunteer team, materials provided; a guest artist leads one session a month | Weekly, Tuesdays 10:00–12:00 | West hall | 26 |",
+              "old_string": "| **Craft group** (continuing) | Led by volunteers, materials provided; a guest artist leads one session a month | Weekly, Tuesdays 10:00–12:00 | West hall | 26 |"
+            },
+            "step": 19
+          },
+          {
+            "name": "read",
+            "callId": "call_00_xmAUU6kI0OLWc3cZFPig6701",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "offset": 194
+            },
+            "step": 20
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_ET_PPsmG71QsxV6Iyvn82cU5492",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "- exhibition at 600 visits across the 30 open days (about 25–30 a day); festival at 400 attendances;",
+              "old_string": "- exhibition at 600 visits over five weeks; festival at 400 attendances;"
+            },
+            "step": 21
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_ET_CrZM7koNDEiVaDojMpT85590",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "10. **Some figures are my estimates, not the pack's:** exhibition artist fees (using the per-session rate as a proxy), display materials, the opening event, talk refreshments, Sunday staffing and evaluation. They are marked † and are the lines most likely to move.\n11. **The craft group is costed as volunteer-run.** The pack does not say who leads it. If it is in fact a paid leader, that is £6,500 (26 × £250) not currently in the budget, and the choice would be between using the contingency and dropping the guest-artist line.",
+              "old_string": "10. **Some figures are my estimates, not the pack's:** exhibition artist fees (using the per-session rate as a proxy), display materials, the opening event, talk refreshments, Sunday staffing and evaluation. They are marked † and are the lines most likely to move."
+            },
+            "step": 21
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_Hs2vw2KPG4i5eXo8nGPU7877",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "**The attendance record (`attendance-2024-2025.csv`) is the strongest evidence in the pack,** because it is the only source that measures what people did rather than what they say.",
+              "old_string": "**The attendance record is the strongest evidence in the pack,** because it is the only source that measures what people did rather than what they say."
+            },
+            "step": 22
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_yzD3deRDNDruNUJHeKsU5957",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "**The 2025 member survey (`member-survey-2025.md`)** explains why we test rather than assume.",
+              "old_string": "**The 2025 survey** explains why we test rather than assume."
+            },
+            "step": 22
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_ET_Tmq8a7Xg5YZG9qBNm1DR3766",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "**The staff interviews (`staff-interviews.md`)** supply the mechanism and the prices:",
+              "old_string": "**The staff interviews** supply the mechanism and the prices:"
+            },
+            "step": 23
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_ET_vkiOKvYu5kleNhEGgjcc2218",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "**The 2023 pilot (`prior-interventions.md`)** is consistent with the transport explanation but does not prove it:",
+              "old_string": "**The 2023 pilot** is consistent with the transport explanation but does not prove it:"
+            },
+            "step": 23
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_Vbqj6yECZy7XYP9CFp9m0555",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "**Room capacities, costs and staffing rules (`spaces-and-costs.md`, `constraints.md`)** set the shape rather than the content: the craft group has outgrown the workshop room's 24, the west hall's 60 suits a film audience of 16–24, and the east hall is the only room that can hold a festival. Every evening is staffed by two bought-in people, volunteers are never left alone after 18:00, and the building is clear well before 23:30. The family fund is treated as optional throughout — which is also how the plan meets the board's wish not to depend on a single funder for core sessions.\n\n**I treated `PRIOR-NOTES.md` as claims to be checked, not facts.**",
+              "old_string": "**I treated `PRIOR-NOTES.md` as claims to be checked, not facts.**"
+            },
+            "step": 24
+          },
+          {
+            "name": "read",
+            "callId": "call_00_Cd0FN6iaTlAbQBNshf9i6881",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "offset": 126,
+              "limit": 50
+            },
+            "step": 25
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_aB5KAweeKFcHENspqeMj9904",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "| Exhibition workshops | 4 × (£250 + 20 × £6) | 0 | 0 | 0 | 370 | 1,110 | 0 | 1,480 |",
+              "old_string": "| Exhibition workshops | 4 × (£250 + 20 × £6) | 0 | 0 | 0 | 740 | 740 | 0 | 1,480 |"
+            },
+            "step": 26
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_pPZ9bsEiiWkMidBSnh3E7384",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "| **Direct programme costs** | | **6,310** | **5,820** | **7,300** | **13,330** | **9,980** | **11,940** | **54,680** |",
+              "old_string": "| **Direct programme costs** | | **6,310** | **5,820** | **7,300** | **13,700** | **9,610** | **11,940** | **54,680** |"
+            },
+            "step": 26
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_ET_kumpvGlbRLhFDVjbI6h25991",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "| Mon 13 – Thu 16 | Exhibition install | East hall |",
+              "old_string": "| Mon 13 – Fri 17 | Exhibition install | East hall |"
+            },
+            "step": 27
+          },
+          {
+            "name": "bash",
+            "callId": "call_01_ET_OwibLHh8sdaiBP8w3TVH9976",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && python -c \"\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\ntot=[0]*6; direct=None\nfor L in lines:\n    if not L.startswith('| '): continue\n    c=[x.strip().replace('**','') for x in L.strip().strip('|').split('|')]\n    if c[0] in ('Total','Contingency') or c[0].startswith('Item') or c[0].startswith('---'): continue\n    if len(c)==9 and all(re.fullmatch(r'[\\d,]*',x or '0') for x in c[2:9]):\n        v=[int(x.replace(',','') or 0) for x in c[2:8]]\n        assert sum(v)==int(c[8].replace(',','') or 0), (c[0], sum(v), c[8])\n        if c[0].startswith('Direct'): direct=v\n        else:\n            for i,x in enumerate(v): tot[i]+=x\nprint('items',tot,sum(tot))\nprint('direct',direct,sum(direct), 'match', tot==direct)\nprint('total with 5000:',sum(direct)+5000,'<=60000:',sum(direct)+5000<=60000)\n\"",
+              "description": "Final verification of budget integrity"
+            },
+            "step": 27
+          },
+          {
+            "name": "read",
+            "callId": "call_00_7dA2xJCLhcvMDU535gft1541",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "offset": 176,
+              "limit": 30
+            },
+            "step": 28
+          },
+          {
+            "name": "bash",
+            "callId": "call_01_5NEU03Phqg4ciqe4gQhI8815",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && git status --porcelain --untracked-files=all",
+              "description": "Confirm only plan.md exists as a new file"
+            },
+            "step": 28
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_XjC556HJ3QO5iX1PHChc9426",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "the pre-childcare level was 27.9 and the post-childcare level 40.0, a step of about twelve people rather than the thirteen to fifteen the prior notes claim.",
+              "old_string": "the pre-childcare level was 27.9 and the post-childcare level 40.0, a step of about twelve people, not the fifteen the prior notes claim."
+            },
+            "step": 29
+          },
+          {
+            "name": "edit",
+            "callId": "call_01_TEOsUdKCqqZ524fHLKJq8895",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "set the shape rather than the content: the craft group's recorded 29–30 does not fit the workshop room's 24, the west hall's 60 suits a film audience of 16–24, and the east hall is the only room that can hold a festival.",
+              "old_string": "set the shape rather than the content: the craft group has outgrown the workshop room's 24, the west hall's 60 suits a film audience of 16–24, and the east hall is the only room that can hold a festival."
+            },
+            "step": 29
+          },
+          {
+            "name": "read",
+            "callId": "call_00_ET_jRYbTLwlGfoUrMVqwa5t5187",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "offset": 78,
+              "limit": 25
+            },
+            "step": 30
+          },
+          {
+            "name": "edit",
+            "callId": "call_00_Hz0q14fWygMuM95KU2po1587",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "new_string": "| Thu 2, 16, 30 | Film nights 7–9, with minibus | West hall |\n| Sat 4, 11 | Family workshop | West hall |\n| Tue 7 – Thu 9 | Easter family intensive, 10:00–13:00 | Workshop room |\n| Tue 7, 14, 21, 28 | Craft group; guest artist Tue 14 | West hall |\n| Thu 9 | Talk 4, with minibus | West hall |\n| Sun 12, 26 | Sunday series 3–4 | West hall |\n| Mon 13 – Thu 16 | Exhibition install | East hall |\n| Fri 17 | Exhibition opening evening, 18:30 | East hall |\n| Sat 18 | **Exhibition opens** (Wed–Sun, 11:00–16:00) | East hall |\n| Sat 18, 25 | Family workshop; exhibition workshop Sat 25, 13:00–15:00 | West hall / East hall |",
+              "old_string": "| Tue 7 – Thu 9 | Easter family intensive, 10:00–13:00 | Workshop room |\n| Sat 4, 11 | Family workshop | West hall |\n| Tue 7, 14, 21, 28 | Craft group; guest artist Tue 14 | West hall |\n| Thu 2, 16, 30 | Film nights 7–9, with minibus | West hall |\n| Thu 9 | Talk 4, with minibus | West hall |\n| Mon 13 – Thu 16 | Exhibition install | East hall |\n| Fri 17 | Exhibition opening evening, 18:30 | East hall |\n| Sat 18 | **Exhibition opens** (Wed–Sun, 11:00–16:00) | East hall |\n| Sat 18, 25 | Family workshop; exhibition workshop Sat 25, 13:00–15:00 | West hall / East hall |\n| Sun 12, 26 | Sunday series 3–4 | West hall |"
+            },
+            "step": 31
+          },
+          {
+            "name": "read",
+            "callId": "call_00_ET_cBbi9YRpcElzLOIWpqkX9517",
+            "arguments": {
+              "file_path": "deliverables/plan.md",
+              "offset": 78,
+              "limit": 18
+            },
+            "step": 32
+          },
+          {
+            "name": "bash",
+            "callId": "call_00_m7M9bnzMZxKhxxDQYJOd6877",
+            "arguments": {
+              "command": "cd \"F:\\Codex_Work_Space\\Palimpsest\\.cog2-rig\\matrix\\B\\work\" && wc -w deliverables/plan.md && grep -n \"west and west\\|TODO\\|  \" deliverables/plan.md | head -5; echo \"checks done\"; git status --porcelain --untracked-files=all",
+              "description": "Final lint and file inventory check"
+            },
+            "step": 33
+          }
+        ],
+        "userChars": 0,
+        "assistantChars": 2524,
+        "usage": {
+          "inputTokens": 22977,
+          "outputTokens": 52084,
+          "cacheReadTokens": 1875328,
+          "cacheWriteTokens": 0,
+          "totalTokens": 1950389
+        },
+        "finalAssistantText": "I'll start by exploring the working directory to understand what material is available.\nNow let me verify the budget arithmetic and monthly phasing before writing.\nData confirmed. Now I'll write the plan.\nWritten to `deliverables/plan.md` — no other files created.\n\n**What the plan contains**\n\n- **Month-by-month schedule** (Jan–Jun 2026) with actual dates and weekdays, room allocation, milestones and decision gates. 26 Tuesday craft sessions, 26 Saturday family workshops, 13 film nights + 6 talks (19 evenings), 6 Sunday afternoon events, a five-week east hall exhibition (18 Apr–17 May), a 6 June festival, and two three-day holiday intensives.\n- **Budget table** phased by month: £54,680 direct + £5,000 contingency = **£59,680**, leaving £320 against the £60,000 ceiling. Line items reconcile to the monthly columns, which reconcile to the total (verified programmatically). Childcare (£4,680) sits in the family fund, outside the budget, and is not assumed anywhere.\n- **Rationale** naming each source file, and a numbered list of eleven uncertainties.\n\n**The main evidence judgments**\n\n- Recomputing the attendance file changes the story: the 2024 childcare \"27 → 42\" is really 27.9 → 40.0 once the August trough is removed, the gain is real but eroding (43 in Jan 2025 to 39 in Dec), and **every strand finished 2025 below its December 2024 level**. The 3% headline fall masks a composition effect.\n- `PRIOR-NOTES.md` is treated as claims to check, not facts. Its note 3 (east hall climate-controlled) is contradicted by the January 2025 HVAC failure — so nothing sensitive is hung until the repair is commissioned *and* logged for four to six weeks. Its note 4 overreads the survey (44% yes / 35% no, self-selected members, explicitly a stated preference).\n- The 2023 pilot (60 booked / 37 attended, 48 / 23) is consistent with the transport explanation but doesn't prove it, so the plan re-runs the test with the missing ingredient — a minibus on every evening — with a 27 February stop rule.\n- The cycle-time risk is flagged honestly: the attendance file records one figure per strand per month and doesn't say whether strands ran weekly or monthly, so cadence is presented as my planning choice, not a fact from the pack.\n\nI also flagged two things a reviewer would otherwise catch late: the craft group is costed as volunteer-run (£6,500 exposure if it isn't), and several line items (exhibition fees, display, refreshments, evaluation) are my estimates rather than the pack's unit costs — marked † in the table."
+      }
+    ],
+    "model": "deepseek-flash",
+    "provider": "deepseek-official",
+    "totalUsage": {
+      "inputTokens": 22977,
+      "outputTokens": 52084,
+      "cacheReadTokens": 1875328,
+      "cacheWriteTokens": 0,
+      "totalTokens": 1950389
+    },
+    "tokenAccounting": "summed from assistant/message usage events in the session stream"
+  },
+  "deliverable": {
+    "present": true,
+    "bytes": 18812,
+    "digest": "81a23337e1e601dc08549a4a03fbaaa966154ccd46cc9168bcf5dccd9b4c51dc",
+    "text": "# Harrowgate Community Trust — Programme Plan, January–June 2026\n\n**Prepared for:** the board\n**Programming budget:** £60,000 (artists, materials, bought-in staff hours, marketing, event costs)\n**Excluded from this budget:** building repairs (east hall HVAC, capital grant) and the family fund (capped separately at £9,000)\n\n---\n\n## 1. Summary\n\nThe plan keeps the three existing sessions running, adds two tests of the explanations the board has not chosen between, and puts the east hall to work from the moment it is genuinely usable. It spends **£59,680** of the £60,000, leaves £320 unallocated, and holds £5,000 in contingency.\n\nThree things drive the design:\n\n- **The decline is real in every strand, including the one that was growing.** In 2025 the craft group averaged 29.2 (down from 33.9), the film club 16.2 (down from 20.7) and the family workshop 37.8 (up from 31.2) — but the family workshop peaked at 44 in November 2024 and has drifted down since: December 2025 was 39 against 42 a year earlier. The 2024 childcare gain was real; it is now eroding.\n- **The board has three competing explanations and no test that separates them.** So the plan buys evidence as well as activity: an evening season with transport actually provided (the one condition the 2023 pilot never met), and a Sunday afternoon series in the slot the trust has never tried.\n- **The east hall cannot be used as the 2019 survey describes.** The HVAC failed in January 2025. Nothing sensitive goes in until the repair is commissioned *and* has been monitored.\n\n---\n\n## 2. The programme\n\n| Strand | What it is | Cadence | Room | Sessions |\n| --- | --- | --- | --- | --- |\n| **Craft group** (continuing) | Run by the existing volunteer team, materials provided; a guest artist leads one session a month | Weekly, Tuesdays 10:00–12:00 | West hall | 26 |\n| **Family workshop** (continuing) | Paid workshop leader plus materials; free childcare alongside it if the family fund is released | Weekly, Saturdays 10:00–12:00 | West hall | 26 |\n| **Evening season** (test) | 13 film nights and 6 talks, every one with a booked minibus from the square | 19 Thursdays, 19:00–21:30 | West hall | 19 |\n| **Sunday series** (test) | Artist-led afternoon sessions; no evening staffing, no transport needed | 6 Sundays, 14:00–16:00, from March | West hall | 6 |\n| **East hall exhibition** | Eight artists, four and a half weeks, public programme of four workshops | 18 April – 17 May | East hall | 1 show |\n| **Spring festival** | Day-to-evening festival across all three public rooms | Saturday 6 June | East hall + west hall + café | 1 |\n| **Holiday intensives** | Three-day family making blocks in the Easter and half-term weeks | 2 blocks of 3 days | Workshop room | 6 days |\n\nThe craft group moves to the west hall: it averages 29–30 and the workshop room holds 24. The workshop room stays in use for glazing and kiln work in small groups, and for the holiday intensives (capped at 20).\n\n---\n\n## 3. Month-by-month schedule\n\n### January 2026 — restart, baseline, first transport test\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Thu 1 | Closed (New Year's Day) | — |\n| Sat 3, 10, 17, 24, 31 | Family workshop, 10:00–12:00; childcare 10:00–14:00 if the fund is released | West hall |\n| Tue 6, 13, 20, 27 | Craft group, 10:00–12:00; guest artist Tue 13 | West hall |\n| Thu 8, 22 | Film nights 1–2, 19:00–21:30; minibus picks up 18:30, returns 21:45 | West hall |\n| Thu 15 | Talk 1, 19:00–20:30, with minibus | West hall |\n| Thu 29 | No event — evening review pack prepared | — |\n\n**Milestones:** baseline pack to the board Fri 9 (2025 averages by strand, bookings and no-shows, membership 610). Board decisions due Fri 30: success measures, release of the family fund, and confirmation of the minibus trial to the end of February.\n\n### February 2026 — test continues; the decision point\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Sat 7, 14, 21, 28 | Family workshop | West hall |\n| Tue 3, 10, 17, 24 | Craft group; guest artist Tue 10 | West hall |\n| Thu 5, 19 | Film nights 3–4, with minibus | West hall |\n| Thu 12 | Talk 2, with minibus | West hall |\n| Thu 26 | No event — evening review | — |\n\n**Milestone:** Fri 27, evening-season review. Six evenings of data (4 films, 2 talks). **Stop rule:** continue the minibus only if average attendance is at least 20 and at least a quarter of attenders arrive by minibus. If not, the minibus stops and the £3,120 budgeted for the remaining 13 evenings moves to the Sunday series and the exhibition public programme. Also on 27 Feb: confirmation that the HVAC grant is approved and the repair is on schedule.\n\n### March 2026 — the east hall opens; the Sunday test begins\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Mon 2 | East hall handover check; temperature and humidity logging begins | East hall |\n| Sat 7, 14, 21, 28 | Family workshop | West hall |\n| Tue 3, 10, 17, 24, 31 | Craft group; guest artist Tue 10 | West hall |\n| Thu 5, 19 | Film nights 5–6, with minibus | West hall |\n| Thu 12 | Talk 3 — first event in the east hall (west hall if commissioning slips) | East hall |\n| Sun 8, 22 | Sunday series 1–2 | West hall |\n| Thu 26 | No event | — |\n\n**Milestone:** the east hall is used for the first time on Thu 12, at low risk and low cost, before anything is hung in it.\n\n### April 2026 — exhibition, Easter intensive, peak spend\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Thu 2, 16, 30 | Film nights 7–9, with minibus | West hall |\n| Sat 4, 11 | Family workshop | West hall |\n| Tue 7 – Thu 9 | Easter family intensive, 10:00–13:00 | Workshop room |\n| Tue 7, 14, 21, 28 | Craft group; guest artist Tue 14 | West hall |\n| Thu 9 | Talk 4, with minibus | West hall |\n| Sun 12, 26 | Sunday series 3–4 | West hall |\n| Mon 13 – Thu 16 | Exhibition install | East hall |\n| Fri 17 | Exhibition opening evening, 18:30 | East hall |\n| Sat 18 | **Exhibition opens** (Wed–Sun, 11:00–16:00) | East hall |\n| Sat 18, 25 | Family workshop; exhibition workshop Sat 25, 13:00–15:00 | West hall / East hall |\n\n**Milestone:** Fri 24, mid-point review — the first Sunday event, the first exhibition week, and the first full month with the east hall open.\n\n### May 2026 — exhibition closes; half-term; festival build\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Sat 2, 9, 16, 23, 30 | Family workshop; exhibition workshops Sat 2, 9, 16 at 13:00–15:00 | West hall / East hall |\n| Tue 5, 12, 19, 26 | Craft group; guest artist Tue 12 | West hall |\n| Thu 7 | Talk 5, with minibus | West hall |\n| Thu 14, 28 | Film nights 10–11, with minibus | West hall |\n| Sun 10 | Sunday series 5 | West hall |\n| Sun 17 | **Exhibition closes** | East hall |\n| Mon 18 – Tue 19 | Exhibition deinstall | East hall |\n| Tue 26 – Thu 28 | Half-term family intensive, 10:00–13:00 | Workshop room |\n\n**Milestone:** exhibition visitor count and workshop bookings reported to the board; festival programme and artist contracts confirmed.\n\n### June 2026 — festival, evaluation, decisions for the second half\n\n| Date | Activity | Room |\n| --- | --- | --- |\n| Tue 2, 9, 16, 23, 30 | Craft group; guest artist Tue 9 | West hall |\n| Thu 4 | Talk 6, with minibus | West hall |\n| Sat 6 | **Spring festival**, 10:00–22:30; the family workshop runs inside it at 10:00 | All rooms |\n| Sat 13, 20, 27 | Family workshop | West hall |\n| Thu 11, 25 | Film nights 12–13, with minibus | West hall |\n| Sun 14 | Sunday series 6 | West hall |\n| W/c Mon 15 | Member survey re-run (same questions as October 2025) | Online and paper |\n\n**Milestone:** Fri 26, evaluation report and recommendations for July–December to the board.\n\n---\n\n## 4. Budget\n\nAll figures in £. Unit costs are taken from the pack's cost schedule except where marked †, which are planning estimates.\n\n| Item | Basis | Jan | Feb | Mar | Apr | May | Jun | Total |\n| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| Marketing and print | £600 × 6 months | 600 | 600 | 600 | 600 | 600 | 600 | 3,600 |\n| Craft group materials | 30 × £6 × 26 | 720 | 720 | 900 | 720 | 720 | 900 | 4,680 |\n| Craft guest artists | 6 × £250 | 250 | 250 | 250 | 250 | 250 | 250 | 1,500 |\n| Family workshop leader | 26 × £250 | 1,250 | 1,000 | 1,000 | 1,000 | 1,250 | 1,000 | 6,500 |\n| Family workshop materials | 40 × £6 × 26 | 1,200 | 960 | 960 | 960 | 1,200 | 960 | 6,240 |\n| Film licence | 13 × £120 | 240 | 240 | 240 | 360 | 240 | 240 | 1,560 |\n| Film technician | 13 × £150 | 300 | 300 | 300 | 450 | 300 | 300 | 1,950 |\n| Evening staffing (two staff) | 19 × £220 | 660 | 660 | 660 | 880 | 660 | 660 | 4,180 |\n| Minibus and driver | 19 × £240 | 720 | 720 | 720 | 960 | 720 | 720 | 4,560 |\n| Talk speakers | 6 × £250 | 250 | 250 | 250 | 250 | 250 | 250 | 1,500 |\n| Talk refreshments † | 6 × £120 | 120 | 120 | 120 | 120 | 120 | 120 | 720 |\n| Sunday series artists | 6 × £250 | 0 | 0 | 500 | 500 | 250 | 250 | 1,500 |\n| Sunday series materials | 30 × £6 × 6 | 0 | 0 | 360 | 360 | 180 | 180 | 1,080 |\n| Sunday staffing (two staff) † | 6 × £220 | 0 | 0 | 440 | 440 | 220 | 220 | 1,320 |\n| Exhibition artist fees † | 8 × £250 | 0 | 0 | 0 | 2,000 | 0 | 0 | 2,000 |\n| Exhibition install technician | 6 × £150 | 0 | 0 | 0 | 600 | 300 | 0 | 900 |\n| Exhibition display and materials † | estimate | 0 | 0 | 0 | 1,000 | 500 | 0 | 1,500 |\n| Exhibition opening † | staffing + refreshments | 0 | 0 | 0 | 400 | 0 | 0 | 400 |\n| Exhibition workshops | 4 × (£250 + 20 × £6) | 0 | 0 | 0 | 370 | 1,110 | 0 | 1,480 |\n| Holiday intensives | 6 × (£250 + 20 × £6) | 0 | 0 | 0 | 1,110 | 1,110 | 0 | 2,220 |\n| Spring festival | 8 × £250 + 200 × £6 + 3 × £150 + 2 × £220 | 0 | 0 | 0 | 0 | 0 | 4,090 | 4,090 |\n| Evaluation — survey and data † | estimate | 0 | 0 | 0 | 0 | 0 | 1,200 | 1,200 |\n| **Direct programme costs** | | **6,310** | **5,820** | **7,300** | **13,330** | **9,980** | **11,940** | **54,680** |\n| Contingency | HVAC delay, minibus price, weather, low uptake | — | — | — | — | — | — | 5,000 |\n| **Total** | | | | | | | | **59,680** |\n\n**Within the £60,000 ceiling by £320.**\n\n**Not in this budget:**\n\n- **Family fund (separate, capped at £9,000):** 26 Saturdays × £180 = **£4,680** for childcare, if the trustees release it. It is not assumed anywhere above. If it is not released, the family workshop still runs — same leader, same materials — and on the 2024 pre-childcare level we should expect around 30 rather than 40.\n- **Building repairs:** the east hall HVAC repair (quoted £18,000) is a capital grant application and is not a programming cost.\n\n**Notes on the numbers.** The minibus is budgeted inside the programming budget rather than through a separate grant, because in 2023 the pilot failed when the driver funding fell through. Evening and Sunday staffing is bought in at the pack's four-hour rate of £220 for two staff; volunteer hours are not costed. Contingency is 9% of direct costs and is the first place to look if the HVAC schedule slips.\n\n---\n\n## 5. Rationale: what I relied on, and what I am uncertain about\n\n### The evidence I relied on\n\n**The attendance record (`attendance-2024-2025.csv`) is the strongest evidence in the pack,** because it is the only source that measures what people did rather than what they say.\n\n| Strand | 2024 average | 2025 average | Change |\n| --- | ---: | ---: | ---: |\n| Tuesday craft group | 33.9 | 29.2 | −14% |\n| Thursday film club | 20.7 | 16.2 | −22% |\n| Saturday family workshop | 31.2 | 37.8 | +21% |\n\nThree things follow. First, the decline is not confined to one badly programmed strand — it runs through all three. Second, the family workshop's gain is genuine: comparing like with like (excluding the August trough, which appears in both years) the pre-childcare level was 27.9 and the post-childcare level 40.0, a step of about twelve people rather than the thirteen to fifteen the prior notes claim. Third, that gain is eroding — 43 in January 2025 down to 39 in December, and every strand finished 2025 below its December 2024 figure (craft 30 v 35, film 17 v 22, family 39 v 42). Overall attendances fell only 3% (1,030 to 997) because the family growth masked the other two. That mask is now coming off.\n\n**The 2025 member survey (`member-survey-2025.md`)** explains why we test rather than assume. Transport is the most-cited barrier (61%), then programme (34%), cost (29%) and caring responsibilities (27%). Saturday morning is the preferred slot (38%) and Sunday afternoon the least favoured (12%). That is enough to justify a Saturday-based family strand and a cheap Sunday test, but not enough to justify a large evening bet on its own.\n\n**The staff interviews (`staff-interviews.md`)** supply the mechanism and the prices: the last scheduled bus leaves the square at 18:40, a taxi is about £14 return, the 2023 minibus quote was £240 a night and the pilot ran without one when the driver funding failed. They also supply the two facts that overrule the prior notes — the HVAC failed in January 2025, and the east hall is usable from 1 March only if the capital grant is approved and the unit is commissioned.\n\n**The 2023 pilot (`prior-interventions.md`)** is consistent with the transport explanation but does not prove it: 60 seats were reserved for the first night and 37 people came; 48 were reserved for the second and 23 came. A no-show rate rising from 38% to 52% fits people discovering they could not get home. It equally fits a weak second film. Three nights with no transport and no price test cannot settle it, which is why the plan repeats the test with the missing ingredient present.\n\n**Room capacities, costs and staffing rules (`spaces-and-costs.md`, `constraints.md`)** set the shape rather than the content: the craft group's recorded 29–30 does not fit the workshop room's 24, the west hall's 60 suits a film audience of 16–24, and the east hall is the only room that can hold a festival. Every evening is staffed by two bought-in people, volunteers are never left alone after 18:00, and the building is clear well before 23:30. The family fund is treated as optional throughout — which is also how the plan meets the board's wish not to depend on a single funder for core sessions.\n\n**I treated `PRIOR-NOTES.md` as claims to be checked, not facts.** Note 3 (east hall climate-controlled) is out of date and would have put sensitive work at risk. Note 4 (members want evening events) overreads the survey: 44% said yes, 21% maybe and 35% no, among 240 self-selected members, and the survey volunteer explicitly warns the figure is a stated preference with no price test. Note 1 is directionally right and the plan follows its condition — no evening opening without transport. Note 2 is right in direction, overstated in size. Note 5 (website traffic) shows no attendance effect and is not relied on.\n\nI did **not** fund a repeat of the 2022 outreach van: it reached 11 people a visit, no evaluation survives, and staff remember it as \"not a substitute for the building\".\n\n### What I am uncertain about\n\n1. **The cause of the decline is still unidentified.** The plan is a set of tests, not a bet. If transport is not the reason, the main loss is the minibus line (£4,560), and the 27 February stop rule caps it at about £1,440.\n2. **The survey cannot see the people who left.** It is members only, 39% response, self-selected. Lapsed attenders — the group the plan most needs to reach — are absent from it by construction.\n3. **Stated preference is not behaviour.** \"Would you come if transport were available?\" was asked without a price. The 44% may overstate real uptake, which is exactly what the minibus trial measures.\n4. **The attendance file does not record frequency.** It gives one figure per strand per month and does not say whether each strand ran weekly or monthly. I have used the figures as indicative per-session levels and set the cadence explicitly in the schedule; the cost of the plan depends on that choice, which is mine, not the pack's.\n5. **The east hall date is contingent.** 1 March depends on a capital grant not yet approved and a repair not yet let. If commissioning slips, the exhibition moves to the west hall with five artists and no sensitive works, and the festival stays in the west hall and café. Even on time, nothing sensitive is hung until four to six weeks of logger data confirm the hall holds stable conditions — the 2019 survey is not evidence about 2026.\n6. **Costs may have moved.** The pack's figures are described as typical; the minibus quote dates from 2023. The £5,000 contingency is sized for that.\n7. **The childcare money is not committed.** Trustees have not decided whether the family fund can be used every Saturday. The core family session does not depend on it, which also satisfies the board's wish not to depend on a single funder for core sessions.\n8. **Six months cannot separate a trend from a season.** August is the trough in both years and the plan does not run into August, so the strongest seasonality effect is outside the window — but a spring-only comparison will still be noisy, and a single term is a small sample.\n9. **There is no revenue data in the pack.** The plan therefore forecasts attendance and behaviour, not income; the café and ticket income should be reported alongside it but cannot be projected from what we have.\n10. **Some figures are my estimates, not the pack's:** exhibition artist fees (using the per-session rate as a proxy), display materials, the opening event, talk refreshments, Sunday staffing and evaluation. They are marked † and are the lines most likely to move.\n11. **The craft group is costed as volunteer-run.** The pack does not say who leads it. If it is in fact a paid leader, that is £6,500 (26 × £250) not currently in the budget, and the choice would be between using the contingency and dropping the guest-artist line.\n\n---\n\n## 6. How success will be judged\n\nThe board has not chosen a measure (open question 6), so this is a proposal for confirmation on 30 January. Whatever is chosen, the data collection is the same; only the headline changes.\n\n**Primary:** average attendance per session for each strand, against its 2025 average — craft 29.2, film 16.2, family 37.8. Success is arresting the decline, not restoring 2024 in one term.\n\n**Secondary:**\n\n- share of evening attenders arriving by minibus (target 25% or more) and the no-show rate against the 2023 pilot's 38–52%;\n- Sunday series at 25 or more per event, talks at 30 or more;\n- exhibition at 600 visits across the 30 open days (about 25–30 a day); festival at 400 attendances;\n- net change in membership against the 610 baseline;\n- café takings on event days, which the pack does not currently record and which the plan would start recording in January.\n\nA single number — \"did more people come, and did they come from outside the current membership\" — is the one I would put in front of the board in June.\n"
+  },
+  "seed": null
+}

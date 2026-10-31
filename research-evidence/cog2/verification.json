@@ -1,0 +1,87 @@
+{
+  "schema": "cog2-verification/v1",
+  "at": "2026-11-01",
+  "codeFreeze": {
+    "commit": "e23a29a9d8331da86dad46f3c3ea6070d6319e5c",
+    "tree": "2e006507758f67d587f522f31bdf54741020ffa2"
+  },
+  "build": {
+    "command": "pnpm run build",
+    "exit": 0
+  },
+  "architecture": {
+    "command": "pnpm run architecture:check",
+    "exit": 0,
+    "violations": 0,
+    "baselineExceptions": 9
+  },
+  "publicApi": {
+    "command": "pnpm run architecture:check-public-api",
+    "exit": 0,
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0
+  },
+  "targeted": {
+    "command": "npx vitest run <21 files> --maxWorkers=1",
+    "files": 21,
+    "tests": 76,
+    "failed": 0,
+    "exit": 0,
+    "log": "verification/targeted-serial.log"
+  },
+  "targetedParallel": {
+    "firstRunObserved": {
+      "files": 21,
+      "failedFiles": 8,
+      "failedTests": 9,
+      "exit": 1,
+      "consolePreserved": false,
+      "cause": "HOST_ERROR/no attempt id under default parallelism"
+    },
+    "diagnosticRun": {
+      "files": 21,
+      "failedFiles": 5,
+      "failedTests": 5,
+      "exit": 1,
+      "log": "verification/targeted-parallel-failed.log",
+      "json": "verification/targeted-parallel-failed.json"
+    },
+    "isolated": {
+      "file": "test/ci3_promotion_authority.test.ts",
+      "tests": 5,
+      "failed": 0,
+      "exit": 0,
+      "log": "verification/isolated-failed-file.log"
+    },
+    "disposition": "resource contention in Work/qualification suites; serial authoritative run passed; not an application assertion and not caused by the launch hint"
+  },
+  "broad": {
+    "command": "npx vitest run --exclude '**/r3l0*.test.ts' --exclude '**/trajectory_*.test.ts' --maxWorkers=2",
+    "selection": {
+      "all": 417,
+      "excludedR3l0": 39,
+      "excludedTrajectory": 78,
+      "includedFiles": 300
+    },
+    "files": 300,
+    "tests": 3777,
+    "failed": 0,
+    "exit": 0,
+    "log": "verification/broad.log",
+    "json": "verification/broad.json"
+  },
+  "protectedAssets": {
+    "evidenceTrees": 70,
+    "evidenceTreesAtBaseline": 69,
+    "worktrees": 95,
+    "gateRoots": 19,
+    "stashes": 0,
+    "realRuntimeHomeWritten": false
+  },
+  "hygiene": {
+    "testGlobalSetupRemovedLeakedTempDirs": 971,
+    "note": "the repository's own test global setup removed temp dirs created by the run"
+  },
+  "note": "No executable change was made after the Code Freeze; all later files are documentation and evidence."
+}

@@ -1,0 +1,451 @@
+{
+  "schema": "cog2-scores/v1",
+  "scoredAt": "2026-11-01",
+  "scorer": "single evaluator (this agent); non-blinded; the rubric is the pre-registered one in COG2-EXPERIMENTAL-PROTOCOL.md",
+  "verdictVocabulary": [
+    "PASS",
+    "PARTIAL",
+    "FAIL",
+    "OBSERVED",
+    "NA"
+  ],
+  "limits": [
+    "One run per condition. This supports bounded observations, not statistical superiority.",
+    "The evaluator and the participants share one machine and one model family; isolation is organizational, not blinded.",
+    "Lexical signals were not used as a score: COG-1's lexical rubric saturated. Verdicts come from reading the delivered artifacts.",
+    "Human coordination is counted as the number of task-author interventions needed to make the product surface reachable; it is not a wall-clock human-time measurement.",
+    "Exact token usage is summed from assistant/message usage events; it is model usage, not a price.",
+    "The original P round-2 record was overwritten by the seam re-test before all records were copied. It was reconstructed from its preserved session stream (identical usage and 95/0 tool-call counts) and is labelled reconstructed."
+  ],
+  "matrix": {
+    "A": {
+      "label": "strong file-native baseline",
+      "productTools": false,
+      "projectInitialized": false,
+      "observed": {
+        "toolCalls": 102,
+        "palimpsestCalls": 0,
+        "wallClockMs": 702225,
+        "planChars": 39800,
+        "totalTokens": 7561141
+      },
+      "rubric": {
+        "R1": {
+          "verdict": "PASS",
+          "evidence": "Six-Month Programme Plan, £59,700 plan total, month-by-month schedule and rationale."
+        },
+        "R2": {
+          "verdict": "PASS",
+          "evidence": "A transport-enabled evening series at small scale; the 2023 failure is acknowledged."
+        },
+        "R3": {
+          "verdict": "PASS",
+          "evidence": "Saturday family workshop, 26 sessions; family fund request £4,680."
+        },
+        "R4": {
+          "verdict": "PASS",
+          "evidence": "\"The 2019 'climate-controlled' description is no longer true\"; no sensitive textiles or paper before commissioning."
+        },
+        "R5": {
+          "verdict": "PASS",
+          "evidence": "\"44% ... is a stated preference ... hypothetical ... did not test actual attendance\"."
+        },
+        "R6": {
+          "verdict": "PASS",
+          "evidence": "Website traffic is explicitly not evidence of attendance and is not used as a success measure."
+        },
+        "R7": {
+          "verdict": "PASS",
+          "evidence": "£59,700 with an arithmetic check against £60,000."
+        }
+      }
+    },
+    "B": {
+      "label": "Palimpsest installed, no ProjectIR",
+      "productTools": true,
+      "projectInitialized": false,
+      "observed": {
+        "toolCalls": 50,
+        "palimpsestCalls": 0,
+        "wallClockMs": 308942,
+        "planChars": 18812,
+        "totalTokens": 1950389
+      },
+      "rubric": {
+        "R1": {
+          "verdict": "PASS",
+          "evidence": "Programme plan with six months, budget table and rationale."
+        },
+        "R2": {
+          "verdict": "PASS",
+          "evidence": "\"an evening season with transport actually provided (the one condition the 2023 pilot never met)\"."
+        },
+        "R3": {
+          "verdict": "PASS",
+          "evidence": "Family workshop with childcare if the family fund is released."
+        },
+        "R4": {
+          "verdict": "PASS",
+          "evidence": "\"Nothing sensitive goes in until the repair is commissioned and has been monitored.\""
+        },
+        "R5": {
+          "verdict": "PASS",
+          "evidence": "\"stated preference with no price test\"; \"Stated preference is not behaviour\"."
+        },
+        "R6": {
+          "verdict": "PASS",
+          "evidence": "\"Note 5 (website traffic) shows no attendance effect and is not relied on.\""
+        },
+        "R7": {
+          "verdict": "PASS",
+          "evidence": "£59,680 spent, £320 unallocated."
+        }
+      },
+      "taskFit": {
+        "verdict": "OBSERVED",
+        "evidence": "The model made no project-initialization attempt and continued with ordinary files. This reproduces the COG-1 product-entry limitation: a Palimpsest installation whose project was never started is indistinguishable from a file workspace in behaviour."
+      }
+    },
+    "C": {
+      "label": "project-ready, neutral task (no seam)",
+      "productTools": true,
+      "projectInitialized": true,
+      "observed": {
+        "toolCalls": 50,
+        "palimpsestCalls": 0,
+        "wallClockMs": 686251,
+        "planChars": 33165,
+        "totalTokens": 4043331
+      },
+      "rubric": {
+        "R1": {
+          "verdict": "PASS",
+          "evidence": "Plan total £59,088, six months, rationale."
+        },
+        "R2": {
+          "verdict": "PASS",
+          "evidence": "Four Friday film nights with a minibus; the 2023 failure is used as the reason to test with transport."
+        },
+        "R3": {
+          "verdict": "PASS",
+          "evidence": "24 weekly Saturday workshops plus holiday sessions, with childcare from the separate fund."
+        },
+        "R4": {
+          "verdict": "PASS",
+          "evidence": "East hall use conditional on HVAC commissioning; the 2019 claim is corrected from the interviews."
+        },
+        "R5": {
+          "verdict": "PASS",
+          "evidence": "The 44% figure is called a stated preference with the method-note caveat."
+        },
+        "R6": {
+          "verdict": "PASS",
+          "evidence": "Website traffic \"did not change attendance\"; reach is not the binding constraint."
+        },
+        "R7": {
+          "verdict": "PASS",
+          "evidence": "£59,088 with £912 headroom."
+        }
+      },
+      "taskFit": {
+        "verdict": "FAIL",
+        "evidence": "A valid ProjectIR and five recorded journal entries existed, but the model made ZERO product calls. The neutral task did not make the recorded work visible; the plan was re-derived from raw files."
+      },
+      "inheritance": {
+        "verdict": "FAIL",
+        "evidence": "The journal was never read (0 palimpsest_project calls), so discovery and retrieval did not occur. The plan quality remained high because the raw pack is sufficient."
+      }
+    },
+    "D": {
+      "label": "project-ready plus one task-shaped invitation",
+      "productTools": true,
+      "projectInitialized": true,
+      "observed": {
+        "toolCalls": 92,
+        "palimpsestCalls": 7,
+        "wallClockMs": 578722,
+        "planChars": 23338,
+        "totalTokens": 4643097
+      },
+      "rubric": {
+        "R1": {
+          "verdict": "PASS",
+          "evidence": "Plan with month-by-month schedule, budget table and rationale."
+        },
+        "R2": {
+          "verdict": "PASS",
+          "evidence": "Eight Friday events with a hired minibus; the 2023 result is treated as a negative result for an untransported series."
+        },
+        "R3": {
+          "verdict": "PASS",
+          "evidence": "Weekly Saturday workshop with family-fund childcare."
+        },
+        "R4": {
+          "verdict": "PASS",
+          "evidence": "East hall gated on HVAC commissioning; \"2019 ... no longer true\"."
+        },
+        "R5": {
+          "verdict": "PASS",
+          "evidence": "The survey is a stated preference; the method note is quoted."
+        },
+        "R6": {
+          "verdict": "PASS",
+          "evidence": "Website traffic is not evidence of attendance."
+        },
+        "R7": {
+          "verdict": "PASS",
+          "evidence": "Budget table within £60,000; programme total £58,500 in the no-grant case."
+        }
+      },
+      "taskFit": {
+        "verdict": "PASS",
+        "evidence": "The one-sentence invitation changed selection from 0 to 7 product calls: status, project overview, preview, journal_entries, open_loops, manage status, surfaces."
+      },
+      "inheritance": {
+        "verdict": "PASS",
+        "evidence": "journal_entries was read and the plan uses the 2023 numbers (37, 19), the 18:40 minibus and the stated-preference correction."
+      }
+    },
+    "CSEAM": {
+      "label": "project-ready, neutral task, launch seam present",
+      "productTools": true,
+      "projectInitialized": true,
+      "observed": {
+        "toolCalls": 35,
+        "palimpsestCalls": 3,
+        "wallClockMs": 304443,
+        "planChars": 23031,
+        "totalTokens": 1058488
+      },
+      "rubric": {
+        "R1": {
+          "verdict": "PASS",
+          "evidence": "Plan with six months, budget and rationale; committed £59,468 with £532 unallocated."
+        },
+        "R2": {
+          "verdict": "PASS",
+          "evidence": "\"No Friday evening opening is proposed\"; the 2023 negative result is used directly."
+        },
+        "R3": {
+          "verdict": "PASS",
+          "evidence": "Saturday family workshop with family-fund childcare."
+        },
+        "R4": {
+          "verdict": "PASS",
+          "evidence": "Nothing in the east hall before commissioning; the 2019 claim is corrected."
+        },
+        "R5": {
+          "verdict": "PASS",
+          "evidence": "The 44% figure is called hypothetical and the method note is quoted."
+        },
+        "R6": {
+          "verdict": "PASS",
+          "evidence": "Website traffic had no detectable attendance effect; reach is not the binding constraint."
+        },
+        "R7": {
+          "verdict": "PASS",
+          "evidence": "Within £60,000 with unallocated headroom."
+        }
+      },
+      "taskFit": {
+        "verdict": "PASS",
+        "evidence": "The launch sentence produced 3 product calls (journal_entries, overview, open_loops) where the same task without it produced 0."
+      },
+      "inheritance": {
+        "verdict": "PASS",
+        "evidence": "The journal was read and the plan states the negative result directly; it is also the cheapest high-quality run (35 calls, 304s)."
+      },
+      "economics": {
+        "verdict": "PASS",
+        "evidence": "35 tool calls and 304s versus C's 50 calls and 686s; the seam removed re-derivation work."
+      }
+    },
+    "NEG": {
+      "label": "negative task-fit control, no seam",
+      "observed": {
+        "toolCalls": 0,
+        "palimpsestCalls": 0,
+        "wallClockMs": 13874,
+        "answerInReply": true,
+        "totalTokens": 10835
+      },
+      "taskFit": {
+        "verdict": "PASS",
+        "evidence": "A self-contained rewrite produced no project calls and no files. Correct avoidance."
+      }
+    },
+    "NEGSEAM": {
+      "label": "negative task-fit control with the seam",
+      "observed": {
+        "toolCalls": 0,
+        "palimpsestCalls": 0,
+        "wallClockMs": 14347,
+        "answerInReply": true,
+        "totalTokens": 10971
+      },
+      "taskFit": {
+        "verdict": "PASS",
+        "evidence": "The seam did not cause unnecessary work on a task that needed none."
+      }
+    }
+  },
+  "inheritance": {
+    "P": {
+      "carrier": "palimpsest project journal",
+      "round1": {
+        "observed": {
+          "toolCalls": 27,
+          "palimpsestCalls": 11,
+          "wallClockMs": 174080,
+          "journalEntriesRecorded": 5,
+          "totalTokens": 583574
+        },
+        "I1": {
+          "verdict": "PASS",
+          "evidence": "The 2023 pilot drew 37, 23 and 19; the last minibus is 18:40; the series failed without transport."
+        },
+        "I2": {
+          "verdict": "PASS",
+          "evidence": "The HVAC failed in January 2025; the 2019 climate claim is stale; 1 March is conditional."
+        },
+        "I3": {
+          "verdict": "PASS",
+          "evidence": "Five entries recorded through palimpsest_project: NEGATIVE_RESULT, three REFERENCE_NOTEs, one OPPORTUNITY."
+        },
+        "I4": {
+          "verdict": "PASS",
+          "evidence": "Structural/floor-load data is explicitly absent; the hall's suitability is not overclaimed."
+        }
+      },
+      "round2NoSeam": {
+        "observed": {
+          "toolCalls": 95,
+          "palimpsestCalls": 0,
+          "wallClockMs": 1066159,
+          "journalEntriesPresent": 8,
+          "record": "reconstructed from the preserved session stream",
+          "totalTokens": 10365799
+        },
+        "R1toR8": {
+          "verdict": "PASS",
+          "evidence": "The plan adapts to the late bus (events end 20:30 before 21:15), the 1 March east-hall availability, and the £4,000 cap (20 of 26 Saturdays); the website update changes nothing."
+        },
+        "inheritance": {
+          "verdict": "FAIL",
+          "evidence": "ZERO product calls. The 8-entry journal was never read; the earlier work did not reach the later plan. The plan is good because the raw pack is sufficient, not because the project capital was used."
+        }
+      },
+      "round2Seam": {
+        "observed": {
+          "toolCalls": 104,
+          "palimpsestCalls": 1,
+          "wallClockMs": 769105,
+          "journalEntriesPresent": 8,
+          "totalTokens": 8625587
+        },
+        "R1toR8": {
+          "verdict": "PASS",
+          "evidence": "The plan adapts to the late bus, the 1 March availability and the 22-session/4-unfunded-Saturday family-fund limit."
+        },
+        "inheritance": {
+          "verdict": "PASS",
+          "evidence": "One journal_entries call; the plan uses the 2023 attendance, the 18:40 service and the earlier east-hall analysis."
+        }
+      }
+    },
+    "F": {
+      "carrier": "ordinary PRIOR-NOTES.md",
+      "round1": {
+        "observed": {
+          "toolCalls": 11,
+          "palimpsestCalls": 0,
+          "wallClockMs": 86343,
+          "notesChars": 8813,
+          "totalTokens": 173881
+        },
+        "I1": {
+          "verdict": "PASS",
+          "evidence": "The pilot failure and the transport cause are recorded."
+        },
+        "I2": {
+          "verdict": "PASS",
+          "evidence": "The HVAC failure is recorded and the 2019 claim is marked stale."
+        },
+        "I3": {
+          "verdict": "PASS",
+          "evidence": "Conclusions appended to sources/PRIOR-NOTES.md."
+        },
+        "I4": {
+          "verdict": "PASS",
+          "evidence": "The 1 March date and the missing environmental data are stated as uncertainties."
+        }
+      },
+      "round2": {
+        "observed": {
+          "toolCalls": 77,
+          "palimpsestCalls": 0,
+          "wallClockMs": 827721,
+          "planChars": 41901,
+          "totalTokens": 5021636
+        },
+        "R1toR8": {
+          "verdict": "PASS",
+          "evidence": "The plan uses the late bus, gates the east hall on commissioning and handles the £4,000 family-fund cap."
+        },
+        "inheritance": {
+          "verdict": "PASS",
+          "evidence": "sources/PRIOR-NOTES.md was read (one of the file reads) and the plan says \"The Round 1 notes ... were used as a check\"; it cites the two stale claims the notes corrected."
+        }
+      }
+    }
+  },
+  "crossAgent": {
+    "autoPlan": {
+      "verdict": "FOCUS",
+      "evidence": "The advisor chose FOCUS with PRINCIPAL_CONTINUES: \"Coordination is blocked ... no independent sovereign peer\" and \"the recommended structure is a single principal locus (FOCUS), so no branch, cell or agent is created\"."
+    },
+    "explicitParallel": {
+      "verdict": "CAPABILITY_REQUIRED",
+      "evidence": "PARALLEL was refused honestly: \"reasoning.cell is UNAVAILABLE ... reasoning branches capability is not available\", capability warning emitted, executionKind CAPABILITY_REQUIRED."
+    },
+    "conclusion": "No cross-agent influence was exercised in this deployment. No source-to-recipient claim is made. A test-only callback forwarding a finding would prove a mechanism, not the normal product, and was not used."
+  },
+  "adaptation": {
+    "sequentialUpdates": {
+      "verdict": "PASS",
+      "evidence": "Both P round-2 and F round-2 correctly used the Friday late bus, the 1 March east-hall availability and the £4,000 family-fund cap; both correctly ignored the website update."
+    },
+    "inProgressDelivery": {
+      "verdict": "NOT EXERCISED",
+      "evidence": "The isolated profile is attention activation \"none\" (pull mode), and the one-shot invocation delivers one launch turn and exits. No mid-run human event or attention signal was delivered; the closest supported form is a later turn with an updated world, which is sequential, not continuous. No Router, mailbox or watchdog was built."
+    }
+  },
+  "overallObservations": [
+    "Strong models with ordinary files solve this task in every condition; the Palimpsest product does not improve the decision quality on this sample.",
+    "The product surface is readable (positive control) and is used when an invitation or a launch sentence makes it visible (D, CSEAM, P2SEAM).",
+    "Without that visibility, a cold principal does not discover recorded project work (C, P2), even when the work exists and is directly relevant.",
+    "The file-native carrier is discovered by default because it is one of the files the model already reads; the journal is not.",
+    "The bounded correction (conditional, count-only launch hint) changes selection and cost without harming the negative control, but does not make the plan better than the strong file baseline."
+  ],
+  "positiveControl": {
+    "label": "mechanism capability check (diagnostic, never scored as autonomous use)",
+    "observed": {
+      "toolCalls": 12,
+      "palimpsestCalls": 1,
+      "wallClockMs": 49629,
+      "totalTokens": 76673,
+      "entriesRead": 5
+    },
+    "verdict": "PASS",
+    "evidence": "palimpsest_project action=journal_entries returned all five entries; the model quoted their kinds, titles and the stale/misleading content. Labelled diagnostic."
+  },
+  "budget": {
+    "plannedSessions": 16,
+    "actualSessions": 13,
+    "maxPerSessionWallClockMs": 1200000,
+    "parallelSessions": 1,
+    "totalTokens": 44125402,
+    "model": "deepseek-official/deepseek-flash",
+    "runtime": "DSH 0.2.1-rc.3"
+  }
+}
