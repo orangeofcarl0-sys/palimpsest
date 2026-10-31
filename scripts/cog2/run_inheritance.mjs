@@ -41,11 +41,12 @@ const args = new Map(
 const CONDITION = String(args.get("condition") ?? "").toUpperCase();
 const ROUND = Number(args.get("round") ?? "0");
 const DIR = String(args.get("dir") ?? "");
+const TAG = String(args.get("tag") ?? "");
 if (!["P", "F"].includes(CONDITION)) throw new Error("--condition=P|F is required");
 if (![1, 2].includes(ROUND)) throw new Error("--round=1|2 is required");
 if (DIR === "") throw new Error("--dir=<run dir> is required");
 
-const HOME = join(DIR, ROUND === 1 ? "home-r1" : "home-r2");
+const HOME = join(DIR, ROUND === 1 ? `home-r1${TAG}` : `home-r2${TAG}`);
 const STATE = join(DIR, "state");
 const WORK = join(DIR, "work");
 const UNIT = `cog2-inherit-${CONDITION.toLowerCase()}-r${ROUND}`;
@@ -89,7 +90,7 @@ const task =
     ? `${ROUND_ONE_TASK}\n\n${PALIMPSEST ? ROUND_ONE_JOURNAL_INSTRUCTION : ROUND_ONE_FILE_INSTRUCTION}`
     : ROUND_TWO_TASK;
 
-const logPath = join(DIR, `round-${ROUND}.log`);
+const logPath = join(DIR, `round-${ROUND}${TAG}.log`);
 const result = await launch({
   profileUnit: UNIT,
   homeDir: HOME,
@@ -147,7 +148,7 @@ const record = {
   journalAfter,
 };
 
-writeFileSync(join(DIR, `round-${ROUND}.json`), JSON.stringify(record, null, 2));
+writeFileSync(join(DIR, `round-${ROUND}${TAG}.json`), JSON.stringify(record, null, 2));
 console.log(
   JSON.stringify({
     condition: CONDITION,
