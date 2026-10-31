@@ -21,9 +21,9 @@ if (application.projectWorkspace !== undefined) {
       tool({
         name: "palimpsest_project",
         description:
-          "The DERIVED project workspace: read the project overview, associated assets, derived open loops, and history; append a decision through the EXISTING ProjectIR validation; or record a journal entry. It owns no truth and copies no canonical fact. A decision is a ProjectIR lineage append (never an authority grant) and a journal entry is knowledge with no other canonical owner",
+          "The DERIVED project workspace: read the project overview, associated assets, derived open loops, history, and the recorded journal entries; append a decision through the EXISTING ProjectIR validation; or record a journal entry. It owns no truth and copies no canonical fact. A decision is a ProjectIR lineage append (never an authority grant) and a journal entry is knowledge with no other canonical owner",
         mode: "mutating",
-        actions: ["overview", "assets", "open_loops", "history", "decision", "journal"],
+        actions: ["overview", "assets", "open_loops", "history", "journal_entries", "decision", "journal"],
         extraProperties: {
           projectId: { type: "string", description: "defaults to this installation's project" },
           statement: { type: "string" },
@@ -61,6 +61,23 @@ if (application.projectWorkspace !== undefined) {
           if (action === "assets") return workspace.assets();
           if (action === "open_loops") return workspace.openLoops();
           if (action === "history") return workspace.history();
+          /**
+           * COG-1 §16: the journal was WRITE-ONLY through the model surface.
+           *
+           * Measured: `history` returned only `JOURNAL_<KIND>` titles, `view()` omitted
+           * the journal entirely, and no action returned an entry body — while
+           * `ProjectWorkspaceApplicationSurface.journal()` and the HTTP GET route both
+           * already served it. A model could record durable project knowledge and never
+           * read it back, so the compounding chain broke at discovery/delivery: the
+           * asset existed, but no later agent could find it.
+           *
+           * This is an ADAPTER action over the existing application surface. It adds no
+           * store, no semantic owner and no authority; it reuses the service's own
+           * project-scoped read (which refuses any project but the installed one).
+           */
+          if (action === "journal_entries") {
+            return workspace.journal(typeof object.projectId === "string" && object.projectId.length > 0 ? object.projectId : undefined);
+          }
           if (action === "decision") {
             const evidenceIds = Array.isArray(object.evidenceIds) ? stringArray(object.evidenceIds, "evidenceIds") : [];
             return workspace.appendDecision({

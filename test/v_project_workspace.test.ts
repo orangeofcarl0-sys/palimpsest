@@ -751,6 +751,10 @@ describe("G10-V project journal — knowledge with no other canonical owner", ()
     const ports = readOnlyPorts();
     const service = workspaceService(rig, ports);
     try {
+      // COG-1: a project-scoped write now requires the project its reads require,
+      // so this kind-vocabulary probe starts the project first. The property under
+      // test — the journal kind grammar — is unchanged.
+      rig.controller.start({ projectId: PROJECT, goal: GOAL, requirements: [], decisions: [], tasks: [taskSpec("task-1")], committedAt: CLOCK });
       const entry = await service.recordJournalEntry({ projectId: PROJECT, kind: "IDEA", title: "t", body: "b", provenance: "p" });
       expect(() => parseProjectJournalEntry({ ...entry, kind: "PROOF" })).toThrow(/must be one of/u);
     } finally {
