@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "kind": "cog1-research-evidence",
+  "stage": "COG-1 — Real-Task Cognitive Compounding & Adaptive Multi-Agent Synthesis",
+  "measuredAt": "2026-10-31",
+  "node": {
+    "platform": "win32 10.0.26200 x64",
+    "node": "v24.22.0 (pinned at F:/Codex_Work_Space/Palimpsest/.runtimes/node-v24.22.0-win-x64/node.exe)",
+    "modelRoute": "deepseek-official",
+    "model": "deepseek-flash",
+    "runtime": "0.2.1-rc.3",
+    "providerAccess": "the owner's existing configured credential store; no credential appears in this evidence"
+  },
+  "baseline": {
+    "parentCommit": "61b0757dea988daa10a00c220dee34e2d4c72028",
+    "parentTree": "3dcfc407da493a57c8756349ca06b5973c413f1f",
+    "parentMeaning": "CI3 Evidence Freeze; a strict descendant of origin/main 044330b (0 commits behind), clean tree, E-LIVE integrated",
+    "branch": "palimpsest-cog1-real-task-compounding"
+  },
+  "codeFreeze": {
+    "commit": "f12521903d5e07d850406d7c6dab6db20243df94",
+    "tree": "b9b5f1c0bec2606ce78ca711d8df205be5db5f96",
+    "p0Commit": "71e6e1fc7b27e30ab7372fec78a9f8efe93b22af",
+    "p3CorrectionCommit": "e7ddec03d26bb0258e3c8146254e864a6e780fa0",
+    "productionFilesChanged": [
+      "src/project_workspace/service.ts (write fence: project-scoped write requires the project)",
+      "src/adapters/dsh/project.ts (palimpsest_project action journal_entries)"
+    ],
+    "testsChanged": [
+      "test/cog1_workspace_write_fence.test.ts (new)",
+      "test/aer_scope_isolation.test.ts (action list + foreign-project read)",
+      "test/v_project_workspace.test.ts (start the project before the kind-vocabulary probe)"
+    ],
+    "documentsAdded": [
+      "docs/engineering/COG1-CAPABILITY-AND-PRODUCT-PATH-AUDIT.md",
+      "docs/engineering/COG1-EXPERIMENTAL-PROTOCOL.md"
+    ],
+    "scriptsAdded": [
+      "scripts/cog1/task_text.mjs",
+      "scripts/cog1/quoted_costs.mjs",
+      "scripts/cog1/run_condition.mjs",
+      "scripts/cog1/oracle.mjs",
+      "scripts/cog1/extract_telemetry.mjs",
+      "scripts/cog1/reuse_analysis.mjs",
+      "scripts/cog1/diagnose_tools.mjs",
+      "scripts/cog1/correction_retest.mjs",
+      "scripts/cog1/transfer_probe.mjs"
+    ],
+    "scenarioFiles": "scripts/cog1/scenario/sources (8 files) + scripts/cog1/scenario/updates (4 files), all labelled synthetic"
+  },
+  "selectionProducerCommit": "f12521903d5e07d850406d7c6dab6db20243df94",
+  "selection": {
+    "producer": "scripts/ci3/derive-selection.mjs --json (walks the filesystem; no hand list)",
+    "allTestFiles": 416,
+    "excludedR3l0": 39,
+    "excludedTrajectory": 78,
+    "includedFiles": 299,
+    "includedTestsRun": 3772
+  },
+  "feasibility": {
+    "realModelCall": { "command": "dsh --profile headless \"Reply with exactly one word: READY\"", "exit": 0, "answer": "READY", "wallClockSeconds": 8.994 },
+    "isolatedRuntimeHome": { "method": "both accepted home variables pointed at a test directory", "result": "PASS; profiles/, sessions/, storages/ created there; the owner's ~/.dsh not written" },
+    "principalComposition": {
+      "profile": "cog1-c (base bundle + palimpsest-dsh-host over a typed deployment profile)",
+      "ready": { "application": "full", "localExplore": "AVAILABLE", "branchAdapter": "dsh-subprocess-branch:cog1-c", "reasoningStore": "CONFIGURED", "projectVerification": "AVAILABLE", "inboundPump": "CONFIGURED", "attention": "PULL", "coldResume": "UNAVAILABLE" },
+      "palimpsestToolCount": 26,
+      "tools": ["palimpsest_start", "palimpsest_plan", "palimpsest_next", "palimpsest_preview", "palimpsest_run", "palimpsest_claim", "palimpsest_report", "palimpsest_gate", "palimpsest_status", "palimpsest_surfaces", "palimpsest_finish", "palimpsest_begin", "palimpsest_attention", "palimpsest_federation", "palimpsest_boundary", "palimpsest_runtime_view", "palimpsest_reasoning", "palimpsest_recipes", "palimpsest_advisor", "palimpsest_recipe", "palimpsest_collaborate", "palimpsest_delegate", "palimpsest_project", "palimpsest_manage", "palimpsest_verification", "palimpsest_graph"],
+      "theModelSawThem": "the request HEADER contains all 26 names; the model is asked to list them and does",
+      "theModelCanWriteTheWorld": "PASS (created REPORT.md containing PROBE_OK)"
+    }
+  },
+  "scenario": {
+    "kind": "non-software, synthetic, two rounds",
+    "domain": "Riversdale Community Arts Centre (fictional public cultural organisation)",
+    "goal": "Improve participation and service accessibility over the next quarter while respecting a fixed resource envelope.",
+    "sourcePack": ["README.md", "attendance.csv", "survey.md", "interviews.md", "constraints.md", "resources.md", "prior-interventions.md", "open-questions.md"],
+    "synthesisRequirements": [
+      "the 92% satisfaction figure is a self-selected Family Saturday sample that cannot support a venue-wide claim",
+      "Youth Studio visits fell while unique participants rose, because delivery fell from 4 to 2 sessions a month",
+      "the 2023 evening gain vanished when the minibus stopped: transport is the active ingredient",
+      "the 2022 £9,000 poster campaign produced no measurable change; the board minuted not to repeat it without a specific audience and offer",
+      "the lift is capital work with a lead time, and first-floor events are not permitted until it is repaired",
+      "£48,000 does not fund everything attractive"
+    ],
+    "updatePack": [
+      "U1 estates doorstep survey (new observation; partly contradicts the 2022 board minute)",
+      "U2 lift re-quote £27,500 / 8 weeks, and accessible entrance required before evening events over 60 (changed constraint)",
+      "U3 partner clarification: supply fell, interest did not; waitlist of 40; up to 4 extra sessions for £6,500 (clarification)",
+      "U4 café supplier notice (negative control: must not change the plan)"
+    ],
+    "deliverables": ["assessment.md", "options.md", "pilot.md", "budget.md", "metrics.md", "plan.md", "uncertainties.md", "decisions.json"]
+  },
+  "conditions": {
+    "A": "strong single agent: @deepseek-ai/dsh-base + dsh-headless; subagent/workflow tools DISABLED",
+    "B": "lead + workers: the same profile with subagent, subagent_fork, subagent-control and workflow ENABLED",
+    "C": "Palimpsest principal: the shipped palimpsest-dsh-host bundle over a typed deployment profile (reasoning {}, workspace stores, repository = the project world); 26 palimpsest_* tools"
+  },
+  "runs": [
+    { "condition": "A", "round": 1, "exit": 0, "timedOut": false, "wallClockSeconds": 721, "modelTurns": 71, "inputTokens": 62328, "outputTokens": 116901, "toolCalls": 95, "palimpsestToolCalls": 0, "deliverables": "8/8", "chosenPilot": "After Hours: Thursday evening opening with a late minibus", "total": 37500 },
+    { "condition": "A", "round": 2, "exit": 0, "timedOut": false, "wallClockSeconds": 840, "modelTurns": 107, "inputTokens": 108760, "outputTokens": 132299, "toolCalls": 118, "palimpsestToolCalls": 0, "deliverables": "8/8", "chosenPilot": "After Hours, capped at 60 attendees", "total": 37500, "changedSinceRound1": 8 },
+    { "condition": "B", "round": 1, "exit": 0, "timedOut": false, "wallClockSeconds": 737, "modelTurns": 75, "inputTokens": 64679, "outputTokens": 113195, "toolCalls": 87, "palimpsestToolCalls": 0, "deliverables": "8/8", "chosenPilot": "Transport-linked evening opening pilot (with the £22,000 lift)", "total": 46000 },
+    { "condition": "B", "round": 2, "exit": 0, "timedOut": false, "wallClockSeconds": 753, "modelTurns": 115, "inputTokens": 127022, "outputTokens": 114652, "toolCalls": 131, "palimpsestToolCalls": 0, "deliverables": "8/8", "chosenPilot": "Thursday Lates — transport-linked evening opening pilot", "total": 37500, "changedSinceRound1": 11 },
+    { "condition": "C", "round": 1, "exit": 0, "timedOut": false, "wallClockSeconds": 444, "modelTurns": 47, "inputTokens": 27401, "outputTokens": 61663, "toolCalls": 60, "palimpsestToolCalls": 0, "deliverables": "8/8", "chosenPilot": "Evening Access Pilot", "total": 37500 },
+    { "condition": "C", "round": 2, "exit": 0, "timedOut": false, "wallClockSeconds": 900, "modelTurns": 119, "inputTokens": 105946, "outputTokens": 144260, "toolCalls": 171, "palimpsestToolCalls": 0, "deliverables": "8/8", "chosenPilot": "Evening Access Pilot, 60-cap", "total": 37500, "changedSinceRound1": 14 }
+  ],
+  "mechanicalResults": {
+    "allConditions": "deliverables 8/8 present; decisions.json parses and matches the round; total = sum of lines; every line matches a quoted cost; the plan is described consistently by pilot.md, budget.md and decisions.json",
+    "round1Costs": "all three used the round-1 table (£22,000 lift)",
+    "round2Costs": "all three used the revised table (£27,500 lift); no condition retained the stale £22,000"
+  },
+  "rubricResults": {
+    "note": "the rubric is lexical and pre-registered; it is a screening instrument, not a truth oracle",
+    "round1": { "A": "11/11", "B": "11/11", "C": "11/11" },
+    "round2": { "A": "7/7", "B": "7/7", "C": "7/7" },
+    "observedCaveat": "all three conditions saturated the rubric, so it did not discriminate between them; the qualitative differences are recorded separately from the scores"
+  },
+  "synthesisEvidence": {
+    "crossSourceCorrectionsObserved": [
+      "all three conditions identified the 92% survey as a self-selected Family Saturday sample and refused to generalise it",
+      "all three identified the Youth Studio fall as a supply (session-frequency) change, not lost interest",
+      "all three identified transport as the active ingredient of the 2023 evening pilot",
+      "all three refused the borough-wide print campaign on the 2022 evidence",
+      "all three handled the U4 café notice as no-change (and removed the unavailable refresh from the option set)",
+      "all three recomputed the lift economics after U2 and dropped or deferred the lift rather than silently overspending"
+    ],
+    "adaptationObserved": [
+      "A capped every evening event at 60 and added booking, waitlist, door-count reconciliation and a zero-tolerance compliance metric",
+      "B deferred the lift to a separate capital bid, added the targeted mailer and training, and rewrote all eight artifacts to a £37,500 plan",
+      "C doubled the Youth Studio block at the same price, added the 60-cap with a turnaway log, renamed uncertainty ids to avoid collision with the update ids, and revised cost-effectiveness ratios"
+    ],
+    "behaviouralReuse": {
+      "method": "counted path references in read/bash tool arguments from the model-visible session stream",
+      "A": { "round1DeliverableRefs": 31, "round2DeliverableRefs": 118, "round2SourceRefs": 9, "round2UpdateRefs": 5 },
+      "B": { "round1DeliverableRefs": 31, "round2DeliverableRefs": 33, "round2SourceRefs": 8, "round2UpdateRefs": 4 },
+      "C": { "round1DeliverableRefs": 11, "round2DeliverableRefs": 95, "round2SourceRefs": 9, "round2UpdateRefs": 10 },
+      "reading": "all three consulted their round-1 artifacts in round 2; the inherited capital was FILE capital in every condition"
+    },
+    "productCapital": "zero journal entries, zero reasoning cells, zero associations were created by any pilot run: the product's own capital plane was never engaged"
+  },
+  "theDefect": {
+    "observedBy": "scripts/cog1/diagnose_tools.mjs, a labelled expert diagnostic after the pilot",
+    "before": {
+      "reads": ["palimpsest_project overview -> Error: project \"riversdale\" has no ProjectIR", "palimpsest_status -> Error: project does not exist", "palimpsest_manage -> Error: project \"riversdale\" has no ProjectIR"],
+      "writes": "palimpsest_project journal -> accepted, entryId pje-8a0e144be9490360b3e49577a4a23e3b, durable row recorded",
+      "secondIdenticalWrite": "accepted again with a NEW entryId and digest (not idempotent)",
+      "consequence": "durable project knowledge was recorded into a project the product cannot load, and a later ProjectIR under the same id would adopt it"
+    },
+    "secondDefect": {
+      "statement": "no tool returned a journal entry BODY",
+      "measured": "view() omits journal entirely; history() returns JOURNAL_<KIND> titles only; the application surface and the HTTP GET route already served bodies; the DSH adapter exposed only the write",
+      "consequence": "the compounding chain broke at discovery/delivery: the asset existed and no later agent could read it"
+    },
+    "productionPaths": ["src/project_workspace/service.ts:509+ (associateAsset, recordJournalEntry, resolveJournalEntry, promoteOpportunity)", "src/adapters/dsh/project.ts:26,39-82"],
+    "notChanged": "no store, no semantic owner, no authority, no arbitration, no new key, no schema"
+  },
+  "falsifiers": {
+    "file": "test/cog1_workspace_write_fence.test.ts",
+    "RED": "before the correction the journal write and the asset association both RESOLVED for a project with no ProjectIR",
+    "GREEN": "both now reject with kind unknown_project; a valid write after start still succeeds; the model-facing action returns the recorded body"
+  },
+  "correctionRetest": {
+    "script": "scripts/cog1/correction_retest.mjs",
+    "processes": "three separate principal processes over one deployment",
+    "results": {
+      "writeRefusedBeforeStart": true,
+      "journalWrittenInSession1": true,
+      "markerRecoveredByColdSession2": true,
+      "markerPresentInAnyFileOnDisk": false
+    },
+    "marker": "COG1-MARKER-mvwkxlic-mhlocb6i (unguessable, generated per run)",
+    "reading": "the knowledge crossed a real process boundary only through the product's durable journal"
+  },
+  "transfer": {
+    "script": "scripts/cog1/transfer_probe.mjs",
+    "domain": "Marrowfield Skills Trust (fictional adult-learning charity), projectId marrowfield",
+    "results": {
+      "writeFenceHeldBeforeStart": true,
+      "journalEntryRecorded": true,
+      "markerRecoveredByColdSession": true,
+      "markerOnDisk": false
+    },
+    "marker": "TRANSFER-mvwldtm1-92o431b",
+    "reading": "the corrected mechanism is not specific to the Riversdale scenario or to the earlier project id; the fence and the read both held in a new domain and a new deployment",
+    "limitation": "this is a MECHANISM transfer (one probe, two model sessions), not a second cognitive comparison"
+  },
+  "broadRegression": {
+    "command": "vitest run over the 299 included files",
+    "run1": {
+      "outcome": "NOT GREEN",
+      "files": "4 failed | 295 passed (299)",
+      "tests": "6 failed | 3766 passed (3772)",
+      "failures": [
+        "test/lean_promotion_readiness.test.ts — 3 tests, each 'Test timed out in 30000ms'",
+        "test/lean_work_execution_world.test.ts — 1 test, 'Test timed out in 30000ms'",
+        "two further failures were reported by the summary but fell outside the captured console tail"
+      ],
+      "diagnosis": "zero assertion failures in the captured output; every captured failure is the 30 s test timeout under a 24-worker run that also swept 968 leaked temp directories"
+    },
+    "diagnosisBeforeRerun": [
+      "both named files pass in isolation (13/13)",
+      "all 47 lean_* suites pass in isolation (504/504)",
+      "the failure set moved between the two CI3 broad attempts in the same way, with the same 30 s timeout signature"
+    ],
+    "run2": {
+      "purpose": "ONE bounded diagnostic rerun with a JSON reporter, to attribute every failure rather than to obtain green",
+      "outcome": "3772/3772 passed, exit 0",
+      "interpretation": "the earlier failures were resource-contention timeouts, not defects; the rerun is recorded as a diagnostic, not promoted into the authoritative result"
+    },
+    "honestStatus": "the FIRST broad run exited non-zero and is reported as such. The rerun is reported next to it, with its purpose stated, and is not used to overwrite the first result. The targeted CI1–CI3 and COG-1 suites are the evidence for the correction."
+  },
+  "targetedVerification": {
+    "tsc": "exit 0",
+    "architectureCheck": "PASS (0 violations, 9 accepted baseline exceptions)",
+    "publicApiCheck": "PASS (0 missing, 0 changed, 0 added)",
+    "ci1ci2ci3cog1": "20 files, 71 tests, 71 passed",
+    "affectedSuites": "aer_scope_isolation, v_project_workspace, v_adversarial, trajectory_t0, e2i_intent_reconciliation, uxc_host_runtime, architecture/change_radius, cog1_workspace_write_fence — all passed"
+  },
+  "protectedAssets": {
+    "researchEvidenceTrees": 68,
+    "gitWorktrees": 95,
+    "gateRoots": 19,
+    "runtime": "0.2.1-rc.3 (revalidated; unchanged)",
+    "globalRuntimeHome": "not modified; the isolated homes live under F:/Codex_Work_Space/Palimpsest/.cog1-rig (test-owned)"
+  },
+  "claims": [
+    { "id": "C1", "claim": "A real model-driven principal, composed with the shipped product in an isolated runtime home, receives and can call the palimpsest_* tools.", "support": "feasibility probes; 26 names in the request header" },
+    { "id": "C2", "claim": "On a non-software two-round task, all three conditions produced complete, internally consistent, evidence-grounded plans and adapted correctly to the controlled update pack.", "support": "six runs, 8/8 deliverables each, mechanical budget/consistency checks, rubric saturation, read inspection" },
+    { "id": "C3", "claim": "None of the six pilot runs used ANY product tool, although condition C had 26 available; the product's cognitive surface was not discovered or chosen.", "support": "tool-call histograms from the model-visible session streams (A 213, B 218, C 231 calls; 0 palimpsest_*)" },
+    { "id": "C4", "claim": "The product's only ungated durable knowledge surface was write-only to a model, and its write accepted a project that every read refused.", "support": "diagnose_tools.mjs before/after; direct probe of view/history/open_loops/journal" },
+    { "id": "C5", "claim": "A bounded two-part correction (write fence + read action) closes the loop, verified across a real process boundary and in a second domain.", "support": "RED/GREEN test; correction_retest marker recovery; transfer probe marker recovery" },
+    { "id": "C6", "claim": "The correction does not change any valid call, any authority, or any owner.", "support": "CI suites, architecture and public-API checks; existing tests updated only where they had relied on pre-project writes" }
+  ],
+  "verdicts": {
+    "V0": "ESTABLISHED — the baseline, runtime, model and protected resources are known; the parent is the CI3 freeze on a clean tree",
+    "V1": "ESTABLISHED — a genuine model principal exercised the ordinary product path; it was reachable and callable, and the model chose not to use it",
+    "V2": "ESTABLISHED — every condition produced meaningful, source-grounded intermediate and final outputs; the synthesis traps were all resolved",
+    "V3": "NOT ESTABLISHED — no condition used a product collaboration capability; condition B was offered subagents and used none; no cross-agent influence exists to observe",
+    "V4": "NOT ESTABLISHED — no earlier project capital was selected, delivered or used through the product; the observed inheritance was file-based in all three conditions",
+    "V5": "PARTIAL — every condition revised its plan in response to new evidence and preserved authorization boundaries, but the product's Intent path was not reachable by a model (no tool exists), so the product's own adaptation mechanism was not exercised",
+    "V6": "ESTABLISHED for the artifacts — all three plans are internally coherent and constraint-respecting; the cross-artifact contradictions the scenario was built to provoke were resolved",
+    "V7": "MEASURED — wall clock 444–900 s per round, 47–119 model turns, 60–171 tool calls; no human intervention during any run; the Palimpsest condition was not cheaper",
+    "V8": "PARTIAL — the correction transferred mechanically to a second non-software domain; no second cognitive comparison was run",
+    "V9": "ESTABLISHED — no protected asset altered, no authority weakened, no test result misstated; the broad run is reported as NOT green"
+  },
+  "overall": "The stage establishes a negative result with a precise boundary: Palimpsest's cognitive capital plane is reachable but not chosen by a real model on an ordinary document task, and until this stage it was also write-only and unfenced. The correction makes the minimum loop real - a project-scoped write that requires the project, and a read a later model can use - and that loop is demonstrated across a process boundary and in a second domain. The stage does NOT establish that Palimpsest improves cognitive outcomes versus a strong single agent on this task: no condition used the product, and no comparison showed a product-attributable advantage."
+}
