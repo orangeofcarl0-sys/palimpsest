@@ -32,6 +32,8 @@ import { brandString } from '@deepseek-ai/dsh-brand';
 import { installModelSelection } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 
+import { composeLaunchMessage } from './project_hint.js';
+
 /**
  * R2-U §7: the EXPERIMENTAL presentation seam. Loaded statically because it has no imports of its own and
  * must never be the reason a worker fails to compose; the module carries the frozen clause and the
@@ -1442,7 +1444,14 @@ async function run(ctx, deps) {
   });
 
   if (typeof startup.message === 'string' && startup.message.trim() !== '') {
-    await deliver(startup.message);
+    // COG-2 §15: a cold principal is told that recorded project work exists, in one sentence and
+    // without any entry content. Measured: without it, a later principal discovered nothing; with
+    // it, it read the journal and used it. Absence/empty/failure composes the message unchanged.
+    const launchMessage = await composeLaunchMessage(
+      host.deployment?.installed?.application?.projectWorkspace,
+      startup.message,
+    );
+    await deliver(launchMessage);
   }
 
   if (startup.once === true) {
