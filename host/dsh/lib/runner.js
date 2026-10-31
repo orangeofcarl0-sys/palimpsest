@@ -42,6 +42,11 @@ import { composeLaunchMessage } from './project_hint.js';
  */
 import { AFFORDANCE_ENV, applyAffordance, resolveAffordanceMode } from './affordance.js';
 /**
+ * COG-3 §11: the branch task text is presentation over the composed capability set. It lives in its
+ * own import-free module so the RESULT_ONLY and PROJECT_READ_ONLY wordings can be tested directly.
+ */
+import { branchTask } from './branch_prompt.js';
+/**
  * R2-E §8/§10: the EXPERIMENTAL efficacy seam. Loaded statically for the same reason as the affordance:
  * it has no imports beyond `node:crypto` and must never be why a worker fails to compose. In the default
  * mode it is inert.
@@ -123,60 +128,9 @@ function userMessage(text) {
 }
 
 /**
- * The task text for ONE ephemeral reasoning branch. It carries the frozen brief and
- * (when supplied) the selector-only materialized evidence plus the frozen allowlist.
- * The capability boundary is NOT this text: the branch environment registers only
- * `palimpsest_branch_result`, so no other tool exists to call.
+ * COG-3 §11: branchTask now lives in ./branch_prompt.js. It is imported above and re-exported below,
+ * so existing callers and tests keep the same name.
  */
-function branchTask(payload) {
-  const brief = payload.brief;
-  const evidenceContext = payload.evidenceContext;
-  const allowed = Array.isArray(evidenceContext?.allowedEvidenceRefs)
-    ? evidenceContext.allowedEvidenceRefs.map((ref) => (typeof ref === 'string' ? ref : ref?.evidenceId)).filter((id) => typeof id === 'string' && id.length > 0)
-    : [];
-  const selections = Array.isArray(evidenceContext?.selections) ? evidenceContext.selections : [];
-  const hasEvidence = allowed.length > 0 || selections.length > 0;
-
-  const lines = [
-    'You are an EPHEMERAL reasoning branch of a Palimpsest ReasoningCell. You are NOT a durable principal: you create no peer, no persistent point and no durable session. You have exactly ONE tool, `palimpsest_branch_result`, and you call it exactly ONCE.',
-    '',
-    `cellId: ${payload.cellId}`,
-    `branchId: ${payload.branchId}`,
-    `objective: ${typeof brief.objective === 'string' ? brief.objective : ''}`,
-    `question: ${typeof brief.question === 'string' ? brief.question : ''}`,
-    `acceptedFrontierBasis: ${JSON.stringify(brief.frontierBasis ?? null)}`,
-    `acceptedClaims: ${JSON.stringify(brief.acceptedClaims ?? [])}`,
-  ];
-
-  if (hasEvidence) {
-    lines.push('', 'ALLOWED EVIDENCE (you may cite ONLY these evidence ids):');
-    for (const id of allowed) lines.push(`- ${id}`);
-    lines.push('', 'MATERIALIZED EVIDENCE SELECTIONS (the exact selected bytes; this is ALL you may read):');
-    for (const selection of selections) {
-      lines.push(
-        `--- evidenceId: ${String(selection?.evidenceId)} | kind: ${String(selection?.kind)} | mediaType: ${String(selection?.mediaType)} | digest: ${String(selection?.digest)} ---`,
-      );
-      lines.push(String(selection?.text ?? ''));
-    }
-    lines.push(
-      '',
-      'EVIDENCE RULES:',
-      '- You may cite ONLY evidence ids from the ALLOWED EVIDENCE list above; never invent, guess or cite any other id.',
-      '- You may NOT browse the Vault or read any other source; the materialized selections above are ALL the evidence you may use.',
-      '- Your result MUST include `evidenceRefs` set to the evidence ids you actually used (an array of id strings).',
-    );
-  }
-
-  lines.push('', 'Do this now:');
-  lines.push('1. Think briefly about the frozen question using ONLY the material above.');
-  lines.push(
-    '2. Call `palimpsest_branch_result` EXACTLY ONCE with {"statement":"<one concise, falsifiable statement that directly answers the question>"' +
-      (hasEvidence ? ',"evidenceRefs":["<only evidence ids you actually used from the ALLOWED list>"]' : '') +
-      '}. Do not call it again if it succeeds or fails.',
-  );
-  lines.push('3. Reply with one short line. Do nothing else.');
-  return lines.join('\n');
-}
 
 /** Machine-readable line the harness parses; exactly one is printed, even on failure. */
 function printBranchResult(result) {
