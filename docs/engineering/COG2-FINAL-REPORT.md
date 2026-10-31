@@ -14,7 +14,7 @@ files, it already did.
 
 ## 1. Executive summary
 
-- All three comparison conditions, and every project-ready condition, produced a competent
+- Every comparison condition, and every project-ready condition, produced a competent
   six-month plan. A strong model with ordinary files is enough for this task. That finding is
   preserved, not explained away.
 - The product was **readable but not discovered**. With a valid ProjectIR and a populated journal,
