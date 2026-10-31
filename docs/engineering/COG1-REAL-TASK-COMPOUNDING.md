@@ -41,7 +41,7 @@ That is now corrected in two files and verified in three ways: a RED/GREEN test,
 | E-LIVE | `ec40f6b` present, an ancestor of both `origin/main` and HEAD |
 | Runtime | `@deepseek-ai/dsh@0.2.1-rc.3` installed globally and revalidated |
 | Model access | `deepseek-flash` via the owner's configured `deepseek-official` route, verified with a live one-word call (exit 0, 9 s) |
-| Protected assets | 68 evidence trees, 95 worktrees, 19 gate roots — all unchanged; the real runtime home was not written |
+| Protected assets | 68 pre-existing evidence trees (69 after this stage added `cog1`), 95 worktrees, 19 gate roots — none modified; the real runtime home was not written |
 
 **Environment note, recorded rather than hidden.** At the start of this stage the repository's top-level `node_modules` links were missing (only the pnpm virtual store remained), so nothing could build. The links were restored with `pnpm install --frozen-lockfile` against the existing store and the committed lockfile. No dependency version changed and no network artifact was substituted: the install reported `reused 128, downloaded 0`.
 
@@ -230,7 +230,7 @@ So the compounding chain — earlier work → retained asset → discovery → d
 | All 47 `lean_*` suites in isolation | 504/504 passed |
 | **Authorized broad non-gate run** | **NOT GREEN** — 4 files / 6 tests failed, all `Test timed out in 30000ms`, 3766/3772 passed, exit non-zero |
 | One bounded diagnostic rerun with a JSON reporter | 3772/3772 passed, exit 0 — **recorded as a diagnostic, not promoted into the authoritative result** |
-| Protected assets | 68 evidence trees, 95 worktrees, 19 gate roots, runtime `0.2.1-rc.3` — unchanged |
+| Protected assets | 68 pre-existing evidence trees (69 with `cog1` added), 95 worktrees, 19 gate roots, runtime `0.2.1-rc.3` — none modified |
 | Real runtime home | not modified; all experiment state under test-owned directories |
 
 The first broad run is reported as it happened. Its failures were resource-contention timeouts under a 24-worker run, not assertion failures; the two named files and the whole `lean_*` family pass in isolation, and the failure set moved between attempts the same way CI3 recorded. Rather than rerun until green, the sequence — failure, diagnosis, isolated confirmation, one attributed rerun — is recorded in full.
