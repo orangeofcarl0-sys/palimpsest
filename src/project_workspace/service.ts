@@ -506,8 +506,23 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
 
   /* ----- scoped writes ----- */
 
+  /**
+   * COG-1 §16: a project-scoped WRITE requires the project that every READ requires.
+   *
+   * Measured failure: `recordJournalEntry` and `associateAsset` accepted a project
+   * with no ProjectIR while `view()`, `openLoops()` and `history()` all refused it
+   * with `unknown_project`. The durable result was project knowledge that no read
+   * path could reach, which a later ProjectIR under the same id would silently
+   * adopt. The predicate is the reads' own (`readProject`), so write and read
+   * cannot disagree again; `appendDecision` already went through it.
+   */
+  function requireProjectExists(): void {
+    readProject();
+  }
+
   async function associateAsset(input: AssociateAssetInput): Promise<ProjectAssetAssociation> {
     assertScopedProject(input.projectId);
+    requireProjectExists();
     // G10-AE §5/§10: `EXTERNAL_ASSET` names an asset owned by an EXTERNAL LIBRARY,
     // so an association of that kind is a project's durable REFERENCE to one exact
     // external revision. Only the external asset bridge may create one, because
@@ -537,6 +552,7 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
 
   async function recordJournalEntry(input: RecordJournalEntryInput): Promise<ProjectJournalEntry> {
     assertScopedProject(input.projectId);
+    requireProjectExists();
     const entry = materializeProjectJournalEntry({
       projectId: input.projectId,
       kind: input.kind,
@@ -552,6 +568,7 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
 
   async function resolveJournalEntry(input: ResolveJournalEntryInput): Promise<ProjectJournalViewEntry> {
     assertScopedProject(input.projectId);
+    requireProjectExists();
     const resolution = materializeProjectJournalResolution(input.resolution);
     await appendJournal(input.projectId, [
       journalEntryResolvedEvent({ projectId: input.projectId, entryId: input.entryId, resolution, resolvedAt: now() }),

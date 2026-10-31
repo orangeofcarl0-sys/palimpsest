@@ -287,17 +287,31 @@ function scoreCondition(condition) {
   };
   if (!existsSync(work)) return { condition, present: false };
   const decisions = json(work, "deliverables/decisions.json");
-  const budget = budgetChecks(decisions, QUOTED.ROUND_2);
+  /**
+   * ROUND-AWARE. The current working tree is judged against the cost table that is
+   * CURRENT for its declared round: a round-1 artifact must not be blamed for the
+   * revised lift quote, and a round-2 artifact must not be credited with the old one.
+   * The round comes from decisions.json, and an absent/invalid value falls back to
+   * the highest round for which a run record exists.
+   */
+  const roundsPresent = { one: record(1) ?? null, two: record(2) ?? null };
+  const declaredRound = Number(decisions?.round);
+  const currentRound = declaredRound === 1 || declaredRound === 2
+    ? declaredRound
+    : roundsPresent.two !== null ? 2 : 1;
+  const quoted = currentRound === 2 ? QUOTED.ROUND_2 : QUOTED.ROUND_1;
+  const budget = budgetChecks(decisions, quoted);
   const consistency = consistencyChecks(work, decisions);
   const rubric = rubricScore(work, RUBRIC);
-  const rubricTwo = rubricScore(work, ROUND_2_RUBRIC);
-  const changes = roundTwoDeclared(decisions);
+  const rubricTwo = currentRound === 2 ? rubricScore(work, ROUND_2_RUBRIC) : { items: [], achieved: 0, weight: 0, ratio: null };
+  const changes = currentRound === 2 ? roundTwoDeclared(decisions) : { count: 0, changes: [] };
   const missing = DELIVERABLES.filter((rel) => !existsSync(join(work, rel)));
   return {
     condition,
     present: true,
     missing,
-    rounds: { one: record(1) ?? null, two: record(2) ?? null },
+    currentRound,
+    rounds: roundsPresent,
     budget,
     consistency,
     rubric,
