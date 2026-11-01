@@ -1,0 +1,2286 @@
+{
+  "schema": "cog4-work-result-run/v1",
+  "startedAt": "2026-11-01T09:40:25.283Z",
+  "projectId": "sablewick",
+  "deterministicWorker": true,
+  "workerNote": "The Work Result is produced by a deterministic test-owned worker, not a model. The Work lifecycle, completion check, basis capture and continuation are the real product paths.",
+  "workDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\work",
+  "stateDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\state",
+  "initialHead": "5f6002d79b9f269c5293b294b79da9d58d725913",
+  "scenarioDigests": {
+    "sources/brief.md": "311e9f1dab83d1ffc3f64586b23fedfbb319ead05760e5f574af406d90fd990c",
+    "sources/vendor-capabilities.csv": "f81576167c284060eb494706e424204d99028823fe71bf56476883d49e4d9373",
+    "sources/vendor-pricing.csv": "6574dc730f9dcf482412b1160505a1169c7769683ac978f98dbec85026652b79",
+    "sources/sites.md": "6b6b99d2ef44ffaed3f40594c1462df67222835ef660e0bfd116396787899acb",
+    "sources/rollout-windows.md": "d52bf0ecc794829fe78c1d784240802b637b7c43aeaed7084a54537b71ca2a34",
+    "sources/prior-notes.md": "f169312da7f60392626a1e2c5db4a94a34a0ddc5be175e289f50af2d7cc1e00e",
+    "sources/newsletter.md": "fcca8762d29a16547c8e16ab2a29371e0151c7e856a83073d6f289ae3c5e3c1d",
+    "verify.mjs": "8aac349081e5a65f778d3565a54c8a9041cdfc4d2880fe1ab08975bdc238a07f"
+  },
+  "journal": [
+    {
+      "entryId": "pje-680b8e1c70071791c087f6dfca4d43d8",
+      "kind": "NEGATIVE_RESULT",
+      "title": "2023 Marsh Lane trial failed"
+    },
+    {
+      "entryId": "pje-0c791e91e7be3e6801d285d9772f247f",
+      "kind": "OPEN_QUESTION",
+      "title": "Solaris cold-weather certificate not on file"
+    },
+    {
+      "entryId": "pje-f5f5d58b3bd28b957f646096123caa03",
+      "kind": "REFERENCE_NOTE",
+      "title": "Grant conditions"
+    }
+  ],
+  "tasks": {
+    "technical-fit": {
+      "driven": {
+        "jobId": "wdj-d18db314-0297-4c7f-84e3-46fceb6c782c",
+        "attemptId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "SETTLED",
+          "attemptId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+          "resultCommit": "4f0eec5781fe47716bba6deb5f8eb10d635fabb7",
+          "changedFiles": [
+            "deliverables/technical-fit.md"
+          ],
+          "exported": true,
+          "evidenceRecorded": [
+            "write_scope_valid",
+            "expected_files_exist"
+          ],
+          "detail": "the attempt is COMPLETED with result commit 4f0eec5781fe; the canonical object database can now read 4f0eec5781fe; no ref, working tree or project revision changed; every mechanical check held for candidate 4f0eec5781fe"
+        },
+        "hostError": null,
+        "stepped": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "TASK_VERIFYING",
+          "payload_version": 1,
+          "entity_type": "task",
+          "entity_id": "technical-fit",
+          "payload": {
+            "previous_state": "ACTIVE",
+            "new_state": "VERIFYING",
+            "reason": "batch has a completed candidate",
+            "batch_activation_event_id": 7
+          },
+          "causation_id": 7,
+          "correlation_id": "task:technical-fit",
+          "idempotency_key": "4484ae76b0b304f3e7c4dde79b4792f2670708684ee6f69285901671b4dd563e",
+          "expected_project_revision": 0,
+          "event_id": 14,
+          "project_sequence": 14,
+          "request_digest": "7205c13a9205e856fe0b1b5112281f4da5aa094231efac997d8bad25dd3ee7a4",
+          "previous_event_digest": "dc1b46bb9aa0e1ce62d487c2eb48d8a6c9589b7f503e91f13a2e73d856a5423c",
+          "event_digest": "adb4305bab6f73e532a3041cf75a361fcbb668087cd6552655d93b4cb2acf91a",
+          "committed_at": "2026-11-01T09:40:26.958000Z"
+        },
+        "task": {
+          "taskId": "technical-fit",
+          "state": "VERIFYING",
+          "lastEventId": 14,
+          "batchActivationEventId": 7,
+          "envelopeId": "envelope-b63466bc66282f19b579b9488cdcc2c0"
+        }
+      },
+      "state": "VERIFYING",
+      "attempt": {
+        "attemptId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+        "state": "COMPLETED"
+      }
+    },
+    "cost-schedule": {
+      "driven": {
+        "jobId": "wdj-28951142-3313-4467-acfd-9f15a73dde12",
+        "attemptId": "attempt-baaf963c5b6bd004409fcfe013219440",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "SETTLED",
+          "attemptId": "attempt-baaf963c5b6bd004409fcfe013219440",
+          "resultCommit": "fcc199899414c586485628f3a6d3149bc029df75",
+          "changedFiles": [
+            "deliverables/cost-schedule.md"
+          ],
+          "exported": true,
+          "evidenceRecorded": [
+            "write_scope_valid",
+            "expected_files_exist"
+          ],
+          "detail": "the attempt is COMPLETED with result commit fcc199899414; the canonical object database can now read fcc199899414; no ref, working tree or project revision changed; every mechanical check held for candidate fcc199899414"
+        },
+        "hostError": null,
+        "stepped": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "TASK_VERIFYING",
+          "payload_version": 1,
+          "entity_type": "task",
+          "entity_id": "cost-schedule",
+          "payload": {
+            "previous_state": "ACTIVE",
+            "new_state": "VERIFYING",
+            "reason": "batch has a completed candidate",
+            "batch_activation_event_id": 15
+          },
+          "causation_id": 15,
+          "correlation_id": "task:cost-schedule",
+          "idempotency_key": "1db79110d479428495a0a97a1204448ce6883c425b5505d017de9324ce5409b0",
+          "expected_project_revision": 0,
+          "event_id": 22,
+          "project_sequence": 22,
+          "request_digest": "d682be0439eb9fcaae6121c437a790ae13556da361e69b3aabe71cba99bc5e1f",
+          "previous_event_digest": "3e1e9f6c43231e85d2f03d3e654bd54ca79fe7b2c257d4cf80dd72a10b994283",
+          "event_digest": "b47644a91e9de28ef96f52fdaa1ba940d99e0b82624b5faa63fa8616e7479976",
+          "committed_at": "2026-11-01T09:40:28.939000Z"
+        },
+        "task": {
+          "taskId": "cost-schedule",
+          "state": "VERIFYING",
+          "lastEventId": 22,
+          "batchActivationEventId": 15,
+          "envelopeId": "envelope-6321d2bb62b51631ff2b9c0107f27390"
+        }
+      },
+      "state": "VERIFYING",
+      "attempt": {
+        "attemptId": "attempt-baaf963c5b6bd004409fcfe013219440",
+        "state": "COMPLETED"
+      }
+    }
+  },
+  "results": {
+    "technical-fit": {
+      "attemptId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+      "basis": {
+        "resolution": {
+          "basis": {
+            "schemaVersion": 1,
+            "projectId": "sablewick",
+            "taskId": "technical-fit",
+            "capturedAtRevision": 0,
+            "semanticProjectionDigest": "c21d4ebcfed802216ac8b7f112bfb0f17211d59459a8ac4d9b0b739c22830ede",
+            "source": {
+              "state": "BOUND",
+              "value": {
+                "backend": "git",
+                "revision": "5f6002d79b9f269c5293b294b79da9d58d725913"
+              }
+            },
+            "assets": {
+              "state": "NOT_REQUIRED"
+            },
+            "environment": {
+              "state": "NOT_REQUIRED"
+            },
+            "basisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26"
+          },
+          "taskId": "technical-fit"
+        },
+        "summary": {
+          "basisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+          "taskId": "technical-fit",
+          "capturedAt": "2026-11-01T09:40:25.476Z"
+        },
+        "currentness": {
+          "attemptId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+          "taskId": "technical-fit",
+          "basisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+          "currentBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reasons": [],
+          "detail": "the current world still resolves every bound dependency identically"
+        }
+      },
+      "result": {
+        "eventId": 13,
+        "resultCommit": "4f0eec5781fe47716bba6deb5f8eb10d635fabb7",
+        "report": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "attempt_id": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+          "task_id": "technical-fit",
+          "envelope_id": "envelope-b63466bc66282f19b579b9488cdcc2c0",
+          "input_project_revision": 0,
+          "input_project_digest": "f12c24e2ac5975714a26fc01f4c975efe5adc981e00fe324b29c40a236c0a9d2",
+          "base_commit": "5f6002d79b9f269c5293b294b79da9d58d725913",
+          "worktree_id": "worktree-ad0fb9f4",
+          "result_commit": "4f0eec5781fe47716bba6deb5f8eb10d635fabb7",
+          "worker_status": "completed",
+          "summary": "delegated work settled from its execution world",
+          "changed_files": [
+            "deliverables/technical-fit.md"
+          ],
+          "produced_artifacts": [
+            "deliverables/technical-fit.md"
+          ],
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "runtime_metadata": {
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "argv": [
+              "dsh-agent"
+            ],
+            "exit_code": 0,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          },
+          "context_manifest": "context-manifest-4622b521244f283927c762c58e8a9570"
+        }
+      },
+      "content": "# Technical fit\n\n## Site A — Marsh Lane Store\nVendor: V1\nConstraint: design minimum -12 °C; V1 is rated to -20 °C. V2 is excluded by the 2023 marsh-lane failure.\n\n## Site B — Harbour Workshop\nVendor: V3\nConstraint: design minimum -4 °C and a coastal-rated warranty; V3 is the only vendor meeting both.\n\n## Site C — School Annexe\nVendor: V3\nConstraint: ambient minimum 2 °C and a unit no wider than 800 mm; V3 is 750 mm wide. The 2023 V2 failure was at -8 °C, below this site's minimum.\n\n## Summary\n\nA: V1. B: V3. C: V3.\n",
+      "taskState": "VERIFYING",
+      "attemptState": "COMPLETED"
+    },
+    "cost-schedule": {
+      "attemptId": "attempt-baaf963c5b6bd004409fcfe013219440",
+      "basis": {
+        "resolution": {
+          "basis": {
+            "schemaVersion": 1,
+            "projectId": "sablewick",
+            "taskId": "cost-schedule",
+            "capturedAtRevision": 0,
+            "semanticProjectionDigest": "2a54823cc39ac916cad8b79f0106d247031bc3764d6f6594c3a9650c17a2e6cd",
+            "source": {
+              "state": "BOUND",
+              "value": {
+                "backend": "git",
+                "revision": "5f6002d79b9f269c5293b294b79da9d58d725913"
+              }
+            },
+            "assets": {
+              "state": "NOT_REQUIRED"
+            },
+            "environment": {
+              "state": "NOT_REQUIRED"
+            },
+            "basisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a"
+          },
+          "taskId": "cost-schedule"
+        },
+        "summary": {
+          "basisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+          "taskId": "cost-schedule",
+          "capturedAt": "2026-11-01T09:40:27.526Z"
+        },
+        "currentness": {
+          "attemptId": "attempt-baaf963c5b6bd004409fcfe013219440",
+          "taskId": "cost-schedule",
+          "basisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+          "currentBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reasons": [],
+          "detail": "the current world still resolves every bound dependency identically"
+        }
+      },
+      "result": {
+        "eventId": 21,
+        "resultCommit": "fcc199899414c586485628f3a6d3149bc029df75",
+        "report": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "attempt_id": "attempt-baaf963c5b6bd004409fcfe013219440",
+          "task_id": "cost-schedule",
+          "envelope_id": "envelope-6321d2bb62b51631ff2b9c0107f27390",
+          "input_project_revision": 0,
+          "input_project_digest": "f12c24e2ac5975714a26fc01f4c975efe5adc981e00fe324b29c40a236c0a9d2",
+          "base_commit": "5f6002d79b9f269c5293b294b79da9d58d725913",
+          "worktree_id": "worktree-13219440",
+          "result_commit": "fcc199899414c586485628f3a6d3149bc029df75",
+          "worker_status": "completed",
+          "summary": "delegated work settled from its execution world",
+          "changed_files": [
+            "deliverables/cost-schedule.md"
+          ],
+          "produced_artifacts": [
+            "deliverables/cost-schedule.md"
+          ],
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "runtime_metadata": {
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "argv": [
+              "dsh-agent"
+            ],
+            "exit_code": 0,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          },
+          "context_manifest": "context-manifest-8689f412ce28b58122265c20148561e9"
+        }
+      },
+      "content": "# Cost and schedule\n\n## Budget\n\n| Site | Low (£) | High (£) |\n| --- | --- | --- |\n| A | 25,800 | 36,200 |\n| B | 25,800 | 36,200 |\n| C | 25,800 | 36,200 |\n\n## Sequence\n\nA in January–February, B in March–April, C in May–June. Order each unit before its window; the longest current lead time is 10 weeks, so the B order must be placed by late December.\n\n## Total\n\nCommitted low: £77,400; high: £108,600. Contingency at 8%: £6,192–£8,688. Total £83,592–£117,288, within the £120,000 grant.\n",
+      "taskState": "VERIFYING",
+      "attemptState": "COMPLETED"
+    }
+  },
+  "packagedInspection": {
+    "technical-fit": {
+      "EXACT": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+        },
+        "resolved": true,
+        "taskId": "technical-fit",
+        "targetObservationDigest": "e58083f2e8cae0054fd342f4de6018db012843dcc5b687c0ceb1d6a6c83abbec",
+        "compatibility": {
+          "outcome": "EXACT",
+          "issuanceDigest": "6340e0c4c056843ffaf22608eeb98e16281afd5d03e0b06c0afcdec98692c841"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+          },
+          "originBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+          "currentTargetDigest": "e58083f2e8cae0054fd342f4de6018db012843dcc5b687c0ceb1d6a6c83abbec",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reuse": {
+            "exactCurrent": true,
+            "rematerializationAvailable": false,
+            "blocker": null
+          },
+          "rework": {
+            "available": true,
+            "blocker": null
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+          "assessmentDigest": "ee0cf618e3f57a119b78d9ef9e66d3a47c331cc9ce441165d601198adf164fc5"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+      },
+      "vendorUpdate": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+        },
+        "resolved": true,
+        "taskId": "technical-fit",
+        "targetObservationDigest": "5e15f0b764cbeb38263d7fe90e4759aa9ff1cb8f9e2ba249de5655f24df48f2c",
+        "compatibility": {
+          "outcome": "INCOMPATIBLE",
+          "issuanceDigest": "e9a8833ad295da7b8a586b1fa4b5d972a903e420c81a8432b065a807a6f68545"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+          },
+          "originBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+          "currentTargetDigest": "5e15f0b764cbeb38263d7fe90e4759aa9ff1cb8f9e2ba249de5655f24df48f2c",
+          "currentness": "STALE",
+          "compatibility": "INCOMPATIBLE",
+          "reuse": {
+            "exactCurrent": false,
+            "rematerializationAvailable": false,
+            "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+          },
+          "rework": {
+            "available": true,
+            "blocker": null
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+          "assessmentDigest": "9dd62b00b7b13c66729b371b23bf0b0f28762579c21fe0ce03a4a888bd7b1c05"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": true
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      "newsletterUpdate": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+        },
+        "resolved": true,
+        "taskId": "technical-fit",
+        "targetObservationDigest": "8a553801992df9cfeeca3b9cb51ce5bec6b9293b91fcd96fdfe954811ebe74ac",
+        "compatibility": {
+          "outcome": "INCOMPATIBLE",
+          "issuanceDigest": "88a6440c718d5b2572d9b25e227c87a006f92aae5685a51b3df02c1812b683a3"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+          },
+          "originBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+          "currentTargetDigest": "8a553801992df9cfeeca3b9cb51ce5bec6b9293b91fcd96fdfe954811ebe74ac",
+          "currentness": "STALE",
+          "compatibility": "INCOMPATIBLE",
+          "reuse": {
+            "exactCurrent": false,
+            "rematerializationAvailable": false,
+            "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+          },
+          "rework": {
+            "available": true,
+            "blocker": null
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+          "assessmentDigest": "3d36b17f8f17a313cc5f9503f0e664bb88915e759821b16814efcc595061ec72"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": true
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      }
+    },
+    "cost-schedule": {
+      "EXACT": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+        },
+        "resolved": true,
+        "taskId": "cost-schedule",
+        "targetObservationDigest": "679f42ef89b5e9d9b5dd7371a58c135784f43ec3febd3c221b7411d56f8ea7b7",
+        "compatibility": {
+          "outcome": "EXACT",
+          "issuanceDigest": "a73fc7df38014dfc0e9f9cf7fc155cb67fc86fc3511eea13a330c332b35c3729"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+          },
+          "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+          "currentTargetDigest": "679f42ef89b5e9d9b5dd7371a58c135784f43ec3febd3c221b7411d56f8ea7b7",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reuse": {
+            "exactCurrent": true,
+            "rematerializationAvailable": false,
+            "blocker": null
+          },
+          "rework": {
+            "available": true,
+            "blocker": null
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+          "assessmentDigest": "d435fd9e981d3a46659718441b6534f75d85c6fae8920b18c7a9fe25aa430ca7"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+      },
+      "vendorUpdate": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+        },
+        "resolved": true,
+        "taskId": "cost-schedule",
+        "targetObservationDigest": "85c6c1ae97decdbe321f94b6bacebdc0173b740ebeee6231688ed2a56602ba12",
+        "compatibility": {
+          "outcome": "INCOMPATIBLE",
+          "issuanceDigest": "8d2247bc562bc1237a6371e9dc2da812f47740525a496e390415ceaec15a2425"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+          },
+          "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+          "currentTargetDigest": "85c6c1ae97decdbe321f94b6bacebdc0173b740ebeee6231688ed2a56602ba12",
+          "currentness": "STALE",
+          "compatibility": "INCOMPATIBLE",
+          "reuse": {
+            "exactCurrent": false,
+            "rematerializationAvailable": false,
+            "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+          },
+          "rework": {
+            "available": false,
+            "blocker": "this deployment cannot start an attempt on the current basis (the task is not open, or no work execution is composed)"
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+          "assessmentDigest": "623fad55ddceb71cf9ce798a65ef1f697cb524adae8d5e5fd1b2a68e5400535e"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      "newsletterUpdate": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+        },
+        "resolved": true,
+        "taskId": "cost-schedule",
+        "targetObservationDigest": "e080ce5715f3686b17b264ae1232add464035875f7c4eaa547f7c5896fb38211",
+        "compatibility": {
+          "outcome": "INCOMPATIBLE",
+          "issuanceDigest": "03f1008f4dbfefcf54bb6413906ff11c946ea6c4fb1ebd11f90ec38f59bc4e4c"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+          },
+          "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+          "currentTargetDigest": "e080ce5715f3686b17b264ae1232add464035875f7c4eaa547f7c5896fb38211",
+          "currentness": "STALE",
+          "compatibility": "INCOMPATIBLE",
+          "reuse": {
+            "exactCurrent": false,
+            "rematerializationAvailable": false,
+            "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+          },
+          "rework": {
+            "available": false,
+            "blocker": "this deployment cannot start an attempt on the current basis (the task is not open, or no work execution is composed)"
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+          "assessmentDigest": "6bbafa11209fb0c9d79554784bda524c1d5e40d224ae1561f019b45314a044ef"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      "externalSinceResult": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+        },
+        "resolved": true,
+        "taskId": "cost-schedule",
+        "targetObservationDigest": "e080ce5715f3686b17b264ae1232add464035875f7c4eaa547f7c5896fb38211",
+        "compatibility": {
+          "outcome": "INCOMPATIBLE",
+          "issuanceDigest": "03f1008f4dbfefcf54bb6413906ff11c946ea6c4fb1ebd11f90ec38f59bc4e4c"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+          },
+          "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+          "currentTargetDigest": "e080ce5715f3686b17b264ae1232add464035875f7c4eaa547f7c5896fb38211",
+          "currentness": "STALE",
+          "compatibility": "INCOMPATIBLE",
+          "reuse": {
+            "exactCurrent": false,
+            "rematerializationAvailable": false,
+            "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+          },
+          "rework": {
+            "available": false,
+            "blocker": "this deployment cannot start an attempt on the current basis (the task is not open, or no work execution is composed)"
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+          "assessmentDigest": "6bbafa11209fb0c9d79554784bda524c1d5e40d224ae1561f019b45314a044ef"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      }
+    }
+  },
+  "expertDiagnostic": {
+    "technical-fit": {
+      "EXACT": {
+        "outcome": "EXACT",
+        "detail": "D3-a exact currentness already proved the basis holds, so no divergence needs a compatibility proof",
+        "conflicts": [],
+        "unknowns": [],
+        "proofs": [],
+        "assessmentDigest": "693bdc7f17de7fea9696fa19ea153ed00910867f0a97daef84387a27f06c7019",
+        "issuanceDigest": "a6af7c0787464b7f69666a7a7b83a60120a461fcced4f6851397421db5103f12",
+        "admission": {
+          "state": "ADMITTED",
+          "admitted": true,
+          "detail": "the basis is exactly current, so no divergence exists to admit against"
+        },
+        "targetObservation": {
+          "digest": "e58083f2e8cae0054fd342f4de6018db012843dcc5b687c0ceb1d6a6c83abbec",
+          "detail": "source at 5f6002d79b9f"
+        },
+        "resultManifestDigest": "404e37207f6835649038b3b44b5e26699ed2c90e5dc741b842cd98c97b53d145",
+        "originBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      },
+      "unknownSemanticBeforeUpdate": {
+        "outcome": "UNKNOWN",
+        "detail": "no proof was completed: change_coverage, change_coverage",
+        "conflicts": [],
+        "unknowns": [
+          {
+            "part": "change_coverage",
+            "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+          },
+          {
+            "part": "change_coverage",
+            "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+          }
+        ],
+        "proofs": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/prior-notes.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/sites.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/technical-fit.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          }
+        ],
+        "assessmentDigest": "88a976e1d74f7db13025b556c995187534b537c906273b2298a17287dc466505",
+        "issuanceDigest": "2e0c77e8efa9c0dfdb4a517323bc6fc14abd1b78e7a227f719138e740656fa69",
+        "admission": {
+          "state": "INSUFFICIENT_PROOF",
+          "admitted": false,
+          "detail": "the certificate records an incomplete proof: no proof was completed: change_coverage, change_coverage"
+        },
+        "targetObservation": {
+          "digest": "07445e88bd7f994e618d3fcdf445817da675e1d1f948877e6261ba00f90e788e",
+          "detail": "source at 95b395b974ab"
+        },
+        "resultManifestDigest": "404e37207f6835649038b3b44b5e26699ed2c90e5dc741b842cd98c97b53d145",
+        "originBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      },
+      "vendorUpdate": {
+        "outcome": "INCOMPATIBLE",
+        "detail": "1 proven interference(s) between the world change and this result",
+        "conflicts": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "kind": "read_invalidation",
+            "detail": "the source change touches a resource this result was computed from (both selectors name the source path \"sources/vendor-capabilities.csv\"), so its input would be superseded"
+          }
+        ],
+        "unknowns": [],
+        "proofs": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/prior-notes.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/sites.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/technical-fit.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/technical-fit.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          }
+        ],
+        "assessmentDigest": "49889bf157c8468e4389d2c7c3f15a646d662e78914a498f53fe79bf5cf87e0b",
+        "issuanceDigest": "43c12e1a505f3ba5ff92c5057466c1602d88e25944fb1f97d526e556264a8e76",
+        "admission": {
+          "state": "CONFLICT",
+          "admitted": false,
+          "detail": "a proven interference exists, and further observation cannot remove it: 1 proven interference(s) between the world change and this result"
+        },
+        "targetObservation": {
+          "digest": "5e15f0b764cbeb38263d7fe90e4759aa9ff1cb8f9e2ba249de5655f24df48f2c",
+          "detail": "source at 31cfc2515203"
+        },
+        "resultManifestDigest": "404e37207f6835649038b3b44b5e26699ed2c90e5dc741b842cd98c97b53d145",
+        "originBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "31cfc2515203d6195f8f20273f06083ef513b620",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      },
+      "newsletterUpdate": {
+        "outcome": "INCOMPATIBLE",
+        "detail": "1 proven interference(s) between the world change and this result",
+        "conflicts": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "kind": "read_invalidation",
+            "detail": "the source change touches a resource this result was computed from (both selectors name the source path \"sources/vendor-capabilities.csv\"), so its input would be superseded"
+          }
+        ],
+        "unknowns": [],
+        "proofs": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/prior-notes.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/sites.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/prior-notes.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/sites.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/technical-fit.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/technical-fit.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/technical-fit.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          }
+        ],
+        "assessmentDigest": "6301ba1dca9494948a17bc3cc3b7c8c724a928977e8448cff311c0448a7ef0eb",
+        "issuanceDigest": "37a4ab68c4158aa7fadb4bc9e577f7588da307947ab369082d0f4c7d3366e865",
+        "admission": {
+          "state": "CONFLICT",
+          "admitted": false,
+          "detail": "a proven interference exists, and further observation cannot remove it: 1 proven interference(s) between the world change and this result"
+        },
+        "targetObservation": {
+          "digest": "8a553801992df9cfeeca3b9cb51ce5bec6b9293b91fcd96fdfe954811ebe74ac",
+          "detail": "source at 99726194019d"
+        },
+        "resultManifestDigest": "404e37207f6835649038b3b44b5e26699ed2c90e5dc741b842cd98c97b53d145",
+        "originBasisDigest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "99726194019d555589f3014ac046bb822d2503cb",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      }
+    },
+    "cost-schedule": {
+      "EXACT": {
+        "outcome": "EXACT",
+        "detail": "D3-a exact currentness already proved the basis holds, so no divergence needs a compatibility proof",
+        "conflicts": [],
+        "unknowns": [],
+        "proofs": [],
+        "assessmentDigest": "d1d0ea935c4445a998e1b4503bf70f6e184ce36896165f026a6ae9c3f65982cc",
+        "issuanceDigest": "b77876318c706e164b007be3d20078357caa515d4ac75565880608d51ca47b7b",
+        "admission": {
+          "state": "ADMITTED",
+          "admitted": true,
+          "detail": "the basis is exactly current, so no divergence exists to admit against"
+        },
+        "targetObservation": {
+          "digest": "679f42ef89b5e9d9b5dd7371a58c135784f43ec3febd3c221b7411d56f8ea7b7",
+          "detail": "source at 5f6002d79b9f"
+        },
+        "resultManifestDigest": "624684dbf4fda7dc62bdd828ef2c474d89c54a8ad661df5e42a1b4fa4d01b2bc",
+        "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      },
+      "vendorUpdate": {
+        "outcome": "INCOMPATIBLE",
+        "detail": "1 proven interference(s) between the world change and this result",
+        "conflicts": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "kind": "write_collision",
+            "detail": "the source change touches a resource this result also writes (both selectors name the source path \"deliverables/cost-schedule.md\"), so accepting both would make one overwrite the other"
+          }
+        ],
+        "unknowns": [],
+        "proofs": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          }
+        ],
+        "assessmentDigest": "4da8ff337cc0717e4c6e1f7f37db843cb2e1303ad9af6a77d0d381e288d3da9a",
+        "issuanceDigest": "87eca94d3acbde46e84ec064ed1992d0b7f70a987506fb2caa531ade7d1b2d3a",
+        "admission": {
+          "state": "CONFLICT",
+          "admitted": false,
+          "detail": "a proven interference exists, and further observation cannot remove it: 1 proven interference(s) between the world change and this result"
+        },
+        "targetObservation": {
+          "digest": "85c6c1ae97decdbe321f94b6bacebdc0173b740ebeee6231688ed2a56602ba12",
+          "detail": "source at 31cfc2515203"
+        },
+        "resultManifestDigest": "624684dbf4fda7dc62bdd828ef2c474d89c54a8ad661df5e42a1b4fa4d01b2bc",
+        "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "31cfc2515203d6195f8f20273f06083ef513b620",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      },
+      "newsletterUpdate": {
+        "outcome": "INCOMPATIBLE",
+        "detail": "1 proven interference(s) between the world change and this result",
+        "conflicts": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "kind": "write_collision",
+            "detail": "the source change touches a resource this result also writes (both selectors name the source path \"deliverables/cost-schedule.md\"), so accepting both would make one overwrite the other"
+          }
+        ],
+        "unknowns": [],
+        "proofs": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          }
+        ],
+        "assessmentDigest": "b403046beb662a577aa7f316bc6aa3fa6f287f44ecbc015744a1a6b982a52549",
+        "issuanceDigest": "b28d2391baa0712443e0eacfcb7192560734cf62076cba1a654c4fab6f68f542",
+        "admission": {
+          "state": "CONFLICT",
+          "admitted": false,
+          "detail": "a proven interference exists, and further observation cannot remove it: 1 proven interference(s) between the world change and this result"
+        },
+        "targetObservation": {
+          "digest": "e080ce5715f3686b17b264ae1232add464035875f7c4eaa547f7c5896fb38211",
+          "detail": "source at 99726194019d"
+        },
+        "resultManifestDigest": "624684dbf4fda7dc62bdd828ef2c474d89c54a8ad661df5e42a1b4fa4d01b2bc",
+        "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "99726194019d555589f3014ac046bb822d2503cb",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      },
+      "externalSinceResult": {
+        "outcome": "COMPATIBLE",
+        "detail": "every one of the 8 change-to-dependency relation(s) is PROVEN DISJOINT under complete coverage",
+        "conflicts": [],
+        "unknowns": [],
+        "proofs": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          }
+        ],
+        "assessmentDigest": "c2800523471010dfe30a3945527d4d3d57dee5a01d319a7f95e6de99c48153e1",
+        "issuanceDigest": "9fae96012c509c148fb6891bc043773114cbdfbae367585ec786d5374a2f7a24",
+        "admission": {
+          "state": "ADMITTED",
+          "admitted": true,
+          "detail": "an authoritative, current certificate proves non-interference: every one of the 8 change-to-dependency relation(s) is PROVEN DISJOINT under complete coverage"
+        },
+        "targetObservation": {
+          "digest": "e080ce5715f3686b17b264ae1232add464035875f7c4eaa547f7c5896fb38211",
+          "detail": "source at 99726194019d"
+        },
+        "resultManifestDigest": "624684dbf4fda7dc62bdd828ef2c474d89c54a8ad661df5e42a1b4fa4d01b2bc",
+        "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "result",
+        "changeBaseRevision": "fcc199899414c586485628f3a6d3149bc029df75",
+        "currentSourceRevision": "99726194019d555589f3014ac046bb822d2503cb",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      },
+      "unknownSemantic": {
+        "outcome": "INCOMPATIBLE",
+        "detail": "1 proven interference(s) between the world change and this result",
+        "conflicts": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "kind": "write_collision",
+            "detail": "the source change touches a resource this result also writes (both selectors name the source path \"deliverables/cost-schedule.md\"), so accepting both would make one overwrite the other"
+          }
+        ],
+        "unknowns": [
+          {
+            "part": "change_coverage",
+            "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+          },
+          {
+            "part": "change_coverage",
+            "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+          }
+        ],
+        "proofs": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/brief.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/rollout-windows.md"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-pricing.csv"
+            },
+            "side": "read",
+            "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/newsletter.md"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "deliverables/cost-schedule.md"
+            },
+            "side": "write",
+            "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+          }
+        ],
+        "assessmentDigest": "da70404ddfb71be5dacac7b413aaf5482e3ca81c15d000d05cad0409cf67f386",
+        "issuanceDigest": "7f9d82483428682572e4a1f79a965f14eea5cef1c89f301e866e7ca06e42a9ab",
+        "admission": {
+          "state": "CONFLICT",
+          "admitted": false,
+          "detail": "a proven interference exists, and further observation cannot remove it: 1 proven interference(s) between the world change and this result"
+        },
+        "targetObservation": {
+          "digest": "d27acdf938bc838e2764a8d88ad0d0148d5ee40fca6c26d81bdcbef803272980",
+          "detail": "source at 99726194019d"
+        },
+        "resultManifestDigest": "624684dbf4fda7dc62bdd828ef2c474d89c54a8ad661df5e42a1b4fa4d01b2bc",
+        "originBasisDigest": "0abee5dd52b413d9470fae49a699bd50881db7357613ef90a14b54cbd4a65a1a",
+        "originSourceRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "changeFrom": "origin",
+        "changeBaseRevision": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "currentSourceRevision": "99726194019d555589f3014ac046bb822d2503cb",
+        "repositorySourceSelector": {
+          "domain": "source",
+          "scope": "repository"
+        }
+      }
+    }
+  },
+  "updates": {
+    "vendor": {
+      "fromHead": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+      "toHead": "31cfc2515203d6195f8f20273f06083ef513b620",
+      "paths": [
+        "sources/vendor-capabilities.csv"
+      ],
+      "target": "sources/vendor-capabilities.csv",
+      "digestAfter": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+    },
+    "newsletter": {
+      "fromHead": "31cfc2515203d6195f8f20273f06083ef513b620",
+      "toHead": "99726194019d555589f3014ac046bb822d2503cb",
+      "paths": [
+        "sources/newsletter.md"
+      ],
+      "target": "sources/newsletter.md",
+      "digestAfter": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+    }
+  },
+  "negativeControls": {
+    "duplicatePromotion": {
+      "promotionId": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+      "committed": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "event_type": "PROMOTION_COMMITTED",
+        "payload_version": 1,
+        "entity_type": "promotion",
+        "entity_id": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+        "payload": {
+          "promotion_id": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+          "attempt_id": "attempt-baaf963c5b6bd004409fcfe013219440",
+          "source_commit": "fcc199899414c586485628f3a6d3149bc029df75",
+          "expected_head_commit": "5f6002d79b9f269c5293b294b79da9d58d725913",
+          "resulting_head_commit": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+          "reason": "promoted via Ordarium git.promote",
+          "operation_id": "op_de383bb20c2a8d188db237198953c1b8727020dc",
+          "outcome_basis": "invoke_result",
+          "outcome_digest": "a61c3ee8bab04f572965f2293864674d7b4e7dad5b6067d0277659791b1bdbbf"
+        },
+        "causation_id": null,
+        "correlation_id": "promotion:promotion-09839e1c4ec5124fa819bace5a8ca836",
+        "idempotency_key": "5fa26496f5ebc5e2164b05bd11d2242210a193357d2d3619d1aefd74d75d18e6",
+        "expected_project_revision": 0,
+        "event_id": 24,
+        "project_sequence": 24,
+        "request_digest": "db44265c143c51d730b7ffe63656fd56c7f24dbf2e50351d51c152941ff6c9a8",
+        "previous_event_digest": "eef13fde28565d9281db9f847fb8b677c659b82e60211bb5c764649891dd3d21",
+        "event_digest": "707cee4939c4ab960e7df1cd3051a7e1dc6f477f723496203c2f4d80a4e110e6",
+        "committed_at": "2026-11-01T09:40:29.594000Z"
+      },
+      "resultingHeadCommit": "95b395b974ab8482f2904c12acabbf0c41aca3a1"
+    },
+    "inspectUnknownResult": {
+      "schemaVersion": 1,
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-does-not-exist"
+      },
+      "resolved": false,
+      "taskId": null,
+      "targetObservationDigest": null,
+      "compatibility": {
+        "outcome": "NOT_ASSESSED",
+        "issuanceDigest": null
+      },
+      "assessment": null,
+      "availableActions": {
+        "rematerialize": false,
+        "rework": false
+      },
+      "detail": "this deployment cannot authoritatively resolve that result: unknown identity, an attempt that never completed, or a result whose basis was never captured"
+    },
+    "rematerializeIncompatible": {
+      "schemaVersion": 1,
+      "state": "REFUSED",
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+      },
+      "taskId": "technical-fit",
+      "detail": "the fresh assessment does not offer rematerialization for this result (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable)",
+      "admissionRef": null,
+      "candidateRef": null
+    },
+    "staleInspection": {
+      "schemaVersion": 1,
+      "state": "STALE_INSPECTION",
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+      },
+      "taskId": "technical-fit",
+      "detail": "the caller's assessment digest does not match a fresh assessment of the CURRENT world — the choice was made against a world that has since moved; re-inspect and choose again (zero events, zero permits used)",
+      "blockers": [],
+      "reopenedEventId": null,
+      "headSynced": false,
+      "attemptId": null,
+      "jobId": null
+    },
+    "staleInspectionEventsAdded": 0,
+    "reworkPromoted": {
+      "schemaVersion": 1,
+      "state": "REFUSED",
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-baaf963c5b6bd004409fcfe013219440"
+      },
+      "taskId": "cost-schedule",
+      "detail": "the task is SATISFIED, not VERIFYING: a governed reopening sets aside a completed candidate of a VERIFYING batch, and no such candidate is being held",
+      "blockers": [],
+      "reopenedEventId": null,
+      "headSynced": false,
+      "attemptId": null,
+      "jobId": null
+    }
+  },
+  "errors": [],
+  "projectRevision": null,
+  "promotions": {
+    "liveHeadBefore": "5f6002d79b9f269c5293b294b79da9d58d725913",
+    "canonicalHeadBefore": "5f6002d79b9f269c5293b294b79da9d58d725913",
+    "costSchedule": {
+      "promotionId": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+      "committed": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "event_type": "PROMOTION_COMMITTED",
+        "payload_version": 1,
+        "entity_type": "promotion",
+        "entity_id": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+        "payload": {
+          "promotion_id": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+          "attempt_id": "attempt-baaf963c5b6bd004409fcfe013219440",
+          "source_commit": "fcc199899414c586485628f3a6d3149bc029df75",
+          "expected_head_commit": "5f6002d79b9f269c5293b294b79da9d58d725913",
+          "resulting_head_commit": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+          "reason": "promoted via Ordarium git.promote",
+          "operation_id": "op_de383bb20c2a8d188db237198953c1b8727020dc",
+          "outcome_basis": "invoke_result",
+          "outcome_digest": "a61c3ee8bab04f572965f2293864674d7b4e7dad5b6067d0277659791b1bdbbf"
+        },
+        "causation_id": null,
+        "correlation_id": "promotion:promotion-09839e1c4ec5124fa819bace5a8ca836",
+        "idempotency_key": "5fa26496f5ebc5e2164b05bd11d2242210a193357d2d3619d1aefd74d75d18e6",
+        "expected_project_revision": 0,
+        "event_id": 24,
+        "project_sequence": 24,
+        "request_digest": "db44265c143c51d730b7ffe63656fd56c7f24dbf2e50351d51c152941ff6c9a8",
+        "previous_event_digest": "eef13fde28565d9281db9f847fb8b677c659b82e60211bb5c764649891dd3d21",
+        "event_digest": "707cee4939c4ab960e7df1cd3051a7e1dc6f477f723496203c2f4d80a4e110e6",
+        "committed_at": "2026-11-01T09:40:29.594000Z"
+      },
+      "resultingHeadCommit": "95b395b974ab8482f2904c12acabbf0c41aca3a1"
+    },
+    "costScheduleStep": "TASK_SATISFIED",
+    "costScheduleTask": "SATISFIED",
+    "headAfter": "5f6002d79b9f269c5293b294b79da9d58d725913",
+    "liveHeadAfter": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+    "reconcile": {
+      "status": "blocked",
+      "fromHead": "5f6002d79b9f269c5293b294b79da9d58d725913",
+      "toHead": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+      "blockers": [
+        "quiescence_required: the project must be quiescent before the head advances: every ACTIVE/VERIFYING task and open attempt must settle (a promoted task must reach SATISFIED first)"
+      ]
+    },
+    "headAfterReconcile": "5f6002d79b9f269c5293b294b79da9d58d725913",
+    "costContentInTree": "# Cost and schedule\r\n\r\n## Budget\r\n\r\n| Site | Low (£) | High (£) |\r\n| --- | --- | --- |\r\n| A | 25,800 | 36,200 |\r\n| B | 25,800 | 36,200 |\r\n| C | 25,800 | 36,200 |\r\n\r\n## Sequence\r\n\r\nA in January–February, B in March–April, C in May–June. Order each unit before its window; the longest current lead time is 10 weeks, so the B order must be placed by late December.\r\n\r\n## Total\r\n\r\nCommitted low: £77,400; high: £108,600. Contingency at 8%: £6,192–£8,688. Total £83,592–£117,288, within the £120,000 grant.\r\n"
+  },
+  "packagedContinuation": {
+    "reworkTechnicalFit": {
+      "schemaVersion": 1,
+      "state": "DELEGATED",
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+      },
+      "taskId": "technical-fit",
+      "detail": "the governed reopening, the head reconciliation and the D2-d delegation all landed; the Work runs on the current basis",
+      "blockers": [],
+      "reopenedEventId": 26,
+      "headSynced": true,
+      "attemptId": null,
+      "jobId": "wdj-acb0a785-53a2-4634-a801-b4eb31771f99"
+    },
+    "technicalFitTaskAfterRework": "READY",
+    "reworkTerminal": {
+      "jobId": "wdj-acb0a785-53a2-4634-a801-b4eb31771f99",
+      "taskId": "technical-fit",
+      "attemptId": null,
+      "phase": "HOST_ERROR",
+      "settlement": null,
+      "hostError": "HEAD_BASIS_MISMATCH: the repository is at 99726194019d, the project head at 95b395b974ab, the proven effect head at 95b395b974ab and the task's base at 95b395b974ab — a worker's world must start where its envelope says the work starts"
+    },
+    "reworkAttempt": {
+      "attemptId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+      "state": "COMPLETED"
+    },
+    "reworkResult": {
+      "eventId": 13,
+      "resultCommit": "4f0eec5781fe47716bba6deb5f8eb10d635fabb7",
+      "report": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "attempt_id": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+        "task_id": "technical-fit",
+        "envelope_id": "envelope-b63466bc66282f19b579b9488cdcc2c0",
+        "input_project_revision": 0,
+        "input_project_digest": "f12c24e2ac5975714a26fc01f4c975efe5adc981e00fe324b29c40a236c0a9d2",
+        "base_commit": "5f6002d79b9f269c5293b294b79da9d58d725913",
+        "worktree_id": "worktree-ad0fb9f4",
+        "result_commit": "4f0eec5781fe47716bba6deb5f8eb10d635fabb7",
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world",
+        "changed_files": [
+          "deliverables/technical-fit.md"
+        ],
+        "produced_artifacts": [
+          "deliverables/technical-fit.md"
+        ],
+        "started_at": "2026-08-13T00:00:00.000000Z",
+        "finished_at": "2026-08-13T00:00:01.000000Z",
+        "runtime_metadata": {
+          "runner": "dsh-agent",
+          "runner_version": "1",
+          "argv": [
+            "dsh-agent"
+          ],
+          "exit_code": 0,
+          "duration_ms": 1,
+          "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "stdout_artifact": null,
+          "stderr_artifact": null
+        },
+        "context_manifest": "context-manifest-4622b521244f283927c762c58e8a9570"
+      }
+    },
+    "reworkContent": "# Technical fit\n\n## Site A — Marsh Lane Store\nVendor: V1\nConstraint: design minimum -12 °C; V1 is rated to -20 °C. V2 is excluded by the 2023 marsh-lane failure.\n\n## Site B — Harbour Workshop\nVendor: V3\nConstraint: design minimum -4 °C and a coastal-rated warranty; V3 is the only vendor meeting both.\n\n## Site C — School Annexe\nVendor: V3\nConstraint: ambient minimum 2 °C and a unit no wider than 800 mm; V3 is 750 mm wide. The 2023 V2 failure was at -8 °C, below this site's minimum.\n\n## Summary\n\nA: V1. B: V3. C: V3.\n",
+    "reworkEvents": [
+      {
+        "eventId": 26,
+        "entityId": "technical-fit",
+        "provenance": {
+          "schema_version": 1,
+          "origin_result_subject": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-d16532bd0851cae20310d8e0ad0fb9f4"
+          },
+          "origin_basis_digest": "e7a2e1fb7ba2f9bf0c9bf16ad8fcf7d80911fbe6f6a5d0cd18f3ee920b250f26",
+          "target_observation_digest": "8a553801992df9cfeeca3b9cb51ce5bec6b9293b91fcd96fdfe954811ebe74ac",
+          "current_envelope_id": "envelope-b63466bc66282f19b579b9488cdcc2c0",
+          "reason": "INCOMPATIBLE",
+          "continuation_assessment_digest": "3d36b17f8f17a313cc5f9503f0e664bb88915e759821b16814efcc595061ec72"
+        }
+      }
+    ],
+    "reconcileAfterReopen": {
+      "status": "in_sync",
+      "fromHead": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+      "toHead": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+      "blockers": []
+    },
+    "headAfterReopenReconcile": "95b395b974ab8482f2904c12acabbf0c41aca3a1",
+    "liveHeadAfterReopen": "99726194019d555589f3014ac046bb822d2503cb"
+  },
+  "history": [
+    {
+      "eventId": 1,
+      "type": "PROJECT_CREATED",
+      "entityId": "sablewick",
+      "revision": null
+    },
+    {
+      "eventId": 2,
+      "type": "GATE_DEFINED",
+      "entityId": "gate-release",
+      "revision": 0
+    },
+    {
+      "eventId": 3,
+      "type": "ROLE_TABLE_DEFINED",
+      "entityId": "sablewick",
+      "revision": 0
+    },
+    {
+      "eventId": 4,
+      "type": "STAGE_GRAPH_DEFINED",
+      "entityId": "sablewick",
+      "revision": 0
+    },
+    {
+      "eventId": 5,
+      "type": "TASK_CREATED",
+      "entityId": "technical-fit",
+      "revision": 0
+    },
+    {
+      "eventId": 6,
+      "type": "TASK_CREATED",
+      "entityId": "cost-schedule",
+      "revision": 0
+    },
+    {
+      "eventId": 7,
+      "type": "TASK_STARTED",
+      "entityId": "technical-fit",
+      "revision": 0
+    },
+    {
+      "eventId": 8,
+      "type": "ATTEMPT_CREATED",
+      "entityId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+      "revision": 0
+    },
+    {
+      "eventId": 9,
+      "type": "ATTEMPT_STARTED",
+      "entityId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+      "revision": 0
+    },
+    {
+      "eventId": 10,
+      "type": "CONTEXT_MANIFEST_ADDED",
+      "entityId": "context-manifest-4622b521244f283927c762c58e8a9570",
+      "revision": 0
+    },
+    {
+      "eventId": 11,
+      "type": "EVIDENCE_ADDED",
+      "entityId": "evidence-96fa6101d25f4518a30b1f281fc9a47c",
+      "revision": 0
+    },
+    {
+      "eventId": 12,
+      "type": "EVIDENCE_ADDED",
+      "entityId": "evidence-ee2247078ed9bb6ba2119f1c554d8f31",
+      "revision": 0
+    },
+    {
+      "eventId": 13,
+      "type": "ATTEMPT_COMPLETED",
+      "entityId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+      "revision": 0
+    },
+    {
+      "eventId": 14,
+      "type": "TASK_VERIFYING",
+      "entityId": "technical-fit",
+      "revision": 0
+    },
+    {
+      "eventId": 15,
+      "type": "TASK_STARTED",
+      "entityId": "cost-schedule",
+      "revision": 0
+    },
+    {
+      "eventId": 16,
+      "type": "ATTEMPT_CREATED",
+      "entityId": "attempt-baaf963c5b6bd004409fcfe013219440",
+      "revision": 0
+    },
+    {
+      "eventId": 17,
+      "type": "ATTEMPT_STARTED",
+      "entityId": "attempt-baaf963c5b6bd004409fcfe013219440",
+      "revision": 0
+    },
+    {
+      "eventId": 18,
+      "type": "CONTEXT_MANIFEST_ADDED",
+      "entityId": "context-manifest-8689f412ce28b58122265c20148561e9",
+      "revision": 0
+    },
+    {
+      "eventId": 19,
+      "type": "EVIDENCE_ADDED",
+      "entityId": "evidence-cd4d4749114be6f781e54b346fa427eb",
+      "revision": 0
+    },
+    {
+      "eventId": 20,
+      "type": "EVIDENCE_ADDED",
+      "entityId": "evidence-ac301897d2744b76f315f04b84d0cc8b",
+      "revision": 0
+    },
+    {
+      "eventId": 21,
+      "type": "ATTEMPT_COMPLETED",
+      "entityId": "attempt-baaf963c5b6bd004409fcfe013219440",
+      "revision": 0
+    },
+    {
+      "eventId": 22,
+      "type": "TASK_VERIFYING",
+      "entityId": "cost-schedule",
+      "revision": 0
+    },
+    {
+      "eventId": 23,
+      "type": "PROMOTION_PREPARED",
+      "entityId": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+      "revision": 0
+    },
+    {
+      "eventId": 24,
+      "type": "PROMOTION_COMMITTED",
+      "entityId": "promotion-09839e1c4ec5124fa819bace5a8ca836",
+      "revision": 0
+    },
+    {
+      "eventId": 25,
+      "type": "TASK_SATISFIED",
+      "entityId": "cost-schedule",
+      "revision": 0
+    },
+    {
+      "eventId": 26,
+      "type": "TASK_READY",
+      "entityId": "technical-fit",
+      "revision": 0
+    },
+    {
+      "eventId": 27,
+      "type": "PROJECT_REVISED",
+      "entityId": "sablewick",
+      "revision": 0
+    },
+    {
+      "eventId": 28,
+      "type": "TASK_REAUTHORIZED",
+      "entityId": "technical-fit",
+      "revision": 1
+    }
+  ],
+  "finalHead": "99726194019d555589f3014ac046bb822d2503cb",
+  "finalTaskStates": {
+    "technical-fit": "READY",
+    "cost-schedule": "SATISFIED"
+  },
+  "plan": {
+    "technical-fit": null,
+    "cost-schedule": "# Cost and schedule\r\n\r\n## Budget\r\n\r\n| Site | Low (£) | High (£) |\r\n| --- | --- | --- |\r\n| A | 25,800 | 36,200 |\r\n| B | 25,800 | 36,200 |\r\n| C | 25,800 | 36,200 |\r\n\r\n## Sequence\r\n\r\nA in January–February, B in March–April, C in May–June. Order each unit before its window; the longest current lead time is 10 weeks, so the B order must be placed by late December.\r\n\r\n## Total\r\n\r\nCommitted low: £77,400; high: £108,600. Contingency at 8%: £6,192–£8,688. Total £83,592–£117,288, within the £120,000 grant.\r\n"
+  },
+  "finishedAt": "2026-11-01T09:40:33.244Z"
+}
