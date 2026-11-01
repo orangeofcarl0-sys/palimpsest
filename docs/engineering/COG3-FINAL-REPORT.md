@@ -41,7 +41,7 @@ G3 PARTIAL, G4 PARTIAL, G5 ESTABLISHED** (with the budget overrun disclosed).
 - **No comparative advantage.** The single-agent baseline scored 11/12 on the common rubric for
   1.83M tokens. The native DSH baseline, with one subagent, scored 12/12 and produced the strongest
   risk analysis in the campaign for 8.54M tokens. Palimpsest scored 12/12 for 16.22M tokens. The
-  best plan in the campaign came from the native baseline's red-team subagent.
+  strongest risk analysis in the campaign came from the native baseline's red-team subagent.
 - **The campaign exceeded its token cap** (27.13M against 25M), the F baseline was truncated, and
   P-minus was not run. That is a protocol violation, reported rather than hidden.
 
