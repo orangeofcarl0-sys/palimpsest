@@ -6,12 +6,32 @@
  * qualification in `research-evidence/c6r/runtime/` pins its effect.
  */
 import { describe, expect, it } from "vitest";
-import { ALLOWED_PROVIDER_ROUTES, providerRouteAllowed } from "../scripts/c6r/egress_policy.mjs";
+import {
+  ALLOWED_PROVIDER_ROUTES,
+  providerAuthHeaders,
+  providerRouteAllowed,
+  providerRouteAllowedFor,
+} from "../scripts/c6r/egress_policy.mjs";
 
 describe("C6-R2 provider-only egress", () => {
-  it("allows exactly POST /v1/messages", () => {
+  it("allows exactly POST /v1/messages for the Anthropic route", () => {
     expect(ALLOWED_PROVIDER_ROUTES).toEqual(["POST /v1/messages"]);
     expect(providerRouteAllowed("POST", "/v1/messages")).toBe(true);
+    expect(providerRouteAllowedFor("anthropic", "POST", "/v1/messages")).toBe(true);
+  });
+
+  it("allows exactly POST /v1/chat/completions for the OpenAI route", () => {
+    expect(providerRouteAllowedFor("openai", "POST", "/v1/chat/completions")).toBe(true);
+    expect(providerRouteAllowedFor("openai", "POST", "/v1/messages")).toBe(false);
+    expect(providerRouteAllowedFor("openai", "GET", "/v1/chat/completions")).toBe(false);
+    expect(providerRouteAllowedFor("openai", "POST", "/v1/models")).toBe(false);
+    expect(providerRouteAllowedFor("openai", "POST", "/chat/completions")).toBe(false);
+  });
+
+  it("selects the auth header for each provider kind", () => {
+    expect(providerAuthHeaders("anthropic", "key")).toEqual({ "x-api-key": "key" });
+    expect(providerAuthHeaders("openai", "key")).toEqual({ authorization: "Bearer key" });
+    expect(() => providerAuthHeaders("unknown", "key")).toThrow(/unknown provider kind/);
   });
 
   it("refuses every other method or path", () => {

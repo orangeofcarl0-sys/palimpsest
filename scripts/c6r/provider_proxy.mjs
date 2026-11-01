@@ -1,25 +1,39 @@
 /**
- * C6-R2 — provider-only egress proxy.
+ * C6-R — provider-only egress proxy (Anthropic Messages or OpenAI Chat Completions).
  *
  * It runs OUTSIDE the model's sandbox, holds the only real credential, and forwards exactly one
- * route (`POST /v1/messages`) to the configured upstream. Everything else is refused. The model's
- * sandbox has no network namespace of its own except a loopback bridge to this Unix socket, so it
- * cannot fetch a public repository, a search engine, or any other host.
+ * route for the configured provider kind. The model's sandbox has no network of its own except a
+ * loopback bridge to this Unix socket, so it cannot fetch a repository, a search engine, or any
+ * other host.
  *
- * The key is read from a credential file (default: the owner's DSH credential store) or from
- * C6R_REAL_KEY for a mock qualification. It is never logged and never enters the sandbox.
+ * Credential sources (the key is never logged and never enters the sandbox):
+ *   · C6R_REAL_KEY — qualification / mock mode;
+ *   · C6R_PROVIDER_CONFIG_FILE + C6R_PROVIDER_ID — the active ZCode provider rule's access.apiKey;
+ *   · C6R_CREDENTIAL_FILE — the owner's DSH credential store (legacy Anthropic route).
  */
 import { createServer, request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
 import { dirname } from "node:path";
-import { providerRouteAllowed } from "./egress_policy.mjs";
+import { PROVIDER_KINDS, providerAuthHeaders, providerRouteAllowedFor } from "./egress_policy.mjs";
 
 const SOCKET = process.env.C6R_PROXY_SOCKET;
-const UPSTREAM = process.env.C6R_UPSTREAM ?? "https://api.deepseek.com/anthropic";
+const KIND = process.env.C6R_PROVIDER_KIND ?? "anthropic";
+const ROUTE = PROVIDER_KINDS[KIND];
+if (ROUTE === undefined) {
+  process.stderr.write(`[provider-proxy] unknown C6R_PROVIDER_KIND "${KIND}"\n`);
+  process.exit(2);
+}
+const DEFAULT_UPSTREAM = KIND === "openai" ? "https://opencode.ai/zen/go/v1" : "https://api.deepseek.com/anthropic";
+const UPSTREAM = process.env.C6R_UPSTREAM ?? DEFAULT_UPSTREAM;
 const LOG = process.env.C6R_PROXY_LOG ?? "";
 const CREDENTIAL_FILE = process.env.C6R_CREDENTIAL_FILE ?? "";
+const PROVIDER_CONFIG_FILE = process.env.C6R_PROVIDER_CONFIG_FILE ?? "";
+const PROVIDER_ID = process.env.C6R_PROVIDER_ID ?? "";
 const ENV_KEY = process.env.C6R_REAL_KEY ?? "";
+const UPSTREAM_HEADERS = (() => {
+  try { return JSON.parse(process.env.C6R_UPSTREAM_HEADERS ?? "{}"); } catch { return {}; }
+})();
 
 if (SOCKET === undefined || SOCKET === "") {
   process.stderr.write("[provider-proxy] C6R_PROXY_SOCKET is required\n");
@@ -28,10 +42,19 @@ if (SOCKET === undefined || SOCKET === "") {
 
 function readKey() {
   if (ENV_KEY !== "") return ENV_KEY;
-  if (CREDENTIAL_FILE === "" || !existsSync(CREDENTIAL_FILE)) return null;
-  const text = readFileSync(CREDENTIAL_FILE, "utf8");
-  const match = text.match(/^\s{2}DEEPSEEK_API_KEY:\s*(\S+)\s*$/m) ?? text.match(/DEEPSEEK_API_KEY\s*[:=]\s*(\S+)/);
-  return match === null ? null : match[1];
+  if (PROVIDER_CONFIG_FILE !== "" && PROVIDER_ID !== "" && existsSync(PROVIDER_CONFIG_FILE)) {
+    const config = JSON.parse(readFileSync(PROVIDER_CONFIG_FILE, "utf8"));
+    const rules = config.config?.providerConfigRules?.providerRules ?? [];
+    const rule = rules.find((entry) => entry.providerId === PROVIDER_ID || entry.providerName === PROVIDER_ID);
+    const key = rule?.config?.access?.apiKey;
+    if (typeof key === "string" && key.length > 0) return key;
+  }
+  if (CREDENTIAL_FILE !== "" && existsSync(CREDENTIAL_FILE)) {
+    const text = readFileSync(CREDENTIAL_FILE, "utf8");
+    const match = text.match(/^\s{2}DEEPSEEK_API_KEY:\s*(\S+)\s*$/m) ?? text.match(/DEEPSEEK_API_KEY\s*[:=]\s*(\S+)/);
+    if (match !== null) return match[1];
+  }
+  return null;
 }
 
 const KEY = readKey();
@@ -42,19 +65,20 @@ if (KEY === null) {
 
 const upstreamRoot = new URL(UPSTREAM);
 const transport = upstreamRoot.protocol === "https:" ? httpsRequest : httpRequest;
+const upstreamRootPath = upstreamRoot.pathname.replace(/\/$/u, "");
 
 mkdirSync(dirname(SOCKET), { recursive: true });
 if (existsSync(SOCKET)) unlinkSync(SOCKET);
 
 function log(entry) {
   if (LOG === "") return;
-  appendFileSync(LOG, `${JSON.stringify({ at: new Date().toISOString(), ...entry })}\n`);
+  appendFileSync(LOG, `${JSON.stringify({ at: new Date().toISOString(), kind: KIND, ...entry })}\n`);
 }
 
 const server = createServer((req, res) => {
   const started = Date.now();
   const path = new URL(req.url ?? "/", "http://local").pathname;
-  if (!providerRouteAllowed(req.method, path)) {
+  if (!providerRouteAllowedFor(KIND, req.method, path)) {
     log({ method: req.method, path, status: 403, reason: "route_not_allowed" });
     res.writeHead(403, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: { type: "provider_proxy_route_denied" } }));
@@ -63,20 +87,20 @@ const server = createServer((req, res) => {
 
   const headers = { ...req.headers };
   for (const name of ["host", "x-api-key", "authorization", "cookie", "proxy-authorization"]) delete headers[name];
-  headers["x-api-key"] = KEY;
+  Object.assign(headers, providerAuthHeaders(KIND, KEY), UPSTREAM_HEADERS);
 
-  const target = new URL(`${upstreamRoot.pathname.replace(/\/$/u, "")}${path}`, upstreamRoot);
+  const target = new URL(`${upstreamRootPath}${ROUTE.upstreamPath}`, upstreamRoot);
   const upstream = transport(
     target,
-    { method: "POST", headers },
+    { method: ROUTE.method, headers },
     (upstreamRes) => {
       res.writeHead(upstreamRes.statusCode ?? 502, upstreamRes.headers);
       upstreamRes.pipe(res);
-      upstreamRes.on("end", () => log({ method: "POST", path, status: upstreamRes.statusCode, upstream: target.origin + target.pathname, ms: Date.now() - started }));
+      upstreamRes.on("end", () => log({ method: ROUTE.method, path, status: upstreamRes.statusCode, upstream: target.origin + target.pathname, ms: Date.now() - started }));
     },
   );
   upstream.on("error", (error) => {
-    log({ method: "POST", path, status: 502, error: String(error.message ?? error) });
+    log({ method: ROUTE.method, path, status: 502, error: String(error.message ?? error) });
     if (!res.headersSent) res.writeHead(502, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: { type: "provider_proxy_upstream_failed" } }));
   });
@@ -84,7 +108,7 @@ const server = createServer((req, res) => {
 });
 
 server.listen(SOCKET, () => {
-  process.stdout.write(`[provider-proxy] listening on ${SOCKET} upstream=${UPSTREAM} route=POST /v1/messages\n`);
+  process.stdout.write(`[provider-proxy] listening on ${SOCKET} kind=${KIND} route=${ROUTE.method} ${ROUTE.path} upstream=${UPSTREAM}\n`);
 });
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
