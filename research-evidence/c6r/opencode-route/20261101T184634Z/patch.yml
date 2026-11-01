@@ -1,0 +1,65 @@
+- id: llm-deepseek
+  disabled: true
+- id: llm-pi-ai
+  config:
+    providers:
+      opencode:
+        displayName: OpenCode Go
+        api: openai-completions
+        baseURL: http://127.0.0.1:18080/v1
+        apiKeyEnv: C6R_PLACEHOLDER
+        headers:
+          x-opencode-session: zcode-5c7f8d75-20260913
+        compat:
+          thinkingFormat: deepseek
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 262144
+        reasoning: high
+        models:
+          - id: deepseek-v4.1-flash
+            name: DeepSeek V4.1 Flash
+            reasoningEfforts:
+              off:
+              high: high
+- id: agent-default-model
+  config:
+    provider: opencode
+    model: deepseek-v4.1-flash
+- id: approval
+  config:
+    policy: never
+- id: permission
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: never
+      workspace-write:
+        sandbox: workspace-write
+        approval: never
+      danger-full-access:
+        sandbox: danger-full-access
+        approval: never
+    defaultPreset: workspace-write
+- id: sandbox-policy
+  config:
+    mode: workspace-write
+    workspaceRoot: /workspace
+- id: session-title-llm
+  disabled: true
+- id: tool-subagent
+  disabled: true
+- id: tool-subagent-control
+  disabled: true
+- id: tool-workflow
+  disabled: true
+- id: subagent
+  disabled: true
+- id: subagent-spawn-in-process
+  disabled: true
+- id: subagent-fork-in-process
+  disabled: true
+- id: workflow-ptc
+  disabled: true
+- id: tool-web
+  disabled: true

@@ -10,6 +10,11 @@ set -euo pipefail
 
 REPO="${REPO:-/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1}"
 BASE="$HOME/c6r"
+
+mkdir -p "$BASE"
+cp "$REPO/scripts/c6r/provider_proxy.mjs" "$BASE/provider_proxy.mjs"
+cp "$REPO/scripts/c6r/egress_policy.mjs" "$BASE/egress_policy.mjs"
+cp "$REPO/scripts/c6r/upstream_retry.mjs" "$BASE/upstream_retry.mjs"
 DSH="$BASE/dsh/node_modules/.bin/dsh"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 WORK="$BASE/opencode-probe/$STAMP"

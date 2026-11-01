@@ -7,6 +7,11 @@ set -euo pipefail
 
 REPO="${REPO:-/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1}"
 BASE="$HOME/c6r"
+
+mkdir -p "$BASE"
+cp "$REPO/scripts/c6r/provider_proxy.mjs" "$BASE/provider_proxy.mjs"
+cp "$REPO/scripts/c6r/egress_policy.mjs" "$BASE/egress_policy.mjs"
+cp "$REPO/scripts/c6r/upstream_retry.mjs" "$BASE/upstream_retry.mjs"
 PRODUCT="$BASE/product"
 DSH="$BASE/dsh/node_modules/.bin/dsh"
 RUN="${C6R_P1_RUN:-$BASE/runs/qual-p1}"
@@ -150,7 +155,7 @@ bwrap \
   env -i HOME=/dsh-home DSH_HOME=/dsh-home TMPDIR=/tmp PATH=/usr/local/bin:/usr/bin:/bin \
     C6R_PLACEHOLDER=c6r-placeholder-not-a-credential \
     C6R_PROXY_SOCKET=/run/c6r-provider.sock C6R_BRIDGE_PORT=18080 \
-    bash -c 'node /net_bridge.mjs > /dsh-home/bridge.log 2>&1 & BRIDGE=$!; sleep 0.4; /usr/bin/timeout -s KILL 480 /dsh/node_modules/.bin/dsh --profile c6r-p1 --once "$1"; STATUS=$?; kill "$BRIDGE" 2>/dev/null || true; exit "$STATUS"' _ "$PROMPT" \
+    bash -c 'node /net_bridge.mjs > /dsh-home/bridge.log 2>&1 & BRIDGE=$!; sleep 0.4; /usr/bin/timeout -s KILL 900 /dsh/node_modules/.bin/dsh --profile c6r-p1 --once "$1"; STATUS=$?; kill "$BRIDGE" 2>/dev/null || true; exit "$STATUS"' _ "$PROMPT" \
   > "$OUT/run.log" 2> "$OUT/run.err"
 EXIT_CODE=$?
 set -e
