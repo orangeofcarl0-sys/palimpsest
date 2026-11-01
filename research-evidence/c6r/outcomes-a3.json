@@ -1,0 +1,147 @@
+{
+  "schema": "c6r-outcomes/v3",
+  "generatedAt": "2026-11-01T19:10:00.000Z",
+  "stage": "C6-R — Agent-Native Behavioral Qualification & Comparative Value (Retry / Code Freeze 4)",
+  "incomingBaseline": {
+    "commit": "d1a05a7bfc145258efa34c2710998db04680d266",
+    "tree": "e96cec6318bb35639e7083b222b811b8b2f59b11"
+  },
+  "codeFreezes": {
+    "original": { "commit": "103c4eb107418e0d253d27681ec33f77b0514de3", "tree": "b3f4004b056c1c789bc0b6fc7281cc5ba5b77f1f" },
+    "providerA2": { "commit": "508c9a07a4bbb9439947c8ae95eaa298ad7341ba", "tree": "1c842de2641dcd93a99f00b0ac2253f48f79dba2" },
+    "rigC1": { "commit": "7b80a17ea4fd037b4ab1cbdc0b03828f6dad4ecf", "tree": "d1fadcfcdc92de8817e41ea6af82dd3160877d21" },
+    "rigC2": { "commit": "7cd5e1c08448f82dec70441ad481329d89716311", "tree": "0e5c623f739642de2b85682569c52f13fb38462c" }
+  },
+  "provider": {
+    "name": "opencode",
+    "model": "deepseek-v4.1-flash",
+    "protocol": "openai-chat-completions",
+    "baseUrl": "https://opencode.ai/zen/go/v1",
+    "zcodeProviderId": "5c7f8d75-e85e-4de5-9b27-e2b59eab1c7a",
+    "keySource": "C:/Users/66494/.zcode/v2/provider_config.json (outside the sandbox)",
+    "keyLength": 51,
+    "keyEnteredSandbox": false,
+    "oldProvider": "deepseek-official / deepseek-flash (blocked at TLS; run c6r-001)"
+  },
+  "proxyRetry": {
+    "policy": "4 attempts, 500/1000/2000 ms, pre-response only",
+    "bodyBuffered": true,
+    "bodyLimitBytes": 67108864,
+    "retryAfterResponseStarted": false,
+    "freshConnectionPerAttempt": true,
+    "credentialOrBodyLogged": false,
+    "selfTest": {
+      "path": "research-evidence/c6r/retry-selftest/retry-selftest.json",
+      "upstreamAttempts": 3,
+      "retries": 2,
+      "finalStatus": 200,
+      "passed": true
+    }
+  },
+  "probe": {
+    "path": "research-evidence/c6r/opencode-probe/20261101T181503Z",
+    "state": "AVAILABLE",
+    "assistantText": "PROBE_OK",
+    "attempts": 4,
+    "assistantMessages": 1,
+    "tokens": 3587
+  },
+  "runs": {
+    "c6r-001": { "provider": "deepseek-official / deepseek-flash", "state": "BLOCKED", "reason": "provider_transport_reset", "tokens": 0 },
+    "c6r-002": {
+      "provider": "opencode / deepseek-v4.1-flash",
+      "codeFreeze": "508c9a07a4bbb9439947c8ae95eaa298ad7341ba",
+      "state": "INVALID",
+      "reason": "provider_502_during_turn",
+      "sessionId": "session-f6adbe2e-7ddb-425b-9d62-fe52b45452ce",
+      "assistantMessages": 21,
+      "toolCalls": 43,
+      "tokens": 790661,
+      "durationMs": 666069,
+      "discoveredCandidateA": true,
+      "siteBNoCompliantVendor": true,
+      "candidateTreatedAsUnaccepted": true,
+      "projectMutation": false,
+      "planCreated": false,
+      "finalAnswer": false
+    },
+    "c6r-003": {
+      "provider": "opencode / deepseek-v4.1-flash",
+      "codeFreeze": "7b80a17ea4fd037b4ab1cbdc0b03828f6dad4ecf",
+      "state": "BLOCKED",
+      "reason": "provider_error_before_turn",
+      "assistantMessages": 0,
+      "tokens": 0,
+      "providerAttempts": 6
+    },
+    "c6r-004": {
+      "provider": "opencode / deepseek-v4.1-flash",
+      "codeFreeze": "7cd5e1c08448f82dec70441ad481329d89716311",
+      "state": "INVALID",
+      "reason": "incomplete_or_unreadable_stream",
+      "sessionId": "session-19198df8-a156-410c-8340-e10a65b3460d",
+      "assistantMessages": 4,
+      "toolCalls": 11,
+      "tokens": 46213,
+      "exit": 124,
+      "durationMs": 900000,
+      "discoveredCandidateA": true,
+      "siteBNoCompliantVendor": true,
+      "candidateTreatedAsUnaccepted": true,
+      "projectMutation": false,
+      "planCreated": false,
+      "finalAnswer": false,
+      "note": "The retry recovered several requests; the gateway still reset too often, and the 900 s guard ended the turn."
+    }
+  },
+  "conditions": {
+    "P1": "INVALID (two partial diagnostics; no completed turn)",
+    "F1": "NOT EXERCISED",
+    "P3": "NOT EXERCISED",
+    "F2": "NOT EXERCISED",
+    "authorization": "NOT EXERCISED",
+    "t1Effects": "NOT EXERCISED",
+    "t2Release": "IMPLEMENTED_AND_TESTED, NOT EXERCISED_WITH_A_MODEL",
+    "comparison": "NOT EXERCISED"
+  },
+  "gates": {
+    "R0": "ESTABLISHED",
+    "R1": "ESTABLISHED",
+    "R2": "ESTABLISHED (isolated runtime; Windows excluded)",
+    "R3": "ESTABLISHED",
+    "R4": "BLOCKED (two partial diagnostics, no completed trial)",
+    "R5": "BLOCKED",
+    "R6": "BLOCKED",
+    "R7": "BLOCKED",
+    "R8": "ESTABLISHED"
+  },
+  "budget": {
+    "sessions": 4,
+    "maxSessions": 6,
+    "tokens": 840461,
+    "maxTokens": 8000000,
+    "stopStartTokens": 5000000,
+    "stopReached": false,
+    "stoppedBecause": "opencode gateway sustained ECONNRESET; no further session after P1c",
+    "unusedSessions": 2
+  },
+  "verification": {
+    "codeFreeze4": {
+      "build": "exit 0",
+      "architecture": "PASS 0 violations, 9 accepted exceptions",
+      "publicApi": "PASS 0/0/0",
+      "targeted": "9 files / 79 tests, 0 failed",
+      "logs": "research-evidence/c6r/verification/code-freeze-4"
+    }
+  },
+  "limitations": [
+    "No completed P1; P1a and P1c are partial diagnostics, P1b had no turn.",
+    "No F1, P3 or F2; no matched pair or comparison.",
+    "No Agent proposal task, operator approval, Work, Promotion or TASK_SATISFIED in C6-R.",
+    "The opencode gateway is unstable; the bounded retry recovered some requests but not the sustained reset rate.",
+    "P1a overran the 8-minute target (666 s); P1c hit the 900 s guard.",
+    "P1a and P1c read outside the stated workspace (state DB, product code, runtime home); no write occurred.",
+    "The mock qualifications are not cognition; their tokens are synthetic.",
+    "Node v24.14.1 is below the declared >=24.15.0."
+  ]
+}
