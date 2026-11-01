@@ -107,6 +107,13 @@ describe("C6-R4 session accounting", () => {
     expect(classifySession({ sessionCount: 1, assistantMessages: 2, providerErrors: 0, complete: true }).classification).toBe("OBSERVED");
   });
 
+  it("marks a turn that had assistant content but ended in a provider error as INVALID", () => {
+    expect(classifySession({ sessionCount: 1, assistantMessages: 21, providerErrors: 1, complete: true })).toEqual({
+      classification: "INVALID",
+      reason: "provider_error_during_turn",
+    });
+  });
+
   it("stops starting a new session at exactly the pre-registered thresholds", () => {
     expect(budgetDecision({ sessionsStarted: 0, totalTokens: 0, elapsedMs: 0 }).allowed).toBe(true);
     expect(budgetDecision({ sessionsStarted: 5, totalTokens: 4_999_999, elapsedMs: 1_000 }).allowed).toBe(true);

@@ -1,0 +1,108 @@
+{
+  "schema": "c6r-provider-probe/v3",
+  "at": "2026-11-01T18:16:19.138Z",
+  "providerKind": "openai",
+  "provider": "opencode",
+  "model": "deepseek-v4.1-flash",
+  "upstream": "https://opencode.ai/zen/go/v1",
+  "startedAt": "2026-11-01T18:15:04.204429891Z",
+  "elapsedMs": 74669792480,
+  "codeFreeze": {
+    "commit": "508c9a07a4bbb9439947c8ae95eaa298ad7341ba",
+    "tree": "1c842de2641dcd93a99f00b0ac2253f48f79dba2"
+  },
+  "headAtProbe": "6207e859334d6c49c79d0b5c14e8cb54fd51b232",
+  "exit": 0,
+  "state": "AVAILABLE",
+  "reason": null,
+  "quotaError": false,
+  "providerError": {
+    "at": "2026-11-01T18:15:29.668Z",
+    "kind": "openai",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "status": 502,
+    "error": "read ECONNRESET"
+  },
+  "assistantMessages": 1,
+  "assistantText": "PROBE_OK",
+  "requestHeaders": 1,
+  "toolCatalogue": [
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "read",
+    "read_image",
+    "skill",
+    "todo_write",
+    "update_goal",
+    "working_directory",
+    "write"
+  ],
+  "usage": {
+    "inputTokens": 3582,
+    "outputTokens": 5,
+    "totalTokens": 3587
+  },
+  "sessionId": "session-88919922-1744-4d56-a2d7-910770ccb1bb",
+  "sessionFiles": [
+    "session.v4.jsonl.zstd"
+  ],
+  "proxyRequests": [
+    {
+      "at": "2026-11-01T18:15:29.668Z",
+      "kind": "openai",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "status": 502,
+      "error": "read ECONNRESET"
+    },
+    {
+      "at": "2026-11-01T18:15:49.620Z",
+      "kind": "openai",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "status": 502,
+      "error": "read ECONNRESET"
+    },
+    {
+      "at": "2026-11-01T18:16:10.384Z",
+      "kind": "openai",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "status": 502,
+      "error": "read ECONNRESET"
+    },
+    {
+      "at": "2026-11-01T18:16:18.757Z",
+      "kind": "openai",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "status": 200,
+      "upstream": "https://opencode.ai/zen/go/v1/chat/completions",
+      "ms": 6374
+    }
+  ],
+  "credential": {
+    "providerId": "5c7f8d75-e85e-4de5-9b27-e2b59eab1c7a",
+    "providerName": "opencode go orange",
+    "keyPresent": true,
+    "keyLength": 51,
+    "keyPrefix": null,
+    "apiType": "openai-chat-completions",
+    "baseUrl": "https://opencode.ai/zen/go/v1",
+    "headerNames": [
+      "x-opencode-session"
+    ]
+  },
+  "stderrTail": "dsh: warning: 2 entries did not activate\ntool-subagent-list-agents (@deepseek-ai/dsh-tool-subagent-control/list-agents): pending (waiting for service: subagents)\ntool-subagent-fork (@deepseek-ai/dsh-tool-subagent): pending (waiting for service: subagents)\n",
+  "note": "One bounded availability probe through the isolated runtime and provider-only egress. The real credential stayed outside the sandbox.",
+  "identityNote": "The WSL launch did not forward the C6R_CODE_FREEZE_* environment; these identities come from run c6r-002, which pinned Code Freeze 2. The provider request itself is unaffected."
+}
