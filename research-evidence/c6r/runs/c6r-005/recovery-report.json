@@ -1,0 +1,464 @@
+{
+  "schema": "c6r-promotion-recovery-report/v1",
+  "at": "2026-11-01T20:11:34.147Z",
+  "label": "OPERATOR_RECOVERY",
+  "beforeHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+  "beforeTasks": [
+    {
+      "taskId": "technical-fit",
+      "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+      "writePaths": [
+        "deliverables/technical-fit.md"
+      ],
+      "state": "SATISFIED"
+    },
+    {
+      "taskId": "cost-schedule",
+      "objective": "Produce the programme cost and schedule envelope from the current pricing and installation windows, including the 8% contingency.",
+      "writePaths": [
+        "deliverables/cost-schedule.md"
+      ],
+      "state": "SATISFIED"
+    },
+    {
+      "taskId": "technical-refresh",
+      "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+      "writePaths": [
+        "deliverables/technical-refresh.md"
+      ],
+      "state": "VERIFYING"
+    }
+  ],
+  "beforeLedger": {
+    "events": [
+      {
+        "event_id": 42,
+        "event_type": "PROMOTION_PREPARED",
+        "entity_id": "promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38"
+      },
+      {
+        "event_id": 41,
+        "event_type": "EVIDENCE_ADDED",
+        "entity_id": "evidence-e576b54a99e4ec675d2e4ba5af34bda7"
+      },
+      {
+        "event_id": 40,
+        "event_type": "EVIDENCE_ADDED",
+        "entity_id": "evidence-0a9c03f4a2567a61753e81021c88e6c5"
+      },
+      {
+        "event_id": 39,
+        "event_type": "TASK_VERIFYING",
+        "entity_id": "technical-refresh"
+      },
+      {
+        "event_id": 38,
+        "event_type": "EVIDENCE_ADDED",
+        "entity_id": "evidence-f9ded4e3e1034ccdaafe3e7a0e5faa17"
+      },
+      {
+        "event_id": 37,
+        "event_type": "ATTEMPT_COMPLETED",
+        "entity_id": "attempt-73616b76d9e6be3fb1329eb368efd35d"
+      },
+      {
+        "event_id": 36,
+        "event_type": "ATTEMPT_STARTED",
+        "entity_id": "attempt-73616b76d9e6be3fb1329eb368efd35d"
+      },
+      {
+        "event_id": 35,
+        "event_type": "ATTEMPT_CREATED",
+        "entity_id": "attempt-73616b76d9e6be3fb1329eb368efd35d"
+      },
+      {
+        "event_id": 34,
+        "event_type": "TASK_STARTED",
+        "entity_id": "technical-refresh"
+      },
+      {
+        "event_id": 33,
+        "event_type": "TASK_CREATED",
+        "entity_id": "technical-refresh"
+      },
+      {
+        "event_id": 32,
+        "event_type": "PROJECT_REVISED",
+        "entity_id": "sablewick"
+      },
+      {
+        "event_id": 31,
+        "event_type": "PROJECT_REVISED",
+        "entity_id": "sablewick"
+      }
+    ],
+    "promotions": [
+      {
+        "project_id": "sablewick",
+        "promotion_id": "promotion-f1898b7b20036d8ac6bf7a1deb3b94e0",
+        "state": "COMMITTED"
+      },
+      {
+        "project_id": "sablewick",
+        "promotion_id": "promotion-38d5ff302465a86dc08e6444e4583107",
+        "state": "COMMITTED"
+      },
+      {
+        "project_id": "sablewick",
+        "promotion_id": "promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38",
+        "state": "PREPARED"
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "cost-schedule",
+        "state": "SATISFIED",
+        "last_event_id": 30
+      },
+      {
+        "task_id": "technical-fit",
+        "state": "SATISFIED",
+        "last_event_id": 17
+      },
+      {
+        "task_id": "technical-refresh",
+        "state": "VERIFYING",
+        "last_event_id": 39
+      }
+    ],
+    "attempts": [
+      {
+        "attempt_id": "attempt-5157c92228739494240f22a27d19f61f",
+        "task_id": "technical-fit",
+        "state": "COMPLETED"
+      },
+      {
+        "attempt_id": "attempt-dc7002743c313023866f8a713f567f61",
+        "task_id": "cost-schedule",
+        "state": "COMPLETED"
+      },
+      {
+        "attempt_id": "attempt-73616b76d9e6be3fb1329eb368efd35d",
+        "task_id": "technical-refresh",
+        "state": "COMPLETED"
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "op_d0dede47300aeb87dc28b8809441a01a2ff66e85",
+        "state": "uncertain",
+        "updated_at": "2026-11-01T20:10:51.798Z"
+      },
+      {
+        "operation_id": "op_47926abc8b7fdda95715389f28656d245d7d65bc",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T20:00:42.062Z"
+      },
+      {
+        "operation_id": "op_d1a099d685151bbbeda69f618baadcf230fe06d0",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T19:59:43.333Z"
+      },
+      {
+        "operation_id": "op_07daa8d8b4ac7413b79827009aa0d1d60eabb02b",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T19:59:34.677Z"
+      },
+      {
+        "operation_id": "op_bd084b90b2c404cbd155b1a0b9e658ace13b57cb",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T19:58:47.506Z"
+      },
+      {
+        "operation_id": "op_f19e2d4c5f99e4a9643c50edac96fd798ff3650d",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T17:15:01.520Z"
+      },
+      {
+        "operation_id": "op_7ca1f192b3b833c3eff56bb7eebaef98237409e9",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T17:15:01.061Z"
+      },
+      {
+        "operation_id": "op_bd4fb5c66dcf2d40dc73b00652117c3ac4ff065a",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T17:15:00.751Z"
+      }
+    ],
+    "uncertain": [
+      {
+        "operation_id": "op_d0dede47300aeb87dc28b8809441a01a2ff66e85",
+        "state": "uncertain",
+        "record": {
+          "schemaVersion": 2,
+          "operationId": "op_d0dede47300aeb87dc28b8809441a01a2ff66e85",
+          "actionName": "palimpsest.git.promote",
+          "actionVersion": "1",
+          "contractFingerprint": "ed25d5c67793403cfd70d7a28b9ec926e2fdd0e9006cc6fcb9f2afb6909d91cc",
+          "inputDigest": "a9d98314a1691808b661225ed03839b3eba5a779e843a2ca87df590be6cbc9fa",
+          "logicalKeyDigest": "44f3097965bce04e06322e53db168b622d9fed1f218f1e802ec65e0a2175d4e8",
+          "identity": {
+            "source": "palimpsest",
+            "scope": "sablewick",
+            "callId": "promote:promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38"
+          },
+          "effectKind": "reconcilable",
+          "idempotencyMode": "none",
+          "state": "uncertain",
+          "semanticRevision": 13,
+          "attempts": 4,
+          "lastFencingToken": 4,
+          "authorization": {
+            "decision": "allow",
+            "kind": "policy-decision",
+            "source": "plan-revision:3",
+            "reason": "internal orchestration effect palimpsest.git.promote under plan revision 3",
+            "at": "2026-11-01T20:06:44.452Z"
+          },
+          "uncertainty": {
+            "reason": "execution-threw-after-dispatch",
+            "at": "2026-11-01T20:10:51.797Z"
+          },
+          "createdAt": "2026-11-01T20:06:44.443Z",
+          "updatedAt": "2026-11-01T20:10:51.798Z"
+        }
+      }
+    ]
+  },
+  "report": {
+    "prepared": 1,
+    "terminal": [],
+    "inFlight": [],
+    "blocked": [
+      {
+        "promotionId": "promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38",
+        "outcome": "blocked",
+        "reason": "promotion stays uncertain after reconciliation"
+      }
+    ]
+  },
+  "error": null,
+  "afterHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+  "afterTasks": [
+    {
+      "taskId": "technical-fit",
+      "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+      "writePaths": [
+        "deliverables/technical-fit.md"
+      ],
+      "state": "SATISFIED"
+    },
+    {
+      "taskId": "cost-schedule",
+      "objective": "Produce the programme cost and schedule envelope from the current pricing and installation windows, including the 8% contingency.",
+      "writePaths": [
+        "deliverables/cost-schedule.md"
+      ],
+      "state": "SATISFIED"
+    },
+    {
+      "taskId": "technical-refresh",
+      "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+      "writePaths": [
+        "deliverables/technical-refresh.md"
+      ],
+      "state": "VERIFYING"
+    }
+  ],
+  "afterLedger": {
+    "events": [
+      {
+        "event_id": 42,
+        "event_type": "PROMOTION_PREPARED",
+        "entity_id": "promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38"
+      },
+      {
+        "event_id": 41,
+        "event_type": "EVIDENCE_ADDED",
+        "entity_id": "evidence-e576b54a99e4ec675d2e4ba5af34bda7"
+      },
+      {
+        "event_id": 40,
+        "event_type": "EVIDENCE_ADDED",
+        "entity_id": "evidence-0a9c03f4a2567a61753e81021c88e6c5"
+      },
+      {
+        "event_id": 39,
+        "event_type": "TASK_VERIFYING",
+        "entity_id": "technical-refresh"
+      },
+      {
+        "event_id": 38,
+        "event_type": "EVIDENCE_ADDED",
+        "entity_id": "evidence-f9ded4e3e1034ccdaafe3e7a0e5faa17"
+      },
+      {
+        "event_id": 37,
+        "event_type": "ATTEMPT_COMPLETED",
+        "entity_id": "attempt-73616b76d9e6be3fb1329eb368efd35d"
+      },
+      {
+        "event_id": 36,
+        "event_type": "ATTEMPT_STARTED",
+        "entity_id": "attempt-73616b76d9e6be3fb1329eb368efd35d"
+      },
+      {
+        "event_id": 35,
+        "event_type": "ATTEMPT_CREATED",
+        "entity_id": "attempt-73616b76d9e6be3fb1329eb368efd35d"
+      },
+      {
+        "event_id": 34,
+        "event_type": "TASK_STARTED",
+        "entity_id": "technical-refresh"
+      },
+      {
+        "event_id": 33,
+        "event_type": "TASK_CREATED",
+        "entity_id": "technical-refresh"
+      },
+      {
+        "event_id": 32,
+        "event_type": "PROJECT_REVISED",
+        "entity_id": "sablewick"
+      },
+      {
+        "event_id": 31,
+        "event_type": "PROJECT_REVISED",
+        "entity_id": "sablewick"
+      }
+    ],
+    "promotions": [
+      {
+        "project_id": "sablewick",
+        "promotion_id": "promotion-f1898b7b20036d8ac6bf7a1deb3b94e0",
+        "state": "COMMITTED"
+      },
+      {
+        "project_id": "sablewick",
+        "promotion_id": "promotion-38d5ff302465a86dc08e6444e4583107",
+        "state": "COMMITTED"
+      },
+      {
+        "project_id": "sablewick",
+        "promotion_id": "promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38",
+        "state": "PREPARED"
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "cost-schedule",
+        "state": "SATISFIED",
+        "last_event_id": 30
+      },
+      {
+        "task_id": "technical-fit",
+        "state": "SATISFIED",
+        "last_event_id": 17
+      },
+      {
+        "task_id": "technical-refresh",
+        "state": "VERIFYING",
+        "last_event_id": 39
+      }
+    ],
+    "attempts": [
+      {
+        "attempt_id": "attempt-5157c92228739494240f22a27d19f61f",
+        "task_id": "technical-fit",
+        "state": "COMPLETED"
+      },
+      {
+        "attempt_id": "attempt-dc7002743c313023866f8a713f567f61",
+        "task_id": "cost-schedule",
+        "state": "COMPLETED"
+      },
+      {
+        "attempt_id": "attempt-73616b76d9e6be3fb1329eb368efd35d",
+        "task_id": "technical-refresh",
+        "state": "COMPLETED"
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "op_d0dede47300aeb87dc28b8809441a01a2ff66e85",
+        "state": "uncertain",
+        "updated_at": "2026-11-01T20:11:34.133Z"
+      },
+      {
+        "operation_id": "op_47926abc8b7fdda95715389f28656d245d7d65bc",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T20:00:42.062Z"
+      },
+      {
+        "operation_id": "op_d1a099d685151bbbeda69f618baadcf230fe06d0",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T19:59:43.333Z"
+      },
+      {
+        "operation_id": "op_07daa8d8b4ac7413b79827009aa0d1d60eabb02b",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T19:59:34.677Z"
+      },
+      {
+        "operation_id": "op_bd084b90b2c404cbd155b1a0b9e658ace13b57cb",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T19:58:47.506Z"
+      },
+      {
+        "operation_id": "op_f19e2d4c5f99e4a9643c50edac96fd798ff3650d",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T17:15:01.520Z"
+      },
+      {
+        "operation_id": "op_7ca1f192b3b833c3eff56bb7eebaef98237409e9",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T17:15:01.061Z"
+      },
+      {
+        "operation_id": "op_bd4fb5c66dcf2d40dc73b00652117c3ac4ff065a",
+        "state": "succeeded",
+        "updated_at": "2026-11-01T17:15:00.751Z"
+      }
+    ],
+    "uncertain": [
+      {
+        "operation_id": "op_d0dede47300aeb87dc28b8809441a01a2ff66e85",
+        "state": "uncertain",
+        "record": {
+          "schemaVersion": 2,
+          "operationId": "op_d0dede47300aeb87dc28b8809441a01a2ff66e85",
+          "actionName": "palimpsest.git.promote",
+          "actionVersion": "1",
+          "contractFingerprint": "ed25d5c67793403cfd70d7a28b9ec926e2fdd0e9006cc6fcb9f2afb6909d91cc",
+          "inputDigest": "a9d98314a1691808b661225ed03839b3eba5a779e843a2ca87df590be6cbc9fa",
+          "logicalKeyDigest": "44f3097965bce04e06322e53db168b622d9fed1f218f1e802ec65e0a2175d4e8",
+          "identity": {
+            "source": "palimpsest",
+            "scope": "sablewick",
+            "callId": "promote:promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38"
+          },
+          "effectKind": "reconcilable",
+          "idempotencyMode": "none",
+          "state": "uncertain",
+          "semanticRevision": 16,
+          "attempts": 5,
+          "lastFencingToken": 5,
+          "authorization": {
+            "decision": "allow",
+            "kind": "policy-decision",
+            "source": "plan-revision:3",
+            "reason": "internal orchestration effect palimpsest.git.promote under plan revision 3",
+            "at": "2026-11-01T20:06:44.452Z"
+          },
+          "uncertainty": {
+            "reason": "execution-threw-after-dispatch",
+            "at": "2026-11-01T20:11:34.133Z"
+          },
+          "createdAt": "2026-11-01T20:06:44.443Z",
+          "updatedAt": "2026-11-01T20:11:34.133Z"
+        }
+      }
+    ]
+  }
+}

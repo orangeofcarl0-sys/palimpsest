@@ -13,7 +13,7 @@
     "visibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
     "source": "scripts/cog6/scenario"
   },
-  "state": "P1_PREPARED",
+  "state": "P1_FINISHED",
   "history": [
     {
       "at": "2026-11-01T19:57:29.271Z",
@@ -21,18 +21,69 @@
       "to": "P1_PREPARED",
       "reason": "run created",
       "detail": null
+    },
+    {
+      "at": "2026-11-01T19:57:36.353Z",
+      "from": "P1_PREPARED",
+      "to": "P1_RUNNING",
+      "reason": "deepseek-official session launched through the Windows CONNECT proxy",
+      "detail": null
+    },
+    {
+      "at": "2026-11-01T20:02:51.644Z",
+      "from": "P1_RUNNING",
+      "to": "P1_FINISHED",
+      "reason": "valid assistant observation",
+      "detail": null
     }
   ],
   "conditions": {
     "P1": {
       "preparedAt": "2026-11-01T19:57:29.272Z",
-      "startedAt": null,
-      "finishedAt": null,
-      "sessionId": null,
-      "exit": null,
-      "usage": null,
-      "classification": null,
-      "evidence": "research-evidence/c6r/p1-host"
+      "startedAt": "2026-11-01T20:02:51.642Z",
+      "finishedAt": "2026-11-01T20:02:51.642Z",
+      "sessionId": "session-f62d01cb-a165-4517-8c04-9e9a8acfb4d0",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "usage": {
+        "inputTokens": 106263,
+        "outputTokens": 38456,
+        "totalTokens": 6298575
+      },
+      "classification": "OBSERVED",
+      "evidence": "research-evidence/c6r/runs/c6r-005/P1",
+      "classifyReason": null,
+      "account": {
+        "sessions": [
+          {
+            "sessionId": "session-f62d01cb-a165-4517-8c04-9e9a8acfb4d0",
+            "streams": 1,
+            "complete": true,
+            "providerErrors": 0,
+            "assistantMessages": 92,
+            "usageEvents": 92,
+            "duplicateEvents": 0,
+            "missingUsageMessages": 0,
+            "inputTokens": 106263,
+            "outputTokens": 38456,
+            "cacheReadTokens": 6153856,
+            "cacheWriteTokens": 0,
+            "totalTokens": 6298575
+          }
+        ],
+        "sessionCount": 1,
+        "totals": {
+          "inputTokens": 106263,
+          "outputTokens": 38456,
+          "cacheReadTokens": 6153856,
+          "cacheWriteTokens": 0,
+          "totalTokens": 6298575,
+          "usageEvents": 92
+        },
+        "problems": []
+      }
     },
     "F1": {
       "preparedAt": "2026-11-01T19:57:29.273Z",
