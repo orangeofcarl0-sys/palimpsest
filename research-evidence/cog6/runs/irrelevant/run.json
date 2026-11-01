@@ -1,0 +1,606 @@
+{
+  "startedAt": "2026-11-01T14:26:00.856Z",
+  "steps": [
+    {
+      "label": "newsletter:start",
+      "at": "2026-11-01T14:26:02.306Z",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "event_type": "PROJECT_CREATED",
+        "payload_version": 1,
+        "entity_type": "project",
+        "entity_id": "sablewick",
+        "payload": {
+          "project_ir": {
+            "schema_version": 1,
+            "project_id": "sablewick",
+            "revision": 0,
+            "parent_revision": null,
+            "parent_digest": null,
+            "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+            "requirements": [
+              {
+                "requirement_id": "R1",
+                "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R2",
+                "statement": "No fossil-fuel backup may be installed.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R3",
+                "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R4",
+                "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R5",
+                "statement": "Keep at least 8% of committed cost as contingency.",
+                "priority": "high",
+                "acceptance_refs": []
+              }
+            ],
+            "decisions": [],
+            "tasks": [
+              {
+                "task_id": "technical-fit",
+                "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+                "depends_on": [],
+                "write_paths": [
+                  "deliverables/technical-fit.md"
+                ],
+                "required_artifacts": [
+                  "deliverables/technical-fit.md"
+                ]
+              }
+            ],
+            "head_commit": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+            "committed_at": "2026-11-01T14:26:02.307000Z",
+            "digest": "b1bbb3eb4bd0c99a89012a37a00d0570bb7602370ee0c8f60ba529bfb38f85f6"
+          }
+        },
+        "causation_id": null,
+        "correlation_id": "scheduler-project-create",
+        "idempotency_key": "029fc5b3819f954be07b3dc8f197a633f0548a95871f9ff01db5f55b835ff49d",
+        "expected_project_revision": null,
+        "event_id": 1,
+        "project_sequence": 1,
+        "request_digest": "3f9793f544d6f139cf14a6aa63e2bfdd07a2a1c45eeb3961435920ab890e3c89",
+        "previous_event_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+        "event_digest": "6cea5b4684f06d3c14db4512154540822aa41ea629f527e813a110928f0a6661",
+        "committed_at": "2026-11-01T14:26:02.312000Z"
+      }
+    },
+    {
+      "label": "newsletter:drive",
+      "at": "2026-11-01T14:26:02.337Z",
+      "ok": true,
+      "value": {
+        "jobId": "wdj-a9585c98-8de2-4f06-acab-cbe2e38ff9af",
+        "attemptId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+        "attemptState": "COMPLETED",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "SETTLED",
+          "attemptId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+          "resultCommit": "ce1624db410c5b9ca10f38b71e8adfefc13db4eb",
+          "changedFiles": [
+            "deliverables/technical-fit.md"
+          ],
+          "exported": true,
+          "evidenceRecorded": [
+            "write_scope_valid",
+            "expected_files_exist"
+          ],
+          "detail": "the attempt is COMPLETED with result commit ce1624db410c; the canonical object database can now read ce1624db410c; no ref, working tree or project revision changed; every mechanical check held for candidate ce1624db410c"
+        },
+        "hostError": null,
+        "stepped": "TASK_VERIFYING",
+        "task": {
+          "taskId": "technical-fit",
+          "state": "VERIFYING",
+          "lastEventId": 13,
+          "batchActivationEventId": 6,
+          "envelopeId": "envelope-791224b250caa3f5b670d2127755a7b8"
+        }
+      }
+    },
+    {
+      "label": "newsletter:inspect:before",
+      "at": "2026-11-01T14:26:04.037Z",
+      "ok": true,
+      "value": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+        },
+        "resolved": true,
+        "taskId": "technical-fit",
+        "targetObservationDigest": "9a97fbeccf42fe58553ec5bcfe4cda3811885073928b960fc057e994c635fb59",
+        "compatibility": {
+          "outcome": "EXACT",
+          "issuanceDigest": "61232563182ae74e49ba5aa66080c96a29033139f67c0355134d10be286b1ea5"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+          },
+          "originBasisDigest": "bfa4efd2d4e6d9804b9689f2da08b1b98ffe18cc88ddad54219360f4ac99e1a8",
+          "currentTargetDigest": "9a97fbeccf42fe58553ec5bcfe4cda3811885073928b960fc057e994c635fb59",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reuse": {
+            "exactCurrent": true,
+            "rematerializationAvailable": false,
+            "blocker": null
+          },
+          "rework": {
+            "available": true,
+            "blocker": null
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+          "assessmentDigest": "b79dda26acd608eb740ba32d63acead7a37639ede5a761750c036c0bbe41dc62"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+      }
+    },
+    {
+      "label": "newsletter:directUpdate",
+      "at": "2026-11-01T14:26:04.243Z",
+      "ok": true,
+      "value": {
+        "fromHead": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+        "toHead": "3ae28531073f8dd1591d1678e80d1b5787e599f2",
+        "target": "sources/newsletter.md",
+        "paths": [
+          "sources/newsletter.md"
+        ],
+        "digestAfter": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+      }
+    },
+    {
+      "label": "newsletter:inspect:after",
+      "at": "2026-11-01T14:26:04.467Z",
+      "ok": true,
+      "value": {
+        "schemaVersion": 1,
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+        },
+        "resolved": true,
+        "taskId": "technical-fit",
+        "targetObservationDigest": "34ddd64dcbcece5b01619e3ba86e056bee1face733c155eb056605d7f0d295b5",
+        "compatibility": {
+          "outcome": "INCOMPATIBLE",
+          "issuanceDigest": "d6d853e58c64ff8af8de6504a836b8ac97cb426c9647045fbbe42309ec24b8aa"
+        },
+        "assessment": {
+          "schemaVersion": 1,
+          "resultSubjectRef": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+          },
+          "originBasisDigest": "bfa4efd2d4e6d9804b9689f2da08b1b98ffe18cc88ddad54219360f4ac99e1a8",
+          "currentTargetDigest": "34ddd64dcbcece5b01619e3ba86e056bee1face733c155eb056605d7f0d295b5",
+          "currentness": "STALE",
+          "compatibility": "INCOMPATIBLE",
+          "reuse": {
+            "exactCurrent": false,
+            "rematerializationAvailable": false,
+            "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+          },
+          "rework": {
+            "available": true,
+            "blocker": null
+          },
+          "evidence": {
+            "moreCouldHelp": false,
+            "gaps": []
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+          "assessmentDigest": "af24d2a1f645620114b577a008c69e6c67f3203d36f01eed95f4370669d89ff4"
+        },
+        "availableActions": {
+          "rematerialize": false,
+          "rework": true
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      }
+    }
+  ],
+  "inbox": {
+    "dir": "F:\\Codex_Work_Space\\Palimpsest\\.cog6-rig\\final-irrelevant\\programme-inbox",
+    "arrivals": [
+      {
+        "arrivedAt": "2026-02-08T10:00:00Z",
+        "item": "2026-02-08/solaris-certificate-claim.md",
+        "kind": "SUPPLIER_CORRESPONDENCE",
+        "sha256": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778",
+        "status": "UNACCEPTED",
+        "observed": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:00:00Z",
+        "item": "2026-02-10/vendor-capabilities.csv",
+        "kind": "SUPPLIER_CAPABILITY_BULLETIN",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "status": "UNACCEPTED",
+        "observed": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:01:00Z",
+        "item": "2026-02-10/newsletter.md",
+        "kind": "PROGRAMME_NEWSLETTER",
+        "sha256": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4",
+        "status": "UNACCEPTED",
+        "observed": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+      },
+      {
+        "arrivedAt": "2026-02-14T09:00:00Z",
+        "item": "2026-02-14/vendor-capabilities-corrected.csv",
+        "kind": "SUPPLIER_CAPABILITY_CORRECTION",
+        "sha256": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+        "status": "UNACCEPTED",
+        "observed": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91"
+      },
+      {
+        "arrivedAt": "2026-02-14T09:05:00Z",
+        "item": "2026-02-14/vendor-capabilities.csv",
+        "kind": "DUPLICATE_DELIVERY",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "status": "UNACCEPTED",
+        "observed": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+      }
+    ]
+  },
+  "initialHead": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+  "seedStart": {
+    "label": "newsletter:start",
+    "at": "2026-11-01T14:26:02.306Z",
+    "ok": true,
+    "value": {
+      "schema_version": 1,
+      "project_id": "sablewick",
+      "event_type": "PROJECT_CREATED",
+      "payload_version": 1,
+      "entity_type": "project",
+      "entity_id": "sablewick",
+      "payload": {
+        "project_ir": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "revision": 0,
+          "parent_revision": null,
+          "parent_digest": null,
+          "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+          "requirements": [
+            {
+              "requirement_id": "R1",
+              "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R2",
+              "statement": "No fossil-fuel backup may be installed.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R3",
+              "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R4",
+              "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R5",
+              "statement": "Keep at least 8% of committed cost as contingency.",
+              "priority": "high",
+              "acceptance_refs": []
+            }
+          ],
+          "decisions": [],
+          "tasks": [
+            {
+              "task_id": "technical-fit",
+              "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+              "depends_on": [],
+              "write_paths": [
+                "deliverables/technical-fit.md"
+              ],
+              "required_artifacts": [
+                "deliverables/technical-fit.md"
+              ]
+            }
+          ],
+          "head_commit": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+          "committed_at": "2026-11-01T14:26:02.307000Z",
+          "digest": "b1bbb3eb4bd0c99a89012a37a00d0570bb7602370ee0c8f60ba529bfb38f85f6"
+        }
+      },
+      "causation_id": null,
+      "correlation_id": "scheduler-project-create",
+      "idempotency_key": "029fc5b3819f954be07b3dc8f197a633f0548a95871f9ff01db5f55b835ff49d",
+      "expected_project_revision": null,
+      "event_id": 1,
+      "project_sequence": 1,
+      "request_digest": "3f9793f544d6f139cf14a6aa63e2bfdd07a2a1c45eeb3961435920ab890e3c89",
+      "previous_event_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "event_digest": "6cea5b4684f06d3c14db4512154540822aa41ea629f527e813a110928f0a6661",
+      "committed_at": "2026-11-01T14:26:02.312000Z"
+    }
+  },
+  "work": {
+    "label": "newsletter:drive",
+    "at": "2026-11-01T14:26:02.337Z",
+    "ok": true,
+    "value": {
+      "jobId": "wdj-a9585c98-8de2-4f06-acab-cbe2e38ff9af",
+      "attemptId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+      "attemptState": "COMPLETED",
+      "phase": "FINISHED",
+      "settlement": {
+        "state": "SETTLED",
+        "attemptId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+        "resultCommit": "ce1624db410c5b9ca10f38b71e8adfefc13db4eb",
+        "changedFiles": [
+          "deliverables/technical-fit.md"
+        ],
+        "exported": true,
+        "evidenceRecorded": [
+          "write_scope_valid",
+          "expected_files_exist"
+        ],
+        "detail": "the attempt is COMPLETED with result commit ce1624db410c; the canonical object database can now read ce1624db410c; no ref, working tree or project revision changed; every mechanical check held for candidate ce1624db410c"
+      },
+      "hostError": null,
+      "stepped": "TASK_VERIFYING",
+      "task": {
+        "taskId": "technical-fit",
+        "state": "VERIFYING",
+        "lastEventId": 13,
+        "batchActivationEventId": 6,
+        "envelopeId": "envelope-791224b250caa3f5b670d2127755a7b8"
+      }
+    }
+  },
+  "attempt": {
+    "attemptId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+    "state": "COMPLETED"
+  },
+  "result": {
+    "eventId": 12,
+    "resultCommit": "ce1624db410c5b9ca10f38b71e8adfefc13db4eb",
+    "report": {
+      "schema_version": 1,
+      "project_id": "sablewick",
+      "attempt_id": "attempt-f1208e804c170fa8e801ef7127213d8e",
+      "task_id": "technical-fit",
+      "envelope_id": "envelope-791224b250caa3f5b670d2127755a7b8",
+      "input_project_revision": 0,
+      "input_project_digest": "b1bbb3eb4bd0c99a89012a37a00d0570bb7602370ee0c8f60ba529bfb38f85f6",
+      "base_commit": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+      "worktree_id": "worktree-27213d8e",
+      "result_commit": "ce1624db410c5b9ca10f38b71e8adfefc13db4eb",
+      "worker_status": "completed",
+      "summary": "delegated work settled from its execution world",
+      "changed_files": [
+        "deliverables/technical-fit.md"
+      ],
+      "produced_artifacts": [
+        "deliverables/technical-fit.md"
+      ],
+      "started_at": "2026-08-13T00:00:00.000000Z",
+      "finished_at": "2026-08-13T00:00:01.000000Z",
+      "runtime_metadata": {
+        "runner": "dsh-agent",
+        "runner_version": "1",
+        "argv": [
+          "dsh-agent"
+        ],
+        "exit_code": 0,
+        "duration_ms": 1,
+        "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "stdout_artifact": null,
+        "stderr_artifact": null
+      },
+      "context_manifest": "context-manifest-68655cccbcdd7f00e53dfd9f9945e36b"
+    }
+  },
+  "beforeChange": {
+    "label": "newsletter:inspect:before",
+    "at": "2026-11-01T14:26:04.037Z",
+    "ok": true,
+    "value": {
+      "schemaVersion": 1,
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+      },
+      "resolved": true,
+      "taskId": "technical-fit",
+      "targetObservationDigest": "9a97fbeccf42fe58553ec5bcfe4cda3811885073928b960fc057e994c635fb59",
+      "compatibility": {
+        "outcome": "EXACT",
+        "issuanceDigest": "61232563182ae74e49ba5aa66080c96a29033139f67c0355134d10be286b1ea5"
+      },
+      "assessment": {
+        "schemaVersion": 1,
+        "resultSubjectRef": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+        },
+        "originBasisDigest": "bfa4efd2d4e6d9804b9689f2da08b1b98ffe18cc88ddad54219360f4ac99e1a8",
+        "currentTargetDigest": "9a97fbeccf42fe58553ec5bcfe4cda3811885073928b960fc057e994c635fb59",
+        "currentness": "CURRENT",
+        "compatibility": "EXACT",
+        "reuse": {
+          "exactCurrent": true,
+          "rematerializationAvailable": false,
+          "blocker": null
+        },
+        "rework": {
+          "available": true,
+          "blocker": null
+        },
+        "evidence": {
+          "moreCouldHelp": false,
+          "gaps": []
+        },
+        "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+        "assessmentDigest": "b79dda26acd608eb740ba32d63acead7a37639ede5a761750c036c0bbe41dc62"
+      },
+      "availableActions": {
+        "rematerialize": false,
+        "rework": false
+      },
+      "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+    }
+  },
+  "directUpdate": {
+    "label": "newsletter:directUpdate",
+    "at": "2026-11-01T14:26:04.243Z",
+    "ok": true,
+    "value": {
+      "fromHead": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+      "toHead": "3ae28531073f8dd1591d1678e80d1b5787e599f2",
+      "target": "sources/newsletter.md",
+      "paths": [
+        "sources/newsletter.md"
+      ],
+      "digestAfter": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+    }
+  },
+  "afterChange": {
+    "label": "newsletter:inspect:after",
+    "at": "2026-11-01T14:26:04.467Z",
+    "ok": true,
+    "value": {
+      "schemaVersion": 1,
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+      },
+      "resolved": true,
+      "taskId": "technical-fit",
+      "targetObservationDigest": "34ddd64dcbcece5b01619e3ba86e056bee1face733c155eb056605d7f0d295b5",
+      "compatibility": {
+        "outcome": "INCOMPATIBLE",
+        "issuanceDigest": "d6d853e58c64ff8af8de6504a836b8ac97cb426c9647045fbbe42309ec24b8aa"
+      },
+      "assessment": {
+        "schemaVersion": 1,
+        "resultSubjectRef": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-f1208e804c170fa8e801ef7127213d8e"
+        },
+        "originBasisDigest": "bfa4efd2d4e6d9804b9689f2da08b1b98ffe18cc88ddad54219360f4ac99e1a8",
+        "currentTargetDigest": "34ddd64dcbcece5b01619e3ba86e056bee1face733c155eb056605d7f0d295b5",
+        "currentness": "STALE",
+        "compatibility": "INCOMPATIBLE",
+        "reuse": {
+          "exactCurrent": false,
+          "rematerializationAvailable": false,
+          "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+        },
+        "rework": {
+          "available": true,
+          "blocker": null
+        },
+        "evidence": {
+          "moreCouldHelp": false,
+          "gaps": []
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+        "assessmentDigest": "af24d2a1f645620114b577a008c69e6c67f3203d36f01eed95f4370669d89ff4"
+      },
+      "availableActions": {
+        "rematerialize": false,
+        "rework": true
+      },
+      "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+    }
+  },
+  "finalSnapshot": {
+    "head": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+    "liveHead": "3ae28531073f8dd1591d1678e80d1b5787e599f2",
+    "revision": 0,
+    "digest": "b1bbb3eb4bd0c99a89012a37a00d0570bb7602370ee0c8f60ba529bfb38f85f6",
+    "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+    "requirements": [
+      {
+        "requirement_id": "R1",
+        "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R2",
+        "statement": "No fossil-fuel backup may be installed.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R3",
+        "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R4",
+        "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R5",
+        "statement": "Keep at least 8% of committed cost as contingency.",
+        "priority": "high",
+        "acceptance_refs": []
+      }
+    ],
+    "requirementsDigest": "f341a9c3243c564fc5fec31fe31c0e08e94228c8ff228cb9902f3bd383e5688f",
+    "tasks": [
+      {
+        "taskId": "technical-fit",
+        "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+        "writePaths": [
+          "deliverables/technical-fit.md"
+        ],
+        "state": "VERIFYING"
+      }
+    ],
+    "journal": []
+  },
+  "status": "irrelevant-update control complete"
+}

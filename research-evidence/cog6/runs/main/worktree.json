@@ -1,0 +1,47 @@
+{
+  "head": "caa543441c4510941e0f228c6991616f75fb3557",
+  "log": [
+    "caa5434 (HEAD -> master) control: an external commit that bypassed Work and Promotion",
+    "2279623 promote promotion-b812c0ee8d34c92fa934014bd9edc4c5",
+    "7be3826 work: deliverables/technical-refresh.md",
+    "55370b0 promote promotion-a12f950e81f1798585704e676f8d01c6",
+    "16d30de work: accept external candidate Solaris programme office bulletin SW-2026-02-10 at 0e997cbcc04a",
+    "73e7a3d promote promotion-1177fa56ec957372f5aa9f1df0a34f7b",
+    "c4dee24 work: deliverables/cost-schedule.md",
+    "c6e0d3b promote promotion-c8ace220c1df9c33ed7ec14c3be462bb",
+    "dd8ae02 work: deliverables/technical-fit.md",
+    "195d691 seed: Sablewick programme pack (canonical data before the 2026-02-10 bulletin)"
+  ],
+  "status": "?? .palimpsest/worlds/attempt-09f959ac1a902ee3d1eba3eabcc62334/\n?? .palimpsest/worlds/attempt-9c38eb28691667e5b1ae470ed0877a37/\n?? .palimpsest/worlds/attempt-a123e84a69339196cf19578185f3a8f4/\n?? .palimpsest/worlds/attempt-ab0cc63e32eb6ed1640c0ca5a21d8157/\n?? .palimpsest/worlds/attempt-ba7373eff39434c817ceab1707c37f49/\n",
+  "files": {
+    "sources/vendor-capabilities.csv": {
+      "digest": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+      "text": "vendor,chemistry,min_c,max_c,warranty_years,coastal_warranty,unit_width_mm,lead_weeks\nV1,LiFePO4,-20,50,10,no,900,6\nV2,NMC,-5,45,8,no,650,4\nV3,LTO,0,55,12,yes,750,10\nV4,LiFePO4,-20,50,5,yes,850,8\n"
+    },
+    "deliverables/technical-fit.md": {
+      "digest": "1138a8175a3708fb2b0a957dd23bc5652a59c80839dce649841e330bf8974ecb",
+      "text": "# Technical fit\r\n\r\n## Site findings\r\n\r\n- Site A: V1 (rated to -20 C).\r\n- Site B: V3 (rated to -10 C, coastal warranty).\r\n- Site C: V3 (750 mm, rated to -10 C).\r\n\r\n## Summary\r\n\r\nA: V1; B: V3; C: V3.\r\n\r\n## Evidence note\r\n\r\nThe Solaris (V3) cold-weather certificate is promised but not on file. This analysis uses the published capability data only; the certificate claim is unverified and does not change a published minimum.\r\n"
+    },
+    "deliverables/technical-refresh.md": {
+      "digest": "736e591e902f789fc1e620b8a2ffa4dc7e25d57ac42c8341a167415bcd4d4908",
+      "text": "# Technical refresh\r\n\r\n## Site findings\r\n\r\n- Site A (design minimum -12 C, no coastal requirement): V1 (rated to -20 C).\r\n- Site B (design minimum -4 C **and** a coastal-rated warranty): **no compliant vendor on the current data**. V3 is rated to 0 C after the 2026-02-10 bulletin, which is above the site minimum; V2 is rated to -5 C but has no coastal warranty; V1 and V4 have no coastal warranty.\r\n- Site C (ambient minimum 2 C, width <= 800 mm): V3 (750 mm, rated to 0 C).\r\n\r\n## Summary\r\n\r\nNo compliant vendor exists for Site B on the current capability data. The programme cannot satisfy the Site B coastal-temperature requirement with the current vendor set. This is a negative finding about the current data, not a completed procurement.\r\n\r\n## Evidence note\r\n\r\nThe Solaris (V3) cold-weather certificate is promised but not on file. This analysis uses the published capability data only; the certificate claim is unverified and does not change a published minimum.\r\n"
+    },
+    "deliverables/cost-schedule.md": {
+      "digest": "46fda819406463bb3ed99da9c72f1448b9e138becd965010ee9c6d10453b08f8",
+      "text": "# Cost and schedule\r\n\r\n## Historical envelope (V1 for Site A, two V3 units for Sites B and C)\r\n\r\nCommitted cost: £104,900.\r\nContingency at 8%: £8,392.\r\nTotal: £113,292, within the £120,000 grant.\r\n\r\n## Sequence\r\n\r\nSite A in January-February, Site B in March-April, Site C in May-June. Order each unit before its window; the longest lead time is 10 weeks, so the Site B order must be placed by late December.\r\n"
+    }
+  },
+  "sourceTree": {
+    "digest": "9812a494da64cf94d919d389543c037c67088f835766b0a2ba02d301adb9dd62",
+    "files": [
+      "brief.md",
+      "newsletter.md",
+      "operations.md",
+      "prior-notes.md",
+      "rollout-windows.md",
+      "sites.md",
+      "vendor-capabilities.csv",
+      "vendor-pricing.csv"
+    ]
+  }
+}

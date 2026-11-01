@@ -1,0 +1,324 @@
+{
+  "startedAt": "2026-11-01T14:25:57.477Z",
+  "steps": [
+    {
+      "label": "outofscope:start",
+      "at": "2026-11-01T14:25:58.943Z",
+      "ok": true,
+      "value": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "event_type": "PROJECT_CREATED",
+        "payload_version": 1,
+        "entity_type": "project",
+        "entity_id": "sablewick",
+        "payload": {
+          "project_ir": {
+            "schema_version": 1,
+            "project_id": "sablewick",
+            "revision": 0,
+            "parent_revision": null,
+            "parent_digest": null,
+            "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+            "requirements": [
+              {
+                "requirement_id": "R1",
+                "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R2",
+                "statement": "No fossil-fuel backup may be installed.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R3",
+                "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R4",
+                "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+                "priority": "critical",
+                "acceptance_refs": []
+              },
+              {
+                "requirement_id": "R5",
+                "statement": "Keep at least 8% of committed cost as contingency.",
+                "priority": "high",
+                "acceptance_refs": []
+              }
+            ],
+            "decisions": [],
+            "tasks": [
+              {
+                "task_id": "technical-refresh",
+                "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+                "depends_on": [],
+                "write_paths": [
+                  "deliverables/technical-refresh.md"
+                ],
+                "required_artifacts": [
+                  "deliverables/technical-refresh.md"
+                ]
+              }
+            ],
+            "head_commit": "2f74da63ff860e8c0cf9c16d62fefd7c1d3919f0",
+            "committed_at": "2026-11-01T14:25:58.944000Z",
+            "digest": "7713d83024f4dc14a75723d43f127cd18a5bde768778f426a213eb2dc2e723d2"
+          }
+        },
+        "causation_id": null,
+        "correlation_id": "scheduler-project-create",
+        "idempotency_key": "029fc5b3819f954be07b3dc8f197a633f0548a95871f9ff01db5f55b835ff49d",
+        "expected_project_revision": null,
+        "event_id": 1,
+        "project_sequence": 1,
+        "request_digest": "56782cfe3182431f53ed3c77d38df625f02bf7713b721ae08189070492b31f8a",
+        "previous_event_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+        "event_digest": "411a3cc9db6a3b13792a2b8c587f328d3fa90ff730edf641f786744ca594e332",
+        "committed_at": "2026-11-01T14:25:58.949000Z"
+      }
+    },
+    {
+      "label": "outofscope:drive",
+      "at": "2026-11-01T14:25:58.973Z",
+      "ok": true,
+      "value": {
+        "jobId": "wdj-0782d270-8e23-463c-87ac-eb2bff8b5f16",
+        "attemptId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+        "attemptState": "RUNNING",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "NOT_READY",
+          "attemptId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+          "reason": "OUT_OF_SCOPE",
+          "detail": "the world changed paths outside the task envelope's write_paths [deliverables/technical-refresh.md]: sources/newsletter.md"
+        },
+        "hostError": null,
+        "stepped": null,
+        "task": {
+          "taskId": "technical-refresh",
+          "state": "ACTIVE",
+          "lastEventId": 6,
+          "batchActivationEventId": null,
+          "envelopeId": "envelope-2974ee2e5bf0f66a7642a937f8046d42"
+        }
+      }
+    }
+  ],
+  "inbox": {
+    "dir": "F:\\Codex_Work_Space\\Palimpsest\\.cog6-rig\\final-outofscope\\programme-inbox",
+    "arrivals": [
+      {
+        "arrivedAt": "2026-02-08T10:00:00Z",
+        "item": "2026-02-08/solaris-certificate-claim.md",
+        "kind": "SUPPLIER_CORRESPONDENCE",
+        "sha256": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778",
+        "status": "UNACCEPTED",
+        "observed": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:00:00Z",
+        "item": "2026-02-10/vendor-capabilities.csv",
+        "kind": "SUPPLIER_CAPABILITY_BULLETIN",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "status": "UNACCEPTED",
+        "observed": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:01:00Z",
+        "item": "2026-02-10/newsletter.md",
+        "kind": "PROGRAMME_NEWSLETTER",
+        "sha256": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4",
+        "status": "UNACCEPTED",
+        "observed": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+      },
+      {
+        "arrivedAt": "2026-02-14T09:00:00Z",
+        "item": "2026-02-14/vendor-capabilities-corrected.csv",
+        "kind": "SUPPLIER_CAPABILITY_CORRECTION",
+        "sha256": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+        "status": "UNACCEPTED",
+        "observed": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91"
+      },
+      {
+        "arrivedAt": "2026-02-14T09:05:00Z",
+        "item": "2026-02-14/vendor-capabilities.csv",
+        "kind": "DUPLICATE_DELIVERY",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "status": "UNACCEPTED",
+        "observed": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+      }
+    ]
+  },
+  "initialHead": "2f74da63ff860e8c0cf9c16d62fefd7c1d3919f0",
+  "seedStart": {
+    "label": "outofscope:start",
+    "at": "2026-11-01T14:25:58.943Z",
+    "ok": true,
+    "value": {
+      "schema_version": 1,
+      "project_id": "sablewick",
+      "event_type": "PROJECT_CREATED",
+      "payload_version": 1,
+      "entity_type": "project",
+      "entity_id": "sablewick",
+      "payload": {
+        "project_ir": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "revision": 0,
+          "parent_revision": null,
+          "parent_digest": null,
+          "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+          "requirements": [
+            {
+              "requirement_id": "R1",
+              "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R2",
+              "statement": "No fossil-fuel backup may be installed.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R3",
+              "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R4",
+              "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+              "priority": "critical",
+              "acceptance_refs": []
+            },
+            {
+              "requirement_id": "R5",
+              "statement": "Keep at least 8% of committed cost as contingency.",
+              "priority": "high",
+              "acceptance_refs": []
+            }
+          ],
+          "decisions": [],
+          "tasks": [
+            {
+              "task_id": "technical-refresh",
+              "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+              "depends_on": [],
+              "write_paths": [
+                "deliverables/technical-refresh.md"
+              ],
+              "required_artifacts": [
+                "deliverables/technical-refresh.md"
+              ]
+            }
+          ],
+          "head_commit": "2f74da63ff860e8c0cf9c16d62fefd7c1d3919f0",
+          "committed_at": "2026-11-01T14:25:58.944000Z",
+          "digest": "7713d83024f4dc14a75723d43f127cd18a5bde768778f426a213eb2dc2e723d2"
+        }
+      },
+      "causation_id": null,
+      "correlation_id": "scheduler-project-create",
+      "idempotency_key": "029fc5b3819f954be07b3dc8f197a633f0548a95871f9ff01db5f55b835ff49d",
+      "expected_project_revision": null,
+      "event_id": 1,
+      "project_sequence": 1,
+      "request_digest": "56782cfe3182431f53ed3c77d38df625f02bf7713b721ae08189070492b31f8a",
+      "previous_event_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "event_digest": "411a3cc9db6a3b13792a2b8c587f328d3fa90ff730edf641f786744ca594e332",
+      "committed_at": "2026-11-01T14:25:58.949000Z"
+    }
+  },
+  "work": {
+    "label": "outofscope:drive",
+    "at": "2026-11-01T14:25:58.973Z",
+    "ok": true,
+    "value": {
+      "jobId": "wdj-0782d270-8e23-463c-87ac-eb2bff8b5f16",
+      "attemptId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+      "attemptState": "RUNNING",
+      "phase": "FINISHED",
+      "settlement": {
+        "state": "NOT_READY",
+        "attemptId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+        "reason": "OUT_OF_SCOPE",
+        "detail": "the world changed paths outside the task envelope's write_paths [deliverables/technical-refresh.md]: sources/newsletter.md"
+      },
+      "hostError": null,
+      "stepped": null,
+      "task": {
+        "taskId": "technical-refresh",
+        "state": "ACTIVE",
+        "lastEventId": 6,
+        "batchActivationEventId": null,
+        "envelopeId": "envelope-2974ee2e5bf0f66a7642a937f8046d42"
+      }
+    }
+  },
+  "attempt": {
+    "attemptId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+    "state": "RUNNING"
+  },
+  "result": null,
+  "finalSnapshot": {
+    "head": "2f74da63ff860e8c0cf9c16d62fefd7c1d3919f0",
+    "liveHead": "2f74da63ff860e8c0cf9c16d62fefd7c1d3919f0",
+    "revision": 0,
+    "digest": "7713d83024f4dc14a75723d43f127cd18a5bde768778f426a213eb2dc2e723d2",
+    "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+    "requirements": [
+      {
+        "requirement_id": "R1",
+        "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R2",
+        "statement": "No fossil-fuel backup may be installed.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R3",
+        "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R4",
+        "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R5",
+        "statement": "Keep at least 8% of committed cost as contingency.",
+        "priority": "high",
+        "acceptance_refs": []
+      }
+    ],
+    "requirementsDigest": "f341a9c3243c564fc5fec31fe31c0e08e94228c8ff228cb9902f3bd383e5688f",
+    "tasks": [
+      {
+        "taskId": "technical-refresh",
+        "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+        "writePaths": [
+          "deliverables/technical-refresh.md"
+        ],
+        "state": "ACTIVE"
+      }
+    ],
+    "journal": []
+  },
+  "status": "out-of-scope control complete"
+}

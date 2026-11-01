@@ -1,0 +1,156 @@
+[
+  {
+    "eventId": 1,
+    "type": "PROJECT_CREATED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": null,
+    "payload": {
+      "project_ir": {
+        "revision": 0,
+        "digest": "b1bbb3eb4bd0c99a89012a37a00d0570bb7602370ee0c8f60ba529bfb38f85f6",
+        "head_commit": "f040355e37d1338f0eee88c3b8bb33c664ebefff"
+      }
+    }
+  },
+  {
+    "eventId": 2,
+    "type": "GATE_DEFINED",
+    "entityId": "gate-release",
+    "entityType": "gate",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 3,
+    "type": "ROLE_TABLE_DEFINED",
+    "entityId": "sablewick",
+    "entityType": "role-table",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 4,
+    "type": "STAGE_GRAPH_DEFINED",
+    "entityId": "sablewick",
+    "entityType": "stage-graph",
+    "revision": 0,
+    "payload": {
+      "reason": "two independent programme work pieces must reach VERIFYING together so the continuation can be isolated from scheduling"
+    }
+  },
+  {
+    "eventId": 5,
+    "type": "TASK_CREATED",
+    "entityId": "technical-fit",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 6,
+    "type": "TASK_STARTED",
+    "entityId": "technical-fit",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {
+      "previous_state": "READY",
+      "new_state": "ACTIVE",
+      "reason": "deterministic batch activation"
+    }
+  },
+  {
+    "eventId": 7,
+    "type": "ATTEMPT_CREATED",
+    "entityId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "task_id": "technical-fit"
+    }
+  },
+  {
+    "eventId": 8,
+    "type": "ATTEMPT_STARTED",
+    "entityId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "previous_state": "CREATED",
+      "new_state": "RUNNING",
+      "reason": "Phase 2 deterministic mock start"
+    }
+  },
+  {
+    "eventId": 9,
+    "type": "CONTEXT_MANIFEST_ADDED",
+    "entityId": "context-manifest-68655cccbcdd7f00e53dfd9f9945e36b",
+    "entityType": "context-manifest",
+    "revision": 0,
+    "payload": {
+      "task_id": "technical-fit"
+    }
+  },
+  {
+    "eventId": 10,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-5539c250ffb87431a14f956066711e6a",
+    "entityType": "evidence",
+    "revision": 0,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-5539c250ffb87431a14f956066711e6a",
+        "predicate": "write_scope_valid",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 11,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-30331ecb05b7e8f6da0f3e1b87d099f4",
+    "entityType": "evidence",
+    "revision": 0,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-30331ecb05b7e8f6da0f3e1b87d099f4",
+        "predicate": "expected_files_exist",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 12,
+    "type": "ATTEMPT_COMPLETED",
+    "entityId": "attempt-f1208e804c170fa8e801ef7127213d8e",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "previous_state": "RUNNING",
+      "new_state": "COMPLETED",
+      "reason": "deterministic callback",
+      "attempt_report": {
+        "result_commit": "ce1624db410c5b9ca10f38b71e8adfefc13db4eb",
+        "changed_files": [
+          "deliverables/technical-fit.md"
+        ],
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world"
+      }
+    }
+  },
+  {
+    "eventId": 13,
+    "type": "TASK_VERIFYING",
+    "entityId": "technical-fit",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {
+      "previous_state": "ACTIVE",
+      "new_state": "VERIFYING",
+      "reason": "batch has a completed candidate"
+    }
+  }
+]

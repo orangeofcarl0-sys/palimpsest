@@ -1,0 +1,75 @@
+{
+  "inbox": {
+    "dir": "F:\\Codex_Work_Space\\Palimpsest\\.cog6-rig\\final-main\\programme-inbox",
+    "arrivals": [
+      {
+        "arrivedAt": "2026-02-08T10:00:00Z",
+        "item": "2026-02-08/solaris-certificate-claim.md",
+        "kind": "SUPPLIER_CORRESPONDENCE",
+        "sha256": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778",
+        "status": "UNACCEPTED",
+        "observed": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:00:00Z",
+        "item": "2026-02-10/vendor-capabilities.csv",
+        "kind": "SUPPLIER_CAPABILITY_BULLETIN",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "status": "UNACCEPTED",
+        "observed": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:01:00Z",
+        "item": "2026-02-10/newsletter.md",
+        "kind": "PROGRAMME_NEWSLETTER",
+        "sha256": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4",
+        "status": "UNACCEPTED",
+        "observed": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+      },
+      {
+        "arrivedAt": "2026-02-14T09:00:00Z",
+        "item": "2026-02-14/vendor-capabilities-corrected.csv",
+        "kind": "SUPPLIER_CAPABILITY_CORRECTION",
+        "sha256": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+        "status": "UNACCEPTED",
+        "observed": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91"
+      },
+      {
+        "arrivedAt": "2026-02-14T09:05:00Z",
+        "item": "2026-02-14/vendor-capabilities.csv",
+        "kind": "DUPLICATE_DELIVERY",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "status": "UNACCEPTED",
+        "observed": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+      }
+    ]
+  },
+  "candidateA": {
+    "candidateId": "sablewick-capabilities-2026-02-10",
+    "relativePath": "2026-02-10/vendor-capabilities.csv",
+    "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "origin": "Solaris programme office bulletin SW-2026-02-10",
+    "target": "sources/vendor-capabilities.csv"
+  },
+  "candidateB": {
+    "candidateId": "sablewick-capabilities-2026-02-14-corrected",
+    "relativePath": "2026-02-14/vendor-capabilities-corrected.csv",
+    "digest": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "origin": "Solaris programme office correction SW-2026-02-14",
+    "target": "sources/vendor-capabilities.csv"
+  },
+  "duplicateA": {
+    "candidateId": "sablewick-capabilities-2026-02-10-repeat",
+    "relativePath": "2026-02-14/vendor-capabilities.csv",
+    "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "origin": "Solaris programme office re-send of bulletin SW-2026-02-10",
+    "target": "sources/vendor-capabilities.csv"
+  },
+  "acceptedBlob": {
+    "acceptedHead": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+    "workingTreeDigest": "620c334dd79bc010b63d4febba0c6583197be92408dbfeb895de68083c6a277f",
+    "committedBlobDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "candidateDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "equalsCandidate": true
+  }
+}

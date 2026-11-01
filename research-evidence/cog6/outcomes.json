@@ -1,0 +1,481 @@
+{
+  "schema": "cog6-outcomes/v1",
+  "generatedAt": "2026-11-01T14:34:13.781Z",
+  "codeFreeze": "c10af086896abc139110eea041fdaccd19135590",
+  "codeFreezeTree": "4515f31c3122605d029c7268ff55b0b791940a3a",
+  "model": null,
+  "modelNote": "No model was used. The provider probe returned QUOTA: Insufficient Balance; no scored P or F session was started. All Work Results below are deterministic test-owned outputs, not Agent cognition.",
+  "agentUsed": false,
+  "worker": "deterministic WorkWorkerRunPort (in-process, not a model and not the DSH subprocess worker)",
+  "labels": {
+    "operator": "test-owned independent routine; every call is an explicit operator act",
+    "product": "Work delegation, completion, promotion, reconciliation, workspace journal, packaged continuation",
+    "evaluator": "independent deterministic domain rubric"
+  },
+  "scenario": {
+    "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+    "candidateA": {
+      "candidateId": "sablewick-capabilities-2026-02-10",
+      "relativePath": "2026-02-10/vendor-capabilities.csv",
+      "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "origin": "Solaris programme office bulletin SW-2026-02-10",
+      "target": "sources/vendor-capabilities.csv"
+    },
+    "candidateB": {
+      "candidateId": "sablewick-capabilities-2026-02-14-corrected",
+      "relativePath": "2026-02-14/vendor-capabilities-corrected.csv",
+      "digest": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+      "origin": "Solaris programme office correction SW-2026-02-14",
+      "target": "sources/vendor-capabilities.csv"
+    },
+    "duplicateA": {
+      "candidateId": "sablewick-capabilities-2026-02-10-repeat",
+      "relativePath": "2026-02-14/vendor-capabilities.csv",
+      "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "origin": "Solaris programme office re-send of bulletin SW-2026-02-10",
+      "target": "sources/vendor-capabilities.csv"
+    },
+    "preCandidateCapabilitiesDigest": "f81576167c284060eb494706e424204d99028823fe71bf56476883d49e4d9373",
+    "acceptedCapabilities": {
+      "acceptedHead": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+      "workingTreeDigest": "620c334dd79bc010b63d4febba0c6583197be92408dbfeb895de68083c6a277f",
+      "committedBlobDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "candidateDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "equalsCandidate": true
+    },
+    "requirementsDigestBefore": "f341a9c3243c564fc5fec31fe31c0e08e94228c8ff228cb9902f3bd383e5688f",
+    "requirementsDigestAfter": "f341a9c3243c564fc5fec31fe31c0e08e94228c8ff228cb9902f3bd383e5688f",
+    "requirementsUnchanged": true
+  },
+  "mechanism": {
+    "initialHead": "195d691f3569b45ca89d3ba131ee3cd30169f90d",
+    "initialProject": {
+      "head": "73e7a3daf08c1450568a37e229547a0ec9df6154",
+      "liveHead": "73e7a3daf08c1450568a37e229547a0ec9df6154",
+      "revision": 3,
+      "digest": "2b48da7db91142d6762d97b244a4c56e61679cac2a73e0bc1f60c27bcd86d119",
+      "tasks": [
+        {
+          "taskId": "technical-fit",
+          "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+          "writePaths": [
+            "deliverables/technical-fit.md"
+          ],
+          "state": "SATISFIED"
+        },
+        {
+          "taskId": "cost-schedule",
+          "objective": "Produce the programme cost and schedule envelope from the current pricing and installation windows, including the 8% contingency.",
+          "writePaths": [
+            "deliverables/cost-schedule.md"
+          ],
+          "state": "SATISFIED"
+        },
+        {
+          "taskId": "technical-refresh",
+          "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+          "writePaths": [
+            "deliverables/technical-refresh.md"
+          ],
+          "state": "READY"
+        }
+      ],
+      "journal": [
+        {
+          "entryId": "pje-1b9a86e27647fe9dbc5bc87164b13dd8",
+          "kind": "NEGATIVE_RESULT",
+          "title": "2023 Marsh Lane trial: V2 cold-start failure",
+          "provenance": "sources/prior-notes.md (2023 trial notes)",
+          "resolution": null
+        },
+        {
+          "entryId": "pje-ac899ac3c0346f915bf29e0efcd21aa2",
+          "kind": "OPEN_QUESTION",
+          "title": "Solaris V3 cold-weather certificate is not on file",
+          "provenance": "sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md",
+          "resolution": null
+        },
+        {
+          "entryId": "pje-82b4eacc0abe8616da93d8b311424c6b",
+          "kind": "OPPORTUNITY",
+          "title": "Switch Site B to V2 to reduce cost",
+          "provenance": "programme volunteer proposal, 2026-01-05 (rejected)",
+          "resolution": {
+            "status": "DISMISSED",
+            "detail": "rejected: V2 has no coastal warranty (grant condition 3); the saving does not justify an unqualified installation"
+          }
+        }
+      ]
+    },
+    "historical": {
+      "technicalResult": "dd8ae020ebaf89dc4411c7b12f2736e046fa9302",
+      "technicalPromotion": "promotion-c8ace220c1df9c33ed7ec14c3be462bb",
+      "costResult": "c4dee2441ca1acc81a1909b76ce1c9c5bf27d5db",
+      "costPromotion": "promotion-1177fa56ec957372f5aa9f1df0a34f7b",
+      "promotions": [
+        {
+          "promotionId": "promotion-c8ace220c1df9c33ed7ec14c3be462bb",
+          "attemptId": "attempt-09f959ac1a902ee3d1eba3eabcc62334",
+          "sourceCommit": "dd8ae020ebaf89dc4411c7b12f2736e046fa9302",
+          "expectedHeadCommit": "195d691f3569b45ca89d3ba131ee3cd30169f90d",
+          "resultingHeadCommit": "c6e0d3b8f63f24213fd30d99729ea6d6a6cba775"
+        },
+        {
+          "promotionId": "promotion-1177fa56ec957372f5aa9f1df0a34f7b",
+          "attemptId": "attempt-ba7373eff39434c817ceab1707c37f49",
+          "sourceCommit": "c4dee2441ca1acc81a1909b76ce1c9c5bf27d5db",
+          "expectedHeadCommit": "c6e0d3b8f63f24213fd30d99729ea6d6a6cba775",
+          "resultingHeadCommit": "73e7a3daf08c1450568a37e229547a0ec9df6154"
+        }
+      ]
+    },
+    "currentResult": {
+      "task": "technical-refresh",
+      "attemptId": "attempt-a123e84a69339196cf19578185f3a8f4",
+      "resultCommit": "c8415401023f77ade4c36ba88ec175510dd224c7",
+      "basis": {
+        "resolution": {
+          "basis": {
+            "schemaVersion": 1,
+            "projectId": "sablewick",
+            "taskId": "technical-refresh",
+            "capturedAtRevision": 4,
+            "semanticProjectionDigest": "87dceda94eb8f331f8fefbec9b4dda16f52e036e9e50126d7a326fc9ade8abd3",
+            "source": {
+              "state": "BOUND",
+              "value": {
+                "backend": "git",
+                "revision": "73e7a3daf08c1450568a37e229547a0ec9df6154"
+              }
+            },
+            "assets": {
+              "state": "NOT_REQUIRED"
+            },
+            "environment": {
+              "state": "NOT_REQUIRED"
+            },
+            "basisDigest": "f73718ea8b68d480dc24063a8bc1b0087c19a95ea8d13ec01b92d8138dbda9f7"
+          },
+          "taskId": "technical-refresh"
+        },
+        "summary": {
+          "basisDigest": "f73718ea8b68d480dc24063a8bc1b0087c19a95ea8d13ec01b92d8138dbda9f7",
+          "taskId": "technical-refresh",
+          "capturedAt": "2026-11-01T14:25:48.577Z"
+        },
+        "currentness": {
+          "attemptId": "attempt-a123e84a69339196cf19578185f3a8f4",
+          "taskId": "technical-refresh",
+          "basisDigest": "f73718ea8b68d480dc24063a8bc1b0087c19a95ea8d13ec01b92d8138dbda9f7",
+          "currentBasisDigest": "f73718ea8b68d480dc24063a8bc1b0087c19a95ea8d13ec01b92d8138dbda9f7",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reasons": [],
+          "detail": "the current world still resolves every bound dependency identically"
+        }
+      },
+      "inspectionBeforeIntake": {
+        "compatibility": {
+          "outcome": "EXACT",
+          "issuanceDigest": "7bcb93a132b19b01681d3e62c8ba0d2f1bca054753193db17418780f5312b123"
+        },
+        "currentness": "CURRENT"
+      }
+    },
+    "intake": {
+      "attemptId": "attempt-9c38eb28691667e5b1ae470ed0877a37",
+      "resultCommit": "16d30dee252397b53b89447e9523380e78f5b31a",
+      "promotionId": "promotion-a12f950e81f1798585704e676f8d01c6",
+      "promotionEventId": "54",
+      "expectedHeadCommit": "73e7a3daf08c1450568a37e229547a0ec9df6154",
+      "resultingHeadCommit": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+      "acceptedBlobDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "candidateDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "blobEqualsCandidate": true,
+      "wrongSourceRefused": true,
+      "wrongHeadRefused": true,
+      "duplicatePromotionReplayed": true
+    },
+    "headBeforeRework": {
+      "status": "blocked",
+      "fromHead": "73e7a3daf08c1450568a37e229547a0ec9df6154",
+      "toHead": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+      "blockers": [
+        "quiescence_required: the project must be quiescent before the head advances: every ACTIVE/VERIFYING task and open attempt must settle (a promoted task must reach SATISFIED first)"
+      ]
+    },
+    "assessment": {
+      "compatibility": {
+        "outcome": "INCOMPATIBLE",
+        "issuanceDigest": "50b8bb88aea727fbfc8a22dffcaba5a25cdd7d65e808557bd6eb68642400fb24"
+      },
+      "currentness": "STALE",
+      "availableActions": {
+        "rematerialize": false,
+        "rework": true
+      },
+      "assessmentDigest": "1b05b9b1258d38cc02736bd7f4b4722b50f8664b37a609361a21bbf3173ff4d9"
+    },
+    "rework": {
+      "state": "DELEGATED",
+      "headSynced": true,
+      "reopenedEventId": 56,
+      "jobId": "wdj-4f7972b7-9ae8-4e39-9360-cbe8724b6349",
+      "jobTerminal": "FINISHED",
+      "settlement": "SETTLED",
+      "newAttemptId": "attempt-ab0cc63e32eb6ed1640c0ca5a21d8157",
+      "resultCommit": "7be38267ca994b1529e08e2ad77ebd23e845bc38",
+      "resultBase": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+      "promotionId": "promotion-b812c0ee8d34c92fa934014bd9edc4c5",
+      "promotionEventId": "68",
+      "expectedHeadCommit": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+      "resultingHeadCommit": "22796231660d7915c561a34445aecbd7f1900159",
+      "taskState": "SATISFIED",
+      "headAfter": {
+        "status": "reconciled",
+        "revision": 6,
+        "fromHead": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+        "toHead": "22796231660d7915c561a34445aecbd7f1900159",
+        "blockers": []
+      }
+    },
+    "final": {
+      "projectHead": "22796231660d7915c561a34445aecbd7f1900159",
+      "liveHead": "caa543441c4510941e0f228c6991616f75fb3557",
+      "taskStates": {
+        "cost-schedule": "SATISFIED",
+        "intake-vendor-2026-02-10": "SATISFIED",
+        "post-control": "READY",
+        "technical-fit": "SATISFIED",
+        "technical-refresh": "SATISFIED"
+      },
+      "projectRevision": 6,
+      "journal": [
+        {
+          "entryId": "pje-1b9a86e27647fe9dbc5bc87164b13dd8",
+          "kind": "NEGATIVE_RESULT",
+          "title": "2023 Marsh Lane trial: V2 cold-start failure",
+          "provenance": "sources/prior-notes.md (2023 trial notes)",
+          "resolution": null
+        },
+        {
+          "entryId": "pje-ac899ac3c0346f915bf29e0efcd21aa2",
+          "kind": "OPEN_QUESTION",
+          "title": "Solaris V3 cold-weather certificate is not on file",
+          "provenance": "sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md",
+          "resolution": null
+        },
+        {
+          "entryId": "pje-82b4eacc0abe8616da93d8b311424c6b",
+          "kind": "OPPORTUNITY",
+          "title": "Switch Site B to V2 to reduce cost",
+          "provenance": "programme volunteer proposal, 2026-01-05 (rejected)",
+          "resolution": {
+            "status": "DISMISSED",
+            "detail": "rejected: V2 has no coastal warranty (grant condition 3); the saving does not justify an unqualified installation"
+          }
+        }
+      ]
+    },
+    "controls": {
+      "operatorAuthorisedA": {
+        "approved": true,
+        "reason": "authorised",
+        "duplicate": false,
+        "detail": "the exact candidate digest, target and no-extra-paths objective are bound"
+      },
+      "changedCandidateBRefused": {
+        "approved": false,
+        "reason": "digest_mismatch",
+        "detail": "approval binds 0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c; the proposed candidate is 14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91 (sablewick-capabilities-2026-02-14-corrected) and is a different candidate"
+      },
+      "duplicateDelivery": {
+        "approved": true,
+        "reason": "duplicate_delivery_same_digest",
+        "duplicate": true,
+        "detail": "the bytes are identical to the already authorised candidate; no second canonical application is authorised"
+      },
+      "requirementRelaxationRefused": {
+        "approved": false,
+        "reason": "business_requirement_change_requires_operator",
+        "detail": "Site B's -4 C minimum and coastal warranty are binding grant requirements; a separate explicit operator decision is required, and the normal product has no model-facing requirement-change path"
+      },
+      "directExternalCommit": {
+        "commit": {
+          "fromHead": "22796231660d7915c561a34445aecbd7f1900159",
+          "toHead": "caa543441c4510941e0f228c6991616f75fb3557",
+          "target": "sources/vendor-capabilities.csv",
+          "paths": [
+            "sources/vendor-capabilities.csv"
+          ],
+          "digestAfter": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91"
+        },
+        "drive": {
+          "jobId": "wdj-32f808f5-2b03-477b-a91c-98dd168082b5",
+          "attemptId": null,
+          "attemptState": null,
+          "phase": "HOST_ERROR",
+          "settlement": null,
+          "hostError": "HEAD_BASIS_MISMATCH: the repository is at caa543441c45, the project head at 22796231660d, the proven effect head at 22796231660d and the task's base at 22796231660d — a worker's world must start where its envelope says the work starts",
+          "stepped": null,
+          "task": {
+            "taskId": "post-control",
+            "state": "READY",
+            "lastEventId": 72,
+            "batchActivationEventId": null,
+            "envelopeId": "envelope-58aee0f63675f99a6c41636fee551dad"
+          }
+        },
+        "attempt": null,
+        "taskState": "READY",
+        "projectHead": "22796231660d7915c561a34445aecbd7f1900159",
+        "liveHead": "caa543441c4510941e0f228c6991616f75fb3557"
+      }
+    },
+    "outOfScope": {
+      "settlement": {
+        "state": "NOT_READY",
+        "attemptId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+        "reason": "OUT_OF_SCOPE",
+        "detail": "the world changed paths outside the task envelope's write_paths [deliverables/technical-refresh.md]: sources/newsletter.md"
+      },
+      "attempt": {
+        "attemptId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+        "state": "RUNNING"
+      },
+      "result": null,
+      "taskState": "ACTIVE"
+    },
+    "irrelevantUpdate": {
+      "before": {
+        "compatibility": {
+          "outcome": "EXACT",
+          "issuanceDigest": "61232563182ae74e49ba5aa66080c96a29033139f67c0355134d10be286b1ea5"
+        },
+        "currentness": "CURRENT"
+      },
+      "directUpdate": {
+        "fromHead": "f040355e37d1338f0eee88c3b8bb33c664ebefff",
+        "toHead": "3ae28531073f8dd1591d1678e80d1b5787e599f2",
+        "target": "sources/newsletter.md",
+        "paths": [
+          "sources/newsletter.md"
+        ],
+        "digestAfter": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+      },
+      "after": {
+        "compatibility": {
+          "outcome": "INCOMPATIBLE",
+          "issuanceDigest": "d6d853e58c64ff8af8de6504a836b8ac97cb426c9647045fbbe42309ec24b8aa"
+        },
+        "currentness": "STALE",
+        "availableActions": {
+          "rematerialize": false,
+          "rework": true
+        }
+      },
+      "taskState": "VERIFYING"
+    },
+    "rubric": {
+      "checks": {
+        "acceptedV3MinIsZero": true,
+        "noVendorSatisfiesSiteB": true,
+        "deliverableStatesNoSiteBVendor": true,
+        "deliverablePreservesCertificateUnverified": true,
+        "requirementR3Unchanged": true,
+        "goalUnchanged": true,
+        "taskAccepted": true,
+        "resultCommitPresent": true,
+        "journalHasAgentNegativeResult": false
+      },
+      "failed": [],
+      "siteBVendors": [],
+      "deliverableDigest": "736e591e902f789fc1e620b8a2ffa4dc7e25d57ac42c8341a167415bcd4d4908",
+      "acceptedCapabilitiesDigest": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91"
+    }
+  },
+  "events": {
+    "count": 72,
+    "types": {
+      "ATTEMPT_COMPLETED": 5,
+      "ATTEMPT_CREATED": 5,
+      "ATTEMPT_STARTED": 5,
+      "CONTEXT_MANIFEST_ADDED": 5,
+      "EVIDENCE_ADDED": 10,
+      "GATE_DEFINED": 1,
+      "PROJECT_CREATED": 1,
+      "PROJECT_REVISED": 7,
+      "PROMOTION_COMMITTED": 4,
+      "PROMOTION_PREPARED": 4,
+      "ROLE_TABLE_DEFINED": 1,
+      "STAGE_GRAPH_DEFINED": 1,
+      "TASK_CREATED": 5,
+      "TASK_READY": 1,
+      "TASK_REAUTHORIZED": 3,
+      "TASK_SATISFIED": 4,
+      "TASK_STARTED": 5,
+      "TASK_VERIFYING": 5
+    }
+  },
+  "modelGate": {
+    "probe": {
+      "at": "2026-11-01T14:04:51.927Z",
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "ms": 32530,
+      "quotaError": true,
+      "requestId": "5bbca676-fad3-423a-b78f-d2b5e53586f1",
+      "modelListingLoaded": "2",
+      "configuredProvider": "deepseek-official",
+      "configuredModel": "deepseek-flash",
+      "sessionFiles": 1,
+      "reportedTokens": 0
+    },
+    "budgetSelfTest": {
+      "killed": true,
+      "killedBy": "token_stop_threshold",
+      "signal": "SIGKILL",
+      "elapsedMs": 455,
+      "reportedTokensSeen": 4000,
+      "note": "A local dummy child with the same stdio/exit interface; no model was started."
+    },
+    "campaign": {
+      "schema": "cog6-model-campaign/v1",
+      "at": "2026-11-01T14:26:14.331Z",
+      "state": "BLOCKED",
+      "gate": {
+        "state": "BLOCKED",
+        "reason": "insufficient_balance",
+        "detail": "C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-permission-presets/lib/index.js:177:48)\n    at Fiber.execute (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1068:24)\n    at file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1142:34\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog6-probe/home/profiles/cog6-probe/#permission\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog6-probe/home/profiles/cog6-probe/#include\n[llm-deepseek-api-key] model listing from https://api.deepseek.com/models loaded 2 model(s), skipped 0 row(s)\ndsh: QUOTA: Insufficient Balance (request_id: 5bbca676-fad3-423a-b78f-d2b5e53586f1)\n",
+        "result": {
+          "at": "2026-11-01T14:04:51.927Z",
+          "exit": {
+            "code": 1,
+            "signal": null
+          },
+          "ms": 32530,
+          "stdoutTail": "\n",
+          "stderrTail": "dsh: warning: 1 entry did not activate\npermission (@deepseek-ai/dsh-permission-presets): Error: permission: the mounted bash executor does not confine (no sandboxMode) — presets bundle a sandbox mode, so composing this plugin over an unconfined executor is a misconfiguration\n    at new PermissionPresetService (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-permission-presets/lib/index.js:177:48)\n    at Fiber.execute (file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1068:24)\n    at file:///C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis/lib/index.js:1142:34\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog6-probe/home/profiles/cog6-probe/#permission\n    at file:///F:/Codex_Work_Space/Palimpsest/.cog6-probe/home/profiles/cog6-probe/#include\n[llm-deepseek-api-key] model listing from https://api.deepseek.com/models loaded 2 model(s), skipped 0 row(s)\ndsh: QUOTA: Insufficient Balance (request_id: 5bbca676-fad3-423a-b78f-d2b5e53586f1)\n",
+          "sessionFiles": [
+            {
+              "path": "F:\\Codex_Work_Space\\Palimpsest\\.cog6-probe\\home\\sessions\\--F-Codex_Work_Space-Palimpsest-.cog6-probe-work--\\session-e0ce3beb-d14d-4aec-b817-ea96eeed086e\\session.v4.jsonl.zstd",
+              "bytes": 7958
+            }
+          ]
+        }
+      },
+      "startedSessions": 0,
+      "note": "No scored P or F session was started. The provider gate did not establish availability."
+    }
+  },
+  "limitations": [
+    "No Agent, no Principal Session, no model Worker and no native DSH baseline.",
+    "The deterministic worker is a test-owned WorkWorkerRunPort, not a model.",
+    "The mechanism arm is operator-authored; it cannot establish H6-D, H6-P, H6-A or H6-F.",
+    "The packaged continuation still cannot prove positive compatibility for a changed source world.",
+    "The completion contract for documentation write scopes narrows out the standard command; the evidence is write scope plus required artifact.",
+    "The final direct-commit control intentionally leaves the live head ahead of the project head."
+  ]
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "eventId": 1,
+    "type": "PROJECT_CREATED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": null,
+    "payload": {
+      "project_ir": {
+        "revision": 0,
+        "digest": "7713d83024f4dc14a75723d43f127cd18a5bde768778f426a213eb2dc2e723d2",
+        "head_commit": "2f74da63ff860e8c0cf9c16d62fefd7c1d3919f0"
+      }
+    }
+  },
+  {
+    "eventId": 2,
+    "type": "GATE_DEFINED",
+    "entityId": "gate-release",
+    "entityType": "gate",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 3,
+    "type": "ROLE_TABLE_DEFINED",
+    "entityId": "sablewick",
+    "entityType": "role-table",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 4,
+    "type": "STAGE_GRAPH_DEFINED",
+    "entityId": "sablewick",
+    "entityType": "stage-graph",
+    "revision": 0,
+    "payload": {
+      "reason": "two independent programme work pieces must reach VERIFYING together so the continuation can be isolated from scheduling"
+    }
+  },
+  {
+    "eventId": 5,
+    "type": "TASK_CREATED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 6,
+    "type": "TASK_STARTED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {
+      "previous_state": "READY",
+      "new_state": "ACTIVE",
+      "reason": "deterministic batch activation"
+    }
+  },
+  {
+    "eventId": 7,
+    "type": "ATTEMPT_CREATED",
+    "entityId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "task_id": "technical-refresh"
+    }
+  },
+  {
+    "eventId": 8,
+    "type": "ATTEMPT_STARTED",
+    "entityId": "attempt-3dd8bf50690a57127e45b4b375dbcb9b",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "previous_state": "CREATED",
+      "new_state": "RUNNING",
+      "reason": "Phase 2 deterministic mock start"
+    }
+  },
+  {
+    "eventId": 9,
+    "type": "CONTEXT_MANIFEST_ADDED",
+    "entityId": "context-manifest-704c01e570a15ac33979166cdd3f5cce",
+    "entityType": "context-manifest",
+    "revision": 0,
+    "payload": {
+      "task_id": "technical-refresh"
+    }
+  }
+]
