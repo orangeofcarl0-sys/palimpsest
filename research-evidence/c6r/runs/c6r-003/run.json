@@ -13,7 +13,7 @@
     "visibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
     "source": "scripts/cog6/scenario"
   },
-  "state": "P1_PREPARED",
+  "state": "BLOCKED",
   "history": [
     {
       "at": "2026-11-01T18:33:39.770Z",
@@ -21,18 +21,69 @@
       "to": "P1_PREPARED",
       "reason": "run created",
       "detail": null
+    },
+    {
+      "at": "2026-11-01T18:33:48.133Z",
+      "from": "P1_PREPARED",
+      "to": "P1_RUNNING",
+      "reason": "opencode session launched",
+      "detail": null
+    },
+    {
+      "at": "2026-11-01T18:36:18.277Z",
+      "from": "P1_RUNNING",
+      "to": "BLOCKED",
+      "reason": "provider_error_before_turn",
+      "detail": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\c6r\\runs\\c6r-003\\P1"
     }
   ],
   "conditions": {
     "P1": {
       "preparedAt": "2026-11-01T18:33:39.771Z",
-      "startedAt": null,
-      "finishedAt": null,
-      "sessionId": null,
-      "exit": null,
-      "usage": null,
-      "classification": null,
-      "evidence": "research-evidence/c6r/p1-host"
+      "startedAt": "2026-11-01T18:36:18.276Z",
+      "finishedAt": "2026-11-01T18:36:18.276Z",
+      "sessionId": "session-a39fd57e-b506-440e-9923-2ff679f5aff4",
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "classification": "BLOCKED",
+      "evidence": "research-evidence/c6r/runs/c6r-003/P1",
+      "classifyReason": "provider_error_before_turn",
+      "account": {
+        "sessions": [
+          {
+            "sessionId": "session-a39fd57e-b506-440e-9923-2ff679f5aff4",
+            "streams": 1,
+            "complete": true,
+            "providerErrors": 1,
+            "assistantMessages": 0,
+            "usageEvents": 0,
+            "duplicateEvents": 0,
+            "missingUsageMessages": 0,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0,
+            "totalTokens": 0
+          }
+        ],
+        "sessionCount": 1,
+        "totals": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 0,
+          "usageEvents": 0
+        },
+        "problems": []
+      }
     },
     "F1": {
       "preparedAt": "2026-11-01T18:33:39.771Z",
