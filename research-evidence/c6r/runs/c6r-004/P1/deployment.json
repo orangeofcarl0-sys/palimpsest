@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "profileId": "sablewick-p1",
+  "projectId": "sablewick",
+  "localPeer": "local-operator",
+  "repository": "/run/p1/world",
+  "execution": "worktree",
+  "concurrency": 2,
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "verify.mjs"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "The package test script must pass and every change must stay inside the declared write scope."
+  },
+  "transport": {
+    "namespace": "sablewick-p1",
+    "databasePath": "/run/p1/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "/run/p1/state/palimpsest.sqlite",
+    "ordarium": "/run/p1/state/ordarium.sqlite",
+    "coordination": "/run/p1/state/coordination.sqlite",
+    "transportCursors": "/run/p1/state/transport-cursors.sqlite",
+    "projectJournal": "/run/p1/state/journal.sqlite",
+    "projectAssociations": "/run/p1/state/associations.sqlite"
+  }
+}
