@@ -1,0 +1,154 @@
+{
+  "schema": "cog3-scores/v1",
+  "scoredAt": "2026-11-01",
+  "evaluation": "manual pass over the actual deliverables with quoted evidence; mechanical extraction is supporting evidence, not a score",
+  "rubricMaximum": 16,
+  "rubricNote": "The pre-registered table has eight 0-2 items (maximum 16). The sentence in COG3-EXPERIMENTAL-PROTOCOL.md saying '0-12' was an arithmetic slip; the table is authoritative and is recorded here as a forward erratum, not a rubric change.",
+  "conditions": {
+    "P": {
+      "label": "shipped Palimpsest host, long-lived principal, journal carrier, delegation, update + cold resume",
+      "model": "deepseek-flash",
+      "provider": "deepseek-official",
+      "sessions": 3,
+      "principalProcesses": 2,
+      "researchBranches": 1,
+      "tokens": 16221721,
+      "wallClockSeconds": 1210,
+      "planBytesRoundOne": 58367,
+      "planBytesRoundTwo": 62972,
+      "scores": {
+        "Q1": { "score": 2, "quote": "The adjacent inspection room is 16°C and 45% RH. This is inside Filmtek's 15–20°C and 40–50% RH operating range. ... nitrate to leave the cold store in batches of up to 40 reels for at most 30 minutes, including scanning time." },
+        "Q2": { "score": 2, "quote": "Complete the per-reel orphan-works rights risk assessment in January, scan at Northgate between 2 and 20 February ... and publish by 15 April 2026." },
+        "Q3": { "score": 2, "quote": "There is no written permission, the estate's solicitor says a decision is unlikely before autumn 2026, and a verbal assurance is not sufficient for publication." },
+        "Q4": { "score": 2, "quote": "TOTAL | 84,000 | Within the £84,000 grant; C2 Filmtek 15 days at £1,200 = £18,000; C3 transport £3,600; E1 contingency £4,620." },
+        "Q5": { "score": 2, "quote": "The 2025 open day drew 2,340 visitors. ... That is the figure to use for the newsletter. ... This figure is not in the January pack." },
+        "Q6": { "score": 2, "quote": "Project update, 20 January 2026 ... B scanning moved forward to 2–20 February, with 23–27 February as buffer ... the inspection room is available for scanning only until 28 February 2026." },
+        "Q7": { "score": 2, "quote": "The delegated finding aligns with the plan's key judgement and confirms the three-week Filmtek booking. I have tightened deliverables/plan.md so the calibration assumption explicitly reflects it: Planning range: 20–30 minutes per reel end-to-end." },
+        "Q8": { "score": 2, "quote": "The pack gives durations and vendor rates but not staff rates, page counts, scan cycle times or item-level throughput. The following assumptions are explicit so that they can be tested... calibrate on 13 February; if the inspection room moves outside 15–20°C or 40–50% RH, scanning stops." }
+      },
+      "total": 16,
+      "commonSubsetTotal": "12/12 (Q1-Q5, Q8)",
+      "notes": [
+        "Q1 was solved by the principal from the pack; the delegated question was the per-reel scan time that the pack does not state.",
+        "The principal also used web_search and web_fetch for scan throughput. The finding and the web search are not independent, so causal attribution of the throughput assumption to the delegation alone is not exclusive.",
+        "The plan's throughput assumption (1 reel per 30-minute batch, 16 reels/day, 15 days, three-week booking) is traceable to the delegated 20-40 minute range, but the plan does not name the delegation as its source; it says 'Industry practice suggests'."
+      ]
+    },
+    "S": {
+      "label": "strong single-agent file baseline; prior findings in sources/prior-notes.md; native subagents disabled",
+      "model": "deepseek-flash",
+      "provider": "deepseek-official",
+      "sessions": 1,
+      "tokens": 1828481,
+      "wallClockSeconds": 534,
+      "planBytes": 39321,
+      "scores": {
+        "Q1": { "score": 2, "quote": "The inspection room is 16°C and 45% RH, inside Filmtek's 15–20°C and 40–50% RH range. ... Batches stay within the policy limit of 40 reels and 30 minutes door-to-door." },
+        "Q2": { "score": 2, "quote": "Collection B assessment runs 12–30 January (15 staff days), producing a per-reel register ... publication is signed off only when every reel has a completed record." },
+        "Q3": { "score": 2, "quote": "the only written legal advice says the Harrow estate is unlikely to decide before autumn 2026, and a verbal \"spring\" assurance cannot satisfy a donor restriction that requires written permission." },
+        "Q4": { "score": 2, "quote": "The budget is £84,000 exactly: £79,780 committed and £4,220 (5.0%) held as contingency." },
+        "Q5": { "score": 2, "quote": "This figure is already recorded in the Partnership's programme notes and should be used as stated in the newsletter. It is not a figure that requires external checking." },
+        "Q6": { "score": null, "quote": "not exercised: S was a one-shot baseline and did not receive the phase-2 project update" },
+        "Q7": { "score": null, "quote": "not applicable: no independent result was delivered" },
+        "Q8": { "score": 1, "quote": "At an assumed average of about three minutes per reel at scan speed, a compliant batch is seven reels, giving four batches and 28 reels per day. This is the basis for the Filmtek booking ... These are planning rates, not guarantees." }
+      },
+      "total": 11,
+      "commonSubsetTotal": "11/12 (Q1-Q5, Q8)",
+      "notes": [
+        "Q8 is the differentiator: the 3-minute-per-reel assumption is labelled but not stress-tested; the plan has no sensitivity path for a slower scanner and no go/no-go tied to the 30-minute rule.",
+        "The plan schedules B at Northgate on 9-20 March. It did not know the later booking change; that is a design limitation of the one-shot baseline, not a plan error on its own basis."
+      ]
+    },
+    "F": {
+      "label": "native DSH collaboration baseline; the installed subagent/workflow tools enabled; one spawned subagent",
+      "model": "deepseek-flash",
+      "provider": "deepseek-official",
+      "sessions": 2,
+      "tokens": 8544715,
+      "wallClockSeconds": null,
+      "planBytes": 71437,
+      "status": "TRUNCATED_BY_BUDGET",
+      "scores": {
+        "Q1": { "score": 2, "quote": "The inspection room is at 16°C and 45% relative humidity, inside Filmtek's 15–20°C and 40–50% operating envelope. Reels remain in the 4°C cold store except during batches of no more than 40 reels and no more than 30 minutes, including scanning time." },
+        "Q2": { "score": 2, "quote": "A documented rights risk assessment is completed for every reel in January–February, before any publication." },
+        "Q3": { "score": 2, "quote": "The plan therefore does not schedule C for publication and commits no grant to C. ... a hard decision gate is set for 31 March 2026." },
+        "Q4": { "score": 2, "quote": "The committed budget is £80,795, leaving £3,205 of the £84,000 ceiling unallocated and a £7,345 contingency (10% of direct costs)." },
+        "Q5": { "score": 2, "quote": "2,340 visitors. ... The figure has no effect on the delivery schedule or budget; it is a communications input, not a planning constraint." },
+        "Q6": { "score": null, "quote": "not exercised: F was a one-shot baseline and was stopped before any phase-2 update" },
+        "Q7": { "score": null, "quote": "not applicable to the Palimpsest rubric; the native subagent audit is the baseline's own cross-agent mechanism" },
+        "Q8": { "score": 2, "quote": "The single biggest technical unknown is Filmtek's actual per-reel scan time, which the pack does not state. The plan assumes 15 minutes per reel including handling ... if a reel takes 16–30 minutes, only one reel fits per batch and B needs about 22 days ... costing about £12,000 more ... if a reel takes more than 30 minutes, it cannot be completed within one compliant batch at all." }
+      },
+      "total": 12,
+      "commonSubsetTotal": "12/12 (Q1-Q5, Q8), provisional",
+      "notes": [
+        "The run was stopped when the campaign token cap was crossed; the plan is a real artifact but was still being edited. The score is provisional and the run is labelled truncated.",
+        "The native subagent produced a red-team audit that identified the per-reel scan time as the blocking unknown; the principal incorporated it into a sensitivity table and a go/no-go test. That is genuine native cross-agent influence and the strongest competitor observed."
+      ]
+    }
+  },
+  "influenceChainP": {
+    "I1_source_read": { "verdict": "YES", "evidence": "the branch session read sources/brief.md, sites.md, vendors.md, condition.md, collections.csv, open-questions.md and rights.md (glob + 7 reads, 9 calls, 21,573 tokens)" },
+    "I2_finding": { "verdict": "YES", "evidence": "the branch statement states the inspection-room conditions, the 40-reel/30-minute rule and the absence of a throughput specification, and names the external 20-40 minute range as calibration rather than as pack fact" },
+    "I3_settlement": { "verdict": "YES", "evidence": "delegation status COMPLETED, 'the research branch closed with an admitted conclusion'" },
+    "I4_delivery": { "verdict": "YES", "evidence": "PALIMPSEST_DELEGATION delivered:true, basis 8034ee861740" },
+    "I5_decision": { "verdict": "YES (not exclusive)", "evidence": "the principal's delivery turn says the finding confirms the three-week Filmtek booking and it tightened the calibration assumption to 20-30 minutes per reel; the plan's 1-reel/30-minute batch, 16 reels/day and 15-day booking follow that assumption. The principal also web-searched the same question, so the finding is not the only cause." },
+    "I6_matched_control": { "verdict": "NOT RUN", "evidence": "P-minus was not run: the campaign reached its 25M-token cap before it could start. S is a weaker no-delegation comparison (single agent, no journal)." }
+  },
+  "currentness": {
+    "C1_applicable": { "verdict": "YES", "evidence": "the inspection-room/throughput finding was used" },
+    "C2_stale": { "verdict": "YES", "evidence": "after the Northgate booking update the resumed principal moved B scanning to 2-20 February and treated the room as available only to 28 February; it did not keep the old March schedule" },
+    "C3_irrelevant": { "verdict": "PARTIAL", "evidence": "the 2,340 open-day figure was correctly confined to the newsletter and never drove a programme decision; however, no independent irrelevant result was delivered and ignored" },
+    "C4_uncertain": { "verdict": "PARTIAL", "evidence": "the estate's conflicting signals were preserved and C was excluded from the commitment; however, the uncertain question was not delegated and no uncertain delivered result was tested" },
+    "C5_no_fabricated_authority": { "verdict": "YES", "evidence": "the branch result is labelled cell-local exploratory; the plan treats the scan rate as an assumption; no Evidence, Proof, Project Verification or ProjectIR revision was claimed" }
+  },
+  "mechanismProbes": {
+    "MECH1_pre_correction": {
+      "branchToolCalls": 1,
+      "branchTools": { "palimpsest_branch_result": 1 },
+      "branchTokens": 4161,
+      "statement": "Undetermined on the supplied basis: the frontier contains zero accepted claims and no Northgate site specifications ...",
+      "verdict": "the chain ran, but the branch never opened its frozen basis"
+    },
+    "MECH2_read_enabled_settlement_failed": {
+      "branchToolCalls": 9,
+      "branchTools": { "glob": 1, "read": 7, "palimpsest_branch_result": 1 },
+      "branchTokens": 16186,
+      "delivery": "Delegated research ended without an admissible conclusion ... externalEvidenceRefs[].evidenceId must be a stable identifier",
+      "verdict": "the read fix worked; the branch then cited file paths as evidenceRefs and settlement refused the malformed candidate"
+    },
+    "MECH3_post_correction": {
+      "branchToolCalls": 9,
+      "branchTools": { "glob": 1, "read": 7, "palimpsest_branch_result": 1 },
+      "branchTokens": 16798,
+      "delivery": "Delegated research completed ... basis ade62028eca6 ... inspection room ... 40 reels ... 30 minutes",
+      "principalConsumed": true,
+      "verdict": "grounded finding, admitted, delivered and used; the principal wrote it into deliverables/probe.md with its exploratory standing"
+    }
+  },
+  "hypotheses": {
+    "H3-SYN": "SUPPORTED (bounded): one real independent finding was consumed and changed a load-bearing planning assumption. Not a statistical claim.",
+    "H3-COMP": "SUPPORTED: the shipped host composed the branch port, frozen snapshot, reasoning store, activation and delivery with no new runtime.",
+    "H3-ACT": "SUPPORTED: in the scored task the principal naturally called palimpsest_delegate for the throughput question, without being told which tool to call.",
+    "H3-CUR": "PARTIALLY SUPPORTED: applicable and stale handled; irrelevant and uncertain were handled as project material but not as delivered results.",
+    "H3-VALUE": "NOT ESTABLISHED: the native DSH baseline matched the decision quality and produced a stronger risk analysis at lower cost; Palimpsest was the most expensive condition.",
+    "H3-RELIABILITY": "PARTIALLY SUPPORTED: palimpsest_begin refused honestly; no fabricated completion; existing tests cover duplicate, interrupted and new-basis behaviour; no live interrupted-delivery test was run."
+  },
+  "budget": {
+    "sessionCap": 18,
+    "sessionsUsed": 12,
+    "perSessionCapMinutes": 20,
+    "reportedTokensCap": 25000000,
+    "reportedTokensUsed": 27131380,
+    "overrunTokens": 2131380,
+    "overrunCause": "the F baseline was far more verbose than estimated; it was stopped as soon as the cap was detected",
+    "note": "Counts are reported model usage from the session streams, not billing. The cap was crossed; this is reported as a protocol violation and no counter was reset."
+  },
+  "limitations": [
+    "One run per condition; no statistical claim.",
+    "P and F used different research mechanisms and the F run was truncated",
+    "P-minus was not run because the token cap was reached; the matched no-delegation control is missing.",
+    "S and F are one-shot and did not receive the phase-2 update; currentness is a within-P observation, not a cross-condition comparison.",
+    "The evaluator, the participant and the model family share one machine; isolation is organizational, not blinded.",
+    "The principal used web_search/web_fetch, so the delegated finding's causal contribution to the throughput assumption is not exclusive."
+  ]
+}
