@@ -1,0 +1,77 @@
+{
+  "schema": "cog6-run/v1",
+  "scenario": "mechanism",
+  "at": "2026-11-01T14:25:57.154Z",
+  "modelUsed": false,
+  "worker": "deterministic test-owned WorkWorkerRunPort (not a model, not the DSH subprocess worker)",
+  "agentUsed": false,
+  "note": "Operator-authored authorised intake plus deterministic execution. This is not an Agent discovery, proposal or approval.",
+  "initialHead": "195d691f3569b45ca89d3ba131ee3cd30169f90d",
+  "finalHead": "caa543441c4510941e0f228c6991616f75fb3557",
+  "projectHead": "22796231660d7915c561a34445aecbd7f1900159",
+  "taskStates": {
+    "cost-schedule": "SATISFIED",
+    "intake-vendor-2026-02-10": "SATISFIED",
+    "post-control": "READY",
+    "technical-fit": "SATISFIED",
+    "technical-refresh": "SATISFIED"
+  },
+  "requirementsDigest": "f341a9c3243c564fc5fec31fe31c0e08e94228c8ff228cb9902f3bd383e5688f",
+  "journal": [
+    {
+      "entryId": "pje-1b9a86e27647fe9dbc5bc87164b13dd8",
+      "kind": "NEGATIVE_RESULT",
+      "title": "2023 Marsh Lane trial: V2 cold-start failure",
+      "provenance": "sources/prior-notes.md (2023 trial notes)",
+      "resolution": null
+    },
+    {
+      "entryId": "pje-ac899ac3c0346f915bf29e0efcd21aa2",
+      "kind": "OPEN_QUESTION",
+      "title": "Solaris V3 cold-weather certificate is not on file",
+      "provenance": "sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md",
+      "resolution": null
+    },
+    {
+      "entryId": "pje-82b4eacc0abe8616da93d8b311424c6b",
+      "kind": "OPPORTUNITY",
+      "title": "Switch Site B to V2 to reduce cost",
+      "provenance": "programme volunteer proposal, 2026-01-05 (rejected)",
+      "resolution": {
+        "status": "DISMISSED",
+        "detail": "rejected: V2 has no coastal warranty (grant condition 3); the saving does not justify an unqualified installation"
+      }
+    }
+  ],
+  "promotionFacts": [
+    {
+      "promotionId": "promotion-c8ace220c1df9c33ed7ec14c3be462bb",
+      "attemptId": "attempt-09f959ac1a902ee3d1eba3eabcc62334",
+      "sourceCommit": "dd8ae020ebaf89dc4411c7b12f2736e046fa9302",
+      "expectedHeadCommit": "195d691f3569b45ca89d3ba131ee3cd30169f90d",
+      "resultingHeadCommit": "c6e0d3b8f63f24213fd30d99729ea6d6a6cba775"
+    },
+    {
+      "promotionId": "promotion-1177fa56ec957372f5aa9f1df0a34f7b",
+      "attemptId": "attempt-ba7373eff39434c817ceab1707c37f49",
+      "sourceCommit": "c4dee2441ca1acc81a1909b76ce1c9c5bf27d5db",
+      "expectedHeadCommit": "c6e0d3b8f63f24213fd30d99729ea6d6a6cba775",
+      "resultingHeadCommit": "73e7a3daf08c1450568a37e229547a0ec9df6154"
+    },
+    {
+      "promotionId": "promotion-a12f950e81f1798585704e676f8d01c6",
+      "attemptId": "attempt-9c38eb28691667e5b1ae470ed0877a37",
+      "sourceCommit": "16d30dee252397b53b89447e9523380e78f5b31a",
+      "expectedHeadCommit": "73e7a3daf08c1450568a37e229547a0ec9df6154",
+      "resultingHeadCommit": "55370b0f5bd7740aba4dcbe3074fb6b545443f61"
+    },
+    {
+      "promotionId": "promotion-b812c0ee8d34c92fa934014bd9edc4c5",
+      "attemptId": "attempt-ab0cc63e32eb6ed1640c0ca5a21d8157",
+      "sourceCommit": "7be38267ca994b1529e08e2ad77ebd23e845bc38",
+      "expectedHeadCommit": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+      "resultingHeadCommit": "22796231660d7915c561a34445aecbd7f1900159"
+    }
+  ],
+  "key": null
+}

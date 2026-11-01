@@ -1,0 +1,379 @@
+{
+  "schema": "cog6-manifest/v1",
+  "generatedAt": "2026-11-01T14:37:35.159Z",
+  "codeFreeze": "c10af086896abc139110eea041fdaccd19135590",
+  "codeFreezeTree": "4515f31c3122605d029c7268ff55b0b791940a3a",
+  "evidenceFreeze": "forward: the commit adding this manifest and research-evidence/cog6/**; a commit cannot contain its own SHA",
+  "model": {
+    "used": false,
+    "provider": "deepseek-official/deepseek-flash",
+    "probe": "QUOTA: Insufficient Balance",
+    "scoredSessions": 0,
+    "reportedTokens": 0
+  },
+  "counts": {
+    "evidenceArtifacts": 32,
+    "reports": 10,
+    "scenarioFiles": 19,
+    "experimentFiles": 5,
+    "productFiles": 2
+  },
+  "artifacts": {
+    "product": [
+      {
+        "path": "src/composition/continuation.ts",
+        "sha256": "76854abbae7c86bfa20670f5fc2b936636b85c9b46cfa6d1c0b233b47d3ad105",
+        "bytes": 30701
+      },
+      {
+        "path": "test/lean_d5d_result_continuation_service.test.ts",
+        "sha256": "d741699b577f095ac9c032e2360e044287c9af1d7c479f1bfdf40d5a63828787",
+        "bytes": 51311
+      }
+    ],
+    "experiment": [
+      {
+        "path": "scripts/cog6/rig6.mjs",
+        "sha256": "fe2989a47eac2673f88fc3f81d9982e702e1aa302f8567e9c587b19a52e55a8e",
+        "bytes": 35399
+      },
+      {
+        "path": "scripts/cog6/run_cog6.mjs",
+        "sha256": "a1b9cf6d9832615c15c68e1488fa7e8e6f74e0001ea28787d505cce7dcfef289",
+        "bytes": 22367
+      },
+      {
+        "path": "scripts/cog6/model_conditions.mjs",
+        "sha256": "72c60a0613fe46c8507442410c236a64c11adb41d7c5d228dae30d7650e38006",
+        "bytes": 13332
+      },
+      {
+        "path": "scripts/cog6/run_model_gate.mjs",
+        "sha256": "5c780baf025d6468107583dc66bd728341d1027ae40175f6d3cb0e0503e20d73",
+        "bytes": 1705
+      },
+      {
+        "path": "scripts/cog6/probe_provider.mjs",
+        "sha256": "900085c5729dce11946be0393c2db4a2530465a708b9065494c59907311ec9b9",
+        "bytes": 4663
+      }
+    ],
+    "scenario": [
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-08/solaris-certificate-claim.md",
+        "sha256": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778",
+        "bytes": 406
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-10/candidate.json",
+        "sha256": "2ef87e180ff0d0e0ae5787e60090b785d0f7e4c3338841575f68f0a030366674",
+        "bytes": 481
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-10/newsletter.md",
+        "sha256": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4",
+        "bytes": 236
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-10/vendor-capabilities.csv",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "bytes": 195
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-14/candidate-corrected.json",
+        "sha256": "61306201c84cf75f8de163aaa04d1545080484b97add2f5f4a1cfd0f0548ae3c",
+        "bytes": 585
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-14/duplicate.json",
+        "sha256": "b2de97911475b91d9d03cf3d4b86fb5653587c24ab805cf4d2ce30e7f9510c1b",
+        "bytes": 584
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-14/vendor-capabilities-corrected.csv",
+        "sha256": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+        "bytes": 196
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/2026-02-14/vendor-capabilities.csv",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "bytes": 195
+      },
+      {
+        "path": "scripts/cog6/scenario/inbox/arrivals.jsonl",
+        "sha256": "66c4fddb15e667458a3a295c0bc0a612e9e1851d7e5fa7e3bdc9cef2bf9c87c5",
+        "bytes": 1069
+      },
+      {
+        "path": "scripts/cog6/scenario/package.json",
+        "sha256": "5ba554d0e638d74765a41abfb8c66a5f018a7d6214b4468c0c7c48b42f260910",
+        "bytes": 180
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/brief.md",
+        "sha256": "bac923d66e0475e744ecf95000609335ea59d6f9f4d2aad2dfad3b9b5297f224",
+        "bytes": 983
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/newsletter.md",
+        "sha256": "95ac3de599a28ee4d09b89bfdad9261a98ae2a7b932a54805173ed254d96ecb2",
+        "bytes": 190
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/operations.md",
+        "sha256": "41c43d7c2bd2ef4e5b81398a5d93e4f53db944c8f27b75de13e1d11ff608a27d",
+        "bytes": 1449
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/prior-notes.md",
+        "sha256": "bdf2ea19ff5bd040dd116be512acd67c4a950b747f9069af67a3214ed07dfb7e",
+        "bytes": 507
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/rollout-windows.md",
+        "sha256": "d52bf0ecc794829fe78c1d784240802b637b7c43aeaed7084a54537b71ca2a34",
+        "bytes": 405
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/sites.md",
+        "sha256": "6b6b99d2ef44ffaed3f40594c1462df67222835ef660e0bfd116396787899acb",
+        "bytes": 443
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/vendor-capabilities.csv",
+        "sha256": "f81576167c284060eb494706e424204d99028823fe71bf56476883d49e4d9373",
+        "bytes": 197
+      },
+      {
+        "path": "scripts/cog6/scenario/sources/vendor-pricing.csv",
+        "sha256": "6574dc730f9dcf482412b1160505a1169c7769683ac978f98dbec85026652b79",
+        "bytes": 94
+      },
+      {
+        "path": "scripts/cog6/scenario/verify.mjs",
+        "sha256": "b925da78ec89b48f4b5758bb1ace1528edf8ef24fdde1b6b165c94c0b9e9dae2",
+        "bytes": 2591
+      }
+    ],
+    "reports": [
+      {
+        "path": "docs/engineering/COG6-BASELINE-AND-AUTHORITY.md",
+        "sha256": "a4e7317f214ac1b30641a32072221eaecc6a51bebe04606c04eea086f5c1b6a7",
+        "bytes": 6983
+      },
+      {
+        "path": "docs/engineering/COG6-COMPARATIVE-RESULTS.md",
+        "sha256": "6d521cda0abd6d0a0b98e79b84a772e422331d492aaf80d2819ef037bfaa8aea",
+        "bytes": 3401
+      },
+      {
+        "path": "docs/engineering/COG6-ENGINEERING-REPORT.md",
+        "sha256": "47b34040b9e927ca040455ae01af5b3205bfc87d299ec25822e7530674b2c205",
+        "bytes": 11538
+      },
+      {
+        "path": "docs/engineering/COG6-EXECUTABLE-EVOLUTION.md",
+        "sha256": "5b5de7824d87b2eb13c9bf842dffc6fd8364172777b8bdbfe0f679a87cca9457",
+        "bytes": 12618
+      },
+      {
+        "path": "docs/engineering/COG6-EXPERIMENTAL-PROTOCOL.md",
+        "sha256": "4a0beb85a520b3d7ea59823309eca302299cbe4052a8bb8848a108ee89471e25",
+        "bytes": 21468
+      },
+      {
+        "path": "docs/engineering/COG6-FINAL-REPORT.md",
+        "sha256": "bbc04cde7edb8e15fc2618a0c74391139d64b2598fad934139afeddafaef8cba",
+        "bytes": 19165
+      },
+      {
+        "path": "docs/engineering/COG6-FRESH-CONTINUITY.md",
+        "sha256": "4b59548ca82a20fd07af27e310d03bb1c564759b96e7304ff939349dc3d0da99",
+        "bytes": 3631
+      },
+      {
+        "path": "docs/engineering/COG6-NATURAL-DISCOVERY-RESULTS.md",
+        "sha256": "89618ca008128cc7965c00d03024cb789a424fac199771dde2ae226e80040092",
+        "bytes": 3614
+      },
+      {
+        "path": "docs/engineering/COG6-PROJECT-OUTCOME-AND-AUTHORITY.md",
+        "sha256": "d50f77fa325dcbb106c2dff8cd566f2ae6eff2406aa0827a1357e97d10c70a71",
+        "bytes": 26956
+      },
+      {
+        "path": "docs/engineering/COG6-PROPOSAL-AND-AUTHORIZATION.md",
+        "sha256": "edc22975b2fe81d5ef08515dbf3dc8f9e3e560d2f852917ae320a4ec12bf6a38",
+        "bytes": 4607
+      }
+    ],
+    "evidence": [
+      {
+        "path": "research-evidence/cog6/model/budget-self-test.json",
+        "sha256": "58f510d21c80e1e891eac5e6c3fd036f7557b7489c7d818124dbb8ee2fc02645",
+        "bytes": 307
+      },
+      {
+        "path": "research-evidence/cog6/model/campaign.json",
+        "sha256": "b22c8d56d5b314f818f12452065fca8b0b8ec219b8151cd569818b095e55d941",
+        "bytes": 2736
+      },
+      {
+        "path": "research-evidence/cog6/outcomes.json",
+        "sha256": "f3ee2f33309661d7083207bdf58727fc3e70bf9ae608d4c160490c796085fa8d",
+        "bytes": 21985
+      },
+      {
+        "path": "research-evidence/cog6/preflight.txt",
+        "sha256": "7fb93c99e46ab4db57e077f9487a2014bcf8c0f29711489afb063fcf2b76a2ca",
+        "bytes": 3194
+      },
+      {
+        "path": "research-evidence/cog6/probe/probe-result.json",
+        "sha256": "11b2b1d197841e34ce5f03f314fb43a1d30c1587016d58bccadad6f3c7df8ee8",
+        "bytes": 1534
+      },
+      {
+        "path": "research-evidence/cog6/probe/sessions/--F-Codex_Work_Space-Palimpsest-.cog6-probe-work--/session-e0ce3beb-d14d-4aec-b817-ea96eeed086e/session.v4.jsonl.zstd",
+        "sha256": "1db8a3d000f1e92ddea5ecc6e8913297d873f69a8ccb3e2ed4d5742109e48b6c",
+        "bytes": 7958
+      },
+      {
+        "path": "research-evidence/cog6/README.md",
+        "sha256": "61f66a82cbe9545443eee4fc8f737bbcce2abba830a49e681e81f5af57193131",
+        "bytes": 4042
+      },
+      {
+        "path": "research-evidence/cog6/runs/irrelevant/events.json",
+        "sha256": "83fee1fe64138de382beb694b1dfd45117e27ae59e383ff0d554a187dd115484",
+        "bytes": 3808
+      },
+      {
+        "path": "research-evidence/cog6/runs/irrelevant/run.json",
+        "sha256": "11a53b77393eb16a530a1d3759adec07dacc4ef916ec9a669ddef337606579da",
+        "bytes": 24660
+      },
+      {
+        "path": "research-evidence/cog6/runs/irrelevant/summary.json",
+        "sha256": "026fafce6c843f7c6399304f8fb6e06397da2bddc2848f951b984714f4053d94",
+        "bytes": 688
+      },
+      {
+        "path": "research-evidence/cog6/runs/irrelevant/worktree.json",
+        "sha256": "c0db5cdb648d74301559bb7353ebbb4e2e4ad97be2604cf4e2d12c9214ccb39a",
+        "bytes": 1031
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/candidates.json",
+        "sha256": "70fd5ad41f8e7434c4c37526fab2d620c1fa49e9b595665596d60af02f920774",
+        "bytes": 3391
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/events.json",
+        "sha256": "bec42079934ebd4a4c0c69171913e6e4ee5130651a007ea5a522612a128d3088",
+        "bytes": 22308
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/files/deliverables/cost-schedule.md",
+        "sha256": "46fda819406463bb3ed99da9c72f1448b9e138becd965010ee9c6d10453b08f8",
+        "bytes": 413
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/files/deliverables/technical-fit.md",
+        "sha256": "1138a8175a3708fb2b0a957dd23bc5652a59c80839dce649841e330bf8974ecb",
+        "bytes": 425
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/files/deliverables/technical-refresh.md",
+        "sha256": "736e591e902f789fc1e620b8a2ffa4dc7e25d57ac42c8341a167415bcd4d4908",
+        "bytes": 972
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/files/sources/vendor-capabilities.csv",
+        "sha256": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+        "bytes": 196
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/rubric.json",
+        "sha256": "36fabee2f0bec51f46c8de3a45f93698aa364b6641cb29b37a81614ea4102517",
+        "bytes": 3219
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/run.json",
+        "sha256": "45eb891afcb71bb89fa0b18052e32c33df9b57f658743d61a59c941b3640fdf9",
+        "bytes": 94019
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/summary.json",
+        "sha256": "13cef6402d70c06193939dc2e012468b57d56cfee498633119c79a4fc1a5f9be",
+        "bytes": 3285
+      },
+      {
+        "path": "research-evidence/cog6/runs/main/worktree.json",
+        "sha256": "83adf3bb1c3b3a2a83dc819e501963a31abeb2aac5155a2b6b40ad51cd8cf224",
+        "bytes": 4155
+      },
+      {
+        "path": "research-evidence/cog6/runs/outofscope/events.json",
+        "sha256": "10fd75b826dfa197ee65d54d1dd7f44bcdb1afc7a50a3c3f2641f8b427ddffd2",
+        "bytes": 2189
+      },
+      {
+        "path": "research-evidence/cog6/runs/outofscope/run.json",
+        "sha256": "1e909ff4deb5b2422e80d728a0bd0669f8180af971e0bd3b5612d85a595f4425",
+        "bytes": 13013
+      },
+      {
+        "path": "research-evidence/cog6/runs/outofscope/summary.json",
+        "sha256": "aa645b0d5906ca65dfa4a5f6a9c805ad46f69ea943d246f24c951b0752e7da58",
+        "bytes": 689
+      },
+      {
+        "path": "research-evidence/cog6/runs/outofscope/worktree.json",
+        "sha256": "77b0d1db9f9887860fc64c4e4bb1bc3e53187eefd7e36caad3ee4b0526234906",
+        "bytes": 951
+      },
+      {
+        "path": "research-evidence/cog6/verification/architecture.log",
+        "sha256": "930575528393d9ecd9d65cc4063d3c9ee79dd93c039050be6373879cb602e50f",
+        "bytes": 371
+      },
+      {
+        "path": "research-evidence/cog6/verification/build.log",
+        "sha256": "c1ab88421c115ef5d89115b7419c5b58a76492b7b5aa7d9a06ac142d2977a709",
+        "bytes": 113
+      },
+      {
+        "path": "research-evidence/cog6/verification/public-api.log",
+        "sha256": "a2884e640d01c5c5ac31e7c844c86b42c1359d37379618b3a4c1cefebea0aa2f",
+        "bytes": 363
+      },
+      {
+        "path": "research-evidence/cog6/verification/targeted-1.log",
+        "sha256": "492327b9ddac2c47a4df758f8efa5536c194a4294228df64e4e3c187dd174501",
+        "bytes": 26605
+      },
+      {
+        "path": "research-evidence/cog6/verification/targeted-2.log",
+        "sha256": "0a7cec82d2df8c961481418eebf472175525d91988a17c5284df7340eda41ad9",
+        "bytes": 11603
+      },
+      {
+        "path": "research-evidence/cog6/verification/targeted-3.log",
+        "sha256": "4b9d5e30a0e980cc75561c64cdc60bb576f9f1db98a8f451b8e6c6f4a548d744",
+        "bytes": 16946
+      },
+      {
+        "path": "research-evidence/cog6/verification.json",
+        "sha256": "a1f69d308ad8ebca7ee0726f8cf3369ae33b89c217598639ca92914bb6bad287",
+        "bytes": 3273
+      }
+    ]
+  },
+  "note": "No model was used. The deterministic mechanism is operator-authored and executed by a test-owned in-process WorkWorkerRunPort. The Agent-behavior gates are BLOCKED by provider quota.",
+  "verification": {
+    "hashesChecked": 68,
+    "mismatches": 0,
+    "failures": []
+  }
+}
