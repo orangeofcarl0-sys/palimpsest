@@ -23,6 +23,7 @@ import { createServer, request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
 import { dirname } from "node:path";
+import { pathToFileURL } from "node:url";
 import { PROVIDER_KINDS, providerAuthHeaders, providerRouteAllowedFor } from "./egress_policy.mjs";
 import { UPSTREAM_RETRY, retryUpstreamPlan } from "./upstream_retry.mjs";
 
@@ -40,6 +41,8 @@ const CREDENTIAL_FILE = process.env.C6R_CREDENTIAL_FILE ?? "";
 const PROVIDER_CONFIG_FILE = process.env.C6R_PROVIDER_CONFIG_FILE ?? "";
 const PROVIDER_ID = process.env.C6R_PROVIDER_ID ?? "";
 const ENV_KEY = process.env.C6R_REAL_KEY ?? "";
+const UPSTREAM_PROXY = process.env.C6R_UPSTREAM_PROXY ?? "";
+const UPSTREAM_PROXY_AGENT = process.env.C6R_UPSTREAM_PROXY_AGENT ?? "";
 const UPSTREAM_HEADERS = (() => {
   try { return JSON.parse(process.env.C6R_UPSTREAM_HEADERS ?? "{}"); } catch { return {}; }
 })();
@@ -70,6 +73,15 @@ const KEY = readKey();
 if (KEY === null) {
   process.stderr.write("[provider-proxy] no provider credential is available\n");
   process.exit(3);
+}
+
+let proxyAgentModule = null;
+async function getProxyAgent() {
+  if (UPSTREAM_PROXY === "") return null;
+  if (UPSTREAM_PROXY_AGENT === "") throw new Error("C6R_UPSTREAM_PROXY_AGENT is required with C6R_UPSTREAM_PROXY");
+  if (proxyAgentModule === null) proxyAgentModule = await import(pathToFileURL(UPSTREAM_PROXY_AGENT).href);
+  const { HttpsProxyAgent } = proxyAgentModule;
+  return new HttpsProxyAgent(UPSTREAM_PROXY);
 }
 
 const upstreamRoot = new URL(UPSTREAM);
@@ -129,17 +141,14 @@ const server = createServer((req, res) => {
     headers["content-length"] = String(body.length);
     Object.assign(headers, providerAuthHeaders(KIND, KEY), UPSTREAM_HEADERS);
 
-    const upstream = transport(target, { method: ROUTE.method, headers, agent: false }, (upstreamRes) => {
+    const responseHandler = (upstreamRes) => {
       responseStarted = true;
       res.writeHead(upstreamRes.statusCode ?? 502, upstreamRes.headers);
       upstreamRes.pipe(res);
-      upstreamRes.on("end", () => log({ method: ROUTE.method, path, attempt, status: upstreamRes.statusCode, upstream: target.origin + target.pathname, ms: Date.now() - started }));
+      upstreamRes.on("end", () => log({ method: ROUTE.method, path, attempt, status: upstreamRes.statusCode, upstream: target.origin + target.pathname, viaProxy: UPSTREAM_PROXY !== "", ms: Date.now() - started }));
       upstreamRes.on("error", () => { if (!res.destroyed) res.end(); });
-    });
-    upstream.setTimeout(UPSTREAM_RETRY.timeoutMs, () => {
-      upstream.destroy(Object.assign(new Error("upstream timeout"), { code: "UPSTREAM_TIMEOUT" }));
-    });
-    upstream.on("error", (error) => {
+    };
+    const onError = (error) => {
       const code = typeof error.code === "string" ? error.code : "UNKNOWN";
       const plan = retryUpstreamPlan({ attempt, errorCode: code, responseStarted });
       if (plan.retry) {
@@ -150,8 +159,22 @@ const server = createServer((req, res) => {
       log({ method: ROUTE.method, path, attempt, retry: false, status: 502, error: code, reason: plan.reason });
       if (!res.headersSent) res.writeHead(502, { "content-type": "application/json" });
       if (!res.writableEnded) res.end(JSON.stringify({ error: { type: "provider_proxy_upstream_failed" } }));
-    });
-    upstream.end(body);
+    };
+    const finish = (upstream) => {
+      upstream.setTimeout(UPSTREAM_RETRY.timeoutMs, () => {
+        upstream.destroy(Object.assign(new Error("upstream timeout"), { code: "UPSTREAM_TIMEOUT" }));
+      });
+      upstream.on("error", onError);
+      upstream.end(body);
+    };
+    if (UPSTREAM_PROXY !== "") {
+      getProxyAgent().then((agent) => {
+        if (res.destroyed) return;
+        finish(httpsRequest(target, { method: ROUTE.method, headers, agent }, responseHandler));
+      }).catch(onError);
+    } else {
+      finish(transport(target, { method: ROUTE.method, headers, agent: false }, responseHandler));
+    }
   }
 });
 
