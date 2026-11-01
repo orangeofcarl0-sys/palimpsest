@@ -1,0 +1,9 @@
+[WARN] Unsupported engine: wanted: {"node":">=24.15.0"} (current: {"node":"v24.14.1","pnpm":"11.21.0"})
+$ pnpm run build && node scripts/audit/module-architecture.mjs --check-public-api
+[WARN] Unsupported engine: wanted: {"node":">=24.15.0"} (current: {"node":"v24.14.1","pnpm":"11.21.0"})
+$ tsc -b
+public-api:check PASS
+  missing: 0
+  changed kind: 0
+  added: 0
+API_EXIT=0
