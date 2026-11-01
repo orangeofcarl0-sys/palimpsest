@@ -9,6 +9,11 @@ set -euo pipefail
 
 REPO="${REPO:-/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1}"
 BASE="$HOME/c6r"
+
+mkdir -p "$BASE"
+cp "$REPO/scripts/c6r/provider_proxy.mjs" "$BASE/provider_proxy.mjs"
+cp "$REPO/scripts/c6r/egress_policy.mjs" "$BASE/egress_policy.mjs"
+cp "$REPO/scripts/c6r/upstream_retry.mjs" "$BASE/upstream_retry.mjs"
 PRODUCT="$BASE/product"
 DSH="$BASE/dsh/node_modules/.bin/dsh"
 RUN="${C6R_P1_RUN:-$BASE/runs/qual-p1}"

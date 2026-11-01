@@ -11,6 +11,11 @@ set -euo pipefail
 
 REPO="${REPO:-/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1}"
 BASE="$HOME/c6r"
+
+mkdir -p "$BASE"
+cp "$REPO/scripts/c6r/provider_proxy.mjs" "$BASE/provider_proxy.mjs"
+cp "$REPO/scripts/c6r/egress_policy.mjs" "$BASE/egress_policy.mjs"
+cp "$REPO/scripts/c6r/upstream_retry.mjs" "$BASE/upstream_retry.mjs"
 QUAL="$BASE/qual"
 DSH="$BASE/dsh/node_modules/.bin/dsh"
 PORT="${C6R_MOCK_PORT:-18080}"
