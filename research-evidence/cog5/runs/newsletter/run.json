@@ -1,0 +1,548 @@
+{
+  "schema": "cog5-run/v1",
+  "scenario": "newsletter",
+  "startedAt": "2026-11-01T12:37:50.282Z",
+  "process": {
+    "pid": 46520,
+    "node": "v24.14.1",
+    "platform": "win32"
+  },
+  "deterministicWorker": true,
+  "workerNote": "The Work Results are produced by a deterministic test-owned worker, not a model. The Work lifecycle, completion evaluation, basis capture, promotion, head reconciliation and packaged continuation are the real product paths.",
+  "projectId": "sablewick",
+  "workDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog5-rig\\newsletter2\\work",
+  "stateDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog5-rig\\newsletter2\\state",
+  "intakeCandidate": {
+    "name": "vendor-capabilities-2026-02-10.csv",
+    "sourcePath": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\cog5\\scenario\\candidates\\vendor-capabilities-2026-02-10.csv",
+    "origin": "programme-office batch 2026-02-10 (test-owned immutable snapshot)",
+    "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "sourcePathInEvidence": "scripts/cog5/scenario/candidates/vendor-capabilities-2026-02-10.csv"
+  },
+  "initialHead": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+  "scenarioDigests": {},
+  "tasks": {
+    "technical-fit": {
+      "driven": {
+        "jobId": "wdj-55e23db0-e69d-47f4-bfd3-6688a190fe7a",
+        "attemptId": "attempt-70b2b3986b08d5f4aa340f312eb061a8",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "SETTLED",
+          "attemptId": "attempt-70b2b3986b08d5f4aa340f312eb061a8",
+          "resultCommit": "8825d441d4fbdd7d44b962fe10f137a5f13a59fe",
+          "changedFiles": [
+            "deliverables/technical-fit.md"
+          ],
+          "exported": true,
+          "evidenceRecorded": [
+            "write_scope_valid",
+            "expected_files_exist"
+          ],
+          "detail": "the attempt is COMPLETED with result commit 8825d441d4fb; the canonical object database can now read 8825d441d4fb; no ref, working tree or project revision changed; every mechanical check held for candidate 8825d441d4fb"
+        },
+        "hostError": null,
+        "stepped": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "TASK_VERIFYING",
+          "payload_version": 1,
+          "entity_type": "task",
+          "entity_id": "technical-fit",
+          "payload": {
+            "previous_state": "ACTIVE",
+            "new_state": "VERIFYING",
+            "reason": "batch has a completed candidate",
+            "batch_activation_event_id": 6
+          },
+          "causation_id": 6,
+          "correlation_id": "task:technical-fit",
+          "idempotency_key": "7695d2e77fb09d241362442662cf9dc2ca7a6bea65f6508dcf2a0d46f3c46019",
+          "expected_project_revision": 0,
+          "event_id": 13,
+          "project_sequence": 13,
+          "request_digest": "9c85960abdecd0d6a45b0ef705f58505a8833e8715fa521aec556f959b29dfa3",
+          "previous_event_digest": "8fc5a3b3fa39287cfac11602a29efdd8ed8312497822a8a59466063799679bd3",
+          "event_digest": "371171c6d58bbe26c6d0f3290208a2fc9abe69f02a1991105674c445c862f275",
+          "committed_at": "2026-11-01T12:37:53.325000Z"
+        },
+        "task": {
+          "taskId": "technical-fit",
+          "state": "VERIFYING",
+          "lastEventId": 13,
+          "batchActivationEventId": 6,
+          "envelopeId": "envelope-762ed88f8f0133551af261a247b3f55f"
+        }
+      },
+      "task": {
+        "taskId": "technical-fit",
+        "state": "VERIFYING",
+        "batchActivationEventId": 6,
+        "envelopeId": "envelope-762ed88f8f0133551af261a247b3f55f",
+        "lastEventId": 13
+      },
+      "attempt": {
+        "attemptId": "attempt-70b2b3986b08d5f4aa340f312eb061a8",
+        "state": "COMPLETED"
+      }
+    }
+  },
+  "results": {
+    "technical-fit": {
+      "attemptId": "attempt-70b2b3986b08d5f4aa340f312eb061a8",
+      "basis": {
+        "resolution": {
+          "basis": {
+            "schemaVersion": 1,
+            "projectId": "sablewick",
+            "taskId": "technical-fit",
+            "capturedAtRevision": 0,
+            "semanticProjectionDigest": "c21d4ebcfed802216ac8b7f112bfb0f17211d59459a8ac4d9b0b739c22830ede",
+            "source": {
+              "state": "BOUND",
+              "value": {
+                "backend": "git",
+                "revision": "938cc24dee5ae27cfdd07482d961e4274b4c850a"
+              }
+            },
+            "assets": {
+              "state": "NOT_REQUIRED"
+            },
+            "environment": {
+              "state": "NOT_REQUIRED"
+            },
+            "basisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7"
+          },
+          "taskId": "technical-fit"
+        },
+        "summary": {
+          "basisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+          "taskId": "technical-fit",
+          "capturedAt": "2026-11-01T12:37:51.767Z"
+        },
+        "currentness": {
+          "attemptId": "attempt-70b2b3986b08d5f4aa340f312eb061a8",
+          "taskId": "technical-fit",
+          "basisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+          "currentBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reasons": [],
+          "detail": "the current world still resolves every bound dependency identically"
+        }
+      },
+      "result": {
+        "eventId": 12,
+        "resultCommit": "8825d441d4fbdd7d44b962fe10f137a5f13a59fe",
+        "report": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "attempt_id": "attempt-70b2b3986b08d5f4aa340f312eb061a8",
+          "task_id": "technical-fit",
+          "envelope_id": "envelope-762ed88f8f0133551af261a247b3f55f",
+          "input_project_revision": 0,
+          "input_project_digest": "a89c50a5006e6cf74e55c9cc84c674caa3735fcb851f0332c01fde3d25f931aa",
+          "base_commit": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+          "worktree_id": "worktree-2eb061a8",
+          "result_commit": "8825d441d4fbdd7d44b962fe10f137a5f13a59fe",
+          "worker_status": "completed",
+          "summary": "delegated work settled from its execution world",
+          "changed_files": [
+            "deliverables/technical-fit.md"
+          ],
+          "produced_artifacts": [
+            "deliverables/technical-fit.md"
+          ],
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "runtime_metadata": {
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "argv": [
+              "dsh-agent"
+            ],
+            "exit_code": 0,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          },
+          "context_manifest": "context-manifest-d694b36160fab6d751b78884860dce2e"
+        }
+      },
+      "content": "# Technical fit\n\n## Site A — Marsh Lane Store\nVendor: V1\nConstraint: design minimum -12 °C; V1 is rated to -20 °C. V2 is excluded by the 2023 marsh-lane failure.\n\n## Site B — Harbour Workshop\nVendor: V3\nConstraint: design minimum -4 °C and a coastal-rated warranty; V3 is the only vendor meeting both.\n\n## Site C — School Annexe\nVendor: V3\nConstraint: ambient minimum 2 °C and a unit no wider than 800 mm; V3 is 750 mm wide. The 2023 V2 failure was at -8 °C, below this site's minimum.\n\n## Summary\n\nA: V1. B: V3. C: V3.\n",
+      "taskState": "VERIFYING",
+      "attemptState": "COMPLETED",
+      "promotionFacts": []
+    }
+  },
+  "packagedInspection": {
+    "technical-fit": {
+      "beforeChange": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+          },
+          "resolved": true,
+          "taskId": "technical-fit",
+          "targetObservationDigest": "fb1d3af117d21fc88453f74ba481df3905d64051887698742fa3eee8bffe7a61",
+          "compatibility": {
+            "outcome": "EXACT",
+            "issuanceDigest": "eb047a3ec3f43c445ba7020939d791504ef7aae2b37893e2ed9e190282616822"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+            },
+            "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+            "currentTargetDigest": "fb1d3af117d21fc88453f74ba481df3905d64051887698742fa3eee8bffe7a61",
+            "currentness": "CURRENT",
+            "compatibility": "EXACT",
+            "reuse": {
+              "exactCurrent": true,
+              "rematerializationAvailable": false,
+              "blocker": null
+            },
+            "rework": {
+              "available": true,
+              "blocker": null
+            },
+            "evidence": {
+              "moreCouldHelp": false,
+              "gaps": []
+            },
+            "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+            "assessmentDigest": "3c09ecb805820564c0881be12260a4ce77fca61629745b74f5a2084f1a27ba3c"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": false
+          },
+          "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+        }
+      },
+      "afterNewsletter": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+          },
+          "resolved": true,
+          "taskId": "technical-fit",
+          "targetObservationDigest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+          "compatibility": {
+            "outcome": "INCOMPATIBLE",
+            "issuanceDigest": "1727bdad4b5cda7caca8a174795717b2ed8ae5b8051bc334b0dc02caa2ed4274"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+            },
+            "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+            "currentTargetDigest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+            "currentness": "STALE",
+            "compatibility": "INCOMPATIBLE",
+            "reuse": {
+              "exactCurrent": false,
+              "rematerializationAvailable": false,
+              "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+            },
+            "rework": {
+              "available": true,
+              "blocker": null
+            },
+            "evidence": {
+              "moreCouldHelp": false,
+              "gaps": []
+            },
+            "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+            "assessmentDigest": "2dd0b3d2c6946e0452e9d548b8b4503bf2520b29ff64dc9153a4ba43d943c488"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": true
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+        }
+      }
+    }
+  },
+  "expertDiagnostic": {
+    "technical-fit": {
+      "unrelatedChangeWithTestFacets": {
+        "ok": true,
+        "value": {
+          "outcome": "COMPATIBLE",
+          "detail": "every one of the 5 change-to-dependency relation(s) is PROVEN DISJOINT under complete coverage",
+          "conflicts": [],
+          "unknowns": [],
+          "proofs": [
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/brief.md"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/prior-notes.md"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/sites.md"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "deliverables/technical-fit.md"
+              },
+              "side": "write",
+              "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+            }
+          ],
+          "assessmentDigest": "216395728573f963a70cedee3e3602ba54b518153903303341b4c23fce4b7d89",
+          "issuanceDigest": "9e6b02b75e3557c768433ec706dd06fb44fb224befce78ca1eaab0feae0edd27",
+          "admission": {
+            "state": "ADMITTED",
+            "admitted": true,
+            "detail": "an authoritative, current certificate proves non-interference: every one of the 5 change-to-dependency relation(s) is PROVEN DISJOINT under complete coverage"
+          },
+          "targetObservation": {
+            "digest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+            "detail": "source at 7e85d748883c"
+          },
+          "resultManifestDigest": "0a884e291ce2c7573cccb0aa484a2ffd43e662d439796e5d69bdfd8d07e648ea",
+          "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+          "originSourceRevision": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+          "changeFrom": "origin",
+          "changeBaseRevision": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+          "currentSourceRevision": "7e85d748883c4baee4e46661480c02af838536bf",
+          "repositorySourceSelector": {
+            "domain": "source",
+            "scope": "repository"
+          },
+          "testOwned": {
+            "preciseReadPaths": [
+              "sources/brief.md",
+              "sources/vendor-capabilities.csv",
+              "sources/sites.md",
+              "sources/prior-notes.md"
+            ],
+            "facetObservations": "projectSemantic/assets/environment empty",
+            "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+          }
+        }
+      },
+      "unrelatedChangeWithUnavailableSemantic": {
+        "ok": true,
+        "value": {
+          "outcome": "UNKNOWN",
+          "detail": "no proof was completed: change_coverage, change_coverage",
+          "conflicts": [],
+          "unknowns": [
+            {
+              "part": "change_coverage",
+              "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+            },
+            {
+              "part": "change_coverage",
+              "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+            }
+          ],
+          "proofs": [
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/brief.md"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/prior-notes.md"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/sites.md"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "side": "read",
+              "basis": "proven disjoint: the source change and this read dependency cannot name the same resource"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/newsletter.md"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "deliverables/technical-fit.md"
+              },
+              "side": "write",
+              "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+            }
+          ],
+          "assessmentDigest": "93e9e1deac42a013155ab4a0e0acf5efa394196634cc8bf54dc55f67c5f4cee0",
+          "issuanceDigest": "cdb7fed07860c86513563145450519c3b931567e6eaad9c0346ca9bf949ecbba",
+          "admission": {
+            "state": "INSUFFICIENT_PROOF",
+            "admitted": false,
+            "detail": "the certificate records an incomplete proof: no proof was completed: change_coverage, change_coverage"
+          },
+          "targetObservation": {
+            "digest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+            "detail": "source at 7e85d748883c"
+          },
+          "resultManifestDigest": "0a884e291ce2c7573cccb0aa484a2ffd43e662d439796e5d69bdfd8d07e648ea",
+          "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+          "originSourceRevision": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+          "changeFrom": "origin",
+          "changeBaseRevision": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+          "currentSourceRevision": "7e85d748883c4baee4e46661480c02af838536bf",
+          "repositorySourceSelector": {
+            "domain": "source",
+            "scope": "repository"
+          },
+          "testOwned": {
+            "preciseReadPaths": [
+              "sources/brief.md",
+              "sources/vendor-capabilities.csv",
+              "sources/sites.md",
+              "sources/prior-notes.md"
+            ],
+            "facetObservations": "projectSemantic unavailable; assets/environment empty",
+            "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+          }
+        }
+      }
+    }
+  },
+  "promotions": {},
+  "head": {},
+  "rework": {},
+  "negativeControls": {},
+  "errors": [],
+  "finishedAt": "2026-11-01T12:37:54.404Z",
+  "updates": {
+    "newsletter": {
+      "ok": true,
+      "value": {
+        "fromHead": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+        "toHead": "7e85d748883c4baee4e46661480c02af838536bf",
+        "target": "sources/newsletter.md",
+        "paths": [
+          "sources/newsletter.md"
+        ],
+        "digestAfter": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+      }
+    }
+  },
+  "final": {
+    "projectHead": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+    "liveHead": "7e85d748883c4baee4e46661480c02af838536bf",
+    "task": {
+      "taskId": "technical-fit",
+      "state": "VERIFYING",
+      "batchActivationEventId": 6,
+      "envelopeId": "envelope-762ed88f8f0133551af261a247b3f55f",
+      "lastEventId": 13
+    }
+  },
+  "exitCode": 0
+}

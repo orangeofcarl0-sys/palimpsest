@@ -1,0 +1,132 @@
+{
+  "scenario": "newsletter",
+  "exitCode": 0,
+  "errorCount": 0,
+  "fatal": null,
+  "initialHead": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+  "promotions": null,
+  "packaged": {
+    "technical-fit": {
+      "beforeChange": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+          },
+          "resolved": true,
+          "taskId": "technical-fit",
+          "targetObservationDigest": "fb1d3af117d21fc88453f74ba481df3905d64051887698742fa3eee8bffe7a61",
+          "compatibility": {
+            "outcome": "EXACT",
+            "issuanceDigest": "eb047a3ec3f43c445ba7020939d791504ef7aae2b37893e2ed9e190282616822"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+            },
+            "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+            "currentTargetDigest": "fb1d3af117d21fc88453f74ba481df3905d64051887698742fa3eee8bffe7a61",
+            "currentness": "CURRENT",
+            "compatibility": "EXACT",
+            "reuse": {
+              "exactCurrent": true,
+              "rematerializationAvailable": false,
+              "blocker": null
+            },
+            "rework": {
+              "available": true,
+              "blocker": null
+            },
+            "evidence": {
+              "moreCouldHelp": false,
+              "gaps": []
+            },
+            "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+            "assessmentDigest": "3c09ecb805820564c0881be12260a4ce77fca61629745b74f5a2084f1a27ba3c"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": false
+          },
+          "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+        }
+      },
+      "afterNewsletter": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+          },
+          "resolved": true,
+          "taskId": "technical-fit",
+          "targetObservationDigest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+          "compatibility": {
+            "outcome": "INCOMPATIBLE",
+            "issuanceDigest": "1727bdad4b5cda7caca8a174795717b2ed8ae5b8051bc334b0dc02caa2ed4274"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+            },
+            "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+            "currentTargetDigest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+            "currentness": "STALE",
+            "compatibility": "INCOMPATIBLE",
+            "reuse": {
+              "exactCurrent": false,
+              "rematerializationAvailable": false,
+              "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+            },
+            "rework": {
+              "available": true,
+              "blocker": null
+            },
+            "evidence": {
+              "moreCouldHelp": false,
+              "gaps": []
+            },
+            "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+            "assessmentDigest": "2dd0b3d2c6946e0452e9d548b8b4503bf2520b29ff64dc9153a4ba43d943c488"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": true
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+        }
+      }
+    }
+  },
+  "expertOutcomes": {
+    "technical-fit": {
+      "unrelatedChangeWithTestFacets": "COMPATIBLE",
+      "unrelatedChangeWithUnavailableSemantic": "UNKNOWN"
+    }
+  },
+  "rework": null,
+  "negativeControls": {
+    "duplicatePromotion": null,
+    "wrongSourceCommit": null,
+    "wrongExpectedHead": null,
+    "unauthorizedHead": null
+  },
+  "final": {
+    "projectHead": "938cc24dee5ae27cfdd07482d961e4274b4c850a",
+    "liveHead": "7e85d748883c4baee4e46661480c02af838536bf",
+    "task": {
+      "taskId": "technical-fit",
+      "state": "VERIFYING",
+      "batchActivationEventId": 6,
+      "envelopeId": "envelope-762ed88f8f0133551af261a247b3f55f",
+      "lastEventId": 13
+    }
+  }
+}

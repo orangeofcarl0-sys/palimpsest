@@ -1,0 +1,1550 @@
+{
+  "schema": "cog5-run/v1",
+  "scenario": "main",
+  "startedAt": "2026-11-01T12:37:25.442Z",
+  "process": {
+    "pid": 29720,
+    "node": "v24.14.1",
+    "platform": "win32"
+  },
+  "deterministicWorker": true,
+  "workerNote": "The Work Results are produced by a deterministic test-owned worker, not a model. The Work lifecycle, completion evaluation, basis capture, promotion, head reconciliation and packaged continuation are the real product paths.",
+  "projectId": "sablewick",
+  "workDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog5-rig\\main5\\work",
+  "stateDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog5-rig\\main5\\state",
+  "intakeCandidate": {
+    "name": "vendor-capabilities-2026-02-10.csv",
+    "sourcePath": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\cog5\\scenario\\candidates\\vendor-capabilities-2026-02-10.csv",
+    "origin": "programme-office batch 2026-02-10 (test-owned immutable snapshot)",
+    "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "sourcePathInEvidence": "scripts/cog5/scenario/candidates/vendor-capabilities-2026-02-10.csv"
+  },
+  "initialHead": "29a08cd4be9273008892696da1f0dac2731aee46",
+  "scenarioDigests": {
+    "sources/brief.md": "311e9f1dab83d1ffc3f64586b23fedfbb319ead05760e5f574af406d90fd990c",
+    "sources/vendor-capabilities.csv": "f81576167c284060eb494706e424204d99028823fe71bf56476883d49e4d9373",
+    "sources/vendor-pricing.csv": "6574dc730f9dcf482412b1160505a1169c7769683ac978f98dbec85026652b79",
+    "sources/sites.md": "6b6b99d2ef44ffaed3f40594c1462df67222835ef660e0bfd116396787899acb",
+    "sources/rollout-windows.md": "d52bf0ecc794829fe78c1d784240802b637b7c43aeaed7084a54537b71ca2a34",
+    "sources/prior-notes.md": "f169312da7f60392626a1e2c5db4a94a34a0ddc5be175e289f50af2d7cc1e00e",
+    "sources/newsletter.md": "fcca8762d29a16547c8e16ab2a29371e0151c7e856a83073d6f289ae3c5e3c1d",
+    "verify.mjs": "8aac349081e5a65f778d3565a54c8a9041cdfc4d2880fe1ab08975bdc238a07f"
+  },
+  "tasks": {
+    "technical-fit": {
+      "driven": {
+        "jobId": "wdj-cc224ea1-5e13-4e49-a605-cb3d8aa4c604",
+        "attemptId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "SETTLED",
+          "attemptId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+          "resultCommit": "6584c6bdf843f1266edeaca3f6213850663dcf09",
+          "changedFiles": [
+            "deliverables/technical-fit.md"
+          ],
+          "exported": true,
+          "evidenceRecorded": [
+            "write_scope_valid",
+            "expected_files_exist"
+          ],
+          "detail": "the attempt is COMPLETED with result commit 6584c6bdf843; the canonical object database can now read 6584c6bdf843; no ref, working tree or project revision changed; every mechanical check held for candidate 6584c6bdf843"
+        },
+        "hostError": null,
+        "stepped": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "TASK_VERIFYING",
+          "payload_version": 1,
+          "entity_type": "task",
+          "entity_id": "technical-fit",
+          "payload": {
+            "previous_state": "ACTIVE",
+            "new_state": "VERIFYING",
+            "reason": "batch has a completed candidate",
+            "batch_activation_event_id": 7
+          },
+          "causation_id": 7,
+          "correlation_id": "task:technical-fit",
+          "idempotency_key": "4484ae76b0b304f3e7c4dde79b4792f2670708684ee6f69285901671b4dd563e",
+          "expected_project_revision": 0,
+          "event_id": 14,
+          "project_sequence": 14,
+          "request_digest": "7205c13a9205e856fe0b1b5112281f4da5aa094231efac997d8bad25dd3ee7a4",
+          "previous_event_digest": "b31200eefc77bfc78738280a74e384e6a11f84327658c714bd392dc1e25d22e1",
+          "event_digest": "7c3e7952e946046e8eea064df20b163d8c42bf5c21d834f7f4d34c35998c51ed",
+          "committed_at": "2026-11-01T12:37:28.369000Z"
+        },
+        "task": {
+          "taskId": "technical-fit",
+          "state": "VERIFYING",
+          "lastEventId": 14,
+          "batchActivationEventId": 7,
+          "envelopeId": "envelope-dfdfe0006976e1fe9e8a131d741d388a"
+        }
+      },
+      "task": {
+        "taskId": "technical-fit",
+        "state": "VERIFYING",
+        "batchActivationEventId": 7,
+        "envelopeId": "envelope-dfdfe0006976e1fe9e8a131d741d388a",
+        "lastEventId": 14
+      },
+      "attempt": {
+        "attemptId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+        "state": "COMPLETED"
+      }
+    },
+    "intake-vendor-2026-02-10": {
+      "driven": {
+        "jobId": "wdj-e95e5687-b815-48b0-a267-90afad6a7c06",
+        "attemptId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "SETTLED",
+          "attemptId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+          "resultCommit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+          "changedFiles": [
+            "sources/vendor-capabilities.csv"
+          ],
+          "exported": true,
+          "evidenceRecorded": [
+            "write_scope_valid",
+            "expected_files_exist"
+          ],
+          "detail": "the attempt is COMPLETED with result commit 9e9c89474bf4; the canonical object database can now read 9e9c89474bf4; no ref, working tree or project revision changed; every mechanical check held for candidate 9e9c89474bf4"
+        },
+        "hostError": null,
+        "stepped": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "TASK_VERIFYING",
+          "payload_version": 1,
+          "entity_type": "task",
+          "entity_id": "intake-vendor-2026-02-10",
+          "payload": {
+            "previous_state": "ACTIVE",
+            "new_state": "VERIFYING",
+            "reason": "batch has a completed candidate",
+            "batch_activation_event_id": 15
+          },
+          "causation_id": 15,
+          "correlation_id": "task:intake-vendor-2026-02-10",
+          "idempotency_key": "33843c54eb3d73f12f618040a48daf66e59d79b1c33c55973dbc94823cefc3d6",
+          "expected_project_revision": 0,
+          "event_id": 22,
+          "project_sequence": 22,
+          "request_digest": "35184c77c234561c983e33a8f8aae223073f6e73b6964c12e268c5d3dd6427af",
+          "previous_event_digest": "38996b1ffb11085175aa0ff95df65ff7e5f74c999f7aac567b9797f75bebe9c1",
+          "event_digest": "ff404c96fe1fe973f94cf5a7239accc747bb5d68aba70157bd59c43cefeb7a17",
+          "committed_at": "2026-11-01T12:37:30.375000Z"
+        },
+        "task": {
+          "taskId": "intake-vendor-2026-02-10",
+          "state": "VERIFYING",
+          "lastEventId": 22,
+          "batchActivationEventId": 15,
+          "envelopeId": "envelope-b1e67f107aba45047848b2f1bde01872"
+        }
+      },
+      "task": {
+        "taskId": "intake-vendor-2026-02-10",
+        "state": "VERIFYING",
+        "batchActivationEventId": 15,
+        "envelopeId": "envelope-b1e67f107aba45047848b2f1bde01872",
+        "lastEventId": 22
+      },
+      "attempt": {
+        "attemptId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+        "state": "COMPLETED"
+      }
+    }
+  },
+  "results": {
+    "technical-fit": {
+      "attemptId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+      "basis": {
+        "resolution": {
+          "basis": {
+            "schemaVersion": 1,
+            "projectId": "sablewick",
+            "taskId": "technical-fit",
+            "capturedAtRevision": 0,
+            "semanticProjectionDigest": "c21d4ebcfed802216ac8b7f112bfb0f17211d59459a8ac4d9b0b739c22830ede",
+            "source": {
+              "state": "BOUND",
+              "value": {
+                "backend": "git",
+                "revision": "29a08cd4be9273008892696da1f0dac2731aee46"
+              }
+            },
+            "assets": {
+              "state": "NOT_REQUIRED"
+            },
+            "environment": {
+              "state": "NOT_REQUIRED"
+            },
+            "basisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2"
+          },
+          "taskId": "technical-fit"
+        },
+        "summary": {
+          "basisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2",
+          "taskId": "technical-fit",
+          "capturedAt": "2026-11-01T12:37:26.988Z"
+        },
+        "currentness": {
+          "attemptId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+          "taskId": "technical-fit",
+          "basisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2",
+          "currentBasisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reasons": [],
+          "detail": "the current world still resolves every bound dependency identically"
+        }
+      },
+      "result": {
+        "eventId": 13,
+        "resultCommit": "6584c6bdf843f1266edeaca3f6213850663dcf09",
+        "report": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "attempt_id": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+          "task_id": "technical-fit",
+          "envelope_id": "envelope-dfdfe0006976e1fe9e8a131d741d388a",
+          "input_project_revision": 0,
+          "input_project_digest": "0c1e8d3549258233a61a6c027d6affd86cbd1b8edb0498a0466ca7180133d28d",
+          "base_commit": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "worktree_id": "worktree-4b47b3f4",
+          "result_commit": "6584c6bdf843f1266edeaca3f6213850663dcf09",
+          "worker_status": "completed",
+          "summary": "delegated work settled from its execution world",
+          "changed_files": [
+            "deliverables/technical-fit.md"
+          ],
+          "produced_artifacts": [
+            "deliverables/technical-fit.md"
+          ],
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "runtime_metadata": {
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "argv": [
+              "dsh-agent"
+            ],
+            "exit_code": 0,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          },
+          "context_manifest": "context-manifest-6b453be08382c30e225ded058e705344"
+        }
+      },
+      "content": "# Technical fit\n\n## Site A — Marsh Lane Store\nVendor: V1\nConstraint: design minimum -12 °C; V1 is rated to -20 °C. V2 is excluded by the 2023 marsh-lane failure.\n\n## Site B — Harbour Workshop\nVendor: V3\nConstraint: design minimum -4 °C and a coastal-rated warranty; V3 is the only vendor meeting both.\n\n## Site C — School Annexe\nVendor: V3\nConstraint: ambient minimum 2 °C and a unit no wider than 800 mm; V3 is 750 mm wide. The 2023 V2 failure was at -8 °C, below this site's minimum.\n\n## Summary\n\nA: V1. B: V3. C: V3.\n",
+      "taskState": "VERIFYING",
+      "attemptState": "COMPLETED",
+      "promotionFacts": []
+    },
+    "intake-vendor-2026-02-10": {
+      "attemptId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+      "basis": {
+        "resolution": {
+          "basis": {
+            "schemaVersion": 1,
+            "projectId": "sablewick",
+            "taskId": "intake-vendor-2026-02-10",
+            "capturedAtRevision": 0,
+            "semanticProjectionDigest": "cfc78e40ec180e7656a8d60aeb2b4f051ddcc400e86da078d2cab87f44d40548",
+            "source": {
+              "state": "BOUND",
+              "value": {
+                "backend": "git",
+                "revision": "29a08cd4be9273008892696da1f0dac2731aee46"
+              }
+            },
+            "assets": {
+              "state": "NOT_REQUIRED"
+            },
+            "environment": {
+              "state": "NOT_REQUIRED"
+            },
+            "basisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22"
+          },
+          "taskId": "intake-vendor-2026-02-10"
+        },
+        "summary": {
+          "basisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+          "taskId": "intake-vendor-2026-02-10",
+          "capturedAt": "2026-11-01T12:37:28.908Z"
+        },
+        "currentness": {
+          "attemptId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+          "taskId": "intake-vendor-2026-02-10",
+          "basisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+          "currentBasisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+          "currentness": "CURRENT",
+          "compatibility": "EXACT",
+          "reasons": [],
+          "detail": "the current world still resolves every bound dependency identically"
+        }
+      },
+      "result": {
+        "eventId": 21,
+        "resultCommit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+        "report": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "attempt_id": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+          "task_id": "intake-vendor-2026-02-10",
+          "envelope_id": "envelope-b1e67f107aba45047848b2f1bde01872",
+          "input_project_revision": 0,
+          "input_project_digest": "0c1e8d3549258233a61a6c027d6affd86cbd1b8edb0498a0466ca7180133d28d",
+          "base_commit": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "worktree_id": "worktree-3507ecee",
+          "result_commit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+          "worker_status": "completed",
+          "summary": "delegated work settled from its execution world",
+          "changed_files": [
+            "sources/vendor-capabilities.csv"
+          ],
+          "produced_artifacts": [
+            "sources/vendor-capabilities.csv"
+          ],
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "runtime_metadata": {
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "argv": [
+              "dsh-agent"
+            ],
+            "exit_code": 0,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          },
+          "context_manifest": "context-manifest-c0fed7158be6f47ccc86e766731f3672"
+        }
+      },
+      "content": "vendor,chemistry,min_c,max_c,warranty_years,coastal_warranty,unit_width_mm,lead_weeks\nV1,LiFePO4,-20,50,10,no,900,6\nV2,NMC,-5,45,8,no,650,4\nV3,LTO,0,55,12,yes,750,10\nV4,LiFePO4,-20,50,5,no,850,8\n",
+      "taskState": "VERIFYING",
+      "attemptState": "COMPLETED",
+      "promotionFacts": []
+    }
+  },
+  "packagedInspection": {
+    "technical-fit": {
+      "beforeChange": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4"
+          },
+          "resolved": true,
+          "taskId": "technical-fit",
+          "targetObservationDigest": "1535905226fd322235017c422f4469fc51879c625604f37e1c0201a92cc523e6",
+          "compatibility": {
+            "outcome": "EXACT",
+            "issuanceDigest": "08f3d141b60ba0494f2e61248c5d8f4012cdc1dbd2088ec0f2364d6e66671faf"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4"
+            },
+            "originBasisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2",
+            "currentTargetDigest": "1535905226fd322235017c422f4469fc51879c625604f37e1c0201a92cc523e6",
+            "currentness": "CURRENT",
+            "compatibility": "EXACT",
+            "reuse": {
+              "exactCurrent": true,
+              "rematerializationAvailable": false,
+              "blocker": null
+            },
+            "rework": {
+              "available": true,
+              "blocker": null
+            },
+            "evidence": {
+              "moreCouldHelp": false,
+              "gaps": []
+            },
+            "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+            "assessmentDigest": "d27bfb8024c62e2c6b28b9a38ce2c49233a6b019ac809483af2257eda9db5fe7"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": false
+          },
+          "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+        }
+      },
+      "afterIntake": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4"
+          },
+          "resolved": true,
+          "taskId": "technical-fit",
+          "targetObservationDigest": "b3231762790d1da28343219662b5bda110830cd5a4947dba050120841501febf",
+          "compatibility": {
+            "outcome": "INCOMPATIBLE",
+            "issuanceDigest": "3edd91dae5030b18d903849d170598ae2ffba7dd98484f0264fbd372f7d570cc"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4"
+            },
+            "originBasisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2",
+            "currentTargetDigest": "b3231762790d1da28343219662b5bda110830cd5a4947dba050120841501febf",
+            "currentness": "STALE",
+            "compatibility": "INCOMPATIBLE",
+            "reuse": {
+              "exactCurrent": false,
+              "rematerializationAvailable": false,
+              "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+            },
+            "rework": {
+              "available": true,
+              "blocker": null
+            },
+            "evidence": {
+              "moreCouldHelp": false,
+              "gaps": []
+            },
+            "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+            "assessmentDigest": "8004f3d13ac1a72032bc6961cfaa7d66a8d77d52aca4bf30bdc3769993333b5f"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": true
+          },
+          "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+        }
+      }
+    },
+    "intake-vendor-2026-02-10": {
+      "beforePromotion": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-2f04c9eec40c85e5ccbb3a303507ecee"
+          },
+          "resolved": true,
+          "taskId": "intake-vendor-2026-02-10",
+          "targetObservationDigest": "add6ac0c587fe5dd1ff77ab97a1e791d7317b884fadf9e808008cd910140c6fb",
+          "compatibility": {
+            "outcome": "EXACT",
+            "issuanceDigest": "c4f1331274591340605c30eba4ae12a3c4aa29d99098f4217e84fec8f1ec8d74"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-2f04c9eec40c85e5ccbb3a303507ecee"
+            },
+            "originBasisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+            "currentTargetDigest": "add6ac0c587fe5dd1ff77ab97a1e791d7317b884fadf9e808008cd910140c6fb",
+            "currentness": "CURRENT",
+            "compatibility": "EXACT",
+            "reuse": {
+              "exactCurrent": true,
+              "rematerializationAvailable": false,
+              "blocker": null
+            },
+            "rework": {
+              "available": true,
+              "blocker": null
+            },
+            "evidence": {
+              "moreCouldHelp": false,
+              "gaps": []
+            },
+            "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+            "assessmentDigest": "31011f1e695e19e44d236f4ced12ea4390dc9e581ad5457687185eef4a6b6bd8"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": false
+          },
+          "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+        }
+      },
+      "afterPromotion": {
+        "ok": true,
+        "value": {
+          "schemaVersion": 1,
+          "result": {
+            "kind": "ATTEMPT_RESULT",
+            "ref": "attempt-2f04c9eec40c85e5ccbb3a303507ecee"
+          },
+          "resolved": true,
+          "taskId": "intake-vendor-2026-02-10",
+          "targetObservationDigest": "0af58439d866cd1da51cd30ad0aca68f52c826018226de7e99c04e4b68ec8039",
+          "compatibility": {
+            "outcome": "UNKNOWN",
+            "issuanceDigest": "428414f9f449e21faa32a3fecf0fbcca204731fc96643499d7bceeb85c94b659"
+          },
+          "assessment": {
+            "schemaVersion": 1,
+            "resultSubjectRef": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-2f04c9eec40c85e5ccbb3a303507ecee"
+            },
+            "originBasisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+            "currentTargetDigest": "0af58439d866cd1da51cd30ad0aca68f52c826018226de7e99c04e4b68ec8039",
+            "currentness": "STALE",
+            "compatibility": "UNKNOWN",
+            "reuse": {
+              "exactCurrent": false,
+              "rematerializationAvailable": false,
+              "blocker": "a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused"
+            },
+            "rework": {
+              "available": false,
+              "blocker": "this deployment cannot start an attempt on the current basis (the task is not open, or no work execution is composed)"
+            },
+            "evidence": {
+              "moreCouldHelp": true,
+              "gaps": [
+                "the compatibility proof is incomplete: a complete change observation or an enforced read boundary could complete it"
+              ]
+            },
+            "detail": "reuse is not proven (a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused); the work may still be redone on the current basis",
+            "assessmentDigest": "06a4112a7eb240b74a68524460393157688a247b05fa8fb3c7e21fc853463b81"
+          },
+          "availableActions": {
+            "rematerialize": false,
+            "rework": false
+          },
+          "detail": "reuse is not proven (a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused); the work may still be redone on the current basis"
+        }
+      }
+    }
+  },
+  "expertDiagnostic": {
+    "technical-fit": {
+      "beforeChange": {
+        "ok": true,
+        "value": {
+          "outcome": "EXACT",
+          "detail": "D3-a exact currentness already proved the basis holds, so no divergence needs a compatibility proof",
+          "conflicts": [],
+          "unknowns": [],
+          "proofs": [],
+          "assessmentDigest": "0b8ae5110759efbe7d32ea8c998fda7857397009a9bd9bc92deb25ce03c96a0a",
+          "issuanceDigest": "fcbffad3900b9da21aee2995fbce251ccd9c7a231f075ba90e93fd8aae8e53f8",
+          "admission": {
+            "state": "ADMITTED",
+            "admitted": true,
+            "detail": "the basis is exactly current, so no divergence exists to admit against"
+          },
+          "targetObservation": {
+            "digest": "1535905226fd322235017c422f4469fc51879c625604f37e1c0201a92cc523e6",
+            "detail": "source at 29a08cd4be92"
+          },
+          "resultManifestDigest": "2d4a498ad68f10550081075ced14b4e7caca4aa94d5863519744df4b52fd2183",
+          "originBasisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2",
+          "originSourceRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "changeFrom": "origin",
+          "changeBaseRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "currentSourceRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "repositorySourceSelector": {
+            "domain": "source",
+            "scope": "repository"
+          },
+          "testOwned": {
+            "preciseReadPaths": [
+              "sources/brief.md",
+              "sources/vendor-capabilities.csv",
+              "sources/sites.md",
+              "sources/prior-notes.md"
+            ],
+            "facetObservations": "projectSemantic/assets/environment empty",
+            "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+          }
+        }
+      },
+      "afterIntake": {
+        "ok": true,
+        "value": {
+          "outcome": "INCOMPATIBLE",
+          "detail": "1 proven interference(s) between the world change and this result",
+          "conflicts": [
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "side": "read",
+              "kind": "read_invalidation",
+              "detail": "the source change touches a resource this result was computed from (both selectors name the source path \"sources/vendor-capabilities.csv\"), so its input would be superseded"
+            }
+          ],
+          "unknowns": [],
+          "proofs": [
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "deliverables/technical-fit.md"
+              },
+              "side": "write",
+              "basis": "proven disjoint: the source change and this write dependency cannot name the same resource"
+            }
+          ],
+          "assessmentDigest": "efaf03fe5c07bc9c410a7da90ebe41f09c5592a34449ad4fc8cf887fb616054f",
+          "issuanceDigest": "051270ccaec2e2bb6ad88a78d919397e508e2acfd602e4dd88b6df15329a8efd",
+          "admission": {
+            "state": "CONFLICT",
+            "admitted": false,
+            "detail": "a proven interference exists, and further observation cannot remove it: 1 proven interference(s) between the world change and this result"
+          },
+          "targetObservation": {
+            "digest": "b3231762790d1da28343219662b5bda110830cd5a4947dba050120841501febf",
+            "detail": "source at 365c83012674"
+          },
+          "resultManifestDigest": "2d4a498ad68f10550081075ced14b4e7caca4aa94d5863519744df4b52fd2183",
+          "originBasisDigest": "e8646833718dc1fdc5851f21a579a56f7456c0315286cbae871cdb5ed704b7b2",
+          "originSourceRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "changeFrom": "origin",
+          "changeBaseRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+          "repositorySourceSelector": {
+            "domain": "source",
+            "scope": "repository"
+          },
+          "testOwned": {
+            "preciseReadPaths": [
+              "sources/brief.md",
+              "sources/vendor-capabilities.csv",
+              "sources/sites.md",
+              "sources/prior-notes.md"
+            ],
+            "facetObservations": "projectSemantic/assets/environment empty",
+            "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+          }
+        }
+      }
+    },
+    "intake-vendor-2026-02-10": {
+      "originIntervalPreFixBehaviour": {
+        "ok": true,
+        "value": {
+          "outcome": "INCOMPATIBLE",
+          "detail": "2 proven interference(s) between the world change and this result",
+          "conflicts": [
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "side": "read",
+              "kind": "read_invalidation",
+              "detail": "the source change touches a resource this result was computed from (both selectors name the source path \"sources/vendor-capabilities.csv\"), so its input would be superseded"
+            },
+            {
+              "change": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "dependency": {
+                "domain": "source",
+                "scope": "path",
+                "path": "sources/vendor-capabilities.csv"
+              },
+              "side": "write",
+              "kind": "write_collision",
+              "detail": "the source change touches a resource this result also writes (both selectors name the source path \"sources/vendor-capabilities.csv\"), so accepting both would make one overwrite the other"
+            }
+          ],
+          "unknowns": [],
+          "proofs": [],
+          "assessmentDigest": "5fc0a33b4027df65b48f7d7ff8a3f40dbdf724b3a94821f4bab68f7f3c400970",
+          "issuanceDigest": "aa6e1530bf0fa5a3e68f222c83246adf3e35bea4fd21fabdd0191a2ce9c3acec",
+          "admission": {
+            "state": "CONFLICT",
+            "admitted": false,
+            "detail": "a proven interference exists, and further observation cannot remove it: 2 proven interference(s) between the world change and this result"
+          },
+          "targetObservation": {
+            "digest": "0af58439d866cd1da51cd30ad0aca68f52c826018226de7e99c04e4b68ec8039",
+            "detail": "source at 365c83012674"
+          },
+          "resultManifestDigest": "bfee628af6ac6ca7dee938ef2db461e6f2b04a6d72d7cd8c0b8cb6ec41ef58d7",
+          "originBasisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+          "originSourceRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "changeFrom": "origin",
+          "changeBaseRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+          "repositorySourceSelector": {
+            "domain": "source",
+            "scope": "repository"
+          },
+          "testOwned": {
+            "preciseReadPaths": [
+              "sources/vendor-capabilities.csv"
+            ],
+            "facetObservations": "projectSemantic/assets/environment empty",
+            "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+          }
+        }
+      },
+      "acceptedHeadWithTestFacets": {
+        "ok": true,
+        "value": {
+          "outcome": "COMPATIBLE",
+          "detail": "every one of the 0 change-to-dependency relation(s) is PROVEN DISJOINT under complete coverage",
+          "conflicts": [],
+          "unknowns": [],
+          "proofs": [],
+          "assessmentDigest": "271969a6b4df5cca82a183f717ed3ad974c1948d36985f32299795baf2dd8798",
+          "issuanceDigest": "cbef85a1e37000c03f68509d451878bdc2939804182354c209130ab4e896834f",
+          "admission": {
+            "state": "ADMITTED",
+            "admitted": true,
+            "detail": "an authoritative, current certificate proves non-interference: every one of the 0 change-to-dependency relation(s) is PROVEN DISJOINT under complete coverage"
+          },
+          "targetObservation": {
+            "digest": "0af58439d866cd1da51cd30ad0aca68f52c826018226de7e99c04e4b68ec8039",
+            "detail": "source at 365c83012674"
+          },
+          "resultManifestDigest": "bfee628af6ac6ca7dee938ef2db461e6f2b04a6d72d7cd8c0b8cb6ec41ef58d7",
+          "originBasisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+          "originSourceRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "changeFrom": "promoted-head",
+          "changeBaseRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+          "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+          "repositorySourceSelector": {
+            "domain": "source",
+            "scope": "repository"
+          },
+          "testOwned": {
+            "preciseReadPaths": [
+              "sources/vendor-capabilities.csv"
+            ],
+            "facetObservations": "projectSemantic/assets/environment empty",
+            "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+          }
+        }
+      },
+      "acceptedHeadWithUnavailableSemantic": {
+        "ok": true,
+        "value": {
+          "outcome": "UNKNOWN",
+          "detail": "no proof was completed: change_coverage, change_coverage",
+          "conflicts": [],
+          "unknowns": [
+            {
+              "part": "change_coverage",
+              "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+            },
+            {
+              "part": "change_coverage",
+              "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+            }
+          ],
+          "proofs": [],
+          "assessmentDigest": "0feb5c9a5843f95fb2d24dca0cb78eef50bfb8248f5d3587c55766e774be28a0",
+          "issuanceDigest": "54b9580978626890bdae2a783036446e3e4bdca69f4ec8bd937736a130a93898",
+          "admission": {
+            "state": "INSUFFICIENT_PROOF",
+            "admitted": false,
+            "detail": "the certificate records an incomplete proof: no proof was completed: change_coverage, change_coverage"
+          },
+          "targetObservation": {
+            "digest": "0af58439d866cd1da51cd30ad0aca68f52c826018226de7e99c04e4b68ec8039",
+            "detail": "source at 365c83012674"
+          },
+          "resultManifestDigest": "bfee628af6ac6ca7dee938ef2db461e6f2b04a6d72d7cd8c0b8cb6ec41ef58d7",
+          "originBasisDigest": "31d2d780d02f46edeaf3eab0c927b22452078f57abb02399d063d6fc3716cd22",
+          "originSourceRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+          "changeFrom": "promoted-head",
+          "changeBaseRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+          "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+          "repositorySourceSelector": {
+            "domain": "source",
+            "scope": "repository"
+          },
+          "testOwned": {
+            "preciseReadPaths": [
+              "sources/vendor-capabilities.csv"
+            ],
+            "facetObservations": "projectSemantic unavailable; assets/environment empty",
+            "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+          }
+        }
+      }
+    }
+  },
+  "promotions": {
+    "intake": {
+      "before": {
+        "projectHead": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "liveHead": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "task": {
+          "taskId": "intake-vendor-2026-02-10",
+          "state": "VERIFYING",
+          "batchActivationEventId": 15,
+          "envelopeId": "envelope-b1e67f107aba45047848b2f1bde01872",
+          "lastEventId": 22
+        }
+      },
+      "call": {
+        "ok": true,
+        "value": {
+          "promotionId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+          "committed": {
+            "schema_version": 1,
+            "project_id": "sablewick",
+            "event_type": "PROMOTION_COMMITTED",
+            "payload_version": 1,
+            "entity_type": "promotion",
+            "entity_id": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+            "payload": {
+              "promotion_id": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+              "attempt_id": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+              "source_commit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+              "expected_head_commit": "29a08cd4be9273008892696da1f0dac2731aee46",
+              "resulting_head_commit": "365c830126744bf66fc1528b94a85ead500a7c09",
+              "reason": "promoted via Ordarium git.promote",
+              "operation_id": "op_e5d41bf1cc55e2c600ccc14724d448231c871d75",
+              "outcome_basis": "invoke_result",
+              "outcome_digest": "c0f3096a10437812b886b045412b9d5470d95a2c2e1eb537bf347b4f92bbb7c1"
+            },
+            "causation_id": null,
+            "correlation_id": "promotion:promotion-1a5e8dcf9f43939bff73483f0294768f",
+            "idempotency_key": "8523807fe82fb8bcf3ccc6c93734c7ae3f0c3d4f39e3ce45dfaa2bcd2898fa9d",
+            "expected_project_revision": 0,
+            "event_id": 24,
+            "project_sequence": 24,
+            "request_digest": "a410d736fbe0cabf5b167f1eace2daba539428bfb07624a453eeebc57c82eff4",
+            "previous_event_digest": "54a4bfd78b507d3ed6bc87376de0699c52398a0824ad4c6144dbc9d3447dda83",
+            "event_digest": "31e1a82f385cdbd6d54b1413278ed19f3e82179a521bb60b600705687499e12e",
+            "committed_at": "2026-11-01T12:37:30.885000Z"
+          },
+          "resultingHeadCommit": "365c830126744bf66fc1528b94a85ead500a7c09"
+        }
+      },
+      "step": {
+        "ok": true,
+        "value": "TASK_SATISFIED"
+      },
+      "after": {
+        "projectHead": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "liveHead": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "task": {
+          "taskId": "intake-vendor-2026-02-10",
+          "state": "SATISFIED",
+          "batchActivationEventId": 15,
+          "envelopeId": "envelope-b1e67f107aba45047848b2f1bde01872",
+          "lastEventId": 25
+        },
+        "facts": [
+          {
+            "eventId": "24",
+            "promotionId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+            "attemptId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+            "sourceCommit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+            "expectedHeadCommit": "29a08cd4be9273008892696da1f0dac2731aee46",
+            "resultingHeadCommit": "365c830126744bf66fc1528b94a85ead500a7c09"
+          }
+        ]
+      },
+      "acceptedContentDigest": "620c334dd79bc010b63d4febba0c6583197be92408dbfeb895de68083c6a277f",
+      "candidateDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "contentMatchesCandidate": false,
+      "acceptedBlobDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "blobMatchesCandidate": true,
+      "workingTreeMatchesCandidate": false,
+      "digestNote": "the committed blob is the authoritative comparison; the working-tree file may be EOL-normalized by Git on Windows",
+      "lineage": {
+        "resultCommit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+        "resultInAcceptedHead": "PROVEN",
+        "expectedHeadInAcceptedHead": "PROVEN",
+        "acceptedHeadInCurrent": "PROVEN"
+      },
+      "resolvedBaseline": {
+        "state": "PROMOTED",
+        "baselineRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "promotionId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+        "eventId": "24",
+        "detail": "the accepted promotion promotion-1a5e8dcf9f43939bff73483f0294768f produced 365c83012674, which Git proves contains result 9e9c89474bf4 and is contained in the current source 365c83012674"
+      }
+    }
+  },
+  "head": {
+    "reconcileBeforeRework": {
+      "ok": true,
+      "value": {
+        "status": "blocked",
+        "fromHead": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "toHead": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "blockers": [
+          "quiescence_required: the project must be quiescent before the head advances: every ACTIVE/VERIFYING task and open attempt must settle (a promoted task must reach SATISFIED first)"
+        ]
+      }
+    }
+  },
+  "rework": {
+    "inspectionDigest": "8004f3d13ac1a72032bc6961cfaa7d66a8d77d52aca4bf30bdc3769993333b5f",
+    "availableActions": {
+      "rematerialize": false,
+      "rework": true
+    },
+    "start": {
+      "ok": true,
+      "value": {
+        "schemaVersion": 1,
+        "state": "DELEGATED",
+        "result": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4"
+        },
+        "taskId": "technical-fit",
+        "detail": "the governed reopening, the head reconciliation and the D2-d delegation all landed; the Work runs on the current basis",
+        "blockers": [],
+        "reopenedEventId": 26,
+        "headSynced": true,
+        "attemptId": null,
+        "jobId": "wdj-61e2ca2b-4a89-4c6d-acd5-7bd1e9f79e10"
+      }
+    },
+    "startValue": {
+      "schemaVersion": 1,
+      "state": "DELEGATED",
+      "result": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4"
+      },
+      "taskId": "technical-fit",
+      "detail": "the governed reopening, the head reconciliation and the D2-d delegation all landed; the Work runs on the current basis",
+      "blockers": [],
+      "reopenedEventId": 26,
+      "headSynced": true,
+      "attemptId": null,
+      "jobId": "wdj-61e2ca2b-4a89-4c6d-acd5-7bd1e9f79e10"
+    },
+    "taskAfterStart": {
+      "taskId": "technical-fit",
+      "state": "ACTIVE",
+      "batchActivationEventId": null,
+      "envelopeId": "envelope-123873dfcdeb4a6f69e655f0d159076d",
+      "lastEventId": 29
+    },
+    "headAfterStart": {
+      "projectHead": "365c830126744bf66fc1528b94a85ead500a7c09",
+      "liveHead": "365c830126744bf66fc1528b94a85ead500a7c09"
+    },
+    "job": {
+      "jobId": "wdj-61e2ca2b-4a89-4c6d-acd5-7bd1e9f79e10",
+      "taskId": "technical-fit",
+      "attemptId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+      "phase": "FINISHED",
+      "settlement": {
+        "state": "SETTLED",
+        "attemptId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+        "resultCommit": "bb821f038a48de1bdd26e021993d578eb0be176e",
+        "changedFiles": [
+          "deliverables/technical-fit.md"
+        ],
+        "exported": true,
+        "evidenceRecorded": [
+          "write_scope_valid",
+          "expected_files_exist"
+        ],
+        "detail": "the attempt is COMPLETED with result commit bb821f038a48; the canonical object database can now read bb821f038a48; no ref, working tree or project revision changed; every mechanical check held for candidate bb821f038a48"
+      },
+      "hostError": null
+    },
+    "stepAfterJob": {
+      "ok": true,
+      "value": "TASK_VERIFYING"
+    },
+    "attempt": {
+      "attemptId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+      "state": "COMPLETED"
+    },
+    "result": {
+      "eventId": 35,
+      "resultCommit": "bb821f038a48de1bdd26e021993d578eb0be176e",
+      "report": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "attempt_id": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+        "task_id": "technical-fit",
+        "envelope_id": "envelope-123873dfcdeb4a6f69e655f0d159076d",
+        "input_project_revision": 1,
+        "input_project_digest": "e8da0722c9f554b65bfc889b90ca6f7256de3e9e3ec7869bbd7325e5e1caa518",
+        "base_commit": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "worktree_id": "worktree-76ac2d3e",
+        "result_commit": "bb821f038a48de1bdd26e021993d578eb0be176e",
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world",
+        "changed_files": [
+          "deliverables/technical-fit.md"
+        ],
+        "produced_artifacts": [
+          "deliverables/technical-fit.md"
+        ],
+        "started_at": "2026-08-13T00:00:00.000000Z",
+        "finished_at": "2026-08-13T00:00:01.000000Z",
+        "runtime_metadata": {
+          "runner": "dsh-agent",
+          "runner_version": "1",
+          "argv": [
+            "dsh-agent"
+          ],
+          "exit_code": 0,
+          "duration_ms": 1,
+          "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "stdout_artifact": null,
+          "stderr_artifact": null
+        },
+        "context_manifest": "context-manifest-e1feece38e593c68abf08ae6aa9f1ef6"
+      }
+    },
+    "content": "# Technical fit\n\n## Summary\n\nNo compliant vendor exists for every site on the current capability data.\n",
+    "basis": {
+      "resolution": {
+        "basis": {
+          "schemaVersion": 1,
+          "projectId": "sablewick",
+          "taskId": "technical-fit",
+          "capturedAtRevision": 1,
+          "semanticProjectionDigest": "c21d4ebcfed802216ac8b7f112bfb0f17211d59459a8ac4d9b0b739c22830ede",
+          "source": {
+            "state": "BOUND",
+            "value": {
+              "backend": "git",
+              "revision": "365c830126744bf66fc1528b94a85ead500a7c09"
+            }
+          },
+          "assets": {
+            "state": "NOT_REQUIRED"
+          },
+          "environment": {
+            "state": "NOT_REQUIRED"
+          },
+          "basisDigest": "4f4a3dc8913c54d1c4a54d84395d9f5fb7ff465ccb19bcbdd000fb39151020f5"
+        },
+        "taskId": "technical-fit"
+      },
+      "summary": {
+        "basisDigest": "4f4a3dc8913c54d1c4a54d84395d9f5fb7ff465ccb19bcbdd000fb39151020f5",
+        "taskId": "technical-fit",
+        "capturedAt": "2026-11-01T12:37:32.656Z"
+      },
+      "currentness": {
+        "attemptId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+        "taskId": "technical-fit",
+        "basisDigest": "4f4a3dc8913c54d1c4a54d84395d9f5fb7ff465ccb19bcbdd000fb39151020f5",
+        "currentBasisDigest": "4f4a3dc8913c54d1c4a54d84395d9f5fb7ff465ccb19bcbdd000fb39151020f5",
+        "currentness": "CURRENT",
+        "compatibility": "EXACT",
+        "reasons": [],
+        "detail": "the current world still resolves every bound dependency identically"
+      }
+    },
+    "taskAfterJob": {
+      "taskId": "technical-fit",
+      "state": "VERIFYING",
+      "batchActivationEventId": 29,
+      "envelopeId": "envelope-123873dfcdeb4a6f69e655f0d159076d",
+      "lastEventId": 36
+    },
+    "promotion": {
+      "before": {
+        "projectHead": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "liveHead": "365c830126744bf66fc1528b94a85ead500a7c09"
+      },
+      "call": {
+        "ok": true,
+        "value": {
+          "promotionId": "promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+          "committed": {
+            "schema_version": 1,
+            "project_id": "sablewick",
+            "event_type": "PROMOTION_COMMITTED",
+            "payload_version": 1,
+            "entity_type": "promotion",
+            "entity_id": "promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+            "payload": {
+              "promotion_id": "promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+              "attempt_id": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+              "source_commit": "bb821f038a48de1bdd26e021993d578eb0be176e",
+              "expected_head_commit": "365c830126744bf66fc1528b94a85ead500a7c09",
+              "resulting_head_commit": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+              "reason": "promoted via Ordarium git.promote",
+              "operation_id": "op_56219cba7c0a504fcc96cb91019ac39043d23369",
+              "outcome_basis": "invoke_result",
+              "outcome_digest": "d424ecaf53adc7a451d93bb6b4d934466bbf5f9a3011ee6dada855b4e5f2ee6c"
+            },
+            "causation_id": null,
+            "correlation_id": "promotion:promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+            "idempotency_key": "88e574373a6892b54218286fa12bab70e05226cef74363629f946f6314edbdf7",
+            "expected_project_revision": 1,
+            "event_id": 38,
+            "project_sequence": 38,
+            "request_digest": "6cee90bd38291574485af3a17448ffe82445e267e1f5e66766b55101b2957246",
+            "previous_event_digest": "1452e3a22a5d81e41f8c79dcab3d7ba33f948cb0af2c8a6882468583d509eeb2",
+            "event_digest": "afca21f15b9a2ec1753777ad86d743e7c561612e7e2f8df4264a98f766c2e0ae",
+            "committed_at": "2026-11-01T12:37:34.513000Z"
+          },
+          "resultingHeadCommit": "42a8ab40ce33b24fa888413207efb95878b8bd5d"
+        }
+      },
+      "step": {
+        "ok": true,
+        "value": "TASK_SATISFIED"
+      },
+      "after": {
+        "projectHead": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "liveHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+        "task": {
+          "taskId": "technical-fit",
+          "state": "SATISFIED",
+          "batchActivationEventId": 29,
+          "envelopeId": "envelope-123873dfcdeb4a6f69e655f0d159076d",
+          "lastEventId": 39
+        },
+        "facts": [
+          {
+            "eventId": "38",
+            "promotionId": "promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+            "attemptId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+            "sourceCommit": "bb821f038a48de1bdd26e021993d578eb0be176e",
+            "expectedHeadCommit": "365c830126744bf66fc1528b94a85ead500a7c09",
+            "resultingHeadCommit": "42a8ab40ce33b24fa888413207efb95878b8bd5d"
+          }
+        ]
+      }
+    },
+    "reconcileAfterPromotion": {
+      "ok": true,
+      "value": {
+        "status": "reconciled",
+        "revision": 2,
+        "fromHead": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "toHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+        "blockers": []
+      }
+    }
+  },
+  "negativeControls": {
+    "wrongSourceCommit": {
+      "refused": true,
+      "error": "source commit 29a08cd4be9273008892696da1f0dac2731aee46 does not match the canonical AttemptReport.result_commit 9e9c89474bf4f8f7c3715b7a730e6b0be5761efd"
+    },
+    "wrongExpectedHead": {
+      "refused": true,
+      "error": "expected head 0000000000000000000000000000000000000000 does not match the canonical proven effect head 29a08cd4be9273008892696da1f0dac2731aee46"
+    },
+    "duplicatePromotion": {
+      "ok": true,
+      "value": {
+        "promotionId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+        "committed": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "PROMOTION_COMMITTED",
+          "payload_version": 1,
+          "entity_type": "promotion",
+          "entity_id": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+          "payload": {
+            "promotion_id": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+            "attempt_id": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+            "source_commit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+            "expected_head_commit": "29a08cd4be9273008892696da1f0dac2731aee46",
+            "resulting_head_commit": "365c830126744bf66fc1528b94a85ead500a7c09",
+            "reason": "promoted via Ordarium git.promote",
+            "operation_id": "op_e5d41bf1cc55e2c600ccc14724d448231c871d75",
+            "outcome_basis": "invoke_result",
+            "outcome_digest": "c0f3096a10437812b886b045412b9d5470d95a2c2e1eb537bf347b4f92bbb7c1"
+          },
+          "causation_id": null,
+          "correlation_id": "promotion:promotion-1a5e8dcf9f43939bff73483f0294768f",
+          "idempotency_key": "8523807fe82fb8bcf3ccc6c93734c7ae3f0c3d4f39e3ce45dfaa2bcd2898fa9d",
+          "expected_project_revision": 0,
+          "event_id": 24,
+          "project_sequence": 24,
+          "request_digest": "a410d736fbe0cabf5b167f1eace2daba539428bfb07624a453eeebc57c82eff4",
+          "previous_event_digest": "54a4bfd78b507d3ed6bc87376de0699c52398a0824ad4c6144dbc9d3447dda83",
+          "event_digest": "31e1a82f385cdbd6d54b1413278ed19f3e82179a521bb60b600705687499e12e",
+          "committed_at": "2026-11-01T12:37:30.885000Z"
+        },
+        "resultingHeadCommit": "365c830126744bf66fc1528b94a85ead500a7c09"
+      }
+    },
+    "unauthorizedHead": {
+      "ok": true,
+      "value": {
+        "before": {
+          "plannedEvent": "PROJECT_REVISED",
+          "projectHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+          "liveHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+          "task": {
+            "taskId": "post-control",
+            "state": "READY",
+            "batchActivationEventId": null,
+            "envelopeId": "envelope-6585fb44dba7d25222a7c7b901ca584b",
+            "lastEventId": 42
+          }
+        },
+        "update": {
+          "fromHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+          "toHead": "07ca3558946d14a565afc9366b93caac34e5462b",
+          "target": "sources/newsletter.md",
+          "paths": [
+            "sources/newsletter.md"
+          ],
+          "digestAfter": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+        },
+        "start": {
+          "jobId": "wdj-c36f0f4e-6a8d-43ee-946f-0cefb9899e04",
+          "taskId": "post-control",
+          "state": "STARTED",
+          "resumed": false,
+          "detail": "the canonical task was resolved and frozen; the job is preparing its execution world"
+        },
+        "job": {
+          "jobId": "wdj-c36f0f4e-6a8d-43ee-946f-0cefb9899e04",
+          "taskId": "post-control",
+          "attemptId": null,
+          "phase": "HOST_ERROR",
+          "settlement": null,
+          "hostError": "HEAD_BASIS_MISMATCH: the repository is at 07ca3558946d, the project head at 42a8ab40ce33, the proven effect head at 42a8ab40ce33 and the task's base at 42a8ab40ce33 — a worker's world must start where its envelope says the work starts"
+        },
+        "attempt": null,
+        "taskAfter": {
+          "taskId": "post-control",
+          "state": "READY",
+          "batchActivationEventId": null,
+          "envelopeId": "envelope-6585fb44dba7d25222a7c7b901ca584b",
+          "lastEventId": 42
+        },
+        "projectHeadAfter": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+        "liveHeadAfter": "07ca3558946d14a565afc9366b93caac34e5462b"
+      }
+    }
+  },
+  "errors": [],
+  "finishedAt": "2026-11-01T12:37:35.160Z",
+  "install": {
+    "adapters": null,
+    "hasContinuation": true,
+    "hasDelegation": true
+  },
+  "seed": {
+    "revision": null,
+    "projectHead": "29a08cd4be9273008892696da1f0dac2731aee46",
+    "liveHead": "29a08cd4be9273008892696da1f0dac2731aee46"
+  },
+  "final": {
+    "projectHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+    "liveHead": "07ca3558946d14a565afc9366b93caac34e5462b",
+    "tasks": {
+      "technical-fit": {
+        "taskId": "technical-fit",
+        "state": "SATISFIED",
+        "batchActivationEventId": 29,
+        "envelopeId": "envelope-123873dfcdeb4a6f69e655f0d159076d",
+        "lastEventId": 39
+      },
+      "intake-vendor-2026-02-10": {
+        "taskId": "intake-vendor-2026-02-10",
+        "state": "SATISFIED",
+        "batchActivationEventId": 15,
+        "envelopeId": "envelope-b1e67f107aba45047848b2f1bde01872",
+        "lastEventId": 25
+      }
+    },
+    "events": [
+      {
+        "eventId": 1,
+        "type": "PROJECT_CREATED",
+        "entityId": "sablewick",
+        "revision": null
+      },
+      {
+        "eventId": 2,
+        "type": "GATE_DEFINED",
+        "entityId": "gate-release",
+        "revision": 0
+      },
+      {
+        "eventId": 3,
+        "type": "ROLE_TABLE_DEFINED",
+        "entityId": "sablewick",
+        "revision": 0
+      },
+      {
+        "eventId": 4,
+        "type": "STAGE_GRAPH_DEFINED",
+        "entityId": "sablewick",
+        "revision": 0
+      },
+      {
+        "eventId": 5,
+        "type": "TASK_CREATED",
+        "entityId": "technical-fit",
+        "revision": 0
+      },
+      {
+        "eventId": 6,
+        "type": "TASK_CREATED",
+        "entityId": "intake-vendor-2026-02-10",
+        "revision": 0
+      },
+      {
+        "eventId": 7,
+        "type": "TASK_STARTED",
+        "entityId": "technical-fit",
+        "revision": 0
+      },
+      {
+        "eventId": 8,
+        "type": "ATTEMPT_CREATED",
+        "entityId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+        "revision": 0
+      },
+      {
+        "eventId": 9,
+        "type": "ATTEMPT_STARTED",
+        "entityId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+        "revision": 0
+      },
+      {
+        "eventId": 10,
+        "type": "CONTEXT_MANIFEST_ADDED",
+        "entityId": "context-manifest-6b453be08382c30e225ded058e705344",
+        "revision": 0
+      },
+      {
+        "eventId": 11,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-3ce8bbedd8e77bf164b3e6d3e9a23f6f",
+        "revision": 0
+      },
+      {
+        "eventId": 12,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-0028065bde4b0bd8782127773ced4a51",
+        "revision": 0
+      },
+      {
+        "eventId": 13,
+        "type": "ATTEMPT_COMPLETED",
+        "entityId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+        "revision": 0
+      },
+      {
+        "eventId": 14,
+        "type": "TASK_VERIFYING",
+        "entityId": "technical-fit",
+        "revision": 0
+      },
+      {
+        "eventId": 15,
+        "type": "TASK_STARTED",
+        "entityId": "intake-vendor-2026-02-10",
+        "revision": 0
+      },
+      {
+        "eventId": 16,
+        "type": "ATTEMPT_CREATED",
+        "entityId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+        "revision": 0
+      },
+      {
+        "eventId": 17,
+        "type": "ATTEMPT_STARTED",
+        "entityId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+        "revision": 0
+      },
+      {
+        "eventId": 18,
+        "type": "CONTEXT_MANIFEST_ADDED",
+        "entityId": "context-manifest-c0fed7158be6f47ccc86e766731f3672",
+        "revision": 0
+      },
+      {
+        "eventId": 19,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-3d06af824630b3dcd74a3c323dee64de",
+        "revision": 0
+      },
+      {
+        "eventId": 20,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-69ab7137aa8eaef1bbb744c219cf2a30",
+        "revision": 0
+      },
+      {
+        "eventId": 21,
+        "type": "ATTEMPT_COMPLETED",
+        "entityId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+        "revision": 0
+      },
+      {
+        "eventId": 22,
+        "type": "TASK_VERIFYING",
+        "entityId": "intake-vendor-2026-02-10",
+        "revision": 0
+      },
+      {
+        "eventId": 23,
+        "type": "PROMOTION_PREPARED",
+        "entityId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+        "revision": 0
+      },
+      {
+        "eventId": 24,
+        "type": "PROMOTION_COMMITTED",
+        "entityId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+        "revision": 0
+      },
+      {
+        "eventId": 25,
+        "type": "TASK_SATISFIED",
+        "entityId": "intake-vendor-2026-02-10",
+        "revision": 0
+      },
+      {
+        "eventId": 26,
+        "type": "TASK_READY",
+        "entityId": "technical-fit",
+        "revision": 0
+      },
+      {
+        "eventId": 27,
+        "type": "PROJECT_REVISED",
+        "entityId": "sablewick",
+        "revision": 0
+      },
+      {
+        "eventId": 28,
+        "type": "TASK_REAUTHORIZED",
+        "entityId": "technical-fit",
+        "revision": 1
+      },
+      {
+        "eventId": 29,
+        "type": "TASK_STARTED",
+        "entityId": "technical-fit",
+        "revision": 1
+      },
+      {
+        "eventId": 30,
+        "type": "ATTEMPT_CREATED",
+        "entityId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+        "revision": 1
+      },
+      {
+        "eventId": 31,
+        "type": "ATTEMPT_STARTED",
+        "entityId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+        "revision": 1
+      },
+      {
+        "eventId": 32,
+        "type": "CONTEXT_MANIFEST_ADDED",
+        "entityId": "context-manifest-e1feece38e593c68abf08ae6aa9f1ef6",
+        "revision": 1
+      },
+      {
+        "eventId": 33,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-8fa72177941b86e70dad469073d49406",
+        "revision": 1
+      },
+      {
+        "eventId": 34,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-30f404e982adf5f131c362b9eb78b901",
+        "revision": 1
+      },
+      {
+        "eventId": 35,
+        "type": "ATTEMPT_COMPLETED",
+        "entityId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+        "revision": 1
+      },
+      {
+        "eventId": 36,
+        "type": "TASK_VERIFYING",
+        "entityId": "technical-fit",
+        "revision": 1
+      },
+      {
+        "eventId": 37,
+        "type": "PROMOTION_PREPARED",
+        "entityId": "promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+        "revision": 1
+      },
+      {
+        "eventId": 38,
+        "type": "PROMOTION_COMMITTED",
+        "entityId": "promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+        "revision": 1
+      },
+      {
+        "eventId": 39,
+        "type": "TASK_SATISFIED",
+        "entityId": "technical-fit",
+        "revision": 1
+      },
+      {
+        "eventId": 40,
+        "type": "PROJECT_REVISED",
+        "entityId": "sablewick",
+        "revision": 1
+      },
+      {
+        "eventId": 41,
+        "type": "PROJECT_REVISED",
+        "entityId": "sablewick",
+        "revision": 2
+      },
+      {
+        "eventId": 42,
+        "type": "TASK_CREATED",
+        "entityId": "post-control",
+        "revision": 3
+      }
+    ]
+  },
+  "exitCode": 0
+}

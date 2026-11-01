@@ -1,0 +1,498 @@
+{
+  "schema": "cog5-outcomes/v1",
+  "codeFreeze": "af4cb65736d82419b151b3c4eccc75621ee1aea5",
+  "codeFreezeTree": "f854222a300f32bd24e0753398469ca86fd9545c",
+  "deterministicWorker": true,
+  "model": null,
+  "modelNote": "No model was used in any COG-5 mechanism run. The Work Results are deterministic test-owned outputs.",
+  "mechanism": {
+    "initialHead": "29a08cd4be9273008892696da1f0dac2731aee46",
+    "intakeCandidate": {
+      "path": "scripts/cog5/scenario/candidates/vendor-capabilities-2026-02-10.csv",
+      "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "origin": "programme-office batch 2026-02-10 (test-owned immutable snapshot)"
+    },
+    "technical": {
+      "attemptId": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4",
+      "resultCommit": "6584c6bdf843f1266edeaca3f6213850663dcf09",
+      "basisSource": "29a08cd4be9273008892696da1f0dac2731aee46",
+      "taskStateAfterIntake": "VERIFYING"
+    },
+    "intake": {
+      "attemptId": "attempt-2f04c9eec40c85e5ccbb3a303507ecee",
+      "resultCommit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+      "basisSource": "29a08cd4be9273008892696da1f0dac2731aee46",
+      "promotionId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+      "promotionEventId": "24",
+      "expectedHeadCommit": "29a08cd4be9273008892696da1f0dac2731aee46",
+      "resultingHeadCommit": "365c830126744bf66fc1528b94a85ead500a7c09",
+      "acceptedBlobDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "blobMatchesCandidate": true,
+      "resolvedBaseline": {
+        "state": "PROMOTED",
+        "baselineRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "promotionId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+        "eventId": "24",
+        "detail": "the accepted promotion promotion-1a5e8dcf9f43939bff73483f0294768f produced 365c83012674, which Git proves contains result 9e9c89474bf4 and is contained in the current source 365c83012674"
+      },
+      "lineage": {
+        "resultCommit": "9e9c89474bf4f8f7c3715b7a730e6b0be5761efd",
+        "resultInAcceptedHead": "PROVEN",
+        "expectedHeadInAcceptedHead": "PROVEN",
+        "acceptedHeadInCurrent": "PROVEN"
+      }
+    },
+    "rework": {
+      "reopenedEventId": 26,
+      "originResultSubject": {
+        "kind": "ATTEMPT_RESULT",
+        "ref": "attempt-f27ca3f61c4c8281a1bb8f434b47b3f4"
+      },
+      "reason": "INCOMPATIBLE",
+      "targetObservationDigest": "b3231762790d1da28343219662b5bda110830cd5a4947dba050120841501febf",
+      "assessmentDigest": "8004f3d13ac1a72032bc6961cfaa7d66a8d77d52aca4bf30bdc3769993333b5f",
+      "headSynced": true,
+      "jobId": "wdj-61e2ca2b-4a89-4c6d-acd5-7bd1e9f79e10",
+      "jobPhase": "FINISHED",
+      "newAttemptId": "attempt-8f395d58e1e39b5abb84829476ac2d3e",
+      "newResultCommit": "bb821f038a48de1bdd26e021993d578eb0be176e",
+      "newResultBase": "365c830126744bf66fc1528b94a85ead500a7c09",
+      "changedFiles": [
+        "deliverables/technical-fit.md"
+      ],
+      "evidenceRecorded": [
+        "write_scope_valid",
+        "expected_files_exist"
+      ],
+      "promotionId": "promotion-d7e2ebee47af2f6dac4e4d6e8efa5659",
+      "promotionEventId": "38",
+      "resultingHeadCommit": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+      "promotionStep": "TASK_SATISFIED",
+      "finalTaskState": "SATISFIED"
+    },
+    "projectRevisions": [
+      {
+        "eventId": 27,
+        "revision": 1,
+        "head": "365c830126744bf66fc1528b94a85ead500a7c09"
+      },
+      {
+        "eventId": 40,
+        "revision": 2,
+        "head": "42a8ab40ce33b24fa888413207efb95878b8bd5d"
+      },
+      {
+        "eventId": 41,
+        "revision": 3,
+        "head": "42a8ab40ce33b24fa888413207efb95878b8bd5d"
+      }
+    ],
+    "taskReauthorization": [
+      {
+        "eventId": 28,
+        "taskId": "technical-fit",
+        "baseCommit": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "projectRevision": 1
+      }
+    ],
+    "final": {
+      "projectHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+      "liveHead": "07ca3558946d14a565afc9366b93caac34e5462b",
+      "tasks": {
+        "technical-fit": {
+          "taskId": "technical-fit",
+          "state": "SATISFIED",
+          "batchActivationEventId": 29,
+          "envelopeId": "envelope-123873dfcdeb4a6f69e655f0d159076d",
+          "lastEventId": 39
+        },
+        "intake-vendor-2026-02-10": {
+          "taskId": "intake-vendor-2026-02-10",
+          "state": "SATISFIED",
+          "batchActivationEventId": 15,
+          "envelopeId": "envelope-b1e67f107aba45047848b2f1bde01872",
+          "lastEventId": 25
+        }
+      }
+    }
+  },
+  "observation": {
+    "packaged": {
+      "technicalBeforeChange": {
+        "outcome": "EXACT",
+        "currentness": "CURRENT",
+        "compatibility": "EXACT",
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+      },
+      "technicalAfterIntake": {
+        "outcome": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "compatibility": "INCOMPATIBLE",
+        "availableActions": {
+          "rematerialize": false,
+          "rework": true
+        },
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      "intakeBeforePromotion": {
+        "outcome": "EXACT",
+        "currentness": "CURRENT",
+        "compatibility": "EXACT",
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+      },
+      "intakeAfterPromotion": {
+        "outcome": "UNKNOWN",
+        "currentness": "STALE",
+        "compatibility": "UNKNOWN",
+        "availableActions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "detail": "reuse is not proven (a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused); the work may still be redone on the current basis"
+      }
+    },
+    "expert": {
+      "technicalBeforeChange": {
+        "outcome": "EXACT",
+        "changeFrom": "origin",
+        "changeBaseRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "currentSourceRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "conflicts": [],
+        "unknowns": [],
+        "proofs": 0,
+        "admission": {
+          "state": "ADMITTED",
+          "admitted": true,
+          "detail": "the basis is exactly current, so no divergence exists to admit against"
+        },
+        "testOwned": {
+          "preciseReadPaths": [
+            "sources/brief.md",
+            "sources/vendor-capabilities.csv",
+            "sources/sites.md",
+            "sources/prior-notes.md"
+          ],
+          "facetObservations": "projectSemantic/assets/environment empty",
+          "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+        }
+      },
+      "technicalAfterIntake": {
+        "outcome": "INCOMPATIBLE",
+        "changeFrom": "origin",
+        "changeBaseRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "conflicts": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "kind": "read_invalidation",
+            "detail": "the source change touches a resource this result was computed from (both selectors name the source path \"sources/vendor-capabilities.csv\"), so its input would be superseded"
+          }
+        ],
+        "unknowns": [],
+        "proofs": 1,
+        "admission": {
+          "state": "CONFLICT",
+          "admitted": false,
+          "detail": "a proven interference exists, and further observation cannot remove it: 1 proven interference(s) between the world change and this result"
+        },
+        "testOwned": {
+          "preciseReadPaths": [
+            "sources/brief.md",
+            "sources/vendor-capabilities.csv",
+            "sources/sites.md",
+            "sources/prior-notes.md"
+          ],
+          "facetObservations": "projectSemantic/assets/environment empty",
+          "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+        }
+      },
+      "intakeOriginInterval": {
+        "outcome": "INCOMPATIBLE",
+        "changeFrom": "origin",
+        "changeBaseRevision": "29a08cd4be9273008892696da1f0dac2731aee46",
+        "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "conflicts": [
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "read",
+            "kind": "read_invalidation",
+            "detail": "the source change touches a resource this result was computed from (both selectors name the source path \"sources/vendor-capabilities.csv\"), so its input would be superseded"
+          },
+          {
+            "change": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "dependency": {
+              "domain": "source",
+              "scope": "path",
+              "path": "sources/vendor-capabilities.csv"
+            },
+            "side": "write",
+            "kind": "write_collision",
+            "detail": "the source change touches a resource this result also writes (both selectors name the source path \"sources/vendor-capabilities.csv\"), so accepting both would make one overwrite the other"
+          }
+        ],
+        "unknowns": [],
+        "proofs": 0,
+        "admission": {
+          "state": "CONFLICT",
+          "admitted": false,
+          "detail": "a proven interference exists, and further observation cannot remove it: 2 proven interference(s) between the world change and this result"
+        },
+        "testOwned": {
+          "preciseReadPaths": [
+            "sources/vendor-capabilities.csv"
+          ],
+          "facetObservations": "projectSemantic/assets/environment empty",
+          "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+        }
+      },
+      "intakeAcceptedHead": {
+        "outcome": "COMPATIBLE",
+        "changeFrom": "promoted-head",
+        "changeBaseRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "conflicts": [],
+        "unknowns": [],
+        "proofs": 0,
+        "admission": {
+          "state": "ADMITTED",
+          "admitted": true,
+          "detail": "an authoritative, current certificate proves non-interference: every one of the 0 change-to-dependency relation(s) is PROVEN DISJOINT under complete coverage"
+        },
+        "testOwned": {
+          "preciseReadPaths": [
+            "sources/vendor-capabilities.csv"
+          ],
+          "facetObservations": "projectSemantic/assets/environment empty",
+          "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+        }
+      },
+      "intakeAcceptedHeadUnavailableSemantic": {
+        "outcome": "UNKNOWN",
+        "changeFrom": "promoted-head",
+        "changeBaseRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "currentSourceRevision": "365c830126744bf66fc1528b94a85ead500a7c09",
+        "conflicts": [],
+        "unknowns": [
+          {
+            "part": "change_coverage",
+            "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+          },
+          {
+            "part": "change_coverage",
+            "detail": "the projectSemantic change set is not PROVEN_COMPLETE (no first-party observer exists for the project semantic change domain), so not even its emptiness can be established"
+          }
+        ],
+        "proofs": 0,
+        "admission": {
+          "state": "INSUFFICIENT_PROOF",
+          "admitted": false,
+          "detail": "the certificate records an incomplete proof: no proof was completed: change_coverage, change_coverage"
+        },
+        "testOwned": {
+          "preciseReadPaths": [
+            "sources/vendor-capabilities.csv"
+          ],
+          "facetObservations": "projectSemantic unavailable; assets/environment empty",
+          "note": "test instrumentation, not a DSH execution observation; this cannot grant production reuse"
+        }
+      }
+    },
+    "newsletterRun": {
+      "technical-fit": {
+        "unrelatedChangeWithTestFacets": "COMPATIBLE",
+        "unrelatedChangeWithUnavailableSemantic": "UNKNOWN"
+      }
+    },
+    "newsletterPackaged": {
+      "technical-fit": {
+        "beforeChange": {
+          "ok": true,
+          "value": {
+            "schemaVersion": 1,
+            "result": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+            },
+            "resolved": true,
+            "taskId": "technical-fit",
+            "targetObservationDigest": "fb1d3af117d21fc88453f74ba481df3905d64051887698742fa3eee8bffe7a61",
+            "compatibility": {
+              "outcome": "EXACT",
+              "issuanceDigest": "eb047a3ec3f43c445ba7020939d791504ef7aae2b37893e2ed9e190282616822"
+            },
+            "assessment": {
+              "schemaVersion": 1,
+              "resultSubjectRef": {
+                "kind": "ATTEMPT_RESULT",
+                "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+              },
+              "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+              "currentTargetDigest": "fb1d3af117d21fc88453f74ba481df3905d64051887698742fa3eee8bffe7a61",
+              "currentness": "CURRENT",
+              "compatibility": "EXACT",
+              "reuse": {
+                "exactCurrent": true,
+                "rematerializationAvailable": false,
+                "blocker": null
+              },
+              "rework": {
+                "available": true,
+                "blocker": null
+              },
+              "evidence": {
+                "moreCouldHelp": false,
+                "gaps": []
+              },
+              "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence",
+              "assessmentDigest": "3c09ecb805820564c0881be12260a4ce77fca61629745b74f5a2084f1a27ba3c"
+            },
+            "availableActions": {
+              "rematerialize": false,
+              "rework": false
+            },
+            "detail": "this result still holds at the exact basis it was produced from, so it needs no carrying across a divergence"
+          }
+        },
+        "afterNewsletter": {
+          "ok": true,
+          "value": {
+            "schemaVersion": 1,
+            "result": {
+              "kind": "ATTEMPT_RESULT",
+              "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+            },
+            "resolved": true,
+            "taskId": "technical-fit",
+            "targetObservationDigest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+            "compatibility": {
+              "outcome": "INCOMPATIBLE",
+              "issuanceDigest": "1727bdad4b5cda7caca8a174795717b2ed8ae5b8051bc334b0dc02caa2ed4274"
+            },
+            "assessment": {
+              "schemaVersion": 1,
+              "resultSubjectRef": {
+                "kind": "ATTEMPT_RESULT",
+                "ref": "attempt-70b2b3986b08d5f4aa340f312eb061a8"
+              },
+              "originBasisDigest": "6842d01aa3041f653ce2c8584afa79846cb439c78dee161e6e0982a4998841a7",
+              "currentTargetDigest": "295a0b3a844a845f2bd29157a24f344e9660cda6ac84ced8155b4f53a4e9a2d0",
+              "currentness": "STALE",
+              "compatibility": "INCOMPATIBLE",
+              "reuse": {
+                "exactCurrent": false,
+                "rematerializationAvailable": false,
+                "blocker": "a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable"
+              },
+              "rework": {
+                "available": true,
+                "blocker": null
+              },
+              "evidence": {
+                "moreCouldHelp": false,
+                "gaps": []
+              },
+              "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis",
+              "assessmentDigest": "2dd0b3d2c6946e0452e9d548b8b4503bf2520b29ff64dc9153a4ba43d943c488"
+            },
+            "availableActions": {
+              "rematerialize": false,
+              "rework": true
+            },
+            "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+          }
+        }
+      }
+    }
+  },
+  "controls": {
+    "wrongSourceCommit": {
+      "refused": true,
+      "error": "source commit 29a08cd4be9273008892696da1f0dac2731aee46 does not match the canonical AttemptReport.result_commit 9e9c89474bf4f8f7c3715b7a730e6b0be5761efd"
+    },
+    "wrongExpectedHead": {
+      "refused": true,
+      "error": "expected head 0000000000000000000000000000000000000000 does not match the canonical proven effect head 29a08cd4be9273008892696da1f0dac2731aee46"
+    },
+    "duplicatePromotion": {
+      "promotionId": "promotion-1a5e8dcf9f43939bff73483f0294768f",
+      "eventId": 24,
+      "resultingHeadCommit": "365c830126744bf66fc1528b94a85ead500a7c09"
+    },
+    "unauthorizedLiveHead": {
+      "job": {
+        "jobId": "wdj-c36f0f4e-6a8d-43ee-946f-0cefb9899e04",
+        "taskId": "post-control",
+        "attemptId": null,
+        "phase": "HOST_ERROR",
+        "settlement": null,
+        "hostError": "HEAD_BASIS_MISMATCH: the repository is at 07ca3558946d, the project head at 42a8ab40ce33, the proven effect head at 42a8ab40ce33 and the task's base at 42a8ab40ce33 — a worker's world must start where its envelope says the work starts"
+      },
+      "taskAfter": {
+        "taskId": "post-control",
+        "state": "READY",
+        "batchActivationEventId": null,
+        "envelopeId": "envelope-6585fb44dba7d25222a7c7b901ca584b",
+        "lastEventId": 42
+      },
+      "projectHeadAfter": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+      "liveHeadAfter": "07ca3558946d14a565afc9366b93caac34e5462b",
+      "update": {
+        "fromHead": "42a8ab40ce33b24fa888413207efb95878b8bd5d",
+        "toHead": "07ca3558946d14a565afc9366b93caac34e5462b",
+        "target": "sources/newsletter.md",
+        "paths": [
+          "sources/newsletter.md"
+        ],
+        "digestAfter": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4"
+      }
+    },
+    "outOfScopeWrite": {
+      "state": "NOT_READY",
+      "attemptId": "attempt-fcbd22b5b83c00da752e67323f191e98",
+      "reason": "OUT_OF_SCOPE",
+      "detail": "the world changed paths outside the task envelope's write_paths [deliverables/technical-fit.md]: sources/newsletter.md"
+    }
+  },
+  "historicalObservation": {
+    "cog4HeadBasisMismatch": "COG-4 rework was authorized but the D2 job refused because a direct external commit moved the live head ahead of the canonical head; that refusal is preserved as the negative control here."
+  },
+  "limitations": [
+    "No model was used; the results are mechanism results, not cognitive or comparative results.",
+    "The packaged first-party face cannot issue a positive COMPATIBLE certificate for a changed source world.",
+    "The expert COMPATIBLE/UNKNOWN diagnostics use test-owned precise read paths and empty facet observations; they are not production authority.",
+    "The deterministic worker is an in-process test port; the host read fence was characterized from code but not exercised by this run.",
+    "The completion contract narrowed out the standard command for the documentation/data write scopes; the evidence is write scope plus required artifact.",
+    "A fresh-session model continuation was not exercised in COG-5; COG-4 established the durable-state inheritance path."
+  ]
+}
