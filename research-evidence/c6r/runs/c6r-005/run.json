@@ -1,0 +1,100 @@
+{
+  "schema": "c6r-run/v1",
+  "runId": "c6r-005",
+  "createdAt": "2026-11-01T19:57:29.269Z",
+  "dir": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\c6r\\runs\\c6r-005",
+  "codeFreeze": {
+    "commit": "39e1514617015981957814410ea2471b4d3eb834",
+    "tree": "b6ea86f439636b3f078659f27adf110bdde98dc7"
+  },
+  "scenario": {
+    "t1": "2026-02-10T09:05:00Z",
+    "t2": "2026-02-14T09:10:00Z",
+    "visibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+    "source": "scripts/cog6/scenario"
+  },
+  "state": "P1_PREPARED",
+  "history": [
+    {
+      "at": "2026-11-01T19:57:29.271Z",
+      "from": null,
+      "to": "P1_PREPARED",
+      "reason": "run created",
+      "detail": null
+    }
+  ],
+  "conditions": {
+    "P1": {
+      "preparedAt": "2026-11-01T19:57:29.272Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": "research-evidence/c6r/p1-host"
+    },
+    "F1": {
+      "preparedAt": "2026-11-01T19:57:29.273Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": "research-evidence/c6r/f1-host"
+    },
+    "P3": {
+      "preparedAt": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": null
+    },
+    "F2": {
+      "preparedAt": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": null
+    }
+  },
+  "authorization": null,
+  "effects": null,
+  "evaluation": null,
+  "provider": {
+    "name": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic",
+    "egress": "windows CONNECT proxy 127.0.0.1:7890 via https-proxy-agent",
+    "keySource": "owner DSH credential store, outside the sandbox"
+  },
+  "connectivity": {
+    "dir": "research-evidence/c6r/deepseek-connect",
+    "result": {
+      "schema": "c6r-deepseek-precheck/v1",
+      "at": "2026-11-01T19:52:47.583Z",
+      "label": "NO_MODEL",
+      "proxy": "http://127.0.0.1:7890",
+      "proxyAgent": "/home/admini/c6r/dsh/node_modules/https-proxy-agent/dist/index.js",
+      "target": "https://api.deepseek.com",
+      "tls": "connected",
+      "status": 401,
+      "body": "{\"error\":{\"message\":\"Authentication Fails (missing key) (request_id: 0d7db1ab-a925-4a40-81d8-7675d5addb6f)\",\"type\":\"authentication_error\",\"param\":null,\"code\":\"invalid_request_error\"}}",
+      "reachable": true,
+      "credential": {
+        "present": true,
+        "length": 35,
+        "prefix": "sk-"
+      },
+      "note": "Unauthenticated GET / through the host CONNECT proxy. No model request and no key sent."
+    }
+  }
+}
