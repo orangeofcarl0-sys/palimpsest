@@ -1,0 +1,103 @@
+{
+  "schema": "cog3-verification/v1",
+  "at": "2026-11-01",
+  "codeFreeze": {
+    "commit": "bf21110497e8a15211899f0334795185ebeffff3",
+    "tree": "b9143917811108563b7a84ee55d8f4e54e8660d0"
+  },
+  "build": {
+    "command": "pnpm run build",
+    "exit": 0,
+    "log": "verification/build.log"
+  },
+  "architecture": {
+    "command": "pnpm run architecture:check",
+    "exit": 0,
+    "violations": 0,
+    "baselineExceptions": 9,
+    "log": "verification/architecture.log"
+  },
+  "publicApi": {
+    "command": "pnpm run architecture:check-public-api",
+    "exit": 0,
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0,
+    "log": "verification/public-api.log"
+  },
+  "targeted": {
+    "command": "npx vitest run <15 files> --maxWorkers=1",
+    "selection": [
+      "test/cog3_branch_read_prompt.test.ts",
+      "test/cog2_project_context_hint.test.ts",
+      "test/cog1_workspace_write_fence.test.ts",
+      "test/uxa_collaboration.test.ts",
+      "test/uxc_host_runtime.test.ts",
+      "test/lean_delegation_runtime.test.ts",
+      "test/lean_delegation_surface.test.ts",
+      "test/lean_delegation_snapshot.test.ts",
+      "test/lean_delegation_orthogonality.test.ts",
+      "test/lean_branch_capability.test.ts",
+      "test/lean_branch_seam.test.ts",
+      "test/n_reasoning_cell.test.ts",
+      "test/p_attention.test.ts",
+      "test/r2lr_last_mile.test.ts",
+      "test/trajectory_p2d2_host_delivery.test.ts"
+    ],
+    "files": 15,
+    "tests": 164,
+    "failed": 0,
+    "exit": 0,
+    "log": "verification/targeted-serial.log"
+  },
+  "broad": {
+    "command": "npx vitest run --exclude '**/r3l0*.test.ts' --exclude '**/trajectory_*.test.ts' --maxWorkers=2",
+    "selection": {
+      "all": 417,
+      "excludedR3l0": 39,
+      "excludedTrajectory": 78,
+      "includedFiles": 301
+    },
+    "files": 301,
+    "testSuites": 1521,
+    "failedTestSuites": 4,
+    "tests": 3782,
+    "passed": 3779,
+    "failed": 3,
+    "success": false,
+    "failedFile": "test/inplace_execution.test.ts",
+    "failedTests": [
+      "gate observation: only a number is an exit code a missing executable observes as null, never NaN (the live defect)",
+      "in-place gate: it runs where the work is the gate executes in the repository and records the observed exit code",
+      "in-place promotion: the ledger advances to the work that is already in the tree promotes: the task is satisfied and the ledger head becomes the recorded commit"
+    ],
+    "diagnostic": {
+      "hypothesis": "the shell PATH used for the broad run has no `python` executable; the gate command `python -c ...` therefore produced no observable exit code",
+      "command": "PATH=/d/ProgramData/anaconda3:$PATH npx vitest run test/inplace_execution.test.ts --maxWorkers=1",
+      "files": 1,
+      "tests": 9,
+      "failed": 0,
+      "exit": 0,
+      "log": "verification/inplace-python-path.log",
+      "disposition": "environment-caused, not an application regression and not a consequence of the COG-3 host change; the broad suite was NOT rerun to green"
+    },
+    "log": "verification/broad.log",
+    "json": "verification/broad.json"
+  },
+  "historicalFailures": {
+    "cog2TargetedParallel": "remains unattributed: 8/9 failed files in the first default-parallel run, 5/5 in the preserved JSON diagnostic, one file passed in isolation, serial authoritative run passed. COG-3 does not reclassify it."
+  },
+  "protectedAssets": {
+    "worktrees": 95,
+    "gateRoots": 19,
+    "evidenceTrees": 71,
+    "evidenceTreesBeforeCog3": 70,
+    "stashes": 0,
+    "realRuntimeHomeWritten": false
+  },
+  "hygiene": {
+    "testGlobalSetupRemovedLeakedTempDirs": 971,
+    "note": "the repository's own test global setup removed dirs created by the run"
+  },
+  "note": "The failing broad run is the authoritative record. The isolated diagnostic supports the environmental hypothesis; no counter was reset and the suite was not rerun until it happened to pass."
+}
