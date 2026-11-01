@@ -10,7 +10,6 @@
  * wording names the read tools and no longer claims a single-tool boundary.
  */
 import { describe, expect, it } from "vitest";
-import { pathToFileURL } from "node:url";
 
 const moduleUrl = new URL("../host/dsh/lib/branch_prompt.js", import.meta.url).href;
 

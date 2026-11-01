@@ -614,6 +614,7 @@ export function sessionTelemetry(homeDir) {
       palimpsestCalls: palimpsestCalls.length,
       palimpsestToolNames: [...new Set(palimpsestCalls.map((call) => call.name))],
       toolCallDetails: toolCalls,
+      toolResults: toolResults.slice(-200),
       userTexts,
       userChars: userTexts.reduce((sum, text) => sum + text.length, 0),
       assistantChars: assistantTexts.reduce((sum, text) => sum + text.length, 0),
