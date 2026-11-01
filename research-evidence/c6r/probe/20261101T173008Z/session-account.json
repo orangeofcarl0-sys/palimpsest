@@ -1,0 +1,75 @@
+{
+  "account": {
+    "sessions": [
+      {
+        "sessionId": "session-2d84fd8e-1b05-48be-ab68-167bdb59fa47",
+        "streams": 1,
+        "complete": true,
+        "providerErrors": 0,
+        "usageEvents": 0,
+        "duplicateEvents": 0,
+        "missingUsageMessages": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "totalTokens": 0
+      }
+    ],
+    "sessionCount": 1,
+    "totals": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 0,
+      "totalTokens": 0,
+      "usageEvents": 0
+    },
+    "problems": []
+  },
+  "streams": [
+    {
+      "path": "research-evidence/c6r/probe/20261101T173008Z/session/session.v4.jsonl.zstd",
+      "sessionId": "session-2d84fd8e-1b05-48be-ab68-167bdb59fa47",
+      "events": 32,
+      "frames": 16,
+      "truncatedFrames": 0,
+      "malformedLines": 0,
+      "complete": true,
+      "turnEnd": {
+        "turn": 1,
+        "reason": {
+          "kind": "error",
+          "error": {
+            "message": "DeepSeek Messages request failed (502)",
+            "code": "SERVER",
+            "status": 502
+          }
+        }
+      },
+      "toolCatalogue": [
+        [
+          "bash",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "read",
+          "read_image",
+          "skill",
+          "todo_write",
+          "update_goal",
+          "working_directory",
+          "write"
+        ]
+      ],
+      "toolCalls": [],
+      "toolResults": []
+    }
+  ]
+}

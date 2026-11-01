@@ -1,0 +1,95 @@
+{
+  "schema": "c6r-provider-probe/v2",
+  "at": "2026-11-01T17:33:30.000Z",
+  "startedAt": "2026-11-01T17:30:08Z",
+  "firstRequestAt": "2026-11-01T17:30:34.143Z",
+  "lastRequestAt": "2026-11-01T17:32:25.397Z",
+  "retryWindowMs": 111254,
+  "codeFreeze": {
+    "commit": "103c4eb107418e0d253d27681ec33f77b0514de3",
+    "tree": "b3f4004b056c1c789bc0b6fc7281cc5ba5b77f1f"
+  },
+  "headAtProbe": "2411eef74f9c6aabba59531061db0a3f03ac6966",
+  "exit": null,
+  "harnessExit": 128,
+  "harnessExitReason": "the probe shell's final identity step called git inside WSL, where a linked worktree with a Windows gitdir path is not resolvable; the provider attempt had already finished",
+  "dshTurnEnd": {
+    "kind": "error",
+    "error": {
+      "message": "DeepSeek Messages request failed (502)",
+      "code": "SERVER",
+      "status": 502
+    }
+  },
+  "quotaError": false,
+  "providerError": {
+    "status": 502,
+    "error": "read ECONNRESET"
+  },
+  "proxyRequests": [
+    { "at": "2026-11-01T17:30:34.143Z", "method": "POST", "path": "/v1/messages", "status": 502, "error": "read ECONNRESET" },
+    { "at": "2026-11-01T17:30:53.959Z", "method": "POST", "path": "/v1/messages", "status": 502, "error": "read ECONNRESET" },
+    { "at": "2026-11-01T17:31:14.174Z", "method": "POST", "path": "/v1/messages", "status": 502, "error": "read ECONNRESET" },
+    { "at": "2026-11-01T17:31:35.231Z", "method": "POST", "path": "/v1/messages", "status": 502, "error": "read ECONNRESET" },
+    { "at": "2026-11-01T17:31:58.359Z", "method": "POST", "path": "/v1/messages", "status": 502, "error": "read ECONNRESET" },
+    { "at": "2026-11-01T17:32:25.397Z", "method": "POST", "path": "/v1/messages", "status": 502, "error": "read ECONNRESET" }
+  ],
+  "providerAttempts": 6,
+  "adapterRetries": 5,
+  "sessionId": "session-2d84fd8e-1b05-48be-ab68-167bdb59fa47",
+  "sessionEvents": 32,
+  "sessionComplete": true,
+  "requestHeaders": 1,
+  "assistantMessages": 0,
+  "usage": null,
+  "permission": {
+    "preset": "workspace-write",
+    "sandboxMode": "workspace-write",
+    "approvalPolicy": "never",
+    "activated": true
+  },
+  "toolCatalogue": [
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "read",
+    "read_image",
+    "skill",
+    "todo_write",
+    "update_goal",
+    "working_directory",
+    "write"
+  ],
+  "network": {
+    "dns": "198.18.0.38",
+    "dnsClass": "fake-IP / benchmark range (198.18.0.0/15), injected by the host's proxy layer",
+    "tcp443": "connected",
+    "tlsHandshake": "did_not_complete",
+    "httpRequestSentToProvider": false,
+    "note": "The upstream connections reset after TCP connect; the provider's own quota or authentication was never reached."
+  },
+  "credential": {
+    "source": "owner DSH credential store outside the sandbox",
+    "matched": true,
+    "length": 35,
+    "prefix": "sk-",
+    "quoted": false,
+    "logged": false,
+    "enteredSandbox": false
+  },
+  "state": "BLOCKED",
+  "reason": "provider_transport_reset",
+  "labels": [
+    "HARNESS_NETWORK_DEFECT",
+    "NOT_A_QUOTA_OBSERVATION",
+    "NO_MODEL_TURN"
+  ],
+  "note": "One bounded availability probe through the isolated runtime and provider-only egress. The permission preset and the real tool catalogue were exercised; the provider was never reached. This is not a cognitive observation and not a quota result. The small harness defect (a WSL git read of a linked-worktree gitdir) is recorded, not patched after the Code Freeze; the next probe requires a new Code Freeze and a reachable provider path."
+}
