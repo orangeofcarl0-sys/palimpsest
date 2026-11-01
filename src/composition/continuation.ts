@@ -49,6 +49,7 @@ import { makeRematerializationRuntime, type RematerializationRuntime } from "../
 import type { AuthoritativeResultResolver } from "../result/subject.js";
 import type { ProjectWorldBasisRuntime, ProjectWorldObservationPort } from "../project_world/runtime.js";
 import { gitSourceChangeObserver, GIT_SOURCE_OBSERVER_ID, GIT_SOURCE_OBSERVER_VERSION, GIT_SOURCE_MECHANISM } from "../deployment/source_change_observer.js";
+import { gitAncestryProbe, resolvePromotionBaseline } from "../deployment/promotion_lineage.js";
 import { gitSourceRematerializer } from "../deployment/source_rematerializer.js";
 import { firstPartyResultResolver } from "../deployment/result_resolution.js";
 import { firstPartyAttemptResultVerificationSource } from "../project_verification/index.js";
@@ -349,14 +350,42 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     const unavailable = (domain: "project_semantic" | "source" | "assets" | "environment", detail: string) =>
       conservative.unavailable({ domain, detail });
 
+    /**
+     * COG-5 §5.5 — WHICH INTERVAL ANSWERS "WHAT CHANGED AFTER THIS RESULT?".
+     *
+     * An unpromoted candidate's origin is the right baseline. A promoted result's own output is already in
+     * the accepted world, so its change interval starts at the ACCEPTED RESULTING HEAD recorded by the
+     * normal Promotion Lineage — never at the result commit by assumption, and never at the origin, which
+     * would report the result's own output as a later external change.
+     *
+     * `UNPROVEN` is UNAVAILABLE, not an origin fallback: the assessor then reports `UNKNOWN` (insufficient
+     * proof rather than a fabricated conflict or a fabricated compatibility).
+     */
+    const baseline = resolvePromotionBaseline({
+      attemptId: result.resultSubjectRef.ref,
+      resultCommit: result.sourceResult === null ? null : result.sourceResult.resultRevision,
+      currentSourceRevision: currentSource.ok ? currentSource.revision.revision : null,
+      promotionFacts: controller.promotions.promotionFactsSync(),
+      provesAncestry: gitAncestryProbe(repo),
+    });
     const changeRef =
-      originSourceRevision !== null && currentSource.ok
-        ? sourceObserver.observeChange({
-            fromRevision: originSourceRevision,
-            toRevision: currentSource.revision.revision,
-            scopeRef: repo,
-          })
-        : unavailable("source", "the basis-to-current source change could not be observed");
+      baseline.state === "UNPROVEN"
+        ? unavailable("source", `the post-promotion change interval could not be anchored: ${baseline.detail}`)
+        : baseline.state === "PROMOTED"
+          ? currentSource.ok
+            ? sourceObserver.observeChange({
+                fromRevision: baseline.baselineRevision,
+                toRevision: currentSource.revision.revision,
+                scopeRef: repo,
+              })
+            : unavailable("source", "the current source revision could not be observed")
+          : originSourceRevision !== null && currentSource.ok
+            ? sourceObserver.observeChange({
+                fromRevision: originSourceRevision,
+                toRevision: currentSource.revision.revision,
+                scopeRef: repo,
+              })
+            : unavailable("source", "the basis-to-current source change could not be observed");
     const writeRef =
       originSourceRevision !== null && result.sourceResult !== null
         ? sourceObserver.observeChange({
