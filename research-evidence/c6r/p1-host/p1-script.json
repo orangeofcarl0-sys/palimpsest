@@ -1,0 +1,14 @@
+{
+  "turns": [
+    {
+      "tool_calls": [
+        { "id": "toolu_p_status", "name": "palimpsest_status", "input": {} },
+        { "id": "toolu_p_overview", "name": "palimpsest_project", "input": { "action": "overview" } },
+        { "id": "toolu_p_journal", "name": "palimpsest_project", "input": { "action": "journal_entries" } },
+        { "id": "toolu_p_inbox", "name": "read", "input": { "file_path": "/run/p1/inbox/arrivals.jsonl" } },
+        { "id": "toolu_p_caps", "name": "read", "input": { "file_path": "/run/p1/world/sources/vendor-capabilities.csv" } }
+      ]
+    },
+    { "text": "P1_QUALIFICATION_DONE" }
+  ]
+}
