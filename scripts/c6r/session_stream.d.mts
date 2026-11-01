@@ -22,6 +22,7 @@ export interface SessionAccount {
   streams: number;
   complete: boolean;
   providerErrors: number;
+  assistantMessages: number;
   usageEvents: number;
   duplicateEvents: number;
   missingUsageMessages: number;

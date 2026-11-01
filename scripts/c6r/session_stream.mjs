@@ -109,6 +109,7 @@ export function accountSessions(streams) {
         streams: 0,
         complete: true,
         providerErrors: 0,
+        assistantMessages: 0,
         usageEvents: 0,
         duplicateEvents: 0,
         missingUsageMessages: 0,
@@ -126,6 +127,9 @@ export function accountSessions(streams) {
       if (event.type === "request/error" || event.type === "provider/error" || event.type === "turn/error") {
         session.providerErrors += 1;
       }
+      if (event.type === "turn/end" && event.data?.reason?.kind === "error") {
+        session.providerErrors += 1;
+      }
       if (event.type !== "assistant/message") continue;
       const key = `${stream.sessionId}\0${event.seq}`;
       if (seen.has(key)) {
@@ -133,6 +137,7 @@ export function accountSessions(streams) {
         continue;
       }
       seen.add(key);
+      session.assistantMessages += 1;
       const usage = usageOfEvent(event);
       if (usage === null) {
         session.missingUsageMessages += 1;
