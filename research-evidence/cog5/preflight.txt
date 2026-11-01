@@ -1,0 +1,53 @@
+COG-5 read-only preflight, captured 2026-11-01T12:17:08Z
+repository: /f/Codex_Work_Space/Palimpsest/palimpsest-sr1
+
+$ git status --short
+?? research-evidence/cog5/
+
+$ git status --porcelain=v1 -uall
+?? research-evidence/cog5/preflight.txt
+
+$ git branch --show-current
+palimpsest-cog5-trustworthy-continuation
+
+$ git rev-parse HEAD
+924d30414ffd2a7b5f8f6aa297b8a29c9065c8aa
+
+$ git rev-parse HEAD^{tree}
+1b451532aa07da1f8035fe9f5855b6e62fd5781c
+
+$ git rev-parse origin/main
+044330b2e55198542d545edc42ed9c36e7ce896b
+
+$ git rev-parse origin/palimpsest-cog4-state-synthesis
+924d30414ffd2a7b5f8f6aa297b8a29c9065c8aa
+
+$ git stash list
+
+$ git branch --list palimpsest-cog5-trustworthy-continuation
+* palimpsest-cog5-trustworthy-continuation
+
+$ git branch -r --list origin/palimpsest-cog5-trustworthy-continuation
+
+$ git rev-list --left-right --count origin/main...HEAD
+0	365
+
+$ git worktree list --porcelain (counts)
+worktrees: 95
+locked entries: 2
+prunable entries: 90
+
+$ protected resources
+gate roots (~/.palimpsest-gates): 19
+evidence trees (research-evidence/*/): 73
+stashes: 0
+
+$ branch creation
+git switch -c palimpsest-cog5-trustworthy-continuation 924d30414ffd2a7b5f8f6aa297b8a29c9065c8aa
+-> Switched to a new branch
+
+$ post-creation
+palimpsest-cog5-trustworthy-continuation
+924d30414ffd2a7b5f8f6aa297b8a29c9065c8aa
+1b451532aa07da1f8035fe9f5855b6e62fd5781c
+?? research-evidence/cog5/
