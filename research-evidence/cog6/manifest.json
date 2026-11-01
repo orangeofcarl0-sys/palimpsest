@@ -1,9 +1,11 @@
 {
-  "schema": "cog6-manifest/v1",
-  "generatedAt": "2026-11-01T14:37:35.159Z",
+  "schema": "cog6-manifest/v2",
+  "generatedAt": "2026-11-01T14:39:43.062Z",
   "codeFreeze": "c10af086896abc139110eea041fdaccd19135590",
   "codeFreezeTree": "4515f31c3122605d029c7268ff55b0b791940a3a",
-  "evidenceFreeze": "forward: the commit adding this manifest and research-evidence/cog6/**; a commit cannot contain its own SHA",
+  "evidenceBlobSource": "967d176a7b504522ab785f0ba1a9d682bb4e068a",
+  "evidenceFreeze": "the evidence-only commit adding this manifest; the hashed non-manifest blobs are unchanged by it",
+  "hashBasis": "sha256 of the committed Git blob at the evidence commit; the three captured deliverable working-tree digests are recorded separately in capturedWorkingTreeHashes",
   "model": {
     "used": false,
     "provider": "deepseek-official/deepseek-flash",
@@ -275,18 +277,18 @@
       },
       {
         "path": "research-evidence/cog6/runs/main/files/deliverables/cost-schedule.md",
-        "sha256": "46fda819406463bb3ed99da9c72f1448b9e138becd965010ee9c6d10453b08f8",
-        "bytes": 413
+        "sha256": "4ffe9bd76be2b4cb2b0598da17ed055b8d2502401c2f12c698f5902f6f4d4d60",
+        "bytes": 402
       },
       {
         "path": "research-evidence/cog6/runs/main/files/deliverables/technical-fit.md",
-        "sha256": "1138a8175a3708fb2b0a957dd23bc5652a59c80839dce649841e330bf8974ecb",
-        "bytes": 425
+        "sha256": "98fc7f27c5bf7866963092edfd8f643fa04b617e3776126469d2724ddb4720d1",
+        "bytes": 410
       },
       {
         "path": "research-evidence/cog6/runs/main/files/deliverables/technical-refresh.md",
-        "sha256": "736e591e902f789fc1e620b8a2ffa4dc7e25d57ac42c8341a167415bcd4d4908",
-        "bytes": 972
+        "sha256": "caa034029184ea632a871c9f4aa277a4f73adb2ce6ef45f647375d526a9e32ad",
+        "bytes": 957
       },
       {
         "path": "research-evidence/cog6/runs/main/files/sources/vendor-capabilities.csv",
@@ -370,7 +372,27 @@
       }
     ]
   },
-  "note": "No model was used. The deterministic mechanism is operator-authored and executed by a test-owned in-process WorkWorkerRunPort. The Agent-behavior gates are BLOCKED by provider quota.",
+  "capturedWorkingTreeHashes": {
+    "research-evidence/cog6/runs/main/files/deliverables/technical-refresh.md": {
+      "capturedWorkingTreeSha256": "736e591e902f789fc1e620b8a2ffa4dc7e25d57ac42c8341a167415bcd4d4908",
+      "capturedBytes": 972,
+      "committedBlobSha256": "caa034029184ea632a871c9f4aa277a4f73adb2ce6ef45f647375d526a9e32ad",
+      "note": "the rubric read the run-time working tree; Git committed the same text with LF line endings"
+    },
+    "research-evidence/cog6/runs/main/files/deliverables/technical-fit.md": {
+      "capturedWorkingTreeSha256": "1138a8175a3708fb2b0a957dd23bc5652a59c80839dce649841e330bf8974ecb",
+      "capturedBytes": 425,
+      "committedBlobSha256": "98fc7f27c5bf7866963092edfd8f643fa04b617e3776126469d2724ddb4720d1",
+      "note": "the rubric read the run-time working tree; Git committed the same text with LF line endings"
+    },
+    "research-evidence/cog6/runs/main/files/deliverables/cost-schedule.md": {
+      "capturedWorkingTreeSha256": "46fda819406463bb3ed99da9c72f1448b9e138becd965010ee9c6d10453b08f8",
+      "capturedBytes": 413,
+      "committedBlobSha256": "4ffe9bd76be2b4cb2b0598da17ed055b8d2502401c2f12c698f5902f6f4d4d60",
+      "note": "the rubric read the run-time working tree; Git committed the same text with LF line endings"
+    }
+  },
+  "note": "No model was used. The deterministic mechanism is operator-authored and executed by a test-owned in-process WorkWorkerRunPort. The Agent-behavior gates are BLOCKED by provider quota. The rubric's deliverableDigest in outcomes.json is the captured working-tree digest recorded above, not the normalized committed blob.",
   "verification": {
     "hashesChecked": 68,
     "mismatches": 0,
