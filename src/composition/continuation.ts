@@ -550,7 +550,9 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
             batch_activation_event_id: batchActivationEventId,
             target_state: "READY",
           }),
-          expected_project_revision: 0,
+          // A reopening is not a revision event, but every ordinary event must still name the
+          // ProjectIR revision it was composed against.
+          expected_project_revision: controller.work.project().revision,
         }),
         permit,
         { assessmentDigest },

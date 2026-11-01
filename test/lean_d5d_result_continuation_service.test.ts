@@ -964,6 +964,44 @@ describe("§D5-d the structural pins", () => {
 });
 
 /**
+ * COG-6: a governed reopening must carry the CURRENT ProjectIR revision.
+ *
+ * The reopen append used to pass `expected_project_revision: 0` unconditionally. That happened to be true
+ * in the first packaged scenarios, but any project whose plan was revised before its result became stale
+ * (a second task added, an ordinary `palimpsest_plan` revision) was refused by the event store with
+ * "expected revision 0, current revision is N". The reopening is not a revision event, but every ordinary
+ * event must still name the revision it was composed against.
+ */
+describe("§D5-d the governed opening after a plan revision", () => {
+  it("15. REWORK AFTER A REVISION: the reopening names the current ProjectIR revision", async () => {
+    const r = await rig();
+    try {
+      // One ordinary plan revision while the project is quiescent, before any attempt exists.
+      r.installed.controller.plan({
+        tasks: TASKS.map((taskId) => taskSpec(taskId)),
+        reason: "a normal task-graph revision before the work",
+      });
+      expect(r.ir().revision).toBe(1);
+
+      await driftLine(r);
+      const inspection = r.installed.continuation!.inspect({ result: r.refOf("task-b") });
+      expect(inspection.availableActions.rework).toBe(true);
+
+      const outcome = await r.installed.continuation!.startRework({
+        result: r.refOf("task-b"),
+        expectedAssessmentDigest: inspection.assessment!.assessmentDigest,
+      });
+      expect(["REOPENED_WAITING_FOR_QUIESCENCE", "READY_FOR_DELEGATION"]).toContain(outcome.state);
+      expect(r.reworkEvents()).toHaveLength(1);
+      expect(r.taskState("task-b")).toBe("READY");
+      expect(r.ir().revision).toBe(1);
+    } finally {
+      await r.close();
+    }
+  }, 240_000);
+});
+
+/**
  * Retry the record-decided replay until the D2-d lane takes this task's re-execution. The intermediate
  * READY_FOR_DELEGATION states are the honest "the scheduler boots the task IT makes next / the single
  * mutating lane is held" — never fabricated delegation.
