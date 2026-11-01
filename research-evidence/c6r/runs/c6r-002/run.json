@@ -1,0 +1,93 @@
+{
+  "schema": "c6r-run/v1",
+  "runId": "c6r-002",
+  "createdAt": "2026-11-01T18:14:46.131Z",
+  "dir": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\c6r\\runs\\c6r-002",
+  "codeFreeze": {
+    "commit": "508c9a07a4bbb9439947c8ae95eaa298ad7341ba",
+    "tree": "1c842de2641dcd93a99f00b0ac2253f48f79dba2"
+  },
+  "scenario": {
+    "t1": "2026-02-10T09:05:00Z",
+    "t2": "2026-02-14T09:10:00Z",
+    "visibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+    "source": "scripts/cog6/scenario"
+  },
+  "state": "P1_PREPARED",
+  "history": [
+    {
+      "at": "2026-11-01T18:14:46.132Z",
+      "from": null,
+      "to": "P1_PREPARED",
+      "reason": "run created",
+      "detail": null
+    }
+  ],
+  "conditions": {
+    "P1": {
+      "preparedAt": "2026-11-01T18:14:46.133Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": "research-evidence/c6r/p1-host"
+    },
+    "F1": {
+      "preparedAt": "2026-11-01T18:14:46.134Z",
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": "research-evidence/c6r/f1-host"
+    },
+    "P3": {
+      "preparedAt": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": null
+    },
+    "F2": {
+      "preparedAt": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "sessionId": null,
+      "exit": null,
+      "usage": null,
+      "classification": null,
+      "evidence": null
+    }
+  },
+  "authorization": null,
+  "effects": null,
+  "evaluation": null,
+  "provider": {
+    "name": "opencode",
+    "model": "deepseek-v4.1-flash",
+    "protocol": "openai-chat-completions",
+    "baseUrl": "https://opencode.ai/zen/go/v1",
+    "zcodeProviderId": "5c7f8d75-e85e-4de5-9b27-e2b59eab1c7a",
+    "keySource": "zcode provider_config.json (outside the sandbox)"
+  },
+  "initial": {
+    "p1ProjectHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+    "p1Revision": 3,
+    "p1Ready": [
+      "technical-refresh"
+    ],
+    "p1Satisfied": [
+      "technical-fit",
+      "cost-schedule"
+    ],
+    "p1VisibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+    "p1CanonicalCapabilities": "f81576167c284060eb494706e424204d99028823fe71bf56476883d49e4d9373",
+    "p1CandidateOnDisk": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c"
+  }
+}
