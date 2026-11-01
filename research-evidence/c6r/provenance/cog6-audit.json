@@ -1,0 +1,112 @@
+{
+  "schema": "c6r-cog6-provenance-audit/v1",
+  "auditedAt": "2026-11-01T16:24:07.515Z",
+  "subject": "COG-6 `mechanism.rubric.acceptedCapabilitiesDigest`",
+  "sourceIdentities": {
+    "candidateA": {
+      "candidateId": "sablewick-capabilities-2026-02-10",
+      "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "provenance": "inbox/2026-02-10/vendor-capabilities.csv"
+    },
+    "candidateB": {
+      "candidateId": "sablewick-capabilities-2026-02-14-corrected",
+      "digest": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+      "provenance": "inbox/2026-02-14/vendor-capabilities-corrected.csv"
+    },
+    "acceptedIntakeHead": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+    "acceptedBlobDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "acceptedBlobEqualsCandidateA": true,
+    "finalProjectHead": "22796231660d7915c561a34445aecbd7f1900159",
+    "finalLiveHead": "caa543441c4510941e0f228c6991616f75fb3557"
+  },
+  "fieldUnderAudit": {
+    "path": "mechanism.rubric.acceptedCapabilitiesDigest",
+    "valueInOutcomes": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "presentInRubricJson": false,
+    "rubricJsonFields": [
+      "checks",
+      "failed",
+      "siteBVendors",
+      "deliverable",
+      "requirementR3",
+      "taskState",
+      "result"
+    ],
+    "valueEqualsCandidateB": true,
+    "valueEqualsAcceptedBlob": false
+  },
+  "preservedFinalSnapshot": {
+    "path": "research-evidence/cog6/runs/main/files/sources/vendor-capabilities.csv",
+    "digest": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "equalsCandidateB": true,
+    "equalsCandidateA": false,
+    "equalsWorktreeSnapshotField": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "note": "this file is the FINAL working-tree snapshot, captured by writeRunArtifacts AFTER the direct Candidate B control"
+  },
+  "rubricEvaluation": {
+    "recordedAt": null,
+    "recordedAtExplanation": "the rubric was assigned directly, not wrapped in recorder.capture, so it carries no timestamp of its own",
+    "window": {
+      "notBefore": "2026-11-01T14:25:56.339Z",
+      "notAfter": "2026-11-01T14:25:56.473Z",
+      "beforeDirectControl": true
+    },
+    "checks": {
+      "acceptedV3MinIsZero": true,
+      "noVendorSatisfiesSiteB": true,
+      "deliverableStatesNoSiteBVendor": true,
+      "deliverablePreservesCertificateUnverified": true,
+      "requirementR3Unchanged": true,
+      "goalUnchanged": true,
+      "taskAccepted": true,
+      "resultCommitPresent": true,
+      "journalHasAgentNegativeResult": false
+    },
+    "siteBVendors": [],
+    "taskState": "SATISFIED",
+    "resultCommit": "7be38267ca994b1529e08e2ad77ebd23e845bc38",
+    "mechanicalContradiction": {
+      "siteBVendorsUnderCandidateA": [],
+      "siteBVendorsUnderCandidateB": [
+        "V4"
+      ],
+      "recordedSiteBVendors": [],
+      "candidateBWouldYieldAVendor": true,
+      "recordedOutputIsCompatibleWithB": false,
+      "conclusion": "the rubric's own `siteBVendors` and `noVendorSatisfiesSiteB` could only have been produced from A-era capability data; Candidate B makes V4 compliant, so a rubric reading B would have recorded V4"
+    }
+  },
+  "sequence": {
+    "intakePromotionAt": "2026-11-01T14:25:52.452Z",
+    "reworkPromotionAt": "2026-11-01T14:25:55.893Z",
+    "finalTaskAt": "2026-11-01T14:25:56.339Z",
+    "directControlAt": "2026-11-01T14:25:56.473Z",
+    "directControlFromHead": "22796231660d7915c561a34445aecbd7f1900159",
+    "directControlToHead": "caa543441c4510941e0f228c6991616f75fb3557"
+  },
+  "extractorEvidence": {
+    "found": true,
+    "line": 181,
+    "source": "acceptedCapabilitiesDigest: sha(join(RUNS, \"main\", \"files\", \"sources\", \"vendor-capabilities.csv\")),"
+  },
+  "worldCheck": {
+    "path": "F:/Codex_Work_Space/Palimpsest/.cog6-rig/final-main/world",
+    "acceptedIntakeHead": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+    "acceptedIntakeBlob": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "finalProjectHead": "22796231660d7915c561a34445aecbd7f1900159",
+    "finalProjectHeadBlob": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "finalLiveHead": "caa543441c4510941e0f228c6991616f75fb3557",
+    "finalLiveHeadBlob": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "coreAutocrlf": "true"
+  },
+  "conclusion": {
+    "theFieldWasProducedByTheRubric": false,
+    "theFieldWasProducedByTheEvidenceExtractor": true,
+    "whatTheExtractorUsed": "the post-control working-tree snapshot written to files/** by writeRunArtifacts",
+    "acceptedCanonicalIdentity": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "negativeControlIdentity": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "rubricObservedB": false,
+    "rubricRecordedTheBlobItRead": false,
+    "remediation": "C6-R evaluates only committed blobs at explicitly named heads, records the evaluation time and subject, and marks an unresolvable basis UNQUALIFIED"
+  }
+}
