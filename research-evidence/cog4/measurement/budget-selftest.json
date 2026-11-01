@@ -1,0 +1,262 @@
+{
+  "schema": "cog4-budget-selftest/v1",
+  "at": "2026-11-01T09:46:23.088Z",
+  "simulated": true,
+  "note": "Usage values are simulated test-owned records. No model was called. This proves the monitor's accounting and launch policy, not any model behaviour.",
+  "limits": {
+    "sessionCap": 12,
+    "tokenCap": 12000000,
+    "launchStopTokens": 8000000,
+    "principalReserveTokens": 300000,
+    "childReserveTokens": 100000,
+    "perSessionMinutes": 8
+  },
+  "cases": [
+    {
+      "name": "duplicate observation is charged once",
+      "passed": true,
+      "detail": {
+        "observed": 1000,
+        "second": {
+          "counted": false,
+          "duplicate": true,
+          "sessionKey": "h1:s1",
+          "seq": 1
+        },
+        "duplicates": 1
+      }
+    },
+    {
+      "name": "delayed event is charged once and flagged",
+      "passed": true,
+      "detail": {
+        "observed": 1500,
+        "late": {
+          "counted": true,
+          "duplicate": false,
+          "delayed": true,
+          "sessionKey": "h1:s2",
+          "seq": 2
+        },
+        "delayed": 1
+      }
+    },
+    {
+      "name": "a resumed Session is one Session and its events sum once",
+      "passed": true,
+      "detail": {
+        "sessions": 1,
+        "observed": 2000
+      }
+    },
+    {
+      "name": "a child Session is counted separately",
+      "passed": true,
+      "detail": {
+        "sessions": 2,
+        "observed": 1400
+      }
+    },
+    {
+      "name": "cache-read is reported separately from input/output",
+      "passed": true,
+      "detail": {
+        "input": 50,
+        "output": 100,
+        "cache": 850,
+        "observed": 1000
+      }
+    },
+    {
+      "name": "launch is refused when observed + live reserve + estimate crosses the launch-stop threshold",
+      "passed": true,
+      "detail": {
+        "refused": {
+          "allowed": false,
+          "reasons": [
+            "observed 500000 + live reserve 200000 + estimated 400000 exceeds the launch-stop threshold 1000000"
+          ],
+          "estimatedTokens": 400000,
+          "snapshot": {
+            "schemaVersion": 1,
+            "limits": {
+              "sessionCap": 12,
+              "tokenCap": 5000000,
+              "launchStopTokens": 1000000,
+              "principalReserveTokens": 200000,
+              "childReserveTokens": 100000,
+              "perSessionMinutes": 8
+            },
+            "sessionsStarted": 1,
+            "sessionsCompleted": 0,
+            "liveSessions": 1,
+            "observedTokens": 500000,
+            "inputTokens": 10,
+            "outputTokens": 499990,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0,
+            "inFlightReserveTokens": 200000,
+            "projectedCeilingTokens": 700000,
+            "remainingToLaunchStop": 500000,
+            "remainingToCap": 4500000,
+            "launchStopReached": false,
+            "stopRequested": false,
+            "sessionCapReached": false,
+            "duplicateObservations": 0,
+            "delayedObservations": 0,
+            "overWallClock": [],
+            "sessions": [
+              {
+                "sessionKey": "h1:live",
+                "sessionId": "live",
+                "home": "h1",
+                "role": "principal",
+                "parent": null,
+                "startedAt": null,
+                "lastEventAt": null,
+                "completedAt": null,
+                "events": 1,
+                "inputTokens": 10,
+                "outputTokens": 499990,
+                "cacheReadTokens": 0,
+                "cacheWriteTokens": 0,
+                "totalTokens": 500000,
+                "unavailable": []
+              }
+            ],
+            "note": "Tokens are reported model usage observed from assistant/message events, not billing. Cache-read is reported separately."
+          }
+        }
+      }
+    },
+    {
+      "name": "launch is allowed again after the live reserve is released and enough headroom remains",
+      "passed": true,
+      "detail": {
+        "allowed": {
+          "allowed": true,
+          "reasons": [],
+          "estimatedTokens": 300000,
+          "snapshot": {
+            "schemaVersion": 1,
+            "limits": {
+              "sessionCap": 12,
+              "tokenCap": 5000000,
+              "launchStopTokens": 1000000,
+              "principalReserveTokens": 200000,
+              "childReserveTokens": 100000,
+              "perSessionMinutes": 8
+            },
+            "sessionsStarted": 2,
+            "sessionsCompleted": 2,
+            "liveSessions": 0,
+            "observedTokens": 600000,
+            "inputTokens": 20,
+            "outputTokens": 599980,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0,
+            "inFlightReserveTokens": 0,
+            "projectedCeilingTokens": 600000,
+            "remainingToLaunchStop": 400000,
+            "remainingToCap": 4400000,
+            "launchStopReached": false,
+            "stopRequested": false,
+            "sessionCapReached": false,
+            "duplicateObservations": 0,
+            "delayedObservations": 0,
+            "overWallClock": [],
+            "sessions": [
+              {
+                "sessionKey": "h1:done",
+                "sessionId": "done",
+                "home": "h1",
+                "role": "principal",
+                "parent": null,
+                "startedAt": null,
+                "lastEventAt": null,
+                "completedAt": "T1",
+                "events": 1,
+                "inputTokens": 10,
+                "outputTokens": 99990,
+                "cacheReadTokens": 0,
+                "cacheWriteTokens": 0,
+                "totalTokens": 100000,
+                "unavailable": []
+              },
+              {
+                "sessionKey": "h1:live",
+                "sessionId": "live",
+                "home": "h1",
+                "role": "principal",
+                "parent": null,
+                "startedAt": null,
+                "lastEventAt": null,
+                "completedAt": "T1",
+                "events": 1,
+                "inputTokens": 10,
+                "outputTokens": 499990,
+                "cacheReadTokens": 0,
+                "cacheWriteTokens": 0,
+                "totalTokens": 500000,
+                "unavailable": []
+              }
+            ],
+            "note": "Tokens are reported model usage observed from assistant/message events, not billing. Cache-read is reported separately."
+          }
+        }
+      }
+    },
+    {
+      "name": "the hard stop is raised at the ceiling",
+      "passed": true,
+      "detail": {
+        "stopRequested": true,
+        "remaining": -200000
+      }
+    },
+    {
+      "name": "unavailable usage is recorded without inventing tokens",
+      "passed": true,
+      "detail": {
+        "observed": 1000,
+        "unavailable": [
+          {
+            "at": "2026-11-01T09:46:23.087Z",
+            "reason": "the session stream could not be decoded"
+          }
+        ]
+      }
+    },
+    {
+      "name": "a completed Session is accounted exactly once",
+      "passed": true,
+      "detail": {
+        "first": {
+          "newlyCompleted": true,
+          "sessionKey": "h1:s9"
+        },
+        "second": {
+          "newlyCompleted": false,
+          "sessionKey": "h1:s9"
+        },
+        "completed": 1
+      }
+    },
+    {
+      "name": "a Session past its wall-clock bound is reported",
+      "passed": true,
+      "detail": {
+        "overWallClock": [
+          {
+            "sessionKey": "h1:s10",
+            "role": "principal",
+            "elapsedMs": 540000,
+            "limitMs": 480000
+          }
+        ]
+      }
+    }
+  ],
+  "passed": 11,
+  "failed": 0
+}

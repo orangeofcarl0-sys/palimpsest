@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "profileId": "cog4-fresh-p",
+  "projectId": "sablewick",
+  "localPeer": "peer-sablewick-fresh",
+  "persistentPoint": "pp-sablewick-fresh",
+  "repository": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\work",
+  "execution": "worktree",
+  "standard": {
+    "statement": "The package.json test script must pass and every change must stay inside the declared write scope."
+  },
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "verify.mjs"
+        ]
+      }
+    ]
+  },
+  "transport": {
+    "namespace": "cog4-fresh-p",
+    "databasePath": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\fresh-p\\transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\state\\palimpsest.sqlite",
+    "ordarium": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\state\\ordarium.sqlite",
+    "coordination": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\fresh-p\\coordination.sqlite",
+    "transportCursors": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\fresh-p\\cursors.sqlite",
+    "boundaryMemory": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\fresh-p\\boundary.sqlite",
+    "runtimeScope": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\fresh-p\\runtime.sqlite",
+    "attentionMarks": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\fresh-p\\attention.sqlite",
+    "projectAssociations": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\state\\associations.sqlite",
+    "projectJournal": "F:\\Codex_Work_Space\\Palimpsest\\.cog4-rig\\cross-basis\\state\\journal.sqlite"
+  },
+  "reasoning": {},
+  "attention": {
+    "policyId": "cog4-fresh-p-attention",
+    "cooldownMs": 0,
+    "activation": "dsh"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "schema": "cog4-verification/v1",
+  "at": "2026-11-01T10:03:15.980Z",
+  "codeFreeze": {
+    "commit": "0e04becff68c68118bf99c7c9d6bac3c77dd0f33",
+    "tree": "4f6c0677a13c96961c3a1f501372f5f2110f0d72"
+  },
+  "build": {
+    "command": "pnpm run build",
+    "exit": 0,
+    "log": "verification/build.log"
+  },
+  "architecture": {
+    "command": "pnpm run architecture:check",
+    "exit": 0,
+    "violations": 0,
+    "baselineExceptions": 9,
+    "log": "verification/architecture.log"
+  },
+  "publicApi": {
+    "command": "pnpm run architecture:check-public-api",
+    "exit": 0,
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0,
+    "log": "verification/public-api.log"
+  },
+  "targeted": {
+    "command": "npx vitest run <18 files> --maxWorkers=1",
+    "batches": [
+      {
+        "command": "npx vitest run <12 files> --maxWorkers=1",
+        "files": 12,
+        "tests": 155,
+        "passed": 155,
+        "failed": 0,
+        "exit": 0,
+        "log": "verification/targeted-1.log"
+      },
+      {
+        "command": "npx vitest run <6 files> --maxWorkers=1",
+        "files": 6,
+        "tests": 89,
+        "passed": 89,
+        "failed": 0,
+        "exit": 0,
+        "log": "verification/targeted-2.log"
+      }
+    ],
+    "files": 18,
+    "tests": 244,
+    "failed": 0
+  },
+  "broad": {
+    "command": "PATH=/d/ProgramData/anaconda3:$PATH npx vitest run --exclude '**/r3l0*.test.ts' --exclude '**/trajectory_*.test.ts' --maxWorkers=2",
+    "purpose": "environment-sensitive broad regression with Python on the test PATH (the COG-3 failure cause)",
+    "status": "PARTIAL",
+    "exit": null,
+    "files": null,
+    "filesState": null,
+    "tests": null,
+    "testsState": null,
+    "complete": false,
+    "log": "verification/broad.log"
+  },
+  "historicalFailures": {
+    "cog3Broad": "301 files / 3,782 tests / 3 failures in test/inplace_execution.test.ts; cause diagnosed as Python absent from the test PATH; the historical record is unchanged",
+    "cog3TokenDiscrepancy": "scores.json recorded 16,221,721 for P while the immutable streams and run-two.json record 16,215,721 (6,000 arithmetic/transcription); forward-only audit in measurement/cog3-audit.json",
+    "cog2TargetedParallel": "remains unattributed; COG-3 forward erratum §2 is unchanged"
+  },
+  "protectedAssets": {
+    "worktrees": 95,
+    "gateRoots": 19,
+    "evidenceTrees": 72,
+    "stashes": 0,
+    "realRuntimeHomeWritten": false
+  },
+  "note": "The broad run was stopped at the verification cutoff; its partial log is preserved and no broad pass is claimed. A nonzero runner exit, if any, is preserved as the record; no suite is rerun to green."
+}

@@ -1,0 +1,201 @@
+{
+  "schema": "cog4-capability-matrix/v1",
+  "at": "2026-11-01",
+  "codeFreeze": "0e04becff68c68118bf99c7c9d6bac3c77dd0f33",
+  "basis": "source audit plus the live deterministic run; COG-3 capability matrix carried forward where unchanged",
+  "normalHost": {
+    "entry": "host/dsh/lib/index.js -> palimpsest.launchDeployment(profile, host)",
+    "compositionInputs": [
+      "profile.reasoning -> reasoning store + host-derived branch port",
+      "profile.repository + world observation -> ProjectWorld basis runtime",
+      "options.host.workWorkerFacts + dshHomePath -> D2 work worker port",
+      "repository + worldBasisRuntime -> packaged ResultContinuationService",
+      "options.projectIntentAdmission -> Project Intent authority (NOT supplied by the DSH host)",
+      "profile.trajectory -> experimental worker-prompt Trajectory capsule delivery (default off)"
+    ],
+    "modelFacingToolCount": 26,
+    "continuationTool": null,
+    "projectIntentTool": null,
+    "trajectoryTool": null
+  },
+  "capabilities": [
+    {
+      "capability": "Work Result production (ATTEMPT_RESULT)",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": "indirect: palimpsest_begin/finish for in-place direct work; palimpsest_manage step/run for D2 worktree work",
+      "authority": "ProjectController + WorkDelegationService + completion contract",
+      "lifecycleOwner": "canonical Work ledger",
+      "requiresRepository": true,
+      "requiresConfirmedStandard": true,
+      "observed": "two real ATTEMPT_RESULTs produced by the deterministic test-owned worker; completion evaluator recorded write_scope_valid + expected_files_exist; the documentation/data write scope narrowed the standard command out by the declared applicability rule",
+      "limitations": "a documentation/data result has no command evidence; the standard's command applies only to non-documentation write scopes"
+    },
+    {
+      "capability": "Result identity / manifest",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": false,
+      "authority": "firstPartyResultResolver + attempt basis store",
+      "lifecycleOwner": "Work ledger",
+      "observed": "the packaged service resolved both ATTEMPT_RESULTs and reported a result manifest digest",
+      "limitations": "the result content is not a model-facing field; the model sees task/attempt state and can read the execution world on disk"
+    },
+    {
+      "capability": "ProjectWorld basis capture",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": false,
+      "authority": "makeProjectWorldBasisRuntime + attempt basis store",
+      "lifecycleOwner": "attempt provenance",
+      "observed": "both attempts captured a source-bound basis at the seed revision; currentness CURRENT before any change",
+      "limitations": "assets/environment facets are NOT_REQUIRED for these works; projectSemantic has no first-party change observer"
+    },
+    {
+      "capability": "Continuation inspect (packaged)",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": false,
+      "authority": "ResultContinuationService (first-party-result-continuation-service)",
+      "lifecycleOwner": "stateless orchestration over D3 + D2 owners",
+      "observed": {
+        "EXACT": "both results before any change",
+        "INCOMPATIBLE": "both results after the vendor update; both results after the newsletter update",
+        "COMPATIBLE": "not reached",
+        "UNKNOWN": "not reached"
+      },
+      "limitations": "the packaged face is scoped to ATTEMPT_RESULT and uses wholeRepositoryRead() for result reads; every source change overlaps that footprint, so COMPATIBLE is structurally unreachable for a source change. The projectSemantic/assets/environment change facets are UNAVAILABLE, so the normal route also cannot produce a clean UNKNOWN. No model-facing tool exposes inspect."
+    },
+    {
+      "capability": "Continuation inspect (expert D3 kernel)",
+      "implemented": true,
+      "composedInNormalHost": "not as a model surface; the same kernel is composed inside the packaged service",
+      "modelReachable": false,
+      "authority": "CompatibilityIssuer + registered observers",
+      "observed": {
+        "EXACT": "both results before any change",
+        "COMPATIBLE": "cost-schedule for external changes since its own result; 8 disjointness proofs, ADMITTED",
+        "INCOMPATIBLE": "technical-fit for the vendor capability change; conflict on sources/vendor-capabilities.csv",
+        "UNKNOWN": "technical-fit with an unavailable projectSemantic premise; change_coverage gaps, no conflict, INSUFFICIENT_PROOF"
+      },
+      "limitations": "the expert diagnostic used a test-owned instrumented read set (CONSERVATIVE_DOMAIN) to attest the deterministic worker's actual reads; this is not the packaged first-party read footprint. A production caller cannot obtain this narrower coverage from the current Work path."
+    },
+    {
+      "capability": "Cross-basis admission",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": false,
+      "authority": "CrossBasisAdmissionRuntime + admission store",
+      "observed": "COMPATIBLE expert certificate ADMITTED; UNKNOWN certificate refused with INSUFFICIENT_PROOF; admission != promotion",
+      "limitations": "the packaged service never offers rematerialization for a source change, so the admitted expert certificate had no packaged carry route"
+    },
+    {
+      "capability": "Rematerialization",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": false,
+      "authority": "RematerializationRuntime + git source rematerializer",
+      "observed": "packaged rematerialize refused for the INCOMPATIBLE technical result; no MATERIALIZED result",
+      "limitations": "not exercised end to end because the packaged assessment did not offer it; a positive rematerialization on a sandbox-enforced read footprint is out of the normal path"
+    },
+    {
+      "capability": "Governed rework",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": false,
+      "authority": "ResultContinuationService.startRework -> ReworkAdmissionPermit -> D2-d WorkDelegationService",
+      "observed": "the service minted the permit and reopened technical-fit to READY after the vendor change; the D2 job then reported HOST_ERROR/HEAD_BASIS_MISMATCH because the live repository head was ahead of the canonical project head; no new attempt was created",
+      "limitations": "the continuation target observation (live HEAD) and the execution base (canonical head) diverged after the external source updates. The product refused honestly; it did not fabricate a current-basis rework."
+    },
+    {
+      "capability": "Normal Promotion",
+      "implemented": true,
+      "composedInNormalHost": "operator-only; no model tool",
+      "modelReachable": false,
+      "authority": "PromotionManager / ProjectController.promoteAttempt",
+      "observed": "cost-schedule promoted; task SATISFIED; PROMOTION_COMMITTED event; duplicate promotion returned the same terminal event (idempotent); the project head was later reconciled after the technical task became READY",
+      "limitations": "promotion is an operator action; the model cannot promote. A promoted result's own output is part of the origin-to-current diff, so the packaged continuation can report a write collision with the result itself."
+    },
+    {
+      "capability": "Project journal (read/write)",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": true,
+      "authority": "ProjectWorkspaceService + journal store",
+      "observed": "P fresh Agent read the journal; three entries (negative result, open question, grant conditions) were available and used",
+      "limitations": "journal entries are knowledge, not Evidence; a journal entry does not move the project head or prove compatibility"
+    },
+    {
+      "capability": "Project Intent prepare/assess/apply",
+      "implemented": true,
+      "composedInNormalHost": "composed only when the caller supplies projectIntentAdmission; the DSH host supplies none",
+      "modelReachable": false,
+      "authority": "ProjectIntentService + caller-supplied ProjectIntentAdmissionPort + controller.planReconciled",
+      "observed": "not exercised by the model; no structured proposal and no PROJECT_REVISED event. The source audit shows a normal-host apply would return authority_unresolved.",
+      "limitations": "no model-facing tool and no normal-host admission authority; an operator could invoke the expert service with a declared authority, but that would be an operator diagnostic, not model authority"
+    },
+    {
+      "capability": "Trajectory projection / capsule",
+      "implemented": true,
+      "composedInNormalHost": "worker-prompt-facing; experimental delivery default off",
+      "modelReachable": "only through an experimental worker prompt when profile.trajectory is set; no principal tool",
+      "authority": "Trajectory read models + execution-association recorder",
+      "observed": "not exercised; the deterministic worker has no model Session binding, so the Attempt lineage is not a qualified Trajectory source",
+      "limitations": "do not force Trajectory when the Attempt binding/source qualification is absent"
+    },
+    {
+      "capability": "External source observation",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": "through ordinary repository tools and the packaged world observation",
+      "authority": "firstPartyProjectWorldObservation (live git HEAD) + git source observer",
+      "observed": "the packaged and expert diagnostics observed the vendor and newsletter commits as source changes; the canonical project head did not adopt them",
+      "limitations": "the live head and the canonical head can diverge; rework execution starts at the canonical head, not the observed live head"
+    },
+    {
+      "capability": "Project-head reconciliation",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": "palimpsest_manage reconcile_project_head",
+      "authority": "ProjectController.reconcileProjectHead",
+      "observed": "blocked by quiescence while technical-fit was VERIFYING; in_sync after the rework reopening, but still behind the external live head; it did not adopt the ambient head",
+      "limitations": "reconciliation advances to the proven effect head, not to an arbitrary external source commit"
+    },
+    {
+      "capability": "Fresh Session inheritance",
+      "implemented": true,
+      "composedInNormalHost": true,
+      "modelReachable": true,
+      "authority": "new DSH Session + durable ProjectIR/journal/Work state",
+      "observed": "P used a new DSH home and a new Session; no previous session store; it discovered the promotion, the unpromoted attempt and its worktree, the journal, the vendor update, the newsletter and the head divergence",
+      "limitations": "the continuation assessment and result content are not exposed as model-facing fields; the Agent recovered the technical worktree through ordinary filesystem access"
+    },
+    {
+      "capability": "Native DSH collaboration",
+      "implemented": true,
+      "composedInNormalHost": "enabled in both P and F profiles",
+      "modelReachable": true,
+      "authority": "DSH subagent/subagent_fork/workflow",
+      "observed": "P did not spawn a child; contaminated F used none; clean F blocked before the model turn",
+      "limitations": "no valid F comparison was obtained"
+    }
+  ],
+  "shortestCompleteRealPath": [
+    "test-owned repository + confirmed standard",
+    "D2 work delegation -> execution world -> completion evaluation -> ATTEMPT_RESULT + evidence",
+    "package continuation inspect (EXACT/INCOMPATIBLE; NO model-facing tool)",
+    "operator promotion (normal path) -> TASK_SATISFIED",
+    "external source update -> live-head observation",
+    "packaged continuation: INCOMPATIBLE; expert kernel: EXACT/COMPATIBLE/INCOMPATIBLE/UNKNOWN",
+    "governed rework: permit + reopen; D2 execution refused at HEAD_BASIS_MISMATCH when the live head is ahead of the canonical head",
+    "fresh DSH Session reads durable project state + ordinary files -> continuation note"
+  ],
+  "missingSeams": [
+    "no model-facing continuation inspect/assessment tool",
+    "no model-facing Project Intent tool and no normal-host admission authority",
+    "packaged continuation uses wholeRepositoryRead, so COMPATIBLE is unreachable for any source change",
+    "the packaged result content is not exposed as a model field; the Agent reads the execution world on disk",
+    "the live external source revision and the canonical project head can diverge; rework execution uses the canonical head",
+    "reconcileProjectHead does not adopt an arbitrary external commit, and can be blocked by a non-quiescent task"
+  ]
+}

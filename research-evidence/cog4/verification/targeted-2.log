@@ -1,0 +1,152 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mF:/Codex_Work_Space/Palimpsest/palimpsest-sr1[39m
+
+(node:29464) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m test/trajectory_p2d1_currentness.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 7819[2mms[22m[39m
+     [33m[2m✓[22m[39m 1. another Invocation appears during Event Read ⇒ RACED [33m 1079[2mms[22m[39m
+     [33m[2m✓[22m[39m 2. a foreign creator claim appears during Event Read ⇒ RACED [33m 936[2mms[22m[39m
+     [33m[2m✓[22m[39m 3. the selected Invocation's own history changes during Event Read ⇒ RACED [33m 1302[2mms[22m[39m
+     [33m[2m✓[22m[39m 4. a duplicate identical observation replayed during Event Read is NOT a conflict ⇒ still admitted [33m 981[2mms[22m[39m
+     [33m[2m✓[22m[39m 5. an unrelated project's append does not cause a false conflict ⇒ still admitted [33m 976[2mms[22m[39m
+     [33m[2m✓[22m[39m 6. a source read failure during a relevant Store update does not admit the page [33m 1464[2mms[22m[39m
+     [33m[2m✓[22m[39m associationRelevantBasisOf reads only the Attempt's own rows plus the one-session creator probe [33m 953[2mms[22m[39m
+(node:46128) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m test/e2i_intent_reconciliation.test.ts [2m([22m[2m29 tests[22m[2m)[22m[33m 14665[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P01: a fresh project-associated Proof grounds a Requirement revision proposal [33m 525[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P02: an active Reasoning claim grounds a Decision append proposal [33m 415[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P03: a NEGATIVE_RESULT grounds a reconsideration without becoming Evidence [33m 385[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P04: heterogeneous grounds produce a deterministic content-addressed proposal [33m 454[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P05: an approving authority commits exactly one PROJECT_REVISED with a receipt [33m 554[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P06: a cold restart recovers the revised ProjectIR and its accepted provenance [33m 529[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P07/I-P08: ordinary later planning creates Work under the revised intent [33m 432[2mms[22m[39m
+     [33m[2m✓[22m[39m I-P09: E1-K can independently deliver the supporting Proof to that new worker [33m 1144[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N01: zero grounds is refused as not an E2-I proposal [33m 355[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N02: a foreign-project Proof is refused [33m 377[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N03: a STALE Proof is refused [33m 435[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N04: an inactive Reasoning claim is refused [33m 426[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N05: a non-NEGATIVE_RESULT journal entry is refused [33m 350[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N06: a stale project basis yields zero ProjectIR write [33m 405[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N07: a Proof standing change before apply makes the proposal stale [33m 422[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N08: a Reasoning ground that becomes inactive before apply yields zero write [33m 869[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N09: an absent authority yields authority_unresolved with zero write [33m 398[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N10/I-N11: a rejecting or unresolved authority yields zero write [33m 808[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N12: management DELEGATE mode cannot approve an intent proposal [33m 433[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N13: a caller cannot forge admission via boolean or string fields [33m 389[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N14: an accepted receipt cannot be supplied through ordinary PlanInput [33m 380[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N15/I-N16: a goal or requirement revision retires old nonterminal Work [33m 782[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N17: the quiescence fence is still live, and E2-I retires Work through it rather than around it [33m 964[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N18: an accepted receipt stays byte-identical after owner standing changes [33m 405[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N19: ordinary non-E2-I controller.plan remains backward-compatible [33m 518[2mms[22m[39m
+     [33m[2m✓[22m[39m I-N20: no ground standing reaches Promotion eligibility [33m 511[2mms[22m[39m
+     [33m[2m✓[22m[39m duplicate/conflicting changes in one proposal are refused [33m 439[2mms[22m[39m
+(node:15424) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+Cloning into 'C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-SF7cX1\worlds/deriv-daf09f6ecfdb4d0cb93dcbb85f3cf92e'...
+done.
+HEAD is now at 7db998c H1
+From C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-SF7cX1\worlds/deriv-daf09f6ecfdb4d0cb93dcbb85f3cf92e
+ * branch            HEAD       -> FETCH_HEAD
+Preparing worktree (detached HEAD ced7a99)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+Cloning into 'C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-dloV8X\worlds/deriv-2d220c4c6d3eeaef07572ca3c782fb8d'...
+done.
+HEAD is now at acbb4eb H1
+From C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-dloV8X\worlds/deriv-2d220c4c6d3eeaef07572ca3c782fb8d
+ * branch            HEAD       -> FETCH_HEAD
+Preparing worktree (detached HEAD 4dc83ea)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.ts', LF will be replaced by CRLF the next time Git touches it
+Cloning into 'C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-Fzm4QP\worlds/deriv-1dec80459931c69994d206de51ec1415'...
+done.
+HEAD is now at d7be960 H1
+From C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-Fzm4QP\worlds/deriv-1dec80459931c69994d206de51ec1415
+ * branch            HEAD       -> FETCH_HEAD
+Cloning into 'C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-Fzm4QP\worlds/deriv-6645d7d054a7010b9121c7298143dacb'...
+done.
+HEAD is now at f91db37 H0
+From C:\Users\66494\AppData\Local\Temp\palimpsest-d3d4-Fzm4QP\worlds/deriv-6645d7d054a7010b9121c7298143dacb
+ * branch            HEAD       -> FETCH_HEAD
+Preparing worktree (detached HEAD fc8a77f)
+ [32m✓[39m test/lean_d3d_composition.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 8252[2mms[22m[39m
+     [33m[2m✓[22m[39m R0 admitted against B1 → candidate R1 at B1 → independently re-verified, canonical untouched [33m 2464[2mms[22m[39m
+     [33m[2m✓[22m[39m the origin's verification does NOT transfer: the candidate needs its OWN run [33m 2285[2mms[22m[39m
+     [33m[2m✓[22m[39m the two qualifications are independent: one candidate's run does not satisfy another's [33m 3121[2mms[22m[39m
+(node:21652) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/lean_d5c1_head_sync_composition.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 3714[2mms[22m[39m
+     [33m[2m✓[22m[39m SYNC_REQUIRED, and the same G10-X compiler refuses — naming task-b and task-c, no open attempts [33m 352[2mms[22m[39m
+     [33m[2m✓[22m[39m reconcileProjectHead() lands PROJECT_REVISED + TASK_REAUTHORIZED — and no REWORK event exists [33m 320[2mms[22m[39m
+     [33m[2m✓[22m[39m the task rebinds to E_1 while the attempt keeps E_0, byte for byte, with a stable subject [33m 309[2mms[22m[39m
+     [33m[2m✓[22m[39m mutatingWorkTarget names task-b at H1 with resumed=false, and the log holds no activation [33m 309[2mms[22m[39m
+(node:51152) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/lean_d5c2_prior_result_context.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 3830[2mms[22m[39m
+     [33m[2m✓[22m[39m the landed TASK_READY carries the permit-derived provenance, and a caller-supplied one is DISCARDED [33m 345[2mms[22m[39m
+     [33m[2m✓[22m[39m CRASH-SAFE: a fresh EventStore over the same log compiles A1's context with the full lineage [33m 362[2mms[22m[39m
+     [33m[2m✓[22m[39m NO new EventType: the whole chain rides TASK_READY and CONTEXT_MANIFEST_ADDED only [33m 310[2mms[22m[39m
+     [33m[2m✓[22m[39m CONTEXT NOT BASIS: compiling A1's manifest leaves the Work identity and the basis untouched [33m 320[2mms[22m[39m
+     [33m[2m✓[22m[39m MANIFEST PER ATTEMPT: M0 has no continuation, M1 does, both deterministic, ids distinct [33m 307[2mms[22m[39m
+     [33m[2m✓[22m[39m NO TIME TRAVEL: fetch(A0) is M0's world even after M1 exists — and dies with M0 [33m 302[2mms[22m[39m
+     [33m[2m✓[22m[39m the origin worker's summary rides as worker_summary — an interpretation, never evidence [33m 309[2mms[22m[39m
+     [33m[2m✓[22m[39m HISTORICAL VERIFICATION: R0's PASS rides as history, and A1's own qualification stays empty [33m 347[2mms[22m[39m
+     [33m[2m✓[22m[39m NO VERIFICATION HISTORY declared ⇒ the block carries none (honest absence, never fabrication) [33m 313[2mms[22m[39m
+     [33m[2m✓[22m[39m WORLD COORDINATES ONLY: refs are carried, no merge machinery exists in the compiler [33m 324[2mms[22m[39m
+ [32m✓[39m test/lean_delegation_runtime.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 349[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m89 passed[39m[22m[90m (89)[39m
+[2m   Start at [22m 17:50:26
+[2m   Duration [22m 49.44s[2m (transform 4.70s, setup 0ms, import 8.54s, tests 38.63s, environment 1ms)[22m
+
+
+[test temp hygiene] removed 39 leaked temp dir(s)
