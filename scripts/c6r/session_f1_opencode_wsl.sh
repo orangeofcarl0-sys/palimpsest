@@ -137,7 +137,7 @@ bwrap \
   env -i HOME=/dsh-home DSH_HOME=/dsh-home TMPDIR=/tmp PATH=/usr/local/bin:/usr/bin:/bin \
     C6R_PLACEHOLDER=c6r-placeholder-not-a-credential \
     C6R_PROXY_SOCKET=/run/c6r-provider.sock C6R_BRIDGE_PORT=18080 \
-    bash -c 'node /net_bridge.mjs > /dsh-home/bridge.log 2>&1 & BRIDGE=$!; sleep 0.4; /dsh/node_modules/.bin/dsh --profile headless --patch /qual/patch.yml "$1"; STATUS=$?; kill "$BRIDGE" 2>/dev/null || true; exit "$STATUS"' _ "$PROMPT" \
+    bash -c 'node /net_bridge.mjs > /dsh-home/bridge.log 2>&1 & BRIDGE=$!; sleep 0.4; /usr/bin/timeout -s KILL 480 /dsh/node_modules/.bin/dsh --profile headless --patch /qual/patch.yml "$1"; STATUS=$?; kill "$BRIDGE" 2>/dev/null || true; exit "$STATUS"' _ "$PROMPT" \
   > "$OUT/run.log" 2> "$OUT/run.err"
 EXIT_CODE=$?
 set -e

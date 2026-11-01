@@ -41,6 +41,9 @@ export function classifySession({ sessionCount, assistantMessages, providerError
   if (sessionCount === 0) return { classification: "BLOCKED", reason: "no_session" };
   if (assistantMessages === 0 && providerErrors > 0) return { classification: "BLOCKED", reason: "provider_error_before_turn" };
   if (assistantMessages === 0) return { classification: "BLOCKED", reason: "no_assistant_turn" };
+  /* A turn that produced assistant content and then failed at the provider is TRUNCATED: the visible
+     behavior is diagnostic, but the turn is not a completed observation and must not be scored as one. */
+  if (providerErrors > 0) return { classification: "INVALID", reason: "provider_error_during_turn" };
   if (!complete) return { classification: "INVALID", reason: "incomplete_or_unreadable_stream" };
   return { classification: "OBSERVED", reason: null };
 }
