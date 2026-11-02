@@ -95,4 +95,44 @@ describe("PC1 S02-R02: a placed attempt completes through the normal product pat
     expect(promoted.resultingHeadCommit).not.toBe(head);
     expect(installed.controller.status().tasks.find((task) => task.task_id === "deliver")?.state).toBe("SATISFIED");
   });
+
+  it("an existing READY task can be entered with `start` and completed in-place", async () => {
+    const { repo, head, stateDir } = workspace();
+    const installed = installProduct(
+      { tools: { register: () => () => undefined } } as never,
+      {
+        projectId: "pc1",
+        repository: repo,
+        stateDir,
+        execution: "in-place",
+        standard: standard(),
+        toolProfile: "normal",
+      },
+    );
+    cleanups.push(() => void installed.dispose());
+    installed.controller.start({
+      projectId: "pc1",
+      goal: "deliver the in-place result",
+      headCommit: head,
+      tasks: [{ task_id: "deliver", objective: "deliver", depends_on: [], write_paths: ["deliverable.md"], required_artifacts: ["deliverable.md"] }],
+    });
+    const tool = installed.tools.find((entry) => entry.name === "palimpsest_work") as DshToolDefinition;
+    const started = (await tool.execute(
+      { action: "start" },
+      { callId: "c1", rootCallId: "r", name: "palimpsest_work", arguments: {}, signal: new AbortController().signal },
+    )) as { state: string; status: { summary: { attemptsRunning: number } } };
+    expect(started.state).toBe("READY");
+    expect(started.status.summary.attemptsRunning).toBe(1);
+    writeFileSync(join(repo, "deliverable.md"), "# delivered\n");
+    execFileSync("git", ["add", "-A"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "deliver"], { cwd: repo });
+    const completed = (await tool.execute(
+      { action: "complete", summary: "delivered" },
+      { callId: "c2", rootCallId: "r", name: "palimpsest_work", arguments: {}, signal: new AbortController().signal },
+    )) as { state: string; changedFiles: string[]; evidenceRecorded: string[] };
+    expect(completed.state).toBe("COMPLETED");
+    expect(completed.changedFiles).toContain("deliverable.md");
+    expect(completed.evidenceRecorded).toContain("write_scope_valid");
+    expect(installed.controller.status().tasks.find((task) => task.task_id === "deliver")?.state).toBe("VERIFYING");
+  });
 });
