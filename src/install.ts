@@ -27,6 +27,7 @@ import { composeProjectCollaborationCapability } from "./composition/project_col
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import { composeProcedureCapability } from "./composition/procedures.js";
 import { makeProjectContinuityService } from "./project_continuity/index.js";
+import { makeDomainOutcomeService } from "./domain_outcome/index.js";
 import { composeExecutionAssociationCluster, type ExecutionAssociationInstallOptions, type ExecutionAssociationInstallResult } from "./composition/execution_association.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
@@ -490,6 +491,24 @@ export function installPalimpsest(
   });
 
   /*
+   * PC1 S06: the DERIVED domain-outcome service. It evaluates an explicit contract and records the
+   * evaluation as a journal REFERENCE_NOTE (non-canonical). Without a workspace there is nowhere to
+   * record an evaluation, so the service is absent rather than stubbed.
+   */
+  const domainOutcome =
+    projectWorkspace === undefined
+      ? undefined
+      : makeDomainOutcomeService({
+          workspace: {
+            journal: (projectId?: string) => projectWorkspace.journal(projectId),
+            recordJournalEntry: (input) =>
+              projectWorkspace.recordJournalEntry({ ...input, projectId: options.projectId }),
+          },
+          ...(options.repository === undefined ? {} : { repository: options.repository }),
+          ...(options.clock === undefined ? {} : { clock: options.clock }),
+        });
+
+  /*
    * PC1 S03: the DERIVED project-continuity facade. It reads the existing Work owner, the derived
    * workspace/journal when composed, and the promotion facts - and owns nothing. It is composed
    * for every deployment with a Work owner; an absent workspace is reported as `unavailable` rather
@@ -508,6 +527,18 @@ export function installPalimpsest(
             journal: (projectId?: string) => projectWorkspace.journal(projectId),
             openLoops: () => projectWorkspace.openLoops(),
           },
+        }),
+    ...(domainOutcome === undefined
+      ? {}
+      : {
+          outcomes: async () =>
+            (await domainOutcome.project()).map((evaluation) => ({
+              taskId: evaluation.taskId,
+              businessOutcome: evaluation.status,
+              investigationComplete: evaluation.investigationComplete,
+              unmetRequirements: evaluation.unmetRequirements,
+              detail: evaluation.detail,
+            })),
         }),
     authority: {
       operatorIntentAdmission: options.projectIntentAdmission !== undefined,
@@ -530,6 +561,7 @@ export function installPalimpsest(
     crossProjectService: crossProject,
     delegationService: delegation,
     continuity,
+    domainOutcome,
     assemblyOptions: options,
   });
   const { application, tools } = assembly;

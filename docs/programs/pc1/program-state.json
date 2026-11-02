@@ -55,47 +55,63 @@
       ]
     },
     "S04": {
-      "implementation": "IN_PROGRESS",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
       "comparison": "NOT_REQUIRED",
       "blockers": [],
-      "evidence": []
+      "evidence": [
+        "docs/programs/pc1/S04-*.md"
+      ]
     },
     "S05": {
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
       "comparison": "NOT_REQUIRED",
-      "blockers": [],
-      "evidence": []
+      "blockers": [
+        "live collaboration needs spend authorization and a configured peer"
+      ],
+      "evidence": [
+        "docs/programs/pc1/S05-*.md"
+      ]
     },
     "S06": {
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_REQUIRED",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
       "comparison": "NOT_REQUIRED",
       "blockers": [],
-      "evidence": []
+      "evidence": [
+        "docs/programs/pc1/S06-*.md"
+      ]
     },
     "S07": {
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_REQUIRED",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
       "comparison": "NOT_REQUIRED",
       "blockers": [],
-      "evidence": []
+      "evidence": [
+        "docs/programs/pc1/S07-*.md"
+      ]
     },
     "S08": {
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "blockers": [],
-      "evidence": []
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "BLOCKED",
+      "comparison": "BLOCKED",
+      "blockers": [
+        "no spend authorization; no provider/profile for a live matched pair",
+        "the field-study live path needs a per-condition DSH profile"
+      ],
+      "evidence": [
+        "research-evidence/pc1/s08/acceptance.json",
+        "docs/programs/pc1/S08-EVALUATION.md"
+      ]
     },
     "S09": {
-      "implementation": "NOT_STARTED",
+      "implementation": "IN_PROGRESS",
       "deterministic": "NOT_RUN",
       "live": "NOT_RUN",
       "comparison": "NOT_REQUIRED",
@@ -113,8 +129,8 @@
   },
   "pendingEffects": [],
   "nextActions": [
-    "S04: proposal review package, operator authority adapter, source-intake binding",
-    "S06 domain outcome projection in parallel"
+    "S09: RC bundle, user acceptance script, README honesty, examples",
+    "S10: full diff, final regression, manifests, PR kit, final report"
   ],
   "lastCheckpoint": {
     "at": "2026-11-02",

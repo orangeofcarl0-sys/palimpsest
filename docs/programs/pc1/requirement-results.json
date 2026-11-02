@@ -340,392 +340,475 @@
     },
     {
       "requirementId": "S04-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "proposal content and digest; non-authoritative store",
       "blockers": []
     },
     {
       "requirementId": "S04-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts",
+        "src/cli_product.ts"
+      ],
+      "notes": "preview/decide/apply with exact digest and currentness; operator authority required",
       "blockers": []
     },
     {
       "requirementId": "S04-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "plan/intent/source kinds use separate existing owners; no mixed approval",
       "blockers": []
     },
     {
       "requirementId": "S04-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "stale basis refused; duplicate approval idempotent; conflict refused",
       "blockers": []
     },
     {
       "requirementId": "S04-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LIVE_NOTE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "approved plan/source/intent goes through existing revision/Work path; live model not invoked",
       "blockers": []
     },
     {
       "requirementId": "S04-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "approved bytes/digest and result blob verified independently; wrong blob fails",
       "blockers": []
     },
     {
       "requirementId": "S04-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S06",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "negative findings remain separate from business outcome; S06 projection",
       "blockers": []
     },
     {
       "requirementId": "S04-R08",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "proposed/decided/applied/executed/accepted trace fields",
       "blockers": []
     },
     {
       "requirementId": "S04-R09",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LOCAL_OPERATOR",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts",
+        "src/cli_product.ts"
+      ],
+      "notes": "local operator adapter + exact-digest admission; real identity provider remains external",
       "blockers": []
     },
     {
       "requirementId": "S05-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "four executors + principal/unavailable selection",
       "blockers": []
     },
     {
       "requirementId": "S05-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LIVE_BLOCK",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "mechanism chosen by need; live collaboration not run",
       "blockers": []
     },
     {
       "requirementId": "S05-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "structured handoff/receipt contract",
       "blockers": []
     },
     {
       "requirementId": "S05-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "root-source independence audit; shared sources not independent",
       "blockers": []
     },
     {
       "requirementId": "S05-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "conflicts preserved; hypothesis not counted as positive",
       "blockers": []
     },
     {
       "requirementId": "S05-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "delivery/consume/act/cancel/interrupt/restart reducer",
       "blockers": []
     },
     {
       "requirementId": "S05-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "BLOCKED_LIVE",
+      "live": "BLOCKED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/install.ts",
+        "scripts/pc1/run_pair.mjs"
+      ],
+      "notes": "tools exist; live paths blocked without budget/peer",
       "blockers": []
     },
     {
       "requirementId": "S05-R08",
-      "implementation": "NOT_STARTED",
+      "implementation": "IMPLEMENTED",
       "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "live": "BLOCKED",
+      "comparison": "BLOCKED",
+      "evidence": [
+        "docs/programs/pc1/S08-EVALUATION.md"
+      ],
+      "notes": "value comparison requires live matched pair",
       "blockers": []
     },
     {
       "requirementId": "S06-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "execution/workAcceptance/businessOutcome projected separately",
       "blockers": []
     },
     {
       "requirementId": "S06-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/domain_outcome/contracts.ts"
+      ],
+      "notes": "explicit contract registry; no extension-based truth",
       "blockers": []
     },
     {
       "requirementId": "S06-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "contract evidence refs and status; no universal truth claim",
       "blockers": []
     },
     {
       "requirementId": "S06-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "negative investigation completes investigation, not business goal",
       "blockers": []
     },
     {
       "requirementId": "S06-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_SCOPE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "artifact digest/ref recorded; non-Git source is read as a file fact",
       "blockers": []
     },
     {
       "requirementId": "S06-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "evaluator input/output recorded; no hidden CoT; human-review uncertain",
       "blockers": []
     },
     {
       "requirementId": "S06-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "continuity summary shows accepted negative + unmet objective",
       "blockers": []
     },
     {
       "requirementId": "S07-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "doctor reads installed versions and capability facts",
       "blockers": []
     },
     {
       "requirementId": "S07-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_PLATFORM_LIMIT",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts",
+        "docs/programs/pc1/S07-RUNTIME.md"
+      ],
+      "notes": "Linux/WSL2 qualified in C6-R; Windows write-only limitation recorded",
       "blockers": []
     },
     {
       "requirementId": "S07-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S05",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "delivery/consumption/action separated; interruption explicit",
       "blockers": []
     },
     {
       "requirementId": "S07-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "usage dedupe/split, budget gate, process-tree stop",
       "blockers": []
     },
     {
       "requirementId": "S07-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/runtime/usage.ts"
+      ],
+      "notes": "wall clock and token classes separated; no invented cost",
       "blockers": []
     },
     {
       "requirementId": "S07-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S01",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "promotion recovery plus lifecycle cancellation; no duplicate effect",
       "blockers": []
     },
     {
       "requirementId": "S07-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_PLATFORM_LIMIT",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "Linux/WSL2 supported path; unsupported platform doctor warning",
       "blockers": []
     },
     {
       "requirementId": "S08-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_DETERMINISTIC",
+      "live": "BLOCKED",
       "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "evidence": [
+        "research-evidence/pc1/s08/acceptance.json"
+      ],
+      "notes": "Sablewick staging, T1/T2 visibility, F/P equivalence; live pair blocked",
       "blockers": []
     },
     {
       "requirementId": "S08-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_DETERMINISTIC",
+      "live": "BLOCKED",
       "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "evidence": [
+        "research-evidence/pc1/s08/acceptance.json"
+      ],
+      "notes": "field-study staging with independent roles/updates; live pair blocked",
       "blockers": []
     },
     {
       "requirementId": "S08-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_EQUIVALENCE",
+      "live": "BLOCKED",
       "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "evidence": [
+        "scripts/pc1/acceptance.mjs"
+      ],
+      "notes": "P/F fact and visible-set equivalence; no live matched pair",
       "blockers": []
     },
     {
       "requirementId": "S08-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_GATE",
+      "live": "BLOCKED",
       "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "evidence": [
+        "scripts/pc1/run_pair.mjs"
+      ],
+      "notes": "live runner refuses without spend/provider/profile/runtime",
       "blockers": []
     },
     {
       "requirementId": "S08-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "BLOCKED",
       "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "evidence": [
+        "scripts/pc1/analyze.mjs"
+      ],
+      "notes": "session stream analysis pipeline",
       "blockers": []
     },
     {
       "requirementId": "S08-R06",
-      "implementation": "NOT_STARTED",
+      "implementation": "IMPLEMENTED",
       "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "live": "BLOCKED",
+      "comparison": "BLOCKED",
+      "evidence": [
+        "docs/programs/pc1/S08-EVALUATION.md"
+      ],
+      "notes": "requires live agents and accepted outcomes",
       "blockers": []
     },
     {
       "requirementId": "S08-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_EQUIVALENCE",
+      "live": "BLOCKED",
       "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "evidence": [
+        "research-evidence/pc1/s08/acceptance.json"
+      ],
+      "notes": "basis/visible-set digests recorded; oracle not copied",
       "blockers": []
     },
     {
       "requirementId": "S08-R08",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LIVE_BLOCK",
+      "live": "BLOCKED",
       "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "evidence": [
+        "docs/programs/pc1/S08-EVALUATION.md"
+      ],
+      "notes": "failures classified as resource/environment; no new router/owner",
       "blockers": []
     },
     {

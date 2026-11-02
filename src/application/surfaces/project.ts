@@ -27,6 +27,8 @@ export interface ProjectSurfaceDeps {
   readonly projectWorkspace?: ProjectWorkspaceService | undefined;
   /** PC1 S03: the derived continuity facade, when the project cluster composes it. */
   readonly continuity?: import("../../project_continuity/index.js").ProjectContinuityService | undefined;
+  /** PC1 S06: the derived domain-outcome service, when the project cluster composes it. */
+  readonly domainOutcome?: import("../../domain_outcome/index.js").DomainOutcomeService | undefined;
   readonly verification?: { readonly service: Pick< ProjectVerificationService, "status" | "history" | "verifyCurrentHead" >; } | undefined;
 }
 
@@ -78,6 +80,17 @@ export interface ProjectWorkspaceApplicationSurface {
   summary(): Promise<import("../../project_continuity/index.js").ProjectSummary>;
   explain(subject: string): Promise<import("../../project_continuity/index.js").ProjectExplanation>;
   contextCapsule(input?: { readonly maxBytes?: number | undefined }): Promise<import("../../project_continuity/index.js").ContextCapsule>;
+  /** PC1 S06: the registered domain contracts (descriptive only). */
+  outcomeContracts(): readonly { readonly contractId: string; readonly version: string; readonly question: string; readonly requiredInputs: readonly string[] }[];
+  /** PC1 S06: the recorded domain evaluations, latest per task. */
+  outcomeProject(): Promise<readonly import("../../domain_outcome/index.js").DomainEvaluation[]>;
+  /** PC1 S06: evaluate an explicit contract and record the evaluation as a non-canonical journal note. */
+  evaluateOutcome(input: {
+    readonly taskId: string;
+    readonly contractId: string;
+    readonly artifactPath?: string | null | undefined;
+    readonly parameters?: Readonly<Record<string, unknown>> | undefined;
+  }): Promise<import("../../domain_outcome/index.js").DomainEvaluation>;
 }
 
 /**
@@ -256,6 +269,24 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
                   throw new Error("this deployment composes no project continuity facade");
                 }
                 return deps.continuity.contextCapsule(input);
+              },
+              outcomeContracts: () => {
+                if (deps.domainOutcome === undefined) {
+                  throw new Error("this deployment composes no domain-outcome service");
+                }
+                return deps.domainOutcome.contracts();
+              },
+              outcomeProject: () => {
+                if (deps.domainOutcome === undefined) {
+                  throw new Error("this deployment composes no domain-outcome service");
+                }
+                return deps.domainOutcome.project();
+              },
+              evaluateOutcome: (input) => {
+                if (deps.domainOutcome === undefined) {
+                  throw new Error("this deployment composes no domain-outcome service");
+                }
+                return deps.domainOutcome.evaluate(input);
               },
             };
           })();

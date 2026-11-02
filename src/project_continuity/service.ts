@@ -113,6 +113,12 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
 
     const taskObjective = new Map(ir.tasks.map((task) => [task.task_id, task.objective]));
     const taskByAttempt = new Map(status.attempts.map((attempt) => [attempt.attempt_id, attempt.task_id]));
+    const acceptedTaskIds = new Set(
+      input.work
+        .promotionFacts()
+        .map((fact) => taskByAttempt.get(fact.attemptId))
+        .filter((taskId): taskId is string => typeof taskId === "string"),
+    );
     const acceptedResults = input.work
       .promotionFacts()
       .map((fact) =>
@@ -193,11 +199,33 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
         }),
       );
 
-    const tasks = status.tasks.map((task) => ({
+    const tasks: ContinuityTask[] = status.tasks.map((task) => ({
       taskId: task.task_id,
       state: task.state,
       objective: taskObjective.get(task.task_id) ?? "",
+      workAcceptance: acceptedTaskIds.has(task.task_id)
+        ? "ACCEPTED"
+        : task.state === "VERIFYING"
+          ? "CANDIDATE"
+          : task.state === "SATISFIED"
+            ? "NOT_ACCEPTED"
+            : "UNKNOWN",
     }));
+    if (input.outcomes !== undefined) {
+      const outcomes = await input.outcomes();
+      const byTask = new Map(outcomes.map((outcome) => [outcome.taskId, outcome]));
+      for (let index = 0; index < tasks.length; index += 1) {
+        const outcome = byTask.get(tasks[index]!.taskId);
+        if (outcome === undefined) continue;
+        tasks[index] = {
+          ...tasks[index]!,
+          businessOutcome: outcome.businessOutcome,
+          investigationComplete: outcome.investigationComplete,
+          unmetRequirements: outcome.unmetRequirements,
+          outcomeDetail: outcome.detail,
+        };
+      }
+    }
     const pendingWork = tasks.filter((task) => task.state !== "SATISFIED" && task.state !== "FAILED" && task.state !== "STALE");
 
     const blocked: ContinuityItem[] = [];

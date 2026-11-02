@@ -51,6 +51,13 @@ export interface ContinuityTask {
   readonly taskId: string;
   readonly state: string;
   readonly objective: string;
+  /** PC1 S06: the canonical Work acceptance status, separate from execution and business outcome. */
+  readonly workAcceptance?: "ACCEPTED" | "CANDIDATE" | "NOT_ACCEPTED" | "UNKNOWN" | undefined;
+  /** PC1 S06: the explicit domain-contract outcome; `unknown` when no contract was evaluated. */
+  readonly businessOutcome?: "supported" | "infeasible" | "uncertain" | "contested" | "partially_fulfilled" | "unknown" | undefined;
+  readonly investigationComplete?: boolean | undefined;
+  readonly unmetRequirements?: readonly string[] | undefined;
+  readonly outcomeDetail?: string | undefined;
 }
 
 export interface ProjectSummary {
@@ -133,5 +140,13 @@ export interface ContinuityInput {
     readonly sourceIntake: "operator_only" | "unavailable";
     readonly promotion: "operator_only";
   };
+  /** PC1 S06: the derived domain outcomes, when a domain-outcome service is composed. */
+  readonly outcomes?: (() => Promise<readonly {
+    readonly taskId: string;
+    readonly businessOutcome: "supported" | "infeasible" | "uncertain" | "contested" | "partially_fulfilled" | "unknown";
+    readonly investigationComplete: boolean;
+    readonly unmetRequirements: readonly string[];
+    readonly detail: string;
+  }[]>) | undefined;
   readonly clock?: (() => string) | undefined;
 }

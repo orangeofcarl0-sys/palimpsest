@@ -41,6 +41,7 @@ const NORMAL_VISIBLE = new Set<string>([
   "palimpsest_project",
   "palimpsest_work",
   "palimpsest_continuity",
+  "palimpsest_outcome",
   "palimpsest_review",
   "palimpsest_surfaces",
   "palimpsest_verification",

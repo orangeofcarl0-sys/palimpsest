@@ -18,6 +18,7 @@ import { defineProjectTools } from "./project.js";
 import { defineGraphTools } from "./graph.js";
 import { defineNormalWorkTool } from "./normal.js";
 import { defineContinuityTool } from "./continuity.js";
+import { defineOutcomeTool } from "./outcome.js";
 
 export function defineApplicationTools(application: PalimpsestApplicationSurface): DshToolDefinition[] {
   return [
@@ -34,5 +35,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
     defineNormalWorkTool(application),
     // PC1 S03: the derived continuity read. New tool rather than new actions on an existing one.
     ...defineContinuityTool(application),
+    // PC1 S06: explicit domain-outcome evaluation; it cannot set a status itself.
+    ...defineOutcomeTool(application),
   ];
 }
