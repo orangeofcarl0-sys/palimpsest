@@ -341,8 +341,12 @@ product change.
 4. **Operator identity** — the CLI now verifies an Ed25519-signed local credential; it is still not
    a remote IdP/SSO. A deployment needing federated identity supplies its own
    `OperatorAuthorityPort`.
-5. **PR / mainline** — owner authorized PR/merge on 2026-11-03; the final integration state is
-   recorded below after the integration attempt.
+5. **PR / mainline** — owner authorized PR/merge on 2026-11-03. PR
+   https://github.com/orangeofcarl0-sys/palimpsest/pull/216 is open and `MERGEABLE`; it is
+   `BLOCKED` by the required `unit` check. The remaining unit failures are two pre-existing
+   `trajectory_p2e1rf_malformed_ace` / `trajectory_p2e1rg_kernel_coverage` tests that pass in the
+   local CF8 suite and are unrelated to the changed files. No admin bypass was used; `main` was not
+   moved.
 6. **Test-owned resources** — `.pc1-rig`, `.pc1-tmp`, `.c6r-rig`, `.cog5-rig`, `.pc1v1-rig`, the
    live evidence and the untracked Python shim were retained; no credentials were added to the
    repository.
@@ -356,8 +360,9 @@ product change.
 - RC digest: `844b6ee2b7b9b067844aed52a1d429cf6e8227aef32fbbdec0136cf34d2d4fdb`.
 - R9: `EXECUTED`; 8 principal runs, 11 Subagent child sessions, 0 provider errors, 41,685,383 tokens.
 - Comparative benefit: `NOT_SUPPORTED`; strong native DSH competitive or superior.
-- PR/mainline: owner authorized; the final integration state is recorded in §12 and the PR/merge
-  record. No force-push or historical rewrite was used.
+- PR/mainline: PR #216 open, `MERGEABLE` but `BLOCKED` by the required `unit` check (two
+  pre-existing trajectory tests); no admin bypass and no `main` movement. No force-push or
+  historical rewrite was used.
 - The evidence manifest and code manifest are generated from committed bytes and do not hash
   themselves; `research-evidence/pc1v1/rc.json` and `docs/programs/pc1v1/FREEZE.json` record the
   exact identities.
