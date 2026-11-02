@@ -9,13 +9,14 @@
   },
   "protectedMain": "044330b2e55198542d545edc42ed9c36e7ce896b",
   "codeFreeze": {
-    "version": 8,
+    "version": 9,
     "runtimePromptCommit": "92158e37b66b2a649093d870765b6e8b312d6d58",
     "runtimePromptTree": "a0c4e007ca42fbb83f9c6b678a112d5c050ea340",
     "finalExecutableCommit": "18a9c1cef45fda9373b50004ee70650b0e9579af",
     "finalExecutableTree": "8914b91f708dd01b1f6fad26a03d5234f72e545d",
     "deliveryToolingCommit": "b93f1ff991777ba9e702e657f0eda7bf0680e3bd",
-    "note": "1 b7cb43b, 2 bf5e59e, 3 e6159e6 (signed operator), 4 6c8ebd9 (Subagent/cohort tooling), 5 7edb4c6 (scoring isolation/start claim), 6 92158e3 (Field artifact contract), 7 b93f1ff (RC packaging only), 8 18a9c1c (facade/CI correction; behavior-preserving). The live cohort ran at Code Freeze 6; no new scored cohort is claimed for 8."
+    "manifestToolingCommit": "410bc6e76f48e70b2b335c70697d4996195388ba",
+    "note": "1 b7cb43b, 2 bf5e59e, 3 e6159e6 (signed operator), 4 6c8ebd9 (Subagent/cohort tooling), 5 7edb4c6 (scoring isolation/start claim), 6 92158e3 (Field artifact contract), 7 b93f1ff (RC packaging only), 8 18a9c1c (facade/CI correction; behavior-preserving), 9 410bc6e (manifest tooling). The live cohort ran at Code Freeze 6; no new scored cohort is claimed for 8/9."
   },
   "releaseCandidate": {
     "version": "0.2.0-pc1.1-pc1v1",
@@ -33,7 +34,8 @@
     "architecture": "PASS; 0 violations; 9 accepted baseline exceptions",
     "publicApi": "PASS; 0 missing, 0 changed kind, 0 added",
     "curatedTests": "PASS; 33 files / 241 tests",
-    "fullSuite": "Windows: NOT CLEANLY OBSERVED (36 failed files / 121 tests). WSL-native Git clone: exact result in research-evidence/pc1v1/s10/final-full-suite-wsl-git.log; the suite is not called green unless that log is green.",
+    "fullSuite": "Windows: NOT CLEANLY OBSERVED (36 failed files / 121 tests). WSL-native Git clone (pre-CF8): 37 failed files / 134 failed tests, 407 passed files / 5515 passed tests; CF8 fixes the adapter guard, but the full suite was not rerun.",
+    "manifests": "code 2634 files / evidence 298 files; 0 mismatches by blob OID",
     "runtime": "Node 24.22.0; pnpm 11.21.0; Git 2.53.0; DSH 0.2.1-rc.3; Ordarium 1.3.1"
   },
   "live": {
