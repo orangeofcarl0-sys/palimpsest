@@ -1,0 +1,5 @@
+$ pnpm run build && node scripts/audit/module-architecture.mjs --check
+$ tsc -b
+architecture:check PASS
+  violations: 0
+  accepted baseline exceptions observed: 9

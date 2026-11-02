@@ -1,0 +1,113 @@
+Baseline e938502005e8d9334c2438fa47488f253bd78cc8
+Command: vitest run test/lean_work_execution_world.test.ts test/architecture/dsh_adapter_clusters.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/Users/66494/AppData/Local/Temp/pc1v1-baseline-e938502[39m
+
+ [31m❯[39m test/architecture/dsh_adapter_clusters.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 50[2mms[22m[39m
+     [32m✓[39m every module under src/adapters/ is classified L5[32m 5[2mms[22m[39m
+     [32m✓[39m the layer rule rejects L1/L2/L3 → adapters and accepts adapters → application[32m 1[2mms[22m[39m
+     [32m✓[39m no strongly connected component contains an adapter module (no new adapter cycle)[32m 0[2mms[22m[39m
+     [32m✓[39m the checks above are not vacuous: the live graph really does have adapters and cycles[32m 0[2mms[22m[39m
+     [32m✓[39m every adapter import target is a sibling, the façade, the host contract, or a recorded vocabulary[32m 2[2mms[22m[39m
+     [32m✓[39m the imports from below the façade are vocabulary and pure helpers, never a store or a service[32m 5[2mms[22m[39m
+     [32m✓[39m no adapter module mentions a durable store or a service API at all[32m 3[2mms[22m[39m
+     [32m✓[39m the compatibility entry is a shallow re-export and implements nothing[32m 1[2mms[22m[39m
+     [32m✓[39m the aggregate composes clusters statically, in the frozen order[32m 1[2mms[22m[39m
+     [32m✓[39m §11 static composition only: no registry, discovery, reflection or dynamic import[32m 9[2mms[22m[39m
+[31m     [31m×[31m both import paths reach the SAME function, and it returns the full catalogue[39m[32m 11[2mms[22m[39m
+[31m     [31m×[31m the aggregate is shallow and every cluster is cohesive rather than a renamed switchboard[39m[32m 8[2mms[22m[39m
+     [32m✓[39m the compatibility entry file is the only file left under src/tools for the DSH catalogue[32m 1[2mms[22m[39m
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/elsewhere/x.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: adding embedded git repository: .palimpsest/worktrees/attempt-f8cc1a992d02a1f6556269c1330a685c
+hint: You've added another git repository inside your current repository.
+hint: Clones of the outer repository will not contain the contents of
+hint: the embedded repository and will not know how to obtain it.
+hint: If you meant to add a submodule, use:
+hint:
+hint: 	git submodule add <url> .palimpsest/worktrees/attempt-f8cc1a992d02a1f6556269c1330a685c
+hint:
+hint: If you added this path by mistake, you can remove it from the
+hint: index with:
+hint:
+hint: 	git rm --cached .palimpsest/worktrees/attempt-f8cc1a992d02a1f6556269c1330a685c
+hint:
+hint: See "git help submodule" for more information.
+hint: Disable this message with "git config set advice.addEmbeddedRepo false"
+warning: in the working copy of 'src/other.ts', LF will be replaced by CRLF the next time Git touches it
+ [31m❯[39m test/lean_work_execution_world.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 9862[2mms[22m[39m
+     [33m[2m✓[22m[39m placing an attempt materializes a world that OWNS its mutable git state [33m 1429[2mms[22m[39m
+     [33m[2m✓[22m[39m a missing execution world is refused, never reported as a clean one [33m 1023[2mms[22m[39m
+     [33m[2m✓[22m[39m work observed in an isolated worktree refuses an uncommitted completion (the same rule as in-place) [33m 1132[2mms[22m[39m
+[31m     [31m×[31m work observed in an isolated worktree settles on the commit made INSIDE it, not on a caller's claim[39m[33m 1296[2mms[22m[39m
+     [33m[2m✓[22m[39m a commit followed by more uncommitted drift is refused too (a result commit is not a licence) [33m 1265[2mms[22m[39m
+     [33m[2m✓[22m[39m out-of-scope work in the placed world is refused, and the refusal names the placement [33m 1204[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps observing base → result honestly even after the CANONICAL head moves on [33m 1556[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/lean_work_execution_world.test.ts[2m > [22m§D2-a B. ONE observation, so the completion rule cannot differ by placement[2m > [22mwork observed in an isolated worktree settles on the commit made INSIDE it, not on a caller's claim
+[31m[1mDomainValidationError[22m: RESULT_NOT_EXPORTED: attempt attempt-299fb4648aebbd78f8c1d3fdc9da8f72's result commit 71ffef60172d cannot be made readable in the canonical object database (WORLD_MISSING: attempt attempt-299fb4648aebbd78f8c1d3fdc9da8f72 has no execution world to export from); recording it would name a commit the project cannot materialize[39m
+[36m [2m❯[22m exportAndResolveResultCommit src/work/report_integrity.ts:[2m34:15[22m[39m
+
+[90m [2m❯[22m ProjectController.#exportAndResolveResultCommit src/tools/controller.ts:[2m2330:12[22m[39m
+[90m [2m❯[22m ProjectController.report src/tools/controller.ts:[2m2320:30[22m[39m
+[90m [2m❯[22m Object.execute src/tools/tools.ts:[2m274:34[22m[39m
+[90m [2m❯[22m Object.execute src/tools/tools.ts:[2m111:22[22m[39m
+[90m [2m❯[22m call test/lean_work_execution_world.test.ts:[2m115:24[22m[39m
+[90m [2m❯[22m test/lean_work_execution_world.test.ts:[2m271:11[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/architecture/dsh_adapter_clusters.test.ts[2m > [22mSR-1 §15 A05 defineApplicationTools is still the aggregate entry[2m > [22mboth import paths reach the SAME function, and it returns the full catalogue
+[31m[1mError[22m: Cannot find module 'file:///C:/Users/66494/AppData/Local/Temp/pc1v1-baseline-e938502/dist/src/tools/application_tools.js' imported from C:/Users/66494/AppData/Local/Temp/pc1v1-baseline-e938502/test/architecture/dsh_adapter_clusters.test.ts[39m
+[36m [2m❯[22m test/architecture/dsh_adapter_clusters.test.ts:[2m184:21[22m[39m
+    [90m182|[39m
+    [90m183|[39m   it("both import paths reach the SAME function, and it returns the fu…
+    [90m184|[39m     [35mconst[39m compat [33m=[39m ([35mawait[39m [35mimport[39m(
+    [90m   |[39m                     [31m^[39m
+    [90m185|[39m       new URL(`../../dist/src/tools/application_tools.js`, import.meta…
+    [90m186|[39m     )) [35mas[39m { readonly defineApplicationTools[33m:[39m unknown }[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/architecture/dsh_adapter_clusters.test.ts[2m > [22mSR-1 §29 the split produced no replacement monolith[2m > [22mthe aggregate is shallow and every cluster is cohesive rather than a renamed switchboard
+[31m[1mAssertionError[22m: expected 12 to be 8 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 8[39m
+[31m+ 12[39m
+
+[36m [2m❯[22m test/architecture/dsh_adapter_clusters.test.ts:[2m215:29[22m[39m
+    [90m213|[39m         [33m.[39m[34mmap[39m((file) [33m=>[39m [file[33m,[39m [34mloc[39m([32m`[39m[36m${[39m[33mADAPTERS[39m[36m}[39m[32m/[39m[36m${[39mfile[36m}[39m[32m`[39m)])[33m,[39m
+    [90m214|[39m     )[33m;[39m
+    [90m215|[39m     [34mexpect[39m(clusterLoc[33m.[39msize)[33m.[39m[34mtoBe[39m([34m8[39m)[33m;[39m
+    [90m   |[39m                             [31m^[39m
+    [90m216|[39m     [35mfor[39m ([35mconst[39m [file[33m,[39m lines] [35mof[39m clusterLoc) {
+    [90m217|[39m       expect(lines, `${ADAPTERS}/${file} is ${String(lines)} lines`).t…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m17 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 01:43:11
+[2m   Duration [22m 25.42s[2m (transform 5.92s, setup 0ms, import 16.29s, tests 9.91s, environment 0ms)[22m
+
+
+[test temp hygiene] removed 7 leaked temp dir(s)
+; 3 refused (link safety): C:\Users\66494\AppData\Local\Temp\palimpsest-r3l0ciar-gates-13132, C:\Users\66494\AppData\Local\Temp\palimpsest-r3l0ciarlcf-controls-28468, C:\Users\66494\AppData\Local\Temp\palimpsest-runs
