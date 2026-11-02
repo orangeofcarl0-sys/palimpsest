@@ -22,7 +22,7 @@ function run(script, args) {
   return result.stdout;
 }
 
-const seedOut = run("scripts/c6r/seed_p1.mjs", [`--run=${RUN}`, `--sandbox-root=${join(RUN, "run")}`]);
+const seedOut = run("scripts/c6r/seed_p1.mjs", [`--run=${RUN}`, "--sandbox-root=/run/p1"]);
 const buildOut = run("scripts/c6r/build_f1.mjs", [`--p1-run=${RUN}`, `--run=${RUN}`]);
 const p1 = readJson(join(RUN, "p1", "initial-state.json"));
 const f1 = readJson(join(RUN, "f1", "equivalence.json"));

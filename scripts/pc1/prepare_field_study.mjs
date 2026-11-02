@@ -136,6 +136,28 @@ const t1Arrivals = stageUpdates({ timeline, visibleRoot: join(scenario, "visible
 const pVisibleT1 = visibleSetDigest(P_INBOX);
 const t2Arrivals = stageUpdates({ timeline, visibleRoot: join(scenario, "visible"), inbox: P_INBOX, at: T2 });
 const pVisibleT2 = visibleSetDigest(P_INBOX);
+writeJson(join(P, "deployment.json"), {
+  schemaVersion: 1,
+  profileId: "field-study-p",
+  projectId: "riverton",
+  localPeer: "local-operator",
+  repository: "/run/fs-p/world",
+  execution: "in-place",
+  concurrency: 1,
+  toolProfile: "normal",
+  policy: { allowed_commands: [] },
+  standard: { statement: "The plan must satisfy the stated observation, data-validity, uncertainty, schedule and budget constraints, or record a grounded needs-verification/infeasible conclusion." },
+  transport: { namespace: "field-study-p", databasePath: "/run/fs-p/state/transport.sqlite" },
+  databases: {
+    orchestration: "/run/fs-p/state/palimpsest.sqlite",
+    ordarium: "/run/fs-p/state/ordarium.sqlite",
+    coordination: "/run/fs-p/state/coordination.sqlite",
+    transportCursors: "/run/fs-p/state/transport-cursors.sqlite",
+    projectJournal: "/run/fs-p/state/journal.sqlite",
+    projectAssociations: "/run/fs-p/state/associations.sqlite",
+    management: "/run/fs-p/state/management.sqlite",
+  },
+});
 writeJson(join(P, "initial-state.json"), {
   scenario: timeline.scenarioId,
   observationTime: T1,

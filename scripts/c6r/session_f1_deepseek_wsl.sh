@@ -15,7 +15,9 @@ CREDENTIAL_FILE="/mnt/c/Users/66494/.dsh/.credentials.yaml"
 PROXY_URL="http://127.0.0.1:7890"
 PROXY_AGENT="/home/admini/c6r/dsh/node_modules/https-proxy-agent/dist/index.js"
 UPSTREAM="https://api.deepseek.com/anthropic"
-PROMPT='You are the planning agent for the Sablewick community battery programme. This is a historical project-state replay: the programme is being observed as of 2026-02-10 09:05 UTC. The programme workspace is at /run/f1/world, and the programme handoff is HANDOFF.md in the workspace. The programme inbox is at /run/f1/inbox. Continue the programme from the state and information available at that observation time. Examine relevant new information, determine whether the existing plan remains justified, and identify the next useful actions. Respect the programme authorization and acceptance requirements. Work only inside the programme workspace and the programme inbox.'
+DEFAULT_PROMPT='You are the planning agent for the Sablewick community battery programme. This is a historical project-state replay: the programme is being observed as of 2026-02-10 09:05 UTC. The programme workspace is at /run/f1/world, and the programme handoff is HANDOFF.md in the workspace. The programme inbox is at /run/f1/inbox. Continue the programme from the state and information available at that observation time. Examine relevant new information, determine whether the existing plan remains justified, and identify the next useful actions. Respect the programme authorization and acceptance requirements. Work only inside the programme workspace and the programme inbox.'
+INBOX="${C6R_INBOX_DIR:-$F1/inbox}"
+PROMPT="${C6R_PROMPT:-$DEFAULT_PROMPT}"
 
 mkdir -p "$BASE"
 cp "$REPO/scripts/c6r/provider_proxy.mjs" "$BASE/provider_proxy.mjs"
@@ -118,6 +120,7 @@ bwrap \
   --ro-bind "$BASE/net_bridge.mjs" /net_bridge.mjs \
   --bind "$OUT/provider.sock" /run/c6r-provider.sock \
   --bind "$F1" /run/f1 \
+  --bind "$INBOX" /run/f1/inbox \
   --bind "$HOST" /dsh-home \
   --proc /proc --dev /dev --tmpfs /tmp \
   --tmpfs /mnt --tmpfs /home --tmpfs /root --tmpfs /media --tmpfs /srv \
