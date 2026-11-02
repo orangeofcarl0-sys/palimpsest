@@ -288,20 +288,23 @@ describe("the twelve fault-acceptance scenarios in plugin shape", () => {
     }
   });
 
-  it("9. write escape: a failing write-scope gate produces evidence, never promotion", async () => {
+  it("9. write escape: a structural gate cannot be forged by an unrelated command and records nothing when unobservable", async () => {
     const { controller, cleanup } = await rig();
     try {
       const attemptId = await driveToAttempt(controller);
-      const gate = await controller.gate({
-        attemptId,
-        predicate: "write_scope_valid",
-        command: ["check-write-scope"],
- // the gate detected an out-of-scope write
-      });
-      expect(gate.event_type).toBe("EVIDENCE_ADDED");
+      // PC1 S01-R05: write_scope_valid is the PRODUCT's observation of the tree. The in-memory
+      // fixture has no observable tree, so the honest answer is a refusal — never an evidence atom
+      // borrowed from a command that did not look at the scope at all.
+      await expect(
+        controller.gate({
+          attemptId,
+          predicate: "write_scope_valid",
+          command: ["check-write-scope"],
+        }),
+      ).rejects.toThrow(/no observable tree/u);
       const status = controller.status();
-      expect(status.evidence[0]).toMatchObject({ status: "active" });
-      // A failing scope gate must not make the batch eligible for promotion.
+      expect(status.evidence).toEqual([]);
+      // A refused structural gate must not make the batch eligible for promotion.
       expect(status.attempts[0]?.state).not.toBe("COMPLETED");
     } finally {
       await cleanup();

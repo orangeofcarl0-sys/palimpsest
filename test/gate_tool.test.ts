@@ -22,7 +22,7 @@ const GATE_PASS = parseGateDefinition({
   require: {
     all: [
       { exists: { predicate: "tests_pass" } },
-      { exists: { predicate: "write_scope_valid" } },
+      { exists: { predicate: "process_exit_zero" } },
     ],
   },
 });
@@ -98,11 +98,11 @@ describe("Gate DSL integration (R3)", () => {
       await controller.gate({ attemptId, predicate: "tests_pass", command: ["pytest"] });
       const incomplete = controller.evaluateGate("gate-pass", "attempt", attemptId);
       expect(incomplete.verdict).toBe("INCOMPLETE");
-      expect(incomplete.next_evidence_needed).toEqual(["exists(write_scope_valid)"]);
+      expect(incomplete.next_evidence_needed).toEqual(["exists(process_exit_zero)"]);
       await controller.gate({
         attemptId,
-        predicate: "write_scope_valid",
-        command: ["check-write-scope"],
+        predicate: "process_exit_zero",
+        command: ["pytest"],
       });
       const pass = controller.evaluateGate("gate-pass", "attempt", attemptId);
       expect(pass.verdict).toBe("PASS");
@@ -140,9 +140,9 @@ describe("Gate DSL integration (R3)", () => {
         { callId: "c", rootCallId: "r", name: "palimpsest_gate", arguments: {}, agent: undefined, parent: undefined, signal: new AbortController().signal },
       )) as { evidenceId: string; gateVerdict: string; nextEvidenceNeeded: string[] };
       expect(first.gateVerdict).toBe("INCOMPLETE");
-      expect(first.nextEvidenceNeeded).toEqual(["exists(write_scope_valid)"]);
+      expect(first.nextEvidenceNeeded).toEqual(["exists(process_exit_zero)"]);
       const second = (await gateTool!.execute(
-        { attemptId, predicate: "write_scope_valid", command: ["check-write-scope"], gateId: "gate-pass" },
+        { attemptId, predicate: "process_exit_zero", command: ["pytest"], gateId: "gate-pass" },
         { callId: "c2", rootCallId: "r", name: "palimpsest_gate", arguments: {}, agent: undefined, parent: undefined, signal: new AbortController().signal },
       )) as { gateVerdict: string };
       expect(second.gateVerdict).toBe("PASS");

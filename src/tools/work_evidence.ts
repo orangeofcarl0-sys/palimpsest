@@ -134,6 +134,7 @@ export function recordObservedEvidence(
   predicate: Extract<EvidencePredicate, "write_scope_valid" | "expected_files_exist">,
   value: Record<string, unknown>,
   candidate?: { readonly dependencyDigest: string; readonly producer: string } | undefined,
+  producer?: string | undefined,
 ): SchedulerEvent {
   const key = actionKey("evidence-observed-v1", {
     project_id: context.projectId,
@@ -163,7 +164,7 @@ export function recordObservedEvidence(
     environment_digest: "e".repeat(64),
     dependency_digest: candidate?.dependencyDigest ?? null,
     observed_artifacts: [...context.requiredArtifacts],
-    producer: candidate?.producer ?? "palimpsest-finish",
+    producer: candidate?.producer ?? producer ?? "palimpsest-finish",
     created_at: context.now(),
     status: "active",
   };
