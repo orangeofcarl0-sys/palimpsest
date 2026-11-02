@@ -12,7 +12,12 @@ import { dirname, join, resolve } from "node:path";
 
 import { installProduct, type InstalledProduct } from "./product.js";
 import { runDoctor } from "./runtime/doctor.js";
-import type { OperatorAuthorityPort } from "./project_review/index.js";
+import {
+  makeSignedOperatorAuthority,
+  verifyOperatorToken,
+  type OperatorAuthorityPort,
+  type OperatorTokenClaims,
+} from "./project_review/index.js";
 import type { ProjectIntentAdmissionPort } from "./project_intent/index.js";
 import { makeDomainOutcomeService } from "./domain_outcome/index.js";
 
@@ -22,10 +27,12 @@ export interface ProductProfile {
   readonly repository: string;
   readonly stateDir: string;
   readonly toolProfile: "normal" | "expert";
-  /** The local operator identity for review decisions and the local intent admission. */
+  /** The expected operator subject; the credential, not this string, is the authority. */
   readonly operatorId?: string | undefined;
-  /** The purpose this local operator is allowed to decide; recorded, not a free-floating grant. */
+  /** The purpose this operator is allowed to decide; recorded, not a free-floating grant. */
   readonly operatorPurpose?: string | undefined;
+  /** The Ed25519 public key the signed operator credential must verify against. */
+  readonly operatorPublicKeyPath?: string | undefined;
 }
 
 type Options = Map<string, string>;
@@ -57,40 +64,87 @@ function writeProfile(path: string, profile: ProductProfile): void {
   writeFileSync(path, `${JSON.stringify(profile, null, 2)}\n`);
 }
 
-function localAuthority(operatorId: string | undefined): OperatorAuthorityPort | undefined {
-  if (operatorId === undefined || operatorId === "") return undefined;
+interface VerifiedOperator {
+  readonly authority: OperatorAuthorityPort;
+  readonly actor: string;
+  readonly claims: OperatorTokenClaims;
+}
+
+/**
+ * R5/owner decision: the CLI no longer accepts a bare operator id as authority. It reads a bearer
+ * credential signed with the operator's Ed25519 private key, verifies it against the public key
+ * configured at `init`, and only then exposes an authority for this process.
+ *
+ * This is a local signed credential, not a remote IdP. A deployment that needs SSO supplies its own
+ * `OperatorAuthorityPort`; the product never turns a string into an operator.
+ */
+function verifiedOperator(profile: ProductProfile, tokenPath: string): VerifiedOperator {
+  if (
+    profile.operatorId === undefined ||
+    profile.operatorId === "" ||
+    profile.operatorPurpose === undefined ||
+    profile.operatorPurpose === "" ||
+    profile.operatorPublicKeyPath === undefined ||
+    profile.operatorPublicKeyPath === ""
+  ) {
+    throw new Error(
+      "this profile has no signed operator identity; run `palimpsest init` with --operator, --operator-purpose and --operator-public-key",
+    );
+  }
+  const token = readFileSync(resolve(tokenPath), "utf8").trim();
+  const publicKeyPem = readFileSync(resolve(profile.operatorPublicKeyPath), "utf8");
+  const verification = verifyOperatorToken({
+    token,
+    publicKeyPem,
+    expectedOperatorId: profile.operatorId,
+    expectedPurpose: profile.operatorPurpose,
+  });
+  if (!verification.valid) throw new Error(`operator credential refused: ${verification.reason}`);
+  const actor = verification.claims.operatorId.startsWith("operator:")
+    ? verification.claims.operatorId
+    : `operator:${verification.claims.operatorId}`;
   return {
-    policyRef: { policyId: "pc1-local-operator", version: "1" },
-    authorize(actor) {
-      return actor === operatorId
-        ? { authorized: true, role: "operator" }
-        : { authorized: false, role: "unknown", reason: `the configured local operator is ${operatorId}` };
-    },
+    authority: makeSignedOperatorAuthority({ claims: verification.claims, actor }),
+    actor,
+    claims: verification.claims,
   };
 }
 
-function localIntentAdmission(profile: ProductProfile): ProjectIntentAdmissionPort | undefined {
-  if (profile.operatorId === undefined || profile.operatorPurpose === undefined) return undefined;
-  const policyRef = { policyId: "pc1-local-intent-admission", version: "1" };
+function signedIntentAdmission(profile: ProductProfile, operator: VerifiedOperator): ProjectIntentAdmissionPort {
+  const policyRef = { policyId: "pc1v1-signed-intent-admission", version: "1" };
   return {
     policyRef,
     async decide(input) {
       const provenanceDigest = createHash("sha256")
-        .update(`${profile.operatorId}\u0000${profile.operatorPurpose}\u0000${input.proposal.digest}\u0000${input.currentness.status}`)
+        .update(
+          `${operator.actor}\u0000${profile.operatorPurpose ?? ""}\u0000${operator.claims.nonce}\u0000${input.proposal.digest}\u0000${input.currentness.status}`,
+        )
         .digest("hex");
       return {
         decision: "ADMIT",
         proposalDigest: input.proposal.digest,
         policyRef,
         provenanceDigest,
-        detail: `local operator ${profile.operatorId} admitted the exact proposal digest for purpose: ${profile.operatorPurpose}`,
+        detail: `signed operator ${operator.actor} admitted the exact proposal digest for purpose: ${profile.operatorPurpose ?? ""}`,
       };
     },
   };
 }
 
-function openProduct(profile: ProductProfile): InstalledProduct {
-  return installProduct({ tools: { register: () => () => undefined } } as never, {
+function openProduct(
+  profile: ProductProfile,
+  options: { readonly operatorTokenPath?: string | undefined; readonly requireOperator?: boolean | undefined } = {},
+): { readonly installed: InstalledProduct; readonly operator: VerifiedOperator | undefined } {
+  const operator =
+    options.operatorTokenPath === undefined || options.operatorTokenPath === ""
+      ? undefined
+      : verifiedOperator(profile, options.operatorTokenPath);
+  if (options.requireOperator === true && operator === undefined) {
+    throw new Error(
+      "this command requires a signed operator credential; supply --operator-token=<file> (or PALIMPSEST_OPERATOR_TOKEN_FILE)",
+    );
+  }
+  const installed = installProduct({ tools: { register: () => () => undefined } } as never, {
     projectId: profile.projectId,
     repository: profile.repository,
     stateDir: profile.stateDir,
@@ -102,9 +156,10 @@ function openProduct(profile: ProductProfile): InstalledProduct {
       confirmed: true,
       notes: ["A project may replace this with a stricter confirmed standard."],
     },
-    operatorAuthority: localAuthority(profile.operatorId),
-    ...(localIntentAdmission(profile) === undefined ? {} : { projectIntentAdmission: localIntentAdmission(profile) }),
+    ...(operator === undefined ? {} : { operatorAuthority: operator.authority }),
+    ...(operator === undefined ? {} : { projectIntentAdmission: signedIntentAdmission(profile, operator) }),
   });
+  return { installed, operator };
 }
 
 function repoHead(repository: string): string {
@@ -143,6 +198,11 @@ export async function runProductCommand(command: string, options: Options, posit
     const toolProfile = option(options, "tool-profile") === "expert" ? "expert" : "normal";
     const operatorId = option(options, "operator");
     const operatorPurpose = option(options, "operator-purpose");
+    const operatorPublicKey = option(options, "operator-public-key");
+    const operatorOptions = [operatorId, operatorPurpose, operatorPublicKey].filter((value) => value !== undefined).length;
+    if (operatorOptions !== 0 && operatorOptions !== 3) {
+      throw new Error("--operator, --operator-purpose and --operator-public-key must be supplied together");
+    }
     const profileFile = profilePath(options);
     mkdirSync(stateDir, { recursive: true });
     const profile: ProductProfile = {
@@ -153,9 +213,10 @@ export async function runProductCommand(command: string, options: Options, posit
       toolProfile,
       ...(operatorId === undefined ? {} : { operatorId }),
       ...(operatorPurpose === undefined ? {} : { operatorPurpose }),
+      ...(operatorPublicKey === undefined ? {} : { operatorPublicKeyPath: resolve(operatorPublicKey) }),
     };
     writeProfile(profileFile, profile);
-    const installed = openProduct(profile);
+    const { installed } = openProduct(profile);
     try {
       const hasProject = (() => {
         try {
@@ -185,7 +246,7 @@ export async function runProductCommand(command: string, options: Options, posit
   const profile = readProductProfile(profilePath(options));
 
   if (command === "continue" || command === "context-capsule") {
-    const installed = openProduct(profile);
+    const { installed } = openProduct(profile);
     try {
       const workspace = installed.application.projectWorkspace!;
       if (command === "context-capsule") {
@@ -202,7 +263,13 @@ export async function runProductCommand(command: string, options: Options, posit
 
   if (command === "review") {
     const [, subcommand, proposalId] = positional;
-    const installed = openProduct(profile);
+    const requiresOperator =
+      subcommand === "approve" || subcommand === "reject" || subcommand === "request-changes" || subcommand === "apply";
+    const operatorTokenPath = option(options, "operator-token") ?? process.env.PALIMPSEST_OPERATOR_TOKEN_FILE;
+    const { installed, operator } = openProduct(profile, {
+      ...(operatorTokenPath === undefined ? {} : { operatorTokenPath }),
+      requireOperator: requiresOperator,
+    });
     try {
       if (subcommand === undefined) throw new Error("usage: palimpsest review <list|adopt|preview|approve|reject|request-changes|apply|verify-source|propose-plan> …");
       if (subcommand === "list") {
@@ -238,14 +305,24 @@ export async function runProductCommand(command: string, options: Options, posit
         return true;
       }
       if (subcommand === "approve" || subcommand === "reject" || subcommand === "request-changes") {
-        const actor = requiredOption(options, "actor");
+        const actor = operator?.actor;
+        if (actor === undefined) throw new Error("a verified operator credential is required");
+        const displayActor = option(options, "actor");
+        if (displayActor !== undefined && displayActor !== actor) {
+          throw new Error(`--actor "${displayActor}" is not the verified operator "${actor}"`);
+        }
         const decision = subcommand === "approve" ? "APPROVE" : subcommand === "reject" ? "REJECT" : "REQUEST_CHANGES";
         const preview = installed.review.decide(proposalId ?? "", { decision, actor, ...(option(options, "note") === undefined ? {} : { note: option(options, "note") }) });
         console.log(JSON.stringify(preview, null, 2));
         return true;
       }
       if (subcommand === "apply") {
-        const actor = requiredOption(options, "actor");
+        const actor = operator?.actor;
+        if (actor === undefined) throw new Error("a verified operator credential is required");
+        const displayActor = option(options, "actor");
+        if (displayActor !== undefined && displayActor !== actor) {
+          throw new Error(`--actor "${displayActor}" is not the verified operator "${actor}"`);
+        }
         const outcome = await installed.review.apply(proposalId ?? "", { actor });
         console.log(JSON.stringify(outcome, null, 2));
         return true;
@@ -262,7 +339,7 @@ export async function runProductCommand(command: string, options: Options, posit
   }
 
   if (command === "recover") {
-    const installed = openProduct(profile);
+    const { installed } = openProduct(profile);
     try {
       const report = await installed.controller.promotions.reconcileAll();
       const head = await installed.controller.reconcileProjectHead();
@@ -276,7 +353,7 @@ export async function runProductCommand(command: string, options: Options, posit
 
   if (command === "outcomes") {
     const [, subcommand] = positional;
-    const installed = openProduct(profile);
+    const { installed } = openProduct(profile);
     try {
       const service = makeDomainOutcomeService({
         workspace: {
