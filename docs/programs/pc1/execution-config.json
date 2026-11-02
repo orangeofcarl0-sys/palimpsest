@@ -1,0 +1,48 @@
+{
+  "programId": "PALIMPSEST-PC1",
+  "repository": "orangeofcarl0-sys/palimpsest",
+  "targetBranch": "palimpsest-product-convergence-v1",
+  "existingAuthorityOnly": true,
+  "destructiveHistoricalOperations": false,
+  "modelExecution": {
+    "enabled": false,
+    "spendAuthorizationRef": null,
+    "provider": null,
+    "model": null,
+    "runtimeVersion": null,
+    "recommendationOnlyNotSpendAuthorization": true,
+    "proposedLimits": {
+      "reportedTokensMax": 24000000,
+      "stopNewLaunchesAt": 18000000,
+      "inFlightReserveTokens": 6000000,
+      "maxSessionsIncludingChildren": 24,
+      "perSessionWallSeconds": 600
+    },
+    "currencyLimit": null,
+    "currency": null,
+    "pairedReservationRequired": true,
+    "inheritedStricterLimitWins": true,
+    "providerSwitchRequiresNewCohort": true
+  },
+  "evaluation": {
+    "scenarios": [
+      "sablewick",
+      "field-study"
+    ],
+    "conditions": [
+      "F_NATIVE_DSH",
+      "P_PALIMPSEST"
+    ],
+    "primaryMode": "matched native cognitive capabilities",
+    "startWithPairedPilot": true,
+    "repeatOnlyUnderPreregisteredBudget": true,
+    "doNotCancelFOnPFailure": true
+  },
+  "delivery": {
+    "createLocalRc": true,
+    "publishRegistry": false,
+    "createRemotePr": false,
+    "mergeMain": false,
+    "pushOnlyProgramBranchNonForce": true
+  }
+}

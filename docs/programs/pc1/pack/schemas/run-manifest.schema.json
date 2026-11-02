@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:run-manifest:1",
+  "title": "冻结运行身份和证据 manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runId",
+    "cohortId",
+    "condition",
+    "scenarioId",
+    "codeFreeze",
+    "codeTree",
+    "profileDigest",
+    "visibleSetDigest",
+    "observationTime",
+    "executionKind",
+    "status",
+    "sessionIds",
+    "usage",
+    "artifacts"
+  ],
+  "properties": {
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cohortId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "condition": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarioId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "codeFreeze": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "codeTree": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "profileDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "visibleSetDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "observationTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "executionKind": {
+      "enum": [
+        "DETERMINISTIC",
+        "REAL_MODEL",
+        "MIXED_EXPLICIT"
+      ]
+    },
+    "status": {
+      "enum": [
+        "PREPARED",
+        "RUNNING",
+        "FINISHED",
+        "TRUNCATED",
+        "FAILED",
+        "INVALID",
+        "BLOCKED"
+      ]
+    },
+    "sessionIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "usage": {
+      "type": "object",
+      "required": [
+        "reportedTokens",
+        "inputTokens",
+        "outputTokens",
+        "cacheReadTokens",
+        "basis",
+        "billingKnown"
+      ],
+      "properties": {
+        "reportedTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "inputTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "outputTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cacheReadTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "basis": {
+          "enum": [
+            "PROVIDER_SESSION_EVENTS",
+            "PARTIAL",
+            "UNAVAILABLE",
+            "NO_MODEL"
+          ]
+        },
+        "billingKnown": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256",
+          "bytes",
+          "role",
+          "subjectRef"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subjectRef": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "actualProvider": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "actualModel": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "runtimeVersion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "invalidReason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authorityRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

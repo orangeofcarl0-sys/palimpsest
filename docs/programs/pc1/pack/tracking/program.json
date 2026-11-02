@@ -1,0 +1,140 @@
+{
+  "programId": "PALIMPSEST-PC1",
+  "version": "1.0.0",
+  "createdAt": "2026-11-02",
+  "branch": "palimpsest-product-convergence-v1",
+  "baseline": {
+    "commit": "044b08056a0e98b7d7cee207cb36fb7e453907fe",
+    "tree": "1b7caa156d187e952be8bd90e797f440cb7e2402",
+    "sourceBranch": "palimpsest-c6r-behavioral-qualification",
+    "mainObserved": "044330b2e55198542d545edc42ed9c36e7ce896b"
+  },
+  "scope": "Complete product implementation; empirical qualification separately reported",
+  "executionPolicy": {
+    "continuous": true,
+    "stopAfterEachPhase": false,
+    "defaultNewCanonicalAuthorityAllowed": false,
+    "pushDevelopmentBranchNonForce": true,
+    "openPr": false,
+    "mergeMain": false,
+    "modifyHistoricalEvidence": false,
+    "continueIndependentWorkWhenExternalBlocked": true
+  },
+  "phaseReadiness": "All dependencies have implementation IMPLEMENTED and deterministic PASSED. Live/comparative blocks alone do not block engineering successors. Readiness does not authorize effects or model spending.",
+  "phases": [
+    {
+      "id": "S00",
+      "name": "基线与完整计划",
+      "dependsOn": [],
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S01",
+      "name": "成果与证据完整性",
+      "dependsOn": [
+        "S00"
+      ],
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S02",
+      "name": "正常产品路径",
+      "dependsOn": [
+        "S00",
+        "S01"
+      ],
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S03",
+      "name": "项目认知连续性",
+      "dependsOn": [
+        "S00"
+      ],
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S04",
+      "name": "提案授权与行动",
+      "dependsOn": [
+        "S01",
+        "S02",
+        "S03",
+        "S06"
+      ],
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S05",
+      "name": "真实多 Agent 合成",
+      "dependsOn": [
+        "S02",
+        "S03",
+        "S07"
+      ],
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S06",
+      "name": "领域结果与负面成果",
+      "dependsOn": [
+        "S00",
+        "S01"
+      ],
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S07",
+      "name": "运行恢复与预算",
+      "dependsOn": [
+        "S00",
+        "S01"
+      ],
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S08",
+      "name": "两个场景与比较",
+      "dependsOn": [
+        "S04",
+        "S05",
+        "S06",
+        "S07"
+      ],
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S09",
+      "name": "产品安装与使用",
+      "dependsOn": [
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "S07"
+      ],
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "mustImplement": true
+    },
+    {
+      "id": "S10",
+      "name": "集成与交付",
+      "dependsOn": [
+        "S08",
+        "S09"
+      ],
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "mustImplement": true
+    }
+  ]
+}

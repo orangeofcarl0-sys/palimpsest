@@ -1,0 +1,114 @@
+{
+  "programId": "PALIMPSEST-PC1",
+  "branch": "palimpsest-product-convergence-v1",
+  "lastCheckedCommit": "044b08056a0e98b7d7cee207cb36fb7e453907fe",
+  "updatedAt": "2026-11-02",
+  "phases": {
+    "S00": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_ENV_LIMITATION",
+      "live": "BLOCKED_NO_SPEND_AUTHORIZATION",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [
+        "Node v24.14.1 < package engine >=24.15.0 (build still passes; recorded environment limitation)",
+        "No PC1 model spend authorization"
+      ],
+      "evidence": [
+        "docs/programs/pc1/S00-BASELINE-DOSSIER.md",
+        "docs/programs/pc1/S00-OWNER-CAPABILITY-MATRIX.md",
+        "docs/programs/pc1/S00-ROLE-MAP.md",
+        "research-evidence/pc1/s00/"
+      ]
+    },
+    "S01": {
+      "implementation": "IN_PROGRESS",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S02": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S03": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_RUN",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S04": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_RUN",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S05": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_RUN",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S06": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S07": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S08": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_RUN",
+      "comparison": "NOT_RUN",
+      "blockers": [],
+      "evidence": []
+    },
+    "S09": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_RUN",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    },
+    "S10": {
+      "implementation": "NOT_STARTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": []
+    }
+  },
+  "pendingEffects": [],
+  "nextActions": [
+    "S01: reproduce legacy report export gap and uncertain promotion; RED/GREEN; structural predicate refusal",
+    "S02/S03/S06/S07 design and implementation in parallel where owners are independent"
+  ],
+  "lastCheckpoint": {
+    "at": "2026-11-02",
+    "branch": "palimpsest-product-convergence-v1",
+    "baseline": "044b08056a0e98b7d7cee207cb36fb7e453907fe"
+  }
+}

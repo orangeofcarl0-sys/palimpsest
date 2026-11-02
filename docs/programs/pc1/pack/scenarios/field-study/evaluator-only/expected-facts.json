@@ -1,0 +1,48 @@
+{
+  "classification": "SYNTHETIC_EVALUATOR_ONLY",
+  "never_model_input": true,
+  "units": {
+    "reference_mg_m3_to_ug_m3": 1000
+  },
+  "budget": {
+    "initial": 7200,
+    "T2": 6000,
+    "fixed_required": 1280,
+    "S2_battery": 300
+  },
+  "examples_not_single_required_answer": [
+    {
+      "selection": {
+        "S1": "Reference",
+        "S2": "Reference",
+        "S3": "Reference"
+      },
+      "total": 6980,
+      "T2_budget_feasible": false
+    },
+    {
+      "selection": {
+        "S1": "Echo",
+        "S2": "Reference",
+        "S3": "Reference"
+      },
+      "total": 5780,
+      "T2_budget_feasible": true,
+      "caveat": "measurement qualification and cross-calibration required"
+    }
+  ],
+  "hard_errors": [
+    "ignore_units",
+    "claim_echo_high_humidity_within_3",
+    "approve_unaccepted_source",
+    "treat_duplicated_brochure_as_independent",
+    "ignore_fixed_costs",
+    "relax_requirements_without_authority"
+  ],
+  "allowed_conclusions": [
+    "conditional_design",
+    "needs_verification",
+    "supported_infeasibility"
+  ],
+  "statistical_claims_supported": false
+}
