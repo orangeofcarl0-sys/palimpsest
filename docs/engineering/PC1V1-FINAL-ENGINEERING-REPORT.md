@@ -40,8 +40,10 @@ full governance path the default for ordinary planning. The live details are in
 | Code Freeze 3 (signed operator identity) | `e6159e6b2bf595d8eecb4c709f57e315c1bb5854` / tree `fae1a606a5d8eba269adbd772e4c015104f9502a` |
 | Code Freeze 4 (Subagent/cohort tooling) | `6c8ebd98f9e8f89804201d0b77c6d57d96ff0898` / tree `8ade5b49b2f2ceee0838ea619d8e996500df2cff` |
 | Code Freeze 5 (scoring isolation, start claim) | `7edb4c622c62c9623767185ef87c3f32b5b6e901` / tree `bce3722ac14456cb89906f970e49d95413698a74` |
-| **Code Freeze 6 (final executable/prompt freeze)** | **`92158e37b66b2a649093d870765b6e8b312d6d58` / tree `a0c4e007ca42fbb83f9c6b678a112d5c050ea340`** |
-| RC | `dist-rc/palimpsest-0.2.0-pc1.1-pc1v1.tar.gz` (rebuilt from Code Freeze 6; see `research-evidence/pc1v1/rc.json`) |
+| Code Freeze 6 (runtime/prompt behavior) | `92158e37b66b2a649093d870765b6e8b312d6d58` / tree `a0c4e007ca42fbb83f9c6b678a112d5c050ea340` |
+| Code Freeze 7 (RC packaging only) | `b93f1ff991777ba9e702e657f0eda7bf0680e3bd` / tree `9f3f6f39ee68842f0d6455ed3d237852008ca493` |
+| **Code Freeze 8 (final executable; behavior-preserving CI correction)** | **`18a9c1cef45fda9373b50004ee70650b0e9579af` / tree `8914b91f708dd01b1f6fad26a03d5234f72e545d`** |
+| RC | `dist-rc/palimpsest-0.2.0-pc1.1-pc1v1.tar.gz` (rebuilt from Code Freeze 8; see `research-evidence/pc1v1/rc.json`) |
 | Evidence freeze | the commit containing this report, the live addendum, `research-evidence/pc1v1` and the manifests |
 | PR / mainline | owner authorized PR/merge on 2026-11-03; see §12/§13 for the final integration state |
 
@@ -269,9 +271,9 @@ default for ordinary planning.
 | Build (Node 24.22.0) | PASS | `research-evidence/pc1v1/s10/final-build.log` |
 | Architecture | PASS, 0 violations, 9 accepted baseline exceptions | `final-architecture.log` |
 | Public API | PASS, 0 missing / 0 changed kind / 0 added | `final-public-api.log` |
-| Curated PC1/PC1-V1 + architecture suite | 33 files / 241 tests PASS | `final-curated-tests.log` |
+| Curated PC1/PC1-V1 + architecture suite (CF8) | **36 files / 272 tests PASS**, including the adapter guard and trajectory kernel-coverage test | `final-curated-tests-cf8.log` |
 | Full ordinary suite (Windows) | **NOT CLEANLY OBSERVED**: 36 failed files / 121 failed tests, 407 passed files / 5,524 passed tests | `final-full-suite.log` |
-| Full ordinary suite (WSL-native Git clone) | result captured in `final-full-suite-wsl-git.log`; see §10 | `final-full-suite-wsl-git.log` |
+| Full ordinary suite (WSL-native Git clone, pre-CF8) | 37 failed files / 134 failed tests; 407 passed files / 5,515 passed tests; CF8 fixes the adapter guard identified in this log, but the full suite was not rerun | `final-full-suite-wsl-git.log` |
 | Baseline pre-existing failures | `lean_work_execution_world` and `architecture/dsh_adapter_clusters` fail at `e938502` too | `baseline-preexisting-failures.log` |
 | RC | local tarball + manifest + SHA-256; `dirty:false`; 4,042 files | `dist-rc/`, `research-evidence/pc1v1/rc.json` |
 | Installed RC smoke | PASS: Node 24.22, Git 2.53, DSH 0.2.1-rc.3, Ordarium 1.3.1; Windows sandbox WARN; live model BLOCKED | `research-evidence/pc1v1/s10/rc-doctor.json` |
@@ -312,14 +314,15 @@ product change.
 
 - RC version label: `0.2.0-pc1.1-pc1v1` (the package version remains `0.2.0-pc1.1`; the label is
   local delivery metadata).
-- Source: runtime/prompt Code Freeze 6 `92158e37b66b2a649093d870765b6e8b312d6d58`, tree
-  `a0c4e007ca42fbb83f9c6b678a112d5c050ea340`; delivery/tooling Code Freeze 7
-  `b93f1ff991777ba9e702e657f0eda7bf0680e3bd`, `dirty:false`.
+- Source: final executable Code Freeze 8 `18a9c1cef45fda9373b50004ee70650b0e9579af`, tree
+  `8914b91f708dd01b1f6fad26a03d5234f72e545d`, `dirty:false`. The live cohort itself ran at Code
+  Freeze 6; Code Freeze 8 moves the hard-constraint vocabulary behind the application facade and
+  restores the adapter-cluster guard without changing the measured behavior.
 - Contents: `dist/`, product CLI, PC1-V1 docs/pack, PC1 docs/pack, scenario scripts, PC1-V1 live
   runner and examples. The raw live evidence archive is deliberately external because its deep
   paths exceed the Windows package path budget; it is committed and manifested separately.
 - Manifest: 4,042 staged files with per-file SHA-256.
-- Tarball SHA-256: `a951ce720d9615eddc167e8b1581dc4d350175104ccdaa738eed9d48783f9728`
+- Tarball SHA-256: `844b6ee2b7b9b067844aed52a1d429cf6e8227aef32fbbdec0136cf34d2d4fdb`
   (recorded externally in `research-evidence/pc1v1/rc.json`).
 - Installation/upgrade/rollback limits: no registry publication; no canonical migration; the new
   review adoption fields are additive to `review.sqlite`; the RC is local and not a deployment
@@ -348,9 +351,9 @@ product change.
 
 ## 13. Final state
 
-- Final runtime/prompt Code Freeze: `92158e37b66b2a649093d870765b6e8b312d6d58`.
-- Delivery/tooling Code Freeze: `b93f1ff991777ba9e702e657f0eda7bf0680e3bd`.
-- RC digest: `a951ce720d9615eddc167e8b1581dc4d350175104ccdaa738eed9d48783f9728`.
+- Final executable Code Freeze: `18a9c1cef45fda9373b50004ee70650b0e9579af`.
+- Live-cohort runtime/prompt Code Freeze: `92158e37b66b2a649093d870765b6e8b312d6d58`.
+- RC digest: `844b6ee2b7b9b067844aed52a1d429cf6e8227aef32fbbdec0136cf34d2d4fdb`.
 - R9: `EXECUTED`; 8 principal runs, 11 Subagent child sessions, 0 provider errors, 41,685,383 tokens.
 - Comparative benefit: `NOT_SUPPORTED`; strong native DSH competitive or superior.
 - PR/mainline: owner authorized; the final integration state is recorded in §12 and the PR/merge
