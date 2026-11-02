@@ -53,7 +53,7 @@ for (const entry of include) {
 }
 const commit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: REPO, encoding: "utf8" }).trim();
 const tree = execFileSync("git", ["rev-parse", "HEAD^{tree}"], { cwd: REPO, encoding: "utf8" }).trim();
-const status = execFileSync("git", ["status", "--porcelain"], { cwd: REPO, encoding: "utf8" }).trim();
+const status = execFileSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: REPO, encoding: "utf8" }).trim();
 const files = walk(STAGE).map((path) => ({ path, bytes: statSync(join(STAGE, path)).size, sha256: sha256(join(STAGE, path)) }));
 const manifest = {
   schema: "pc1-rc-manifest/v1",
