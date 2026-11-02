@@ -345,10 +345,14 @@ product change.
    `OperatorAuthorityPort`.
 5. **PR / mainline** — owner authorized PR/merge on 2026-11-03. PR
    https://github.com/orangeofcarl0-sys/palimpsest/pull/216 is open and `MERGEABLE`; it is
-   `BLOCKED` by the required `unit` check. The remaining unit failures are two pre-existing
-   `trajectory_p2e1rf_malformed_ace` / `trajectory_p2e1rg_kernel_coverage` tests that pass in the
-   local CF8 suite and are unrelated to the changed files. No admin bypass was used; `main` was not
-   moved.
+   `BLOCKED` by the required `unit` and `host-boundary` checks:
+   - `unit`: the two pre-existing `trajectory_p2e1rf_malformed_ace` /
+     `trajectory_p2e1rg_kernel_coverage` tests fail in CI but pass in the local CF8 suite; they are
+     unrelated to the changed files.
+   - `host-boundary`: HR-27 fails because CI resolves
+     `@deepseek-ai/dsh-win32-process@0.2.1-rc.5` while the hardening contract pins `0.2.1-rc.3`.
+     That is dependency drift in the CI image, not a PC1-V1 code change.
+   No admin bypass was used; `main` was not moved.
 6. **Test-owned resources** — `.pc1-rig`, `.pc1-tmp`, `.c6r-rig`, `.cog5-rig`, `.pc1v1-rig`, the
    live evidence and the untracked Python shim were retained; no credentials were added to the
    repository.
@@ -362,9 +366,9 @@ product change.
 - RC digest: `844b6ee2b7b9b067844aed52a1d429cf6e8227aef32fbbdec0136cf34d2d4fdb`.
 - R9: `EXECUTED`; 8 principal runs, 11 Subagent child sessions, 0 provider errors, 41,685,383 tokens.
 - Comparative benefit: `NOT_SUPPORTED`; strong native DSH competitive or superior.
-- PR/mainline: PR #216 open, `MERGEABLE` but `BLOCKED` by the required `unit` check (two
-  pre-existing trajectory tests); no admin bypass and no `main` movement. No force-push or
-  historical rewrite was used.
+- PR/mainline: PR #216 open, `MERGEABLE` but `BLOCKED` by `unit` (two pre-existing trajectory
+  tests) and `host-boundary` (CI DSH rc.5 vs the pinned rc.3 contract); no admin bypass and no
+  `main` movement. No force-push or historical rewrite was used.
 - The evidence manifest and code manifest are generated from committed bytes by blob OID and do not
   hash themselves; `research-evidence/pc1v1/rc.json` and `docs/programs/pc1v1/FREEZE.json` record
   the exact identities. Evidence-freeze commit is the commit containing the manifests.
