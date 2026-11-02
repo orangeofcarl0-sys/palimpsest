@@ -85,3 +85,78 @@ function tool(input: {
   };
 }
 export { ToolArgsError, required, requiredNumber, requiredRevisionRef, requiredString, stringArray, tool };
+
+/** The principal-safe projection of orchestration status. */
+export interface ExecutionBoundary {
+  readonly placement: "in-place" | "worktree";
+  readonly liveRepositoryMutable: boolean;
+  readonly isolated: boolean;
+  readonly preAcceptance: boolean;
+  readonly detail: string;
+  readonly warning: string | null;
+}
+
+export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Record<string, unknown> {
+  const view = status as {
+    revision?: unknown;
+    headCommit?: unknown;
+    schedulerState?: unknown;
+    tasks?: Array<{ task_id?: unknown; state?: unknown }>;
+    attempts?: Array<{ state?: unknown }>;
+    evidence?: Array<{ status?: unknown }>;
+    promotions?: Array<{ state?: unknown }>;
+    promotionFence?: Array<{ state?: unknown }>;
+    holds?: unknown[];
+    nextAction?: {
+      kind?: unknown;
+      executable?: unknown;
+      action?: unknown;
+      detail?: unknown;
+      taskId?: unknown;
+    };
+  };
+  const tasks = (view.tasks ?? []).map((task) => ({ task_id: String(task.task_id), state: String(task.state) }));
+  const attemptStates = (view.attempts ?? []).map((attempt) => String(attempt.state));
+  const evidence = view.evidence ?? [];
+  const nextAction =
+    view.nextAction === undefined
+      ? undefined
+      : {
+          kind: String(view.nextAction.kind),
+          executable: view.nextAction.executable === true,
+          action: typeof view.nextAction.action === "string" ? view.nextAction.action : null,
+          detail: String(view.nextAction.detail ?? ""),
+          taskId: typeof view.nextAction.taskId === "string" ? view.nextAction.taskId : null,
+        };
+  const nextActions =
+    nextAction === undefined
+      ? [
+          ...(attemptStates.includes("RUNNING") ? ["palimpsest_work action=complete"] : []),
+          ...(tasks.some((task) => task.state === "VERIFYING") ? ["an operator must review and accept the delivered result"] : []),
+          ...(tasks.some((task) => task.state === "READY") ? ["palimpsest_work action=next"] : []),
+        ]
+      : nextAction.executable && nextAction.action !== null
+        ? [nextAction.action]
+        : [`${nextAction.kind.startsWith("WAIT_OPERATOR") ? "operator" : "agent"}: ${nextAction.detail}`];
+  return {
+    revision: view.revision,
+    headCommit: view.headCommit,
+    schedulerState: view.schedulerState,
+    ...(boundary === undefined ? {} : { boundary }),
+    holds: (view.holds ?? []).map((taskId) => String(taskId)),
+    nextAction,
+    tasks,
+    summary: {
+      tasksTotal: tasks.length,
+      tasksSatisfied: tasks.filter((task) => task.state === "SATISFIED").length,
+      tasksVerifying: tasks.filter((task) => task.state === "VERIFYING").length,
+      attemptsRunning: attemptStates.filter((state) => state === "RUNNING").length,
+      attemptsCompleted: attemptStates.filter((state) => state === "COMPLETED").length,
+      evidenceActive: evidence.filter((atom) => atom.status === "active").length,
+      evidenceStale: evidence.filter((atom) => atom.status === "stale").length,
+      promotionsPrepared: (view.promotions ?? []).filter((promotion) => promotion.state === "PREPARED").length,
+      promotionFencePending: (view.promotionFence ?? []).length,
+    },
+    nextActions,
+  };
+}

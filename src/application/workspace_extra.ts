@@ -6,6 +6,7 @@
  */
 import type { ProjectContinuityService } from "../project_continuity/index.js";
 import type { DomainOutcomeService } from "../domain_outcome/index.js";
+import { HARD_CONSTRAINT_KINDS } from "../domain/hard_constraints.js";
 
 export interface ContinuityFaces {
   readonly continuity?: ProjectContinuityService | undefined;
@@ -24,6 +25,8 @@ export interface WorkspaceExtraSurface {
     readonly artifactPath?: string | null | undefined;
     readonly parameters?: Readonly<Record<string, unknown>> | undefined;
   }): Promise<import("../domain_outcome/index.js").DomainEvaluation>;
+  /** R7: the closed hard-constraint vocabulary, exposed so adapters do not import the domain. */
+  hardConstraintKinds(): readonly import("../domain/hard_constraints.js").HardConstraintKind[];
   /** R7: a deterministic hard-constraint check over explicit inputs. */
   checkHardConstraint(input: {
     readonly kind: import("../domain/hard_constraints.js").HardConstraintKind;
@@ -58,6 +61,7 @@ export function makeWorkspaceExtraSurface(deps: ContinuityFaces): WorkspaceExtra
       if (deps.domainOutcome === undefined) throw new Error("this deployment composes no domain-outcome service");
       return deps.domainOutcome.evaluate(input);
     },
+    hardConstraintKinds: () => [...HARD_CONSTRAINT_KINDS],
     checkHardConstraint: (input) => {
       if (deps.domainOutcome === undefined) throw new Error("this deployment composes no domain-outcome service");
       return deps.domainOutcome.checkHardConstraint(input);

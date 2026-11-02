@@ -8,12 +8,12 @@
  */
 import type { PalimpsestApplicationSurface } from "../../application/surface.js";
 import type { DshToolDefinition } from "../../tools/dsh_types.js";
-import { HARD_CONSTRAINT_KINDS, type HardConstraintKind } from "../../domain/hard_constraints.js";
 import { tool, ToolArgsError, requiredString } from "./common.js";
 
 export function defineOutcomeTool(application: PalimpsestApplicationSurface): DshToolDefinition[] {
   const workspace = application.projectWorkspace;
   if (workspace === undefined) return [];
+  const constraintKinds = workspace.hardConstraintKinds();
   return [
     tool({
       name: "palimpsest_outcome",
@@ -28,17 +28,17 @@ export function defineOutcomeTool(application: PalimpsestApplicationSurface): Ds
         parameters: { type: "object", description: "for evaluate: contract-specific facts; for check: the explicit inputs the calculator requires" },
         kind: {
           type: "string",
-          enum: [...HARD_CONSTRAINT_KINDS],
-          description: "for check: schedule | budget | units | coverage | source-identity | approval",
+          enum: [...constraintKinds],
+          description: `for check: ${constraintKinds.join(" | ")}`,
         },
       },
       run: async (action, object) => {
         if (action === "contracts") return workspace.outcomeContracts();
         if (action === "project") return workspace.outcomeProject();
         if (action === "check") {
-          const kind = requiredString(object, "kind") as HardConstraintKind;
-          if (!(HARD_CONSTRAINT_KINDS as readonly string[]).includes(kind)) {
-            throw new ToolArgsError(`argument "kind" must be one of ${HARD_CONSTRAINT_KINDS.join(", ")}`);
+          const kind = requiredString(object, "kind");
+          if (!(constraintKinds as readonly string[]).includes(kind)) {
+            throw new ToolArgsError(`argument "kind" must be one of ${constraintKinds.join(", ")}`);
           }
           const parameters = object.parameters;
           if (typeof parameters !== "object" || parameters === null || Array.isArray(parameters)) {
@@ -47,7 +47,7 @@ export function defineOutcomeTool(application: PalimpsestApplicationSurface): Ds
           const checkTaskId = object.taskId;
           if (checkTaskId !== undefined && typeof checkTaskId !== "string") throw new ToolArgsError('argument "taskId" must be a string when given');
           return workspace.checkHardConstraint({
-            kind,
+            kind: kind as never,
             parameters: parameters as Readonly<Record<string, unknown>>,
             ...(checkTaskId === undefined ? {} : { taskId: checkTaskId }),
           });
