@@ -342,7 +342,17 @@ export function makeDelegationService(deps: DelegationServiceDeps): DelegationSe
   const now = (): string => (deps.clock ?? (() => new Date().toISOString()))();
 
   function projectBasisFor(basisCommit: string): ProjectBasisRef {
-    const current = deps.projectBasis?.();
+    /**
+     * A delegation can be opened before the canonical project exists (the test fixtures and a
+     * fresh embedder do this). The frozen Git basis is still a fact, so an absent project is
+     * recorded honestly as revision 0 / empty digest, not as a hard failure.
+     */
+    let current: ProjectBasisRef | undefined;
+    try {
+      current = deps.projectBasis?.();
+    } catch {
+      current = undefined;
+    }
     return current === undefined
       ? { projectRevision: 0, projectDigest: "", headCommit: basisCommit }
       : { ...current, headCommit: basisCommit };
