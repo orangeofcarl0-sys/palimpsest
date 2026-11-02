@@ -50,7 +50,6 @@ const include = [
   "docs/programs/pc1v1",
   "docs/engineering/PC1V1-ROOT-CAUSE-AND-OUTCOME-PLAN.md",
   "docs/programs/pc1",
-  "research-evidence/pc1v1",
   "scripts/pc1v1",
   "scripts/pc1",
   "scripts/c6r",
@@ -63,6 +62,9 @@ for (const entry of include) {
   if (!existsSync(from)) continue;
   cpSync(from, join(STAGE, entry), { recursive: true });
 }
+// The external rc.json records the tarball's digest; a copy staged before that digest exists would
+// be stale and self-referential, so it is not part of the package.
+rmSync(join(STAGE, "research-evidence", "pc1v1", "rc.json"), { force: true });
 const status = execFileSync(
   "git",
   ["status", "--porcelain", "--untracked-files=no", "--", "src", "test", "tools", "architecture", "scripts", "package.json", "README.md"],
