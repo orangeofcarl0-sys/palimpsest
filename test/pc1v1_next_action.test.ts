@@ -186,6 +186,28 @@ describe("PC1-V1 R2: the normal surface does not contradict the Scheduler", () =
     expect(status.nextAction.detail).toMatch(/hold/iu);
   });
 
+  it("start claims an ATTEMPT_CREATED position that the principal did not claim yet", async () => {
+    const { repo, head, stateDir } = workspace();
+    const installed = install(repo, stateDir);
+    installed.controller.start({
+      projectId: "pc1v1",
+      goal: "enter the prepared position",
+      headCommit: head,
+      tasks: [{ task_id: "deliver", objective: "deliver", depends_on: [], write_paths: ["docs/notes.md"], required_artifacts: [] }],
+    });
+    installed.controller.step();
+    const created = installed.controller.step();
+    expect(created?.event_type).toBe("ATTEMPT_CREATED");
+    const tool = installed.tools.find((entry) => entry.name === "palimpsest_work") as DshToolDefinition | undefined;
+    const result = (await tool!.execute(
+      { action: "start", goal: "write the notes", writePaths: ["docs/notes.md"] },
+      { callId: "start-claim", rootCallId: "r", name: "palimpsest_work", arguments: {}, signal: new AbortController().signal },
+    )) as { state: string; boundary?: { liveRepositoryMutable: boolean } };
+    expect(result.state).toBe("READY");
+    expect(result.boundary?.liveRepositoryMutable).toBe(true);
+    expect(installed.controller.status().attempts.find((attempt) => attempt.attempt_id === created!.entity_id)?.state).toBe("RUNNING");
+  });
+
   it("a project without a confirmed standard says so before suggesting any completion", () => {
     const { repo, head, stateDir } = workspace();
     const installed = install(repo, stateDir, null);
