@@ -1,0 +1,195 @@
+{
+  "schema": "pc1v1-live-cohort/v1",
+  "cohortId": "pc1v1-live-2026-11-03",
+  "codeFreeze": "6c8ebd98f9e8f89804201d0b77c6d57d96ff0898",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "oracleCopied": false,
+  "scenarios": {
+    "sablewick": {
+      "t1": "2026-02-10T09:05:00Z",
+      "t2": "2026-02-14T09:10:00Z",
+      "pWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\sablewick\\p1\\world",
+      "fWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\sablewick\\f1\\world",
+      "inbox": {
+        "pT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\sablewick\\p1\\inbox-t1",
+        "pT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\sablewick\\p1\\inbox-t2",
+        "fT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\sablewick\\f1\\inbox-t1",
+        "fT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\sablewick\\f1\\inbox-t2"
+      },
+      "visibleSetDigest": {
+        "pT1": "66ce571429d114bbeb7c84c3884d5f91aa0655a1b2ddc5f0abca53eabf6621ef",
+        "pT2": "fdac3d7814a959ab65994a770add508fee439327822273b582fe6eac95c7e5dc",
+        "fT1": "66ce571429d114bbeb7c84c3884d5f91aa0655a1b2ddc5f0abca53eabf6621ef",
+        "fT2": "fdac3d7814a959ab65994a770add508fee439327822273b582fe6eac95c7e5dc"
+      }
+    },
+    "fieldStudy": {
+      "t1": "2026-03-02T09:00:00Z",
+      "t2": "2026-03-09T09:10:00Z",
+      "pWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\field-study\\p1\\world",
+      "fWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\field-study\\f1\\world",
+      "inbox": {
+        "pT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\field-study\\p1\\inbox-t1",
+        "pT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\field-study\\p1\\inbox-t2",
+        "fT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\field-study\\f1\\inbox-t1",
+        "fT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1v1-rig\\field-study\\f1\\inbox-t2"
+      },
+      "visibleSetDigest": {
+        "pT1": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "pT2": "dc22bfe70d1e793e2ebcdb614eb91244a98515e59778fcca40c4ea371e607239",
+        "fT1": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "fT2": "dc22bfe70d1e793e2ebcdb614eb91244a98515e59778fcca40c4ea371e607239"
+      }
+    }
+  },
+  "visibleSetDigest": {
+    "sablewick": {
+      "pT1": "66ce571429d114bbeb7c84c3884d5f91aa0655a1b2ddc5f0abca53eabf6621ef",
+      "pT2": "fdac3d7814a959ab65994a770add508fee439327822273b582fe6eac95c7e5dc",
+      "fT1": "66ce571429d114bbeb7c84c3884d5f91aa0655a1b2ddc5f0abca53eabf6621ef",
+      "fT2": "fdac3d7814a959ab65994a770add508fee439327822273b582fe6eac95c7e5dc"
+    },
+    "fieldStudy": {
+      "pT1": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "pT2": "dc22bfe70d1e793e2ebcdb614eb91244a98515e59778fcca40c4ea371e607239",
+      "fT1": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "fT2": "dc22bfe70d1e793e2ebcdb614eb91244a98515e59778fcca40c4ea371e607239"
+    }
+  },
+  "sessions": [
+    {
+      "id": "sablewick-p-t1",
+      "scenario": "sablewick",
+      "condition": "P",
+      "stage": "T1",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nexport C6R_P1_RUN=/home/admini/pc1v1/runs/sablewick/p-t1\nexport C6R_INBOX_DIR=/home/admini/pc1v1/runs/sablewick/p-t1/p1/inbox-t1\nexport C6R_PROMPT=\"$(printf '%s' 'WW91IGFyZSB0aGUgcGxhbm5pbmcgYWdlbnQgZm9yIHRoZSBTYWJsZXdpY2sgY29tbXVuaXR5IGJhdHRlcnkgcHJvZ3JhbW1lLiBUaGlzIGlzIGEgaGlzdG9yaWNhbCBwcm9qZWN0LXN0YXRlIHJlcGxheSBvYnNlcnZlZCBhdCAyMDI2LTAyLTEwIDA5OjA1IFVUQy4gVGhlIHByb2dyYW1tZSByZXBvc2l0b3J5IGlzIC9ydW4vcDEvd29ybGQgYW5kIHRoZSBwcm9ncmFtbWUgaW5ib3ggaXMgL3J1bi9wMS9pbmJveC4gQ29udGludWUgdGhlIHByb2dyYW1tZSBmcm9tIHRoZSBzdGF0ZSBhbmQgaW5mb3JtYXRpb24gYXZhaWxhYmxlIGF0IHRoYXQgb2JzZXJ2YXRpb24gdGltZS4gRXhhbWluZSByZWxldmFudCBuZXcgaW5mb3JtYXRpb24sIGRldGVybWluZSB3aGV0aGVyIHRoZSBleGlzdGluZyBwbGFuIHJlbWFpbnMganVzdGlmaWVkLCBhbmQgaWRlbnRpZnkgdGhlIG5leHQgdXNlZnVsIGFjdGlvbnMuIFJlc3BlY3QgdGhlIHByb2dyYW1tZSBhdXRob3JpemF0aW9uIGFuZCBhY2NlcHRhbmNlIHJlcXVpcmVtZW50cy4gUmVjb3JkIHlvdXIgY29uY2x1c2lvbnMgYW5kIHByb3Bvc2VkIGFjdGlvbnMgdGhyb3VnaCB0aGUgYXZhaWxhYmxlIHByb2plY3QgbWVjaGFuaXNtcy4gWW91IG1heSB1c2UgaW5kZXBlbmRlbnQgc3ViYWdlbnRzIGZvciBib3VuZGVkIHN1Yi1xdWVzdGlvbnM7IHJlcG9ydCB0aGVpciBmaW5kaW5ncyBzZXBhcmF0ZWx5IGFuZCBkbyBub3QgcHJlc2VudCB0aGVtIGFzIGFjY2VwdGVkIHRydXRoLiBXb3JrIG9ubHkgaW5zaWRlIHRoZSBwcm9ncmFtbWUgcmVwb3NpdG9yeSBhbmQgdGhlIHByb2dyYW1tZSBpbmJveC4=' | base64 -d)\"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_sablewick_p.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-p-t1/wsl-out'\ncp -a '/home/admini/pc1v1/runs/sablewick/p-t1/p1/scored-deepseek/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-p-t1/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    },
+    {
+      "id": "sablewick-f-t1",
+      "scenario": "sablewick",
+      "condition": "F",
+      "stage": "T1",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nexport C6R_F1_RUN=/home/admini/pc1v1/runs/sablewick/f-t1\nexport C6R_INBOX_DIR=/home/admini/pc1v1/runs/sablewick/f-t1/f1/inbox-t1\nexport C6R_PROMPT=\"$(printf '%s' 'WW91IGFyZSB0aGUgcGxhbm5pbmcgYWdlbnQgZm9yIHRoZSBTYWJsZXdpY2sgY29tbXVuaXR5IGJhdHRlcnkgcHJvZ3JhbW1lLiBUaGlzIGlzIGEgaGlzdG9yaWNhbCBwcm9qZWN0LXN0YXRlIHJlcGxheSBvYnNlcnZlZCBhdCAyMDI2LTAyLTEwIDA5OjA1IFVUQy4gVGhlIHByb2dyYW1tZSB3b3Jrc3BhY2UgaXMgL3J1bi9mMS93b3JsZDsgcmVhZCBIQU5ET0ZGLm1kIGZpcnN0LiBUaGUgcHJvZ3JhbW1lIGluYm94IGlzIC9ydW4vZjEvaW5ib3guIENvbnRpbnVlIHRoZSBwcm9ncmFtbWUgZnJvbSB0aGUgc3RhdGUgYW5kIGluZm9ybWF0aW9uIGF2YWlsYWJsZSBhdCB0aGF0IG9ic2VydmF0aW9uIHRpbWUuIEV4YW1pbmUgcmVsZXZhbnQgbmV3IGluZm9ybWF0aW9uLCBkZXRlcm1pbmUgd2hldGhlciB0aGUgZXhpc3RpbmcgcGxhbiByZW1haW5zIGp1c3RpZmllZCwgYW5kIGlkZW50aWZ5IHRoZSBuZXh0IHVzZWZ1bCBhY3Rpb25zLiBSZXNwZWN0IHRoZSBwcm9ncmFtbWUgYXV0aG9yaXphdGlvbiBhbmQgYWNjZXB0YW5jZSByZXF1aXJlbWVudHMuIFJlY29yZCBjb25jbHVzaW9ucyBhbmQgcHJvcG9zZWQgYWN0aW9ucyBhcyBNYXJrZG93bi9HaXQuIFlvdSBtYXkgdXNlIGluZGVwZW5kZW50IHN1YmFnZW50cyBmb3IgYm91bmRlZCBzdWItcXVlc3Rpb25zOyByZXBvcnQgdGhlaXIgZmluZGluZ3Mgc2VwYXJhdGVseSBhbmQgZG8gbm90IHByZXNlbnQgdGhlbSBhcyBhY2NlcHRlZCB0cnV0aC4gV29yayBvbmx5IGluc2lkZSB0aGUgcHJvZ3JhbW1lIHdvcmtzcGFjZSBhbmQgdGhlIHByb2dyYW1tZSBpbmJveC4=' | base64 -d)\"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_sablewick_f.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-f-t1/wsl-out'\ncp -a '/home/admini/pc1v1/runs/sablewick/f-t1/f1/scored-deepseek/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-f-t1/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    },
+    {
+      "id": "sablewick-p-t2",
+      "scenario": "sablewick",
+      "condition": "P",
+      "stage": "T2",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nrm -rf /home/admini/pc1v1/runs/sablewick/p-t2/p1 /home/admini/pc1v1/runs/sablewick/p-t2/f1\ncp -a /home/admini/pc1v1/runs/sablewick/p-t1/p1 /home/admini/pc1v1/runs/sablewick/p-t2/p1\nexport C6R_P1_RUN=/home/admini/pc1v1/runs/sablewick/p-t2\nexport C6R_INBOX_DIR=/home/admini/pc1v1/runs/sablewick/p-t2/p1/inbox-t2\nexport C6R_PROMPT=\"$(printf '%s' 'WW91IGFyZSB0aGUgcGxhbm5pbmcgYWdlbnQgZm9yIHRoZSBTYWJsZXdpY2sgY29tbXVuaXR5IGJhdHRlcnkgcHJvZ3JhbW1lLiBUaGlzIGlzIGEgbGF0ZXIgaGlzdG9yaWNhbCBwcm9qZWN0LXN0YXRlIHJlcGxheSBvYnNlcnZlZCBhdCAyMDI2LTAyLTE0IDA5OjEwIFVUQy4gVGhlIHByb2dyYW1tZSByZXBvc2l0b3J5IGlzIC9ydW4vcDEvd29ybGQgYW5kIHRoZSBwcm9ncmFtbWUgaW5ib3ggaXMgL3J1bi9wMS9pbmJveC4gQ29udGludWUgZnJvbSB0aGUgcHJvamVjdCBzdGF0ZSB5b3UgZmluZC4gTmV3IGl0ZW1zIG1heSBoYXZlIGFycml2ZWQgc2luY2UgdGhlIGVhcmxpZXIgb2JzZXJ2YXRpb24sIGluY2x1ZGluZyBhIGNvcnJlY3RlZCBjYXBhYmlsaXR5IGJ1bGxldGluIGFuZCBhIGJ5dGUtaWRlbnRpY2FsIGR1cGxpY2F0ZTsgYSBsYXRlIHJlcG9ydCBmcm9tIHRoZSBlYXJsaWVyIG9ic2VydmF0aW9uIG1heSBhbHNvIGJlIHByZXNlbnQuIERvIG5vdCB0cmVhdCBhIGZpbGUgb3IgYSBsYXRlIHJlcG9ydCBhcyBhY2NlcHRlZCBhdXRob3JpdHkuIERpc3Rpbmd1aXNoIHNvdXJjZSBzdGFuZGluZywgY2FuZGlkYXRlcywgYWNjZXB0ZWQgZmFjdHMsIG5lZ2F0aXZlIGZpbmRpbmdzIGFuZCBvcGVuIHF1ZXN0aW9uczsgcmVjb3JkIGNvbmNsdXNpb25zIGFuZCBwcm9wb3NlZCBhY3Rpb25zIHRocm91Z2ggdGhlIGF2YWlsYWJsZSBwcm9qZWN0IG1lY2hhbmlzbXMuIFlvdSBtYXkgdXNlIGluZGVwZW5kZW50IHN1YmFnZW50cyBmb3IgYm91bmRlZCBzdWItcXVlc3Rpb25zOyByZXBvcnQgdGhlaXIgZmluZGluZ3Mgc2VwYXJhdGVseSBhbmQgZG8gbm90IHByZXNlbnQgdGhlbSBhcyBhY2NlcHRlZCB0cnV0aC4gV29yayBvbmx5IGluc2lkZSB0aGUgcHJvZ3JhbW1lIHJlcG9zaXRvcnkgYW5kIHRoZSBwcm9ncmFtbWUgaW5ib3gu' | base64 -d)\"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_sablewick_p.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-p-t2/wsl-out'\ncp -a '/home/admini/pc1v1/runs/sablewick/p-t2/p1/scored-deepseek/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-p-t2/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    },
+    {
+      "id": "sablewick-f-t2",
+      "scenario": "sablewick",
+      "condition": "F",
+      "stage": "T2",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nrm -rf /home/admini/pc1v1/runs/sablewick/f-t2/p1 /home/admini/pc1v1/runs/sablewick/f-t2/f1\ncp -a /home/admini/pc1v1/runs/sablewick/f-t1/f1 /home/admini/pc1v1/runs/sablewick/f-t2/f1\nexport C6R_F1_RUN=/home/admini/pc1v1/runs/sablewick/f-t2\nexport C6R_INBOX_DIR=/home/admini/pc1v1/runs/sablewick/f-t2/f1/inbox-t2\nexport C6R_PROMPT=\"$(printf '%s' 'WW91IGFyZSB0aGUgcGxhbm5pbmcgYWdlbnQgZm9yIHRoZSBTYWJsZXdpY2sgY29tbXVuaXR5IGJhdHRlcnkgcHJvZ3JhbW1lLiBUaGlzIGlzIGEgbGF0ZXIgaGlzdG9yaWNhbCBwcm9qZWN0LXN0YXRlIHJlcGxheSBvYnNlcnZlZCBhdCAyMDI2LTAyLTE0IDA5OjEwIFVUQy4gVGhlIHByb2dyYW1tZSB3b3Jrc3BhY2UgaXMgL3J1bi9mMS93b3JsZDsgcmVhZCBIQU5ET0ZGLm1kIGZpcnN0LiBUaGUgcHJvZ3JhbW1lIGluYm94IGlzIC9ydW4vZjEvaW5ib3guIENvbnRpbnVlIGZyb20gdGhlIHN0YXRlIHlvdSBmaW5kLiBOZXcgaXRlbXMgbWF5IGhhdmUgYXJyaXZlZCBzaW5jZSB0aGUgZWFybGllciBvYnNlcnZhdGlvbiwgaW5jbHVkaW5nIGEgY29ycmVjdGVkIGNhcGFiaWxpdHkgYnVsbGV0aW4gYW5kIGEgYnl0ZS1pZGVudGljYWwgZHVwbGljYXRlOyBhIGxhdGUgcmVwb3J0IGZyb20gdGhlIGVhcmxpZXIgb2JzZXJ2YXRpb24gbWF5IGFsc28gYmUgcHJlc2VudC4gRG8gbm90IHRyZWF0IGEgZmlsZSBvciBhIGxhdGUgcmVwb3J0IGFzIGFjY2VwdGVkIGF1dGhvcml0eS4gUmVjb3JkIGNvbmNsdXNpb25zIGFuZCBwcm9wb3NlZCBhY3Rpb25zIGFzIE1hcmtkb3duL0dpdC4gWW91IG1heSB1c2UgaW5kZXBlbmRlbnQgc3ViYWdlbnRzIGZvciBib3VuZGVkIHN1Yi1xdWVzdGlvbnM7IHJlcG9ydCB0aGVpciBmaW5kaW5ncyBzZXBhcmF0ZWx5IGFuZCBkbyBub3QgcHJlc2VudCB0aGVtIGFzIGFjY2VwdGVkIHRydXRoLiBXb3JrIG9ubHkgaW5zaWRlIHRoZSBwcm9ncmFtbWUgd29ya3NwYWNlIGFuZCB0aGUgcHJvZ3JhbW1lIGluYm94Lg==' | base64 -d)\"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_sablewick_f.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-f-t2/wsl-out'\ncp -a '/home/admini/pc1v1/runs/sablewick/f-t2/f1/scored-deepseek/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/sablewick-f-t2/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-p-t1",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "T1",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nexport PC1_RUN=/home/admini/pc1v1/runs/field-study\nexport PC1_CONDITION=P\nexport PC1_STAGE=T1\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_field.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-p-t1/wsl-out'\ncp -a '/home/admini/pc1v1/runs/field-study/p1/scored-T1/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-p-t1/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-p-t2",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "T2",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nexport PC1_RUN=/home/admini/pc1v1/runs/field-study\nexport PC1_CONDITION=P\nexport PC1_STAGE=T2\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_field.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-p-t2/wsl-out'\ncp -a '/home/admini/pc1v1/runs/field-study/p1/scored-T2/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-p-t2/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-f-t1",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "T1",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nexport PC1_RUN=/home/admini/pc1v1/runs/field-study\nexport PC1_CONDITION=F\nexport PC1_STAGE=T1\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_field.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-f-t1/wsl-out'\ncp -a '/home/admini/pc1v1/runs/field-study/f1/scored-T1/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-f-t1/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-f-t2",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "T2",
+      "subagents": true,
+      "cwd": ".",
+      "command": [
+        "wsl.exe",
+        "bash",
+        "-lc",
+        "set -e\nexport PC1_RUN=/home/admini/pc1v1/runs/field-study\nexport PC1_CONDITION=F\nexport PC1_STAGE=T2\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_field.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-f-t2/wsl-out'\ncp -a '/home/admini/pc1v1/runs/field-study/f1/scored-T2/out/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03/field-study-f-t2/wsl-out/' || true\nexit $STATUS"
+      ],
+      "env": {},
+      "timeoutMs": 900000
+    }
+  ],
+  "note": "Frozen before the first scored model call. Both conditions use the same observation times, visible sets, provider/model and Subagent invitation. Each T2 session continues the matching T1 world; raw WSL output is copied under each session's wsl-out."
+}
