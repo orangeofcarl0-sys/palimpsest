@@ -493,6 +493,7 @@ type MutatingWorkSettlement =
       readonly resultCommit: string;
       readonly changedFiles: readonly string[];
       readonly exported: boolean;
+      readonly evidenceRecorded: readonly string[];
       readonly detail: string;
     }
   | {
