@@ -80,7 +80,7 @@ const acceptance = {
   scenarios: ["sablewick", "field-study"],
   checks,
   passed: checks.every((check) => check.ok),
-  liveModel: { state: "BLOCKED", reason: "no spend authorization", modelCalls: 0 },
+  liveModel: { state: "NOT_RUN_BY_THIS_SCRIPT", reason: "deterministic acceptance only; the matched live cohort is recorded in research-evidence/pc1/live/outcomes.json", modelCalls: 0 },
   note: "This is deterministic staging/equivalence acceptance. It is not a model-behavior or comparative result.",
 };
 writeJson(OUT, acceptance);
