@@ -126,7 +126,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
     mode: "mutating",
     actions: ["status", "plan", "next", "run", "start", "begin", "complete", "propose", "explore", "explorations"],
     extraProperties: {
-      goal: { type: "string", description: "for begin/plan: what the work is, in the user's own words" },
+      goal: { type: "string", description: "for start/begin/plan: what the work is, in the user's own words; on start it also lets the product bootstrap a direct position when the plan has no claimable one" },
       writePaths: { type: "array", items: { type: "string" }, description: "for begin/propose: the paths this work or proposed action may change" },
       requiredArtifacts: { type: "array", items: { type: "string" }, description: "for begin: paths the work must leave in place" },
       summary: { type: "string", description: "for complete: what you consider done, in your own words" },
@@ -191,40 +191,83 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
             nextActions: ["palimpsest_work action=run", "palimpsest_work action=status"],
           };
         }
-        const already = work.status() as { attempts?: Array<{ state?: string }> };
-        if (!(already.attempts ?? []).some((attempt) => attempt.state === "RUNNING")) {
-          let claimed = false;
-          for (let step = 0; step < 4; step += 1) {
-            const event = work.control("next", []) as { event_type?: unknown; entity_id?: unknown } | null;
-            if (event?.event_type === "ATTEMPT_CREATED" && typeof event.entity_id === "string") {
-              await work.control("claim", [event.entity_id]);
-              claimed = true;
-              break;
-            }
-            if (event?.event_type === "ATTEMPT_STARTED") {
-              claimed = true;
-              break;
-            }
+        const already = work.status() as {
+          attempts?: Array<{ attempt_id?: string; state?: string }>;
+          tasks?: unknown[];
+        };
+        const attempts = already.attempts ?? [];
+        if (attempts.some((attempt) => attempt.state === "RUNNING")) {
+          return { state: "READY", boundary: work.boundary(), status: safeStatus(work.status(), work.boundary()) };
+        }
+        /**
+         * R9 live correction: `next` can create an ATTEMPT_CREATED position in one call, and the
+         * principal may only call `start` afterwards (the pilot did exactly that). Claim the exact
+         * existing attempt first; asking the scheduler again would return null while the position
+         * already exists, and a generic `claim` without an id is not a reliable selector.
+         */
+        const claimable = attempts.find(
+          (attempt) =>
+            (attempt.state === "CREATED" || attempt.state === "LEASED") && typeof attempt.attempt_id === "string",
+        );
+        if (claimable !== undefined) {
+          await work.control("claim", [claimable.attempt_id]);
+          return { state: "READY", boundary: work.boundary(), status: safeStatus(work.status(), work.boundary()) };
+        }
+        let claimed = false;
+        for (let step = 0; step < 4; step += 1) {
+          const event = work.control("next", []) as { event_type?: unknown; entity_id?: unknown } | null;
+          if (event?.event_type === "ATTEMPT_CREATED" && typeof event.entity_id === "string") {
+            await work.control("claim", [event.entity_id]);
+            claimed = true;
+            break;
           }
-          if (!claimed) {
-            // A claimable attempt may already exist without a scheduler step; try the selection seam.
-            try {
-              await work.control("claim", []);
-              claimed = true;
-            } catch {
-              claimed = false;
-            }
-          }
-          if (!claimed) {
-            return {
-              state: "NO_CLAIMABLE_WORK",
-              detail: "no claimable work position was found; inspect the task states before writing anything",
-              status: safeStatus(work.status(), work.boundary()),
-              nextActions: ["palimpsest_work action=status", "palimpsest_work action=plan"],
-            };
+          if (event?.event_type === "ATTEMPT_STARTED") {
+            claimed = true;
+            break;
           }
         }
-        return { state: "READY", status: safeStatus(work.status(), work.boundary()) };
+        if (!claimed) {
+          // A claimable attempt may already exist without a scheduler step; try the selection seam.
+          try {
+            await work.control("claim", []);
+            claimed = true;
+          } catch {
+            claimed = false;
+          }
+        }
+        if (!claimed) {
+          const goal = object.goal;
+          /**
+           * Direct bootstrap is only safe for a project with no plan. With an existing plan it
+           * would have to guess or rewrite the plan, so the product refuses instead of creating a
+           * second, conflicting work shape.
+           */
+          if (typeof goal === "string" && goal.trim() !== "" && (already.tasks ?? []).length === 0) {
+            const writePaths = object.writePaths === undefined ? [] : stringArray(object.writePaths, "writePaths");
+            const requiredArtifacts =
+              object.requiredArtifacts === undefined ? undefined : stringArray(object.requiredArtifacts, "requiredArtifacts");
+            const begun = await work.begin({
+              goal,
+              writePaths,
+              ...(requiredArtifacts === undefined ? {} : { requiredArtifacts }),
+            });
+            return {
+              ...begun,
+              state: "READY",
+              bootstrapped: true,
+              boundary: work.boundary(),
+              status: safeStatus(work.status(), work.boundary()),
+            };
+          }
+          return {
+            state: "NO_CLAIMABLE_WORK",
+            detail:
+              "no claimable work position was found. The project already has a plan, so direct bootstrap will not rewrite it; inspect status, then revise the plan or claim a legal position. Do not inspect private implementation details.",
+            status: safeStatus(work.status(), work.boundary()),
+            nextActions: ["palimpsest_work action=status", "palimpsest_work action=plan"],
+          };
+        }
+        return { state: "READY", boundary: work.boundary(), status: safeStatus(work.status(), work.boundary()) };
       }
       if (action === "begin") {
         const goal = requiredString(object, "goal");

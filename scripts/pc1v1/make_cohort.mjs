@@ -28,7 +28,7 @@ function toWslPath(path) {
 }
 const hostRootWsl = toWslPath(hostRoot);
 
-const COMMON = "You may use independent subagents for bounded sub-questions; report their findings separately and do not present them as accepted truth.";
+const COMMON = "Use the independent `subagent` tool for at least one bounded sub-question when the task has independent parts; report its finding separately and do not present it as accepted truth.";
 const SABLE_P_T1 = `You are the planning agent for the Sablewick community battery programme. This is a historical project-state replay observed at 2026-02-10 09:05 UTC. The programme repository is /run/p1/world and the programme inbox is /run/p1/inbox. Continue the programme from the state and information available at that observation time. Examine relevant new information, determine whether the existing plan remains justified, and identify the next useful actions. Respect the programme authorization and acceptance requirements. Record your conclusions and proposed actions through the available project mechanisms. ${COMMON} Work only inside the programme repository and the programme inbox.`;
 const SABLE_P_T2 = `You are the planning agent for the Sablewick community battery programme. This is a later historical project-state replay observed at 2026-02-14 09:10 UTC. The programme repository is /run/p1/world and the programme inbox is /run/p1/inbox. Continue from the project state you find. New items may have arrived since the earlier observation, including a corrected capability bulletin and a byte-identical duplicate; a late report from the earlier observation may also be present. Do not treat a file or a late report as accepted authority. Distinguish source standing, candidates, accepted facts, negative findings and open questions; record conclusions and proposed actions through the available project mechanisms. ${COMMON} Work only inside the programme repository and the programme inbox.`;
 const SABLE_F_T1 = `You are the planning agent for the Sablewick community battery programme. This is a historical project-state replay observed at 2026-02-10 09:05 UTC. The programme workspace is /run/f1/world; read HANDOFF.md first. The programme inbox is /run/f1/inbox. Continue the programme from the state and information available at that observation time. Examine relevant new information, determine whether the existing plan remains justified, and identify the next useful actions. Respect the programme authorization and acceptance requirements. Record conclusions and proposed actions as Markdown/Git. ${COMMON} Work only inside the programme workspace and the programme inbox.`;
@@ -46,22 +46,21 @@ function sableCommand(input) {
   const { run, work, condition, stage, prompt } = input;
   const script = condition === "P" ? "session_sablewick_p.sh" : "session_sablewick_f.sh";
   const runVar = condition === "P" ? "C6R_P1_RUN" : "C6R_F1_RUN";
-  const copyLines =
-    stage === "T2"
-      ? `rm -rf ${liveRoot}/sablewick/${run.replace(`${liveRoot}/sablewick/`, "")}/p1 ${liveRoot}/sablewick/${run.replace(`${liveRoot}/sablewick/`, "")}/f1\n` +
-        `cp -a ${liveRoot}/sablewick/${condition === "P" ? "p-t1" : "f-t1"}/${condition === "P" ? "p1" : "f1"} ${run}/${condition === "P" ? "p1" : "f1"}\n`
-      : "";
-  const out = `${run}/${condition === "P" ? "p1" : "f1"}/scored-deepseek/out`;
+  const part = condition === "P" ? "p1" : "f1";
+  const target = `${run}/${part}`;
+  const source = `${liveRoot}/sablewick/${condition === "P" ? "p-t1" : "f-t1"}/${part}`;
+  const copyLines = stage === "T2" ? `rm -rf ${target}\ncp -a ${source} ${target}\n` : "";
+  const out = `${liveRoot}/../out/sablewick/${condition === "P" ? "p" : "f"}-${stage}`;
   const host = `${hostRootWsl}/${input.id}/wsl-out`;
-  const inbox = `${run}/${condition === "P" ? "p1" : "f1"}/inbox-${stage.toLowerCase()}`;
+  const inbox = `${target}/inbox-${stage.toLowerCase()}`;
   return shell(
-    `set -e\n${copyLines}export ${runVar}=${run}\nexport C6R_INBOX_DIR=${inbox}\nexport C6R_PROMPT="$(printf '%s' '${b64(prompt)}' | base64 -d)"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/${script}; STATUS=$?\nmkdir -p '${host}'\ncp -a '${out}/.' '${host}/' || true\nexit $STATUS`,
+    `set -e\n${copyLines}export ${runVar}=${run}\nexport PC1V1_STAGE=${stage}\nexport C6R_INBOX_DIR=${inbox}\nexport C6R_PROMPT="$(printf '%s' '${b64(prompt)}' | base64 -d)"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/${script}; STATUS=$?\nmkdir -p '${host}'\ncp -a '${out}/.' '${host}/' || true\nexit $STATUS`,
   );
 }
 
 function fieldCommand(input) {
   const { run, work, condition, stage, id } = input;
-  const out = `${run}/${condition === "P" ? "p1" : "f1"}/scored-${stage}/out`;
+  const out = `${liveRoot}/../out/field-study/${condition}-${stage}`;
   const host = `${hostRootWsl}/${id}/wsl-out`;
   return shell(
     `set -e\nexport PC1_RUN=${run}\nexport PC1_CONDITION=${condition}\nexport PC1_STAGE=${stage}\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_field.sh; STATUS=$?\nmkdir -p '${host}'\ncp -a '${out}/.' '${host}/' || true\nexit $STATUS`,
