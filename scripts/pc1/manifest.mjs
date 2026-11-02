@@ -23,14 +23,14 @@ if (paths.length === 0) {
   process.stderr.write("usage: node manifest.mjs --label=<label> --out=<file> [--path=<tracked path>]...\n");
   process.exit(2);
 }
-const listed = execFileSync("git", ["ls-tree", "-r", "--name-only", commit, "--", ...paths], { cwd: REPO, encoding: "utf8" })
-  .split("\n")
-  .map((value) => value.trim())
+const listed = execFileSync("git", ["-c", "core.quotePath=false", "ls-tree", "-r", "-z", "--name-only", commit, "--", ...paths], { cwd: REPO })
+  .toString("utf8")
+  .split("\u0000")
   .filter((value) => value !== "");
 const files = listed
   .filter((path) => resolve(REPO, path) !== out)
   .map((path) => {
-    const bytes = execFileSync("git", ["show", `${commit}:${path}`], { cwd: REPO, maxBuffer: 256 * 1024 * 1024 });
+    const bytes = execFileSync("git", ["-c", "core.quotePath=false", "show", `${commit}:${path}`], { cwd: REPO, maxBuffer: 256 * 1024 * 1024 });
     return { path, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
   });
 const tree = execFileSync("git", ["rev-parse", `${commit}^{tree}`], { cwd: REPO, encoding: "utf8" }).trim();
