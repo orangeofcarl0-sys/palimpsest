@@ -26,6 +26,7 @@ import { composeProjectIntentCapability } from "./composition/project_intent.js"
 import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import { composeProcedureCapability } from "./composition/procedures.js";
+import { makeProjectContinuityService } from "./project_continuity/index.js";
 import { composeExecutionAssociationCluster, type ExecutionAssociationInstallOptions, type ExecutionAssociationInstallResult } from "./composition/execution_association.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
@@ -488,6 +489,34 @@ export function installPalimpsest(
     clock: options.clock,
   });
 
+  /*
+   * PC1 S03: the DERIVED project-continuity facade. It reads the existing Work owner, the derived
+   * workspace/journal when composed, and the promotion facts - and owns nothing. It is composed
+   * for every deployment with a Work owner; an absent workspace is reported as `unavailable` rather
+   * than replaced by invented memory.
+   */
+  const continuity = makeProjectContinuityService({
+    work: {
+      project: () => controller.work.project(),
+      status: () => controller.status(),
+      promotionFacts: () => controller.promotions.promotionFactsSync(),
+    },
+    ...(projectWorkspace === undefined
+      ? {}
+      : {
+          workspace: {
+            journal: (projectId?: string) => projectWorkspace.journal(projectId),
+            openLoops: () => projectWorkspace.openLoops(),
+          },
+        }),
+    authority: {
+      operatorIntentAdmission: options.projectIntentAdmission !== undefined,
+      sourceIntake: "operator_only",
+      promotion: "operator_only",
+    },
+    ...(options.clock === undefined ? {} : { clock: options.clock }),
+  });
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -500,6 +529,7 @@ export function installPalimpsest(
     collaborationService: collaboration,
     crossProjectService: crossProject,
     delegationService: delegation,
+    continuity,
     assemblyOptions: options,
   });
   const { application, tools } = assembly;

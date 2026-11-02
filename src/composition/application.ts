@@ -18,6 +18,8 @@ import type { DelegationService } from "../interaction/delegation.js";
 import type { PalimpsestApplicationSurface } from "../application/surface.js";
 import { makePalimpsestApplicationSurface } from "../application/surface.js";
 import { defineApplicationTools } from "../tools/application_tools.js";
+import { defineNormalWorkTool } from "../adapters/dsh/normal.js";
+import { applyToolProfile } from "../adapters/dsh/tool_profile.js";
 import type { DshToolDefinition } from "../tools/dsh_types.js";
 import type { ProjectController } from "../tools/controller.js";
 import type { CollaborationComposition } from "./collaboration.js";
@@ -38,6 +40,8 @@ export interface ApplicationAssemblyInput {
   readonly crossProjectService: CrossProjectService | undefined;
   /** PLMP-LEAN-1 §C.14: the D1 RESEARCH delegation runtime, composed after the groups. */
   readonly delegationService: DelegationService | undefined;
+  /** PC1 S03: the derived project-continuity facade; absent only when no Work owner is composed. */
+  readonly continuity: import("../project_continuity/index.js").ProjectContinuityService | undefined;
   /** Exactly the option fields the assembly reads. */
   readonly assemblyOptions: ApplicationAssemblyOptions;
 }
@@ -53,6 +57,7 @@ export type ApplicationAssemblyOptions = Pick<
   | "reasoningCellStore"
   | "attentionActivation"
   | "hostFacts"
+  | "toolProfile"
 >;
 
 /** What the assembly produced. */
@@ -77,7 +82,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
   const { organization, institution, runtimeScopes, holons, organizationDynamics, organizationEvolutionInstalled, runtimeEvolutionInstalled, reasoningCellsInstalled } = input.organization;
   const { proofExtraction, organizationMemory, recipeRegistry, taskProfiler, verificationWiring, liveVerification, advisor, recipeExecution, recipeExecutionStatus, attention, externalAssetsRef, projectWorkspace } = input.cognition;
   const { verification, externalAssets, projectManagement, operatingStores, monitor } = input.governance;
-  const { controller, baseTools, collaborationService, crossProjectService, delegationService, assemblyOptions } = input;
+  const { controller, baseTools, collaborationService, crossProjectService, delegationService, continuity, assemblyOptions } = input;
   void campaignEvidence;
   void boundaryHome;
   void federatedBoundaryMemory;
@@ -138,6 +143,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
+    ...(continuity === undefined ? {} : { continuity }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(monitor === undefined ? {} : { monitor }),
     // G10-AD §22/§23: the project-head verification face over the SAME composed runtime.
@@ -194,7 +200,19 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     // face, so `palimpsest_external_assets` is composed exactly when the bridge is.
     application.externalAssets !== undefined ||
     application.projections !== undefined;
-  const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
+  const profile = assemblyOptions.toolProfile ?? "expert";
+  /**
+   * A bare Work-only deployment has no advanced surface, and historically advertised exactly the
+   * nine Work tools. That stays true for `expert`/`legacy`. A NORMAL profile still needs its one work
+   * facade, because the product path is not the legacy chain; it is composed from the same
+   * application surface and adds no capability.
+   */
+  const applicationTools = hasAdvancedSurface
+    ? defineApplicationTools(application)
+    : profile === "normal"
+      ? [defineNormalWorkTool(application)]
+      : [];
+  const tools = applyToolProfile([...baseTools, ...applicationTools], profile);
 
   return { application, hasAdvancedSurface, tools };
 }
