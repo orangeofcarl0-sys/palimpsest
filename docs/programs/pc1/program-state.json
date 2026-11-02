@@ -1,7 +1,7 @@
 {
   "programId": "PALIMPSEST-PC1",
   "branch": "palimpsest-product-convergence-v1",
-  "lastCheckedCommit": "044b08056a0e98b7d7cee207cb36fb7e453907fe",
+  "lastCheckedCommit": "4757dd6e57efe08b207a89a6af371b9c6a67a002",
   "updatedAt": "2026-11-02",
   "phases": {
     "S00": {
@@ -111,26 +111,40 @@
       ]
     },
     "S09": {
-      "implementation": "IN_PROGRESS",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_REQUIRED",
-      "blockers": [],
-      "evidence": []
-    },
-    "S10": {
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
       "live": "NOT_REQUIRED",
       "comparison": "NOT_REQUIRED",
       "blockers": [],
-      "evidence": []
+      "evidence": [
+        "docs/programs/pc1/S09-PACKAGING.md",
+        "docs/programs/pc1/S09-USER-ACCEPTANCE.md",
+        "test/pc1_cli.test.ts",
+        "dist-rc/palimpsest-0.2.0-pc1.1.tar.gz"
+      ]
+    },
+    "S10": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_ENVIRONMENT_LIMITS",
+      "live": "BLOCKED",
+      "comparison": "BLOCKED",
+      "blockers": [
+        "no spend authorization for a live matched pair",
+        "full ordinary suite not cleanly observed on Windows due resource/file-lock contention",
+        "the field-study live path needs a per-condition DSH profile"
+      ],
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md",
+        "docs/programs/pc1/S10-PR-KIT.md",
+        "research-evidence/pc1/s10/"
+      ]
     }
   },
   "pendingEffects": [],
   "nextActions": [
-    "S09: RC bundle, user acceptance script, README honesty, examples",
-    "S10: full diff, final regression, manifests, PR kit, final report"
+    "Commit the evidence freeze",
+    "Generate manifests from the evidence-freeze commit",
+    "Push the programme branch non-force (no PR)"
   ],
   "lastCheckpoint": {
     "at": "2026-11-02",

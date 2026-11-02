@@ -1,0 +1,81 @@
+(node:43980) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "schema": "pc1-doctor/v1",
+  "at": "2026-11-02T12:48:55.821Z",
+  "platform": "win32",
+  "checks": [
+    {
+      "id": "node",
+      "status": "WARN",
+      "detail": "Node 24.14.1 is below the declared engine >=24.15.0; the build can still pass, but this is not the supported runtime",
+      "remedy": "install Node 24.15.0 or newer"
+    },
+    {
+      "id": "git",
+      "status": "PASS",
+      "detail": "git version 2.53.0.windows.2",
+      "remedy": "none"
+    },
+    {
+      "id": "repository",
+      "status": "PASS",
+      "detail": "canonical repository: F:/Codex_Work_Space/Palimpsest/palimpsest-sr1",
+      "remedy": "none"
+    },
+    {
+      "id": "dsh",
+      "status": "PASS",
+      "detail": "DSH 0.2.1-rc.3",
+      "remedy": "none"
+    },
+    {
+      "id": "ordarium",
+      "status": "UNKNOWN",
+      "detail": "the @ordarium/core version could not be read from node_modules",
+      "remedy": "run the locked install"
+    },
+    {
+      "id": "sandbox",
+      "status": "WARN",
+      "detail": "Windows ACL sandbox confines writes only; it is not a general isolation boundary",
+      "remedy": "use the Linux/WSL2 runtime for scored or untrusted execution"
+    },
+    {
+      "id": "provider",
+      "status": "UNKNOWN",
+      "detail": "no provider configuration path was supplied",
+      "remedy": "configure the host provider store"
+    },
+    {
+      "id": "credential",
+      "status": "UNKNOWN",
+      "detail": "no credential store path was supplied",
+      "remedy": "configure the host credential store"
+    },
+    {
+      "id": "live-model",
+      "status": "BLOCKED",
+      "detail": "no spend authorization is configured; live model trials must not start",
+      "remedy": "the owner must provide an explicit spend authorization and budget window"
+    },
+    {
+      "id": "tool-profile",
+      "status": "PASS",
+      "detail": "advertised tool profile: expert",
+      "remedy": "use `normal` for the ordinary product path"
+    },
+    {
+      "id": "doctor-credentials",
+      "status": "PASS",
+      "detail": "this report never reads or prints a credential value",
+      "remedy": "none"
+    }
+  ],
+  "supportedStack": "Windows is an engineering/verification host; scored untrusted execution is not supported",
+  "limitations": [
+    "Windows: write-confinement only; no qualified read/child-process isolation."
+  ],
+  "liveModel": "BLOCKED",
+  "liveModelDetail": "no spend authorization: live trials are BLOCKED, not failed"
+}
