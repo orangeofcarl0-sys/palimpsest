@@ -53,3 +53,11 @@ export type {
   RuntimeCarrierRealizeResult,
   RuntimeCarrierReleaseRequest,
 } from "./carrier_port.js";
+
+/** PC1 S07: installed-runtime diagnostics and resource accounting (no new runtime owner). */
+export { runDoctor } from "./doctor.js";
+export type { DoctorCheck, DoctorInput, DoctorReport, DoctorStatus } from "./doctor.js";
+export { DOCTOR_STATUSES } from "./doctor.js";
+export { canStartSession, classifyRun, dedupeUsage, sumUsage } from "./usage.js";
+export type { BudgetState, BudgetWindow, RunClassification, RunClassificationInput, UsageEntry, UsageTotals } from "./usage.js";
+export { terminateProcessTree } from "./process.js";

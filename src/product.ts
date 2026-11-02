@@ -22,6 +22,7 @@ import type { TaskPolicy } from "./domain/policy.js";
 import type { ExecutionMode } from "./composition/install_contract.js";
 import type { GitPort } from "./effects/index.js";
 import type { DshPluginContext } from "./tools/dsh_types.js";
+import { makeReviewService, SqliteReviewStore, type OperatorAuthorityPort, type ReviewService } from "./project_review/index.js";
 
 export interface InstallProductOptions {
   readonly projectId: string;
@@ -41,6 +42,13 @@ export interface InstallProductOptions {
   /** Defaults to `normal`. `expert` is available for debugging/migration. */
   readonly toolProfile?: "normal" | "expert" | undefined;
   readonly git?: GitPort | undefined;
+  /**
+   * PC1 S04: the host-verified operator identity used to DECIDE/APPLY a proposal. Absent means
+   * decisions refuse; a proposal can still be created and previewed.
+   */
+  readonly operatorAuthority?: OperatorAuthorityPort | undefined;
+  /** Existing ProjectIntent admission authority; passed to the intent service unchanged. */
+  readonly projectIntentAdmission?: PalimpsestInstallOptions["projectIntentAdmission"];
   /** Advanced options passed through unchanged; the product entry owns no extra semantics. */
   readonly advanced?: Partial<PalimpsestInstallOptions> | undefined;
 }
@@ -51,7 +59,10 @@ export interface InstalledProduct extends InstalledPalimpsest {
     readonly toolProfile: "normal" | "expert";
     readonly journalPath: string;
     readonly associationPath: string;
+    readonly reviewPath: string;
   };
+  /** PC1 S04: the non-authoritative proposal/review metadata service. */
+  readonly review: ReviewService;
 }
 
 export function installProduct(context: DshPluginContext, options: InstallProductOptions): InstalledProduct {
@@ -74,16 +85,38 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
     ...(options.policy === undefined ? {} : { policy: options.policy }),
     ...(options.clock === undefined ? {} : { clock: options.clock }),
     ...(options.git === undefined ? {} : { git: options.git }),
+    ...(options.projectIntentAdmission === undefined ? {} : { projectIntentAdmission: options.projectIntentAdmission }),
     projectJournalStore: journal,
     projectAssociationStore: associations,
   });
+  const reviewPath = join(stateDir, "review.sqlite");
+  const reviewStore = new SqliteReviewStore(reviewPath);
+  const review = makeReviewService({
+    projectId: options.projectId,
+    store: reviewStore,
+    work: {
+      project: () => installed.controller.work.project(),
+      plan: (input) => installed.controller.plan(input),
+    },
+    ...(installed.intent === undefined ? {} : { intent: installed.intent }),
+    repository: options.repository,
+    ...(options.operatorAuthority === undefined ? {} : { operatorAuthority: options.operatorAuthority }),
+    ...(options.clock === undefined ? {} : { clock: options.clock }),
+  });
+  const dispose = installed.dispose;
   return {
     ...installed,
+    review,
     product: {
       stateDir,
       toolProfile,
       journalPath,
       associationPath,
+      reviewPath,
+    },
+    dispose: async () => {
+      reviewStore.close();
+      await dispose();
     },
   };
 }

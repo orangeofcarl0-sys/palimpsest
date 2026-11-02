@@ -370,6 +370,15 @@ export const REVIEWED_TOOL_ADDITIONS: readonly { readonly name: string; readonly
       "metadata. It adds a tool and changes no existing contract or authority.",
   },
   {
+    name: "palimpsest_outcome",
+    reason:
+      "PC1 S06. Work acceptance and a file/exit-0 observation could not express a business outcome: a " +
+      "negative investigation and a successful delivery looked the same at the Work layer. This tool " +
+      "exposes explicit domain-contract evaluation (JSON artifact schema, negative investigation, " +
+      "human review) and records the result as a non-canonical journal note; it cannot choose a status. " +
+      "It adds a new tool and changes no existing contract.",
+  },
+  {
     name: "palimpsest_continuity",
     reason:
       "PC1 S03. The workspace could show raw history and journal entries but had no first-party answer " +

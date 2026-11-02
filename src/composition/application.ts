@@ -42,6 +42,8 @@ export interface ApplicationAssemblyInput {
   readonly delegationService: DelegationService | undefined;
   /** PC1 S03: the derived project-continuity facade; absent only when no Work owner is composed. */
   readonly continuity: import("../project_continuity/index.js").ProjectContinuityService | undefined;
+  /** PC1 S06: the derived domain-outcome service; absent without a workspace. */
+  readonly domainOutcome: import("../domain_outcome/index.js").DomainOutcomeService | undefined;
   /** Exactly the option fields the assembly reads. */
   readonly assemblyOptions: ApplicationAssemblyOptions;
 }
@@ -82,7 +84,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
   const { organization, institution, runtimeScopes, holons, organizationDynamics, organizationEvolutionInstalled, runtimeEvolutionInstalled, reasoningCellsInstalled } = input.organization;
   const { proofExtraction, organizationMemory, recipeRegistry, taskProfiler, verificationWiring, liveVerification, advisor, recipeExecution, recipeExecutionStatus, attention, externalAssetsRef, projectWorkspace } = input.cognition;
   const { verification, externalAssets, projectManagement, operatingStores, monitor } = input.governance;
-  const { controller, baseTools, collaborationService, crossProjectService, delegationService, continuity, assemblyOptions } = input;
+  const { controller, baseTools, collaborationService, crossProjectService, delegationService, continuity, domainOutcome, assemblyOptions } = input;
   void campaignEvidence;
   void boundaryHome;
   void federatedBoundaryMemory;
@@ -144,6 +146,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(continuity === undefined ? {} : { continuity }),
+    ...(domainOutcome === undefined ? {} : { domainOutcome }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(monitor === undefined ? {} : { monitor }),
     // G10-AD §22/§23: the project-head verification face over the SAME composed runtime.
