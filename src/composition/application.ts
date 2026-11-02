@@ -59,8 +59,10 @@ export type ApplicationAssemblyOptions = Pick<
   | "reasoningCellStore"
   | "attentionActivation"
   | "hostFacts"
-  | "toolProfile"
->;
+> & {
+  /** PC1 S02-R01: presentation tier; not a field of the canonical install contract. */
+  readonly toolProfile?: "legacy" | "normal" | "expert" | "all" | undefined;
+};
 
 /** What the assembly produced. */
 export interface ApplicationAssembly {

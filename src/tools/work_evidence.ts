@@ -37,6 +37,8 @@ import { canonicalDigest } from "../schema/canonical.js";
 import { parseNewEvent, type EvidenceAtom, type EvidencePredicate, type SchedulerEvent } from "../schema/index.js";
 import type { EventStore } from "../state/index.js";
 import { actionKey, stableEntityId } from "../domain/index.js";
+export { exportAndResolveResultCommit, observeStructuralGate } from "../work/report_integrity.js";
+export { attemptWorkDir, observeAttemptResult as observeAttemptResultPort } from "../work/attempt_observation.js";
 import type { AttemptCompletionContract } from "../domain/completion_contract.js";
 import {
   candidateDependencyDigest,
