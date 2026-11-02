@@ -1,6 +1,13 @@
 export { makeReviewService, ReviewError } from "./service.js";
 export type { ReviewService, ReviewServiceDeps, ReviewWorkOwner } from "./service.js";
 export { SqliteReviewStore } from "./store.js";
+export {
+  makeSignedOperatorAuthority,
+  OPERATOR_TOKEN_PREFIX,
+  signOperatorToken,
+  verifyOperatorToken,
+} from "./operator_identity.js";
+export type { OperatorTokenClaims, OperatorTokenVerification } from "./operator_identity.js";
 export type {
   ApplicationRecord,
   OperatorAuthorityPort,
