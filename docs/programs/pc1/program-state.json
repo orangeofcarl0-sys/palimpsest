@@ -1,7 +1,7 @@
 {
   "programId": "PALIMPSEST-PC1",
   "branch": "palimpsest-product-convergence-v1",
-  "lastCheckedCommit": "2ed32bc954f7961bf19d8531d62b8f8f4088b7dd",
+  "lastCheckedCommit": "e8c7675205c74d33015966f3c5b62eec6e2279f1",
   "updatedAt": "2026-11-02",
   "phases": {
     "S00": {
@@ -102,7 +102,7 @@
       "live": "OBSERVED",
       "comparison": "NOT_SUPPORTED",
       "blockers": [
-        "no real independent subagents were used; single-principal only"
+        "single-principal only; no independent subagents"
       ],
       "evidence": [
         "research-evidence/pc1/live/outcomes.json",
@@ -140,9 +140,8 @@
   },
   "pendingEffects": [],
   "nextActions": [
-    "Commit the live addendum and evidence",
-    "Run final build/architecture/public API and the curated integration suite",
-    "Regenerate code/evidence manifests from the final freeze",
+    "Commit the final live evidence freeze",
+    "Generate code/evidence manifests from the final freeze",
     "Push the programme branch non-force (no PR)"
   ],
   "lastCheckpoint": {
