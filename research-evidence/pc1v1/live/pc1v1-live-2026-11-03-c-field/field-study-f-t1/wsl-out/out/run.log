@@ -1,0 +1,31 @@
+Completed the historical replay and committed the required artifacts to Git.
+
+## Required artifacts
+
+| Artifact | Status |
+|---|---|
+| `study-plan.md` | Conditional plan, status **NOT APPROVED** |
+| `plan.json` | Valid JSON, `deployment_approved: false`, `feasibility_demonstrated: false` |
+| `reviews/evidence.md` | Observed data vs manufacturer claims, coverage matrix, double-counting check |
+| `reviews/delivery.md` | Cost, schedule, power/network, resources, failure alternatives |
+| `unresolved.md` | 30 open questions with owners |
+
+Commits: `cb6045e` and `3d057a8` (latest). Working tree is clean.
+
+## Key conclusions
+
+- The inbox was empty; no external source was accepted, no budget change approved, and no deployment approved.
+- **Echo is not admissible at S2 or S3 on current evidence.** Echo’s observed lab data cover RH 40–60% only; S2 is 80–95% and S3 is 70–90%. The procurement summary merely repeats the Echo brochure and is not a second source.
+- **Reference is the only model with observed high-RH points** (90% and 95%), so it is the basis for S2/S3.
+- **Candidate A (all-Reference)** costs **6,980** against the **7,200** cap on the stated cost lines, leaving 220. It is the comparability-first candidate, but it has no spare Reference and no second S2 battery. It is not approvable yet: Reference source acceptance, unit allocation, R3 verification, R2 definition, and R5 approval are open.
+- **Candidate B (Reference at S2/S3, Echo at S1)** costs 5,780 base / 6,760 with a resilience package, but requires Echo S1 verification and mixed-model cross-calibration.
+- **Candidate C (all-Echo)** costs 3,540 but is evidence-blocked at S2/S3.
+- Schedule meets R4 only with approval/order by **2026-03-08** for a Reference-based plan; latest observation start is **2026-03-16**, ending **2026-03-29**.
+- R3 remains a working target, not demonstrated: n = 4 per model, no replicates, and temperature (9–26 °C) and concentration (10–30 µg/m³) coverage gaps.
+
+## Independent subagent findings — reported separately, not accepted truth
+
+- **Evidence check** (`a0642ff3-0188-4bf1-bd69-73302b853eee`): Echo has no observed data above 60% RH; Reference has the stronger but sparse high-RH position; temperature is a universal gap; procurement summary is not independent; ±3 target is unverified. Its interpretation is an independent opinion, not source acceptance.
+- **Cost/schedule check** (`83677ac5-3cb9-4276-8f44-f53fcbc46b66`): base totals agree with the plan’s arithmetic. It reported latest order dates one day later using an inclusive lead-time convention; the plan keeps the conservative 2026-03-08 gate. It also flagged the S2 mains/battery ambiguity, one-time vs per-site fixed costs, battery load assumptions, and unlisted costs — recorded as U26–U29, not accepted facts.
+
+No deployment is approved. No source is accepted. No budget change is approved.

@@ -1,0 +1,24 @@
+{
+  "schema": "pc1v1-session-run/v1",
+  "id": "sablewick-f-t1",
+  "scenario": "sablewick",
+  "condition": "F",
+  "stage": "T1",
+  "subagents": true,
+  "command": [
+    "wsl.exe",
+    "bash",
+    "-lc",
+    "set -e\nexport C6R_F1_RUN=/home/admini/pc1v1/runs/sablewick/f-t1\nexport PC1V1_STAGE=T1\nexport C6R_INBOX_DIR=/home/admini/pc1v1/runs/sablewick/f-t1/f1/inbox-t1\nexport C6R_PROMPT=\"$(printf '%s' 'WW91IGFyZSB0aGUgcGxhbm5pbmcgYWdlbnQgZm9yIHRoZSBTYWJsZXdpY2sgY29tbXVuaXR5IGJhdHRlcnkgcHJvZ3JhbW1lLiBUaGlzIGlzIGEgaGlzdG9yaWNhbCBwcm9qZWN0LXN0YXRlIHJlcGxheSBvYnNlcnZlZCBhdCAyMDI2LTAyLTEwIDA5OjA1IFVUQy4gVGhlIHByb2dyYW1tZSB3b3Jrc3BhY2UgaXMgL3J1bi9mMS93b3JsZDsgcmVhZCBIQU5ET0ZGLm1kIGZpcnN0LiBUaGUgcHJvZ3JhbW1lIGluYm94IGlzIC9ydW4vZjEvaW5ib3guIENvbnRpbnVlIHRoZSBwcm9ncmFtbWUgZnJvbSB0aGUgc3RhdGUgYW5kIGluZm9ybWF0aW9uIGF2YWlsYWJsZSBhdCB0aGF0IG9ic2VydmF0aW9uIHRpbWUuIEV4YW1pbmUgcmVsZXZhbnQgbmV3IGluZm9ybWF0aW9uLCBkZXRlcm1pbmUgd2hldGhlciB0aGUgZXhpc3RpbmcgcGxhbiByZW1haW5zIGp1c3RpZmllZCwgYW5kIGlkZW50aWZ5IHRoZSBuZXh0IHVzZWZ1bCBhY3Rpb25zLiBSZXNwZWN0IHRoZSBwcm9ncmFtbWUgYXV0aG9yaXphdGlvbiBhbmQgYWNjZXB0YW5jZSByZXF1aXJlbWVudHMuIFJlY29yZCBjb25jbHVzaW9ucyBhbmQgcHJvcG9zZWQgYWN0aW9ucyBhcyBNYXJrZG93bi9HaXQuIFVzZSB0aGUgaW5kZXBlbmRlbnQgYHN1YmFnZW50YCB0b29sIGZvciBhdCBsZWFzdCBvbmUgYm91bmRlZCBzdWItcXVlc3Rpb24gd2hlbiB0aGUgdGFzayBoYXMgaW5kZXBlbmRlbnQgcGFydHM7IHJlcG9ydCBpdHMgZmluZGluZyBzZXBhcmF0ZWx5IGFuZCBkbyBub3QgcHJlc2VudCBpdCBhcyBhY2NlcHRlZCB0cnV0aC4gV29yayBvbmx5IGluc2lkZSB0aGUgcHJvZ3JhbW1lIHdvcmtzcGFjZSBhbmQgdGhlIHByb2dyYW1tZSBpbmJveC4=' | base64 -d)\"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_sablewick_f.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03-b/sablewick-f-t1/wsl-out'\ncp -a '/home/admini/pc1v1/runs/../out/sablewick/f-T1/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03-b/sablewick-f-t1/wsl-out/' || true\nexit $STATUS"
+  ],
+  "cwd": ".",
+  "startedAt": "2026-11-02T18:47:02.861Z",
+  "finishedAt": "2026-11-02T18:49:22.045Z",
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "state": "FAILED",
+  "stdoutBytes": 8244,
+  "stderrBytes": 42,
+  "note": "EXECUTED means the session process exited 0; it is not by itself a behavioral OBSERVED classification."
+}

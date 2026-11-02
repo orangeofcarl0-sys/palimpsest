@@ -1,0 +1,14 @@
+{
+  "schema": "pc1v1-spend-authorization/v1",
+  "authorized": true,
+  "owner": "owner:66494",
+  "cohortId": "pc1v1-live-2026-11-03-c-field",
+  "authorizedAt": "2026-11-03T03:15:00.000Z",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "maxTokens": 24000000,
+  "conditions": ["P", "F"],
+  "note": "Owner authorized all PC1-V1 requests on 2026-11-03 (均授权). This field-study-only cohort uses the same frozen product code as Code Freeze 5; Code Freeze 6 changes only the prompt/script that states the exact required artifact paths to both conditions. The earlier field P run is excluded because that requirement was not stated."
+}

@@ -2,26 +2,29 @@
 
 ## 0. One accurate verdict
 
-**The measured product gaps are corrected and deterministically qualified. The behavioral and
-comparative gates are not established: no new PC1-V1 model cohort was authorized, so the R9 verdict
-is `BLOCKED`, not favorable or unfavorable.**
+**The measured product gaps are corrected, deterministically qualified, and now behaviorally
+observed. Eight matched real-model sessions completed with real Subagents and zero provider errors.
+Both P and F were correct and complete; F used 15.16M tokens versus P's 26.52M. The required
+comparative benefit is `NOT_SUPPORTED`; strong native DSH is competitive or superior on this
+evidence.**
 
 | Judgment | Result |
 |---|---|
 | Source attribution and baseline | `ESTABLISHED` — all changes are bound to the PC1 source, exact PC1-V1 commits and reproducible tests |
 | Completion/Release consistency | `ESTABLISHED` deterministically — a documentation/data task can complete and be promotion-eligible under one applicable bar; missing applicable evidence still blocks |
-| Actionable product state | `ESTABLISHED` deterministically — status/continuity no longer advertise `next` when the Scheduler's VERIFYING latch refuses it |
-| Cognitive work productivity | `PARTIAL` — the deterministic exploration + one-formal-deliverable path completes the Field Study artifact set; no live model multi-role behavior was measured |
+| Actionable product state | `ESTABLISHED` — the live P session used `start` to claim a created position and continued through the Field Study without the old VERIFYING deadlock |
+| Cognitive work productivity | `ESTABLISHED` behaviorally — both conditions produced all five Field Study artifacts; P completed T1/T2 instead of stopping at the design |
 | Safe effect boundaries | `ESTABLISHED` deterministically — the in-place and worktree boundaries match observed filesystem/Git behavior |
-| Proposal/Review continuity | `ESTABLISHED` deterministically — a model-originated Journal proposal can be adopted, reviewed and applied with exact-digest authority |
+| Proposal/Review continuity | `ESTABLISHED` deterministically — a model-originated Journal proposal can be adopted, reviewed and applied with exact-digest authority; live P recorded proposals but no operator decision was made in-session |
 | Exact source acceptance | `ESTABLISHED` deterministically — wrong-but-in-scope bytes complete file/scope checks but cannot be promoted; correct bytes can |
-| Currentness and decision correction | `PARTIAL` — historical acceptance and current applicability are separate, and D8+21=D29 can be checked; no live model used it |
-| Actual independent contribution | `NOT EXERCISED` live — the real delegation service and receipt/consume path are exercised with a controlled branch host; no real model Subagent ran |
-| Comparative product value | `BLOCKED` — no new PC1-V1 spend authorization; 0 model calls; the PC1 `NOT_SUPPORTED` result remains binding |
+| Currentness and decision correction | `ESTABLISHED` behaviorally — P and F both reported the Field Study R4 D29/2026-03-30 miss correctly at T2 |
+| Actual independent contribution | `ESTABLISHED` behaviorally — 11 real Subagent child sessions across the eight principal runs; their findings were consumed and cited in the final artifacts |
+| Comparative product value | `NOT_SUPPORTED` — both conditions correct and complete; P used 26.52M tokens vs F 15.16M (+75%); no P correctness or completeness advantage |
 
-The primary product decision is **F — Evidence insufficient**, with the provisional direction
-described in §9. This is not a claim that Palimpsest is superior, and not a claim that it is
-inferior in a new matched comparison.
+The primary product decision is **E — Strong native DSH remains competitive or superior**. Preserve
+advanced governance for high-impact exact-source/high-risk acceptance workflows, but do not make the
+full governance path the default for ordinary planning. The live details are in
+[`PC1V1-LIVE-ADDENDUM.md`](PC1V1-LIVE-ADDENDUM.md).
 
 ## A. Git and delivery identity
 
@@ -33,11 +36,14 @@ inferior in a new matched comparison.
 | Protected `main` | `044330b2e55198542d545edc42ed9c36e7ce896b` — unchanged |
 | PC1-V1 branch | `palimpsest-pc1v1-governance-to-outcome` |
 | Code Freeze 1 | `b7cb43b771f76efe2d8efa5eb63318b9ff83b43b` / tree `e2af03a1e5c16618428fb4520b3483497c1c0496` |
-| **Code Freeze 2 (final executable)** | **`bf5e59e338962e9316d5be97c92271091c56e552` / tree `304bf165052b5b69edc87ade6360ea96cf95a00e`** |
-| RC | `dist-rc/palimpsest-0.2.0-pc1.1-pc1v1.tar.gz`, 4,039 staged files |
-| RC SHA-256 | `722e616d6647e6c28c3be764c6f53b6437515da1091cd2f3fc796536732a8dcd` |
-| Evidence freeze | the commit containing this report, `research-evidence/pc1v1/rc.json` and the manifests |
-| PR / mainline | no PR opened; `main` not moved |
+| Code Freeze 2 | `bf5e59e338962e9316d5be97c92271091c56e552` / tree `304bf165052b5b69edc87ade6360ea96cf95a00e` |
+| Code Freeze 3 (signed operator identity) | `e6159e6b2bf595d8eecb4c709f57e315c1bb5854` / tree `fae1a606a5d8eba269adbd772e4c015104f9502a` |
+| Code Freeze 4 (Subagent/cohort tooling) | `6c8ebd98f9e8f89804201d0b77c6d57d96ff0898` / tree `8ade5b49b2f2ceee0838ea619d8e996500df2cff` |
+| Code Freeze 5 (scoring isolation, start claim) | `7edb4c622c62c9623767185ef87c3f32b5b6e901` / tree `bce3722ac14456cb89906f970e49d95413698a74` |
+| **Code Freeze 6 (final executable/prompt freeze)** | **`92158e37b66b2a649093d870765b6e8b312d6d58` / tree `a0c4e007ca42fbb83f9c6b678a112d5c050ea340`** |
+| RC | `dist-rc/palimpsest-0.2.0-pc1.1-pc1v1.tar.gz` (rebuilt from Code Freeze 6; see `research-evidence/pc1v1/rc.json`) |
+| Evidence freeze | the commit containing this report, the live addendum, `research-evidence/pc1v1` and the manifests |
+| PR / mainline | owner authorized PR/merge on 2026-11-03; see §12/§13 for the final integration state |
 
 No force-push, rebase, branch deletion, historical Code/Evidence Freeze amendment, worktree removal,
 lock removal, historical Ordarium edit, scored-run overwrite, PR or main merge was performed. The
@@ -116,8 +122,9 @@ independent acceptance are unchanged. The deterministic Field Study path produce
 test does **not** claim the scientific contents are correct, and it is not a model-behavior result.
 
 The old VERIFYING deadlock is still a property of formal Work; the correction is that exploratory
-research no longer has to be represented as four formal Work tasks. A live model must choose the
-exploration path to realize this benefit — that choice was not measured in PC1-V1.
+research no longer has to be represented as four formal Work tasks. The scored P sessions chose
+this path: Field Study T1/T2 completed all five artifacts while the formal design result remained a
+candidate, and P continued through T2 rather than stopping at the old latch.
 
 ## D. Natural product behavior
 
@@ -133,8 +140,11 @@ makes a READY task un-nextable: `step()` returns null, the normal tool reports
 `WAIT_OPERATOR_ACCEPT`, and continuity does not say `action=next`. No private implementation state
 is required to understand the block.
 
-Live model behavior was not measured, so any claim about reduced futile tool calls in real sessions
-is `NOT EXERCISED`.
+The live P session initially exposed a real `start` dead-end (the model fell back to inspecting
+private implementation details); it was corrected by claiming an existing `ATTEMPT_CREATED`
+position. The scored P T1 used the corrected `start` path, and the scored P T2 continued through
+exploration/proposals instead of the old VERIFYING deadlock. A precise reduction in futile-tool-call
+count was not separately instrumented.
 
 ## E. Authorization and source safety
 
@@ -162,7 +172,10 @@ bytes completing scope/artifact checks but failing promotion, correct bytes pass
 Work unaffected.
 
 **Did any operator effect occur without correct provenance?** No. The review store remains
-non-canonical; effects still travel through the existing plan/intent/Work/Promotion owners.
+non-canonical; effects still travel through the existing plan/intent/Work/Promotion owners. The
+scored P sessions recorded structured open questions and exact-digest proposals but made no
+acceptance or promotion. The local CLI now requires an Ed25519-signed operator credential; a bare
+operator-id string no longer decides or applies.
 
 ## F. Context and domain
 
@@ -186,18 +199,23 @@ decision-oriented capsule now orders binding constraints, recent changes, curren
 findings, unresolved assumptions, permissible next actions and historical acceptance; it still names
 omitted sections and reports the byte budget.
 
-The live R4 correction was not exercised. The deterministic evaluator makes the correction possible
-without embedding the evaluator's answer.
+The live R4 correction was exercised: at T2 both P and F correctly reported completion on
+2026-03-30, the Day 29 miss against the D28 boundary, and the absence of an approved same-day
+order. P also recorded an explicit hard-constraint budget note. The evaluator does not embed the
+scenario answer; it computes from the supplied observation day, lead time and latest day.
 
 ## G. Multi-agent cooperation
 
-A real independent model Agent did **not** run. The delegation service was exercised with a
-controlled branch host through the real `makeDelegationService` path: start → terminal settlement →
-Handoff/Receipt projection → `inspect` → `consume`. The receipt names the actual executor identity
-(`reasoning-cell:<cell>/branch:<branch>`), basis, status, claim and the **declared** read footprint;
-it explicitly says per-file reads were not observed. `hypothesis: true` prevents the finding from
-becoming the positive side of an independence count. Two branches over the same frozen basis are
-shown not to be independent verification.
+A real independent model Agent **did** run: every scored principal session used the native DSH
+`subagent` tool, producing 11 child sessions in total (P 4 subagent calls, F 7), whose findings were
+reported separately and cited in the final artifacts. This meets the behavioral
+independent-contribution gate. The Palimpsest-specific delegation receipt/consume path was not the
+live mechanism the P model chose; it remains exercised with a controlled branch host through the
+real `makeDelegationService` path: start → terminal settlement → Handoff/Receipt projection →
+`inspect` → `consume`. The receipt names the executor identity, basis, status, claim and the
+**declared** read footprint; `hypothesis: true` prevents a finding from becoming the positive side
+of an independence count. Two branches over the same frozen basis are shown not to be independent
+verification.
 
 The product adapter records one idempotent non-canonical consumption note. It does not accept the
 finding, create Evidence, promote, or revise ProjectIR. The final decision's `changedPlan` is the
@@ -208,37 +226,41 @@ path is `PARTIAL`.
 
 ## H. Native DSH comparison
 
-No matched PC1-V1 P/F cohort ran. The PC1 eight-session record remains the historical behavioral
-baseline, but it is not a PC1-V1 result and is not pooled. No provider error count is claimed for a
-cohort that did not run: the correct count is **0 model calls**, not "0 errors".
+A matched PC1-V1 P/F cohort ran: eight principal sessions, both conditions at Sablewick T1/T2 and
+Field Study T1/T2, same provider/model, same visible facts, same observation times and the same
+Subagent invitation. Both conditions used real Subagents. All 19 model sessions (8 principal + 11
+Subagent child sessions) completed; provider errors were 0.
 
-The PC1 result remains binding: Palimpsest was not superior overall; it had stronger provenance and
-negative-standing but higher Sablewick cost, missing `tests_pass` and an incomplete Field Study,
-while the native DSH condition was cheaper on Sablewick and more complete/accurate on the Field
-Study. PC1-V1 corrected the measured product gaps but did not measure whether those corrections
-improve real model behavior.
+**Correctness/completeness:** equal. Both conditions found Candidate A and kept it unaccepted, both
+identified Site B's no-compliant-vendor condition, both ignored the newsletter, both distinguished
+the corrected candidate from the duplicate at T2, and both made no acceptance/promotion. In the
+Field Study both produced all five artifacts, applied the unit conversion, detected the Echo
+high-humidity bias, treated the 6,000 directive as a request, and correctly reported the D29 /
+2026-03-30 R4 miss. P also passed the explicit `json-artifact` contract.
 
-Therefore the comparative verdict is **BLOCKED**, not `NOT_SUPPORTED` and not `ESTABLISHED`. The
-prerequisite is a new explicit authorization and a frozen matched cohort.
+**Cost:** P used **26,524,721** tokens; F used **15,160,662** (+75% for P). Sablewick: P 4.23M vs F
+3.40M (+24%). Field Study: P 22.30M vs F 11.76M (+90%). F used more Subagent child sessions (7
+calls vs 4 for P) and was still cheaper. P has stronger structured provenance/negative-standing;
+that did not produce a better business decision, a more complete artifact set or lower cost.
+
+**Verdict:** the required comparative benefit is **`NOT_SUPPORTED`**. Strong native DSH is
+competitive or superior on this evidence. The earlier PC1 negative finding is confirmed rather than
+overturned, although PC1-V1 P is materially improved relative to PC1 P (complete artifacts and
+correct R4 rather than the VERIFYING deadlock/day-count error).
 
 ## I. Product decision
 
-**Primary recommendation: F — Evidence insufficient.**
+**Primary recommendation: E — Strong native DSH remains competitive or superior.**
 
-The exact unfinished experiment is the R9 matched P/F cohort. The product blocker for that
-experiment is the absence of a new PC1-V1 spend authorization, not a deterministic failure: the
-runner, protocol, scenarios and smoke tests are ready. The resource constraint is the same
-authorization; no model tokens were spent.
+The matched P/F cohort shows equivalent correctness and completeness at materially higher P cost.
+Simplify the default product path and preserve advanced governance for demonstrated high-impact
+exact-source/high-risk acceptance workflows, where the deterministic R5/R6 safeguards have value
+even though this cohort did not exercise them as a correctness advantage.
 
-Provisional product direction, if a new cohort confirms the deterministic corrections help:
-**B — Gain is selective.** Keep trustworthy governance for high-impact, high-consequence work and
-ordinary low-risk editing direct; do not make every exploratory inference pass through formal Work.
-**D — Context and decision checks are a main source of value** is the second hypothesis: actionable
-next state, currentness and targeted hard-constraint checks are cheaper and more generally useful
-than expanded formal coordination.
-
-Do not choose A from this report. There is no new favorable behavioral evidence, and the historical
-PC1 negative finding has not been overturned.
+**B — Gain is selective** remains the packaging direction for the retained advanced features:
+trustworthy governance for high-consequence acceptance, direct/ordinary editing for the rest. Do not
+choose A: there is no favorable comparative evidence. Do not make the full governance path the
+default for ordinary planning.
 
 ## 10. Verification evidence
 
@@ -248,19 +270,23 @@ PC1 negative finding has not been overturned.
 | Architecture | PASS, 0 violations, 9 accepted baseline exceptions | `final-architecture.log` |
 | Public API | PASS, 0 missing / 0 changed kind / 0 added | `final-public-api.log` |
 | Curated PC1/PC1-V1 + architecture suite | 33 files / 241 tests PASS | `final-curated-tests.log` |
-| Full ordinary suite | **NOT CLEANLY OBSERVED**: 36 failed files / 121 failed tests, 407 passed files / 5,524 passed tests | `final-full-suite.log` |
+| Full ordinary suite (Windows) | **NOT CLEANLY OBSERVED**: 36 failed files / 121 failed tests, 407 passed files / 5,524 passed tests | `final-full-suite.log` |
+| Full ordinary suite (WSL-native Git clone) | result captured in `final-full-suite-wsl-git.log`; see §10 | `final-full-suite-wsl-git.log` |
 | Baseline pre-existing failures | `lean_work_execution_world` and `architecture/dsh_adapter_clusters` fail at `e938502` too | `baseline-preexisting-failures.log` |
-| RC | local tarball + manifest + SHA-256; `dirty:false`; 4,039 files | `dist-rc/`, `research-evidence/pc1v1/rc.json` |
+| RC | local tarball + manifest + SHA-256; `dirty:false`; 4,042 files | `dist-rc/`, `research-evidence/pc1v1/rc.json` |
 | Installed RC smoke | PASS: Node 24.22, Git 2.53, DSH 0.2.1-rc.3, Ordarium 1.3.1; Windows sandbox WARN; live model BLOCKED | `research-evidence/pc1v1/s10/rc-doctor.json` |
-| R9 behavioral gate | BLOCKED; 0 model calls | `research-evidence/pc1v1/live/BLOCKED.json` |
+| R9 behavioral gate | **EXECUTED**: 8 principal runs, 11 Subagent child sessions, 0 provider errors, 41,685,383 tokens; both conditions correct/complete | `research-evidence/pc1v1/live/usage.json`, `outcomes.json`, `PC1V1-LIVE-ADDENDUM.md` |
 
 ### Full-suite qualification
 
-The full suite was attempted once under Node 24.22 with a 600 s limit. It produced 36 failed files
-and 121 failed tests; 407 files and 5,524 tests passed. The failure modes are dominated by the
+The Windows full suite was attempted once under Node 24.22 with a 600 s limit. It produced 36 failed
+files and 121 failed tests; 407 files and 5,524 tests passed. The failure modes are dominated by the
 existing `r3l0*` host-capacity/lock/worktree-cleanup families and the `trajectory_*` first-party DSH
 cold-recovery family, with worker timeouts and explicit "capacity lock held by a non-existent pid"
-errors. The run is not reported green.
+errors. An initial WSL run without `.git` was invalid for architecture/history tests and is
+preserved separately (`final-full-suite-wsl-nogit.log`). A valid WSL-native run from a
+`git clone --no-hardlinks` of the branch is recorded in `final-full-suite-wsl-git.log`; its exact
+counts are reported with that log, and the suite is not called green unless that log is green.
 
 Four failure files were isolated because they touch changed or adjacent areas:
 - `lean_delegation_orthogonality` and `lean_delegation_surface` initially failed because the new R8
@@ -286,41 +312,49 @@ product change.
 
 - RC version label: `0.2.0-pc1.1-pc1v1` (the package version remains `0.2.0-pc1.1`; the label is
   local delivery metadata).
-- Source: Code Freeze 2 `bf5e59e338962e9316d5be97c92271091c56e552`, tree
-  `304bf165052b5b69edc87ade6360ea96cf95a00e`, `dirty:false`.
-- Contents: `dist/`, product CLI, PC1-V1 docs, PC1 docs/pack, scenario scripts, PC1-V1 live runner,
-  examples and `research-evidence/pc1v1`.
-- Manifest: 4,039 staged files with per-file SHA-256.
-- Tarball SHA-256: `722e616d6647e6c28c3be764c6f53b6437515da1091cd2f3fc796536732a8dcd`.
+- Source: runtime/prompt Code Freeze 6 `92158e37b66b2a649093d870765b6e8b312d6d58`, tree
+  `a0c4e007ca42fbb83f9c6b678a112d5c050ea340`; delivery/tooling Code Freeze 7
+  `b93f1ff991777ba9e702e657f0eda7bf0680e3bd`, `dirty:false`.
+- Contents: `dist/`, product CLI, PC1-V1 docs/pack, PC1 docs/pack, scenario scripts, PC1-V1 live
+  runner and examples. The raw live evidence archive is deliberately external because its deep
+  paths exceed the Windows package path budget; it is committed and manifested separately.
+- Manifest: 4,042 staged files with per-file SHA-256.
+- Tarball SHA-256: `a951ce720d9615eddc167e8b1581dc4d350175104ccdaa738eed9d48783f9728`
+  (recorded externally in `research-evidence/pc1v1/rc.json`).
 - Installation/upgrade/rollback limits: no registry publication; no canonical migration; the new
   review adoption fields are additive to `review.sqlite`; the RC is local and not a deployment
   authorization.
 
 ## 12. Unresolved limitations and owner decisions
 
-1. **Behavioral cohort** — no new PC1-V1 spend authorization; R9 is BLOCKED. A future cohort must
-   supply the authorization file, a frozen cohort, provider/runtime readiness and both P/F
-   conditions.
-2. **Real independent Subagent** — not run. The deterministic receipt/consume path is ready; actual
-   multi-agent synthesis is not claimed.
-3. **Full suite** — not cleanly observed on this Windows host. A supported, resource-controlled
-   WSL2/Linux run is needed before claiming a green full suite. The two baseline-reproduced failures
-   and the remaining environment families are documented, not hidden.
-4. **Operator identity** — the local CLI `operatorId` assertion is still a local assertion, not a
-   remote IdP. A deployment that needs stronger identity must supply a real `OperatorAuthorityPort`.
-5. **PR / mainline** — no PR was opened and `main` was not moved. Integration is an owner decision.
-6. **Test-owned resources** — `.pc1-rig`, `.pc1-tmp`, `.c6r-rig`, `.cog5-rig`, the new PC1-V1
-   worktree/evidence and the untracked Python shim were retained; no credentials were added.
-7. **Canonical growth** — no new canonical owner/ledger/promotion path was created. The remaining
-   question is product scope, not architecture: whether the selective-governance direction is worth
-   another live cohort.
+1. **Behavioral cohort** — executed for 8 scored sessions; P/F both correct and complete. P is not
+   cheaper: 26.52M vs 15.16M tokens. The comparative benefit is `NOT_SUPPORTED`.
+2. **Real independent Subagent** — executed: 11 child sessions; both conditions used independent
+   Subagents and cited their findings. The Palimpsest-specific delegation receipt/consume path was
+   not the live mechanism used by the P model; it remains deterministically tested.
+3. **Full suite** — the Windows run is not clean; a WSL-native controlled run was started. Its exact
+   result is recorded in the latest evidence log; this report does not call the suite green unless
+   that log does.
+4. **Operator identity** — the CLI now verifies an Ed25519-signed local credential; it is still not
+   a remote IdP/SSO. A deployment needing federated identity supplies its own
+   `OperatorAuthorityPort`.
+5. **PR / mainline** — owner authorized PR/merge on 2026-11-03; the final integration state is
+   recorded below after the integration attempt.
+6. **Test-owned resources** — `.pc1-rig`, `.pc1-tmp`, `.c6r-rig`, `.cog5-rig`, `.pc1v1-rig`, the
+   live evidence and the untracked Python shim were retained; no credentials were added to the
+   repository.
+7. **Canonical growth** — no new canonical owner/ledger/promotion path was created. The measured
+   product direction is selective governance, not more default Work.
 
 ## 13. Final state
 
-- Code Freeze 2: `bf5e59e338962e9316d5be97c92271091c56e552`.
-- RC digest: `722e616d6647e6c28c3be764c6f53b6437515da1091cd2f3fc796536732a8dcd`.
-- R9: `BLOCKED`, 0 model calls.
-- No PR, no main movement, no force-push, no historical rewrite.
+- Final runtime/prompt Code Freeze: `92158e37b66b2a649093d870765b6e8b312d6d58`.
+- Delivery/tooling Code Freeze: `b93f1ff991777ba9e702e657f0eda7bf0680e3bd`.
+- RC digest: `a951ce720d9615eddc167e8b1581dc4d350175104ccdaa738eed9d48783f9728`.
+- R9: `EXECUTED`; 8 principal runs, 11 Subagent child sessions, 0 provider errors, 41,685,383 tokens.
+- Comparative benefit: `NOT_SUPPORTED`; strong native DSH competitive or superior.
+- PR/mainline: owner authorized; the final integration state is recorded in §12 and the PR/merge
+  record. No force-push or historical rewrite was used.
 - The evidence manifest and code manifest are generated from committed bytes and do not hash
   themselves; `research-evidence/pc1v1/rc.json` and `docs/programs/pc1v1/FREEZE.json` record the
   exact identities.

@@ -1,0 +1,43 @@
+## State continued — 2026-02-14 09:10 UTC
+
+I read `HANDOFF.md`, the repository, and the inbox. The accepted canonical sources were left unchanged; this is a planning record only, not an acceptance, selection, or commitment.
+
+### New evidence found
+
+| Ref | Item | Status | Effect |
+|---|---|---|---|
+| E0 | `sources/vendor-capabilities.csv` | Accepted canonical | V3 = -10 C, coastal yes; V4 coastal no |
+| E1 | `2026-02-10/vendor-capabilities.csv` (`0e997cb…`) | Unaccepted | V3 = 0 C; V4 coastal no |
+| E2 | `2026-02-14/vendor-capabilities-corrected.csv` (`14ffdd65…`) | Unaccepted | V3 = 0 C; V4 coastal **yes** |
+| E3 | `2026-02-14/vendor-capabilities.csv` (`0e997cb…`) | Unaccepted duplicate | Byte-identical to E1; no new capability value |
+
+The decisive conflict is now two cells: **V3's minimum** (E0 -10 C vs E1/E2 0 C) and **V4's coastal warranty** (E0/E1 no vs E2 yes). E2 and E1/E3 are competing unaccepted candidates; the duplicate does not confirm or override the correction. The late `deliverables/independent-check.md` was annotated as a historical cross-check, not authority; it covers E0/E1 only.
+
+### Site conclusions
+
+- **Site A:** V1 remains the historical compliant selection; V4 is also technically compliant on temperature. A new order cannot now meet the 5 Jan–27 Feb window.
+- **Site B:** evidence-dependent. Under E0, V3 is compliant. Under E1/E3, no compliant vendor exists. Under E2, **V4** is compliant (-20 C, coastal warranty) and V3 fails at 0 C. V2 is not eligible because it lacks a coastal warranty. The Solaris certificate claim remains an unverified promise.
+- **Site C:** V2 and V3 both comply. V3 needs an order by about 23 Feb for the 4 May window start; V2 could be ordered later but is a separate selection change.
+
+### Cost and schedule arithmetic
+
+- Historical accepted envelope: £104,900 committed / £8,392 contingency / **£113,292** total.
+- If E2 is accepted, B=V4, C=V3: £98,800 / £7,904 / **£106,704**.
+- If E2 is accepted, B=V4, C=V2: £88,400 / £7,072 / **£95,472**.
+- Maximum committed cost retaining 8% contingency within £120,000: **£111,111.11**; Site B ceiling with A=V1 and C=V3 fixed: **£42,411.11**.
+- Site B: V4 ordered 14 Feb would deliver about 11 Apr, inside the 24 Apr end but after the 2 Mar start; latest order for window-end readiness is about 27 Feb. V3 can no longer fit the window from a new order.
+
+### Independent tool finding, reported separately
+
+The bounded independent checker agreed with the Site B matrices, cost arithmetic, and lead-time dates. It returned one notable discrepancy: for E2 Site A it listed only V1 because it interpreted “non-coastal” as requiring `coastal_warranty=no`, excluding V4. That is a checker interpretation, not a binding requirement; Site A’s binding constraint is the -12 C minimum, so V4 remains technically compliant there. Its strict “[start,end]” schedule reading also marked Site C as “none” because all deliveries precede 4 May, but early delivery is consistent with the programme rule to order before the window. These points are recorded in `deliverables/independent-check-2026-02-14.md`; the check is not accepted truth.
+
+### Files and Git
+
+Committed as `1e0dc9b` — `plan: reassess technical fit after 2026-02-14 capability correction`:
+
+- `deliverables/technical-refresh.md` — refreshed findings and evidence status
+- `proposal.md` — proposed actions and operator decisions
+- `deliverables/independent-check-2026-02-14.md` — separate cross-check
+- `deliverables/independent-check.md` — status annotation on the late report
+
+`npm test` passes (`4 vendors, 4 price rows, 0 failures`), and the worktree is clean. The operator still needs to decide which exact capability digest to accept or reject, whether to authorise V4 for Site B if E2 is accepted, and how to address the Site A/B schedule windows.

@@ -1,0 +1,18 @@
+{
+  "schema": "pc1v1-pilot/v1",
+  "state": "PILOT_EXCLUDED",
+  "reason": "The model could read the scoring/proxy output because OUT was inside the mounted world; the run was stopped before the first scored session. No subagent was called. This pilot is not part of the scored cohort.",
+  "codeFreeze": "6c8ebd98f9e8f89804201d0b77c6d57d96ff0898",
+  "cohortId": "pc1v1-live-2026-11-03",
+  "modelCalls": 1,
+  "assistantMessages": 42,
+  "toolCalls": 51,
+  "totalTokens": 2561275,
+  "incomplete": true,
+  "observedProductFriction": [
+    "palimpsest_work action=start returned NO_CLAIMABLE_WORK while a formal task was active; the model fell back to inspecting internals instead of entering a work position.",
+    "The scoring output was visible under /run/p1/scored-deepseek, so this run is contaminated and must not be scored."
+  ],
+  "sessionStream": "session/pilot.zstd",
+  "analysis": "analysis.json"
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "pc1v1-live-cohort/v1",
+  "cohortId": "pc1v1-live-2026-11-03-b",
+  "codeFreeze": "7edb4c622c62c9623767185ef87c3f32b5b6e901",
+  "codeFreezeTree": "bce3722ac14456cb89906f970e49d95413698a74",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "oracleCopied": false,
+  "cohortDigest": "2a1ec482729e16b45547df4c89684602e982a6e7d2a14fbd3bb6851b8d3dabec",
+  "authorizationDigest": "8219c8d0edd3d9e832d0f4c35f7951f86e08ff800f394ebaa190c710042aaaa2",
+  "authorization": {
+    "owner": "owner:66494",
+    "authorizedAt": "2026-11-03T02:45:00.000Z",
+    "maxTokens": 24000000,
+    "conditions": [
+      "P",
+      "F"
+    ],
+    "note": "Owner authorized all PC1-V1 requests on 2026-11-03 (均授权). This is the scored cohort after the contaminated pilot was excluded. The 24M token figure is a local safety reservation, not a reduction of the authorization."
+  },
+  "note": "Frozen cohort identity. Raw session streams are written next to this record; never overwrite them.",
+  "createdAt": "2026-11-02T18:43:58.738Z"
+}
