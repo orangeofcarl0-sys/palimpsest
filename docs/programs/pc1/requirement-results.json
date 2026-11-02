@@ -79,72 +79,90 @@
     },
     {
       "requirementId": "S01-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S01-ROOT-CAUSE.md"
+      ],
+      "notes": "short input is not canonical identity; full OID was stored; unreadable object caused the uncertain merge",
       "blockers": []
     },
     {
       "requirementId": "S01-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "research-evidence/pc1/s01/regression.log"
+      ],
+      "notes": "report and reportLate export object-only and resolve full OID; failure refuses; real-git tests",
       "blockers": []
     },
     {
       "requirementId": "S01-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts"
+      ],
+      "notes": "world object export uses canonical repo configured by host; in-place skip; broken world refused",
       "blockers": []
     },
     {
       "requirementId": "S01-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_HISTORICAL_RESIDUAL",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "docs/programs/pc1/S01-ROOT-CAUSE.md"
+      ],
+      "notes": "uncertain promotion recovers after object restoration; historical op remains untouched evidence",
       "blockers": []
     },
     {
       "requirementId": "S01-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "test/gate_tool.test.ts",
+        "test/acceptance.test.ts"
+      ],
+      "notes": "structural predicates are product observations; caller command cannot forge them; no atom on failure",
       "blockers": []
     },
     {
       "requirementId": "S01-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts"
+      ],
+      "notes": "gate PASS remains scoped to registered evidence; missing-evidence explanation preserved; subject detail continues in S02",
       "blockers": []
     },
     {
       "requirementId": "S01-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts"
+      ],
+      "notes": "resultCommit and acceptedHead remain distinct; export moves no ref; promotion merge tested",
       "blockers": []
     },
     {

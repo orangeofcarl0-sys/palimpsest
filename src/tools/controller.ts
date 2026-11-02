@@ -523,6 +523,15 @@ interface SettlingExecutionWorldPort {
     readonly attemptId: string;
     readonly commit: string;
   }): Promise<{ readonly imported: boolean; readonly detail: string }>;
+  /**
+   * The same object-only export, synchronously, for `report`, whose ledger append is synchronous.
+   * A port that composes the asynchronous seam but not this one is a test/in-memory backend; the
+   * controller then falls back to its own local git check only when a real repository exists.
+   */
+  exportResultCommitSync?(input: {
+    readonly attemptId: string;
+    readonly commit: string;
+  }): { readonly imported: boolean; readonly detail: string };
 }
 
 /**
@@ -2304,15 +2313,95 @@ export class ProjectController {
         // moves only when the worker commits inside it.
         ...(observed.observedHead === "" ? {} : { resultCommit: observed.observedHead }),
       };
+      /**
+       * PC1 S01-R02: a COMPLETED result is not recordable until the canonical object database can
+       * READ it. The delegated settlement route already exported before reporting; the legacy report
+       * path did not, which is how a full OID from a `--shared` world became a name the canonical
+       * repository could not merge. The export is object-only (no ref, working tree or revision),
+       * and refusal is the honest outcome when it fails.
+       */
+      if (input.workerStatus === "completed" && observed.observedHead !== "") {
+        input = {
+          ...input,
+          resultCommit: this.#exportAndResolveResultCommit(attemptId, observed.observedHead),
+        };
+      }
     }
     const report = this.#buildReport(attemptId, input);
     return this.scheduler.recordCallback(attemptId, terminal[input.workerStatus], report);
   }
 
+  /**
+   * Export the result commit from the attempt's world into the canonical object database and return
+   * its FULL object identity. Throws when the object cannot be made readable.
+   *
+   * Why this lives on the report path: `result_commit` is about to be written into the ledger, and a
+   * ledger row naming an object the project cannot read is not a result — it is a promise that
+   * promotion later discovers is unfulfillable, after the effect has already been dispatched.
+   */
+  #exportAndResolveResultCommit(attemptId: string, commit: string): string {
+    const repository = this.effects.git.repository;
+    // The in-memory port has no real ODB to export into; there is nothing to check and the fake
+    // commit identity is all the deployment can have. A real deployment always has a repository.
+    if (repository === undefined || repository === "") return commit;
+    /**
+     * IN-PLACE work is already in the canonical repository: its commit object is readable there by
+     * construction and there is no world to export from. Resolve the full identity below; do NOT ask
+     * the world port for an export it would correctly report as WORLD_MISSING.
+     */
+    if (this.execution !== "in-place") {
+      const port = this.#executionWorldPort;
+      const sync = port?.exportResultCommitSync;
+      if (sync !== undefined) {
+        const outcome = sync({ attemptId, commit });
+        if (!outcome.imported) {
+          throw new DomainValidationError(
+            `RESULT_NOT_EXPORTED: attempt ${attemptId}'s result commit ${commit.slice(0, 12)} cannot be made readable in the canonical object database (${outcome.detail}); recording it would name a commit the project cannot materialize`,
+          );
+        }
+      } else {
+        // A legacy/custom world port without the synchronous seam: import the world HEAD directly.
+        // This is the same object-only operation, not a second promotion path.
+        const workDir = this.#attemptWorkDirSync(attemptId)?.workDir;
+        if (workDir === undefined || workDir === null) {
+          throw new DomainValidationError(
+            `RESULT_NOT_EXPORTED: attempt ${attemptId} has no readable execution world to export its result from`,
+          );
+        }
+        try {
+          execFileSync("git", ["fetch", "--no-tags", workDir, "HEAD"], {
+            cwd: this.#canonicalRepository(),
+            encoding: "utf8",
+          });
+        } catch (error) {
+          throw new DomainValidationError(
+            `RESULT_NOT_EXPORTED: attempt ${attemptId}'s result commit ${commit.slice(0, 12)} could not be imported from its world (${error instanceof Error ? error.message : String(error)})`,
+          );
+        }
+      }
+    }
+    // Resolve the FULL object identity after the import. The input may be short; the world's HEAD is
+    // not. `rev-parse --verify` also proves the canonical repository can actually read it.
+    try {
+      return execFileSync("git", ["rev-parse", "--verify", `${commit}^{commit}`], {
+        cwd: this.#canonicalRepository(),
+        encoding: "utf8",
+      }).trim();
+    } catch (error) {
+      throw new DomainValidationError(
+        `RESULT_NOT_EXPORTED: the canonical repository cannot resolve attempt ${attemptId}'s result commit ${commit.slice(0, 12)} (${error instanceof Error ? error.message : String(error)})`,
+      );
+    }
+  }
+
   /** A worker that expired its lease may still return; it is recorded STALE. */
   reportLate(attemptId: string, input: ReportInput): SchedulerEvent {
+    const late =
+      input.workerStatus === "completed" && typeof input.resultCommit === "string" && input.resultCommit !== ""
+        ? { ...input, resultCommit: this.#exportAndResolveResultCommit(attemptId, input.resultCommit) }
+        : input;
     const report = this.#buildReport(attemptId, {
-      ...input,
+      ...late,
       workerStatus: input.workerStatus === "expired" ? "expired" : input.workerStatus,
     });
     return this.scheduler.recordCallback(attemptId, "ATTEMPT_LATE_RESULT", report);
@@ -2576,6 +2665,17 @@ export class ProjectController {
   async gate(input: GateInput): Promise<SchedulerEvent> {
     const [row, envelope] = this.#attemptContext(input.attemptId);
     const executable = input.command[0];
+    /**
+     * PC1 S01-R05: a STRUCTURAL predicate is an observation of the tree/artifacts, never a label on
+     * somebody else's command. Measured in the C6-R P1 session: `node verify.mjs` (exit 0) was
+     * recorded as `write_scope_valid` and `expected_files_exist`, and a release gate then passed on
+     * evidence that had observed neither scope nor artifacts. The caller may still REQUEST a
+     * structural check — the product performs it here, from the same observation `finish` uses —
+     * but it cannot supply the observation by running an unrelated command.
+     */
+    if (input.predicate === "write_scope_valid" || input.predicate === "expected_files_exist") {
+      return this.#observeStructuralGate(input);
+    }
     if (executable === undefined) {
       throw new DomainValidationError("gate command must have an executable");
     }
@@ -2607,6 +2707,56 @@ export class ProjectController {
       observation.exitCode,
       input.observedArtifacts,
     );
+  }
+
+  /**
+   * The product's own structural observation, for a gate that requests one.
+   *
+   * It reads the attempt's tree (the same `#observeAttemptResultSync` and same filesystem checks
+   * `finish` uses) and records `write_scope_valid` / `expected_files_exist` ONLY when the fact
+   * actually holds. A failed structural observation refuses without recording an atom: absence of
+   * qualification must not be creatable by the failing route.
+   */
+  #observeStructuralGate(input: GateInput): SchedulerEvent {
+    const [, envelope] = this.#attemptContext(input.attemptId);
+    const target = this.#attemptWorkDirSync(input.attemptId);
+    if (target === null) {
+      throw new DomainValidationError(
+        `attempt ${input.attemptId} has no observable tree, so a structural gate cannot be answered — an unobservable scope is not a valid one`,
+      );
+    }
+    if (input.predicate === "write_scope_valid") {
+      const observed = this.#observeAttemptResultSync(input.attemptId, envelope.base_commit);
+      if (observed === null) {
+        throw new DomainValidationError(
+          `attempt ${input.attemptId}'s result cannot be observed, so write scope cannot be qualified`,
+        );
+      }
+      const outOfScope = observed.changedFiles.filter(
+        (path) => !envelope.write_paths.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
+      );
+      if (outOfScope.length > 0) {
+        throw new DomainValidationError(
+          `STRUCTURAL_OBSERVATION_FAILED: attempt ${input.attemptId} changed paths outside write_paths [${envelope.write_paths.join(", ")}]: ${outOfScope.join(", ")} — no write_scope_valid atom is recorded for a scope that is not valid`,
+        );
+      }
+      return this.#recordObservedEvidence(input.attemptId, "write_scope_valid", {
+        changed_files: [...observed.changedFiles],
+        write_paths: [...envelope.write_paths],
+        out_of_scope: [],
+      }, undefined, "palimpsest-gate");
+    }
+    const paths = input.observedArtifacts ?? envelope.required_artifacts;
+    const missing = paths.filter((path) => !existsSync(join(target.workDir, path)));
+    if (missing.length > 0) {
+      throw new DomainValidationError(
+        `STRUCTURAL_OBSERVATION_FAILED: attempt ${input.attemptId} is missing required artifacts: ${missing.join(", ")} — no expected_files_exist atom is recorded for files that do not exist`,
+      );
+    }
+    return this.#recordObservedEvidence(input.attemptId, "expected_files_exist", {
+      paths: [...paths],
+      missing: [],
+    }, undefined, "palimpsest-gate");
   }
 
   /**
@@ -2674,9 +2824,10 @@ export class ProjectController {
     predicate: Extract<EvidenceAtom["predicate"], "write_scope_valid" | "expected_files_exist">,
     value: EvidenceAtom["value"],
     candidate?: { readonly dependencyDigest: string; readonly producer: string } | undefined,
+    producer?: string | undefined,
   ): SchedulerEvent {
     const [row, envelope] = this.#attemptContext(attemptId);
-    return recordObservedEvidence(this.#evidenceContext(attemptId, row, envelope), predicate, value, candidate);
+    return recordObservedEvidence(this.#evidenceContext(attemptId, row, envelope), predicate, value, candidate, producer);
   }
 
   /**

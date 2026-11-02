@@ -21,15 +21,19 @@
       ]
     },
     "S01": {
-      "implementation": "IN_PROGRESS",
-      "deterministic": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
       "live": "NOT_REQUIRED",
       "comparison": "NOT_REQUIRED",
       "blockers": [],
-      "evidence": []
+      "evidence": [
+        "docs/programs/pc1/S01-ROOT-CAUSE.md",
+        "test/pc1_result_integrity.test.ts",
+        "research-evidence/pc1/s01/regression.log"
+      ]
     },
     "S02": {
-      "implementation": "NOT_STARTED",
+      "implementation": "IN_PROGRESS",
       "deterministic": "NOT_RUN",
       "live": "NOT_REQUIRED",
       "comparison": "NOT_REQUIRED",
@@ -103,8 +107,8 @@
   },
   "pendingEffects": [],
   "nextActions": [
-    "S01: reproduce legacy report export gap and uncertain promotion; RED/GREEN; structural predicate refusal",
-    "S02/S03/S06/S07 design and implementation in parallel where owners are independent"
+    "S02: tool tiers, lossless status, VERIFYING proposal, normal product entry",
+    "S03 continuity facade in parallel"
   ],
   "lastCheckpoint": {
     "at": "2026-11-02",
