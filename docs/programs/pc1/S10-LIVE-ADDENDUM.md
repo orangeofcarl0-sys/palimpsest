@@ -10,7 +10,7 @@
 | Scored sessions | 8 (Sablewick P/F T1/T2, field-study P/F T1/T2) |
 | Provider errors | 0 |
 | Classification | all 8 `OBSERVED` |
-| Scored tokens | 10,018,203 |
+| Scored tokens | 11,533,565 |
 | P tokens | 5,018,240 |
 | F tokens | 6,515,325 |
 | Independent subagents | none (both conditions single-principal; no multi-agent synthesis claim) |
