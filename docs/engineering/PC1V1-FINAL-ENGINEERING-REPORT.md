@@ -43,6 +43,7 @@ full governance path the default for ordinary planning. The live details are in
 | Code Freeze 6 (runtime/prompt behavior) | `92158e37b66b2a649093d870765b6e8b312d6d58` / tree `a0c4e007ca42fbb83f9c6b678a112d5c050ea340` |
 | Code Freeze 7 (RC packaging only) | `b93f1ff991777ba9e702e657f0eda7bf0680e3bd` / tree `9f3f6f39ee68842f0d6455ed3d237852008ca493` |
 | **Code Freeze 8 (final executable; behavior-preserving CI correction)** | **`18a9c1cef45fda9373b50004ee70650b0e9579af` / tree `8914b91f708dd01b1f6fad26a03d5234f72e545d`** |
+| Code Freeze 9 (manifest tooling only) | `410bc6e76f48e70b2b335c70697d4996195388ba` / tree `546b32395f1b3960fdf892b6d44f9c8b5bab2da4` |
 | RC | `dist-rc/palimpsest-0.2.0-pc1.1-pc1v1.tar.gz` (rebuilt from Code Freeze 8; see `research-evidence/pc1v1/rc.json`) |
 | Evidence freeze | the commit containing this report, the live addendum, `research-evidence/pc1v1` and the manifests |
 | PR / mainline | owner authorized PR/merge on 2026-11-03; see §12/§13 for the final integration state |
@@ -278,6 +279,7 @@ default for ordinary planning.
 | RC | local tarball + manifest + SHA-256; `dirty:false`; 4,042 files | `dist-rc/`, `research-evidence/pc1v1/rc.json` |
 | Installed RC smoke | PASS: Node 24.22, Git 2.53, DSH 0.2.1-rc.3, Ordarium 1.3.1; Windows sandbox WARN; live model BLOCKED | `research-evidence/pc1v1/s10/rc-doctor.json` |
 | R9 behavioral gate | **EXECUTED**: 8 principal runs, 11 Subagent child sessions, 0 provider errors, 41,685,383 tokens; both conditions correct/complete | `research-evidence/pc1v1/live/usage.json`, `outcomes.json`, `PC1V1-LIVE-ADDENDUM.md` |
+| Committed-byte manifests | code 2,634 files / evidence 298 files; 0 mismatches | `research-evidence/pc1v1/manifest-code.json`, `manifest-evidence.json` |
 
 ### Full-suite qualification
 
@@ -363,6 +365,6 @@ product change.
 - PR/mainline: PR #216 open, `MERGEABLE` but `BLOCKED` by the required `unit` check (two
   pre-existing trajectory tests); no admin bypass and no `main` movement. No force-push or
   historical rewrite was used.
-- The evidence manifest and code manifest are generated from committed bytes and do not hash
-  themselves; `research-evidence/pc1v1/rc.json` and `docs/programs/pc1v1/FREEZE.json` record the
-  exact identities.
+- The evidence manifest and code manifest are generated from committed bytes by blob OID and do not
+  hash themselves; `research-evidence/pc1v1/rc.json` and `docs/programs/pc1v1/FREEZE.json` record
+  the exact identities. Evidence-freeze commit is the commit containing the manifests.
