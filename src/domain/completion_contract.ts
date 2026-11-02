@@ -27,6 +27,8 @@
  */
 import { canonicalDigest } from "../schema/canonical.js";
 import type { EvidencePredicate } from "../schema/models.js";
+import { artifactSetDigest, commandDigest } from "./command_identity.js";
+import type { GateClause, GateDefinition } from "./gate_clause.js";
 import type { ProjectStandard } from "./standard.js";
 
 /** What the product must check, in product vocabulary. The evidence owner maps these. */
@@ -35,6 +37,11 @@ export type MechanicalCheck =
       readonly kind: "run_standard_command";
       readonly command: readonly string[];
       readonly predicate: Extract<EvidencePredicate, "process_exit_zero" | "tests_pass" | "lint_pass">;
+      /**
+       * R1: the exact command this obligation names. Two clauses with one predicate are two
+       * obligations, so the release gate can require each observation rather than a broad `exists`.
+       */
+      readonly commandDigest: string;
     }
   | { readonly kind: "assert_write_scope" }
   | { readonly kind: "assert_required_artifacts"; readonly paths: readonly string[] };
@@ -177,7 +184,12 @@ export function deriveAttemptCompletionContract(
       );
       continue;
     }
-    mechanical.push({ kind: "run_standard_command", command: [...clause.command], predicate: clause.predicate });
+    mechanical.push({
+      kind: "run_standard_command",
+      command: [...clause.command],
+      predicate: clause.predicate,
+      commandDigest: commandDigest(clause.command),
+    });
     if (!commandAllowed(clause.command, envelope.allowed_commands)) {
       diagnostics.push(
         `the standard requires ${clause.command.join(" ")} but this task's envelope does not authorize it (authorized: ${envelope.allowed_commands.map((entry) => `${entry.executable} ${entry.argv_prefix.join(" ")}`.trim()).join("; ") || "none"}) — the operator must widen policy.allowed_commands; the agent cannot`,
@@ -256,6 +268,53 @@ export function deriveAttemptCompletionContract(
     diagnostics: Object.freeze(diagnostics),
   });
 }
+
+/**
+ * R1: the effective `all` chain for a standard-derived release gate. Every check the contract
+ * carries becomes exactly one clause, so a declared-inapplicable command cannot remain an
+ * unexplained release obligation and two same-predicate commands remain two obligations.
+ */
+export function deriveEffectiveReleaseChain(contract: AttemptCompletionContract): readonly GateClause[] {
+  const chain: GateClause[] = [];
+  for (const check of contract.mechanical) {
+    if (check.kind === "assert_write_scope") {
+      chain.push({ exists: { predicate: "write_scope_valid" } });
+      continue;
+    }
+    if (check.kind === "assert_required_artifacts") {
+      chain.push({
+        exists: {
+          predicate: "expected_files_exist",
+          where: { paths_digest: artifactSetDigest(check.paths) },
+        },
+      });
+      continue;
+    }
+    chain.push({
+      exists: {
+        predicate: check.predicate,
+        where: { command_digest: check.commandDigest },
+      },
+    });
+  }
+  return Object.freeze(chain);
+}
+
+/** R1: the stored gate document with its identity, evaluated over the task-aware chain. */
+export function effectiveReleaseGateDefinition(
+  stored: GateDefinition,
+  contract: AttemptCompletionContract,
+): GateDefinition {
+  return {
+    gate_id: stored.gate_id,
+    version: stored.version,
+    subject_type: "attempt",
+    require: { mode: "all", chain: [...deriveEffectiveReleaseChain(contract)] },
+  };
+}
+
+export { explainStatusWorkState } from "./work_state.js";
+export type { ControllerStatusView, WorkNextAction, WorkNextActionKind } from "./work_state.js";
 
 /* -------------------------------------------------------------------------- *
  * Readiness — two layers, because they answer different questions

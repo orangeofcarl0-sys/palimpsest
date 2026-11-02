@@ -52,6 +52,7 @@ import {
   type PromotionBlocker,
   type PromotionEligibilityAssessment,
   type PromotionFenceRow,
+  type PromotionSourceIntakeAdmissionPort,
   type PromotionVerificationAdmissionPort,
 } from "../domain/promotion_eligibility.js";
 import {
@@ -125,15 +126,29 @@ export class PromotionManager {
      * verification is required" — which is what keeps every existing construction unchanged.
      */
     verificationAdmission?: PromotionVerificationAdmissionPort | undefined,
+    /**
+     * R1: the attempt-aware gate evaluator. The Controller owns the completion contract, so it
+     * supplies the effective release verdict here; absent means the historical stored-gate read.
+     */
+    gateEvaluator?: ((attemptId: string, gateId: string) => GateResult) | undefined,
+    /**
+     * R6: the source-intake admission read. Absent means this deployment binds no source intakes,
+     * so ordinary promotions are unchanged.
+     */
+    sourceIntakeAdmission?: PromotionSourceIntakeAdmissionPort | undefined,
   ) {
     this.#store = store;
     this.#effects = effects;
     this.projectId = projectId;
     this.#execution = execution;
     this.#verificationAdmission = verificationAdmission;
+    this.#gateEvaluator = gateEvaluator;
+    this.#sourceIntakeAdmission = sourceIntakeAdmission;
   }
 
   readonly #verificationAdmission: PromotionVerificationAdmissionPort | undefined;
+  readonly #gateEvaluator: ((attemptId: string, gateId: string) => GateResult) | undefined;
+  readonly #sourceIntakeAdmission: PromotionSourceIntakeAdmissionPort | undefined;
 
   readonly #execution: "worktree" | "in-place";
 
@@ -356,13 +371,10 @@ export class PromotionManager {
     if (gateId !== undefined) {
       // Y semantics carry into promotion admission unchanged: Evidence that lost
       // its authority cannot keep a gate PASS, so it cannot authorize an effect.
-      const verdict: GateResult = new GateEngine().evaluate(
-        this.#store,
-        this.projectId,
-        "attempt",
-        attemptId,
-        gateId,
-      );
+      const verdict: GateResult =
+        this.#gateEvaluator === undefined
+          ? new GateEngine().evaluate(this.#store, this.projectId, "attempt", attemptId, gateId)
+          : this.#gateEvaluator(attemptId, gateId);
       gate = { gateId, verdict: verdict.verdict };
     }
     const promotionId = promotionIdFor(this.projectId, attemptId);
@@ -391,7 +403,14 @@ export class PromotionManager {
     // preview, promoteAttempt, the expert promote, recovery reconciliation and the redispatch
     // defence — inherits the requirement. No second admission path.
     const verification = this.#verificationAdmission?.read(attemptId) ?? null;
-    return verification === null ? base : { ...base, verification };
+    const sourceIntake =
+      this.#sourceIntakeAdmission?.read({
+        attemptId,
+        taskId: base.attempt?.taskId ?? base.task?.taskId ?? null,
+        resultCommit: base.attempt?.report?.result_commit ?? null,
+      }) ?? null;
+    const withVerification = verification === null ? base : { ...base, verification };
+    return sourceIntake === null ? withVerification : { ...withVerification, sourceIntake };
   }
 
   /**

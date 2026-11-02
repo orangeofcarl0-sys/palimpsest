@@ -34,6 +34,7 @@
  * promoted?" expressible with no schema change and no new predicate.
  */
 import { canonicalDigest } from "../schema/canonical.js";
+import { artifactSetDigest, commandDigest } from "../domain/command_identity.js";
 import { parseNewEvent, type EvidenceAtom, type EvidencePredicate, type SchedulerEvent } from "../schema/index.js";
 import type { EventStore } from "../state/index.js";
 import { actionKey, stableEntityId } from "../domain/index.js";
@@ -150,6 +151,11 @@ export function recordObservedEvidence(
   const existing = context.findExisting?.(key);
   if (existing !== undefined) return requireActive(existing, predicate, context.attemptId);
   const evidenceId = stableEntityId("evidence", key);
+  const paths = value["paths"];
+  const valueWithIdentity =
+    predicate === "expected_files_exist" && Array.isArray(paths)
+      ? { ...value, paths_digest: artifactSetDigest(paths.map((path) => String(path))) }
+      : value;
   const evidence: EvidenceAtom = {
     schema_version: 1,
     project_id: context.projectId,
@@ -158,7 +164,7 @@ export function recordObservedEvidence(
     subject_id: context.attemptId,
     subject_digest: canonicalDigest({ attempt_id: context.attemptId, predicate }),
     predicate,
-    value: value as EvidenceAtom["value"],
+    value: valueWithIdentity as EvidenceAtom["value"],
     project_revision: context.projectRevision,
     input_fingerprint: context.projectDigest,
     command: null,
@@ -247,7 +253,10 @@ export function recordCommandEvidence(
     subject_id: context.attemptId,
     subject_digest: canonicalDigest({ attempt_id: context.attemptId, command }),
     predicate,
-    value: (value ?? { exit_code: exitCode }) as EvidenceAtom["value"],
+    value: {
+      ...(value ?? { exit_code: exitCode }),
+      command_digest: commandDigest(command),
+    } as EvidenceAtom["value"],
     project_revision: context.projectRevision,
     input_fingerprint: context.projectDigest,
     command: [...command],

@@ -24,6 +24,12 @@ export interface WorkspaceExtraSurface {
     readonly artifactPath?: string | null | undefined;
     readonly parameters?: Readonly<Record<string, unknown>> | undefined;
   }): Promise<import("../domain_outcome/index.js").DomainEvaluation>;
+  /** R7: a deterministic hard-constraint check over explicit inputs. */
+  checkHardConstraint(input: {
+    readonly kind: import("../domain/hard_constraints.js").HardConstraintKind;
+    readonly parameters: Readonly<Record<string, unknown>>;
+    readonly taskId?: string | null | undefined;
+  }): Promise<import("../domain/hard_constraints.js").HardConstraintResult>;
 }
 
 export function makeWorkspaceExtraSurface(deps: ContinuityFaces): WorkspaceExtraSurface {
@@ -51,6 +57,10 @@ export function makeWorkspaceExtraSurface(deps: ContinuityFaces): WorkspaceExtra
     evaluateOutcome: (input) => {
       if (deps.domainOutcome === undefined) throw new Error("this deployment composes no domain-outcome service");
       return deps.domainOutcome.evaluate(input);
+    },
+    checkHardConstraint: (input) => {
+      if (deps.domainOutcome === undefined) throw new Error("this deployment composes no domain-outcome service");
+      return deps.domainOutcome.checkHardConstraint(input);
     },
   };
 }

@@ -221,7 +221,9 @@ describe("CI2 §6 — the Finish route's authorized completion behaviour", () =>
 
     const artifactAtom = byPredicate.get("expected_files_exist")!;
     expect(artifactAtom.command).toBeNull();
-    expect(artifactAtom.value).toEqual({ paths: ["src/dedupe.ts"], missing: [] });
+    expect(artifactAtom.value).toMatchObject({ paths: ["src/dedupe.ts"], missing: [] });
+    // R1 adds the exact declared-artifact identity; it is additive, and the value remains the same fact.
+    expect((artifactAtom.value as { paths_digest?: string }).paths_digest).toMatch(/^[0-9a-f]{64}$/u);
 
     /**
      * THE REFERENCE GAP THIS STAGE EXISTS TO CLOSE.

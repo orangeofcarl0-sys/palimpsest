@@ -204,9 +204,15 @@ export async function runProductCommand(command: string, options: Options, posit
     const [, subcommand, proposalId] = positional;
     const installed = openProduct(profile);
     try {
-      if (subcommand === undefined) throw new Error("usage: palimpsest review <list|preview|approve|reject|request-changes|apply|verify-source|propose-plan> …");
+      if (subcommand === undefined) throw new Error("usage: palimpsest review <list|adopt|preview|approve|reject|request-changes|apply|verify-source|propose-plan> …");
       if (subcommand === "list") {
-        console.log(JSON.stringify(installed.review.list(), null, 2));
+        // R5: list also performs the verified, idempotent adoption of structured Journal proposals,
+        // so a model-originated proposal appears in the normal Operator Review experience.
+        console.log(JSON.stringify(await installed.review.listAll(), null, 2));
+        return true;
+      }
+      if (subcommand === "adopt") {
+        console.log(JSON.stringify(await installed.review.adoptJournalProposal(proposalId ?? ""), null, 2));
         return true;
       }
       if (subcommand === "preview") {

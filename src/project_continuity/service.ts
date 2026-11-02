@@ -35,6 +35,9 @@ function item(input: {
   applicability?: string | undefined;
   adoptionBasis?: string | undefined;
   reopenConditions?: readonly string[] | undefined;
+  historicalAcceptance?: "ACCEPTED" | undefined;
+  currentApplicability?: "APPLICABLE" | "CONTRADICTED" | "SUPERSEDED" | "UNKNOWN" | undefined;
+  applicabilityBasis?: string | undefined;
 }): ContinuityItem {
   return Object.freeze({
     id: input.id,
@@ -46,6 +49,9 @@ function item(input: {
     applicability: input.applicability ?? "this project, at the recorded basis",
     ...(input.adoptionBasis === undefined ? {} : { adoptionBasis: input.adoptionBasis }),
     reopenConditions: Object.freeze([...(input.reopenConditions ?? [])]),
+    ...(input.historicalAcceptance === undefined ? {} : { historicalAcceptance: input.historicalAcceptance }),
+    ...(input.currentApplicability === undefined ? {} : { currentApplicability: input.currentApplicability }),
+    ...(input.applicabilityBasis === undefined ? {} : { applicabilityBasis: input.applicabilityBasis }),
   });
 }
 
@@ -119,20 +125,31 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
         .map((fact) => taskByAttempt.get(fact.attemptId))
         .filter((taskId): taskId is string => typeof taskId === "string"),
     );
-    const acceptedResults = input.work
-      .promotionFacts()
-      .map((fact) =>
-        item({
-          id: `promotion:${fact.promotionId}`,
-          standing: "ACCEPTED_FOR_PURPOSE",
-          title: `Accepted result for ${taskByAttempt.get(fact.attemptId) ?? "a completed task"}`,
-          detail: `source commit ${fact.sourceCommit} was promoted onto ${fact.expectedHeadCommit}; resulting head ${fact.resultingHeadCommit}`,
-          sourceRefs: [`promotion:${fact.promotionId}`, `commit:${fact.sourceCommit}`, `commit:${fact.resultingHeadCommit}`],
-          basis,
-          adoptionBasis: "the promotion effect recorded by the canonical Promotion path",
-          reopenConditions: ["a later accepted source revision or a re-evaluation of the result's subject"],
-        }),
-      );
+    const promotionFacts = input.work.promotionFacts();
+    const lastPromotionByTask = new Map<string, string>();
+    for (const fact of promotionFacts) {
+      const taskId = taskByAttempt.get(fact.attemptId);
+      if (taskId !== undefined && taskId !== null) lastPromotionByTask.set(taskId, fact.promotionId);
+    }
+    const acceptedResults = promotionFacts.map((fact) => {
+      const taskId = taskByAttempt.get(fact.attemptId) ?? null;
+      const superseded = taskId !== null && lastPromotionByTask.get(taskId) !== fact.promotionId;
+      return item({
+        id: `promotion:${fact.promotionId}`,
+        standing: "ACCEPTED_FOR_PURPOSE",
+        title: `Accepted result for ${taskId ?? "a completed task"}`,
+        detail: `source commit ${fact.sourceCommit} was promoted onto ${fact.expectedHeadCommit}; resulting head ${fact.resultingHeadCommit}`,
+        sourceRefs: [`promotion:${fact.promotionId}`, `commit:${fact.sourceCommit}`, `commit:${fact.resultingHeadCommit}`],
+        basis,
+        adoptionBasis: "the promotion effect recorded by the canonical Promotion path",
+        reopenConditions: ["a later accepted source revision or a re-evaluation of the result's subject"],
+        historicalAcceptance: "ACCEPTED",
+        currentApplicability: superseded ? "SUPERSEDED" : "UNKNOWN",
+        applicabilityBasis: superseded
+          ? "a later accepted result for the same task exists; the earlier result remains historical"
+          : "no current-world compatibility assessment is composed for this result; historical acceptance is not proof that it still applies",
+      });
+    });
 
     const candidates: ContinuityItem[] = [];
     for (const task of status.tasks) {
@@ -257,10 +274,24 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
     const ready = pendingWork.filter((task) => task.state === "READY");
     const active = pendingWork.filter((task) => task.state === "ACTIVE");
     const running = status.attempts.filter((attempt) => attempt.state === "RUNNING");
-    if (blocked.length > 0) nextActions.push("operator: recover the pending canonical effect before starting dependent work");
-    if (verifying.length > 0) nextActions.push("operator: review the delivered result and accept or reject it");
-    if (ready.length > 0) nextActions.push("agent: palimpsest_work action=next (mechanical step is legal)");
-    if (active.length > 0 && running.length > 0) nextActions.push("agent: palimpsest_work action=complete when the work is done");
+    /**
+     * R2: the Work owner's pure explanation is the ONE source of the formal next action. The old
+     * broad-state inference remains only for a compatibility projection that does not carry it.
+     */
+    if (status.nextAction !== undefined) {
+      if (status.nextAction.executable && status.nextAction.action !== null) {
+        nextActions.push(`agent: ${status.nextAction.action}`);
+      } else {
+        nextActions.push(
+          `${status.nextAction.kind.startsWith("WAIT_OPERATOR") ? "operator" : "agent"}: ${status.nextAction.detail}`,
+        );
+      }
+    } else {
+      if (blocked.length > 0) nextActions.push("operator: recover the pending canonical effect before starting dependent work");
+      if (verifying.length > 0) nextActions.push("operator: review the delivered result and accept or reject it");
+      if (ready.length > 0) nextActions.push("agent: palimpsest_work action=next (mechanical step is legal)");
+      if (active.length > 0 && running.length > 0) nextActions.push("agent: palimpsest_work action=complete when the work is done");
+    }
     if (openQuestions.length > 0) nextActions.push("agent: address an open question by investigation or a proposal; do not treat it as accepted");
     if (pendingWork.length === 0 && verifying.length === 0) nextActions.push("agent: propose the next bounded step in the project journal");
     if (nextActions.length === 0) nextActions.push("status is quiescent; read the recent journal before proposing a change");
@@ -281,6 +312,11 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
       candidates,
       negativeFindings,
       openQuestions,
+      recentChanges: entries.slice(-6).map((entry) => ({
+        id: `journal:${entry.entry.entryId}`,
+        kind: entry.entry.kind,
+        title: entry.entry.title,
+      })),
       tasks,
       pendingWork,
       blocked,
@@ -341,17 +377,43 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
       const budgetBytes = Math.max(MIN_CAPSULE_BYTES, Math.trunc(requested));
       const omitted: string[] = [];
       const usedRefs = new Set<string>();
+      /**
+       * Decision-oriented order: binding constraints and the current blocker come before history;
+       * negative findings and unresolved assumptions come before candidate optimism; the legal next
+       * action comes before the long accepted-result list. The explicit omission/byte budget is
+       * unchanged, so a section that does not fit is still NAMED rather than silently dropped.
+       */
       const sections: Array<{ readonly name: string; readonly text: string; readonly refs: readonly string[] }> = [
         { name: "goal", text: `# Project ${summary.projectId}\n\nGoal: ${summary.goal}\nBasis: revision ${summary.basis.projectRevision}, head ${summary.basis.headCommit.slice(0, 12)}, observed ${summary.basis.observedAt}\n`, refs: [] },
         {
           name: "requirements",
-          text: `## Binding requirements\n\n${summary.requirements.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
+          text: `## Binding requirements / hard constraints\n\n${summary.requirements.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
           refs: summary.requirements.flatMap((entry) => entry.sourceRefs),
         },
         {
-          name: "acceptedResults",
-          text: `## Accepted for purpose\n\n${summary.acceptedResults.length === 0 ? "(none)" : summary.acceptedResults.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
-          refs: summary.acceptedResults.flatMap((entry) => entry.sourceRefs),
+          name: "recentChanges",
+          text: `## Recent material changes\n\n${(summary.recentChanges ?? []).length === 0 ? "(none)" : (summary.recentChanges ?? []).map((entry) => `- ${entry.kind}: ${entry.title} (${entry.id})`).join("\n")}\n`,
+          refs: (summary.recentChanges ?? []).map((entry) => entry.id),
+        },
+        {
+          name: "blocked",
+          text: `## Current blocking / uncertain effects\n\n${summary.blocked.length === 0 ? "(none)" : summary.blocked.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
+          refs: summary.blocked.flatMap((entry) => entry.sourceRefs),
+        },
+        {
+          name: "negativeFindings",
+          text: `## Important negative findings\n\n${summary.negativeFindings.length === 0 ? "(none)" : summary.negativeFindings.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
+          refs: summary.negativeFindings.flatMap((entry) => entry.sourceRefs),
+        },
+        {
+          name: "openQuestions",
+          text: `## Unresolved assumptions / interpretations\n\n${summary.openQuestions.length === 0 ? "(none)" : summary.openQuestions.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
+          refs: summary.openQuestions.flatMap((entry) => entry.sourceRefs),
+        },
+        {
+          name: "nextActions",
+          text: `## Permissible next actions\n\n${summary.nextActions.map((line) => `- ${line}`).join("\n")}\n`,
+          refs: [],
         },
         {
           name: "candidates",
@@ -359,14 +421,9 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
           refs: summary.candidates.flatMap((entry) => entry.sourceRefs),
         },
         {
-          name: "negativeFindings",
-          text: `## Negative findings\n\n${summary.negativeFindings.length === 0 ? "(none)" : summary.negativeFindings.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
-          refs: summary.negativeFindings.flatMap((entry) => entry.sourceRefs),
-        },
-        {
-          name: "openQuestions",
-          text: `## Open questions / interpretations\n\n${summary.openQuestions.length === 0 ? "(none)" : summary.openQuestions.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
-          refs: summary.openQuestions.flatMap((entry) => entry.sourceRefs),
+          name: "acceptedResults",
+          text: `## Historical acceptance and current applicability\n\n${summary.acceptedResults.length === 0 ? "(none)" : summary.acceptedResults.map((entry) => `- ${entry.title}: ${entry.detail}${entry.currentApplicability === undefined ? "" : ` [historical=${entry.historicalAcceptance ?? "ACCEPTED"}; current=${entry.currentApplicability}]`}`).join("\n")}\n`,
+          refs: summary.acceptedResults.flatMap((entry) => entry.sourceRefs),
         },
         {
           name: "pendingWork",
@@ -374,18 +431,8 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
           refs: summary.tasks.map((task) => `task:${task.taskId}`),
         },
         {
-          name: "blocked",
-          text: `## Blocked / uncertain effects\n\n${summary.blocked.length === 0 ? "(none)" : summary.blocked.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
-          refs: summary.blocked.flatMap((entry) => entry.sourceRefs),
-        },
-        {
           name: "authority",
           text: `## Authority boundaries\n\n${summary.authorizationBoundaries.map((line) => `- ${line}`).join("\n")}\n`,
-          refs: [],
-        },
-        {
-          name: "nextActions",
-          text: `## Next legal actions\n\n${summary.nextActions.map((line) => `- ${line}`).join("\n")}\n`,
           refs: [],
         },
       ];

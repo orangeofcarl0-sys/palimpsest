@@ -92,6 +92,12 @@ export interface ProjectWorkspaceApplicationSurface extends WorkspaceExtraSurfac
     readonly artifactPath?: string | null | undefined;
     readonly parameters?: Readonly<Record<string, unknown>> | undefined;
   }): Promise<import("../../domain_outcome/index.js").DomainEvaluation>;
+  /** PC1-V1 R7: a deterministic hard-constraint check over explicit inputs. */
+  checkHardConstraint(input: {
+    readonly kind: import("../../domain/hard_constraints.js").HardConstraintKind;
+    readonly parameters: Readonly<Record<string, unknown>>;
+    readonly taskId?: string | null | undefined;
+  }): Promise<import("../../domain/hard_constraints.js").HardConstraintResult>;
 }
 
 /**

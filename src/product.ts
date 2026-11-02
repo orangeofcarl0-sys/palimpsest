@@ -23,6 +23,7 @@ import type { ExecutionMode } from "./composition/install_contract.js";
 import type { GitPort } from "./effects/index.js";
 import type { DshPluginContext } from "./tools/dsh_types.js";
 import { makeReviewService, SqliteReviewStore, type OperatorAuthorityPort, type ReviewService } from "./project_review/index.js";
+import type { PromotionSourceIntakeAdmissionPort } from "./domain/promotion_eligibility.js";
 
 export interface InstallProductOptions {
   readonly projectId: string;
@@ -73,6 +74,15 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
   const toolProfile = options.toolProfile ?? "normal";
   const journal = new SqliteProjectJournalStore(journalPath);
   const associations = new SqliteProjectAssetAssociationStore(associationPath);
+  /**
+   * R6: the review owner is created AFTER the Work controller, so the admission port is a stable,
+   * late-bound read. Before the binding it answers `null` (no intake requirement); after it, every
+   * promotion assessment sees the exact approved-source binding.
+   */
+  let reviewRef: ReviewService | undefined;
+  const sourceIntakeAdmission: PromotionSourceIntakeAdmissionPort = {
+    read: (input) => reviewRef?.sourceIntakeAdmissionForAttempt(input) ?? null,
+  };
   const installed = installPalimpsest(context, {
     ...(options.advanced ?? {}),
     projectId: options.projectId,
@@ -88,6 +98,7 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
     ...(options.projectIntentAdmission === undefined ? {} : { projectIntentAdmission: options.projectIntentAdmission }),
     projectJournalStore: journal,
     projectAssociationStore: associations,
+    sourceIntakeAdmission,
   });
   const reviewPath = join(stateDir, "review.sqlite");
   const reviewStore = new SqliteReviewStore(reviewPath);
@@ -102,7 +113,37 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
     repository: options.repository,
     ...(options.operatorAuthority === undefined ? {} : { operatorAuthority: options.operatorAuthority }),
     ...(options.clock === undefined ? {} : { clock: options.clock }),
+    /**
+     * R5: the ONE verified adoption path. It reads the already-composed journal rather than creating
+     * a second proposal store, and an approved ACTION is written back as a non-canonical note.
+     */
+    ...(installed.projectWorkspace === undefined
+      ? {}
+      : {
+          journal: {
+            entries: async () =>
+              (await installed.projectWorkspace!.journal(options.projectId)).map(({ entry }) => ({
+                entryId: entry.entryId,
+                kind: entry.kind,
+                title: entry.title,
+                body: entry.body,
+                provenance: entry.provenance,
+                digest: entry.digest,
+              })),
+            recordApprovedAction: async (input: { title: string; body: string; provenance: string }) => {
+              const entry = await installed.projectWorkspace!.recordJournalEntry({
+                projectId: options.projectId,
+                kind: "REFERENCE_NOTE",
+                title: input.title,
+                body: input.body,
+                provenance: input.provenance,
+              });
+              return { entryId: entry.entryId, digest: entry.digest };
+            },
+          },
+        }),
   });
+  reviewRef = review;
   const dispose = installed.dispose;
   return {
     ...installed,

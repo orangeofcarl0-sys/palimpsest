@@ -4,6 +4,7 @@ import { isAbsolute, resolve } from "node:path";
 
 import { canonicalDigest } from "../schema/canonical.js";
 import type { ProjectJournalEntry, ProjectJournalViewEntry } from "../project_workspace/journal.js";
+import { evaluateHardConstraint, type HardConstraintKind, type HardConstraintResult } from "../domain/hard_constraints.js";
 import { BUILT_IN_DOMAIN_CONTRACTS } from "./contracts.js";
 import type {
   DomainContract,
@@ -13,6 +14,7 @@ import type {
 } from "./types.js";
 
 const MARKER = "<!-- pc1-domain-outcome:v1 -->";
+const HARD_CONSTRAINT_MARKER = "<!-- pc1-hard-constraint:v1 -->";
 
 export interface DomainOutcomeWorkspace {
   journal(projectId?: string): Promise<readonly ProjectJournalViewEntry[]>;
@@ -43,6 +45,15 @@ export interface EvaluateDomainOutcomeInput {
 export interface DomainOutcomeService {
   contracts(): readonly { readonly contractId: string; readonly version: string; readonly question: string; readonly requiredInputs: readonly string[] }[];
   evaluate(input: EvaluateDomainOutcomeInput): Promise<DomainEvaluation>;
+  /**
+   * R7: evaluate a mechanical business constraint over explicit inputs and record the result as a
+   * non-canonical note. It is a calculator, not a truth owner; the caller cannot choose the status.
+   */
+  checkHardConstraint(input: {
+    readonly kind: HardConstraintKind;
+    readonly parameters: Readonly<Record<string, unknown>>;
+    readonly taskId?: string | null | undefined;
+  }): Promise<HardConstraintResult>;
   project(): Promise<readonly DomainEvaluation[]>;
   projectTasks(input: {
     readonly tasks: readonly { readonly taskId: string; readonly state: string }[];
@@ -146,6 +157,28 @@ export function makeDomainOutcomeService(deps: DomainOutcomeServiceDeps): Domain
         provenance: `contract:${contract.contractId}@${contract.version}${artifactDigest === null ? "" : `; artifact:sha256:${artifactDigest}`}`,
       });
       return evaluation;
+    },
+    async checkHardConstraint(input) {
+      const checked = evaluateHardConstraint({ kind: input.kind, parameters: input.parameters });
+      const scope = input.taskId === undefined || input.taskId === null ? "project" : input.taskId;
+      await deps.workspace.recordJournalEntry({
+        kind: "REFERENCE_NOTE",
+        title: `Hard constraint ${input.kind} (${checked.status}) for ${scope}`,
+        body: [
+          "## Mechanical hard-constraint check",
+          "",
+          `Kind: ${input.kind}`,
+          `Status: ${checked.status}`,
+          `Detail: ${checked.detail}`,
+          "",
+          `Assumptions:\n${checked.assumptions.map((entry) => `- ${entry}`).join("\n")}`,
+          "",
+          HARD_CONSTRAINT_MARKER,
+          JSON.stringify(checked),
+        ].join("\n"),
+        provenance: `hard-constraint:${input.kind}; subject:${scope}`,
+      });
+      return checked;
     },
     async project() {
       const entries = await deps.workspace.journal();

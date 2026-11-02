@@ -150,9 +150,9 @@ if (application.collaboration !== undefined) {
       tool({
         name: "palimpsest_delegate",
         description:
-          "DELEGATE ONE RESEARCH QUESTION AND CARRY ON (PLMP-LEAN-1 §C.14): use this when a question would genuinely improve your next decision, but answering it is not the work you are doing — 顺便研究一下 / 后台查一下 / 同时研究这个问题, or English equivalents such as look into this in the background, research this while I keep working, find out whether … BEFORE I decide. `start` [mutating] returns IMMEDIATELY: it opens an EPHEMERAL exploratory reasoning branch against a FROZEN snapshot of this project's committed HEAD (the delegation's read basis) and runs it on the same cognition backend as `palimpsest_collaborate`. Do NOT wait, do NOT poll and do NOT call `status` in a loop — a terminal result is delivered to YOU on its own, as a follow-up message naming its basis and its conclusion. Keep doing your own work in the meantime; delegating never blocks and never requires `palimpsest_begin`. The result is cell-local EXPLORATORY standing: it is NOT Evidence, NOT verified truth and NOT a project verification, and nothing about it creates a Task, an Attempt or a promotion. Re-issuing the SAME task on the SAME basis returns the SAME delegation (it never runs twice), and on a NEW basis it is a new one. `status` [read-only] and `inspect` [read-only] exist for restart recovery and explicit drill-down: an OPEN branch with no live job reports INTERRUPTED — honest, never a claim that a worker is still running, and v1 does not re-run it. `kind` is RESEARCH only for now.",
+          "DELEGATE ONE RESEARCH QUESTION AND CARRY ON (PLMP-LEAN-1 §C.14): use this when a question would genuinely improve your next decision, but answering it is not the work you are doing — 顺便研究一下 / 后台查一下 / 同时研究这个问题, or English equivalents such as look into this in the background, research this while I keep working, find out whether … BEFORE I decide. `start` [mutating] returns IMMEDIATELY: it opens an EPHEMERAL exploratory reasoning branch against a FROZEN snapshot of this project's committed HEAD (the delegation's read basis) and runs it on the same cognition backend as `palimpsest_collaborate`. Do NOT wait, do NOT poll and do NOT call `status` in a loop — a terminal result is delivered to YOU on its own, as a follow-up message naming its basis and its conclusion. Keep doing your own work in the meantime; delegating never blocks and never requires `palimpsest_begin`. The result is cell-local EXPLORATORY standing: it is NOT Evidence, NOT verified truth and NOT a project verification, and nothing about it creates a Task, an Attempt or a promotion. `inspect` returns the projected Handoff/Receipt, including an explicit DECLARED (not observed) read footprint. `consume` [mutating] records YOUR decision about a terminal finding as a non-canonical Journal note; it does not accept the finding or make it Evidence. Re-issuing the SAME task on the SAME basis returns the SAME delegation (it never runs twice), and on a NEW basis it is a new one. `status` [read-only] and `inspect` [read-only] exist for restart recovery and explicit drill-down: an OPEN branch with no live job reports INTERRUPTED — honest, never a claim that a worker is still running, and v1 does not re-run it. `kind` is RESEARCH only for now.",
         mode: "mutating",
-        actions: ["start", "status", "inspect"],
+        actions: ["start", "status", "inspect", "consume"],
         extraProperties: {
           task: {
             type: "string",
@@ -166,12 +166,64 @@ if (application.collaboration !== undefined) {
           },
           delegationRef: {
             type: "string",
-            description: "the opaque ref returned by `start`, required by `status`/`inspect` (never construct one yourself)",
+            description: "the opaque ref returned by `start`, required by `status`/`inspect`/`consume` (never construct one yourself)",
+          },
+          decisionNote: {
+            type: "string",
+            description: "for consume: what you decided to do with the terminal finding, in your own words",
+          },
+          changedPlan: {
+            type: "boolean",
+            description: "for consume: whether the finding actually changed your plan or synthesis",
           },
         },
         run: async (action, object) => {
           if (action === "status") return delegation.status({ delegationRef: requiredString(object, "delegationRef") });
           if (action === "inspect") return delegation.inspect({ delegationRef: requiredString(object, "delegationRef") });
+          if (action === "consume") {
+            const delegationRef = requiredString(object, "delegationRef");
+            const decisionNote = requiredString(object, "decisionNote");
+            const changedPlan = object.changedPlan === true;
+            if (object.changedPlan !== undefined && typeof object.changedPlan !== "boolean") {
+              throw new ToolArgsError('argument "changedPlan" must be a boolean when given');
+            }
+            const consumed = await delegation.consume({ delegationRef, decisionNote, changedPlan });
+            const workspace = application.projectWorkspace;
+            if (workspace === undefined) {
+              throw new ToolArgsError("this deployment composes no project journal, so consumption cannot be recorded");
+            }
+            const marker = "<!-- pc1-consumption:v1 -->";
+            const entries = await workspace.journal();
+            const existing = entries.find(
+              (entry) => entry.entry.body.includes(marker) && entry.entry.body.includes(delegationRef),
+            );
+            if (existing !== undefined) {
+              return { ...consumed, journalRef: existing.entry.entryId, alreadyRecorded: true };
+            }
+            const body = [
+              "## Delegation consumption (non-canonical)",
+              "",
+              `Decision: ${decisionNote}`,
+              `Changed the plan: ${String(changedPlan)}`,
+              "",
+              `Delegation: ${delegationRef}`,
+              `Terminal state: ${consumed.state}`,
+              "",
+              "```json",
+              JSON.stringify(consumed.receipt, null, 2),
+              "```",
+              "",
+              marker,
+              JSON.stringify({ schema: "pc1-consumption/v1", delegationRef, decisionNote, changedPlan, receipt: consumed.receipt }),
+            ].join("\n");
+            const entry = await workspace.recordJournalEntry({
+              kind: "REFERENCE_NOTE",
+              title: `Consumed delegation: ${delegationRef.slice(0, 40)}`,
+              body,
+              provenance: `delegation:${delegationRef}`,
+            });
+            return { ...consumed, journalRef: entry.entryId, alreadyRecorded: false };
+          }
           const kind = object.kind;
           if (kind !== undefined && kind !== "RESEARCH") {
             throw new ToolArgsError('argument "kind" must be "RESEARCH" (WORK and cross-project are not delegated here)');
