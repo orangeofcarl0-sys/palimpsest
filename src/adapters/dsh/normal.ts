@@ -147,16 +147,19 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         });
       }
       if (action === "complete") {
-        if (work.placement() !== "in-place") {
-          return {
-            state: "PLACED_WORK_PENDING_HOST_SETTLEMENT",
-            detail:
-              "this deployment places work in an isolated world; that attempt is settled by the host worker's own report path, not by a principal calling finish. Use `palimpsest_work action=run` to drive the plan and `palimpsest_work action=status` to see the terminal state.",
-            nextActions: ["palimpsest_work action=run", "palimpsest_work action=status"],
-          };
-        }
         const summary = object.summary;
         if (summary !== undefined && typeof summary !== "string") throw new ToolArgsError('argument "summary" must be a string when given');
+        if (work.placement() !== "in-place") {
+          const result = await work.completePlaced(summary === undefined ? {} : { summary });
+          return {
+            state: result.state,
+            resultCommit: result.resultCommit,
+            changedFiles: result.changedFiles,
+            evidenceRecorded: result.evidenceRecorded,
+            nextEvidenceNeeded: result.nextEvidenceNeeded,
+            nextActions: ["an operator must review and accept the delivered result"],
+          };
+        }
         const result = await work.finish(summary === undefined ? {} : { summary });
         return {
           state: result.state,

@@ -107,6 +107,20 @@ export interface WorkApplicationSurface {
     };
   }>;
   /**
+   * PC1 S02-R02: close the CURRENT placed attempt through the existing settlement owner. This is the
+   * principal-facing equivalent of `finish` for a deployment that places work in an isolated world:
+   * the product observes the world, exports the result, evaluates the completion contract and reports
+   * the attempt. It refuses when there is not exactly one RUNNING attempt.
+   */
+  completePlaced(input?: { readonly summary?: string | undefined } | undefined): Promise<{
+    readonly attemptId: string;
+    readonly state: "COMPLETED";
+    readonly resultCommit: string;
+    readonly changedFiles: readonly string[];
+    readonly evidenceRecorded: readonly string[];
+    readonly nextEvidenceNeeded: readonly string[];
+  }>;
+  /**
    * PLMP-LEAN-1 §5 / 2A-Q: readiness in two layers — what the DEPLOYMENT can do, and what the
    * CURRENT task requires. The deployment layer is answerable at startup; the task layer only once a
    * task exists. A deployment gap ("no independent verifier") is a task blocker only when this task
@@ -170,6 +184,33 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
             verdict,
             detail: outcome.detail,
           },
+        };
+      },
+      completePlaced: async (input) => {
+        const running = deps.controller.status().attempts.filter((attempt) => attempt.state === "RUNNING");
+        if (running.length !== 1) {
+          throw new Error(
+            running.length === 0
+              ? "no RUNNING attempt is available to complete; use `palimpsest_work action=run` to reach one"
+              : `${String(running.length)} attempts are RUNNING; the product refuses to guess which one this completion closes`,
+          );
+        }
+        const attemptId = running[0]!.attempt_id;
+        const settled = await deps.controller.settleMutatingWork({
+          attemptId,
+          workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input?.summary === undefined ? {} : { detail: input.summary }) },
+        });
+        if (settled.state !== "SETTLED") {
+          throw new Error(`${settled.state}: ${settled.detail}`);
+        }
+        deps.controller.step();
+        return {
+          attemptId,
+          state: "COMPLETED" as const,
+          resultCommit: settled.resultCommit,
+          changedFiles: settled.changedFiles,
+          evidenceRecorded: settled.evidenceRecorded,
+          nextEvidenceNeeded: Object.freeze([]),
         };
       },
       begin: (input) => deps.controller.begin(input),

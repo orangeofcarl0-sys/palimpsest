@@ -488,6 +488,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "repository",
       "execution",
       "concurrency",
+      "toolProfile",
       "policy",
       "standard",
       "persistentPoint",
