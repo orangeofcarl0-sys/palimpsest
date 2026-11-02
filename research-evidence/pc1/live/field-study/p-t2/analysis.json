@@ -1,0 +1,83 @@
+{
+  "schema": "pc1-session-analysis/v1",
+  "at": "2026-11-02T14:49:45.850Z",
+  "paths": [
+    "research-evidence\\pc1\\live\\field-study\\p-t2\\session\\session.v4.jsonl.zstd"
+  ],
+  "streams": [
+    {
+      "path": "research-evidence\\pc1\\live\\field-study\\p-t2\\session\\session.v4.jsonl.zstd",
+      "sessionId": "session-a4b9cffe-3969-4c3b-8e23-df36b91797d9",
+      "complete": true,
+      "frames": 87,
+      "truncatedFrames": 0,
+      "malformedLines": 0,
+      "toolCalls": 41,
+      "toolResults": 41,
+      "catalogue": [
+        [
+          "bash",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "palimpsest_collaborate",
+          "palimpsest_continuity",
+          "palimpsest_outcome",
+          "palimpsest_project",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "palimpsest_work",
+          "read",
+          "read_image",
+          "skill",
+          "todo_write",
+          "update_goal",
+          "working_directory",
+          "write"
+        ]
+      ]
+    }
+  ],
+  "account": {
+    "sessionCount": 1,
+    "totals": {
+      "inputTokens": 37311,
+      "outputTokens": 24199,
+      "cacheReadTokens": 621568,
+      "cacheWriteTokens": 0,
+      "totalTokens": 683078,
+      "usageEvents": 16
+    },
+    "problems": [],
+    "sessions": [
+      {
+        "sessionId": "session-a4b9cffe-3969-4c3b-8e23-df36b91797d9",
+        "streams": 1,
+        "complete": true,
+        "providerErrors": 0,
+        "assistantMessages": 16,
+        "usageEvents": 16,
+        "duplicateEvents": 0,
+        "missingUsageMessages": 0,
+        "inputTokens": 37311,
+        "outputTokens": 24199,
+        "cacheReadTokens": 621568,
+        "cacheWriteTokens": 0,
+        "totalTokens": 683078,
+        "classification": {
+          "classification": "OBSERVED",
+          "reason": null
+        }
+      }
+    ]
+  },
+  "interpretation": "This is a mechanical analysis of session events. OBSERVED means the turn completed; it does not mean the answer was correct or useful. Deterministic tests are not a substitute for a live model result."
+}

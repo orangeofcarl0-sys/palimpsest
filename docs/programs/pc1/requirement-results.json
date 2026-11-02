@@ -719,96 +719,112 @@
       "requirementId": "S08-R01",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED_DETERMINISTIC",
-      "live": "BLOCKED",
-      "comparison": "NOT_RUN",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "research-evidence/pc1/s08/acceptance.json"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "Sablewick staging, T1/T2 visibility, F/P equivalence; live pair blocked",
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
       "blockers": []
     },
     {
       "requirementId": "S08-R02",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED_DETERMINISTIC",
-      "live": "BLOCKED",
-      "comparison": "NOT_RUN",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "research-evidence/pc1/s08/acceptance.json"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "field-study staging with independent roles/updates; live pair blocked",
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
       "blockers": []
     },
     {
       "requirementId": "S08-R03",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED_EQUIVALENCE",
-      "live": "BLOCKED",
-      "comparison": "NOT_RUN",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "scripts/pc1/acceptance.mjs"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "P/F fact and visible-set equivalence; no live matched pair",
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
       "blockers": []
     },
     {
       "requirementId": "S08-R04",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED_GATE",
-      "live": "BLOCKED",
-      "comparison": "NOT_RUN",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "scripts/pc1/run_pair.mjs"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "live runner refuses without spend/provider/profile/runtime",
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
       "blockers": []
     },
     {
       "requirementId": "S08-R05",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED",
-      "live": "BLOCKED",
-      "comparison": "NOT_RUN",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "scripts/pc1/analyze.mjs"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "session stream analysis pipeline",
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
       "blockers": []
     },
     {
       "requirementId": "S08-R06",
       "implementation": "IMPLEMENTED",
       "deterministic": "NOT_RUN",
-      "live": "BLOCKED",
-      "comparison": "BLOCKED",
+      "live": "NOT_ESTABLISHED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "docs/programs/pc1/S08-EVALUATION.md"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "requires live agents and accepted outcomes",
+      "notes": "single-principal only; no real independent subagents, so no multi-agent synthesis claim; paired outcomes recorded",
       "blockers": []
     },
     {
       "requirementId": "S08-R07",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED_EQUIVALENCE",
-      "live": "BLOCKED",
-      "comparison": "NOT_RUN",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "research-evidence/pc1/s08/acceptance.json"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "basis/visible-set digests recorded; oracle not copied",
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
       "blockers": []
     },
     {
       "requirementId": "S08-R08",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED_WITH_LIVE_BLOCK",
-      "live": "BLOCKED",
-      "comparison": "NOT_RUN",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "docs/programs/pc1/S08-EVALUATION.md"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "failures classified as resource/environment; no new router/owner",
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
       "blockers": []
     },
     {
@@ -943,12 +959,14 @@
       "requirementId": "S10-R04",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED",
-      "live": "BLOCKED",
-      "comparison": "BLOCKED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "docs/programs/pc1/S10-FINAL-REPORT.md"
+        "docs/programs/pc1/S10-FINAL-REPORT.md",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md",
+        "research-evidence/pc1/live/outcomes.json"
       ],
-      "notes": "four judgments reported separately; no live/comparative claim",
+      "notes": "four judgments updated with 8 real sessions; mixed/no-superiority verdict",
       "blockers": []
     },
     {
@@ -968,12 +986,12 @@
       "requirementId": "S10-R06",
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED",
-      "live": "BLOCKED",
-      "comparison": "BLOCKED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "evidence": [
-        "docs/programs/pc1/S10-FINAL-REPORT.md"
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ],
-      "notes": "one recommendation: matched live pilot under new budget; no expansion claim",
+      "notes": "one recommendation: narrow governance, fix VERIFYING deadlock, normal command evidence and in-place boundary",
       "blockers": []
     },
     {

@@ -1,0 +1,35 @@
+Read `HANDOFF.md`, reviewed the full inbox including the 2026-02-14 arrivals, and continued the `technical-refresh` task without treating any unaccepted item as authority.
+
+## Key findings
+
+**Accepted evidence**
+- Canonical capabilities still record **V3 at -10 C**.
+- The historical accepted selection remains **A: V1; B: V3; C: V3**.
+- No canonical source was changed.
+
+**New inbox evidence — unaccepted**
+- `2026-02-14/vendor-capabilities-corrected.csv` — sha256 `14ffdd…7bc91` — a genuine correction candidate: V4’s coastal warranty changes to `yes`, but V3 remains at `0 C`.
+- `2026-02-14/vendor-capabilities.csv` — sha256 `0e997c…f920c` — **duplicate delivery**, byte-identical to the 2026-02-10 bulletin. It is not a correction and adds no evidence.
+
+**Latest candidate assessment**
+- Site A: **V1** compliant.
+- Site B: **V4 only if the corrected candidate is accepted**; V3 at 0 C fails the -4 C requirement, and V1/V2 lack coastal warranties.
+- Under the uncorrected 2026-02-10 bulletin, **no compliant Site B vendor exists**.
+- Site C: **V3** remains compliant; V2 is also technically viable.
+
+**Negative findings retained**
+- V2 is not suitable below -5 C due to the 2023 Marsh Lane cold-start failure.
+- V2 has no coastal warranty, so Site B’s V2 option remains dismissed.
+- The Solaris V3 certificate is still only a promise, with no document, number, issuer or test standard.
+
+**Open questions**
+- Which capability data is authoritative: accepted V3 `-10 C` or candidate V3 `0 C`.
+- Whether the operator will accept the corrected candidate at exact digest `14ffdd…7bc91`.
+- Site B procurement remains unresolved until that decision is recorded.
+
+## Artifacts
+- Created `deliverables/technical-refresh.md`.
+- Created `proposal.md` requesting an independent operator decision on the corrected candidate.
+- Appended a 2026-02-14 update to `HANDOFF.md`.
+- Committed as `e09caf3`.
+- `npm test` passes; canonical source hashes are unchanged.

@@ -1,0 +1,74 @@
+{
+  "schema": "pc1-session-analysis/v1",
+  "at": "2026-11-02T14:56:59.543Z",
+  "paths": [
+    "research-evidence\\pc1\\live\\field-study\\f-t2\\session\\session.v4.jsonl.zstd"
+  ],
+  "streams": [
+    {
+      "path": "research-evidence\\pc1\\live\\field-study\\f-t2\\session\\session.v4.jsonl.zstd",
+      "sessionId": "session-2d7280f4-f4ee-410f-83b3-f9305b352fe9",
+      "complete": true,
+      "frames": 253,
+      "truncatedFrames": 0,
+      "malformedLines": 0,
+      "toolCalls": 74,
+      "toolResults": 74,
+      "catalogue": [
+        [
+          "bash",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "read",
+          "read_image",
+          "skill",
+          "todo_write",
+          "update_goal",
+          "working_directory",
+          "write"
+        ]
+      ]
+    }
+  ],
+  "account": {
+    "sessionCount": 1,
+    "totals": {
+      "inputTokens": 51435,
+      "outputTokens": 50680,
+      "cacheReadTokens": 3670016,
+      "cacheWriteTokens": 0,
+      "totalTokens": 3772131,
+      "usageEvents": 61
+    },
+    "problems": [],
+    "sessions": [
+      {
+        "sessionId": "session-2d7280f4-f4ee-410f-83b3-f9305b352fe9",
+        "streams": 1,
+        "complete": true,
+        "providerErrors": 0,
+        "assistantMessages": 61,
+        "usageEvents": 61,
+        "duplicateEvents": 0,
+        "missingUsageMessages": 0,
+        "inputTokens": 51435,
+        "outputTokens": 50680,
+        "cacheReadTokens": 3670016,
+        "cacheWriteTokens": 0,
+        "totalTokens": 3772131,
+        "classification": {
+          "classification": "OBSERVED",
+          "reason": null
+        }
+      }
+    ]
+  },
+  "interpretation": "This is a mechanical analysis of session events. OBSERVED means the turn completed; it does not mean the answer was correct or useful. Deterministic tests are not a substitute for a live model result."
+}

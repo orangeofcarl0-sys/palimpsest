@@ -1,0 +1,20 @@
+Completed the 2026-03-09 late-state reassessment and committed it as `b93a57b`.
+
+## Key conclusions
+
+- **R4 is not met on the current trajectory.** The earlier plan’s hard-latest approval was **D7 = 2026-03-08**; no approval is recorded. At **D8 = 2026-03-09**, the conservative sequence finishes **D29 = 2026-03-30**. Only immediate approval plus confirmed same-day order release reaches D28 exactly, with no buffer.
+- **The 6,000 budget directive is not authority.** It is a candidate request, not an applied budget change. The stated cap remains **7,200** until an independent operator acts. If 6,000 is applied, the all-Reference baseline at **6,980** exceeds it by **980**; the mixed Echo-S1/Reference-S2/S3 design at **5,780** is the only affordable current candidate, but it is unverified at S1 and still has no same-model spare.
+- **Field validation was converted correctly.** `reference_mg_m3 × 1000 = µg/m³`. Echo errors at 85/90/95% RH are **+9.0/+11.0/+12.0 µg/m³**; Reference errors are **+0.6/+0.8/−0.8 µg/m³**. This is candidate evidence, not accepted. If accepted, it excludes Echo from S2/S3 and strengthens Reference, but does not close S1’s 35–44%/46–65% RH gaps or the 9–17/23–26 °C gaps.
+- **Newsletter:** no planning effect.
+- **No self-approval:** no source, budget change, design, purchase, or deployment is approved. Decisions **A1–A8** remain with the independent operator.
+
+## Files updated
+
+- `reviews/2026-03-09-reassessment.md` — new full reassessment
+- `reviews/evidence.md` — late field-validation and budget classification
+- `reviews/delivery.md` — schedule lapse and budget consequences
+- `study-plan.md` — late-state status and revised requirements/actions
+- `unresolved.md` — U10–U12 and approval requests A6–A8
+- `plan.json` — updated status, schedule, budget request, evidence, and approval register
+
+All committed; working tree is clean.

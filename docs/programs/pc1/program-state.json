@@ -1,7 +1,7 @@
 {
   "programId": "PALIMPSEST-PC1",
   "branch": "palimpsest-product-convergence-v1",
-  "lastCheckedCommit": "4757dd6e57efe08b207a89a6af371b9c6a67a002",
+  "lastCheckedCommit": "2ed32bc954f7961bf19d8531d62b8f8f4088b7dd",
   "updatedAt": "2026-11-02",
   "phases": {
     "S00": {
@@ -99,15 +99,15 @@
     "S08": {
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED",
-      "live": "BLOCKED",
-      "comparison": "BLOCKED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "blockers": [
-        "no spend authorization; no provider/profile for a live matched pair",
-        "the field-study live path needs a per-condition DSH profile"
+        "no real independent subagents were used; single-principal only"
       ],
       "evidence": [
-        "research-evidence/pc1/s08/acceptance.json",
-        "docs/programs/pc1/S08-EVALUATION.md"
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
       ]
     },
     "S09": {
@@ -126,24 +126,23 @@
     "S10": {
       "implementation": "IMPLEMENTED",
       "deterministic": "PASSED_WITH_ENVIRONMENT_LIMITS",
-      "live": "BLOCKED",
-      "comparison": "BLOCKED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
       "blockers": [
-        "no spend authorization for a live matched pair",
-        "full ordinary suite not cleanly observed on Windows due resource/file-lock contention",
-        "the field-study live path needs a per-condition DSH profile"
+        "full ordinary suite not cleanly observed on Windows due resource/file-lock contention"
       ],
       "evidence": [
         "docs/programs/pc1/S10-FINAL-REPORT.md",
-        "docs/programs/pc1/S10-PR-KIT.md",
-        "research-evidence/pc1/s10/"
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md",
+        "research-evidence/pc1/live/"
       ]
     }
   },
   "pendingEffects": [],
   "nextActions": [
-    "Commit the evidence freeze",
-    "Generate manifests from the evidence-freeze commit",
+    "Commit the live addendum and evidence",
+    "Run final build/architecture/public API and the curated integration suite",
+    "Regenerate code/evidence manifests from the final freeze",
     "Push the programme branch non-force (no PR)"
   ],
   "lastCheckpoint": {

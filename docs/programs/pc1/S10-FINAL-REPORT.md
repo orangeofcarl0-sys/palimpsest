@@ -9,8 +9,8 @@ comparative value are NOT verified under PC1 because no spend authorization was 
 |---|---|
 | Engineering functions implemented | `IMPLEMENTATION_COMPLETE_WITH_DECLARED_GAPS` — the normal product path, review/authority, continuity, domain outcomes, runtime doctor, evaluation runners and packaging exist and are exercised by deterministic tests; declared gaps are listed below |
 | Mechanism and integration qualified | `DETERMINISTICALLY_QUALIFIED_WITH_ENVIRONMENT_LIMITS` — build PASS, architecture PASS (0 violations, 9 accepted baseline exceptions), public API PASS after the recorded additive baseline update, curated PC1/adjacent integration 132/132 PASS; the full ordinary suite was not cleanly observed on this Windows host (resource/file-lock hook timeouts), and one first-party-DSH test fails identically at the frozen baseline |
-| Actual Agent ability verified | `NOT_VERIFIED_UNDER_PC1` — no live model call was made. Prior C6-R P1 behavior remains historical evidence, not a PC1 result |
-| Comparative value supported | `NOT_SUPPORTED` — no matched live P/F pair; no superiority or cost claim |
+| Actual Agent ability verified | `BEHAVIORALLY_OBSERVED` — 8 matched real sessions (Sablewick P/F T1/T2, field-study P/F T1/T2), all `OBSERVED`, 0 provider errors, 10,018,203 scored tokens; single-principal only |
+| Comparative value supported | `NOT_SUPPORTED` — mixed results: P has stronger provenance/negative-standing; F is cheaper on Sablewick and more complete/accurate on the field study. No superiority claim |
 
 ## 2. What a user can now do (normal path)
 

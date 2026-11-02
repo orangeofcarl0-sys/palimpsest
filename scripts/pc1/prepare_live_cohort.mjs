@@ -31,6 +31,7 @@ run("scripts/pc1/prepare_field_study.mjs", [`--run=${FIELD}`]);
 for (const file of [join(SABLE, "p1", "deployment.json"), join(FIELD, "p1", "deployment.json")]) {
   const profile = JSON.parse(readFileSync(file, "utf8"));
   profile.toolProfile = "normal";
+  if (file.includes("sablewick")) profile.execution = "in-place";
   writeFileSync(file, `${JSON.stringify(profile, null, 2)}\n`);
 }
 
@@ -55,7 +56,8 @@ for (const dir of [join(FIELD, "p1"), join(FIELD, "f1")]) {
 
 const cohort = {
   schema: "pc1-live-cohort/v1",
-  cohortId: "pc1-live-2026-11-02",
+  cohortId: process.env.PC1_COHORT_ID ?? "pc1-live-2026-11-02",
+  codeFreeze: "733e5d43c06ba067ede9f9093670dfb0f3374d77",
   createdAt: new Date().toISOString(),
   provider: { id: "deepseek-official", model: "deepseek-flash", protocol: "anthropic-messages", baseUrl: "https://api.deepseek.com/anthropic" },
   spendAuthorization: "owner: no special limit; PC1 live closure authorized 2026-11-02",
@@ -98,7 +100,7 @@ const cohort = {
     },
   },
   oracleCopied: false,
-  note: "Evaluator-only material is not included. T1/T2 inboxes are separate visible sets. The code/scenario/operator/rubric freeze is recorded before the first model call.",
+  note: "Evaluator-only material is not included. T1/T2 inboxes are separate visible sets. The code/scenario/operator/rubric freeze is recorded before this cohort's first model call. The earlier pre-fix P pilot is preserved separately and is not part of this scored cohort.",
 };
 const cohortPath = join(REPO, "research-evidence", "pc1", "live", "cohort.json");
 writeJson(cohortPath, cohort);
