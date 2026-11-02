@@ -33,23 +33,29 @@
       ]
     },
     "S02": {
-      "implementation": "IN_PROGRESS",
-      "deterministic": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
       "live": "NOT_REQUIRED",
       "comparison": "NOT_REQUIRED",
       "blockers": [],
-      "evidence": []
+      "evidence": [
+        "docs/programs/pc1/S02-NORMAL-PATH.md",
+        "test/pc1_normal_product.test.ts"
+      ]
     },
     "S03": {
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
       "comparison": "NOT_REQUIRED",
       "blockers": [],
-      "evidence": []
+      "evidence": [
+        "docs/programs/pc1/S03-CONTINUITY.md",
+        "test/pc1_continuity.test.ts"
+      ]
     },
     "S04": {
-      "implementation": "NOT_STARTED",
+      "implementation": "IN_PROGRESS",
       "deterministic": "NOT_RUN",
       "live": "NOT_RUN",
       "comparison": "NOT_REQUIRED",
@@ -107,8 +113,8 @@
   },
   "pendingEffects": [],
   "nextActions": [
-    "S02: tool tiers, lossless status, VERIFYING proposal, normal product entry",
-    "S03 continuity facade in parallel"
+    "S04: proposal review package, operator authority adapter, source-intake binding",
+    "S06 domain outcome projection in parallel"
   ],
   "lastCheckpoint": {
     "at": "2026-11-02",

@@ -167,142 +167,175 @@
     },
     {
       "requirementId": "S02-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "docs/programs/pc1/S02-NORMAL-PATH.md"
+      ],
+      "notes": "toolProfile tiers; normal vs expert test; parity-reviewed additions",
       "blockers": []
     },
     {
       "requirementId": "S02-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "src/adapters/dsh/normal.ts"
+      ],
+      "notes": "palimpsest_work complete follows placement; placed work names host settlement",
       "blockers": []
     },
     {
       "requirementId": "S02-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts"
+      ],
+      "notes": "normal results round-trip JSON; attempt/evidence/promotion ids projected away",
       "blockers": []
     },
     {
       "requirementId": "S02-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts"
+      ],
+      "notes": "propose stores non-authoritative journal IDEA while plan stays frozen in VERIFYING",
       "blockers": []
     },
     {
       "requirementId": "S02-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S04_DEPENDENCY",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "src/project_continuity/service.ts"
+      ],
+      "notes": "authority boundaries visible in continuity; operator review decision path continues in S04",
       "blockers": []
     },
     {
       "requirementId": "S02-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts"
+      ],
+      "notes": "normal read/status path creates no Work; proposer writes only journal metadata",
       "blockers": []
     },
     {
       "requirementId": "S02-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "normal status/project/continuity reads avoid SQLite; no internal ids in principal projection",
       "blockers": []
     },
     {
       "requirementId": "S03-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/project_continuity",
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "derived facade over existing owners; no store/cache; unavailable owners named",
       "blockers": []
     },
     {
       "requirementId": "S03-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "standing vocabulary with source refs/basis/applicability/reopen conditions",
       "blockers": []
     },
     {
       "requirementId": "S03-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "capsule byte budget, omitted sections, explicit incomplete",
       "blockers": []
     },
     {
       "requirementId": "S03-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "fresh installation over same state sees same durable facts; no transcript",
       "blockers": []
     },
     {
       "requirementId": "S03-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S05_DEPENDENCY",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/project_continuity/types.ts"
+      ],
+      "notes": "source refs preserved; independence accounting continues in S05",
       "blockers": []
     },
     {
       "requirementId": "S03-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_SCOPE_NOTE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/project_continuity/service.ts"
+      ],
+      "notes": "projection reads only owner-backed facts; no invented causal edges",
       "blockers": []
     },
     {
       "requirementId": "S03-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "open questions/opportunities visible; no automatic Work creation",
       "blockers": []
     },
     {

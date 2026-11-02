@@ -178,6 +178,8 @@ export interface ApplicationSurfaceDeps {
   readonly disclosure?: DisclosureService | undefined;
   /** G10-V (additive): the DERIVED project workspace service; absent ⇒ no workspace surface. */
   readonly projectWorkspace?: ProjectWorkspaceService | undefined;
+  /** PC1 S03: the derived continuity facade over the existing Work/workspace/journal owners. */
+  readonly continuity?: import("../project_continuity/index.js").ProjectContinuityService | undefined;
   /** G10-V (additive): the bounded management service; absent ⇒ no management surface. */
   readonly projectManagement?: ProjectManagementService | undefined;
   /** G10-AC: the composed Campaign monitor driver, when the operator wired one. */

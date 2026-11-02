@@ -16,6 +16,8 @@ import { defineProductTools } from "./product.js";
 import { defineProofTools } from "./proof.js";
 import { defineProjectTools } from "./project.js";
 import { defineGraphTools } from "./graph.js";
+import { defineNormalWorkTool } from "./normal.js";
+import { defineContinuityTool } from "./continuity.js";
 
 export function defineApplicationTools(application: PalimpsestApplicationSurface): DshToolDefinition[] {
   return [
@@ -27,5 +29,10 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
     ...defineProofTools(application),
     ...defineProjectTools(application),
     ...defineGraphTools(application),
+    // PC1 S02-R02: the one placement-aware, principal-facing work facade. It composes the SAME
+    // controller/application surface; it is not a second execution path.
+    defineNormalWorkTool(application),
+    // PC1 S03: the derived continuity read. New tool rather than new actions on an existing one.
+    ...defineContinuityTool(application),
   ];
 }

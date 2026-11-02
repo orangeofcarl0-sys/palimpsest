@@ -118,6 +118,11 @@ export interface WorkApplicationSurface {
   preview(): unknown;
   /** Work control verbs (pause/resume/next/run/claim/gate/report/plan/promote/holdSet/holdClear). */
   control(op: string, args: readonly unknown[]): unknown;
+  /**
+   * PC1 S02-R02: WHERE this deployment places work. The normal completion facade uses it to choose
+   * the real path instead of making the agent guess whether `finish` applies.
+   */
+  placement(): "in-place" | "worktree";
 }
 
 export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkApplicationSurface } {
@@ -172,6 +177,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),
+      placement: () => deps.controller.execution,
       control: (op, args) => {
         // Reuse the existing Work control surface — Work stays Work-scoped.
         const surface = definePalimpsestControl(deps.controller) as unknown as Record<string, (...a: readonly unknown[]) => unknown>;

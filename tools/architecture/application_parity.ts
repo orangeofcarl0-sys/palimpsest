@@ -358,6 +358,26 @@ export const REVIEWED_TOOL_ADDITIONS: readonly { readonly name: string; readonly
       "and neither captured installation wires one, so both still show the canonical catalogue plus " +
       "this named entry. It adds a tool and changes no existing contract.",
   },
+  {
+    name: "palimpsest_work",
+    reason:
+      "PC1 S02-R01/R02. The canonical catalogue exposed the legacy Work chain (`next`/`claim`/`report`/" +
+      "`gate`) and the direct `begin`/`finish` pair at the same time, so a principal had to guess which " +
+      "route applied to its placement; the C6-R P1 session paid for that guess with a misreported short " +
+      "commit and a promotion that could not be recovered. This tool composes the SAME controller and " +
+      "application surface into one normal path (status/plan/next/run/begin/complete/propose), follows " +
+      "the deployment's REAL placement, and records a follow-up proposal as non-authoritative journal " +
+      "metadata. It adds a tool and changes no existing contract or authority.",
+  },
+  {
+    name: "palimpsest_continuity",
+    reason:
+      "PC1 S03. The workspace could show raw history and journal entries but had no first-party answer " +
+      "to 'what is the current understanding, which accepted facts does it rest on, and what would " +
+      "reopen them?'. This tool exposes a DERIVED summary/explain/context-capsule over the existing " +
+      "Work, workspace, journal and promotion owners; it owns no store and adds a new tool rather than " +
+      "changing an existing tool's action set, which the parity contract deliberately cannot grant.",
+  },
 ]);
 
 /**

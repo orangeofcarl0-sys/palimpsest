@@ -66,6 +66,20 @@ import { SqliteManagementPreferenceStore } from "../project_management/index.js"
 export type { HostDeploymentFactsPort };
 
 export interface InstallPalimpsestOptions extends DelegationInstallOptions, ContinuationInstallOptions, ProjectIntentInstallOptions, ProjectCollaborationInstallOptions, ProcedureInstallOptions {
+  /**
+   * PC1 S02-R01: which tool catalogue this deployment ADVERTISES.
+   *
+   *   legacy  the historical nine Work tools only;
+   *   normal  the small product path (`palimpsest_project`, `palimpsest_work`, start/status,
+   *           plus composed collaboration/verification facades);
+   *   expert  the full catalogue (the historical default);
+   *   all     alias of `expert`.
+   *
+   * This is a PRESENTATION tier. It filters tool definitions; it changes no execution, no stored
+   * state and no authority. The product entry point defaults to `normal`; `installPalimpsest`
+   * keeps `expert` so existing deployments and tests keep the catalogue they had.
+   */
+  toolProfile?: "legacy" | "normal" | "expert" | "all" | undefined;
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
   databasePath?: string | undefined;
   /** Shared Ordarium ledger; defaults to $DSH_HOME/ordarium/operations.sqlite. */

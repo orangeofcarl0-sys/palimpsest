@@ -25,6 +25,8 @@ export interface ProjectSurfaceDeps {
   readonly monitor?: { status(): Promise<CampaignMonitorStatus>; previewTick(): Promise<CampaignMonitorTickResult>; } | undefined;
   readonly projectManagement?: ProjectManagementService | undefined;
   readonly projectWorkspace?: ProjectWorkspaceService | undefined;
+  /** PC1 S03: the derived continuity facade, when the project cluster composes it. */
+  readonly continuity?: import("../../project_continuity/index.js").ProjectContinuityService | undefined;
   readonly verification?: { readonly service: Pick< ProjectVerificationService, "status" | "history" | "verifyCurrentHead" >; } | undefined;
 }
 
@@ -72,6 +74,10 @@ export interface ProjectWorkspaceApplicationSurface {
     readonly entryId: string;
     readonly taskSpec: TaskSpec;
   }): Promise<PromoteOpportunityResult>;
+  /** PC1 S03: the current understanding with standing and basis (derived, never a second truth). */
+  summary(): Promise<import("../../project_continuity/index.js").ProjectSummary>;
+  explain(subject: string): Promise<import("../../project_continuity/index.js").ProjectExplanation>;
+  contextCapsule(input?: { readonly maxBytes?: number | undefined }): Promise<import("../../project_continuity/index.js").ContextCapsule>;
 }
 
 /**
@@ -233,6 +239,24 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
                 }),
               promoteOpportunity: (input) =>
                 service.promoteOpportunity({ projectId: input.projectId ?? projectId, entryId: input.entryId, taskSpec: input.taskSpec }),
+              summary: () => {
+                if (deps.continuity === undefined) {
+                  throw new Error("this deployment composes no project continuity facade");
+                }
+                return deps.continuity.summary();
+              },
+              explain: (subject) => {
+                if (deps.continuity === undefined) {
+                  throw new Error("this deployment composes no project continuity facade");
+                }
+                return deps.continuity.explain(subject);
+              },
+              contextCapsule: (input) => {
+                if (deps.continuity === undefined) {
+                  throw new Error("this deployment composes no project continuity facade");
+                }
+                return deps.continuity.contextCapsule(input);
+              },
             };
           })();
 
