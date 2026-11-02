@@ -17,6 +17,8 @@ import type { ManagementActivityRecord } from "../../project_operating/activity.
 import type { ProjectOperatingHistory } from "../../project_operating/history.js";
 import type { ExternalAssetImportCandidate, ExternalAssetImportCommit, ExternalAssetImportPreparation, ExternalAssetInspection, ExternalAssetInspectInput, ExternalAssetPrepareImportInput, ExternalAssetPreparePublicationInput, ExternalAssetPrepareReferenceInput, ExternalAssetProviderDescriptor, ExternalAssetPublicationPreview, ExternalAssetPublicationResult, ExternalAssetReferenceCandidate, ExternalAssetReferenceCommit, ExternalAssetReferencePreparation, ExternalAssetSearchInput, ExternalAssetSearchPage } from "../../external_assets/index.js";
 import type { WorkModeBaseMode, WorkModeModifier } from "../../project_operating/work_mode_profile.js";
+import { makeWorkspaceExtraSurface, type ContinuityFaces, type WorkspaceExtraSurface } from "../workspace_extra.js";
+export type { ContinuityFaces } from "../workspace_extra.js";
 
 /** Exactly the dependencies this cluster reads — nothing else is visible to it (§9). */
 export interface ProjectSurfaceDeps {
@@ -25,10 +27,9 @@ export interface ProjectSurfaceDeps {
   readonly monitor?: { status(): Promise<CampaignMonitorStatus>; previewTick(): Promise<CampaignMonitorTickResult>; } | undefined;
   readonly projectManagement?: ProjectManagementService | undefined;
   readonly projectWorkspace?: ProjectWorkspaceService | undefined;
-  /** PC1 S03: the derived continuity facade, when the project cluster composes it. */
-  readonly continuity?: import("../../project_continuity/index.js").ProjectContinuityService | undefined;
-  /** PC1 S06: the derived domain-outcome service, when the project cluster composes it. */
-  readonly domainOutcome?: import("../../domain_outcome/index.js").DomainOutcomeService | undefined;
+  /** PC1 S03/S06: the derived continuity and domain-outcome faces. */
+  readonly continuity?: ContinuityFaces["continuity"];
+  readonly domainOutcome?: ContinuityFaces["domainOutcome"];
   readonly verification?: { readonly service: Pick< ProjectVerificationService, "status" | "history" | "verifyCurrentHead" >; } | undefined;
 }
 
@@ -38,7 +39,7 @@ export interface ProjectSurfaceDeps {
  * copies a canonical fact. The `projectId` inputs default to this installation's project (a
  * caller cannot address another project's history through this surface).
  */
-export interface ProjectWorkspaceApplicationSurface {
+export interface ProjectWorkspaceApplicationSurface extends WorkspaceExtraSurface {
   view(): Promise<ProjectWorkspaceView>;
   assets(): Promise<readonly ProjectAssetAssociation[]>;
   openLoops(): Promise<readonly OpenLoop[]>;
@@ -252,42 +253,7 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
                 }),
               promoteOpportunity: (input) =>
                 service.promoteOpportunity({ projectId: input.projectId ?? projectId, entryId: input.entryId, taskSpec: input.taskSpec }),
-              summary: () => {
-                if (deps.continuity === undefined) {
-                  throw new Error("this deployment composes no project continuity facade");
-                }
-                return deps.continuity.summary();
-              },
-              explain: (subject) => {
-                if (deps.continuity === undefined) {
-                  throw new Error("this deployment composes no project continuity facade");
-                }
-                return deps.continuity.explain(subject);
-              },
-              contextCapsule: (input) => {
-                if (deps.continuity === undefined) {
-                  throw new Error("this deployment composes no project continuity facade");
-                }
-                return deps.continuity.contextCapsule(input);
-              },
-              outcomeContracts: () => {
-                if (deps.domainOutcome === undefined) {
-                  throw new Error("this deployment composes no domain-outcome service");
-                }
-                return deps.domainOutcome.contracts();
-              },
-              outcomeProject: () => {
-                if (deps.domainOutcome === undefined) {
-                  throw new Error("this deployment composes no domain-outcome service");
-                }
-                return deps.domainOutcome.project();
-              },
-              evaluateOutcome: (input) => {
-                if (deps.domainOutcome === undefined) {
-                  throw new Error("this deployment composes no domain-outcome service");
-                }
-                return deps.domainOutcome.evaluate(input);
-              },
+              ...makeWorkspaceExtraSurface(deps),
             };
           })();
 

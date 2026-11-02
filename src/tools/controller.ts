@@ -53,7 +53,7 @@ import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService } from "../work/attempt_execution.js";
-import { attachCompletionEvidence, findRecordedEvidence, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
+import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
@@ -2313,13 +2313,7 @@ export class ProjectController {
         // moves only when the worker commits inside it.
         ...(observed.observedHead === "" ? {} : { resultCommit: observed.observedHead }),
       };
-      /**
-       * PC1 S01-R02: a COMPLETED result is not recordable until the canonical object database can
-       * READ it. The delegated settlement route already exported before reporting; the legacy report
-       * path did not, which is how a full OID from a `--shared` world became a name the canonical
-       * repository could not merge. The export is object-only (no ref, working tree or revision),
-       * and refusal is the honest outcome when it fails.
-       */
+      // PC1 S01-R02: export the completed result object before recording its full identity.
       if (input.workerStatus === "completed" && observed.observedHead !== "") {
         input = {
           ...input,
@@ -2331,67 +2325,17 @@ export class ProjectController {
     return this.scheduler.recordCallback(attemptId, terminal[input.workerStatus], report);
   }
 
-  /**
-   * Export the result commit from the attempt's world into the canonical object database and return
-   * its FULL object identity. Throws when the object cannot be made readable.
-   *
-   * Why this lives on the report path: `result_commit` is about to be written into the ledger, and a
-   * ledger row naming an object the project cannot read is not a result — it is a promise that
-   * promotion later discovers is unfulfillable, after the effect has already been dispatched.
-   */
+  /** Export the result object and return its full identity; see `work/report_integrity.ts`. */
   #exportAndResolveResultCommit(attemptId: string, commit: string): string {
-    const repository = this.effects.git.repository;
-    // The in-memory port has no real ODB to export into; there is nothing to check and the fake
-    // commit identity is all the deployment can have. A real deployment always has a repository.
-    if (repository === undefined || repository === "") return commit;
-    /**
-     * IN-PLACE work is already in the canonical repository: its commit object is readable there by
-     * construction and there is no world to export from. Resolve the full identity below; do NOT ask
-     * the world port for an export it would correctly report as WORLD_MISSING.
-     */
-    if (this.execution !== "in-place") {
-      const port = this.#executionWorldPort;
-      const sync = port?.exportResultCommitSync;
-      if (sync !== undefined) {
-        const outcome = sync({ attemptId, commit });
-        if (!outcome.imported) {
-          throw new DomainValidationError(
-            `RESULT_NOT_EXPORTED: attempt ${attemptId}'s result commit ${commit.slice(0, 12)} cannot be made readable in the canonical object database (${outcome.detail}); recording it would name a commit the project cannot materialize`,
-          );
-        }
-      } else {
-        // A legacy/custom world port without the synchronous seam: import the world HEAD directly.
-        // This is the same object-only operation, not a second promotion path.
-        const workDir = this.#attemptWorkDirSync(attemptId)?.workDir;
-        if (workDir === undefined || workDir === null) {
-          throw new DomainValidationError(
-            `RESULT_NOT_EXPORTED: attempt ${attemptId} has no readable execution world to export its result from`,
-          );
-        }
-        try {
-          execFileSync("git", ["fetch", "--no-tags", workDir, "HEAD"], {
-            cwd: this.#canonicalRepository(),
-            encoding: "utf8",
-          });
-        } catch (error) {
-          throw new DomainValidationError(
-            `RESULT_NOT_EXPORTED: attempt ${attemptId}'s result commit ${commit.slice(0, 12)} could not be imported from its world (${error instanceof Error ? error.message : String(error)})`,
-          );
-        }
-      }
-    }
-    // Resolve the FULL object identity after the import. The input may be short; the world's HEAD is
-    // not. `rev-parse --verify` also proves the canonical repository can actually read it.
-    try {
-      return execFileSync("git", ["rev-parse", "--verify", `${commit}^{commit}`], {
-        cwd: this.#canonicalRepository(),
-        encoding: "utf8",
-      }).trim();
-    } catch (error) {
-      throw new DomainValidationError(
-        `RESULT_NOT_EXPORTED: the canonical repository cannot resolve attempt ${attemptId}'s result commit ${commit.slice(0, 12)} (${error instanceof Error ? error.message : String(error)})`,
-      );
-    }
+    return exportAndResolveResultCommit({
+      attemptId,
+      commit,
+      repository: this.effects.git.repository,
+      execution: this.execution,
+      exportResultCommitSync: this.#executionWorldPort?.exportResultCommitSync?.bind(this.#executionWorldPort),
+      workDir: () => this.#attemptWorkDirSync(attemptId)?.workDir ?? null,
+      canonicalRepository: () => this.#canonicalRepository(),
+    });
   }
 
   /** A worker that expired its lease may still return; it is recorded STALE. */
@@ -2407,94 +2351,28 @@ export class ProjectController {
     return this.scheduler.recordCallback(attemptId, "ATTEMPT_LATE_RESULT", report);
   }
 
-  /**
-   * PLMP-LEAN-1 §D2-a: WHERE an attempt's work actually happens, and whether it can be observed.
-   *
-   *   in-place   the canonical repository is the tree, and the attempt is judged in it;
-   *   worktree   the attempt works in its OWN isolated git worktree, whose path the git port owns.
-   *
-   * The second half used to be unobservable from here, which is why the worktree path could only
-   * trust what a worker claimed. It is observable now, and it fails CLOSED when it is not: an
-   * execution world that does not exist is never reported as a clean one.
-   */
+  /** WHERE the attempt works (see `work/attempt_observation.ts`). */
   #attemptWorkDirSync(attemptId: string): { placement: AttemptPlacement; workDir: string } | null {
-    if (this.execution === "in-place") {
-      return { placement: "in-place", workDir: this.#canonicalRepository() };
-    }
-    // The world id IS the attempt id (see `claim`); the report's `worktree_id` field is a display id
-    // and is deliberately not used to locate anything. `worldPath` is the D2 vocabulary; the
-    // `worktreePath` fallback keeps a legacy port (a linked-worktree backend) observable.
     const git = this.effects.git;
-    const workDir = git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId);
-    if (workDir === undefined || workDir === "") {
-      /**
-       * A port that cannot NAME a tree has no trees: there is nothing on disk to be wrong about, so
-       * there is nothing to observe and this attempt's completion rests on its caller's report, as it
-       * did before this observation existed. That is the in-memory port's world, and it is why the
-       * rule is stated as a property of the PLACEMENT rather than as a blanket requirement: the
-       * first-party port always names a tree (`GitCliPort`), so a real deployment is always observed.
-       *
-       * A port that DOES name a tree and has none is a different case, and it is refused below.
-       */
-      return null;
-    }
-    if (!existsSync(workDir)) {
-      throw new DomainValidationError(
-        `attempt ${attemptId} has no work execution world at "${workDir}" — nothing can be observed there, and an absent tree is not an empty one`,
-      );
-    }
-    return { placement: "worktree", workDir };
+    return attemptWorkDir({
+      attemptId,
+      execution: this.execution,
+      canonicalRepository: this.#canonicalRepository(),
+      worldPath: git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId),
+    });
   }
 
-  /**
-   * PLMP-LEAN-1 §D2-a: ONE observation of what an attempt's work actually is, in WHATEVER world it
-   * ran. This is the input the completion invariant consumes, and there is deliberately only one of
-   * it: `CompletionInvariant(in-place) == CompletionInvariant(worktree)` is the property that keeps a
-   * second execution world from becoming a second, weaker set of rules.
-   *
-   * The commands are the same in both placements, run in the tree that placement names:
-   *
-   *   committedChanges    `git diff --name-only base..HEAD` — the normal case, the worker commits;
-   *   uncommittedChanges  `git status --porcelain` — work that is IN the tree but not in a commit;
-   *   observedHead        the tree's HEAD, which for a placed attempt is its result commit;
-   *   requiredArtifacts   whether each declared artifact is present IN THAT TREE.
-   *
-   * `.palimpsest/` scaffolding is excluded in both: it is the product's own state, never the
-   * attempt's work.
-   */
+  /** ONE observation of the attempt result (see `work/attempt_observation.ts`). */
   #observeAttemptResultSync(attemptId: string, baseCommit: string): AttemptResultObservation | null {
-    const target = this.#attemptWorkDirSync(attemptId);
-    if (target === null) return null;
-    const { placement, workDir } = target;
-    const run = (args: string[]): string => execFileSync("git", args, { cwd: workDir, encoding: "utf8" });
-    const committedChanges = run(["diff", "--name-only", baseCommit, "HEAD"])
-      .split(String.fromCharCode(10))
-      .map((path: string) => path.trim())
-      .filter((path: string) => path !== "" && !path.startsWith(".palimpsest/"));
-    const uncommittedChanges = run(["status", "--porcelain"])
-      .split(String.fromCharCode(10))
-      .filter((line: string) => line.trim() !== "")
-      .map((line: string) => line.slice(3).trim())
-      .filter((path: string) => !path.startsWith(".palimpsest/"));
-    const changedFiles = [...new Set([...committedChanges, ...uncommittedChanges])].sort();
-    const observedHead = run(["rev-parse", "HEAD"]).trim();
     const [, envelope] = this.#attemptContext(attemptId);
-    const requiredArtifacts = envelope.required_artifacts.map((path) =>
-      Object.freeze({ path, present: existsSync(join(workDir, path)) }),
-    );
-    // `uncommittedChanges` is returned SEPARATELY, not merely folded into changedFiles: a completed
-    // attempt must have materialized its work as a commit, and only the two sets apart can say
-    // whether it did (see #assertCompletionMaterialized).
-    return Object.freeze({
+    const git = this.effects.git;
+    return observeAttemptResultPort({
       attemptId,
-      placement,
-      workDir,
       baseCommit,
-      observedHead,
-      committedChanges: Object.freeze(committedChanges),
-      uncommittedChanges: Object.freeze(uncommittedChanges),
-      changedFiles: Object.freeze(changedFiles),
-      requiredArtifacts: Object.freeze(requiredArtifacts),
+      execution: this.execution,
+      canonicalRepository: this.#canonicalRepository(),
+      worldPath: git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId),
+      requiredArtifacts: envelope.required_artifacts,
     });
   }
 
@@ -2709,14 +2587,7 @@ export class ProjectController {
     );
   }
 
-  /**
-   * The product's own structural observation, for a gate that requests one.
-   *
-   * It reads the attempt's tree (the same `#observeAttemptResultSync` and same filesystem checks
-   * `finish` uses) and records `write_scope_valid` / `expected_files_exist` ONLY when the fact
-   * actually holds. A failed structural observation refuses without recording an atom: absence of
-   * qualification must not be creatable by the failing route.
-   */
+  /** The product's own structural observation; see `work/report_integrity.ts`. */
   #observeStructuralGate(input: GateInput): SchedulerEvent {
     const [, envelope] = this.#attemptContext(input.attemptId);
     const target = this.#attemptWorkDirSync(input.attemptId);
@@ -2725,38 +2596,17 @@ export class ProjectController {
         `attempt ${input.attemptId} has no observable tree, so a structural gate cannot be answered — an unobservable scope is not a valid one`,
       );
     }
-    if (input.predicate === "write_scope_valid") {
-      const observed = this.#observeAttemptResultSync(input.attemptId, envelope.base_commit);
-      if (observed === null) {
-        throw new DomainValidationError(
-          `attempt ${input.attemptId}'s result cannot be observed, so write scope cannot be qualified`,
-        );
-      }
-      const outOfScope = observed.changedFiles.filter(
-        (path) => !envelope.write_paths.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
-      );
-      if (outOfScope.length > 0) {
-        throw new DomainValidationError(
-          `STRUCTURAL_OBSERVATION_FAILED: attempt ${input.attemptId} changed paths outside write_paths [${envelope.write_paths.join(", ")}]: ${outOfScope.join(", ")} — no write_scope_valid atom is recorded for a scope that is not valid`,
-        );
-      }
-      return this.#recordObservedEvidence(input.attemptId, "write_scope_valid", {
-        changed_files: [...observed.changedFiles],
-        write_paths: [...envelope.write_paths],
-        out_of_scope: [],
-      }, undefined, "palimpsest-gate");
-    }
-    const paths = input.observedArtifacts ?? envelope.required_artifacts;
-    const missing = paths.filter((path) => !existsSync(join(target.workDir, path)));
-    if (missing.length > 0) {
-      throw new DomainValidationError(
-        `STRUCTURAL_OBSERVATION_FAILED: attempt ${input.attemptId} is missing required artifacts: ${missing.join(", ")} — no expected_files_exist atom is recorded for files that do not exist`,
-      );
-    }
-    return this.#recordObservedEvidence(input.attemptId, "expected_files_exist", {
-      paths: [...paths],
-      missing: [],
-    }, undefined, "palimpsest-gate");
+    const predicate = input.predicate as "write_scope_valid" | "expected_files_exist";
+    return observeStructuralGate({
+      attemptId: input.attemptId,
+      predicate,
+      writePaths: envelope.write_paths,
+      requiredArtifacts: envelope.required_artifacts,
+      observedArtifacts: input.observedArtifacts,
+      workDir: target.workDir,
+      observed: this.#observeAttemptResultSync(input.attemptId, envelope.base_commit),
+      record: (kind, value) => this.#recordObservedEvidence(input.attemptId, kind, value as never, undefined, "palimpsest-gate"),
+    }) as SchedulerEvent;
   }
 
   /**

@@ -64,7 +64,10 @@ export class SqliteReviewStore implements ReviewStore {
     );
   }
 
+  #closed = false;
   close(): void {
+    if (this.#closed) return;
+    this.#closed = true;
     this.#database.close();
   }
 }

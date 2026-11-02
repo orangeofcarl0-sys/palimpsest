@@ -72,6 +72,15 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // owner of execution provenance, not kernel substrate and not a host adapter.
   project_world: "L2",
   project_workspace: "L2",
+  // PC1 S03/S05/S06: derived read facades and contract layers. They own no canonical store:
+  // continuity projects existing owners, handoff defines the collaboration contract, and
+  // domain_outcome evaluates an explicit domain contract.
+  project_continuity: "L2",
+  project_handoff: "L2",
+  domain_outcome: "L2",
+  // PC1 S04: the proposal/review metadata capability. It drives the existing plan/intent owners
+  // through structural ports and owns only its non-authoritative review store.
+  project_review: "L3",
   boundary_memory: "L2",
   monitor: "L2",
   attention: "L2",
@@ -185,6 +194,14 @@ const FILE_LAYER_OVERRIDES: Readonly<Record<string, { readonly layer: LogicalLay
     "src/tools/gate_runner.ts": {
       layer: "L2",
       why: "executes gate commands through the effects runtime (semantic execution helper, not an adapter)",
+    },
+    "src/product.ts": {
+      layer: "L5",
+      why: "the ordinary-user product composition entry (host/deployment wiring)",
+    },
+    "src/cli_product.ts": {
+      layer: "L5",
+      why: "the product CLI adapter (host entry point)",
     },
     "src/tools/parallel.ts": {
       layer: "L2",

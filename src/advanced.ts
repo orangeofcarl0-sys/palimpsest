@@ -15,8 +15,6 @@ export * from "./telemetry/index.js";
 export * from "./tools/index.js";
 export { installPalimpsest, trustedDefaultPolicy } from "./install.js";
 export type { InstallPalimpsestOptions, InstalledPalimpsest, InstalledRuntime } from "./install.js";
-export { installProduct } from "./product.js";
-export type { InstallProductOptions, InstalledProduct } from "./product.js";
 
 /**
  * G10-D5: the runtime/continuity grounding surface — advanced opt-in only
