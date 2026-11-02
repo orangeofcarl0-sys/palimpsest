@@ -1,0 +1,15 @@
+{
+  "schema": "pc1v1-spend-authorization-amendment/v1",
+  "amends": "pc1v1-live-2026-11-03-c-field",
+  "authorized": true,
+  "owner": "owner:66494",
+  "authorizedAt": "2026-11-03T03:35:00.000Z",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "maxTokens": 40000000,
+  "conditions": ["P", "F"],
+  "reason": "The original 24M figure was a local safety reservation, not an owner limit. The owner's 2026-11-03 均授权 covers the remaining matched Field Study sessions. Completed sessions before this amendment used about 21.6M tokens; the Field Study P T1 was 11.4M. This amendment raises the local reservation to 40M and remains subject to a hard stop if the next sessions threaten that ceiling.",
+  "note": "The runner does not enforce a provider-side monetary cap. Usage is read from the DSH session streams after each session."
+}

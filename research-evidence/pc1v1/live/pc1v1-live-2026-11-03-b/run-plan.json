@@ -1,0 +1,80 @@
+{
+  "schema": "pc1v1-run-plan/v1",
+  "cohortId": "pc1v1-live-2026-11-03-b",
+  "codeFreeze": "7edb4c622c62c9623767185ef87c3f32b5b6e901",
+  "head": "d424ff9c9dd1ced598594fa621da599e61ac2511",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "sessionCount": 8,
+  "sessions": [
+    {
+      "id": "sablewick-p-t1",
+      "scenario": "sablewick",
+      "condition": "P",
+      "stage": "T1",
+      "subagents": true
+    },
+    {
+      "id": "sablewick-f-t1",
+      "scenario": "sablewick",
+      "condition": "F",
+      "stage": "T1",
+      "subagents": true
+    },
+    {
+      "id": "sablewick-p-t2",
+      "scenario": "sablewick",
+      "condition": "P",
+      "stage": "T2",
+      "subagents": true
+    },
+    {
+      "id": "sablewick-f-t2",
+      "scenario": "sablewick",
+      "condition": "F",
+      "stage": "T2",
+      "subagents": true
+    },
+    {
+      "id": "field-study-p-t1",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "T1",
+      "subagents": true
+    },
+    {
+      "id": "field-study-p-t2",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "T2",
+      "subagents": true
+    },
+    {
+      "id": "field-study-f-t1",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "T1",
+      "subagents": true
+    },
+    {
+      "id": "field-study-f-t2",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "T2",
+      "subagents": true
+    }
+  ],
+  "matchedPairs": [
+    "field-study:T1",
+    "field-study:T2",
+    "sablewick:T1",
+    "sablewick:T2"
+  ],
+  "blockers": [],
+  "state": "READY",
+  "generatedAt": "2026-11-02T18:43:58.701Z"
+}

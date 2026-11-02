@@ -1,8 +1,9 @@
 # PC1-V1 R9 — pre-registered behavioral protocol
 
-Status: **FROZEN / NOT EXECUTED**. No model call has been made under this protocol. Execution is
-`BLOCKED` until a new, explicit PC1-V1 spend authorization is supplied; the prior PC1 authorization
-is not inherited.
+Status: **FROZEN / EXECUTED 2026-11-03**. The owner supplied the explicit PC1-V1 authorization (均授权);
+eight matched principal sessions and eleven Subagent child sessions ran. The preregistered rules
+above remain unchanged; the results are in `docs/engineering/PC1V1-LIVE-ADDENDUM.md` and
+`research-evidence/pc1v1/live/`. Excluded pilots are preserved separately; they are not scored.
 
 ## 1. Question
 

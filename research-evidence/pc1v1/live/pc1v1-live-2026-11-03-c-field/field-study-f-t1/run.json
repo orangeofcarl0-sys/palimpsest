@@ -1,0 +1,24 @@
+{
+  "schema": "pc1v1-session-run/v1",
+  "id": "field-study-f-t1",
+  "scenario": "field-study",
+  "condition": "F",
+  "stage": "T1",
+  "subagents": true,
+  "command": [
+    "wsl.exe",
+    "bash",
+    "-lc",
+    "set -e\nexport PC1_RUN=/home/admini/pc1v1/runs/field-study\nexport PC1_CONDITION=F\nexport PC1_STAGE=T1\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_field.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03-c-field/field-study-f-t1/wsl-out'\ncp -a '/home/admini/pc1v1/runs/../out/field-study/F-T1/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03-c-field/field-study-f-t1/wsl-out/' || true\nexit $STATUS"
+  ],
+  "cwd": ".",
+  "startedAt": "2026-11-02T19:27:44.588Z",
+  "finishedAt": "2026-11-02T19:36:35.153Z",
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "state": "FAILED",
+  "stdoutBytes": 23458,
+  "stderrBytes": 0,
+  "note": "EXECUTED means the session process exited 0; it is not by itself a behavioral OBSERVED classification."
+}
