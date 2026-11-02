@@ -813,142 +813,179 @@
     },
     {
       "requirementId": "S09-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_cli.test.ts",
+        "docs/programs/pc1/S09-USER-ACCEPTANCE.md"
+      ],
+      "notes": "doctor/init create profile and state; no credential read",
       "blockers": []
     },
     {
       "requirementId": "S09-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_cli.test.ts",
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "init/continue/review/recover CLI on the same owners",
       "blockers": []
     },
     {
       "requirementId": "S09-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "README.md",
+        "docs/programs/pc1/S09-PACKAGING.md"
+      ],
+      "notes": "README scope updated; doctor reports limits; claims map to evidence",
       "blockers": []
     },
     {
       "requirementId": "S09-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_NO_SCHEMA_CHANGE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-PR-KIT.md"
+      ],
+      "notes": "no canonical schema migration; additive review store only; old evidence not requalified",
       "blockers": []
     },
     {
       "requirementId": "S09-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "doctor reports sandbox/provider/live-model boundaries; no blank dead end",
       "blockers": []
     },
     {
       "requirementId": "S09-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "dist-rc/palimpsest-0.2.0-pc1.1.tar.gz",
+        "dist-rc/palimpsest-0.2.0-pc1.1.tar.gz.sha256"
+      ],
+      "notes": "local RC tarball + sha256 + manifest + doctor smoke",
       "blockers": []
     },
     {
       "requirementId": "S09-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_cli.test.ts"
+      ],
+      "notes": "shell path doctor/init/continue/capsule/outcomes/review works without SQLite",
       "blockers": []
     },
     {
       "requirementId": "S10-R01",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-PR-KIT.md"
+      ],
+      "notes": "full diff inventory and PR kit from local Git",
       "blockers": []
     },
     {
       "requirementId": "S10-R02",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
-      "blockers": []
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_ENVIRONMENT_LIMITS",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "research-evidence/pc1/s10/final-integration.log",
+        "research-evidence/pc1/s10/final-full-test-clean.log",
+        "research-evidence/pc1/s10/final-architecture.log"
+      ],
+      "notes": "curated final integration 132/132; full suite not cleanly observed on Windows (86 hook-timeout/lock failures); one baseline-reproduced first-party DSH failure",
+      "blockers": [
+        "Windows host resource/file-lock contention during the full suite"
+      ]
     },
     {
       "requirementId": "S10-R03",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md"
+      ],
+      "notes": "Code Freeze 5 4757dd6; evidence freeze follows this report; manifests from committed bytes",
       "blockers": []
     },
     {
       "requirementId": "S10-R04",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "BLOCKED",
+      "comparison": "BLOCKED",
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md"
+      ],
+      "notes": "four judgments reported separately; no live/comparative claim",
       "blockers": []
     },
     {
       "requirementId": "S10-R05",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S09-PACKAGING.md",
+        "docs/programs/pc1/S10-PR-KIT.md"
+      ],
+      "notes": "RC install smoke, upgrade/rollback/recovery guide, PR kit without opening a PR",
       "blockers": []
     },
     {
       "requirementId": "S10-R06",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "BLOCKED",
+      "comparison": "BLOCKED",
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md"
+      ],
+      "notes": "one recommendation: matched live pilot under new budget; no expansion claim",
       "blockers": []
     },
     {
       "requirementId": "S10-R07",
-      "implementation": "NOT_STARTED",
-      "deterministic": "NOT_RUN",
-      "live": "NOT_RUN",
-      "comparison": "NOT_RUN",
-      "evidence": [],
-      "notes": "未由本文档包执行或验证；由本地 Agent 填实际证据。",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_PENDING_PUSH",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md"
+      ],
+      "notes": "branch clean, main/history unchanged; non-force push after the evidence freeze",
       "blockers": []
     }
   ]
