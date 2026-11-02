@@ -489,6 +489,7 @@ export function launchDeployment(
     ordariumDatabasePath: profile.databases.ordarium,
     ...(profile.repository === undefined ? {} : { repository: profile.repository }),
     ...(profile.execution === undefined ? {} : { execution: profile.execution }),
+    ...(profile.toolProfile === undefined ? {} : { toolProfile: profile.toolProfile }),
     ...(profile.concurrency === undefined ? {} : { concurrency: profile.concurrency }),
     // PLMP-LEAN-1 §1: the project's done-ness is DERIVED here from the repository, intersected
     // with the operator's policy bound (never widened by it), and — when the operator confirmed it

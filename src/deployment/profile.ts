@@ -169,6 +169,8 @@ export interface ProjectAgentDeploymentProfile {
    * `policy.allowed_commands`. Absent ⇒ 1, which is exactly the pre-D4 behaviour.
    */
   readonly concurrency?: number | undefined;
+  /** PC1: the advertised tool tier (presentation only; no authority change). */
+  readonly toolProfile?: "legacy" | "normal" | "expert" | "all" | undefined;
   /**
    * The OPERATOR's task policy for this deployment: at minimum the gate commands this project's
    * toolchain actually uses (`node --test`, `cargo test`, …). It is a bound, never a suggestion —
@@ -538,6 +540,15 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       ? {}
       : { execution: parseExecutionMode(optionalString(object, "execution", what)!) }),
     ...(concurrency === undefined ? {} : { concurrency }),
+    ...(object.toolProfile === undefined
+      ? {}
+      : (() => {
+          const value = object.toolProfile;
+          if (value !== "legacy" && value !== "normal" && value !== "expert" && value !== "all") {
+            fail("invalid_value", `${what}.toolProfile must be one of legacy|normal|expert|all`);
+          }
+          return { toolProfile: value as "legacy" | "normal" | "expert" | "all" };
+        })()),
     ...(object.policy === undefined ? {} : { policy: parsePolicy(object.policy, what) }),
     ...(object.standard === undefined ? {} : { standard: parseStandard(object.standard, what) }),
     ...(optionalStableId(object, "persistentPoint", what) === undefined ? {} : { persistentPoint: optionalStableId(object, "persistentPoint", what)! }),
