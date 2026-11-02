@@ -40,7 +40,7 @@ script-only side door.
 | Code Freeze 3 (packaging dirty check) | `a4f2adb4914c66276f9252245c9b483c8ad4f8ad` / tree `3afbff420f36e6486bba7e8399b02c88eff990a2` |
 | Code Freeze 4 (manifest generator) | `82b4d789feae38ee124b03ec27d6d94499f44826` |
 | **Code Freeze 5 (final executable)** | **`4757dd6e57efe08b207a89a6af371b9c6a67a002` / tree `6a774746d5f7bb2cf48d30e877aa5f8838b3e3bd`** |
-| Evidence freeze | recorded in the final manifest commit after this report is committed |
+| Evidence freeze | the commit containing this report; `manifest-code.json` / `manifest-evidence.json` record its exact hash |
 | Protected `main` | `044330b2e55198542d545edc42ed9c36e7ce896b` — unchanged, never moved |
 
 No force-push, rebase, branch deletion, worktree removal, lock removal, historical evidence rewrite,
@@ -105,8 +105,9 @@ Declared gaps:
   a green suite. `test/trajectory_p2d1_real_integration.test.ts` was reproduced at the frozen
   baseline `044b080` with the baseline `dist` and reports `NOT_ESTABLISHED` there too (first-party DSH
   cold-recovery capability refusal, nonterminal attempt). No fabricated settlement was used.
-- RC: `dist-rc/palimpsest-0.2.0-pc1.1.tar.gz`, SHA-256 recorded next to it, manifest over 3,930
-  staged files; a doctor smoke from the extracted tarball passes.
+- RC: `dist-rc/palimpsest-0.2.0-pc1.1.tar.gz`, SHA-256 recorded next to it, manifest over 3,932
+  staged files; built from Code Freeze 5 (`4757dd6`), `dirty:false`, and a doctor smoke from the
+  extracted tarball passes. The tarball digest is `909dcff5f954cf690dfb633dc2e1b9f331035b356606030475f6ecafdd729be4`.
 - Manifests: code and evidence manifests are generated from committed bytes; the evidence manifest
   is added in the evidence-freeze commit and does not hash itself.
 
