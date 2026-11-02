@@ -147,7 +147,8 @@ describe("PC1 S06: domain outcome is explicit and separate", () => {
     const tool = installed.tools.find((entry) => entry.name === "palimpsest_outcome")!;
     const properties = tool.parameters.properties as Record<string, unknown>;
     const action = properties.action as { enum: string[] };
-    expect(action.enum).toEqual(["contracts", "project", "evaluate"]);
+    expect(action.enum).toEqual(["contracts", "project", "evaluate", "check"]);
     expect(properties).not.toHaveProperty("status");
+    expect(properties).not.toHaveProperty("register");
   });
 });

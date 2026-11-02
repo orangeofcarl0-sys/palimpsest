@@ -29,6 +29,7 @@ import { describe, expect, it } from "vitest";
 
 import { evaluateCompletionContract, candidateDependencyDigest } from "../src/work/completion_evaluation.js";
 import type { AttemptCompletionContract } from "../src/domain/completion_contract.js";
+import { commandDigest } from "../src/domain/command_identity.js";
 import { evalClause } from "../src/domain/gate_clause.js";
 import { GateEngine } from "../src/evidence/gate_dsl.js";
 
@@ -37,7 +38,12 @@ const CONTRACT: AttemptCompletionContract = Object.freeze({
   basisDigest: "b".repeat(64),
   mechanical: Object.freeze([
     Object.freeze({ kind: "assert_write_scope" as const }),
-    Object.freeze({ kind: "run_standard_command" as const, command: Object.freeze(["node", "-e", "process.exit(0)"]), predicate: "process_exit_zero" as const }),
+    Object.freeze({
+      kind: "run_standard_command" as const,
+      command: Object.freeze(["node", "-e", "process.exit(0)"]),
+      predicate: "process_exit_zero" as const,
+      commandDigest: commandDigest(["node", "-e", "process.exit(0)"]),
+    }),
     Object.freeze({ kind: "assert_required_artifacts" as const, paths: Object.freeze(["src/a.ts"]) }),
   ]),
   verification: Object.freeze({ required: false, requiredReasons: Object.freeze([]), recommended: false, recommendationReasons: Object.freeze([]) }),

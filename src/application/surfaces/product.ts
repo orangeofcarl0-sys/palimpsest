@@ -103,6 +103,12 @@ export interface DelegationApplicationSurface {
   status(input: { readonly delegationRef: string }): Promise<DelegationStatusView>;
   /** Progressive disclosure: the same state plus the question, the basis and the conclusion. */
   inspect(input: { readonly delegationRef: string }): Promise<DelegationInspection>;
+  /** R8: record the principal's decision about a terminal finding (non-canonical consumption). */
+  consume(input: {
+    readonly delegationRef: string;
+    readonly decisionNote: string;
+    readonly changedPlan?: boolean | undefined;
+  }): Promise<import("../../interaction/delegation.js").DelegationConsumption>;
 }
 
 export function makeProductSurfaces(deps: ProductSurfaceDeps): {
@@ -158,6 +164,7 @@ export function makeProductSurfaces(deps: ProductSurfaceDeps): {
             start: (input) => deps.delegation!.start(input),
             status: (input) => deps.delegation!.status(input),
             inspect: (input) => deps.delegation!.inspect(input),
+            consume: (input) => deps.delegation!.consume(input),
           };
 
 

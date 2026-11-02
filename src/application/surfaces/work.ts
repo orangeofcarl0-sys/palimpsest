@@ -137,6 +137,20 @@ export interface WorkApplicationSurface {
    * the real path instead of making the agent guess whether `finish` applies.
    */
   placement(): "in-place" | "worktree";
+  /**
+   * PC1-V1 R4: the ACTUAL filesystem boundary, stated before the first write.
+   *
+   * A non-moving canonical ProjectIR head does not mean the live Git tree or HEAD stayed still.
+   * This projection keeps the two protections distinct and never calls in-place work isolated.
+   */
+  boundary(): {
+    readonly placement: "in-place" | "worktree";
+    readonly liveRepositoryMutable: boolean;
+    readonly isolated: boolean;
+    readonly preAcceptance: boolean;
+    readonly detail: string;
+    readonly warning: string | null;
+  };
 }
 
 export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkApplicationSurface } {
@@ -219,6 +233,27 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),
       placement: () => deps.controller.execution,
+      boundary: () =>
+        deps.controller.execution === "in-place"
+          ? Object.freeze({
+              placement: "in-place" as const,
+              liveRepositoryMutable: true,
+              isolated: false,
+              preAcceptance: true,
+              detail:
+                "DIRECT LOW-RISK EDITING: native file edits and commits change the live repository and its Git HEAD immediately. Work completion observes the changed paths and enforces the declared write scope, but it cannot prevent an earlier edit. The canonical ProjectIR head moves only when an authorized Promotion accepts a result.",
+              warning:
+                "before your first edit: this is the live project tree, not an isolated candidate. For high-impact governed work, use isolated (worktree) execution so acceptance remains separate.",
+            })
+          : Object.freeze({
+              placement: "worktree" as const,
+              liveRepositoryMutable: false,
+              isolated: true,
+              preAcceptance: true,
+              detail:
+                "GOVERNED ISOLATED CANDIDATE: work happens in an isolated Git worktree. Edits there do not change the canonical branch or its HEAD; the canonical head moves only when an authorized Promotion accepts the result.",
+              warning: null,
+            }),
       control: (op, args) => {
         // Reuse the existing Work control surface — Work stays Work-scoped.
         const surface = definePalimpsestControl(deps.controller) as unknown as Record<string, (...a: readonly unknown[]) => unknown>;

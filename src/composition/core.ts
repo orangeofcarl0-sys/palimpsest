@@ -49,6 +49,8 @@ export interface CoreCompositionOptions {
    * (nothing available), so an unstated capability reads as ABSENT rather than assumed present.
    */
   readonly capabilities?: import("../domain/completion_contract.js").CompletionCapabilities | undefined;
+  /** PC1-V1 R6: the approved-source admission read, when a review owner is composed. */
+  readonly sourceIntakeAdmission?: import("../domain/promotion_eligibility.js").PromotionSourceIntakeAdmissionPort | undefined;
   readonly clock?: (() => string) | undefined;
   readonly effectsClock?: (() => Date) | undefined;
   readonly leaseMs?: number | undefined;
@@ -289,6 +291,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     standard: options.standard,
     capabilities,
     verificationAdmission: verificationAdmissionPort,
+    ...(options.sourceIntakeAdmission === undefined ? {} : { sourceIntakeAdmission: options.sourceIntakeAdmission }),
     /**
      * §D2-e1: the execution-world port exists exactly where this deployment PLACES work in worlds — a
      * real repository that can be observed. It owns no authority: it imports objects and deletes

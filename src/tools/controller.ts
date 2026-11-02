@@ -58,7 +58,13 @@ import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
-import { deriveAttemptCompletionContract, deriveCompletionReadiness } from "../domain/completion_contract.js";
+import {
+  deriveAttemptCompletionContract,
+  deriveCompletionReadiness,
+  effectiveReleaseGateDefinition,
+  explainStatusWorkState,
+  type ControllerStatusView,
+} from "../domain/completion_contract.js";
 import {
   compilePlanRevision,
   type PlanReconciliationBlocker,
@@ -167,6 +173,8 @@ function directShapeEquivalent(project: ProjectIr, task: TaskSpec): boolean {
 
 /** The one gate a confirmed project standard declares; promotion names it by this id. */
 export const RELEASE_GATE_ID = "gate-release";
+/** The declaration marker for the one project gate the confirmed standard derives. */
+export const RELEASE_GATE_DECLARED_BY = "derived from the confirmed project standard";
 
 export interface StartProjectInput {
   projectId: string;
@@ -333,91 +341,7 @@ export interface AllocationCalibration {
   readonly concurrentLimit: number;
 }
 
-export interface ControllerStatusView {
-  projectId: string;
-  revision: number;
-  headCommit: string;
-  schedulerState: "RUNNING" | "PAUSED";
-  generation: number;
-  tasks: Array<{
-    task_id: string;
-    state: string;
-    last_event_id: number;
-    role?: string;
-  }>;
-  attempts: Array<{
-    attempt_id: string;
-    task_id: string | null;
-    state: string;
-    attempt_no: number | null;
-  }>;
-  evidence: Array<{ evidence_id: string; status: string }>;
-  promotions: Array<{ promotion_id: string; state: string }>;
-  /**
-   * G10-Z: pending promotion intents - the same read model the revision fence
-   * refuses on, exposed so a UI can explain the refusal without provoking it.
-   */
-  promotionFence: Array<{
-    promotion_id: string;
-    attempt_id: string;
-    task_id: string;
-    state: string;
-  }>;
-  parallel: { admittedAttempts: number; rejectedClaims: number };
-  /** PLMP-TLM-2 §1: human-facing model performance summary (absent when cold). */
-  telemetry?: {
-    rows: Array<{
-      task_type: string;
-      model: string;
-      attempts: number;
-      successes: number;
-      successRate: string;
-      avgCost: string;
-      costPerSuccess: string;
-    }>;
-  };
-  /** E3 resume block: where the project is, what the host must do next. */
-  resume: {
-    action:
-      | "blocked"
-      | "paused"
-      | "progress"
-      | "dispatch_worker"
-      | "gate_and_promote"
-      | "awaiting_worker"
-      | "idle";
-    detail: string;
-    inFlightAttemptIds: string[];
-    openTasks: Array<{ task_id: string; state: string }>;
-    /** Promotions sitting PREPARED without a terminal event (H1 §3.1). */
-    preparedPromotions: string[];
-  };
-  /**
-   * G10-X additive: the canonical head picture. Derived from the ProjectIR
-   * head plus the committed promotion facts only - never from `git.head()`.
-   */
-  head?: {
-    projectHeadCommit: string;
-    provenEffectHeadCommit: string;
-    state: ProjectHeadState;
-    /**
-     * G10-X additive: the provenance of the promotion that produced the
-     * canonical head (the chain tip when SYNC_REQUIRED, the absorbed tip when
-     * IN_SYNC). `null` when no promotion is chained. Derived from the committed
-     * promotion facts only.
-     */
-    latestPromotion:
-      | {
-          promotionId: string;
-          attemptId: string;
-          sourceCommit: string;
-          fromHead: string;
-          toHead: string;
-          eventId: string;
-        }
-      | null;
-  };
-}
+export type { ControllerStatusView } from "../domain/completion_contract.js";
 
 /**
  * Where an attempt's work happens, and therefore where it is observed.
@@ -663,6 +587,12 @@ export interface ProjectControllerOptions {
    * it to the promotion manager, so admission is a per-assessment read rather than a cached copy.
    */
   verificationAdmission?: import("../domain/promotion_eligibility.js").PromotionVerificationAdmissionPort | undefined;
+  /**
+   * PC1-V1 R6: the exact approved-source admission read, when this deployment composes a review
+   * service. Absent means no task is bound to an approved intake, so ordinary promotions are
+   * unchanged.
+   */
+  sourceIntakeAdmission?: import("../domain/promotion_eligibility.js").PromotionSourceIntakeAdmissionPort | undefined;
   /**
    * PLMP-LEAN-1 §D2-e1: the execution-world port, when this deployment places work in worlds.
    *
@@ -1142,6 +1072,8 @@ export class ProjectController {
       options.projectId,
       this.execution,
       options.verificationAdmission,
+      (attemptId, gateId) => this.evaluateGate(gateId, "attempt", attemptId),
+      options.sourceIntakeAdmission,
     );
     this.recovery = createPromotionRecoveryService({
       store: options.store,
@@ -1305,7 +1237,7 @@ export class ProjectController {
             subject_type: "attempt",
             require: { all: chain },
           }),
-          "derived from the confirmed project standard",
+          RELEASE_GATE_DECLARED_BY,
         );
       }
     }
@@ -3356,7 +3288,34 @@ export class ProjectController {
     subjectType: GateDefinition["subject_type"],
     subjectId: string,
   ): GateResult {
+    if (gateId === RELEASE_GATE_ID && subjectType === "attempt") {
+      const effective = this.#effectiveReleaseGate(subjectId);
+      if (effective !== undefined) {
+        return this.gates.evaluateDefinition(effective, this.store, this.projectId, subjectType, subjectId);
+      }
+    }
     return this.gates.evaluate(this.store, this.projectId, subjectType, subjectId, gateId);
+  }
+
+  /**
+   * R1: the standard-derived release gate evaluated against THIS attempt's completion contract.
+   *
+   * The stored gate declaration is not rewritten. An unknown/foreign attempt, a manually declared
+   * gate, or a project without a confirmed standard returns `undefined` so the historical evaluation
+   * path answers exactly as before (including an honest INCOMPLETE for a foreign subject).
+   */
+  #effectiveReleaseGate(attemptId: string): GateDefinition | undefined {
+    const row = this.store.connection
+      .prepare("SELECT declared_by FROM gate_registry WHERE project_id=? AND gate_id=?")
+      .get(this.projectId, RELEASE_GATE_ID) as { declared_by: string } | undefined;
+    if (row?.declared_by !== RELEASE_GATE_DECLARED_BY) return undefined;
+    const stored = this.gates.get(this.store, this.projectId, RELEASE_GATE_ID);
+    if (stored === undefined || this.#standard === undefined) return undefined;
+    try {
+      return effectiveReleaseGateDefinition(stored, this.#completionContractFor(attemptId));
+    } catch {
+      return undefined;
+    }
   }
 
   /**
@@ -4328,6 +4287,15 @@ export class ProjectController {
     return { ok: true, projectInitialized: this.isProjectInitialized(), eventCursor: Number(cursorRow.m) };
   }
 
+  /**
+   * R2: the Scheduler's PURE next decision, without committing it. A caller can therefore ask
+   * "would `next` do anything?" without causing the transition it is asking about.
+   */
+  nextDecisionPreview(): { readonly eventType: string; readonly entityId: string } | null {
+    const decision = this.scheduler.decide();
+    return decision === null ? null : { eventType: decision.event_type, entityId: decision.entity_id };
+  }
+
   status(): ControllerStatusView {
     const project = this.#project();
     const promotionFence = this.promotions.promotionFenceRows().map((row) => ({
@@ -4404,12 +4372,39 @@ export class ProjectController {
         row.costPerSuccess === undefined ? "n/a" : row.costPerSuccess.toFixed(4),
     }));
     const headStatus = this.promotions.projectHeadStatusSync();
+    const holds = (
+      this.store.connection
+        .prepare("SELECT task_id FROM task_holds WHERE project_id=? AND project_revision=? ORDER BY task_id")
+        .all(this.projectId, project.revision) as Array<{ task_id: string }>
+    ).map((row) => String(row.task_id));
+    let schedulerDecision: { readonly eventType: string; readonly entityId: string } | null = null;
+    let schedulerError: string | null = null;
+    if (control.state === "RUNNING") {
+      try {
+        schedulerDecision = this.nextDecisionPreview();
+      } catch (error) {
+        schedulerError = error instanceof Error ? error.message : String(error);
+      }
+    }
+    const nextAction = explainStatusWorkState({
+      standardConfirmed: this.#standard !== undefined && this.#standard.confirmed,
+      schedulerState: control.state,
+      schedulerDecision,
+      schedulerError,
+      tasks,
+      attempts,
+      holds,
+      promotionFence,
+      headState: headStatus.state,
+    });
     return {
       projectId: this.projectId,
       revision: project.revision,
       headCommit: project.head_commit,
       schedulerState: control.state,
       generation: control.generation,
+      holds,
+      nextAction,
       tasks,
       attempts,
       evidence,

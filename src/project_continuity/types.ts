@@ -45,6 +45,10 @@ export interface ContinuityItem {
   readonly applicability: string;
   readonly adoptionBasis?: string | undefined;
   readonly reopenConditions: readonly string[];
+  /** PC1-V1 R7: history and current usability are separate facts, never one inferred label. */
+  readonly historicalAcceptance?: "ACCEPTED" | undefined;
+  readonly currentApplicability?: "APPLICABLE" | "CONTRADICTED" | "SUPERSEDED" | "UNKNOWN" | undefined;
+  readonly applicabilityBasis?: string | undefined;
 }
 
 export interface ContinuityTask {
@@ -76,6 +80,8 @@ export interface ProjectSummary {
   readonly candidates: readonly ContinuityItem[];
   readonly negativeFindings: readonly ContinuityItem[];
   readonly openQuestions: readonly ContinuityItem[];
+  /** PC1-V1 R7: the latest bounded journal changes, for a decision-oriented capsule. */
+  readonly recentChanges?: readonly { readonly id: string; readonly kind: string; readonly title: string }[];
   readonly tasks: readonly ContinuityTask[];
   readonly pendingWork: readonly ContinuityTask[];
   readonly blocked: readonly ContinuityItem[];
@@ -120,6 +126,14 @@ export interface ContinuityInput {
       evidence: readonly { evidence_id: string; status: string }[];
       promotions: readonly { promotion_id: string; state: string }[];
       promotionFence: readonly { promotion_id: string; attempt_id: string; task_id: string; state: string }[];
+      /** PC1-V1 R2: the Work owner's truthful next-action explanation, when present. */
+      nextAction?: {
+        readonly kind: string;
+        readonly executable: boolean;
+        readonly action: string | null;
+        readonly detail: string;
+        readonly taskId: string | null;
+      };
     };
     promotionFacts(): readonly {
       promotionId: string;

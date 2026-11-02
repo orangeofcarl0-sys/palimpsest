@@ -63,6 +63,7 @@ export function installPalimpsest(
     execution: options.execution,
     ...(options.concurrency === undefined ? {} : { concurrency: options.concurrency }),
     standard: options.standard,
+    ...(options.sourceIntakeAdmission === undefined ? {} : { sourceIntakeAdmission: options.sourceIntakeAdmission }),
     /**
      * PLMP-LEAN-1 §2.1 / 2A-Q + §D2-LIVE: what this deployment can actually do.
      *
@@ -287,6 +288,10 @@ export function installPalimpsest(
   const delegation = composeDelegationCapability({
     options,
     reasoning: reasoningCellsInstalled?.service,
+    projectBasis: () => {
+      const ir = controller.work.project();
+      return { projectRevision: ir.revision, projectDigest: ir.digest, headCommit: ir.head_commit };
+    },
   });
 
   /*

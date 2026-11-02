@@ -54,7 +54,13 @@ export type PromotionBlockerKind =
    * that does not qualify. Never a substitute for the gate: a separate admission requirement.
    */
   | "required_verification_missing"
-  | "required_verification_unsatisfied";
+  | "required_verification_unsatisfied"
+  /**
+   * PC1-V1 R6: this Work task was created by an APPROVED source intake, and the result bytes do not
+   * match the exact approved digest/scope, or the binding can no longer be verified. Only tasks
+   * explicitly bound to an approved intake carry this requirement.
+   */
+  | "source_intake_unverified";
 
 /**
  * PLMP-LEAN-1 §B.14: what the verification owner says about one attempt's required independent
@@ -85,6 +91,31 @@ export interface PromotionVerificationAdmission {
  */
 export interface PromotionVerificationAdmissionPort {
   read(attemptId: string): PromotionVerificationAdmission | null;
+}
+
+/**
+ * PC1-V1 R6: what the review owner says about one attempt's approved source-intake binding.
+ *
+ * `required: false` (or an absent port) means ordinary Work, which keeps every non-intake promotion
+ * path unchanged. `verified` is a conclusion about the EXACT result commit's blob and scope, not a
+ * claim that the source is good.
+ */
+export interface PromotionSourceIntakeAdmission {
+  readonly required: boolean;
+  readonly verified: boolean;
+  readonly proposalId: string | null;
+  readonly targetPath: string | null;
+  readonly approvedDigest: string | null;
+  readonly actualDigest: string | null;
+  readonly detail: string | null;
+}
+
+export interface PromotionSourceIntakeAdmissionPort {
+  read(input: {
+    readonly attemptId: string;
+    readonly taskId: string | null;
+    readonly resultCommit: string | null;
+  }): PromotionSourceIntakeAdmission | null;
 }
 
 /** Which half of the input world a staleness blocker is about. */
@@ -156,6 +187,8 @@ export interface PromotionEligibilityInput {
    * once a completion contract asks for one.
    */
   readonly verification?: PromotionVerificationAdmission | null | undefined;
+  /** PC1-V1 R6: the approved source-intake admission, when this task is bound to one. */
+  readonly sourceIntake?: PromotionSourceIntakeAdmission | null | undefined;
   /** An unresolved promotion intent owned by this attempt, if any. */
   readonly pendingPromotion: PromotionFenceRow | null;
   /**
@@ -398,6 +431,20 @@ export function assessPromotionEligibility(
         verification.detail ??
           "this attempt's completion contract requires independent verification and no qualifying run exists",
         [verification.subjectDigest ?? "", verification.runRef ?? ""].filter((ref) => ref !== ""),
+      ),
+    );
+  }
+
+  // R6: an approved source intake is an EXACT-BYTE admission requirement. It is checked in the
+  // single assessor so preview, product promotion, expert promotion and recovery all inherit it.
+  const sourceIntake = input.sourceIntake;
+  if (sourceIntake !== null && sourceIntake !== undefined && sourceIntake.required && !sourceIntake.verified) {
+    blockers.push(
+      blocker(
+        "source_intake_unverified",
+        sourceIntake.detail ??
+          "this task was created by an approved source intake, but the result bytes or scope do not match the approved proposal",
+        [sourceIntake.proposalId ?? "", sourceIntake.targetPath ?? ""].filter((ref) => ref !== ""),
       ),
     );
   }

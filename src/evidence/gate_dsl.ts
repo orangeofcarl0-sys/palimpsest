@@ -124,9 +124,26 @@ export class GateEngine {
     if (gate === undefined) {
       throw new DomainValidationError(`gate ${gateId} is not declared`);
     }
+    return this.evaluateDefinition(gate, store, projectId, subjectType, subjectId);
+  }
+
+  /**
+   * PC1-V1 R1: evaluate an already-derived definition.
+   *
+   * Used only for a task-aware effective chain over the stored gate's own identity. It performs the
+   * same Evidence read and the same hard-gate semantics as `evaluate`; there is no second verdict
+   * algorithm.
+   */
+  evaluateDefinition(
+    gate: GateDefinition,
+    store: EventStore,
+    projectId: string,
+    subjectType: GateDefinition["subject_type"],
+    subjectId: string,
+  ): GateResult {
     if (gate.subject_type !== subjectType) {
       throw new DomainValidationError(
-        `gate ${gateId} expects subject_type ${gate.subject_type}, got ${subjectType}`,
+        `gate ${gate.gate_id} expects subject_type ${gate.subject_type}, got ${subjectType}`,
       );
     }
     const evidence = activeEvidenceViews(store, projectId, subjectType, subjectId);
@@ -157,7 +174,7 @@ export class GateEngine {
     const nextEvidenceNeeded = unresolved.length > 0
       ? [...unresolved]
       : verdict === "FAIL"
-        ? [`re-run gate ${gateId} after fixing failed clauses`]
+        ? [`re-run gate ${gate.gate_id} after fixing failed clauses`]
         : [];
 
     return {

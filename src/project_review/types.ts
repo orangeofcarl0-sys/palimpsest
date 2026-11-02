@@ -9,7 +9,7 @@
 import type { ProjectIntentChange, ProjectIntentProposal } from "../project_intent/proposal.js";
 import type { TaskSpec } from "../schema/models.js";
 
-export const PROPOSAL_KINDS = ["INTENT_REVISION", "PLAN_REVISION", "SOURCE_INTAKE"] as const;
+export const PROPOSAL_KINDS = ["INTENT_REVISION", "PLAN_REVISION", "SOURCE_INTAKE", "ACTION"] as const;
 export type ProposalKind = (typeof PROPOSAL_KINDS)[number];
 
 export const PROPOSAL_STATUSES = ["PROPOSED", "APPROVED", "REJECTED", "CHANGES_REQUESTED", "STALE", "APPLIED", "APPLICATION_FAILED"] as const;
@@ -46,7 +46,28 @@ export interface IntentRevisionPayload {
   readonly changedIds: readonly string[];
 }
 
-export type ProposalPayload = SourceIntakePayload | PlanRevisionPayload | IntentRevisionPayload;
+/**
+ * R5: a generic model-originated action that is reviewable without inventing a TaskSpec, a source
+ * digest or an approval. Applying it records the operator's exact decision; it does not create
+ * canonical Work or move ProjectIR. A plan/source proposal is still mapped to its real owner.
+ */
+export interface ActionPayload {
+  readonly journalEntryId: string;
+  readonly journalDigest: string | null;
+  readonly actionClass: "INVESTIGATE" | "CHANGE" | "ACCEPT_SOURCE" | "REVISE_PLAN" | "OTHER";
+  readonly changedPlanRef: string | null;
+}
+
+export type ProposalPayload = SourceIntakePayload | PlanRevisionPayload | IntentRevisionPayload | ActionPayload;
+
+/** R5: how a Journal proposal entered the review store, and what still needs human repair. */
+export interface JournalAdoption {
+  readonly journalEntryId: string;
+  readonly journalDigest: string | null;
+  readonly adoptedAt: string;
+  readonly repairRequired: boolean;
+  readonly missingFields: readonly string[];
+}
 
 export interface ReviewDecision {
   readonly decision: "APPROVE" | "REJECT" | "REQUEST_CHANGES";
@@ -90,6 +111,7 @@ export interface ProposalRecord {
   readonly application?: ApplicationRecord | undefined;
   readonly execution?: { readonly attemptId: string; readonly taskId: string; readonly recordedAt: string } | undefined;
   readonly acceptance?: { readonly promotionId: string; readonly acceptedHead: string; readonly recordedAt: string } | undefined;
+  readonly adoption?: JournalAdoption | undefined;
 }
 
 export interface ProposalDraft {
@@ -121,6 +143,28 @@ export interface ReviewPreview {
   readonly knownImpacts: readonly string[];
   readonly requiredAuthority: string;
   readonly effects: readonly string[];
+}
+
+/**
+ * R5: the Journal face adoption reads. Deliberately structural (no ProjectWorkspace import), so the
+ * review layer keeps its dependency direction while still binding the exact entry bytes.
+ */
+export interface JournalProposalEntry {
+  readonly entryId: string;
+  readonly kind: string;
+  readonly title: string;
+  readonly body: string;
+  readonly provenance: string;
+  readonly digest: string | null;
+}
+
+export interface ReviewJournalPort {
+  entries(): Promise<readonly JournalProposalEntry[]>;
+  recordApprovedAction(input: {
+    readonly title: string;
+    readonly body: string;
+    readonly provenance: string;
+  }): Promise<{ readonly entryId: string; readonly digest: string }>;
 }
 
 export interface ReviewStore {
