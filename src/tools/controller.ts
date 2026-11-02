@@ -2314,7 +2314,6 @@ export class ProjectController {
         // moves only when the worker commits inside it.
         ...(observed.observedHead === "" ? {} : { resultCommit: observed.observedHead }),
       };
-      // PC1 S01-R02: export the completed result object before recording its full identity.
       if (input.workerStatus === "completed" && observed.observedHead !== "") {
         input = {
           ...input,
