@@ -191,11 +191,16 @@ describe("SR-1 §15 A05 defineApplicationTools is still the aggregate entry", ()
     const tools = (direct.defineApplicationTools as (application: unknown) => readonly { readonly name: string }[])({
       attention: undefined,
     });
-    // The work cluster is the aggregate `palimpsest_surfaces` plus the two agent-facing handoffs:
-    // `palimpsest_begin` and `palimpsest_finish` (PLMP-LEAN-1 appendices E and A, both recorded in
-    // REVIEWED_TOOL_ADDITIONS). All three are unconditional because the Work face is composed in
-    // EVERY installation — the minimal one included — so none depends on an optional face.
-    expect(tools.map((tool) => tool.name)).toEqual(["palimpsest_surfaces", "palimpsest_finish", "palimpsest_begin"]);
+    // The work cluster is the aggregate `palimpsest_surfaces` plus the agent-facing handoffs and
+    // the PC1 normal facade: `palimpsest_begin`, `palimpsest_finish`, `palimpsest_work` (all
+    // recorded in REVIEWED_TOOL_ADDITIONS). All are unconditional because the Work face is composed
+    // in EVERY installation — the minimal one included — so none depends on an optional face.
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "palimpsest_surfaces",
+      "palimpsest_finish",
+      "palimpsest_begin",
+      "palimpsest_work",
+    ]);
   });
 });
 
@@ -212,7 +217,9 @@ describe("SR-1 §29 the split produced no replacement monolith", () => {
         .filter((file) => file.endsWith(".ts") && file !== "index.ts" && file !== "common.ts")
         .map((file) => [file, loc(`${ADAPTERS}/${file}`)]),
     );
-    expect(clusterLoc.size).toBe(8);
+    // PC1 added the normal facade, tool-profile, continuity and outcome clusters; PC1-V1 adds no
+    // new adapter cluster. The count is the measured reviewed partition, not an aspirational eight.
+    expect(clusterLoc.size).toBe(12);
     for (const [file, lines] of clusterLoc) {
       expect(lines, `${ADAPTERS}/${file} is ${String(lines)} lines`).toBeLessThanOrEqual(400);
     }
