@@ -2357,7 +2357,7 @@ export class ProjectController {
     return attemptWorkDir({
       attemptId,
       execution: this.execution,
-      canonicalRepository: this.#canonicalRepository(),
+      canonicalRepository: this.execution === "in-place" ? this.#canonicalRepository() : "",
       worldPath: git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId),
     });
   }
@@ -2370,7 +2370,7 @@ export class ProjectController {
       attemptId,
       baseCommit,
       execution: this.execution,
-      canonicalRepository: this.#canonicalRepository(),
+      canonicalRepository: this.execution === "in-place" ? this.#canonicalRepository() : "",
       worldPath: git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId),
       requiredArtifacts: envelope.required_artifacts,
     });
