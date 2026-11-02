@@ -113,7 +113,21 @@ if (authorizationPath === "") {
 }
 
 const head = git(["rev-parse", "HEAD"]);
-if (cohort.codeFreeze !== head) blockers.push(`cohort.codeFreeze ${cohort.codeFreeze} is not HEAD ${head}`);
+if (cohort.codeFreeze !== head) {
+  /**
+   * A cohort record is necessarily committed AFTER the executable freeze it names. The rule is not
+   * "codeFreeze == HEAD"; it is "the executable paths did not change after the Code Freeze". A
+   * docs/evidence-only cohort-freeze commit is therefore valid, while any src/test/scripts change
+   * still requires a new freeze.
+   */
+  const ancestor = spawnSync("git", ["merge-base", "--is-ancestor", cohort.codeFreeze, head], { cwd: REPO });
+  if (ancestor.status !== 0) {
+    blockers.push(`cohort.codeFreeze ${cohort.codeFreeze} is neither HEAD ${head} nor an ancestor of it`);
+  } else {
+    const changed = git(["diff", "--name-only", cohort.codeFreeze, head, "--", "src", "test", "scripts", "architecture", "package.json"]);
+    if (changed !== "") blockers.push(`executable paths changed after Code Freeze ${cohort.codeFreeze}: ${changed.split("\n").join(", ")}`);
+  }
+}
 const dirty = git(["status", "--porcelain", "--untracked-files=no", "--", "src", "test", "scripts", "architecture", "package.json"]);
 if (dirty !== "") blockers.push("the executable tree is dirty; establish a new Code Freeze before scoring");
 
