@@ -1,0 +1,27 @@
+## Outcome
+
+Continued from the base state and produced a **conditional three-site plan**, not an approval. The recommended design is:
+
+- **3 × Reference instruments**, one per site, for a common **14-consecutive-day** window.
+- Target window **D11–D24 (2026-03-12 to 2026-03-25)**; hard-latest **D15–D28**.
+- Total cost **6,980** against the **7,200** cap, with all **1,280** fixed costs and the **300** S2 battery kit included; headroom **220**.
+- Reference is preferred because it has observed high-humidity bench points at 90/95% RH, offline storage, and avoids Echo's unverified high-RH performance and logger dependency.
+- Echo is documented as the cheaper but currently unsupported option for S2/S3.
+
+## Key conclusions
+
+- **Observed:** Echo samples cover only RH 40–60%, max error 1.2 µg/m³. Reference samples cover RH 45/75/90/95%, max error 0.9 µg/m³. Both samples are small and only 18–22 °C.
+- **Manufacturer claim:** Echo's ±2 µg/m³ over RH 20–95% is not supported by independent high-humidity data. The procurement summary merely repeats the brochure.
+- **Not proven:** Reference does not yet prove ±3 µg/m³ across all site RH/temperature ranges; a pre-deployment verification gate is required.
+- **No source accepted, no budget change, no deployment approved.** Independent approval is requested by **D3 (2026-03-04)**, hard-latest **D7 (2026-03-08)**.
+- The inbox was empty at the observation time, so no external candidate was accepted or rejected.
+
+## Artifacts written and committed
+
+- `study-plan.md` — design, comparability protocol, uncertainty gates, schedule, cost, failure rules, scientific limits.
+- `reviews/evidence.md` — observed sources vs manufacturer claims vs candidates vs accepted facts vs open questions.
+- `reviews/delivery.md` — cost, power, network, schedule, resources, failure alternatives.
+- `plan.json` — structured conditional plan with requirements, cost, approvals, gates and evidence classification.
+- `unresolved.md` — outstanding approvals, blocking questions, decision-record template.
+
+Git history is clean on `master`; latest commit is `d07de94` with the full planning set. No files outside the workspace/inbox were modified.

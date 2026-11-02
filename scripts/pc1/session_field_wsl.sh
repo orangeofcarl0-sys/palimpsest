@@ -15,6 +15,7 @@ if [ "$COND" = "P" ]; then
   WORK="$RUN/p1"
   PROFILE_ID=pc1-fs-p
   BUNDLES='["@deepseek-ai/dsh-base", "palimpsest-dsh-host"]'
+  ONCE="--once"
   if [ "$STAGE" = "T1" ]; then
     PROMPT='You are the planning agent for the Riverton three-site PM2.5 observation study. This is a historical project-state replay observed at 2026-03-02 09:00 UTC. The project workspace is /run/fs-p/world; the inbox is /run/fs-p/inbox. Continue from the available project state. Distinguish observed sources, manufacturer claims, candidates, accepted facts and open questions. Record conclusions and proposed actions through the available project mechanisms. You may investigate, propose and plan; you may not accept an external source, change the binding requirements or approved budget, or approve your own proposal. Work only inside the workspace and the inbox.'
   else
@@ -25,6 +26,7 @@ else
   WORK="$RUN/f1"
   PROFILE_ID=pc1-fs-f
   BUNDLES='["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-headless"]'
+  ONCE=""
   if [ "$STAGE" = "T1" ]; then
     PROMPT='You are the planning agent for the Riverton three-site PM2.5 observation study. This is a historical project-state replay observed at 2026-03-02 09:00 UTC. The workspace is /run/fs-f/world; read HANDOFF.md first. The inbox is /run/fs-f/inbox. Continue from the available state. Distinguish observed sources, manufacturer claims, candidates, accepted facts and open questions. Record conclusions and proposed actions as Markdown/Git. Work only inside the workspace and the inbox.'
   else
@@ -33,7 +35,8 @@ else
 fi
 HOST="$WORK/scored-$STAGE/home"
 OUT="$WORK/scored-$STAGE/out"
-INBOX="$WORK/inbox-$STAGE"
+STAGE_LC=$(printf %s "$STAGE" | tr "[:upper:]" "[:lower:]")
+INBOX="$WORK/inbox-$STAGE_LC"
 CREDENTIAL_FILE="/mnt/c/Users/66494/.dsh/.credentials.yaml"
 PROXY_URL="http://127.0.0.1:7890"
 PROXY_AGENT="/home/admini/c6r/dsh/node_modules/https-proxy-agent/dist/index.js"
@@ -153,9 +156,9 @@ bwrap \
   --tmpfs /mnt --tmpfs /home --tmpfs /root --tmpfs /media --tmpfs /srv \
   --unshare-pid --unshare-net --die-with-parent --chdir "$MOUNT/world" \
   env -i HOME=/dsh-home DSH_HOME=/dsh-home TMPDIR=/tmp PATH=/usr/local/bin:/usr/bin:/bin \
-    C6R_PLACEHOLDER=c6r-placeholder-not-a-credential \
+    C6R_PLACEHOLDER=c6r-placeholder-not-a-credential ONCE="$ONCE" \
     C6R_PROXY_SOCKET=/run/c6r-provider.sock C6R_BRIDGE_PORT=18080 \
-    bash -c 'node /net_bridge.mjs > /dsh-home/bridge.log 2>&1 & BRIDGE=$!; sleep 0.4; /usr/bin/timeout -s KILL 900 /dsh/node_modules/.bin/dsh --profile "$0" --once "$1"; STATUS=$?; kill "$BRIDGE" 2>/dev/null || true; exit "$STATUS"' "$PROFILE_ID" "$PROMPT" \
+    bash -c 'node /net_bridge.mjs > /dsh-home/bridge.log 2>&1 & BRIDGE=$!; sleep 0.4; /usr/bin/timeout -s KILL 900 /dsh/node_modules/.bin/dsh --profile "$0" $ONCE "$1"; STATUS=$?; kill "$BRIDGE" 2>/dev/null || true; exit "$STATUS"' "$PROFILE_ID" "$PROMPT" \
   > "$OUT/run.log" 2> "$OUT/run.err"
 EXIT_CODE=$?
 set -e
