@@ -84,9 +84,9 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
   return tool({
     name: "palimpsest_work",
     description:
-      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), open one governed work position (`begin`), close it when done (`complete`), or save a follow-up proposal without forcing the current plan (`propose`). It never accepts an attempt id, an exit code, an evidence predicate or an approval. `complete` follows the deployment's real placement: in-place work is finished by the product's own observation; a placed worker is settled by its host worker, and this tool says so rather than suggesting a route that cannot work there. A proposal is NON-AUTHORITATIVE: it records what should be considered next; it does not approve, plan or accept anything.",
+      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), or save a follow-up proposal without forcing the current plan (`propose`). It never accepts an attempt id, an exit code, an evidence predicate or an approval. `start` is the normal way to enter an EXISTING ready task; `begin` is the direct single-task bootstrap. `complete` follows the deployment's real placement: in-place work is finished by the product's own observation; a placed attempt is settled through the same settlement owner. A proposal is NON-AUTHORITATIVE: it records what should be considered next; it does not approve, plan or accept anything.",
     mode: "mutating",
-    actions: ["status", "plan", "next", "run", "begin", "complete", "propose"],
+    actions: ["status", "plan", "next", "run", "start", "begin", "complete", "propose"],
     extraProperties: {
       goal: { type: "string", description: "for begin/plan: what the work is, in the user's own words" },
       writePaths: { type: "array", items: { type: "string" }, description: "for begin: the paths this work may change" },
@@ -136,6 +136,49 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         const outcome = await work.control("run", maxSteps === undefined ? [] : [maxSteps]);
         return { outcome, status: safeStatus(work.status()) };
       }
+      if (action === "start") {
+        if (work.placement() !== "in-place") {
+          return {
+            state: "PLACED_WORK",
+            detail: "this deployment places work in an isolated world; use the host worker or `palimpsest_work action=run`, then `complete`",
+            nextActions: ["palimpsest_work action=run", "palimpsest_work action=status"],
+          };
+        }
+        const already = work.status() as { attempts?: Array<{ state?: string }> };
+        if (!(already.attempts ?? []).some((attempt) => attempt.state === "RUNNING")) {
+          let claimed = false;
+          for (let step = 0; step < 4; step += 1) {
+            const event = work.control("next", []) as { event_type?: unknown; entity_id?: unknown } | null;
+            if (event?.event_type === "ATTEMPT_CREATED" && typeof event.entity_id === "string") {
+              await work.control("claim", [event.entity_id]);
+              claimed = true;
+              break;
+            }
+            if (event?.event_type === "ATTEMPT_STARTED") {
+              claimed = true;
+              break;
+            }
+          }
+          if (!claimed) {
+            // A claimable attempt may already exist without a scheduler step; try the selection seam.
+            try {
+              await work.control("claim", []);
+              claimed = true;
+            } catch {
+              claimed = false;
+            }
+          }
+          if (!claimed) {
+            return {
+              state: "NO_CLAIMABLE_WORK",
+              detail: "no claimable work position was found; inspect the task states before writing anything",
+              status: safeStatus(work.status()),
+              nextActions: ["palimpsest_work action=status", "palimpsest_work action=plan"],
+            };
+          }
+        }
+        return { state: "READY", status: safeStatus(work.status()) };
+      }
       if (action === "begin") {
         const goal = requiredString(object, "goal");
         const writePaths = stringArray(object.writePaths, "writePaths");
@@ -161,6 +204,9 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
           };
         }
         const result = await work.finish(summary === undefined ? {} : { summary });
+        // Move the settled attempt into the canonical VERIFYING state so the operator review is the
+        // next legal action, rather than leaving the task ACTIVE until an unrelated scheduler tick.
+        work.control("next", []);
         return {
           state: result.state,
           changedFiles: result.changedFiles,
