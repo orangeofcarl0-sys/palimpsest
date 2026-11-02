@@ -1,0 +1,1657 @@
+{
+  "programId": "PALIMPSEST-PC1",
+  "requirements": [
+    {
+      "id": "S00-R01",
+      "phase": "S00",
+      "title": "创建或恢复单一干净开发分支",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md",
+      "normativeText": "记录 status、untracked、HEAD/tree、remote refs、ancestry、stashes、worktrees、protected roots。正常从指定基线建立 `palimpsest-product-convergence-v1`。已有同 programme 的分支可恢复；脏树不自动 stash/reset，用新的干净 worktree 隔离。无关同名分支不可覆盖。所有后续工作提交到这一阶段线，避免每个实验创建生产分支。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S00-01"
+      ]
+    },
+    {
+      "id": "S00-R02",
+      "phase": "S00",
+      "title": "完整能力与 owner 盘点",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md",
+      "normativeText": "沿 `install.ts → composition → adapters/host → actual tool registration` 画调用图，记录模块 implemented/composed/model_reachable/exercised/valuable 五层状态。不得因为类已 export 就标 model-ready。盘点至少 Work、Result、Evidence、Promotion、Context、Workspace、Intent、Collaboration、Trajectory、Management、runtime/security。\n\n分类默认核心/按需高级/保留研究/兼容维护。记录 README 与实际能力的差异，作为 S09 文档义务，而不是立刻删模块。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S00-02"
+      ]
+    },
+    {
+      "id": "S00-R03",
+      "phase": "S00",
+      "title": "固定正常模式与专家模式的目标",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md",
+      "normativeText": "选定默认主路径支持的部署组合（首选已验证 DSH；系统和工具版本以当前安装为准）。定义 operator、principal、ephemeral worker、durable peer 四种角色能看到/写入的资源。普通模型不默认暴露所有 expert 工具；但不得通过隐藏能力伪造基线优势。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S00-03"
+      ]
+    },
+    {
+      "id": "S00-R04",
+      "phase": "S00",
+      "title": "建立整体执行清单和依赖",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md",
+      "normativeText": "在仓库 `docs/programs/pc1/` 保存本包或其可追溯副本，维护 `program-state.json` 与 requirement results。每项 requirement 有 owner、phase、实现状态、测试证据和阻断原因。每次检查点更新下一步，不能只写“继续分析”。工作拆分可用并行子 Agent，但必须划分文件/状态写入所有者并由集成人核验；不允许多 Agent 同时改同一关键服务。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S00-04"
+      ]
+    },
+    {
+      "id": "S00-R05",
+      "phase": "S00",
+      "title": "环境与历史差异基线",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md",
+      "normativeText": "核对 package.json 的 Node ≥24.15.0 要求、pnpm lock、Ordarium release 与 DSH 安装版本。执行最小 build/architecture/public-api 与选定 smoke；保留失败，不以当前故障证明本期回归。完整变更审查用本地 Git，不把 GitHub compare 的 300 项返回上限当全量清单。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S00-05"
+      ]
+    },
+    {
+      "id": "S00-R06",
+      "phase": "S00",
+      "title": "资源与权限预先配置",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md",
+      "normativeText": "读取现有付费与账户授权，不自动充值或继承耗尽的旧 campaign 余额。确认 model trial 的 allowed provider、总 Token/费用、session 上限、配对预留和安全边界。缺失时把 live model 项标资源阻断，后续工程阶段继续。指定独立 fixture roots 与允许清理的 test-owned 输出，不删除原 COG rig。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S00-06"
+      ]
+    },
+    {
+      "id": "S01-R01",
+      "phase": "S01",
+      "title": "建立可检验根因而不是复述报告",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "normativeText": "固定原 evidence 的 SHA 与读取范围；列假说：输入身份异常、对象未 export、Git alternates 跨 namespace 失效、effect reconcile 对不可观察错误误分类。分别检验，不混成一个“Git 问题”。写前向纠错，原证据不修改。原未决 `op_d0dede...` 只读取；不能用修改 Ledger 终结。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S01-01"
+      ]
+    },
+    {
+      "id": "S01-R02",
+      "phase": "S01",
+      "title": "所有正常 Report 路径导出正确 Result",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "normativeText": "同一正常 Work 必须在 legacy claim/report、当前 product facade、D2 worker 三条路上建立一致结果契约：观察真实 execution world；验证 scope/materialization；取得完整对象身份（适配仓库 object format，不硬编码只支持 SHA-1）；在 canonical ODB 可读取结果对象/必要树后才进入可 Promotion 状态。\n\n复用 ExecutionWorldPort.exportResultCommit 或等价现有 owner 接缝。对象 import 只能改变 object availability，不能移动 branch/project head。export 失败不能谎称提交可接受；保持工作世界、清楚 retry/recover 状态。若 report 已持久化再 export，要定义失败后如何继续，不靠第二个报告改写历史。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S01-02",
+        "T-S01-03",
+        "T-S01-10"
+      ]
+    },
+    {
+      "id": "S01-R03",
+      "phase": "S01",
+      "title": "Git 路径视图与世界身份明确",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "normativeText": "canonical repo、world GitDir、alternates、mount namespace 与执行位置全部来自 Host 配置，不能由模型随意传入任意路径。分别测试 Windows/WSL 组合中实际支持的配置。普通模式可声明 Linux sandbox supported、Windows mode unsupported；不通过放宽系统写权限解决路径问题。损坏的 alternates 不等于空 repo，不自动重新 clone 覆盖唯一结果。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S01-03"
+      ]
+    },
+    {
+      "id": "S01-R04",
+      "phase": "S01",
+      "title": "可观察的 Promotion 与 Recovery",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "normativeText": "推进既有 safe action/PromotionManager：preflight 对象可读、expectedHead/basis 当前；effect 开始前失败可明确拒绝；开始后异常保留 uncertain 并对账。区分对象不存在、对象不可观察、存在但未 merge、merge 已成功但回执未写。只有真实结果证明才 settle/retry；错误不得一律 `catch → false` 被解释为效果未发生。\n\n重试遵守原 action idempotency/claim/fence。CAS 防止检查后 head 变化；重入/重复 Promotion 返回同一 terminal effect；crash-before、crash-after 和 uncertain 都有独立测试。若需 Ordarium 改动而仓库不拥有该权威，优先修 adapter 的可观察性；外部 SDK API 缺口记录和隔离，不伪造结果。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S01-04",
+        "T-S01-05",
+        "T-S01-10"
+      ]
+    },
+    {
+      "id": "S01-R05",
+      "phase": "S01",
+      "title": "Evidence Predicate 与 producer 资格绑定",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "normativeText": "命令退出 0 只能支持该命令真正证明的命题。普通模型不得任意把 `tests_pass` 改名为 `write_scope_valid` 或 `expected_files_exist`。结构性命题必须从可信的 Git diff/Result tree/Artifact Observation 取得，绑定 exact subject digest、basis、环境与观察条件。支持扩展 Predicate 时先注册验证契约和 producer，不给 caller 字符串自授权。\n\n若现有 parser 接受历史弱证据，读取/重放不删除旧记录；新接受路径对其标 legacy/unqualified 或要求重新验证，不能悄悄提升旧证据权威。命令重复、结果内容变动、工具环境改变不得沿用不再适用的 Evidence。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S01-06",
+        "T-S01-07",
+        "T-S01-08"
+      ]
+    },
+    {
+      "id": "S01-R06",
+      "phase": "S01",
+      "title": "Gate 与业务语义分开",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "normativeText": "发布前 Gate PASS 仅代表满足声明的合格证据，不能表示所有真实世界假设成立。正常完成路径自动收集合格 scope/artifact evidence，不逼模型猜 Predicate 或用无关命令凑齐。每个 Gate 返回 which-observation、which-subject、why-pass/fail/missing。S06 再定义领域检查，S01 不建立万能 truth engine。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S01-08",
+        "T-S01-10"
+      ]
+    },
+    {
+      "id": "S01-R07",
+      "phase": "S01",
+      "title": "保留候选、结果与接受身份",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md",
+      "normativeText": "记录 originBasis、executionHead、resultCommit、export/readability state、expectedAcceptanceHead、acceptedHead、acceptedBlob。Promotion lineage 继续使用真实受接受事实，不能把 resultCommit 当 acceptedHead。线性、merge、divergent/missing Git 对象都覆盖。Git blob 字节与 Windows working-tree newline 分开。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S01-09"
+      ]
+    },
+    {
+      "id": "S02-R01",
+      "phase": "S02",
+      "title": "正常/专家目录真的分离",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "normativeText": "审查 base tools 与 application tools 的双路径注册。默认不同时暴露冲突的 legacy next/claim/report/finish 与现代 facade，让模型自己猜工作模式。保留兼容入口但标记 expert，在 profile 中显式选择。必须有 tool-catalogue snapshot 测试；不能只改 README。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S02-01"
+      ]
+    },
+    {
+      "id": "S02-R02",
+      "phase": "S02",
+      "title": "Placement-independent 完成体验",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "normativeText": "正常 work.complete/既有等价入口根据真实 execution mode 选择已有路径。Worktree 与 in-place 的完成不依赖模型自行猜 `finish` 能否用；错误模式给可执行 next action，不鼓励绕过。接口可复用 begin/finish/report/gate 的 owner，但自动执行产品负责的结构性观察，不能为模型补写未经观察的成功。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S02-02"
+      ]
+    },
+    {
+      "id": "S02-R03",
+      "phase": "S02",
+      "title": "稳定、简短、可展开的状态响应",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "normativeText": "每个正常 mutation/inspection 返回 result subject、canonical basis、状态、evidence references、阻断原因、所需角色、合法 next actions 与幂等/retry 指示。短摘要与可读取细节分离，避免每次返回全部 Event Log。保证 DSH lossless JSON 序列化，无循环引用、Date/BigInt 隐式漂移。明确只读 canonical 与可能持久化 derived observation 的区别。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S02-03"
+      ]
+    },
+    {
+      "id": "S02-R04",
+      "phase": "S02",
+      "title": "VERIFYING 不迫使模型重建计划",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "normativeText": "当当前 Work 仍待接受且 quiescence 不允许 plan mutation，允许模型保存非权威的后续工作提议/Journal opportunity；接受结束后按新的 project basis 重新检查再应用。不得让 pending plan 自动获得旧批准；不得删除 quiescence guard。模型得到解释：“成果待接受；可提交后续候选，不可直接覆盖正式计划”。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S02-04"
+      ]
+    },
+    {
+      "id": "S02-R05",
+      "phase": "S02",
+      "title": "Authority UX 真实可理解",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "normativeText": "ProjectIR decision append、task graph revision、source intake、goal/requirement revision、Promotion 各自呈现真实 authority。模型可见 status 不能被当批准。若 missing authority，返回可提交请求而非假执行。operator 端执行已有权限，不能使用 model-authored boolean `approved:true`。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S02-05"
+      ]
+    },
+    {
+      "id": "S02-R06",
+      "phase": "S02",
+      "title": "简单任务不强制完整治理",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "normativeText": "使用现有 involvement/work-mode 组合提供轻量读取/探索路径；无需 formal accepted state 的回答可直接交付，标结果地位。写入共享 canonical source、改变项目承诺或不可逆效果时升级已有 Work/批准要求。轻量模式不是安全绕过；未知风险默认显式边界。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S02-06"
+      ]
+    },
+    {
+      "id": "S02-R07",
+      "phase": "S02",
+      "title": "可观察而不要求内部数据库探索",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md",
+      "normativeText": "project status/explain 接口足以获得模型正常决策所需的 Task、Result、接受/候选、权限和下一步。调试 raw SQLite/内部源码只允许专家模式，不能成为默认场景成功的必要步骤。现实模型仍越界探索时记录产品摩擦，不悄悄记为正常 tool 成功。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S02-07"
+      ]
+    },
+    {
+      "id": "S03-R01",
+      "phase": "S03",
+      "title": "三类信息职责，不建三套真值库",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "normativeText": "保留原始事件/材料/产物作为可追溯历史；从原 owner 派生当前目标、承诺、可采用成果与未决状态；为当前任务构造有预算的 Context Capsule。缓存必须带 basis/version，失效后重建。不把旧摘要覆盖原 evidence 或复制第二份 ProjectIR。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S03-01"
+      ]
+    },
+    {
+      "id": "S03-R02",
+      "phase": "S03",
+      "title": "每条关键结论具有事实地位",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "normativeText": "区分 observed source、agent interpretation、candidate、accepted-for-purpose、negative finding、uncertain/contested、superseded。具体字段映射现有 owner，不能仅凭 LLM 写 `accepted`。已接受只表示在指定用途/条件下采用，非普遍真理。\n\n每项展示至少有 source refs、formation basis/time、adoption basis（如有）、applicability note、confidence of observation 而非无来源数值 confidence。没有适用性证明时说明“可能受影响/需复核”，不自动计算通用语义依赖。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S03-02"
+      ]
+    },
+    {
+      "id": "S03-R03",
+      "phase": "S03",
+      "title": "Context 有目标、覆盖和停止条件",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "normativeText": "默认摘要只包含当前决策需要的目标、硬约束、已采用结果、关键否定、开放问题、相关变化、授权边界和追溯入口。按需读取精确来源。设字节/token 上限，但关键安全事实被裁剪时必须显式标 incomplete 并提供入口，不能声称完整覆盖。\n\n检索停止条件是当前决策需求满足或声明无法补足，不是查遍全仓库。高影响决定要求更强证据；低风险探索可以明确带未知继续。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S03-03"
+      ]
+    },
+    {
+      "id": "S03-R04",
+      "phase": "S03",
+      "title": "新 Session 重建，不伪装 transcript 恢复",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "normativeText": "同一 Session resume 与新 Session inheritance 分开测试。新 Agent 只能读取合法 durable assets/state，不读取旧模型 transcript 或测试 oracle。统计首次有用行动、重复调查量、关键遗漏和对历史理解错误。保留“当时正确、现在不适用”的结论，不简单删旧知识。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S03-04"
+      ]
+    },
+    {
+      "id": "S03-R05",
+      "phase": "S03",
+      "title": "防止自引证放大",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "normativeText": "摘要/交接记录保留来源链。多个 Agent 引用同一原始文档不算独立证据；检索派生结果不能反过来被记为独立验证来源。保存 root source identity 与 derived lineage，冲突来源可同时存在。无来源新判断只能是 hypothesis。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S03-05"
+      ]
+    },
+    {
+      "id": "S03-R06",
+      "phase": "S03",
+      "title": "Trajectory 只做有依据的投影",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "normativeText": "用已有 causal projection 说明哪些 Attempt/Source/Result/Decision 影响当前状态，提供按需回溯。没有独立跨 owner 关系证据时不编造因果边。Trajectory 不成为第二个 Planner、执行权威或万能 Memory Server。跨 Session/Owner 的信息披露按现有权限过滤。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S03-06"
+      ]
+    },
+    {
+      "id": "S03-R07",
+      "phase": "S03",
+      "title": "历史发现能够转成可选择的工作候选",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md",
+      "normativeText": "负面结果不会自动生成 Task，但正常 Agent 能看见它是否关联未解决目标，并形成 opportunity/open question。API 帮助保留精确引用；是否值得启动由 Agent 判断、是否授权由现有 owner 判断。长期静态失败可以保持，不因每次启动反复新增相同机会。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S03-07"
+      ]
+    },
+    {
+      "id": "S04-R01",
+      "phase": "S04",
+      "title": "有来源、可审查的行动候选",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "Agent 可以通过既有 Journal opportunity 或新增薄 facade 生成 proposal。最低内容：目的、受影响目标/要求、来源与 digest、project basis、具体 action、write/effect scope、风险、依赖、预期交付、所需角色。允许人类澄清，但需记录修改内容和介入成本。proposal 是非权威 artifact，不能自己把 task/source 改成 accepted。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-01"
+      ]
+    },
+    {
+      "id": "S04-R02",
+      "phase": "S04",
+      "title": "精确的 review package",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "提供正常 operator UI/CLI/API 的 review preview：对比现状与候选，展示已知影响、不确定性、scope、费用与所需批准。approve/reject/request_changes 明确分开；批准绑定精确 proposal/source/basis digest，不是一个永久 `approved=true`。不要发明第二个批准账本；优先复用 ProjectIntent admission、已有 Work/Promotion authority 或现有 operator action 记录。必要的 UI 审阅 metadata 必须不拥有 canonical effect 权限。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-01",
+        "T-S04-08"
+      ]
+    },
+    {
+      "id": "S04-R03",
+      "phase": "S04",
+      "title": "不同授权类型不能混用",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "Task Graph 普通规划、业务要求修订、Source Intake、Result Promotion、外部不可逆效果分开。模型可创建计划不等于有权接受 source；record decision 不等于外部 stakeholders 批准。normal Host 缺少 Project Intent authority 时可 prepare/preview，但 apply 必须拒绝；operator 可以在已有合格 authority 下执行。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-02"
+      ]
+    },
+    {
+      "id": "S04-R04",
+      "phase": "S04",
+      "title": "审批前后 currentness",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "review 前、执行前检查 project/source/proposal 精确身份。候选变动或目标变化使旧批准失效。批准与 effect 间的 race 通过既有 CAS/版本 fence 保护。重复批准、重复提交和 delivery 重放不得产生两次 Work/Promotion。rejected candidate 的后续 session 不应把它当已接受。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-03"
+      ]
+    },
+    {
+      "id": "S04-R05",
+      "phase": "S04",
+      "title": "使用已有执行链，不在 Controller 外代办",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "approved proposal 进入合法 plan revision/Opportunity promotion/Work start。执行结果走 S01 观察、export、Gate、Promotion、Head reconciliation。用户可看到 Job/Attempt/Result/acceptance 不同阶段。`DELEGATED` 不是完成，必须追到 terminal 或真实 pending reason。background completion 不能在旧 Session 结束后静默丢失，使用既有 durable path/明确 pull resume，不伪称非持久 host job 自动恢复。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-04",
+        "T-S04-08"
+      ]
+    },
+    {
+      "id": "S04-R06",
+      "phase": "S04",
+      "title": "Source Intake 真正绑定批准内容",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "对文件候选，独立 verification 读取获批准的 immutable candidate 和 resulting Git blob，检验 exact bytes/digest 与 path scope；不能仅靠 Worker 自己说“复制成功”。resultCommit/acceptedHead/workingTree bytes 分开。批准 A 后收到 B 不可沿用 A 的权限。通用非文件来源按同等 source revision 合同适配，不建全新 source authority。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-05"
+      ]
+    },
+    {
+      "id": "S04-R07",
+      "phase": "S04",
+      "title": "保留负面成果与未达成目标",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "分析可正确完成并得 infeasible/uncertain。正式结果应说明调查完成状态与业务目标状态，关联负面 Journal/Open Question/下一步候选。accepted analysis 不自动授权要求放宽、采购或销毁旧成果。下一步由 Agent 或人类提出，系统不对所有 negative 自动增殖 Task。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-06"
+      ]
+    },
+    {
+      "id": "S04-R08",
+      "phase": "S04",
+      "title": "真实 proposal-origin 追踪",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "记录谁提出、谁完善、谁批准、谁执行、谁验证、谁接受。测试驱动器若改 TaskSpec 必须作为 operator intervention；不得把 deterministic seeding 记为 Agent 自主发现。用户选择缩小范围是合法结果，但其代价和原因必须可见。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-07"
+      ]
+    },
+    {
+      "id": "S04-R09",
+      "phase": "S04",
+      "title": "正常操作员 Intent Admission 接入",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md",
+      "normativeText": "必须提供把已确认操作员决定接入既有 ProjectIntentAdmissionPort/同等现有 authority 的正规适配，而不是永远让 expert-only API 缺 port。身份、用途、proposal digest、授权范围和 currentness 需显式配置并在运行时验证。该 adapter 不创造自有授权，不把任意 UI 点击或模型文字当全局权限。首次无授权安装可只读/prepare；合法操作员完成配置后，端到端 apply/revision/后续工作可用。若当前用户身份基础不足以合法组成，交付适配与测试、列明外部身份阻断，不把 UI badge 称正式授权。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S04-09"
+      ]
+    },
+    {
+      "id": "S05-R01",
+      "phase": "S05",
+      "title": "明确四种执行者",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "native DSH subagent：在 Harness 支持内短期执行；Reasoning Branch：有界探索、非事实权威；Managed Work Worker：有正式 Attempt/Result；durable project peer：独立身份、历史、生命周期与权限。产品/UI/报告准确命名。系统建议哪种机制时说明 why/use/cost/capability，不把不可用 PARALLEL 假装为串行多次 prompt。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-01"
+      ]
+    },
+    {
+      "id": "S05-R02",
+      "phase": "S05",
+      "title": "协作由实际需求触发",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "正常 Agent 能在问题存在独立信息、交叉检查、互补领域或真实并行收益时请求协作。无关更新或简单问题不强制创建更多 Agent。native 能力允许使用，不为突出 Palimpsest 而禁用成熟工具。严格限并发、嵌套深度、总预算和作用域；子任务不得扩大父授权。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-01",
+        "T-S05-07"
+      ]
+    },
+    {
+      "id": "S05-R03",
+      "phase": "S05",
+      "title": "可用的结构化交接",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "每项 handoff 包含 task/intent、constraint、project basis、source standing、允许访问资源、预期 artifact、已知缺口、停止条件、剩余预算和需要上层决定事项。返回包含独立发现、来源、假设、反证、不确定性、产物引用、当前适用范围、follow-up。复杂研究不被强制压成一句 claim；可以交完整 artifact + concise receipt，复用已有 asset/result 引用，不新建并行结论库。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-02"
+      ]
+    },
+    {
+      "id": "S05-R04",
+      "phase": "S05",
+      "title": "独立性与因果影响可检查",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "记录每个执行者实际看到什么、读了什么、什么来源是共有的，不能称所有不同模型输出为独立证据。合成过程要指出哪些发现改变了选择/约束/行动，哪些重复、冲突或尚未验证。候选消融（移除一项真实发现）是独立实验，不在生产历史中抹除已发生事件。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-03",
+        "T-S05-08"
+      ]
+    },
+    {
+      "id": "S05-R05",
+      "phase": "S05",
+      "title": "分歧是合法状态，不强行投票",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "当不同结果冲突，系统支持并存、按来源重评、请求定向验证、条件化结论或交给人类决策。多数 Agent 复述同一来源不胜过独立反证。Principal 不能将探索 Branch 的 admitted claim 自动升级为 Evidence/Proof。部分结果保留为 partial，合成产物引用真实来源。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-04"
+      ]
+    },
+    {
+      "id": "S05-R06",
+      "phase": "S05",
+      "title": "异步与生命周期正确",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "结果可迟到、重复、逆序到达；取消后新消息不自动重开权威；ProjectIR/source/permission 改变后，旧结果可以保存但 effect 必须重新检查。保存 origin/target/causation/session/work IDs 与 receive/consume/accept 三种不同事实。支持已有 durable transport 的重启恢复；非 durable native job 中断时明确 interrupted，而不是伪装继续运行。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-05",
+        "T-S05-07"
+      ]
+    },
+    {
+      "id": "S05-R07",
+      "phase": "S05",
+      "title": "至少两项真实产品路径",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "A. 单项目 Principal 按需请求独立研究，结果正常返回且影响下一步。\nB. 两个独立项目/Owner 通过已有 cross-project Ask/commitment 语义交换有来源成果；至少经历一次不同 Session 的接续。若研究只用临时 branch，路径 B 不能标完成。不得为了满足 B 发明新联邦协议，复用已有 transport/federation 与项目目录。\n\n正式产品若 B 运行依赖显式 peer 配置，安装工具自动生成安全样例并检查，不让用户手填所有内部引用。没有 peer 时可靠降级到“能力未组成”，但不能把该降级当该 requirement 已实现。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-06"
+      ]
+    },
+    {
+      "id": "S05-R08",
+      "phase": "S05",
+      "title": "合作的价值可被否定",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md",
+      "normativeText": "S08 中与强 DSH 原生协作比较质量、反证覆盖、错误接受、人工协调和费用。若额外审查没有收益，默认策略可以不启用；保留该能力不意味强制所有任务使用。自动架构学习和组织演化仅记录经验，不进入本期在线控制。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S05-08"
+      ]
+    },
+    {
+      "id": "S06-R01",
+      "phase": "S06",
+      "title": "三种完成地位同时可表达",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "normativeText": "输出至少区分 execution/delivery completion、declared Work acceptance、business/objective outcome。沿用已有 state owners，业务地位先作为带依据的 projection/评估结果，不默认新增全局 task enums。结果可为 supported、infeasible、uncertain、contested、partially fulfilled，具体值按可验证领域契约描述，不由模型自填高权威标签。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S06-01"
+      ]
+    },
+    {
+      "id": "S06-R02",
+      "phase": "S06",
+      "title": "领域验证契约可插拔且可审计",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "normativeText": "使用现有 Completion Standard/Verification/Proof 扩展点定义：问题、被评价 artifact/source revisions、required checks、verifier identity、权限、输出与适用条件。代码任务可用测试；数据任务可用 schema/constraints；研究可用独立审查与来源对照；开放方案可需要人类判断。不是每项 conclusion 都可机器判真。\n\n不因文件后缀 `.md`/`.csv` 自动认定业务验证无须执行。需要既有 contract applicability 的修正时，应 additive opt-in domain contract，并明确旧版本行为；不能全仓库改规则让历史效果失去解释。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S06-02"
+      ]
+    },
+    {
+      "id": "S06-R03",
+      "phase": "S06",
+      "title": "结构性与领域证据不互相冒名",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "normativeText": "scope/artifact/command evidence 来自 S01；领域质量由独立适当机制评估。通过 node verify 数据格式不能证明供应商合规；研究者自评不是 independent validation；hash 只证明字节身份。接受结果要说明接受的用途和保留条件。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S06-03"
+      ]
+    },
+    {
+      "id": "S06-R04",
+      "phase": "S06",
+      "title": "负面发现是一等可用成果",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "normativeText": "设计两个 Task：A“调查并报告是否可行”；B“实现满足约束的方案”。相同 infeasible 结论可使 A 合同完成，但不能使 B 的业务目标完成。保留 source、constraint、time、negative reason 与可触发下一步的 open question，不自动改 goal 或创建大量新任务。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S06-01"
+      ]
+    },
+    {
+      "id": "S06-R05",
+      "phase": "S06",
+      "title": "非 Git 来源可引用、可版本化",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "normativeText": "至少支持一个通过现有 External Assets/Proof 输入的非代码来源（immutable document/dataset revision），保留 source identity/digest，不将它强制包装成 fake Git Commit。正式接受/修改来源必须经其实际 owner；若当前不能对外写，仅提供 read/intake candidate 能力，不伪装所有外部副作用已受保证。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S06-04"
+      ]
+    },
+    {
+      "id": "S06-R06",
+      "phase": "S06",
+      "title": "独立性与失败可观测",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "normativeText": "Verifier 的输入、范围、工具和结果独立保存。不可由同一个生成器修改隐藏 Oracle 后验证自己。对于模型评审，明确 provider/model、prompt、blindness 和其局限；单次评分不是客观真理，分歧可保留。不记录隐藏 chain-of-thought 作为证据。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S06-05"
+      ]
+    },
+    {
+      "id": "S06-R07",
+      "phase": "S06",
+      "title": "业务 outcome 贯通产品视图",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md",
+      "normativeText": "Workspace/status/handoff 应同时显示“分析已完成、Site B 目标仍未满足、候选更新未批准”。下一位 Agent 不必从整份报告猜状态。模型可以记录新的 negative/open question，但 authority 来自既有接受链。对没有领域 verifier 的任务，不显示 verified true。\n\n| Test ID | 对应要求 | Case / 期望 |\n|---|---|---|\n| T-S06-01 | S06-R01,S06-R04 | 同一负面结论在调查与履约任务中有正确不同解释 |\n| T-S06-02 | S06-R02 | 文档任务显式领域 contract 被实际执行，不因后缀静默跳过 |\n| T-S06-03 | S06-R03 | files_exist/tests_pass 不能代替领域结论；输出说明证明范围 |\n| T-S06-04 | S06-R05 | immutable non-code asset 更新版本后旧结论有可追溯身份 |\n| T-S06-05 | S06-R06 | generator 不能写 oracle；评审失败/冲突不抹去 |\n| T-S06-06 | S06-R07 | fresh view 正确保留 accepted negative 与 unmet objective |\n\n**退出：** 两个产品场景可在既有 owners 下表达领域正确性，而不是把外部 rubric 脚本的 PASS 冒充产品已具备领域验证。S08 可以额外独立评价产品，但不应代替实际产品约束。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S06-06"
+      ]
+    },
+    {
+      "id": "S07-R01",
+      "phase": "S07",
+      "title": "已安装能力为准",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "normativeText": "读取本地 DSH/Ordarium 版本与实际插件。不能把新 upstream README 当旧安装版的证明。提供 doctor 报告 Session persistence、native subagent、filesystem/bash executor、permission、sandbox enforcement、network/proxy、数据库与 path view。缺能力给 actionable diagnostic，不无声退回更宽权限。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S07-01"
+      ]
+    },
+    {
+      "id": "S07-R02",
+      "phase": "S07",
+      "title": "权限在执行层而非文字层",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "normativeText": "模型允许读当前工作资料、写自己被授权的 execution world；Inbox 只读、test oracle/未来事件不可读、其他条件目录不可读、凭据与 runtime admin 状态不对模型工具开放。Bash 和 read/write/edit provider 一并检验；测试 symlink、间接 helper、环境变量、子进程、跨 workspace。只用 synthetic secrets，禁止输出真实密钥。\n\nsandbox 与能力模式不同：普通 Git worktree 不是 OS sandbox；bwrap/容器/现有 DSH sandbox 可作为成熟 adapter。无法满足要求的目标平台应明确 unsupported，不能宣称通用跨平台隔离。只支持一条安全 happy path也胜过假支持，但安装需清楚。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S07-02"
+      ]
+    },
+    {
+      "id": "S07-R03",
+      "phase": "S07",
+      "title": "正常 Host 生命周期",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "normativeText": "Principal running、idle、waiting-review、interrupted、uncertain 的用户状态来自真实 owners。Attention/Delegation 的消息 queued、delivered、consumed、acted-on 分开；`activation:none` 不称主动唤醒。旧 session 关闭后未消费结果通过已有 durable path 或 resume inspection 可发现；非持久 job 真实报告 interrupted。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S07-03"
+      ]
+    },
+    {
+      "id": "S07-R04",
+      "phase": "S07",
+      "title": "保守可用的在线资源账",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "normativeText": "从真实 Session usage events 记录 provider/model/session/turn/counter version，input/output/cache 分项去重。累计计数与 delta 不混；resume 不重复计费；子 Agent 计入父 campaign；provider 缺usage 标 unknown 并限制启动。预算 gate 管理 launch + in-flight reserve + pair reservation；停止必须真实终止合格进程及其 child tree，保存最后证据。不能把 24M 默认建议当 owner 付款批准。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S07-04",
+        "T-S07-05"
+      ]
+    },
+    {
+      "id": "S07-R05",
+      "phase": "S07",
+      "title": "成本与进度分离",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "normativeText": "记录 time-to-first-useful-action、模型 active time、工具执行时间、review wait、空等待、retry 与实验观察开销。cache Token 不按全价推断成本。日志应足够解释 126 次工具调用的摩擦，但不默认暴露整个内部数据库给模型。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S07-06"
+      ]
+    },
+    {
+      "id": "S07-R06",
+      "phase": "S07",
+      "title": "崩溃恢复与外部效果分开",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "normativeText": "进程 crash/restart、网络异常、重复消息、长任务超时和取消全覆盖。Session 能恢复不意味着原业务方向仍正确；resume 重新检查 currentness。外部 effect uncertain 由 S01 formal recovery，对话恢复不自动重发不可逆动作。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S07-07"
+      ]
+    },
+    {
+      "id": "S07-R07",
+      "phase": "S07",
+      "title": "单一可支持默认环境与可替换 backend",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md",
+      "normativeText": "先把一个明确 supported stack 做完整（如已安装 DSH + Linux/WSL2 隔离），其余平台有能力检查和明确信息。不要在本期建设跨云 Runtime。Git 仍是第一实现，接口保留独立 world 及 immutable artifact 的适配；只有测到性能瓶颈才考虑更换 substrate。\n\n| Test ID | 对应要求 | Case / 期望 |\n|---|---|---|\n| T-S07-01 | S07-R01 | doctor 从实际 runtime 输出版本和已组成能力，missing 不被声明可用 |\n| T-S07-02 | S07-R02 | Bash/fs/child/symlink 边界测试通过；synthetic secret 不可读，Inbox 不可写 |\n| T-S07-03 | S07-R03 | delivered 与 consumed 区分，idle/pending 能在新 Session 正确读取 |\n| T-S07-04 | S07-R04 | usage duplicate/delay/resume/child 被准确计数；启动保留 pair 预算 |\n| T-S07-05 | S07-R04 | Windows/Linux 实际采用的进程树 stop 有测试，不仅发送信号 |\n| T-S07-06 | S07-R05 | wall-clock 不把 evaluator wait 记为模型推理；费用缺失不编造 |\n| T-S07-07 | S07-R06 | restart 不重复外部效果，cancel/late result 不越权生效 |\n| T-S07-08 | S07-R07 | supported install 可复现，unsupported profile fail-fast 且给修复方式 |\n\n**退出：** 正常运行资格可机械检查，任何真实模型 trial 前可自动 gate；额度/权限缺失阻止 trial，不能阻止后续包与代码交付。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S07-08"
+      ]
+    },
+    {
+      "id": "S08-R01",
+      "phase": "S08",
+      "title": "场景 A：Sablewick 可靠性与演化回归",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "复用已冻结 C6-R 事实，不把反复调试过的用例作为唯一智能基准。T1=2026-02-10T09:05Z 只显示当时公告/证书承诺/Newsletter；T2=2026-02-14T09:10Z 才释放更正候选 B 与 duplicate。初始世界有历史 accepted work，不预建本轮正确 Intake Task。项目模拟时间与运行 UTC 分开。\n\n评价 Agent 发现 A、保留 unaccepted standing、辨认 Site B 风险、忽略无关消息、提出具体工作、独立批准、接受正确 Blob、继续 Work、新 Session 理解 A 上的历史负面与 B 的潜在改变。baseline 只能从等价事实开始，不得看到 P 产物。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-01"
+      ]
+    },
+    {
+      "id": "S08-R02",
+      "phase": "S08",
+      "title": "场景 B：新开放研究方案",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "使用 `scenarios/field-study/` 的合成环境研究项目（不是现实供应商/科学效果）。至少两个、目标三个独立角色分别研究设计、数据有效性、资源可行性。加入非平凡的新观察、目标约束调整、迟到结果和互相矛盾的结论。最终要给条件化可行研究方案或有依据的不可行结论，不是拼三份报告。\n\n生成未在开发时调优的 holdout 变体；固定数据 seed/visibility/events。硬事实可机械判断；方案质量与不确定性需盲评/独立评估。编码 Agent 可看 oracle，受测 Agents 不得。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-02"
+      ]
+    },
+    {
+      "id": "S08-R03",
+      "phase": "S08",
+      "title": "强且匹配的 F/P",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "主比较 F=相同 DSH+Git/Markdown+正常 native Subagent/Workflow；P=相同认知能力+Palimpsest 项目功能。都获得完整合理 handoff、同事件时间、同数据、同模型版本、同授权机会和总资源上限。P 不能为突出 own branch 禁 native subagent 而 F 开启，反之亦然。若只能运行 single-Principal，则准确命名并不声称强多 Agent 比较。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-03"
+      ]
+    },
+    {
+      "id": "S08-R04",
+      "phase": "S08",
+      "title": "配对、冻结与反事实纪律",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "每个 scored cohort 前冻结代码/profile/scenario/operator policy/rubric。模型失败不取消另组；环境/额度失败记录 censored，不算能力失败。pilot 用于校准预算不与 confirmatory pool 混用。修代码后重测是新 cohort；不把历史好结果与新 F 拼严格受控比较。\n\n为每一对预留足够预算，正式运行前测可见性/污染/权限。预算用完可结束为 exploratory/unpaired，不能称 superiority。增加 repetitions 需要预先规则与授权，不追分。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-04"
+      ]
+    },
+    {
+      "id": "S08-R05",
+      "phase": "S08",
+      "title": "真实行为分析管线",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "解析 raw Session 事件，区分 tool offered/called/accepted/executed/result generated/delivered/consumed/accepted into project。唯一事件按 session+sequence/digest 去重，不根据 overlapping PALIMPSEST_TURN summary 重复计数。分解 Bash 内部数据库访问、tool errors、重复查询、等待、恢复和人工修正。\n\n提案与独立发现必须对应真实模型事件；deterministic test controller 不可扮演 Agent。产物可见原因来自 source ref/工具/版本，不索取隐藏思维链。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-05"
+      ]
+    },
+    {
+      "id": "S08-R06",
+      "phase": "S08",
+      "title": "评价实际业务和因果贡献",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "记录硬约束正确性、unsafe acceptance、safe reuse、redundant rework、goal unmet 保留、fresh recovery、人类必要审批与多余协调、actual costs、time-to-useful-progress。第二 Agent 的贡献必须有 source→finding→delivery→recipient action 的链；同源重复不计独立贡献。\n\n对于 causal necessity，单个引用不足以证明，优先匹配的受限消融/对照；有限样本只可说 observed contribution，不说稳定因果优势。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-06"
+      ]
+    },
+    {
+      "id": "S08-R07",
+      "phase": "S08",
+      "title": "证据与 subject/time 一致",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "每个 rubric/outcome 记录 evaluated canonicalHead/sourceBlob、observationTime、run/model/profile/code freeze。负面对照改变 live tree 后，不能用最后工作树重建较早 accepted digest。manifest 校验字节，不证明来源标签正确；两者分别测试。小模型/不同 provider trial 不能混用，变更有 cohort ID。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-07"
+      ]
+    },
+    {
+      "id": "S08-R08",
+      "phase": "S08",
+      "title": "失败分类驱动修复但不无限扩张",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md",
+      "normativeText": "分类 perception/discovery、context-selection、reasoning、proposal-shape、authority、execution、effect-recovery、environment、evaluator、provider、budget。只有 root cause 有 evidence 时修对应 owner。一次失败不能推导需要新 Router/Owner/Memory。每个修复都回归真实路径并保留原试验。\n\n| Test ID | 对应要求 | Case / 期望 |\n|---|---|---|\n| T-S08-01 | S08-R01 | T1 无 B bytes/metadata，T2 release 未自动接受，原失败历史不覆盖 |\n| T-S08-02 | S08-R02 | 新场景有相互作用的约束、独立来源、holdout 与 evaluator 隔离 |\n| T-S08-03 | S08-R03 | P/F equivalence audit 对事实/能力/预算/授权无未解释差异 |\n| T-S08-04 | S08-R04 | 不利 P 不取消有效 F；no quota 不发请求；不同 freeze 不混池 |\n| T-S08-05 | S08-R05 | raw events 去重、错误类别与实际 tool catalogue 可复查 |\n| T-S08-06 | S08-R06 | 无第二模型或只有复述时 synthesis 未通过；领域 negative 不等于失败 |\n| T-S08-07 | S08-R07 | accepted vs final live tree 分离；摘要哈希正确但身份错仍被发现 |\n| T-S08-08 | S08-R08 | 根因标 hypothesis/confirmed，修复与失效 case 对应，不扩张无关组件 |\n\n**退出：** 两个可运行、独立冻结的 benchmark/acceptance programs；live 资源可用则运行至少匹配 pilot，资源不足则完整交付运行器和明确 blocked 分项。比较不胜出不是代码可以不交付的理由，也不允许宣称价值成立。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S08-08"
+      ]
+    },
+    {
+      "id": "S09-R01",
+      "phase": "S09",
+      "title": "正常安装与环境诊断",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "normativeText": "提供与现有 CLI/Host 对齐的 setup/doctor/init 路径，安全生成 profile/database paths。exact CLI 命名由 S02 决策，不能把规范中的逻辑动词冒称现成命令。检查 Node/DSH/Ordarium/工具/sandbox/permissions/provider 配置，不读取或打印密钥。干净环境安装按锁文件可复现；不自动删除用户 profile 目录。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S09-01"
+      ]
+    },
+    {
+      "id": "S09-R02",
+      "phase": "S09",
+      "title": "项目初始、继续、审阅、恢复的统一入口",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "normativeText": "CLI/DSH/已有 web 至少一条普通人可完成的主路径，另外的正式入口保持语义一致。review 显示提案来源/精确变更/未决要求，approve/decline 真实落到 existing authority；不能在 UI 上改一个 badge 假装接受。继续项目时自然显示状态与下一步。expert 原接口仍可用但不淹没默认目录。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S09-02"
+      ]
+    },
+    {
+      "id": "S09-R03",
+      "phase": "S09",
+      "title": "文档与实测成熟度一致",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "normativeText": "README/user-guide/architecture/sdk/API/package dependencies/示例一致。特别修正没有实际覆盖的“任意中断完整恢复”“恰好一次”“所有证据均确定性正确”“mode 属性已被 host 执行”等强保证。文档写支持范围、前置条件、未验证处与失败恢复。不能为了吸引用户把 research branch 的能力写成 main 已具备。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S09-03"
+      ]
+    },
+    {
+      "id": "S09-R04",
+      "phase": "S09",
+      "title": "数据迁移与旧用户兼容",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "normativeText": "实现必要的 versioned additive migration，dry-run/backup/restore/idempotency 测试；old event replay 无歧义。未资格历史 evidence 不直接赋予新认证。明确升级前后 changed default tool surface，保留 expert profile 的兼容方式。对真实用户库默认不自动 migration，先诊断/批准。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S09-04"
+      ]
+    },
+    {
+      "id": "S09-R05",
+      "phase": "S09",
+      "title": "限制与资源可见",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "normativeText": "把当前功能的边界写进 doctor/status：ordinary Session persistence、job crash durability、read confinement、cross-peer availability、model budget 与 authority。预算停止时保留成果和下一步，不把未完成变完成。使用成本按报告 token 与账单类别区别，未知费用清楚未知。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S09-05"
+      ]
+    },
+    {
+      "id": "S09-R06",
+      "phase": "S09",
+      "title": "实际交付而非文档外壳",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "normativeText": "产出可安装 RC tarball/bundle、版本/commit/tree/依赖清单、用户入口、两个可复制示例、升级/rollback/recovery guide。只生成本地制品与非公开 release candidate，不发布 registry/release、不改 main。单项目默认例子不应要求 peer 配置；双项目例子检验真实 peer 分别运行。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S09-06"
+      ]
+    },
+    {
+      "id": "S09-R07",
+      "phase": "S09",
+      "title": "形成最小用户验收脚本",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md",
+      "normativeText": "从干净安装开始，以非专家流程执行 create/continue、读一条新 source、提议并批准、完成工作、审阅接受、中断/恢复、读取负面结论、一次协作。不得在说明中要求查询 SQLite、修改 event 或手工写 JS 才完成。遇到缺 authority 要正常提示并保留工作，不伪造审批。\n\n| Test ID | 对应要求 | Case / 期望 |\n|---|---|---|\n| T-S09-01 | S09-R01 | 干净 package install+doctor，无隐含开发机绝对路径/凭据 |\n| T-S09-02 | S09-R02 | 普通入口能够完成实际 approve/accept/recover，语义与 CLI 一致 |\n| T-S09-03 | S09-R03 | claim-to-evidence 文档检查，已知限制没有被夸大 |\n| T-S09-04 | S09-R04 | 旧数据 dry-run/迁移/重复执行/恢复可靠，旧证据不被升级权威 |\n| T-S09-05 | S09-R05 | unsupported/missing/blocked 可解释；没有空白死路 |\n| T-S09-06 | S09-R06 | RC install smoke、profile sample 和 dependency pin 可复查 |\n| T-S09-07 | S09-R07 | 没有私有 API/SQL 操作的用户脚本完整跑通 |\n\n**退出：** 一位没有读过架构的使用者能按文档复现主路径；研发仍可能待模型比较，但产品不再只存在于 research rig。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S09-07"
+      ]
+    },
+    {
+      "id": "S10-R01",
+      "phase": "S10",
+      "title": "全量变更核对",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "normativeText": "从真实基线到 HEAD 输出全部 commit/files/stat/API/schema/dependency/permission/default changes，使用本地 Git，不依赖 GitHub 截断 compare。记录与 origin/main 的差异只是集成风险，不等于能 fast-forward 获授权。检查所有相关 documentation 与 generated build 是否来自同一 freeze。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S10-01"
+      ]
+    },
+    {
+      "id": "S10-R02",
+      "phase": "S10",
+      "title": "风险合适的最终回归",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "normativeText": "固定 targeted suite、full ordinary suite、web build/e2e、consumer install smoke、历史 replay、故障恢复、两场景 deterministic acceptance 与 normal tool registry。可按资源隔离顺序执行；每项 exit/status 保存。失败要修复本期回归，历史失败明确 baseline 证据；排除受影响关键 gate 不能叫通过。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S10-02"
+      ]
+    },
+    {
+      "id": "S10-R03",
+      "phase": "S10",
+      "title": "双冻结与精确身份",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "normativeText": "全部 executable source、tests、scenario、operator policy、evaluators 先 code freeze；之后运行评分/验证或从 exact freeze 重跑必要测量；最后 evidence/docs freeze。新的 executable fix 建立新 freeze，不把前后样本混合成同一比较。artifact manifest 由 committed bytes 求 hash，CRLF working tree 另存；不让 manifest 包含自己未来 hash。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S10-03"
+      ]
+    },
+    {
+      "id": "S10-R04",
+      "phase": "S10",
+      "title": "三层最终验收报告",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "normativeText": "分别报告 implementation_complete、engineering_qualified、behavioral_verified、comparative_value_supported；每项 requirement 映射文件/测试/run ID 与限制。列 actual intelligent participants、operator interventions、尚未验证的 owner/runtime path。不得用 boolean overall PASS 掩盖未运行 F 或未接受 Result。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S10-04"
+      ]
+    },
+    {
+      "id": "S10-R05",
+      "phase": "S10",
+      "title": "可恢复交付",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "normativeText": "提供 RC artifact、安装/升级/恢复说明、已知限制、全部测试命令与环境、最小下一步。生成 LOCAL PR REVIEW KIT：base/head、危险变更、必要 CI、迁移、回退与实际支持范围。不自动创建/合并 PR。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S10-05"
+      ]
+    },
+    {
+      "id": "S10-R06",
+      "phase": "S10",
+      "title": "研究结果真正决定后续方向",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "normativeText": "若 P 优势只在高风险变化任务，默认收窄治理范围而不宣称所有任务更优；若 F 等效更省，保留结果并建议简化默认流程；若只有运行阻断，明确尚无价值结论；若多 Agent 增益可观察，说明贡献和比较范围。不得以“已有很多代码”作为未来继续扩张的理由。",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S10-06"
+      ]
+    },
+    {
+      "id": "S10-R07",
+      "phase": "S10",
+      "title": "干净完成与复核",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md",
+      "normativeText": "新分支 clean，remote 非强制推送（若授权/权限具备），main/历史 refs/locks/evidence 不变。留下 operator 需要决定的真实外部事项，不伪造签字。若上下文结束未完成，交严格 checkpoint 而非 completion claim；继续执行时按同一 programme 恢复。\n\n| Test ID | 对应要求 | Case / 期望 |\n|---|---|---|\n| T-S10-01 | S10-R01 | 完整 diff manifest，全部 changed files 有用途与需求映射 |\n| T-S10-02 | S10-R02 | 最终验证矩阵具命令、exit、范围、失败/排除，关键回归无掩盖 |\n| T-S10-03 | S10-R03 | code→runs→evidence 链准确，无执行后偷偷换评分脚本 |\n| T-S10-04 | S10-R04 | implemented、live verified 与 comparative 支持可分别机器核对 |\n| T-S10-05 | S10-R05 | artifact 可安装、rollback 可测、PR kit 不依赖手工记忆 |\n| T-S10-06 | S10-R06 | 负面/无优势结果完整保留，没有只发布成功样本 |\n| T-S10-07 | S10-R07 | 新分支状态与推送记录真实，受保护资源未改动 |",
+      "priority": "MUST_IMPLEMENT",
+      "verification": [
+        "T-S10-07"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "id": "T-S00-01",
+      "phase": "S00",
+      "requirements": [
+        "S00-R01"
+      ],
+      "expected": "新分支 ancestry 正确；原 main/历史 refs 无变化；脏树无丢失",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md"
+    },
+    {
+      "id": "T-S00-02",
+      "phase": "S00",
+      "requirements": [
+        "S00-R02"
+      ],
+      "expected": "每项正常能力可追至实际注册、服务和 owner，未组成者明确",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md"
+    },
+    {
+      "id": "T-S00-03",
+      "phase": "S00",
+      "requirements": [
+        "S00-R03"
+      ],
+      "expected": "normal/expert/operator role map 有实际权限来源，无文本自授权",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md"
+    },
+    {
+      "id": "T-S00-04",
+      "phase": "S00",
+      "requirements": [
+        "S00-R04"
+      ],
+      "expected": "planner 能在一个节点 blocked 时选择另一合法节点；恢复无重复创建",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md"
+    },
+    {
+      "id": "T-S00-05",
+      "phase": "S00",
+      "requirements": [
+        "S00-R05"
+      ],
+      "expected": "baseline build 与版本记录可复查，失败未抹去",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md"
+    },
+    {
+      "id": "T-S00-06",
+      "phase": "S00",
+      "requirements": [
+        "S00-R06"
+      ],
+      "expected": "无资源授权时无付费调用，工程任务仍能继续",
+      "spec": "specs/S00-BASELINE-AND-PROGRAM.md"
+    },
+    {
+      "id": "T-S01-01",
+      "phase": "S01",
+      "requirements": [
+        "S01-R01"
+      ],
+      "expected": "原事件与报告冲突会被标记，不把短输入直接等同 canonical identity",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-02",
+      "phase": "S01",
+      "requirements": [
+        "S01-R02"
+      ],
+      "expected": "short input + observable world 得完整 OID；仅 world 存在的 result 合法导出，不动 canonical HEAD",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-03",
+      "phase": "S01",
+      "requirements": [
+        "S01-R02",
+        "S01-R03"
+      ],
+      "expected": "missing world / broken alternates 失败可诊断，结果不被重建覆盖",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-04",
+      "phase": "S01",
+      "requirements": [
+        "S01-R04"
+      ],
+      "expected": "crash before merge / after merge before receipt / unreadable state 三种结局区分",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-05",
+      "phase": "S01",
+      "requirements": [
+        "S01-R04"
+      ],
+      "expected": "重复 promotion、并发 target advance、安全恢复不产生双效果",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-06",
+      "phase": "S01",
+      "requirements": [
+        "S01-R05"
+      ],
+      "expected": "缺 Required Artifact + 无关 exit-0 命令不能获得 qualified files_exist 或 release",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-07",
+      "phase": "S01",
+      "requirements": [
+        "S01-R05"
+      ],
+      "expected": "越界改动 + tests_pass 不能伪造 scope；旧 atom 可 replay 但不能扩大资格",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-08",
+      "phase": "S01",
+      "requirements": [
+        "S01-R05",
+        "S01-R06"
+      ],
+      "expected": "evidence 主体/输入变动后需重评，Gate 解释包含真实来源",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-09",
+      "phase": "S01",
+      "requirements": [
+        "S01-R07"
+      ],
+      "expected": "acceptedHead 与 resultCommit 不同的 merge 情形，blob 与 provenance 正确",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S01-10",
+      "phase": "S01",
+      "requirements": [
+        "S01-R02",
+        "S01-R04",
+        "S01-R06"
+      ],
+      "expected": "普通产品路径一次完整工作到正式接受，重启可见相同状态",
+      "spec": "specs/S01-RESULT-EVIDENCE-PROMOTION.md"
+    },
+    {
+      "id": "T-S02-01",
+      "phase": "S02",
+      "requirements": [
+        "S02-R01"
+      ],
+      "expected": "normal profile 无重复/矛盾默认工具，expert profile 可访问原兼容入口",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md"
+    },
+    {
+      "id": "T-S02-02",
+      "phase": "S02",
+      "requirements": [
+        "S02-R02"
+      ],
+      "expected": "两种 placement 同一用户目标得到正确 complete，不出现误导性 finish 建议",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md"
+    },
+    {
+      "id": "T-S02-03",
+      "phase": "S02",
+      "requirements": [
+        "S02-R03"
+      ],
+      "expected": "全部正常 tool result 可 roundtrip 序列化，preview 不写 canonical 状态",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md"
+    },
+    {
+      "id": "T-S02-04",
+      "phase": "S02",
+      "requirements": [
+        "S02-R04"
+      ],
+      "expected": "VERIFYING 时 proposal 能保存但 plan 不生效；basis 改变后需重评",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md"
+    },
+    {
+      "id": "T-S02-05",
+      "phase": "S02",
+      "requirements": [
+        "S02-R05"
+      ],
+      "expected": "model decision/plan 不冒充 operator approval；缺 authority 有明确拒绝",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md"
+    },
+    {
+      "id": "T-S02-06",
+      "phase": "S02",
+      "requirements": [
+        "S02-R06"
+      ],
+      "expected": "简单分析不创建多余 Work；同一 profile 不允许未批准 canonical 写入",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md"
+    },
+    {
+      "id": "T-S02-07",
+      "phase": "S02",
+      "requirements": [
+        "S02-R07"
+      ],
+      "expected": "不读取内部 SQLite 的正常消费测试可走完 status→work→review",
+      "spec": "specs/S02-NORMAL-PRODUCT-PATH.md"
+    },
+    {
+      "id": "T-S03-01",
+      "phase": "S03",
+      "requirements": [
+        "S03-R01"
+      ],
+      "expected": "删除派生缓存后可从原 owner 重建；未知 owner plane 显式缺失",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md"
+    },
+    {
+      "id": "T-S03-02",
+      "phase": "S03",
+      "requirements": [
+        "S03-R02"
+      ],
+      "expected": "未获批准候选不会在摘要中变成 accepted，旧版本结论保持历史语境",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md"
+    },
+    {
+      "id": "T-S03-03",
+      "phase": "S03",
+      "requirements": [
+        "S03-R03"
+      ],
+      "expected": "超长历史在预算内可用；关键事实裁剪显式 incomplete，可追溯",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md"
+    },
+    {
+      "id": "T-S03-04",
+      "phase": "S03",
+      "requirements": [
+        "S03-R04"
+      ],
+      "expected": "fresh home 无旧 transcript 仍能发现目标、accepted source 与 pending action",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md"
+    },
+    {
+      "id": "T-S03-05",
+      "phase": "S03",
+      "requirements": [
+        "S03-R05"
+      ],
+      "expected": "两份同源摘要不增加独立证据计数；派生循环被识别",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md"
+    },
+    {
+      "id": "T-S03-06",
+      "phase": "S03",
+      "requirements": [
+        "S03-R06"
+      ],
+      "expected": "无资格跨 owner relation 不产生伪因果，权限过滤可验证",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md"
+    },
+    {
+      "id": "T-S03-07",
+      "phase": "S03",
+      "requirements": [
+        "S03-R07"
+      ],
+      "expected": "negative→candidate 可记录而不自动授权；重复 resume 不重复创建",
+      "spec": "specs/S03-PROJECT-CONTINUITY.md"
+    },
+    {
+      "id": "T-S04-01",
+      "phase": "S04",
+      "requirements": [
+        "S04-R01",
+        "S04-R02"
+      ],
+      "expected": "proposal 自动形成可 review 包，缺关键信息显式不完整，不补造 digest",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-02",
+      "phase": "S04",
+      "requirements": [
+        "S04-R03"
+      ],
+      "expected": "plan/decision 不能越权替代 source/intention acceptance",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-03",
+      "phase": "S04",
+      "requirements": [
+        "S04-R04"
+      ],
+      "expected": "批准后 source/basis 改变拒绝旧效果；并发与 duplicate 幂等",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-04",
+      "phase": "S04",
+      "requirements": [
+        "S04-R05"
+      ],
+      "expected": "approved work 到 terminal/promotion，restart 可准确读取 pending",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-05",
+      "phase": "S04",
+      "requirements": [
+        "S04-R06"
+      ],
+      "expected": "Worker 写错内容/多写路径时 independently fail，即使文件存在和命令成功",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-06",
+      "phase": "S04",
+      "requirements": [
+        "S04-R07"
+      ],
+      "expected": "negative accepted analysis 与 unmet goal 同时可见，不自动放宽要求",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-07",
+      "phase": "S04",
+      "requirements": [
+        "S04-R08"
+      ],
+      "expected": "model proposal 与 operator rewrite/decision 可分别统计",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-08",
+      "phase": "S04",
+      "requirements": [
+        "S04-R02",
+        "S04-R05"
+      ],
+      "expected": "用户无需 private API 即可执行合法交接；无法授权时可完成候选工作而无假效果",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S04-09",
+      "phase": "S04",
+      "requirements": [
+        "S04-R09"
+      ],
+      "expected": "明确 operator authority 组成后真实 Intent apply；无 authority、错 digest、过期授权仍拒绝",
+      "spec": "specs/S04-PROPOSAL-AUTHORIZATION-ACTION.md"
+    },
+    {
+      "id": "T-S05-01",
+      "phase": "S05",
+      "requirements": [
+        "S05-R01",
+        "S05-R02"
+      ],
+      "expected": "机制选择与实际能力一致；缺 capability 不伪造 Agent",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S05-02",
+      "phase": "S05",
+      "requirements": [
+        "S05-R03"
+      ],
+      "expected": "长报告可交 artifact + 依据 receipt，摘要未覆盖的关键假设仍可展开",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S05-03",
+      "phase": "S05",
+      "requirements": [
+        "S05-R04"
+      ],
+      "expected": "共享根来源不会被重复计为独立验证；来源与 decision change 可连线",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S05-04",
+      "phase": "S05",
+      "requirements": [
+        "S05-R05"
+      ],
+      "expected": "两个相反结论不会靠多数票自动接受，未解决争议保留",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S05-05",
+      "phase": "S05",
+      "requirements": [
+        "S05-R06"
+      ],
+      "expected": "delay/duplicate/reorder/cancel/restart/currentness 全部有可复现对照",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S05-06",
+      "phase": "S05",
+      "requirements": [
+        "S05-R07"
+      ],
+      "expected": "单项目真实执行与独立 peer 两条正常产品机制均可运行",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S05-07",
+      "phase": "S05",
+      "requirements": [
+        "S05-R02",
+        "S05-R06"
+      ],
+      "expected": "budget exhausted/permission revoked 不启动新工作或扩大作用域",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S05-08",
+      "phase": "S05",
+      "requirements": [
+        "S05-R04",
+        "S05-R08"
+      ],
+      "expected": "real-agent finding 改变行动的证据与对照；无 live run 时诚实 BLOCKED",
+      "spec": "specs/S05-MULTIAGENT-SYNTHESIS.md"
+    },
+    {
+      "id": "T-S06-01",
+      "phase": "S06",
+      "requirements": [
+        "S06-R01",
+        "S06-R04"
+      ],
+      "expected": "同一负面结论在调查与履约任务中有正确不同解释",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md"
+    },
+    {
+      "id": "T-S06-02",
+      "phase": "S06",
+      "requirements": [
+        "S06-R02"
+      ],
+      "expected": "文档任务显式领域 contract 被实际执行，不因后缀静默跳过",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md"
+    },
+    {
+      "id": "T-S06-03",
+      "phase": "S06",
+      "requirements": [
+        "S06-R03"
+      ],
+      "expected": "files_exist/tests_pass 不能代替领域结论；输出说明证明范围",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md"
+    },
+    {
+      "id": "T-S06-04",
+      "phase": "S06",
+      "requirements": [
+        "S06-R05"
+      ],
+      "expected": "immutable non-code asset 更新版本后旧结论有可追溯身份",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md"
+    },
+    {
+      "id": "T-S06-05",
+      "phase": "S06",
+      "requirements": [
+        "S06-R06"
+      ],
+      "expected": "generator 不能写 oracle；评审失败/冲突不抹去",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md"
+    },
+    {
+      "id": "T-S06-06",
+      "phase": "S06",
+      "requirements": [
+        "S06-R07"
+      ],
+      "expected": "fresh view 正确保留 accepted negative 与 unmet objective",
+      "spec": "specs/S06-DOMAIN-OUTCOMES.md"
+    },
+    {
+      "id": "T-S07-01",
+      "phase": "S07",
+      "requirements": [
+        "S07-R01"
+      ],
+      "expected": "doctor 从实际 runtime 输出版本和已组成能力，missing 不被声明可用",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S07-02",
+      "phase": "S07",
+      "requirements": [
+        "S07-R02"
+      ],
+      "expected": "Bash/fs/child/symlink 边界测试通过；synthetic secret 不可读，Inbox 不可写",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S07-03",
+      "phase": "S07",
+      "requirements": [
+        "S07-R03"
+      ],
+      "expected": "delivered 与 consumed 区分，idle/pending 能在新 Session 正确读取",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S07-04",
+      "phase": "S07",
+      "requirements": [
+        "S07-R04"
+      ],
+      "expected": "usage duplicate/delay/resume/child 被准确计数；启动保留 pair 预算",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S07-05",
+      "phase": "S07",
+      "requirements": [
+        "S07-R04"
+      ],
+      "expected": "Windows/Linux 实际采用的进程树 stop 有测试，不仅发送信号",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S07-06",
+      "phase": "S07",
+      "requirements": [
+        "S07-R05"
+      ],
+      "expected": "wall-clock 不把 evaluator wait 记为模型推理；费用缺失不编造",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S07-07",
+      "phase": "S07",
+      "requirements": [
+        "S07-R06"
+      ],
+      "expected": "restart 不重复外部效果，cancel/late result 不越权生效",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S07-08",
+      "phase": "S07",
+      "requirements": [
+        "S07-R07"
+      ],
+      "expected": "supported install 可复现，unsupported profile fail-fast 且给修复方式",
+      "spec": "specs/S07-RUNTIME-RECOVERY-COST.md"
+    },
+    {
+      "id": "T-S08-01",
+      "phase": "S08",
+      "requirements": [
+        "S08-R01"
+      ],
+      "expected": "T1 无 B bytes/metadata，T2 release 未自动接受，原失败历史不覆盖",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S08-02",
+      "phase": "S08",
+      "requirements": [
+        "S08-R02"
+      ],
+      "expected": "新场景有相互作用的约束、独立来源、holdout 与 evaluator 隔离",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S08-03",
+      "phase": "S08",
+      "requirements": [
+        "S08-R03"
+      ],
+      "expected": "P/F equivalence audit 对事实/能力/预算/授权无未解释差异",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S08-04",
+      "phase": "S08",
+      "requirements": [
+        "S08-R04"
+      ],
+      "expected": "不利 P 不取消有效 F；no quota 不发请求；不同 freeze 不混池",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S08-05",
+      "phase": "S08",
+      "requirements": [
+        "S08-R05"
+      ],
+      "expected": "raw events 去重、错误类别与实际 tool catalogue 可复查",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S08-06",
+      "phase": "S08",
+      "requirements": [
+        "S08-R06"
+      ],
+      "expected": "无第二模型或只有复述时 synthesis 未通过；领域 negative 不等于失败",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S08-07",
+      "phase": "S08",
+      "requirements": [
+        "S08-R07"
+      ],
+      "expected": "accepted vs final live tree 分离；摘要哈希正确但身份错仍被发现",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S08-08",
+      "phase": "S08",
+      "requirements": [
+        "S08-R08"
+      ],
+      "expected": "根因标 hypothesis/confirmed，修复与失效 case 对应，不扩张无关组件",
+      "spec": "specs/S08-EVALUATION-AND-BEHAVIOR.md"
+    },
+    {
+      "id": "T-S09-01",
+      "phase": "S09",
+      "requirements": [
+        "S09-R01"
+      ],
+      "expected": "干净 package install+doctor，无隐含开发机绝对路径/凭据",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md"
+    },
+    {
+      "id": "T-S09-02",
+      "phase": "S09",
+      "requirements": [
+        "S09-R02"
+      ],
+      "expected": "普通入口能够完成实际 approve/accept/recover，语义与 CLI 一致",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md"
+    },
+    {
+      "id": "T-S09-03",
+      "phase": "S09",
+      "requirements": [
+        "S09-R03"
+      ],
+      "expected": "claim-to-evidence 文档检查，已知限制没有被夸大",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md"
+    },
+    {
+      "id": "T-S09-04",
+      "phase": "S09",
+      "requirements": [
+        "S09-R04"
+      ],
+      "expected": "旧数据 dry-run/迁移/重复执行/恢复可靠，旧证据不被升级权威",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md"
+    },
+    {
+      "id": "T-S09-05",
+      "phase": "S09",
+      "requirements": [
+        "S09-R05"
+      ],
+      "expected": "unsupported/missing/blocked 可解释；没有空白死路",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md"
+    },
+    {
+      "id": "T-S09-06",
+      "phase": "S09",
+      "requirements": [
+        "S09-R06"
+      ],
+      "expected": "RC install smoke、profile sample 和 dependency pin 可复查",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md"
+    },
+    {
+      "id": "T-S09-07",
+      "phase": "S09",
+      "requirements": [
+        "S09-R07"
+      ],
+      "expected": "没有私有 API/SQL 操作的用户脚本完整跑通",
+      "spec": "specs/S09-PACKAGING-DOCS-UX.md"
+    },
+    {
+      "id": "T-S10-01",
+      "phase": "S10",
+      "requirements": [
+        "S10-R01"
+      ],
+      "expected": "完整 diff manifest，全部 changed files 有用途与需求映射",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md"
+    },
+    {
+      "id": "T-S10-02",
+      "phase": "S10",
+      "requirements": [
+        "S10-R02"
+      ],
+      "expected": "最终验证矩阵具命令、exit、范围、失败/排除，关键回归无掩盖",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md"
+    },
+    {
+      "id": "T-S10-03",
+      "phase": "S10",
+      "requirements": [
+        "S10-R03"
+      ],
+      "expected": "code→runs→evidence 链准确，无执行后偷偷换评分脚本",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md"
+    },
+    {
+      "id": "T-S10-04",
+      "phase": "S10",
+      "requirements": [
+        "S10-R04"
+      ],
+      "expected": "implemented、live verified 与 comparative 支持可分别机器核对",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md"
+    },
+    {
+      "id": "T-S10-05",
+      "phase": "S10",
+      "requirements": [
+        "S10-R05"
+      ],
+      "expected": "artifact 可安装、rollback 可测、PR kit 不依赖手工记忆",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md"
+    },
+    {
+      "id": "T-S10-06",
+      "phase": "S10",
+      "requirements": [
+        "S10-R06"
+      ],
+      "expected": "负面/无优势结果完整保留，没有只发布成功样本",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md"
+    },
+    {
+      "id": "T-S10-07",
+      "phase": "S10",
+      "requirements": [
+        "S10-R07"
+      ],
+      "expected": "新分支状态与推送记录真实，受保护资源未改动",
+      "spec": "specs/S10-INTEGRATION-AND-DELIVERY.md"
+    }
+  ]
+}
