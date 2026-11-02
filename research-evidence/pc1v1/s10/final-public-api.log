@@ -1,0 +1,6 @@
+$ pnpm run build && node scripts/audit/module-architecture.mjs --check-public-api
+$ tsc -b
+public-api:check PASS
+  missing: 0
+  changed kind: 0
+  added: 0
