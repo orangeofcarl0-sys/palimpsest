@@ -279,7 +279,7 @@ default for ordinary planning.
 | RC | local tarball + manifest + SHA-256; `dirty:false`; 4,042 files | `dist-rc/`, `research-evidence/pc1v1/rc.json` |
 | Installed RC smoke | PASS: Node 24.22, Git 2.53, DSH 0.2.1-rc.3, Ordarium 1.3.1; Windows sandbox WARN; live model BLOCKED | `research-evidence/pc1v1/s10/rc-doctor.json` |
 | R9 behavioral gate | **EXECUTED**: 8 principal runs, 11 Subagent child sessions, 0 provider errors, 41,685,383 tokens; both conditions correct/complete | `research-evidence/pc1v1/live/usage.json`, `outcomes.json`, `PC1V1-LIVE-ADDENDUM.md` |
-| Committed-byte manifests | code 2,634 files / evidence 298 files; 0 mismatches | `research-evidence/pc1v1/manifest-code.json`, `manifest-evidence.json` |
+| Committed-byte manifests | code 2,634 files / evidence 297 files (manifest files excluded from the evidence manifest); 0 mismatches | `research-evidence/pc1v1/manifest-code.json`, `manifest-evidence.json` |
 
 ### Full-suite qualification
 

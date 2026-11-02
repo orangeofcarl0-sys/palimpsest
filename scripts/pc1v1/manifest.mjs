@@ -44,6 +44,9 @@ for (const record of treeOutput.toString("utf8").split("\u0000")) {
 }
 const files = entries
   .filter((entry) => resolve(REPO, entry.path) !== out)
+  // A manifest cannot honestly cover itself or its sibling manifest whose bytes change when this
+  // one is written. They are delivery artifacts, not evidence payload.
+  .filter((entry) => !/(?:^|\/)manifest-(?:code|evidence)\.json$/u.test(entry.path))
   .map((entry) => {
     const bytes = execFileSync("git", ["cat-file", "blob", entry.oid], { cwd: REPO, maxBuffer: 256 * 1024 * 1024 });
     return { path: entry.path, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
