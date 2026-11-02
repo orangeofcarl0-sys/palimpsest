@@ -8,7 +8,8 @@
 | Base / source branch | `palimpsest-c6r-behavioral-qualification` @ `044b08056a0e98b7d7cee207cb36fb7e453907fe` |
 | Base tree | `1b7caa156d187e952be8bd90e797f440cb7e2402` |
 | Proposed branch | `palimpsest-product-convergence-v1` |
-| Code freeze | `4757dd6e57efe08b207a89a6af371b9c6a67a002` / tree `6a774746d5f7bb2cf48d30e877aa5f8838b3e3bd` |
+| Code freeze | `e8c7675205c74d33015966f3c5b62eec6e2279f1` / tree `e20d4c7682ac33aed9f2ae3e1bb5e2d185d7fcf8` |
+| Delivery/evaluation freeze | `bd34f96d7e22beebce44b773dcad2920e97752bb` / tree `409583a6f74f446184ad03314e4de36e59684143` |
 
 The exact evidence-freeze head is recorded in `docs/programs/pc1/S10-FINAL-REPORT.md` after the
 final manifest. No force-push, rebase, branch deletion, worktree removal, or main movement was done.
@@ -92,9 +93,9 @@ visible in the diff, not hidden.
 | Build | PASS | `research-evidence/pc1/s10/final-build.log` |
 | Architecture | PASS 0 violations / 9 accepted exceptions | `final-architecture.log` |
 | Public API | PASS after the recorded additive baseline update | `final-public-api.log` |
-| Curated final integration | 132/132 PASS | `final-integration.log` |
+| Curated final integration | 134/134 PASS | `final-integration.log` |
 | Full ordinary suite | NOT CLEANLY OBSERVED on this Windows host (86 hook-timeout/lock failures under contention); one test reproduced identically at the baseline | `final-full-test-clean.log` |
-| Scenario acceptance | PASS, live BLOCKED, 0 model calls | `research-evidence/pc1/s08/acceptance.json` |
+| Scenario acceptance | PASS; live cohort separately observed (8 sessions, 0 provider errors) | `research-evidence/pc1/s08/acceptance.json`; `research-evidence/pc1/live/outcomes.json` |
 | RC | tarball + SHA-256 + manifest | `dist-rc/palimpsest-0.2.0-pc1.1.tar.gz` |
 
 The pre-existing failure was reproduced on a temporary baseline worktree at `044b080` with the
@@ -113,8 +114,9 @@ own output records `level1: NOT_ESTABLISHED` and no fabricated settlement.
    `normal`. A host that wants the normal surface must use the product entry or set `toolProfile`.
 5. **Local operator** — not a substitute for a real identity provider; a deployment that needs
    stronger separation must supply one.
-6. **Live evaluation** — no model call was made; do not treat the deterministic acceptance as a
-   behavioral or comparative result.
+6. **Live evaluation** — the eight scored sessions are real, but they are single-principal; do not
+   treat the deterministic acceptance as a substitute for them, and do not infer independent-agent
+   synthesis from the field-study role files.
 
 ## 7. Owner decisions
 
