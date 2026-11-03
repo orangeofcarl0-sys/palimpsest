@@ -2579,6 +2579,7 @@ export class ProjectController {
       attemptId,
       causationId: Number(row.last_event_id),
       projectRevision: envelope.project_revision,
+      expectedProjectRevision: this.promotions.projectRevision(),
       projectDigest: envelope.project_digest,
       requiredArtifacts: envelope.required_artifacts,
       now: () => this.#now(),

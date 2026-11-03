@@ -47,9 +47,25 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
   return tool({
     name: "palimpsest_work",
     description:
-      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. `start` is the normal way to enter an EXISTING ready task; `begin` is the direct single-task bootstrap. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately (completion observes scope but does not prevent an earlier edit), while worktree edits are an isolated candidate until an authorized Promotion. `complete` follows the deployment's real placement: in-place work is finished by the product's own observation; a placed attempt is settled through the same settlement owner. A proposal is NON-AUTHORITATIVE: it records what should be considered next; it does not approve, plan or accept anything.",
+      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), start a REAL worker in its own execution world (`delegate`), observe who is actually running (`workers`), request a stop without pretending it happened (`stop`), inspect a delivered result and choose a safe continuation route (`results`, `continue`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `delegate` executes an EXISTING canonical task; it does not invent work, and the worker may only report; the product observes the world and settles. `workers` distinguishes canonical attempt state from host-local job observation: a RUNNING attempt with no job in this host is NOT proven alive. `stop` is a REQUEST. `results` reports the packaged continuation assessment for the latest COMPLETED result, and `continue` carries the inspection digest into rematerialization or governed rework; neither accepts or promotes anything. `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately, while worktree edits are an isolated candidate until an authorized Promotion. A proposal is NON-AUTHORITATIVE.",
     mode: "mutating",
-    actions: ["status", "plan", "next", "run", "start", "begin", "complete", "propose", "explore", "explorations"],
+    actions: [
+      "status",
+      "plan",
+      "next",
+      "run",
+      "start",
+      "begin",
+      "complete",
+      "delegate",
+      "workers",
+      "stop",
+      "results",
+      "continue",
+      "propose",
+      "explore",
+      "explorations",
+    ],
     extraProperties: {
       goal: { type: "string", description: "for start/begin/plan: what the work is, in the user's own words; on start it also lets the product bootstrap a direct position when the plan has no claimable one" },
       writePaths: { type: "array", items: { type: "string" }, description: "for begin/propose: the paths this work or proposed action may change" },
@@ -81,7 +97,9 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       actionClass: { type: "string", enum: ["INVESTIGATE", "CHANGE", "ACCEPT_SOURCE", "REVISE_PLAN", "OTHER"], description: "for propose: the consequence class; CHANGE/ACCEPT_SOURCE/REVISE_PLAN need sources and a write scope" },
       sourcePath: { type: "string", description: "for propose: an optional candidate source file for an exact-digest SOURCE_INTAKE proposal" },
       targetPath: { type: "string", description: "for propose: the project path the source would occupy" },
-      taskId: { type: "string", description: "for propose: the Work task id an approved source intake would create; for explore: an optional related task" },
+      taskId: { type: "string", description: "the Work task: for delegate/stop/continue (required there), for results/complete (optional; complete then settles THAT task rather than guessing the single RUNNING attempt), for propose an approved source intake, or for explore an optional related task" },
+      route: { type: "string", enum: ["rematerialize", "rework"], description: "for continue: carry a compatible result onto the current world, or reopen the task for governed rework" },
+      expectedAssessmentDigest: { type: "string", description: "for continue: the assessment digest returned by `results`; a stale digest is refused rather than applied to a moved world" },
       objective: { type: "string", description: "for propose: the Work objective for an approved source intake" },
       finding: { type: "string", description: "for explore: what was observed, with the limits of the observation" },
       uncertainty: { type: "string", description: "for explore: what remains uncertain or unverified" },
@@ -108,12 +126,37 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         const outcome = await work.control("run", maxSteps === undefined ? [] : [maxSteps]);
         return { outcome, status: safeStatus(work.status(), work.boundary()) };
       }
+      if (action === "delegate") {
+        const taskId = object.taskId;
+        if (taskId !== undefined && typeof taskId !== "string") throw new ToolArgsError('argument "taskId" must be a string when given');
+        const started = await work.startWorker(taskId === undefined ? {} : { taskId });
+        return { ...started, workers: await work.workers() };
+      }
+      if (action === "workers") return await work.workers();
+      if (action === "stop") {
+        const taskId = requiredString(object, "taskId");
+        return await work.stopWorker({ taskId });
+      }
+      if (action === "results") {
+        const taskId = object.taskId;
+        if (taskId !== undefined && typeof taskId !== "string") throw new ToolArgsError('argument "taskId" must be a string when given');
+        return await work.results(taskId === undefined ? {} : { taskId });
+      }
+      if (action === "continue") {
+        const taskId = requiredString(object, "taskId");
+        const route = requiredString(object, "route");
+        if (route !== "rematerialize" && route !== "rework") {
+          throw new ToolArgsError('argument "route" must be "rematerialize" or "rework"');
+        }
+        const expectedAssessmentDigest = requiredString(object, "expectedAssessmentDigest");
+        return await work.continueResult({ taskId, route, expectedAssessmentDigest });
+      }
       if (action === "start") {
         if (work.placement() !== "in-place") {
           return {
             state: "PLACED_WORK",
-            detail: "this deployment places work in an isolated world; use the host worker or `palimpsest_work action=run`, then `complete`",
-            nextActions: ["palimpsest_work action=run", "palimpsest_work action=status"],
+            detail: "this deployment places work in an isolated world; start a real worker with `palimpsest_work action=delegate` (or use `run` for the mechanical path), then `complete` after the product observes the world",
+            nextActions: ["palimpsest_work action=delegate", "palimpsest_work action=workers", "palimpsest_work action=status"],
           };
         }
         const already = work.status() as {
@@ -209,6 +252,19 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         const summary = object.summary;
         if (summary !== undefined && typeof summary !== "string") throw new ToolArgsError('argument "summary" must be a string when given');
         if (work.placement() !== "in-place") {
+          const taskId = object.taskId;
+          if (taskId !== undefined && typeof taskId !== "string") throw new ToolArgsError('argument "taskId" must be a string when given');
+          if (taskId !== undefined) {
+            const result = await work.completeTask(summary === undefined ? { taskId } : { taskId, summary });
+            return {
+              ...result,
+              boundary: work.boundary(),
+              nextActions:
+                result.state === "SETTLED"
+                  ? ["palimpsest_work action=results", "an operator must review and accept the delivered result"]
+                  : ["palimpsest_work action=workers", "palimpsest_work action=status"],
+            };
+          }
           const result = await work.completePlaced(summary === undefined ? {} : { summary });
           return {
             state: result.state,

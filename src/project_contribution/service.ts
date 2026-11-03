@@ -96,6 +96,14 @@ export interface ContributionServiceDeps {
   readonly workspace: ContributionWorkspacePort;
   /** Present only when this deployment composes the async delegation runtime. */
   readonly delegation?: ContributionDelegationPort | undefined;
+  /**
+   * LHAPE-B: recover a decision whose PLAN revision committed but whose Journal record did not.
+   *
+   * The decision id is embedded in the canonical ProjectIR decisions, so the already-applied revision
+   * is discoverable from the event log. This returns the reconstructed change and NO effect; the
+   * service then writes the missing record without revising the plan again.
+   */
+  readonly appliedDecision?: ((decisionId: string) => { readonly planChange: ContributionPlanChange } | null) | undefined;
   readonly clock?: (() => string) | undefined;
 }
 
@@ -450,15 +458,28 @@ export function makeContributionService(deps: ContributionServiceDeps): Contribu
      * must return the decision that was already applied rather than mistaking its own plan revision
      * for an unrelated stale basis. A DIFFERENT plan change from an old basis is still refused.
      */
-    if (wantsPlan && basisState === "STALE" && input.allowStaleBasis !== true) {
+    /**
+     * LHAPE-B: the crash window between the Plan revision and this Journal record.
+     *
+     * `controller.plan()` commits the ProjectIR revision and its `Decision` (which carries THIS
+     * decision id) in ONE canonical event. If the process dies before the Journal note is written, a
+     * retry sees a STALE basis and the plan revision already applied. The canonical decision is the
+     * recovery anchor: when it is present, do NOT revise again and do NOT refuse as stale — write the
+     * missing record from the facts the event log already holds.
+     */
+    let planChange: ContributionPlanChange | null = wantsPlan
+      ? (deps.appliedDecision?.(decisionId)?.planChange ?? null)
+      : null;
+    const recovered = planChange !== null;
+
+    if (wantsPlan && !recovered && basisState === "STALE" && input.allowStaleBasis !== true) {
       throw new ContributionError(
         "STALE_BASIS",
         `contribution ${input.contributionId} was recorded against revision ${String(target.record.basis.projectRevision)} (${target.record.basis.headCommit.slice(0, 12)}), which is not the current basis; an old result must not silently change the plan. Re-read the project and pass allowStaleBasis only if the finding is still informative on the new basis.`,
       );
     }
 
-    let planChange: ContributionPlanChange | null = null;
-    if (wantsPlan) {
+    if (wantsPlan && !recovered) {
       const before = deps.controller.work.project();
       const delta = taskDelta(before.tasks, input.tasks!);
       const decision: Decision = {

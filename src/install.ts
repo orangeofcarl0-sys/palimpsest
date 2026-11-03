@@ -16,6 +16,7 @@ import { composeCognitionCapabilities } from "./composition/cognition.js";
 import { composeGovernanceCapabilities } from "./composition/governance.js";
 import { composeInstalledLifecycle } from "./composition/lifecycle.js";
 import type { DshPluginContext } from "./tools/dsh_types.js";
+import type { ProjectIr } from "./schema/models.js";
 import { evaluate } from "./experiment/index.js";
 import { makeCollaborationService, makeCrossProjectService } from "./interaction/index.js";
 import type { CollaborationService, CrossProjectService } from "./interaction/index.js";
@@ -509,9 +510,21 @@ export function installPalimpsest(
       status: () => controller.status(),
       plan: (input) => controller.plan(input),
       promotionFacts: () => controller.promotions.promotionFactsSync(),
+      /**
+       * LHAPE-B: the canonical ProjectIR revisions, ascending. The ProjectIR itself is carried in the
+       * `PROJECT_REVISED` payload, so this is a READ over the ONE event log — not a second history.
+       */
+      revisionHistory: () =>
+        controller.store
+          .listEvents(options.projectId)
+          .filter((event) => event.event_type === "PROJECT_CREATED" || event.event_type === "PROJECT_REVISED")
+          .map((event) => event.payload.project_ir as ProjectIr)
+          .sort((left, right) => left.revision - right.revision),
     },
     projectWorkspace,
     ...(delegation === undefined ? {} : { delegation }),
+    ...(workDelegation === undefined ? {} : { workDelegation }),
+    executionPlacement: controller.execution,
     ...(options.repository === undefined ? {} : { repository: options.repository }),
     ...(options.clock === undefined ? {} : { clock: options.clock }),
     operatorIntentAdmission: options.projectIntentAdmission !== undefined,
@@ -533,6 +546,8 @@ export function installPalimpsest(
     domainOutcome,
     ...(contribution === undefined ? {} : { contribution }),
     ...(pulse === undefined ? {} : { pulse }),
+    ...(workDelegation === undefined ? {} : { workDelegation }),
+    ...(continuation === undefined ? {} : { continuation }),
     assemblyOptions: options,
   });
   const { application, tools } = assembly;
