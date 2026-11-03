@@ -484,6 +484,21 @@ export interface WorkJobView {
   readonly settlement: unknown;
   /** The host-side failure detail, when this process could not continue. Never a project fact. */
   readonly hostError: string | null;
+  /**
+   * Whether a stop was REQUESTED for this job's worker. This is a host request, never an observation
+   * that the process stopped: `phase` and the canonical attempt stay authoritative until the port
+   * reports what it actually observed.
+   */
+  readonly stopRequested: boolean;
+}
+
+/** The honest answer to a stop request. `STOP_REQUESTED` is not `STOPPED`. */
+export interface WorkDelegationStopResult {
+  readonly jobId: string;
+  readonly taskId: string;
+  readonly phase: WorkJobPhase;
+  readonly state: "STOP_REQUESTED" | "ALREADY_TERMINAL" | "UNKNOWN";
+  readonly detail: string;
 }
 
 export interface WorkDelegationStartResult {
@@ -561,6 +576,13 @@ export interface WorkDelegationService {
   }): Promise<WorkDelegationStartResult>;
   /** READ-ONLY. Never retries, resumes, settles, verifies or promotes — it is not a command channel. */
   followup(input: { readonly jobId: string }): Promise<WorkJobView | { readonly jobId: string; readonly phase: "UNKNOWN"; readonly detail: string }>;
+  /** READ-ONLY listing of THIS host's jobs. Host-local and non-durable, like the job map itself. */
+  jobs(): Promise<readonly WorkJobView[]>;
+  /**
+   * Request that a job's worker stop. The worker port observes the abort signal; this call reports the
+   * REQUEST, not a stopped process. A worker that cannot be observed stopping keeps `phase` RUNNING.
+   */
+  stop(input: { readonly jobId?: string | undefined; readonly taskId?: string | undefined }): Promise<WorkDelegationStopResult>;
   /** READ-ONLY canonical inspection, addressed by the DURABLE identity rather than the host handle. */
   inspectAttempt(input: { readonly attemptId: string }): Promise<{
     readonly attemptId: string;
@@ -715,9 +737,22 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
    * The HOST-LOCAL half: thin on purpose. Nothing here is canonical, nothing here is durable, and
    * nothing here may grow into a second scheduler store.
    */
-  const jobs = new Map<string, WorkJobView & { readonly promise: Promise<void> }>();
+  /** Host-private mutable job entry. The PUBLIC view is frozen; this object is not exposed. */
+  interface WorkJobEntry {
+    readonly jobId: string;
+    readonly taskId: string;
+    attemptId: string | null;
+    phase: WorkJobPhase;
+    settlement: unknown;
+    hostError: string | null;
+    stopRequested: boolean;
+    readonly abort: AbortController;
+    promise: Promise<void>;
+  }
 
-  function viewOf(entry: WorkJobView & { readonly promise: Promise<void> }): WorkJobView {
+  const jobs = new Map<string, WorkJobEntry>();
+
+  function viewOf(entry: WorkJobEntry): WorkJobView {
     return Object.freeze({
       jobId: entry.jobId,
       taskId: entry.taskId,
@@ -725,7 +760,16 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
       phase: entry.phase,
       settlement: entry.settlement,
       hostError: entry.hostError,
+      stopRequested: entry.stopRequested,
     });
+  }
+
+  /** The active host job for one task, if any. Host-local only; never canonical. */
+  function activeJobForTask(taskId: string): WorkJobView | undefined {
+    for (const entry of jobs.values()) {
+      if (entry.taskId === taskId && (entry.phase === "QUEUED" || entry.phase === "RUNNING")) return entry;
+    }
+    return undefined;
   }
 
   return Object.freeze({
@@ -739,6 +783,19 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
       const target = deps.controller.mutatingWorkTarget(
         input.expectedTaskId === undefined ? {} : { expectedTaskId: input.expectedTaskId },
       );
+      /**
+       * HOST-LOCAL DUPLICATE GUARD. The canonical lane can legitimately be RESUMED, but this host must
+       * not spawn a SECOND worker onto the same task and world while the first is still active: the
+       * project would still hold one attempt, while two processes wrote into one world. That is a host
+       * safety fact (two live jobs), not a Work authority fact, so it is enforced here and never
+       * converted into an attempt failure.
+       */
+      const running = activeJobForTask(target.taskId);
+      if (running !== undefined) {
+        throw new WorkDelegationError(
+          `WORK_ALREADY_RUNNING: task "${target.taskId}" already has an active host job (${running.jobId}, ${running.phase}); wait for it to finish or stop it before starting another`,
+        );
+      }
       const jobId = `wdj-${randomUUID()}`;
       const entry = {
         jobId,
@@ -747,6 +804,8 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
         phase: "QUEUED" as WorkJobPhase,
         settlement: null as unknown,
         hostError: null as string | null,
+        stopRequested: false,
+        abort: new AbortController(),
         promise: Promise.resolve(),
       };
       jobs.set(jobId, entry);
@@ -799,6 +858,7 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
             workDir: prepared.worldPath,
             context,
             contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
+            signal: entry.abort.signal,
             ...(observe === undefined ? {} : { observe }),
             ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
             ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
@@ -807,6 +867,11 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
             attemptId: prepared.attemptId,
             workerOutcome,
           });
+          /**
+           * Settlement is INERT with respect to the scheduler: it records the worker's observed
+           * result, and the caller decides when to take the next legal lifecycle tick. That keeps the
+           * D5 continuation flows, which advance the scheduler themselves, on one contract.
+           */
           terminal("FINISHED");
         } catch (error) {
           /**
@@ -814,7 +879,10 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
            * attempt keeps whatever state it really has (RUNNING, with its world and any commit in it),
            * the lane stays fenced, and no `ATTEMPT_FAILED` is fabricated.
            */
-          entry.hostError = error instanceof Error ? error.message : String(error);
+          const detail = error instanceof Error ? error.message : String(error);
+          entry.hostError = entry.stopRequested
+            ? `a stop was requested by this host; the worker ended with: ${detail} — the canonical attempt was not failed by this`
+            : detail;
           terminal("HOST_ERROR");
         }
       })();
@@ -848,6 +916,52 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
         });
       }
       return viewOf(entry);
+    },
+
+    async jobs(): Promise<readonly WorkJobView[]> {
+      return Object.freeze(
+        [...jobs.values()]
+          .sort((left, right) => left.jobId.localeCompare(right.jobId))
+          .map((entry) => viewOf(entry)),
+      );
+    },
+
+    async stop(input: { readonly jobId?: string | undefined; readonly taskId?: string | undefined }): Promise<WorkDelegationStopResult> {
+      const entry =
+        input.jobId === undefined
+          ? input.taskId === undefined
+            ? undefined
+            : [...jobs.values()].find((candidate) => candidate.taskId === input.taskId)
+          : jobs.get(input.jobId);
+      if (entry === undefined) {
+        return Object.freeze({
+          jobId: input.jobId ?? "",
+          taskId: input.taskId ?? "",
+          phase: "QUEUED" as WorkJobPhase,
+          state: "UNKNOWN" as const,
+          detail:
+            "this host has no such job; host-local jobs are not durable, and an attempt left by a previous host is inspected by its canonical state rather than stopped through a job that no longer exists",
+        });
+      }
+      if (entry.phase === "FINISHED" || entry.phase === "HOST_ERROR") {
+        return Object.freeze({
+          jobId: entry.jobId,
+          taskId: entry.taskId,
+          phase: entry.phase,
+          state: "ALREADY_TERMINAL" as const,
+          detail: "this host already observed the job reach a terminal phase; there is nothing left to stop",
+        });
+      }
+      entry.stopRequested = true;
+      entry.abort.abort();
+      return Object.freeze({
+        jobId: entry.jobId,
+        taskId: entry.taskId,
+        phase: entry.phase,
+        state: "STOP_REQUESTED" as const,
+        detail:
+          "a stop was requested and the worker port was signalled; this is NOT an observation that the process stopped, so the phase and the canonical attempt remain unchanged until the port reports what it actually saw",
+      });
     },
 
     async inspectAttempt(input: { readonly attemptId: string }) {

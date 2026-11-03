@@ -7,7 +7,7 @@
  */
 
 import { makeWorkSurfaces } from "./surfaces/work.js";
-import type { WorkApplicationSurface } from "./surfaces/work.js";
+import type { ResultContinuationFace, WorkApplicationSurface, WorkDelegationFace } from "./surfaces/work.js";
 import { makeProductSurfaces } from "./surfaces/product.js";
 import type { CollaborationApplicationSurface, ContributionApplicationSurface, ContributionServicePort, CrossProjectApplicationSurface, DelegationApplicationSurface } from "./surfaces/product.js";
 import { makeFederationSurfaces } from "./surfaces/federation.js";
@@ -212,6 +212,10 @@ export interface ApplicationSurfaceDeps {
    * bypass and no second approval path.
    */
   readonly externalAssets?: ExternalAssetsApplicationSurface | undefined;
+  /** LHAPE-A: the composed async work-worker transport; absent ⇒ no worker can start. */
+  readonly workDelegation?: WorkDelegationFace | undefined;
+  /** LHAPE-B: the composed result-continuation authority; absent ⇒ no result inspection. */
+  readonly continuation?: ResultContinuationFace | undefined;
 }
 
 

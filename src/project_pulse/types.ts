@@ -19,6 +19,10 @@ export const PULSE_DECISION_KINDS = [
   "STALE_CONTRIBUTION",
   "TERMINAL_DELEGATION",
   "INTERRUPTED_DELEGATION",
+  "EXECUTION_UNOBSERVED",
+  "ORPHANED_EXECUTION",
+  "STOP_REQUESTED",
+  "STALE_RESULT",
   "BLOCKED_EFFECT",
   "OPEN_QUESTION",
 ] as const;
@@ -31,6 +35,30 @@ export interface PulseDecisionItem {
   readonly who: "OPERATOR" | "AGENT";
   /** Always true: this is a judgement prompt, never a permission or an acceptance. */
   readonly advisory: true;
+}
+
+/**
+ * LHAPE-A/B: what this host can honestly say about execution right now.
+ *
+ * `hostObserved` is the load-bearing distinction: a canonical attempt may be RUNNING while no worker
+ * exists in THIS process (a restart, a killed host, a different host). That is UNOBSERVED, not alive.
+ */
+export interface PulseExecutionView {
+  readonly placement: "in-place" | "worktree" | "UNKNOWN";
+  readonly attempts: readonly {
+    readonly taskId: string | null;
+    readonly state: string;
+    readonly taskState: string | null;
+    readonly orphaned: boolean;
+    readonly hostObserved: boolean;
+  }[];
+  readonly jobs: readonly {
+    readonly taskId: string;
+    readonly phase: string;
+    readonly settlementState: string | null;
+    readonly stopRequested: boolean;
+  }[];
+  readonly detail: string;
 }
 
 export interface ProjectPulse {
@@ -48,6 +76,7 @@ export interface ProjectPulse {
   readonly blocked: readonly ContinuityItem[];
   readonly contributions: readonly ContributionChainEntry[];
   readonly delegations: readonly DelegationPulseEntry[];
+  readonly execution: PulseExecutionView;
   readonly decisionQueue: readonly PulseDecisionItem[];
   readonly nextActions: {
     /** What the scheduler/product can mechanically execute next. */
