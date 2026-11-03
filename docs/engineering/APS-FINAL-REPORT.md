@@ -56,9 +56,25 @@ Project Workspace、Journal、Continuity、Work/Scheduler、Delegation 和真实
 | `origin/main` | `044330b2e55198542d545edc42ed9c36e7ce896e`（未移动） |
 | 是否 force-push | 否 |
 | 是否 merge `main` | 否 |
-| 是否创建 APS PR | 否（本轮没有外部合并授权；分支保留在本地） |
+| 是否 push | 是，`origin/palimpsest-autonomous-project-synthesis` |
+| 是否创建 APS PR | 是，PR #217；stacked on `palimpsest-pc1v1-governance-to-outcome`，base 不是 `main` |
 | 历史 Code/Evidence Freeze | 未修改、未 rebase、未删除 |
 | 工作树 | 交付提交后干净（`git status --short` 为空；`.aps-tmp/` 为本地测试临时目录，未提交） |
+
+### 1.1 PR 与 required checks
+
+PR #217 是 **stacked PR**，避免把 PC1-V1 的 216 号 PR 完整复制一遍；它不直接合并到 `main`。当前状态：
+
+- `MERGEABLE`，但 required checks **FAILURE**：
+  - `unit`：`trajectory_p2e1rf_malformed_ace.test.ts` 与
+    `trajectory_p2e1rg_kernel_coverage.test.ts` 失败；这两项在 PC1-V1 CI 中已存在，本轮未改动
+    相关代码。
+  - `host-boundary`：仅 HR-27 失败，CI 解析到
+    `@deepseek-ai/dsh-win32-process@0.2.1-rc.5`，而 hardening contract 记录的是 `0.2.1-rc.3`；
+    这是 CI 依赖漂移。
+- 同一轮中 `e1-k/e2-i/e3-c/e4-l/e5-p/e-live` gates 和 `e2e` 通过；`d2/d4/d5/d5-reliability` 与
+  `package-smoke` 是 host-dependent 失败。
+- 没有 admin bypass，没有 force-push，`main` 未移动。主分支合并仍被 required checks 阻塞。
 
 差分范围：
 
@@ -325,14 +341,15 @@ PC1-V1 的真实 P/F 结论仍是 `NOT_SUPPORTED`（P 26,524,721 vs F 15,160,662
 
 ## 8. 下一步（需要 Owner 决策）
 
-1. **APS spend authorization**：如果要做真实 F/L/G 对照，提供覆盖 exact cohort、provider、
-   aggregate token ceiling 和 expiry 的 `aps-spend-authorization/v1`；否则保持 `BLOCKED`。
-2. **Operator acceptance**：对真实交付执行现有 Review/Promotion，才能验证 contribution →
-   decision → accepted outcome 的最后一环；当前只到 VERIFIED-ING candidate。
+1. **完整 APS-C 长程 cohort**：pilot 只做了 F/L/G 各一个 session、单场景。若要讨论质量/成本优势，
+   需要 T1/T2、跨 Session、晚到/过期结果、delegation 和重复/配对样本。
+2. **G 的 rework/re-report**：G 的 `selection` 因后续提交落在报告之后而被 in-place guard 拒绝；
+   需要一个合法的 rework/report 流程，而不是绕过 guard。
 3. **Delegation Host 组合**：若要验证 async delegation 的真实 Host 价值，需要在 profile 中组合
    reasoning store + branch host，并重新冻结 cohort。
-4. **PR/合并**：本轮没有 push/PR/merge；如需进入 `main`，按仓库保护规则单独授权并处理历史 CI
-   阻塞。
+4. **PR/合并**：PR #217 已创建为 stacked PR；主分支合并仍受 required `unit`/`host-boundary`
+   阻塞。需要 Owner 决定：修复 CI 的 DSH pin 与两个历史 trajectory 测试，或明确接受 PR 保持在
+   open/stacked 状态。不会使用 admin bypass。
 
 ---
 
