@@ -35,6 +35,9 @@ export interface ControllerStatusView {
     task_id: string | null;
     state: string;
     attempt_no: number | null;
+    /** Derived: the attempt's task is retired, so this is not a live work position. */
+    orphaned?: boolean;
+    task_state?: string;
   }>;
   evidence: Array<{ evidence_id: string; status: string }>;
   promotions: Array<{ promotion_id: string; state: string }>;
@@ -279,13 +282,21 @@ export function explainStatusWorkState(input: {
   readonly promotionFence: readonly { readonly task_id: string; readonly state: string }[];
   readonly headState: string;
 }): WorkNextAction {
+  const terminalTaskIds = new Set(
+    input.tasks
+      .filter((task) => ["STALE", "FAILED", "SATISFIED"].includes(task.state))
+      .map((task) => task.task_id),
+  );
+  const liveAttempts = input.attempts.filter(
+    (attempt) => attempt.task_id === null || !terminalTaskIds.has(attempt.task_id),
+  );
   return explainWorkState({
     standardConfirmed: input.standardConfirmed,
     schedulerState: input.schedulerState,
     schedulerDecision: input.schedulerDecision,
     schedulerError: input.schedulerError,
     tasks: input.tasks.map((task) => ({ taskId: task.task_id, state: task.state })),
-    attempts: input.attempts.map((attempt) => ({ taskId: attempt.task_id, state: attempt.state })),
+    attempts: liveAttempts.map((attempt) => ({ taskId: attempt.task_id, state: attempt.state })),
     holds: input.holds,
     promotionFence: input.promotionFence.map((entry) => ({ taskId: entry.task_id, state: entry.state })),
     headState: input.headState,

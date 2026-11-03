@@ -289,10 +289,14 @@ Owner 于 2026-11-03 授权 APS 花费后，执行了 `aps-pilot-2026-11-03`：
 | L | 5/5 | 250,765 | 0 | 4（pulse/project） |
 | G | 5/5 | 1,256,498 | 1 | 17（work/contribution/pulse） |
 
-G 的 artifact 正确，但 operator acceptance 被真实拒绝：模型在报告 `selection`（commit `349e074`）
-之后又提交了 independent check（`ac4971f`），in-place promotion guard 拒绝把旧报告当作包含后续
-工作的结果。`selection` 仍 VERIFYING，`independent-check` 仍 READY；没有伪造接受，也没有绕过
-guard。这既是可信接受边界的正面证据，也是 G 条件的一个真实成本/顺序问题。
+G 的 artifact 正确，但直接 operator acceptance 被真实拒绝：模型在报告 `selection`（commit
+`349e074`）之后又提交了 independent check（`ac4971f`），in-place promotion guard 拒绝把旧报告当作
+包含后续工作的结果。随后执行了合法的 typed replan：原 `selection`/`selection-final` 变 STALE，
+新的 `selection-final-2` 覆盖当前完整 artifact 集并被 Promotion（`promotion-cafd69a6...`），
+最终 `selection-final-2 = SATISFIED`、revision 4、project head `ac4971f`。空的
+`independent-check` position 也由带决策的 plan revision 退休。这个 replan 还暴露并修复了一个
+真实缺陷：已退休 task 的 RUNNING attempt 仍占用 in-place 单写 lane；修复后 `openAttempts`、
+in-place lane 和 `finish` 使用同一读取，并新增 `test/aps_replan_orphan.test.ts` 回归测试。
 
 详细结果：[APS-C-PILOT-RESULT.md](APS-C-PILOT-RESULT.md)。
 
@@ -310,8 +314,8 @@ Palimpsest 总体上更优、更经济或更差；也不能把它当作完整长
   `STOPPED.json` 并 SIGTERM/SIGKILL 目标进程；pilot 中三个 session 均未触发停止。
 - `test/aps_cohort_gate.test.ts`：5 个测试覆盖无授权、授权不足、freeze 不匹配、READY 不执行、
   预算 guard 真正杀进程。
-- 完整 APS-C 仍缺：T1/T2、跨 Session、晚到/过期结果、delegation、G 的 operator acceptance、
-  重复/配对样本。本轮 pilot 不替代这些。
+- 完整 APS-C 仍缺：T1/T2、跨 Session、晚到/过期结果、delegation、重复/配对样本。G 的接受已通过
+  合法 replan 完成，但 pilot 本身不替代这些。
 
 ### 6.3 与 PC1-V1 的关系
 

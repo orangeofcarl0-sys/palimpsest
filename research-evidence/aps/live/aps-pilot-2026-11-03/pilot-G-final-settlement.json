@@ -1,0 +1,63 @@
+{
+  "schema": "aps-pilot-final-settlement/v1",
+  "note": "The independent-check artifact is accepted inside selection-final-2; the empty work position is retired. No model run.",
+  "decision": {
+    "decision_id": "decision-aps-settle-1793708076493",
+    "statement": "Retire the empty independent-check work position because its review is accepted inside selection-final-2",
+    "rationale": "reviews/coastal.md is a required artifact of the accepted selection-final-2 result at project head ac4971f. The separate independent-check task never acquired a claim because the VERIFYING latch blocked it; keeping it READY would offer a zero-work position whose artifact is already accepted.",
+    "evidence_ids": [],
+    "supersedes": null
+  },
+  "before": {
+    "revision": 3,
+    "projectHead": "ac4971f877f11dfa6a57dfd1f98a73f68c894b58",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final-2",
+        "state": "SATISFIED"
+      }
+    ]
+  },
+  "after": {
+    "revision": 4,
+    "projectHead": "ac4971f877f11dfa6a57dfd1f98a73f68c894b58",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final-2",
+        "state": "SATISFIED"
+      }
+    ],
+    "nextAction": {
+      "kind": "NO_ACTION",
+      "executable": false,
+      "action": null,
+      "detail": "every declared task is terminal; there is no legal formal transition left",
+      "taskId": null,
+      "blockers": []
+    }
+  }
+}
