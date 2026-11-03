@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "profileId": "aps-host",
+  "projectId": "aps",
+  "localPeer": "local-operator",
+  "repository": "/run/aps/world",
+  "execution": "in-place",
+  "concurrency": 1,
+  "toolProfile": "normal",
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "-e",
+          "process.exit(0)"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "Each selection must stay inside its declared write scope, name the vendor, and record the deciding constraint."
+  },
+  "transport": {
+    "namespace": "aps-host",
+    "databasePath": "/run/aps/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "/run/aps/state/palimpsest.sqlite",
+    "ordarium": "/run/aps/state/ordarium.sqlite",
+    "coordination": "/run/aps/state/coordination.sqlite",
+    "transportCursors": "/run/aps/state/transport-cursors.sqlite",
+    "projectJournal": "/run/aps/state/journal.sqlite",
+    "projectAssociations": "/run/aps/state/associations.sqlite",
+    "management": "/run/aps/state/management.sqlite"
+  }
+}
