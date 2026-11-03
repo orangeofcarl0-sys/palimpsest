@@ -1,0 +1,39 @@
+- id: llm-deepseek
+  config:
+    baseURL: http://127.0.0.1:18080
+    apiKeyEnv: APS_MOCK_KEY
+- id: llm-pi-ai
+  disabled: true
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: deepseek-flash
+- id: approval
+  config:
+    policy: never
+- id: permission
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: never
+      workspace-write:
+        sandbox: workspace-write
+        approval: never
+      danger-full-access:
+        sandbox: danger-full-access
+        approval: never
+    defaultPreset: workspace-write
+- id: sandbox-policy
+  config:
+    mode: workspace-write
+    workspaceRoot: /run/aps/world
+- id: session-title-llm
+  disabled: true
+- id: tool-web
+  disabled: true
+- id: palimpsest-tools
+  config:
+    palimpsestEntry: '/product/dist/src/advanced.js'
+    deploymentProfile: '/run/aps/deployment.json'
+    serve: false

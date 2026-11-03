@@ -1,0 +1,71 @@
+{
+  "schema": "aps-pilot-prep/v1",
+  "cohortId": "aps-pilot-2026-11-03",
+  "codeFreeze": "10b277cafa2c0b8e5b8a2b1ac9e7d3cbfe29d5cf",
+  "mode": "REAL_MODEL_PILOT",
+  "worlds": {
+    "F": "/home/admini/aps/pilot/worlds/F",
+    "L": "/home/admini/aps/pilot/worlds/L",
+    "G": "/home/admini/aps/pilot/worlds/G"
+  },
+  "sessions": [
+    {
+      "id": "pilot-f-1",
+      "condition": "F",
+      "maxTokens": 2500000,
+      "command": [
+        "bash",
+        "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/aps/session_pilot.sh",
+        "F"
+      ],
+      "cwd": "/home/admini/aps/pilot",
+      "sessionRoot": "/home/admini/aps/pilot/home-F/sessions",
+      "env": {
+        "APS_PILOT_RUN": "/home/admini/aps/pilot",
+        "APS_PILOT_REPO": "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1",
+        "APS_PILOT_CONDITION": "F"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "pilot-l-1",
+      "condition": "L",
+      "maxTokens": 2500000,
+      "command": [
+        "bash",
+        "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/aps/session_pilot.sh",
+        "L"
+      ],
+      "cwd": "/home/admini/aps/pilot",
+      "sessionRoot": "/home/admini/aps/pilot/home-L/sessions",
+      "env": {
+        "APS_PILOT_RUN": "/home/admini/aps/pilot",
+        "APS_PILOT_REPO": "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1",
+        "APS_PILOT_CONDITION": "L"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "pilot-g-1",
+      "condition": "G",
+      "maxTokens": 2500000,
+      "command": [
+        "bash",
+        "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/aps/session_pilot.sh",
+        "G"
+      ],
+      "cwd": "/home/admini/aps/pilot",
+      "sessionRoot": "/home/admini/aps/pilot/home-G/sessions",
+      "env": {
+        "APS_PILOT_RUN": "/home/admini/aps/pilot",
+        "APS_PILOT_REPO": "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1",
+        "APS_PILOT_CONDITION": "G"
+      },
+      "timeoutMs": 900000
+    }
+  ],
+  "budget": {
+    "perSession": 2500000,
+    "aggregate": 7500000
+  }
+}

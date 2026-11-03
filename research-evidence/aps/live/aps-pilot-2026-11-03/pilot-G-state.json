@@ -1,0 +1,107 @@
+{
+  "schema": "aps-pilot-state/v1",
+  "condition": "G",
+  "note": "Derived product read after the real-model session. Not a new run and not an acceptance.",
+  "project": {
+    "goal": "Produce a defensible vendor selection or a grounded decision to withhold a selection for each site, respecting the stated constraints and the declared sources.",
+    "revision": 0,
+    "digest": "df8c9cadbd809a0fb7efccf7653489523ee8088cf5966050f1240afa272c88f2",
+    "headCommit": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "selection",
+        "objective": "Produce the site-by-site selection or withholding decision in deliverables/selection.md."
+      },
+      {
+        "taskId": "independent-check",
+        "objective": "Independently check the coastal-rating status and record the result in reviews/coastal.md."
+      }
+    ]
+  },
+  "status": {
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "VERIFYING"
+      }
+    ],
+    "attempts": [
+      {
+        "attemptId": "attempt-8f2acdeb3e45933caf2df7ff646f8cfb",
+        "taskId": "selection",
+        "state": "COMPLETED"
+      }
+    ],
+    "nextAction": {
+      "kind": "WAIT_OPERATOR_ACCEPT",
+      "executable": false,
+      "action": null,
+      "detail": "the Scheduler's VERIFYING latch is held by selection; action=next will make no progress until an operator accepts or reworks that result. Investigation and proposals may still proceed outside the formal plan",
+      "taskId": "selection",
+      "blockers": [
+        "task:selection:VERIFYING"
+      ]
+    }
+  },
+  "contributions": [
+    {
+      "contributionId": "ctb-90b21f7bb8b83bcd95846219b4faf56d",
+      "sourceKind": "NATIVE_SUBAGENT",
+      "sourceRef": "native-subagent:coastal-check-827b2acf",
+      "observation": "PRINCIPAL_DECLARED",
+      "status": "ACKNOWLEDGED",
+      "basisState": "CURRENT",
+      "decisions": [
+        "ACKNOWLEDGE"
+      ],
+      "planChange": null,
+      "downstream": {
+        "planRevision": null,
+        "addedTaskIds": [],
+        "taskStates": [],
+        "acceptedTaskIds": [],
+        "observableOutcome": false
+      }
+    }
+  ],
+  "decisionQueue": [
+    {
+      "kind": "OPEN_QUESTION",
+      "ref": "journal:pje-dea9b6415144793a2a17e0ae41e1cc7b",
+      "detail": "Exploration: Independently verify whether any vendor holds a current 2026 coastal-rated warranty, and record the result : ## Exploratory finding (non-authoritative)\n\nIndependently verify whether any vendor holds a current 2026 coastal-rated warranty, and record the result in reviews/coastal.md.\n\n### Finding\n\nIndependent read-only check found no current 2026 coastal-rated warranty established for any vendor. The only coastal field is coastal_2024, which is \"no\" for Kestrel, Solaris, and Halcyon; no 2026 certificate is on file for any vendor. Halcyon's inbox note says a 2026 certificate is expected but NOT on file and is expressly an unverified claim, not a current coastal rating. All three vendors meet Site B's -4 °C minimum, so the binding coastal requirement is the deciding gap; Site B cannot be selected from the declared sources. The review is recorded at reviews/coastal.md.\n\n### Sources\n\n- sources/sites.md\n- sources/vendor-capabilities.csv\n- inbox/2026-02-10/vendor-update.md\n- TASK.md\n- reviews/coastal.md\n\n### Candidate artifacts\n\n- reviews/coastal.md\n\n### Uncertainty\n\nThe inbox note is not accepted source material and describes a certificate rather than warranty terms; its scope is unknown. No 2025-or-later coastal field exists in accepted sources. A future admitted 2026 coastal certificate could change the Site B conclusion.\n\n### Standing\n\nCLOSED — exploratory only; this is not Work, Evidence or acceptance.\n\n<!-- palimpsest-exploration:v1 -->\n{\"schema\":\"pc1-exploration/v1\",\"goal\":\"Independently verify whether any vendor holds a current 2026 coastal-rated warranty, and record the result in reviews/coastal.md.\",\"finding\":\"Independent read-only check found no current 2026 coastal-rated warranty established for any vendor. The only coastal field is coastal_2024, which is \\\"no\\\" for Kestrel, Solaris, and Halcyon; no 2026 certificate is on file for any vendor. Halcyon's inbox note says a 2026 certificate is expected but NOT on file and is expressly an unverified claim, not a current coastal rating. All three vendors meet Site B's -4 °C minimum, so the binding coastal requirement is the deciding gap; Site B cannot be selected from the declared sources. The review is recorded at reviews/coastal.md.\",\"sources\":[\"sources/sites.md\",\"sources/vendor-capabilities.csv\",\"inbox/2026-02-10/vendor-update.md\",\"TASK.md\",\"reviews/coastal.md\"],\"artifacts\":[\"reviews/coastal.md\"],\"uncertainty\":\"The inbox note is not accepted source material and describes a certificate rather than warranty terms; its scope is unknown. No 2025-or-later coastal field exists in accepted sources. A future admitted 2026 coastal certificate could change the Site B conclusion.\",\"status\":\"CLOSED\",\"taskId\":\"independent-check\",\"standing\":\"EXPLORATORY\"}",
+      "who": "AGENT",
+      "advisory": true
+    },
+    {
+      "kind": "OPERATOR_ACCEPTANCE",
+      "ref": "task:selection",
+      "detail": "delivered work for selection awaits an operator acceptance decision",
+      "who": "OPERATOR",
+      "advisory": true
+    }
+  ],
+  "journal": [
+    {
+      "entryId": "pje-dea9b6415144793a2a17e0ae41e1cc7b",
+      "kind": "REFERENCE_NOTE",
+      "title": "Exploration: Independently verify whether any vendor holds a current 2026 coastal-rated warranty, and record the result ",
+      "provenance": "sources/sites.md; sources/vendor-capabilities.csv; inbox/2026-02-10/vendor-update.md; TASK.md; reviews/coastal.md"
+    },
+    {
+      "entryId": "pje-27f5008bb721390d7f7dbdcff63f6928",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution: Independently check the coastal-rating status and record the result in reviews/coastal.md.",
+      "provenance": "contribution:native-subagent:coastal-check-827b2acf"
+    },
+    {
+      "entryId": "pje-eccb2de8e4a7b6e3020279f0795967c9",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution decision: ACKNOWLEDGE",
+      "provenance": "contribution:ctb-90b21f7bb8b83bcd95846219b4faf56d"
+    }
+  ]
+}

@@ -9,8 +9,16 @@ import { makeProjectContinuityService } from "../project_continuity/index.js";
 import type { ProjectContinuityService } from "../project_continuity/index.js";
 import { makeDomainOutcomeService } from "../domain_outcome/index.js";
 import type { DomainOutcomeService } from "../domain_outcome/index.js";
+import { makeContributionService } from "../project_contribution/index.js";
+import type {
+  ContributionChangeClass,
+  ContributionDelegationPort,
+  ContributionService,
+} from "../project_contribution/index.js";
+import { makeProjectPulseService } from "../project_pulse/index.js";
+import type { ProjectPulseService, PulseDelegationPort } from "../project_pulse/index.js";
 import type { ProjectWorkspaceService } from "../project_workspace/index.js";
-import type { ProjectIr } from "../schema/models.js";
+import type { Decision, ProjectIr, Requirement, TaskSpec } from "../schema/models.js";
 
 interface ContinuityWorkOwner {
   project(): ProjectIr;
@@ -24,6 +32,15 @@ interface ContinuityWorkOwner {
     promotions: readonly { promotion_id: string; state: string }[];
     promotionFence: readonly { promotion_id: string; attempt_id: string; task_id: string; state: string }[];
   };
+  plan(input: {
+    goal: string;
+    requirements: readonly Requirement[];
+    decisions: readonly Decision[];
+    tasks: readonly TaskSpec[];
+    reason?: string | undefined;
+    changeClass?: ContributionChangeClass | undefined;
+    changedIds?: readonly string[] | undefined;
+  }): unknown;
   promotionFacts(): readonly {
     promotionId: string;
     attemptId: string;
@@ -37,6 +54,8 @@ export interface ContinuityCompositionInput {
   readonly projectId: string;
   readonly controller: ContinuityWorkOwner;
   readonly projectWorkspace: ProjectWorkspaceService | undefined;
+  /** APS: the async delegation runtime, when this deployment composes one. */
+  readonly delegation?: (ContributionDelegationPort & PulseDelegationPort) | undefined;
   readonly repository?: string | undefined;
   readonly clock?: (() => string) | undefined;
   readonly operatorIntentAdmission: boolean;
@@ -45,6 +64,10 @@ export interface ContinuityCompositionInput {
 export interface ContinuityComposition {
   readonly continuity: ProjectContinuityService;
   readonly domainOutcome: DomainOutcomeService | undefined;
+  /** APS-A/B: present only when a durable project journal is composed. */
+  readonly contribution: ContributionService | undefined;
+  /** APS-A: the derived continuation view, present with the contribution chain. */
+  readonly pulse: ProjectPulseService | undefined;
 }
 
 export function composeContinuityCapability(input: ContinuityCompositionInput): ContinuityComposition {
@@ -95,5 +118,36 @@ export function composeContinuityCapability(input: ContinuityCompositionInput): 
     ...(input.clock === undefined ? {} : { clock: input.clock }),
   });
 
-  return Object.freeze({ continuity, domainOutcome });
+  const contribution =
+    workspace === undefined
+      ? undefined
+      : makeContributionService({
+          projectId: input.projectId,
+          controller: {
+            projectId: input.projectId,
+            work: { project: () => input.controller.project() },
+            status: () => input.controller.status(),
+            plan: (planInput) => input.controller.plan(planInput),
+          },
+          workspace: {
+            journal: (projectId?: string) => workspace.journal(projectId),
+            recordJournalEntry: (entry) => workspace.recordJournalEntry(entry),
+          },
+          ...(input.delegation === undefined ? {} : { delegation: input.delegation }),
+          ...(input.clock === undefined ? {} : { clock: input.clock }),
+        });
+
+  const pulse =
+    workspace === undefined || contribution === undefined
+      ? undefined
+      : makeProjectPulseService({
+          projectId: input.projectId,
+          continuity,
+          contributions: contribution,
+          workspace: { journal: (projectId?: string) => workspace.journal(projectId) },
+          ...(input.delegation === undefined ? {} : { delegation: input.delegation }),
+          ...(input.clock === undefined ? {} : { clock: input.clock }),
+        });
+
+  return Object.freeze({ continuity, domainOutcome, contribution, pulse });
 }

@@ -9,7 +9,38 @@
 import type { PalimpsestApplicationSurface } from "../../application/surface.js";
 import { COLLABORATION_INTENTS, MAX_BRANCH_HINT, MIN_BRANCH_HINT } from "../../interaction/index.js";
 import type { DshToolDefinition } from "../../tools/dsh_types.js";
-import { tool, ToolArgsError, required, requiredString } from "./common.js";
+import { tool, ToolArgsError, required, requiredString, stringArray } from "./common.js";
+
+const CONTRIBUTION_DECISIONS = [
+  "ACKNOWLEDGE",
+  "ACCEPT_AS_CANDIDATE",
+  "REJECT",
+  "NEEDS_MORE_EVIDENCE",
+  "REVISE_PLAN",
+] as const;
+
+function taskInput(raw: unknown): Array<{
+  task_id: string;
+  objective: string;
+  depends_on: string[];
+  write_paths: string[];
+  required_artifacts: string[];
+}> {
+  if (!Array.isArray(raw)) throw new ToolArgsError("tasks must be an array");
+  return raw.map((entry) => {
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+      throw new ToolArgsError("each task must be an object");
+    }
+    const task = entry as Record<string, unknown>;
+    return {
+      task_id: requiredString(task, "task_id"),
+      objective: requiredString(task, "objective"),
+      depends_on: task.depends_on === undefined ? [] : [...stringArray(task.depends_on, "depends_on")],
+      write_paths: task.write_paths === undefined ? [] : [...stringArray(task.write_paths, "write_paths")],
+      required_artifacts: task.required_artifacts === undefined ? [] : [...stringArray(task.required_artifacts, "required_artifacts")],
+    };
+  });
+}
 
 export function defineProductTools(application: PalimpsestApplicationSurface): DshToolDefinition[] {
   const tools: DshToolDefinition[] = [];
@@ -146,6 +177,8 @@ if (application.collaboration !== undefined) {
   }
   if (application.delegation !== undefined) {
     const delegation = application.delegation;
+    const contribution = application.contribution;
+    const changeClasses = contribution?.changeClasses() ?? [];
     tools.push(
       tool({
         name: "palimpsest_delegate",
@@ -174,7 +207,43 @@ if (application.collaboration !== undefined) {
           },
           changedPlan: {
             type: "boolean",
-            description: "for consume: whether the finding actually changed your plan or synthesis",
+            description: "for consume: whether the finding actually changed your plan or synthesis; on its own this is a DECLARATION, not proof that the project changed",
+          },
+          decision: {
+            type: "string",
+            enum: [...CONTRIBUTION_DECISIONS],
+            description:
+              "for consume: what you decided about the terminal finding. Default: REVISE_PLAN when tasks are supplied, ACCEPT_AS_CANDIDATE when changedPlan is true, otherwise ACKNOWLEDGE",
+          },
+          tasks: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                task_id: { type: "string" },
+                objective: { type: "string" },
+                depends_on: { type: "array", items: { type: "string" } },
+                write_paths: { type: "array", items: { type: "string" } },
+                required_artifacts: { type: "array", items: { type: "string" } },
+              },
+              required: ["task_id", "objective"],
+            },
+            description: "for consume REVISE_PLAN: the COMPLETE new task graph; supplying it applies a real plan revision",
+          },
+          reason: { type: "string", description: "for consume REVISE_PLAN: why the plan revision is applied" },
+          changeClass: {
+            type: "string",
+            enum: [...changeClasses],
+            description: "for consume REVISE_PLAN: optional typed invalidation class",
+          },
+          changedIds: {
+            type: "array",
+            items: { type: "string" },
+            description: "for consume REVISE_PLAN: logical ids changed by the revision, when a typed change class is used",
+          },
+          allowStaleBasis: {
+            type: "boolean",
+            description: "for consume REVISE_PLAN: explicitly allow a plan change from a stale delegation basis; use only after re-reading the project",
           },
         },
         run: async (action, object) => {
@@ -187,7 +256,52 @@ if (application.collaboration !== undefined) {
             if (object.changedPlan !== undefined && typeof object.changedPlan !== "boolean") {
               throw new ToolArgsError('argument "changedPlan" must be a boolean when given');
             }
+            if (object.decision !== undefined) {
+              const named = requiredString(object, "decision");
+              if (!(CONTRIBUTION_DECISIONS as readonly string[]).includes(named)) {
+                throw new ToolArgsError(`argument "decision" must be one of ${CONTRIBUTION_DECISIONS.join(", ")}`);
+              }
+            }
+            if (object.changeClass !== undefined) {
+              const named = requiredString(object, "changeClass");
+              if (!changeClasses.includes(named)) {
+                throw new ToolArgsError(`argument "changeClass" must be one of ${changeClasses.join(", ")}`);
+              }
+            }
+            if (object.allowStaleBasis !== undefined && typeof object.allowStaleBasis !== "boolean") {
+              throw new ToolArgsError('argument "allowStaleBasis" must be a boolean when given');
+            }
+            const tasks = object.tasks === undefined ? undefined : taskInput(object.tasks);
+            const decision =
+              object.decision !== undefined
+                ? (requiredString(object, "decision") as (typeof CONTRIBUTION_DECISIONS)[number])
+                : tasks !== undefined
+                  ? "REVISE_PLAN"
+                  : changedPlan
+                    ? "ACCEPT_AS_CANDIDATE"
+                    : "ACKNOWLEDGE";
             const consumed = await delegation.consume({ delegationRef, decisionNote, changedPlan });
+            let contributionResult:
+              | {
+                  readonly contribution: Awaited<ReturnType<NonNullable<typeof contribution>["record"]>>;
+                  readonly decision: Awaited<ReturnType<NonNullable<typeof contribution>["decide"]>>;
+                }
+              | undefined;
+            if (contribution !== undefined) {
+              const recorded = await contribution.record({ sourceKind: "DELEGATION", sourceRef: delegationRef });
+              const decided = await contribution.decide({
+                contributionId: recorded.contribution.contributionId,
+                decision,
+                decisionNote,
+                ...(tasks === undefined ? {} : { tasks }),
+                ...(object.reason === undefined ? {} : { reason: requiredString(object, "reason") }),
+                ...(object.changeClass === undefined ? {} : { changeClass: requiredString(object, "changeClass") as never }),
+                ...(object.changedIds === undefined ? {} : { changedIds: stringArray(object.changedIds, "changedIds") }),
+                declaredChangedPlan: changedPlan,
+                ...(object.allowStaleBasis === undefined ? {} : { allowStaleBasis: object.allowStaleBasis === true }),
+              });
+              contributionResult = { contribution: recorded, decision: decided };
+            }
             const workspace = application.projectWorkspace;
             if (workspace === undefined) {
               throw new ToolArgsError("this deployment composes no project journal, so consumption cannot be recorded");
@@ -198,13 +312,23 @@ if (application.collaboration !== undefined) {
               (entry) => entry.entry.body.includes(marker) && entry.entry.body.includes(delegationRef),
             );
             if (existing !== undefined) {
-              return { ...consumed, journalRef: existing.entry.entryId, alreadyRecorded: true };
+              return {
+                ...consumed,
+                ...(contributionResult ?? {}),
+                journalRef: existing.entry.entryId,
+                alreadyRecorded: true,
+                contributionAlreadyRecorded:
+                  contributionResult === undefined
+                    ? undefined
+                    : contributionResult.contribution.alreadyRecorded || contributionResult.decision.alreadyRecorded,
+              };
             }
             const body = [
               "## Delegation consumption (non-canonical)",
               "",
-              `Decision: ${decisionNote}`,
-              `Changed the plan: ${String(changedPlan)}`,
+              `Decision: ${decision}`,
+              `Note: ${decisionNote}`,
+              `Declared changed plan: ${String(changedPlan)}`,
               "",
               `Delegation: ${delegationRef}`,
               `Terminal state: ${consumed.state}`,
@@ -222,13 +346,42 @@ if (application.collaboration !== undefined) {
               body,
               provenance: `delegation:${delegationRef}`,
             });
-            return { ...consumed, journalRef: entry.entryId, alreadyRecorded: false };
+            return {
+              ...consumed,
+              ...(contributionResult ?? {}),
+              journalRef: entry.entryId,
+              alreadyRecorded: false,
+              contributionAlreadyRecorded:
+                contributionResult === undefined
+                  ? undefined
+                  : contributionResult.contribution.alreadyRecorded || contributionResult.decision.alreadyRecorded,
+            };
           }
           const kind = object.kind;
           if (kind !== undefined && kind !== "RESEARCH") {
             throw new ToolArgsError('argument "kind" must be "RESEARCH" (WORK and cross-project are not delegated here)');
           }
-          return delegation.start({ task: requiredString(object, "task"), kind: "RESEARCH" });
+          const taskText = requiredString(object, "task");
+          const started = await delegation.start({ task: taskText, kind: "RESEARCH" });
+          if (contribution === undefined) return started;
+          try {
+            await contribution.recordDelegationStart({
+              delegationRef: started.delegationRef,
+              task: taskText,
+              basisCommit: started.basisCommit,
+            });
+            return started;
+          } catch (error) {
+            /**
+             * The delegation really is running. A journal write failure must not fabricate a failed
+             * start; it is reported as a discovery warning so a later Session knows the result may
+             * not be listed by the project pulse.
+             */
+            return {
+              ...started,
+              journalWarning: `the delegation started but its start record could not be written: ${error instanceof Error ? error.message : String(error)}`,
+            };
+          }
         },
       }),
     );

@@ -1,0 +1,76 @@
+{
+  "schema": "aps-delivery/v1",
+  "branch": "palimpsest-autonomous-project-synthesis",
+  "base": "d691f3f1a8130e11e52a0ce293c935c4452fb9d2",
+  "codeFreeze": "d75c5b671fd740f6a71d16c372259e031aac4d21",
+  "implementationCommits": [
+    "d653e8118c3ec7aeb201fc2a3250a0626b0e95c2",
+    "e0fa0891a25ea646123fad403fc6c4bae4309085",
+    "d75c5b671fd740f6a71d16c372259e031aac4d21"
+  ],
+  "evidenceIntroducedAt": "3b171e58074a2cfe2ad16949c98040576498f9a7",
+  "main": {
+    "local": "67b29c9e7907b08fe594738973ce48b55e10d80b",
+    "origin": "044330b2e55198542d545edc42ed9c36e7ce896e",
+    "moved": false
+  },
+  "pushed": true,
+  "pullRequest": {
+    "number": 217,
+    "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/217",
+    "base": "palimpsest-pc1v1-governance-to-outcome",
+    "state": "OPEN",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "UNSTABLE",
+    "requiredChecks": {
+      "unit": "FAILURE (pre-existing trajectory_p2e1rf_malformed_ace, trajectory_p2e1rg_kernel_coverage)",
+      "host-boundary": "FAILURE (HR-27 DSH rc.5 vs recorded rc.3)",
+      "package-smoke": "SUCCESS after raising the consumer-smoke child buffer (new modules large listing)"
+    },
+    "merged": false,
+    "adminBypass": false
+  },
+  "hotspotTests": {
+    "files": 24,
+    "tests": 130,
+    "result": "PASS",
+    "note": "targeted hotspot batch; the whole historical suite is not claimed green"
+  },
+  "architecture": {
+    "check": "PASS",
+    "publicApi": "PASS"
+  },
+  "hostRun": {
+    "mode": "MOCK_MODEL_REAL_DSH_HOST",
+    "path": "research-evidence/aps/2026-11-03-host-run",
+    "providerCalls": 0,
+    "paidTokens": 0,
+    "principalSessions": 3,
+    "nativeSubagentSessions": 2
+  },
+  "apsPilot": {
+    "cohortId": "aps-pilot-2026-11-03",
+    "mode": "REAL_MODEL_PILOT",
+    "provider": "deepseek-official/deepseek-flash",
+    "authorizedTokens": 7500000,
+    "actualTokens": 1851733,
+    "sessions": 3,
+    "stoppedByBudget": 0,
+    "scores": { "F": "5/5", "L": "5/5", "G": "5/5" },
+    "tokens": { "F": 344470, "L": 250765, "G": 1256498 },
+    "gOperatorAcceptance": "ACCEPTED_AFTER_TYPED_REPLAN",
+    "gFirstPromotion": "REFUSED_BY_IN_PLACE_ORDER_GUARD",
+    "gFinalTask": "selection-final-2",
+    "gFinalTaskState": "SATISFIED",
+    "gFinalRevision": 4,
+    "gProjectHead": "ac4971f877f11dfa6a57dfd1f98a73f68c894b58",
+    "gReplanExposedBugFix": "test/aps_replan_orphan.test.ts",
+    "evidence": "research-evidence/aps/live/aps-pilot-2026-11-03",
+    "result": "docs/engineering/APS-C-PILOT-RESULT.md"
+  },
+  "apsFullCohort": {
+    "state": "NOT_EXECUTED",
+    "reason": "only the bounded 3-session pilot was executed; no full T1/T2 matched long-horizon cohort",
+    "modelCalls": 0
+  }
+}

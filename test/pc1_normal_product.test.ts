@@ -86,8 +86,9 @@ describe("PC1 S02-R01: the normal and expert catalogues really differ", () => {
     expect(names).toContain("palimpsest_work");
     expect(names).toContain("palimpsest_project");
     expect(names).toContain("palimpsest_start");
-    expect(names).toContain("palimpsest_status");
-    for (const forbidden of ["palimpsest_next", "palimpsest_claim", "palimpsest_report", "palimpsest_gate", "palimpsest_begin", "palimpsest_finish", "palimpsest_plan"]) {
+    expect(names).toContain("palimpsest_continuity");
+    expect(names).toContain("palimpsest_contribute");
+    for (const forbidden of ["palimpsest_next", "palimpsest_claim", "palimpsest_report", "palimpsest_gate", "palimpsest_begin", "palimpsest_finish", "palimpsest_plan", "palimpsest_status", "palimpsest_surfaces", "palimpsest_review", "palimpsest_collaborate", "palimpsest_cross_project"]) {
       expect(names).not.toContain(forbidden);
     }
   });
@@ -103,7 +104,7 @@ describe("PC1 S02-R01: the normal and expert catalogues really differ", () => {
 });
 
 describe("PC1 S02-R03: normal tool results are lossless JSON", () => {
-  it("status/project/work/surfaces results round-trip through JSON", async () => {
+  it("status/project/work/continuity results round-trip through JSON", async () => {
     const { repo, head } = workspace();
     const { call } = install(repo, "normal");
     await call("palimpsest_start", {
@@ -113,10 +114,10 @@ describe("PC1 S02-R03: normal tool results are lossless JSON", () => {
       tasks: [{ task_id: "deliver", objective: "deliver", depends_on: [], write_paths: ["deliverable.md"], required_artifacts: ["deliverable.md"] }],
     });
     const results = [
-      await call("palimpsest_status", {}),
-      await call("palimpsest_project", { action: "overview" }),
       await call("palimpsest_work", { action: "status" }),
-      await call("palimpsest_surfaces", { action: "list" }),
+      await call("palimpsest_project", { action: "overview" }),
+      await call("palimpsest_continuity", { action: "pulse" }),
+      await call("palimpsest_contribute", { action: "list" }),
     ];
     for (const result of results) {
       const serialized = JSON.stringify(result);
@@ -124,7 +125,7 @@ describe("PC1 S02-R03: normal tool results are lossless JSON", () => {
       expect(() => JSON.parse(serialized)).not.toThrow();
     }
     // The principal-safe work projection omits orchestrator identities.
-    const status = results[2] as Record<string, unknown>;
+    const status = results[0] as Record<string, unknown>;
     const text = JSON.stringify(status);
     expect(text).not.toMatch(/attempt-[0-9a-f]{16}/u);
     expect(text).not.toMatch(/promotion-[0-9a-f]{16}/u);

@@ -1,0 +1,56 @@
+{
+  "schema": "aps-pilot-replan-acceptance/v1",
+  "note": "A typed plan revision retires the stale report and re-issues the same artifact under a new task id. No promotion guard was bypassed.",
+  "decision": {
+    "decision_id": "decision-aps-replan-1793707472858",
+    "statement": "Retire the stale G selection report and re-issue the same artifact as selection-final at the current basis",
+    "rationale": "The original selection attempt recorded commit 349e074, then the independent check landed at ac4971f. In-place promotion correctly refused the older report. This is a typed replan, not an acceptance bypass; the artifact is unchanged and is re-reported from the current head.",
+    "evidence_ids": [],
+    "supersedes": null
+  },
+  "records": [
+    {
+      "taskId": "independent-check",
+      "mode": "no-claimable-attempt",
+      "state": "READY"
+    }
+  ],
+  "refusals": [
+    {
+      "stage": "selection-final",
+      "error": "attempt attempt-71988884f148863a1b18a56e91f578db changed paths outside the task envelope's write_paths [deliverables/selection.md]: reviews/coastal.md — revert them or revise the plan with palimpsest_plan; the attempt is still running"
+    }
+  ],
+  "before": {
+    "revision": 0,
+    "projectHead": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "VERIFYING"
+      }
+    ]
+  },
+  "after": {
+    "revision": 1,
+    "projectHead": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final",
+        "state": "ACTIVE"
+      }
+    ]
+  }
+}

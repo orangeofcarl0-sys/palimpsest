@@ -1416,14 +1416,10 @@ export class ProjectController {
           ? null
           : parseTaskEnvelope(decodeJsonBlob(row.envelope_json)),
     }));
-    const openAttempts: ReconcileAttemptRow[] = (
-      this.store.connection
-        .prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING')")
-        .all(this.projectId) as Array<Record<string, unknown>>
-    ).map((row) => ({
-      attemptId: String(row.attempt_id),
-      taskId: String(row.task_id),
-      state: String(row.state),
+    const openAttempts: ReconcileAttemptRow[] = this.work.openAttempts().map((row) => ({
+      attemptId: row.attemptId,
+      taskId: row.taskId,
+      state: row.state,
     }));
 
     // Typed invalidation is an explicit operator act: it names the tasks whose
@@ -2635,17 +2631,16 @@ export class ProjectController {
 
   /** The one attempt this principal currently has RUNNING; 0 or more than 1 is a refusal, not a guess. */
   #uniqueRunningAttempt(): string {
-    const rows = this.store.connection
-      .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND state=? ORDER BY attempt_id")
-      .all(this.projectId, "RUNNING") as { attempt_id: string }[];
-    if (rows.length === 1) return rows[0]!.attempt_id;
+    // The Work read owner excludes attempts on tasks a plan revision has retired.
+    const rows = this.work.openAttempts().filter((attempt) => attempt.state === "RUNNING");
+    if (rows.length === 1) return rows[0]!.attemptId;
     if (rows.length === 0) {
       throw new DomainValidationError(
         "no attempt is running, so there is no work to finish — claim a task first (the plan's ready set decides which), then do the work and call finish again",
       );
     }
     throw new DomainValidationError(
-      `${rows.length} attempts are running (${rows.map((row) => row.attempt_id).join(", ")}), so finishing would have to guess which one is yours — settle them one at a time, or narrow the plan so only one task is ready`,
+      `${rows.length} attempts are running (${rows.map((row) => row.attemptId).join(", ")}), so finishing would have to guess which one is yours — settle them one at a time, or narrow the plan so only one task is ready`,
     );
   }
 
@@ -4335,10 +4330,18 @@ export class ProjectController {
         .all(this.projectId) as Array<Record<string, unknown>>
     ).map((row) => {
       const state = decodeJsonBlob(row.state_json);
+      const taskId = row.task_id === null ? null : String(row.task_id);
+      const taskState = taskId === null ? undefined : tasks.find((task) => task.task_id === taskId)?.state;
+      // A retired task's attempt is historical, even if its row still says RUNNING.
+      const orphaned =
+        taskState !== undefined &&
+        ["STALE", "FAILED", "SATISFIED"].includes(taskState) &&
+        ["CREATED", "LEASED", "RUNNING"].includes(String(row.state));
       return {
         attempt_id: String(row.attempt_id),
-        task_id: row.task_id === null ? null : String(row.task_id),
-        state: String(row.state),
+        task_id: taskId,
+        state: orphaned ? "STALE" : String(row.state),
+        ...(orphaned ? { orphaned: true as const, task_state: taskState } : {}),
         attempt_no:
           typeof state.attempt_no === "number" ? state.attempt_no : null,
       };
@@ -4710,21 +4713,16 @@ export class ProjectController {
     });
   }
 
-  /** Roles of attempts still occupying a slot (CREATED/LEASED/RUNNING). */
+  /** Roles of attempts still occupying a slot (LEASED/RUNNING on a task the plan still owns). */
   #runningRoles(): TaskRole[] {
-    // Only claimed attempts (LEASED/RUNNING) occupy a slot; CREATED
-    // candidates are created by the scheduler but not yet running.
-    const rows = this.store.connection
-      .prepare(
-        "SELECT task_id FROM attempts WHERE project_id=? AND state IN ('LEASED','RUNNING')",
-      )
-      .all(this.projectId) as Array<{ task_id: string }>;
+    // Only claimed attempts occupy a slot; openAttempts already excludes retired-task orphans.
+    const rows = this.work.openAttempts().filter((attempt) => attempt.state === "LEASED" || attempt.state === "RUNNING");
     const project = this.#project();
     const roles = new Map<string, TaskRole>();
     for (const task of project.tasks) {
       roles.set(task.task_id, task.role ?? "implementer");
     }
-    return rows.map((row) => roles.get(row.task_id) ?? "implementer");
+    return rows.map((row) => roles.get(row.taskId) ?? "implementer");
   }
 
   #project(): ProjectIr {

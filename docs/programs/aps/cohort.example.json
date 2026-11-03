@@ -1,0 +1,40 @@
+{
+  "schema": "aps-live-cohort/v1",
+  "cohortId": "aps-live-2026-11-03",
+  "codeFreeze": "d75c5b671fd740f6a71d16c372259e031aac4d21",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "conditions": ["F", "L", "G"],
+  "oracleCopied": false,
+  "sessions": [
+    {
+      "id": "scenario-f-1",
+      "condition": "F",
+      "maxTokens": 2000000,
+      "command": ["bash", "scripts/aps/session_template.sh", "F"],
+      "cwd": ".",
+      "sessionRoot": ".aps-live/f",
+      "timeoutMs": 900000
+    },
+    {
+      "id": "scenario-l-1",
+      "condition": "L",
+      "maxTokens": 2000000,
+      "command": ["bash", "scripts/aps/session_template.sh", "L"],
+      "cwd": ".",
+      "sessionRoot": ".aps-live/l",
+      "timeoutMs": 900000
+    },
+    {
+      "id": "scenario-g-1",
+      "condition": "G",
+      "maxTokens": 2000000,
+      "command": ["bash", "scripts/aps/session_template.sh", "G"],
+      "cwd": ".",
+      "sessionRoot": ".aps-live/g",
+      "timeoutMs": 900000
+    }
+  ]
+}
