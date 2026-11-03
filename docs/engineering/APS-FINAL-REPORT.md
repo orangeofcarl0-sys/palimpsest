@@ -33,7 +33,11 @@ Project Workspace、Journal、Continuity、Work/Scheduler、Delegation 和真实
   新增 `site-b-coastal`、`capacity-refresh`，移除 `site-b`；
 - 该 Session 启动并完成 `site-a`，写出 `deliverables/site-a.md` 并提交，任务进入 **VERIFYING**；
 - 第三个新 Principal Session 的 pulse 能看到计划变更、交付候选、操作员验收队列，以及另一个
-  **UNASSESSED + STALE** 的贡献（晚到/未消费结果）。
+  **UNASSESSED + STALE** 的贡献（晚到/未消费结果）；
+- 随后执行真实 operator acceptance：`site-a` 经现有 Promotion 路径变为 **SATISFIED**；
+  由该贡献的 `REVISE_PLAN` 新增的 `site-b-coastal` 与 `capacity-refresh` 也由确定性 worker
+  完成并接受，最终 **三个任务 SATISFIED，revision 4**，贡献链的
+  `downstream.observableOutcome = true`。
 
 这不是模型质量或成本结论。运行使用确定性 Messages 替身，标记为 `MOCK_MODEL_REAL_DSH_HOST`；
 没有 provider 调用，没有付费 token。APS-C 的 F/L/G 真实模型对照 **BLOCKED**：没有 APS 花费授权。
@@ -86,7 +90,7 @@ Project Workspace、Journal、Continuity、Work/Scheduler、Delegation 和真实
 | 并发项目产物制作 | **部分** | 两个 subagent 并发返回 finding；实际仓库产物由 principal 单独写出，未做到两个 Agent 同时写相互关联产物 |
 | 晚到结果处理 | **已验证 / 已观察** | stale 贡献拒绝静默改计划、`allowStaleBasis` 显式；Host 第三个 Session 看到 UNASSESSED+STALE 贡献与 terminal/interrupted delegation 队列 |
 | 跨 Session 继续执行 | **已观察** | Session 2/3 均以 pulse 恢复目标、贡献、计划变更和待验收工作 |
-| 最终成果合成 | **部分** | `deliverables/site-a.md` 已交付并进入 VERIFYING；没有 operator acceptance / promotion |
+| 最终成果合成 | **已完成（确定性交付 + 真实 Promotion）** | 三个 task SATISFIED；`site-a`、`site-b-coastal`、`capacity-refresh` 均经现有 Promotion 路径；贡献新增 task 的 `downstream.observableOutcome = true` |
 | 可信接受边界 | **未削弱** | 没有新增 acceptance/promotion 路径；贡献不是 Evidence、不是接受、不是授权；既有 Promotion/Work 测试通过 |
 
 ---
@@ -144,16 +148,35 @@ Project Workspace、Journal、Continuity、Work/Scheduler、Delegation 和真实
 
 ### 3.4 最终成果
 
-- 路径：`deliverables/site-a.md`
-- SHA-256：`6c11e8fe8a3dbba8e7c5d9e99a01d64c89bc688115c33f3467086eb3916f50b0`
-- Work 状态：`site-a` = VERIFYING
-- 未完成：`site-b-coastal` = READY，`capacity-refresh` = BLOCKED（依赖未满足）
-- 未执行：operator acceptance / Promotion；因此最终“接受”链路停在候选交付，而不是伪造成功。
+三个交付物均已由真实 Work/Promotion 路径接受：
+
+| 任务 | 状态 | 产物 |
+|---|---|---|
+| `site-a` | **SATISFIED** | `deliverables/site-a.md`，SHA-256 `6c11e8fe8a3dbba8e7c5d9e99a01d64c89bc688115c33f3467086eb3916f50b0` |
+| `site-b-coastal` | **SATISFIED** | `deliverables/site-b-coastal.md`，SHA-256 `6ad48bb8d95edf501136bd28d3bbd2795a224842453ef45aea500ade88a19907` |
+| `capacity-refresh` | **SATISFIED** | `deliverables/capacity-refresh.md`，SHA-256 `53f992cac12deef0ed1abcdb296567bb3a6a079081e4cf1f9f44259554b91f8d` |
+
+- 最终 project revision：**4**
+- 最终 project head：`102679a2a6706512f35be33878dd759fb68cdc3c`
+- `site-a` 的真实 operator acceptance：`promotion-c4e30c694416ab0862b9056bb46a9099`，head 从
+  `37afc073...` 推进到 `3e364a88...`
+- `site-b-coastal`：`promotion-0bd67a8c06678d25649f55c8f3c24f0f`
+- `capacity-refresh`：`promotion-50ce4baeb7410a1eee17fea0961b05c1`
+- 贡献链：coastal 贡献的新增任务 `site-b-coastal`、`capacity-refresh` 均 SATISFIED，
+  `downstream.observableOutcome = true`；width 贡献仍为 `UNASSESSED + STALE`，没有被错误接受。
+
+注意：`site-b-coastal` 的产物是一个“无法从声明来源确认 2026 coastal rating”的
+negative/needs-verification 交付，而不是伪造一个合规 vendor。下游完成由确定性 test-owned
+worker 执行，不是模型结果。
 
 ### 3.5 人工干预
 
-运行期间没有人工干预。世界、项目 seed 和脚本是测试所有；seed 不是评分对象。没有把 seed 结果
-当作模型行为。
+三个 Principal Session 运行期间没有人工干预。世界、项目 seed 和脚本是测试所有；seed 不是评分对象。
+没有把 seed 结果当作模型行为。
+
+运行结束后，Owner 授权的 operator acceptance 与确定性 downstream completion 被显式执行：
+`operator_accept.mjs` 对 `site-a` 走真实 Promotion；`complete_downstream.mjs` 由 deterministic
+test-owned worker 完成并接受贡献新增的两个 task。两者都在证据中单独标注，不计作模型行为。
 
 ---
 
@@ -231,49 +254,72 @@ Project Workspace、Journal、Continuity、Work/Scheduler、Delegation 和真实
 
 ## 6. 对照结果与 APS-C
 
-### 6.1 本阶段没有真实模型对照
+### 6.1 已执行一个有上限的真实模型 pilot
 
-APS-C 需要 F（Strong Native DSH）、L（Palimpsest Lightweight）、G（Palimpsest Governed）三条件
-真实模型 cohort。当前**没有 APS 花费授权**；PC1-V1 的授权不转移。因此：
+Owner 于 2026-11-03 授权 APS 花费后，执行了 `aps-pilot-2026-11-03`：
 
-- 没有启动任何 F/L/G 真实模型 session；
-- 没有 token、质量、成本或恢复率对照；
-- 不声称 Palimpsest 优于 F，也不声称 L/G 有净收益；
-- 确定性 Host 运行只证明机制可运行，不证明认知收益。
+- F / L / G 各 **1 个真实 model session**，同场景、同可见来源、同评分器；
+- provider/model：`deepseek-official` / `deepseek-flash`；
+- 授权：每 session 2.5M tokens，总计 7.5M；
+- 实际：**1,851,733 tokens**，没有 session 触发 budget guard 停止；
+- 三个条件都 **5/5** 正确：Site A 选择合规 vendor 并说明 tie-break；Site B 因缺少当前 2026
+  coastal 证据而 withhold；没有把 2024 列或“expected”证书当作 current。
 
-### 6.2 已准备好的执行边界
+| 条件 | 分数 | Tokens | Subagent | Palimpsest 调用 |
+|---|---:|---:|---:|---:|
+| F | 5/5 | 344,470 | 1 | 0 |
+| L | 5/5 | 250,765 | 0 | 4（pulse/project） |
+| G | 5/5 | 1,256,498 | 1 | 17（work/contribution/pulse） |
 
-- `docs/programs/aps/APS-C-PROTOCOL.md`：F/L/G 场景、指标、评分纪律。
+G 的 artifact 正确，但 operator acceptance 被真实拒绝：模型在报告 `selection`（commit `349e074`）
+之后又提交了 independent check（`ac4971f`），in-place promotion guard 拒绝把旧报告当作包含后续
+工作的结果。`selection` 仍 VERIFYING，`independent-check` 仍 READY；没有伪造接受，也没有绕过
+guard。这既是可信接受边界的正面证据，也是 G 条件的一个真实成本/顺序问题。
+
+详细结果：[APS-C-PILOT-RESULT.md](APS-C-PILOT-RESULT.md)。
+
+这是 **n=1、单场景、单模型** 的 pilot。可以说：在这个场景中 L 比 F 少用约 27% tokens，G 比 F
+多用约 3.6× tokens，且 G 的 formal Work 在 `VERIFYING` latch 下阻塞了第二个任务。不能说
+Palimpsest 总体上更优、更经济或更差；也不能把它当作完整长程对照。
+
+### 6.2 执行边界与尚未完成的完整 cohort
+
+- `docs/programs/aps/APS-C-PROTOCOL.md`：完整 F/L/G 长程场景、指标、评分纪律。
 - `scripts/aps/run_cohort.mjs`：fail-closed cohort gate。缺授权、授权过期、cohort/provider/
-  condition 不匹配、请求总量超授权或超本地 8M 硬上限、code freeze 与 HEAD 不一致，任一条件都
+  condition 不匹配、请求总量超授权或超本地硬上限、code freeze 与 HEAD 不一致，任一条件都
   BLOCKED，`modelCalls = 0`。
 - `scripts/aps/budget_guard.mjs`：真实读取 DSH session usage，累计超过 session ceiling 时写
-  `STOPPED.json` 并 SIGTERM/SIGKILL 目标进程；这不是“只验证 maxTokens 是正整数”。
+  `STOPPED.json` 并 SIGTERM/SIGKILL 目标进程；pilot 中三个 session 均未触发停止。
 - `test/aps_cohort_gate.test.ts`：5 个测试覆盖无授权、授权不足、freeze 不匹配、READY 不执行、
   预算 guard 真正杀进程。
+- 完整 APS-C 仍缺：T1/T2、跨 Session、晚到/过期结果、delegation、G 的 operator acceptance、
+  重复/配对样本。本轮 pilot 不替代这些。
 
 ### 6.3 与 PC1-V1 的关系
 
 PC1-V1 的真实 P/F 结论仍是 `NOT_SUPPORTED`（P 26,524,721 vs F 15,160,662 tokens；两者正确/完整）。
-本轮没有推翻它，也没有用确定性运行替代它。APS 的额外机制是否值得成本，仍需要授权的真实
-F/L/G cohort 才能回答。
+本轮 APS pilot 的 F/L/G 全部正确，且 L 在该单场景中低于 F、G 高于 F；这与 PC1-V1 的
+“治理成本可能超过收益”的警告一致，但样本量不足以推翻或确认任何总体结论。
 
 ---
 
 ## 7. 未解决限制（必须保留）
 
-1. **模型未观察**：Host 运行使用脚本化 Messages 替身；所有模型行为、token、成本、比较结论均未观察。
-2. **APS-C 未授权**：没有 APS spend authorization；F/L/G 真实 cohort 未执行。
+1. **真实模型只做了一个 pilot**：F/L/G 各一个 session、单场景；确定性 Host 运行仍使用脚本化
+   Messages 替身，不能替代完整长程模型证据。
+2. **完整 APS-C 未执行**：没有 T1/T2、跨 Session、晚到结果、delegation 和重复样本；仅凭 pilot
+   不能声称总体质量/成本优势。
 3. **Delegation 未在 Host 中组合**：本次 profile 无 reasoning store / async branch host；
    `palimpsest_delegate` 不在目录中。Delegation 证据来自确定性测试。
 4. **并发资产生产未验证**：两个 subagent 并发返回 finding，但没有并发写相互关联产物。
-5. **最终接受未完成**：`site-a` 仅 VERIFYING；没有 operator acceptance / Promotion；没有证明
-   最终业务验收。
+5. **G 的接受链未完成**：G 的 `selection` 停在 VERIFYING，`independent-check` 因 latch 保持
+   READY；真实模型没有、也不能代替 operator acceptance。确定性的 `site-a` 接受链已单独闭合。
 6. **全量历史套件未声称全绿**：只做热点资格；历史 trajectory/CI 依赖问题未修复。
 7. **normal profile 是有意收窄**：高级工具仍在 `expert`，但旧调用方若依赖 normal 的
    `palimpsest_outcome`/`review`/`verification`/`collaborate`/`cross_project` 需要切到 expert。
 8. **贡献 basis 语义**：已评估且其 plan revision 仍为当前 revision 的贡献显示 CURRENT；未评估
-   的历史贡献显示 STALE。pulse 同时给出 status 和 basisState，Principal 仍需自行判断。
+   的历史贡献显示 STALE；当前 revision 已继续前进时，即使曾导致 plan change 也会显示 STALE。
+   pulse 同时给出 status 和 basisState，Principal 仍需自行判断。
 
 ---
 

@@ -4,13 +4,13 @@
   "project": {
     "goal": "Select a defensible vendor for each site and leave a reviewable selection artifact, respecting every stated site constraint.",
     "revision": 1,
-    "digest": "b1c32f044c999f23ffe4a315f28ebac0b0e8621c13e6b9e145aec003ec8a2362",
+    "digest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
     "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
     "decisions": [
       {
-        "decisionId": "ctd-e36331e5f9c3917f787472a9f749c1b6",
+        "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
         "statement": "Principal revise plan: Check whether the 2026 coastal rating is present for the site-B vendor.",
-        "rationale": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete. [contribution ctb-014342a3fabd4e1405c45893a0b93c7b; source NATIVE_SUBAGENT:subagent:coastal-check]"
+        "rationale": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete. [contribution ctb-f779034f4f55d79dce31a082b8cfb704; source NATIVE_SUBAGENT:subagent:coastal-check]"
       }
     ],
     "tasks": [
@@ -63,7 +63,7 @@
     ],
     "attempts": [
       {
-        "attemptId": "attempt-8a8e78d1a6dddd6c742e2306631014d5",
+        "attemptId": "attempt-28aee5dc009c7ac2f2c4ba0c12d7f74c",
         "taskId": "site-a",
         "state": "COMPLETED"
       }
@@ -81,25 +81,25 @@
   },
   "journal": [
     {
-      "entryId": "pje-5984a91f972a5cf2ba7b4bd870f6b806",
+      "entryId": "pje-8a598fd38039aded70693423262f1990",
       "kind": "REFERENCE_NOTE",
       "title": "Contribution: Check whether the 2026 coastal rating is present for the site-B vendor.",
       "provenance": "contribution:subagent:coastal-check",
-      "digest": "bec30e88d469aa984463bc0ec79f1cc6e0b1f47e07d2de144fed2e8c1b368edc"
+      "digest": "84168debbcdc3cb715db85c67a64e492a294c2d1d5c0172624fd7322c01d9ca6"
     },
     {
-      "entryId": "pje-004209220c87a6fea9bbfdb45d268262",
+      "entryId": "pje-68148f621423b3a1195224f5cd45106c",
       "kind": "REFERENCE_NOTE",
       "title": "Contribution: Check whether unit width or the design minimum is the binding constraint for site A.",
       "provenance": "contribution:subagent:width-check",
-      "digest": "e5fa5dc6372aa79cf62664da26638cd706d222ca46e2dc6db00d85871d5142a5"
+      "digest": "7c1673f97962e92fb265d1c29e625c0df03710b77792cef8665782ae2d97a55c"
     },
     {
-      "entryId": "pje-5712ef224fff31d10fb4ab9a23b74739",
+      "entryId": "pje-7e2b7a77b693661fd49af23a393aefeb",
       "kind": "REFERENCE_NOTE",
       "title": "Contribution decision: REVISE_PLAN",
-      "provenance": "contribution:ctb-014342a3fabd4e1405c45893a0b93c7b",
-      "digest": "dbf0d7a40ffd2af78da02a8fa99187e15e639a7c2bc7e0ccc15d955136ea9f3b"
+      "provenance": "contribution:ctb-f779034f4f55d79dce31a082b8cfb704",
+      "digest": "c7696073bd33393fe54cde57fbc74bf3431c70d600a9f356daed0393dbef9446"
     }
   ],
   "artifact": {
@@ -114,9 +114,9 @@
     "goal": "Select a defensible vendor for each site and leave a reviewable selection artifact, respecting every stated site constraint.",
     "basis": {
       "projectRevision": 1,
-      "projectDigest": "b1c32f044c999f23ffe4a315f28ebac0b0e8621c13e6b9e145aec003ec8a2362",
+      "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
       "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
-      "observedAt": "2026-11-03T10:29:46.090Z"
+      "observedAt": "2026-11-03T10:56:24.084Z"
     },
     "requirements": [
       {
@@ -130,9 +130,9 @@
         ],
         "basis": {
           "projectRevision": 1,
-          "projectDigest": "b1c32f044c999f23ffe4a315f28ebac0b0e8621c13e6b9e145aec003ec8a2362",
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
           "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
-          "observedAt": "2026-11-03T10:29:46.090Z"
+          "observedAt": "2026-11-03T10:56:24.084Z"
         },
         "applicability": "this project, at the recorded basis",
         "adoptionBasis": "the project's current ProjectIR revision",
@@ -151,9 +151,9 @@
         ],
         "basis": {
           "projectRevision": 1,
-          "projectDigest": "b1c32f044c999f23ffe4a315f28ebac0b0e8621c13e6b9e145aec003ec8a2362",
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
           "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
-          "observedAt": "2026-11-03T10:29:46.090Z"
+          "observedAt": "2026-11-03T10:56:24.084Z"
         },
         "applicability": "this project, at the recorded basis",
         "adoptionBasis": "the project's current ProjectIR revision",
@@ -174,9 +174,9 @@
         ],
         "basis": {
           "projectRevision": 1,
-          "projectDigest": "b1c32f044c999f23ffe4a315f28ebac0b0e8621c13e6b9e145aec003ec8a2362",
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
           "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
-          "observedAt": "2026-11-03T10:29:46.090Z"
+          "observedAt": "2026-11-03T10:56:24.084Z"
         },
         "applicability": "delivered, not yet part of canonical project state",
         "reopenConditions": [
@@ -193,9 +193,9 @@
         ],
         "basis": {
           "projectRevision": 1,
-          "projectDigest": "b1c32f044c999f23ffe4a315f28ebac0b0e8621c13e6b9e145aec003ec8a2362",
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
           "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
-          "observedAt": "2026-11-03T10:29:46.090Z"
+          "observedAt": "2026-11-03T10:56:24.084Z"
         },
         "applicability": "open loop in the derived workspace",
         "reopenConditions": [
@@ -207,17 +207,17 @@
     "openQuestions": [],
     "recentChanges": [
       {
-        "id": "journal:pje-5984a91f972a5cf2ba7b4bd870f6b806",
+        "id": "journal:pje-8a598fd38039aded70693423262f1990",
         "kind": "REFERENCE_NOTE",
         "title": "Contribution: Check whether the 2026 coastal rating is present for the site-B vendor."
       },
       {
-        "id": "journal:pje-004209220c87a6fea9bbfdb45d268262",
+        "id": "journal:pje-68148f621423b3a1195224f5cd45106c",
         "kind": "REFERENCE_NOTE",
         "title": "Contribution: Check whether unit width or the design minimum is the binding constraint for site A."
       },
       {
-        "id": "journal:pje-5712ef224fff31d10fb4ab9a23b74739",
+        "id": "journal:pje-7e2b7a77b693661fd49af23a393aefeb",
         "kind": "REFERENCE_NOTE",
         "title": "Contribution decision: REVISE_PLAN"
       }
@@ -247,7 +247,7 @@
       {
         "record": {
           "schema": "pc1-contribution/v1",
-          "contributionId": "ctb-014342a3fabd4e1405c45893a0b93c7b",
+          "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
           "projectId": "aps",
           "sourceKind": "NATIVE_SUBAGENT",
           "sourceRef": "subagent:coastal-check",
@@ -255,7 +255,7 @@
           "finding": "The capacity table exposes only a 2024 coastal column, and every entry is 'no'. No 2026 coastal rating is present in the declared source.",
           "basis": {
             "projectRevision": 0,
-            "projectDigest": "5b0e108d69af83007cbbd6ac5ba23ff8347885ec3d8d7cd4135fed269fab4b71",
+            "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
             "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
           },
           "observation": "PRINCIPAL_DECLARED",
@@ -266,21 +266,21 @@
           "readFootprintObservation": "DECLARED",
           "artifacts": [],
           "independentVerification": false,
-          "createdAt": "2026-11-03T10:29:36.438Z"
+          "createdAt": "2026-11-03T10:56:14.409Z"
         },
-        "journalEntryId": "pje-5984a91f972a5cf2ba7b4bd870f6b806",
+        "journalEntryId": "pje-8a598fd38039aded70693423262f1990",
         "decisions": [
           {
             "record": {
               "schema": "pc1-contribution-decision/v1",
-              "decisionId": "ctd-e36331e5f9c3917f787472a9f749c1b6",
+              "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
               "projectId": "aps",
-              "contributionId": "ctb-014342a3fabd4e1405c45893a0b93c7b",
+              "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
               "decision": "REVISE_PLAN",
               "decisionNote": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete.",
               "basisAtDecision": {
                 "projectRevision": 0,
-                "projectDigest": "5b0e108d69af83007cbbd6ac5ba23ff8347885ec3d8d7cd4135fed269fab4b71",
+                "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
                 "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
               },
               "basisState": "CURRENT",
@@ -302,22 +302,22 @@
                 ],
                 "reason": "the subagent finding changes the site-B requirement"
               },
-              "createdAt": "2026-11-03T10:29:40.595Z"
+              "createdAt": "2026-11-03T10:56:18.557Z"
             },
-            "journalEntryId": "pje-5712ef224fff31d10fb4ab9a23b74739"
+            "journalEntryId": "pje-7e2b7a77b693661fd49af23a393aefeb"
           }
         ],
         "latestDecision": {
           "record": {
             "schema": "pc1-contribution-decision/v1",
-            "decisionId": "ctd-e36331e5f9c3917f787472a9f749c1b6",
+            "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
             "projectId": "aps",
-            "contributionId": "ctb-014342a3fabd4e1405c45893a0b93c7b",
+            "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
             "decision": "REVISE_PLAN",
             "decisionNote": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete.",
             "basisAtDecision": {
               "projectRevision": 0,
-              "projectDigest": "5b0e108d69af83007cbbd6ac5ba23ff8347885ec3d8d7cd4135fed269fab4b71",
+              "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
               "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
             },
             "basisState": "CURRENT",
@@ -339,9 +339,9 @@
               ],
               "reason": "the subagent finding changes the site-B requirement"
             },
-            "createdAt": "2026-11-03T10:29:40.595Z"
+            "createdAt": "2026-11-03T10:56:18.557Z"
           },
-          "journalEntryId": "pje-5712ef224fff31d10fb4ab9a23b74739"
+          "journalEntryId": "pje-7e2b7a77b693661fd49af23a393aefeb"
         },
         "status": "PLAN_CHANGED",
         "basisState": "CURRENT",
@@ -368,7 +368,7 @@
       {
         "record": {
           "schema": "pc1-contribution/v1",
-          "contributionId": "ctb-9213588e7e203274124319737d5acab2",
+          "contributionId": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
           "projectId": "aps",
           "sourceKind": "NATIVE_SUBAGENT",
           "sourceRef": "subagent:width-check",
@@ -376,7 +376,7 @@
           "finding": "Site A allows a unit up to 1200 mm wide; the Kestrel V2 is 900 mm, so width is not its binding constraint. Its design minimum is the binding constraint.",
           "basis": {
             "projectRevision": 0,
-            "projectDigest": "5b0e108d69af83007cbbd6ac5ba23ff8347885ec3d8d7cd4135fed269fab4b71",
+            "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
             "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
           },
           "observation": "PRINCIPAL_DECLARED",
@@ -387,9 +387,9 @@
           "readFootprintObservation": "DECLARED",
           "artifacts": [],
           "independentVerification": false,
-          "createdAt": "2026-11-03T10:29:36.484Z"
+          "createdAt": "2026-11-03T10:56:14.441Z"
         },
-        "journalEntryId": "pje-004209220c87a6fea9bbfdb45d268262",
+        "journalEntryId": "pje-68148f621423b3a1195224f5cd45106c",
         "decisions": [],
         "latestDecision": null,
         "status": "UNASSESSED",
@@ -414,7 +414,7 @@
       },
       {
         "kind": "STALE_CONTRIBUTION",
-        "ref": "ctb-9213588e7e203274124319737d5acab2",
+        "ref": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
         "detail": "contribution from NATIVE_SUBAGENT was recorded at revision 0; the project has moved, so re-read the current basis before relying on it",
         "who": "AGENT",
         "advisory": true
@@ -439,19 +439,19 @@
     ],
     "sources": [
       {
-        "ref": "decision:ctd-e36331e5f9c3917f787472a9f749c1b6",
+        "ref": "decision:ctd-f37b3df7e574b67ebbac8c339168d8c6",
         "digest": null
       },
       {
-        "ref": "journal:pje-004209220c87a6fea9bbfdb45d268262",
+        "ref": "journal:pje-68148f621423b3a1195224f5cd45106c",
         "digest": null
       },
       {
-        "ref": "journal:pje-5712ef224fff31d10fb4ab9a23b74739",
+        "ref": "journal:pje-7e2b7a77b693661fd49af23a393aefeb",
         "digest": null
       },
       {
-        "ref": "journal:pje-5984a91f972a5cf2ba7b4bd870f6b806",
+        "ref": "journal:pje-8a598fd38039aded70693423262f1990",
         "digest": null
       },
       {
@@ -482,6 +482,6 @@
       ],
       "omitted": []
     },
-    "digest": "b2a118f88d087d577bbbe1ab57a771ec94b5d7233e95196fd2f6405964a5e6d4"
+    "digest": "07a11c28bf514feac2eb781ac8d60c0a72046cdf47e19ccb11c03d6aed3929b6"
   }
 }

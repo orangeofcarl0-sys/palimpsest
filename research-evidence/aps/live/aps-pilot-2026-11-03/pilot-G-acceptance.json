@@ -1,0 +1,46 @@
+{
+  "schema": "aps-pilot-operator-acceptance/v1",
+  "note": "Owner-authorized operator acceptance attempt on the G condition's real-model artifacts. A refusal is preserved, never converted into a success. Not a model run.",
+  "accepted": false,
+  "records": [
+    {
+      "taskId": "independent-check",
+      "mode": "no-claimable-attempt",
+      "state": "READY"
+    }
+  ],
+  "refusals": [
+    {
+      "taskId": "selection",
+      "error": "in-place attempt attempt-8f2acdeb3e45933caf2df7ff646f8cfb recorded commit 349e07417bf7 but the repository is at ac4971f877f1: work landed after the report, so promoting the recorded commit would not contain it — report the attempt again from the current state"
+    }
+  ],
+  "before": {
+    "revision": 0,
+    "projectHead": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "VERIFYING"
+      }
+    ]
+  },
+  "after": {
+    "revision": 0,
+    "projectHead": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "VERIFYING"
+      }
+    ]
+  }
+}

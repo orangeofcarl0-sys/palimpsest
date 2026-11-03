@@ -34,9 +34,23 @@
     "principalSessions": 3,
     "nativeSubagentSessions": 2
   },
-  "apsLiveCohort": {
-    "state": "BLOCKED",
-    "reason": "no APS spend authorization; a PC1-V1 authorization does not transfer",
+  "apsPilot": {
+    "cohortId": "aps-pilot-2026-11-03",
+    "mode": "REAL_MODEL_PILOT",
+    "provider": "deepseek-official/deepseek-flash",
+    "authorizedTokens": 7500000,
+    "actualTokens": 1851733,
+    "sessions": 3,
+    "stoppedByBudget": 0,
+    "scores": { "F": "5/5", "L": "5/5", "G": "5/5" },
+    "tokens": { "F": 344470, "L": 250765, "G": 1256498 },
+    "gOperatorAcceptance": "REFUSED_BY_IN_PLACE_ORDER_GUARD",
+    "evidence": "research-evidence/aps/live/aps-pilot-2026-11-03",
+    "result": "docs/engineering/APS-C-PILOT-RESULT.md"
+  },
+  "apsFullCohort": {
+    "state": "NOT_EXECUTED",
+    "reason": "only the bounded 3-session pilot was executed; no full T1/T2 matched long-horizon cohort",
     "modelCalls": 0
   }
 }

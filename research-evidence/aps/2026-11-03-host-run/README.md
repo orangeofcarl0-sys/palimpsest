@@ -17,9 +17,11 @@ was called and no paid tokens were spent.
 | Native child 2 | Returned the site-A width/design-minimum finding. |
 | Principal 2 | New session. `pulse` found the project and both contributions; applied `REVISE_PLAN` to the coastal finding through the contribution tool. The product observed **revision 0 → 1**, adding `site-b-coastal` and `capacity-refresh` and removing `site-b`. It then started `site-a`, wrote `deliverables/site-a.md`, committed it, and completed the attempt; the task reached **VERIFYING**. |
 | Principal 3 | New session. `pulse` found the plan change, the delivered candidate, the operator-acceptance queue and the still-unassessed second contribution, now `STALE` because the project moved. |
+| Operator | Owner-authorized acceptance on the real Promotion path: `site-a` promoted to **SATISFIED**. A deterministic test-owned worker then completed and promoted the two tasks the contribution's plan revision added (`site-b-coastal`, `capacity-refresh`), leaving **all three tasks SATISFIED** at revision 4. |
 
 The second contribution was deliberately left unassessed. It is the late/unconsumed-result case in the
-final pulse. No operator acceptance or promotion was performed, so `site-a` remains `VERIFYING`.
+final pulse. The contribution's added tasks reached SATISFIED, so
+`downstream.observableOutcome = true`; the unassessed contribution remains STALE and was not accepted.
 
 ## Files
 
@@ -30,7 +32,10 @@ final pulse. No operator acceptance or promotion was performed, so `site-a` rema
 - `session-logs/` — each principal's host stdout/stderr and exit code.
 - `mock.jsonl` / `mock.log` — the deterministic Messages requests, including the exact normal
   Palimpsest catalogue and the scripted tool calls.
-- `artifact-site-a.md` — the deliverable the principal wrote and completed.
+- `artifact-site-a.md`, `artifact-site-b-coastal.md`, `artifact-capacity-refresh.md` — the three
+  deliverables.
+- `operator-acceptance.json`, `downstream-completion.json` — the real Promotion records for the
+  operator-accepted result and the deterministic downstream completions.
 - `seed.json` — the seeded project basis and computed contribution ids.
 - `deployment.json`, `profile.patch.yml`, `profile.package.json`, `dump-config.txt` — the exact
   deployment and DSH profile.
@@ -47,4 +52,6 @@ final pulse. No operator acceptance or promotion was performed, so `site-a` rema
   repository artifacts. The principal produced the one artifact.
 - `palimpsest_delegate` was not composed in this profile (no reasoning store / async branch host).
   Delegation consumption is covered by deterministic service/adapter tests, not this host run.
-- The APS-C paid F/L/G cohort is **BLOCKED**: no APS spend authorization exists.
+- The full APS-C long-horizon cohort was not run. A separate bounded 3-session F/L/G real-model pilot
+  exists at `research-evidence/aps/live/aps-pilot-2026-11-03/`; this deterministic host run is not a
+  model result.
