@@ -31,23 +31,26 @@ const LEGACY_BASE = [
 /**
  * The normal product path. Names are exact; a tool that is not composed simply does not appear.
  *
- * `palimpsest_work` is the one work facade (status/plan/next/run/begin/complete/propose).
- * `palimpsest_project` is the derived project view/journal/proposal surface.
- * The collaboration/verification facades are included only when their owners compose them.
+ * APS-A deliberately REDUCES this tier to the six verbs an ordinary project session needs:
+ *
+ *   start       create the project / its first plan
+ *   work        the one Work facade (status/plan/next/run/start/begin/complete/propose/explore)
+ *   continuity  the derived current understanding and the decision-oriented pulse
+ *   project     the derived workspace, journal and decisions
+ *   delegate    async RESEARCH delegation (when composed)
+ *   contribute  record another executor's finding and connect it to the plan (when composed)
+ *
+ * `collaborate`, `cross_project`, `outcome`, `verification`, `review`, `surfaces` and the legacy
+ * chain remain available under `expert`/`all`. They are not removed; they stop competing for the
+ * ordinary session's attention.
  */
 const NORMAL_VISIBLE = new Set<string>([
   "palimpsest_start",
-  "palimpsest_status",
   "palimpsest_project",
   "palimpsest_work",
   "palimpsest_continuity",
-  "palimpsest_outcome",
-  "palimpsest_review",
-  "palimpsest_surfaces",
-  "palimpsest_verification",
-  "palimpsest_collaborate",
   "palimpsest_delegate",
-  "palimpsest_cross_project",
+  "palimpsest_contribute",
 ]);
 
 export function applyToolProfile(

@@ -15,6 +15,8 @@ import type { PeerRef } from "../federation/index.js";
 import type { CrossProjectService } from "../interaction/cross_project.js";
 import type { CollaborationService } from "../interaction/collaboration.js";
 import type { DelegationService } from "../interaction/delegation.js";
+import type { ContributionService } from "../project_contribution/index.js";
+import type { ProjectPulseService } from "../project_pulse/index.js";
 import type { PalimpsestApplicationSurface } from "../application/surface.js";
 import { makePalimpsestApplicationSurface } from "../application/surface.js";
 import { defineApplicationTools } from "../tools/application_tools.js";
@@ -44,6 +46,10 @@ export interface ApplicationAssemblyInput {
   readonly continuity: import("../project_continuity/index.js").ProjectContinuityService | undefined;
   /** PC1 S06: the derived domain-outcome service; absent without a workspace. */
   readonly domainOutcome: import("../domain_outcome/index.js").DomainOutcomeService | undefined;
+  /** APS-A/B: the non-authoritative contribution chain; absent without a workspace. */
+  readonly contribution?: ContributionService | undefined;
+  /** APS-A: the derived continuation view; absent without a contribution chain. */
+  readonly pulse?: ProjectPulseService | undefined;
   /** Exactly the option fields the assembly reads. */
   readonly assemblyOptions: ApplicationAssemblyOptions;
 }
@@ -86,7 +92,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
   const { organization, institution, runtimeScopes, holons, organizationDynamics, organizationEvolutionInstalled, runtimeEvolutionInstalled, reasoningCellsInstalled } = input.organization;
   const { proofExtraction, organizationMemory, recipeRegistry, taskProfiler, verificationWiring, liveVerification, advisor, recipeExecution, recipeExecutionStatus, attention, externalAssetsRef, projectWorkspace } = input.cognition;
   const { verification, externalAssets, projectManagement, operatingStores, monitor } = input.governance;
-  const { controller, baseTools, collaborationService, crossProjectService, delegationService, continuity, domainOutcome, assemblyOptions } = input;
+  const { controller, baseTools, collaborationService, crossProjectService, delegationService, continuity, domainOutcome, contribution, pulse, assemblyOptions } = input;
   void campaignEvidence;
   void boundaryHome;
   void federatedBoundaryMemory;
@@ -142,6 +148,9 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     // PLMP-LEAN-1 §C.14: the RESEARCH delegation face. ABSENT ⇒ no such surface, never a stub (the
     // same lesson as the collaboration/cross-project faces above).
     ...(delegationService === undefined ? {} : { delegation: delegationService }),
+    // APS-A/B: the contribution chain and the derived pulse. ABSENT ⇒ no such surface, never a stub.
+    ...(contribution === undefined ? {} : { contribution }),
+    ...(pulse === undefined ? {} : { projectPulse: pulse }),
     ...(assemblyOptions.remoteTransport === undefined ? {} : { remoteTransport: assemblyOptions.remoteTransport }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),

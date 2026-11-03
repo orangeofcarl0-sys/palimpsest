@@ -50,7 +50,9 @@ function workspace(): { root: string; repo: string; head: string; stateDir: stri
 function install(repo: string, head: string, stateDir: string) {
   const installed = installProduct(
     { tools: { register: () => () => undefined } } as never,
-    { projectId: "pc1v1", repository: repo, stateDir, execution: "in-place", standard, toolProfile: "normal" },
+    // The explicit hard-constraint check remains an EXPERT surface; the normal profile is the
+    // six-verb ordinary-project path and does not advertise it.
+    { projectId: "pc1v1", repository: repo, stateDir, execution: "in-place", standard, toolProfile: "expert" },
   );
   cleanups.push(() => void installed.dispose());
   installed.controller.start({
