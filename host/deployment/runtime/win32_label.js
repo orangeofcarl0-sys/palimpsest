@@ -104,10 +104,18 @@ const MANDATORY_LABEL_AUTHORITY = 16;
  *     labelled object, success on the control, from a Low token — is what separates the Mandatory Integrity
  *     mechanism from an incidental ACL effect or an unapplied label.
  *
- * WHAT THIS DOES **NOT** CLAIM. It does not establish that every Win32 call behaves identically to rc.2, that the
+ * REQUALIFICATION (APS CI baseline update, 2026-11-03). The owner set the CURRENT resolved baseline to
+ * `0.2.1-rc.5`, so the pin moved from rc.3 to rc.5 under the same rule: the CI host-boundary run resolves
+ * `@deepseek-ai/dsh-win32-process@0.2.1-rc.5`, `koffi` still resolves to `3.1.1` through the package's own
+ * declared dependency graph, and the conformance suite's seam/label checks (HR-09..HR-26) pass against that
+ * resolution. HR-27 previously failed only because this constant still named rc.3; the failure was drift
+ * reporting, not a seam failure. The six bound symbols and the label read/write behaviour remain the
+ * qualification subject; this pin is not a general statement about rc.5.
+ *
+ * WHAT THIS DOES **NOT** CLAIM. It does not establish that every Win32 call behaves identically to rc.3, that the
  * ACL binding signatures marshal identically in untested paths, or that the real runtime Home boundary is now
  * protected — E2 measured that it is not, and nothing here changes it. The pin names the release this code was
- * qualified against for the operations it performs; it is not a general statement about rc.3.
+ * qualified against for the operations it performs.
  *
  * The `qualifiedVersion` therefore names the release this code was actually qualified against, and
  * `dshCompatibilityReport()` still reports drift for any OTHER release rather than assuming compatibility.
@@ -115,9 +123,9 @@ const MANDATORY_LABEL_AUTHORITY = 16;
 export const DSH_CONTRACT = Object.freeze({
   package: '@deepseek-ai/dsh-win32-process',
   /** The exact version the fence was qualified against. */
-  qualifiedVersion: '0.2.1-rc.3',
+  qualifiedVersion: '0.2.1-rc.5',
   /** The release the earlier qualification was performed against, kept so the history stays legible. */
-  previouslyQualifiedVersion: '0.2.1-rc.2',
+  previouslyQualifiedVersion: '0.2.1-rc.3',
   /** The release before that, retained because the E2 requalification evidence names it. */
   firstQualifiedVersion: '0.2.0-rc.2',
   /** The exported seam, and the two context members it must provide. */
