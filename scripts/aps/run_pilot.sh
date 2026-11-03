@@ -45,7 +45,9 @@ if [ -z "$CODE_FREEZE" ]; then
   exit 2
 fi
 export APS_CODE_FREEZE_HEAD="$CODE_FREEZE"
-node "$PRODUCT/scripts/aps/prepare_pilot.mjs" --run="$RUN" --repo="$REPO" --codeFreeze="$CODE_FREEZE" > "$RUN/out/prepare.json"
+node "$PRODUCT/scripts/aps/prepare_pilot.mjs" --run="$RUN" --repo="$REPO" --codeFreeze="$CODE_FREEZE" > "$BASE/prepare.json"
+mkdir -p "$RUN/out" "$EVIDENCE"
+cp "$BASE/prepare.json" "$RUN/out/prepare.json"
 
 C6R_PROVIDER_KIND=anthropic C6R_PROXY_SOCKET="$RUN/out/provider.sock" \
   C6R_UPSTREAM="https://api.deepseek.com/anthropic" \
