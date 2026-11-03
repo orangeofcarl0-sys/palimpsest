@@ -11,23 +11,33 @@
   "evidenceIntroducedAt": "3b171e58074a2cfe2ad16949c98040576498f9a7",
   "main": {
     "local": "67b29c9e7907b08fe594738973ce48b55e10d80b",
-    "origin": "044330b2e55198542d545edc42ed9c36e7ce896e",
-    "moved": false
+    "origin": "055d09211562caef24d7e63999bd7b897b8bffd3",
+    "moved": true,
+    "how": "authorized merge of PR #216; no admin bypass"
   },
   "pushed": true,
   "pullRequest": {
     "number": 217,
     "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/217",
     "base": "palimpsest-pc1v1-governance-to-outcome",
-    "state": "OPEN",
+    "state": "MERGED",
+    "mergeCommit": "e9d6e5c8688753296f12268f9466b40b94fd7ca3",
     "mergeable": "MERGEABLE",
-    "mergeStateStatus": "UNSTABLE",
+    "mergeStateStatus": "CLEAN",
     "requiredChecks": {
-      "unit": "FAILURE (pre-existing trajectory_p2e1rf_malformed_ace, trajectory_p2e1rg_kernel_coverage)",
-      "host-boundary": "FAILURE (HR-27 DSH rc.5 vs recorded rc.3)",
-      "package-smoke": "SUCCESS after raising the consumer-smoke child buffer (new modules large listing)"
+      "unit": "SUCCESS",
+      "host-boundary": "SUCCESS",
+      "package-smoke": "SUCCESS"
     },
-    "merged": false,
+    "merged": true,
+    "adminBypass": false
+  },
+  "mainPullRequest": {
+    "number": 216,
+    "state": "MERGED",
+    "mergeCommit": "055d09211562caef24d7e63999bd7b897b8bffd3",
+    "requiredChecks": "SUCCESS",
+    "merged": true,
     "adminBypass": false
   },
   "hotspotTests": {
