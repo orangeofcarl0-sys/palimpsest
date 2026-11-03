@@ -17,7 +17,11 @@ import type { ManagementActivityRecord } from "../../project_operating/activity.
 import type { ProjectOperatingHistory } from "../../project_operating/history.js";
 import type { ExternalAssetImportCandidate, ExternalAssetImportCommit, ExternalAssetImportPreparation, ExternalAssetInspection, ExternalAssetInspectInput, ExternalAssetPrepareImportInput, ExternalAssetPreparePublicationInput, ExternalAssetPrepareReferenceInput, ExternalAssetProviderDescriptor, ExternalAssetPublicationPreview, ExternalAssetPublicationResult, ExternalAssetReferenceCandidate, ExternalAssetReferenceCommit, ExternalAssetReferencePreparation, ExternalAssetSearchInput, ExternalAssetSearchPage } from "../../external_assets/index.js";
 import type { WorkModeBaseMode, WorkModeModifier } from "../../project_operating/work_mode_profile.js";
+import type { ProjectPulse, ProjectPulseService } from "../../project_pulse/index.js";
 import { makeWorkspaceExtraSurface, type ContinuityFaces, type WorkspaceExtraSurface } from "../workspace_extra.js";
+
+/** The pulse service as the aggregate factory needs to know it. */
+export type ProjectPulseServicePort = ProjectPulseService;
 export type { ContinuityFaces } from "../workspace_extra.js";
 
 /** Exactly the dependencies this cluster reads — nothing else is visible to it (§9). */
@@ -30,6 +34,8 @@ export interface ProjectSurfaceDeps {
   /** PC1 S03/S06: the derived continuity and domain-outcome faces. */
   readonly continuity?: ContinuityFaces["continuity"];
   readonly domainOutcome?: ContinuityFaces["domainOutcome"];
+  /** APS-A: the derived decision-oriented continuation view. */
+  readonly projectPulse?: ProjectPulseService | undefined;
   readonly verification?: { readonly service: Pick< ProjectVerificationService, "status" | "history" | "verifyCurrentHead" >; } | undefined;
 }
 
@@ -79,6 +85,8 @@ export interface ProjectWorkspaceApplicationSurface extends WorkspaceExtraSurfac
   }): Promise<PromoteOpportunityResult>;
   /** PC1 S03: the current understanding with standing and basis (derived, never a second truth). */
   summary(): Promise<import("../../project_continuity/index.js").ProjectSummary>;
+  /** APS-A: the decision-oriented continuation view over the same owners. */
+  pulse(): Promise<ProjectPulse>;
   explain(subject: string): Promise<import("../../project_continuity/index.js").ProjectExplanation>;
   contextCapsule(input?: { readonly maxBytes?: number | undefined }): Promise<import("../../project_continuity/index.js").ContextCapsule>;
   /** PC1 S06: the registered domain contracts (descriptive only). */
@@ -262,6 +270,12 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
               promoteOpportunity: (input) =>
                 service.promoteOpportunity({ projectId: input.projectId ?? projectId, entryId: input.entryId, taskSpec: input.taskSpec }),
               ...makeWorkspaceExtraSurface(deps),
+              pulse: () => {
+                if (deps.projectPulse === undefined) {
+                  throw new Error("this deployment composes no project pulse");
+                }
+                return deps.projectPulse.pulse();
+              },
             };
           })();
 

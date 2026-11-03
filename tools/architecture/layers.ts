@@ -78,6 +78,11 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   project_continuity: "L2",
   project_handoff: "L2",
   domain_outcome: "L2",
+  // APS-A/B: the contribution chain appends only to the existing Journal and applies plan
+  // revisions through the controller; the pulse is a derived continuation view. Neither owns a
+  // canonical store, a scheduler or acceptance authority.
+  project_contribution: "L2",
+  project_pulse: "L2",
   // PC1 S04: the proposal/review metadata capability. It drives the existing plan/intent owners
   // through structural ports and owns only its non-authoritative review store.
   project_review: "L3",

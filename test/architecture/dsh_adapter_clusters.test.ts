@@ -159,6 +159,7 @@ describe("SR-1 §15 A05 defineApplicationTools is still the aggregate entry", ()
       "defineProofTools",
       "defineProjectTools",
       "defineGraphTools",
+      "defineContributionTools",
     ]);
   });
 
@@ -217,9 +218,9 @@ describe("SR-1 §29 the split produced no replacement monolith", () => {
         .filter((file) => file.endsWith(".ts") && file !== "index.ts" && file !== "common.ts")
         .map((file) => [file, loc(`${ADAPTERS}/${file}`)]),
     );
-    // PC1 added the normal facade, tool-profile, continuity and outcome clusters; PC1-V1 adds no
-    // new adapter cluster. The count is the measured reviewed partition, not an aspirational eight.
-    expect(clusterLoc.size).toBe(12);
+    // PC1 added the normal facade, tool-profile, continuity and outcome clusters; APS adds the
+    // contribution chain. The count is the measured reviewed partition, not an aspirational eight.
+    expect(clusterLoc.size).toBe(13);
     for (const [file, lines] of clusterLoc) {
       expect(lines, `${ADAPTERS}/${file} is ${String(lines)} lines`).toBeLessThanOrEqual(400);
     }

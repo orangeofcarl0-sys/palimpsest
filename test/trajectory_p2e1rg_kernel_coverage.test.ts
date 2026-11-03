@@ -52,6 +52,11 @@ type FenceModule = {
 };
 
 const RUNTIME = ["..", "host", "deployment", "runtime"].join("/");
+/**
+ * RG-B exercises the WINDOWS mandatory-integrity ACL seam. The CI unit job runs on Ubuntu; the Windows
+ * behaviour is covered by the host-boundary job. Keep the cases visible but skip where the API does not exist.
+ */
+const WINDOWS = process.platform === "win32";
 const ROOT = mkdtempSync(join(tmpdir(), "p2e1rg-rgb-"));
 const ORIGINAL_DSH_ROOT = process.env.PALIMPSEST_DSH_ROOT;
 let fence: FenceModule | null = null;
@@ -98,7 +103,7 @@ function makeTree(files: readonly string[]): string {
 
 const ready = () => fence !== null;
 
-describe("RG-B tree verification completeness (DYNAMICALLY_VERIFIED)", () => {
+describe.skipIf(!WINDOWS)("RG-B tree verification completeness (DYNAMICALLY_VERIFIED)", () => {
   it("1. a small fully labelled tree is verified AND complete", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
     const tree = makeTree(["a.txt", "nested/b.txt"]);
@@ -217,7 +222,7 @@ describe("RG-B tree verification completeness (DYNAMICALLY_VERIFIED)", () => {
   });
 });
 
-describe("RG-B root coverage semantics (DYNAMICALLY_VERIFIED)", () => {
+describe.skipIf(!WINDOWS)("RG-B root coverage semantics (DYNAMICALLY_VERIFIED)", () => {
   it("10. a skipped ancestor DERIVES coverage for its non-world children", () => {
     if (!ready()) return expect(moduleError).toBeTruthy();
     const repository = join(ROOT, "prod-1");

@@ -1,0 +1,487 @@
+{
+  "schema": "aps-final-pulse-run/v1",
+  "note": "Derived product read after the deterministic host run. No model result is claimed.",
+  "project": {
+    "goal": "Select a defensible vendor for each site and leave a reviewable selection artifact, respecting every stated site constraint.",
+    "revision": 1,
+    "digest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
+    "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+    "decisions": [
+      {
+        "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
+        "statement": "Principal revise plan: Check whether the 2026 coastal rating is present for the site-B vendor.",
+        "rationale": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete. [contribution ctb-f779034f4f55d79dce31a082b8cfb704; source NATIVE_SUBAGENT:subagent:coastal-check]"
+      }
+    ],
+    "tasks": [
+      {
+        "taskId": "site-a",
+        "objective": "Select the site-A vendor from sources/vendor-capabilities.csv and sources/sites.md, and record the deciding constraint in deliverables/site-a.md.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/site-a.md"
+        ]
+      },
+      {
+        "taskId": "site-b-coastal",
+        "objective": "Select a coastal-rated vendor for site B and record the exact rating source in deliverables/site-b-coastal.md.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/site-b-coastal.md"
+        ]
+      },
+      {
+        "taskId": "capacity-refresh",
+        "objective": "Re-read sources/vendor-capabilities.csv and record whether a 2026 coastal rating is present in deliverables/capacity-refresh.md.",
+        "dependsOn": [
+          "site-b-coastal"
+        ],
+        "requiredArtifacts": [
+          "deliverables/capacity-refresh.md"
+        ]
+      }
+    ]
+  },
+  "status": {
+    "tasks": [
+      {
+        "taskId": "capacity-refresh",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "site-a",
+        "state": "VERIFYING"
+      },
+      {
+        "taskId": "site-b",
+        "state": "STALE"
+      },
+      {
+        "taskId": "site-b-coastal",
+        "state": "READY"
+      }
+    ],
+    "attempts": [
+      {
+        "attemptId": "attempt-28aee5dc009c7ac2f2c4ba0c12d7f74c",
+        "taskId": "site-a",
+        "state": "COMPLETED"
+      }
+    ],
+    "nextAction": {
+      "kind": "WAIT_OPERATOR_ACCEPT",
+      "executable": false,
+      "action": null,
+      "detail": "the Scheduler's VERIFYING latch is held by site-a; action=next will make no progress until an operator accepts or reworks that result. Investigation and proposals may still proceed outside the formal plan",
+      "taskId": "site-a",
+      "blockers": [
+        "task:site-a:VERIFYING"
+      ]
+    }
+  },
+  "journal": [
+    {
+      "entryId": "pje-8a598fd38039aded70693423262f1990",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution: Check whether the 2026 coastal rating is present for the site-B vendor.",
+      "provenance": "contribution:subagent:coastal-check",
+      "digest": "84168debbcdc3cb715db85c67a64e492a294c2d1d5c0172624fd7322c01d9ca6"
+    },
+    {
+      "entryId": "pje-68148f621423b3a1195224f5cd45106c",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution: Check whether unit width or the design minimum is the binding constraint for site A.",
+      "provenance": "contribution:subagent:width-check",
+      "digest": "7c1673f97962e92fb265d1c29e625c0df03710b77792cef8665782ae2d97a55c"
+    },
+    {
+      "entryId": "pje-7e2b7a77b693661fd49af23a393aefeb",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution decision: REVISE_PLAN",
+      "provenance": "contribution:ctb-f779034f4f55d79dce31a082b8cfb704",
+      "digest": "c7696073bd33393fe54cde57fbc74bf3431c70d600a9f356daed0393dbef9446"
+    }
+  ],
+  "artifact": {
+    "path": "deliverables/site-a.md",
+    "present": true,
+    "sha256": "6c11e8fe8a3dbba8e7c5d9e99a01d64c89bc688115c33f3467086eb3916f50b0",
+    "text": "# Site A selection\n\nVendor: Kestrel (V2).\nDeciding constraint: the unit is rated to -20 °C, below the -12 °C design minimum, and is 900 mm wide, within the 1200 mm limit. The table has no 2026 coastal row; site A has no coastal requirement.\n"
+  },
+  "pulse": {
+    "schema": "pc1-project-pulse/v1",
+    "projectId": "aps",
+    "goal": "Select a defensible vendor for each site and leave a reviewable selection artifact, respecting every stated site constraint.",
+    "basis": {
+      "projectRevision": 1,
+      "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
+      "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+      "observedAt": "2026-11-03T10:56:24.084Z"
+    },
+    "requirements": [
+      {
+        "id": "requirement:R1",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "R1 (critical)",
+        "detail": "Each site selection must name the vendor and the deciding constraint.",
+        "sourceRefs": [
+          "requirement:R1",
+          "revision:1"
+        ],
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
+          "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+          "observedAt": "2026-11-03T10:56:24.084Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the project's current ProjectIR revision",
+        "reopenConditions": [
+          "an operator intent revision that changes or removes this requirement"
+        ]
+      },
+      {
+        "id": "requirement:R2",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "R2 (critical)",
+        "detail": "A coastal-rated warranty is binding for site B.",
+        "sourceRefs": [
+          "requirement:R2",
+          "revision:1"
+        ],
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
+          "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+          "observedAt": "2026-11-03T10:56:24.084Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the project's current ProjectIR revision",
+        "reopenConditions": [
+          "an operator intent revision that changes or removes this requirement"
+        ]
+      }
+    ],
+    "acceptedAssets": [],
+    "candidates": [
+      {
+        "id": "candidate:site-a",
+        "standing": "CANDIDATE",
+        "title": "Delivered result awaiting acceptance: site-a",
+        "detail": "Select the site-A vendor from sources/vendor-capabilities.csv and sources/sites.md, and record the deciding constraint in deliverables/site-a.md.",
+        "sourceRefs": [
+          "task:site-a"
+        ],
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
+          "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+          "observedAt": "2026-11-03T10:56:24.084Z"
+        },
+        "applicability": "delivered, not yet part of canonical project state",
+        "reopenConditions": [
+          "operator acceptance, rejection, or a changed project basis before acceptance"
+        ]
+      },
+      {
+        "id": "loop:READY_WORK:task:site-b-coastal",
+        "standing": "CANDIDATE",
+        "title": "Work awaiting a legal next step",
+        "detail": "task site-b-coastal is ready: Select a coastal-rated vendor for site B and record the exact rating source in deliverables/site-b-coastal.md.",
+        "sourceRefs": [
+          "task:site-b-coastal"
+        ],
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "7944faf2f6e7a95f136ff38f33b7f709c9d41a097bdd1ac65b786fc1e12ac2be",
+          "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+          "observedAt": "2026-11-03T10:56:24.084Z"
+        },
+        "applicability": "open loop in the derived workspace",
+        "reopenConditions": [
+          "the subject is resolved, rejected or superseded"
+        ]
+      }
+    ],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "recentChanges": [
+      {
+        "id": "journal:pje-8a598fd38039aded70693423262f1990",
+        "kind": "REFERENCE_NOTE",
+        "title": "Contribution: Check whether the 2026 coastal rating is present for the site-B vendor."
+      },
+      {
+        "id": "journal:pje-68148f621423b3a1195224f5cd45106c",
+        "kind": "REFERENCE_NOTE",
+        "title": "Contribution: Check whether unit width or the design minimum is the binding constraint for site A."
+      },
+      {
+        "id": "journal:pje-7e2b7a77b693661fd49af23a393aefeb",
+        "kind": "REFERENCE_NOTE",
+        "title": "Contribution decision: REVISE_PLAN"
+      }
+    ],
+    "pendingWork": [
+      {
+        "taskId": "capacity-refresh",
+        "state": "BLOCKED",
+        "objective": "Re-read sources/vendor-capabilities.csv and record whether a 2026 coastal rating is present in deliverables/capacity-refresh.md.",
+        "workAcceptance": "UNKNOWN"
+      },
+      {
+        "taskId": "site-a",
+        "state": "VERIFYING",
+        "objective": "Select the site-A vendor from sources/vendor-capabilities.csv and sources/sites.md, and record the deciding constraint in deliverables/site-a.md.",
+        "workAcceptance": "CANDIDATE"
+      },
+      {
+        "taskId": "site-b-coastal",
+        "state": "READY",
+        "objective": "Select a coastal-rated vendor for site B and record the exact rating source in deliverables/site-b-coastal.md.",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "blocked": [],
+    "contributions": [
+      {
+        "record": {
+          "schema": "pc1-contribution/v1",
+          "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
+          "projectId": "aps",
+          "sourceKind": "NATIVE_SUBAGENT",
+          "sourceRef": "subagent:coastal-check",
+          "task": "Check whether the 2026 coastal rating is present for the site-B vendor.",
+          "finding": "The capacity table exposes only a 2024 coastal column, and every entry is 'no'. No 2026 coastal rating is present in the declared source.",
+          "basis": {
+            "projectRevision": 0,
+            "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
+            "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
+          },
+          "observation": "PRINCIPAL_DECLARED",
+          "declaredReadFootprint": [
+            "sources/vendor-capabilities.csv",
+            "sources/sites.md"
+          ],
+          "readFootprintObservation": "DECLARED",
+          "artifacts": [],
+          "independentVerification": false,
+          "createdAt": "2026-11-03T10:56:14.409Z"
+        },
+        "journalEntryId": "pje-8a598fd38039aded70693423262f1990",
+        "decisions": [
+          {
+            "record": {
+              "schema": "pc1-contribution-decision/v1",
+              "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
+              "projectId": "aps",
+              "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
+              "decision": "REVISE_PLAN",
+              "decisionNote": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete.",
+              "basisAtDecision": {
+                "projectRevision": 0,
+                "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
+                "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
+              },
+              "basisState": "CURRENT",
+              "declaredChangedPlan": true,
+              "planChange": {
+                "fromRevision": 0,
+                "toRevision": 1,
+                "addedTaskIds": [
+                  "site-b-coastal",
+                  "capacity-refresh"
+                ],
+                "removedTaskIds": [
+                  "site-b"
+                ],
+                "changedTaskIds": [],
+                "changeClass": "behavior_change",
+                "changedIds": [
+                  "site-b"
+                ],
+                "reason": "the subagent finding changes the site-B requirement"
+              },
+              "createdAt": "2026-11-03T10:56:18.557Z"
+            },
+            "journalEntryId": "pje-7e2b7a77b693661fd49af23a393aefeb"
+          }
+        ],
+        "latestDecision": {
+          "record": {
+            "schema": "pc1-contribution-decision/v1",
+            "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
+            "projectId": "aps",
+            "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
+            "decision": "REVISE_PLAN",
+            "decisionNote": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete.",
+            "basisAtDecision": {
+              "projectRevision": 0,
+              "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
+              "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
+            },
+            "basisState": "CURRENT",
+            "declaredChangedPlan": true,
+            "planChange": {
+              "fromRevision": 0,
+              "toRevision": 1,
+              "addedTaskIds": [
+                "site-b-coastal",
+                "capacity-refresh"
+              ],
+              "removedTaskIds": [
+                "site-b"
+              ],
+              "changedTaskIds": [],
+              "changeClass": "behavior_change",
+              "changedIds": [
+                "site-b"
+              ],
+              "reason": "the subagent finding changes the site-B requirement"
+            },
+            "createdAt": "2026-11-03T10:56:18.557Z"
+          },
+          "journalEntryId": "pje-7e2b7a77b693661fd49af23a393aefeb"
+        },
+        "status": "PLAN_CHANGED",
+        "basisState": "CURRENT",
+        "downstream": {
+          "planRevision": 1,
+          "addedTaskIds": [
+            "site-b-coastal",
+            "capacity-refresh"
+          ],
+          "taskStates": [
+            {
+              "taskId": "site-b-coastal",
+              "state": "READY"
+            },
+            {
+              "taskId": "capacity-refresh",
+              "state": "BLOCKED"
+            }
+          ],
+          "acceptedTaskIds": [],
+          "observableOutcome": false
+        }
+      },
+      {
+        "record": {
+          "schema": "pc1-contribution/v1",
+          "contributionId": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
+          "projectId": "aps",
+          "sourceKind": "NATIVE_SUBAGENT",
+          "sourceRef": "subagent:width-check",
+          "task": "Check whether unit width or the design minimum is the binding constraint for site A.",
+          "finding": "Site A allows a unit up to 1200 mm wide; the Kestrel V2 is 900 mm, so width is not its binding constraint. Its design minimum is the binding constraint.",
+          "basis": {
+            "projectRevision": 0,
+            "projectDigest": "fb8ec2798652cb5f3a040ad05bd3fe15aac152a531e48f2f0137d50e6936c82c",
+            "headCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
+          },
+          "observation": "PRINCIPAL_DECLARED",
+          "declaredReadFootprint": [
+            "sources/vendor-capabilities.csv",
+            "sources/sites.md"
+          ],
+          "readFootprintObservation": "DECLARED",
+          "artifacts": [],
+          "independentVerification": false,
+          "createdAt": "2026-11-03T10:56:14.441Z"
+        },
+        "journalEntryId": "pje-68148f621423b3a1195224f5cd45106c",
+        "decisions": [],
+        "latestDecision": null,
+        "status": "UNASSESSED",
+        "basisState": "STALE",
+        "downstream": {
+          "planRevision": null,
+          "addedTaskIds": [],
+          "taskStates": [],
+          "acceptedTaskIds": [],
+          "observableOutcome": false
+        }
+      }
+    ],
+    "delegations": [],
+    "decisionQueue": [
+      {
+        "kind": "OPERATOR_ACCEPTANCE",
+        "ref": "task:site-a",
+        "detail": "delivered work for site-a awaits an operator acceptance decision",
+        "who": "OPERATOR",
+        "advisory": true
+      },
+      {
+        "kind": "STALE_CONTRIBUTION",
+        "ref": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
+        "detail": "contribution from NATIVE_SUBAGENT was recorded at revision 0; the project has moved, so re-read the current basis before relying on it",
+        "who": "AGENT",
+        "advisory": true
+      }
+    ],
+    "nextActions": {
+      "mechanical": [
+        "operator: the Scheduler's VERIFYING latch is held by site-a; action=next will make no progress until an operator accepts or reworks that result. Investigation and proposals may still proceed outside the formal plan",
+        "agent: address an open question by investigation or a proposal; do not treat it as accepted"
+      ],
+      "decisionRelevant": [
+        "operator: delivered work for site-a awaits an operator acceptance decision",
+        "agent: contribution from NATIVE_SUBAGENT was recorded at revision 0; the project has moved, so re-read the current basis before relying on it"
+      ],
+      "distinction": "mechanical actions are what the scheduler/product can legally execute next; decisionRelevant items are advisory judgements about what may advance the project, not authority, acceptance or a promise of value"
+    },
+    "authorityBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "sources": [
+      {
+        "ref": "decision:ctd-f37b3df7e574b67ebbac8c339168d8c6",
+        "digest": null
+      },
+      {
+        "ref": "journal:pje-68148f621423b3a1195224f5cd45106c",
+        "digest": null
+      },
+      {
+        "ref": "journal:pje-7e2b7a77b693661fd49af23a393aefeb",
+        "digest": null
+      },
+      {
+        "ref": "journal:pje-8a598fd38039aded70693423262f1990",
+        "digest": null
+      },
+      {
+        "ref": "requirement:R1",
+        "digest": null
+      },
+      {
+        "ref": "requirement:R2",
+        "digest": null
+      },
+      {
+        "ref": "revision:1",
+        "digest": null
+      },
+      {
+        "ref": "task:site-a",
+        "digest": null
+      },
+      {
+        "ref": "task:site-b-coastal",
+        "digest": null
+      }
+    ],
+    "coverage": {
+      "complete": false,
+      "unavailable": [
+        "delegation runtime (not composed)"
+      ],
+      "omitted": []
+    },
+    "digest": "07a11c28bf514feac2eb781ac8d60c0a72046cdf47e19ccb11c03d6aed3929b6"
+  }
+}

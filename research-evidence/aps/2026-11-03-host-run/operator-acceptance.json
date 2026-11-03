@@ -1,0 +1,60 @@
+{
+  "schema": "aps-operator-acceptance/v1",
+  "operator": "owner-authorized deterministic acceptance",
+  "taskId": "site-a",
+  "attemptId": "attempt-28aee5dc009c7ac2f2c4ba0c12d7f74c",
+  "acceptedAt": "2026-11-03T10:56:24.995Z",
+  "promoted": true,
+  "note": "The artifact is a deterministic-host-run deliverable, not a model result. The acceptance is a real operator decision on the real Work/Promotion path.",
+  "result": {
+    "promotionId": "promotion-c4e30c694416ab0862b9056bb46a9099",
+    "sourceCommit": "3e364a88197508a065e7c7d1323b79d61aba14dc",
+    "expectedHeadCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+    "resultingHeadCommit": "3e364a88197508a065e7c7d1323b79d61aba14dc",
+    "eventType": "PROMOTION_COMMITTED"
+  },
+  "before": {
+    "revision": 1,
+    "tasks": [
+      {
+        "taskId": "capacity-refresh",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "site-a",
+        "state": "VERIFYING"
+      },
+      {
+        "taskId": "site-b",
+        "state": "STALE"
+      },
+      {
+        "taskId": "site-b-coastal",
+        "state": "READY"
+      }
+    ],
+    "projectHead": "37afc0730b439cba9ee4d0287c70b7362e2af2b5"
+  },
+  "after": {
+    "revision": 2,
+    "tasks": [
+      {
+        "taskId": "capacity-refresh",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "site-a",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "site-b",
+        "state": "STALE"
+      },
+      {
+        "taskId": "site-b-coastal",
+        "state": "READY"
+      }
+    ],
+    "projectHead": "3e364a88197508a065e7c7d1323b79d61aba14dc"
+  }
+}

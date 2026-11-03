@@ -1,0 +1,19 @@
+{
+  "schema": "aps-spend-authorization/v1",
+  "authorized": true,
+  "owner": "Owner (authorized 2026-11-03)",
+  "cohortId": "aps-pilot-2026-11-03",
+  "authorizedAt": "2026-11-03T11:08:19.733Z",
+  "expiresAt": "2026-11-10T00:00:00.000Z",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "maxTokens": 7500000,
+  "conditions": [
+    "F",
+    "L",
+    "G"
+  ],
+  "note": "Bounded APS-C pilot: 3 matched sessions, 2.5M tokens per session, 7.5M aggregate. The PC1-V1 authorization is not reused."
+}
