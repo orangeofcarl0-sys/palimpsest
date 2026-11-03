@@ -1,0 +1,45 @@
+{
+  "schema": "aps-live-run-plan/v1",
+  "cohortId": "aps-pilot-2026-11-03",
+  "codeFreeze": "10b277cafa2c0b8e5b8a2b1ac9e7d3cbfe29d5cf",
+  "requestedTokens": 7500000,
+  "hardCapTokens": 8000000,
+  "execute": true,
+  "sessions": [
+    {
+      "id": "pilot-f-1",
+      "condition": "F",
+      "maxTokens": 2500000,
+      "command": [
+        "bash",
+        "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/aps/session_pilot.sh",
+        "F"
+      ],
+      "sessionRoot": "/home/admini/aps/pilot/home-F/sessions"
+    },
+    {
+      "id": "pilot-l-1",
+      "condition": "L",
+      "maxTokens": 2500000,
+      "command": [
+        "bash",
+        "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/aps/session_pilot.sh",
+        "L"
+      ],
+      "sessionRoot": "/home/admini/aps/pilot/home-L/sessions"
+    },
+    {
+      "id": "pilot-g-1",
+      "condition": "G",
+      "maxTokens": 2500000,
+      "command": [
+        "bash",
+        "/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/aps/session_pilot.sh",
+        "G"
+      ],
+      "sessionRoot": "/home/admini/aps/pilot/home-G/sessions"
+    }
+  ],
+  "budgetGuard": "scripts/aps/budget_guard.mjs watches the real DSH usage stream and terminates the target above its session ceiling",
+  "startedAt": "2026-11-03T11:08:19.983Z"
+}

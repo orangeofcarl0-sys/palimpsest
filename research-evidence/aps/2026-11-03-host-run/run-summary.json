@@ -1,7 +1,7 @@
 {
   "schema": "aps-host-run-summary/v1",
   "runId": "aps-host-2026-11-03",
-  "createdAt": "2026-11-03T10:30:10.801Z",
+  "createdAt": "2026-11-03T10:58:02.302Z",
   "mode": "MOCK_MODEL_REAL_DSH_HOST",
   "note": "The DSH host, Palimpsest product, SQLite state, native subagent child sessions and tool calls are real. The model is a deterministic Messages stand-in and produces NO model-cognition evidence. No provider was called and no paid tokens were spent.",
   "providerCalls": 0,
@@ -17,71 +17,71 @@
   "principalSessions": [
     {
       "match": "APS_PRINCIPAL_SESSION_1",
-      "sessionId": "session-ffae478f-b5ff-4b43-955c-601d5abb4539",
+      "sessionId": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
       "turnCount": 3
     },
     {
       "match": "APS_PRINCIPAL_SESSION_1",
-      "sessionId": "session-ffae478f-b5ff-4b43-955c-601d5abb4539",
+      "sessionId": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
       "turnCount": 3
     },
     {
       "match": "APS_PRINCIPAL_SESSION_1",
-      "sessionId": "session-ffae478f-b5ff-4b43-955c-601d5abb4539",
+      "sessionId": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
       "turnCount": 3
     },
     {
       "match": "APS_PRINCIPAL_SESSION_2",
-      "sessionId": "session-01fb80b4-1af6-4874-ad75-c262d60cb414",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
       "turnCount": 6
     },
     {
       "match": "APS_PRINCIPAL_SESSION_2",
-      "sessionId": "session-01fb80b4-1af6-4874-ad75-c262d60cb414",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
       "turnCount": 6
     },
     {
       "match": "APS_PRINCIPAL_SESSION_2",
-      "sessionId": "session-01fb80b4-1af6-4874-ad75-c262d60cb414",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
       "turnCount": 6
     },
     {
       "match": "APS_PRINCIPAL_SESSION_2",
-      "sessionId": "session-01fb80b4-1af6-4874-ad75-c262d60cb414",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
       "turnCount": 6
     },
     {
       "match": "APS_PRINCIPAL_SESSION_2",
-      "sessionId": "session-01fb80b4-1af6-4874-ad75-c262d60cb414",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
       "turnCount": 6
     },
     {
       "match": "APS_PRINCIPAL_SESSION_2",
-      "sessionId": "session-01fb80b4-1af6-4874-ad75-c262d60cb414",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
       "turnCount": 6
     },
     {
       "match": "APS_PRINCIPAL_SESSION_3",
-      "sessionId": "session-6c903352-dc26-4f41-8d5e-171bd6492ba6",
+      "sessionId": "session-aed959bb-53f9-4b25-9f56-8af214e6d9c7",
       "turnCount": 2
     },
     {
       "match": "APS_PRINCIPAL_SESSION_3",
-      "sessionId": "session-6c903352-dc26-4f41-8d5e-171bd6492ba6",
+      "sessionId": "session-aed959bb-53f9-4b25-9f56-8af214e6d9c7",
       "turnCount": 2
     }
   ],
   "subagentSessions": [
     {
       "match": "APS_CHILD_COASTAL",
-      "sessionId": "3bc47f78-b0bd-4f12-a09b-fc2d8b54b676",
+      "sessionId": "a7171729-f5b0-4604-9f35-7d95aa1e826d",
       "requestCount": 1,
       "toolCalls": [],
       "returnedText": "The capacity table exposes only a 2024 coastal column, and every entry is 'no'. No 2026 coastal rating is present in the declared source."
     },
     {
       "match": "APS_CHILD_WIDTH",
-      "sessionId": "b553e466-305a-4695-bbf8-4e2aeff3887f",
+      "sessionId": "eb307aec-5173-4ea6-904c-a50049708198",
       "requestCount": 1,
       "toolCalls": [],
       "returnedText": "Site A allows a unit up to 1200 mm wide; the Kestrel V2 is 900 mm, so width is not its binding constraint. Its design minimum is the binding constraint."
@@ -89,12 +89,12 @@
   ],
   "plan": {
     "goal": "Select a defensible vendor for each site and leave a reviewable selection artifact, respecting every stated site constraint.",
-    "revision": 1,
+    "revision": 4,
     "decisions": [
       {
-        "decisionId": "ctd-e36331e5f9c3917f787472a9f749c1b6",
+        "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
         "statement": "Principal revise plan: Check whether the 2026 coastal rating is present for the site-B vendor.",
-        "rationale": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete. [contribution ctb-014342a3fabd4e1405c45893a0b93c7b; source NATIVE_SUBAGENT:subagent:coastal-check]"
+        "rationale": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete. [contribution ctb-f779034f4f55d79dce31a082b8cfb704; source NATIVE_SUBAGENT:subagent:coastal-check]"
       }
     ],
     "tasks": [
@@ -128,11 +128,11 @@
     "status": [
       {
         "taskId": "capacity-refresh",
-        "state": "BLOCKED"
+        "state": "SATISFIED"
       },
       {
         "taskId": "site-a",
-        "state": "VERIFYING"
+        "state": "SATISFIED"
       },
       {
         "taskId": "site-b",
@@ -140,20 +140,20 @@
       },
       {
         "taskId": "site-b-coastal",
-        "state": "READY"
+        "state": "SATISFIED"
       }
     ]
   },
   "contributions": [
     {
-      "contributionId": "ctb-014342a3fabd4e1405c45893a0b93c7b",
+      "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
       "sourceKind": "NATIVE_SUBAGENT",
       "sourceRef": "subagent:coastal-check",
       "observation": "PRINCIPAL_DECLARED",
       "readFootprintObservation": "DECLARED",
       "independentVerification": false,
       "status": "PLAN_CHANGED",
-      "basisState": "CURRENT",
+      "basisState": "STALE",
       "latestDecision": "REVISE_PLAN",
       "planChange": {
         "fromRevision": 0,
@@ -181,19 +181,22 @@
         "taskStates": [
           {
             "taskId": "site-b-coastal",
-            "state": "READY"
+            "state": "SATISFIED"
           },
           {
             "taskId": "capacity-refresh",
-            "state": "BLOCKED"
+            "state": "SATISFIED"
           }
         ],
-        "acceptedTaskIds": [],
-        "observableOutcome": false
+        "acceptedTaskIds": [
+          "site-b-coastal",
+          "capacity-refresh"
+        ],
+        "observableOutcome": true
       }
     },
     {
-      "contributionId": "ctb-9213588e7e203274124319737d5acab2",
+      "contributionId": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
       "sourceKind": "NATIVE_SUBAGENT",
       "sourceRef": "subagent:width-check",
       "observation": "PRINCIPAL_DECLARED",
@@ -216,54 +219,141 @@
   "unassessedContributions": 1,
   "decisionQueue": [
     {
-      "kind": "OPERATOR_ACCEPTANCE",
-      "ref": "task:site-a",
-      "detail": "delivered work for site-a awaits an operator acceptance decision",
-      "who": "OPERATOR",
-      "advisory": true
-    },
-    {
       "kind": "STALE_CONTRIBUTION",
-      "ref": "ctb-9213588e7e203274124319737d5acab2",
+      "ref": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
       "detail": "contribution from NATIVE_SUBAGENT was recorded at revision 0; the project has moved, so re-read the current basis before relying on it",
       "who": "AGENT",
       "advisory": true
     }
   ],
   "mechanicalNextActions": [
-    "operator: the Scheduler's VERIFYING latch is held by site-a; action=next will make no progress until an operator accepts or reworks that result. Investigation and proposals may still proceed outside the formal plan",
-    "agent: address an open question by investigation or a proposal; do not treat it as accepted"
+    "agent: every declared task is terminal; there is no legal formal transition left",
+    "agent: address an open question by investigation or a proposal; do not treat it as accepted",
+    "agent: propose the next bounded step in the project journal"
   ],
   "artifact": {
     "path": "deliverables/site-a.md",
     "present": true,
     "sha256": "6c11e8fe8a3dbba8e7c5d9e99a01d64c89bc688115c33f3467086eb3916f50b0"
   },
+  "artifacts": [
+    {
+      "path": "deliverables/site-a.md",
+      "present": true,
+      "sha256": "6c11e8fe8a3dbba8e7c5d9e99a01d64c89bc688115c33f3467086eb3916f50b0"
+    },
+    {
+      "path": "deliverables/site-b-coastal.md",
+      "present": true,
+      "sha256": "6ad48bb8d95edf501136bd28d3bbd2795a224842453ef45aea500ade88a19907"
+    },
+    {
+      "path": "deliverables/capacity-refresh.md",
+      "present": true,
+      "sha256": "53f992cac12deef0ed1abcdb296567bb3a6a079081e4cf1f9f44259554b91f8d"
+    }
+  ],
+  "operatorAcceptance": {
+    "promoted": true,
+    "taskId": "site-a",
+    "result": {
+      "promotionId": "promotion-c4e30c694416ab0862b9056bb46a9099",
+      "sourceCommit": "3e364a88197508a065e7c7d1323b79d61aba14dc",
+      "expectedHeadCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+      "resultingHeadCommit": "3e364a88197508a065e7c7d1323b79d61aba14dc",
+      "eventType": "PROMOTION_COMMITTED"
+    },
+    "after": {
+      "revision": 2,
+      "tasks": [
+        {
+          "taskId": "capacity-refresh",
+          "state": "BLOCKED"
+        },
+        {
+          "taskId": "site-a",
+          "state": "SATISFIED"
+        },
+        {
+          "taskId": "site-b",
+          "state": "STALE"
+        },
+        {
+          "taskId": "site-b-coastal",
+          "state": "READY"
+        }
+      ],
+      "projectHead": "3e364a88197508a065e7c7d1323b79d61aba14dc"
+    },
+    "note": "The artifact is a deterministic-host-run deliverable, not a model result. The acceptance is a real operator decision on the real Work/Promotion path."
+  },
+  "downstreamCompletion": {
+    "records": [
+      {
+        "taskId": "site-b-coastal",
+        "state": "SATISFIED",
+        "attemptId": "attempt-b92c76d1a8671fad316bb074ef536ee6",
+        "resultCommit": null,
+        "promotionId": "promotion-0bd67a8c06678d25649f55c8f3c24f0f",
+        "resultingHeadCommit": "4a1b505500e2c484fcf6e64358548e61fc4d03e9",
+        "artifact": "deliverables/site-b-coastal.md"
+      },
+      {
+        "taskId": "capacity-refresh",
+        "state": "SATISFIED",
+        "attemptId": "attempt-dab33dd364f76ae10e67f7742e996881",
+        "resultCommit": null,
+        "promotionId": "promotion-50ce4baeb7410a1eee17fea0961b05c1",
+        "resultingHeadCommit": "102679a2a6706512f35be33878dd759fb68cdc3c",
+        "artifact": "deliverables/capacity-refresh.md"
+      }
+    ],
+    "revision": 4,
+    "projectHead": "102679a2a6706512f35be33878dd759fb68cdc3c",
+    "tasks": [
+      {
+        "taskId": "capacity-refresh",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "site-a",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "site-b",
+        "state": "STALE"
+      },
+      {
+        "taskId": "site-b-coastal",
+        "state": "SATISFIED"
+      }
+    ]
+  },
   "sessionFiles": [
     {
-      "session": "3bc47f78-b0bd-4f12-a09b-fc2d8b54b676",
+      "session": "a7171729-f5b0-4604-9f35-7d95aa1e826d",
+      "bytes": 14084,
+      "sha256": "509214c3da8cdf2beaad8af1563eda5cfbfd9114bf8375955873c0c1ee98c490"
+    },
+    {
+      "session": "eb307aec-5173-4ea6-904c-a50049708198",
       "bytes": 14092,
-      "sha256": "e21be963b60ab20d1de66548c3de9db106e0e1f63b0d5d151abf4eaac581daa1"
+      "sha256": "e636008272aaa663868926febd0a6e024563c745e5bc37b45bd8d6d505df4d71"
     },
     {
-      "session": "b553e466-305a-4695-bbf8-4e2aeff3887f",
-      "bytes": 14098,
-      "sha256": "3fcf79665e2fce3b49ba3d3f3c38df037a8d6d879dc1174c791059324c927d51"
+      "session": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "bytes": 26262,
+      "sha256": "daf7ebe7b4dfcbd15a3062f30a9357b1fa0bfc6320e5130b3e9ef4e12c5c512b"
     },
     {
-      "session": "session-01fb80b4-1af6-4874-ad75-c262d60cb414",
-      "bytes": 26267,
-      "sha256": "8d12e4d8699811a3f06f8cc6746ac7db63ef3a5207f4b4a1ecc7617ab149f90e"
+      "session": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
+      "bytes": 22339,
+      "sha256": "d578fae60a4d3d4bb53dc72e1220ea07108c0ea16c20914e977e9d24c87f0bcd"
     },
     {
-      "session": "session-6c903352-dc26-4f41-8d5e-171bd6492ba6",
-      "bytes": 17685,
-      "sha256": "eaebca2d07de0eab57ef6b2a3bf5121ed8bd8181b4954bfce9c9397be20d7755"
-    },
-    {
-      "session": "session-ffae478f-b5ff-4b43-955c-601d5abb4539",
-      "bytes": 22337,
-      "sha256": "15065ca950449872dd0ae8c9dbe9a65b2cb56739d5fc582624a796e8e2042f1e"
+      "session": "session-aed959bb-53f9-4b25-9f56-8af214e6d9c7",
+      "bytes": 17698,
+      "sha256": "c9c18d1ac0a1f5ca9e9eb10cc95c7684c6bee7904557fbe2777e7fcb8fd6354d"
     }
   ],
   "limitations": [
