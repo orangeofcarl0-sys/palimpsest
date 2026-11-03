@@ -304,7 +304,7 @@ process.stdout.write(
         fenceLoadsFromRealRuntimeHome: fenceModule?.tree === "REAL_runtime_HOME",
         fenceDeclaredPin: fencePin?.declaredQualifiedVersion ?? null,
         /** The claim that matters: does the code that RAN declare the pin this stage adopted? */
-        enforcedPinMatchesAdoptedPin: fencePin?.declaredQualifiedVersion === "0.2.1-rc.3",
+        enforcedPinMatchesAdoptedPin: fencePin?.declaredQualifiedVersion === "0.2.1-rc.5",
       },
     },
     null,
