@@ -66,12 +66,18 @@ const summary = {
     sessionId: entry.sessionId,
     turnCount: principal.filter((row) => row.sessionId === entry.sessionId && row.match === entry.match).length,
   })),
-  subagentSessions: children.map((entry) => ({
-    match: entry.match,
-    sessionId: entry.sessionId,
-    toolCalls: (entry.turn?.tool_calls ?? []).map((call) => call.name),
-    returnedText: typeof entry.turn?.text === "string" ? entry.turn.text : null,
-  })),
+  subagentSessions: [...new Set(children.map((entry) => entry.sessionId))].map((sessionId) => {
+    const rows = children.filter((entry) => entry.sessionId === sessionId);
+    const first = rows[0];
+    const lastText = [...rows].reverse().find((entry) => typeof entry.turn?.text === "string");
+    return {
+      match: first.match,
+      sessionId,
+      requestCount: rows.length,
+      toolCalls: (first.turn?.tool_calls ?? []).map((call) => call.name),
+      returnedText: lastText?.turn?.text ?? null,
+    };
+  }),
   plan: {
     goal: finalPulse.project.goal,
     revision: finalPulse.project.revision,
