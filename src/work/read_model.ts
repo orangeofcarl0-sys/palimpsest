@@ -181,12 +181,30 @@ export function makeWorkReadModel(input: {
   };
 
   const openAttempts = (): readonly WorkOpenAttempt[] => {
+    /**
+     * An attempt on a RETIRED task is not an open work position. A typed plan revision can stale a
+     * task while its attempt row is still CREATED/LEASED/RUNNING; the task is the authority on
+     * whether that position still exists. Counting the orphan would hold the in-place single-running
+     * lane forever and make every later plan revision fail its quiescence check. The attempt row is
+     * preserved as history; this reader reports only positions the task graph still owns.
+     */
+    const taskStates = new Map(
+      (
+        connection
+          .prepare("SELECT task_id, state FROM tasks WHERE project_id=?")
+          .all(projectId) as unknown as readonly { task_id: unknown; state: unknown }[]
+      ).map((row) => [String(row.task_id), String(row.state)]),
+    );
+    const terminalTaskStates = new Set(["STALE", "FAILED", "SATISFIED"]);
     const rows = connection
       .prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? ORDER BY attempt_id")
       .all(projectId) as unknown as readonly { attempt_id: unknown; task_id: unknown; state: unknown }[];
     return Object.freeze(
       rows
-        .filter((row) => ATTEMPT_OPEN_STATES.has(String(row.state)))
+        .filter((row) => {
+          const taskId = String(row.task_id ?? "");
+          return ATTEMPT_OPEN_STATES.has(String(row.state)) && !terminalTaskStates.has(taskStates.get(taskId) ?? "");
+        })
         .map((row) =>
           Object.freeze({
             attemptId: String(row.attempt_id),

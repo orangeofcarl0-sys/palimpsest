@@ -1,0 +1,64 @@
+{
+  "schema": "aps-pilot-replan-acceptance/v1",
+  "note": "A typed plan revision retires the stale report and re-issues the same artifact under a new task id. No promotion guard was bypassed.",
+  "decision": {
+    "decision_id": "decision-aps-replan-1793707518336",
+    "statement": "Retire the stale G selection/first re-issue report and re-issue the complete current artifact set as selection-final-2",
+    "rationale": "The original selection attempt recorded commit 349e074, then the independent check landed at ac4971f. The first re-issue still declared only the selection path, so the product correctly refused the out-of-scope review file. This typed replan gives the re-issued task the COMPLETE current tree scope. It is not an acceptance bypass; the artifacts are unchanged and are re-reported from the current head.",
+    "evidence_ids": [],
+    "supersedes": null
+  },
+  "records": [
+    {
+      "taskId": "independent-check",
+      "mode": "no-claimable-attempt",
+      "state": "READY"
+    }
+  ],
+  "refusals": [
+    {
+      "stage": "selection-final-2",
+      "error": "in-place execution allows one RUNNING attempt at a time (1 already running) — wait for it to settle or switch the deployment to worktree execution"
+    }
+  ],
+  "before": {
+    "revision": 1,
+    "projectHead": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final",
+        "state": "ACTIVE"
+      }
+    ]
+  },
+  "after": {
+    "revision": 2,
+    "projectHead": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final-2",
+        "state": "ACTIVE"
+      }
+    ]
+  }
+}

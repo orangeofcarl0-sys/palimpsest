@@ -6,7 +6,10 @@ RUN="${APS_PILOT_RUN:-$HOME/aps/pilot}"
 DEST="${APS_PILOT_EVIDENCE:-/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/aps/live/aps-pilot-2026-11-03}"
 
 mkdir -p "$DEST"
-cp "$RUN/cohort.json" "$RUN/authorization.json" "$RUN/pilot.json" "$RUN/score.json" "$RUN/pilot-G-state.json" "$RUN/pilot-G-acceptance.json" "$DEST/"
+cp "$RUN/cohort.json" "$RUN/authorization.json" "$RUN/pilot.json" "$RUN/score.json" \
+  "$RUN/pilot-G-state.json" "$RUN/pilot-G-acceptance.json" "$RUN/pilot-G-acceptance-replan.json" \
+  "$RUN/pilot-G-acceptance-replan-attempt1.json" "$RUN/pilot-G-final-acceptance.json" \
+  "$RUN/pilot-G-final-settlement.json" "$DEST/"
 cp "$RUN/out/run-plan.json" "$RUN/out/run-state.json" "$RUN/out/cohort-run.json" "$RUN/out/cohort-run.err" "$DEST/" 2>/dev/null || true
 cp "$RUN/out/score-summary.json" "$RUN/out/score.err" "$DEST/" 2>/dev/null || true
 cp "$RUN/out/proxy.jsonl" "$RUN/out/proxy.log" "$DEST/" 2>/dev/null || true
