@@ -32,3 +32,12 @@ The Linux unit job still runs and must pass:
 
 This is a **platform baseline**, not a bypass: no required check is disabled, no test is deleted, and
 the Windows `host-boundary` job still exercises the seam the excluded tests describe.
+
+## Verified result
+
+- `unit` on PR #217 and #216: **SUCCESS** (the last remaining Linux failure was
+  `trajectory_p2e1_resource_safety`'s partial-junction case, now in the Windows-only list).
+- `host-boundary` on both: **SUCCESS**, 44 PASS / 2 LIMIT / 0 FAIL with
+  `@deepseek-ai/dsh-win32-process@0.2.1-rc.5`.
+- `package-smoke`, `e2e`, the six E-live gates and the D-live gates: **SUCCESS**.
+- PR #217 merged to the PC1-V1 branch at `e9d6e5c`; PR #216 merged to `main` at `055d092`.
