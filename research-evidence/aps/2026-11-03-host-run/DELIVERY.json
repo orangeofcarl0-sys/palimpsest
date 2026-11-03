@@ -1,0 +1,42 @@
+{
+  "schema": "aps-delivery/v1",
+  "branch": "palimpsest-autonomous-project-synthesis",
+  "base": "d691f3f1a8130e11e52a0ce293c935c4452fb9d2",
+  "codeFreeze": "d75c5b671fd740f6a71d16c372259e031aac4d21",
+  "implementationCommits": [
+    "d653e8118c3ec7aeb201fc2a3250a0626b0e95c2",
+    "e0fa0891a25ea646123fad403fc6c4bae4309085",
+    "d75c5b671fd740f6a71d16c372259e031aac4d21"
+  ],
+  "evidenceIntroducedAt": "3b171e58074a2cfe2ad16949c98040576498f9a7",
+  "main": {
+    "local": "67b29c9e7907b08fe594738973ce48b55e10d80b",
+    "origin": "044330b2e55198542d545edc42ed9c36e7ce896e",
+    "moved": false
+  },
+  "pushed": false,
+  "pullRequest": null,
+  "hotspotTests": {
+    "files": 24,
+    "tests": 130,
+    "result": "PASS",
+    "note": "targeted hotspot batch; the whole historical suite is not claimed green"
+  },
+  "architecture": {
+    "check": "PASS",
+    "publicApi": "PASS"
+  },
+  "hostRun": {
+    "mode": "MOCK_MODEL_REAL_DSH_HOST",
+    "path": "research-evidence/aps/2026-11-03-host-run",
+    "providerCalls": 0,
+    "paidTokens": 0,
+    "principalSessions": 3,
+    "nativeSubagentSessions": 2
+  },
+  "apsLiveCohort": {
+    "state": "BLOCKED",
+    "reason": "no APS spend authorization; a PC1-V1 authorization does not transfer",
+    "modelCalls": 0
+  }
+}
