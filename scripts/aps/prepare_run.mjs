@@ -231,6 +231,8 @@ const mockScripts = {
         {
           tool_calls: [
             { id: "s1_pulse", name: "palimpsest_continuity", input: { action: "pulse" } },
+            { id: "s1_read_caps", name: "read", input: { file_path: "/run/aps/world/sources/vendor-capabilities.csv" } },
+            { id: "s1_read_sites", name: "read", input: { file_path: "/run/aps/world/sources/sites.md" } },
             {
               id: "s1_subagent",
               name: "subagent",
@@ -285,24 +287,12 @@ const mockScripts = {
     {
       match: "APS_CHILD_COASTAL",
       turns: [
-        {
-          tool_calls: [
-            { id: "child_read_caps", name: "read", input: { file_path: "/run/aps/world/sources/vendor-capabilities.csv" } },
-            { id: "child_read_sites", name: "read", input: { file_path: "/run/aps/world/sources/sites.md" } },
-          ],
-        },
         { text: FINDING },
       ],
     },
     {
       match: "APS_CHILD_WIDTH",
       turns: [
-        {
-          tool_calls: [
-            { id: "child_width_caps", name: "read", input: { file_path: "/run/aps/world/sources/vendor-capabilities.csv" } },
-            { id: "child_width_sites", name: "read", input: { file_path: "/run/aps/world/sources/sites.md" } },
-          ],
-        },
         { text: FINDING_2 },
       ],
     },
