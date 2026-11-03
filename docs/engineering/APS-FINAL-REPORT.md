@@ -72,8 +72,10 @@ PR #217 是 **stacked PR**，避免把 PC1-V1 的 216 号 PR 完整复制一遍�
   - `host-boundary`：仅 HR-27 失败，CI 解析到
     `@deepseek-ai/dsh-win32-process@0.2.1-rc.5`，而 hardening contract 记录的是 `0.2.1-rc.3`；
     这是 CI 依赖漂移。
-- 同一轮中 `e1-k/e2-i/e3-c/e4-l/e5-p/e-live` gates 和 `e2e` 通过；`d2/d4/d5/d5-reliability` 与
-  `package-smoke` 是 host-dependent 失败。
+- 同一轮中 `e1-k/e2-i/e3-c/e4-l/e5-p/e-live` gates、`e2e`、`d2/d4/d5/d5-reliability` 与
+  `package-smoke` 均通过。`package-smoke` 初次失败是因为新增模块让 `npm pack --dry-run --json`
+  的列表超过 Node 默认子进程 buffer；已在该脚本内设置 64 MB buffer，复跑通过。
+- 仍然只有 `unit` 与 `host-boundary` 失败；两者都是本轮之前已存在的 CI 问题。
 - 没有 admin bypass，没有 force-push，`main` 未移动。主分支合并仍被 required checks 阻塞。
 
 差分范围：
