@@ -9,7 +9,7 @@
 import { makeWorkSurfaces } from "./surfaces/work.js";
 import type { WorkApplicationSurface } from "./surfaces/work.js";
 import { makeProductSurfaces } from "./surfaces/product.js";
-import type { CollaborationApplicationSurface, CrossProjectApplicationSurface, DelegationApplicationSurface } from "./surfaces/product.js";
+import type { CollaborationApplicationSurface, ContributionApplicationSurface, ContributionServicePort, CrossProjectApplicationSurface, DelegationApplicationSurface } from "./surfaces/product.js";
 import { makeFederationSurfaces } from "./surfaces/federation.js";
 import type { FederationApplicationSurface, BoundaryApplicationSurface, AttentionApplicationSurface, RemoteSubmissionPort } from "./surfaces/federation.js";
 import { makeCognitionSurfaces } from "./surfaces/cognition.js";
@@ -17,7 +17,7 @@ import type { ReasoningApplicationSurface, EmpiricalApplicationSurface, RecipesA
 import { makeProofSurfaces } from "./surfaces/proof.js";
 import type { ProofApplicationSurface, DisclosureApplicationSurface } from "./surfaces/proof.js";
 import { makeProjectSurfaces } from "./surfaces/project.js";
-import type { ProjectWorkspaceApplicationSurface, ProjectManagementApplicationSurface, MonitorApplicationSurface, VerificationApplicationSurface, ExternalAssetsApplicationSurface, ContinuityFaces } from "./surfaces/project.js";
+import type { ProjectWorkspaceApplicationSurface, ProjectManagementApplicationSurface, MonitorApplicationSurface, ProjectPulseServicePort, VerificationApplicationSurface, ExternalAssetsApplicationSurface, ContinuityFaces } from "./surfaces/project.js";
 import { makeOrganizationSurfaces } from "./surfaces/organization.js";
 import type { RuntimeApplicationSurface, OrganizationApplicationSurface, CampaignApplicationSurface, DynamicsApplicationSurface, EvolutionApplicationSurface } from "./surfaces/organization.js";
 import { makeProjectionsSurfaces } from "./surfaces/projections.js";
@@ -89,6 +89,8 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
    * host, so the face is absent rather than stubbed (the same rule every optional face follows).
    */
   readonly delegation?: DelegationApplicationSurface | undefined;
+  /** APS-A/B: the project contribution chain. ABSENT ⇒ no such surface, never a stub. */
+  readonly contribution?: ContributionApplicationSurface | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence plane; absent ⇒ no proof surface. */
   readonly proof?: ProofApplicationSurface | undefined;
   /** G10-T (additive): local purpose-scoped disclosure; absent ⇒ no disclosure surface. */
@@ -170,6 +172,10 @@ export interface ApplicationSurfaceDeps {
    * pretending it can research something in the background.
    */
   readonly delegation?: DelegationService | undefined;
+  /** APS-A/B: the composed contribution chain. ABSENT ⇒ no contribution surface. */
+  readonly contribution?: ContributionServicePort | undefined;
+  /** APS-A: the derived continuation view; absent ⇒ the workspace exposes no pulse. */
+  readonly projectPulse?: ProjectPulseServicePort | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence service; absent ⇒ no proof surface. */
   readonly proof?: ProofEvidenceService | undefined;
   /** G10-T CF-T-02 (additive): evidence-grounded extraction behind the proof surface. */
@@ -219,7 +225,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
   const organizationCluster = makeOrganizationSurfaces(deps);
   const projectionsCluster = makeProjectionsSurfaces(deps);
   const { work } = workCluster;
-  const { collaboration, crossProject, delegation } = productCluster;
+  const { collaboration, crossProject, delegation, contribution } = productCluster;
   const { federation, boundary, attention } = federationCluster;
   const { reasoning, empirical, recipes, advisor, recipeExecution } = cognitionCluster;
   const { proof, disclosure } = proofCluster;
@@ -247,6 +253,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     // documented above `const monitor` is the reason this line ships WITH the face.
     ...(crossProject === undefined ? {} : { crossProject }),
     ...(delegation === undefined ? {} : { delegation }),
+    ...(contribution === undefined ? {} : { contribution }),
     ...(proof === undefined ? {} : { proof }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),

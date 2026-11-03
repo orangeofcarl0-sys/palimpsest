@@ -1,0 +1,60 @@
+export {
+  CONTRIBUTION_DECISIONS,
+  CONTRIBUTION_OBSERVATIONS,
+  CONTRIBUTION_SOURCE_KINDS,
+  CONTRIBUTION_STATUSES,
+  READ_FOOTPRINT_OBSERVATIONS,
+  contributionDecisionIdOf,
+  contributionIdOf,
+} from "./types.js";
+export type {
+  ContributionBasis,
+  ContributionChainEntry,
+  ContributionDecisionEntry,
+  ContributionDecisionKind,
+  ContributionDecisionRecord,
+  ContributionDownstream,
+  ContributionObservation,
+  ContributionPlanChange,
+  ContributionRecord,
+  ContributionSourceKind,
+  ContributionStatus,
+  DelegationPulseEntry,
+  DelegationStartRecord,
+  ReadFootprintObservation,
+} from "./types.js";
+export {
+  CONTRIBUTION_DECISION_MARKER,
+  CONTRIBUTION_MARKER,
+  DELEGATION_START_MARKER,
+  contributionJournalBody,
+  contributionJournalEntries,
+  decisionJournalBody,
+  decisionJournalEntries,
+  delegationStartEntries,
+  delegationStartJournalBody,
+  parseContributionRecord,
+  parseDecisionRecord,
+  parseDelegationStartRecord,
+} from "./records.js";
+export type { JournalRecordRow } from "./records.js";
+export {
+  CONTRIBUTION_CHANGE_CLASSES,
+  ContributionError,
+  makeContributionService,
+} from "./service.js";
+export type {
+  ContributionChangeClass,
+  ContributionControllerPort,
+  ContributionDelegationPort,
+  ContributionReceiptView,
+  ContributionService,
+  ContributionServiceDeps,
+  ContributionWorkspacePort,
+  DecideContributionInput,
+  DecideContributionResult,
+  RecordContributionInput,
+  RecordContributionResult,
+  RecordDelegationStartInput,
+  RecordDelegationStartResult,
+} from "./service.js";

@@ -19,6 +19,7 @@ import { defineGraphTools } from "./graph.js";
 import { defineNormalWorkTool } from "./normal.js";
 import { defineContinuityTool } from "./continuity.js";
 import { defineOutcomeTool } from "./outcome.js";
+import { defineContributionTools } from "./contribution.js";
 
 export function defineApplicationTools(application: PalimpsestApplicationSurface): DshToolDefinition[] {
   return [
@@ -37,5 +38,8 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
     ...defineContinuityTool(application),
     // PC1 S06: explicit domain-outcome evaluation; it cannot set a status itself.
     ...defineOutcomeTool(application),
+    // APS-A/B: record another executor's finding and, when the principal actually replans, apply
+    // the COMPLETE task graph through the existing revision owner.
+    ...defineContributionTools(application),
   ];
 }

@@ -502,14 +502,16 @@ export function installPalimpsest(
    * owner, workspace/journal and promotion facts, and owns nothing; install.ts only decides to
    * compose it.
    */
-  const { continuity, domainOutcome } = composeContinuityCapability({
+  const { continuity, domainOutcome, contribution, pulse } = composeContinuityCapability({
     projectId: options.projectId,
     controller: {
       project: () => controller.work.project(),
       status: () => controller.status(),
+      plan: (input) => controller.plan(input),
       promotionFacts: () => controller.promotions.promotionFactsSync(),
     },
     projectWorkspace,
+    ...(delegation === undefined ? {} : { delegation }),
     ...(options.repository === undefined ? {} : { repository: options.repository }),
     ...(options.clock === undefined ? {} : { clock: options.clock }),
     operatorIntentAdmission: options.projectIntentAdmission !== undefined,
@@ -529,6 +531,8 @@ export function installPalimpsest(
     delegationService: delegation,
     continuity,
     domainOutcome,
+    ...(contribution === undefined ? {} : { contribution }),
+    ...(pulse === undefined ? {} : { pulse }),
     assemblyOptions: options,
   });
   const { application, tools } = assembly;
