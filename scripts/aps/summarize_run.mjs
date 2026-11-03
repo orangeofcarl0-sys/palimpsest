@@ -17,6 +17,12 @@ const args = new Map(
 const RUN = resolve(String(args.get("run") ?? join(process.env.HOME ?? ".", "aps-run")));
 const OUT = join(RUN, "out");
 const finalPulse = JSON.parse(readFileSync(join(RUN, "final-pulse.json"), "utf8"));
+const acceptance = existsSync(join(RUN, "operator-acceptance.json"))
+  ? JSON.parse(readFileSync(join(RUN, "operator-acceptance.json"), "utf8"))
+  : null;
+const downstream = existsSync(join(RUN, "downstream-completion.json"))
+  ? JSON.parse(readFileSync(join(RUN, "downstream-completion.json"), "utf8"))
+  : null;
 const mockLines = existsSync(join(OUT, "mock.jsonl"))
   ? readFileSync(join(OUT, "mock.jsonl"), "utf8").split(/\n/).filter((line) => line.trim() !== "")
   : [];
@@ -107,6 +113,29 @@ const summary = {
     present: finalPulse.artifact.present,
     sha256: finalPulse.artifact.sha256,
   },
+  artifacts: ["deliverables/site-a.md", "deliverables/site-b-coastal.md", "deliverables/capacity-refresh.md"].map((relative) => {
+    const file = join(RUN, "world", relative);
+    return existsSync(file)
+      ? { path: relative, present: true, sha256: createHash("sha256").update(readFileSync(file)).digest("hex") }
+      : { path: relative, present: false, sha256: null };
+  }),
+  operatorAcceptance: acceptance === null
+    ? null
+    : {
+        promoted: acceptance.promoted === true,
+        taskId: acceptance.taskId,
+        result: acceptance.result ?? null,
+        after: acceptance.after ?? null,
+        note: acceptance.note ?? null,
+      },
+  downstreamCompletion: downstream === null
+    ? null
+    : {
+        records: downstream.records,
+        revision: downstream.revision,
+        projectHead: downstream.projectHead,
+        tasks: downstream.tasks,
+      },
   sessionFiles,
   limitations: [
     "The model is a deterministic Messages stand-in, not a language model. No cognition, quality, cost or comparative benefit is claimed.",
