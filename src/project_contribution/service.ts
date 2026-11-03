@@ -537,6 +537,19 @@ export function makeContributionService(deps: ContributionServiceDeps): Contribu
         });
       const latest = own[own.length - 1] ?? null;
       const change = latest?.record.planChange ?? null;
+      /**
+       * The raw finding basis and the DECISION basis are different facts. A contribution that caused
+       * an applied plan revision is current when that revision is still the current project revision;
+       * the pre-decision basis is historical by construction. An unassessed contribution from an
+       * older revision stays STALE, and a decision whose plan revision has since been superseded
+       * falls back to the raw comparison.
+       */
+      const basisState: ContributionChainEntry["basisState"] =
+        change !== null && change.toRevision === current.projectRevision
+          ? "CURRENT"
+          : sameBasis(row.record.basis, current)
+            ? "CURRENT"
+            : "STALE";
       const addedTaskIds = change?.addedTaskIds ?? [];
       const downstreamStates = addedTaskIds.map((taskId) => ({
         taskId,
@@ -561,7 +574,7 @@ export function makeContributionService(deps: ContributionServiceDeps): Contribu
           ),
           latestDecision: latest === null ? null : Object.freeze({ record: latest.record, journalEntryId: latest.entry.entryId }),
           status: statusOf(own),
-          basisState: sameBasis(row.record.basis, current) ? "CURRENT" : "STALE",
+          basisState,
           downstream,
         }),
       );
