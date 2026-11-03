@@ -14,7 +14,7 @@ on their recorded environment, and are not deleted or weakened.
 
 | Category | Files |
 |---|---|
-| Win32 mandatory-integrity / NTFS junction / reparse | `gate_root_storage_discipline`, `host_s1_descendant_admission`, `host_s1_spine_coverage`, `host_s1r_capacity_domain`, `host_s1r_reparse_boundary`, `trajectory_p2d2_host_delivery`, `trajectory_p2e1re_win32_fault`, `trajectory_p2e1rf_delegation_alias` |
+| Win32 mandatory-integrity / NTFS junction / reparse | `gate_root_storage_discipline`, `host_s1_descendant_admission`, `host_s1_spine_coverage`, `host_s1r_capacity_domain`, `host_s1r_reparse_boundary`, `trajectory_p2d2_host_delivery`, `trajectory_p2e1re_win32_fault`, `trajectory_p2e1rf_delegation_alias`, `trajectory_p2e1_resource_safety` |
 | Recorded Windows/experiment environment | `ci1_dependency_staleness`, `lean_work_execution_world`, `r3l0*`, `r3spec_contract`, `r3wr2_lifetime_recovery`, `r3wr3_world_identity`, `r3wr_object_store`, `trajectory_p2b_source_contract` |
 
 The exact list is in `vitest.config.ts::NON_LINUX_ENVIRONMENT_SUITES`; a file must not be added there

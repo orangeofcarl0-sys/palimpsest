@@ -42,6 +42,7 @@ const NON_LINUX_ENVIRONMENT_SUITES = [
   "test/trajectory_p2d2_host_delivery.test.ts",
   "test/trajectory_p2e1re_win32_fault.test.ts",
   "test/trajectory_p2e1rf_delegation_alias.test.ts",
+  "test/trajectory_p2e1_resource_safety.test.ts",
 ];
 
 export default defineConfig({
