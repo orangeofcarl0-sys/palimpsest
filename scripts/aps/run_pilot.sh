@@ -36,7 +36,15 @@ cp "$REPO/scripts/c6r/net_bridge.mjs" "$RUN/out/net_bridge.mjs"
 cp "$REPO/scripts/c6r/provider_proxy.mjs" "$BASE/provider_proxy.mjs"
 cp "$REPO/scripts/aps/session_pilot.sh" "$BASE/session_pilot.sh"
 
-CODE_FREEZE=$(git -C "$REPO" rev-parse HEAD)
+CODE_FREEZE="${APS_CODE_FREEZE_HEAD:-}"
+if [ -z "$CODE_FREEZE" ]; then
+  CODE_FREEZE=$(git -C "$REPO" rev-parse HEAD 2>/dev/null || true)
+fi
+if [ -z "$CODE_FREEZE" ]; then
+  echo "set APS_CODE_FREEZE_HEAD to the exact commit (WSL git cannot read this linked worktree's .git file)" >&2
+  exit 2
+fi
+export APS_CODE_FREEZE_HEAD="$CODE_FREEZE"
 node "$PRODUCT/scripts/aps/prepare_pilot.mjs" --run="$RUN" --repo="$REPO" --codeFreeze="$CODE_FREEZE" > "$RUN/out/prepare.json"
 
 C6R_PROVIDER_KIND=anthropic C6R_PROXY_SOCKET="$RUN/out/provider.sock" \
