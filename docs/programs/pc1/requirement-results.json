@@ -1,0 +1,1010 @@
+{
+  "programId": "PALIMPSEST-PC1",
+  "results": [
+    {
+      "requirementId": "S00-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "research-evidence/pc1/s00/git-status.txt",
+        "worktrees.txt",
+        "docs/programs/pc1/S00-BASELINE-DOSSIER.md"
+      ],
+      "notes": "branch ancestry, clean baseline, protected refs checked",
+      "blockers": []
+    },
+    {
+      "requirementId": "S00-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S00-OWNER-CAPABILITY-MATRIX.md"
+      ],
+      "notes": "owner/capability map written from source and C6-R evidence",
+      "blockers": []
+    },
+    {
+      "requirementId": "S00-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S00-ROLE-MAP.md"
+      ],
+      "notes": "role map with actual authority sources",
+      "blockers": []
+    },
+    {
+      "requirementId": "S00-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/program-state.json",
+        "requirements.json"
+      ],
+      "notes": "program state and requirement matrix initialised; pack copied",
+      "blockers": []
+    },
+    {
+      "requirementId": "S00-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_ENV_LIMITATION",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "research-evidence/pc1/s00/build.log",
+        "architecture-check.log"
+      ],
+      "notes": "build 0; architecture PASS 0 violations; Node engine warning recorded",
+      "blockers": []
+    },
+    {
+      "requirementId": "S00-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "BLOCKED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/execution-config.json"
+      ],
+      "notes": "no spend authorization; modelExecution.enabled=false; engineering continues",
+      "blockers": []
+    },
+    {
+      "requirementId": "S01-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S01-ROOT-CAUSE.md"
+      ],
+      "notes": "short input is not canonical identity; full OID was stored; unreadable object caused the uncertain merge",
+      "blockers": []
+    },
+    {
+      "requirementId": "S01-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "research-evidence/pc1/s01/regression.log"
+      ],
+      "notes": "report and reportLate export object-only and resolve full OID; failure refuses; real-git tests",
+      "blockers": []
+    },
+    {
+      "requirementId": "S01-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts"
+      ],
+      "notes": "world object export uses canonical repo configured by host; in-place skip; broken world refused",
+      "blockers": []
+    },
+    {
+      "requirementId": "S01-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_HISTORICAL_RESIDUAL",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "docs/programs/pc1/S01-ROOT-CAUSE.md"
+      ],
+      "notes": "uncertain promotion recovers after object restoration; historical op remains untouched evidence",
+      "blockers": []
+    },
+    {
+      "requirementId": "S01-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "test/gate_tool.test.ts",
+        "test/acceptance.test.ts"
+      ],
+      "notes": "structural predicates are product observations; caller command cannot forge them; no atom on failure",
+      "blockers": []
+    },
+    {
+      "requirementId": "S01-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts"
+      ],
+      "notes": "gate PASS remains scoped to registered evidence; missing-evidence explanation preserved; subject detail continues in S02",
+      "blockers": []
+    },
+    {
+      "requirementId": "S01-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts"
+      ],
+      "notes": "resultCommit and acceptedHead remain distinct; export moves no ref; promotion merge tested",
+      "blockers": []
+    },
+    {
+      "requirementId": "S02-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "docs/programs/pc1/S02-NORMAL-PATH.md"
+      ],
+      "notes": "toolProfile tiers; normal vs expert test; parity-reviewed additions",
+      "blockers": []
+    },
+    {
+      "requirementId": "S02-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "src/adapters/dsh/normal.ts"
+      ],
+      "notes": "palimpsest_work complete follows placement; placed work names host settlement",
+      "blockers": []
+    },
+    {
+      "requirementId": "S02-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts"
+      ],
+      "notes": "normal results round-trip JSON; attempt/evidence/promotion ids projected away",
+      "blockers": []
+    },
+    {
+      "requirementId": "S02-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts"
+      ],
+      "notes": "propose stores non-authoritative journal IDEA while plan stays frozen in VERIFYING",
+      "blockers": []
+    },
+    {
+      "requirementId": "S02-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S04_DEPENDENCY",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "src/project_continuity/service.ts"
+      ],
+      "notes": "authority boundaries visible in continuity; operator review decision path continues in S04",
+      "blockers": []
+    },
+    {
+      "requirementId": "S02-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts"
+      ],
+      "notes": "normal read/status path creates no Work; proposer writes only journal metadata",
+      "blockers": []
+    },
+    {
+      "requirementId": "S02-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_normal_product.test.ts",
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "normal status/project/continuity reads avoid SQLite; no internal ids in principal projection",
+      "blockers": []
+    },
+    {
+      "requirementId": "S03-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/project_continuity",
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "derived facade over existing owners; no store/cache; unavailable owners named",
+      "blockers": []
+    },
+    {
+      "requirementId": "S03-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "standing vocabulary with source refs/basis/applicability/reopen conditions",
+      "blockers": []
+    },
+    {
+      "requirementId": "S03-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "capsule byte budget, omitted sections, explicit incomplete",
+      "blockers": []
+    },
+    {
+      "requirementId": "S03-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "fresh installation over same state sees same durable facts; no transcript",
+      "blockers": []
+    },
+    {
+      "requirementId": "S03-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S05_DEPENDENCY",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/project_continuity/types.ts"
+      ],
+      "notes": "source refs preserved; independence accounting continues in S05",
+      "blockers": []
+    },
+    {
+      "requirementId": "S03-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_SCOPE_NOTE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/project_continuity/service.ts"
+      ],
+      "notes": "projection reads only owner-backed facts; no invented causal edges",
+      "blockers": []
+    },
+    {
+      "requirementId": "S03-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_continuity.test.ts"
+      ],
+      "notes": "open questions/opportunities visible; no automatic Work creation",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "proposal content and digest; non-authoritative store",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts",
+        "src/cli_product.ts"
+      ],
+      "notes": "preview/decide/apply with exact digest and currentness; operator authority required",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "plan/intent/source kinds use separate existing owners; no mixed approval",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "stale basis refused; duplicate approval idempotent; conflict refused",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LIVE_NOTE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "approved plan/source/intent goes through existing revision/Work path; live model not invoked",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "approved bytes/digest and result blob verified independently; wrong blob fails",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S06",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "negative findings remain separate from business outcome; S06 projection",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R08",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "proposed/decided/applied/executed/accepted trace fields",
+      "blockers": []
+    },
+    {
+      "requirementId": "S04-R09",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LOCAL_OPERATOR",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_review.test.ts",
+        "src/cli_product.ts"
+      ],
+      "notes": "local operator adapter + exact-digest admission; real identity provider remains external",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "four executors + principal/unavailable selection",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LIVE_BLOCK",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "mechanism chosen by need; live collaboration not run",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "structured handoff/receipt contract",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "root-source independence audit; shared sources not independent",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "conflicts preserved; hypothesis not counted as positive",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "delivery/consume/act/cancel/interrupt/restart reducer",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "BLOCKED_LIVE",
+      "live": "BLOCKED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/install.ts",
+        "scripts/pc1/run_pair.mjs"
+      ],
+      "notes": "tools exist; live paths blocked without budget/peer",
+      "blockers": []
+    },
+    {
+      "requirementId": "S05-R08",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "NOT_RUN",
+      "live": "BLOCKED",
+      "comparison": "BLOCKED",
+      "evidence": [
+        "docs/programs/pc1/S08-EVALUATION.md"
+      ],
+      "notes": "value comparison requires live matched pair",
+      "blockers": []
+    },
+    {
+      "requirementId": "S06-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "execution/workAcceptance/businessOutcome projected separately",
+      "blockers": []
+    },
+    {
+      "requirementId": "S06-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/domain_outcome/contracts.ts"
+      ],
+      "notes": "explicit contract registry; no extension-based truth",
+      "blockers": []
+    },
+    {
+      "requirementId": "S06-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "contract evidence refs and status; no universal truth claim",
+      "blockers": []
+    },
+    {
+      "requirementId": "S06-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "negative investigation completes investigation, not business goal",
+      "blockers": []
+    },
+    {
+      "requirementId": "S06-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_SCOPE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "artifact digest/ref recorded; non-Git source is read as a file fact",
+      "blockers": []
+    },
+    {
+      "requirementId": "S06-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "evaluator input/output recorded; no hidden CoT; human-review uncertain",
+      "blockers": []
+    },
+    {
+      "requirementId": "S06-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_domain_outcome.test.ts"
+      ],
+      "notes": "continuity summary shows accepted negative + unmet objective",
+      "blockers": []
+    },
+    {
+      "requirementId": "S07-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "doctor reads installed versions and capability facts",
+      "blockers": []
+    },
+    {
+      "requirementId": "S07-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_PLATFORM_LIMIT",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts",
+        "docs/programs/pc1/S07-RUNTIME.md"
+      ],
+      "notes": "Linux/WSL2 qualified in C6-R; Windows write-only limitation recorded",
+      "blockers": []
+    },
+    {
+      "requirementId": "S07-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S05",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "delivery/consumption/action separated; interruption explicit",
+      "blockers": []
+    },
+    {
+      "requirementId": "S07-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "usage dedupe/split, budget gate, process-tree stop",
+      "blockers": []
+    },
+    {
+      "requirementId": "S07-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "src/runtime/usage.ts"
+      ],
+      "notes": "wall clock and token classes separated; no invented cost",
+      "blockers": []
+    },
+    {
+      "requirementId": "S07-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_S01",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_result_integrity.test.ts",
+        "test/pc1_collaboration.test.ts"
+      ],
+      "notes": "promotion recovery plus lifecycle cancellation; no duplicate effect",
+      "blockers": []
+    },
+    {
+      "requirementId": "S07-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_PLATFORM_LIMIT",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "Linux/WSL2 supported path; unsupported platform doctor warning",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_DETERMINISTIC",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_DETERMINISTIC",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_EQUIVALENCE",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_GATE",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "NOT_RUN",
+      "live": "NOT_ESTABLISHED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "single-principal only; no real independent subagents, so no multi-agent synthesis claim; paired outcomes recorded",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_EQUIVALENCE",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
+      "blockers": []
+    },
+    {
+      "requirementId": "S08-R08",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_LIVE_BLOCK",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "8 real sessions, 0 provider errors; matched outcomes in research-evidence/pc1/live/outcomes.json; no superiority",
+      "blockers": []
+    },
+    {
+      "requirementId": "S09-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_cli.test.ts",
+        "docs/programs/pc1/S09-USER-ACCEPTANCE.md"
+      ],
+      "notes": "doctor/init create profile and state; no credential read",
+      "blockers": []
+    },
+    {
+      "requirementId": "S09-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_cli.test.ts",
+        "test/pc1_review.test.ts"
+      ],
+      "notes": "init/continue/review/recover CLI on the same owners",
+      "blockers": []
+    },
+    {
+      "requirementId": "S09-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "README.md",
+        "docs/programs/pc1/S09-PACKAGING.md"
+      ],
+      "notes": "README scope updated; doctor reports limits; claims map to evidence",
+      "blockers": []
+    },
+    {
+      "requirementId": "S09-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_NO_SCHEMA_CHANGE",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-PR-KIT.md"
+      ],
+      "notes": "no canonical schema migration; additive review store only; old evidence not requalified",
+      "blockers": []
+    },
+    {
+      "requirementId": "S09-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_runtime.test.ts"
+      ],
+      "notes": "doctor reports sandbox/provider/live-model boundaries; no blank dead end",
+      "blockers": []
+    },
+    {
+      "requirementId": "S09-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "dist-rc/palimpsest-0.2.0-pc1.1.tar.gz",
+        "dist-rc/palimpsest-0.2.0-pc1.1.tar.gz.sha256"
+      ],
+      "notes": "local RC tarball + sha256 + manifest + doctor smoke",
+      "blockers": []
+    },
+    {
+      "requirementId": "S09-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "test/pc1_cli.test.ts"
+      ],
+      "notes": "shell path doctor/init/continue/capsule/outcomes/review works without SQLite",
+      "blockers": []
+    },
+    {
+      "requirementId": "S10-R01",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-PR-KIT.md"
+      ],
+      "notes": "full diff inventory and PR kit from local Git",
+      "blockers": []
+    },
+    {
+      "requirementId": "S10-R02",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_ENVIRONMENT_LIMITS",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "research-evidence/pc1/s10/final-integration.log",
+        "research-evidence/pc1/s10/final-full-test-clean.log",
+        "research-evidence/pc1/s10/final-architecture.log"
+      ],
+      "notes": "curated final integration 132/132; full suite not cleanly observed on Windows (86 hook-timeout/lock failures); one baseline-reproduced first-party DSH failure",
+      "blockers": [
+        "Windows host resource/file-lock contention during the full suite"
+      ]
+    },
+    {
+      "requirementId": "S10-R03",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md"
+      ],
+      "notes": "product Code Freeze 9 e8c7675; evidence freeze follows this report; manifests from committed bytes",
+      "blockers": []
+    },
+    {
+      "requirementId": "S10-R04",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md",
+        "research-evidence/pc1/live/outcomes.json"
+      ],
+      "notes": "four judgments updated with 8 real sessions; mixed/no-superiority verdict",
+      "blockers": []
+    },
+    {
+      "requirementId": "S10-R05",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S09-PACKAGING.md",
+        "docs/programs/pc1/S10-PR-KIT.md"
+      ],
+      "notes": "RC install smoke, upgrade/rollback/recovery guide, PR kit without opening a PR",
+      "blockers": []
+    },
+    {
+      "requirementId": "S10-R06",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "evidence": [
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ],
+      "notes": "one recommendation: narrow governance, fix VERIFYING deadlock, normal command evidence and in-place boundary",
+      "blockers": []
+    },
+    {
+      "requirementId": "S10-R07",
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_PENDING_PUSH",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md"
+      ],
+      "notes": "branch clean, main/history unchanged; non-force push after the evidence freeze",
+      "blockers": []
+    }
+  ]
+}

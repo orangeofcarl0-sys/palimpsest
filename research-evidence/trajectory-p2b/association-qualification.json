@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_ASSOCIATION_QUALIFICATION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "module": "src/execution_association/qualification.ts",
+  "outcomeVocabulary": ["NO_DURABLE_OBSERVATION", "OBSERVATION_INCOMPLETE", "SOURCE_UNAVAILABLE", "SOURCE_REFUSED", "CONFLICT", "ASSOCIATION_QUALIFIED"],
+  "whatProducesQualification": [
+    "a committed durable observation for the exact (projectId, attemptId, invocationId)",
+    "a re-read of canonical Work confirming the Attempt exists under this project",
+    "a read of the real DSH Session header confirming the session exists and its SessionId matches",
+    "the record's sourceBasis matching the VERIFIER's own trusted basis",
+    "the Invocation's observation window being CLOSED",
+    "exactly ONE distinct SessionId among the candidates"
+  ],
+  "whatCannotProduceQualification": [
+    "a stored record whose sourceQualificationDeclared says FIRST_PARTY_DSH_QUALIFIED (the field is never read to reach an outcome)",
+    "a record with no matching Work Attempt",
+    "a record whose basis does not match the deployment's",
+    "an unreadable or contradictory Session source",
+    "an open or missing observation window",
+    "two or more distinct candidate identities"
+  ],
+  "h1Integration": {
+    "produced": "AttemptSessionAssociation with producerEvidence.source = CANONICAL_ATTEMPT_BINDING, durableBindingRef = the committed event id, verification = VERIFIED, observationState = PRODUCER_OBSERVED",
+    "fabricatedFields": "none — every field is taken from an actual stored fact or an actual read",
+    "note": "the association is produced but NOT admitted into ordinary Attempt Preview (that is P2-C)"
+  },
+  "observed": {
+    "qualifiedCount": 1,
+    "refusalCasesCovered": ["SOURCE_REFUSED (basis mismatch, foreign Work attempt, header contradiction)", "CONFLICT (two and three candidates)", "OBSERVATION_INCOMPLETE (unfinalized)", "SOURCE_UNAVAILABLE (missing, unsupported)", "NO_DURABLE_OBSERVATION (absent, wrong attempt, wrong project)"]
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "actualFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "QUALIFICATION_SOURCE_GROUNDED"
+}

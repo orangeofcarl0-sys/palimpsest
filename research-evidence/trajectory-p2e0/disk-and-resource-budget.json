@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_DISK_AND_RESOURCE_BUDGET",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "modelCallsMade": 0,
+  "heavyDshGateRun": false,
+  "measured": {
+    "realModulesEntries": 125,
+    "realModulesReparsePoints": 98,
+    "measuredFullDereferencedCopyBytes": 518000000,
+    "fFreeBytesStatfs": 120718372864,
+    "cFreeBytesStatfs": 51739303936,
+    "fFreeBytesDf": "113G (df -h /f)",
+    "cFreeBytesDf": "12G (df -h /c, 95% used)",
+    "freeSpaceDiscrepancyNote": "df and Node statfsSync disagree on C: (df reports a per-user view, ~12 GB free; statfsSync reports the volume view, ~51.7 GB). The CONSERVATIVE figure is taken for the preflight verdict so a heavy gate is not started on an optimistic reading."
+  },
+  "p2d2Approach": {
+    "strategy": "copy (dereference:true)",
+    "copiesPerRun": 2,
+    "estimatedBytesPerRun": 1036000000,
+    "cleanup": "none (leaked); 22 roots / 5.13 GB observed in the gate root"
+  },
+  "e0Approach": {
+    "strategy": "per-entry junctions + copy only the two host bundles",
+    "copiesPerRun": 2,
+    "estimatedBytesPerRun": 10000000,
+    "cleanup": "owned-root safeCleanup (no-follow; measured repeatable with zero growth)"
+  },
+  "preflight": {
+    "junctionOnF": {
+      "targetPath": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates",
+      "freeBytes": 120718372864,
+      "strategy": "junction",
+      "copies": 2,
+      "estimatedRequiredBytes": 30000000,
+      "sufficient": true,
+      "verdict": "SUFFICIENT"
+    },
+    "copyOnF": {
+      "targetPath": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates",
+      "freeBytes": 120718372864,
+      "strategy": "copy",
+      "copies": 2,
+      "estimatedRequiredBytes": 3108000000,
+      "sufficient": true,
+      "verdict": "SUFFICIENT"
+    },
+    "conservativeOnC": {
+      "targetPath": "C: (conservative df reading ~12 GB)",
+      "freeBytes": 120718372864,
+      "strategy": "junction",
+      "copies": 2,
+      "estimatedRequiredBytes": 30000000,
+      "sufficient": true,
+      "verdict": "SUFFICIENT",
+      "note": "even the copy strategy fits the conservative C: reading, but E0 targets F: by policy to keep C: clear"
+    }
+  },
+  "verdict": {
+    "junctionOnF": "SUFFICIENT",
+    "copyOnF": "SUFFICIENT",
+    "heavyGateTarget": "F: (policy: keep C: clear)"
+  },
+  "note": "§4.6: the preflight uses the MEASURED copy cost, not a package count. The junction strategy needs ~10 MB per run where the P2-D2 copy strategy needed ~1 GB."
+}

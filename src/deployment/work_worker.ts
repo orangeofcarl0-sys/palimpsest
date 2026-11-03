@@ -35,16 +35,216 @@
  * Host/deployment packaging (`src/deployment/**`): it imports the tool contract and nothing semantic.
  */
 import { spawn } from "node:child_process";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
+import type { WorkWorkerAttemptContext, WorkWorkerTaskContext } from "../context/service.js";
+import {
+  HOST_OBSERVATION_DOES_NOT_PROVE,
+  HOST_OBSERVATION_PROVES,
+  HOST_OBSERVATION_SCHEMA_VERSION,
+  WORKER_SESSION_IDENTITY_SCHEMA_VERSION,
+  makeWorkerSessionIdentityTracker,
+  type HostProcessObservation,
+  type HostProcessRole,
+  type WorkObservationSink,
+  type WorkSessionIdentitySink,
+  type WorkerSessionSourceQualification,
+} from "../interaction/work_delegation.js";
+
+
+/**
+ * R1-L §18 — ONE worker-context contract, not two silently divergent ones.
+ *
+ * These are the CONTEXT OWNER's own types (L2), re-exported rather than re-declared. Before R1-L this
+ * module carried its own copy of `WorkWorkerTaskContext`, the controller carried a third, and the
+ * interaction port hid the difference behind `context: unknown` — while the RUNTIME already delivered
+ * the nested `{work, compiled}` shape. The host's `context.work ?? context` was the visible symptom of
+ * that drift: a lenient reader papering over a type that did not describe what actually arrived.
+ *
+ * The direction is L5 → L2, which the layer model allows, and the context owner imports nothing from
+ * here, so this is not a cycle.
+ */
+export type { WorkWorkerAttemptContext, WorkWorkerTaskContext } from "../context/service.js";
 
 /** The ONE host-private tool a worker answers through. Deliberately NOT the branch result tool. */
 export const WORK_WORKER_RESULT_TOOL_NAME = "palimpsest_worker_result";
 
+/**
+ * R1-L §7/§13: the worker-private CONTEXT PULL tool.
+ *
+ * R1 measured that a selected knowledge handle reached the worker PROCESS PAYLOAD and was then dropped:
+ * the model never saw the index, and because every inherited `palimpsest_*` tool is denied to a worker,
+ * it had no tool with which to pull a body. The three R1 conditions therefore produced byte-identical
+ * model-visible prompts and the primary experiment could not be formed. This tool is the missing mile.
+ *
+ * It is registered for EVERY worker, including one whose attempt selected no capital (§7), so the R1
+ * conditions differ only in the attempt's own visible index and resolvable handles — never in the tool
+ * catalogue. It is READ-ONLY, worker-local, noncanonical, and grants no mutation capability.
+ */
+export const WORK_WORKER_CONTEXT_PULL_TOOL_NAME = "palimpsest_worker_context_pull";
+
+/**
+ * R1-L §11: the ONE channel name for the parent↔child pull transport, and the closed response
+ * vocabulary. Single constants so the two processes cannot disagree about the protocol string.
+ */
+export const WORK_WORKER_CONTEXT_CHANNEL = "palimpsest-worker-context-v1";
+
+/**
+ * Trajectory-P2A §7.1: the ONE channel name and kind for the host→parent SESSION IDENTITY report.
+ *
+ * A SEPARATE protocol from the context pull, deliberately: an identity message must never be processed
+ * as a pull request and vice versa (§7.1). The channel string is duplicated from the host bundle's own
+ * constant because the host is plain JavaScript outside the TypeScript program and cannot import from
+ * it; the two are pinned equal by a test that reads the host module.
+ */
+export const WORK_WORKER_SESSION_IDENTITY_CHANNEL = "palimpsest-worker-session-identity-v1";
+export const WORK_WORKER_SESSION_IDENTITY_KIND = "session-created";
+
+/**
+ * §7.1: parse the SESSION IDENTITY envelope strictly.
+ *
+ * The envelope admits EXACTLY `{channel, kind, sessionId}` — no more and no fewer keys. A message that
+ * does not match exactly is not ours: it is dropped rather than coerced, because a lenient parser on the
+ * transport is how "a session was created" quietly becomes a claim about which session, or about a
+ * session that was never created. There is no reading of stdout or stderr here at all (§7.1, §10.1).
+ *
+ * The SessionId must satisfy the producer's own output contract (see `workerSessionIdWellFormed`).
+ */
+export function parseWorkerSessionIdentityEnvelope(
+  raw: unknown,
+): { readonly sessionId: string } | undefined {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return undefined;
+  const record = raw as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  if (keys.length !== 3 || keys.join(",") !== "channel,kind,sessionId") return undefined;
+  if (record.channel !== WORK_WORKER_SESSION_IDENTITY_CHANNEL || record.kind !== WORK_WORKER_SESSION_IDENTITY_KIND) return undefined;
+  const { sessionId } = record;
+  if (!workerSessionIdWellFormed(sessionId)) return undefined;
+  return Object.freeze({ sessionId });
+}
+
+/**
+ * §7.1: the SessionId syntax the PARENT admits, matching the producer's own rule.
+ *
+ * Deliberately moderate for the same reason as the producer's: DSH's SessionId is an unconstrained
+ * branded string and the worker host mints `worker-<uuid>`, so a prefix rule would break on a resumed or
+ * forked session, while an any-string rule would admit control characters or path-shaped values. This
+ * admits a non-empty, bounded, non-whitespace, non-control string and nothing more.
+ */
+export function workerSessionIdWellFormed(value: unknown): value is string {
+  return typeof value === "string" && value.length >= 1 && value.length <= 200 && !/[\s\u0000-\u001f\u007f]/u.test(value);
+}
+
+/** §11: a pull response is exactly one of these. `refused` is distinct from `not_found` on purpose. */
+export const WORKER_PULL_STATUSES = ["resolved", "not_found", "refused", "error"] as const;
+export type WorkerPullStatus = (typeof WORKER_PULL_STATUSES)[number];
+
+/** §11: what the child sends. Carries the handle and NOTHING else — no attempt, no project, no ref. */
+export interface WorkerPullRequest {
+  readonly channel: typeof WORK_WORKER_CONTEXT_CHANNEL;
+  readonly kind: "pull";
+  readonly requestId: string;
+  readonly handle: string;
+}
+
+/** §11: what the parent answers. `value` is the canonical fetch result, verbatim and unflattened. */
+export interface WorkerPullResponse {
+  readonly channel: typeof WORK_WORKER_CONTEXT_CHANNEL;
+  readonly kind: "pull-result";
+  readonly requestId: string;
+  readonly status: WorkerPullStatus;
+  readonly value?: unknown;
+  readonly detail?: string;
+}
+
+/** §8: the ONE accepted request shape. `additionalProperties: false` is the schema-level half of this. */
+export function workWorkerPullRequestSchemaOk(raw: unknown): raw is { readonly handle: string } {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return false;
+  const keys = Object.keys(raw);
+  if (keys.length !== 1 || keys[0] !== "handle") return false;
+  const handle = (raw as { readonly handle?: unknown }).handle;
+  return typeof handle === "string" && handle.length > 0;
+}
+
+/**
+ * §11: parse the IPC ENVELOPE strictly.
+ *
+ * The envelope is a different shape from the tool arguments, and both are closed: the arguments admit
+ * exactly `{handle}`, and the envelope admits exactly `{channel, kind, requestId, handle}`. A message
+ * that does not match EXACTLY is not ours — it is dropped rather than coerced, because a lenient parser
+ * on the transport is how a "pull" quietly becomes something else.
+ */
+export function parseWorkerPullEnvelope(
+  raw: unknown,
+): { readonly requestId: string; readonly handle: string } | undefined {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return undefined;
+  const record = raw as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  if (keys.length !== 4 || keys.join(",") !== "channel,handle,kind,requestId") return undefined;
+  if (record.channel !== WORK_WORKER_CONTEXT_CHANNEL || record.kind !== "pull") return undefined;
+  const { requestId, handle } = record;
+  if (typeof requestId !== "string" || requestId.length === 0) return undefined;
+  if (typeof handle !== "string" || handle.length === 0) return undefined;
+  return Object.freeze({ requestId, handle });
+}
+
+/**
+ * §8/§9: THE ATTEMPT-BOUND ALLOWLIST.
+ *
+ * Derived from the attempt's OWN compiled handles, so the pull can never become a global asset lookup:
+ * a valid handle from another attempt, from another project, a fabricated handle, and any generic
+ * `@ctx/knowledge/*` namespace are all simply "not in this set". There is no fallback path by design.
+ */
+export function workerPullHandleAllowed(compiledHandles: readonly { readonly handle: string }[], handle: string): boolean {
+  for (const entry of compiledHandles) {
+    if (entry.handle === handle) return true;
+  }
+  return false;
+}
+
+/**
+ * §8/§13: the worker-private pull tool's definition. The schema admits `handle` and nothing else, so the
+ * model cannot name an attempt, a project, a claim, a cell, a procedure, a path or an owner — the handle
+ * IS the entire request identity, and the parent binds it to the attempt the host already owns.
+ */
+export interface WorkWorkerContextPullToolDefinition {
+  readonly name: string;
+  readonly description: string;
+  readonly parameters: Record<string, unknown>;
+  /** §13: the worker-private tools are read-only. A pull reads; it never writes and never settles. */
+  readonly mode: "read-only";
+}
+
+export function workWorkerContextPullToolDefinition(): WorkWorkerContextPullToolDefinition {
+  return Object.freeze({
+    name: WORK_WORKER_CONTEXT_PULL_TOOL_NAME,
+    description:
+      "READ PROJECT CONTEXT: fetch the canonical body behind ONE handle listed in the 'Project context available to this attempt' section. " +
+      "Pass exactly one listed handle and nothing else — a handle that was not listed for THIS attempt is refused, and no other argument exists. " +
+      "The result is READ-ONLY background: it is never authority, it cannot change what settlement accepts, and it cannot widen your write scope or your allowed commands.",
+    parameters: Object.freeze({
+      type: "object",
+      properties: Object.freeze({
+        handle: {
+          type: "string",
+          description: "exactly one handle from this attempt's own context index, e.g. @ctx/procedure/<id>/<revision>",
+        },
+      }),
+      required: ["handle"],
+      additionalProperties: false,
+    }),
+    mode: "read-only",
+  });
+}
+
 /** Machine-readable line the worker process must print as its final output. */
 export const WORK_WORKER_RESULT_PREFIX = "PALIMPSEST_WORK_RESULT ";
+
+/** §17: the noncanonical telemetry prefix reporting which handles a worker actually pulled. */
+export const WORK_WORKER_PULL_PREFIX = "PALIMPSEST_WORKER_PULL ";
 
 /**
  * What a worker is allowed to SAY. Note what is absent: no `COMPLETED`, and no way to assert a changed
@@ -85,24 +285,52 @@ export type WorkWorkerResultParse =
  *              that knows its attempt id is one step from believing it may settle it.
  *
  * `Context isolation != Context starvation`: the worker gets the task, not the transcript.
+ *
+ * The type itself is the CONTEXT OWNER's (`../context/service.js`) and is re-exported below rather than
+ * re-declared — see §18 there. A second, structurally-identical copy is exactly the drift R1-L removes.
  */
-export interface WorkWorkerTaskContext {
-  readonly projectGoal: string;
-  readonly requirements: readonly string[];
-  readonly decisions: readonly string[];
-  readonly objective: string;
-  readonly writeScope: readonly string[];
-  readonly requiredArtifacts: readonly string[];
-  readonly baseCommit: string;
-  readonly completionChecks: readonly string[];
-  readonly independentVerificationRequired: boolean;
-}
 
 export interface WorkWorkerExecutionInput {
   /** The prepared execution world: the worktree D2-b created, and the worker's whole filesystem world. */
   readonly workDir: string;
-  readonly context: WorkWorkerTaskContext;
+  /**
+   * THIS attempt's delivered context: the task half plus the attempt's own compiled half (its boot
+   * references and its pull handles). Typed as the context owner's shape because that is what the
+   * standard delegation path actually passes — a worker port that claims the flat task shape would be
+   * describing something the product does not send.
+   */
+  readonly context: import("../context/service.js").WorkWorkerAttemptContext;
+  /**
+   * §10: the canonical read for ONE handle, bound by the CALLER to the attempt it prepared.
+   *
+   * The port deliberately does not receive an attempt id: it receives a closure that already knows it.
+   * That is what keeps `PullHandle ≠ global read authority` structural rather than a convention — there
+   * is no argument through which a wider read could be requested.
+   *
+   * Absent ⇒ every pull is answered with an honest refusal rather than a fabricated body.
+   */
+  readonly contextPull?: ((handle: string) => Promise<unknown>) | undefined;
   readonly signal?: AbortSignal | undefined;
+  /**
+   * R3-L0C-G1 §4: the OPTIONAL host-only observation sink. The product path passes `undefined` unless a research
+   * consumer attaches one; the worker process never sees it and the payload is byte-identical either way (§9).
+   */
+  readonly observe?: WorkObservationSink | undefined;
+  /**
+   * Trajectory-P2A §7.3: the OPTIONAL host-only SESSION IDENTITY sink.
+   *
+   * Absent ⇒ the port records no session identity and behaves exactly as before (§13). Present ⇒ the port
+   * reports the identity it actually observed on its OWN child's IPC channel. Like `observe`, this is a
+   * report the port makes and never reads back, and it can never change the returned outcome.
+   */
+  readonly observeSessionIdentity?: WorkSessionIdentitySink | undefined;
+  /**
+   * Trajectory-P2A §7.4/§10.2: how the executable behind `dshBin` is QUALIFIED, as a separate dimension
+   * from the observation state. Defaults to `DIRECT_CHILD_IPC` — the honest value when a caller says
+   * nothing, because a configured binary may be a wrapper. A first-party integration test raises it
+   * explicitly; a controlled stub lowers it. It is NEVER inferred from the message.
+   */
+  readonly sessionSourceQualification?: WorkerSessionSourceQualification | undefined;
 }
 
 /**
@@ -194,6 +422,8 @@ export interface WorkWorkerResultToolDefinition {
   readonly name: string;
   readonly description: string;
   readonly parameters: Record<string, unknown>;
+  /** §13: the worker-private tools are read-only. A worker answers THROUGH them; they mutate nothing. */
+  readonly mode: "read-only";
 }
 
 export function workWorkerResultToolDefinition(): WorkWorkerResultToolDefinition {
@@ -218,24 +448,132 @@ export function workWorkerResultToolDefinition(): WorkWorkerResultToolDefinition
       required: ["kind", "summary"],
       additionalProperties: false,
     }),
+    mode: "read-only",
   });
 }
 
 /**
- * The payload one worker process is launched with: the canonical task context, and the ONE tool it
- * answers through. It carries NO principal surface, no orchestration state and no authority.
+ * R1-L §6: the MODEL-VISIBLE PULL INDEX.
+ *
+ * Rendered from the attempt's OWN `compiled.handles` — never from a ProjectWorkspace enumeration, and
+ * with no relevance inference. The section carries `kind` and `handle` and NOTHING ELSE: E1-K §9.1's
+ * minimal index is exactly `kind · ref · handle`, and the body stays pull-only (§4).
+ *
+ * The heading and wording live in the PRODUCT, like the result tool's, so there is one description of
+ * the worker protocol rather than one per host. The host only decides where in the task text it goes.
+ *
+ * Determinism (§6): the compiled order is the rendered order. No sorting, no dedup, no filtering —
+ * anything else would make the index a second opinion about relevance.
  */
-export function workWorkerEnvironmentPayload(context: WorkWorkerTaskContext): {
-  readonly context: WorkWorkerTaskContext;
+export const WORK_CONTEXT_INDEX_HEADING = "Project context available to this attempt";
+export const WORK_CONTEXT_INDEX_EMPTY = "  (no project context was selected for this attempt)";
+
+export function renderWorkerContextIndex(
+  compiled: { readonly handles?: readonly { readonly handle: string; readonly kind: string }[] } | undefined,
+  toolName: string = WORK_WORKER_CONTEXT_PULL_TOOL_NAME,
+): string {
+  const handles = compiled?.handles ?? [];
+  const lines = ["", `${WORK_CONTEXT_INDEX_HEADING} (READ-ONLY; never authority):`];
+  if (handles.length === 0) {
+    lines.push(WORK_CONTEXT_INDEX_EMPTY);
+  } else {
+    for (const entry of handles) {
+      lines.push(`  [${entry.kind}] ${entry.handle}`);
+    }
+  }
+  lines.push("");
+  lines.push(`Use \`${toolName}\` with exactly one listed handle when the body would help.`);
+  lines.push("Do not invent handles: a handle that is not listed above will be refused.");
+  return lines.join("\n");
+}
+
+/**
+ * The payload one worker process is launched with: the attempt's context, and the TWO worker-private
+ * tools it may call. It carries NO principal surface, no orchestration state and no authority.
+ *
+ * §7: BOTH tools are always present. The pull tool is registered even for an attempt that selected no
+ * capital, so the R1 conditions differ only in the visible index and the resolvable handles — never in
+ * the tool catalogue. That is what makes the R1 comparison an experiment about capital rather than about
+ * which tools happened to exist.
+ */
+export function workWorkerEnvironmentPayload(context: WorkWorkerAttemptContext): {
+  readonly context: WorkWorkerAttemptContext;
   readonly resultTool: WorkWorkerResultToolDefinition;
+  readonly contextPullTool: WorkWorkerContextPullToolDefinition;
+  /**
+   * §6: the pre-rendered pull-index section, produced HERE so the wording, the ordering and the
+   * empty-case line are the product's and are unit-testable. The host's job is placement, not prose —
+   * and carrying it in the payload avoids adding a name to the package's public surface, which the
+   * public-API parity check would (correctly) refuse.
+   */
+  readonly contextIndexText: string;
+  /** §11: the ONE channel name, sent so the child cannot disagree with the parent about the protocol. */
+  readonly contextPullChannel: string;
+  /**
+   * §9: the attempt-bound allowlist, derived from THIS attempt's compiled handles. The parent refuses
+   * any handle outside it; the list is sent so the child can also refuse locally without a round trip.
+   */
+  readonly allowedPullHandles: readonly string[];
   /** The Palimpsest tool-name prefix a worker must not inherit (enumerated by the host at run time). */
   readonly deniedAuthorityPrefix: string;
+  /**
+   * Trajectory-P2-E0 §8.6/§8.7/§8.9: THE TRIAL DELIVERY RECORD for THIS attempt.
+   *
+   * ONE object carrying the THREE INDEPENDENT DIMENSIONS (assigned arm, source-derived eligibility, actual
+   * delivery state), the failure reason when relevant, and the PRODUCT-RENDERED presentation the Host places
+   * — or `null` for the OFF arm, where there is nothing to deliver.
+   *
+   * WHY ONE OBJECT AND NOT THE RAW CAPSULE. P2-D2 shipped the WHOLE attempt context, whose
+   * `compiled.trajectoryCapsule.capsule` is the raw historical Capsule body — so a CONTROL arm, whose
+   * presentation deliberately carries no history, still transported the full body in the Worker Environment
+   * (F5/F12). The raw Capsule is now kept in the PARENT for diagnostics (§8.7) and is NOT copied into the
+   * child payload; the child receives only the bounded, product-rendered presentation plus the trial facts.
+   */
+  readonly trajectoryDelivery: import("../context/service.js").TrajectoryDeliveryRecord | null;
 } {
+  const handles = context.compiled?.handles ?? [];
+  const capsule = context.compiled?.trajectoryCapsule;
   return Object.freeze({
-    context,
+    context: workerContextWithoutCapsuleBody(context),
     resultTool: workWorkerResultToolDefinition(),
+    contextPullTool: workWorkerContextPullToolDefinition(),
+    contextIndexText: renderWorkerTaskText(context),
+    contextPullChannel: WORK_WORKER_CONTEXT_CHANNEL,
+    allowedPullHandles: Object.freeze(handles.map((entry: { readonly handle: string }) => entry.handle)),
     deniedAuthorityPrefix: "palimpsest_",
+    /**
+     * §8.9: the trial record. `null` when the deployment composed no trajectory delivery at all, so a
+     * payload predating this field is byte-identical to before.
+     */
+    trajectoryDelivery:
+      capsule === undefined
+        ? null
+        : Object.freeze({
+            assignedArm: capsule.assignedArm ?? "OFF",
+            eligibility: capsule.eligibility ?? "UNKNOWN",
+            deliveryState: capsule.deliveryState ?? "NOT_ATTEMPTED",
+            failureReason: capsule.failureReason ?? null,
+            presentation: capsule.presentation ?? null,
+          }),
   });
+}
+
+/**
+ * §8.6/§8.7: THE CHILD-PAYLOAD MINIMIZATION.
+ *
+ * The worker payload must NOT carry the historical Capsule body. `compiled.trajectoryCapsule.capsule` is the
+ * raw admitted history; the CHILD needs only the product-rendered presentation, which travels separately.
+ * The Parent keeps the Capsule for diagnostics. When the attempt has no trajectory delivery the context is
+ * returned UNCHANGED (the same object), so a default deployment's payload is byte-identical to before.
+ */
+function workerContextWithoutCapsuleBody(context: WorkWorkerAttemptContext): WorkWorkerAttemptContext {
+  const capsule = context.compiled?.trajectoryCapsule;
+  if (capsule === undefined) return context;
+  const { capsule: _withheld, ...compiledWithoutBody } = capsule;
+  return Object.freeze({
+    ...context,
+    compiled: Object.freeze({ ...context.compiled, trajectoryCapsule: Object.freeze(compiledWithoutBody) }),
+  }) as WorkWorkerAttemptContext;
 }
 
 /* ------------------------------------------------------------------ *
@@ -249,6 +587,8 @@ export interface DshSubprocessWorkWorkerPortInput {
   readonly profile: string;
   /** Hard wall-clock budget for one worker; exceeded ⇒ HOST_FAILURE. */
   readonly timeoutMs?: number;
+  /** §11: bounded per-request budget for ONE context pull; independent of the worker's wall clock. */
+  readonly pullTimeoutMs?: number;
   /** Node executable; defaults to the current process executable. */
   readonly nodeExecPath?: string;
 }
@@ -257,6 +597,105 @@ function hostFailure(detail: string): WorkWorkerExecutionOutcome {
   return Object.freeze({ kind: "HOST_FAILURE" as const, detail });
 }
 
+/**
+ * §4: what a caller of the emitter supplies. Every observational field is OPTIONAL, because an event kind that
+ * genuinely has no pid (a failed spawn) or no exit code (a request) must not be forced to invent one — the
+ * emitter fills the unobserved fields with `null`, which is the honest value.
+ */
+interface ObservationEmitInput {
+  readonly eventKind: HostProcessObservation["eventKind"];
+  readonly directChildPid?: number | null | undefined;
+  readonly processRole?: HostProcessRole | undefined;
+  readonly exitCode?: number | null | undefined;
+  readonly exitSignal?: string | null | undefined;
+  readonly hostFailureDetail?: string | null | undefined;
+}
+
+/**
+ * R3-L0C-G1 §4: the observation emitter for ONE port invocation.
+ *
+ * WHAT IT DOES NOT DO. It cannot alter the outcome: `emit` returns void, the caller ignores a throw, and the
+ * emitter holds no reference to the promise's resolver. An observation is a report ABOUT the process, never a
+ * channel INTO the run.
+ *
+ * WHAT IT DOES NOT RECORD. No command line, no environment value, no worker context, no model prompt. The
+ * executable identity is sanitized: the Node path and the worker bin path are recorded as DIGESTS, and the
+ * worker bin also contributes its basename only — so a reader sees WHICH binary was launched without a raw
+ * machine path appearing in durable evidence.
+ */
+function makeObservationEmitter(input: {
+  readonly sink: WorkObservationSink | undefined;
+  readonly invocationId: string;
+  readonly adapterId: string;
+  readonly nodeExecPath: string;
+  readonly workerBin: string;
+}): { readonly emit: (event: ObservationEmitInput) => void } {
+  const digest = (value: string): string => createHash("sha256").update(value, "utf8").digest("hex");
+  const executableIdentity = Object.freeze({
+    adapterId: input.adapterId,
+    nodeExecutableDigest: digest(input.nodeExecPath),
+    workerBinBasename: basename(input.workerBin),
+    workerBinDigest: digest(input.workerBin),
+  });
+  let sequence = 0;
+  return {
+    emit: (event): void => {
+      if (input.sink === undefined) return;
+      sequence += 1;
+      const observation: HostProcessObservation = Object.freeze({
+        schemaVersion: HOST_OBSERVATION_SCHEMA_VERSION,
+        producer: "dshSubprocessWorkWorkerPort",
+        eventKind: event.eventKind,
+        invocationId: input.invocationId,
+        sequence,
+        observedAt: new Date().toISOString(),
+        directChildPid: event.directChildPid ?? null,
+        processRole: event.processRole ?? "DIRECT_CHILD",
+        exitCode: event.exitCode ?? null,
+        exitSignal: event.exitSignal ?? null,
+        hostFailureDetail: event.hostFailureDetail ?? null,
+        executableIdentity,
+        proves: HOST_OBSERVATION_PROVES,
+        doesNotProve: HOST_OBSERVATION_DOES_NOT_PROVE,
+      });
+      try {
+        input.sink(observation);
+      } catch {
+        /* §4: a failing observer must not change the port's outcome or fabricate a Work terminal state */
+      }
+    },
+  };
+}
+
+/**
+ * R1-L §6: the task text a worker receives, with the pull index appended.
+ *
+ * This is the PRODUCT's rendering of the worker protocol. The host decides WHERE the index goes in its
+ * own prompt; this function produces the index section itself, so the wording, the ordering and the
+ * empty-case line are testable without a DSH runtime — which is the only way §3's regression can be
+ * pinned deterministically, since the runner imports `@deepseek-ai/dsh-*` at module scope.
+ */
+export function renderWorkerTaskText(
+  context: WorkWorkerAttemptContext,
+  toolName: string = WORK_WORKER_CONTEXT_PULL_TOOL_NAME,
+): string {
+  return renderWorkerContextIndex(context.compiled, toolName);
+}
+
+/**
+ * P2-E1 §12.3: read the worker's ONE outcome line, WITHOUT treating the HOST's own diagnostic as one.
+ *
+ * The runner prints exactly ONE line on this prefix: either the worker's canonical outcome, or — when the
+ * worker produced none — the HOST's own `{kind:"HOST_FAILURE", detail}` diagnostic (a statement about a
+ * process, not a work outcome). The two share the prefix by design, and many readers take the last such
+ * line. The P2-E0 parser did not distinguish them, so a host diagnostic was fed to the STRICT worker-result
+ * parser and rejected with `worker result has unknown argument "detail"` — an error that blames the worker
+ * for the host's own message.
+ *
+ * This does NOT widen the strict vocabulary (§12.3 forbids that): it refuses to read a HOST line as a worker
+ * outcome at all, so `parseWorkWorkerResult` still sees only genuine worker reports. A `HOST_FAILURE` line is
+ * skipped, and the caller reports the honest "exited without reporting an outcome" for it.
+ */
 function parseWorkerResultLine(stdout: string): WorkWorkerResultParse | undefined {
   const lines = stdout.split(/\r?\n/u);
   for (let index = lines.length - 1; index >= 0; index -= 1) {
@@ -265,6 +704,8 @@ function parseWorkerResultLine(stdout: string): WorkWorkerResultParse | undefine
     try {
       const parsed: unknown = JSON.parse(line.slice(WORK_WORKER_RESULT_PREFIX.length));
       if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+        /** The HOST's own diagnostic is not a worker outcome: never feed it to the strict worker parser. */
+        if ((parsed as { readonly kind?: unknown }).kind === "HOST_FAILURE") continue;
         return parseWorkWorkerResult(parsed);
       }
     } catch {
@@ -275,7 +716,99 @@ function parseWorkerResultLine(stdout: string): WorkWorkerResultParse | undefine
 }
 
 /**
+ * §17: the handles a worker actually pulled, read from its OWN telemetry line.
+ *
+ * The telemetry carries HANDLES ONLY — never a body — so R1 can answer "did the stochastic worker use
+ * the capital?" mechanically, without persisting any model reasoning.
+ */
+export function parseWorkerPullLine(stdout: string): readonly string[] {
+  for (let index = stdout.split(/\r?\n/u).length - 1; index >= 0; index -= 1) {
+    const line = stdout.split(/\r?\n/u)[index];
+    if (line === undefined || !line.startsWith(WORK_WORKER_PULL_PREFIX)) continue;
+    try {
+      const parsed: unknown = JSON.parse(line.slice(WORK_WORKER_PULL_PREFIX.length));
+      if (typeof parsed === "object" && parsed !== null && Array.isArray((parsed as { readonly pulled?: unknown }).pulled)) {
+        return Object.freeze(((parsed as { readonly pulled: readonly unknown[] }).pulled).filter((entry): entry is string => typeof entry === "string"));
+      }
+    } catch {
+      /* a malformed telemetry line is not evidence; keep scanning */
+    }
+  }
+  return Object.freeze([]);
+}
+
+/**
+ * §10: the PARENT-SIDE canonical resolver. This is the ONLY way a body is read, and it is bound to the
+ * attempt the host already owns — the model never receives an attempt id, so it cannot choose one.
+ *
+ * `PullHandle ≠ global read authority`: the resolver is handed a handle the attempt's own manifest
+ * bound, and refuses everything else.
+ */
+export interface WorkWorkerContextPullResolverInput {
+  /** §9: the attempt-bound allowlist. A handle outside it is refused without touching any owner. */
+  readonly allowedHandles: readonly string[];
+  /**
+   * The canonical read. The port supplies the attempt internally; the caller never sees it, and the
+   * model certainly does not. Returning `undefined` means "this manifest has no such binding".
+   */
+  readonly fetch: (handle: string) => Promise<unknown>;
+}
+
+/**
+ * §11: the parent's answer to one pull request.
+ *
+ * `refused` and `not_found` are deliberately different: "you may not ask that" is not the same fact as
+ * "the owner no longer has it", and collapsing them would hide a boundary breach inside a lookup miss.
+ */
+export async function resolveWorkerPullRequest(
+  resolver: WorkWorkerContextPullResolverInput,
+  rawEnvelope: unknown,
+): Promise<WorkerPullResponse> {
+  const requestId = (() => {
+    if (typeof rawEnvelope === "object" && rawEnvelope !== null) {
+      const candidate = (rawEnvelope as { readonly requestId?: unknown }).requestId;
+      if (typeof candidate === "string") return candidate;
+    }
+    return "unknown";
+  })();
+  const envelope = parseWorkerPullEnvelope(rawEnvelope);
+  if (envelope === undefined) {
+    // §21 L-N09: a malformed message can never produce a body, and it is reported as such.
+    return Object.freeze({ channel: WORK_WORKER_CONTEXT_CHANNEL, kind: "pull-result", requestId, status: "error", detail: "malformed pull request" });
+  }
+  if (!workerPullHandleAllowed(resolver.allowedHandles.map((handle) => ({ handle })), envelope.handle)) {
+    // §9: no fallback to a global asset lookup, and no hint about what does exist.
+    return Object.freeze({
+      channel: WORK_WORKER_CONTEXT_CHANNEL,
+      kind: "pull-result",
+      requestId: envelope.requestId,
+      status: "refused",
+      detail: "that handle is not part of this attempt's compiled context",
+    });
+  }
+  try {
+    const value = await resolver.fetch(envelope.handle);
+    if (value === undefined) {
+      return Object.freeze({ channel: WORK_WORKER_CONTEXT_CHANNEL, kind: "pull-result", requestId: envelope.requestId, status: "not_found", detail: "the bound owner no longer resolves this handle" });
+    }
+    return Object.freeze({ channel: WORK_WORKER_CONTEXT_CHANNEL, kind: "pull-result", requestId: envelope.requestId, status: "resolved", value });
+  } catch (error) {
+    return Object.freeze({
+      channel: WORK_WORKER_CONTEXT_CHANNEL,
+      kind: "pull-result",
+      requestId: envelope.requestId,
+      status: "error",
+      detail: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/**
  * Run ONE worker as an EPHEMERAL DSH process whose working directory is the prepared execution world.
+ *
+ * §11: the child is spawned with ONE extra IPC channel (`stdio[3]`), which is the parent's only way to
+ * answer a pull. The channel is a capability of THIS process: it dies with the worker (§21 L-P15), and
+ * the child can reach nothing else — no HTTP port, no shared database, no controller reference.
  *
  * The port NEVER fabricates an outcome: a timeout, a spawn failure, a crash and a silent worker are all
  * `HOST_FAILURE`, which is a statement about a process rather than about the work.
@@ -283,10 +816,26 @@ function parseWorkerResultLine(stdout: string): WorkWorkerResultParse | undefine
 export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortInput): WorkWorkerExecutionPort {
   const timeoutMs = input.timeoutMs ?? 1_800_000;
   const nodeExecPath = input.nodeExecPath ?? process.execPath;
+  /** §11: bounded per-request budget for one pull, independent of the worker's own wall clock. */
+  const pullTimeoutMs = input.pullTimeoutMs ?? 15_000;
   return {
     adapterId: `dsh-subprocess-work-worker:${input.profile}`,
     async run(runInput): Promise<WorkWorkerExecutionOutcome> {
       if (runInput.signal?.aborted === true) return hostFailure("worker execution aborted by the caller before it started");
+
+      /**
+       * §4: ONE emitter per invocation. It is created BEFORE the spawn so `SPAWN_ATTEMPTED` is observable even
+       * when the spawn itself fails — which is the only way P1-C can distinguish "no child was ever created"
+       * from "a child existed and its start failed".
+       */
+      const invocationId = `wpi-${randomUUID()}`;
+      const { emit } = makeObservationEmitter({
+        sink: runInput.observe,
+        invocationId,
+        adapterId: `dsh-subprocess-work-worker:${input.profile}`,
+        nodeExecPath,
+        workerBin: input.dshBin,
+      });
 
       let payloadJson: string;
       try {
@@ -297,28 +846,160 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
       const dir = mkdtempSync(join(tmpdir(), "palimpsest-worker-"));
       const contextFile = join(dir, "worker-context.json");
       writeFileSync(contextFile, payloadJson, "utf8");
+      const allowedHandles = (runInput.context.compiled?.handles ?? []).map((entry) => entry.handle);
+      /** §17: the handles this worker actually pulled, for the noncanonical telemetry line. */
+      const pulledHandles: string[] = [];
 
       try {
         return await new Promise<WorkWorkerExecutionOutcome>((resolve) => {
           let settled = false;
           let stdout = "";
           let stderr = "";
+          /** §4: whether a real close/exit event was observed, so the absence is reportable rather than implied. */
+          let exitObserved = false;
+          /** §4: whether the SPAWN ITSELF failed, in which case no child ever existed and no exit may be claimed. */
+          let spawnErrored = false;
+          /** §4: the pid the Host actually obtained, or null when the spawn never produced one. */
+          let observedPid: number | null = null;
           const finish = (outcome: WorkWorkerExecutionOutcome): void => {
             if (settled) return;
             settled = true;
             if (timer !== undefined) clearTimeout(timer);
             runInput.signal?.removeEventListener("abort", onAbort);
+            /**
+             * §4: A CHILD THAT NEVER PRODUCED A CLOSE EVENT DID NOT CLEANLY EXIT. When the host is finishing
+             * because of a timeout or an abort rather than an observed exit, that absence is emitted as
+             * `DIRECT_CHILD_EXIT_UNCONFIRMED` — so a consumer cannot read the missing event as a clean exit.
+             */
+            if (!exitObserved && !spawnErrored && observedPid !== null) {
+              emit({ eventKind: "DIRECT_CHILD_EXIT_UNCONFIRMED", directChildPid: observedPid, hostFailureDetail: outcome.kind === "HOST_FAILURE" ? outcome.detail : null });
+            }
             resolve(outcome);
           };
 
+          emit({ eventKind: "DIRECT_CHILD_SPAWN_ATTEMPTED" });
           const spawned = spawn(nodeExecPath, [input.dshBin, "--profile", input.profile, "--work", contextFile], {
             // The worker's WHOLE filesystem world is the prepared worktree. This is the one capability
             // condition D2-c insists on: freedom inside the world, not freedom to leave it.
             cwd: runInput.workDir,
-            stdio: ["ignore", "pipe", "pipe"],
+            // §11: `stdio[3]` is the pull channel. `ipc` on a `spawn` gives the child exactly one
+            // `process.send`/`process.on('message')` pair and nothing else — no port, no socket file,
+            // no shared store. The DSH host itself uses no Node IPC (verified), so this does not
+            // collide with its own transports.
+            stdio: ["ignore", "pipe", "pipe", "ipc"],
+          });
+          /**
+           * §4: `spawned.pid` proves at most that the Host obtained a DIRECT-CHILD process identity. It is
+           * recorded as observed, and `processRole` stays `DIRECT_CHILD` — never promoted to a DSH worker.
+           */
+          observedPid = typeof spawned.pid === "number" ? spawned.pid : null;
+          if (observedPid !== null) {
+            emit({ eventKind: "DIRECT_CHILD_SPAWN_OBSERVED", directChildPid: observedPid });
+          }
+
+          /**
+           * §10/§11: answer a pull by delegating to the caller's canonical resolver. The port supplies
+           * the ATTEMPT internally — `runInput` closed over it — so the model never sees it.
+           *
+           * `pullSeen` records the handles actually pulled, for §17 telemetry.
+           */
+          const pending = new Map<string, NodeJS.Timeout>();
+          /**
+           * Trajectory-P2A §7.5: the per-invocation session identity tracker. It is created ONCE per
+           * `run()` call and closed over the port's OWN `invocationId`, so a report is associated with the
+           * invocation this parent launched and never with a message-supplied identity.
+           */
+          const sessionIdentity = makeWorkerSessionIdentityTracker({ invocationId });
+          spawned.on("message", (message: unknown) => {
+            /**
+             * §7.1: the SESSION IDENTITY branch is consulted FIRST and independently. The two protocols
+             * are disjoint by channel and kind, so neither can be read as the other.
+             *
+             * §7.2: the parent supplies its OWN invocationId and its OWN child pid. The message carries
+             * neither, so there is nothing in the payload that could mis-attribute the report.
+             *
+             * §7.6: the sink is optional and best-effort. A throwing consumer must not change the worker's
+             * outcome, so the call is contained and the result is only ever reported through it.
+             */
+            const identity = parseWorkerSessionIdentityEnvelope(message);
+            if (identity !== undefined) {
+              /**
+               * §7.5: the tracker enforces the repetition semantics. A first valid report establishes the
+               * identity; a repeated identical report is idempotent; two DIFFERENT identities become an
+               * explicit conflict in which neither is chosen. Arrival order never decides authority.
+               */
+              sessionIdentity.observe({
+                sessionId: identity.sessionId,
+                directChildPid: observedPid,
+                sourceQualification: runInput.sessionSourceQualification ?? "DIRECT_CHILD_IPC",
+              });
+              const sink = runInput.observeSessionIdentity;
+              const observed = sessionIdentity.observation;
+              if (sink !== undefined && observed !== null) {
+                try {
+                  /**
+                   * §7.6: the sink is contained. It reports the observation — including when the tracker's
+                   * state is CONFLICT, so the consumer can see the disagreement rather than only the first
+                   * identity. The sink's own throw is swallowed and cannot change the worker's outcome.
+                   */
+                  sink(observed);
+                } catch {
+                  /* §7.6: an observer failure is not a Work failure and not a Host failure */
+                }
+              }
+              return;
+            }
+            const envelope = parseWorkerPullEnvelope(message);
+            if (envelope === undefined) return;
+            const resolver = runInput.contextPull;
+            if (resolver === undefined) {
+              // A worker that asks for context when the host composed no resolver gets an honest
+              // refusal, never a fabricated body.
+              safeSend({ channel: WORK_WORKER_CONTEXT_CHANNEL, kind: "pull-result", requestId: envelope.requestId, status: "error", detail: "this host composed no context resolver" });
+              return;
+            }
+            const timeout = setTimeout(() => {
+              pending.delete(envelope.requestId);
+              safeSend({ channel: WORK_WORKER_CONTEXT_CHANNEL, kind: "pull-result", requestId: envelope.requestId, status: "error", detail: `the context pull exceeded ${String(pullTimeoutMs)}ms` });
+            }, pullTimeoutMs);
+            pending.set(envelope.requestId, timeout);
+            void resolveWorkerPullRequest(
+              {
+                allowedHandles,
+                fetch: async (handle) => await resolver(handle),
+              },
+              message,
+            ).then(
+              (response) => {
+                const held = pending.get(envelope.requestId);
+                if (held !== undefined) {
+                  clearTimeout(held);
+                  pending.delete(envelope.requestId);
+                }
+                if (response.status === "resolved") pulledHandles.push(envelope.handle);
+                safeSend(response);
+              },
+              (error: unknown) => {
+                const held = pending.get(envelope.requestId);
+                if (held !== undefined) {
+                  clearTimeout(held);
+                  pending.delete(envelope.requestId);
+                }
+                safeSend({ channel: WORK_WORKER_CONTEXT_CHANNEL, kind: "pull-result", requestId: envelope.requestId, status: "error", detail: error instanceof Error ? error.message : String(error) });
+              },
+            );
           });
 
+          function safeSend(response: WorkerPullResponse): void {
+            try {
+              spawned.send?.(response);
+            } catch {
+              /* the worker may have exited between its request and our answer */
+            }
+          }
+
           const onAbort = (): void => {
+            emit({ eventKind: "DIRECT_CHILD_ABORT_REQUESTED", directChildPid: observedPid });
             try {
               spawned.kill();
             } catch {
@@ -327,6 +1008,7 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
             finish(hostFailure("worker execution aborted by the caller"));
           };
           const timer = setTimeout(() => {
+            emit({ eventKind: "DIRECT_CHILD_TIMEOUT_REQUESTED", directChildPid: observedPid });
             try {
               spawned.kill();
             } catch {
@@ -342,8 +1024,29 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
           spawned.stderr?.on("data", (chunk: Buffer | string) => {
             stderr += chunk.toString();
           });
-          spawned.on("error", (error: Error) => finish(hostFailure(`the worker host failed to start: ${error.message}`)));
-          spawned.on("close", (code: number | null) => {
+          spawned.on("error", (error: Error) => {
+            /**
+             * §4: a spawn error is a failure to CREATE the child, so no pid and no exit event are claimed.
+             * `spawnErrored` is what stops the `close` handler — which Node still fires after a failed spawn —
+             * from reporting an exit for a process that never existed.
+             */
+            spawnErrored = true;
+            emit({ eventKind: "DIRECT_CHILD_SPAWN_ERROR", directChildPid: observedPid, hostFailureDetail: error.message });
+            finish(hostFailure(`the worker host failed to start: ${error.message}`));
+          });
+          spawned.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
+            /** §4: no child was ever created, so a close event here is not an exit of a real direct child. */
+            if (spawnErrored) return;
+            /**
+             * §4: THE DIRECT CHILD'S EXIT IS OBSERVED HERE, and only here. `exitObserved` is set so `finish`
+             * does not also emit an UNCONFIRMED event for a child that really did close.
+             */
+            exitObserved = true;
+            emit({ eventKind: "DIRECT_CHILD_EXIT_OBSERVED", directChildPid: observedPid, exitCode: code, exitSignal: signal });
+            // §11: the pull capability dies with the worker process. Every in-flight request is
+            // abandoned here rather than left to resolve against a child that no longer exists.
+            for (const timeout of pending.values()) clearTimeout(timeout);
+            pending.clear();
             const parsed = parseWorkerResultLine(stdout);
             if (parsed !== undefined && parsed.ok) {
               finish(parsed.outcome);

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "context consumer authorization",
+  "falsifier": "F15",
+  "finding": "the attributed Preview admitted ANY canonical Attempt of the project by its AttemptId with no consumer-Attempt binding, so a consumer could inspect another Attempt's history by naming it",
+  "correction": {
+    "boundary": "src/composition/attributed_preview.ts capsuleForConsumer — the Capsule requires a CONSUMER Attempt whose own canonical governed-rework lineage names exactly one permitted origin",
+    "authorizationPort": "src/composition/execution_association.ts makeCapsuleAuthorization — resolves the origin from the durable rework lineage (a TASK_READY before the consumer's creation event carrying rework_provenance.origin_result_subject.ref)",
+    "selectorRule": "a caller-supplied requestedOriginAttemptId must AGREE with the lineage or the request is refused ORIGIN_NOT_PERMITTED; the model supplies nothing but its own consumer Attempt identity",
+    "noGlobalFallback": "there is no global Session search and no cross-project access; the model cannot supply a SessionId, an unrestricted AttemptId, a self-declared binding or a source epoch"
+  },
+  "evidence": [
+    {
+      "class": "CONTROLLED_FIXTURE",
+      "test": "test/trajectory_p2d0_context_capsule.test.ts",
+      "observed": ["no lineage => NO_LINEAGE with capsule null", "non-canonical consumer => CONSUMER_NOT_CANONICAL", "disagreeing requested origin => refused"]
+    },
+    {
+      "class": "REAL_FIRST_PARTY_DSH_NO_MODEL",
+      "test": "test/trajectory_p2d0_cold_capsule.test.ts",
+      "observed": "through the ordinary product path, an attempt with no governed continuation is refused NO_LINEAGE and its capsule is null"
+    }
+  ],
+  "expectedInvariant": "the consumer-side authority is the Work/Rework lineage or the Context allowlist, never the model naming an Attempt or Session",
+  "verdict": "PASS",
+  "remainingUncertainty": "the ordinary (non-Capsule) attributed Preview still admits any canonical Attempt of the project by AttemptId — that is a read-only inspection surface for operators and is deliberately not changed here; the CONSUMER-facing surface (the Capsule) is the one that is lineage-bound",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "sourceDataChanged": false
+}

@@ -82,6 +82,7 @@ describe("SR1-A14 public API parity", () => {
       "./advanced",
       "./institutional-learning",
       "./procedures",
+      "./product",
       "./project-collaboration",
       "./project-intent",
     ]);

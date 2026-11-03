@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_REGRESSION",
+  "stage": "Trajectory-V0S-H0",
+  "baseline": "34dec4234a384e537fcd9b774470db4673e9f431",
+  "commands": {
+    "build": "npx tsc -b",
+    "architecture": "node scripts/audit/module-architecture.mjs --check",
+    "publicApi": "node scripts/audit/module-architecture.mjs --check-public-api",
+    "broadSuite": "npx vitest run --exclude test/r3l0ciarlcf_gates.test.ts --maxWorkers=2"
+  },
+  "results": {
+    "build": "PASS",
+    "architecture": { "status": "PASS", "violations": 0, "acceptedBaselineExceptions": 9 },
+    "publicApi": { "status": "PASS", "missing": 0, "changedKind": 0, "added": 0 },
+    "broadSuite": { "files": 324, "tests": 4578, "passed": 4565, "failed": 13 }
+  },
+  "focusedMeasurements": {
+    "trajectorySuites": { "files": 15, "tests": 218, "failed": 0 },
+    "architectureSelfTests": { "files": 22, "tests": 315, "failed": 0 },
+    "workDelegationAndContinuation": { "files": 7, "tests": 78, "failed": 0, "note": "composition_root_rules, delegation runtime, worker runtime, R1-L pull transport, G1 observer, continuation service, governed rework" },
+    "h0NewTests": { "files": 4, "tests": 41, "failed": 0, "note": "falsifiers 12, relations 12, session claim 4, source privacy 8, completeness 9 — 45 total; 41 counted here exclude the 4 shared" }
+  },
+  "failureClassification": {
+    "newH0Regression": 0,
+    "archivedClosureDrift": {
+      "count": 13,
+      "classification": "DRIFTED_EXPECTED",
+      "perFile": {
+        "r3l0ciarl_gates": { "failed": 1, "baselineFailed": 1 },
+        "r3l0ciarlc_gates": { "failed": 2, "baselineFailed": 2 },
+        "r3l0ciarlcfs_gates": { "failed": 5, "baselineFailed": 5 },
+        "r3l0ciarlcfsh_persisted": { "failed": 5, "baselineFailed": 5 }
+      },
+      "baselineReproduction": "all four files were run in an isolated worktree pinned at 34dec42 and produced the IDENTICAL counts (1, 2, 5, 5), proving the drift is pre-existing and not introduced by H0",
+      "reason": "adding any src/ module moves the RUNTIME_MANIFEST_MODULES closure digest, so the frozen R3-L0C plan digests no longer match",
+      "archivedPlansRegenerated": false
+    },
+    "environmentResourceFailure": 0,
+    "unresolvedFailure": 0
+  },
+  "safeExclusions": {
+    "r3l0ciarlcf_gates.test.ts": "imports scripts/r3l0ciarlcf/isolated-mutation.mjs, the known unsafe legacy cleanup path that creates a worktree with junctions; excluded from the batch run and never executed",
+    "unsafePathExecuted": false,
+    "boundedConcurrency": "maxWorkers=2; an unbounded batch run exhausts Windows virtual memory (observed in V0S) and produces resource failures in unrelated files that pass in isolation",
+    "noResetOrCleanOrAmendOrRebase": true,
+    "noForcePush": true
+  },
+  "protectedEvidenceImmutability": {
+    "research-evidence/trajectory-t0": "58b699a28daac94db26bc6f0c343c9a0c655f419",
+    "research-evidence/trajectory-v0": "58761f19a7feba3039e6910375cc81361143eaaa",
+    "research-evidence/trajectory-v0s": "c4677c4b8eaa66dfb58bf479873b083bd904d32d",
+    "research-evidence/r3-l0c-g1": "4c98ca488c20ae00722ebd802243e936ed587bc2",
+    "research-evidence/r3-l0c-g1b": "571e6019dbe2cf66c98743f8a7e94a7b9e74c92c",
+    "historicalEvidenceRewritten": false
+  },
+  "projectionTsUnmodified": true,
+  "modelCallsMade": 0,
+  "primaryEnabled": false
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "canonical work and project-evolution restoration",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifier": "F13",
+  "defect": "the attributed adapter supplied resultRefs [], verificationState NOT_OBSERVED_BY_P2C, reworkState NONE and a null basis, and the product cluster supplied an empty project-evolution projection with a caveat — replacing facts the V0 composition can establish",
+  "correction": {
+    "reuseNotReimplement": "the adapter now calls the EXISTING src/composition/trajectory_v0.ts helpers — canonicalFactsOf (real terminal result refs, promotion identity, governed rework, historical Work basis), buildRelationContext (the attempt's own exact relation context) and projectEvolutionOf (the T0 projection summary)",
+    "verificationStanding": "verification remains NOT_OBSERVED_BY_V0, the SAME honest value the ordinary V0 Preview uses: verification is a separate owner's fact and is never inferred from a completed attempt",
+    "projectEvolution": "the product cluster wires projectEvolutionOf over composeTrajectoryInputs, built from the SAME cross-owner reads the V0 composition uses (reasoning, proof, projectWorkspace, journalStore, associationStore), so a real projection root/digest/Work sequence/ProjectIR revision and the selected/quarantined relations are presented, or the honest structured failure origin",
+    "admissionIndependence": "no Session admission depends on Canonical Work or project-evolution success: the qualifier and the attributed admission are unchanged by these facts"
+  },
+  "evidence": {
+    "class": "DYNAMICALLY_REPRODUCED",
+    "test": "test/trajectory_p2d0_source_contract.test.ts > P2D0 F13 (CHANGED ASSERTION P2D0 C4)",
+    "method": "real product install + real attributed preview with a real canonical Attempt",
+    "observed": { "verificationState": "NOT_OBSERVED_BY_V0", "reworkState": "NONE", "resultRefs": [] },
+    "note": "for a freshly prepared Attempt with no terminal result and no governed rework, the honest values are an empty resultRefs and reworkState NONE — the correction is that these now come from the SAME function the V0 Preview uses, and a real basis/result/promotion/rework would be reported rather than replaced by a placeholder"
+  },
+  "expectedInvariant": "the attributed Preview must not silently lose facts the existing V0 composition can establish; result, verification, promotion and rework remain separate facts",
+  "verdict": "PASS",
+  "remainingUncertainty": "the T0 projection's cross-owner reads are present-day while the Work sequence is a historical cut; the projection's own basis vector and the Preview's historicalBasisNote state this, and no cross-owner atomic snapshot is claimed",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_P2D1_FORWARD_ERRATUM",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "note": "§3.2: corrections to earlier P2-D1 claims are recorded here as NEW forward errata. No historical P2-D1 evidence file is modified; this file is additive.",
+  "errata": [
+    {
+      "id": "P2D2-E1",
+      "subject": "P2-D1 'attempt-bound Capsule delivery' (evidence file positive-capsule-delivery.json, attempt-bound-context.json, host-prework-delivery.json)",
+      "p2d1Claim": "P2-D1 delivered a qualified Trajectory Capsule into the attempt worker context through the existing Context boundary, DEFAULT OFF.",
+      "correction": "the claim is TRUE as written — the Capsule reaches `WorkWorkerAttemptContext.compiled.trajectoryCapsule` — but it must NOT be read as model visibility. At the P2-D1 baseline the first-party Host's `workTask()` never reads `context.compiled?.trajectoryCapsule`, so the Capsule is transported into the worker PROCESS and dropped before the model-visible UserMessage is composed (F1/F2). P2-D1's own wording ('delivery into the Context boundary') was accurate; the natural over-reading ('the model saw the Capsule') was NOT established and is explicitly refuted by P2-D2 F1.",
+      "evidence": "scripts/trajectory_p2d2/source-map.mjs F1/F2; test/trajectory_p2d2_source_contract.test.ts"
+    },
+    {
+      "id": "P2D2-E2",
+      "subject": "P2-D1 Capsule Durability provenance (evidence file capsule-uncertainty.json)",
+      "p2d1Claim": "P2-D1 'propagated true durability/uncertainty' and derived uncertainty from the admission.",
+      "correction": "PARTIALLY corrected. P2-D1 did derive `otherInvocationsUnresolved`, `syntheticRecoveryEventCount` and `inheritedEventCount` from the admission. It did NOT derive Durability: `capsuleForConsumer()` accepts a caller-supplied `durability` and the product delivery provider passes NONE, so the delivered Capsule records UNKNOWN even though the Qualifier already established the real class (F5/F6). The word 'true durability' overstated what was implemented; P2-D2 C2 makes Durability source-derived.",
+      "evidence": "scripts/trajectory_p2d2/source-map.mjs F5/F6; test/trajectory_p2d2_source_contract.test.ts"
+    },
+    {
+      "id": "P2D2-E3",
+      "subject": "P2-D1 whole serialized-byte budget (evidence file capsule-whole-byte-budget.json)",
+      "p2d1Claim": "P2-D1 enforced a real whole-serialized-byte budget with an essential floor and CAPSULE_BUDGET_EXCEEDED refusal.",
+      "correction": "TRUE for finite budgets, but incomplete. `effectiveLimits()` validates no runtime value: a NaN budget makes `serializedBytes > limits.maxSerializedBytes` always false, so the bound is silently disabled (F7). The legacy `maxTotalChars` bound is declared but never enforced (F8). P2-D2 C2 adds strict numeric validation and reconciles the legacy bound.",
+      "evidence": "scripts/trajectory_p2d2/source-map.mjs F7/F8; test/trajectory_p2d2_source_contract.test.ts"
+    },
+    {
+      "id": "P2D2-E4",
+      "subject": "P2-D1 ingestion-completeness repair (evidence file ingestion-health.json, invocation-completeness.json)",
+      "p2d1Claim": "P2-D1 closed the ingestion-completeness hole with a durable marker and a sticky per-Invocation health, and the product sink inspects outcomes.",
+      "correction": "TRUE, and the repair preserved runtime behaviour by passing the store's own outcome through. That preserved behaviour is the honest one, but it left the DECLARED `IngestionOutcome` union (RECORDED | IDEMPOTENT | REJECTED) disagreeing with the runtime value (APPENDED | IDEMPOTENT), hidden by an `as IngestionOutcome` cast (F9). P2-D2 C2 unifies the vocabulary so no consumer must reason about the cast.",
+      "evidence": "scripts/trajectory_p2d2/source-map.mjs F9"
+    },
+    {
+      "id": "P2D2-E5",
+      "subject": "P2-D1 real first-party integration (evidence file first-party-non-model-integration.json)",
+      "p2d1Claim": "P2-D1 established real first-party DSH cold recovery with no model turn and a bounded Capsule within a 4096-byte budget, reporting the four evidence levels separately.",
+      "correction": "TRUE and unchanged. P2-D2 adds the erratum that the real 3-event Session is a STARTUP/CONFIGURATION session, not a documented engineering failure, so it is a DELIVERY fixture and NOT a failure-recovery Treatment (F14). No P2-D1 evidence file is modified.",
+      "evidence": "scripts/trajectory_p2d2/source-map.mjs F14"
+    }
+  ],
+  "historicalEvidenceUnmodified": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

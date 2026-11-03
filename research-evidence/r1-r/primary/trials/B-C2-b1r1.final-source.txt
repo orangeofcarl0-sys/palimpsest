@@ -1,0 +1,158 @@
+/**
+ * R1-R §5/§8 — SCENARIO B: THE DISCOVERED METHOD.
+ *
+ * `migrateConfig` reads a legacy configuration document and returns the v2 shape. The order of the
+ * phases is the whole point:
+ *
+ *   1. READ the document on its own terms. Every key is a *legacy spelling*; the document is checked
+ *      as the operator wrote it, before anything is renamed into v2 or filled in with a default.
+ *   2. VALIDATE every value the document actually carries — including settings that have a v2
+ *      default. A value the operator supplied is evidence; it is never quietly replaced by a default
+ *      and it is never quietly ignored.
+ *   3. DEFAULT only what the document omits, and only then rename the settings into the v2 shape.
+ *
+ * Defaulting or transforming before that validation destroys exactly the evidence validation needs:
+ * a supplied `retry: -1` becomes a tidy `retries: 3`, a `bogus` key disappears, and `timeout_ms`
+ * plus `timeoutMs` collapse into whichever spelling the reader happened to look for first — so an
+ * ambiguous or malformed legacy document migrates into a plausible-looking v2 document that no longer
+ * says what the operator wrote.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/** A setting the legacy format has a name for, independent of how a document spells it. */
+type Setting = "name" | "endpoint" | "retries" | "timeoutMs";
+
+/**
+ * Legacy documents are hand-written, so one setting arrives under several spellings. Spellings are
+ * compared in NORMALIZED form — lowercased, separators removed — so that `timeout_ms`, `timeoutMs`
+ * and `TimeoutMS` are recognized as the same setting and cannot be supplied twice under two guises.
+ */
+function normalizeSpelling(spelling: string): string {
+  return spelling.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/** The documented legacy spellings, keyed by their normalized form. */
+const SETTINGS: Readonly<Record<string, Setting | undefined>> = {
+  name: "name",
+  servicename: "name",
+  title: "name",
+  endpoint: "endpoint",
+  url: "endpoint",
+  baseurl: "endpoint",
+  host: "endpoint",
+  retry: "retries",
+  retries: "retries",
+  retrycount: "retries",
+  attempts: "retries",
+  timeout: "timeoutMs",
+  timeoutms: "timeoutMs",
+};
+
+/** A setting the document actually supplied, together with the spelling it was written under. */
+interface Supplied {
+  readonly spelling: string;
+  readonly value: unknown;
+}
+
+function describe(value: unknown): string {
+  if (typeof value === "string") return JSON.stringify(value);
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return String(value);
+  }
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // ── Phase 1: read the legacy document as written ────────────────────────────────────────────
+  // Every key must be a recognized legacy spelling, and no two keys may designate one setting.
+  const supplied = new Map<Setting, Supplied>();
+  for (const spelling of Object.keys(input)) {
+    const value = input[spelling];
+    if (value === undefined) continue; // not representable in a legacy document; treat as omitted
+
+    const setting = SETTINGS[normalizeSpelling(spelling)];
+    if (setting === undefined) {
+      throw new ConfigError("UNKNOWN_SETTING", `unrecognized legacy setting ${JSON.stringify(spelling)}`);
+    }
+
+    const already = supplied.get(setting);
+    if (already !== undefined) {
+      throw new ConfigError(
+        "AMBIGUOUS_SETTING",
+        `the legacy document supplies ${setting} twice, as ${JSON.stringify(already.spelling)} and ${JSON.stringify(spelling)}`,
+      );
+    }
+
+    supplied.set(setting, { spelling, value });
+  }
+
+  // ── Phase 2: validate what the document supplies, before any default is applied ─────────────
+  const name = requiredText(supplied, "name", "INVALID_NAME");
+  const endpoint = requiredText(supplied, "endpoint", "INVALID_ENDPOINT");
+  const retries = optionalInteger(supplied, "retries", 0, DEFAULT_RETRIES, "INVALID_RETRIES");
+  const timeoutMs = optionalInteger(supplied, "timeoutMs", 1, DEFAULT_TIMEOUT_MS, "INVALID_TIMEOUT");
+
+  // ── Phase 3: the document is read; now rename and default it into the v2 shape ──────────────
+  return {
+    schemaVersion: 2,
+    service: { name, endpoint },
+    policy: { retries, timeoutMs },
+  };
+}
+
+function requiredText(supplied: Map<Setting, Supplied>, setting: Setting, code: string): string {
+  const entry = supplied.get(setting);
+  if (entry === undefined) {
+    throw new ConfigError(code, `the ${setting} is required and must be a non-empty string`);
+  }
+  if (typeof entry.value !== "string" || entry.value === "") {
+    throw new ConfigError(
+      code,
+      `the ${setting} must be a non-empty string, but ${JSON.stringify(entry.spelling)} is ${describe(entry.value)}`,
+    );
+  }
+  return entry.value;
+}
+
+function optionalInteger(
+  supplied: Map<Setting, Supplied>,
+  setting: Setting,
+  minimum: number,
+  fallback: number,
+  code: string,
+): number {
+  const entry = supplied.get(setting);
+  if (entry === undefined) return fallback;
+
+  const value = entry.value;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < minimum) {
+    throw new ConfigError(
+      code,
+      `the ${setting} must be an integer >= ${minimum}, but ${JSON.stringify(entry.spelling)} is ${describe(value)}`,
+    );
+  }
+  return value;
+}

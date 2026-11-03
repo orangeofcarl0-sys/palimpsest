@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_currentness.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_FOREIGN_CREATOR_RACE",
+  "title": "Foreign creator conflict during Event Read",
+  "method": "a different Attempt commits a same-session same-source-scope creation claim inside the reader callback",
+  "observed": "the post-read basis now includes the cross-Attempt creator claim set, so the preview returns RACED and the binding is NOT BOUND_VERIFIED",
+  "expectedInvariant": "a foreign creator invalidates Session ownership during Event Read",
+  "verdict": "PASS",
+  "remainingUncertainty": "none material"
+}

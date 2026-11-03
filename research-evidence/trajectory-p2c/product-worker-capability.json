@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_PRODUCT_COMPOSITION",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "closedDefect": {
+    "id": "F13",
+    "defect": "no normal product path constructed a Work Worker Port, and the install composed neither the execution-association concern nor a trajectory surface"
+  },
+  "workerCapability": {
+    "hostDerivation": "host/dsh/lib/index.js:deriveWorkWorkerFacts() reads its own DSH bin (process.argv[1] / PALIMPSEST_DSH_BIN) and --profile, exactly as deriveBranchHost does, and returns the FACTS",
+    "portConstruction": "src/install.ts constructs dshSubprocessWorkWorkerPort from those facts",
+    "distinctFromBranch": "the work worker port is derived independently of the reasoning bundle, so obtaining one does not require the branch capability",
+    "startsNothing": "composing the port executes nothing: the gate measured 0 attempts after composition",
+    "absentIsHonest": "no host facts means no port and no Work Delegation, never a stub"
+  },
+  "recorderComposition": {
+    "boundary": "src/composition/continuation.ts wires the recorder to the delegation service's onCorrelatedSessionIdentity and finalizes the window from onTerminal",
+    "ownership": "the recorder is attached at the Parent/Delegation boundary, so the worker or model never names its own AttemptId"
+  },
+  "storeOwnership": {
+    "created": "src/composition/execution_association.ts creates the SqliteExecutionAssociationStore beside the orchestration store",
+    "lifetime": "INSTALL_CREATED_AND_MANAGED, closed by the install lifecycle after the controller and the log",
+    "callerOwned": "a caller-supplied store is honored and not closed by the install"
+  },
+  "readerProductization": {
+    "implementation": "host/deployment/runtime/session_reader.js (shipped as palimpsest-host-deployment)",
+    "researchEntryPoint": "scripts/trajectory_v0/dsh-session-reader.mjs is now a thin re-export",
+    "oneImplementation": true,
+    "secondParser": false,
+    "lazyMount": "the reader mounts its Cordis persistence backend on first use, so the synchronous install pays nothing and a deployment that never reads a session mounts nothing"
+  },
+  "readOnlySurface": {
+    "exposed": "installed.trajectory.attributedPreview.previewAttempt({attemptId, ...})",
+    "inspectionData": true,
+    "startsNothing": true
+  },
+  "sizeDiscipline": {
+    "installContractUnchanged": true,
+    "reason": "install_contract.ts sits at its §22 hotspot ceiling (700 LOC); the new contract attaches via widened type aliases in install.ts (PalimpsestInstallOptions, InstalledPalimpsestWithTrajectory) rather than growing the aggregate contract",
+    "measured": "architecture:check PASS with install_contract.ts still at 699 LOC"
+  },
+  "tests": [
+    "P2C C3 §7.2 composing the capability starts nothing and composes no worker port without host facts",
+    "P2C C3 §7.1 a host-supplied work-worker executable derives a real port without starting a worker",
+    "P2C C3 §7.7 the read-only attributed Preview surface is callable and reports honest absence with no association",
+    "P2C C1 F13 now COMPOSED"
+  ],
+  "evidenceClass": "REAL_PRODUCT_COMPOSITION",
+  "actualFirstPartyDshRan": true,
+  "actualCanonicalWorkRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "PRODUCT_COMPOSITION_ESTABLISHED"
+}

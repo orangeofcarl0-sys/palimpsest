@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0A",
+  "kind": "capital novelty audit, effect decomposition and design law",
+  "noveltyAudit": [
+    {
+      "lesson": "L1",
+      "statement": "validate the complete relevant input/state before destructive mutation",
+      "labels": [
+        "RAW_HISTORY_EXPLICIT",
+        "CAPITAL_ADDS_MATERIAL_COMPRESSION"
+      ],
+      "surfaces": [
+        {
+          "id": "docs/incident-1.md",
+          "explicitHits": [
+            "/validate the complete change set before the first write/iu",
+            "/Validate the COMPLETE change set before the first write/iu"
+          ],
+          "implicitHits": [
+            "/a refusal must leave the caller's state exactly as it was/iu"
+          ]
+        },
+        {
+          "id": "docs/incident-2.md",
+          "explicitHits": [],
+          "implicitHits": []
+        },
+        {
+          "id": "src/ledger.mjs#prior-art",
+          "explicitHits": [],
+          "implicitHits": []
+        },
+        {
+          "id": "README.md",
+          "explicitHits": [],
+          "implicitHits": []
+        }
+      ],
+      "explicitSomewhere": true,
+      "implicitSomewhere": true,
+      "capitalMethodSteps": 5,
+      "capitalOrderedMethodPresent": true,
+      "rawHasOrderedMethod": false,
+      "wordingDifferenceIsNotNovelty": true
+    },
+    {
+      "lesson": "L2",
+      "statement": "compute/freeze the complete affected dependency set before mutation/invalidation",
+      "labels": [
+        "RAW_HISTORY_EXPLICIT",
+        "CAPITAL_ADDS_MATERIAL_COMPRESSION"
+      ],
+      "surfaces": [
+        {
+          "id": "docs/incident-1.md",
+          "explicitHits": [],
+          "implicitHits": []
+        },
+        {
+          "id": "docs/incident-2.md",
+          "explicitHits": [
+            "/must be computed before the mutation that destroys the dependency edges/iu",
+            "/a dependency closure must be computed before the mutation/iu"
+          ],
+          "implicitHits": []
+        },
+        {
+          "id": "src/ledger.mjs#prior-art",
+          "explicitHits": [
+            "/compute the complete affected set while the edges still existed/iu",
+            "/COMPUTE THE CLOSURE FIRST, over the intact edges/iu"
+          ],
+          "implicitHits": [
+            "/only the DIRECT dependents were ever cleared/iu"
+          ]
+        },
+        {
+          "id": "README.md",
+          "explicitHits": [],
+          "implicitHits": []
+        }
+      ],
+      "explicitSomewhere": true,
+      "implicitSomewhere": true,
+      "capitalMethodSteps": 5,
+      "capitalOrderedMethodPresent": true,
+      "rawHasOrderedMethod": false,
+      "wordingDifferenceIsNotNovelty": true
+    }
+  ],
+  "effectLayers": [
+    {
+      "layer": "Artifact Continuity",
+      "what": "the project world, Work, Attempt, Result, Verification, Promotion, intent and receipts survive across process boundaries",
+      "testedByR3L0": "YES — both arms have it",
+      "layerStatus": "CONTROL_CONDITION"
+    },
+    {
+      "layer": "Raw Historical Reconstruction",
+      "what": "the agent can read the project's own incident documents and prior-art code and reconstruct the lessons",
+      "testedByR3L0": "YES — both arms have it, and the H arm exercised it",
+      "layerStatus": "CONTROL_CONDITION"
+    },
+    {
+      "layer": "Governed Capitalization",
+      "what": "admitted, associated, selected, visible and consumed capital delivering a frozen lesson",
+      "testedByR3L0": "YES — this is the marginal treatment",
+      "layerStatus": "TREATMENT"
+    },
+    {
+      "layer": "Organic Compounding",
+      "what": "the system generating its own new capital from its own experience and compounding it unaided",
+      "testedByR3L0": "NO — explicitly out of scope",
+      "layerStatus": "NOT_TESTED"
+    }
+  ],
+  "causalStatus": {
+    "capitalDeliveryEffect": {
+      "status": "CLOSED",
+      "basis": "every CAPITALIZED generation had all six handles visible at the consumer boundary and all six governed pulls resolved to a canonical owner body"
+    },
+    "capitalUptakeEffect": {
+      "status": "CLOSED",
+      "basis": "12 of 12 capitalized generations reached the CONSUMED state, with no exposed generation without consumption"
+    },
+    "perrUtilityEffect": {
+      "status": "NON_DISCRIMINATING",
+      "basis": "HISTORY_ONLY reached PERR = 0.000 in all four blocks, so the treatment had no room to reduce repeated prepaid errors further"
+    },
+    "costEffect": {
+      "status": "DESCRIPTIVE_PAIRED_SIGNAL",
+      "direction": "HIGHER",
+      "inputDeltaBlocksHigher": 3,
+      "inputDeltaBlocksLower": 1,
+      "outputDeltaBlocksHigher": 3,
+      "outputDeltaBlocksLower": 1,
+      "note": "this is a post-hoc descriptive paired signal, NOT a preregistered primary endpoint"
+    },
+    "historyMediation": {
+      "HGenerationsAccessingRawHistory": 12,
+      "HGenerationsTotal": 12,
+      "CGenerationsAccessingRawHistory": 12,
+      "CGenerationsTotal": 12,
+      "status": "OBSERVED_IN_BOTH_ARMS",
+      "note": "both arms accessed raw history, so capital did not REPLACE raw-history use; the tool-order data cannot establish mediation"
+    },
+    "capitalOverheadObserved": true
+  },
+  "genericPriorLimitation": {
+    "statement": "L1 and L2 are broadly recognizable engineering principles: \"validate before you mutate\" and \"compute the closure before you destroy the edges\" are stated in ordinary engineering practice.",
+    "permittedConclusion": "BASE_MODEL_PRIOR IS A PLAUSIBLE ALTERNATIVE EXPLANATION",
+    "forbiddenConclusion": "the base-model prior CAUSED the HISTORY_ONLY success",
+    "whyForbidden": "separating the prior from raw-history reading requires a NO-HISTORY treatment, which this stage is not permitted to add",
+    "noHistoryArmAdded": true
+  },
+  "recommendation": {
+    "chosen": "PROJECT_SPECIFIC_RECONSTRUCTION_PRESSURE",
+    "evidenceBasis": {
+      "perrNonDiscriminating": true,
+      "lessonsExplicitInRawHistory": true,
+      "rawHistoryWasAccessedByBothArms": true,
+      "capitalOverheadPresent": true,
+      "capitalOverheadSystematicEnoughForReductionFirst": true,
+      "note": "the unresolved issue is that the lessons are generic and the raw history is easy to recover, so the control had no floor; overhead exists but is not established as harmful"
+    },
+    "rejected": {
+      "CAPITAL_OVERHEAD_REDUCTION": "overhead is observed but not shown to be harmful, and reducing it would not make the PERR effect identifiable",
+      "ORGANIC_COMPOUNDING_READY": "the data do not support a meaningful incremental capital benefit, because the control already reached the floor",
+      "STOP_AND_RETHINK": "the treatment/control distinction IS causally interpretable — the digest audit proves the treatment is selection-only — so the design is sound and the difficulty is the problem"
+    }
+  },
+  "designLaw": {
+    "id": "PROJECT_SPECIFIC_RECONSTRUCTION_PRESSURE_DESIGN_LAW",
+    "appliesTo": "future historical lessons in any successor stage",
+    "requirements": [
+      "project-specific rather than generic engineering maxims",
+      "recoverable from complete raw Project history",
+      "non-obvious from base-model prior alone as far as reasonably designable",
+      "compressible into governed capital",
+      "exposed under bounded history/search pressure",
+      "evaluated on reconstruction cost and reliability, not merely full-solve accuracy"
+    ],
+    "prohibitions": [
+      "do not tune future lessons against individual DeepSeek failures",
+      "do not author a new fixture in this stage"
+    ],
+    "why": "R3-L0 showed that generic maxims recoverable from a short raw history give the control no floor to fall from, so the marginal effect of governed capitalization cannot be identified"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_IDENTITY_CONFLICT_HISTORY",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "p2aWeakness": "the P2-A per-invocation tracker holds two slots (sessionId + conflictingSessionId), so a THIRD distinct identity for one invocation is lost (F6)",
+  "p2bModel": "one durable record per distinct (projectId, attemptId, invocationId, dshSessionId); conflict is a PROJECTION over the complete accepted observation set",
+  "properties": [
+    "no last-write-wins",
+    "no first-wins",
+    "an observation is never discarded merely because it differs from an earlier one",
+    "a conflicting Invocation yields no unique verified SessionId",
+    "conflicts remain conflicts after a restart"
+  ],
+  "observed": {
+    "threeDistinctIdentitiesAllPreserved": true,
+    "threeCandidatesVisibleAfterRestart": true,
+    "twoCandidatesVisibleAfterRestart": true,
+    "distinctInvocationsUnderOneAttemptPreserved": true
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "ALL_CANDIDATES_PRESERVED"
+}

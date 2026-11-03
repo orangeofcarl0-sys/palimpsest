@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "kind": "TRAJECTORY_P2E1_JUNCTION_SCAN_FAILURE",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "scanType": "discriminated union {state:COMPLETE,links} | {state:INCOMPLETE,errors}",
+  "unreadableSubtreeYieldsIncomplete": true,
+  "incompleteBlocksDeletion": true,
+  "emptyScanNotReportedAsComplete": true,
+  "method": "findDescendantReparsePoints against a non-existent nested root returns INCOMPLETE with errors; safeCleanup short-circuits on INCOMPLETE"
+}

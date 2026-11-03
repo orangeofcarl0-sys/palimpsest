@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_SINGLE_READ_DURABILITY",
+  "law": "observedEvents = storedEvents + interruptedTurnClosers(storedEvents)",
+  "evidenceClass": "PASS_REAL_DSH_NO_MODEL",
+  "sourceFiles": [
+    "scripts/trajectory_v0/dsh-session-reader.mjs",
+    "test/trajectory_h1_durability.test.ts"
+  ],
+  "actualMethod": "open one official read handle; handle.read(0, undefined); derive closers with the installed interruptedTurnClosers over THAT array; classify each event by its position in the resulting array",
+  "officialApisUsed": [
+    "SessionPersistence.open(id, \"read\")",
+    "SessionHandle.read(0, undefined)",
+    "SessionHandle.header",
+    "SessionHandle.inheritedEventCount",
+    "SessionHandle.close()",
+    "interruptedTurnClosers(events) from @deepseek-ai/dsh-session"
+  ],
+  "removedDependency": "readColdSessionLog from @deepseek-ai/dsh-session-query is no longer imported at all, and the second readStoredPrefix comparison is gone",
+  "realStoredEventCounts": {
+    "h1-balanced": 8,
+    "h1-interrupted": 2,
+    "h1-parity": 2,
+    "h1-concurrent": 2,
+    "h1-inherited": 5,
+    "h1-readonly": 2
+  },
+  "syntheticRecoveryCounts": {
+    "h1-balanced": 0,
+    "h1-interrupted": ">0 (exact closers depend on the open step)",
+    "h1-concurrent first read": ">0"
+  },
+  "forkInheritance": "a supported buildForkSeed child: inheritedEventCount=2, isSeeded=true, parentSession recorded, inherited seqs 0..1 marked inherited, forked closers at seq>=2 NOT inherited and carrying the forked cause",
+  "concurrentMutationControl": "test S4 appends to the same session AFTER the first read; the first page is unchanged (persistedEventCount stays 2 and its synthetic seq set is identical), and a fresh read observes the new balanced state (persistedEventCount 4, 0 synthetic)",
+  "errorBehaviour": "SESSION_MISSING for an absent session; a corrupted artifact yields a non-READ_OK state with zero events and a null known count, never an empty success; close() is idempotent",
+  "readOnlyVerification": "sha256+size of the session artifact is identical before and after the diagnostic reads (S1, S7)",
+  "resourceCleanup": "each read opens and closes its own handle; close() disposes the Cordis fiber; five sequential reads leave the source unchanged (S7)",
+  "invariant": "every storedEvents entry is classified from the persistence read that produced it; every event from interruptedTurnClosers is synthetic; no later independent storage count determines the boundary",
+  "verdict": "PASS — one-read derivation established and measured byte-parity with the official cold read",
+  "limitations": [
+    "Node v24.14.1 is below the repository-declared engines minimum of >=24.15.0; the runtime acceptance result is qualified accordingly",
+    "crash durability is NOT claimed: PERSISTED_DSH_EVENT means read back from the stored log, not a proven flush barrier"
+  ]
+}

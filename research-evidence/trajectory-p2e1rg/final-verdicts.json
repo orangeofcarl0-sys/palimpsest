@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RG_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-E1RG",
+  "evidenceClass": "DERIVED_FROM_THE_ABOVE",
+  "runId": "d5ef046f-abe1-4fc7-b752-7bf705e475ac",
+  "verdicts": {
+    "RG_A_HOST_PRECREATE_ADMISSION_QUALIFIED": "QUALIFIED",
+    "RG_B_KERNEL_COVERAGE_AND_TREE_VERIFICATION_QUALIFIED": "QUALIFIED",
+    "RG_C_CONFIDENTIAL_CAPACITY_ATOMICITY_QUALIFIED": "QUALIFIED",
+    "RG_D_HOST_ADMISSION_EVIDENCE_QUALIFIED": "QUALIFIED",
+    "RG_E_HOST_CONFIDENTIAL_EXECUTION_REQUALIFIED": "QUALIFIED",
+    "TRAJECTORY_DSH_MEASUREMENT_CHAIN_PRESERVED": "QUALIFIED"
+  },
+  "scope": {
+    "testedRuntime": {
+      "node": "24.22.0",
+      "platform": "win32",
+      "arch": "x64",
+      "dsh": "0.2.1-rc.2",
+      "abi": "3.1.1"
+    },
+    "explicitlyNotGeneralized": "The verdicts are scoped to this tested runtime. The CWD semantics, the pre-step instruction discovery and the Win32 binding seam were qualified against DSH 0.2.1-rc.2 only.",
+    "notAwarded": {
+      "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+      "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+      "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+      "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+      "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+      "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+      "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED",
+      "CONTROL_BASELINE_TECHNICALLY_READY": "NOT_ESTABLISHED"
+    },
+    "notAwardedReason": "A deterministic adapter emitting a correct answer is not evidence of model reasoning or utility. No stochastic trial and no external model request occurred in this stage."
+  },
+  "basis": {
+    "RG_A": "pre-create controls 13/13; focused admission true",
+    "RG_B": "kernel controls 14/14; probe PROTECTED_ONLY_BY_THE_LABEL; canary leaked in production false; R1-HR fails 0",
+    "RG_C": "capacity controls 13/13; parent grants 6; corrected grants 1",
+    "RG_D": "focused admission true; R1-HR admission true; R1-HC admission true; artifacts hashed 8",
+    "RG_E": "all components true",
+    "TRAJECTORY": "delegation matrix closed true; closure CLOSURE_ESTABLISHED"
+  },
+  "disclosedLimits": [
+    "HR-17: the pre-existing symlink fixture cannot be built on this host; the junction fixture exercises the same reparse mechanism",
+    "HR-39b: concurrently ACTIVE worlds are not isolated from each other's raw code",
+    "HR-33: sibling world NAMES are enumerable because the worlds parent is an ancestor of the world",
+    "HC-27: parallel ACTIVE confidential workers are unsupported; the profile serializes them",
+    "Excluded test: test/r3l0ciarlcf_gates.test.ts, known unsafe against a shared working tree; its exclusion predates this stage",
+    "The ancestor-root probe establishes protection for a PRODUCTION-SHAPED fixture. It does not enumerate every possible layout a deployment might create."
+  ]
+}

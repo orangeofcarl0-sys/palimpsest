@@ -26,6 +26,8 @@ import { composeProjectIntentCapability } from "./composition/project_intent.js"
 import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import { composeProcedureCapability } from "./composition/procedures.js";
+import { composeContinuityCapability } from "./composition/continuity.js";
+import { composeExecutionAssociationCluster, type ExecutionAssociationInstallOptions, type ExecutionAssociationInstallResult } from "./composition/execution_association.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -33,10 +35,22 @@ export { defaultAllocateActivationId, trustedDefaultPolicy };
 // existing import path keeps working.
 export * from "./composition/install_contract.js";
 
+/**
+ * Trajectory-P2-C §7.7: the install OPTIONS and RESULT are widened HERE rather than in
+ * `install_contract.ts`, which sits at its recorded §22 hotspot ceiling (700 LOC). Adding two `extends`
+ * clauses pushed it over; the correct response to a size ratchet is to keep the aggregate contract at its
+ * ceiling and attach the new cohesive contract at the point of use, which is what these aliases do.
+ */
+export type PalimpsestInstallOptions = InstallPalimpsestOptions & ExecutionAssociationInstallOptions & {
+  /** PC1 S02-R01: the advertised tool catalogue tier (presentation only). */
+  toolProfile?: "legacy" | "normal" | "expert" | "all" | undefined;
+};
+export type InstalledPalimpsestWithTrajectory = InstalledPalimpsest & ExecutionAssociationInstallResult;
+
 export function installPalimpsest(
   context: DshPluginContext,
-  options: InstallPalimpsestOptions,
-): InstalledPalimpsest {
+  options: PalimpsestInstallOptions,
+): InstalledPalimpsestWithTrajectory {
   // §12: the core substrate is composed by an explicit typed function; the rest of this
   // file only decides which capabilities to compose and how to assemble the result.
   const core = composeCore({
@@ -49,6 +63,7 @@ export function installPalimpsest(
     execution: options.execution,
     ...(options.concurrency === undefined ? {} : { concurrency: options.concurrency }),
     standard: options.standard,
+    ...(options.sourceIntakeAdmission === undefined ? {} : { sourceIntakeAdmission: options.sourceIntakeAdmission }),
     /**
      * PLMP-LEAN-1 §2.1 / 2A-Q + §D2-LIVE: what this deployment can actually do.
      *
@@ -273,17 +288,84 @@ export function installPalimpsest(
   const delegation = composeDelegationCapability({
     options,
     reasoning: reasoningCellsInstalled?.service,
+    projectBasis: () => {
+      const ir = controller.work.project();
+      return { projectRevision: ir.revision, projectDigest: ir.digest, headCommit: ir.head_commit };
+    },
   });
+
+  /*
+   * Trajectory-P2-C §7: THE EXECUTION-ASSOCIATION CLUSTER.
+   *
+   * ONE composition module owns the whole of P2-C's wiring — the host-derived Work Worker Port, the
+   * durable store, the trusted recorder, the source-verifying qualifier, the official DSH reader and the
+   * read-only attributed Preview. Keeping it in `src/composition/` is what lets this file remain a
+   * COMPOSITION ROOT (§25 A03): bounded fan-out, no direct capability-family imports.
+   *
+   * It is composed BEFORE the continuation cluster because the delegation service consumes its recorder.
+   * §7.2: composing it starts NOTHING — no worker, no attempt, no model, no continuation.
+   */
+  const executionAssociationCluster = composeExecutionAssociationCluster({
+    options: {
+      projectId: options.projectId,
+      databasePath: options.databasePath,
+      workWorkerBin: options.workWorkerBin,
+      workWorkerProfile: options.workWorkerProfile,
+      workWorkerTimeoutMs: options.workWorkerTimeoutMs,
+      executionAssociationSourceKind: options.executionAssociationSourceKind,
+      dshHomePath: options.dshHomePath,
+      dshSessionsRoot: options.dshSessionsRoot,
+      sessionReaderModule: options.sessionReaderModule,
+      workWorkerPort: options.workWorkerPort,
+      ...(options.historicalEpochs === undefined ? {} : { historicalEpochs: options.historicalEpochs }),
+      /**
+       * Trajectory-P2-D1 §11.5: the EXPERIMENTAL Attempt-bound delivery, DEFAULT OFF. Passed through only
+       * when the deployment enabled it, so a default deployment composes exactly what it did before.
+       */
+      ...(options.experimentalTrajectoryContextDelivery === undefined ? {} : { experimentalTrajectoryContextDelivery: options.experimentalTrajectoryContextDelivery }),
+      ...(options.trajectoryCapsuleMaxSerializedBytes === undefined ? {} : { trajectoryCapsuleMaxSerializedBytes: options.trajectoryCapsuleMaxSerializedBytes }),
+      /** Trajectory-P2-D2 §7/§8: the experimental presentation ARM and section budget, DEFAULT OFF. */
+      ...(options.trajectoryPresentationMode === undefined ? {} : { trajectoryPresentationMode: options.trajectoryPresentationMode }),
+      ...(options.trajectorySectionMaxBytes === undefined ? {} : { trajectorySectionMaxBytes: options.trajectorySectionMaxBytes }),
+      /**
+       * P2-D0 §8.3: the cross-owner reads the T0 project-evolution projection consumes, so the attributed
+       * Preview presents the real projection rather than an empty one. These are the SAME owners the V0
+       * trajectory composition uses; an absent owner is reported by the projection's own basis vector.
+       */
+      trajectoryOwners: {
+        reasoning: reasoningCellsInstalled?.service,
+        proof,
+        projectWorkspace,
+        journalStore: options.projectJournalStore,
+        associationStore: options.projectAssociationStore,
+      },
+    },
+    store,
+    controller,
+  });
+  const { workWorkerPortFactory, recorder: executionAssociationRecorder, sessionSourceQualification, trajectory } = executionAssociationCluster;
+
+  /**
+   * Trajectory-P2-D1 §11.5: bind the EXPERIMENTAL Attempt-bound Capsule delivery provider, when the
+   * deployment enabled it. DEFAULT OFF: with the option absent or false, `trajectoryCapsuleDelivery` is
+   * undefined and nothing is bound, so the worker context is byte-identical to production.
+   */
+  if (executionAssociationCluster.trajectoryCapsuleDelivery !== undefined) {
+    core.trajectoryCapsuleDelivery.bind(executionAssociationCluster.trajectoryCapsuleDelivery);
+    /**
+     * P2-E1 §10.1: bind the TRUSTED ARM from the SAME frozen configuration. It is bound independently of the
+     * provider so the Context Owner's error path reports the real arm (a CONTROL failure stays CONTROL) rather
+     * than guessing one. `trajectoryPresentationMode` is trusted configuration the model cannot reach.
+     */
+    core.trajectoryAssignedArm.bind(options.trajectoryPresentationMode ?? "OFF");
+  }
 
   /*
    * PLMP-LEAN-1 §D5-d: the PACKAGED RESULT CONTINUATION composition.
    *
-   * It is composed LAST among the capability clusters, in the order the ruling
-   * fixed: core → governance/verification → work delegation → continuation —
-   * because it consumes the already-composed world observation, basis runtime,
-   * verification seams, controller reads and (optionally) the D2-d worker port.
-   * The D3 authority stores it creates are closed by the install lifecycle via
-   * `ownedResources`; there is deliberately NO continuation store of its own.
+   * It is composed AFTER the association cluster because the delegation service consumes its recorder,
+   * and in the order the ruling fixed: core → governance/verification → work delegation → continuation.
+   * The D3 authority stores it creates are closed by the install lifecycle via `ownedResources`.
    */
   const continuationCluster = composeContinuationCapability({
     options: {
@@ -291,7 +373,9 @@ export function installPalimpsest(
       repository,
       databasePath: options.databasePath,
       ...(options.clock === undefined ? {} : { clock: options.clock }),
-      workWorkerPort: options.workWorkerPort,
+      workWorkerPort: workWorkerPortFactory,
+      ...(executionAssociationRecorder === undefined ? {} : { sessionIdentityRecorder: executionAssociationRecorder }),
+      sessionSourceQualification,
     },
     store,
     controller,
@@ -413,6 +497,26 @@ export function installPalimpsest(
     clock: options.clock,
   });
 
+  /*
+   * PC1 S03/S06: the DERIVED continuity and domain-outcome composition. It reads the existing Work
+   * owner, workspace/journal and promotion facts, and owns nothing; install.ts only decides to
+   * compose it.
+   */
+  const { continuity, domainOutcome, contribution, pulse } = composeContinuityCapability({
+    projectId: options.projectId,
+    controller: {
+      project: () => controller.work.project(),
+      status: () => controller.status(),
+      plan: (input) => controller.plan(input),
+      promotionFacts: () => controller.promotions.promotionFactsSync(),
+    },
+    projectWorkspace,
+    ...(delegation === undefined ? {} : { delegation }),
+    ...(options.repository === undefined ? {} : { repository: options.repository }),
+    ...(options.clock === undefined ? {} : { clock: options.clock }),
+    operatorIntentAdmission: options.projectIntentAdmission !== undefined,
+  });
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -425,6 +529,10 @@ export function installPalimpsest(
     collaborationService: collaboration,
     crossProjectService: crossProject,
     delegationService: delegation,
+    continuity,
+    domainOutcome,
+    ...(contribution === undefined ? {} : { contribution }),
+    ...(pulse === undefined ? {} : { pulse }),
     assemblyOptions: options,
   });
   const { application, tools } = assembly;
@@ -479,6 +587,10 @@ export function installPalimpsest(
       // compatibility issuances, cross-basis admissions, derived candidates). There is deliberately no
       // continuation store: the service is a stateless orchestrator and owns nothing.
       ...continuationCluster.ownedResources,
+      // Trajectory-P2-C §7.5: the execution-association store and the mounted DSH session reader. Both
+      // were created by THIS install (unless the caller supplied its own store), so this install closes
+      // them — after the controller and the log, in the recorded order.
+      ...executionAssociationCluster.ownedResources,
     ]),
   });
 
@@ -524,6 +636,11 @@ export function installPalimpsest(
     ...(verification === undefined ? {} : { verification }),
     ...(monitor === undefined ? {} : { monitor }),
     ...(externalAssets === undefined ? {} : { externalAssets }),
+    // Trajectory-P2-C §7.7: the read-only attributed Preview surface, and the recorder the host wires.
+    ...(trajectory === undefined ? {} : { trajectory }),
+    ...(executionAssociationRecorder === undefined ? {} : { executionAssociationRecorder }),
+    ...(executionAssociationCluster.qualifier === undefined ? {} : { executionAssociationQualifier: executionAssociationCluster.qualifier }),
+    ...(workDelegation === undefined ? {} : { workDelegation }),
     register: lifecycle.register,
     dispose: () => lifecycle.dispose(),
   };

@@ -1,0 +1,24 @@
+R3-S0 GATE S1 — STRUCTURAL GRAPH AUDIT
+
+PASS  SG-01  [required owner]  every lineage node names a canonical owner module that exists in the compiled tree
+        25 nodes across 4 lineages
+PASS  SG-02  [required project scope]  every project-scoped node names an owner, and each unscoped node declares WHY it is not project-scoped
+        22 project-scoped, 3 unscoped (each with a stated reason)
+PASS  SG-03  [required basis/authority]  every authority-bearing node names a real decision, policy or eligibility rule
+        11 authority-bearing node(s): Attempt<-resolveAttemptAuthorization, Promotion<-promotion eligibility (verified re, Admission<-an admission/verification policy d, FutureSelection<-the Context owner revalidates the , Need<-a need admission decision (NeedAdm, Commitment<-a durable need AND a prior cont
+PASS  SG-04  [orphan durable objects]  every declared durable event family is owned by at least one lineage node
+        7 families, all owned
+PASS  SG-05  [illegal missing predecessor]  each lineage is a linear chain and each authority-bearing node has a predecessor it depends on
+        WORK: Project -> Work -> Attempt -> Result -> Verification -> Promotion -> ProjectWorld | KNOWLEDGE: CognitiveCandidate -> Admission -> AssetRevision -> ProjectAssetAssociation -> FutureSelection | COLLABORATION: ProjectReality -> Need -> Commitment -> SovereignRemoteWorkRef -> Fulfillment -> LocalA
+PASS  SG-06  [ambiguous ownership]  no node is declared twice within a lineage, and no node has two owners
+        each node has exactly one owner per lineage
+PASS  SG-07  [mutation without receipt]  every receipt-bearing mutation is ordered after its receipt in its lineage
+        WORK: ProjectWorld after Promotion | KNOWLEDGE: FutureSelection after Admission | EVOLUTION: RevisedIntent/Organization/Runtime after RevisionReceipt | COLLABORATION: LocalContinuation after LocalAdoption
+PASS  SG-08  [registry agreement]  every orchestration event type the contract declares exists in EVENT_TYPES, and every coordination type has a registered parser
+        37 orchestration types, 21 coordination parsers, all declared types present
+PASS  SG-09  [producer/consumer completeness]  every durable event family names a producer, a consumer and a retry/reconciliation rule
+        7 families complete
+PASS  SG-10  [no invented event types]  the contract invents no event type: every orchestration type it names is in the canonical registry
+        no invented types
+
+§"Canonical graph audit": 10/10 invariant(s) PASS. No aggregate score is produced, by design.

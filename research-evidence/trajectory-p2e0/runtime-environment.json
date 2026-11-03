@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_RUNTIME_ENVIRONMENT",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "readOnly": true,
+  "modelCallsMade": 0,
+  "os": {
+    "platform": "win32",
+    "release": "MINGW64_NT-10.0-26200 orangeofcarl0 3.6.6-1cdd4371.x86_64 2026-01-15 22:20 UTC x86_64 Msys",
+    "arch": "x64"
+  },
+  "node": {
+    "version": "v24.14.1",
+    "execPath": "<local-path> Files\\nodejs\\node.exe",
+    "declaredEngine": ">=24.15.0",
+    "meetsDeclaredEngine": false,
+    "alternativesAvailable": {
+      "fnm": null,
+      "nvmDir": "absent"
+    }
+  },
+  "pnpm": null,
+  "git": "git version 2.53.0.windows.2",
+  "dsh": {
+    "version": "0.2.0-rc.2",
+    "installedModules": "<local-path>",
+    "present": true
+  },
+  "filesystem": {
+    "repoRoot": "<local-path>",
+    "dshProfileModules": {
+      "present": true,
+      "entries": 125,
+      "reparsePoints": 98
+    },
+    "repoNodeModules": {
+      "present": true,
+      "entries": 17,
+      "reparsePoints": 5
+    },
+    "gateRoot": "<local-path>",
+    "gateRootSweep": {
+      "present": true,
+      "leakedRoots": 22,
+      "leakedBytes": 5135186645,
+      "reparsePoints": 10
+    }
+  },
+  "disk": [
+    {
+      "filesystem": "F:",
+      "sizeKb": 234427488,
+      "usedKb": 116537680,
+      "availableKb": 117889808,
+      "usePercent": "50%"
+    }
+  ],
+  "relevantEnv": {
+    "DSH_HOME": null,
+    "PALIMPSEST_P2E0_GATE_ROOT": null,
+    "PALIMPSEST_P2B_GATE_ROOT": null,
+    "PALIMPSEST_DSH_BIN": null,
+    "TEMP": "<local-path>",
+    "USERPROFILE": "<local-path>"
+  },
+  "note": "§3.3: Node is below the declared engine minimum where that is true; no alternative runtime was installed (the ruling forbids modifying global user runtime configuration without authorization). The DSH profile module tree is almost entirely junctions — the exact hazard the P2-D2 cleanup followed."
+}

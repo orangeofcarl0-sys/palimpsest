@@ -440,8 +440,10 @@ describe("G10-AE-R agent tool scope isolation", () => {
     expect(Array.isArray(listed)).toBe(true);
     expect((listed as readonly { readonly projectId: string }[]).every((a) => a.projectId === PROJECT_A)).toBe(true);
     assertNoB(listed, "palimpsest_project action=assets");
-    // No global-enumeration action was added.
-    expect(toolActions("palimpsest_project")).toEqual(["overview", "assets", "open_loops", "history", "decision", "journal"]);
+    // No global-enumeration action was added. `journal_entries` is a PROJECT-SCOPED
+    // read added by COG-1: it delegates to `ProjectWorkspaceApplicationSurface.journal()`,
+    // which refuses any project but the installed one.
+    expect(toolActions("palimpsest_project")).toEqual(["overview", "assets", "open_loops", "history", "journal_entries", "decision", "journal"]);
   });
 
   it("AER-N08b (gate review MINOR-2): a foreign projectId is REFUSED, never silently ignored", async () => {
@@ -449,7 +451,7 @@ describe("G10-AE-R agent tool scope isolation", () => {
     // installed project's data, so a caller naming project-B could not tell the scope
     // had been ignored — spec §15's "hide the violation" shape. The tool now refuses.
     const definition = tool("palimpsest_project");
-    for (const action of ["overview", "assets", "open_loops", "history"]) {
+    for (const action of ["overview", "assets", "open_loops", "history", "journal_entries"]) {
       await expect(
         definition.execute({ action, projectId: PROJECT_B }, {} as never),
         `palimpsest_project ${action}`,

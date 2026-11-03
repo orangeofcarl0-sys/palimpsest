@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_FINAL_VERDICTS",
+  "stage": "Palimpsest Host-S1RA",
+  "measuredAt": "2026-10-24T18:25:45.184Z",
+  "codeFreezeHead": "0ef556e316673b206bec6812ae5b7754250ee31b",
+  "verdicts": {
+    "raA": {
+      "verdict": "SHARED_DEPENDENCY_INTEGRITY_QUALIFIED",
+      "basis": [
+        "no unsafe write through an existing junction: every destination is classified with lstat and only ABSENT is creatable (controls 7-10)",
+        "fail-closed handling of broken and unexpected destinations: one refusal fails the whole operation with MODULE_SHARING_NOT_ESTABLISHED",
+        "correct runtime module resolution: the module graph resolves through per-entry junctions (control 2)",
+        "dependency-integrity preservation across tests: 7 of 7 invariants unchanged, and .bin kept all 12 entries"
+      ],
+      "evidence": [
+        "baseline-environment-falsifiers.json F1,F2",
+        "test/gate_root_storage_discipline.test.ts controls 1-10"
+      ]
+    },
+    "raB": {
+      "verdict": "TEST_RESOURCE_LIFECYCLE_QUALIFIED",
+      "basis": [
+        "cleanup limited to verified owned roots, with identity and marker re-proved immediately before deletion (controls 11-16)",
+        "correct retry behaviour: a failed deletion stays retryable and the first reason is preserved (RA-0/F4)",
+        "signal listeners properly managed: dispose() removes exit, SIGINT and SIGTERM (control 13, RA-0/F5)",
+        "no deletion of unowned or uncertain assets: a replaced path, a reparse point and an outside path are all preserved",
+        "reaper refusal when ownership is not established: a marker must name ITS OWN root and its owner must not be running (controls 17-21)"
+      ],
+      "evidence": [
+        "baseline-environment-falsifiers.json F3,F4,F5,F6",
+        "test/gate_root_storage_discipline.test.ts controls 11-22"
+      ]
+    },
+    "raC": {
+      "verdict": "HISTORICAL_EVIDENCE_LINEAGE_RESTORED",
+      "basis": [
+        "original Host-S1 evidence blobs restored byte-identically: 1209f76... and a553c1c...",
+        "Host-S1R evidence kept separately, with the earlier executions preserved under earlier-execution/",
+        "forward-only corrective history: no commit amended, no history rewritten",
+        "no protected 52-tree modification: 52 of 52 unchanged"
+      ],
+      "evidence": [
+        "commit 0a67a26",
+        "scripts/host_s1/verify-protected-evidence.mjs"
+      ]
+    },
+    "raD": {
+      "verdict": "LATEST_EXECUTABLE_TREE_NOT_REQUALIFIED",
+      "basis": [
+        "a new committed Code Freeze exists: 0ef556e",
+        "the non-gate suites executed against it and passed: 1439 of 1439 suites, 3690 of 3690 tests",
+        "build, architecture:check and check-public-api all pass",
+        "the AFFECTED LIVE GATES did NOT execute: every one refuses at pre-create on kernel-drift"
+      ],
+      "blocker": {
+        "kind": "kernel-drift",
+        "resolved": "0.2.1-rc.3",
+        "qualified": "0.2.1-rc.2",
+        "source": "host/dsh/lib/runner.js pre-create refusal",
+        "artifact": "gate-execution-blocker.json"
+      },
+      "whyNotForced": "raising qualifiedVersion would assert a qualification never performed; downgrading the runtime would change the user's global installation; disabling the drift check would remove the protection it exists to provide"
+    },
+    "raE": {
+      "verdict": "REAL_runtime_HOME_BOUNDARY_ADJUDICATED",
+      "basis": [
+        "the real path relationship is established: ~/.dsh is a junction to D:/dsh",
+        "the relevant protection basis is established: neither the link nor the target carries an observable Mandatory Label",
+        "the synthetic first-party behaviour is established: a labelled target refuses the session canary while the runtime dependency stays readable",
+        "the limit of non-destructive observation is stated: absence of a label cannot be distinguished from an unreadable label without a descriptor write"
+      ],
+      "separateClaim": {
+        "verdict": "REAL_runtime_HOME_CONTENT_BOUNDARY_NOT_ESTABLISHED",
+        "reason": "establishing it requires a descriptor write on the real target, which §7.1 forbids"
+      },
+      "evidence": [
+        "dsh-home-boundary-adjudication.json"
+      ]
+    },
+    "integrated": {
+      "verdict": "HOST_S1RA_ENGINEERING_INTEGRITY_NOT_QUALIFIED",
+      "reason": "RA-D does not hold. The engineering-integrity corrections themselves are qualified and every non-gate test passes, but the stage's own rule is that the affected gates must execute against the Code Freeze, and they cannot on this runtime.",
+      "heldBackBecause": "awarding it would report a qualification the run did not measure"
+    },
+    "trajectoryMeasurement": {
+      "verdict": "TRAJECTORY_runtime_MEASUREMENT_CHAIN_NOT_RECONFIRMED",
+      "reason": "the deterministic CONTROL/TREATMENT closure runs the same workers that refuse at pre-create; no model request is authorized in this stage in any case",
+      "noStochasticClaim": true
+    }
+  },
+  "strongerClaims": {
+    "status": "NOT_ESTABLISHED",
+    "items": [
+      "a Tool-capable stochastic Worker is permitted on this machine's production profile",
+      "the real runtime Home's contents are confidential against a Low-integrity process",
+      "the installed 0.2.1-rc.3 seam is ABI-compatible with the 0.2.1-rc.2 qualification"
+    ]
+  },
+  "modelCallsMade": 0,
+  "externalModelRequests": 0,
+  "protectedTreesUnchanged": 52
+}

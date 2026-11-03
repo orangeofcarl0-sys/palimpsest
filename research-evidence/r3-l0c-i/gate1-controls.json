@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I",
+  "kind": "gate 1 negative controls",
+  "controls": [
+    {
+      "id": "RUN_ID_REPLAY_GUARD",
+      "defect": "a second run with the same exposed runRoot launched every session again",
+      "fixedBy": "an exclusive run-root claim, checked before any launch",
+      "verdict": "CLOSED"
+    },
+    {
+      "id": "EMPTY_OBJECT_NOT_OK",
+      "defect": "classifyOutcome({}) returned OK, a default-to-success path",
+      "fixedBy": "the admission schema requires explicit evidence; an empty outcome is UNCLASSIFIABLE",
+      "verdict": "CLOSED"
+    },
+    {
+      "id": "VALIDITY_GATE_REQUIRED",
+      "defect": "an omitted validityGate silently produced MATRIX_COMPLETE",
+      "fixedBy": "the parameter has no default and its absence is refused before any claim or launch",
+      "verdict": "CLOSED"
+    }
+  ],
+  "RUN_ID_REPLAY_GUARD": "PASS",
+  "VALIDITY_GATE_REQUIRED": "PASS",
+  "emptyObjectDisposition": "UNCLASSIFIABLE",
+  "claimInspectionShape": [
+    "verdict",
+    "mayProceed",
+    "claim",
+    "exposureIntents",
+    "launches",
+    "journalExists",
+    "reason"
+  ]
+}

@@ -1,0 +1,208 @@
+/**
+ * Apply a durable event log to the store's current state.
+ *
+ * An append-only log is the source of truth for the replicated store. What a replica receives is
+ * whatever the transport delivered — not the log itself — so the delivered array may be reordered and
+ * it may repeat entries, because the log is durable. Two replicas that hold the same log must end up
+ * in the same state, so nothing here may depend on the order the array happened to arrive in.
+ *
+ * Replay is therefore a two-phase operation, and the phases are never interleaved:
+ *
+ *   1. REPLAY VALIDITY IS ESTABLISHED FIRST. The whole delivered history is read and normalized
+ *      before anything is written: every entry must be an event carrying a non-empty string id and
+ *      the non-negative integer `seq` the log assigned it, every operation must be one the log can
+ *      hold, no two entries may claim one log position with different content, and the positions
+ *      must be the log's own continuous sequence with no holes. Only a history that is a valid
+ *      replay reaches the commit, so a rejected history never touches the caller's object: the
+ *      caller keeps owning it and finds it exactly as it was.
+ *
+ *   2. EVENTS ARE APPLIED IN THE LOG'S OWN SEQUENCE ORDER — the `seq` positions the log assigned —
+ *      never in the order the array happened to arrive. An entity written at one position and
+ *      deleted at a later one therefore ends up in the state the log implies, on every replica. A
+ *      redelivered position is idempotent: the same event delivered twice describes nothing new.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+/** The keys a SET may carry its value under, in precedence order. */
+const VALUE_KEYS = ["v", "value", "payload", "data"] as const;
+
+/** The operations the log can hold; PUT is the log's spelling of an upsert. */
+const OPERATIONS = new Set(["SET", "PUT", "DELETE"]);
+
+const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const opOf = (event: Event): unknown => event.op ?? event.kind ?? "SET";
+
+const valueOf = (event: Event): unknown => {
+  for (const key of VALUE_KEYS) {
+    if (key in event) return (event as Record<string, unknown>)[key];
+  }
+  return null;
+};
+
+/**
+ * A total, order-insensitive rendering of a value, used only to tell "the same event again" from a
+ * contradiction. Two claims of one position describe the same event exactly when their renderings
+ * are equal, so key order inside a value cannot make a redelivery look like a conflict.
+ */
+const canonical = (value: unknown): string => {
+  if (value === null) return "null";
+  if (value === undefined) return "undefined";
+  if (typeof value === "number") return Number.isNaN(value) ? "NaN" : String(value);
+  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "boolean" || typeof value === "bigint") return String(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`).join(",")}}`;
+  }
+  return String(value);
+};
+
+/** One accepted log position, in the shape the commit step needs. */
+interface PlannedWrite {
+  readonly id: string;
+  readonly removed: boolean;
+  readonly value: unknown;
+  /** Identifies the event a position describes, so redeliveries can be recognized. */
+  readonly fingerprint: string;
+}
+
+/** Phase 1 — read and normalize the whole delivery. The caller's state is not touched. */
+const plannedHistory = (events: readonly Event[]): Map<number, PlannedWrite> => {
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the delivered history must be an array of events");
+  }
+
+  const byPosition = new Map<number, PlannedWrite>();
+  for (const raw of events as readonly unknown[]) {
+    if (!isPlainRecord(raw)) {
+      throw new StreamError("INVALID_EVENT", "every event must be an object");
+    }
+    const event = raw as Event;
+
+    if (typeof event.id !== "string" || event.id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+    const seq = event.seq;
+    if (typeof seq !== "number" || !Number.isInteger(seq) || seq < 0) {
+      throw new StreamError("INVALID_SEQUENCE", "every event must carry the non-negative integer seq the log assigned it");
+    }
+
+    const rawOp = opOf(event);
+    if (typeof rawOp !== "string") {
+      throw new StreamError("INVALID_OPERATION", "every event must carry a SET or DELETE op");
+    }
+    const operation = rawOp.toUpperCase();
+    if (!OPERATIONS.has(operation)) {
+      throw new StreamError("INVALID_OPERATION", `unsupported operation ${JSON.stringify(rawOp)}`);
+    }
+
+    const removed = operation === "DELETE";
+    const value = removed ? null : valueOf(event);
+    const fingerprint = removed
+      ? `DELETE ${canonical(event.id)}`
+      : `SET ${canonical(event.id)} ${canonical(value)}`;
+
+    const known = byPosition.get(seq);
+    if (known === undefined) {
+      byPosition.set(seq, { id: event.id, removed, value, fingerprint });
+    } else if (known.fingerprint !== fingerprint) {
+      // The log assigns each accepted event its own position, so two different events claiming one
+      // position contradict the log: the history cannot be replayed to a state the log implies.
+      throw new StreamError("CONFLICTING_SEQUENCE", `log position ${seq} is claimed by two different events`);
+    }
+    // An identical redelivery of a position describes nothing new: collapsing it is idempotent.
+  }
+
+  return byPosition;
+};
+
+/**
+ * Phase 2 — the log's positions are continuous: a replayable delivery covers 0..n-1 with no holes.
+ * A history that skips or starts past a position cannot be replayed onto the state the caller holds,
+ * because the replica cannot know the state the missing positions would have produced.
+ */
+const orderedPositions = (byPosition: Map<number, PlannedWrite>): number[] => {
+  const positions = [...byPosition.keys()].sort((left, right) => left - right);
+  for (let index = 0; index < positions.length; index += 1) {
+    if (positions[index] !== index) {
+      throw new StreamError("INCOMPLETE_LOG", `the delivered history is missing log position ${index}`);
+    }
+  }
+  return positions;
+};
+
+/** Phase 3a — prove the commit below cannot stop half-way, before it starts. */
+const ensureCommitCannotFail = (state: State, positions: readonly number[], byPosition: Map<number, PlannedWrite>): void => {
+  const checked = new Set<string>();
+  for (const position of positions) {
+    const write = byPosition.get(position) as PlannedWrite;
+    if (checked.has(write.id)) continue;
+    checked.add(write.id);
+    const descriptor = Object.getOwnPropertyDescriptor(state, write.id);
+    if (descriptor !== undefined) {
+      if (!descriptor.configurable && (write.removed || !descriptor.writable)) {
+        throw new StreamError("IMMUTABLE_ENTITY", `entity ${JSON.stringify(write.id)} cannot be updated`);
+      }
+    } else if (!Object.isExtensible(state)) {
+      throw new StreamError("IMMUTABLE_ENTITY", `entity ${JSON.stringify(write.id)} cannot be added`);
+    }
+  }
+};
+
+/** Phase 3b — commit the accepted history to the caller's own object, in the log's seq order. */
+const commit = (state: State, positions: readonly number[], byPosition: Map<number, PlannedWrite>): void => {
+  for (const position of positions) {
+    const write = byPosition.get(position) as PlannedWrite;
+    if (write.removed) {
+      delete state[write.id];
+      continue;
+    }
+    // Defined rather than assigned so every entity id — including ids such as "__proto__" that
+    // assignment would divert to the prototype — lands in the state as a real own key.
+    Object.defineProperty(state, write.id, {
+      value: write.value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+  }
+};
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (!isPlainRecord(state)) {
+    throw new StreamError("INVALID_STATE", "the caller's state must be an object keyed by entity id");
+  }
+
+  const byPosition = plannedHistory(events);
+  const positions = orderedPositions(byPosition);
+  ensureCommitCannotFail(state, positions, byPosition);
+
+  commit(state, positions, byPosition);
+  return state;
+}

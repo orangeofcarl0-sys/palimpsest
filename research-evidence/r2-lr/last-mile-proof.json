@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-LR",
+  "gate": "last-mile",
+  "boundary": "the durable DSH session artifact (the model-visible user message)",
+  "payloadIndexDigest": "07401ae9b637d5e3c2b4444663015be489cc6d896f6271491bf17496745061cf",
+  "sessionPromptDigest": "0f479a27f6826b6a92406626793487df42ccb4e80a18aa7113bd91d643be7deb",
+  "sessionArtifactDigest": "2cf220d71a0ef1af4f73d8b69589b1582dacb1cde3702a611cc752ac5cf471c3",
+  "handlesInPayload": [
+    "@ctx/proof/pc-c8389fb1e57f6ec8901885b49d003463",
+    "@ctx/reasoning/cell-marker/cl-14fbdb41d94532e860282885",
+    "@ctx/procedure/prc-6d693b48b4eb78505b1c0ceceb6a93f2/0"
+  ],
+  "handlesInPrompt": [
+    "@ctx/proof/pc-c8389fb1e57f6ec8901885b49d003463",
+    "@ctx/reasoning/cell-marker/cl-14fbdb41d94532e860282885",
+    "@ctx/procedure/prc-6d693b48b4eb78505b1c0ceceb6a93f2/0"
+  ],
+  "headingPresentInSession": true,
+  "bodyNonceInPrompt": 0,
+  "results": [
+    {
+      "id": "LM-01",
+      "statement": "the product payload carries the rendered index",
+      "pass": true,
+      "detail": "3 handle line(s) in the payload"
+    },
+    {
+      "id": "LM-02",
+      "statement": "the payload index names exactly the compiled handles",
+      "pass": true,
+      "detail": "3 compiled handle(s)"
+    },
+    {
+      "id": "LM-03",
+      "statement": "a durable DSH session artifact was found and carried a user message",
+      "pass": true,
+      "detail": "3 user message(s) from C:\\Users\\66494\\.palimpsest-gates\\r2-lr-last-mile\\home\\sessions\\--C-Users-66494-.palimpsest-gates-r2-lr-last-mile-repo-.palimpsest-worlds-attempt-6e108a038ba90278c7fda2252f0c0cac--\\worker-eba3f2d2-4721-416f-a992-71417165a668\\session.v4.jsonl.zstd"
+    },
+    {
+      "id": "LM-04",
+      "statement": "§6 the MODEL-VISIBLE prompt contains the exact index heading",
+      "pass": true,
+      "detail": "heading present at the model-visible boundary"
+    },
+    {
+      "id": "LM-05",
+      "statement": "§6 every selected handle appears in the model-visible prompt",
+      "pass": true,
+      "detail": "handles in prompt: @ctx/proof/pc-c8389fb1e57f6ec8901885b49d003463, @ctx/reasoning/cell-marker/cl-14fbdb41d94532e860282885, @ctx/procedure/prc-6d693b48b4eb78505b1c0ceceb6a93f2/0"
+    },
+    {
+      "id": "LM-06",
+      "statement": "§6 each expected handle appears EXACTLY once in the model-visible prompt",
+      "pass": true,
+      "detail": "@ctx/proof/pc-c8389fb1e5…×1 | @ctx/reasoning/cell-mark…×1 | @ctx/procedure/prc-6d693…×1"
+    },
+    {
+      "id": "LM-07",
+      "statement": "§6 no unselected handle appears in the model-visible prompt",
+      "pass": true,
+      "detail": "only the three bound handles are present"
+    },
+    {
+      "id": "LM-08",
+      "statement": "§6 NO capital body appears in the model-visible prompt",
+      "pass": true,
+      "detail": "the body nonce appears nowhere in the user message"
+    },
+    {
+      "id": "LM-09",
+      "statement": "§6 the body is reachable ONLY by pulling (absent from the prompt, present only after a pull)",
+      "pass": true,
+      "detail": "prompt occurrences=0; the worker reported the body marker=no (it did not pull — that is a choice, not a delivery failure)"
+    },
+    {
+      "id": "LM-10",
+      "statement": "§6 no backing-store path appears in the model-visible prompt",
+      "pass": true,
+      "detail": "no store path in the user message"
+    },
+    {
+      "id": "LM-11",
+      "statement": "the model-visible index is byte-identical to the product payload index",
+      "pass": true,
+      "detail": "434 bytes identical"
+    },
+    {
+      "id": "LM-12",
+      "statement": "the attempt-bound allowlist is exactly the three bound handles",
+      "pass": true,
+      "detail": "3 allowed handle(s)"
+    }
+  ]
+}

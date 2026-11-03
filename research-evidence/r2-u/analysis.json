@@ -1,0 +1,548 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-U",
+  "confidentiality": {
+    "trialsWithTelemetry": 40,
+    "totalTrials": 40,
+    "boundaryInstalled": 40,
+    "kernelSupported": 40,
+    "capacityGranted": 40,
+    "capabilityAllowed": 40,
+    "unverifiedRootCount": 0,
+    "hostFailures": 0,
+    "timeouts": 0,
+    "noRegression": true
+  },
+  "expectedTrials": 40,
+  "completedTrials": 40,
+  "usableTrialCount": 40,
+  "confoundedBlocks": [],
+  "isolationBlocks": [
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 0,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 1,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 2,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 3,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 4,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 0,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 1,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 2,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 3,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 4,
+      "cells": [
+        "K0A0",
+        "K0A1",
+        "K1A0",
+        "K1A1"
+      ],
+      "confounded": false,
+      "differences": []
+    }
+  ],
+  "uptake": {
+    "verdict": "R2-U CAPITAL UPTAKE: NOT_IMPROVED",
+    "scenarios": {
+      "C": {
+        "cells": {
+          "K0A0": {
+            "n": 5,
+            "pulled": 0,
+            "rate": 0
+          },
+          "K1A0": {
+            "n": 5,
+            "pulled": 1,
+            "rate": 0.2
+          },
+          "K0A1": {
+            "n": 5,
+            "pulled": 0,
+            "rate": 0
+          },
+          "K1A1": {
+            "n": 5,
+            "pulled": 0,
+            "rate": 0
+          }
+        },
+        "k1Increase": false,
+        "k0Shift": 0,
+        "k1Shift": -0.2,
+        "interaction": -0.2,
+        "governedBodiesPulled": 1,
+        "clear": false,
+        "placeboExplained": false
+      },
+      "D": {
+        "cells": {
+          "K0A0": {
+            "n": 5,
+            "pulled": 0,
+            "rate": 0
+          },
+          "K1A0": {
+            "n": 5,
+            "pulled": 0,
+            "rate": 0
+          },
+          "K0A1": {
+            "n": 5,
+            "pulled": 0,
+            "rate": 0
+          },
+          "K1A1": {
+            "n": 5,
+            "pulled": 0,
+            "rate": 0
+          }
+        },
+        "k1Increase": false,
+        "k0Shift": 0,
+        "k1Shift": 0,
+        "interaction": 0,
+        "governedBodiesPulled": 0,
+        "clear": false,
+        "placeboExplained": false
+      }
+    },
+    "clearCount": 0,
+    "directionalCount": 0
+  },
+  "comparisons": {
+    "C": {
+      "primary": {
+        "comparison": "K1A0 vs K1A1",
+        "baseline": {
+          "n": 5,
+          "pulled": 1
+        },
+        "affordance": {
+          "n": 5,
+          "pulled": 0
+        }
+      },
+      "placebo": {
+        "comparison": "K0A0 vs K0A1",
+        "baseline": {
+          "n": 5,
+          "pulled": 0
+        },
+        "affordance": {
+          "n": 5,
+          "pulled": 0
+        }
+      },
+      "interaction": {
+        "k1Shift": -0.2,
+        "k0Shift": 0,
+        "difference": -0.2
+      },
+      "note": "raw counts only; with N=5 per cell no significance claim is made"
+    },
+    "D": {
+      "primary": {
+        "comparison": "K1A0 vs K1A1",
+        "baseline": {
+          "n": 5,
+          "pulled": 0
+        },
+        "affordance": {
+          "n": 5,
+          "pulled": 0
+        }
+      },
+      "placebo": {
+        "comparison": "K0A0 vs K0A1",
+        "baseline": {
+          "n": 5,
+          "pulled": 0
+        },
+        "affordance": {
+          "n": 5,
+          "pulled": 0
+        }
+      },
+      "interaction": {
+        "k1Shift": 0,
+        "k0Shift": 0,
+        "difference": 0
+      },
+      "note": "raw counts only; with N=5 per cell no significance claim is made"
+    }
+  },
+  "efficacy": {
+    "C": {
+      "intentToTreat": {
+        "K0A0": {
+          "n": 5,
+          "finalSolved": "1/5",
+          "firstCandidateSolved": "1/5",
+          "knownFailureRecurred": "4/5"
+        },
+        "K1A0": {
+          "n": 5,
+          "finalSolved": "1/5",
+          "firstCandidateSolved": "1/5",
+          "knownFailureRecurred": "4/5"
+        },
+        "K0A1": {
+          "n": 5,
+          "finalSolved": "2/5",
+          "firstCandidateSolved": "2/5",
+          "knownFailureRecurred": "3/5"
+        },
+        "K1A1": {
+          "n": 5,
+          "finalSolved": "0/5",
+          "firstCandidateSolved": "0/5",
+          "knownFailureRecurred": "5/5"
+        }
+      },
+      "observedUse": {
+        "pullers": {
+          "n": 1,
+          "finalSolved": "1/1",
+          "firstCandidateSolved": "1/1",
+          "knownFailureRecurred": "0/1"
+        },
+        "nonPullers": {
+          "n": 19,
+          "finalSolved": "3/19",
+          "firstCandidateSolved": "3/19",
+          "knownFailureRecurred": "16/19"
+        },
+        "note": "pullers and non-pullers are SELF-SELECTED; this is an association, not an effect"
+      },
+      "efficacyAnalysable": true
+    },
+    "D": {
+      "intentToTreat": {
+        "K0A0": {
+          "n": 5,
+          "finalSolved": "0/5",
+          "firstCandidateSolved": "0/5",
+          "knownFailureRecurred": "5/5"
+        },
+        "K1A0": {
+          "n": 5,
+          "finalSolved": "0/5",
+          "firstCandidateSolved": "0/5",
+          "knownFailureRecurred": "5/5"
+        },
+        "K0A1": {
+          "n": 5,
+          "finalSolved": "0/5",
+          "firstCandidateSolved": "0/5",
+          "knownFailureRecurred": "5/5"
+        },
+        "K1A1": {
+          "n": 5,
+          "finalSolved": "0/5",
+          "firstCandidateSolved": "0/5",
+          "knownFailureRecurred": "5/5"
+        }
+      },
+      "observedUse": {
+        "pullers": {
+          "n": 0,
+          "finalSolved": "0/0",
+          "firstCandidateSolved": "0/0",
+          "knownFailureRecurred": "0/0"
+        },
+        "nonPullers": {
+          "n": 20,
+          "finalSolved": "0/20",
+          "firstCandidateSolved": "0/20",
+          "knownFailureRecurred": "20/20"
+        },
+        "note": "pullers and non-pullers are SELF-SELECTED; this is an association, not an effect"
+      },
+      "efficacyAnalysable": false
+    }
+  },
+  "procedureSpecific": {
+    "C": {
+      "k1Trials": 10,
+      "procedurePulled": 1,
+      "proofPulled": 1,
+      "reasoningPulled": 1,
+      "note": "recorded only; the C1/C2 factorial is NOT reopened and the experiment is not changed mid-run"
+    },
+    "D": {
+      "k1Trials": 10,
+      "procedurePulled": 0,
+      "proofPulled": 0,
+      "reasoningPulled": 0,
+      "note": "recorded only; the C1/C2 factorial is NOT reopened and the experiment is not changed mid-run"
+    }
+  },
+  "cellCounts": {
+    "C": {
+      "K0A0": {
+        "n": 5,
+        "anyPull": "0/5",
+        "proofPulled": "0/5",
+        "reasoningPulled": "0/5",
+        "procedurePulled": "0/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": "UNKNOWN",
+        "finalSolved": "1/5",
+        "firstCandidateSolved": "1/5",
+        "knownFailureRecurred": "4/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 3,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 151465,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 0
+      },
+      "K1A0": {
+        "n": 5,
+        "anyPull": "1/5",
+        "proofPulled": "1/5",
+        "reasoningPulled": "1/5",
+        "procedurePulled": "1/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": 37374,
+        "finalSolved": "1/5",
+        "firstCandidateSolved": "1/5",
+        "knownFailureRecurred": "4/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 0,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 189032,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 4
+      },
+      "K0A1": {
+        "n": 5,
+        "anyPull": "0/5",
+        "proofPulled": "0/5",
+        "reasoningPulled": "0/5",
+        "procedurePulled": "0/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": "UNKNOWN",
+        "finalSolved": "2/5",
+        "firstCandidateSolved": "2/5",
+        "knownFailureRecurred": "3/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 3,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 184463,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 0
+      },
+      "K1A1": {
+        "n": 5,
+        "anyPull": "0/5",
+        "proofPulled": "0/5",
+        "reasoningPulled": "0/5",
+        "procedurePulled": "0/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": "UNKNOWN",
+        "finalSolved": "0/5",
+        "firstCandidateSolved": "0/5",
+        "knownFailureRecurred": "5/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 4,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 203091,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 5
+      }
+    },
+    "D": {
+      "K0A0": {
+        "n": 5,
+        "anyPull": "0/5",
+        "proofPulled": "0/5",
+        "reasoningPulled": "0/5",
+        "procedurePulled": "0/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": "UNKNOWN",
+        "finalSolved": "0/5",
+        "firstCandidateSolved": "0/5",
+        "knownFailureRecurred": "5/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 3,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 74225,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 0
+      },
+      "K1A0": {
+        "n": 5,
+        "anyPull": "0/5",
+        "proofPulled": "0/5",
+        "reasoningPulled": "0/5",
+        "procedurePulled": "0/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": "UNKNOWN",
+        "finalSolved": "0/5",
+        "firstCandidateSolved": "0/5",
+        "knownFailureRecurred": "5/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 3,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 122184,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 5
+      },
+      "K0A1": {
+        "n": 5,
+        "anyPull": "0/5",
+        "proofPulled": "0/5",
+        "reasoningPulled": "0/5",
+        "procedurePulled": "0/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": "UNKNOWN",
+        "finalSolved": "0/5",
+        "firstCandidateSolved": "0/5",
+        "knownFailureRecurred": "5/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 2,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 124677,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 0
+      },
+      "K1A1": {
+        "n": 5,
+        "anyPull": "0/5",
+        "proofPulled": "0/5",
+        "reasoningPulled": "0/5",
+        "procedurePulled": "0/5",
+        "medianHandlesPulled": 0,
+        "medianTimeToFirstPullMs": "UNKNOWN",
+        "finalSolved": "0/5",
+        "firstCandidateSolved": "0/5",
+        "knownFailureRecurred": "5/5",
+        "knownFailureUnknown": 0,
+        "medianVisibleOracleInvocations": 0,
+        "medianImplementationRevisions": 0,
+        "medianElapsedMs": 105592,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "workerCompleted": 5,
+        "capitalShownNeverUsed": 5
+      }
+    }
+  },
+  "calibrationVerdicts": {
+    "D": "PRIMARY_ELIGIBLE"
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "kind": "HOST_S1R_TRAJECTORY_EXECUTION_RECONFIRMATION",
+  "evidenceClass": "FIRST_PARTY_DSH_VERIFIED",
+  "note": "Re-confirms the existing Trajectory first-party DSH chain after the Host admission changes. No stochastic trial, no Treatment trial and no external model request occurred; the deterministic adapter serves every turn.",
+  "closureGate": {
+    "command": "node scripts/trajectory_p2e1rc/closure-gate.mjs",
+    "runId": "ddd943b5-3515-4ebe-a620-1acc65d4dd0e",
+    "exitCode": 0,
+    "artifactDigest": "sha256-187c8fce9bbca0df7be0e2a9c05fe8f54f4a22278afe0558d8e59bdf3387424b",
+    "gatesPassed": 61,
+    "gatesFailed": 0,
+    "modelCallsMade": 0,
+    "externalModelRequestOccurred": false,
+    "stochasticTrialOccurred": false,
+    "notAwarded": {
+      "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+      "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+      "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+      "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+      "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+      "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+      "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED"
+    },
+    "derived": {
+      "firstPartyDshTurnObserved": true,
+      "answersExtractedFromPersistence": true,
+      "controlArmDelivered": true,
+      "treatmentArmDelivered": true,
+      "modelConsumedCapsule": false,
+      "modelConsumedCapsuleReason": "the deterministic adapter is SEEDED with the expected answer through profile configuration; it does not read the Capsule, so this run proves transport and persistence only",
+      "stochasticInference": false,
+      "externalModelRequest": false
+    },
+    "stderrTail": "treatment-dependency-preserved: ok — true\n  · assay-treatment-legacy-oracle-unused: ok — LEGACY_REPRODUCTION_ONLY\n  · assay-treatment-no-model: ok — calls=0\n  · assay-treatment-official-oracle: ok — scripts/trajectory_p2e1/source-aware-oracle.mjs\n  · assay-treatment-relevance: ok — {\"statesPartial\":true,\"statesCounts\":true,\"statesUnread\":true,\"statesAuthorityLimitation\":true}\n  · arms-independently-instantiated: ok — ASSAY-control-attempt-d991fdede12085605910507dc750bdaf vs ASSAY-treatment-attempt-a5160f5d7467708677947c27849f5a6d\n  · arms-share-scenario: ok — p2e1rd-internal-citation-closed-1\n"
+  },
+  "delegationMatrix": {
+    "command": "node scripts/trajectory_p2e1rf/run-delegation-matrix.mjs",
+    "runId": "df609fc7-0dfe-48c9-9bec-96c8570143cf",
+    "exitCode": 0,
+    "artifactDigest": "sha256-ba2080c4e5b246d06dbb14cebf1005dab8fac0ed526c4d5a4d13cf5c6a7a765f",
+    "summary": {
+      "total": 8,
+      "matched": 8,
+      "mismatched": [],
+      "leaked": [],
+      "refusedWithChild": [],
+      "cleanupFailed": [],
+      "limits": [],
+      "positiveCases": [
+        "world",
+        "production"
+      ],
+      "positiveWithoutExecution": [],
+      "positiveWithRefusal": [],
+      "noLeak": true,
+      "allCasesClosed": true
+    },
+    "cases": [
+      {
+        "case": "aliasToWorld",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "sessionCount": 1,
+        "childSessionCreated": false,
+        "preCreateRefused": false,
+        "refusalPhase": "NONE",
+        "canaryDelivered": false,
+        "missingObservations": [
+          "childSessionCreated",
+          "childWorldAuthorized",
+          "authorizedContextDelivered",
+          "noSecurityRefusal"
+        ]
+      },
+      {
+        "case": "aliasToProtected",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "sessionCount": 0,
+        "childSessionCreated": false,
+        "preCreateRefused": true,
+        "refusalPhase": "alias",
+        "canaryDelivered": false,
+        "missingObservations": [
+          "parentSessionCreated",
+          "preCreateAdmitted",
+          "delegationInvoked",
+          "childSessionCreated",
+          "childWorldAuthorized",
+          "authorizedContextDelivered",
+          "noSecurityRefusal"
+        ]
+      },
+      {
+        "case": "world",
+        "expectedVerdict": "ALLOWED_NO_DELIVERY",
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "matched": true,
+        "sessionCount": 2,
+        "childSessionCreated": true,
+        "preCreateRefused": false,
+        "refusalPhase": "NONE",
+        "canaryDelivered": false,
+        "missingObservations": []
+      },
+      {
+        "case": "sibling",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "sessionCount": 1,
+        "childSessionCreated": false,
+        "preCreateRefused": false,
+        "refusalPhase": "NONE",
+        "canaryDelivered": false,
+        "missingObservations": [
+          "childSessionCreated",
+          "childWorldAuthorized",
+          "authorizedContextDelivered",
+          "noSecurityRefusal"
+        ]
+      },
+      {
+        "case": "protected",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "sessionCount": 1,
+        "childSessionCreated": false,
+        "preCreateRefused": false,
+        "refusalPhase": "NONE",
+        "canaryDelivered": false,
+        "missingObservations": [
+          "childSessionCreated",
+          "childWorldAuthorized",
+          "authorizedContextDelivered",
+          "noSecurityRefusal"
+        ]
+      },
+      {
+        "case": "parentOfProtected",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "sessionCount": 1,
+        "childSessionCreated": false,
+        "preCreateRefused": false,
+        "refusalPhase": "NONE",
+        "canaryDelivered": false,
+        "missingObservations": [
+          "childSessionCreated",
+          "childWorldAuthorized",
+          "authorizedContextDelivered",
+          "noSecurityRefusal"
+        ]
+      },
+      {
+        "case": "traversal",
+        "expectedVerdict": "REFUSED_BY_GUARD",
+        "verdict": "REFUSED_BY_GUARD",
+        "matched": true,
+        "sessionCount": 1,
+        "childSessionCreated": false,
+        "preCreateRefused": false,
+        "refusalPhase": "NONE",
+        "canaryDelivered": false,
+        "missingObservations": [
+          "childSessionCreated",
+          "childWorldAuthorized",
+          "authorizedContextDelivered",
+          "noSecurityRefusal"
+        ]
+      },
+      {
+        "case": "production",
+        "expectedVerdict": "ALLOWED_NO_DELIVERY",
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "matched": true,
+        "sessionCount": 2,
+        "childSessionCreated": true,
+        "preCreateRefused": false,
+        "refusalPhase": "NONE",
+        "canaryDelivered": false,
+        "missingObservations": []
+      }
+    ],
+    "stderrTail": "\n=== aliasToWorld (RF-A: a junction whose current target is the world) ===\n\n=== aliasToProtected (RF-A: a junction to a protected root) ===\n\n=== world (legitimate in-world delegation must still work) ===\n\n=== sibling (a sibling attempt world) ===\n\n=== protected (the simulated durable state) ===\n\n=== parentOfProtected (the parent of the protected root) ===\n\n=== traversal (relative traversal out of the world) ===\n\n=== production (the real deployment layout) ===\n\n8/8 matched · leaked [] · limits []\n"
+  },
+  "runIdentity": {
+    "codeFreezeHead": "f76f376f63383a27e54eb41bc79bdb9d49a9ade6",
+    "executedCodeTree": "918c32359b7adb9f055b2455997378af1d81a00b",
+    "workingTreeDirty": false,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1R",
+  "schemaVersion": 1
+}

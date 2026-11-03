@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RC_REGRESSION_RECONCILIATION",
+  "stage": "Trajectory-P2-E1RC",
+  "method": "computed from the supplied vitest JSON reports; no classification is predeclared",
+  "inputs": {
+    "baselineReports": [
+      "C:/Users/66494/AppData/Local/Temp/e1rc-reg/baseline.json"
+    ],
+    "headReports": [
+      "C:/Users/66494/AppData/Local/Temp/e1rc-reg/head.json"
+    ],
+    "isolationReports": [],
+    "exclusions": [
+      "test/r3l0ciarlcf_gates.test.ts"
+    ],
+    "problems": []
+  },
+  "totals": {
+    "baselineFailures": 17,
+    "headFailures": 17,
+    "isolationPassed": 0,
+    "isolationFailed": 0
+  },
+  "counts": {
+    "PRE_EXISTING_SAME_FAILURE": 17
+  },
+  "everyHeadFailureClassifiedExactlyOnce": true,
+  "classifications": [
+    {
+      "key": "test/r3l0ciarlcfsh_persisted.test.ts::R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan reports the four identity facts separately",
+      "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan reports the four identity facts separately",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfsh_persisted.test.ts::R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan agrees with the current recomputed closure",
+      "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan agrees with the current recomputed closure",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfsh_persisted.test.ts::R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+      "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfsh_persisted.test.ts::R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal derives the final verdict from the persisted seal",
+      "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal derives the final verdict from the persisted seal",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfsh_persisted.test.ts::R3-L0C-I-A-R-L-C-F-S-H §8 T3 — the authoritative entry refuses a PRIMARY invocation at the prohibition, after the committed-plan guard passed",
+      "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S-H §8 T3 — the authoritative entry refuses a PRIMARY invocation at the prohibition, after the committed-plan guard passed",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfs_gates.test.ts::R3-L0C-I-A-R-L-C-F-S §3 T1 — committed-plan identity reports the four identity facts separately",
+      "file": "test/r3l0ciarlcfs_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S §3 T1 — committed-plan identity reports the four identity facts separately",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfs_gates.test.ts::R3-L0C-I-A-R-L-C-F-S §3 T3 — the authoritative entry refuses a plan mismatch refuses a PRIMARY invocation at the prohibition, after the guard has passed",
+      "file": "test/r3l0ciarlcfs_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S §3 T3 — the authoritative entry refuses a plan mismatch refuses a PRIMARY invocation at the prohibition, after the guard has passed",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfs_gates.test.ts::R3-L0C-I-A-R-L-C-F-S §3/§14 — the persisted cross-artifact seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+      "file": "test/r3l0ciarlcfs_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S §3/§14 — the persisted cross-artifact seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfs_gates.test.ts::R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan seals the committed plan against evidence built from its OWN identity",
+      "file": "test/r3l0ciarlcfs_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan seals the committed plan against evidence built from its OWN identity",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlcfs_gates.test.ts::R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan is MISMATCH for the previous stage's real persisted pair",
+      "file": "test/r3l0ciarlcfs_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan is MISMATCH for the previous stage's real persisted pair",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlc_gates.test.ts::R3-L0C-I-A-R-L-C — the PRIMARY launch boundary stays closed refuses a structurally complete but untrusted authorization at the launch boundary",
+      "file": "test/r3l0ciarlc_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L-C — the PRIMARY launch boundary stays closed refuses a structurally complete but untrusted authorization at the launch boundary",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarlc_gates.test.ts::R3-L0C-I-A-R-L-C — the closure covers the live path the plan binds the closure and the plan closure matches",
+      "file": "test/r3l0ciarlc_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L-C — the closure covers the live path the plan binds the closure and the plan closure matches",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0ciarl_gates.test.ts::R3-L0C-I-A-R-L §3 — primary-only input discipline a fully-authorized PRIMARY run stops at the launch boundary with no model call",
+      "file": "test/r3l0ciarl_gates.test.ts",
+      "title": "R3-L0C-I-A-R-L §3 — primary-only input discipline a fully-authorized PRIMARY run stops at the launch boundary with no model call",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0cr_contract.test.ts::R3-L0C-R §10/§11 — the Run-1 baseline and the pressure gate §10 the calibration covers 16 sessions with every required metric",
+      "file": "test/r3l0cr_contract.test.ts",
+      "title": "R3-L0C-R §10/§11 — the Run-1 baseline and the pressure gate §10 the calibration covers 16 sessions with every required metric",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/r3l0cr_contract.test.ts::R3-L0C-R §10/§11 — the Run-1 baseline and the pressure gate §10 the calibration does NOT group by the H/C labels",
+      "file": "test/r3l0cr_contract.test.ts",
+      "title": "R3-L0C-R §10/§11 — the Run-1 baseline and the pressure gate §10 the calibration does NOT group by the H/C labels",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/trajectory_p2b_canonical_correlation.test.ts::P2B C3 §5 B0-C2 — real canonical Work Attempt → real first-party DSH Session §5 B0-C2 — the whole chain is established from ONE run",
+      "file": "test/trajectory_p2b_canonical_correlation.test.ts",
+      "title": "P2B C3 §5 B0-C2 — real canonical Work Attempt → real first-party DSH Session §5 B0-C2 — the whole chain is established from ONE run",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    },
+    {
+      "key": "test/trajectory_p2b_first_party_gate.test.ts::P2B C2 §5 B0-C2 — corrected first-party no-model gate §5 B0-F2 — the gate reports an explicit outcome; SKIPPED is never counted as a pass",
+      "file": "test/trajectory_p2b_first_party_gate.test.ts",
+      "title": "P2B C2 §5 B0-C2 — corrected first-party no-model gate §5 B0-F2 — the gate reports an explicit outcome; SKIPPED is never counted as a pass",
+      "status": "failed",
+      "classification": "PRE_EXISTING_SAME_FAILURE",
+      "why": "the same compound identity failed in the baseline report"
+    }
+  ],
+  "verdict": "SCOPED_RECONCILED",
+  "scopeCaveat": "this verdict covers the test files whose reports were supplied; it is NOT a whole-repository regression qualification",
+  "unsafeExclusionsPreserved": [
+    "test/r3l0ciarlcf_gates.test.ts"
+  ]
+}

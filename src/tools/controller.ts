@@ -53,11 +53,18 @@ import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService } from "../work/attempt_execution.js";
+import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
-import { deriveAttemptCompletionContract, deriveCompletionReadiness } from "../domain/completion_contract.js";
+import {
+  deriveAttemptCompletionContract,
+  deriveCompletionReadiness,
+  effectiveReleaseGateDefinition,
+  explainStatusWorkState,
+  type ControllerStatusView,
+} from "../domain/completion_contract.js";
 import {
   compilePlanRevision,
   type PlanReconciliationBlocker,
@@ -166,6 +173,8 @@ function directShapeEquivalent(project: ProjectIr, task: TaskSpec): boolean {
 
 /** The one gate a confirmed project standard declares; promotion names it by this id. */
 export const RELEASE_GATE_ID = "gate-release";
+/** The declaration marker for the one project gate the confirmed standard derives. */
+export const RELEASE_GATE_DECLARED_BY = "derived from the confirmed project standard";
 
 export interface StartProjectInput {
   projectId: string;
@@ -193,10 +202,9 @@ export interface PlanInput {
 }
 
 /**
- * G10-X TRUSTED-ONLY revision options. This is deliberately NOT part of the agent-facing `PlanInput`
- * surface: an agent can never name a head. The head advance is derived by the promotion manager's
- * canonical chain and re-validated here against the same derivation, so `headAdvance` is a redundant
- * proof of a fact the controller already owns - never a free choice.
+ * G10-X TRUSTED-ONLY revision options. Deliberately NOT part of the agent-facing `PlanInput` surface: an
+ * agent can never name a head. The head advance is derived by the promotion manager's canonical chain and
+ * re-validated here, so `headAdvance` is a redundant proof of a fact the controller already owns.
  */
 export interface TrustedPlanOptions {
   readonly headAdvance?:
@@ -237,9 +245,8 @@ export interface PlanReconciliationOutcome {
 }
 
 /**
- * Fail-closed plan-revision blocker. Nothing is written before this is thrown
- * (the reconciliation is pure), so a caller that receives it knows the work
- * graph is byte-for-byte unchanged.
+ * Fail-closed plan-revision blocker. Nothing is written before this is thrown (the reconciliation is pure),
+ * so a caller that receives it knows the work graph is byte-for-byte unchanged.
  */
 export class PlanReconciliationError extends DomainValidationError {
   readonly kind: PlanReconciliationBlockerKind;
@@ -334,91 +341,7 @@ export interface AllocationCalibration {
   readonly concurrentLimit: number;
 }
 
-export interface ControllerStatusView {
-  projectId: string;
-  revision: number;
-  headCommit: string;
-  schedulerState: "RUNNING" | "PAUSED";
-  generation: number;
-  tasks: Array<{
-    task_id: string;
-    state: string;
-    last_event_id: number;
-    role?: string;
-  }>;
-  attempts: Array<{
-    attempt_id: string;
-    task_id: string | null;
-    state: string;
-    attempt_no: number | null;
-  }>;
-  evidence: Array<{ evidence_id: string; status: string }>;
-  promotions: Array<{ promotion_id: string; state: string }>;
-  /**
-   * G10-Z: pending promotion intents - the same read model the revision fence
-   * refuses on, exposed so a UI can explain the refusal without provoking it.
-   */
-  promotionFence: Array<{
-    promotion_id: string;
-    attempt_id: string;
-    task_id: string;
-    state: string;
-  }>;
-  parallel: { admittedAttempts: number; rejectedClaims: number };
-  /** PLMP-TLM-2 §1: human-facing model performance summary (absent when cold). */
-  telemetry?: {
-    rows: Array<{
-      task_type: string;
-      model: string;
-      attempts: number;
-      successes: number;
-      successRate: string;
-      avgCost: string;
-      costPerSuccess: string;
-    }>;
-  };
-  /** E3 resume block: where the project is, what the host must do next. */
-  resume: {
-    action:
-      | "blocked"
-      | "paused"
-      | "progress"
-      | "dispatch_worker"
-      | "gate_and_promote"
-      | "awaiting_worker"
-      | "idle";
-    detail: string;
-    inFlightAttemptIds: string[];
-    openTasks: Array<{ task_id: string; state: string }>;
-    /** Promotions sitting PREPARED without a terminal event (H1 §3.1). */
-    preparedPromotions: string[];
-  };
-  /**
-   * G10-X additive: the canonical head picture. Derived from the ProjectIR
-   * head plus the committed promotion facts only - never from `git.head()`.
-   */
-  head?: {
-    projectHeadCommit: string;
-    provenEffectHeadCommit: string;
-    state: ProjectHeadState;
-    /**
-     * G10-X additive: the provenance of the promotion that produced the
-     * canonical head (the chain tip when SYNC_REQUIRED, the absorbed tip when
-     * IN_SYNC). `null` when no promotion is chained. Derived from the committed
-     * promotion facts only.
-     */
-    latestPromotion:
-      | {
-          promotionId: string;
-          attemptId: string;
-          sourceCommit: string;
-          fromHead: string;
-          toHead: string;
-          eventId: string;
-        }
-      | null;
-  };
-}
+export type { ControllerStatusView } from "../domain/completion_contract.js";
 
 /**
  * Where an attempt's work happens, and therefore where it is observed.
@@ -494,6 +417,7 @@ type MutatingWorkSettlement =
       readonly resultCommit: string;
       readonly changedFiles: readonly string[];
       readonly exported: boolean;
+      readonly evidenceRecorded: readonly string[];
       readonly detail: string;
     }
   | {
@@ -524,6 +448,15 @@ interface SettlingExecutionWorldPort {
     readonly attemptId: string;
     readonly commit: string;
   }): Promise<{ readonly imported: boolean; readonly detail: string }>;
+  /**
+   * The same object-only export, synchronously, for `report`, whose ledger append is synchronous.
+   * A port that composes the asynchronous seam but not this one is a test/in-memory backend; the
+   * controller then falls back to its own local git check only when a real repository exists.
+   */
+  exportResultCommitSync?(input: {
+    readonly attemptId: string;
+    readonly commit: string;
+  }): { readonly imported: boolean; readonly detail: string };
 }
 
 /**
@@ -655,6 +588,12 @@ export interface ProjectControllerOptions {
    */
   verificationAdmission?: import("../domain/promotion_eligibility.js").PromotionVerificationAdmissionPort | undefined;
   /**
+   * PC1-V1 R6: the exact approved-source admission read, when this deployment composes a review
+   * service. Absent means no task is bound to an approved intake, so ordinary promotions are
+   * unchanged.
+   */
+  sourceIntakeAdmission?: import("../domain/promotion_eligibility.js").PromotionSourceIntakeAdmissionPort | undefined;
+  /**
    * PLMP-LEAN-1 §D2-e1: the execution-world port, when this deployment places work in worlds.
    *
    * Optional because a minimal install composes none, and absent means exactly "this deployment has no
@@ -686,6 +625,8 @@ export interface ProjectControllerOptions {
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   contextKnowledge?: (() => ContextKnowledgePorts | undefined) | undefined; // E1-K §10.3 read-through provider
+  trajectoryCapsuleFor?: (() => import("../context/service.js").TrajectoryCapsuleDeliveryProvider | undefined) | undefined; // P2-D1 §11
+  trajectoryAssignedArm?: (() => import("../context/service.js").TrajectoryAssignedArm) | undefined; // P2-E1 §10.1: readable even when the delivery provider throws
   clock?: (() => string) | undefined;
 }
 
@@ -821,9 +762,8 @@ export class ProjectController {
       store: options.store,
     });
     /**
-     * SR-2 §十二: the context owner. Compilation, handle resolution and the composed worker
-     * context moved to `src/context/service.ts`; this controller keeps the primitives (the
-     * lexical/semantic channels, the manifest append) and delegates the decisions.
+     * SR-2 §十二: the context owner. Compilation, handle resolution and the composed worker context moved to
+     * `src/context/service.ts`; this controller keeps the primitives and delegates the decisions.
      */
     this.context = makeContextService({
       projectId: options.projectId,
@@ -845,6 +785,9 @@ export class ProjectController {
       requirementStatements: () => this.work.project().requirements.map((entry) => entry.statement),
       decisionStatements: () => this.work.project().decisions.map((entry) => entry.statement),
       ...(options.contextKnowledge === undefined ? {} : { contextKnowledge: options.contextKnowledge }), // E1-K §10.3
+      // P2-D1 §11: late-bound capsule provider; unbound ⇒ no delivery, byte-identical to before.
+      ...(options.trajectoryCapsuleFor === undefined ? {} : { trajectoryCapsuleFor: async (input: { readonly attemptId: string }) => (await options.trajectoryCapsuleFor?.()?.({ attemptId: input.attemptId })) ?? null }),
+      ...(options.trajectoryAssignedArm === undefined ? {} : { trajectoryAssignedArm: () => options.trajectoryAssignedArm?.() ?? "UNKNOWN" }), // P2-E1 §10.1: trusted arm; absent ⇒ UNKNOWN
       attempt: (attemptId) => {
         const row = this.work.attempt(attemptId);
         return row === null ? null : { attemptId: row.attemptId, taskId: row.taskId, state: row.state };
@@ -1050,6 +993,52 @@ export class ProjectController {
         return await port.exportResultCommit({ attemptId, commit });
       },
       hasExecutionWorldPort: () => this.#executionWorldPort !== undefined,
+      /**
+       * CI2 §7/§9/§10 — the delegated route's completion evaluation. The contract comes from the product's
+       * own derivation over the SAME envelope `finish` derives it from, so the bar cannot differ between the
+       * two routes. The candidate is the EXPORTED commit — already admitted into the canonical object
+       * database by the export step that precedes this call — and its tree is read through git plumbing.
+       */
+      evaluateCompletion: async (input) => {
+        const [row, envelope] = this.#attemptContext(input.attemptId);
+        const candidateTree = execFileSync("git", ["rev-parse", `${input.resultCommit}^{tree}`], {
+          cwd: this.#canonicalRepository(),
+          encoding: "utf8",
+        }).trim();
+        return attachCompletionEvidence({
+          context: this.#evidenceContext(input.attemptId, row, envelope),
+          contract: this.#completionContractForEnvelope(envelope),
+          candidate: { baseCommit: envelope.base_commit, resultCommit: input.resultCommit, candidateTree },
+          workDir: input.worldPath,
+          changedFiles: input.changedFiles,
+          writePaths: envelope.write_paths,
+          /** The atoms this attempt already holds, so a repeat converges and a different candidate conflicts. */
+          existing: (predicate) => {
+            const row = this.store.connection
+              .prepare(
+                "SELECT json_extract(evidence_json,'$.dependency_digest') AS d FROM evidence WHERE project_id=? AND json_extract(evidence_json,'$.subject_id')=? AND json_extract(evidence_json,'$.predicate')=? AND status='active'",
+              )
+              .get(this.projectId, input.attemptId, predicate) as { d: string | null } | undefined;
+            return row?.d ?? null;
+          },
+          runCommand: async (command) => {
+            const executable = command[0];
+            if (executable === undefined) return null;
+            this.#assertGateCommandAllowed(envelope, command);
+            const observation = (await runGateCommand(this.effects, {
+              worktreeId: input.attemptId,
+              executable,
+              argv: command.slice(1),
+              /** The attempt's WORLD, because that is the tree the candidate came from. */
+              cwd: input.worldPath,
+              scope: this.projectId,
+              callId: `delegated-completion:${input.attemptId}:${canonicalDigest({ command }).slice(0, 16)}`,
+              revision: this.promotions.projectRevision(),
+            })) as { exitCode: number | null; outputTail: string };
+            return observation.exitCode;
+          },
+        });
+      },
       report: (attemptId: string) => {
         this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" });
       },
@@ -1083,6 +1072,8 @@ export class ProjectController {
       options.projectId,
       this.execution,
       options.verificationAdmission,
+      (attemptId, gateId) => this.evaluateGate(gateId, "attempt", attemptId),
+      options.sourceIntakeAdmission,
     );
     this.recovery = createPromotionRecoveryService({
       store: options.store,
@@ -1246,12 +1237,12 @@ export class ProjectController {
             subject_type: "attempt",
             require: { all: chain },
           }),
-          "derived from the confirmed project standard",
+          RELEASE_GATE_DECLARED_BY,
         );
       }
     }
-    // H1 §3.4 genesis: the default role table is itself a declaration on the
-    // log, so the previous hardcoded defaults remain replayable facts.
+    // H1 §3.4 genesis: the default role table is itself a declaration on the log, so the previous
+    // hardcoded defaults remain replayable facts.
     this.declareRoleTable({
       roles: Object.entries(DEFAULT_ROLE_SLOTS).map(([role, slots]) => ({ role, slots })),
       hardCap: DEFAULT_HARD_CAP,
@@ -1425,16 +1416,10 @@ export class ProjectController {
           ? null
           : parseTaskEnvelope(decodeJsonBlob(row.envelope_json)),
     }));
-    const openAttempts: ReconcileAttemptRow[] = (
-      this.store.connection
-        .prepare(
-          "SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING')",
-        )
-        .all(this.projectId) as Array<Record<string, unknown>>
-    ).map((row) => ({
-      attemptId: String(row.attempt_id),
-      taskId: String(row.task_id),
-      state: String(row.state),
+    const openAttempts: ReconcileAttemptRow[] = this.work.openAttempts().map((row) => ({
+      attemptId: row.attemptId,
+      taskId: row.taskId,
+      state: row.state,
     }));
 
     // Typed invalidation is an explicit operator act: it names the tasks whose
@@ -1888,9 +1873,7 @@ export class ProjectController {
     const affectedAttemptIds: string[] = [];
     for (const taskId of retiredTaskIds) {
       const attempts = this.store.connection
-        .prepare(
-          "SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=? ORDER BY attempt_id",
-        )
+        .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=? ORDER BY attempt_id")
         .all(this.projectId, taskId) as Array<{ attempt_id: string }>;
       for (const attempt of attempts) affectedAttemptIds.push(String(attempt.attempt_id));
     }
@@ -2259,108 +2242,65 @@ export class ProjectController {
         // moves only when the worker commits inside it.
         ...(observed.observedHead === "" ? {} : { resultCommit: observed.observedHead }),
       };
+      if (input.workerStatus === "completed" && observed.observedHead !== "") {
+        input = {
+          ...input,
+          resultCommit: this.#exportAndResolveResultCommit(attemptId, observed.observedHead),
+        };
+      }
     }
     const report = this.#buildReport(attemptId, input);
     return this.scheduler.recordCallback(attemptId, terminal[input.workerStatus], report);
   }
 
+  /** Export the result object and return its full identity; see `work/report_integrity.ts`. */
+  #exportAndResolveResultCommit(attemptId: string, commit: string): string {
+    return exportAndResolveResultCommit({
+      attemptId,
+      commit,
+      repository: this.effects.git.repository,
+      execution: this.execution,
+      exportResultCommitSync: this.#executionWorldPort?.exportResultCommitSync?.bind(this.#executionWorldPort),
+      workDir: () => this.#attemptWorkDirSync(attemptId)?.workDir ?? null,
+      canonicalRepository: () => this.#canonicalRepository(),
+    });
+  }
+
   /** A worker that expired its lease may still return; it is recorded STALE. */
   reportLate(attemptId: string, input: ReportInput): SchedulerEvent {
+    const late =
+      input.workerStatus === "completed" && typeof input.resultCommit === "string" && input.resultCommit !== ""
+        ? { ...input, resultCommit: this.#exportAndResolveResultCommit(attemptId, input.resultCommit) }
+        : input;
     const report = this.#buildReport(attemptId, {
-      ...input,
+      ...late,
       workerStatus: input.workerStatus === "expired" ? "expired" : input.workerStatus,
     });
     return this.scheduler.recordCallback(attemptId, "ATTEMPT_LATE_RESULT", report);
   }
 
-  /**
-   * PLMP-LEAN-1 §D2-a: WHERE an attempt's work actually happens, and whether it can be observed.
-   *
-   *   in-place   the canonical repository is the tree, and the attempt is judged in it;
-   *   worktree   the attempt works in its OWN isolated git worktree, whose path the git port owns.
-   *
-   * The second half used to be unobservable from here, which is why the worktree path could only
-   * trust what a worker claimed. It is observable now, and it fails CLOSED when it is not: an
-   * execution world that does not exist is never reported as a clean one.
-   */
+  /** WHERE the attempt works (see `work/attempt_observation.ts`). */
   #attemptWorkDirSync(attemptId: string): { placement: AttemptPlacement; workDir: string } | null {
-    if (this.execution === "in-place") {
-      return { placement: "in-place", workDir: this.#canonicalRepository() };
-    }
-    // The world id IS the attempt id (see `claim`); the report's `worktree_id` field is a display id
-    // and is deliberately not used to locate anything. `worldPath` is the D2 vocabulary; the
-    // `worktreePath` fallback keeps a legacy port (a linked-worktree backend) observable.
     const git = this.effects.git;
-    const workDir = git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId);
-    if (workDir === undefined || workDir === "") {
-      /**
-       * A port that cannot NAME a tree has no trees: there is nothing on disk to be wrong about, so
-       * there is nothing to observe and this attempt's completion rests on its caller's report, as it
-       * did before this observation existed. That is the in-memory port's world, and it is why the
-       * rule is stated as a property of the PLACEMENT rather than as a blanket requirement: the
-       * first-party port always names a tree (`GitCliPort`), so a real deployment is always observed.
-       *
-       * A port that DOES name a tree and has none is a different case, and it is refused below.
-       */
-      return null;
-    }
-    if (!existsSync(workDir)) {
-      throw new DomainValidationError(
-        `attempt ${attemptId} has no work execution world at "${workDir}" — nothing can be observed there, and an absent tree is not an empty one`,
-      );
-    }
-    return { placement: "worktree", workDir };
+    return attemptWorkDir({
+      attemptId,
+      execution: this.execution,
+      canonicalRepository: this.execution === "in-place" ? this.#canonicalRepository() : "",
+      worldPath: git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId),
+    });
   }
 
-  /**
-   * PLMP-LEAN-1 §D2-a: ONE observation of what an attempt's work actually is, in WHATEVER world it
-   * ran. This is the input the completion invariant consumes, and there is deliberately only one of
-   * it: `CompletionInvariant(in-place) == CompletionInvariant(worktree)` is the property that keeps a
-   * second execution world from becoming a second, weaker set of rules.
-   *
-   * The commands are the same in both placements, run in the tree that placement names:
-   *
-   *   committedChanges    `git diff --name-only base..HEAD` — the normal case, the worker commits;
-   *   uncommittedChanges  `git status --porcelain` — work that is IN the tree but not in a commit;
-   *   observedHead        the tree's HEAD, which for a placed attempt is its result commit;
-   *   requiredArtifacts   whether each declared artifact is present IN THAT TREE.
-   *
-   * `.palimpsest/` scaffolding is excluded in both: it is the product's own state, never the
-   * attempt's work.
-   */
+  /** ONE observation of the attempt result (see `work/attempt_observation.ts`). */
   #observeAttemptResultSync(attemptId: string, baseCommit: string): AttemptResultObservation | null {
-    const target = this.#attemptWorkDirSync(attemptId);
-    if (target === null) return null;
-    const { placement, workDir } = target;
-    const run = (args: string[]): string => execFileSync("git", args, { cwd: workDir, encoding: "utf8" });
-    const committedChanges = run(["diff", "--name-only", baseCommit, "HEAD"])
-      .split(String.fromCharCode(10))
-      .map((path: string) => path.trim())
-      .filter((path: string) => path !== "" && !path.startsWith(".palimpsest/"));
-    const uncommittedChanges = run(["status", "--porcelain"])
-      .split(String.fromCharCode(10))
-      .filter((line: string) => line.trim() !== "")
-      .map((line: string) => line.slice(3).trim())
-      .filter((path: string) => !path.startsWith(".palimpsest/"));
-    const changedFiles = [...new Set([...committedChanges, ...uncommittedChanges])].sort();
-    const observedHead = run(["rev-parse", "HEAD"]).trim();
     const [, envelope] = this.#attemptContext(attemptId);
-    const requiredArtifacts = envelope.required_artifacts.map((path) =>
-      Object.freeze({ path, present: existsSync(join(workDir, path)) }),
-    );
-    // `uncommittedChanges` is returned SEPARATELY, not merely folded into changedFiles: a completed
-    // attempt must have materialized its work as a commit, and only the two sets apart can say
-    // whether it did (see #assertCompletionMaterialized).
-    return Object.freeze({
+    const git = this.effects.git;
+    return observeAttemptResultPort({
       attemptId,
-      placement,
-      workDir,
       baseCommit,
-      observedHead,
-      committedChanges: Object.freeze(committedChanges),
-      uncommittedChanges: Object.freeze(uncommittedChanges),
-      changedFiles: Object.freeze(changedFiles),
-      requiredArtifacts: Object.freeze(requiredArtifacts),
+      execution: this.execution,
+      canonicalRepository: this.execution === "in-place" ? this.#canonicalRepository() : "",
+      worldPath: git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId),
+      requiredArtifacts: envelope.required_artifacts,
     });
   }
 
@@ -2531,6 +2471,17 @@ export class ProjectController {
   async gate(input: GateInput): Promise<SchedulerEvent> {
     const [row, envelope] = this.#attemptContext(input.attemptId);
     const executable = input.command[0];
+    /**
+     * PC1 S01-R05: a STRUCTURAL predicate is an observation of the tree/artifacts, never a label on
+     * somebody else's command. Measured in the C6-R P1 session: `node verify.mjs` (exit 0) was
+     * recorded as `write_scope_valid` and `expected_files_exist`, and a release gate then passed on
+     * evidence that had observed neither scope nor artifacts. The caller may still REQUEST a
+     * structural check — the product performs it here, from the same observation `finish` uses —
+     * but it cannot supply the observation by running an unrelated command.
+     */
+    if (input.predicate === "write_scope_valid" || input.predicate === "expected_files_exist") {
+      return this.#observeStructuralGate(input);
+    }
     if (executable === undefined) {
       throw new DomainValidationError("gate command must have an executable");
     }
@@ -2564,11 +2515,36 @@ export class ProjectController {
     );
   }
 
+  /** The product's own structural observation; see `work/report_integrity.ts`. */
+  #observeStructuralGate(input: GateInput): SchedulerEvent {
+    const [, envelope] = this.#attemptContext(input.attemptId);
+    const target = this.#attemptWorkDirSync(input.attemptId);
+    if (target === null) {
+      throw new DomainValidationError(
+        `attempt ${input.attemptId} has no observable tree, so a structural gate cannot be answered — an unobservable scope is not a valid one`,
+      );
+    }
+    const predicate = input.predicate as "write_scope_valid" | "expected_files_exist";
+    return observeStructuralGate({
+      attemptId: input.attemptId,
+      predicate,
+      writePaths: envelope.write_paths,
+      requiredArtifacts: envelope.required_artifacts,
+      observedArtifacts: input.observedArtifacts,
+      workDir: target.workDir,
+      observed: this.#observeAttemptResultSync(input.attemptId, envelope.base_commit),
+      record: (kind, value) => this.#recordObservedEvidence(input.attemptId, kind, value as never, undefined, "palimpsest-gate"),
+    }) as SchedulerEvent;
+  }
+
   /**
    * The single place a COMMAND predicate's EVIDENCE_ADDED event is built, so `gate` and `finish`
    * cannot drift apart: `gate` runs the caller's command and hands the observed exit code here,
    * and `finish` does the same after running the project standard's own commands. The exit code is
    * always an OBSERVATION — no caller-supplied value reaches this point (SR-1 #134).
+   *
+   * CI2 §10: the builder moved to `work_evidence.ts` so the delegated settlement route could reach
+   * the same one. This entry point and every existing atom shape are unchanged.
    */
   #recordCommandEvidence(
     attemptId: string,
@@ -2576,50 +2552,38 @@ export class ProjectController {
     command: readonly string[],
     exitCode: number,
     observedArtifacts?: readonly string[] | undefined,
+    value?: Record<string, unknown> | undefined,
+    candidate?: { readonly dependencyDigest: string; readonly producer: string } | undefined,
   ): SchedulerEvent {
     const [row, envelope] = this.#attemptContext(attemptId);
-    const key = actionKey("evidence-v1", {
-      project_id: this.projectId,
-      attempt_id: attemptId,
+    return recordCommandEvidence(
+      this.#evidenceContext(attemptId, row, envelope),
       predicate,
       command,
-    });
-    const evidenceId = stableEntityId("evidence", key);
-    const evidence: EvidenceAtom = {
-      schema_version: 1,
-      project_id: this.projectId,
-      evidence_id: evidenceId,
-      subject_type: "attempt",
-      subject_id: attemptId,
-      subject_digest: canonicalDigest({ attempt_id: attemptId, command }),
-      predicate,
-      value: { exit_code: exitCode },
-      project_revision: envelope.project_revision,
-      input_fingerprint: envelope.project_digest,
-      command: [...command],
-      exit_code: exitCode,
-      environment_digest: "e".repeat(64),
-      dependency_digest: null,
-      observed_artifacts: [...(observedArtifacts ?? envelope.required_artifacts)],
-      producer: "palimpsest-gate",
-      created_at: this.#now(),
-      status: "active",
-    };
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "EVIDENCE_ADDED",
-        payload_version: 1,
-        entity_type: "evidence",
-        entity_id: evidenceId,
-        payload: { evidence },
-        causation_id: row.last_event_id,
-        correlation_id: `evidence:${evidenceId}`,
-        idempotency_key: key,
-        expected_project_revision: envelope.project_revision,
-      }),
+      exitCode,
+      observedArtifacts,
+      value,
+      candidate,
     );
+  }
+
+  /** The parts of the shared writer's context that come from the attempt's own recorded authorization. */
+  #evidenceContext(
+    attemptId: string,
+    row: Record<string, unknown>,
+    envelope: TaskEnvelope,
+  ): WorkEvidenceContext {
+    return {
+      store: this.store,
+      projectId: this.projectId,
+      attemptId,
+      causationId: Number(row.last_event_id),
+      projectRevision: envelope.project_revision,
+      projectDigest: envelope.project_digest,
+      requiredArtifacts: envelope.required_artifacts,
+      now: () => this.#now(),
+      findExisting: (idempotencyKey) => findRecordedEvidence(this.store, this.projectId, idempotencyKey),
+    };
   }
 
   /**
@@ -2630,54 +2594,18 @@ export class ProjectController {
    * contract already permits exactly that — its "requires command and exit_code" rule is scoped to
    * the four process predicates (src/schema/models.ts) — so scope evidence stops being a caller's
    * label stuck onto somebody else's command, which is what it was in the first live session.
+   *
+   * CI2 §10: the builder moved to `work_evidence.ts`; this entry point is unchanged.
    */
   #recordObservedEvidence(
     attemptId: string,
-    predicate: EvidenceAtom["predicate"],
+    predicate: Extract<EvidenceAtom["predicate"], "write_scope_valid" | "expected_files_exist">,
     value: EvidenceAtom["value"],
+    candidate?: { readonly dependencyDigest: string; readonly producer: string } | undefined,
+    producer?: string | undefined,
   ): SchedulerEvent {
     const [row, envelope] = this.#attemptContext(attemptId);
-    const key = actionKey("evidence-observed-v1", {
-      project_id: this.projectId,
-      attempt_id: attemptId,
-      predicate,
-    });
-    const evidenceId = stableEntityId("evidence", key);
-    const evidence: EvidenceAtom = {
-      schema_version: 1,
-      project_id: this.projectId,
-      evidence_id: evidenceId,
-      subject_type: "attempt",
-      subject_id: attemptId,
-      subject_digest: canonicalDigest({ attempt_id: attemptId, predicate }),
-      predicate,
-      value,
-      project_revision: envelope.project_revision,
-      input_fingerprint: envelope.project_digest,
-      command: null,
-      exit_code: null,
-      environment_digest: "e".repeat(64),
-      dependency_digest: null,
-      observed_artifacts: [...envelope.required_artifacts],
-      producer: "palimpsest-finish",
-      created_at: this.#now(),
-      status: "active",
-    };
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "EVIDENCE_ADDED",
-        payload_version: 1,
-        entity_type: "evidence",
-        entity_id: evidenceId,
-        payload: { evidence },
-        causation_id: row.last_event_id,
-        correlation_id: `evidence:${evidenceId}`,
-        idempotency_key: key,
-        expected_project_revision: envelope.project_revision,
-      }),
-    );
+    return recordObservedEvidence(this.#evidenceContext(attemptId, row, envelope), predicate, value, candidate, producer);
   }
 
   /**
@@ -2703,17 +2631,16 @@ export class ProjectController {
 
   /** The one attempt this principal currently has RUNNING; 0 or more than 1 is a refusal, not a guess. */
   #uniqueRunningAttempt(): string {
-    const rows = this.store.connection
-      .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND state=? ORDER BY attempt_id")
-      .all(this.projectId, "RUNNING") as { attempt_id: string }[];
-    if (rows.length === 1) return rows[0]!.attempt_id;
+    // The Work read owner excludes attempts on tasks a plan revision has retired.
+    const rows = this.work.openAttempts().filter((attempt) => attempt.state === "RUNNING");
+    if (rows.length === 1) return rows[0]!.attemptId;
     if (rows.length === 0) {
       throw new DomainValidationError(
         "no attempt is running, so there is no work to finish — claim a task first (the plan's ready set decides which), then do the work and call finish again",
       );
     }
     throw new DomainValidationError(
-      `${rows.length} attempts are running (${rows.map((row) => row.attempt_id).join(", ")}), so finishing would have to guess which one is yours — settle them one at a time, or narrow the plan so only one task is ready`,
+      `${rows.length} attempts are running (${rows.map((row) => row.attemptId).join(", ")}), so finishing would have to guess which one is yours — settle them one at a time, or narrow the plan so only one task is ready`,
     );
   }
 
@@ -3356,7 +3283,34 @@ export class ProjectController {
     subjectType: GateDefinition["subject_type"],
     subjectId: string,
   ): GateResult {
+    if (gateId === RELEASE_GATE_ID && subjectType === "attempt") {
+      const effective = this.#effectiveReleaseGate(subjectId);
+      if (effective !== undefined) {
+        return this.gates.evaluateDefinition(effective, this.store, this.projectId, subjectType, subjectId);
+      }
+    }
     return this.gates.evaluate(this.store, this.projectId, subjectType, subjectId, gateId);
+  }
+
+  /**
+   * R1: the standard-derived release gate evaluated against THIS attempt's completion contract.
+   *
+   * The stored gate declaration is not rewritten. An unknown/foreign attempt, a manually declared
+   * gate, or a project without a confirmed standard returns `undefined` so the historical evaluation
+   * path answers exactly as before (including an honest INCOMPLETE for a foreign subject).
+   */
+  #effectiveReleaseGate(attemptId: string): GateDefinition | undefined {
+    const row = this.store.connection
+      .prepare("SELECT declared_by FROM gate_registry WHERE project_id=? AND gate_id=?")
+      .get(this.projectId, RELEASE_GATE_ID) as { declared_by: string } | undefined;
+    if (row?.declared_by !== RELEASE_GATE_DECLARED_BY) return undefined;
+    const stored = this.gates.get(this.store, this.projectId, RELEASE_GATE_ID);
+    if (stored === undefined || this.#standard === undefined) return undefined;
+    try {
+      return effectiveReleaseGateDefinition(stored, this.#completionContractFor(attemptId));
+    } catch {
+      return undefined;
+    }
   }
 
   /**
@@ -4328,6 +4282,15 @@ export class ProjectController {
     return { ok: true, projectInitialized: this.isProjectInitialized(), eventCursor: Number(cursorRow.m) };
   }
 
+  /**
+   * R2: the Scheduler's PURE next decision, without committing it. A caller can therefore ask
+   * "would `next` do anything?" without causing the transition it is asking about.
+   */
+  nextDecisionPreview(): { readonly eventType: string; readonly entityId: string } | null {
+    const decision = this.scheduler.decide();
+    return decision === null ? null : { eventType: decision.event_type, entityId: decision.entity_id };
+  }
+
   status(): ControllerStatusView {
     const project = this.#project();
     const promotionFence = this.promotions.promotionFenceRows().map((row) => ({
@@ -4367,10 +4330,18 @@ export class ProjectController {
         .all(this.projectId) as Array<Record<string, unknown>>
     ).map((row) => {
       const state = decodeJsonBlob(row.state_json);
+      const taskId = row.task_id === null ? null : String(row.task_id);
+      const taskState = taskId === null ? undefined : tasks.find((task) => task.task_id === taskId)?.state;
+      // A retired task's attempt is historical, even if its row still says RUNNING.
+      const orphaned =
+        taskState !== undefined &&
+        ["STALE", "FAILED", "SATISFIED"].includes(taskState) &&
+        ["CREATED", "LEASED", "RUNNING"].includes(String(row.state));
       return {
         attempt_id: String(row.attempt_id),
-        task_id: row.task_id === null ? null : String(row.task_id),
-        state: String(row.state),
+        task_id: taskId,
+        state: orphaned ? "STALE" : String(row.state),
+        ...(orphaned ? { orphaned: true as const, task_state: taskState } : {}),
         attempt_no:
           typeof state.attempt_no === "number" ? state.attempt_no : null,
       };
@@ -4404,12 +4375,39 @@ export class ProjectController {
         row.costPerSuccess === undefined ? "n/a" : row.costPerSuccess.toFixed(4),
     }));
     const headStatus = this.promotions.projectHeadStatusSync();
+    const holds = (
+      this.store.connection
+        .prepare("SELECT task_id FROM task_holds WHERE project_id=? AND project_revision=? ORDER BY task_id")
+        .all(this.projectId, project.revision) as Array<{ task_id: string }>
+    ).map((row) => String(row.task_id));
+    let schedulerDecision: { readonly eventType: string; readonly entityId: string } | null = null;
+    let schedulerError: string | null = null;
+    if (control.state === "RUNNING") {
+      try {
+        schedulerDecision = this.nextDecisionPreview();
+      } catch (error) {
+        schedulerError = error instanceof Error ? error.message : String(error);
+      }
+    }
+    const nextAction = explainStatusWorkState({
+      standardConfirmed: this.#standard !== undefined && this.#standard.confirmed,
+      schedulerState: control.state,
+      schedulerDecision,
+      schedulerError,
+      tasks,
+      attempts,
+      holds,
+      promotionFence,
+      headState: headStatus.state,
+    });
     return {
       projectId: this.projectId,
       revision: project.revision,
       headCommit: project.head_commit,
       schedulerState: control.state,
       generation: control.generation,
+      holds,
+      nextAction,
       tasks,
       attempts,
       evidence,
@@ -4715,21 +4713,16 @@ export class ProjectController {
     });
   }
 
-  /** Roles of attempts still occupying a slot (CREATED/LEASED/RUNNING). */
+  /** Roles of attempts still occupying a slot (LEASED/RUNNING on a task the plan still owns). */
   #runningRoles(): TaskRole[] {
-    // Only claimed attempts (LEASED/RUNNING) occupy a slot; CREATED
-    // candidates are created by the scheduler but not yet running.
-    const rows = this.store.connection
-      .prepare(
-        "SELECT task_id FROM attempts WHERE project_id=? AND state IN ('LEASED','RUNNING')",
-      )
-      .all(this.projectId) as Array<{ task_id: string }>;
+    // Only claimed attempts occupy a slot; openAttempts already excludes retired-task orphans.
+    const rows = this.work.openAttempts().filter((attempt) => attempt.state === "LEASED" || attempt.state === "RUNNING");
     const project = this.#project();
     const roles = new Map<string, TaskRole>();
     for (const task of project.tasks) {
       roles.set(task.task_id, task.role ?? "implementer");
     }
-    return rows.map((row) => roles.get(row.task_id) ?? "implementer");
+    return rows.map((row) => roles.get(row.taskId) ?? "implementer");
   }
 
   #project(): ProjectIr {

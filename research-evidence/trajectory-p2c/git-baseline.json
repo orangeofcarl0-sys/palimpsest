@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_GIT_BASELINE",
+  "stage": "Trajectory-P2-C",
+  "requiredBaseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "startingHead": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "baselineBranch": "trajectory-p2b-durable-execution-association",
+  "newBranch": "trajectory-p2c-attributed-execution-preview",
+  "fb0": {
+    "headMatchesExactly": true,
+    "worktreeClean": true,
+    "indexClean": true,
+    "diffCheckClean": true,
+    "untrackedClean": true,
+    "remoteP2bPointsAtBaseline": true,
+    "p2cBranchExistedBefore": false,
+    "verdict": "FB0_PASS"
+  },
+  "diffstatCorrection": {
+    "p2bNarrativeClaimed": { "files": 25, "insertions": 4227, "deletions": 0 },
+    "actualGitDiffstat": { "files": 42, "insertions": 5003, "deletions": 0 },
+    "command": "git diff --shortstat 6dc52ba3766d22fb69f5da040da434139a11c758 7e92cdce852f24d659bd2f986ffb26db2c90231a",
+    "explanation": "the P2-B narrative figure was taken mid-stage, before the C7 evidence/doc commit added 17 more files; the actual committed diff is 42 files / 5003 insertions",
+    "historicalEvidenceRewritten": false,
+    "note": "P2-B's own evidence files are NOT modified to correct this; the correction lives here as forward errata"
+  },
+  "mainRefsRecordedSeparately": {
+    "localMain": "67b29c9e7907b08fe594738973ce48b55e10d80b",
+    "originMain": "044330b2e55198542d545edc42ed9c36e7ce896b",
+    "note": "local and remote main differ; neither was modified to make them agree"
+  },
+  "protectedEvidenceTreeIdentities": {
+    "research-evidence/trajectory-t0": "58b699a28daac94db26bc6f0c343c9a0c655f419",
+    "research-evidence/trajectory-v0": "58761f19a7feba3039e6910375cc81361143eaaa",
+    "research-evidence/trajectory-v0s": "c4677c4b8eaa66dfb58bf479873b083bd904d32d",
+    "research-evidence/trajectory-v0s-h0": "0ce8e4baf3be05c4e833dd78acd189f6604a48d6",
+    "research-evidence/trajectory-h1": "a7364123b70a1cf9c24f88cdbe33300c98dd43da",
+    "research-evidence/trajectory-p2a": "b9c7514fe747f75d8bd7a112af1ae5720a306df7",
+    "research-evidence/trajectory-p2b": "aae369eede70f1373152b2264f772ca87fdc6e6b",
+    "research-evidence/r3-l0c-g1": "4c98ca488c20ae00722ebd802243e936ed587bc2",
+    "research-evidence/r3-l0c-g1b": "571e6019dbe2cf66c98743f8a7e94a7b9e74c92c"
+  },
+  "runtimeEnvironment": {
+    "os": "win32 x64 10.0.26200",
+    "node": "24.14.1",
+    "pnpm": "11.21.0",
+    "installedDshVersion": "0.2.0-rc.2",
+    "dshPackageRoot": "<DSH_HOME>/profiles/node_modules/@deepseek-ai",
+    "hostBundleSource": "host/dsh (palimpsest-dsh-host) + host/deployment (palimpsest-host-deployment)",
+    "testOwnedProfileAndSessionRoot": "allocated per run under the gate root with a containment proof",
+    "buildAndDependencyHealth": "tsc -b clean; 0 empty pnpm package dirs",
+    "readmeDeclaredNodeMinimum": ">=24.15.0",
+    "runtimeLimitation": "the installed Node 24.14.1 is BELOW the README-declared >=24.15.0; no global runtime change was made, so product qualification is reported with this exact caveat"
+  },
+  "verdict": "BASELINE_EXACT_AND_CLEAN"
+}

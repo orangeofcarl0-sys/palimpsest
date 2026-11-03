@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1",
+  "kind": "host observation contract",
+  "applicableCommit": "2a1e194f2baf295ceeba1801cd75ecbb83404425",
+  "observationSchemaVersion": 1,
+  "eventKinds": [
+    "DIRECT_CHILD_SPAWN_ATTEMPTED",
+    "DIRECT_CHILD_SPAWN_OBSERVED",
+    "DIRECT_CHILD_SPAWN_ERROR",
+    "DIRECT_CHILD_EXIT_OBSERVED",
+    "DIRECT_CHILD_EXIT_UNCONFIRMED",
+    "DIRECT_CHILD_TIMEOUT_REQUESTED",
+    "DIRECT_CHILD_ABORT_REQUESTED"
+  ],
+  "processRoles": [
+    "DIRECT_CHILD",
+    "UNKNOWN"
+  ],
+  "observationFields": [
+    "schemaVersion",
+    "producer",
+    "eventKind",
+    "invocationId",
+    "sequence",
+    "observedAt",
+    "directChildPid",
+    "processRole",
+    "exitCode",
+    "exitSignal",
+    "hostFailureDetail",
+    "executableIdentity",
+    "proves",
+    "doesNotProve"
+  ],
+  "proves": [
+    "the Host obtained a direct-child process identity from spawn()",
+    "the Host observed a lifecycle event for THAT direct child"
+  ],
+  "doesNotProve": [
+    "that a downstream wrapper spawned the genuine DSH binary",
+    "that the provider/model route actually executed",
+    "that a remote model request occurred",
+    "that a descendant exited when the direct child exited",
+    "that the Work Attempt was canonically completed",
+    "that the artifact belongs to this attempt"
+  ],
+  "directChildIsNotTheDshWorker": true,
+  "sanitization": {
+    "recordsFullCommandLine": false,
+    "recordsEnvironmentValues": false,
+    "recordsWorkerContext": false,
+    "recordsPrompts": false,
+    "nodeExecutable": "sha256 digest only",
+    "workerBin": "basename + sha256 digest"
+  },
+  "observerFailurePolicy": "a throw from the observer is swallowed; it cannot change the outcome or fabricate a Work terminal state; the consumer treats a missing observation as incomplete evidence",
+  "seamOptional": true,
+  "seamLocation": "WorkWorkerRunPort.run({ observe }) -> WorkDelegationServiceDeps.onCorrelatedObservation",
+  "workerOutcomeVocabularyChanged": false,
+  "law": "spawned.pid proves at most that the Host obtained a direct-child process identity; it does not prove a wrapper spawned the genuine DSH binary, that the provider route executed, that a remote request occurred, that a descendant exited with the child, or that the Attempt was canonically completed"
+}

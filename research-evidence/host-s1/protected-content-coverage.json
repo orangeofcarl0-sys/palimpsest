@@ -1,0 +1,130 @@
+{
+  "kind": "HOST_S1_PROTECTED_CONTENT_COVERAGE",
+  "evidenceClass": "FIRST_PARTY_DSH_VERIFIED",
+  "note": "The spine derivation is measured twice: the PLAN shows the sibling is derived, and the Low-token probe shows what that derivation buys. The label-removal arm is the decisive control.",
+  "spineDerivation": {
+    "derivedRoots": [
+      "repository/.palimpsest/durable-state",
+      "repository/.palimpsest/worlds/attempt-B"
+    ],
+    "siblingDerived": true,
+    "durableDerived": true,
+    "spine": [
+      "repository/.palimpsest/worlds",
+      "repository/.palimpsest/worlds/attempt-A"
+    ],
+    "unresolved": []
+  },
+  "kernelApplication": {
+    "supported": true,
+    "siblingLabelled": true,
+    "durableLabelled": true,
+    "coverageComplete": true,
+    "coverageSkippedWithoutDerived": [],
+    "coverageIncompletePlans": []
+  },
+  "lowTokenArms": {
+    "covered": {
+      "driver": {
+        "status": 0,
+        "stderr": ""
+      },
+      "worldReadable": true,
+      "sibling": {
+        "read": false,
+        "code": "EPERM"
+      },
+      "durable": {
+        "read": false,
+        "code": "EPERM"
+      }
+    },
+    "uncovered": {
+      "driver": {
+        "status": 0,
+        "stderr": ""
+      },
+      "sibling": {
+        "read": true,
+        "content": "HOSTS1-SIBLING-CANARY-b82e4f61-SYNTHETIC-ONLY"
+      }
+    }
+  },
+  "siblingVerdict": "SIBLING_PROTECTED_BY_THE_LABEL",
+  "activeWorldUsable": true,
+  "junctionBasisMeasurement": {
+    "verdict": "JUNCTION_LABEL_INSUFFICIENT",
+    "treeWithJunction": {
+      "complete": false,
+      "verified": false,
+      "noUnprotectedEntryFound": true,
+      "stopReason": "COMPLETE",
+      "reparsePoints": [
+        "protected-root/link-to-outside"
+      ],
+      "unlabelled": []
+    },
+    "canaryReadThroughLabelledJunction": true,
+    "note": "A labelled junction protects the LINK OBJECT, not its target. This is why the derivation never labels through a link and why a link's own label is not accepted as coverage."
+  },
+  "verificationCost": {
+    "roots": 2,
+    "anyOverEntryLimit": false,
+    "anyOverDepthLimit": false,
+    "totalEntries": 13189,
+    "totalElapsedMs": 367,
+    "reparsePointsOutsideRoot": 1
+  },
+  "controls": {
+    "id": "host-s1-spine",
+    "command": "node node_modules/vitest/vitest.mjs run test/host_s1_spine_coverage.test.ts",
+    "runId": "3d6c5efc-f15f-43c9-a4b0-a42a51f302aa",
+    "startedAt": "2026-10-20T21:05:08.378Z",
+    "exitCode": 0,
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "observedVerdict": "PASS",
+    "failures": []
+  },
+  "producers": [
+    {
+      "id": "sibling-world",
+      "command": "node scripts/host_s1/sibling-world-probe.mjs --json-out <rig>/sibling-world.json",
+      "exitCode": 0,
+      "runId": "d9822af3-5fab-411c-ac6f-0ac168daf944",
+      "digest": "sha256-23bff0c027a0d394b2bb9bfbcd232de76f2c99609331424fe1460ecb9656fb4f",
+      "verdict": "PASS"
+    },
+    {
+      "id": "junction-label",
+      "command": "node scripts/host_s1/junction-label-probe.mjs --json-out <rig>/junction-label.json",
+      "exitCode": 3,
+      "runId": "5bcb9f0e-be45-4b7b-b19f-20320d14a826",
+      "digest": "sha256-bd50b3a84a5489078ad6fda925bc9281aff87fcbe0521bf33bc0019387150601",
+      "verdict": "MEASURED(JUNCTION_LABEL_INSUFFICIENT)"
+    },
+    {
+      "id": "verify-cost",
+      "command": "node scripts/host_s1/verify-cost-probe.mjs --json-out <rig>/verify-cost.json",
+      "exitCode": 0,
+      "runId": "c1a5f3ba-f08f-45ad-a2a0-5c21c6bf162f",
+      "digest": "sha256-f7faf63bf71e50d83b3834f2e68a51e1f9805fa9f3c58e1e686c19b4d81318d7",
+      "verdict": "PASS"
+    }
+  ],
+  "runIdentity": {
+    "codeFreezeHead": "353b216000596e1475c1766c60d6682a400c633b",
+    "executedCodeTree": "acbd06265d6d539c01ec8a320a042bbd0e5a5195",
+    "workingTreeDirty": false,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1",
+  "schemaVersion": 1
+}

@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0",
+  "kind": "frozen longitudinal experiment plan",
+  "frozenBefore": "the first primary L0 worker session",
+  "researchQuestion": "does governed cognitive capital derived from already-paid historical experience reduce repeated cognitive errors and/or repeated cognitive effort across multiple fresh worker generations, holding durable Project history and ordinary project continuity constant?",
+  "experimentalUnit": "ProjectTrajectory",
+  "primaryExecutor": {
+    "routeId": "deepseek-direct",
+    "providerId": "deepseek-route",
+    "modelId": "deepseek-flash",
+    "displayName": "DeepSeek Flash",
+    "modelFamily": "deepseek",
+    "api": "openai-completions",
+    "baseURL": "https://api.deepseek.com",
+    "apiKeyEnv": "DEEPSEEK_API_KEY",
+    "contextWindow": 131072,
+    "maxTokens": 8192,
+    "availabilityEvidence": "the dummy-fixture plumbing check drove a real worker end-to-end: the worker set answer=42, the visible oracle passed, transcript 1904 bytes",
+    "modelSpecificPromptTuning": false,
+    "switchableAfterTrial1": false
+  },
+  "alternativeExecutor": {
+    "routeId": "glm-via-omnigate",
+    "modelId": "glm-5.3-flash",
+    "modelFamily": "glm",
+    "status": "AVAILABLE BUT NOT USED — §13 prefers DeepSeek Flash and it was stable at plan freeze",
+    "availabilityEvidence": "the same dummy plumbing check also drove GLM end-to-end successfully"
+  },
+  "systemValidityEnvelope": {
+    "kind": "SystemValidityEnvelope",
+    "stage": "R3-L0",
+    "prerequisite": "R3-S0 SYSTEM_VALID",
+    "canonicalRevision": "dfeacc66d7c5f78c96c2d808e980c7f1f1459ddc",
+    "canonicalTree": "997c14e2dee2a14a27d7232edbd87ea36613624e",
+    "branch": "r3-l0-long-horizon-capital-reuse",
+    "confidentialRuntimeProfile": {
+      "source": "host/deployment/runtime/confidential_profile.js",
+      "id": "windows-confidential-single-active",
+      "maxActiveWorkers": 1,
+      "reason": "a worker's own workspace write grant is the last writer of its world label, so two ACTIVE worlds cannot both be read-fenced; the host serializes confidential workers",
+      "limitation": "at most ONE ACTIVE confidential worker exists at a time, so this stage's sessions are strictly sequential and no concurrency effect is measured"
+    },
+    "restartScope": {
+      "scope": "SAME-MACHINE OS PROCESS BOUNDARY",
+      "mechanism": "a fresh child Node process re-attaches to the durable stores BY PATH and re-resolves its own references",
+      "excluded": "no distributed, multi-host or network-boundary restart is measured or claimed"
+    },
+    "commonRuntimeSurface": {
+      "renderer": "dsh-common-worker",
+      "resultTool": "palimpsest_worker_result",
+      "contextPullTool": "palimpsest_worker_context_pull",
+      "contextPullChannel": "palimpsest-worker-context-v1",
+      "modelSpecificPromptTuning": false
+    },
+    "knownBypassScope": {
+      "claim": "KNOWN_BYPASSES_BLOCKED",
+      "forbiddenClaim": "NO_BYPASS_EXISTS",
+      "scope": "the checks enumerate known bypasses and block them; they are not a proof about unknown ones",
+      "checks": [
+        "NO_DIRECT_BACKING_STORE_READ",
+        "NO_UNLISTED_HANDLE_USE",
+        "NO_WRONG_ATTEMPT_REUSE",
+        "NO_CONTROL_PAYLOAD_DISCOVERY",
+        "NO_AUTHORITY_BYPASS",
+        "NO_DIRECT_REMOTE_TO_LOCAL_OWNERSHIP_CONVERSION"
+      ],
+      "attributedTo": "R1-L (worker-side backing-store route), R1-H, R1-HR, R1-HC"
+    },
+    "excludedClaims": [
+      "cross-model portability",
+      "organic self-generated capital compounding",
+      "Procedure marginal efficacy",
+      "universal project intelligence",
+      "monetary cost reduction unless measured",
+      "Fusion value",
+      "distributed or multi-host restart behaviour",
+      "concurrent confidential workers"
+    ]
+  },
+  "arms": {
+    "H": {
+      "id": "H",
+      "name": "HISTORY_ONLY",
+      "receives": "the full durable Project history and the evolving project world",
+      "selectedCapital": [],
+      "forbidden": [
+        "no selected capital handles",
+        "no hidden body injection",
+        "no automatic review"
+      ],
+      "retainsFullPalimpsest": true
+    },
+    "C": {
+      "id": "C",
+      "name": "CAPITALIZED",
+      "receives": "the same durable Project history plus the governed prepaid capital",
+      "requiredPath": [
+        "admission",
+        "ProjectAssetAssociation",
+        "future Context selection",
+        "actual model-visible index",
+        "governed pull",
+        "canonical current body"
+      ],
+      "hostMediatedForcedReview": false,
+      "voluntaryGovernedConsumption": true,
+      "retainsFullPalimpsest": true
+    }
+  },
+  "armOrderPerBlock": [
+    [
+      "C",
+      "H"
+    ],
+    [
+      "C",
+      "H"
+    ],
+    [
+      "H",
+      "C"
+    ],
+    [
+      "H",
+      "C"
+    ]
+  ],
+  "randomizationSeed": 1380724737,
+  "blockCount": 4,
+  "generationsPerTrajectory": 3,
+  "totalSessions": 24,
+  "runBudget": {
+    "intendedValidSessions": 24,
+    "hardMaximumValidSessions": 24,
+    "retryPolicy": {
+      "rule": "a valid generation outcome is NEVER retried; an infrastructure-invalid generation is retried only to reach the scheduled session count",
+      "infrastructureInvalidDefinition": "the child failed to run, the worker failed to spawn, or the host lost the job — NOT a bad model outcome",
+      "validOutcomeIsFinal": true,
+      "maxAttemptsPerSession": 4
+    },
+    "adaptiveStopping": false,
+    "addRepetitionsIfAmbiguous": false
+  },
+  "utilityVerdictRules": {
+    "POSITIVE_SIGNAL": {
+      "requirement": "C cumulative PERR < H cumulative PERR in at least 3 of 4 matched blocks; terminal diagnostic quality in C is not worse than H in at least 3 of 4 blocks; governed capital consumption demonstrated in EVERY C trajectory",
+      "perrBlocksRequired": 3,
+      "qualityBlocksRequired": 3,
+      "requiresConsumptionInEveryCTrajectory": true
+    },
+    "ADVERSE_SIGNAL": {
+      "requirement": "C cumulative PERR is worse in at least 3 of 4 blocks, OR terminal diagnostic quality shows a similarly consistent adverse direction",
+      "perrBlocksRequired": 3
+    },
+    "MIXED": {
+      "requirement": "directional effects exist but do not satisfy either stable criterion"
+    },
+    "NO_SIGNAL": {
+      "requirement": "no meaningful paired directional difference"
+    },
+    "pValues": "NOT REPORTED — §24 forbids p-values at n=4",
+    "costOverridesPerr": false
+  },
+  "uptakeVerdictRules": {
+    "CLOSED": "every CAPITALIZED trajectory contains at least one actual governed capital consumption event, AND the intended capital is consumed in the generations where its declared lesson is exposed",
+    "LIMITED": "at least one CAPITALIZED trajectory consumes capital, but not in every trajectory or not in every generation where the lesson is exposed",
+    "ABSENT": "no CAPITALIZED trajectory contains a governed capital consumption event",
+    "inferFromTaskSuccess": false
+  },
+  "sessionSchema": {
+    "required": [
+      "sessionId",
+      "block",
+      "arm",
+      "generation",
+      "pid",
+      "startingHead",
+      "finalHead",
+      "jobPhase",
+      "attemptId",
+      "promoted",
+      "sourceDigest",
+      "diagnostic",
+      "visibleOracle"
+    ],
+    "capitalWitness": [
+      "assetRevisionExists",
+      "projectAssociationExists",
+      "selectionAttemptBound",
+      "consumerVisibleHandles",
+      "selectedHandleDigest",
+      "governedPullInvoked",
+      "attemptAllowlistAuthorized",
+      "canonicalOwnerBodyDigest",
+      "noBypass"
+    ],
+    "historyOnlyWitness": [
+      "ordinaryHistoryExists",
+      "selectedCapitalSetEmpty",
+      "modelVisibleCapitalIndexAbsent",
+      "noCapitalBodyInPrompt",
+      "noProhibitedDiscovery"
+    ],
+    "cost": [
+      "inputTokens",
+      "outputTokens",
+      "cachedTokens",
+      "contextPullCalls",
+      "bodyBytesDelivered",
+      "toolCalls",
+      "oracleInvocations",
+      "revisions",
+      "elapsedMs"
+    ]
+  },
+  "capitalBundleDigest": "99a5c840fb7ef1f5e08c81096b6ecab9aa023317e9aa7cc6639b39420ebc2c47",
+  "diagnosticClasses": [
+    {
+      "id": "D1",
+      "invariant": "atomic-batch",
+      "lesson": "L1",
+      "prepaid": true,
+      "statement": "an unusable operation anywhere in a batch leaves the caller's ledger byte-identical"
+    },
+    {
+      "id": "D2",
+      "invariant": "validate-before-effect",
+      "lesson": "L1",
+      "prepaid": true,
+      "statement": "an operation AFTER a valid one is validated before the valid one has any effect"
+    },
+    {
+      "id": "D3",
+      "invariant": "closure-before-mutation",
+      "lesson": "L2",
+      "prepaid": true,
+      "statement": "the affected set is computed while the derived-from edges still exist, so a cascade is complete"
+    },
+    {
+      "id": "D4",
+      "invariant": "transitive-cascade",
+      "lesson": "L2",
+      "prepaid": true,
+      "statement": "a revocation reaches the FULL transitive closure, not only direct children"
+    },
+    {
+      "id": "D5",
+      "invariant": "override-preservation",
+      "lesson": null,
+      "prepaid": false,
+      "statement": "a tenant's explicit overrides survive a plan migration"
+    },
+    {
+      "id": "D6",
+      "invariant": "composed-atomicity",
+      "lesson": "L1",
+      "prepaid": true,
+      "statement": "a migration whose validation fails leaves the ledger byte-identical, even though it may revoke and regrant"
+    }
+  ],
+  "prepaidExposures": {
+    "G1": [
+      "D1",
+      "D2"
+    ],
+    "G2": [
+      "D1",
+      "D2",
+      "D3",
+      "D4"
+    ],
+    "G3": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D6"
+    ]
+  },
+  "eligiblePerGeneration": {
+    "G1": [
+      "D1",
+      "D2"
+    ],
+    "G2": [
+      "D1",
+      "D2",
+      "D3",
+      "D4"
+    ],
+    "G3": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D6"
+    ]
+  },
+  "trajectoryEligibleExposures": 11,
+  "generationRequirementDigests": {
+    "G1": "c10ec0c1f2fbf5b5a8a9609ce626defa9b6a9a1e3ea55fc377ed79fd134f8840",
+    "G2": "26f17d18e0071338a657ac0578e5d1406973397cf32edb64de544cbd5a4d5902",
+    "G3": "0e6237e91adf6d161d93ddbf6ca503937ff92a4bc3e5d5bc450ac64ba30e8fe2"
+  },
+  "analysisCodeDigests": {
+    "scripts/r3l0/envelope.mjs": "6e72cca0002b7c3e11caefdd3cca2f631a6f2b82e981ca909969a1364adb7b1b",
+    "scripts/r3l0/project.mjs": "048cc3efb74c17d2609cfcfa70ec8da10ffb1395f4a504353dfa85d0c14539ec",
+    "scripts/r3l0/diagnostic.mjs": "5804a6f4e2760af988e02ff2739a0ed9055de4c040ac4ee24f6354748948f06b",
+    "scripts/r3l0/capital.mjs": "509d4aebc6f3d7b00744d99f42ddb33fcb6ffbc91e1a943d2d6602c2b8c1d537",
+    "scripts/r3l0/trajectory.mjs": "6453e2ac4433c3704d088ba55c042ad873a3eb2b422b3532271ecca146ae52b8",
+    "scripts/r3l0/prehistory.mjs": "ee7623facb2e44040fbd960619915d4338171045ee60d574d5e133afc1346935",
+    "scripts/r3l0/generation-child.mjs": "67eb3010d0faacdb6369d5bdc8696bc5608e80297c66f9247d06c660ca71054c",
+    "scripts/r3l0/matrix.mjs": "503cef057f882031995a8d8f3773f10c0eff548f2c57ec35c59b49cd721fc122",
+    "scripts/r3l0/analyse.mjs": "0fac323d42402fbb2c7228b5ef158ea34e049aed36fe62e6a80ba4e28ac476cb",
+    "scripts/r3l0/witness.mjs": "8da16a09fd7b1a45a9eb0f95c0256b6bc2861784a1a80838f574a9e142890caa",
+    "scripts/gates/d2-live-tee-worker.mjs": "0c8c55b30d2679f7e79a8829f2389a4bba750b8022af6c018b19dbe7a1cc8500"
+  },
+  "historicalEvidenceBaseline": {
+    "protectedRoot": "research-evidence",
+    "excludedStagePath": "research-evidence/r3-l0",
+    "fileCount": 309,
+    "treeDigest": "6d850d7d5c39a4f8d088747e8e68dc8a74ed1a141695e4dbcacd9e3755b320d7"
+  },
+  "stageEvidencePath": "research-evidence/r3-l0",
+  "sessions": [
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b0-C-G1",
+      "trajectoryId": "b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b0-C-G2",
+      "trajectoryId": "b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G3",
+      "sessionId": "b0-C-G3",
+      "trajectoryId": "b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 2
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G1",
+      "sessionId": "b0-H-G1",
+      "trajectoryId": "b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G2",
+      "sessionId": "b0-H-G2",
+      "trajectoryId": "b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G3",
+      "sessionId": "b0-H-G3",
+      "trajectoryId": "b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 2
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b1-C-G1",
+      "trajectoryId": "b1-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b1-C-G2",
+      "trajectoryId": "b1-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G3",
+      "sessionId": "b1-C-G3",
+      "trajectoryId": "b1-C",
+      "orderInBlock": 0,
+      "generationIndex": 2
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G1",
+      "sessionId": "b1-H-G1",
+      "trajectoryId": "b1-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G2",
+      "sessionId": "b1-H-G2",
+      "trajectoryId": "b1-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G3",
+      "sessionId": "b1-H-G3",
+      "trajectoryId": "b1-H",
+      "orderInBlock": 1,
+      "generationIndex": 2
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G1",
+      "sessionId": "b2-H-G1",
+      "trajectoryId": "b2-H",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G2",
+      "sessionId": "b2-H-G2",
+      "trajectoryId": "b2-H",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G3",
+      "sessionId": "b2-H-G3",
+      "trajectoryId": "b2-H",
+      "orderInBlock": 0,
+      "generationIndex": 2
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b2-C-G1",
+      "trajectoryId": "b2-C",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b2-C-G2",
+      "trajectoryId": "b2-C",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G3",
+      "sessionId": "b2-C-G3",
+      "trajectoryId": "b2-C",
+      "orderInBlock": 1,
+      "generationIndex": 2
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G1",
+      "sessionId": "b3-H-G1",
+      "trajectoryId": "b3-H",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G2",
+      "sessionId": "b3-H-G2",
+      "trajectoryId": "b3-H",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "HISTORY_ONLY",
+      "generation": "G3",
+      "sessionId": "b3-H-G3",
+      "trajectoryId": "b3-H",
+      "orderInBlock": 0,
+      "generationIndex": 2
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b3-C-G1",
+      "trajectoryId": "b3-C",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b3-C-G2",
+      "trajectoryId": "b3-C",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G3",
+      "sessionId": "b3-C-G3",
+      "trajectoryId": "b3-C",
+      "orderInBlock": 1,
+      "generationIndex": 2
+    }
+  ],
+  "smokePolicy": "no G1/G2/G3 project worker may run before this plan commit; plumbing checks use dummy fixtures only; an accidental out-of-schedule generation is a protocol deviation and contributes zero to N",
+  "systemValidityPrecedence": "if any load-bearing graph/loop/runtime/mutation gate becomes red, SYSTEM_VALID = NO and BEHAVIORAL MECHANISM CLAIM = INVALID, even if task outcomes favour C"
+}

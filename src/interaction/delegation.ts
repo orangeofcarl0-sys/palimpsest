@@ -41,6 +41,8 @@ import { settleBranchFromOutput, statementFromOutput, type BranchSettlementOwner
 import type { ReasoningPolicyRef } from "../reasoning_cell/ref.js";
 import type { ReasoningCellService, ReasoningCellView } from "../reasoning_cell/service.js";
 import { RECIPE_ADMISSION_POLICY, RECIPE_VERIFICATION_POLICY } from "../recipes/execution.js";
+import { makeDelegationHandoff, makeDelegationReceipt } from "../project_handoff/index.js";
+import type { CollaborationReceipt, Handoff, ProjectBasisRef } from "../project_handoff/index.js";
 /**
  * §C.11 ②: the snapshot port is declared STRUCTURALLY here rather than imported from the deployment
  * layer. The dependency direction matters: this module is a product-interaction service, and importing
@@ -138,6 +140,17 @@ export interface DelegationStatusView {
 export interface DelegationInspection extends DelegationStatusView {
   readonly question: string | null;
   readonly conclusion: string | null;
+  /** R8: the projected Handoff/Receipt, once the branch reached a terminal state. */
+  readonly receipt: CollaborationReceipt | null;
+}
+
+export interface DelegationConsumption {
+  readonly delegationRef: string;
+  readonly state: Exclude<DelegationState, "RUNNING" | "UNKNOWN">;
+  readonly receipt: CollaborationReceipt;
+  readonly decisionNote: string;
+  readonly changedPlan: boolean;
+  readonly detail: string;
 }
 
 /** §C.11 principle ③: terminal, actionable, and never a progress ping. */
@@ -149,6 +162,8 @@ export interface DelegationTerminalProjection {
   readonly question: string;
   readonly conclusion: string | null;
   readonly detail: string;
+  /** R8: the same terminal result projected through the existing receipt contract. */
+  readonly receipt: CollaborationReceipt | null;
 }
 
 /**
@@ -176,6 +191,12 @@ export interface DelegationServiceDeps {
   /** The terminal delivery seam (principal attention / host followup). Called at most once per ref. */
   readonly onTerminal?: ((projection: DelegationTerminalProjection) => void) | undefined;
   /**
+   * R8: the project basis at the moment a handoff is projected. When absent, the frozen basis
+   * commit is still recorded and the revision/digest are marked unavailable rather than invented.
+   */
+  readonly projectBasis?: (() => ProjectBasisRef) | undefined;
+  readonly clock?: (() => string) | undefined;
+  /**
    * The cell's policy refs. They are NOT free choices: a deployment's verification/admission policy
    * ports serve exactly the refs they were built for, and the first-party exploratory bundle serves
    * the recipe EXPLORE refs. Defaulting to those is what makes a delegation work out of the box; a
@@ -189,6 +210,16 @@ export interface DelegationService {
   start(input: { readonly task: string; readonly kind?: DelegationKind | undefined }): Promise<DelegationStartResult>;
   status(input: { readonly delegationRef: string }): Promise<DelegationStatusView>;
   inspect(input: { readonly delegationRef: string }): Promise<DelegationInspection>;
+  /**
+   * R8: consume a terminal delegation result. It returns the receipt and the principal's decision
+   * note; it does NOT write canonical project truth. The adapter records the consumption as a
+   * non-canonical Journal note.
+   */
+  consume(input: {
+    readonly delegationRef: string;
+    readonly decisionNote: string;
+    readonly changedPlan?: boolean | undefined;
+  }): Promise<DelegationConsumption>;
 }
 
 const DEFAULT_VERIFICATION_POLICY: ReasoningPolicyRef = RECIPE_VERIFICATION_POLICY;
@@ -305,6 +336,70 @@ export function makeDelegationService(deps: DelegationServiceDeps): DelegationSe
    * second time (a second close, a second release, a second notification).
    */
   const concluded = new Set<string>();
+  /** R8: the projected handoff/receipt for this process, keyed by the delegation ref. */
+  const handoffs = new Map<string, Handoff>();
+  const receipts = new Map<string, CollaborationReceipt>();
+  const now = (): string => (deps.clock ?? (() => new Date().toISOString()))();
+
+  function projectBasisFor(basisCommit: string): ProjectBasisRef {
+    /**
+     * A delegation can be opened before the canonical project exists (the test fixtures and a
+     * fresh embedder do this). The frozen Git basis is still a fact, so an absent project is
+     * recorded honestly as revision 0 / empty digest, not as a hard failure.
+     */
+    let current: ProjectBasisRef | undefined;
+    try {
+      current = deps.projectBasis?.();
+    } catch {
+      current = undefined;
+    }
+    return current === undefined
+      ? { projectRevision: 0, projectDigest: "", headCommit: basisCommit }
+      : { ...current, headCommit: basisCommit };
+  }
+
+  function handoffFor(
+    ref: string,
+    parsed: { readonly cellId: string; readonly branchId: string; readonly basisCommit: string },
+    question: string,
+    workDir?: string,
+  ): Handoff {
+    const existing = handoffs.get(ref);
+    if (existing !== undefined) return existing;
+    const handoff = makeDelegationHandoff({
+      task: question,
+      basisCommit: parsed.basisCommit,
+      projectBasis: projectBasisFor(parsed.basisCommit),
+      workDir: workDir ?? `declared-basis:${parsed.basisCommit}`,
+      createdAt: now(),
+    });
+    handoffs.set(ref, handoff);
+    return handoff;
+  }
+
+  function receiptFor(
+    ref: string,
+    parsed: { readonly cellId: string; readonly branchId: string; readonly basisCommit: string },
+    question: string,
+    state: "COMPLETED" | "FAILED" | "INTERRUPTED" | "UNKNOWN",
+    conclusion: string | null,
+    detail: string,
+    workDir?: string,
+  ): CollaborationReceipt {
+    const existing = receipts.get(ref);
+    if (existing !== undefined) return existing;
+    const handoff = handoffFor(ref, parsed, question, workDir);
+    const receipt = makeDelegationReceipt({
+      handoff,
+      executorIdentity: `reasoning-cell:${parsed.cellId}/branch:${parsed.branchId}`,
+      state,
+      conclusion,
+      detail,
+      createdAt: handoff.createdAt,
+    });
+    receipts.set(ref, receipt);
+    return receipt;
+  }
 
   async function readCell(cellId: string): Promise<ReasoningCellView | null> {
     try {
@@ -413,6 +508,14 @@ export function makeDelegationService(deps: DelegationServiceDeps): DelegationSe
       await release(entry.snapshot);
     }
 
+    const receipt = receiptFor(
+      ref,
+      { cellId: entry.cellId, branchId: entry.branchId, basisCommit: entry.basisCommit },
+      entry.question,
+      state,
+      conclusion,
+      detail,
+    );
     // The DELIVERY is the third failure class: it is attempted once, and its failure is recorded as
     // nothing more than "the notification did not arrive". `status`/`inspect` still tell the truth.
     try {
@@ -423,6 +526,7 @@ export function makeDelegationService(deps: DelegationServiceDeps): DelegationSe
         question: entry.question,
         conclusion,
         detail,
+        receipt,
       });
     } catch {
       /* delivery failed; the research outcome stands and the canonical state is unchanged */
@@ -520,6 +624,7 @@ export function makeDelegationService(deps: DelegationServiceDeps): DelegationSe
         await release(snapshot);
         throw error;
       }
+      handoffFor(ref, { cellId, branchId, basisCommit }, task, snapshot.workDir);
       active.set(ref, { job, snapshot, cellId, branchId, question: task, settled: false });
 
       // The async half: nothing awaits this, and nothing about it reaches the principal except the
@@ -563,7 +668,44 @@ export function makeDelegationService(deps: DelegationServiceDeps): DelegationSe
         question = observation?.question ?? null;
         conclusion = observation?.conclusion ?? null;
       }
-      return Object.freeze({ ...status, question, conclusion });
+      const receipt =
+        parsed === null || status.state === "RUNNING"
+          ? null
+          : receiptFor(input.delegationRef, parsed, question ?? "", status.state, conclusion, status.detail);
+      return Object.freeze({ ...status, question, conclusion, receipt });
+    },
+    async consume(input: {
+      readonly delegationRef: string;
+      readonly decisionNote: string;
+      readonly changedPlan?: boolean | undefined;
+    }): Promise<DelegationConsumption> {
+      const status = await statusOf(input.delegationRef);
+      if (status.state === "RUNNING" || status.state === "UNKNOWN") {
+        throw new DelegationError(
+          `delegation ${input.delegationRef} is ${status.state}; only a terminal result can be consumed`,
+        );
+      }
+      const parsed = parseDelegationRef(input.delegationRef);
+      if (parsed === null) throw new DelegationError(`"${input.delegationRef}" is not a delegation ref`);
+      const view = await readCell(parsed.cellId);
+      const observation = view === null ? null : observeBranch(view, parsed.branchId);
+      const receipt = receiptFor(
+        input.delegationRef,
+        parsed,
+        observation?.question ?? "",
+        status.state,
+        observation?.conclusion ?? null,
+        status.detail,
+      );
+      return Object.freeze({
+        delegationRef: input.delegationRef,
+        state: status.state,
+        receipt,
+        decisionNote: input.decisionNote,
+        changedPlan: input.changedPlan === true,
+        detail:
+          "consumption records the principal's decision about this exploratory result; it does not accept the finding, create Evidence or promote anything",
+      });
     },
   });
 }

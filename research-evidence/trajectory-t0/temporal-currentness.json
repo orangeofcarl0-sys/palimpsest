@@ -1,0 +1,70 @@
+{
+  "stage": "Trajectory-T0",
+  "commit": "C2",
+  "kind": "multi-owner basis vector, observation-window consistency and as-of semantics",
+  "testFile": "test/trajectory_t0_falsifiers.test.ts",
+  "falsifierCount": 19,
+  "result": "19 passed",
+  "basisVector": {
+    "noInventedGlobalClock": true,
+    "perOwnerCursor": true,
+    "recordedPositions": [
+      "Work: {projectSequence, eventDigest, projectIrRevision, projectIrDigest}",
+      "ProjectIR: {revision, digest}",
+      "Reasoning (per referenced cell): {throughSeq, chainDigest, frontierRevision, frontierDigest}",
+      "Proof: {scopeId, throughSeq, chainDigest}",
+      "Journal (per project): {throughSeq, chainDigest}",
+      "World (per referenced attempt): {capturedAtRevision, basisDigest}"
+    ],
+    "completenessVocabulary": ["COMPLETE", "INCOMPLETE", "RACED"],
+    "absentOwnerNeverEmptyHistory": "G-N12: an uncomposed proof owner yields availability NOT_COMPOSED and completeness INCOMPLETE, never an empty-but-successful history"
+  },
+  "observationWindowConsistency": {
+    "protocol": "read basis -> read history -> read basis -> compare",
+    "racedDetection": "G-N11: a Work history that advances between the reads marks the window RACED and the read model states it as a caveat",
+    "claimedAsGlobalTransaction": false
+  },
+  "currentness": {
+    "vocabulary": ["CURRENT", "CHANGED", "STALE_BY_OWNER", "UNAVAILABLE", "UNKNOWN", "RACED"],
+    "digestDifferenceEstablishes": "CHANGED only — never semantic invalidity",
+    "staleByOwnerRequiresOwnerSemantics": true,
+    "measured": "G-N13: an owner WITHOUT currentness semantics that reports STALE is recorded as UNKNOWN rather than believed; an owner WITH them (reasoning frontier, proof standing) reports its own verdict",
+    "historicalStandingNotOverwritten": true
+  },
+  "asOfSemantics": {
+    "requiresExplicitOwnerCursor": true,
+    "requiresValidatedPredecessorBasisForNonGenesisCut": true,
+    "futureEventsExcluded": "G-N14: a cut at sequence 3 contains event ids [1,2,3] and no PROJECT_REVISED node",
+    "guarantees": [
+      "the named cut is the cut projected",
+      "a historical fact keeps the authorization, context and world basis it actually had",
+      "a rebuild of the same cut yields the same semantic digest"
+    ],
+    "doesNotGuarantee": [
+      "a globally atomic snapshot across owners",
+      "that an owner history is quiescent during the projection (the window may be RACED)",
+      "that a projected fact is still current — currentness is reported separately"
+    ]
+  },
+  "falsifiers": [
+    { "id": "G-N1", "subject": "identity", "invalid": "two events with the same display title but different canonical refs merging", "outcome": "two distinct nodes; the node-id set has size 2" },
+    { "id": "G-N2", "subject": "identity", "invalid": "one canonical source event producing two conflicting node identities", "outcome": "each source canonicalId maps to exactly one nodeId across rebuilds" },
+    { "id": "G-N3", "subject": "identity", "invalid": "a foreign ProjectId accepted through matching local numeric EventIds", "outcome": "refused (FOREIGN_PROJECT_EVENT)" },
+    { "id": "G-N4", "subject": "ordering", "invalid": "same-owner sequence continuity violated", "outcome": "refused (PREVIOUS_DIGEST_MISMATCH / INVALID_SOURCE_EVENT)" },
+    { "id": "G-N5", "subject": "ordering", "invalid": "a newer timestamp used to fabricate a causal predecessor", "outcome": "every succession edge is TEMPORAL_ONLY with evidence null; no relation name contains 'CAUS'" },
+    { "id": "G-N6", "subject": "ordering", "invalid": "two independent owner histories presented as a total causal order", "outcome": "the basis vector records per-owner cursors only; no globalSequence/totalOrder field exists" },
+    { "id": "G-N7", "subject": "evidence", "invalid": "a correlation_id treated as proof of causation", "outcome": "no established edge carries correlation_id as its carryingField; the authorization edge is established by envelope_id" },
+    { "id": "G-N8", "subject": "evidence", "invalid": "an unverified G1-B Host record advertising trustedIngestion true and RUN_ATTEMPT_CORRELATED", "outcome": "admitted at most at LOCAL_HOST_OBSERVATION_UNVERIFIED_FOR_CAUSAL_ADMISSION; no node and no edge is created" },
+    { "id": "G-N9", "subject": "evidence", "invalid": "a Worker summary treated as a verified changed-file observation", "outcome": "no 'changed_files' or 'worker_summary' appears in any result edge; the edge records only that a result was REPORTED" },
+    { "id": "G-N10", "subject": "evidence", "invalid": "a Proof Candidate treated as a published claim", "outcome": "the ground edge is UNRESOLVED_SOURCE with evidence null and the node's epistemicStatus is UNRESOLVED" },
+    { "id": "G-N11", "subject": "currentness", "invalid": "an owner history advancing during multi-owner projection reported as consistent", "outcome": "basis-vector completeness is RACED and the read model carries it as a caveat" },
+    { "id": "G-N12", "subject": "currentness", "invalid": "a required Owner unavailable and treated as empty", "outcome": "availability NOT_COMPOSED, completeness INCOMPLETE, and the owner is listed in unavailable" },
+    { "id": "G-N13", "subject": "currentness", "invalid": "a current Proof Standing overwriting its historical standing", "outcome": "currentness STALE_BY_OWNER while historicalStatus remains PUBLISHED — two separate fields" },
+    { "id": "G-N14", "subject": "currentness", "invalid": "an as-of view including events after its declared cut", "outcome": "includedEventIds is [1,2,3]; no later node appears" },
+    { "id": "G-N15", "subject": "read-only", "invalid": "the projection appending an Owner event", "outcome": "every port method matches ^(list|read|assess); the projection reports readOnly true; no barrel export matches ^(append|settle|publish|admit|revise|promote|write|mutate)" },
+    { "id": "G-N16", "subject": "read-only", "invalid": "the project event count or Owner basis changing merely because Trajectory was queried", "outcome": "count and last event digest are unchanged after two queries; the owner's verifyFull still passes" },
+    { "id": "G-N17", "subject": "determinism", "invalid": "reordering independent input arrays changing the semantic digest", "outcome": "the digest is unchanged" },
+    { "id": "G-N18", "subject": "determinism", "invalid": "two rebuilds from the same owner history differing", "outcome": "nodes, edges and unresolved set are byte-identical under the canonical serialization" }
+  ],
+  "genericCausalityEngineClaimed": false
+}

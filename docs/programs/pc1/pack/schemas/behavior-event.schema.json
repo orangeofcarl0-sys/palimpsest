@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:behavior-event:1",
+  "title": "可见行为分析事件，非模型隐藏推理",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "runId",
+    "actor",
+    "sessionId",
+    "sourceEventRef",
+    "stage",
+    "eventTime",
+    "observationTime",
+    "subjectRefs",
+    "attribution"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sessionId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sourceEventRef": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage": {
+      "enum": [
+        "TOOL_OFFERED",
+        "CALLED",
+        "ACCEPTED",
+        "EXECUTED",
+        "PRODUCED",
+        "DELIVERED",
+        "CONSUMED",
+        "DECISION_CHANGED",
+        "CANONICAL_ACCEPTED",
+        "FAILED",
+        "BLOCKED"
+      ]
+    },
+    "eventTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observationTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subjectRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "attribution": {
+      "enum": [
+        "MODEL",
+        "OPERATOR",
+        "PRODUCT",
+        "FIXTURE",
+        "EVALUATOR"
+      ]
+    },
+    "details": {
+      "type": "object"
+    },
+    "coCauseRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

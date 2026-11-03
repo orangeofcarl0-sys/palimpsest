@@ -25,7 +25,7 @@ import type { InstallPalimpsestOptions } from "./install_contract.js";
 /** Exactly the public options this cluster may read. */
 export type DelegationCompositionOptions = Pick<
   InstallPalimpsestOptions,
-  "projectId" | "repository" | "delegationBranchExecution" | "delegationDelivery"
+  "projectId" | "repository" | "delegationBranchExecution" | "delegationDelivery" | "clock"
 >;
 
 /** The already-composed values this cluster consumes. */
@@ -33,6 +33,8 @@ export interface DelegationCompositionInput {
   readonly options: DelegationCompositionOptions;
   /** The composed ReasoningCell service, or absent when this deployment has no reasoning store. */
   readonly reasoning: ReasoningCellService | undefined;
+  /** R8: the current project basis for the Handoff projection. */
+  readonly projectBasis?: (() => import("../project_handoff/index.js").ProjectBasisRef) | undefined;
 }
 
 /**
@@ -67,5 +69,7 @@ export function composeDelegationCapability(input: DelegationCompositionInput): 
     onTerminal: makePrincipalTerminalComposer({
       deliver: options.delegationDelivery ?? unboundPrincipalDelivery,
     }).onTerminal,
+    ...(input.projectBasis === undefined ? {} : { projectBasis: input.projectBasis }),
+    ...(options.clock === undefined ? {} : { clock: options.clock }),
   });
 }

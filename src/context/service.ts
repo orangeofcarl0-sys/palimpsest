@@ -93,6 +93,120 @@ export interface WorkWorkerTaskContext {
 }
 
 /**
+ * Trajectory-P2-D1 §11: the EXPERIMENTAL Attempt-bound Trajectory Context delivery projection. A bounded,
+ * read-only, digest-carrying view of one qualified historical Capsule, produced for the attempt being
+ * compiled. Its consumer identity is the attempt id the Context Owner supplies — never a model choice.
+ */
+export interface TrajectoryCapsuleDelivery {
+  readonly schemaVersion: number;
+  /** P2-E0 §8.1: the Capsule body, or `null` when delivery was assigned but no Capsule materialized. */
+  readonly capsule: unknown | null;
+  readonly serializedBytes: number;
+  readonly contentDigest: string;
+  readonly originAttemptId: string | null;
+  readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
+  readonly authority: "READ_ONLY_INSPECTION";
+  /**
+   * Trajectory-P2-D2 §7/§8: the PRODUCT-RENDERED, model-visible presentation for this attempt's arm. It is
+   * built by the Context/Trajectory composition (the product decides WHAT may be shown); the Host decides
+   * only WHERE it appears. `null`/absent when the arm renders no section (OFF). A TREATMENT whose
+   * presentation could not be built is reported through `deliveryState` rather than silently becoming
+   * CONTROL (§8.6). Optional so an existing P2-D1 delivery (which carries no presentation) still type-checks.
+   */
+  readonly presentation?: TrajectoryPresentationDelivery | null | undefined;
+  /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is never counted as a CONTROL. */
+  readonly deliveryState?: TrajectoryDeliveryState | undefined;
+  /**
+   * Trajectory-P2-E0 §8.1: THE ASSIGNED ARM. It is frozen by TRUSTED CONFIGURATION before the worker runs
+   * and is INDEPENDENT of whether delivery succeeded — a TREATMENT whose Reader was unavailable still
+   * reports `TREATMENT` here (§8.2). Optional so a P2-D1 delivery (which predates the arm) still type-checks.
+   */
+  readonly assignedArm?: TrajectoryAssignedArm | undefined;
+  /** P2-E0 §8.1: the source-derived historical eligibility, judged independently of the arm. */
+  readonly eligibility?: TrajectoryHistoricalEligibility | undefined;
+  /** P2-E0 §8.9: the failure reason, when delivery did not reach its outcome. Never a substitute for a fact. */
+  readonly failureReason?: string | null | undefined;
+}
+
+/**
+ * P2-E0 §8.1 / P2-E1 §10.1: THE THREE INDEPENDENT DIMENSIONS.
+ *
+ * A trial has an ASSIGNED ARM (trusted configuration), a HISTORICAL ELIGIBILITY (source-derived) and a
+ * DELIVERY OUTCOME (what actually happened). They cannot be silently substituted for each other: a
+ * TREATMENT whose history was unavailable must remain `TREATMENT` + `SOURCE_UNAVAILABLE` +
+ * `DELIVERY_PRECONDITION_NOT_MET`, never `OFF` + `DELIVERY_DISABLED` (§8.2).
+ *
+ * P2-E1 §10.1 adds `UNKNOWN` for the one case where the arm genuinely cannot be established on an error
+ * path — it is NEVER a substitute for a known arm, and it exists so the error path does not have to claim a
+ * specific arm it does not know (the P2-E0 code hard-coded TREATMENT there, mislabelling a CONTROL failure).
+ */
+export const TRAJECTORY_ASSIGNED_ARMS = ["OFF", "CONTROL", "TREATMENT", "UNKNOWN"] as const;
+export type TrajectoryAssignedArm = (typeof TRAJECTORY_ASSIGNED_ARMS)[number];
+
+/**
+ * P2-E0 §8.1: the historical eligibility, derived from the SOURCE (never from the arm). `QUALIFIED` means a
+ * single qualified, admitted historical execution exists; the delivery may still fail for a budget reason,
+ * which is a DELIVERY fact rather than an eligibility one.
+ */
+export const TRAJECTORY_HISTORICAL_ELIGIBILITY = ["QUALIFIED", "NOT_QUALIFIED", "RACED", "SOURCE_UNAVAILABLE", "UNKNOWN"] as const;
+export type TrajectoryHistoricalEligibility = (typeof TRAJECTORY_HISTORICAL_ELIGIBILITY)[number];
+
+/** P2-D2 §9.4: the small, source-grounded delivery-precondition vocabulary. */
+export const TRAJECTORY_DELIVERY_STATES = [
+  /** The arm renders no section (OFF, or the feature is disabled). */
+  "DELIVERY_DISABLED",
+  /** CONTROL rendered its no-history boundary. */
+  "CONTROL_SECTION_RENDERED",
+  /** TREATMENT rendered the qualified Capsule. */
+  "SECTION_RENDERED",
+  /** TREATMENT was assigned but no qualified Capsule was available. */
+  "CAPSULE_NOT_AVAILABLE",
+  /** TREATMENT was assigned but the Capsule was malformed or over budget. */
+  "DELIVERY_PRECONDITION_NOT_MET",
+  /** P2-E0 §8.1: delivery was never attempted for this attempt. */
+  "NOT_ATTEMPTED",
+  /** P2-E0 §8.1: delivery was attempted and FAILED (an error, not a clean refusal). */
+  "FAILED",
+] as const;
+export type TrajectoryDeliveryState = (typeof TRAJECTORY_DELIVERY_STATES)[number];
+
+/**
+ * P2-D2 §7.2/§8.2: the presentation the product hands to the Host. Its declared bytes and digest are over
+ * the ACTUAL rendered text, so the Host can verify that the section it places is the section produced.
+ */
+export interface TrajectoryPresentationDelivery {
+  readonly schemaVersion: 1;
+  readonly mode: "CONTROL" | "TREATMENT";
+  readonly sectionText: string;
+  readonly sectionBytes: number;
+  readonly sectionDigest: string;
+  readonly capsuleDigest: string | null;
+  readonly consumerBasisDigest: string;
+  readonly originAttemptId: string | null;
+  readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
+  readonly authority: "READ_ONLY_INSPECTION";
+}
+
+/** §11: the delivery provider. Given an attempt id, resolve its delivery or null (nothing authorized). */
+export type TrajectoryCapsuleDeliveryProvider = (input: { readonly attemptId: string }) => Promise<TrajectoryCapsuleDelivery | null>;
+
+/**
+ * P2-E0 §8.9: THE TRIAL DELIVERY RECORD the worker payload carries.
+ *
+ * ONE object with the THREE INDEPENDENT DIMENSIONS — assigned arm, source-derived eligibility and the actual
+ * delivery state — plus the failure reason and the product-rendered presentation. It deliberately does NOT
+ * carry the raw Capsule body: the child needs only the bounded presentation, and the Parent keeps the body
+ * for diagnostics (§8.7). Every field is a fact the trial record needs, and none is model-supplied.
+ */
+export interface TrajectoryDeliveryRecord {
+  readonly assignedArm: TrajectoryAssignedArm;
+  readonly eligibility: TrajectoryHistoricalEligibility;
+  readonly deliveryState: TrajectoryDeliveryState;
+  readonly failureReason: string | null;
+  readonly presentation: TrajectoryPresentationDelivery | null;
+}
+
+/**
  * The composed worker context D5-c3 delivers: the task half plus THIS attempt's compiled half.
  *
  * The entry shapes are the DISTRIBUTION's own (`boot` carries a byte count, `handles` does not) —
@@ -106,6 +220,39 @@ export interface WorkWorkerAttemptContext {
     readonly boot: readonly Readonly<{ handle: string; kind: string; ref: string; bytes: number }>[];
     readonly handles: readonly Readonly<{ handle: string; kind: string; ref: string }>[];
     readonly continuation?: PriorResultContext | undefined;
+    /**
+     * Trajectory-P2-D1 §11: the QUALIFIED TRAJECTORY CONTEXT CAPSULE for THIS attempt, when the deployment
+     * composed the experimental delivery port and the attempt has a governed lineage to a qualified origin.
+     *
+     * It is Attempt-bound: the consumer identity is the attempt being compiled (the Host's own
+     * `prepared.attemptId`), never a model choice. It is HISTORICAL DATA with `READ_ONLY_INSPECTION`
+     * authority, and it is present ONLY when the deployment enabled the experimental capability — so a
+     * default deployment's worker context is byte-identical to before.
+     */
+    readonly trajectoryCapsule?:
+      | {
+          readonly schemaVersion: number;
+          readonly capsule: unknown;
+          readonly serializedBytes: number;
+          readonly contentDigest: string;
+          readonly originAttemptId: string;
+          readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
+          readonly authority: "READ_ONLY_INSPECTION";
+          /**
+           * Trajectory-P2-D2 §7: the PRODUCT-RENDERED, model-visible section for this attempt's arm, or
+           * `null` when the arm renders no section. The HOST places this text; it never composes one.
+           */
+          readonly presentation?: TrajectoryPresentationDelivery | null | undefined;
+          /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is distinguishable. */
+          readonly deliveryState?: TrajectoryDeliveryState | undefined;
+          /** P2-E0 §8.1: the TRUSTED assigned arm, independent of whether delivery succeeded. */
+          readonly assignedArm?: TrajectoryAssignedArm | undefined;
+          /** P2-E0 §8.1: the source-derived historical eligibility, judged independently of the arm. */
+          readonly eligibility?: TrajectoryHistoricalEligibility | undefined;
+          /** P2-E0 §8.9: the failure reason when delivery did not reach its outcome. */
+          readonly failureReason?: string | null | undefined;
+        }
+      | undefined;
   };
 }
 
@@ -226,6 +373,26 @@ export interface ContextServicePorts {
    * the same default the distribution uses, so the two numbers cannot drift.
    */
   bootBudgetBytes?: number | undefined;
+  /**
+   * Trajectory-P2-D1 §11: the EXPERIMENTAL Attempt-bound Trajectory Context delivery port.
+   *
+   * The Context Owner does not reach Trajectory itself (it is a lower layer); the composition injects a
+   * narrow port that, given THIS attempt's id, returns a qualified, bounded, read-only Capsule or null.
+   * The port is OPTIONAL and absent by default, so a default deployment delivers no Capsule and its worker
+   * context is byte-identical to before. The consumer identity is the attempt id passed in — never a model
+   * choice — and the port is read-only.
+   */
+  trajectoryCapsuleFor?: TrajectoryCapsuleDeliveryProvider | undefined;
+  /**
+   * P2-E1 §10.1: THE TRUSTED ASSIGNED ARM, read independently of the delivery provider.
+   *
+   * The arm is frozen by TRUSTED CONFIGURATION before the worker runs, so the Context Owner must be able to
+   * report it EVEN WHEN the delivery provider throws — otherwise a CONTROL whose provider failed would be
+   * recorded as whatever the error path guessed (the P2-E0 code guessed `TREATMENT`). This read is a pure
+   * configuration fact: it consults no source, takes no argument a model could supply, and cannot be changed
+   * by a delivered payload. Absent ⇒ `UNKNOWN`, the honest value when no trusted arm was composed.
+   */
+  trajectoryAssignedArm?: (() => TrajectoryAssignedArm) | undefined;
   readonly clock?: (() => string) | undefined;
 }
 
@@ -317,6 +484,18 @@ export interface ContextService {
   workWorkerContext(attemptId: string, options?: ContextCompileOptions): Promise<WorkWorkerAttemptContext>;
   /** The task-level static half a worker receives. */
   taskContext(taskId: string): WorkWorkerTaskContext;
+  /**
+   * Trajectory-P2-D1 §10.3: THE OWNER-DERIVED GOVERNED REWORK ORIGIN.
+   *
+   * The Context Owner ALREADY resolves the governed rework lineage for an attempt (bounded by the
+   * attempt's own creation event) to compile its PriorResultContext. This exposes the SAME resolution as a
+   * narrow read, so a consumer-authorization decision reuses ONE meaning of "Governed Rework lineage"
+   * instead of maintaining a second event-log scan.
+   *
+   * Returns null when the attempt has no creation event or no governed lineage before it. It is a READ: it
+   * grants nothing and changes nothing.
+   */
+  governedReworkOriginOf(attemptId: string): { readonly originAttemptId: string; readonly reworkEventId: number; readonly originResultSubjectKind: string } | null;
 }
 
 /** The deterministic manifest identity for one attempt — the SAME key compile and fetch use. */
@@ -628,6 +807,63 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       }
       const work = taskContextOf(attemptRow.taskId);
       const compiled = await compile(attemptId, options);
+      /**
+       * §11 / P2-E0 §8.2: the EXPERIMENTAL Attempt-bound Trajectory delivery, when the deployment composed
+       * the port. The attempt id is the consumer identity; a null return means the arm is OFF and there is
+       * genuinely nothing to deliver.
+       *
+       * P2-E0 §8.2 CORRECTION: a delivery that carries the three dimensions is recorded EVEN WHEN no Capsule
+       * materialized, so a TREATMENT whose origin was unavailable stays `TREATMENT` + `SOURCE_UNAVAILABLE` +
+       * `DELIVERY_PRECONDITION_NOT_MET` at the worker boundary instead of vanishing into OFF. A port that
+       * THROWS is still contained: the worker context is produced, and the arm is recorded as FAILED.
+       */
+      let trajectoryCapsule: WorkWorkerAttemptContext["compiled"]["trajectoryCapsule"];
+      if (ports.trajectoryCapsuleFor !== undefined) {
+        try {
+          const delivered = await ports.trajectoryCapsuleFor({ attemptId });
+          if (delivered !== null) {
+            trajectoryCapsule = Object.freeze({
+              schemaVersion: delivered.schemaVersion,
+              capsule: delivered.capsule,
+              serializedBytes: delivered.serializedBytes,
+              contentDigest: delivered.contentDigest,
+              originAttemptId: delivered.originAttemptId ?? "",
+              framing: delivered.framing,
+              authority: delivered.authority,
+              presentation: delivered.presentation ?? null,
+              deliveryState: delivered.deliveryState ?? "SECTION_RENDERED",
+              assignedArm: delivered.assignedArm,
+              eligibility: delivered.eligibility,
+              failureReason: delivered.failureReason ?? null,
+            });
+          }
+        } catch (error) {
+          /**
+           * §8.1 / P2-E1 §10.1: an error is a DISTINCT outcome. The arm is not silently dropped; the delivery
+           * is recorded as FAILED with the reason, so the trial's assignment survives.
+           *
+           * P2-E1 CORRECTION: the arm is read from the TRUSTED CONFIGURATION (`ports.trajectoryAssignedArm`),
+           * never hard-coded. The P2-E0 code wrote `assignedArm: "TREATMENT"` here, so a CONTROL whose provider
+           * threw was recorded as a TREATMENT failure. When no trusted arm was composed the honest value is
+           * `UNKNOWN`, which is distinct from every real arm.
+           */
+          const trustedArm = ports.trajectoryAssignedArm?.() ?? "UNKNOWN";
+          trajectoryCapsule = Object.freeze({
+            schemaVersion: 1,
+            capsule: null,
+            serializedBytes: 0,
+            contentDigest: "",
+            originAttemptId: "",
+            framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS" as const,
+            authority: "READ_ONLY_INSPECTION" as const,
+            presentation: null,
+            deliveryState: "FAILED" as const,
+            assignedArm: trustedArm,
+            eligibility: "UNKNOWN" as const,
+            failureReason: `DELIVERY_ERROR: ${error instanceof Error ? error.message : String(error)}`,
+          });
+        }
+      }
       return Object.freeze({
         work,
         compiled: Object.freeze({
@@ -635,12 +871,33 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
           boot: Object.freeze(compiled.distribution.boot.map((entry) => Object.freeze({ ...entry }))),
           handles: Object.freeze(compiled.distribution.handles.map((entry) => Object.freeze({ ...entry }))),
           ...(compiled.manifest.continuation === undefined ? {} : { continuation: compiled.manifest.continuation }),
+          ...(trajectoryCapsule === undefined ? {} : { trajectoryCapsule }),
         }),
       });
     },
 
     taskContext(taskId: string): WorkWorkerTaskContext {
       return taskContextOf(taskId);
+    },
+
+    /**
+     * §10.3: the SAME governed-rework lineage `compile` uses, exposed as a narrow read so consumer
+     * authorization reuses one meaning. Bounded by the attempt's own creation event, so a later Task update
+     * cannot rebind an old consumer.
+     */
+    governedReworkOriginOf(attemptId: string) {
+      const attemptRow = ports.attempt(attemptId);
+      if (attemptRow === null) return null;
+      const lineage = reworkLineageFor(attemptId, attemptRow.taskId);
+      if (lineage === undefined) return null;
+      const subject = lineage.provenance.origin_result_subject as Record<string, unknown> | undefined;
+      const ref = subject?.ref;
+      if (typeof ref !== "string" || ref.length === 0) return null;
+      return Object.freeze({
+        originAttemptId: ref,
+        reworkEventId: lineage.reworkEventId,
+        originResultSubjectKind: typeof subject?.kind === "string" ? subject.kind : "unknown",
+      });
     },
   });
 

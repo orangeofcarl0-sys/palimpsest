@@ -1,0 +1,133 @@
+{
+  "schema": "cog5-run/v1",
+  "scenario": "outofscope",
+  "startedAt": "2026-11-01T12:37:54.568Z",
+  "process": {
+    "pid": 52840,
+    "node": "v24.14.1",
+    "platform": "win32"
+  },
+  "deterministicWorker": true,
+  "workerNote": "The Work Results are produced by a deterministic test-owned worker, not a model. The Work lifecycle, completion evaluation, basis capture, promotion, head reconciliation and packaged continuation are the real product paths.",
+  "projectId": "sablewick",
+  "workDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog5-rig\\outofscope2\\work",
+  "stateDir": "F:\\Codex_Work_Space\\Palimpsest\\.cog5-rig\\outofscope2\\state",
+  "intakeCandidate": {
+    "name": "vendor-capabilities-2026-02-10.csv",
+    "sourcePath": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\cog5\\scenario\\candidates\\vendor-capabilities-2026-02-10.csv",
+    "origin": "programme-office batch 2026-02-10 (test-owned immutable snapshot)",
+    "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "sourcePathInEvidence": "scripts/cog5/scenario/candidates/vendor-capabilities-2026-02-10.csv"
+  },
+  "initialHead": "d5ae72ec7bfbd8950f3f3ef291fa59d61070aeb6",
+  "scenarioDigests": {},
+  "tasks": {
+    "technical-fit": {
+      "driven": {
+        "jobId": "wdj-5885d4c7-37e9-452a-848a-d61298cc7e26",
+        "attemptId": "attempt-fcbd22b5b83c00da752e67323f191e98",
+        "phase": "FINISHED",
+        "settlement": {
+          "state": "NOT_READY",
+          "attemptId": "attempt-fcbd22b5b83c00da752e67323f191e98",
+          "reason": "OUT_OF_SCOPE",
+          "detail": "the world changed paths outside the task envelope's write_paths [deliverables/technical-fit.md]: sources/newsletter.md"
+        },
+        "hostError": null,
+        "task": {
+          "taskId": "technical-fit",
+          "state": "ACTIVE",
+          "lastEventId": 6,
+          "batchActivationEventId": null,
+          "envelopeId": "envelope-164d69e50e87c70647bccb1b8d3b56af"
+        }
+      },
+      "task": {
+        "taskId": "technical-fit",
+        "state": "ACTIVE",
+        "batchActivationEventId": null,
+        "envelopeId": "envelope-164d69e50e87c70647bccb1b8d3b56af",
+        "lastEventId": 6
+      },
+      "attempt": {
+        "attemptId": "attempt-fcbd22b5b83c00da752e67323f191e98",
+        "state": "RUNNING"
+      }
+    }
+  },
+  "results": {
+    "technical-fit": {
+      "attemptId": "attempt-fcbd22b5b83c00da752e67323f191e98",
+      "result": null,
+      "attemptState": "RUNNING",
+      "taskState": "ACTIVE"
+    }
+  },
+  "packagedInspection": {},
+  "expertDiagnostic": {},
+  "promotions": {},
+  "head": {},
+  "rework": {},
+  "negativeControls": {},
+  "errors": [],
+  "finishedAt": "2026-11-01T12:37:57.090Z",
+  "events": [
+    {
+      "eventId": 1,
+      "type": "PROJECT_CREATED",
+      "entityId": "sablewick"
+    },
+    {
+      "eventId": 2,
+      "type": "GATE_DEFINED",
+      "entityId": "gate-release"
+    },
+    {
+      "eventId": 3,
+      "type": "ROLE_TABLE_DEFINED",
+      "entityId": "sablewick"
+    },
+    {
+      "eventId": 4,
+      "type": "STAGE_GRAPH_DEFINED",
+      "entityId": "sablewick"
+    },
+    {
+      "eventId": 5,
+      "type": "TASK_CREATED",
+      "entityId": "technical-fit"
+    },
+    {
+      "eventId": 6,
+      "type": "TASK_STARTED",
+      "entityId": "technical-fit"
+    },
+    {
+      "eventId": 7,
+      "type": "ATTEMPT_CREATED",
+      "entityId": "attempt-fcbd22b5b83c00da752e67323f191e98"
+    },
+    {
+      "eventId": 8,
+      "type": "ATTEMPT_STARTED",
+      "entityId": "attempt-fcbd22b5b83c00da752e67323f191e98"
+    },
+    {
+      "eventId": 9,
+      "type": "CONTEXT_MANIFEST_ADDED",
+      "entityId": "context-manifest-43423485c8cf111d2eea24b486f80e0d"
+    }
+  ],
+  "final": {
+    "projectHead": "d5ae72ec7bfbd8950f3f3ef291fa59d61070aeb6",
+    "liveHead": "d5ae72ec7bfbd8950f3f3ef291fa59d61070aeb6",
+    "task": {
+      "taskId": "technical-fit",
+      "state": "ACTIVE",
+      "batchActivationEventId": null,
+      "envelopeId": "envelope-164d69e50e87c70647bccb1b8d3b56af",
+      "lastEventId": 6
+    }
+  },
+  "exitCode": 0
+}

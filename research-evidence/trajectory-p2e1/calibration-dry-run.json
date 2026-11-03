@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_CALIBRATION_DRY_RUN",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "mode": "dry-run",
+  "verdict": "GO",
+  "checks": [
+    {
+      "id": "oracle-version",
+      "statement": "the evaluation oracle names a frozen version",
+      "ok": true,
+      "detail": "p2e1-source-aware-1"
+    },
+    {
+      "id": "ground-truth-frozen",
+      "statement": "the Ground Truth digest is stable across reads",
+      "ok": true,
+      "detail": "fnv1a-e40ab964-1170"
+    },
+    {
+      "id": "ground-truth-has-coexistence",
+      "statement": "the Ground Truth keeps canonical completion and partial DSH coverage as separate, coexisting propositions",
+      "ok": true,
+      "detail": "ORIGIN_CANONICAL_COMPLETED=TRUE and ORIGIN_DSH_PAGE_PARTIAL=TRUE"
+    },
+    {
+      "id": "ground-truth-has-unknown",
+      "statement": "an unobserved fact is UNKNOWN rather than FALSE",
+      "ok": true,
+      "detail": "ORIGIN_ALL_DSH_EVENTS_OBSERVED, ORIGIN_CURRENT_VERIFICATION_ESTABLISHED"
+    },
+    {
+      "id": "evidence-allowlist-nonempty",
+      "statement": "the evidence allowlist is non-empty (references can be validated)",
+      "ok": true,
+      "detail": "allowlist present"
+    },
+    {
+      "id": "fixture-prepares",
+      "statement": "the benchmark fixture prepares deterministically",
+      "ok": true,
+      "detail": "fixtureId=FIX-A-GOVERNED-PARTIAL-CONTINUATION"
+    },
+    {
+      "id": "fixture-id-frozen",
+      "statement": "the fixture identity is the frozen Family A candidate",
+      "ok": true,
+      "detail": "FIX-A-GOVERNED-PARTIAL-CONTINUATION"
+    },
+    {
+      "id": "fixture-git-basis-real",
+      "statement": "the fixture's Git basis is a REAL commit of its own repository",
+      "ok": true,
+      "detail": "fb6aa02004d6ceaa2034cfe4f562d778c6448298"
+    },
+    {
+      "id": "fixture-partial-page",
+      "statement": "the origin page is genuinely PARTIAL",
+      "ok": true,
+      "detail": "3 of 8"
+    },
+    {
+      "id": "fixture-control-input",
+      "statement": "the CONTROL input renders a no-history boundary",
+      "ok": true,
+      "detail": "766c5539c44ed4196b382bd5584384dcae763d877867c9b75c6b8bfe8a499adb"
+    },
+    {
+      "id": "fixture-treatment-eligible",
+      "statement": "the TREATMENT input renders the qualified Capsule",
+      "ok": true,
+      "detail": "bff67593ff09d364f8a1755aaec8148ce5eba4637d0b03b926b184ad5eab6aa7"
+    },
+    {
+      "id": "fixture-digests-differ",
+      "statement": "CONTROL and TREATMENT sections are DIFFERENT (the difference is the history)",
+      "ok": true,
+      "detail": "sections differ"
+    },
+    {
+      "id": "fixture-budget-bounded",
+      "statement": "the fixture declares a bounded context budget",
+      "ok": true,
+      "detail": "capsuleMaxSerializedBytes=16384 sectionMaxBytes=16384"
+    },
+    {
+      "id": "no-external-provider",
+      "statement": "the dry-run contacts no external provider",
+      "ok": true,
+      "detail": "no provider client is constructed; no credential is read"
+    },
+    {
+      "id": "no-stochastic-execution",
+      "statement": "the dry-run starts no stochastic trial",
+      "ok": true,
+      "detail": "no trial loop exists in this entry point"
+    },
+    {
+      "id": "no-credential-in-source",
+      "statement": "no credential is hard-coded in this entry point",
+      "ok": true,
+      "detail": "the source names parameters, never values"
+    },
+    {
+      "id": "future-parameters-declared",
+      "statement": "the future calibration parameters are declared explicitly",
+      "ok": true,
+      "detail": "provider, modelVersion, repetitionCount, costBudget, runtimeLimit, taskFixture, toolSet, initialGitState, workAuthority, evaluationOracle, stopRules"
+    },
+    {
+      "id": "r2vr-law-carried",
+      "statement": "the R2-VR qualification law is carried forward as requirements",
+      "ok": true,
+      "detail": "5 requirements, none marked completed"
+    },
+    {
+      "id": "baseline-only-declared",
+      "statement": "the first stochastic stage is declared CONTROL-only",
+      "ok": true,
+      "detail": "§15.4: Treatment must not run because a Capsule happens to be available"
+    }
+  ],
+  "failedChecks": [],
+  "oracleVersion": "p2e1-source-aware-1",
+  "groundTruthDigest": "fnv1a-e40ab964-1170",
+  "fixtureId": "FIX-A-GOVERNED-PARTIAL-CONTINUATION",
+  "r2vrQualificationRequirements": [
+    {
+      "id": "baseline-neither-floor-nor-ceiling",
+      "statement": "the CONTROL baseline must be neither at the floor nor at the ceiling of the outcome scale",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "two-dimensions-vary",
+      "statement": "at least two outcome dimensions must vary across CONTROL repetitions",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "treatment-relevant-failure-varies",
+      "statement": "at least one treatment-relevant failure class must vary across CONTROL repetitions",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "trajectory-content-addresses-variation",
+      "statement": "the actual Trajectory content must address a varying outcome",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "not-residual-case-determined",
+      "statement": "the apparent result must not be entirely determined by an unrelated residual case",
+      "statusInE1": "REQUIREMENT_ONLY"
+    }
+  ],
+  "futureCalibrationParameters": [
+    "provider",
+    "modelVersion",
+    "repetitionCount",
+    "costBudget",
+    "runtimeLimit",
+    "taskFixture",
+    "toolSet",
+    "initialGitState",
+    "workAuthority",
+    "evaluationOracle",
+    "stopRules"
+  ],
+  "baselineOnlyDiscipline": "the first stochastic stage runs CONTROL only; Treatment is not enabled by the presence of a Capsule",
+  "stochasticCalibrationExecuted": false,
+  "treatmentTrialsExecuted": false,
+  "externalModelRequestOccurred": false,
+  "paidModelRequestOccurred": false,
+  "modelCallsMade": 0,
+  "elapsedMs": 2310,
+  "note": "§15: this is a DETERMINISTIC DRY-RUN. It measures no utility and awards no BENCHMARK_QUALIFIED. A future authorized stage runs the actual baseline calibration."
+}

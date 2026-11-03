@@ -1,0 +1,104 @@
+{
+  "schema": "aps-pilot-final-acceptance/v1",
+  "note": "The stale attempt was recorded EXPIRED after the typed replan; selection-final-2 covers the complete current artifact set and was promoted. The old report was not accepted.",
+  "expired": [
+    {
+      "attemptId": "attempt-89eb8cccd72e8e50e6ca0b90bfbfcfe4",
+      "taskId": "selection-final-2",
+      "outcome": "REFUSED",
+      "error": "illegal Attempt transition RUNNING -> STALE"
+    }
+  ],
+  "records": [
+    {
+      "taskId": "selection-final-2",
+      "attemptId": "attempt-89eb8cccd72e8e50e6ca0b90bfbfcfe4",
+      "changedFiles": [
+        "deliverables/selection.md",
+        "reviews/coastal.md"
+      ],
+      "promotionId": "promotion-cafd69a6eeda5fda2527c71ede2d3e24",
+      "resultingHeadCommit": "ac4971f877f11dfa6a57dfd1f98a73f68c894b58",
+      "state": "SATISFIED"
+    }
+  ],
+  "refusals": [],
+  "before": {
+    "revision": 2,
+    "projectHead": "bd86c1df89342a37f97b3099155618360b1b1dc4",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final-2",
+        "state": "ACTIVE"
+      }
+    ],
+    "attempts": [
+      {
+        "attemptId": "attempt-8f2acdeb3e45933caf2df7ff646f8cfb",
+        "taskId": "selection",
+        "state": "COMPLETED"
+      },
+      {
+        "attemptId": "attempt-71988884f148863a1b18a56e91f578db",
+        "taskId": "selection-final",
+        "state": "STALE"
+      },
+      {
+        "attemptId": "attempt-89eb8cccd72e8e50e6ca0b90bfbfcfe4",
+        "taskId": "selection-final-2",
+        "state": "RUNNING"
+      }
+    ]
+  },
+  "after": {
+    "revision": 3,
+    "projectHead": "ac4971f877f11dfa6a57dfd1f98a73f68c894b58",
+    "tasks": [
+      {
+        "taskId": "independent-check",
+        "state": "READY"
+      },
+      {
+        "taskId": "selection",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final",
+        "state": "STALE"
+      },
+      {
+        "taskId": "selection-final-2",
+        "state": "SATISFIED"
+      }
+    ],
+    "attempts": [
+      {
+        "attemptId": "attempt-8f2acdeb3e45933caf2df7ff646f8cfb",
+        "taskId": "selection",
+        "state": "COMPLETED"
+      },
+      {
+        "attemptId": "attempt-71988884f148863a1b18a56e91f578db",
+        "taskId": "selection-final",
+        "state": "STALE"
+      },
+      {
+        "attemptId": "attempt-89eb8cccd72e8e50e6ca0b90bfbfcfe4",
+        "taskId": "selection-final-2",
+        "state": "COMPLETED"
+      }
+    ]
+  }
+}

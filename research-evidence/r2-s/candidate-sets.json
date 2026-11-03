@@ -1,0 +1,524 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-S",
+  "note": "§6/§7: the broad candidate set per (scenario, block). TARGET is the scenario's OWN prior-generation bundle; DISTRACTOR is an independent, valid, mature bundle from a DIFFERENT domain, associated with the experimental project through the same public API the target uses.",
+  "bundleProvenance": [
+    {
+      "bundleId": "B",
+      "domain": "legacy configuration migration (normalize/validate/default ordering)",
+      "originProject": "r1r-config-migration",
+      "proofStatementChars": 321,
+      "reasoningStatementChars": 349,
+      "procedureClauses": 8
+    },
+    {
+      "bundleId": "C",
+      "domain": "event-log replay reduction (validate the whole log before mutating state)",
+      "originProject": "r1r-event-reducer",
+      "proofStatementChars": 426,
+      "reasoningStatementChars": 367,
+      "procedureClauses": 6
+    },
+    {
+      "bundleId": "D",
+      "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)",
+      "originProject": "r2u-incremental-cache",
+      "proofStatementChars": 506,
+      "reasoningStatementChars": 491,
+      "procedureClauses": 6
+    }
+  ],
+  "projectAssociation": "ProjectWorkspace.associateAsset({ associationKind: \"MANUAL\" }) — the existing, legitimate, harness-only association path. No canonical semantic change; project-scope enforcement is satisfied, not bypassed.",
+  "sets": [
+    {
+      "scenarioId": "C",
+      "scenarioName": "C_REPLAY_SAFE_REDUCER",
+      "block": 0,
+      "targetBundleId": "C",
+      "distractorBundles": [
+        "B",
+        "D",
+        "D"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "C",
+      "scenarioName": "C_REPLAY_SAFE_REDUCER",
+      "block": 1,
+      "targetBundleId": "C",
+      "distractorBundles": [
+        "D",
+        "D",
+        "B"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "C",
+      "scenarioName": "C_REPLAY_SAFE_REDUCER",
+      "block": 2,
+      "targetBundleId": "C",
+      "distractorBundles": [
+        "B",
+        "B",
+        "D"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "C",
+      "scenarioName": "C_REPLAY_SAFE_REDUCER",
+      "block": 3,
+      "targetBundleId": "C",
+      "distractorBundles": [
+        "D",
+        "D",
+        "D"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "C",
+      "scenarioName": "C_REPLAY_SAFE_REDUCER",
+      "block": 4,
+      "targetBundleId": "C",
+      "distractorBundles": [
+        "D",
+        "B",
+        "D"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "D",
+      "scenarioName": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 0,
+      "targetBundleId": "D",
+      "distractorBundles": [
+        "B",
+        "C",
+        "B"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "D",
+      "scenarioName": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 1,
+      "targetBundleId": "D",
+      "distractorBundles": [
+        "B",
+        "B",
+        "C"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "D",
+      "scenarioName": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 2,
+      "targetBundleId": "D",
+      "distractorBundles": [
+        "C",
+        "B",
+        "B"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "D",
+      "scenarioName": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 3,
+      "targetBundleId": "D",
+      "distractorBundles": [
+        "B",
+        "C",
+        "C"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "C",
+          "domain": "event-log replay reduction (validate the whole log before mutating state)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "D",
+      "scenarioName": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 4,
+      "targetBundleId": "D",
+      "distractorBundles": [
+        "B",
+        "B",
+        "B"
+      ],
+      "items": [
+        {
+          "role": "TARGET",
+          "kind": "proof",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "reasoning",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "TARGET",
+          "kind": "procedure",
+          "bundleId": "D",
+          "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "proof",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "reasoning",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        },
+        {
+          "role": "DISTRACTOR",
+          "kind": "procedure",
+          "bundleId": "B",
+          "domain": "legacy configuration migration (normalize/validate/default ordering)"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,366 @@
+{
+  "schema": "aps-host-run-summary/v1",
+  "runId": "aps-host-2026-11-03",
+  "createdAt": "2026-11-03T10:58:02.302Z",
+  "mode": "MOCK_MODEL_REAL_DSH_HOST",
+  "note": "The DSH host, Palimpsest product, SQLite state, native subagent child sessions and tool calls are real. The model is a deterministic Messages stand-in and produces NO model-cognition evidence. No provider was called and no paid tokens were spent.",
+  "providerCalls": 0,
+  "modelSpendTokens": 0,
+  "codeFreeze": "d75c5b671fd740f6a71d16c372259e031aac4d21",
+  "normalPalimpsestTools": [
+    "palimpsest_continuity",
+    "palimpsest_contribute",
+    "palimpsest_project",
+    "palimpsest_start",
+    "palimpsest_work"
+  ],
+  "principalSessions": [
+    {
+      "match": "APS_PRINCIPAL_SESSION_1",
+      "sessionId": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
+      "turnCount": 3
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_1",
+      "sessionId": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
+      "turnCount": 3
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_1",
+      "sessionId": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
+      "turnCount": 3
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_2",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "turnCount": 6
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_2",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "turnCount": 6
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_2",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "turnCount": 6
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_2",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "turnCount": 6
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_2",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "turnCount": 6
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_2",
+      "sessionId": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "turnCount": 6
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_3",
+      "sessionId": "session-aed959bb-53f9-4b25-9f56-8af214e6d9c7",
+      "turnCount": 2
+    },
+    {
+      "match": "APS_PRINCIPAL_SESSION_3",
+      "sessionId": "session-aed959bb-53f9-4b25-9f56-8af214e6d9c7",
+      "turnCount": 2
+    }
+  ],
+  "subagentSessions": [
+    {
+      "match": "APS_CHILD_COASTAL",
+      "sessionId": "a7171729-f5b0-4604-9f35-7d95aa1e826d",
+      "requestCount": 1,
+      "toolCalls": [],
+      "returnedText": "The capacity table exposes only a 2024 coastal column, and every entry is 'no'. No 2026 coastal rating is present in the declared source."
+    },
+    {
+      "match": "APS_CHILD_WIDTH",
+      "sessionId": "eb307aec-5173-4ea6-904c-a50049708198",
+      "requestCount": 1,
+      "toolCalls": [],
+      "returnedText": "Site A allows a unit up to 1200 mm wide; the Kestrel V2 is 900 mm, so width is not its binding constraint. Its design minimum is the binding constraint."
+    }
+  ],
+  "plan": {
+    "goal": "Select a defensible vendor for each site and leave a reviewable selection artifact, respecting every stated site constraint.",
+    "revision": 4,
+    "decisions": [
+      {
+        "decisionId": "ctd-f37b3df7e574b67ebbac8c339168d8c6",
+        "statement": "Principal revise plan: Check whether the 2026 coastal rating is present for the site-B vendor.",
+        "rationale": "The 2026 coastal rating is not in the declared source. Replace the site-B task with a coastal-rated selection and add an explicit capacity-refresh task before either selection is treated as complete. [contribution ctb-f779034f4f55d79dce31a082b8cfb704; source NATIVE_SUBAGENT:subagent:coastal-check]"
+      }
+    ],
+    "tasks": [
+      {
+        "taskId": "site-a",
+        "objective": "Select the site-A vendor from sources/vendor-capabilities.csv and sources/sites.md, and record the deciding constraint in deliverables/site-a.md.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/site-a.md"
+        ]
+      },
+      {
+        "taskId": "site-b-coastal",
+        "objective": "Select a coastal-rated vendor for site B and record the exact rating source in deliverables/site-b-coastal.md.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/site-b-coastal.md"
+        ]
+      },
+      {
+        "taskId": "capacity-refresh",
+        "objective": "Re-read sources/vendor-capabilities.csv and record whether a 2026 coastal rating is present in deliverables/capacity-refresh.md.",
+        "dependsOn": [
+          "site-b-coastal"
+        ],
+        "requiredArtifacts": [
+          "deliverables/capacity-refresh.md"
+        ]
+      }
+    ],
+    "status": [
+      {
+        "taskId": "capacity-refresh",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "site-a",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "site-b",
+        "state": "STALE"
+      },
+      {
+        "taskId": "site-b-coastal",
+        "state": "SATISFIED"
+      }
+    ]
+  },
+  "contributions": [
+    {
+      "contributionId": "ctb-f779034f4f55d79dce31a082b8cfb704",
+      "sourceKind": "NATIVE_SUBAGENT",
+      "sourceRef": "subagent:coastal-check",
+      "observation": "PRINCIPAL_DECLARED",
+      "readFootprintObservation": "DECLARED",
+      "independentVerification": false,
+      "status": "PLAN_CHANGED",
+      "basisState": "STALE",
+      "latestDecision": "REVISE_PLAN",
+      "planChange": {
+        "fromRevision": 0,
+        "toRevision": 1,
+        "addedTaskIds": [
+          "site-b-coastal",
+          "capacity-refresh"
+        ],
+        "removedTaskIds": [
+          "site-b"
+        ],
+        "changedTaskIds": [],
+        "changeClass": "behavior_change",
+        "changedIds": [
+          "site-b"
+        ],
+        "reason": "the subagent finding changes the site-B requirement"
+      },
+      "downstream": {
+        "planRevision": 1,
+        "addedTaskIds": [
+          "site-b-coastal",
+          "capacity-refresh"
+        ],
+        "taskStates": [
+          {
+            "taskId": "site-b-coastal",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "capacity-refresh",
+            "state": "SATISFIED"
+          }
+        ],
+        "acceptedTaskIds": [
+          "site-b-coastal",
+          "capacity-refresh"
+        ],
+        "observableOutcome": true
+      }
+    },
+    {
+      "contributionId": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
+      "sourceKind": "NATIVE_SUBAGENT",
+      "sourceRef": "subagent:width-check",
+      "observation": "PRINCIPAL_DECLARED",
+      "readFootprintObservation": "DECLARED",
+      "independentVerification": false,
+      "status": "UNASSESSED",
+      "basisState": "STALE",
+      "latestDecision": null,
+      "planChange": null,
+      "downstream": {
+        "planRevision": null,
+        "addedTaskIds": [],
+        "taskStates": [],
+        "acceptedTaskIds": [],
+        "observableOutcome": false
+      }
+    }
+  ],
+  "assessedContributions": 1,
+  "unassessedContributions": 1,
+  "decisionQueue": [
+    {
+      "kind": "STALE_CONTRIBUTION",
+      "ref": "ctb-2e0798d8b5dcb304f5d723e06f26d883",
+      "detail": "contribution from NATIVE_SUBAGENT was recorded at revision 0; the project has moved, so re-read the current basis before relying on it",
+      "who": "AGENT",
+      "advisory": true
+    }
+  ],
+  "mechanicalNextActions": [
+    "agent: every declared task is terminal; there is no legal formal transition left",
+    "agent: address an open question by investigation or a proposal; do not treat it as accepted",
+    "agent: propose the next bounded step in the project journal"
+  ],
+  "artifact": {
+    "path": "deliverables/site-a.md",
+    "present": true,
+    "sha256": "6c11e8fe8a3dbba8e7c5d9e99a01d64c89bc688115c33f3467086eb3916f50b0"
+  },
+  "artifacts": [
+    {
+      "path": "deliverables/site-a.md",
+      "present": true,
+      "sha256": "6c11e8fe8a3dbba8e7c5d9e99a01d64c89bc688115c33f3467086eb3916f50b0"
+    },
+    {
+      "path": "deliverables/site-b-coastal.md",
+      "present": true,
+      "sha256": "6ad48bb8d95edf501136bd28d3bbd2795a224842453ef45aea500ade88a19907"
+    },
+    {
+      "path": "deliverables/capacity-refresh.md",
+      "present": true,
+      "sha256": "53f992cac12deef0ed1abcdb296567bb3a6a079081e4cf1f9f44259554b91f8d"
+    }
+  ],
+  "operatorAcceptance": {
+    "promoted": true,
+    "taskId": "site-a",
+    "result": {
+      "promotionId": "promotion-c4e30c694416ab0862b9056bb46a9099",
+      "sourceCommit": "3e364a88197508a065e7c7d1323b79d61aba14dc",
+      "expectedHeadCommit": "37afc0730b439cba9ee4d0287c70b7362e2af2b5",
+      "resultingHeadCommit": "3e364a88197508a065e7c7d1323b79d61aba14dc",
+      "eventType": "PROMOTION_COMMITTED"
+    },
+    "after": {
+      "revision": 2,
+      "tasks": [
+        {
+          "taskId": "capacity-refresh",
+          "state": "BLOCKED"
+        },
+        {
+          "taskId": "site-a",
+          "state": "SATISFIED"
+        },
+        {
+          "taskId": "site-b",
+          "state": "STALE"
+        },
+        {
+          "taskId": "site-b-coastal",
+          "state": "READY"
+        }
+      ],
+      "projectHead": "3e364a88197508a065e7c7d1323b79d61aba14dc"
+    },
+    "note": "The artifact is a deterministic-host-run deliverable, not a model result. The acceptance is a real operator decision on the real Work/Promotion path."
+  },
+  "downstreamCompletion": {
+    "records": [
+      {
+        "taskId": "site-b-coastal",
+        "state": "SATISFIED",
+        "attemptId": "attempt-b92c76d1a8671fad316bb074ef536ee6",
+        "resultCommit": null,
+        "promotionId": "promotion-0bd67a8c06678d25649f55c8f3c24f0f",
+        "resultingHeadCommit": "4a1b505500e2c484fcf6e64358548e61fc4d03e9",
+        "artifact": "deliverables/site-b-coastal.md"
+      },
+      {
+        "taskId": "capacity-refresh",
+        "state": "SATISFIED",
+        "attemptId": "attempt-dab33dd364f76ae10e67f7742e996881",
+        "resultCommit": null,
+        "promotionId": "promotion-50ce4baeb7410a1eee17fea0961b05c1",
+        "resultingHeadCommit": "102679a2a6706512f35be33878dd759fb68cdc3c",
+        "artifact": "deliverables/capacity-refresh.md"
+      }
+    ],
+    "revision": 4,
+    "projectHead": "102679a2a6706512f35be33878dd759fb68cdc3c",
+    "tasks": [
+      {
+        "taskId": "capacity-refresh",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "site-a",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "site-b",
+        "state": "STALE"
+      },
+      {
+        "taskId": "site-b-coastal",
+        "state": "SATISFIED"
+      }
+    ]
+  },
+  "sessionFiles": [
+    {
+      "session": "a7171729-f5b0-4604-9f35-7d95aa1e826d",
+      "bytes": 14084,
+      "sha256": "509214c3da8cdf2beaad8af1563eda5cfbfd9114bf8375955873c0c1ee98c490"
+    },
+    {
+      "session": "eb307aec-5173-4ea6-904c-a50049708198",
+      "bytes": 14092,
+      "sha256": "e636008272aaa663868926febd0a6e024563c745e5bc37b45bd8d6d505df4d71"
+    },
+    {
+      "session": "session-00fd2511-79b5-4714-9ee6-8e317e16124f",
+      "bytes": 26262,
+      "sha256": "daf7ebe7b4dfcbd15a3062f30a9357b1fa0bfc6320e5130b3e9ef4e12c5c512b"
+    },
+    {
+      "session": "session-78e8a5e3-9dcf-4bcb-be61-82c3988e3a9d",
+      "bytes": 22339,
+      "sha256": "d578fae60a4d3d4bb53dc72e1220ea07108c0ea16c20914e977e9d24c87f0bcd"
+    },
+    {
+      "session": "session-aed959bb-53f9-4b25-9f56-8af214e6d9c7",
+      "bytes": 17698,
+      "sha256": "c9c18d1ac0a1f5ca9e9eb10cc95c7684c6bee7904557fbe2777e7fcb8fd6354d"
+    }
+  ],
+  "limitations": [
+    "The model is a deterministic Messages stand-in, not a language model. No cognition, quality, cost or comparative benefit is claimed.",
+    "The native DSH subagents are real child sessions with real read tool calls; their content is scripted by the test.",
+    "The product cannot observe a native subagent's read footprint; the contribution records what the principal declared and says so.",
+    "No operator acceptance was performed, so site-a remains VERIFYING. This is a real Work state, not a completed promotion.",
+    "The APS-C F/L/G paid comparison is BLOCKED: no APS spend authorization exists."
+  ]
+}

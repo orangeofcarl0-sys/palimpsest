@@ -1,0 +1,125 @@
+{
+  "findings": [
+    [
+      "--- 1. baseline: no label ---",
+      ""
+    ],
+    [
+      "worker integrity (measured)",
+      "probe-failed"
+    ],
+    [
+      "control integrity (measured)",
+      "probe-failed"
+    ],
+    [
+      "BASELINE worker reads own world",
+      "yes"
+    ],
+    [
+      "BASELINE worker reads sibling world",
+      "READABLE — the leak"
+    ],
+    [
+      "BASELINE worker reads durable state",
+      "READABLE — the leak"
+    ],
+    [
+      "--- 2. applying a MEDIUM + NO_READ_UP mandatory label ---",
+      ""
+    ],
+    [
+      "label",
+      "medium integrity SID length: 12"
+    ],
+    [
+      "label",
+      "SetNamedSecurityInfoW(attempt-sibling) rc=0"
+    ],
+    [
+      "label",
+      "SetNamedSecurityInfoW(state) rc=0"
+    ],
+    [
+      "label",
+      "SetNamedSecurityInfoW(sibling.txt) rc=0"
+    ],
+    [
+      "label",
+      "SetNamedSecurityInfoW(proof.txt) rc=0"
+    ],
+    [
+      "label persistence probe",
+      "{\"attempt-sibling\":{\"rc\":0,\"labelPresent\":true},\"state\":{\"rc\":0,\"labelPresent\":true},\"proof.txt\":{\"rc\":0,\"labelPresent\":true}}"
+    ],
+    [
+      "--- 3. after the label ---",
+      ""
+    ],
+    [
+      "worker integrity (measured)",
+      "probe-failed"
+    ],
+    [
+      "control integrity (measured)",
+      "probe-failed"
+    ],
+    [
+      "WORKER reads own world (ordinary work intact)",
+      "YES"
+    ],
+    [
+      "WORKER reads sibling world",
+      "blocked (BLOCKED:EPERM)"
+    ],
+    [
+      "WORKER reads durable state",
+      "blocked (BLOCKED:EPERM)"
+    ],
+    [
+      "WORKER enumerates the worlds dir",
+      "still listable ()"
+    ],
+    [
+      "CONTROL PLANE reads sibling world",
+      "yes — the control plane is unaffected"
+    ],
+    [
+      "CONTROL PLANE reads durable state",
+      "yes — the control plane is unaffected"
+    ]
+  ],
+  "canaries": {
+    "WORLD": "world_3cc8f0d3750d170f52083422",
+    "SIBLING": "sibling_aa3cba6d94ee772601441673",
+    "STATE": "state_15d62be9d0223544712c9362"
+  },
+  "baseline": {
+    "worker": {
+      "world": "canary=world_3cc8f0d3750d170f52083422",
+      "sibling": "canary=sibling_aa3cba6d94ee772601441673",
+      "state": "canary=state_15d62be9d0223544712c9362",
+      "integrity": "probe-failed"
+    },
+    "control": {
+      "world": "canary=world_3cc8f0d3750d170f52083422",
+      "sibling": "canary=sibling_aa3cba6d94ee772601441673",
+      "state": "canary=state_15d62be9d0223544712c9362",
+      "integrity": "probe-failed"
+    }
+  },
+  "after": {
+    "worker": {
+      "world": "canary=world_3cc8f0d3750d170f52083422",
+      "sibling": "BLOCKED:EPERM",
+      "state": "BLOCKED:EPERM",
+      "integrity": "probe-failed"
+    },
+    "control": {
+      "world": "canary=world_3cc8f0d3750d170f52083422",
+      "sibling": "canary=sibling_aa3cba6d94ee772601441673",
+      "state": "canary=state_15d62be9d0223544712c9362",
+      "integrity": "probe-failed"
+    }
+  }
+}

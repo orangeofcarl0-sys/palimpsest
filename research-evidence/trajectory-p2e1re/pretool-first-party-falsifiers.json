@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_PRETOOL_FALSIFIERS",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "The afterFix column was re-run against the current code for this artifact. The beforeFix column is transcribed from the parent-commit run and is the reason the fix exists; it was not re-measured, because re-running the vulnerable code would require reverting the repair.",
+  "cases": [
+    {
+      "name": "world",
+      "controlled": "child cwd = the authorized world",
+      "why": "legitimate delegation must keep working",
+      "expectation": "ALLOWED_NO_DELIVERY",
+      "beforeFix": {
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "canary": false,
+        "sibling": false,
+        "childSessions": 1,
+        "note": "the in-world case behaved correctly before the fix"
+      },
+      "afterFix": {
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "exitCode": 0,
+        "elapsedMs": 9655,
+        "childSessionCount": 1,
+        "refusalObserved": false,
+        "refusalDetail": null,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "canaryEventTypes": [],
+        "workerOutcome": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+        "cleanupOk": true
+      },
+      "matchesExpectation": true
+    },
+    {
+      "name": "sibling",
+      "controlled": "child cwd = a sibling world",
+      "why": "another attempt's instructions must not be delivered",
+      "expectation": "REFUSED_BY_GUARD",
+      "beforeFix": {
+        "verdict": "SIBLING_DELIVERED",
+        "canary": false,
+        "sibling": true,
+        "childSessions": 1,
+        "note": "the sibling world's AGENTS.md reached a user/message of the child session"
+      },
+      "afterFix": {
+        "verdict": "REFUSED_BY_GUARD",
+        "exitCode": 0,
+        "elapsedMs": 9330,
+        "childSessionCount": 0,
+        "refusalObserved": true,
+        "refusalDetail": "{\"turn\":1,\"step\":1,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-1\"},\"toolCallId\":\"call-1\",\"content\":[{\"type\":\"text\",\"text\":\"Error: code run failed (exception): ToolCallError: subagent: the child working directory \\\"C:/Users/66494/.palimpsest-gates/p2e1re-pretool-ec5Rvc/sibling-wor",
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "canaryEventTypes": [],
+        "workerOutcome": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+        "cleanupOk": true
+      },
+      "matchesExpectation": true
+    },
+    {
+      "name": "protected",
+      "controlled": "child cwd = the simulated protected root",
+      "why": "durable state must not be delivered",
+      "expectation": "REFUSED_BY_GUARD",
+      "beforeFix": {
+        "verdict": "DELIVERED",
+        "canary": true,
+        "sibling": false,
+        "childSessions": 1,
+        "note": "the protected canary reached a user/message of the child session before any guarded tool call"
+      },
+      "afterFix": {
+        "verdict": "REFUSED_BY_GUARD",
+        "exitCode": 0,
+        "elapsedMs": 9238,
+        "childSessionCount": 0,
+        "refusalObserved": true,
+        "refusalDetail": "{\"turn\":1,\"step\":1,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-1\"},\"toolCallId\":\"call-1\",\"content\":[{\"type\":\"text\",\"text\":\"Error: code run failed (exception): ToolCallError: subagent: the child working directory \\\"C:/Users/66494/.palimpsest-gates/p2e1re-pretool-cKOqlk/durable-sta",
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "canaryEventTypes": [],
+        "workerOutcome": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+        "cleanupOk": true
+      },
+      "matchesExpectation": true
+    },
+    {
+      "name": "parentOfProtected",
+      "controlled": "child cwd = the parent of the protected root",
+      "why": "outside the world; the pre-fix run read nothing only because no instruction file happened to exist there",
+      "expectation": "REFUSED_BY_GUARD",
+      "beforeFix": {
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "canary": false,
+        "sibling": false,
+        "childSessions": 1,
+        "note": "no AGENTS.md sat at the parent, so nothing foreign was read — an outcome that depended on the FILE SYSTEM rather than on authorization; the corrected host refuses the directory outright"
+      },
+      "afterFix": {
+        "verdict": "REFUSED_BY_GUARD",
+        "exitCode": 0,
+        "elapsedMs": 9378,
+        "childSessionCount": 0,
+        "refusalObserved": true,
+        "refusalDetail": "{\"turn\":1,\"step\":1,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-1\"},\"toolCallId\":\"call-1\",\"content\":[{\"type\":\"text\",\"text\":\"Error: code run failed (exception): ToolCallError: subagent: the child working directory \\\"C:/Users/66494/.palimpsest-gates/p2e1re-pretool-PSop1u\\\" resolves ",
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "canaryEventTypes": [],
+        "workerOutcome": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+        "cleanupOk": true
+      },
+      "matchesExpectation": true
+    },
+    {
+      "name": "traversal",
+      "controlled": "child cwd = ../durable-state",
+      "why": "relative traversal must resolve and then be refused",
+      "expectation": "REFUSED_BY_GUARD",
+      "beforeFix": {
+        "verdict": "DELIVERED",
+        "canary": true,
+        "sibling": false,
+        "childSessions": 1,
+        "note": "a relative ../durable-state reached the protected canary"
+      },
+      "afterFix": {
+        "verdict": "REFUSED_BY_GUARD",
+        "exitCode": 0,
+        "elapsedMs": 9351,
+        "childSessionCount": 0,
+        "refusalObserved": true,
+        "refusalDetail": "{\"turn\":1,\"step\":1,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-1\"},\"toolCallId\":\"call-1\",\"content\":[{\"type\":\"text\",\"text\":\"Error: code run failed (exception): ToolCallError: subagent: the child working directory \\\"../durable-state\\\" resolves to C:\\\\Users\\\\66494\\\\.palimpsest-gates",
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "canaryEventTypes": [],
+        "workerOutcome": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+        "cleanupOk": true
+      },
+      "matchesExpectation": true
+    },
+    {
+      "name": "production",
+      "controlled": "child cwd = the world inside .palimpsest/worlds",
+      "why": "the production layout must still delegate",
+      "expectation": "ALLOWED_NO_DELIVERY",
+      "beforeFix": {
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "canary": false,
+        "sibling": false,
+        "childSessions": 1,
+        "note": "the production layout behaved correctly because the world is inside the protected root"
+      },
+      "afterFix": {
+        "verdict": "ALLOWED_NO_DELIVERY",
+        "exitCode": 0,
+        "elapsedMs": 9290,
+        "childSessionCount": 1,
+        "refusalObserved": false,
+        "refusalDetail": null,
+        "canaryDelivered": false,
+        "siblingTokenDelivered": false,
+        "canaryEventTypes": [],
+        "workerOutcome": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+        "cleanupOk": true
+      },
+      "matchesExpectation": true
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "matched": 6,
+    "mismatched": [],
+    "leakedBeforeFix": [
+      "sibling",
+      "protected",
+      "traversal"
+    ],
+    "leakedAfterFix": [],
+    "noLeakAfterFix": true,
+    "allCasesClosed": true
+  }
+}

@@ -1,0 +1,10 @@
+[WARN] Unsupported engine: wanted: {"node":">=24.15.0"} (current: {"node":"v24.14.1","pnpm":"11.21.0"})
+$ pnpm run build && node scripts/audit/module-architecture.mjs --check
+[WARN] Unsupported engine: wanted: {"node":">=24.15.0"} (current: {"node":"v24.14.1","pnpm":"11.21.0"})
+$ tsc -b
+architecture:check FAIL
+  violations: 1
+  accepted baseline exceptions observed: 9
+  [hotspot_growth] [ratchet] src/tools/controller.ts LOC grew to 4831, above its recorded ceiling 4830 — the Work orchestration façade and the measured hotspot SR-2 exists for. It was 5378 LOC / fanOut 35 / fanIn 20 at the SR-2 start snapshot and 4828 / 39 / 19 after the b-slices: the KNOWLEDGE it owns fell even though its fan-out rose (it now composes its owners). The ceiling is where SR-2 left it — it may fall, and it may not grow back.
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1

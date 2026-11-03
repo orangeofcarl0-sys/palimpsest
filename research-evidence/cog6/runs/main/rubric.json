@@ -1,0 +1,62 @@
+{
+  "checks": {
+    "acceptedV3MinIsZero": true,
+    "noVendorSatisfiesSiteB": true,
+    "deliverableStatesNoSiteBVendor": true,
+    "deliverablePreservesCertificateUnverified": true,
+    "requirementR3Unchanged": true,
+    "goalUnchanged": true,
+    "taskAccepted": true,
+    "resultCommitPresent": true,
+    "journalHasAgentNegativeResult": false
+  },
+  "failed": [],
+  "siteBVendors": [],
+  "deliverable": "# Technical refresh\r\n\r\n## Site findings\r\n\r\n- Site A (design minimum -12 C, no coastal requirement): V1 (rated to -20 C).\r\n- Site B (design minimum -4 C **and** a coastal-rated warranty): **no compliant vendor on the current data**. V3 is rated to 0 C after the 2026-02-10 bulletin, which is above the site minimum; V2 is rated to -5 C but has no coastal warranty; V1 and V4 have no coastal warranty.\r\n- Site C (ambient minimum 2 C, width <= 800 mm): V3 (750 mm, rated to 0 C).\r\n\r\n## Summary\r\n\r\nNo compliant vendor exists for Site B on the current capability data. The programme cannot satisfy the Site B coastal-temperature requirement with the current vendor set. This is a negative finding about the current data, not a completed procurement.\r\n\r\n## Evidence note\r\n\r\nThe Solaris (V3) cold-weather certificate is promised but not on file. This analysis uses the published capability data only; the certificate claim is unverified and does not change a published minimum.\r\n",
+  "requirementR3": {
+    "requirement_id": "R3",
+    "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+    "priority": "critical",
+    "acceptance_refs": []
+  },
+  "taskState": "SATISFIED",
+  "result": {
+    "eventId": 65,
+    "resultCommit": "7be38267ca994b1529e08e2ad77ebd23e845bc38",
+    "report": {
+      "schema_version": 1,
+      "project_id": "sablewick",
+      "attempt_id": "attempt-ab0cc63e32eb6ed1640c0ca5a21d8157",
+      "task_id": "technical-refresh",
+      "envelope_id": "envelope-f0580decace31bb263e4266d56a8cf78",
+      "input_project_revision": 5,
+      "input_project_digest": "9ee06c63c0ac4a094c4f08fd7c504f78d073682b5b3227e2b651140b13aa83aa",
+      "base_commit": "55370b0f5bd7740aba4dcbe3074fb6b545443f61",
+      "worktree_id": "worktree-a21d8157",
+      "result_commit": "7be38267ca994b1529e08e2ad77ebd23e845bc38",
+      "worker_status": "completed",
+      "summary": "delegated work settled from its execution world",
+      "changed_files": [
+        "deliverables/technical-refresh.md"
+      ],
+      "produced_artifacts": [
+        "deliverables/technical-refresh.md"
+      ],
+      "started_at": "2026-08-13T00:00:00.000000Z",
+      "finished_at": "2026-08-13T00:00:01.000000Z",
+      "runtime_metadata": {
+        "runner": "dsh-agent",
+        "runner_version": "1",
+        "argv": [
+          "dsh-agent"
+        ],
+        "exit_code": 0,
+        "duration_ms": 1,
+        "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "stdout_artifact": null,
+        "stderr_artifact": null
+      },
+      "context_manifest": "context-manifest-7a296cf620f53eb33c15b8e708439343"
+    }
+  }
+}

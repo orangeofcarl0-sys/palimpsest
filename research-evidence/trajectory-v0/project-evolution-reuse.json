@@ -1,0 +1,40 @@
+{
+  "stage": "Trajectory-V0",
+  "commit": "C5",
+  "kind": "reuse of the T0 Project Evolution projection, and what V0 conservatively quarantined",
+  "reusedImplementation": "src/trajectory/projection.ts (T0, 1682 lines) — NOT modified and NOT rewritten",
+  "howReused": "src/composition/trajectory_v0.ts calls composeTrajectoryInputs(...) and buildProjectTrajectory(...) exactly as T0's own composition does, then SELECTS a safe subset for the Preview.",
+  "selectedRelations": ["TASK_AUTHORIZED_ATTEMPT", "ATTEMPT_PRODUCED_RESULT", "RESULT_PROMOTED", "ATTEMPT_REOPENED_FOR_REWORK"],
+  "selectionRule": "a relation is selected only when (a) it is in the safe set, (b) its evidenceState is ESTABLISHED_BY_OWNER_REFERENCE, and (c) it actually touches a node whose canonical Work event belongs to the addressed attempt.",
+  "attemptSelector": {
+    "usedByV0": "the canonical Work event's entity_id plus its event type, project id and source digest (src/composition/trajectory_v0.ts attemptEvents())",
+    "explicitlyNotUsed": "node.label.includes(attemptId) — the T0 review flagged label-based Attempt lookup as an incomplete guarantee, so V0 does not rely on it for the canonical selection",
+    "note": "T0's own projection still builds its node set the same way; V0 does not change that. V0 simply does not use the label to SELECT an attempt."
+  },
+  "quarantinedT0Relations": [
+    { "relation": "RECEIPT_REFERENCED_GROUND", "reason": "T0's ground matching uses a substring scan over the serialized payload, so the exact Reasoning/Journal ground match is not guaranteed", "presentedAs": "UNVERIFIED_RELATION in the quarantine list, never among the selected relations" },
+    { "relation": "GOVERNED_INTENT_CHANGED_PROJECT", "reason": "T0's cross-owner historical asOf and full ProjectIR parent/basis digest comparison are known incomplete", "presentedAs": "UNVERIFIED_RELATION" },
+    { "relation": "REVISION_SUCCEEDED_REVISION", "reason": "T0's ProjectIR parent/basis digest comparison is known incomplete", "presentedAs": "UNVERIFIED_RELATION" }
+  ],
+  "remainingT0LimitationsNotFixed": [
+    "historical non-genesis predecessor validation — V0 does not use a non-genesis cut",
+    "cross-owner historical asOf — V0 does not present one as atomic",
+    "exact Reasoning/Journal Ground matching — quarantined",
+    "full ProjectIR parent/basis digest comparison — quarantined",
+    "Proof currentness — V0 reports verification as NOT_OBSERVED_BY_V0 rather than inferring it",
+    "stable repeated cross-owner node identity — unchanged",
+    "label-based Attempt lookup — V0 uses exact entity identity instead of labels for selection"
+  ],
+  "historicalVsCurrent": {
+    "statedOnEveryPreview": true,
+    "field": "projectContext.historicalBasisNote",
+    "value": "WORK_HISTORICAL_CUT_WITH_CURRENT_CROSS_OWNER_READS: the Work sequence/digest is a historical cut, while cross-owner (Reasoning/Proof/Journal) reads are present-day. They are not one atomic snapshot.",
+    "measured": "present in every Preview built by the composition adapter, asserted by test"
+  },
+  "noT0Overhaul": {
+    "projectionTsModified": false,
+    "t0EvidenceModified": false,
+    "reason": "§5 forbids spending this stage fixing every historical T0 issue; only the minimal exact Attempt selector was added, inside the V0 adapter."
+  },
+  "deferredRatherThanImplemented": "V0 omits a questionable Reasoning/Proof edge entirely rather than adding another T0 semantic-reconstruction framework. In the real non-model scenarios no cross-owner ground exists, so the quarantined set is empty there and the selected set contains only exactly-established Work relations."
+}

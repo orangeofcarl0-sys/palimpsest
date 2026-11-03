@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_REGRESSION",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "finalHead": "96ffeb3",
+  "gates": {
+    "typescript": "PASS (tsc -b clean)",
+    "architecture": "PASS (0 violations, 9 accepted exceptions)",
+    "publicApi": "PASS (0 missing, 0 changed, 0 added)"
+  },
+  "focused": {
+    "command": "vitest run <all E0 + E1 trajectory suites + P2-D1/D2 + work-worker + governed-rework>",
+    "files": 18,
+    "tests": 181,
+    "passed": 181,
+    "failed": 0
+  },
+  "broad": {
+    "command": "vitest run --maxWorkers=2 --exclude **/r3l0ciarlcf_gates.test.ts",
+    "testFiles": 374,
+    "tests": 5047,
+    "passed": 5029,
+    "failed": 18
+  },
+  "failingFiles": {
+    "r3l0ciarlcfsh_persisted.test.ts": 5,
+    "r3l0ciarlcfs_gates.test.ts": 5,
+    "r3l0ciarlc_gates.test.ts": 2,
+    "r3l0cr_contract.test.ts": 2,
+    "r3l0ciarl_gates.test.ts": 1,
+    "r3l0ci_gates.test.ts": 1,
+    "trajectory_p2b_canonical_correlation.test.ts": 1,
+    "trajectory_p2b_first_party_gate.test.ts": 1
+  },
+  "regressionsFoundAndFixed": [
+    {
+      "what": "src/composition/attributed_preview.ts grew to 704 lines, above the 700-line composition-module ceiling",
+      "fix": "the added doc comment was compacted back to 699 lines",
+      "status": "FIXED"
+    },
+    {
+      "what": "trajectory_p2b_first_party_gate B0-F4 pinned the PRESENCE of the P2-E0 F14 defect (the parent reading the host HOST_FAILURE line as a worker outcome)",
+      "fix": "the assertion now checks the three facts stay DISTINCT by construction (parent detail no longer contains the host refusal reason)",
+      "status": "FIXED (CHANGED ASSERTION)"
+    },
+    {
+      "what": "trajectory_p2b_canonical_correlation failed in the parallel broad run",
+      "fix": "passes in isolation; classified as shared-DSH-root contention, not a code regression",
+      "status": "CONTENTION"
+    }
+  ],
+  "preExistingFailuresProvenAtBaseline": {
+    "method": "a separate git worktree at the EXACT baseline beec3cc was built (tsc -b) and the SAME six r3l0c-family files were run",
+    "baselineResult": "5 files failed | 1 passed; 15 failed | 168 passed (183)",
+    "mineResult": "5 files failed | 1 passed; 15 failed | 168 passed (183)",
+    "identicalFailureIdentities": true,
+    "newFailuresInMine": 0,
+    "note": "without a built dist the baseline skipped 58 tests and reported only 13 failures; building dist at the baseline reproduces the SAME 15 failures with identical identities"
+  },
+  "historicalFailures": "the residual 15 r3l0c-family failures are pre-existing and environmental (committed-plan closure DRIFTED), unrelated to any file this stage modified — the closure hashes only r3l0c* modules, none of which E1 touched.",
+  "unsafeTestExcluded": "test/r3l0ciarlcf_gates.test.ts (known unsafe isolated-mutation test against the shared Windows workspace)",
+  "runtimeCaveat": "Node 24.14.1 below declared minimum >=24.15.0",
+  "noUnsafeCleanup": true,
+  "historicalEvidenceByteIdentical": true,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

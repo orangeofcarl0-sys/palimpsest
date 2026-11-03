@@ -1,0 +1,949 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-M",
+  "expected": 20,
+  "recorded": 20,
+  "note": "the repo carries the manifest and digests; complete session transcripts stay external",
+  "trials": [
+    {
+      "trialId": "C-M0-b0r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M0",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 86110,
+      "indexPresentationDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "ae06bee48b4a1c9cc5b7fda707a7a5c3a88776e3ac213dc2d3eda60997da0fe9",
+        "transcript": "c2fe8dbcc02a0ab281198749abc053f836606a7ac456e4873619b484e4d1c9af",
+        "finalSource": "4ce3128726fc07ac02030ada200e755eb0100e7099458163c02e9c9cd0a04100"
+      }
+    },
+    {
+      "trialId": "C-M0-b1r1",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M0",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 262046,
+      "indexPresentationDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "c92d0a6dc83a36af1de6c468d9a853ba08453e350f99bc861815d39cbe77e2db",
+        "transcript": "b289e8d8aa2e808dd87ff672487349333e17e3d90b55cb1aa6db2f4e1ea69595",
+        "finalSource": "64b326c3ebc26008a5d84f2aa687ebdb01373805aca63a413da9b9d935dce8f3"
+      }
+    },
+    {
+      "trialId": "C-M0-b2r2",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M0",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 136867,
+      "indexPresentationDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "83c2506826812bac4019cc20dcfc6bec0b4c524c86146e1f914af9b6e341966a",
+        "transcript": "712c2623179dd5d45377c12cc9279828f235135b2617c523f55380042fb0d2bd",
+        "finalSource": "948ec8696a110bba316a36d53680e433bc9310505ba0e69001bea5a1156b1de3"
+      }
+    },
+    {
+      "trialId": "C-M0-b3r3",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M0",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 124803,
+      "indexPresentationDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "13ef2f85c10155e00aff5d40473b953e0671f3553210c15432aace2f1513cdab",
+        "transcript": "1ff9b65181ddfae244c895b0d099dbd043a055f9b975a9464df5166e83aa04db",
+        "finalSource": "253e586cf8cfd67fd18b9f221f5f2f93aca234c98f1ff4037953ec2a5f8fa70a"
+      }
+    },
+    {
+      "trialId": "C-M0-b4r4",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M0",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 127267,
+      "indexPresentationDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "e6288ef1337319081da8fdfd3d0eba9bae2b7f4c0b371884000badc6969c51f0",
+        "transcript": "6d7e8d5310d325a302ff8d0318c133b04ea81fd97c2fdaad55a0fab3a1e513f8",
+        "finalSource": "b4dbcdef0579b04bc09f96c51a6c4c5a1ef993732ea8702ddb3381d39884d4ff"
+      }
+    },
+    {
+      "trialId": "C-M1-b0r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M1",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 126588,
+      "indexPresentationDigest": "31faf95d1038260c555f25adc5a8ddea8f9b025b9453b933736d2d770d3a73fc",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "0261469377bc4346df669d601351fcb048903b1f18be9acb87660604e3492546",
+        "transcript": "063c0a78ef48b49b78f8288e5ce57c46e28bcd23ca7d4839cb39e0494cbe4cee",
+        "finalSource": "208d2d3548e61ba6127bedeb8081c7e91cbb25604e9a219d081b6ce6f5b17464"
+      }
+    },
+    {
+      "trialId": "C-M1-b1r1",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M1",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 143880,
+      "indexPresentationDigest": "31faf95d1038260c555f25adc5a8ddea8f9b025b9453b933736d2d770d3a73fc",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "2ef7bc696375aaab50e70a58f66de28b77c9d11b76237b5837d7198f4401e021",
+        "transcript": "ab492427f92560686822978c107a36d7a9c7484ad6b0db96601cf1c84b679541",
+        "finalSource": "0c207b24386de920812e9a45923d6dabcb0e7db1ed55c1bb2f717b2b711e9b10"
+      }
+    },
+    {
+      "trialId": "C-M1-b2r2",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M1",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 140824,
+      "indexPresentationDigest": "31faf95d1038260c555f25adc5a8ddea8f9b025b9453b933736d2d770d3a73fc",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "c7edee0eddb28c3c4b25b8b20a4265a0fd5d48aad0b94497e4b16f9efd76b028",
+        "transcript": "40ed78f34d9eb584727c6f094a56fb1322ae3a744f94a5d0875737c06aa98a5c",
+        "finalSource": "1508eca6aba5faf85c51a584090eb6d9943c2f459a7705c1e3bf94f724c62d19"
+      }
+    },
+    {
+      "trialId": "C-M1-b3r3",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M1",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 144156,
+      "indexPresentationDigest": "31faf95d1038260c555f25adc5a8ddea8f9b025b9453b933736d2d770d3a73fc",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "14ebc02a46ba8771ad97933b1e497f9bdeed23173e9d602a7c0a79d9bde740ef",
+        "transcript": "95149f41787828d035cb7fdaabad393b78b7b57cc07d0cd903f9604dc7ad81d8",
+        "finalSource": "6833f109c5ccb1a63dad1c5f35a515e9245b9de5a8fd1a2f76718644975f2cc3"
+      }
+    },
+    {
+      "trialId": "C-M1-b4r4",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "M1",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 113157,
+      "indexPresentationDigest": "31faf95d1038260c555f25adc5a8ddea8f9b025b9453b933736d2d770d3a73fc",
+      "productionIndexDigest": "98ad8fc64a134f8353474ad7e64aa36e0c111f5ff1308fb04669768a1a3244ab",
+      "digests": {
+        "trialRecord": "8eb6e157e704dd47a39008a3011f5287039dfdfcbd57ba8881d2304e3d0729e0",
+        "transcript": "55746df42231cd59d282e4c34f447ffdf703f44d4c3ce1a259560b21c8489c40",
+        "finalSource": "a6f651f231fc8b7b493b54f5d74ec5f05675abfbeded5cf0a69d588a18b27155"
+      }
+    },
+    {
+      "trialId": "D-M0-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M0",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 163297,
+      "indexPresentationDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "69fe8bd9d3f7c9085dc6d5043a93d43e9882a71627c10c15d62b54317428d80a",
+        "transcript": "6df8362c21db30ea5fa1b492cf532a36805f9bcc605b852c23f856599687284d",
+        "finalSource": "a6921b48b42e08c82bd784482d53981a3ebfc9d49e4e8d3e68cb3545ff74f82f"
+      }
+    },
+    {
+      "trialId": "D-M0-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M0",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 185951,
+      "indexPresentationDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "7ac6017880cac25aff7eb24a5b49343234290ae11ddc5c5afad8af49d4587b78",
+        "transcript": "da772f2e60ddd0e56df4eb54d9976213b38095a9f17977ee59ea1ce9745236be",
+        "finalSource": "206aee7de9b33bd8b4f358459c85303baf01d25f6b201b48210d3c16b542f304"
+      }
+    },
+    {
+      "trialId": "D-M0-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M0",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 108109,
+      "indexPresentationDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "4f90c464fa443cc36be48e4a3ce49cda60054092845790bd8f61ad89a104e31f",
+        "transcript": "45b6597c1c2a0dd7273f48d0e60694011bbb895d5cf1d4fecca6c3cfbc915a4c",
+        "finalSource": "ce2dd933a9319afdee9dda6a70581405f7329d593727ac2fa2070a285322536f"
+      }
+    },
+    {
+      "trialId": "D-M0-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M0",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 122383,
+      "indexPresentationDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "a7890bb138ccd7c64d917a7a812d4834110f47c51b0c0bfb90e8ef0953c5e33e",
+        "transcript": "1f6f7c1e2f2525a1c9b72ee675023831e79898761af0ddae74524add307fedb9",
+        "finalSource": "143d3e314240dd7828548636bd80c7573124807643d485551e44f52eeb88b43c"
+      }
+    },
+    {
+      "trialId": "D-M0-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M0",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "M0",
+      "pulledHandles": [
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "pullAccounting": {
+        "derivationPullOffset": 0,
+        "derivedCount": 0,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 113079,
+      "indexPresentationDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "27d46e8b8756f49dc50437417fcb4ddf451fa8325bdd381a93dfe335b98672ec",
+        "transcript": "fbcf04eeb3453307099c8fc554573761bed1c09c0a82a20d27af386ae432bdf6",
+        "finalSource": "949ad29b760dc7f45a2bf7c9d37d54c8787fe853672972444b09622b1fe5eade"
+      }
+    },
+    {
+      "trialId": "D-M1-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M1",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 117658,
+      "indexPresentationDigest": "1c10f6856e18ae0b7adfca9fcf9af2c0ce3102efb57e2c09250c4bae609bfb20",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "cf09651660728932f3ef803c78838887c226703298c81a6e0239adcb1ca9c965",
+        "transcript": "56d285e3e660911536ff1a86e6a7827884374e0c54fbe207e78b136c5f5d18bc",
+        "finalSource": "7559a9fdaf7522c993593eccd0e8be7455a32c3cd694582668ec3ea9ad8368f6"
+      }
+    },
+    {
+      "trialId": "D-M1-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M1",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 128375,
+      "indexPresentationDigest": "1c10f6856e18ae0b7adfca9fcf9af2c0ce3102efb57e2c09250c4bae609bfb20",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "f8ae3c06c3705b742475f83941981a68b4414a1e87d9939dab0f73d8beb1e9dc",
+        "transcript": "8e631320e23f59e6a7b7da5366fb0ab07705158ded4f2506c2f1842a43d5e79f",
+        "finalSource": "78270a021143e0c39b4714447d1a77b0aebbc86f8dce554a6c12a16bf93c9ccd"
+      }
+    },
+    {
+      "trialId": "D-M1-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M1",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 117027,
+      "indexPresentationDigest": "1c10f6856e18ae0b7adfca9fcf9af2c0ce3102efb57e2c09250c4bae609bfb20",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "a733dba5befd2dd64502e6ceb6057c0a398836f0ebbbc26a0673bdb91afc2d63",
+        "transcript": "9de38549f507627618dc9f9d6c4eb260b8088424d8829bff9adf678ba0256c11",
+        "finalSource": "69a0dc0869eeccd13cf76ceee95cfe595855743bcba851d727a0e8742c1e103d"
+      }
+    },
+    {
+      "trialId": "D-M1-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M1",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 161847,
+      "indexPresentationDigest": "1c10f6856e18ae0b7adfca9fcf9af2c0ce3102efb57e2c09250c4bae609bfb20",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "7c3e6f9424ff7093f634ac3bf7fa792e4b4501f896a4e6d2cdd7e3891bc986e4",
+        "transcript": "c29df83fc230ea57bdb20b04305956a0876cb2fdf8f0934ed392b5e171625d7c",
+        "finalSource": "0b170fa1312a770f8135c678bc8ae1eb2bb9e6d9b5f23090364282a60aa23573"
+      }
+    },
+    {
+      "trialId": "D-M1-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "M1",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "M1",
+      "pulledHandles": [
+        "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+      ],
+      "pulledKinds": [
+        "procedure",
+        "proof",
+        "reasoning"
+      ],
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "pullAccounting": {
+        "derivationPullOffset": 3,
+        "derivedCount": 3,
+        "workerPulledCount": 3,
+        "consistent": true
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 128574,
+      "indexPresentationDigest": "1c10f6856e18ae0b7adfca9fcf9af2c0ce3102efb57e2c09250c4bae609bfb20",
+      "productionIndexDigest": "6f7e50968a042d679bdafc1c892e903c5f9967d5cdf3a7ca1a08109bc0e2a480",
+      "digests": {
+        "trialRecord": "c66d373ab6834885b84aaba78a1d2ccbdf412c3c2829bb93ea11bb6a328c1a23",
+        "transcript": "2a6ba18f11c295ee8b92c80fb58fe69791e509df990bb8d521e9766099448191",
+        "finalSource": "199e039ee91f1c24b791bc2956e23351e9c3b8e0fe2be3ff9611515147152377"
+      }
+    }
+  ]
+}

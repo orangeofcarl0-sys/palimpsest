@@ -22,6 +22,11 @@ export interface ProjectIntentInstallOptions {
    * for it.
    */
   projectIntentAdmission?: ProjectIntentAdmissionPort | undefined;
+  /**
+   * PC1-V1 R6 (additive): the exact approved-source admission read, composed by `installProduct`
+   * over its review store. Absent ⇒ no Work task is bound to an approved source intake.
+   */
+  sourceIntakeAdmission?: import("../domain/promotion_eligibility.js").PromotionSourceIntakeAdmissionPort | undefined;
 }
 
 export interface ProjectIntentInstallResult {

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "regression",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "build": { "command": "npx tsc -b", "result": "PASS", "exit": 0 },
+  "architecture": { "command": "node scripts/audit/module-architecture.mjs --check", "result": "PASS", "violations": 0, "acceptedBaselineExceptions": 9 },
+  "publicApi": { "command": "node scripts/audit/module-architecture.mjs --check-public-api", "result": "PASS", "missing": 0, "changedKind": 0, "added": 0 },
+  "compositionRootRules": { "command": "vitest test/architecture/", "result": "PASS", "tests": 291, "note": "install.ts fan-out and direct-import counts stay within the SR-1 §25 A03 ceilings; trajectory_v0.ts was kept at 699 LOC (< 700 ratchet)" },
+  "focusedP2D0Suites": {
+    "files": 4,
+    "tests": 32,
+    "passed": 32,
+    "failed": 0,
+    "note": "source contract (18), ipc preservation (3), context capsule (6), cold capsule (1) plus the retained P2-A/B/C suites"
+  },
+  "affectedExistingSuites": {
+    "note": "trajectory H0/H1/V0, P2-A/P2-B/P2-C, composition lifecycle ownership, architecture composition-root and application-parity rules all pass; 767 tests in the trajectory/architecture/composition/context sweep"
+  },
+  "broadSuite": {
+    "command": "npx vitest run --maxWorkers=2 --exclude test/r3l0ciarlcf_gates.test.ts",
+    "files": 349,
+    "tests": 4835,
+    "passed": 4822,
+    "failed": 13,
+    "failedFiles": [
+      { "file": "test/r3l0ciarlcfsh_persisted.test.ts", "failures": 5 },
+      { "file": "test/r3l0ciarlcfs_gates.test.ts", "failures": 5 },
+      { "file": "test/r3l0ciarlc_gates.test.ts", "failures": 2 },
+      { "file": "test/r3l0ciarl_gates.test.ts", "failures": 1 }
+    ],
+    "deltaVsP2CRecord": {
+      "p2cFailed": 13,
+      "p2cFailedFiles": [5, 5, 2, 1],
+      "p2d0Failed": 13,
+      "p2d0FailedFiles": [5, 5, 2, 1],
+      "newRegressions": 0,
+      "note": "identical failure identity and per-file counts to the P2-C record; the total test count rose because P2-D0 added four test files"
+    }
+  },
+  "archivedDriftClassification": {
+    "family": "r3l0ciarl*",
+    "verifiedPreExisting": true,
+    "method": [
+      "the failing tests import ONLY their own scripts under scripts/r3l0ciarl*/ and scripts/gates/",
+      "no archived script contains an import statement naming any module P2-D0 changed (execution_association, attributed_preview, context_capsule, composition/lifecycle, composition/continuation, trajectory/index, handoff_preview, work_delegation)",
+      "the archived scripts' only src imports are src/alpha.js, src/beta.js, src/schema.js and src/values.js, none of which P2-D0 touched",
+      "the per-file failure counts and messages (DRIFTED/MISMATCH seals, PRIMARY prohibition ordering) are unchanged from the P2-C record"
+    ],
+    "cause": "archived closure drift, not a P2-D0 regression"
+  },
+  "unsafeExclusions": [
+    { "file": "test/r3l0ciarlcf_gates.test.ts", "reason": "§14.1 — an unsafe isolated-mutation path in some shared Windows workspaces; excluded from the broad run and not executed" }
+  ],
+  "runtimeCaveats": ["Node v24.14.1 < the documented >=24.15.0 minimum; the only runtime available on this host"],
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "sourceDataChanged": false
+}

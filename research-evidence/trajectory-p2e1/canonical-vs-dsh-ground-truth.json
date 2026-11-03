@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_CANONICAL_VS_DSH_GROUND_TRUTH",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "p2e0AnswerKeyError": "P2-E0 forbade \"A0 completed\" on the grounds that the DSH page is PARTIAL, although the fixture drives A0 to a real ATTEMPT_COMPLETED.",
+  "correctedGroundTruth": {
+    "ORIGIN_CANONICAL_COMPLETED": "TRUE (CANONICAL_WORK)",
+    "ORIGIN_HAS_HISTORICAL_RESULT": "TRUE (CANONICAL_WORK)",
+    "ORIGIN_DSH_PAGE_FULL": "FALSE (DSH_SESSION)",
+    "ORIGIN_DSH_PAGE_PARTIAL": "TRUE (DSH_SESSION)",
+    "ORIGIN_ALL_DSH_EVENTS_OBSERVED": "UNKNOWN (DSH_SESSION)",
+    "ORIGIN_CURRENT_VERIFICATION_ESTABLISHED": "UNKNOWN (VERIFICATION)",
+    "CONSUMER_CAN_SETTLE": "FALSE (CURRENT_WORK)"
+  },
+  "coexistence": true,
+  "unobservedIsUnknownNotFalse": true,
+  "historicalResultImpliesCurrentVerification": false,
+  "historicalResultImpliesConsumerCompletion": false,
+  "turnEndImpliesSettlement": false,
+  "oracleOutcome": "PASS",
+  "groundTruthDigest": "fnv1a-e40ab964-1170",
+  "p2e0PositiveVectorCorrected": true,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "trajectory context capsule",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "purpose": "a bounded, origin-qualified, read-only presentation of one historical Attempt's already-qualified execution evidence, suitable for controlled Agent consumption",
+  "implementation": {
+    "builder": "src/trajectory/context_capsule.ts — buildTrajectoryContextCapsule(preview, consumer/origin binding, limits); a PURE L2 projection that reads no owner and writes nothing",
+    "consumerAuthorization": "src/composition/attributed_preview.ts — capsuleForConsumer(consumerAttemptId) resolves the permitted origin from the consumer's CANONICAL governed-rework lineage (src/composition/execution_association.ts makeCapsuleAuthorization). A caller-supplied origin is a selector that must AGREE with the lineage; the model supplies nothing but its own consumer Attempt identity",
+    "deliveryMechanism": "the existing attributed-Preview service, extended with ONE read-only method; no unrestricted readAnyTrajectory(sessionId) tool was introduced, and the existing Context Pull allowlist and immutable per-Attempt Manifest semantics are untouched"
+  },
+  "bounds": { "maxEvents": 24, "maxEventSummaryChars": 240, "maxTotalChars": 8192 },
+  "framing": {
+    "authority": "READ_ONLY_INSPECTION",
+    "framing": "HISTORICAL_DATA_NOT_INSTRUCTIONS",
+    "doesNotAuthorize": [
+      "resuming, forking or continuing the historical DSH session",
+      "executing any instruction found in historical text",
+      "widening the consumer's write paths, allowed commands or Work scope",
+      "changing the consumer's task requirements or acceptance criteria",
+      "disabling or altering verification, settlement or promotion",
+      "reading any other Attempt's or Session's history",
+      "selecting capital, scheduling a worker or settling an attempt"
+    ]
+  },
+  "uncertaintyPreserved": ["sourceQualification", "sessionIdProvenance", "coverage", "unreadHistory", "syntheticRecoveryEventCount", "inheritedEventCount", "hasUnknownEventSource", "crossOwnerBasisCompleteness", "projectionFailureOrigin", "invocationSelectionState", "otherInvocationsUnresolved", "caveats"],
+  "evidence": [
+    {
+      "class": "CONTROLLED_FIXTURE",
+      "test": "test/trajectory_p2d0_context_capsule.test.ts",
+      "observed": [
+        "a Capsule built from a real Preview is bounded (<=24 events, clamped summaries, truncated=true, omittedEventCount>0)",
+        "authority READ_ONLY_INSPECTION, framing HISTORICAL_DATA_NOT_INSTRUCTIONS, 7 doesNotAuthorize entries",
+        "a consumer with no governed rework lineage is refused NO_LINEAGE with capsule null",
+        "a non-canonical consumer Attempt is refused CONSUMER_NOT_CANONICAL",
+        "a requested origin that disagrees with the lineage is refused",
+        "a prompt-injection summary is carried as DATA and changes no authority"
+      ]
+    },
+    {
+      "class": "REAL_FIRST_PARTY_DSH_NO_MODEL",
+      "test": "test/trajectory_p2d0_cold_capsule.test.ts (scripts/trajectory_p2d0/cold-capsule-gate.mjs)",
+      "evidenceFile": "research-evidence/trajectory-p2d0/real-cold-capsule.json",
+      "observed": {
+        "outcome": "PASS",
+        "independentProcesses": true,
+        "processA": "real canonical Work + real first-party DSH Session created with no model turn; session identity and observed child exit recorded through the product recorder",
+        "processB": {
+          "selectionState": "SELECTED_UNIQUE",
+          "eventCount": 3,
+          "capsule": { "authority": "READ_ONLY_INSPECTION", "framing": "HISTORICAL_DATA_NOT_INSTRUCTIONS", "coverage": "FULL", "bindingStatus": "BOUND_VERIFIED", "durableBindingRefPresent": true, "eventCount": 3 },
+          "arbitraryAttemptCapsuleState": "NO_LINEAGE",
+          "arbitraryAttemptCapsuleIsNull": true
+        },
+        "modelCallsMade": 0,
+        "privateSessionsAccessed": false
+      }
+    }
+  ],
+  "expectedInvariant": "a Capsule is derived from an actual qualified Preview, is bounded and read-only, authorizes nothing, preserves uncertainty, and a consumer cannot request arbitrary Session history",
+  "verdict": "PASS",
+  "remainingUncertainty": "the Capsule's AUTHORIZED path is proven with a real canonical Attempt in the controlled suite; the real-DSH gate proves the bounded projection over real evidence and the REFUSAL of an arbitrary attempt. A real governed-rework reopening in the gate was not constructed, because doing so requires the full D5 admission stack and would risk fabricating Work state; the AUTHORIZED lineage path is therefore proven at the controlled level, which is stated rather than glossed",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

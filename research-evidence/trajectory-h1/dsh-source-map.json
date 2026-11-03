@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_H1_DSH_SOURCE_MAP",
+  "stage": "Trajectory-H1",
+  "installed": true,
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "answers": {
+    "Q0_installed_versions": {
+      "dsh": "0.2.0-rc.2",
+      "session": "0.2.0-rc.2",
+      "sessionQuery": "0.2.0-rc.2",
+      "sessionPersistence": "0.2.0-rc.2",
+      "sessionPersistenceJsonl": "0.2.0-rc.2",
+      "packageRootExists": true
+    },
+    "Q1_one_read_provides_complete_validated_stored_prefix": {
+      "method": "handle.read(0, undefined) on an official read handle",
+      "result": {
+        "audit-balanced": {
+          "storedCount": 4,
+          "expected": 4,
+          "exact": true
+        },
+        "audit-interrupted": {
+          "storedCount": 2,
+          "expected": 2,
+          "exact": true
+        }
+      },
+      "verdict": "YES"
+    },
+    "Q2_closers_apply_directly_to_those_events": {
+      "method": "interruptedTurnClosers(storedEvents) over the SAME array the read returned",
+      "result": {
+        "audit-balanced": {
+          "syntheticCloserCount": 0
+        },
+        "audit-interrupted": {
+          "syntheticCloserCount": 2
+        }
+      },
+      "verdict": "YES"
+    },
+    "Q3_reproduces_official_cold_read_recovery_semantics": {
+      "method": "byte-level comparison of seq/type/reason between the single-read derivation and readColdSessionLog",
+      "result": {
+        "audit-balanced": {
+          "storedCount": 4,
+          "expectedStoredCount": 4,
+          "eventState": "shared-frozen",
+          "inheritedEventCount": 0,
+          "syntheticCloserCount": 0,
+          "derivedTotal": 4,
+          "officialTotal": 4,
+          "parity": {
+            "length": true,
+            "seq": true,
+            "type": true,
+            "reason": true
+          },
+          "headerPairedWithReadHandle": true,
+          "inheritedPairedWithReadHandle": true,
+          "helperMutatedItsInput": false,
+          "derivedIsCallerOwnedOuterArray": true
+        },
+        "audit-interrupted": {
+          "storedCount": 2,
+          "expectedStoredCount": 2,
+          "eventState": "shared-frozen",
+          "inheritedEventCount": 0,
+          "syntheticCloserCount": 2,
+          "derivedTotal": 4,
+          "officialTotal": 4,
+          "parity": {
+            "length": true,
+            "seq": true,
+            "type": true,
+            "reason": true
+          },
+          "headerPairedWithReadHandle": true,
+          "inheritedPairedWithReadHandle": true,
+          "helperMutatedItsInput": false,
+          "derivedIsCallerOwnedOuterArray": true
+        }
+      },
+      "verdict": "YES"
+    },
+    "Q4_ownership_of_returned_event_graph": {
+      "method": "read the SessionSeedEventState the handle reports",
+      "observedEventState": "shared-frozen",
+      "note": "the OUTER array returned by read is caller-owned; the event VALUES are shared-frozen, so the adapter must treat them as immutable and never write through them",
+      "verdict": "SHARED_FROZEN_VALUES_CALLER_OWNED_OUTER_ARRAY"
+    },
+    "Q5_recovery_helper_input_mutation": {
+      "method": "compare the input array length before and after interruptedTurnClosers",
+      "mutated": false,
+      "verdict": "PURE"
+    },
+    "Q9_header_paired_with_the_same_read_handle": {
+      "method": "compare handle.header/handle.inheritedEventCount with the official ColdSessionLog header fields",
+      "result": {
+        "audit-balanced": {
+          "headerPaired": true,
+          "inheritedPaired": true
+        },
+        "audit-interrupted": {
+          "headerPaired": true,
+          "inheritedPaired": true
+        }
+      },
+      "verdict": "YES"
+    },
+    "Q10_inherited_events_and_fork_lineage_without_a_second_read": {
+      "method": "read handle.inheritedEventCount and the header lineage fields from the SAME handle",
+      "observed": {
+        "inheritedEventCount": 0,
+        "headerKeys": [
+          "version",
+          "id",
+          "createdAt",
+          "isSeeded",
+          "delegationDepth",
+          "cwd",
+          "parentSession",
+          "origin"
+        ]
+      },
+      "verdict": "YES"
+    },
+    "Q6_one_read_invocation_yields_a_consistent_logical_prefix": {
+      "method": "one handle.read call resolves one physical generation and returns a slice of it",
+      "observed": {
+        "firstReadCount": 4,
+        "firstReadEventState": "shared-frozen",
+        "firstReadClosers": 0
+      },
+      "sourceNote": "JsonlSessionHandle.read -> readCurrent -> resolveCurrentLog once, then readStoredLog once; a monotonic observedLength guard rejects a shrunken log",
+      "verdict": "YES"
+    },
+    "Q7_ordering_and_snapshot_guarantees_for_concurrent_append": {
+      "method": "append+flush a writer between two reads on one read handle",
+      "observed": {
+        "firstReadCount": 4,
+        "secondReadCount": 6,
+        "monotonic": true
+      },
+      "documentedContract": "SessionHandle: 'Reads concurrent with a mutation carry no ordering promise beyond the valid contiguous prefix'; 'a torn physical tail is never returned'; 'repeated reads on this handle never observe an older state than a prior read'",
+      "verdict": "ONE_READ_IS_A_VALID_CONTIGUOUS_PREFIX; the boundary of an already-observed read is never retroactively reclassified"
+    },
+    "Q8_append_flush_and_crash_durability": {
+      "method": "read the shipped SessionHandle contract",
+      "observed": {
+        "append": "on resolution the batch is accepted, ordered, and visible to reads on this backend instance; a backend may buffer or batch physical writes behind append",
+        "flush": "the durability barrier — on resolution every acknowledged append is durable and the session is materialized for other processes"
+      },
+      "evidentiaryMeaningOfPersistedDshEvent": "an event READ BACK from this persistence backend's stored log; it does NOT by itself prove a resolved flush barrier, crash durability, Work settlement, tool success, promotion or a verified Attempt→Session binding",
+      "verdict": "PERSISTED_MEANS_READ_FROM_THE_STORED_LOG_NOT_CRASH_DURABLE"
+    },
+    "Q11_errors_that_must_remain_distinguishable": {
+      "method": "trigger each failure against the installed backend and record the error NAME",
+      "observed": {
+        "missing": {
+          "name": "SessionPersistenceNotFoundError",
+          "message": "session \"audit-absent-0000000000000000\" not found"
+        },
+        "readOnlyAppend": {
+          "name": "SessionReadOnlyError",
+          "message": "session \"audit-balanced\": append is not available on a read handle"
+        },
+        "readAfterClose": {
+          "name": "SessionHandleClosedError",
+          "message": "session \"audit-balanced\": read on a closed handle"
+        }
+      },
+      "taxonomy": [
+        "SessionPersistenceNotFoundError",
+        "SessionPersistenceCorruptionError",
+        "SessionFormatUnsupportedError",
+        "SessionAlreadyExistsError",
+        "SessionAlreadyOwnedError",
+        "SessionReadOnlyError",
+        "SessionHandleClosedError"
+      ],
+      "verdict": "NAME_BASED_TAXONOMY_IS_AVAILABLE_AND_DISTINCT"
+    },
+    "Q12_closing_after_a_successful_read": {
+      "method": "close twice on a read handle whose read already succeeded",
+      "observed": {
+        "readCount": 4,
+        "firstClose": "resolved",
+        "secondClose": "resolved"
+      },
+      "contract": "close() is idempotent and uncancellable: `this.closing ??= (async () => ...)`, so a second call observes the first settlement",
+      "verdict": "CLOSE_IS_IDEMPOTENT; a close failure must be surfaced separately and must never discard or fabricate the read result"
+    },
+    "Q13_installed_api_behaves_as_expected_under_this_node": {
+      "method": "every probe above ran on this Node version",
+      "node": "v24.14.1",
+      "documentedMinimum": "the repository declares engines.node >=24.15.0",
+      "readOnlyIntegrity": {
+        "balanced": {
+          "before": {
+            "file": "session.v4.jsonl.zstd",
+            "sha256": "4eb57d78ed2c1adb933154fc070a749f5b8da065ab0e2b347ee6326b6a423a4b",
+            "size": 239
+          },
+          "after": {
+            "file": "session.v4.jsonl.zstd",
+            "sha256": "4eb57d78ed2c1adb933154fc070a749f5b8da065ab0e2b347ee6326b6a423a4b",
+            "size": 239
+          },
+          "unchanged": true
+        },
+        "interrupted": {
+          "before": {
+            "file": "session.v4.jsonl.zstd",
+            "sha256": "d660d8dbc18e9ae7320200ca9b70ba716a6a156cce62fe895f64348983dff5a6",
+            "size": 195
+          },
+          "after": {
+            "file": "session.v4.jsonl.zstd",
+            "sha256": "d660d8dbc18e9ae7320200ca9b70ba716a6a156cce62fe895f64348983dff5a6",
+            "size": 195
+          },
+          "unchanged": true
+        }
+      },
+      "verdict": "BEHAVES_AS_DOCUMENTED; the Node version is BELOW the repository's declared minimum and is recorded as an environment caveat"
+    }
+  },
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "referenceImplementations": {
+    "packages/session-query/session-query/src/cold-read.ts": "@deepseek-ai/dsh-session-query/lib/types/cold-read.d.ts + lib/index.js readColdSessionLog",
+    "packages/session/session-persistence/src/handle.ts": "@deepseek-ai/dsh-session-persistence/lib/types/handle.d.ts SessionHandle",
+    "packages/core/session/src/repair.ts": "@deepseek-ai/dsh-session/lib/types/repair.d.ts interruptedTurnClosers/openTurnClosers"
+  },
+  "installedLayout": {
+    "dshHome": "~/.dsh (symlinked to a local install root; the absolute path is deliberately NOT recorded in committed evidence)",
+    "packageRoot": "<dshHome>/profiles/node_modules/@deepseek-ai",
+    "sessionFiles": [
+      "session.v4.jsonl.zstd",
+      "session.v4.jsonl",
+      "session.v3.jsonl.zstd",
+      "session.v3.jsonl"
+    ]
+  }
+}

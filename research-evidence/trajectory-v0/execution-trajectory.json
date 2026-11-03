@@ -1,0 +1,72 @@
+{
+  "stage": "Trajectory-V0",
+  "kind": "the execution event view, as measured",
+  "reader": {
+    "implementation": "scripts/trajectory_v0/dsh-session-reader.mjs",
+    "evidenceClass": "REAL_DSH_QUERY",
+    "backingCapability": "@deepseek-ai/dsh-session-persistence-jsonl (mounted in a bare Cordis Context) + readColdSessionLog from @deepseek-ai/dsh-session-query",
+    "whyAScriptNotSrc": "Palimpsest's own node_modules contains no @deepseek-ai/* package; the installed DSH lives at ~/.dsh/profiles/node_modules/@deepseek-ai/. A src/ module importing an absolute profile path would make the product source depend on one machine's deployment layout, so the reader lives in scripts/ and resolves the DSH home at call time.",
+    "noModelCall": true,
+    "noAgentActivation": true,
+    "noProviderContact": true
+  },
+  "measuredRealRead": {
+    "evidenceClass": "PASS_REAL_DSH_QUERY_NO_MODEL",
+    "sessionId": "session-7439041a-d269-4434-a6f2-491a21e36502",
+    "selectionMethod": "read the candidates and scored their event kinds — never modification time, never filename similarity",
+    "readState": "READ_OK",
+    "headerVersion": 4,
+    "isSeeded": false,
+    "inheritedEventCount": 0,
+    "knownEventCount": 37,
+    "pageReturned": 50,
+    "ruledEventKindsPresent": ["turn/start", "turn/end", "step/start", "step/end", "assistant/message", "tool/call", "tool/result"],
+    "assistantAttemptKindPresentInOtherSessions": true,
+    "boundedRead": "a maxEvents=5 page returned exactly seqs [0,1,2,3,4] while knownEventCount stayed 37 — the page is a real bound, not a full replay relabelled",
+    "cursorRead": "fromSeq=5, maxEvents=5 returned exactly seqs [5,6,7,8,9]",
+    "seqLocality": "DSH seq numbers are local to the session and are never merged into a global sequence",
+    "sanitization": "the page contains no 'arguments', no message content, no stream and no environment value; a tool/call exposes only the tool NAME and its step"
+  },
+  "measuredReadFailures": [
+    { "case": "session missing", "readState": "SESSION_MISSING", "evidenceClass": "PASS_REAL_DSH_QUERY_NO_MODEL", "note": "an absent id is reported as absent, never as an empty event stream" },
+    { "case": "corrupt stored session", "readState": "CORRUPT_SESSION", "evidenceClass": "PASS_DSH_QUERY_PORT_FIXTURE" },
+    { "case": "unsupported stored format", "readState": "FORMAT_UNSUPPORTED", "evidenceClass": "PASS_DSH_QUERY_PORT_FIXTURE" },
+    { "case": "backend unavailable", "readState": "BACKEND_UNAVAILABLE", "evidenceClass": "PASS_DSH_QUERY_PORT_FIXTURE" },
+    { "case": "session identity conflict", "readState": "IDENTITY_CONFLICT", "evidenceClass": "PASS_DSH_QUERY_PORT_FIXTURE" },
+    { "case": "event sequence gap", "readState": "EVENT_GAP", "evidenceClass": "structural (contiguity check in the reader)" },
+    { "case": "truncated observation", "readState": "TRUNCATED_OBSERVATION", "evidenceClass": "vocabulary member; the DSH reader balances an interrupted final turn in memory and reports the recovered prefix" },
+    { "case": "read capability absent", "readState": "READ_CAPABILITY_ABSENT", "evidenceClass": "PASS_REAL_OWNER_NONMODEL", "note": "no reader composed ⇒ an explicit page, so the session lifecycle is IDENTIFIED_NOT_READ rather than NO_SESSION_BOUND" }
+  ],
+  "errorClassificationSource": "SessionQueryError.code (SESSION_QUERY_SESSION_NOT_FOUND / SOURCE_CONFLICT / CORRUPT_SESSION / PERSISTENCE_FAILED / INVALID_SURFACE) and the persistence error classes (SessionPersistenceNotFoundError, SessionPersistenceCorruptionError, SessionFormatUnsupportedError), read from the installed declarations at @deepseek-ai/dsh-session-query/lib/types/config.d.ts and @deepseek-ai/dsh-session-persistence/lib/index.js",
+  "requiredEventCases": [
+    { "case": "turn start and end", "covered": true, "by": "real DSH read + fixture" },
+    { "case": "step start and end", "covered": true, "by": "real DSH read + fixture" },
+    { "case": "tool call with matching result", "covered": true, "by": "real DSH read" },
+    { "case": "tool call WITHOUT result", "covered": true, "by": "fixture — two calls, one result; the unmatched call is present and is never inferred to have succeeded" },
+    { "case": "failed assistant attempt", "covered": true, "by": "fixture — observedStatus 'failed', never flattened to a completed message" },
+    { "case": "incomplete step/turn", "covered": true, "by": "fixture — a step/end with no observedStatus; completion is never inferred from a step boundary" },
+    { "case": "unknown but valid event kind", "covered": true, "by": "real DSH read (permission/preset, sandbox/mode, …) + fixture; referenced by exact seq, never dropped, never interpreted" },
+    { "case": "corrupt or unsupported session source", "covered": true, "by": "fixture" },
+    { "case": "cursor before the first event", "covered": true, "by": "fixture — an empty page with READ_OK and the true knownEventCount" },
+    { "case": "cursor after the observed end", "covered": true, "by": "fixture — an empty page with the true knownEventCount" },
+    { "case": "session fork / inherited cut", "covered": true, "by": "fixture — inheritedEventCount 3 marks seqs 0-2 as inherited and seq 3 as child-owned; the parent is a SESSION relation, never a Work delegation edge" }
+  ],
+  "eventIdentity": {
+    "reference": "{ sessionId, seq, type, inherited }",
+    "sequencesNotMerged": "DSH seq is local to the Session; Work project_sequence is local to the Project; Host Observation sequence is local to the Port Invocation. V0 never merges them into one invented global sequence.",
+    "inheritability": "the inherited flag comes from the source's own inheritedEventCount, so an inherited fork event is distinguishable from a child-owned one"
+  },
+  "sensitiveContent": {
+    "defaultPreviewReturns": ["event kind", "local seq", "source reference", "observed status", "bounded sanitized summary"],
+    "durationOnlyWhenReal": true,
+    "durationFieldPresent": false,
+    "rawInspection": "deferred to a future separately-authorized capability",
+    "measuredAbsence": "the serialized page contains none of the fixture secrets (PRIVATE / SECRET / PAYLOAD) and no 'arguments' key"
+  },
+  "boundedReading": {
+    "defaultPageSize": 50,
+    "backgroundIndexing": false,
+    "newTranscriptPersistence": false,
+    "measuredCost": "the DSH reader reads the session's stored log through the handle seam; the page bound limits what is RETURNED, and the tests measure the page, not a claim of incremental I/O"
+  }
+}

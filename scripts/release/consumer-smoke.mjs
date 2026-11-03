@@ -48,7 +48,18 @@ const record = (label, value) => {
 };
 
 function run(command, args, options = {}) {
-  return execFileSync(command, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], ...options });
+  /**
+   * The package listing is now large enough that `npm pack --dry-run --json` can exceed Node's
+   * default 1 MB child-process buffer (measured in CI after the APS modules were added). This is a
+   * bounded content listing, not unbounded model output; give the child a real buffer rather than
+   * letting a packaging check fail with ENOBUFS.
+   */
+  return execFileSync(command, args, {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    maxBuffer: 64 * 1024 * 1024,
+    ...options,
+  });
 }
 
 /**

@@ -286,7 +286,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
       name: "palimpsest_gate",
       mode: "mutating",
       description:
-        "Execute one gate command inside the attempt worktree and record what it OBSERVED as the attempt's evidence (the recorded exit code is this execution's, never a caller-supplied number; only commands authorized by the task envelope are accepted). With a gateId, also evaluate that registered gate and report the verdict plus missing evidence",
+        "Request ONE gate observation for the attempt. A PROCESS predicate (process_exit_zero / tests_pass / tests_fail / lint_pass) runs the given authorized command and records the execution's own exit code. A STRUCTURAL predicate (expected_files_exist / write_scope_valid) is observed by the product from the attempt's tree and artifacts; the caller's command is ignored and a failing observation records no evidence. With a gateId, also evaluate that registered gate and report the verdict plus missing evidence",
       properties: {
         attemptId: { type: "string" },
         predicate: {
@@ -318,9 +318,13 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
           | undefined;
         let result: Record<string, unknown> = {};
         if (predicate !== undefined) {
-          if (command.length === 0) throw new TypeError("command must be non-empty");
-          // The gate EXECUTES the command and records what it observed; the caller never supplies
-          // an exit code, so a recorded number is always this product's own observation.
+          const structural = predicate === "write_scope_valid" || predicate === "expected_files_exist";
+          if (!structural && command.length === 0) {
+            throw new TypeError("command must be non-empty for a process predicate");
+          }
+          // The gate performs the observation. For a process predicate it EXECUTES the command and
+          // records its exit code; for a structural predicate it ignores the command and observes the
+          // tree itself. The caller never supplies an exit code or a structural result.
           const event = await controller.gate({
             attemptId,
             predicate,

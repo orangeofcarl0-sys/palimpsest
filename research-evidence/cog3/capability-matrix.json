@@ -1,0 +1,175 @@
+{
+  "schema": "cog3-capability-matrix/v1",
+  "observedAt": "2026-11-01",
+  "host": {
+    "runtime": "DSH 0.2.1-rc.3",
+    "plugin": "palimpsest-dsh-host 0.1.0",
+    "profile": "dsh-base + palimpsest-dsh-host",
+    "principal": "dsh --profile cog3-programme (long-lived, no --once)",
+    "deployment": "reasoning {}, attention activation dsh, project journal + associations, repository, isolated DSH_HOME",
+    "ready": {
+      "application": "full",
+      "collaboration": {
+        "advisor": "AVAILABLE",
+        "localExplore": "AVAILABLE",
+        "branchAdapter": "dsh-subprocess-branch:cog3-programme",
+        "reasoningStore": "CONFIGURED",
+        "projectVerification": "AVAILABLE",
+        "crossProject": "UNAVAILABLE",
+        "inboundPump": "CONFIGURED",
+        "attention": "ACTIVE",
+        "coldResume": "AVAILABLE"
+      },
+      "toolNames": [
+        "palimpsest_start", "palimpsest_plan", "palimpsest_next", "palimpsest_preview", "palimpsest_run",
+        "palimpsest_claim", "palimpsest_report", "palimpsest_gate", "palimpsest_status", "palimpsest_surfaces",
+        "palimpsest_finish", "palimpsest_begin", "palimpsest_attention", "palimpsest_federation",
+        "palimpsest_boundary", "palimpsest_runtime_view", "palimpsest_reasoning", "palimpsest_recipes",
+        "palimpsest_advisor", "palimpsest_recipe", "palimpsest_collaborate", "palimpsest_delegate",
+        "palimpsest_project", "palimpsest_manage", "palimpsest_verification", "palimpsest_graph"
+      ]
+    }
+  },
+  "rows": [
+    {
+      "capability": "Project Workspace Journal (read)",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": true,
+      "actuallyExecuted": "P1: palimpsest_project overview/assets/journal_entries; all four entry bodies returned",
+      "resultDelivered": "in the tool result",
+      "consumed": "yes: the plan uses the 2024 CRO pilot and the estate conflict",
+      "limitations": "the launch hint is count-only; the delegated branch does not see the journal"
+    },
+    {
+      "capability": "Project Workspace Journal (write)",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": true,
+      "actuallyExecuted": "not exercised in COG-3 (operator seeded the journal through the product)",
+      "resultDelivered": "n/a",
+      "consumed": "n/a",
+      "limitations": "write fence requires the current project"
+    },
+    {
+      "capability": "local FOCUS",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": true,
+      "actuallyExecuted": "not selected in COG-3",
+      "resultDelivered": "n/a",
+      "consumed": "n/a",
+      "limitations": "the architecture advisor still chooses"
+    },
+    {
+      "capability": "local EXPLORE / PARALLEL",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": true,
+      "actuallyExecuted": "not through palimpsest_collaborate; the same branch host executed through delegation",
+      "resultDelivered": "delegation terminal, not the recipe result",
+      "consumed": "yes (P1 finding)",
+      "limitations": "executeExplore runs branches sequentially; ephemeral, exploratory standing; COG-2's CAPABILITY_REQUIRED was a deployment limitation"
+    },
+    {
+      "capability": "palimpsest_collaborate",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": true,
+      "actuallyExecuted": "no",
+      "resultDelivered": "n/a",
+      "consumed": "n/a",
+      "limitations": "no COG-3 trial asked for it; the tool is present in the live registry"
+    },
+    {
+      "capability": "palimpsest_delegate",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": true,
+      "actuallyExecuted": "yes: P1 and MECH3 started real branches; each branch read the frozen snapshot and settled",
+      "resultDelivered": "yes: PALIMPSEST_DELEGATION delivered:true",
+      "consumed": "yes: the plan uses the throughput range; the pre-correction failure is preserved",
+      "limitations": "cell-local exploratory only; no Evidence/Proof; the host job is in-memory; delivery is not crash-durable; v1 does not auto-rerun INTERRUPTED"
+    },
+    {
+      "capability": "long-lived principal",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": "n/a",
+      "actuallyExecuted": "yes: P1 stayed alive across the launch turn, delegation delivery and a consuming turn",
+      "resultDelivered": "n/a",
+      "consumed": "n/a",
+      "limitations": "process lifetime is the host durability boundary"
+    },
+    {
+      "capability": "terminal delivery",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": "n/a",
+      "actuallyExecuted": "yes: P1 and MECH3",
+      "resultDelivered": "yes",
+      "consumed": "yes",
+      "limitations": "at most one delivery per ref per process; a delivery failure does not rewrite the result"
+    },
+    {
+      "capability": "cold resume",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": "n/a",
+      "actuallyExecuted": "yes: P1 phase 2 resumed session-d8ca633c with the update message",
+      "resultDelivered": "n/a",
+      "consumed": "yes: the revised plan was written",
+      "limitations": "a resume is a new process; it is not asynchronous continuity"
+    },
+    {
+      "capability": "Attention activation",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": "n/a",
+      "actuallyExecuted": "no: no peer signal was produced",
+      "resultDelivered": "n/a",
+      "consumed": "n/a",
+      "limitations": "now ACTIVE in the normal host; COG-2's none was the diagnostic deployment"
+    },
+    {
+      "capability": "Managed Work (palimpsest_begin)",
+      "implemented": true,
+      "composed": "partially: no confirmed standard; execution defaults to worktree",
+      "modelReachable": true,
+      "actuallyExecuted": "attempted by P1 and refused",
+      "resultDelivered": "refusal: 'this deployment's work position is an isolated worktree; direct principal bootstrap v1 supports in-place execution only'",
+      "consumed": "n/a",
+      "limitations": "needs execution in-place or the D2 worker path, plus an operator-confirmed completion standard"
+    },
+    {
+      "capability": "Project Intent",
+      "implemented": true,
+      "composed": true,
+      "modelReachable": false,
+      "actuallyExecuted": "no",
+      "resultDelivered": "n/a",
+      "consumed": "n/a",
+      "limitations": "no model-facing tool"
+    },
+    {
+      "capability": "Trajectory projection",
+      "implemented": true,
+      "composed": "worker-prompt-facing only",
+      "modelReachable": false,
+      "actuallyExecuted": "no",
+      "resultDelivered": "n/a",
+      "consumed": "n/a",
+      "limitations": "no model-facing tool"
+    },
+    {
+      "capability": "native DSH subagents (baseline only)",
+      "implemented": true,
+      "composed": "enabled in the F profile",
+      "modelReachable": true,
+      "actuallyExecuted": "yes: one subagent produced a red-team audit and messaged the parent",
+      "resultDelivered": "yes (subagent final answer and send_message)",
+      "consumed": "yes: the F plan's per-reel sensitivity and go/no-go",
+      "limitations": "not a Palimpsest capability; the F run was truncated at the campaign cap"
+    }
+  ]
+}

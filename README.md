@@ -133,6 +133,37 @@ node "$CLI" status      # 项目状态与断点
 
 在 DSH 中安装技能后（`.zcode/skills/palimpsest/`），直接对 agent 说“并行探索这个实现的两种方案”或“问一下 optics 项目”；中断后说“继续”即可恢复。
 
+## PC1 产品收敛（本分支）
+
+本分支（`palimpsest-product-convergence-v1`）在既有 owner 之上补齐了普通产品路径，**没有新增
+Runtime、Router 或第二套 canonical authority**：
+
+- `palimpsest_work`：一个 placement-aware 的普通工作入口（status/plan/next/run/begin/complete/propose）；
+  placed work 由 host worker 结算，principal 不会被误导去调用不适用的 `finish`。
+- `palimpsest_continuity`：派生投影，区分 accepted / candidate / negative / open / unknown，并给出
+  来源、basis 与 reopen 条件；`context_capsule` 有硬字节预算，裁剪时显式 `omitted`。
+- `palimpsest_outcome`：显式领域合同（JSON artifact / negative investigation / human review），
+  三种完成地位分开；负面结论可以让调查完成，但不会让业务目标变成成功。
+- review 的 operator 决策走 CLI：`review list|preview|approve|reject|apply`；模型只能提议和预览，
+  不能在缺少操作员身份时自行批准。
+- `doctor|init|continue|recover|outcomes`：不查询内部 SQLite 也能完成主路径。
+- Result export：`report` 在写入前把 world result object 导入 canonical ODB；结构性证据
+  （`write_scope_valid` / `expected_files_exist`）只由产品自己的树/工件观察产生，不能由任意 exit-0
+  命令冒充。
+
+**当前实证边界（必须按此理解 README）：**
+
+- 真实模型行为与 P/F 比较 **BLOCKED**：PC1 没有 spend authorization；`doctor` 会显示
+  `liveModel: "BLOCKED"`，`scripts/pc1/run_pair.mjs` 不会发起模型调用。
+- 两个场景的 deterministic staging、T1/T2 可见性、P/F equivalence 已运行
+  （`scripts/pc1/acceptance.mjs`）；这不是“模型更聪明”或“比较收益成立”的证据。
+- Linux/WSL2 + bubblewrap 是已资格化的执行栈；Windows ACL 只限制写入，不是通用隔离边界。
+- exactly-once 仅限既有 Promotion/Ordarium 路径的已测范围；任意跨进程效果仍需对账，不宣称全局
+  exactly-once。
+- 本地 CLI 的 `operatorId` 是本地身份断言，不是远程身份提供者。
+
+详细验收、安装、升级/回退和未解决限制见 [docs/programs/pc1/](docs/programs/pc1/)。
+
 ## 文档
 
 | 文档 | 内容 |

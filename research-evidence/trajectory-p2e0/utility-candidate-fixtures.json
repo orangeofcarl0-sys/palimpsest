@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_BENCHMARK_FIXTURE_A",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "fixtureId": "FIX-A-GOVERNED-PARTIAL-CONTINUATION",
+  "outcome": "PASS",
+  "frozenConditions": {
+    "fixtureId": "FIX-A-GOVERNED-PARTIAL-CONTINUATION",
+    "family": "Governed Rework Continuation over a PARTIAL historical page",
+    "initialGitState": "a test-owned git repo with one commit H0 and src/a.ts",
+    "task": "Decide the correct next action for A1 given the historical execution of A0.",
+    "allowedTools": [
+      "read",
+      "grep",
+      "glob",
+      "ls",
+      "str_replace_editor"
+    ],
+    "writeScope": [
+      "src/a.ts"
+    ],
+    "contextBudget": {
+      "capsuleMaxSerializedBytes": 16384,
+      "sectionMaxBytes": 16384
+    },
+    "completionChecks": [
+      "the answer is a structurally valid structured answer",
+      "the mechanical oracle judges it"
+    ],
+    "experimentalAssignment": "trusted configuration: CONTROL or TREATMENT, fixed before the run",
+    "oracle": "scripts/trajectory_p2e0/mechanical-oracle.mjs (pure function, no model)"
+  },
+  "groundTruthKey": {
+    "requiredFacts": [
+      {
+        "id": "origin-observed",
+        "mustMention": [
+          "a0",
+          "observed"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "page-partial",
+        "mustMention": [
+          "partial"
+        ],
+        "weight": 1
+      }
+    ],
+    "requiredUnknowns": [
+      {
+        "id": "remaining-history-unknown",
+        "mustMention": [
+          "remaining",
+          "unknown"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "no-settlement-proof",
+        "mustMention": [
+          "settle",
+          "not"
+        ],
+        "weight": 1
+      }
+    ],
+    "forbiddenClaims": [
+      {
+        "id": "origin-completed",
+        "tokens": [
+          "a0",
+          "completed"
+        ],
+        "why": "the admitted page is PARTIAL, so it cannot establish that A0 completed"
+      },
+      {
+        "id": "history-exhausted",
+        "tokens": [
+          "whole",
+          "history"
+        ],
+        "why": "the source reports more events than the page carries"
+      }
+    ],
+    "decision": {
+      "acceptableActions": [
+        {
+          "mustMention": [
+            "current",
+            "world"
+          ]
+        },
+        {
+          "mustMention": [
+            "verify"
+          ]
+        },
+        {
+          "mustMention": [
+            "re-check"
+          ]
+        }
+      ],
+      "forbidden": [
+        {
+          "mustMention": [
+            "settle"
+          ],
+          "why": "a consumer cannot settle on the strength of a partial historical page"
+        }
+      ]
+    },
+    "operational": {
+      "mustNotRepeat": [
+        "rerun the historical command verbatim"
+      ]
+    }
+  },
+  "preparation": {
+    "consumerAttemptId": "attempt-798a9ef46f11547de86d371ac7b8000f",
+    "originAttemptId": "attempt-30f9d056a9cec3626136b94eb6302742",
+    "capsuleDigest": "7f07a8a37001041c3db790c7d3bc8a306520c956345710245ae5e130372e8fa9",
+    "coverage": "PARTIAL",
+    "knownEventCount": 8,
+    "includedEventCount": 3,
+    "unreadHistory": "read 3 of 8 known event(s)",
+    "controlSectionDigest": "766c5539c44ed4196b382bd5584384dcae763d877867c9b75c6b8bfe8a499adb",
+    "treatmentSectionDigest": "6de634d8111994f7cc1f5f7fbf8c814c12017a4ac0ebdc7f64494fe60cb8ea7e",
+    "treatmentCapsuleDigestMatchesMaterialization": true,
+    "controlCarriesNoHistory": true
+  },
+  "oracle": {
+    "dimensions": [
+      "historicalUnderstanding",
+      "decisionQuality",
+      "operationalBehavior"
+    ],
+    "positiveVectorVerdict": {
+      "historicalUnderstanding": true,
+      "decisionQuality": true,
+      "operationalBehavior": true
+    },
+    "negativeVectorVerdict": {
+      "historicalUnderstanding": false,
+      "decisionQuality": false,
+      "operationalBehavior": true
+    },
+    "negativeForbiddenViolations": [
+      {
+        "id": "origin-completed",
+        "why": "the admitted page is PARTIAL, so it cannot establish that A0 completed"
+      },
+      {
+        "id": "history-exhausted",
+        "why": "the source reports more events than the page carries"
+      }
+    ],
+    "vacuousRefusalFlagged": true,
+    "vacuousRefusalVerdict": {
+      "historicalUnderstanding": false,
+      "decisionQuality": false,
+      "operationalBehavior": true
+    }
+  },
+  "deliveryEligibility": "DELIVERABLE (the real consumer API returned AUTHORIZED with a bounded Capsule)",
+  "modelCallsMade": 0,
+  "stochasticTrialOccurred": false,
+  "externalModelRequestOccurred": false,
+  "cleanup": {
+    "cleaned": true,
+    "removedLinks": [],
+    "descendantReparsePointsFound": 0,
+    "attempts": 2
+  },
+  "ownedRootRemoved": true
+}

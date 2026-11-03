@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-LR",
+  "audit": "work-payload-exposure",
+  "whoWrites": {
+    "shippedPortWritesToPrivateTempDir": true,
+    "shippedPortPassesPathToChild": true,
+    "harnessFilesThatWriteTheirOwnCopy": [
+      "scripts/gates/r1h-live-gate.mjs",
+      "scripts/gates/r1hc-live-gate.mjs",
+      "scripts/gates/r1l-live-gate.mjs",
+      "scripts/gates/r1s-live-gate.mjs",
+      "scripts/r1/probe-capital-delivery.mjs",
+      "scripts/r1r/trial.mjs",
+      "scripts/r2e/trial.mjs",
+      "scripts/r2m/trial.mjs",
+      "scripts/r2u/trial.mjs"
+    ],
+    "finding": "the shipped port writes to a private mkdtemp directory; the research harnesses ADDITIONALLY copy the payload into their own out/ directory, and THAT copy is what a worker reached in R2-U"
+  },
+  "whatItContains": {
+    "topLevelKeys": [
+      "context",
+      "resultTool",
+      "contextPullTool",
+      "contextIndexText",
+      "contextPullChannel",
+      "allowedPullHandles",
+      "deniedAuthorityPrefix"
+    ],
+    "handleEntries": [
+      {
+        "kind": "proof",
+        "handle": "@ctx/proof/pc-sample"
+      },
+      {
+        "kind": "procedure",
+        "handle": "@ctx/procedure/prc-sample/0"
+      }
+    ],
+    "bodyFieldsOnHandleEntries": [],
+    "credentialShapedFields": false,
+    "carriesCapitalBodies": false,
+    "carriesCredentials": false,
+    "finding": "the payload carries the attempt context, the two worker-private tool DEFINITIONS (name, description, JSON schema), the product-rendered index text, the attempt-bound allowlist and the denied-authority prefix. It carries NO capital body: the compiled handles are identity-only, and the bodies are materialized only on the governed pull path."
+  },
+  "canAWorkerReadIt": {
+    "fenceSourceMentionsTempDir": false,
+    "finding": "the payload file lives in a private temp directory the port creates; the R1-H read fence protects the durable stores and the host home, not that directory. A worker that discovers the path can read its own launch payload."
+  },
+  "classification": "CONTROL_PAYLOAD_MODEL_VISIBLE — research-rig copy is the exposure",
+  "confoundsR2M": {
+    "answer": "NO, provided the rig no longer writes a payload copy inside the worker-readable rig tree",
+    "reason": "the payload contains no capital bodies and no M1 metadata: it is built from the attempt context BEFORE any presentation treatment is applied, so it reveals neither the M1 decision surface nor the hidden oracle. In the blocked R2-M attempt the M1 arm's payload DID contain the derived preview, because the derivation happened in the runner after the payload was composed — so the rig copy must be moved regardless."
+  }
+}

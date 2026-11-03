@@ -1,0 +1,128 @@
+exit=0
+--- run.log ---
+
+### New evidence found
+
+| Ref | Item | Status | Effect |
+|---|---|---|---|
+| E0 | `sources/vendor-capabilities.csv` | Accepted canonical | V3 = -10 C, coastal yes; V4 coastal no |
+| E1 | `2026-02-10/vendor-capabilities.csv` (`0e997cb…`) | Unaccepted | V3 = 0 C; V4 coastal no |
+| E2 | `2026-02-14/vendor-capabilities-corrected.csv` (`14ffdd65…`) | Unaccepted | V3 = 0 C; V4 coastal **yes** |
+| E3 | `2026-02-14/vendor-capabilities.csv` (`0e997cb…`) | Unaccepted duplicate | Byte-identical to E1; no new capability value |
+
+The decisive conflict is now two cells: **V3's minimum** (E0 -10 C vs E1/E2 0 C) and **V4's coastal warranty** (E0/E1 no vs E2 yes). E2 and E1/E3 are competing unaccepted candidates; the duplicate does not confirm or override the correction. The late `deliverables/independent-check.md` was annotated as a historical cross-check, not authority; it covers E0/E1 only.
+
+### Site conclusions
+
+- **Site A:** V1 remains the historical compliant selection; V4 is also technically compliant on temperature. A new order cannot now meet the 5 Jan–27 Feb window.
+- **Site B:** evidence-dependent. Under E0, V3 is compliant. Under E1/E3, no compliant vendor exists. Under E2, **V4** is compliant (-20 C, coastal warranty) and V3 fails at 0 C. V2 is not eligible because it lacks a coastal warranty. The Solaris certificate claim remains an unverified promise.
+- **Site C:** V2 and V3 both comply. V3 needs an order by about 23 Feb for the 4 May window start; V2 could be ordered later but is a separate selection change.
+
+### Cost and schedule arithmetic
+
+- Historical accepted envelope: £104,900 committed / £8,392 contingency / **£113,292** total.
+- If E2 is accepted, B=V4, C=V3: £98,800 / £7,904 / **£106,704**.
+- If E2 is accepted, B=V4, C=V2: £88,400 / £7,072 / **£95,472**.
+- Maximum committed cost retaining 8% contingency within £120,000: **£111,111.11**; Site B ceiling with A=V1 and C=V3 fixed: **£42,411.11**.
+- Site B: V4 ordered 14 Feb would deliver about 11 Apr, inside the 24 Apr end but after the 2 Mar start; latest order for window-end readiness is about 27 Feb. V3 can no longer fit the window from a new order.
+
+### Independent tool finding, reported separately
+
+The bounded independent checker agreed with the Site B matrices, cost arithmetic, and lead-time dates. It returned one notable discrepancy: for E2 Site A it listed only V1 because it interpreted “non-coastal” as requiring `coastal_warranty=no`, excluding V4. That is a checker interpretation, not a binding requirement; Site A’s binding constraint is the -12 C minimum, so V4 remains technically compliant there. Its strict “[start,end]” schedule reading also marked Site C as “none” because all deliveries precede 4 May, but early delivery is consistent with the programme rule to order before the window. These points are recorded in `deliverables/independent-check-2026-02-14.md`; the check is not accepted truth.
+
+### Files and Git
+
+Committed as `1e0dc9b` — `plan: reassess technical fit after 2026-02-14 capability correction`:
+
+- `deliverables/technical-refresh.md` — refreshed findings and evidence status
+- `proposal.md` — proposed actions and operator decisions
+- `deliverables/independent-check-2026-02-14.md` — separate cross-check
+- `deliverables/independent-check.md` — status annotation on the late report
+
+`npm test` passes (`4 vendors, 4 price rows, 0 failures`), and the worktree is clean. The operator still needs to decide which exact capability digest to accept or reject, whether to authorise V4 for Site B if E2 is accepted, and how to address the Site A/B schedule windows.
+--- run.err ---
+Now commit. Message maybe "plan: refresh technical fit after 2026-02-14 capability correction". Add files. Need ensure only intended files. Use explicit paths. `git add deliverables/independent-check.md deliverables/technical-refresh.md proposal.md deliverables/independent-check-2026-02-14.md` then commit. Check status after.
+dsh: reasoning:
+Committed clean. Need final answer summarizing. But before final, verify worktree clean, npm test maybe after commit. Also maybe check the commit includes no unintended source changes. `git show --stat`. We can do a final check. Also maybe read the files after commit? Already. Let's run `git show --stat --oneline HEAD` and `npm test` one more time perhaps. Then update todo.
+dsh: reasoning:
+Now update todo complete.
+dsh: reasoning:
+Now final answer. Need concise but thorough. Mention:
+- Read HANDOFF and current state; no acceptance/source changes.
+- New items: E2 corrected (14ffdd...) changes V4 coastal no->yes, V3 0; duplicate E3 byte-identical to E1; late report independent-check.md annotated as historical.
+- Findings per site: A V1 (V4 also technically), B evidence-dependent: E0 V3, E1/E3 none, E2 V4; C V2/V3.
+- Cost scenarios: historical 113,292; E2 B=V4 C=V3 106,704; E2 B=V4 C=V2 95,472; max committed 111,111.11; Site B ceilings.
+- Schedule: A impossible new order; B V4 can fit by 27 Feb with late start, V3 cannot; C feasible, V3 order by 23 Feb.
+- Independent tool finding separately; note checker's E2 Site A discrepancy due to interpreting "non-coastal" as warranty restriction; schedule C strict artifact; not accepted truth.
+- Files committed, `npm test` passes, sources unchanged.
+- Decision requested: which exact digest to accept/reject, V4 sourcing, schedule recovery, C change.
+- Maybe mention commit hash.
+
+Need be careful not to say "accepted" for E2. Use "if E2 is accepted." Also "corrected" is candidate.
+
+Let's compose with headings. Desired oververbosity 5; final answer moderately detailed. Include exact hashes maybe abbreviated. The user may expect a planning report. Let's write.
+--- proxy ---
+{"at":"2026-11-02T19:00:17.072Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1437}
+{"at":"2026-11-02T19:00:19.203Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1887}
+{"at":"2026-11-02T19:00:21.604Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":2251}
+{"at":"2026-11-02T19:00:37.002Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":15124}
+{"at":"2026-11-02T19:01:03.185Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":26027}
+{"at":"2026-11-02T19:01:04.434Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1097}
+{"at":"2026-11-02T19:01:06.030Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1467}
+{"at":"2026-11-02T19:01:06.150Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":2838}
+{"at":"2026-11-02T19:01:06.175Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"retry":true,"delayMs":500,"error":"ECONNRESET"}
+{"at":"2026-11-02T19:01:08.342Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":2,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1666}
+{"at":"2026-11-02T19:01:10.367Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1900}
+{"at":"2026-11-02T19:01:27.586Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":21299}
+{"at":"2026-11-02T19:01:40.708Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":13045}
+{"at":"2026-11-02T19:01:55.366Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":14602}
+{"at":"2026-11-02T19:01:56.377Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":952}
+{"at":"2026-11-02T19:02:07.134Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":10710}
+{"at":"2026-11-02T19:02:08.569Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1351}
+{"at":"2026-11-02T19:02:24.094Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":15477}
+{"at":"2026-11-02T19:02:25.059Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":890}
+{"at":"2026-11-02T19:02:26.175Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1045}
+{"at":"2026-11-02T19:02:27.840Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1614}
+{"at":"2026-11-02T19:02:29.784Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1869}
+{"at":"2026-11-02T19:02:31.317Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":501}
+{"at":"2026-11-02T19:02:35.818Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":3025}
+{"at":"2026-11-02T19:02:37.445Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1574}
+{"at":"2026-11-02T19:02:39.564Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":89050}
+{"at":"2026-11-02T19:02:42.300Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":2277}
+{"at":"2026-11-02T19:02:45.165Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":2752}
+{"at":"2026-11-02T19:02:46.389Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":8884}
+{"at":"2026-11-02T19:02:48.266Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1816}
+{"at":"2026-11-02T19:02:48.963Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":612}
+{"at":"2026-11-02T19:02:49.200Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":3927}
+{"at":"2026-11-02T19:02:55.123Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":5759}
+{"at":"2026-11-02T19:02:57.434Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":939}
+{"at":"2026-11-02T19:02:58.933Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1451}
+{"at":"2026-11-02T19:03:02.192Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":3213}
+{"at":"2026-11-02T19:03:08.461Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":6218}
+{"at":"2026-11-02T19:03:12.451Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":3944}
+{"at":"2026-11-02T19:03:13.854Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":722}
+{"at":"2026-11-02T19:03:15.504Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1601}
+{"at":"2026-11-02T19:03:19.438Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":3877}
+{"at":"2026-11-02T19:03:20.613Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1095}
+{"at":"2026-11-02T19:03:22.188Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1532}
+{"at":"2026-11-02T19:03:27.936Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":657}
+{"at":"2026-11-02T19:03:29.726Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1741}
+{"at":"2026-11-02T19:03:30.838Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1033}
+{"at":"2026-11-02T19:03:41.549Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":637}
+{"at":"2026-11-02T19:03:43.678Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":2064}
+{"at":"2026-11-02T19:03:50.519Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":30974}
+{"at":"2026-11-02T19:04:04.493Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":741}
+{"at":"2026-11-02T19:04:08.752Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":4216}
+{"at":"2026-11-02T19:04:21.215Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":30559}
+{"at":"2026-11-02T19:04:26.201Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":4885}
+{"at":"2026-11-02T19:05:03.179Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":24348}
+{"at":"2026-11-02T19:05:04.883Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1624}
+{"at":"2026-11-02T19:05:07.625Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":2683}
+{"at":"2026-11-02T19:05:11.246Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":3528}
+{"at":"2026-11-02T19:05:13.416Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":2107}
+{"at":"2026-11-02T19:05:14.904Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":811}
+{"at":"2026-11-02T19:05:16.639Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1652}
+{"at":"2026-11-02T19:05:18.132Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1432}
+{"at":"2026-11-02T19:05:19.769Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1512}
+{"at":"2026-11-02T19:05:21.657Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":1196}
+{"at":"2026-11-02T19:05:29.164Z","kind":"anthropic","method":"POST","path":"/v1/messages","attempt":1,"status":200,"upstream":"https://api.deepseek.com/anthropic/v1/messages","viaProxy":true,"ms":7463}

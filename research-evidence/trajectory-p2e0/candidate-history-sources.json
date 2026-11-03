@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_CANDIDATE_HISTORY_SOURCES",
+  "method": "Identify what historical evidence a candidate fixture may legitimately use, and what each source can and cannot establish.",
+  "sources": [
+    {
+      "id": "SRC-1",
+      "name": "A real first-party DSH Session page",
+      "establishes": [
+        "observed events with seq/type/summary",
+        "coverage (FULL/PARTIAL/UNKNOWN) derived from the source total",
+        "durability provenance when the reader proves it"
+      ],
+      "doesNotEstablish": [
+        "that a specific command SUCCEEDED (no observedStatus in the Capsule)",
+        "that the Work Attempt settled or was verified"
+      ],
+      "usedBy": "FIX-A (the origin page is genuinely PARTIAL)"
+    },
+    {
+      "id": "SRC-2",
+      "name": "Canonical Work lineage",
+      "establishes": [
+        "the governed rework origin of a consumer attempt",
+        "that A0 is a canonical attempt of the project"
+      ],
+      "doesNotEstablish": [
+        "that the origin execution completed cleanly"
+      ],
+      "usedBy": "FIX-A authorization"
+    },
+    {
+      "id": "SRC-3",
+      "name": "The Execution Association qualification",
+      "establishes": [
+        "which Invocation is qualified",
+        "the invocation selection state and unresolved alternatives"
+      ],
+      "doesNotEstablish": [
+        "that an unqualified invocation had no execution"
+      ],
+      "usedBy": "FIX-A and Family B ambiguity"
+    }
+  ],
+  "currentlyCapsuleVisible": [
+    "event seq, type, bounded summary",
+    "event durability, inherited flag, summary truncation flag (carried, not rendered)",
+    "coverage and unread extent",
+    "invocation selection state and unresolved alternatives",
+    "source qualification and session-id provenance",
+    "canonical reality (attempt state, result refs, verification, promotion, rework state)"
+  ],
+  "notCapsuleVisible": [
+    "raw tool arguments",
+    "raw tool results and their error status",
+    "assistant message content",
+    "detailed command failure causes"
+  ],
+  "modelCallsMade": 0,
+  "stochasticTrialOccurred": false,
+  "verdict": "SOURCE_MAP_FOR_FIXTURE_SELECTION"
+}

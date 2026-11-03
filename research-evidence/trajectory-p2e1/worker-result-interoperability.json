@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_WORKER_RESULT_INTEROPERABILITY",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "priorE0Explanation": "P2-E0 recorded that an OPTIONAL providerRetryPolicy method caused the activation failure. MEASURED FALSE.",
+  "measuredRootCauses": [
+    {
+      "id": "RC1",
+      "what": "adapter.providerRetryPolicy is REQUIRED",
+      "where": "dsh-llm LlmRuntime.prepareRoutes() calls adapter.providerRetryPolicy(provider) unconditionally",
+      "symptom": "TypeError: adapter.providerRetryPolicy is not a function; cordis: 1 entry did not activate",
+      "fix": "declare providerRetryPolicy(provider) returning undefined (runtime applies its own default)"
+    },
+    {
+      "id": "RC2",
+      "what": "adapter method signatures and return shapes were wrong",
+      "where": "normalizeModelInfo validates resolveModel(provider,model,signal) => {provider,id,name}; prepareCall must resolve to {model,stream}",
+      "symptom": "adapterCall.model was undefined; the turn never dispatched a stream",
+      "fix": "implement the exact measured signatures and shapes"
+    },
+    {
+      "id": "RC3",
+      "what": "the worker scope presents PTC, so only run_code is directly callable",
+      "where": "dsh-tools registry refusal recorded in the persisted session tool/result",
+      "symptom": "Error: unknown tool \"palimpsest_worker_result\": only run_code is callable directly",
+      "fix": "emit one run_code call whose program invokes the result tool as await tools[name](args)"
+    },
+    {
+      "id": "RC4",
+      "what": "the adapter emitted the tool call on every stream, so the turn never concluded",
+      "where": "agent loop re-invokes the adapter after each tool result",
+      "symptom": "unbounded stream invocations until the wall clock killed the worker",
+      "fix": "after a tool result is present, emit a final text answer instead of another call"
+    }
+  ],
+  "previousWorkerOutcome": "HOST_FAILURE",
+  "correctedWorkerOutcome": "READY_FOR_SETTLEMENT",
+  "strictParserPreserved": true,
+  "parserVocabulary": [
+    "kind",
+    "summary",
+    "reason",
+    "proposedAction"
+  ],
+  "parserWidened": false,
+  "hostFailureLineStillUsesSamePrefix": true,
+  "hostFailureLineNote": "the runner still prints {kind:HOST_FAILURE,detail} on the same PALIMPSEST_WORK_RESULT prefix; that is a HOST fact, not a worker outcome. The real defect was the adapter never producing a worker outcome at all, so this is now moot for the deterministic path, but the prefix sharing remains a latent collision and is reported as such rather than silently changed.",
+  "realFirstPartyDshRan": true,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

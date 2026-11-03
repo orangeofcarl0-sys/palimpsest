@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-LR",
+  "kind": "append-only historical correction",
+  "baseline": "3a4a3c61160e4a36da1ad093addb85888b587923",
+  "repairCommit": "89c3578",
+  "defect": "host/dsh/lib/index.js::applyWork did not forward contextIndexText, so environment.contextIndexText was undefined and workTask omitted the index section from every worker prompt",
+  "defectPresentAt": [
+    "dc5679d",
+    "8ef010a",
+    "c023a63",
+    "8edf9f1",
+    "adf1615"
+  ],
+  "mechanicalProof": "the blocked R2-M pilot renderedSectionDigest equalled sha256(\"undefined\") = eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c",
+  "r1l": {
+    "priorStatus": "gate:r1-l-live PASS 17/17; document stated \"R1-L closes the last mile\"",
+    "correctedStatus": {
+      "attemptBoundPullTransportAndAllowlist": "CLOSED",
+      "modelVisibleIndexDelivery": "WAS NOT CLOSED",
+      "afterRepair": "CLOSED BY R2-LR"
+    },
+    "evidenceInItsOwnArtifacts": {
+      "rendered-prompt-C0.json": false,
+      "rendered-prompt-C1.json": false,
+      "rendered-prompt-C2.json": false,
+      "field": "handlesRenderedIntoPrompt"
+    },
+    "vacuousAssertion": "of(...) !== \"\" || true — repaired in this stage to assert at the session boundary"
+  },
+  "r1r": {
+    "priorVerdict": "R1 STOCHASTIC WORKER COMPOUNDING: NO_REPLICATION",
+    "correctedInterpretation": "R1-R INTENDED CAPITAL TREATMENT: NOT EVALUABLE — MODEL-VISIBLE INDEX NOT DELIVERED",
+    "rawTrialsPreserved": 30,
+    "whatTheRunsWere": "historical observations of workers with pull capability but no prompt-visible selected-handle index"
+  },
+  "r2u": {
+    "priorVerdict": "R2-U CAPITAL UPTAKE: NOT_IMPROVED",
+    "correctedInterpretation": "R2-U INTENDED UPTAKE TREATMENT: NOT EVALUABLE — MODEL-VISIBLE INDEX NOT DELIVERED",
+    "rawTrialsPreserved": 40,
+    "note": "the A1 explicit-review clause WAS delivered, but it instructed the worker to review a section that was not present",
+    "outOfBandPull": {
+      "trialId": "C-K1A0-b2r2",
+      "handles": 3,
+      "classification": "OUT_OF_BAND_HANDLE_DISCOVERY",
+      "mechanism": "the worker listed the rig directory, found out/payload.json, and read the handle IDs from the host control payload",
+      "rawEventPreserved": true,
+      "reclassified": false
+    }
+  },
+  "r2e": {
+    "status": "VALID, unchanged",
+    "verdict": "R2-E CAPITAL EFFICACY: REPLICATED",
+    "why": "R2-E consumed selected bodies host-side through the governed channel and injected them into the worker turn; its treatment did not depend on voluntary discovery of contextIndexText",
+    "noProcedureMarginalClaim": true
+  },
+  "cic": {
+    "amendedCommit": null,
+    "note": "adf1615 is NOT amended; this erratum is appended instead",
+    "changes": [
+      {
+        "subject": "Capital voluntary uptake",
+        "from": "NOT_IMPROVED",
+        "to": "UNKNOWN under the intended model-visible-index interface"
+      },
+      {
+        "subject": "Procedure voluntary uptake",
+        "from": "MEASURED LOW / NOT_IMPROVED under the current interface",
+        "to": "UNKNOWN under the intended model-visible-index interface"
+      }
+    ],
+    "preserved": {
+      "Full selected-capital efficacy": "REPLICATED under forced governed consumption, tested scope only",
+      "Procedure marginal efficacy": "UNPROVEN",
+      "Procedure governance": "CLOSED"
+    },
+    "decisionRelevanceLawRevoked": false
+  },
+  "researchSynthesis": {
+    "correction": "those LOCAL controlled-treatment claims were invalidated by the worker-index delivery defect",
+    "affectedClaims": [
+      "a prose affordance does not improve voluntary uptake (R2-U A1 vs A0)",
+      "opaque index uptake is 1/40 (R2-U overall)",
+      "stochastic workers do not compound capital (R1-R)"
+    ],
+    "externalLiteratureUnaffected": true
+  },
+  "r2mBlockedAttempt": {
+    "commit": "3a4a3c6",
+    "preservedAs": "immutable BLOCKED attempt",
+    "pilotsDiscarded": true,
+    "whyDiscarded": "they violated the no-C/D-pilot discipline and, decisively, received no M1 treatment",
+    "usedForTuning": false
+  }
+}

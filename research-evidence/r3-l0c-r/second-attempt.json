@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-R",
+  "treatmentEvidence": {
+    "sessions": 6,
+    "cSessions": 2,
+    "hSessions": 4,
+    "cHandlesCompiled": [
+      2,
+      4
+    ],
+    "hHandlesCompiled": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "treatmentDelivered": true,
+    "armsDifferOnTreatment": true,
+    "outcomes": [
+      {
+        "sessionId": "r-b0-C-G1",
+        "arm": "C",
+        "generation": "G1",
+        "promoted": true,
+        "prepaidCoverage": 1,
+        "handles": 2
+      },
+      {
+        "sessionId": "r-b0-C-G2",
+        "arm": "C",
+        "generation": "G2",
+        "promoted": true,
+        "prepaidCoverage": 1,
+        "handles": 4
+      },
+      {
+        "sessionId": "r-b0-H-G1",
+        "arm": "H",
+        "generation": "G1",
+        "promoted": false,
+        "prepaidCoverage": 0.5714285714285714,
+        "handles": 0
+      },
+      {
+        "sessionId": "r-b0-H-G2",
+        "arm": "H",
+        "generation": "G2",
+        "promoted": false,
+        "prepaidCoverage": null,
+        "handles": 0
+      },
+      {
+        "sessionId": "r-b1-H-G1",
+        "arm": "H",
+        "generation": "G1",
+        "promoted": false,
+        "prepaidCoverage": 0.5714285714285714,
+        "handles": 0
+      },
+      {
+        "sessionId": "r-b1-H-G2",
+        "arm": "H",
+        "generation": "G2",
+        "promoted": false,
+        "prepaidCoverage": null,
+        "handles": 0
+      }
+    ]
+  },
+  "localizedDefect": {
+    "id": "WORKTREE_ALTERNATE_PATH_NOT_NORMALIZABLE",
+    "where": "the shipped world preparation that writes `.palimpsest/worlds/<attempt-id>/.git/objects/info/alternates`",
+    "symptom": "a worker commit fails with `fatal: could not parse HEAD`; the worker then escalates instead of settling",
+    "evidence": [
+      {
+        "id": "MIXED_SEPARATOR",
+        "detail": "the alternates entry is written as `...\\\\units\\\\r-b0-H\\\\world/.git/objects` — backslashes for the directory and a forward slash before `.git`"
+      },
+      {
+        "id": "GIT_WARNING",
+        "detail": "git reports `error: unable to normalize alternate object path` for that entry"
+      },
+      {
+        "id": "WORKER_ESCALATION",
+        "detail": "the worker transcript shows the failed commit followed by a NEEDS_ESCALATION result"
+      },
+      {
+        "id": "DOWNSTREAM_BLOCK",
+        "detail": "the unfinished attempt blocks the next generation with `plan revision blocked (quiescence_required)`"
+      }
+    ],
+    "contrast": "in the earlier working run the attempt worktrees pointed at `prehistory/world/.git/objects`; here a fresh worktree points at the trajectory world own `.git/objects`",
+    "isProductCode": true,
+    "changedInThisStage": false,
+    "reasonNotFixed": "the alternates path is written by shipped world-preparation code, which is product scope; this stage is authorized to change the executor ROUTE, not how the runtime prepares a worktree"
+  },
+  "executionAttempts": [
+    {
+      "id": "ATTEMPT_A_STALE_WORKTREE_EXCLUSION",
+      "change": "exclude .palimpsest/worlds from the trajectory world copy",
+      "outcome": "STRICTLY_WORSE — reverted",
+      "observed": "attempt worktrees were created fresh from an incomplete store; workers could not commit; the next generation was blocked by quiescence_required",
+      "verdict": "the hypothesis was REFUTED by measurement and the change was reverted in a committed fix"
+    },
+    {
+      "id": "ATTEMPT_B_TREATMENT_NOT_APPLIED",
+      "change": "the authorized route, with the world copy unchanged",
+      "outcome": "STOPPED_ON_TREATMENT_GATE",
+      "observed": "r-b1-C-G2 reached the realization gate with an empty consumer surface while the frozen expectation named four handles",
+      "verdict": "the §15 realization gate fired as designed: the trial is INVALID and the run stops rather than recording it"
+    },
+    {
+      "id": "ATTEMPT_C_COMMIT_FAILURE_BLOCKS_NEXT_GENERATION",
+      "change": "the authorized route, world copy unchanged (after the revert)",
+      "outcome": "STOPPED_ON_BLOCKED_PLAN_REVISION",
+      "observed": "the H worker implemented the requirement but could not commit it, submitted NEEDS_ESCALATION, the attempt stayed RUNNING, and the next generation was refused with plan revision blocked (quiescence_required)",
+      "verdict": "the treatment is delivered and the arms differ; the remaining defect is in the worker git environment"
+    }
+  ],
+  "result": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-R",
+    "kind": "treatment realization and repair replication stage result (continuation)",
+    "status": "BLOCKED",
+    "statusReason": "the authorized route is verified and the treatment is delivered, but the replication stops on a worker git-environment defect that is product scope",
+    "executorRoute": {
+      "provider": "omnigate-route",
+      "model": "deepseek-v4.1-flash",
+      "verified": true,
+      "verification": "the plumbing check completes a real worker on the route with promoted=true and the oracle green",
+      "classification": "EXPLICITLY_RECORDED_DEVIATION",
+      "classifiedAsModelStackChange": false
+    },
+    "treatmentRealization": {
+      "TREATMENT_DELIVERED": true,
+      "ARMS_DIFFER_ON_TREATMENT": true,
+      "cHandlesCompiled": [
+        2,
+        4
+      ],
+      "hHandlesCompiled": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "note": "the CAPITALIZED arm compiled and pulled capital while the RAW_HISTORY arm compiled none, which is the treatment difference the experiment requires"
+    },
+    "localizedDefect": {
+      "id": "WORKTREE_ALTERNATE_PATH_NOT_NORMALIZABLE",
+      "where": "the shipped world preparation that writes `.palimpsest/worlds/<attempt-id>/.git/objects/info/alternates`",
+      "symptom": "a worker commit fails with `fatal: could not parse HEAD`; the worker then escalates instead of settling",
+      "evidence": [
+        {
+          "id": "MIXED_SEPARATOR",
+          "detail": "the alternates entry is written as `...\\\\units\\\\r-b0-H\\\\world/.git/objects` — backslashes for the directory and a forward slash before `.git`"
+        },
+        {
+          "id": "GIT_WARNING",
+          "detail": "git reports `error: unable to normalize alternate object path` for that entry"
+        },
+        {
+          "id": "WORKER_ESCALATION",
+          "detail": "the worker transcript shows the failed commit followed by a NEEDS_ESCALATION result"
+        },
+        {
+          "id": "DOWNSTREAM_BLOCK",
+          "detail": "the unfinished attempt blocks the next generation with `plan revision blocked (quiescence_required)`"
+        }
+      ],
+      "contrast": "in the earlier working run the attempt worktrees pointed at `prehistory/world/.git/objects`; here a fresh worktree points at the trajectory world own `.git/objects`",
+      "isProductCode": true,
+      "changedInThisStage": false,
+      "reasonNotFixed": "the alternates path is written by shipped world-preparation code, which is product scope; this stage is authorized to change the executor ROUTE, not how the runtime prepares a worktree"
+    },
+    "executionAttempts": [
+      {
+        "id": "ATTEMPT_A_STALE_WORKTREE_EXCLUSION",
+        "change": "exclude .palimpsest/worlds from the trajectory world copy",
+        "outcome": "STRICTLY_WORSE — reverted",
+        "observed": "attempt worktrees were created fresh from an incomplete store; workers could not commit; the next generation was blocked by quiescence_required",
+        "verdict": "the hypothesis was REFUTED by measurement and the change was reverted in a committed fix"
+      },
+      {
+        "id": "ATTEMPT_B_TREATMENT_NOT_APPLIED",
+        "change": "the authorized route, with the world copy unchanged",
+        "outcome": "STOPPED_ON_TREATMENT_GATE",
+        "observed": "r-b1-C-G2 reached the realization gate with an empty consumer surface while the frozen expectation named four handles",
+        "verdict": "the §15 realization gate fired as designed: the trial is INVALID and the run stops rather than recording it"
+      },
+      {
+        "id": "ATTEMPT_C_COMMIT_FAILURE_BLOCKS_NEXT_GENERATION",
+        "change": "the authorized route, world copy unchanged (after the revert)",
+        "outcome": "STOPPED_ON_BLOCKED_PLAN_REVISION",
+        "observed": "the H worker implemented the requirement but could not commit it, submitted NEEDS_ESCALATION, the attempt stayed RUNNING, and the next generation was refused with plan revision blocked (quiescence_required)",
+        "verdict": "the treatment is delivered and the arms differ; the remaining defect is in the worker git environment"
+      }
+    ],
+    "executionClosure": {
+      "frozen": "7ac167a1c9a6668dd9beb1dae7b624c3abcc21b3c8ae26729229928635b98ea4",
+      "current": "7ac167a1c9a6668dd9beb1dae7b624c3abcc21b3c8ae26729229928635b98ea4",
+      "matches": true
+    },
+    "validity": {
+      "SYSTEM_VALID": "YES",
+      "EXPERIMENT_ENVIRONMENT_VALID": "YES",
+      "TREATMENT_REALIZATION_VALID": "NO",
+      "TREATMENT_REALIZATION_NOTE": "delivery is proven on the sessions that ran, but the replication did not complete, so realization is not established for the full 16-session schedule",
+      "ANALYSIS_PLAN_VALID": "YES",
+      "CAUSAL_EXPERIMENT_VALID": "NO"
+    },
+    "verdicts": {
+      "R3_L0C_R": "BLOCKED",
+      "RUN_1": "TREATMENT_NOT_APPLIED",
+      "RECONSTRUCTION_PRESSURE": "PRESENT",
+      "EXECUTOR_ROUTE": "REPLACED_UNDER_EXPLICIT_AUTHORIZATION",
+      "CAPITAL_UPTAKE": "NOT_EVALUABLE",
+      "RECONSTRUCTION_COMPRESSION": "NOT_EVALUABLE",
+      "NET_COGNITIVE_COST": "NOT_EVALUABLE",
+      "NEXT": "STOP",
+      "NEXT_REASON": "the remaining defect is in shipped world-preparation code, which this stage is not authorized to change"
+    }
+  }
+}

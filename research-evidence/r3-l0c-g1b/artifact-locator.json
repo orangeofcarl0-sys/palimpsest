@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "canonical attempt locator and complete discovery",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "baselineDefect": {
+    "canonicalOutcome": "DISCOVERED_UNIQUE",
+    "deepCandidateReportsIncomplete": true
+  },
+  "corrected": {
+    "bareHexDiscovered": true,
+    "canonicalDiscovered": true,
+    "deepCandidateOutcome": "DISCOVERY_INCOMPLETE",
+    "canonicalGrammar": {
+      "prefix": "attempt-",
+      "hexLength": 32,
+      "grammar": "^attempt-[0-9a-f]{32}$",
+      "bareHexGrammar": "^[0-9a-f]{32}$",
+      "workOwnerProducer": "src/domain/idempotency.ts stableEntityId(\"attempt\", digest)"
+    },
+    "outcomes": {
+      "DISCOVERED_UNIQUE": "DISCOVERED_UNIQUE",
+      "ABSENT": "ABSENT",
+      "AMBIGUOUS": "AMBIGUOUS",
+      "IDENTITY_UNPARSEABLE": "IDENTITY_UNPARSEABLE",
+      "OUTSIDE_SCOPED_HOME": "OUTSIDE_SCOPED_HOME",
+      "ESCAPE_REFUSED": "ESCAPE_REFUSED",
+      "DISCOVERY_INCOMPLETE": "DISCOVERY_INCOMPLETE",
+      "MALFORMED_EXPECTED_IDENTITY": "MALFORMED_EXPECTED_IDENTITY"
+    }
+  },
+  "sanitizedRealPathSample": {
+    "shape": "<dshHome>/sessions/--<cwd-slug>--/worker-<uuid>/session.v4.jsonl.zstd",
+    "note": "the previous G1 evidence carried a machine-specific absolute sample; this stage records the sanitized structural form only and leaves the historical sample in place as G1 evidence"
+  },
+  "realPrimaryArtifactFabricated": false,
+  "verdict": {
+    "CANONICAL_ATTEMPT_LOCATOR": "PASS_SOURCE_GROUNDED",
+    "INCOMPLETE_DISCOVERY_REFUSED": "PASS_SOURCE_GROUNDED",
+    "REAL_PRIMARY_ARTIFACT_ATTRIBUTION": "NOT_ESTABLISHED"
+  },
+  "law": "a partially scanned directory space is never reported as exhaustively unique, and no actual PRIMARY artifact is fabricated or claimed"
+}

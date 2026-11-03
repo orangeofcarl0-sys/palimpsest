@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RG_BASELINE_AND_ERRATA",
+  "stage": "Trajectory-P2-E1RG",
+  "evidenceClass": "OBSERVED",
+  "parent": "a168beca156c6cbdc6166d45b73a8189e76b7e0a",
+  "parentBranch": "trajectory-p2e1rf-final-security-evidence-closure",
+  "branch": "trajectory-p2e1rg-host-admission-closure",
+  "runId": "d5ef046f-abe1-4fc7-b752-7bf705e475ac",
+  "codeFreezeHead": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+  "codeFreezeTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+  "headAtGeneration": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+  "headTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "node": "24.22.0",
+    "nodeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "pnpm": null,
+    "git": "git version 2.53.0.windows.2",
+    "declaredEngine": ">=24.15.0",
+    "dshHome": "",
+    "builtDistributionPresent": true
+  },
+  "abiIdentity": {
+    "source": "dshCompatibilityReport() in host/deployment/runtime/win32_label.js",
+    "package": "@deepseek-ai/dsh-win32-process",
+    "qualifiedVersion": "0.2.1-rc.2",
+    "resolvedVersion": "0.2.1-rc.2",
+    "ffiPackage": "koffi",
+    "ffiQualifiedVersion": "3.1.1",
+    "ffiResolvedVersion": "3.1.1",
+    "usable": true,
+    "drifted": false
+  },
+  "protectedResearchEvidence": {
+    "declared": 52,
+    "verified": 52,
+    "mismatched": []
+  },
+  "e1rfErrata": [
+    {
+      "id": "E1RF-ERRATUM-1",
+      "artifact": "research-evidence/trajectory-p2e1rf/baseline-and-falsifiers.json",
+      "field": "dsh.koffi",
+      "recordedValue": null,
+      "correctedValue": "3.1.1",
+      "why": "the generator searched two guessed node_modules layouts and missed the copy the seam package resolves; the seam itself reported koffi@3.1.1",
+      "effectOnVerdicts": "NONE — the FFI identity was already established by `dshCompatibilityReport()` inside the R1-HR/R1-HC suites; only the baseline artifact's copy of the number was wrong",
+      "correctionMethod": "read from dshCompatibilityReport(), the module that actually binds the seam"
+    },
+    {
+      "id": "E1RF-ERRATUM-2",
+      "artifact": "research-evidence/trajectory-p2e1rf/git-and-evidence-identity.json",
+      "field": "evidenceInputDigests",
+      "recordedValue": "6 artifact digests",
+      "correctedValue": "13 committed artifacts in the E1RF evidence directory",
+      "why": "the manifest hashed the inputs it consumed rather than every final qualification artifact",
+      "effectOnVerdicts": "NONE — the verdicts were derived from the same artifacts; the manifest simply did not enumerate all of them",
+      "correctionMethod": "E1RG hashes every artifact it commits (see git-and-evidence-identity.json in this stage)"
+    },
+    {
+      "id": "E1RF-ERRATUM-3",
+      "artifact": "docs/engineering/trajectory-p2e1rf.md",
+      "field": "answer provenance table",
+      "recordedValue": "verified against the final Evidence Run",
+      "correctedValue": "the documented digests match closure-gate.json in the Evidence Freeze commit",
+      "why": "the document was written from an earlier run and then regenerated; this stage re-verified the committed values against the committed artifact",
+      "effectOnVerdicts": "NONE — the values agree; the erratum records that the reconciliation was performed rather than assumed",
+      "correctionMethod": "compared the documented SHA-256 values with closure-gate.json at the Evidence Freeze"
+    }
+  ]
+}

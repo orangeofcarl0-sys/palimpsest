@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-V",
+  "note": "§11: across all four arms the task, repo, visible tests, hidden oracle, model/profile, runtime, tool surface, authority and write scope are IDENTICAL. Only the consumed bundle SET differs. Body digests are recorded per arm so a reader can prove the intended bodies were the ones delivered.",
+  "bundleProvenance": [
+    {
+      "bundleId": "B",
+      "domain": "legacy configuration migration (normalize/validate/default ordering)",
+      "originProject": "r1r-config-migration",
+      "proofStatementDigest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb",
+      "reasoningStatementDigest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b",
+      "procedureClauseCount": 8,
+      "procedureClausesDigest": "fb3627d2825922b566eebe28b6b6a3df3904298bc73424bb2ed57c34581af192"
+    },
+    {
+      "bundleId": "C",
+      "domain": "event-log replay reduction (validate the whole log before mutating state)",
+      "originProject": "r1r-event-reducer",
+      "proofStatementDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "reasoningStatementDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "procedureClauseCount": 6,
+      "procedureClausesDigest": "7cc904163fd5754eda370bd6083d32731f9b8fd8ab18dea0d018c1ddf7bbe707"
+    },
+    {
+      "bundleId": "D",
+      "domain": "incremental build-cache invalidation (freeze the affected closure before deleting)",
+      "originProject": "r2u-incremental-cache",
+      "proofStatementDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "reasoningStatementDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "procedureClauseCount": 6,
+      "procedureClausesDigest": "6336cb8ded403bf9ed89e6a7242bd9a4c9e0270db94d2c65abbf8b0a648d5595"
+    }
+  ],
+  "arms": [
+    {
+      "arm": "V0",
+      "bundles": [
+        "D"
+      ],
+      "addedBundles": [],
+      "intendedBodyDigests": [
+        {
+          "bundleId": "D",
+          "kind": "proof",
+          "digest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401"
+        },
+        {
+          "bundleId": "D",
+          "kind": "reasoning",
+          "digest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26"
+        },
+        {
+          "bundleId": "D",
+          "kind": "procedure",
+          "digest": "6336cb8ded403bf9ed89e6a7242bd9a4c9e0270db94d2c65abbf8b0a648d5595"
+        }
+      ]
+    },
+    {
+      "arm": "V1",
+      "bundles": [
+        "D",
+        "B"
+      ],
+      "addedBundles": [
+        "B"
+      ],
+      "intendedBodyDigests": [
+        {
+          "bundleId": "D",
+          "kind": "proof",
+          "digest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401"
+        },
+        {
+          "bundleId": "D",
+          "kind": "reasoning",
+          "digest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26"
+        },
+        {
+          "bundleId": "D",
+          "kind": "procedure",
+          "digest": "6336cb8ded403bf9ed89e6a7242bd9a4c9e0270db94d2c65abbf8b0a648d5595"
+        },
+        {
+          "bundleId": "B",
+          "kind": "proof",
+          "digest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb"
+        },
+        {
+          "bundleId": "B",
+          "kind": "reasoning",
+          "digest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b"
+        },
+        {
+          "bundleId": "B",
+          "kind": "procedure",
+          "digest": "fb3627d2825922b566eebe28b6b6a3df3904298bc73424bb2ed57c34581af192"
+        }
+      ]
+    },
+    {
+      "arm": "V2",
+      "bundles": [
+        "D",
+        "C"
+      ],
+      "addedBundles": [
+        "C"
+      ],
+      "intendedBodyDigests": [
+        {
+          "bundleId": "D",
+          "kind": "proof",
+          "digest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401"
+        },
+        {
+          "bundleId": "D",
+          "kind": "reasoning",
+          "digest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26"
+        },
+        {
+          "bundleId": "D",
+          "kind": "procedure",
+          "digest": "6336cb8ded403bf9ed89e6a7242bd9a4c9e0270db94d2c65abbf8b0a648d5595"
+        },
+        {
+          "bundleId": "C",
+          "kind": "proof",
+          "digest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db"
+        },
+        {
+          "bundleId": "C",
+          "kind": "reasoning",
+          "digest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee"
+        },
+        {
+          "bundleId": "C",
+          "kind": "procedure",
+          "digest": "7cc904163fd5754eda370bd6083d32731f9b8fd8ab18dea0d018c1ddf7bbe707"
+        }
+      ]
+    },
+    {
+      "arm": "V3",
+      "bundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "addedBundles": [
+        "B",
+        "C"
+      ],
+      "intendedBodyDigests": [
+        {
+          "bundleId": "D",
+          "kind": "proof",
+          "digest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401"
+        },
+        {
+          "bundleId": "D",
+          "kind": "reasoning",
+          "digest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26"
+        },
+        {
+          "bundleId": "D",
+          "kind": "procedure",
+          "digest": "6336cb8ded403bf9ed89e6a7242bd9a4c9e0270db94d2c65abbf8b0a648d5595"
+        },
+        {
+          "bundleId": "B",
+          "kind": "proof",
+          "digest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb"
+        },
+        {
+          "bundleId": "B",
+          "kind": "reasoning",
+          "digest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b"
+        },
+        {
+          "bundleId": "B",
+          "kind": "procedure",
+          "digest": "fb3627d2825922b566eebe28b6b6a3df3904298bc73424bb2ed57c34581af192"
+        },
+        {
+          "bundleId": "C",
+          "kind": "proof",
+          "digest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db"
+        },
+        {
+          "bundleId": "C",
+          "kind": "reasoning",
+          "digest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee"
+        },
+        {
+          "bundleId": "C",
+          "kind": "procedure",
+          "digest": "7cc904163fd5754eda370bd6083d32731f9b8fd8ab18dea0d018c1ddf7bbe707"
+        }
+      ]
+    }
+  ]
+}

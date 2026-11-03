@@ -1,0 +1,179 @@
+{
+  "schema": "c6r-outcomes/v1",
+  "generatedAt": "2026-11-01T17:40:00.000Z",
+  "stage": "C6-R — Agent-Native Behavioral Qualification & Comparative Value",
+  "codeFreeze": {
+    "commit": "103c4eb107418e0d253d27681ec33f77b0514de3",
+    "tree": "b3f4004b056c1c789bc0b6fc7281cc5ba5b77f1f"
+  },
+  "incomingBaseline": {
+    "commit": "d1a05a7bfc145258efa34c2710998db04680d266",
+    "tree": "e96cec6318bb35639e7083b222b811b8b2f59b11"
+  },
+  "model": {
+    "configuredProvider": "deepseek-official",
+    "configuredModel": "deepseek-flash",
+    "scoredSessions": 0,
+    "providerProbe": {
+      "run": "c6r-001",
+      "state": "BLOCKED",
+      "reason": "provider_transport_reset",
+      "evidence": "research-evidence/c6r/probe/20261101T173008Z",
+      "providerAttempts": 6,
+      "adapterRetries": 5,
+      "assistantMessages": 0,
+      "reportedTokens": 0,
+      "quotaError": false,
+      "upstream": "HTTP 502, read ECONNRESET on every attempt",
+      "network": {
+        "dns": "198.18.0.38",
+        "dnsClass": "host proxy fake-IP / benchmark range",
+        "tcp443": "connected",
+        "tlsHandshake": "did_not_complete"
+      },
+      "permissionPreset": "workspace-write",
+      "toolCatalogueCount": 17
+    },
+    "mockQualifications": [
+      {
+        "label": "MOCK_MODEL",
+        "evidence": "research-evidence/c6r/runtime",
+        "purpose": "isolated runtime, permission activation, canaries",
+        "syntheticTokens": 2070,
+        "note": "not model usage"
+      },
+      {
+        "label": "MOCK_MODEL",
+        "evidence": "research-evidence/c6r/p1-host",
+        "purpose": "real Palimpsest host over the neutral P1 world",
+        "palimpsestTools": 20,
+        "syntheticTokens": 2070,
+        "note": "not model cognition"
+      }
+    ]
+  },
+  "gates": {
+    "R0": "ESTABLISHED",
+    "R1": "ESTABLISHED",
+    "R2": "ESTABLISHED (isolated runtime; Windows host excluded for read isolation)",
+    "R3": "ESTABLISHED",
+    "R4": "BLOCKED",
+    "R5": "BLOCKED",
+    "R6": "BLOCKED",
+    "R7": "BLOCKED",
+    "R8": "ESTABLISHED"
+  },
+  "corrections": {
+    "cog6AcceptedField": "mechanism.rubric.acceptedCapabilitiesDigest",
+    "cog6FieldValue": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "acceptedSource": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "negativeControlSource": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "rubricEvaluated": "A-era data, before the direct Candidate B control",
+    "historicalFreezeModified": false,
+    "evidence": "docs/engineering/C6R-COG6-EVIDENCE-PROVENANCE-ERRATUM.md"
+  },
+  "scenario": {
+    "t1": "2026-02-10T09:05:00Z",
+    "t2": "2026-02-14T09:10:00Z",
+    "t1VisibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+    "preCandidateCapabilitiesDigest": "f81576167c284060eb494706e424204d99028823fe71bf56476883d49e4d9373",
+    "candidateA": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "candidateB": "14ffdd6525d292f33e86f568d9ecfd8fc5dfe47019e1bfaa76bb055ffc07bc91",
+    "t1ExcludesFutureEvents": true,
+    "t2ReleasesWithoutAccepting": true
+  },
+  "worlds": {
+    "p1": {
+      "projectHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+      "revision": 3,
+      "ready": ["technical-refresh"],
+      "satisfied": ["technical-fit", "cost-schedule"],
+      "intakeTaskPresent": false,
+      "palimpsestTools": 20,
+      "sessionId": "session-c01324f6-afec-47c1-b2f8-a197e522a1f7"
+    },
+    "f1": {
+      "head": "31ee2f288d49aec3825367853a73da454118d495",
+      "visibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+      "handoff": "research-evidence/c6r/f1-host/HANDOFF.md"
+    },
+    "equivalence": {
+      "dimensions": 8,
+      "same": 8,
+      "confounders": 0,
+      "evidence": "research-evidence/c6r/f1-host/equivalence.json"
+    }
+  },
+  "runtime": {
+    "windows": {
+      "dsh": "0.2.1-rc.3",
+      "aclBackend": "dsh-sandbox-windows-acl",
+      "writeConfinement": true,
+      "readConfinement": false,
+      "scoredExecution": "NOT USED"
+    },
+    "isolated": {
+      "host": "WSL2 Ubuntu",
+      "kernel": "6.18.33.2-microsoft-standard-WSL2",
+      "bubblewrap": "0.11.1",
+      "dsh": "0.2.1-rc.3",
+      "mode": "workspace-write",
+      "approval": "never",
+      "network": "private namespace; loopback bridge to a provider-only Unix-socket proxy",
+      "egressAllowList": ["POST /v1/messages"],
+      "canaries": {
+        "oracleReachable": false,
+        "mntCount": 0,
+        "homeCount": 0,
+        "protectedCanaryRead": "denied",
+        "outOfWorkspaceWrite": "denied",
+        "workspaceWrite": "ok",
+        "tmpWrite": "ok",
+        "selfEscalation": "refused",
+        "envSecretVisible": false,
+        "externalDns": "failed",
+        "nonProviderRoute": 403
+      },
+      "evidence": "research-evidence/c6r/runtime"
+    },
+    "budget": {
+      "maxSessions": 6,
+      "maxTokens": 8000000,
+      "stopStartTokens": 5000000,
+      "maxSessionMs": 480000,
+      "processTreeSelfTest": {
+        "childGone": true,
+        "grandchildGone": true,
+        "mechanism": "POSIX process group + SIGKILL"
+      },
+      "evidence": "research-evidence/c6r/budget/budget-selftest.json"
+    }
+  },
+  "experiments": {
+    "P1": "NOT_EXERCISED",
+    "F1": "NOT_EXERCISED",
+    "P3": "NOT_EXERCISED",
+    "F2": "NOT_EXERCISED",
+    "authorization": "NOT_EXERCISED",
+    "t1Effects": "NOT_EXERCISED",
+    "t2Release": "IMPLEMENTED_AND_TESTED, NOT_EXERCISED_WITH_A_MODEL",
+    "comparison": "NOT_EXERCISED"
+  },
+  "verification": {
+    "build": "exit 0",
+    "architecture": "PASS 0 violations, 9 accepted exceptions",
+    "publicApi": "PASS 0/0/0",
+    "targeted": "8 files / 72 tests, 0 failed",
+    "logs": "research-evidence/c6r/verification"
+  },
+  "limitations": [
+    "No real model turn: the provider was reset at TLS; the mock qualifications are not cognition.",
+    "No P1/F1 discovery, proposal, authority, T1 evolution, fresh session or comparison.",
+    "The Windows host confines writes only and is excluded from read-sensitive model execution.",
+    "The isolated runtime's network path to the provider is blocked by the host fake-IP proxy.",
+    "The probe harness has a WSL git identity-read defect; it was recorded, not patched after the Code Freeze.",
+    "The last recorded provider status remains COG-6's QUOTA; C6-R did not re-establish it.",
+    "The mock qualification's 2,070 tokens are synthetic, not model usage.",
+    "Node v24.14.1 is below the declared >=24.15.0."
+  ]
+}

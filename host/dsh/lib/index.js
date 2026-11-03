@@ -119,6 +119,23 @@ function deriveBranchHost(palimpsest, profile) {
 }
 
 /**
+ * Trajectory-P2-C §7.1: the HOST derives the WORK WORKER port facts from its own runtime knowledge — the
+ * same DSH bin and `--profile` the branch host uses. It is deliberately SEPARATE from `deriveBranchHost`:
+ * a work worker is not a research branch, and requiring the reasoning bundle merely to obtain a work port
+ * would couple two unrelated capabilities.
+ *
+ * This returns the FACTS (`dshBin`, `profile`) rather than a port, because the port belongs to the
+ * deployment's composition (`dshSubprocessWorkWorkerPort`) and the install derives it from these facts.
+ * Returning `undefined` when the host cannot establish them is what keeps an absent capability absent.
+ */
+function deriveWorkWorkerFacts() {
+  const profileName = flagValue('--profile');
+  const bin = process.env.PALIMPSEST_DSH_BIN?.trim() || (typeof process.argv[1] === 'string' && process.argv[1].endsWith('.js') ? process.argv[1] : undefined);
+  if (profileName === undefined || bin === undefined) return undefined;
+  return { dshBin: bin, profile: profileName };
+}
+
+/**
  * WORK WORKER MODE: compose the worker environment and nothing else. The runner reads `host.work` and
  * prints the ONE outcome line.
  *
@@ -196,6 +213,74 @@ async function applyWork(ctx, palimpsest, workFile) {
     },
   };
 
+  /**
+   * R1-L §11/§13: THE CHILD-SIDE PULL TOOL.
+   *
+   * Its implementation does exactly one thing: send the strict IPC request and return the parent's
+   * response. It reads no file, opens no port and holds no reference to any owner — the parent owns the
+   * canonical read and binds it to the attempt. The child therefore cannot widen the request: the
+   * envelope it sends is built HERE from the one argument the schema admits.
+   *
+   * `requestId` is a per-call counter, not a model-supplied value, so a model cannot forge or replay
+   * another call's identity.
+   */
+  let pullSeq = 0;
+  const pulledHandles = [];
+  const pullDefinition = raw.contextPullTool;
+  const pullTool =
+    pullDefinition !== undefined && typeof pullDefinition?.name === 'string' && pullDefinition.name.length > 0
+      ? {
+          name: pullDefinition.name,
+          description: typeof pullDefinition.description === 'string' ? pullDefinition.description : '',
+          parameters: pullDefinition.parameters,
+          output: { schema: { type: 'object' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value, null, 2) }] },
+          mode: 'read-only',
+          async execute(args) {
+            // §8: exactly `{ handle }`. A caller that passes anything else is refused here as well as in
+            // the parent, so the child never even forms a request the parent would have to reject.
+            const keys = args !== null && typeof args === 'object' ? Object.keys(args) : [];
+            if (keys.length !== 1 || keys[0] !== 'handle' || typeof args.handle !== 'string' || args.handle.length === 0) {
+              return { status: 'error', detail: 'the pull tool accepts exactly { handle }' };
+            }
+            // §9: refuse locally what this attempt did not bind, without a round trip.
+            const allowed = Array.isArray(raw.allowedPullHandles) ? raw.allowedPullHandles : [];
+            if (!allowed.includes(args.handle)) {
+              return { status: 'refused', detail: "that handle is not part of this attempt's compiled context" };
+            }
+            if (typeof process.send !== 'function') {
+              return { status: 'error', detail: 'this worker has no context channel' };
+            }
+            const requestId = `pull-${++pullSeq}`;
+            const response = await new Promise((resolve) => {
+              let settled = false;
+              const onMessage = (message) => {
+                if (message === null || typeof message !== 'object') return;
+                if (message.requestId !== requestId || message.kind !== 'pull-result') return;
+                settled = true;
+                process.off('message', onMessage);
+                resolve(message);
+              };
+              process.on('message', onMessage);
+              // Bounded wait: a parent that never answers must not hang the worker forever.
+              setTimeout(() => {
+                if (settled) return;
+                process.off('message', onMessage);
+                resolve({ status: 'error', detail: 'the context pull timed out' });
+              }, 20000).unref?.();
+              process.send({
+                channel: typeof raw.contextPullChannel === 'string' ? raw.contextPullChannel : 'palimpsest-worker-context-v1',
+                kind: 'pull',
+                requestId,
+                handle: args.handle,
+              });
+            });
+            // §17: record the handle (never the body) for the noncanonical telemetry line.
+            if (response.status === 'resolved') pulledHandles.push(args.handle);
+            return response.status === 'resolved' ? { status: 'resolved', value: response.value } : { status: response.status, detail: response.detail };
+          },
+        }
+      : undefined;
+
   ctx.provide('palimpsestHost', {
     palimpsest,
     work: {
@@ -205,6 +290,45 @@ async function applyWork(ctx, palimpsest, workFile) {
       // AGENT's scope (not the plugin scope), which is what keeps it out of reach of the restriction
       // that closes the inherited authority surface.
       tool: toRealTool(tool),
+      ...(pullTool === undefined ? {} : { contextPullTool: toRealTool(pullTool) }),
+      /**
+       * R2-LR §3: THE MODEL-VISIBLE PULL INDEX.
+       *
+       * The product already renders this string — `renderWorkerContextIndex` composes it from the
+       * attempt's OWN compiled handles and `workWorkerEnvironmentPayload` ships it in the work payload.
+       * This adapter previously DROPPED it, so the runner's `environment.contextIndexText` was always
+       * `undefined` and the index section was silently omitted from every worker's task message: the
+       * selected handles reached the worker PROCESS but never the worker's PROMPT, and no model-visible
+       * pull path existed in practice.
+       *
+       * This forwards the product-generated presentation value VERBATIM and does nothing else. It does
+       * not compose an index, read a canonical owner, consult a relevance policy, or widen any authority
+       * — the bytes are the product's, and this host only carries them.
+       *
+       * STRICT SHAPE HANDLING (§5): only an actual string is forwarded. A non-string is NOT stringified
+       * or coerced, because a malformed value must degrade to "the worker sees no index" rather than to
+       * "the worker sees a rendering of whatever object arrived". An ABSENT value is likewise not
+       * forwarded, so a payload predating this field produces a byte-identical prompt to before.
+       */
+      ...(typeof raw.contextIndexText === 'string' ? { contextIndexText: raw.contextIndexText } : {}),
+      /**
+       * Trajectory-P2-D2 §7/§8.1: THE PRODUCT-RENDERED TRAJECTORY PRESENTATION.
+       *
+       * The product already rendered this — `buildTrajectoryPresentation` composed it from the attempt's OWN
+       * qualified Capsule and the TRUSTED arm — and `workWorkerEnvironmentPayload` ships it in the work
+       * payload. This adapter forwards it VERBATIM and does nothing else: it composes no section, reads no
+       * canonical owner, chooses no arm and widens no authority. The runner's `workTask()` is what places it.
+       *
+       * STRICT SHAPE HANDLING (§8.2): only an actual object with a string `sectionText` is forwarded; a
+       * malformed value is NOT stringified, because a bad presentation must degrade to "the worker sees no
+       * section" rather than to "the worker sees a rendering of whatever object arrived". An ABSENT value is
+       * likewise not forwarded, so a payload predating this field produces a byte-identical prompt to before.
+       */
+      ...(raw.trajectoryDelivery !== null && typeof raw.trajectoryDelivery === 'object'
+        ? { trajectoryDelivery: raw.trajectoryDelivery }
+        : {}),
+      // §17: the handles this worker actually pulled, for the runner's telemetry line.
+      pulledHandles,
       deniedAuthorityPrefix: typeof raw.deniedAuthorityPrefix === 'string' ? raw.deniedAuthorityPrefix : 'palimpsest_',
       principalTools: [],
     },
@@ -287,6 +411,12 @@ export async function apply(ctx, config) {
   const agents = ctx.get('agents');
   const branchHost = deriveBranchHost(palimpsest, profile);
   const branchExecution = branchHost?.blocking();
+  /**
+   * Trajectory-P2-C §7.1/§7.2: the HOST's own work-worker facts, and the DSH home it runs under. They let
+   * the deployment derive a real Work Worker Port and compose the official session reader. Composing them
+   * starts nothing — execution stays with the existing Work/Continuation authority.
+   */
+  const workWorkerFacts = deriveWorkWorkerFacts();
 
   // The dashboard url exists only AFTER serving (a profile may ask for port 0 and let the OS pick),
   // so the deployment reads it through a getter rather than receiving a value it cannot know yet.
@@ -299,6 +429,8 @@ export async function apply(ctx, config) {
       // PLMP-LEAN-1 §C.11 ②: a delegated branch is bound to a frozen snapshot's workDir, so the
       // delegation needs the factory rather than the one port above.
       ...(branchHost === undefined ? {} : { branchExecutionFor: branchHost.build }),
+      ...(workWorkerFacts === undefined ? {} : { workWorkerFacts }),
+      ...(process.env.DSH_HOME === undefined ? {} : { dshHomePath: process.env.DSH_HOME }),
       facts: {
         dashboardUrl: () => (serve === undefined ? null : serve.url),
         dashboardAuth: () => (serve === undefined ? null : serve.auth),

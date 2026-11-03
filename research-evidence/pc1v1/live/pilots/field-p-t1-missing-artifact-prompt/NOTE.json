@@ -1,0 +1,11 @@
+{
+  "schema": "pc1v1-pilot/v1",
+  "state": "PILOT_EXCLUDED",
+  "reason": "The Field Study prompt did not state the exact required artifact paths, so the P model wrote study-plan.md, evidence-review.md and delivery-analysis.md instead of the frozen plan.json / reviews/* / unresolved.md set. The F handoff carried a different artifact surface, so scoring this run would be an unfair artifact-completeness comparison. The run was stopped and is excluded.",
+  "codeFreeze": "7edb4c622c62c9623767185ef87c3f32b5b6e901",
+  "cohortId": "pc1v1-live-2026-11-03-b-repair",
+  "modelCalls": 1,
+  "subagentObserved": true,
+  "preservedArtifacts": ["study-plan.md", "evidence-review.md", "delivery-analysis.md"],
+  "observedProductNote": "The P model did use a real independent subagent and did write substantive planning/review artifacts; the exclusion is about the missing frozen artifact contract, not about the quality of those documents."
+}

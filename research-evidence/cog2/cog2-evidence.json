@@ -1,0 +1,188 @@
+{
+  "schema": "cog2-evidence/v1",
+  "stage": "COG-2 + BGC-0",
+  "branch": "palimpsest-cog2-project-native-continuity",
+  "baseline": {
+    "commit": "c8fe50590d1862840043aff4449f91ec95524c3a",
+    "tree": "13623581df2e7b2a19e336e6ef94d55f9dcf9d07"
+  },
+  "codeFreeze": {
+    "commit": "e23a29a9d8331da86dad46f3c3ea6070d6319e5c",
+    "tree": "2e006507758f67d587f522f31bdf54741020ffa2"
+  },
+  "model": {
+    "provider": "deepseek-official",
+    "model": "deepseek-flash",
+    "runtime": "DSH 0.2.1-rc.3",
+    "node": "v24.22.0"
+  },
+  "budget": {
+    "plannedSessions": 16,
+    "actualSessions": 13,
+    "parallelSessions": 1,
+    "totalTokens": 44125402,
+    "maxWallClockMs": 1066159
+  },
+  "artifacts": {
+    "branchInventory": {
+      "path": "branch-inventory.json",
+      "bytes": 613398,
+      "digest": "f46ba01b2647578963ed536f0529f84d4dd26c5333cd7a8cce8ad53b9e62605a"
+    },
+    "divergence": {
+      "path": "divergence-assessment.json",
+      "bytes": 379044,
+      "digest": "13fdb61b588d0114c7cc112243fc3d2826f7af88ce2a4780c8437895c3375a98"
+    },
+    "scores": {
+      "path": "scores.json",
+      "digest": "896c2eae85bda23a544d96595b98aff855ca3034dc52d1e3c43a367b25b885b3"
+    },
+    "collection": {
+      "path": "collection.json",
+      "digest": "a07153a5f0ad7e61dcff5d0110c2e1a6d183d80f84ac47769acd21d68d74e1fe"
+    },
+    "sessions": {
+      "path": "sessions/manifest.json",
+      "count": 13,
+      "digest": "4fa3256b27f674b4eda61a04606f1258140c45597fb5c23edfe02a47a5ff7dd3"
+    },
+    "verification": {
+      "path": "verification.json",
+      "digest": "c6bc87f4b1995b250c55617f6827033fceb2e402065f752b9b94100f45619384"
+    }
+  },
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "The cognitive project context is genuinely initialized and readable; the managed Work context is not established because no completion standard is confirmed.",
+      "evidence": [
+        "docs/engineering/COG2-PRODUCT-READINESS.md",
+        "runs/inheritance-P-round-1.json",
+        "trials/P-journal-after.json"
+      ]
+    },
+    {
+      "id": "C2",
+      "claim": "A labelled mechanism check reads all five journal entries through the ordinary product surface.",
+      "evidence": [
+        "runs/positive.json",
+        "scores.json"
+      ]
+    },
+    {
+      "id": "C3",
+      "claim": "Without a first-move cue, a neutral task in a populated project makes zero product calls; a one-sentence invitation makes seven; the launch seam makes three.",
+      "evidence": [
+        "runs/matrix-C.json",
+        "runs/matrix-D.json",
+        "runs/matrix-CSEAM.json",
+        "scores.json"
+      ]
+    },
+    {
+      "id": "C4",
+      "claim": "A cold later process does not discover the project journal (zero calls); the same process with the launch seam reads it, and the file baseline reads its notes by default.",
+      "evidence": [
+        "runs/inheritance-P-round-2-original-reconstructed.json",
+        "runs/inheritance-P-round-2-seam.json",
+        "runs/inheritance-F-round-2.json"
+      ]
+    },
+    {
+      "id": "C5",
+      "claim": "The ordinary task is solved by a strong file-native model; Palimpsest does not improve the decision quality on this sample.",
+      "evidence": [
+        "trials/A/plan.md",
+        "trials/C/plan.md",
+        "trials/CSEAM/plan.md",
+        "scores.json"
+      ]
+    },
+    {
+      "id": "C6",
+      "claim": "Collaboration chooses FOCUS; explicit PARALLEL is refused with CAPABILITY_REQUIRED; no cross-agent influence is claimed.",
+      "evidence": [
+        "collaboration-probe.json",
+        "scores.json"
+      ]
+    },
+    {
+      "id": "C7",
+      "claim": "Sequential updates are adapted correctly; in-progress delivery is not supported by this deployment.",
+      "evidence": [
+        "scores.json",
+        "runs/inheritance-P-round-2-seam.json",
+        "runs/inheritance-F-round-2.json"
+      ]
+    },
+    {
+      "id": "C8",
+      "claim": "The bounded correction changes selection and cost but not decision quality; the negative control makes no unnecessary calls.",
+      "evidence": [
+        "runs/matrix-CSEAM.json",
+        "runs/matrix-NEGSEAM.json",
+        "test/cog2_project_context_hint.test.ts",
+        "verification.json"
+      ]
+    },
+    {
+      "id": "C9",
+      "claim": "The branch census is complete and non-destructive; D5 is content-integrated; main is fast-forward-eligible but not moved.",
+      "evidence": [
+        "branch-inventory.json",
+        "divergence-assessment.json",
+        "docs/engineering/COG2-BRANCH-GOVERNANCE.md"
+      ]
+    },
+    {
+      "id": "C10",
+      "claim": "Authoritative verification at the Code Freeze is green: build, ratchets, public API, 21/76 targeted tests and 300/3777 broad tests.",
+      "evidence": [
+        "verification.json",
+        "verification/targeted-serial.log",
+        "verification/broad.json"
+      ]
+    }
+  ],
+  "verdicts": {
+    "V1": "ESTABLISHED",
+    "V2": "NOT ESTABLISHED",
+    "V3": "ESTABLISHED",
+    "V4": "NOT ESTABLISHED WITHOUT CUE / ESTABLISHED WITH CUE",
+    "V5": "NOT DEMONSTRATED WITHOUT SEAM / PARTIAL WITH SEAM",
+    "V6": "ESTABLISHED",
+    "V7": "NOT ESTABLISHED",
+    "V8": "PARTIAL",
+    "V9": "ESTABLISHED (BEHAVIOUR AND COST; NOT QUALITY)",
+    "V10": "ESTABLISHED"
+  },
+  "overall": "COG-2: PARTIAL - ACTIVATION FIXED, COMPOUNDING NOT DEMONSTRATED",
+  "findings": {
+    "H1": "SUPPORTED",
+    "H2": "PARTIALLY SUPPORTED",
+    "H3": "SUPPORTED",
+    "H4": "NOT DEMONSTRATED",
+    "H5": "NOT EXERCISED"
+  },
+  "operationsNotPerformed": [
+    "no branch deletion or retirement",
+    "no worktree prune or lock removal",
+    "no main update or draft PR",
+    "no tag creation",
+    "no force-push",
+    "no gate root or evidence tree modification",
+    "no real runtime home write",
+    "no edit of any historical freeze"
+  ],
+  "limitations": [
+    "CI4 Contract Basis unchanged",
+    "managed Work not composed",
+    "PARALLEL unavailable",
+    "attention/delegation not composed",
+    "n=1, non-blinded",
+    "P round-2 plan artifact lost; reconstructed from its session stream",
+    "tokens are usage, not price"
+  ],
+  "note": "The Evidence Freeze commit SHA is not included in this manifest or in any Evidence Freeze content."
+}

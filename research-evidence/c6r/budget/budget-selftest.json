@@ -1,0 +1,64 @@
+{
+  "schema": "c6r-budget-selftest/v1",
+  "at": "2026-11-01T17:20:07.867Z",
+  "label": "NO_MODEL",
+  "mechanism": "POSIX process group, SIGKILL via process.kill(-pid)",
+  "childPid": 458,
+  "grandchildPid": 459,
+  "before": {
+    "child": true,
+    "grandchild": true
+  },
+  "killed": {
+    "killed": true,
+    "mechanism": "posix_process_group",
+    "signal": "SIGKILL"
+  },
+  "after": {
+    "child": false,
+    "grandchild": false
+  },
+  "bothGone": true,
+  "decisions": {
+    "atZero": {
+      "allowed": true,
+      "reason": null
+    },
+    "atFiveSessions": {
+      "allowed": true,
+      "reason": null
+    },
+    "atSixSessions": {
+      "allowed": false,
+      "reason": "session_cap"
+    },
+    "atStopTokens": {
+      "allowed": false,
+      "reason": "token_stop_threshold"
+    },
+    "atWallClock": {
+      "allowed": false,
+      "reason": "session_wall_clock"
+    }
+  },
+  "classifications": {
+    "observed": {
+      "classification": "OBSERVED",
+      "reason": null
+    },
+    "blockedQuota": {
+      "classification": "BLOCKED",
+      "reason": "provider_error_before_turn"
+    },
+    "invalidStream": {
+      "classification": "INVALID",
+      "reason": "incomplete_or_unreadable_stream"
+    },
+    "noSession": {
+      "classification": "BLOCKED",
+      "reason": "no_session"
+    }
+  },
+  "elapsedMs": 820,
+  "note": "A local monitor is not a server-side token cap. This proves the launcher can terminate the tree it started."
+}

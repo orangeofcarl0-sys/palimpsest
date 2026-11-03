@@ -1,0 +1,17 @@
+{
+  "schema": "pc1v1-spend-authorization/v1",
+  "authorized": true,
+  "owner": "owner:66494",
+  "cohortId": "pc1v1-live-2026-11-03-b-repair",
+  "authorizedAt": "2026-11-03T02:55:00.000Z",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "maxTokens": 24000000,
+  "conditions": [
+    "P",
+    "F"
+  ],
+  "note": "Owner authorized all PC1-V1 requests on 2026-11-03 (均授权). Repair cohort after two environment-only setup failures: missing T2 parent directory and an empty field-study allowed_commands. Same frozen code, prompts and scenarios."
+}

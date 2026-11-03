@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-AE",
+  "kind": "regression evidence",
+  "mode": "NO PRIMARY STOCHASTIC RUN — no worker was launched in this stage; the only model execution was the optional §17 Kimi dummy-fixture plumbing check",
+  "note": "e0cb13a is not amended. F-A and F-B are byte-identical to their R3-A0 revisions. The R3-A0 qualification analysis is preserved; the corrected analysis is written beside it in research-evidence/r3-ae/.",
+  "build": "PASS (tsc -b, clean)",
+  "unit": "3348/3348 passed (263 files; 34 new R3-AE engine tests + the updated R3-A contract tests)",
+  "architecture": { "violations": 0, "baselineExceptionsObserved": 9 },
+  "publicApi": { "missing": 0, "changedKind": 0, "added": 0 },
+  "antiVacuity": "PASS — 0 unconditional forms",
+  "deterministicGates": {
+    "gateC": "GREEN 38/38 (extended from 33 with the corrected QC-2/QC-4/QC-6 and manifest checks)",
+    "r3aeEngineTests": "34/34 passed",
+    "r3aContractTests": "33/33 passed",
+    "fixturePreconditions": "both fixtures SATISFIED (mechanical oracle, all cases declared, all classes exercised, no model self-report)"
+  },
+  "fixtureIntegrity": {
+    "fADigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a",
+    "fbDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611",
+    "unchangedFromR3A0": true,
+    "boundsUnchanged": true,
+    "nqUnchanged": true,
+    "validOutcomesRerun": false
+  },
+  "correctedVerdicts": {
+    "F-A x deepseek-flash": "UNQUALIFIED (unchanged)",
+    "F-A x glm-5.3-flash": "QUALIFIED (unchanged)",
+    "F-B x deepseek-flash": "UNQUALIFIED (unchanged, QC-1)",
+    "F-B x glm-5.3-flash": "UNQUALIFIED (unchanged)",
+    "aToBGate": "RED"
+  },
+  "canonicalSurfaces": {
+    "srcDiff": "ZERO",
+    "hostDiff": "ZERO",
+    "architectureDiff": "ZERO",
+    "newOwner": "NONE",
+    "architectureWriteRun": false,
+    "productCodeChanged": false,
+    "metadataProductized": false
+  },
+  "allowedChangesMade": [
+    "scripts/r3a/qualification.mjs — the corrected class-series grouping and QC-2/QC-4/QC-6",
+    "scripts/r3a/fixture-manifest.mjs — the frozen experimental fixture manifest (new)",
+    "scripts/r3a/fixture-audit.mjs — the deterministic QC-6 precondition (new)",
+    "scripts/r3a/analyse.mjs — manifest-derived compliance, preconditions, and the empty-pair guard",
+    "scripts/r3a/gate-c.mjs — updated to the corrected API and extended",
+    "scripts/r3a/models.mjs — the Kimi route recorded E2E-ready for plumbing",
+    "test/r3ae_engine.test.ts (new), test/r3a_qualification.test.ts (updated)",
+    "docs/engineering/R3-AE-ENGINE-CORRECTION.md, R3-A1-PREREGISTRATION-REQUIREMENTS.md",
+    "research-evidence/r3-ae/**"
+  ],
+  "noFixtureRevision": "F-A and F-B were NOT revised, despite the RED gate, because adding a class the current models happen to miss is the anti-overfit process §3 forbids"
+}

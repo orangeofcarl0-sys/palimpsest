@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E0_TEST_HOME_CONSTRUCTION",
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "modelCallsMade": 0,
+  "heavyDshGateRun": false,
+  "gateRoot": "F:/Codex_Work_Space/Palimpsest/.p2e0-gates",
+  "firstPartyDshAvailable": true,
+  "construction": {
+    "strategy": "junction",
+    "entriesShared": 125,
+    "branchHostBundlePresent": true,
+    "branchDeploymentBundlePresent": true,
+    "firstPartyDshSessionResolves": true,
+    "firstPartyDshBinResolves": true,
+    "profileWritten": true,
+    "measuredRealBytes": 289170,
+    "measuredRealFiles": 21,
+    "measuredReparsePoints": 123,
+    "measuredFullCopyBytesForComparison": 518000000,
+    "actualAdditionalBytes": 401408,
+    "savingsRatio": 1791.3338174776084,
+    "realModulesReparsePoints": 98
+  },
+  "cleanup": {
+    "cleaned": true,
+    "descendantReparsePointsFound": 123,
+    "removedLinkCount": 123,
+    "removedLinkSample": [
+      "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-home-ah0R6h/home/profiles/node_modules/@agentclientprotocol",
+      "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-home-ah0R6h/home/profiles/node_modules/@anthropic-ai",
+      "F:/Codex_Work_Space/Palimpsest/.p2e0-gates/p2e0-home-ah0R6h/home/profiles/node_modules/@aws"
+    ],
+    "attempts": 1
+  },
+  "ownedRootRemoved": true,
+  "dependencyRootPreserved": {
+    "canonicalUnchanged": true,
+    "entryCountUnchanged": true,
+    "entrypointsUnchanged": true
+  },
+  "verdict": "SAFE_SHARED_CONSTRUCTION_QUALIFIED",
+  "note": "§7.3: the home shares the first-party packages by per-entry junction (the same structure the real DSH profile uses) and copies only this branch's two host bundles. Measured cost is compared against the P2-D2 dereferenced-copy cost."
+}

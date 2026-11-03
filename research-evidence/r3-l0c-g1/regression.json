@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1",
+  "kind": "regression record",
+  "applicableCommit": "2a1e194f2baf295ceeba1801cd75ecbb83404425",
+  "baseline": "fe18441de2ac40921ac4dcabe112a7670363b24a",
+  "deterministic": [
+    {
+      "id": "TYPESCRIPT_BUILD",
+      "verdict": "PASS",
+      "detail": "npx tsc -b exit 0"
+    },
+    {
+      "id": "G1_CONTRACT",
+      "verdict": "PASS",
+      "detail": "test/r3l0c_g1_contract.test.ts: 17 tests"
+    },
+    {
+      "id": "G1_OBSERVER",
+      "verdict": "PASS",
+      "detail": "test/r3l0c_g1_observer.test.ts: 10 tests (P1-A..P1-H)"
+    },
+    {
+      "id": "G1_CORRELATION",
+      "verdict": "PASS",
+      "detail": "test/r3l0c_g1_correlation.test.ts: 21 tests (P2/P3/P4)"
+    },
+    {
+      "id": "G1_INTEGRATED",
+      "verdict": "PASS",
+      "detail": "test/r3l0c_g1_integrated.test.ts: 7 tests (C4)"
+    },
+    {
+      "id": "WORK_DELEGATION_AND_WORKER",
+      "verdict": "PASS",
+      "detail": "lean_work_worker_runtime, lean_work_delegation_transport, lean_delegation_runtime, lean_delegation_orthogonality: unchanged"
+    },
+    {
+      "id": "CONTEXT_PULL_BOUNDARY",
+      "verdict": "PASS",
+      "detail": "r1l_pull_boundary, r1l_pull_transport, r1l_worker_context_pull: 80 tests across the work/pull group"
+    },
+    {
+      "id": "ARCHITECTURE",
+      "verdict": "PASS",
+      "detail": "architecture:check PASS, 0 violations, 9 accepted baseline exceptions"
+    },
+    {
+      "id": "PUBLIC_API",
+      "verdict": "PASS",
+      "detail": "public-api:check PASS, 0 missing / 0 changed kind / 0 added"
+    },
+    {
+      "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+      "verdict": "PASS",
+      "detail": "21 protected namespaces, 403 working files, 0 changed, 0 removed"
+    },
+    {
+      "id": "FULL_UNIT_SUITE",
+      "verdict": "PARTIAL",
+      "detail": "npx vitest run --exclude \"**/r3l0ciarlcf_gates.test.ts\" --maxWorkers=6: 307 files, 4334 tests; 303 files passed, 13 tests failed across 4 files, ALL of them archived-plan closure-binding tests",
+      "tests": 4334,
+      "files": 307,
+      "passed": 4321,
+      "failed": 13
+    }
+  ],
+  "blockedForSafety": [
+    {
+      "id": "test/r3l0ciarlcf_gates.test.ts",
+      "verdict": "BLOCKED_FOR_SAFETY",
+      "reason": "it drives the legacy isolated-mutation helper whose forced worktree removal can follow a junction into the shared node_modules/dist; G0 identified this and G1 does not execute it"
+    }
+  ],
+  "notRun": [
+    {
+      "id": "BROWSER_E2E",
+      "verdict": "NOT_RUN",
+      "reason": "no product UI behaviour was modified"
+    },
+    {
+      "id": "D2_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route; G1 does not enter primary execution"
+    },
+    {
+      "id": "D4_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route"
+    },
+    {
+      "id": "D5_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route"
+    }
+  ],
+  "expensiveTestsIntroduced": false,
+  "centralProducerTestUsesLocalNonModelExecutable": true,
+  "notRunIsNotPass": true,
+  "law": "a NOT_RUN gate is never reported as PASS, and a safety-blocked test is disclosed rather than claimed as passed",
+  "archivedPlanClosureBindingFailures": {
+    "count": 13,
+    "files": [
+      "test/r3l0ciarl_gates.test.ts (1)",
+      "test/r3l0ciarlc_gates.test.ts (2)",
+      "test/r3l0ciarlcfs_gates.test.ts (5)",
+      "test/r3l0ciarlcfsh_persisted.test.ts (5)"
+    ],
+    "cause": "these tests read an ARCHIVED execution plan and require its bound execution closure to equal the closure recomputed from the current tree",
+    "preExisting": true,
+    "verifiedBy": "a pristine-baseline experiment: with EVERY G1 change removed from src/, scripts/r3l0c_g1/, test/r3l0c_g1_* and research-evidence/r3-l0c-g1/, and dist rebuilt with tsc -b --force, the SAME 13 tests fail on the same 4 files",
+    "baselineClosureObserved": "e8d48a21c4913ab6c84797cb7be1d55d043288ef1011fb7c838c9f507b4c217e",
+    "archivedPlanClosureBound": "db39ada8fc336bd28a97eec8e2433e0231549f3ece936e66ceda6fbfba28c443",
+    "additionalCauseRecorded": "the closure digest is computed over working-tree BYTES and depends on line-ending state and on the built dist/**; G0 recorded the same sensitivity, so the archived digests are bound to one specific checkout byte-state rather than to the commit alone",
+    "causedByG1": false,
+    "g1TouchedClosureCoveredFiles": true,
+    "g1TouchedFilesAlsoInClosure": [
+      "src/deployment/work_worker.ts (SOURCE_CLOSURE, COMPILED_RUNTIME_CLOSURE)",
+      "src/interaction/work_delegation.ts (SOURCE_CLOSURE, COMPILED_RUNTIME_CLOSURE)"
+    ],
+    "guardNotDefeated": true,
+    "archivedPlanRegenerated": false,
+    "closureGuardWeakened": false,
+    "expectedPerSection10": true,
+    "section10Quote": "Because G1 may modify product Host/Work code, the resulting Closure will differ from the archived plan. That is expected. Do not run the archived experiment against G1 HEAD. Do not regenerate the archived Plan. Do not weaken the Closure Guard."
+  },
+  "g1TestTotals": {
+    "files": 4,
+    "tests": 55,
+    "allPassed": true
+  }
+}

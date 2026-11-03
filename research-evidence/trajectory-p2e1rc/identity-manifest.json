@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RC_IDENTITY_MANIFEST",
+  "stage": "Trajectory-P2-E1RC",
+  "baselineHead": "f78e7672441b1a970ed21f66435feb595c9401a3",
+  "codeFreezeHead": "50ae7fe1f482b9f28d09b649d60dd62e9ff63b9e",
+  "executedCodeTree": "7f453038e4452da9414a3ae12eecc1e95f995e95",
+  "evidenceInputHead": "50ae7fe1f482b9f28d09b649d60dd62e9ff63b9e",
+  "evidenceContentDigest": "computed over the committed research-evidence/trajectory-p2e1rc/*.json at the evidence commit; the evidence commit cannot contain its own SHA, and the final stage SHA is reported externally in the engineering report",
+  "fieldsNote": "baselineHead, codeFreezeHead, executedCodeTree, evidenceInputHead and evidenceContentDigest are the explicit identities. There is no self-referential testedCodeHead.",
+  "runtime": {
+    "node": "v24.14.1",
+    "declaredMinimum": ">=24.15.0",
+    "conforming": false,
+    "caveat": "Node 24.14.1 is below the declared minimum; no conforming runtime was available and no global runtime was modified"
+  },
+  "acceptance": {
+    "build": "PASS (tsc -b clean)",
+    "architecture": "PASS (0 violations, 9 accepted exceptions)",
+    "publicApi": "PASS (0 missing, 0 changed, 0 added)",
+    "focusedTests": {
+      "files": 28,
+      "tests": 113,
+      "failed": 0
+    },
+    "negativeControls": {
+      "tests": 17,
+      "failed": 0,
+      "evidenceClass": "DYNAMICALLY_VERIFIED"
+    },
+    "closureGate": "CLOSURE_NOT_ESTABLISHED (38 of 50 gates pass; 12 fail on the blocked DSH turn)",
+    "regression": "SCOPED_RECONCILED (17 pre-existing, 0 new, 0 unresolved, within the supplied scope)",
+    "protectedEvidence": "52/52 byte-identical"
+  },
+  "exclusions": [
+    "test/r3l0ciarlcf_gates.test.ts (known unsafe isolated-mutation test against the shared Windows workspace)"
+  ],
+  "commands": {
+    "build": "npx tsc -b",
+    "architecture": "node scripts/audit/module-architecture.mjs --check",
+    "publicApi": "node scripts/audit/module-architecture.mjs --check-public-api",
+    "closure": "node scripts/trajectory_p2e1rc/closure-gate.mjs --json-out <path>",
+    "regression": "node scripts/trajectory_p2e1rc/regression-reconcile.mjs --baseline <json> --head <json> --exclude <testfile>",
+    "falsifiers": "node scripts/trajectory_p2e1rc/measurement-falsifiers.mjs"
+  }
+}

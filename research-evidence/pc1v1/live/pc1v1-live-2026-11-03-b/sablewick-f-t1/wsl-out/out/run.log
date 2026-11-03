@@ -1,0 +1,40 @@
+## Outcome
+
+I refreshed the technical fit against the information available at **2026-02-10 09:05 UTC**. The accepted historical baseline remains A = V1, B = V3, C = V3, but it is **not justified as a current all-sites procurement plan**.
+
+### Site findings
+
+| Site | Finding on latest available data |
+|---|---|
+| **A — Marsh Lane** | **V1** compliant (min -20 C; site min -12 C). V4 also technically compliant; V2 and V3 fail the temperature requirement. |
+| **B — Harbour Workshop** | **No compliant vendor.** V3 is the only coastal-warranty vendor, but the 2026-02-10 bulletin changes its published minimum from -10 C to **0 C**, above the required -4 C. V1/V2/V4 lack coastal warranties. |
+| **C — School Annexe** | **V3** compliant (750 mm, min 0 C vs site 2 C). V2 is also compliant (650 mm, -5 C); V1/V4 are too wide. |
+
+### Evidence and authority
+
+- The decisive document is `2026-02-10/vendor-capabilities.csv`, sha256 `0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c`.
+- It remains **UNACCEPTED**. I did not accept it, alter `sources/`, select a vendor, or change any requirement.
+- The Solaris “certificate” message is only a promise — no certificate number, body, standard or document — and cannot change the published minimum or rescue Site B.
+- The newsletter has no technical or financial bearing. The 2023 V2 cold-start finding remains valid below -5 C; it does not disqualify V2 at Site C (2 C) but does not help Sites A or B.
+
+### Cost and schedule
+
+- Historical envelope: £104,900 committed, £8,392 contingency, £113,292 total — arithmetically sound but dependent on V3 at Site B.
+- Maximum committed cost retaining 8% contingency within £120,000: **£111,111.11**.
+- At 2026-02-10, the Site B order milestone (late December 2025) has passed, and no procurement records exist. Site A’s window closes 27 February; even the shortest lead time (4 weeks) cannot meet it if no order has been placed. Site C remains feasible only with a prompt order — V3’s 10-week lead implies ordering by about 23 February 2026.
+
+### Independent check
+
+I used a bounded independent subagent check, recorded separately in `deliverables/independent-check.md`. It independently derived the same compliance matrices and confirmed the contingency arithmetic. This is reported as a cross-check only, **not accepted programme data**.
+
+### Artifacts and Git
+
+Committed as `109df72`:
+
+- `deliverables/technical-refresh.md` — required refresh artifact
+- `proposal.md` — proposed follow-up actions, explicitly not approved
+- `deliverables/independent-check.md` — separate independent check
+
+`npm test` passes (`4 vendors, 4 price rows, 0 failures`), and the canonical `sources/` tree is unchanged.
+
+**Next required steps:** operator decision on accepting/rejecting the exact bulletin bytes; no Site B order until resolved; bounded sourcing for a coastal-warranty vendor with published minimum ≤ -4 C; then re-baseline cost and schedule, including confirmation of actual order status.

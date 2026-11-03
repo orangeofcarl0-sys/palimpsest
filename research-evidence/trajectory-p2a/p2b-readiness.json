@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_P2B_READINESS",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "whatRealObservationNowExists": "a Parent-owned invocation can carry the actual DSH SessionId of the worker session that invocation created, with an explicit observation state and an independent source qualification",
+  "whichOwnerMayDurablyRecordIt": "NOT this stage. A durable Attempt->Invocation->Session association belongs to a designated persistence owner; P2-A produces the observation, not the record.",
+  "requiredAttemptInvocationSessionAssociation": {
+    "attemptId": "canonical Work",
+    "invocationId": "Parent Deployment Port",
+    "dshSessionId": "DSH Host observation",
+    "durableBindingRef": "a future designated owner, never fabricated here"
+  },
+  "requiredIdentityConflictRules": [
+    "two different valid identities for one invocation remain an explicit conflict",
+    "message order must not decide authority",
+    "NOT_OBSERVED must not be read as no-session-existed",
+    "a durable record must preserve the conflicting pair rather than the first value"
+  ],
+  "crashAndRecoveryWindows": [
+    "the observation is per-invocation and non-durable; a crash before any record loses it entirely",
+    "a crash after a record must be distinguishable from a record never written",
+    "a session that exists on disk after a process exit is not by itself cold recovery"
+  ],
+  "evidenceRequiredToReachBoundVerified": "a durable association verified against an actual owner - not a boolean and not a caller claim",
+  "whatH1ResolverCurrentlyDoesAndDoesNotProve": {
+    "proves": "resolveVerifiedSessionBinding takes its verified id from producer evidence and cannot be satisfied by a caller claim",
+    "doesNotProve": "it operates over logical evidence inputs; a plain association object VERIFIED and durableBindingRef fields do not prove their own authority"
+  },
+  "deferredH1Concerns": [
+    "a plain Association object VERIFIED and durableBindingRef fields do not prove their own authority",
+    "the real production path must verify evidence against an actual owner",
+    "a Producer Observation with a conflicting SessionId can matter even if it is not yet durable",
+    "H1 current Resolver filters durable verified candidates before some conflict checks",
+    "request.hostRecord?.portInvocationId is caller supplied and must not become the authoritative Parent Invocation in P2-B",
+    "P2-C must enforce cross-field consistency between verified binding, session read admission, page identity and page integrity"
+  ],
+  "recommendedNextMinimalP2BExperiment": "persist ONE observed association through a designated owner and re-read it after a restart, asserting the record AttemptId equals the canonical one, a conflicting second identity is preserved as a conflict rather than overwritten, and an association never written is distinguishable from one lost. Do NOT wire it into the ordinary Attempt Preview.",
+  "prohibitedStillInForce": [
+    "durable binding persistence",
+    "cold recovery proof",
+    "automatic Agent Handoff or continuation",
+    "BOUND_VERIFIED admission in production",
+    "PRIMARY execution",
+    "paid model calls"
+  ],
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

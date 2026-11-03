@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C-F-S",
+  "kind": "frozen evidence seal and safety closure stage result",
+  "baseline": "8bf8d42298aee3b8b267b3793e015900ca7cc2a7",
+  "verdicts": {
+    "COMMITTED_PLAN_SELF_DIGEST": "MATCH",
+    "COMMITTED_PLAN_GIT_IDENTITY": "MATCH",
+    "CROSS_ARTIFACT_PLAN_BINDING": "MATCH",
+    "PRIMARY_PLAN_PREFLIGHT_INTEGRITY": "PASS",
+    "SAFE_WORKTREE_CLEANUP": "PASS",
+    "LEGACY_UNSAFE_HELPER_QUARANTINED": "DISCLOSED",
+    "DURABLE_TRIAL_EVIDENCE_IDENTITY": "PASS",
+    "ARTIFACT_EVENT_ENVELOPE_VALIDITY": "PASS",
+    "GENUINE_MEASURED_ZERO_DISTINCTION": "PASS",
+    "AUTHORIZATION_CONDITION_CONSISTENCY": "PASS",
+    "HOST_SPEND_ENFORCEMENT": "NOT_ESTABLISHED",
+    "EXECUTION_CLOSURE": "MATCH",
+    "HISTORICAL_IMMUTABILITY": "PASS",
+    "DETERMINISTIC_MEASUREMENT_QUALIFICATION": "PASS",
+    "REAL_DSH_ARTIFACT_COMPATIBILITY": "NOT_ESTABLISHED",
+    "LIVE_PRIMARY_PROVENANCE": "NOT_ESTABLISHED",
+    "EXTERNAL_AUTHORITY": "NOT_ESTABLISHED",
+    "PAID_EXECUTION": "NOT_RUN",
+    "CAUSAL_RESULT": "NOT_EVALUABLE"
+  },
+  "readiness": {
+    "DETERMINISTIC_MEASUREMENT_QUALIFIED": true,
+    "CROSS_ARTIFACT_EVIDENCE_SEALED": true,
+    "REAL_ARTIFACT_COMPATIBILITY_ESTABLISHED": false,
+    "PRIMARY_EXECUTION_AUTHORIZED": false,
+    "PRIMARY_CAUSAL_DATA_AVAILABLE": false,
+    "centralVerdicts": [
+      "COMMITTED_PLAN_SELF_DIGEST",
+      "COMMITTED_PLAN_GIT_IDENTITY",
+      "CROSS_ARTIFACT_PLAN_BINDING",
+      "PRIMARY_PLAN_PREFLIGHT_INTEGRITY",
+      "SAFE_WORKTREE_CLEANUP",
+      "DURABLE_TRIAL_EVIDENCE_IDENTITY",
+      "ARTIFACT_EVENT_ENVELOPE_VALIDITY",
+      "GENUINE_MEASURED_ZERO_DISTINCTION",
+      "AUTHORIZATION_CONDITION_CONSISTENCY"
+    ],
+    "collapsed": false,
+    "note": "the readiness statements are independent; DETERMINISTIC_MEASUREMENT_QUALIFIED is NOT an authorization and does NOT imply the others"
+  },
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "correctionGaps": {
+    "declared": 5,
+    "allViolatedByBaseline": true,
+    "violated": [
+      "S1_CROSS_ARTIFACT_PLAN_MISMATCH",
+      "S2_UNSAFE_CLEANUP_FALLBACK",
+      "S3_PARTIAL_TRIAL_IDENTITY",
+      "S4_FALSE_ARTIFACT_INTERPRETABILITY",
+      "S5_AUTHORIZATION_VERDICT_INCONSISTENCY"
+    ],
+    "notViolated": []
+  },
+  "planIdentity": {
+    "planId": "r3-l0c-iar-lcfs-primary-plan",
+    "planContentDigest": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "committedBlob": "3e73aeadbb3e228cb755a5b0173e1a5ec0b1d3bb",
+    "worktreeBlob": "3e73aeadbb3e228cb755a5b0173e1a5ec0b1d3bb",
+    "boundClosureDigest": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "currentClosureDigest": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "checks": {
+      "COMMITTED_PLAN_SELF_DIGEST": "MATCH",
+      "COMMITTED_PLAN_GIT_IDENTITY": "MATCH",
+      "PLAN_SCHEMA_AND_ID": "PASS",
+      "PLAN_CLOSURE_BINDING": "MATCH"
+    },
+    "verified": true,
+    "regenerated": false
+  },
+  "evidenceSeal": {
+    "committedPlanId": "r3-l0c-iar-lcfs-primary-plan",
+    "committedFullPlanDigest": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "committedGitBlob": "3e73aeadbb3e228cb755a5b0173e1a5ec0b1d3bb",
+    "executionClosureDigest": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "qualificationPlanReference": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "stageResultPlanReference": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e"
+  },
+  "evidenceSealPipeline": {
+    "pipeline": "COMPLETED",
+    "guardPassed": true,
+    "terminalState": "MATRIX_COMPLETE",
+    "matrixCompleted": true,
+    "completedSessions": 16,
+    "maxLaunchesPerSession": 1,
+    "measurementBasis": "RECOMPUTED_AT_ADMISSION",
+    "terminalAdmissionGreen": true,
+    "terminalAdmissionConditions": 10,
+    "durableReconciliationGreen": true,
+    "durableFullIdentityGreen": true,
+    "primaryRefusedAt": "PRIMARY_PROHIBITION",
+    "primaryLaunched": false,
+    "modelCallsMade": 0
+  },
+  "costBridge": {
+    "measuredCount": 16,
+    "absentCount": 0,
+    "provenance": "FIXTURE",
+    "interpretable": true
+  },
+  "causalReduction": {
+    "CAUSAL_RESULT": "NOT_EVALUABLE",
+    "failingPrerequisites": [
+      "COST_MEASUREMENT_LIVE_PRIMARY_COMPLETE"
+    ]
+  },
+  "authority": {
+    "verdict": "AUTHORITY_NOT_ESTABLISHED",
+    "verified": false,
+    "conditions": {
+      "SCHEMA_VALIDITY": false,
+      "EXTERNALLY_VERIFIED_AUTHORITY": false,
+      "APPROVED_PLAN_ID_MATCH": false,
+      "APPROVED_FULL_PLAN_DIGEST_MATCH": false,
+      "AUTHORIZED_SESSION_SCOPE": false,
+      "EXPLICIT_MONETARY_LIMIT": false,
+      "PROVEN_HOST_SPEND_ENFORCEMENT": false,
+      "NO_FALSE_OR_UNKNOWN_CONDITION": false
+    },
+    "unsatisfiedConditions": [
+      "SCHEMA_VALIDITY",
+      "EXTERNALLY_VERIFIED_AUTHORITY",
+      "APPROVED_PLAN_ID_MATCH",
+      "APPROVED_FULL_PLAN_DIGEST_MATCH",
+      "AUTHORIZED_SESSION_SCOPE",
+      "EXPLICIT_MONETARY_LIMIT",
+      "PROVEN_HOST_SPEND_ENFORCEMENT",
+      "NO_FALSE_OR_UNKNOWN_CONDITION"
+    ],
+    "concepts": {
+      "SCHEMA_VALIDITY": false,
+      "EXTERNALLY_VERIFIED_AUTHORITY": false,
+      "COMMITTED_FULL_PLAN_IDENTITY": false,
+      "AUTHORIZED_SESSION_SCOPE": false,
+      "AUTHORIZED_MONETARY_LIMIT": false,
+      "ACTUAL_HOST_SPEND_ENFORCEMENT": false,
+      "CURRENT_LAUNCH_PERMISSION": false
+    },
+    "problems": [
+      "no authorization record was supplied",
+      "the record approves plan digest undefined but the executing plan's FULL content digest is dad2abadc78294da",
+      "the record approves plan id \"undefined\" but \"r3-l0c-iar-lcfs-primary-plan\" is executing",
+      "the declared budget of null session(s) does not cover the frozen 16-session scope",
+      "the record declares no explicit maximum authorized monetary expenditure, so its ceiling is a session count rather than a spending limit",
+      "no host spending enforcement exists: no host-side or provider-side spending-enforcement mechanism exists in this repository, and this stage does not implement one; a caller-declared session ceiling is not an enforced monetary limit",
+      "the authority is not externally verified: no trusted authority source is configured (PALIMPSEST_AUTHORITY_SOURCE is unset); this stage does not create one, because creating a source and then trusting it would be self-signing"
+    ],
+    "verdictAgreesWithProblems": true,
+    "launchProhibited": true,
+    "hostSpendEnforcement": "NOT_ESTABLISHED",
+    "testFixtureCannotOpenLaunch": true
+  },
+  "erratum": {
+    "erratumFor": {
+      "stage": "R3-L0C-I-A-R-L-C-F",
+      "commit": "8bf8d42298aee3b8b267b3793e015900ca7cc2a7",
+      "planId": "r3-l0c-iar-lcf-primary-plan",
+      "evidenceNamespace": "research-evidence/r3-l0c-iar-lcf"
+    },
+    "previousPlanId": "r3-l0c-iar-lcf-primary-plan",
+    "committedPlanContentDigest": "4a6786d0e027bf6bc119ae689e39ae2066cc51e229d0ca45339f5d6c576605af",
+    "mismatchedQualificationPlanReferenceDigest": "e715ce6fe4cd5bb30348e090f54a536e9882554116814f4168428347a5e0b5b3",
+    "affectedPreviousVerdict": "FULL_PLAN_DIGEST",
+    "selfCheckWasMatch": true,
+    "crossArtifactReferenceWasConsistent": false,
+    "priorQualificationWasFullySealed": false,
+    "newSupersedingPlanId": "r3-l0c-iar-lcfs-primary-plan",
+    "priorEvidenceModified": false
+  },
+  "legacyHelperQuarantine": {
+    "helper": "scripts/r3l0ciarlcf/isolated-mutation.mjs",
+    "function": "destroyIsolatedCheckout",
+    "disposition": "SUPERSEDED for this stage's safety-sensitive mutation operations",
+    "replacedBy": "scripts/r3l0ciarlcfs/safe-cleanup.mjs destroyDisposableCheckout",
+    "physicallyUnexecutable": false,
+    "quarantineIsAGuardNotAnImpossibility": true,
+    "forbiddenClaim": "do not claim the historical helper has become physically unexecutable merely because the new stage does not call it",
+    "stillCallableBy": "the frozen R3-L0C-I-A-R-L-C-F qualification and its tests, which this stage does not rewrite"
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "MIDDLE",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "LAST",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true,
+    "reportThenHangTerminal": "UNCERTAIN_PRESERVED",
+    "reportThenHangUncertain": true
+  },
+  "executionClosure": {
+    "digest": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE",
+      "REUSED_MODULES_CLOSURE"
+    ],
+    "fileCount": 144,
+    "complete": true,
+    "stageHarnessModules": 17,
+    "reusedModules": 31,
+    "reusedMissing": [],
+    "mutationsProven": true,
+    "mutationArms": [
+      "NEW_STAGE_PIPELINE_MODULE",
+      "REUSED_PRIOR_PLAN_IDENTITY_MODULE",
+      "RUNTIME_MANIFEST_DYNAMIC_MODULE",
+      "EXECUTION_CONFIGURATION_OR_TOOLCHAIN"
+    ],
+    "treeMutated": false,
+    "walkerBlindSpotCount": 8
+  },
+  "planClosure": {
+    "EXECUTION_CLOSURE": "MATCH",
+    "frozen": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "current": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
+  },
+  "immutability": {
+    "verdict": "PASS",
+    "protectedNamespaces": 21,
+    "restoreAvailable": false
+  },
+  "plan": {
+    "planId": "r3-l0c-iar-lcfs-primary-plan",
+    "planContentDigest": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "digest": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "supersedes": "r3-l0c-iar-lcf-primary-plan",
+    "frozenAt": "2026-10-10T12:53:25.395Z"
+  },
+  "planContentDigest": {
+    "FULL_PLAN_DIGEST": "MATCH",
+    "frozen": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "current": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e"
+  },
+  "stageStop": {
+    "paidExecution": "NOT_RUN",
+    "primaryAuthorization": "NOT_ESTABLISHED",
+    "realPrimaryCausalResult": "NOT_EVALUABLE",
+    "ranPaidMatrix": false,
+    "beganR3L1": false,
+    "beganFusion": false,
+    "modelCallsMade": 0,
+    "enteredPrimaryExecution": false
+  },
+  "finalAcceptanceQuestion": {
+    "question": "Can a Qualification or Stage Result reference a different prospective plan from the committed plan, can an unverified Trial/Artifact masquerade as a measured endpoint, or can a failed cleanup proceed to a destructive operation outside the disposable environment?",
+    "answer": "NO — measured, with live provenance and real artifact compatibility NOT_ESTABLISHED",
+    "basis": "the Qualification and the Stage Result now reference the COMMITTED plan read back from disk; the durable trial reconciliation compares every load-bearing identity field; an artifact must satisfy a real event envelope before the frozen reconstruction runs; and a failed link unlink preserves the worktree and returns CLEANUP_BLOCKED without reaching git worktree remove --force or a recursive delete"
+  }
+}

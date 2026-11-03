@@ -1,0 +1,75 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mF:/Codex_Work_Space/Palimpsest/palimpsest-sr1[39m
+
+ [32m✓[39m test/trajectory_p2d2_host_delivery.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 11056[2mms[22m[39m
+     [33m[2m✓[22m[39m 27/30. OFF places NO section and the captured UserMessage carries the task [33m 2601[2mms[22m[39m
+     [33m[2m✓[22m[39m 16 (host). OFF is byte-identical whether or not a Capsule object is present (no section) [33m 1767[2mms[22m[39m
+     [33m[2m✓[22m[39m 28/31. CONTROL places the no-history boundary and NO real historical content [33m 863[2mms[22m[39m
+     [33m[2m✓[22m[39m 29/32. TREATMENT places the ACTUAL section, and the host records the matching digests [33m 842[2mms[22m[39m
+     [33m[2m✓[22m[39m 33/34. the tool catalogue and write scope are UNCHANGED by the presentation [33m 1714[2mms[22m[39m
+     [33m[2m✓[22m[39m 25 (host). a MALFORMED presentation is refused, not stringified into the prompt [33m 1704[2mms[22m[39m
+     [33m[2m✓[22m[39m 26 (host). injection-like historical text is placed inside the framed section as DATA [33m 833[2mms[22m[39m
+(node:26544) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/uxc_host_runtime.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 3603[2mms[22m[39m
+     [33m[2m✓[22m[39m N23/N24 a packaged remote project can local-Explore or FOCUS-answer an Ask [33m 362[2mms[22m[39m
+(node:13276) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/uxa_collaboration.test.ts [2m([22m[2m39 tests[22m[2m)[22m[33m 3645[2mms[22m[39m
+     [33m[2m✓[22m[39m profiles the task, chooses EXPLORE, honours the durable VERIFY rider, and never rewrites the preference [33m 338[2mms[22m[39m
+     [33m[2m✓[22m[39m binds the request's verifierRef on PARALLEL_AND_CHECK, and a named NON-independent ref never reads as an independent check [33m 363[2mms[22m[39m
+ [32m✓[39m test/r2lr_last_mile.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 1347[2mms[22m[39m
+     [33m[2m✓[22m[39m passes on the repository's gates [33m 386[2mms[22m[39m
+     [33m[2m✓[22m[39m would FAIL on the exact form the R1-L gate contained [33m 310[2mms[22m[39m
+     [33m[2m✓[22m[39m does NOT flag an ordinary comparison of two facts [33m 316[2mms[22m[39m
+(node:27180) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+Preparing worktree (detached HEAD 15b9dc2)
+Preparing worktree (detached HEAD 15b9dc2)
+ [32m✓[39m test/lean_delegation_surface.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1795[2mms[22m[39m
+     [33m[2m✓[22m[39m a delegating deployment gains the face and the tool, and keeps palimpsest_collaborate as it was [33m 372[2mms[22m[39m
+     [33m[2m✓[22m[39m start returns while the worker is still running, and the result arrives on its own [33m 805[2mms[22m[39m
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+Preparing worktree (detached HEAD 8dc0b43)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+Preparing worktree (detached HEAD 597806b)
+Preparing worktree (detached HEAD 597806b)
+Preparing worktree (detached HEAD 597806b)
+fatal: not a git repository (or any of the parent directories): .git
+ [32m✓[39m test/lean_delegation_snapshot.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1806[2mms[22m[39m
+     [33m[2m✓[22m[39m freezes the committed head, ignores uncommitted changes, and isolates writes [33m 723[2mms[22m[39m
+     [33m[2m✓[22m[39m release runs even when the caller throws, and a second freeze is independent [33m 1009[2mms[22m[39m
+(node:44028) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+Preparing worktree (detached HEAD 27d1700)
+ [32m✓[39m test/lean_delegation_orthogonality.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 766[2mms[22m[39m
+     [33m[2m✓[22m[39m a COMPLETED delegation changes no Work count, and admits only a cell-local claim [33m 682[2mms[22m[39m
+(node:50168) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/cog1_workspace_write_fence.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 480[2mms[22m[39m
+(node:17028) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/n_reasoning_cell.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 301[2mms[22m[39m
+(node:22024) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/lean_branch_capability.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 328[2mms[22m[39m
+ [32m✓[39m test/lean_branch_seam.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 235[2mms[22m[39m
+ [32m✓[39m test/lean_delegation_runtime.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 347[2mms[22m[39m
+(node:18700) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/p_attention.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 180[2mms[22m[39m
+ [32m✓[39m test/cog3_branch_read_prompt.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m test/cog2_project_context_hint.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+[2m      Tests [22m [1m[32m164 passed[39m[22m[90m (164)[39m
+[2m   Start at [22m 08:15:48
+[2m   Duration [22m 45.87s[2m (transform 6.26s, setup 0ms, import 13.13s, tests 25.95s, environment 2ms)[22m
+
+
+[test temp hygiene] removed 18 leaked temp dir(s)

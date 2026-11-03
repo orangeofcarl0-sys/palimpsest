@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I",
+  "kind": "final prospective primary execution plan",
+  "planId": "r3-l0c-i-primary-plan",
+  "baseline": "19f0c69833f33c51ada8642379980c490cb75d04",
+  "frozenBefore": "the first primary model exposure",
+  "executionPathDeviation": {
+    "id": "INFRASTRUCTURE_RETRY_REMOVED_FROM_THE_NEW_PATHWAY",
+    "supersedes": {
+      "planId": "R3-L0C-R REPAIR_REPLICATION",
+      "path": "scripts/r3l0cr/matrix.mjs",
+      "retryRule": "while (attempt < 4) { ... if (!result.infrastructureInvalid) break; }",
+      "disposition": "QUARANTINED — byte-identical, no longer an authorized entry point"
+    },
+    "newPathway": {
+      "runner": "scripts/r3l0cf/fail-stop.mjs",
+      "adapter": "scripts/r3l0cf/primary-matrix.mjs",
+      "driver": "scripts/r3l0cf/primary-matrix-driver.mjs",
+      "child": "scripts/r3l0c/generation-child.mjs",
+      "retryRule": "exactly one launch per session; MAX_WORKER_LAUNCHES = 1, POST_EXPOSURE_RETRIES = 0"
+    },
+    "historicalFileEdited": false,
+    "quarantineEnforcedBy": "assertAuthoritativePath in scripts/r3l0cf/primary-matrix.mjs"
+  },
+  "protocolDeviation": {
+    "schemaVersion": 1,
+    "kind": "R3-L0C-F prospective protocol revision",
+    "OLD_PROTOCOL": "INFRASTRUCTURE_RETRY_UP_TO_4",
+    "NEW_PROTOCOL": "NO_RETRY_AFTER_POSSIBLE_EXPOSURE",
+    "oldRule": "a session the harness judged infrastructure-invalid was re-launched, up to four attempts, until a report was produced or the attempts were exhausted",
+    "newRule": "a session is launched AT MOST ONCE; a failure after the exposure-intent was durably recorded stops the whole matrix and is never re-launched",
+    "prospective": true,
+    "executionDesignIdentical": false,
+    "executionDesignNote": "the behavioral design is preserved, but the EXECUTION design is deliberately revised: retry-after-infrastructure-invalidity is removed",
+    "unchanged": [
+      "research question",
+      "treatment (SELECTION_ONLY)",
+      "experimental unit (ProjectTrajectory)",
+      "history corpus and capital assets",
+      "hidden diagnostic oracle",
+      "quality and reconstruction-cost measures",
+      "four matched blocks",
+      "two generations per trajectory",
+      "H/C arm ordering and randomization seed",
+      "positive/adverse verdict thresholds"
+    ],
+    "implementedIn": "new stage-owned modules under scripts/r3l0cf/",
+    "frozenContractsEdited": false
+  },
+  "outcomePolicy": {
+    "schemaVersion": 1,
+    "kind": "behavioural outcome policy",
+    "separates": {
+      "admissibleObservation": [
+        "CORRECT_IMPLEMENTATION",
+        "INCORRECT_IMPLEMENTATION",
+        "LOW_HIDDEN_INVARIANT_COVERAGE",
+        "MODEL_DECLINED_VISIBLE_CAPITAL",
+        "COMPLETED_WORK_FAILS_CORRECTNESS",
+        "BUDGET_EXHAUSTED_WITHOUT_USABLE_RESULT"
+      ],
+      "infrastructureOrTreatmentFailure": [
+        "MISSING_WORKER_REPORT",
+        "HOST_FAILURE",
+        "GIT_OBJECT_RESOLUTION_FAILURE",
+        "UNAVAILABLE_WORKER_WORLD",
+        "ENVIRONMENTAL_COMMIT_FAILURE",
+        "CONSUMER_VISIBLE_TREATMENT_MISMATCH",
+        "CONTAINMENT_FAILURE",
+        "EXECUTION_CLOSURE_MISMATCH",
+        "PROVIDER_ROUTE_FAILURE_AFTER_INVOCATION",
+        "LAUNCH_THREW"
+      ],
+      "canonicalWorkBlockage": "CANONICAL_WORK_CANNOT_ADVANCE"
+    },
+    "incorrectOracleVectorIsAStop": false,
+    "declinedCapitalPullIsAStop": false,
+    "lowCoverageIsAStop": false,
+    "incorrectVectorIsRecorded": true,
+    "declinedPullIsRecorded": true,
+    "workBlockageIsAStop": true,
+    "forcesResultVerificationOrPromotion": false,
+    "requiresExplicitAdmissionEvidence": true,
+    "emptyObjectAdmitted": false,
+    "frozenEndpointsChanged": false,
+    "frozenThresholdsChanged": false,
+    "law": "a behavioural outcome is recorded, not a reason to terminate the study; only a machinery fault or a canonical Work blockage stops the matrix"
+  },
+  "preservedDesign": {
+    "researchQuestion": "when the correct project-specific operating knowledge is recoverable from a substantial raw Project history, does governed current-standing cognitive capital reduce the cost and unreliability of reconstructing that knowledge?",
+    "experimentalUnit": "ProjectTrajectory",
+    "treatment": "SELECTION_ONLY — the only difference between the arms is whether the frozen handles are selected",
+    "armOrder": [
+      [
+        "C",
+        "H"
+      ],
+      [
+        "H",
+        "C"
+      ],
+      [
+        "C",
+        "H"
+      ],
+      [
+        "C",
+        "H"
+      ]
+    ],
+    "randomizationSeed": 1380724738,
+    "seedRechosen": false,
+    "exposures": {
+      "G1": [
+        "I1"
+      ],
+      "G2": [
+        "I1",
+        "I2"
+      ]
+    },
+    "sessionCount": 16,
+    "blockCount": 4,
+    "generationsPerTrajectory": 2,
+    "compressionVerdictSource": "scripts/r3l0c/analyse.mjs (re-exported by scripts/r3l0cr/analyse.mjs, unchanged)",
+    "netCostVerdictSource": "scripts/r3l0c/analyse.mjs (re-exported by scripts/r3l0cr/analyse.mjs, unchanged)",
+    "verdictThresholdsChanged": false,
+    "primaryEndpointsChanged": false,
+    "corpusDigest": "87ecaa284c1ed91835fd636db8210a3c82be2bdb4ae9381553753475c8df949f",
+    "capitalBundleDigest": "8dac2b28fd28f7087556ff8adca8316bd6a4b805618705dc14cc1b7d8cf213bd",
+    "frozenVerdictSurface": {
+      "REEXPORTED_FROM": "scripts/r3l0c/analyse.mjs",
+      "addedRules": false,
+      "compression": {
+        "POSITIVE_SIGNAL": "POSITIVE_SIGNAL",
+        "ADVERSE_SIGNAL": "ADVERSE_SIGNAL",
+        "MIXED": "MIXED",
+        "NO_SIGNAL": "NO_SIGNAL"
+      },
+      "netCost": {
+        "LOWER": "LOWER",
+        "NEUTRAL": "NEUTRAL",
+        "HIGHER": "HIGHER",
+        "MIXED": "MIXED"
+      },
+      "directions": {
+        "C_LOWER": "C_LOWER",
+        "C_HIGHER": "C_HIGHER",
+        "TIE": "TIE"
+      },
+      "informationPaths": {
+        "CAPITAL_THEN_EDIT": "a governed capital pull returned content before the first world edit",
+        "CAPITAL_THEN_HISTORY": "a governed capital pull returned content, and raw history was read after it",
+        "HISTORY_RECONSTRUCTION": "raw history was read and no capital content was returned",
+        "DIRECT_EDIT_WITHOUT_HISTORY": "the worker edited the world without reading any declared raw history",
+        "NO_RESULT": "no result was submitted"
+      }
+    }
+  },
+  "executionClosure": {
+    "executionClosureDigest": "e3bcdadc66c34a3bceab8a262de70b8e38af8206b27a184251ec7ca531147277",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE"
+    ],
+    "fileCount": 88,
+    "toolchain": {
+      "node": "v24.14.1",
+      "git": "git version 2.53.0.windows.2",
+      "platform": "win32",
+      "arch": "x64",
+      "packages": {
+        "ordarium": "1.3.1",
+        "vitest": "4.1.10",
+        "typescript": "7.0.2",
+        "dshSandboxWindowsAcl": "0.2.0-rc.2"
+      },
+      "globalDshRoot": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh"
+    },
+    "compiledVerification": {
+      "kind": "compiled-against-source verification",
+      "pairs": 9,
+      "missing": [],
+      "DETERMINISTIC": "SUPPORTED",
+      "method": "a fresh emit of src/** with the project's own compiler options, compared byte-for-byte against dist/**",
+      "normalization": "the `//# sourceMappingURL` comment is removed from both sides, because the probe emits without sourcemaps",
+      "diverged": [],
+      "COMPILED_MATCHES_SOURCE": true
+    },
+    "completeness": {
+      "status": "COMPLETE",
+      "declared": 81,
+      "reachable": 53
+    }
+  },
+  "executionRoute": {
+    "runner": "scripts/r3l0cf/fail-stop.mjs",
+    "adapter": "scripts/r3l0cf/primary-matrix.mjs",
+    "driver": "scripts/r3l0cf/primary-matrix-driver.mjs",
+    "child": "scripts/r3l0c/generation-child.mjs",
+    "workerReplacementForDeterministicRuns": "scripts/r3l0cf/scripted-primary-worker.mjs",
+    "realWorkerForThePaidRun": "the shipped DSH worker on the authorized executor route",
+    "authoritativePath": "r3-l0c-i-primary-plan",
+    "legacyMatrixQuarantined": true
+  },
+  "semanticRulings": {
+    "capitalSemanticSufficiency": "verified against the frozen reference cases by a capital-derived procedure",
+    "promptSubstitutionNeutrality": "LIMITED — preserved from R3-L0C-F unless an independently justified interpretation resolves it",
+    "promptNeutralityResolved": false,
+    "readmeEdited": false,
+    "corpusEdited": false
+  },
+  "authorizationRequired": {
+    "required": true,
+    "what": "an explicit authorization ruling for the fail-stop protocol and for the paid matrix",
+    "thisStageProvidesIt": false
+  },
+  "stageStop": {
+    "ranModelMatrix": false,
+    "beganR3L1": false,
+    "beganFusion": false,
+    "modelCallsMade": 0
+  },
+  "frozenAt": "2026-10-09T06:17:11.396Z",
+  "orderingLaw": "the plan is committed AFTER every integration fix and BEFORE any primary model exposure"
+}

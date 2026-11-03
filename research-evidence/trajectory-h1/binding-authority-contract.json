@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_BINDING_AUTHORITY_CONTRACT",
+  "evidenceClass": "CONTROLLED_FIXTURE + SOURCE_DEMONSTRATED",
+  "sourceFiles": [
+    "src/trajectory/binding.ts",
+    "src/trajectory/execution.ts",
+    "src/composition/trajectory_v0.ts",
+    "test/trajectory_h1_binding_authority.test.ts"
+  ],
+  "invariant": "a verified Attempt SessionId is derived from verified producer-side binding evidence, never from the caller Session claim",
+  "change1": "classifySessionBinding no longer accepts canonicalBindingPresent; the BOUND_VERIFIED branch was DELETED rather than guarded",
+  "change2": "the claim classifier cannot reach BOUND_VERIFIED — proven by enumerating its whole reachable input domain (288 combinations, 5 reachable states, none verified)",
+  "change3": "resolveVerifiedSessionBinding is the ONLY function that can name a verified session; it takes the id from an AttemptSessionAssociation and does not accept the caller claim at all",
+  "change4": "the composition no longer derives dshSessionId from a classification: it comes from the resolver, and no producer is composed so it is always null today",
+  "associationShape": "ProjectId, AttemptId, InvocationId, DshSessionId, producer evidence reference, source observation state, durable binding reference, verification state, conflict state (§8.4)",
+  "pipelineDeferred": "§8.3 steps 4-7 (the real IPC identity report and the durable association record) are NOT implemented; H1 prepares the consumer-side contract only",
+  "whyABooleanWasInsufficient": "a bare canonicalBindingPresent boolean was not tied to any SessionId, so it authorized an arbitrary caller-selected id; a field such as trusted:true or a branded type is not a runtime authorization mechanism either",
+  "verdict": "PASS — a caller claim cannot become a verified binding, structurally rather than by convention",
+  "limitations": [
+    "no real DSH IPC identity report exists",
+    "no real Parent-owned durable binding exists",
+    "cold recovery is not tested",
+    "no live model execution occurred",
+    "PRIMARY is not enabled"
+  ]
+}

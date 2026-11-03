@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_DSH_CONCURRENCY_BOUNDARY",
+  "evidenceClass": "PASS_REAL_DSH_NO_MODEL + SOURCE_DEMONSTRATED",
+  "method": "test S4 (real append+flush between reads) plus a source reading of JsonlSessionHandle.read/readCurrent and the documented SessionHandle ordering contract",
+  "observed": {
+    "firstReadCount": 2,
+    "firstReadPersistedEventCount": 2,
+    "afterAppendSecondReadCount": 4,
+    "secondReadPersistedEventCount": 4,
+    "secondReadSyntheticCount": 0,
+    "firstReadBoundaryUnchangedAfterTheAppend": true
+  },
+  "documentedContract": "reads concurrent with a mutation carry no ordering promise beyond the valid contiguous prefix; a torn physical tail is never returned; repeated reads on one handle never observe an older state than a prior read",
+  "verdict": "PASS — an already-observed read boundary is never retroactively reclassified by later storage growth",
+  "note": "this is a controlled, deterministic append AFTER a completed read, not a proven nondeterministic concurrent-writer race; the ruling forbids presenting a source inference as a reproduced race"
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "pc1-s08-acceptance/v1",
+  "at": "2026-11-02T15:01:00.855Z",
+  "scenarios": [
+    "sablewick",
+    "field-study"
+  ],
+  "checks": [
+    {
+      "id": "sablewick.prepare",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "field-study.prepare",
+      "ok": true,
+      "detail": "time Git touches it\nwarning: in the working copy of 'sources/lab-samples.csv', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'sources/measurement-notes.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'sources/procurement-summary.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'sources/site-conditions.csv', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "id": "sablewick.equivalence",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "id": "field-study.equivalence",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "id": "sablewick.oracle-not-copied",
+      "ok": true,
+      "detail": "evaluator-only material is not part of the prepared worlds"
+    },
+    {
+      "id": "field-study.oracle-not-copied",
+      "ok": true,
+      "detail": "evaluator-only material is not part of the prepared worlds"
+    },
+    {
+      "id": "sablewick.t1-no-b",
+      "ok": true,
+      "detail": "2026-02-08/solaris-certificate-claim.md, 2026-02-10/vendor-capabilities.csv, 2026-02-10/newsletter.md"
+    },
+    {
+      "id": "sablewick.t2-b-and-duplicate",
+      "ok": true,
+      "detail": "2026-02-08/solaris-certificate-claim.md, 2026-02-10/vendor-capabilities.csv, 2026-02-10/newsletter.md, 2026-02-14/vendor-capabilities-corrected.csv, 2026-02-14/vendor-capabilities.csv"
+    },
+    {
+      "id": "sablewick.t2-release",
+      "ok": true,
+      "detail": "T2 release is a separate visible set"
+    },
+    {
+      "id": "field-study.t1-empty-updates",
+      "ok": true,
+      "detail": "0 updates at T1"
+    },
+    {
+      "id": "field-study.t2-updates",
+      "ok": true,
+      "detail": "4 files at T2"
+    },
+    {
+      "id": "field-study.visible-sets-differ",
+      "ok": true,
+      "detail": "T1 and T2 are different visible sets"
+    },
+    {
+      "id": "field-study.budget-is-operator-review",
+      "ok": true,
+      "detail": "the budget directive is staged as operator review, not authority"
+    },
+    {
+      "id": "live-runner-blocked-without-auth",
+      "ok": true,
+      "detail": "resource_or_environment_blocked"
+    }
+  ],
+  "passed": true,
+  "liveModel": {
+    "state": "NOT_RUN_BY_THIS_SCRIPT",
+    "reason": "deterministic acceptance only; the matched live cohort is recorded in research-evidence/pc1/live/outcomes.json",
+    "modelCalls": 0
+  },
+  "note": "This is deterministic staging/equivalence acceptance. It is not a model-behavior or comparative result."
+}

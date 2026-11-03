@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_PARENT_INVOCATION_CORRELATION",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "CONTROLLED_IPC_FIXTURE",
+  "sourceLocations": [
+    "src/deployment/work_worker.ts (parseWorkerSessionIdentityEnvelope, the spawned.on(message) identity branch)",
+    "src/interaction/work_delegation.ts (makeWorkerSessionIdentityTracker)"
+  ],
+  "method": "drive the REAL parent worker port with controlled local Node child processes over real ChildProcess IPC channels; assert the strict parser and the per-invocation tracker",
+  "testFile": "test/trajectory_p2a_parent_observation.test.ts",
+  "casesCovered": [
+    "exact valid message accepted",
+    "wrong channel refused",
+    "wrong kind refused",
+    "extra fields refused",
+    "missing SessionId refused",
+    "invalid/oversized SessionId refused",
+    "context pull never treated as identity",
+    "stdout imitation ignored",
+    "stderr imitation ignored",
+    "two children never cross-attribute",
+    "repeated identical message idempotent",
+    "conflicting identities reported as CONFLICT",
+    "no message produces NOT_OBSERVED",
+    "spawn failure fabricates no session",
+    "sink exception leaves the outcome unchanged",
+    "timeout fabricates no identity and no Work success",
+    "parent and host constants agree"
+  ],
+  "expectedInvariant": "the parent associates a report with its OWN invocationId and its OWN child pid, and never trusts a payload-supplied identity",
+  "verdict": "IPC_OBSERVATION_DEMONSTRATED",
+  "whatItDoesNotEstablish": "a real DSH Session (the children are stubs); no DSH binary, provider or model is involved",
+  "realFirstPartyDshPathRan": false,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

@@ -1,0 +1,247 @@
+[
+  {
+    "i": 2,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"overview\"}",
+    "isError": false,
+    "result": "{\n  \"schemaVersion\": 1,\n  \"projectId\": \"sablewick\",\n  \"project\": {\n    \"goal\": \"Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.\",\n    \"revision\": 3,\n    \"digest\": \"5ca237d809bfdcf4e70e8ff9e2f2d5502429ba76ead7800b23988f234769ae8f\",\n    \"headCommit\": \"e7eeb903476dc60c598a1824728da567d0944b4d\",\n    \"head\": {\n      \"projectHeadCommit\": \"e7eeb903476dc60c598a1824728da567d0944b4d\",\n      \"provenEffectHeadCommit\": \"e7eeb903476dc60c598a1824728da567d0944b4d\",\n      \"state\": \"IN_SYNC\",\n      \"stateLabel\": \"in sync\",\n      \"latestPromotion\": {\n        \"promotionId\": \"promotion-38d5ff302465a86dc08e6444e4583107\",\n        \"attemptId\": \"attempt-dc7002743c313023866f8a713f567f61\",\n        \"sourceCommit\": \"254ee20c30169ad6ac010403da02ea055a34ae77\",\n        \"fromHead\": \"ce17c2f62c65bd391ed4ccc4535880ed50994331\",\n        \"toHead\": \"e7eeb903476dc60c598a1824728da567d0944b4d\",\n        \"eventId\": \"29\"\n      }\n    },\n    \"requirements\": [\n      {\n        \"requirement_id\": \"R1\",\n        \"statement\": \"Use the selected local installer; installation labour is included in the vendor quotes.\",\n        \"priority\": \"critical\",\n        \"acceptance_refs\": []\n      },\n      {\n        \"requirement_id\": \"R2\",\n        \"statement\": \"No fossil-fuel backup may be installed.\",\n        \"priority\": \"critical\",\n        \"acceptance_refs\": []\n      },\n      {\n        \"requirement_id\": \"R3\",\n        \"statement\": \"Site B is coastal and flood-exposed: only a vendor whose w"
+  },
+  {
+    "i": 21,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"journal_entries\"}",
+    "isError": false,
+    "result": "[\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"sablewick\",\n      \"kind\": \"NEGATIVE_RESULT\",\n      \"title\": \"2023 Marsh Lane trial: V2 cold-start failure\",\n      \"body\": \"A Kestrel (V2) unit failed to start at -8 C at Marsh Lane in January 2023. V2 is not suitable for a site whose design minimum is below -5 C. This finding remains valid and is not superseded by the 2026 supplier bulletins.\",\n      \"provenance\": \"sources/prior-notes.md (2023 trial notes)\",\n      \"relatedRefs\": [],\n      \"createdAt\": \"2026-11-01T17:15:01.614000Z\",\n      \"entryId\": \"pje-2fee5934fe4f5e15977e7cd5500a6c08\",\n      \"digest\": \"62e6381bc414a77ee455d70b5b806018d6116729066bbc696f19df4f1ff88533\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"sablewick\",\n      \"kind\": \"OPEN_QUESTION\",\n      \"title\": \"Solaris V3 cold-weather certificate is not on file\",\n      \"body\": \"Solaris claims a cold-weather certificate for the LTO unit. The certificate has been promised but no document, number, issuing body or test standard is on file. The claim is unverified and does not change the published minimum operating temperature.\",\n      \"provenance\": \"sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md\",\n      \"relatedRefs\": [],\n      \"createdAt\": \"2026-11-01T17:15:01.624000Z\",\n      \"entryId\": \"pje-ddcdf12128f9673f6ad505f00c1f5b99\",\n      \"digest\": \"2953fd2e07a48060ac7314d1cdfbb680875896369e9b45453c55ea4d918db57a\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schema"
+  },
+  {
+    "i": 23,
+    "name": "palimpsest_manage",
+    "args": "{\"action\": \"status\"}",
+    "isError": false,
+    "result": "{\n  \"profile\": {\n    \"schemaVersion\": 1,\n    \"projectId\": \"sablewick\",\n    \"involvement\": \"DIRECT\",\n    \"budgets\": {\n      \"maxStepsPerRun\": 5\n    },\n    \"allowedActionClasses\": [\n      \"OBSERVE\",\n      \"RECOMMEND\",\n      \"PREPARE\",\n      \"ADVANCE_MECHANICAL_WORK\",\n      \"START_LOCAL_RECIPE\",\n      \"RUN_LOCAL_VERIFY\",\n      \"APPLY_LOCAL_PLAN_REVISION\",\n      \"RECONCILE_PROJECT_HEAD\",\n      \"DISPATCH_LOCAL_WORK\",\n      \"SEND_PEER_REQUEST\",\n      \"CREATE_EXTERNAL_COMMITMENT\",\n      \"APPROVE_DISCLOSURE\",\n      \"EVOLVE_ORGANIZATION\",\n      \"IRREVERSIBLE_EFFECT\"\n    ],\n    \"confirmationBoundaries\": [\n      \"CREATE_EXTERNAL_COMMITMENT\",\n      \"APPROVE_DISCLOSURE\",\n      \"EVOLVE_ORGANIZATION\",\n      \"IRREVERSIBLE_EFFECT\"\n    ],\n    \"updatedAt\": \"1970-01-01T00:00:00.000000Z\",\n    \"updatedBy\": \"operator:unset\",\n    \"digest\": \"877ec3869fc41a083e6face40013e5e6d1c2b7929d6890f7b4363907e16b282b\"\n  },\n  \"view\": {\n    \"schemaVersion\": 1,\n    \"projectId\": \"sablewick\",\n    \"project\": {\n      \"goal\": \"Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.\",\n      \"revision\": 3,\n      \"digest\": \"5ca237d809bfdcf4e70e8ff9e2f2d5502429ba76ead7800b23988f234769ae8f\",\n      \"headCommit\": \"e7eeb903476dc60c598a1824728da567d0944b4d\",\n      \"head\": {\n        \"projectHeadCommit\": \"e7eeb903476dc60c598a1824728da567d0944b4d\",\n        \"provenEffectHeadCommit\": \"e7eeb903476dc60c598a1824728da567d0944b4d\",\n        \"state\": \"IN_SYNC\",\n        \"stateLabel\": \"in sync\",\n"
+  },
+  {
+    "i": 28,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"history\"}",
+    "isError": false,
+    "result": "[\n  {\n    \"kind\": \"JOURNAL_NEGATIVE_RESULT\",\n    \"at\": \"2026-11-01T17:15:01.614000Z\",\n    \"detail\": \"2023 Marsh Lane trial: V2 cold-start failure\"\n  },\n  {\n    \"kind\": \"JOURNAL_OPEN_QUESTION\",\n    \"at\": \"2026-11-01T17:15:01.624000Z\",\n    \"detail\": \"Solaris V3 cold-weather certificate is not on file\"\n  },\n  {\n    \"kind\": \"JOURNAL_OPPORTUNITY\",\n    \"at\": \"2026-11-01T17:15:01.632000Z\",\n    \"detail\": \"Switch Site B to V2 to reduce cost [DISMISSED]\"\n  }\n]"
+  },
+  {
+    "i": 30,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"open_loops\"}",
+    "isError": false,
+    "result": "[\n  {\n    \"id\": \"JOURNAL_OPEN_QUESTION:journal_entry:pje-ddcdf12128f9673f6ad505f00c1f5b99\",\n    \"kind\": \"JOURNAL_OPEN_QUESTION\",\n    \"detail\": \"Solaris V3 cold-weather certificate is not on file\",\n    \"subjectRef\": {\n      \"kind\": \"journal_entry\",\n      \"id\": \"pje-ddcdf12128f9673f6ad505f00c1f5b99\"\n    }\n  },\n  {\n    \"id\": \"READY_WORK:task:technical-refresh\",\n    \"kind\": \"READY_WORK\",\n    \"detail\": \"task technical-refresh is ready: Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.\",\n    \"subjectRef\": {\n      \"kind\": \"task\",\n      \"id\": \"technical-refresh\"\n    }\n  }\n]"
+  },
+  {
+    "i": 36,
+    "name": "palimpsest_next",
+    "args": "{}",
+    "isError": false,
+    "result": "{\n  \"decision\": \"dispatched\",\n  \"eventType\": \"TASK_STARTED\",\n  \"entityId\": \"technical-refresh\",\n  \"projectRevision\": 3\n}"
+  },
+  {
+    "i": 38,
+    "name": "palimpsest_claim",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\"}",
+    "isError": true,
+    "result": "Error: attempt does not exist"
+  },
+  {
+    "i": 41,
+    "name": "palimpsest_next",
+    "args": "{}",
+    "isError": false,
+    "result": "{\n  \"decision\": \"dispatched\",\n  \"eventType\": \"ATTEMPT_CREATED\",\n  \"entityId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\",\n  \"projectRevision\": 3\n}"
+  },
+  {
+    "i": 46,
+    "name": "palimpsest_manage",
+    "args": "{\"action\": \"preview\"}",
+    "isError": true,
+    "result": "Error: tool \"palimpsest_manage\" returned invalid output: value is not lossless JSON"
+  },
+  {
+    "i": 47,
+    "name": "palimpsest_manage",
+    "args": "{\"action\": \"recommend\"}",
+    "isError": false,
+    "result": "[\n  {\n    \"kind\": \"RECOMMEND\",\n    \"reason\": \"an open journal question has no resolution: Solaris V3 cold-weather certificate is not on file\",\n    \"subjects\": [\n      {\n        \"kind\": \"journal_entry\",\n        \"id\": \"pje-ddcdf12128f9673f6ad505f00c1f5b99\"\n      },\n      {\n        \"kind\": \"open_loop\",\n        \"id\": \"JOURNAL_OPEN_QUESTION:journal_entry:pje-ddcdf12128f9673f6ad505f00c1f5b99\"\n      }\n    ],\n    \"riskClass\": \"LOW\",\n    \"requiredConfirmation\": false,\n    \"capability\": \"management.recommend\",\n    \"executable\": true,\n    \"actionId\": \"mac-689a75c6c7debf7d27b29cbbdbebbc3b\"\n  }\n]"
+  },
+  {
+    "i": 48,
+    "name": "palimpsest_claim",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\"}",
+    "isError": false,
+    "result": "{\n  \"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\",\n  \"worktreePath\": \"/run/p1/world/.palimpsest/worlds/attempt-73616b76d9e6be3fb1329eb368efd35d\",\n  \"status\": \"RUNNING\"\n}"
+  },
+  {
+    "i": 51,
+    "name": "write",
+    "args": "{\"file_path\": \"/run/p1/world/.palimpsest/worlds/attempt-73616b76d9e6be3fb1329eb368efd35d/deliverables/technical-refresh.md\", \"content\": \"# Technical refresh — 2026-02-10 09:05 UTC\\n\\n## Sources considered\\n\\n- Accepted programme data: `sources/sites.md`, `sources/vendor-capabilities.csv`,\\n  `sources/vendor-pricing.csv`, `sources/prior-notes.md`, `sources/rollout-windows.md`.\\n- Candidate inbox material, **not accepted data**: `../inbox/2026-02-10/vendor-capabilities.csv`\\n  (supplier capability bulletin) and `../inbox/2026-02-08/solaris-certificate-claim.md`\\n  (supplier correspondence).\\n\\nThe 2026-02-10 bulletin is an unaccepted candidate. Its exact bytes have not been applied to the\\ncanonical capability file and the programme lead has not accepted it. It is therefore assessed here\\nas a material change under review, not as canonical data.\\n\\n## What changed\\n\\nThe 2026-02-10 candidate bulletin is identical to the accepted capability data except for V3:\\nthe published minimum operating temperature changes from **-10 C** to **0 C**. The 2026-02-08\\nSolaris correspondence adds no certificate, certificate number, issuing body or test standard; it\\nis a promise, not evidence, and it does not change a published rating.\\n\\n## Site findings\\n\\n### Site A — Marsh Lane Store\\n\\nDesign minimum **-12 C**; no coastal requirement. **V1** is compliant (published minimum -20 C).\\nV2, V3 and V4 do not meet the temperature requirement under the current data. The existing V1\\nselection is unaffected by the bulletin.\\n\\n### Site B — Harbour Workshop\\n\\nRequirements: **coastal-rated warranty** and published minimum operating temperature **at or below\\n-4 C**.\\n\\n- V3 is the only vendor with a coastal warranty.\\n- Under the accepted capability data V3 is published at -10 C, so the existing V3 selection meets\\n  the temperature requirement.\\n- Under the 2026-02-10 candidate bulletin V3 is published at **0 C**, which is above -4 C. V1, V2\\n  and V4 have no coastal warranty. Therefore, **if the bulletin is accepted, no vendor in the\\n  current set is compliant for Site B**.\\n- The promised Solaris cold-weather certificate does not change the published minimum and cannot\\n  cure the failure.\\n\\nThe existing Site B selection is therefore only valid against the older accepted rating. It is not\\nsafe to order V3 for Site B while the newer bulletin says 0 C; the bulletin must be accepted or\\nrejected through the authorised intake, and a compliant vendor must then be confirmed. The grant\\nrequirement may not be relaxed to fit the available vendors.\\n\\n### Site C — School Annexe\\n\\nRequirements: unit width **no wider than 800 mm**; ambient minimum **2 C**; May–June installation\\nwindow.\\n\\n- **V3** is compliant: 750 mm wide, and either published minimum (0 C under the candidate bulletin\\n  or -10 C under accepted data) is below the 2 C site minimum.\\n- **V2** is also compliant on the stated requirements: 650 mm wide and -5 C minimum. It is a\\n  lower-cost alternative, but the 2023 Marsh Lane note means V2 must not be used where the design\\n  minimum is below -5 C; Site C's 2 C ambient minimum is above that limit.\\n- V1 (900 mm) and V4 (850 mm) exceed the 800 mm limit.\\n\\nThe existing V3 selection for Site C remains technically compliant; V2 is a compliant lower-cost\\nalternative if the cost envelope is refreshed.\\n\\n## Summary\\n\\n| Site | Compliant vendor(s) | Basis |\\n| --- | --- | --- |\\n| A | V1 | Minimum -20 C meets the -12 C site design minimum. |\\n| B | None under the 2026-02-10 bulletin; V3 only under the older accepted rating | V3 is the sole coastal-rated vendor, but its candidate published minimum of 0 C exceeds the -4 C requirement. |\\n| C | V3, or V2 as a lower-cost alternative | Both are no wider than 800 mm and rated below the 2 C site ambient minimum. |\\n\\n## Unresolved evidence questions\\n\\n1. **Acceptance of the 2026-02-10 capability bulletin.** It changes V3's published minimum from\\n   -10 C to 0 C and is currently UNACCEPTED. An authorised intake must apply the exact bytes to the\\n   named canonical path, the product must observe the result, and the programme lead must accept\\n   (promote) that result. Until then, the canonical file still says -10 C, but the newer supplier\\n   statement puts the existing Site B selection in material doubt.\\n2. **Solaris cold-weather certificate.** Still not on file. The 2026-02-08 message contains no\\n   certificate document, number, issuing body or test standard. It is not evidence of a -4 C or\\n   lower rating and does not change the published minimum.\\n\\n## Effect on the existing plan\\n\\nThe existing plan (V1 for Site A, V3 for Sites B and C, total committed cost £104,900 plus 8%\\ncontingency) remains arithmetically valid only against the older accepted V3 rating. If the\\n2026-02-10 bulletin is accepted, there is **no compliant vendor for Site B**, so the plan cannot be\\nexecuted as written and the £104,900 envelope is not a complete compliant envelope. No order should\\nbe placed for Site B until the capability data is accepted and a compliant selection is confirmed.\\nResolving Site B may require a programme-lead decision (for example, a grant variation, a changed\\nsite scope, or a new coastal-rated vendor); that is outside the planning agent's authority.\\n\"}",
+    "isError": false,
+    "result": "<path>/run/p1/world/.palimpsest/worlds/attempt-73616b76d9e6be3fb1329eb368efd35d/deliverables/technical-refresh.md</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+  },
+  {
+    "i": 54,
+    "name": "edit",
+    "args": "{\"file_path\": \"/run/p1/world/.palimpsest/worlds/attempt-73616b76d9e6be3fb1329eb368efd35d/deliverables/technical-refresh.md\", \"old_string\": \"Design minimum **-12 C**; no coastal requirement. **V1** is compliant (published minimum -20 C).\\nV2, V3 and V4 do not meet the temperature requirement under the current data. The existing V1\\nselection is unaffected by the bulletin.\", \"new_string\": \"Design minimum **-12 C**; no coastal requirement. **V1** is compliant (published minimum -20 C) and\\nremains the existing selection. **V4** also meets the temperature requirement (-20 C) and the 1.2 m\\ndoor access, but was not the selected unit. V2 (-5 C) and V3 (-10 C under accepted data, 0 C under\\nthe candidate bulletin) do not meet the -12 C design minimum. The Site A selection is unaffected by\\nthe bulletin.\"}",
+    "isError": false,
+    "result": "The file /run/p1/world/.palimpsest/worlds/attempt-73616b76d9e6be3fb1329eb368efd35d/deliverables/technical-refresh.md has been updated successfully."
+  },
+  {
+    "i": 55,
+    "name": "edit",
+    "args": "{\"file_path\": \"/run/p1/world/.palimpsest/worlds/attempt-73616b76d9e6be3fb1329eb368efd35d/deliverables/technical-refresh.md\", \"old_string\": \"| A | V1 | Minimum -20 C meets the -12 C site design minimum. |\", \"new_string\": \"| A | V1 (V4 also meets the temperature requirement) | Minimum -20 C meets the -12 C site design minimum. |\"}",
+    "isError": false,
+    "result": "The file /run/p1/world/.palimpsest/worlds/attempt-73616b76d9e6be3fb1329eb368efd35d/deliverables/technical-refresh.md has been updated successfully."
+  },
+  {
+    "i": 57,
+    "name": "palimpsest_finish",
+    "args": "{\"summary\": \"Re-checked technical fit against accepted data and the unaccepted 2026-02-10 bulletin. Site A: V1 (V4 also meets temperature). Site B: V3 only under the older accepted -10 C rating; under the candidate 0 C bulletin no vendor is compliant because V3 is the sole coastal-rated vendor. Site C: V3 compliant, with V2 a compliant lower-cost alternative. Recorded that the bulletin needs authorised intake and that the Solaris certificate remains unverified.\"}",
+    "isError": true,
+    "result": "Error: argument \"action\" is required"
+  },
+  {
+    "i": 58,
+    "name": "palimpsest_finish",
+    "args": "{\"action\": \"run\", \"summary\": \"Re-checked technical fit against accepted data and the unaccepted 2026-02-10 bulletin. Site A: V1 (V4 also meets temperature). Site B: V3 only under the older accepted -10 C rating; under the candidate 0 C bulletin no vendor is compliant because V3 is the sole coastal-rated vendor. Site C: V3 compliant, with V2 a compliant lower-cost alternative. Recorded that the bulletin needs authorised intake and that the Solaris certificate remains unverified.\"}",
+    "isError": true,
+    "result": "Error: this deployment places work in isolated worktrees, and finish closes a DIRECT attempt (the one palimpsest_begin opened, which is in-place only) — a worker-placed attempt is settled by its own report path (palimpsest_report), or run the profile with in-place execution"
+  },
+  {
+    "i": 59,
+    "name": "palimpsest_report",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\", \"workerStatus\": \"completed\", \"summary\": \"Re-checked technical fit against accepted data and the unaccepted 2026-02-10 bulletin. Site A: V1 (V4 also meets temperature). Site B: V3 only under the older accepted -10 C rating; under the candidate 0 C bulletin no vendor is compliant because V3 is the sole coastal-rated vendor. Site C: V3 compliant, with V2 a compliant lower-cost alternative. Recorded that the bulletin needs authorised intake and that the Solaris certificate remains unverified.\", \"changedFiles\": [\"deliverables/technical-refresh.md\"], \"producedArtifacts\": [\"deliverables/technical-refresh.md\"], \"resultCommit\": \"f1536b8\"}",
+    "isError": false,
+    "result": "{\n  \"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\",\n  \"eventType\": \"ATTEMPT_COMPLETED\"\n}"
+  },
+  {
+    "i": 61,
+    "name": "palimpsest_gate",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\", \"command\": [\"node\", \"verify.mjs\"], \"predicate\": \"tests_pass\"}",
+    "isError": false,
+    "result": "{\n  \"evidenceId\": \"evidence-f9ded4e3e1034ccdaafe3e7a0e5faa17\",\n  \"status\": \"active\",\n  \"exitCode\": 0,\n  \"outputTail\": \"Sablewick data integrity: 4 vendors, 4 price rows, 0 failures\\n\"\n}"
+  },
+  {
+    "i": 62,
+    "name": "palimpsest_run",
+    "args": "{\"maxMechanicalSteps\": 5}",
+    "isError": false,
+    "result": "{\n  \"phase\": \"needs_promotion\",\n  \"mechanical\": {\n    \"lastEvent\": {\n      \"schema_version\": 1,\n      \"project_id\": \"sablewick\",\n      \"event_type\": \"TASK_VERIFYING\",\n      \"payload_version\": 1,\n      \"entity_type\": \"task\",\n      \"entity_id\": \"technical-refresh\",\n      \"payload\": {\n        \"previous_state\": \"ACTIVE\",\n        \"new_state\": \"VERIFYING\",\n        \"reason\": \"batch has a completed candidate\",\n        \"batch_activation_event_id\": 34\n      },\n      \"causation_id\": 34,\n      \"correlation_id\": \"task:technical-refresh\",\n      \"idempotency_key\": \"2725b8ea07f9d4c58f98dd34a40a91f4363f1f35a27c295f684404e8e9597376\",\n      \"expected_project_revision\": 3,\n      \"event_id\": 39,\n      \"project_sequence\": 39,\n      \"request_digest\": \"1d1f31eef9b07d60f2950cf24c23fe388ca324f06b0c005515b439e9e584c5de\",\n      \"previous_event_digest\": \"a617d03f2545ece565f15ca20c9f117d4e773d633a711e5465e70d9b600fa866\",\n      \"event_digest\": \"8ea20f484c49795ffe6920735de518f32bcc72b6cc66681071e8cc014bc45195\",\n      \"committed_at\": \"2026-11-01T19:59:36.500000Z\"\n    },\n    \"attemptsRun\": 0,\n    \"exits\": []\n  }\n}"
+  },
+  {
+    "i": 64,
+    "name": "palimpsest_manage",
+    "args": "{\"action\": \"recommend\"}",
+    "isError": false,
+    "result": "[\n  {\n    \"kind\": \"RECOMMEND\",\n    \"reason\": \"an open journal question has no resolution: Solaris V3 cold-weather certificate is not on file\",\n    \"subjects\": [\n      {\n        \"kind\": \"journal_entry\",\n        \"id\": \"pje-ddcdf12128f9673f6ad505f00c1f5b99\"\n      },\n      {\n        \"kind\": \"open_loop\",\n        \"id\": \"JOURNAL_OPEN_QUESTION:journal_entry:pje-ddcdf12128f9673f6ad505f00c1f5b99\"\n      }\n    ],\n    \"riskClass\": \"LOW\",\n    \"requiredConfirmation\": false,\n    \"capability\": \"management.recommend\",\n    \"executable\": true,\n    \"actionId\": \"mac-689a75c6c7debf7d27b29cbbdbebbc3b\"\n  }\n]"
+  },
+  {
+    "i": 66,
+    "name": "palimpsest_gate",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\", \"predicate\": \"write_scope_valid\"}",
+    "isError": true,
+    "result": "Error: command must be non-empty"
+  },
+  {
+    "i": 67,
+    "name": "palimpsest_gate",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\", \"command\": [\"node\", \"verify.mjs\"], \"predicate\": \"write_scope_valid\"}",
+    "isError": false,
+    "result": "{\n  \"evidenceId\": \"evidence-0a9c03f4a2567a61753e81021c88e6c5\",\n  \"status\": \"active\",\n  \"exitCode\": 0,\n  \"outputTail\": \"Sablewick data integrity: 4 vendors, 4 price rows, 0 failures\\n\"\n}"
+  },
+  {
+    "i": 68,
+    "name": "palimpsest_gate",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\", \"gateId\": \"gate-release\"}",
+    "isError": false,
+    "result": "{\n  \"gateVerdict\": \"PASS\",\n  \"nextEvidenceNeeded\": []\n}"
+  },
+  {
+    "i": 69,
+    "name": "palimpsest_run",
+    "args": "{\"maxMechanicalSteps\": 5}",
+    "isError": false,
+    "result": "{\n  \"phase\": \"needs_promotion\",\n  \"mechanical\": {\n    \"lastEvent\": null,\n    \"attemptsRun\": 0,\n    \"exits\": []\n  }\n}"
+  },
+  {
+    "i": 70,
+    "name": "palimpsest_manage",
+    "args": "{\"action\": \"run\", \"maxSteps\": 1}",
+    "isError": false,
+    "result": "{\n  \"steps\": [\n    {\n      \"status\": \"needs_confirmation\",\n      \"action\": \"RECOMMEND\",\n      \"detail\": \"RECOMMEND at DIRECT requires an explicit confirmation; the user prefers FOCUS, but no eligible candidate expresses it; eligibility is not bent to honour a preference\",\n      \"candidateId\": \"mac-689a75c6c7debf7d27b29cbbdbebbc3b\",\n      \"actionClass\": \"RECOMMEND\",\n      \"typedReasonCode\": \"needs_confirmation\",\n      \"canonicalOutcomeRefs\": [],\n      \"activityRecordId\": \"management-activity-a1a37bbc2a458ec6ba609d48afa5753f\"\n    }\n  ],\n  \"stoppedReason\": \"needs_confirmation\"\n}"
+  },
+  {
+    "i": 72,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"journal\", \"kind\": \"NEGATIVE_RESULT\", \"title\": \"2026-02-10 capability bulletin removes V3 from Site B fit\", \"body\": \"The unaccepted 2026-02-10 supplier capability bulletin changes V3's published minimum operating temperature from -10 C (accepted data) to 0 C. Site B requires a coastal-rated warranty and a published minimum at or below -4 C. V3 is the only coastal-rated vendor, so if the bulletin is accepted no vendor in the current set is compliant for Site B; V1, V2 and V4 have no coastal warranty. V3 remains compliant for Site C (750 mm wide; 0 C minimum is below the site's 2 C ambient minimum). Site A remains V1 (V4 also meets the -12 C temperature requirement). The existing V1/V3/V3 plan and GBP 104,900 envelope are therefore not a complete compliant envelope under the candidate data.\", \"provenance\": \"inbox/2026-02-10/vendor-capabilities.csv (UNACCEPTED, sha256 0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c); sources/sites.md; sources/vendor-capabilities.csv; sources/prior-notes.md; deliverables/technical-refresh.md\"}",
+    "isError": false,
+    "result": "{\n  \"schemaVersion\": 1,\n  \"projectId\": \"sablewick\",\n  \"kind\": \"NEGATIVE_RESULT\",\n  \"title\": \"2026-02-10 capability bulletin removes V3 from Site B fit\",\n  \"body\": \"The unaccepted 2026-02-10 supplier capability bulletin changes V3's published minimum operating temperature from -10 C (accepted data) to 0 C. Site B requires a coastal-rated warranty and a published minimum at or below -4 C. V3 is the only coastal-rated vendor, so if the bulletin is accepted no vendor in the current set is compliant for Site B; V1, V2 and V4 have no coastal warranty. V3 remains compliant for Site C (750 mm wide; 0 C minimum is below the site's 2 C ambient minimum). Site A remains V1 (V4 also meets the -12 C temperature requirement). The existing V1/V3/V3 plan and GBP 104,900 envelope are therefore not a complete compliant envelope under the candidate data.\",\n  \"provenance\": \"inbox/2026-02-10/vendor-capabilities.csv (UNACCEPTED, sha256 0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c); sources/sites.md; sources/vendor-capabilities.csv; sources/prior-notes.md; deliverables/technical-refresh.md\",\n  \"relatedRefs\": [],\n  \"createdAt\": \"2026-11-01T20:00:17.487000Z\",\n  \"entryId\": \"pje-8e0412522a8e83beeb63764d636b4668\",\n  \"digest\": \"2efe078765869947f2dd8b46bd5e0f636dbf13866afa33e586ddb4e78bcdf1ca\"\n}"
+  },
+  {
+    "i": 73,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"journal\", \"kind\": \"OPEN_QUESTION\", \"title\": \"Should the 2026-02-10 capability bulletin be accepted?\", \"body\": \"The 2026-02-10 supplier capability bulletin is UNACCEPTED. Acceptance requires an authorised intake: a Work task applies the exact bytes to sources/vendor-capabilities.csv, the product observes the result, and the programme lead accepts (promotes) that result. Until then the canonical file still says V3 is rated to -10 C, but the newer supplier statement says 0 C. No order should be placed for Site B on either rating while this is unresolved. The planning agent cannot accept the bulletin or relax the grant requirement.\", \"provenance\": \"inbox/arrivals.jsonl; inbox/2026-02-10/vendor-capabilities.csv; sources/operations.md; deliverables/technical-refresh.md\"}",
+    "isError": false,
+    "result": "{\n  \"schemaVersion\": 1,\n  \"projectId\": \"sablewick\",\n  \"kind\": \"OPEN_QUESTION\",\n  \"title\": \"Should the 2026-02-10 capability bulletin be accepted?\",\n  \"body\": \"The 2026-02-10 supplier capability bulletin is UNACCEPTED. Acceptance requires an authorised intake: a Work task applies the exact bytes to sources/vendor-capabilities.csv, the product observes the result, and the programme lead accepts (promotes) that result. Until then the canonical file still says V3 is rated to -10 C, but the newer supplier statement says 0 C. No order should be placed for Site B on either rating while this is unresolved. The planning agent cannot accept the bulletin or relax the grant requirement.\",\n  \"provenance\": \"inbox/arrivals.jsonl; inbox/2026-02-10/vendor-capabilities.csv; sources/operations.md; deliverables/technical-refresh.md\",\n  \"relatedRefs\": [],\n  \"createdAt\": \"2026-11-01T20:00:19.499000Z\",\n  \"entryId\": \"pje-b2a87b7bfdfacbc8ee8d85e9e0e1ee7a\",\n  \"digest\": \"2769424d28f19250b5c8fe61bfabd55540dd7c5fb79c622afc91f7d655e50dec\"\n}"
+  },
+  {
+    "i": 74,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"journal\", \"kind\": \"OPEN_QUESTION\", \"title\": \"Site B needs an authorised route if the bulletin is accepted\", \"body\": \"If the 2026-02-10 capability bulletin is accepted, Site B has no compliant vendor in the current set: V3 has the only coastal warranty but is published at 0 C, above the required -4 C. R3 is a critical grant requirement and may not be relaxed to fit available vendors. The programme lead must choose an authorised route - obtain a compliant coastal-rated vendor, seek a grant variation, or change the site scope - before any Site B order or commitment. A promised Solaris certificate is not a certificate and does not change the published rating.\", \"provenance\": \"sources/sites.md; sources/vendor-capabilities.csv; sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md; deliverables/technical-refresh.md\"}",
+    "isError": false,
+    "result": "{\n  \"schemaVersion\": 1,\n  \"projectId\": \"sablewick\",\n  \"kind\": \"OPEN_QUESTION\",\n  \"title\": \"Site B needs an authorised route if the bulletin is accepted\",\n  \"body\": \"If the 2026-02-10 capability bulletin is accepted, Site B has no compliant vendor in the current set: V3 has the only coastal warranty but is published at 0 C, above the required -4 C. R3 is a critical grant requirement and may not be relaxed to fit available vendors. The programme lead must choose an authorised route - obtain a compliant coastal-rated vendor, seek a grant variation, or change the site scope - before any Site B order or commitment. A promised Solaris certificate is not a certificate and does not change the published rating.\",\n  \"provenance\": \"sources/sites.md; sources/vendor-capabilities.csv; sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md; deliverables/technical-refresh.md\",\n  \"relatedRefs\": [],\n  \"createdAt\": \"2026-11-01T20:00:22.236000Z\",\n  \"entryId\": \"pje-b39629fbd7f910d928800af927ec46ee\",\n  \"digest\": \"40b901c1d2baf122bb52d6f730549219c3b506407ee514f645262652449a9430\"\n}"
+  },
+  {
+    "i": 75,
+    "name": "palimpsest_plan",
+    "args": "{\"reason\": \"The 2026-02-10 candidate capability bulletin changes V3's published minimum from -10 C to 0 C. It is not canonical until an authorised exact-byte intake is accepted by the programme lead. Add that intake and make the technical and cost refreshes depend on it; do not alter the grant requirements or treat the bulletin as accepted.\", \"tasks\": [{\"task_id\": \"technical-fit\", \"objective\": \"Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.\", \"write_paths\": [\"deliverables/technical-fit.md\"], \"required_artifacts\": [\"deliverables/technical-fit.md\"], \"depends_on\": []}, {\"task_id\": \"cost-schedule\", \"objective\": \"Produce the programme cost and schedule envelope from the current pricing and installation windows, including the 8% contingency.\", \"write_paths\": [\"deliverables/cost-schedule.md\"], \"required_artifacts\": [\"deliverables/cost-schedule.md\"], \"depends_on\": []}, {\"task_id\": \"technical-refresh\", \"objective\": \"Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.\", \"write_paths\": [\"deliverables/technical-refresh.md\"], \"required_artifacts\": [\"deliverables/technical-refresh.md\"], \"depends_on\": []}, {\"task_id\": \"vendor-bulletin-intake\", \"objective\": \"Apply the exact bytes of inbox/2026-02-10/vendor-capabilities.csv to sources/vendor-capabilities.csv for programme-lead acceptance. Do not edit, merge or infer values; this remains a candidate until the product observes the result and the programme lead promotes it.\", \"write_paths\": [\"sources/vendor-capabilities.csv\"], \"required_artifacts\": [\"sources/vendor-capabilities.csv\"], \"depends_on\": []}, {\"task_id\": \"technical-fit-post-intake\", \"objective\": \"Re-run the per-site technical fit against the accepted capability data after intake. Name a compliant vendor for each site or record that none exists, state the deciding constraint, and note any unresolved evidence question.\", \"write_paths\": [\"deliverables/technical-fit.md\"], \"required_artifacts\": [\"deliverables/technical-fit.md\"], \"depends_on\": [\"vendor-bulletin-intake\"]}, {\"task_id\": \"cost-schedule-refresh\", \"objective\": \"Refresh the cost and schedule envelope from accepted prices and accepted capabilities, including the 8% contingency. If no compliant Site B vendor exists, record that no complete compliant envelope can be produced rather than relaxing a requirement.\", \"write_paths\": [\"deliverables/cost-schedule.md\"], \"required_artifacts\": [\"deliverables/cost-schedule.md\"], \"depends_on\": [\"technical-fit-post-intake\"]}]}",
+    "isError": true,
+    "result": "Error: plan revision blocked (quiescence_required): the project is not quiescent: every ACTIVE/VERIFYING task and every open (CREATED/LEASED/RUNNING) attempt must settle before a structural revision can be committed [refs: technical-refresh]"
+  },
+  {
+    "i": 76,
+    "name": "palimpsest_manage",
+    "args": "{\"action\": \"step\"}",
+    "isError": false,
+    "result": "{\n  \"status\": \"needs_confirmation\",\n  \"action\": \"RECOMMEND\",\n  \"detail\": \"RECOMMEND at DIRECT requires an explicit confirmation; the user prefers FOCUS, but no eligible candidate expresses it; eligibility is not bent to honour a preference\",\n  \"candidateId\": \"mac-44103c23c64cf69577866a323c1a5328\",\n  \"actionClass\": \"RECOMMEND\",\n  \"typedReasonCode\": \"needs_confirmation\",\n  \"canonicalOutcomeRefs\": [],\n  \"activityRecordId\": \"management-activity-e5f6c233e9d1748fe3a4e20795878565\"\n}"
+  },
+  {
+    "i": 83,
+    "name": "palimpsest_gate",
+    "args": "{\"attemptId\": \"attempt-73616b76d9e6be3fb1329eb368efd35d\", \"command\": [\"node\", \"verify.mjs\"], \"predicate\": \"expected_files_exist\"}",
+    "isError": false,
+    "result": "{\n  \"evidenceId\": \"evidence-e576b54a99e4ec675d2e4ba5af34bda7\",\n  \"status\": \"active\",\n  \"exitCode\": 0,\n  \"outputTail\": \"Sablewick data integrity: 4 vendors, 4 price rows, 0 failures\\n\"\n}"
+  },
+  {
+    "i": 84,
+    "name": "palimpsest_run",
+    "args": "{\"maxMechanicalSteps\": 5}",
+    "isError": false,
+    "result": "{\n  \"phase\": \"needs_promotion\",\n  \"mechanical\": {\n    \"lastEvent\": null,\n    \"attemptsRun\": 0,\n    \"exits\": []\n  }\n}"
+  },
+  {
+    "i": 117,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"journal\", \"kind\": \"IDEA\", \"title\": \"Proposed next actions after the 2026-02-10 capability bulletin\", \"body\": \"1. Authorised intake: a Work task should apply the exact bytes of inbox/2026-02-10/vendor-capabilities.csv to sources/vendor-capabilities.csv; the product observes the result and the programme lead accepts or rejects it. Do not hand-edit or merge the values. 2. After intake, re-run the per-site technical fit against accepted capability data and update the technical-fit deliverable. 3. If the bulletin is accepted and Site B still has no compliant vendor, refresh the cost/schedule work product only to record that no complete compliant envelope can be produced; do not relax R3. 4. The programme lead must choose an authorised Site B route - a compliant coastal-rated vendor, a grant variation, or a changed site scope - before any order or commitment. 5. Keep the Solaris certificate open question; a promised certificate is not evidence and does not change the published minimum.\", \"provenance\": \"sources/operations.md; deliverables/technical-refresh.md; inbox/2026-02-10/vendor-capabilities.csv; inbox/2026-02-08/solaris-certificate-claim.md\"}",
+    "isError": false,
+    "result": "{\n  \"schemaVersion\": 1,\n  \"projectId\": \"sablewick\",\n  \"kind\": \"IDEA\",\n  \"title\": \"Proposed next actions after the 2026-02-10 capability bulletin\",\n  \"body\": \"1. Authorised intake: a Work task should apply the exact bytes of inbox/2026-02-10/vendor-capabilities.csv to sources/vendor-capabilities.csv; the product observes the result and the programme lead accepts or rejects it. Do not hand-edit or merge the values. 2. After intake, re-run the per-site technical fit against accepted capability data and update the technical-fit deliverable. 3. If the bulletin is accepted and Site B still has no compliant vendor, refresh the cost/schedule work product only to record that no complete compliant envelope can be produced; do not relax R3. 4. The programme lead must choose an authorised Site B route - a compliant coastal-rated vendor, a grant variation, or a changed site scope - before any order or commitment. 5. Keep the Solaris certificate open question; a promised certificate is not evidence and does not change the published minimum.\",\n  \"provenance\": \"sources/operations.md; deliverables/technical-refresh.md; inbox/2026-02-10/vendor-capabilities.csv; inbox/2026-02-08/solaris-certificate-claim.md\",\n  \"relatedRefs\": [],\n  \"createdAt\": \"2026-11-01T20:02:07.427000Z\",\n  \"entryId\": \"pje-d571678fb44ecf2c0fe1be2804780125\",\n  \"digest\": \"b3782d3e4a8e46471c2a98b6f3a65cb83e5b897e415c389a879e649388c85572\"\n}"
+  },
+  {
+    "i": 119,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"journal_entries\"}",
+    "isError": false,
+    "result": "[\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"sablewick\",\n      \"kind\": \"NEGATIVE_RESULT\",\n      \"title\": \"2023 Marsh Lane trial: V2 cold-start failure\",\n      \"body\": \"A Kestrel (V2) unit failed to start at -8 C at Marsh Lane in January 2023. V2 is not suitable for a site whose design minimum is below -5 C. This finding remains valid and is not superseded by the 2026 supplier bulletins.\",\n      \"provenance\": \"sources/prior-notes.md (2023 trial notes)\",\n      \"relatedRefs\": [],\n      \"createdAt\": \"2026-11-01T17:15:01.614000Z\",\n      \"entryId\": \"pje-2fee5934fe4f5e15977e7cd5500a6c08\",\n      \"digest\": \"62e6381bc414a77ee455d70b5b806018d6116729066bbc696f19df4f1ff88533\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"sablewick\",\n      \"kind\": \"OPEN_QUESTION\",\n      \"title\": \"Solaris V3 cold-weather certificate is not on file\",\n      \"body\": \"Solaris claims a cold-weather certificate for the LTO unit. The certificate has been promised but no document, number, issuing body or test standard is on file. The claim is unverified and does not change the published minimum operating temperature.\",\n      \"provenance\": \"sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md\",\n      \"relatedRefs\": [],\n      \"createdAt\": \"2026-11-01T17:15:01.624000Z\",\n      \"entryId\": \"pje-ddcdf12128f9673f6ad505f00c1f5b99\",\n      \"digest\": \"2953fd2e07a48060ac7314d1cdfbb680875896369e9b45453c55ea4d918db57a\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schema"
+  },
+  {
+    "i": 121,
+    "name": "palimpsest_project",
+    "args": "{\"action\": \"open_loops\"}",
+    "isError": false,
+    "result": "[\n  {\n    \"id\": \"JOURNAL_OPEN_QUESTION:journal_entry:pje-b2a87b7bfdfacbc8ee8d85e9e0e1ee7a\",\n    \"kind\": \"JOURNAL_OPEN_QUESTION\",\n    \"detail\": \"Should the 2026-02-10 capability bulletin be accepted?\",\n    \"subjectRef\": {\n      \"kind\": \"journal_entry\",\n      \"id\": \"pje-b2a87b7bfdfacbc8ee8d85e9e0e1ee7a\"\n    }\n  },\n  {\n    \"id\": \"JOURNAL_OPEN_QUESTION:journal_entry:pje-b39629fbd7f910d928800af927ec46ee\",\n    \"kind\": \"JOURNAL_OPEN_QUESTION\",\n    \"detail\": \"Site B needs an authorised route if the bulletin is accepted\",\n    \"subjectRef\": {\n      \"kind\": \"journal_entry\",\n      \"id\": \"pje-b39629fbd7f910d928800af927ec46ee\"\n    }\n  },\n  {\n    \"id\": \"JOURNAL_OPEN_QUESTION:journal_entry:pje-ddcdf12128f9673f6ad505f00c1f5b99\",\n    \"kind\": \"JOURNAL_OPEN_QUESTION\",\n    \"detail\": \"Solaris V3 cold-weather certificate is not on file\",\n    \"subjectRef\": {\n      \"kind\": \"journal_entry\",\n      \"id\": \"pje-ddcdf12128f9673f6ad505f00c1f5b99\"\n    }\n  }\n]"
+  }
+]

@@ -1,0 +1,152 @@
+{
+  "programId": "PALIMPSEST-PC1",
+  "branch": "palimpsest-product-convergence-v1",
+  "lastCheckedCommit": "e8c7675205c74d33015966f3c5b62eec6e2279f1",
+  "updatedAt": "2026-11-02",
+  "phases": {
+    "S00": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_ENV_LIMITATION",
+      "live": "BLOCKED_NO_SPEND_AUTHORIZATION",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [
+        "Node v24.14.1 < package engine >=24.15.0 (build still passes; recorded environment limitation)",
+        "No PC1 model spend authorization"
+      ],
+      "evidence": [
+        "docs/programs/pc1/S00-BASELINE-DOSSIER.md",
+        "docs/programs/pc1/S00-OWNER-CAPABILITY-MATRIX.md",
+        "docs/programs/pc1/S00-ROLE-MAP.md",
+        "research-evidence/pc1/s00/"
+      ]
+    },
+    "S01": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": [
+        "docs/programs/pc1/S01-ROOT-CAUSE.md",
+        "test/pc1_result_integrity.test.ts",
+        "research-evidence/pc1/s01/regression.log"
+      ]
+    },
+    "S02": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": [
+        "docs/programs/pc1/S02-NORMAL-PATH.md",
+        "test/pc1_normal_product.test.ts"
+      ]
+    },
+    "S03": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": [
+        "docs/programs/pc1/S03-CONTINUITY.md",
+        "test/pc1_continuity.test.ts"
+      ]
+    },
+    "S04": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": [
+        "docs/programs/pc1/S04-*.md"
+      ]
+    },
+    "S05": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [
+        "live collaboration needs spend authorization and a configured peer"
+      ],
+      "evidence": [
+        "docs/programs/pc1/S05-*.md"
+      ]
+    },
+    "S06": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": [
+        "docs/programs/pc1/S06-*.md"
+      ]
+    },
+    "S07": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "PARTIAL_OR_BLOCKED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": [
+        "docs/programs/pc1/S07-*.md"
+      ]
+    },
+    "S08": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "blockers": [
+        "single-principal only; no independent subagents"
+      ],
+      "evidence": [
+        "research-evidence/pc1/live/outcomes.json",
+        "research-evidence/pc1/live/usage.json",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md"
+      ]
+    },
+    "S09": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED",
+      "live": "NOT_REQUIRED",
+      "comparison": "NOT_REQUIRED",
+      "blockers": [],
+      "evidence": [
+        "docs/programs/pc1/S09-PACKAGING.md",
+        "docs/programs/pc1/S09-USER-ACCEPTANCE.md",
+        "test/pc1_cli.test.ts",
+        "dist-rc/palimpsest-0.2.0-pc1.1.tar.gz"
+      ]
+    },
+    "S10": {
+      "implementation": "IMPLEMENTED",
+      "deterministic": "PASSED_WITH_ENVIRONMENT_LIMITS",
+      "live": "OBSERVED",
+      "comparison": "NOT_SUPPORTED",
+      "blockers": [
+        "full ordinary suite not cleanly observed on Windows due resource/file-lock contention"
+      ],
+      "evidence": [
+        "docs/programs/pc1/S10-FINAL-REPORT.md",
+        "docs/programs/pc1/S10-LIVE-ADDENDUM.md",
+        "research-evidence/pc1/live/"
+      ]
+    }
+  },
+  "pendingEffects": [],
+  "nextActions": [
+    "Commit the final live evidence freeze",
+    "Generate code/evidence manifests from the final freeze",
+    "Push the programme branch non-force (no PR)"
+  ],
+  "lastCheckpoint": {
+    "at": "2026-11-02",
+    "branch": "palimpsest-product-convergence-v1",
+    "baseline": "044b08056a0e98b7d7cee207cb36fb7e453907fe"
+  }
+}

@@ -9,10 +9,10 @@
  */
 
 import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
-import { installPalimpsest, type InstalledPalimpsest } from "../install.js";
+import { installPalimpsest, type InstalledPalimpsestWithTrajectory } from "../install.js";
 
 /** The commands a deployment with no policy of its own starts from. */
 const PACKAGED_DEFAULT_COMMANDS: ReadonlyArray<{ executable: string; argv_prefix: string[] }> = [
@@ -100,6 +100,14 @@ export interface DeploymentHostServices {
    * honestly reports READY_FOR_DELEGATION (capability absent, never stubbed).
    */
   readonly workWorkerPort?: ((worldPath: string) => import("../interaction/work_delegation.js").WorkWorkerRunPort) | undefined;
+  /**
+   * Trajectory-P2-C §7.1: the host's own WORK WORKER facts (its DSH bin and `--profile`). Supplying them
+   * lets the install derive a real Work Worker Port and the trusted source basis; absent ⇒ the port is
+   * absent and no worker can start. Composing them starts nothing.
+   */
+  readonly workWorkerFacts?: { readonly dshBin: string; readonly profile: string } | undefined;
+  /** Trajectory-P2-C §7.6: the DSH home the host runs under, so the official session reader can be composed. */
+  readonly dshHomePath?: string | undefined;
 }
 
 export interface DeploymentActivationReport {
@@ -117,7 +125,12 @@ export interface DeploymentPumpReport {
 export interface Deployment {
   readonly profile: ProjectAgentDeploymentProfile;
   readonly localPeer: PeerRef;
-  readonly installed: InstalledPalimpsest;
+  /**
+   * P2-D0 §9.8: the WIDENED installed surface, so the runtime capability this deployment composes
+   * (the read-only attributed Preview, the execution-association recorder and qualifier, and the
+   * composed Work Delegation service) is statically reachable rather than only present at run time.
+   */
+  readonly installed: InstalledPalimpsestWithTrajectory;
   readonly transport: DurableOperationTransport;
   readonly pump: FederationInboundPump;
   readonly attention?: AttentionService | undefined;
@@ -476,6 +489,7 @@ export function launchDeployment(
     ordariumDatabasePath: profile.databases.ordarium,
     ...(profile.repository === undefined ? {} : { repository: profile.repository }),
     ...(profile.execution === undefined ? {} : { execution: profile.execution }),
+    ...(profile.toolProfile === undefined ? {} : { toolProfile: profile.toolProfile }),
     ...(profile.concurrency === undefined ? {} : { concurrency: profile.concurrency }),
     // PLMP-LEAN-1 §1: the project's done-ness is DERIVED here from the repository, intersected
     // with the operator's policy bound (never widened by it), and — when the operator confirmed it
@@ -521,6 +535,13 @@ export function launchDeployment(
     ...(delegationBranchExecution === undefined ? {} : { delegationBranchExecution }),
     // §D5-d: the D2-d worker port, so packaged rework reaches a real execution world.
     ...(options.host?.workWorkerPort === undefined ? {} : { workWorkerPort: options.host.workWorkerPort }),
+    /**
+     * Trajectory-P2-C §7.1/§7.6: the host's own work-worker facts and DSH home. They let the install
+     * derive a real Work Worker Port, the trusted source basis, and the official session reader — the
+     * normal product path the P2-B research rig had to build by hand.
+     */
+    ...(options.host?.workWorkerFacts === undefined ? {} : { workWorkerBin: options.host.workWorkerFacts.dshBin, workWorkerProfile: options.host.workWorkerFacts.profile }),
+    ...(options.host?.dshHomePath === undefined ? {} : { dshHomePath: options.host.dshHomePath, dshSessionsRoot: join(options.host.dshHomePath, "sessions") }),
     // The stable late-bound READ port: the delegation service holds THIS object for its whole life,
     // and whatever the host binds later becomes the delivery. A terminal result that arrives before a
     // binding reports `delivered: false` with that reason instead of vanishing.
@@ -545,6 +566,20 @@ export function launchDeployment(
           },
         }),
     ...(options.host?.facts === undefined ? {} : { hostFacts: options.host.facts }),
+    /**
+     * Trajectory-P2-D2 §10.2: the EXPERIMENTAL, DEFAULT-OFF model-visible Trajectory delivery, enabled ONLY
+     * by an explicit `trajectory` profile section. It is TRUSTED configuration: it composes the delivery
+     * capability but starts no Worker, no model, no Attempt and no Session — actual execution stays under the
+     * existing governance. Absent ⇒ nothing is composed and the default packaged path is unchanged.
+     */
+    ...(profile.trajectory === undefined
+      ? {}
+      : {
+          experimentalTrajectoryContextDelivery: true,
+          ...(profile.trajectory.mode === undefined ? {} : { trajectoryPresentationMode: profile.trajectory.mode }),
+          ...(profile.trajectory.capsuleMaxSerializedBytes === undefined ? {} : { trajectoryCapsuleMaxSerializedBytes: profile.trajectory.capsuleMaxSerializedBytes }),
+          ...(profile.trajectory.sectionMaxBytes === undefined ? {} : { trajectorySectionMaxBytes: profile.trajectory.sectionMaxBytes }),
+        }),
     remoteTransport,
   });
 

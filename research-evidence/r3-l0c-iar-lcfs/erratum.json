@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C-F-S",
+  "kind": "previous-stage cross-artifact plan-identity erratum",
+  "erratumFor": {
+    "stage": "R3-L0C-I-A-R-L-C-F",
+    "commit": "8bf8d42298aee3b8b267b3793e015900ca7cc2a7",
+    "planId": "r3-l0c-iar-lcf-primary-plan",
+    "evidenceNamespace": "research-evidence/r3-l0c-iar-lcf"
+  },
+  "previousPlanId": "r3-l0c-iar-lcf-primary-plan",
+  "committedPlanContentDigest": "4a6786d0e027bf6bc119ae689e39ae2066cc51e229d0ca45339f5d6c576605af",
+  "mismatchedQualificationPlanReferenceDigest": "e715ce6fe4cd5bb30348e090f54a536e9882554116814f4168428347a5e0b5b3",
+  "mismatchedStageResultPlanReferenceDigest": "e715ce6fe4cd5bb30348e090f54a536e9882554116814f4168428347a5e0b5b3",
+  "cause": "runQualification called buildProspectivePlan(), which regenerates `frozenAt` on every call, so the plan object the Qualification and the Stage Result embedded was an INDEPENDENTLY REBUILT plan whose full content digest differed from the committed plan's. The committed file was separately re-read by checkPlanContentDigest(), which compared the file to ITSELF and therefore reported MATCH. The two checks were never compared with each other, so one apparently successful qualification carried two plan identities.",
+  "affectedPreviousVerdict": "FULL_PLAN_DIGEST",
+  "affectedVerdictWasPass": true,
+  "selfCheckWasMatch": true,
+  "crossArtifactReferenceWasConsistent": false,
+  "priorQualificationWasFullySealed": false,
+  "statement": "the previous stage's plan self-check was MATCH, but its cross-artifact reference was inconsistent: the committed plan's own digest and the digest the Qualification and the Stage Result embedded were different values, and the previous stage did not compare them.",
+  "whyPriorDeterministicRecordsRemainPreserved": [
+    "the deterministic measurement records describe the R3-L0C-I-A-R-L-C-F pipeline at 8bf8d42, which this stage does not edit, so they remain an accurate description of that code",
+    "the plan-inconsistency defect is confined to the PLAN IDENTITY that the Qualification and the Stage Result reference, not to the matrix observations, the durable reconciliation, the cost bridge or the closure measurement those records also carry",
+    "rewriting the prior evidence would make it describe bytes that never existed, which is the failure the historical-immutability rule exists to prevent, so the correction is recorded here as a NEW erratum instead",
+    "the prior stage's matrix result remains a valid MECHANICAL record; what it cannot support is the claim that its embedded plan reference was the committed plan's"
+  ],
+  "newSupersedingPlanId": "r3-l0c-iar-lcfs-primary-plan",
+  "newSupersedingEvidenceNamespace": "research-evidence/r3-l0c-iar-lcfs",
+  "supersessionReason": "evidence-identity and execution-safety correction, NOT a scientific design change",
+  "priorEvidenceModified": false,
+  "priorEvidenceReadOnly": true,
+  "law": "the previous stage's plan self-check was MATCH while its cross-artifact reference was inconsistent; the prior evidence is never rewritten, and the correction is recorded as a stage-owned erratum naming the new superseding plan identity"
+}

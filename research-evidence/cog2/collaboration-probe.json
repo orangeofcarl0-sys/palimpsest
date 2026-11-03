@@ -1,0 +1,69 @@
+{
+  "schema": "cog2-collaboration-probe/v1",
+  "generatedAt": "2026-10-31T20:15:33.872Z",
+  "note": "Plan derivation only; no branch executed and no model called by this probe.",
+  "auto": {
+    "schema": "cog2-collaboration-probe/v1",
+    "generatedAt": "2026-10-31T20:15:32.818Z",
+    "dir": "F:/Codex_Work_Space/Palimpsest/.cog2-rig/matrix/CSEAM",
+    "task": "Assess the quality and coverage of the evidence behind the Harrowgate programme, and separately draft an implementation plan for the next six months. The evidence finding should be able to change the plan.",
+    "intent": "AUTO",
+    "diagnostic": true,
+    "note": "Plan derivation only; no branch executed and no model called by this probe.",
+    "available": true,
+    "plan": {
+      "task": "Assess the quality and coverage of the evidence behind the Harrowgate programme, and separately draft an implementation plan for the next six months. The evidence finding should be able to change the plan.",
+      "requestedIntent": "AUTO",
+      "effectiveBaseMode": "FOCUS",
+      "modifiers": [],
+      "reason": [
+        "UX-A: the durable Work Mode preference for this project is FOCUS (safe_default); it is CONTEXT only and this request never rewrites it.",
+        "UX-A: the existing empirical architecture advisor selected the structure; UX-A adds no architecture policy of its own.",
+        "Focus is always eligible: a single persistent locus is the baseline, and no other boundary is chosen without an engineering reason.",
+        "Coordination is blocked and cannot be overridden: there is no independent sovereign peer, and a durable peer cannot be conjured.",
+        "Verification can be bound to the registered verifier \"project.attempt.git-diff-check.v1\", which counts as independent under its registered independence class; the deployment can prove the separation.",
+        "No campaign monitoring capability is configured, so Monitor is not suggested.",
+        "No empirical evaluation is available, so the recommendation rests on stated capability and task features alone.",
+        "Advisor blocker: no independent sovereign peer",
+        "UX-A: the recommended structure is a single principal locus (FOCUS), so no branch, cell or agent is created — the principal continues with the request itself."
+      ],
+      "capabilityWarnings": [],
+      "executionKind": "PRINCIPAL_CONTINUES",
+      "verb": "Do it"
+    }
+  },
+  "parallel": {
+    "schema": "cog2-collaboration-probe/v1",
+    "generatedAt": "2026-10-31T20:15:33.694Z",
+    "dir": "F:/Codex_Work_Space/Palimpsest/.cog2-rig/matrix/CSEAM",
+    "task": "Assess the quality and coverage of the evidence behind the Harrowgate programme, and separately draft an implementation plan for the next six months. The evidence finding should be able to change the plan.",
+    "intent": "PARALLEL",
+    "diagnostic": true,
+    "note": "Plan derivation only; no branch executed and no model called by this probe.",
+    "available": true,
+    "plan": {
+      "task": "Assess the quality and coverage of the evidence behind the Harrowgate programme, and separately draft an implementation plan for the next six months. The evidence finding should be able to change the plan.",
+      "requestedIntent": "PARALLEL",
+      "effectiveBaseMode": "EXPLORE",
+      "modifiers": [],
+      "reason": [
+        "UX-A: PARALLEL is an explicit request for LOCAL multi-branch exploration; no durable peer agent is minted to satisfy the word \"multi-agent\" (§7/§13).",
+        "Focus is always eligible: a single persistent locus is the baseline, and no other boundary is chosen without an engineering reason.",
+        "Coordination is blocked and cannot be overridden: there is no independent sovereign peer, and a durable peer cannot be conjured.",
+        "A multi-agent request was noted, but durable coordination still requires an already-independent peer; Explore uses ephemeral branches, not durable peer agents.",
+        "Verification can be bound to the registered verifier \"project.attempt.git-diff-check.v1\", which counts as independent under its registered independence class; the deployment can prove the separation.",
+        "No campaign monitoring capability is configured, so Monitor is not suggested.",
+        "No empirical evaluation is available, so the recommendation rests on stated capability and task features alone.",
+        "Advisor blocker: no independent sovereign peer",
+        "Advisor blocker: reasoning branches capability is not available",
+        "UX-A: derived exploration availability: \"reasoning.cell\" is UNAVAILABLE — reasoning branches capability is not available",
+        "UX-A: the reasoning-branch capability this request needs is absent (reasoning branches capability is not available), so PARALLEL is refused with CAPABILITY_REQUIRED rather than pretending the exploration happened."
+      ],
+      "capabilityWarnings": [
+        "capability \"reasoning.cell\" is UNAVAILABLE in this deployment: reasoning branches capability is not available"
+      ],
+      "executionKind": "CAPABILITY_REQUIRED",
+      "verb": "Not available in this deployment"
+    }
+  }
+}

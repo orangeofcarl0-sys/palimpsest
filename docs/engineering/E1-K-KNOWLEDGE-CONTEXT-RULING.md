@@ -732,3 +732,33 @@ project knowledge reached a new worker through the standard delegation path as a
 body resolved only on pull, that the historical binding stayed immutable while the current standing was
 re-derived, that now-ineligible knowledge was refused with its typed reason and zero manifest write, and
 that the selection granted no promotion authority.
+
+---
+
+## 24. ADDENDUM (R1-L, 2026-09-28) — what the E1-K evidence did and did not cover
+
+**This section is additive. Nothing above is rewritten, and the §23 verdict stands as it was recorded.**
+
+R1 (`38ead3f`) then measured something the E1-K gate could not see, because that gate drives an
+**in-process** worker:
+
+| what | E1-K proved | R1 measured | R1-L closes |
+|---|---|---|---|
+| compile / bind / distribute | ✅ proven | — | — |
+| generic worker payload carries the handles | ✅ proven | — | — |
+| canonical host pull (`fetchContext`) | ✅ proven | — | — |
+| **first-party DSH model-visible pull index** | **not covered** | **absent** | ✅ |
+| **first-party DSH governed worker pull** | **not covered** | **absent** | ✅ |
+
+The distinction matters and is worth stating plainly, because it is easy to read §23 as broader than it
+is. `gate:e1-k-live`'s worker is a JavaScript fixture **inside the gate process** that calls
+`controller.fetchContext(...)` directly. Such a worker can pull, because it is not a sandboxed
+subprocess. A real DSH worker is a separate process that composes no deployment and no store, has every
+inherited `palimpsest_*` tool denied, and therefore could not see the index or pull a body at all.
+
+So E1-K's claim is exact and remains true: **durable project knowledge reached a new worker through the
+standard delegation path as a pull handle, and the body resolved only on pull.** What it did not claim —
+and what R1's probe showed was missing — is that a *real* worker could do so. R1-L supplies that last
+mile: the index is rendered into the worker's task text, and `palimpsest_worker_context_pull` gives the
+worker a governed, attempt-bound read. See `docs/engineering/R1-L-WORKER-CONTEXT-PULL.md` and
+`research-evidence/r1-l/`.

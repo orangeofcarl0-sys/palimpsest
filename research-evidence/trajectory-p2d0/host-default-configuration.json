@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "host default configuration",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifier": "F12",
+  "finding": "the reader is composed only when the host supplies DSH_HOME: host/dsh/lib/index.js sets dshHomePath only when process.env.DSH_HOME is defined, and the cluster requires dshHomePath and dshSessionsRoot before it composes a reader",
+  "assessment": {
+    "explicitDshHome": "SUPPORTED — the host passes process.env.DSH_HOME through to the install, which derives dshSessionsRoot as join(dshHomePath, 'sessions'); the reader resolves the installed DSH package root under that home",
+    "defaultDshHome": "NOT_COMPOSED — with no explicit DSH_HOME the host supplies no dshHomePath, so no reader is composed and the attributed Preview reports the source as unavailable rather than guessing a home path",
+    "productionSpecifier": "palimpsest-host-deployment/runtime/session_reader.js is declared in host/deployment/package.json exports and is the composition default; a test process outside the DSH profile overrides it with an absolute path to the SAME file, so there is one reader implementation"
+  },
+  "evidence": {
+    "class": "SOURCE_DEMONSTRATED",
+    "test": "test/trajectory_p2d0_source_contract.test.ts > F12",
+    "observed": "the host sets dshHomePath only when DSH_HOME is defined; the cluster requires dshHomePath and dshSessionsRoot; the default reader specifier is the package export"
+  },
+  "expectedInvariant": "the supported default-home behavior must be source-grounded, and an unverified home path must not be invented merely to satisfy the reader constructor",
+  "verdict": "PARTIAL — explicit DSH_HOME is verified source-grounded; the supported DEFAULT home resolution is recorded as a limitation rather than guessed",
+  "remainingUncertainty": "the reader's own resolveDshPackageRoot tries <home>/profiles/node_modules/@deepseek-ai and <home>/node_modules/@deepseek-ai; whether the real first-party host always sets DSH_HOME is a deployment-configuration question this stage does not change",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

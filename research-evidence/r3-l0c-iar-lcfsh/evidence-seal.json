@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C-F-S-H",
+  "kind": "persisted cross-artifact evidence seal",
+  "planId": "r3-l0c-iar-lcfsh-primary-plan",
+  "planFullContentDigest": "b6a163d0efbdc09e88972ac443dd704022a35b1258c8823cb25084005991b034",
+  "planCommittedGitBlob": "641ea00f3eb367a2cfb0f8766474743927445e50",
+  "qualificationCommittedGitBlob": "fbf1cd5d947e192522c8fe880d6b342b641a5833",
+  "stageResultCommittedGitBlob": "24e25f76bb639d0b363bf32768215f0b0e7c1977",
+  "qualificationContentDigest": "ae04e17958a4b51188ecf936e15fe24459a45306cf6593dbd9505b4e43a7cff9",
+  "stageResultContentDigest": "989d31f830730dc2e16d7fc3afbd2d504773c6fe4aa7169bc7ea0013885f939d",
+  "executionClosureDigest": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6",
+  "recomputedClosureDigest": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6",
+  "planReferenceEqualities": {
+    "COMMITTED_PLAN_SELF_DIGEST": "MATCH",
+    "QUALIFICATION_PLAN_REFERENCE": "MATCH",
+    "QUALIFICATION_FROZEN_REFERENCE": "MATCH",
+    "STAGE_RESULT_PLAN_REFERENCE": "MATCH",
+    "STAGE_RESULT_FROZEN_REFERENCE": "MATCH"
+  },
+  "planIdEqualities": {
+    "PLAN_ID_AGREEMENT": "MATCH",
+    "PLAN_ID_IS_THE_STAGE_PLAN": "MATCH"
+  },
+  "closureEqualities": {
+    "PLAN_CLOSURE_BINDING": "MATCH",
+    "RECOMPUTED_CLOSURE_AGREES": "MATCH",
+    "QUALIFICATION_CLOSURE_AGREES": "MATCH"
+  },
+  "evaluationPhase": "PERSISTED_SEAL_EVALUATED",
+  "isFinalVerdict": true,
+  "sourceFiles": {
+    "plan": "research-evidence/r3-l0c-iar-lcfsh/execution-plan.json",
+    "qualification": "research-evidence/r3-l0c-iar-lcfsh/qualification.json",
+    "stageResult": "research-evidence/r3-l0c-iar-lcfsh/stage-result.json"
+  },
+  "result": "MATCH",
+  "sealDigest": "adfdec91a27c6b2f00f1e5e7af83fc8ea189f360fac0b29f0412fd4851bb5bfc",
+  "sealDigestExcludesItself": true,
+  "selfFieldExcluded": "sealDigest",
+  "requiredFieldsPresent": true,
+  "missingRequiredFields": [],
+  "checks": {
+    "COMMITTED_PLAN_SELF_DIGEST": "MATCH",
+    "QUALIFICATION_PLAN_REFERENCE": "MATCH",
+    "QUALIFICATION_FROZEN_REFERENCE": "MATCH",
+    "STAGE_RESULT_PLAN_REFERENCE": "MATCH",
+    "STAGE_RESULT_FROZEN_REFERENCE": "MATCH",
+    "PLAN_ID_AGREEMENT": "MATCH",
+    "PLAN_ID_IS_THE_STAGE_PLAN": "MATCH",
+    "PLAN_CLOSURE_BINDING": "MATCH",
+    "RECOMPUTED_CLOSURE_AGREES": "MATCH",
+    "QUALIFICATION_CLOSURE_AGREES": "MATCH"
+  },
+  "failing": [],
+  "uncommittedEvidenceFiles": [],
+  "planVerification": {
+    "checks": {
+      "COMMITTED_PLAN_SELF_DIGEST": "MATCH",
+      "COMMITTED_PLAN_GIT_IDENTITY": "MATCH",
+      "PLAN_SCHEMA_AND_ID": "PASS",
+      "PLAN_CLOSURE_BINDING": "MATCH"
+    },
+    "verified": true,
+    "problems": []
+  },
+  "qualificationReadFromDisk": true,
+  "stageResultReadFromDisk": true,
+  "qualificationGitBlobMatchesWorktree": true,
+  "stageResultGitBlobMatchesWorktree": true,
+  "thisSealIsTheFinalVerdict": true,
+  "prePersistenceStatusIsNotAVerdict": true,
+  "circularDependencyWithVerdicts": false,
+  "law": "the final evidence-seal verdict is derived from the persisted, committed Plan, Qualification and Stage Result read back from disk; a pre-persistence status cannot become an authoritative final verdict"
+}

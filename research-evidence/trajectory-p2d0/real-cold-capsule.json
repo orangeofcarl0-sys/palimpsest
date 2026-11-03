@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D0_CAPSULE_ORCHESTRATE",
+  "stage": "Trajectory-P2-D0",
+  "phase": "orchestrate",
+  "outcome": "PASS",
+  "testRootContained": true,
+  "testRootIsReparsePoint": false,
+  "processA": {
+    "outcome": "PASS",
+    "attemptId": "attempt-0aa1bf3dda89bcc4fd3e348600009c61",
+    "sessionId": "worker-761734da-905b-4c98-8027-7a1328a05283",
+    "consumerAttemptId": null,
+    "reworkEventId": null
+  },
+  "processB": {
+    "outcome": "PASS",
+    "selectionState": "SELECTED_UNIQUE",
+    "eventCount": 3,
+    "capsuleSummary": {
+      "originAttemptId": "attempt-0aa1bf3dda89bcc4fd3e348600009c61",
+      "authority": "READ_ONLY_INSPECTION",
+      "framing": "HISTORICAL_DATA_NOT_INSTRUCTIONS",
+      "eventCount": 3,
+      "coverage": "FULL",
+      "attributionSessionId": "worker-761734da-905b-4c98-8027-7a1328a05283",
+      "bindingStatus": "BOUND_VERIFIED",
+      "durableBindingRefPresent": true,
+      "doesNotAuthorizeCount": 7,
+      "canonicalResultRefs": [],
+      "verificationState": "NOT_OBSERVED_BY_V0",
+      "uncertaintyCoverage": "FULL"
+    },
+    "arbitraryAttemptCapsuleState": "NO_LINEAGE",
+    "arbitraryAttemptCapsuleIsNull": true
+  },
+  "testRootCleanup": {
+    "cleaned": true
+  },
+  "independentProcesses": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "realCanonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "normalProductCompositionUsed": true,
+  "permittedOutcomes": [
+    "PASS",
+    "SKIPPED",
+    "BLOCKED",
+    "NOT_ESTABLISHED"
+  ],
+  "qualified": true
+}

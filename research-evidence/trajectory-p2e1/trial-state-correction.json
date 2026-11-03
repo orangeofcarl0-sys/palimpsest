@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "kind": "TRAJECTORY_P2E1_TRIAL_STATE_CORRECTION",
+  "corrections": [
+    {
+      "id": "F21",
+      "defect": "ContextService.workWorkerContext() hard-coded assignedArm TREATMENT on the delivery-exception path",
+      "fix": "the trusted arm is read from ports.trajectoryAssignedArm(), bound by install.ts from trajectoryPresentationMode; absent => UNKNOWN",
+      "evidence": "SOURCE_DEMONSTRATED + DYNAMICALLY_REPRODUCED (9 tests)"
+    },
+    {
+      "id": "F22",
+      "defect": "eligibilityOfCapsuleState mapped every ORIGIN_NOT_SELECTED to RACED",
+      "fix": "capsuleForConsumer now carries a structured refusalReason; SOURCE_RACED -> RACED, SOURCE_AMBIGUOUS/SOURCE_UNBOUND -> NOT_QUALIFIED",
+      "evidence": "SOURCE_DEMONSTRATED + DYNAMICALLY_REPRODUCED"
+    },
+    {
+      "id": "F22b",
+      "defect": "an absent origin reader (NOT_REQUESTED / READ_CAPABILITY_ABSENT) was classified ORIGIN_PAGE_REFUSED",
+      "fix": "source-unavailable now covers NOT_REQUESTED, READ_CAPABILITY_ABSENT, SESSION_MISSING, BACKEND_UNAVAILABLE",
+      "evidence": "DYNAMICALLY_REPRODUCED"
+    }
+  ],
+  "armVocabulary": [
+    "OFF",
+    "CONTROL",
+    "TREATMENT",
+    "UNKNOWN"
+  ],
+  "eligibilityVocabulary": [
+    "QUALIFIED",
+    "NOT_QUALIFIED",
+    "RACED",
+    "SOURCE_UNAVAILABLE",
+    "UNKNOWN"
+  ],
+  "offByteIdentical": true,
+  "controlCarriesNoCapsuleBody": true,
+  "deliveryFailureDoesNotModifyWork": true,
+  "realCanonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

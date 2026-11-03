@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_GOVERNED_ORIGIN_CHAIN",
+  "gate": "E0-C",
+  "testFile": "scripts/trajectory_p2e0/source-to-dsh-gate.mjs",
+  "method": "Drive the REAL product controller through a genuine governed A0 -> A1 rework (two tasks reach VERIFYING, one is promoted, the other is reopened by a real ReworkAdmissionPermit), then resolve A1 canonical lineage.",
+  "observedResults": {
+    "originAttemptCreated": true,
+    "consumerAttemptCreated": true,
+    "governedReworkOccurred": true,
+    "reworkMechanism": "ReworkAdmissionPermit.issue + store.appendReworkReopening (the product existing governance, not a fabricated settlement)",
+    "consumerIsCanonical": true
+  },
+  "expectedInvariant": "the consumer A1 is a REAL canonical attempt whose governed lineage names A0 as its origin, and the permission is resolved by the Context Owner, never chosen by a caller",
+  "evidenceClass": "REAL_CANONICAL_WORK + REAL_GOVERNED_REWORK",
+  "canonicalWorkRan": true,
+  "realGovernedRework": true,
+  "genuineOriginResult": false,
+  "remainingUncertainty": [
+    "The ORIGIN attempt A0 has no genuinely ADMITTED Work Result: the deterministic adapter performs no git work, so no canonical Origin Result exists. The origin execution association is therefore a CONTROLLED FIXTURE. This is exactly why E0-L2 is NOT_ESTABLISHED."
+  ],
+  "verdict": "PASS"
+}

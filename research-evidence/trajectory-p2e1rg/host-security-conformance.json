@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RG_HOST_SECURITY_CONFORMANCE",
+  "stage": "Trajectory-P2-E1RG",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "Read from the suites' own JSON in this run's rig. PASS, LIMIT and FAIL are counted separately; a LIMIT is never recorded as a PASS.",
+  "suites": {
+    "r1hr": {
+      "runIdentity": {
+        "executedCodeHead": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+        "executedCodeTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r1hr\\conformance.mjs --rig=C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rg-rig-d5ef046f-abe1-4fc7-b752-7bf705e475ac\\r1hr",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "r1hr-conformance",
+        "runId": "d5ef046f-abe1-4fc7-b752-7bf705e475ac",
+        "startedAt": null,
+        "elapsedMs": 4317,
+        "timestampIsNotFreshnessProof": true
+      },
+      "admission": {
+        "admitted": true,
+        "reasons": []
+      },
+      "artifactDigest": "sha256-5a1236f229010faee5ad805973be72adc050221bac6c4cb5040b6349ccd7b064",
+      "exitCode": 0,
+      "totals": {
+        "checks": 47,
+        "pass": 44,
+        "limit": 3,
+        "fail": 0
+      },
+      "verdict": "LIMIT",
+      "limits": [
+        {
+          "identity": "r1hr#18:HR-17:a PRE-EXISTING symlink to a protected file",
+          "id": "HR-17",
+          "statement": "a PRE-EXISTING symlink to a protected file",
+          "status": "LIMIT"
+        },
+        {
+          "identity": "r1hr#40:HR-39b:isolation between CONCURRENTLY ACTIVE worlds",
+          "id": "HR-39b",
+          "statement": "isolation between CONCURRENTLY ACTIVE worlds",
+          "status": "LIMIT"
+        },
+        {
+          "identity": "r1hr#46:HR-33:metadata confidentiality",
+          "id": "HR-33",
+          "statement": "metadata confidentiality",
+          "status": "LIMIT"
+        }
+      ],
+      "failures": [],
+      "duplicateIds": [
+        "HR-25"
+      ]
+    },
+    "r1hc": {
+      "runIdentity": {
+        "executedCodeHead": "a99868c065e8bf585c492a3f1746d9c4c06f2d76",
+        "executedCodeTree": "3f2f8cc1f1b7144a4ab828d46031863c61b4dfea",
+        "command": "node.exe F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r1hc\\conformance.mjs --rig=C:\\Users\\66494\\AppData\\Local\\Temp\\p2e1rg-rig-d5ef046f-abe1-4fc7-b752-7bf705e475ac\\r1hc",
+        "exitCode": 0,
+        "runtimeNode": "24.22.0",
+        "dshIdentity": "0.2.1-rc.2",
+        "selection": "r1hc-conformance",
+        "runId": "d5ef046f-abe1-4fc7-b752-7bf705e475ac",
+        "startedAt": null,
+        "elapsedMs": 8786,
+        "timestampIsNotFreshnessProof": true
+      },
+      "admission": {
+        "admitted": true,
+        "reasons": []
+      },
+      "artifactDigest": "sha256-193bb2e9efa68a66ca2ae80b905fec2731044b4474e4721bf33220f0f4d798d7",
+      "exitCode": 0,
+      "totals": {
+        "checks": 27,
+        "pass": 26,
+        "limit": 1,
+        "fail": 0
+      },
+      "verdict": "LIMIT",
+      "limits": [
+        {
+          "identity": "r1hc#26:HC-27:parallel ACTIVE confidential workers on the current Windows backend",
+          "id": "HC-27",
+          "statement": "parallel ACTIVE confidential workers on the current Windows backend",
+          "status": "LIMIT"
+        }
+      ],
+      "failures": [],
+      "duplicateIds": []
+    }
+  },
+  "preservedDisclosures": [
+    {
+      "id": "HR-17",
+      "statement": "the pre-existing symlink fixture cannot be built on this host; the junction fixture exercises the same reparse mechanism",
+      "status": "LIMIT"
+    },
+    {
+      "id": "HR-39b",
+      "statement": "concurrently ACTIVE worlds are not isolated from each other's raw code",
+      "status": "LIMIT"
+    },
+    {
+      "id": "HR-33",
+      "statement": "sibling world NAMES are enumerable because the worlds parent is an ancestor of the world",
+      "status": "LIMIT"
+    },
+    {
+      "id": "HC-27",
+      "statement": "parallel ACTIVE confidential workers are unsupported; the profile serializes them",
+      "status": "LIMIT"
+    }
+  ],
+  "capabilitySurface": {
+    "failClosed": true,
+    "withdrawn": [
+      "working_directory"
+    ],
+    "delegationSurfaceDerivedFromTable": true,
+    "kernelFactsNowRequired": [
+      "kernelSupported",
+      "kernelRootsVerified",
+      "kernelCoverageComplete",
+      "kernelContractNotDrifted"
+    ]
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "schema": "c6r-equivalence/v1",
+  "at": "2026-11-01T17:17:10.343Z",
+  "p1Run": "/home/admini/c6r/runs/qual-p1",
+  "f1Run": "/home/admini/c6r/runs/qual-f1",
+  "observationTime": "2026-02-10T09:05:00Z",
+  "dimensions": [
+    {
+      "name": "goal",
+      "p": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+      "f": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+      "same": true
+    },
+    {
+      "name": "requirements",
+      "p": [
+        "R1: Use the selected local installer; installation labour is included in the vendor quotes.",
+        "R2: No fossil-fuel backup may be installed.",
+        "R3: Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+        "R4: Site C is a listed building: the unit must be no wider than 800 mm.",
+        "R5: Keep at least 8% of committed cost as contingency."
+      ],
+      "f": [
+        "R1: Use the selected local installer; installation labour is included in the vendor quotes.",
+        "R2: No fossil-fuel backup may be installed.",
+        "R3: Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+        "R4: Site C is a listed building: the unit must be no wider than 800 mm.",
+        "R5: Keep at least 8% of committed cost as contingency."
+      ],
+      "same": true
+    },
+    {
+      "name": "historical_deliverables",
+      "p": [
+        {
+          "name": "technical-fit.md",
+          "digest": "98fc7f27c5bf7866963092edfd8f643fa04b617e3776126469d2724ddb4720d1"
+        },
+        {
+          "name": "cost-schedule.md",
+          "digest": "4ffe9bd76be2b4cb2b0598da17ed055b8d2502401c2f12c698f5902f6f4d4d60"
+        }
+      ],
+      "f": [
+        {
+          "name": "technical-fit.md",
+          "digest": "98fc7f27c5bf7866963092edfd8f643fa04b617e3776126469d2724ddb4720d1"
+        },
+        {
+          "name": "cost-schedule.md",
+          "digest": "4ffe9bd76be2b4cb2b0598da17ed055b8d2502401c2f12c698f5902f6f4d4d60"
+        }
+      ],
+      "same": true
+    },
+    {
+      "name": "ready_work",
+      "p": {
+        "taskId": "technical-refresh",
+        "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+        "writePaths": [
+          "deliverables/technical-refresh.md"
+        ]
+      },
+      "f": {
+        "taskId": "technical-refresh",
+        "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+        "writePaths": [
+          "deliverables/technical-refresh.md"
+        ]
+      },
+      "same": true
+    },
+    {
+      "name": "journal_facts",
+      "p": [
+        {
+          "kind": "NEGATIVE_RESULT",
+          "title": "2023 Marsh Lane trial: V2 cold-start failure",
+          "resolution": null
+        },
+        {
+          "kind": "OPEN_QUESTION",
+          "title": "Solaris V3 cold-weather certificate is not on file",
+          "resolution": null
+        },
+        {
+          "kind": "OPPORTUNITY",
+          "title": "Switch Site B to V2 to reduce cost",
+          "resolution": "DISMISSED"
+        }
+      ],
+      "f": [
+        {
+          "kind": "NEGATIVE_RESULT",
+          "title": "2023 Marsh Lane trial: V2 cold-start failure",
+          "resolution": null
+        },
+        {
+          "kind": "OPEN_QUESTION",
+          "title": "Solaris V3 cold-weather certificate is not on file",
+          "resolution": null
+        },
+        {
+          "kind": "OPPORTUNITY",
+          "title": "Switch Site B to V2 to reduce cost",
+          "resolution": "DISMISSED"
+        }
+      ],
+      "same": true
+    },
+    {
+      "name": "inbox_visible_set",
+      "p": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+      "f": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+      "same": true
+    },
+    {
+      "name": "source_tree",
+      "p": "c854ce6b0d08ac99e82d23b4418faca2045d66ec91cba4c59d4abea21c6c9c65",
+      "f": "c854ce6b0d08ac99e82d23b4418faca2045d66ec91cba4c59d4abea21c6c9c65",
+      "same": true
+    },
+    {
+      "name": "observation_time",
+      "p": "2026-02-10T09:05:00Z",
+      "f": "2026-02-10T09:05:00Z",
+      "same": true
+    }
+  ],
+  "confounders": [],
+  "equivalent": true,
+  "representationDifference": "P uses ProjectIR/Work/Journal state through the Palimpsest host; F uses Git commits, Markdown deliverables and HANDOFF.md. The facts compared here are identical."
+}

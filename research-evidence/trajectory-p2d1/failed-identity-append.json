@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_ingestion_health.test.ts",
+  "evidenceClass": "REAL_PARENT_IPC",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_FAILED_IDENTITY_APPEND",
+  "title": "A failed append for session B cannot be laundered",
+  "method": "real Parent IPC A then B over a controlled ChildProcess; the durable store fails the 2nd append by THROW and by explicit REJECTED",
+  "observed": "durable set is {A} only; a durable incompleteness marker exists; the finalization is UNKNOWN/INGESTION_INCOMPLETE; the Qualifier returns OBSERVATION_INCOMPLETE and qualifiedCount 0; Worker Outcome unchanged (READY_FOR_SETTLEMENT); Session B never fabricated",
+  "expectedInvariant": "a known ingestion failure cannot become a verified binding",
+  "verdict": "PASS",
+  "remainingUncertainty": "a store whose append neither throws nor returns a recognized outcome is treated as a rejection; no store in the product does this"
+}

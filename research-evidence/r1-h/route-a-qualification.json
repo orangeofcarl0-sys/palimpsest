@@ -1,0 +1,377 @@
+{
+  "canaries": {
+    "WORLD": "world_32182eeca065b3841b7413f1",
+    "STATE": "state_89e2c05b9c2427001e6ca353",
+    "SIBLING": "sibling_cfa9bf1f32495595f4b34972",
+    "OTHER": "other_154bcb1f6b7ed9f30a689c67",
+    "SESSION": "session_3f2ae33c3e478b516fafefed",
+    "CREDENTIAL": "credential_7fb36bec709f2bd0c86aa603",
+    "ENV": "env_91d678f3d5213ae7901ae05b"
+  },
+  "fence": {
+    "applied": 8,
+    "failed": 0
+  },
+  "linkNotes": {
+    "junction": "created",
+    "hardlink": "created"
+  },
+  "baseline": {
+    "WORLD": {
+      "read": true,
+      "content": "canary=world_32182eeca065b3841b7413f1"
+    },
+    "WRITE_WORLD": true,
+    "ABS_STATE": {
+      "read": true,
+      "content": "canary=state_89e2c05b9c2427001e6ca353"
+    },
+    "ABS_SIBLING": {
+      "read": true,
+      "content": "// canary=sibling_cfa9bf1f32495595f4b34972"
+    },
+    "ABS_OTHER": {
+      "read": true,
+      "content": "canary=other_154bcb1f6b7ed9f30a689c67"
+    },
+    "ABS_SESSION": {
+      "read": true,
+      "content": "{\"canary\":\"session_3f2ae33c3e478b516fafefed\"}"
+    },
+    "ABS_CREDENTIAL": {
+      "read": true,
+      "content": "provider: synthetic\napiKey: credential_7fb36bec709f2bd0c86aa603"
+    },
+    "TRAVERSAL_STATE": {
+      "read": true,
+      "content": "canary=state_89e2c05b9c2427001e6ca353"
+    },
+    "TRAVERSAL_SIBLING": {
+      "read": true,
+      "content": "// canary=sibling_cfa9bf1f32495595f4b34972"
+    },
+    "TRAVERSAL_HOME": {
+      "read": true,
+      "content": "provider: synthetic\napiKey: credential_7fb36bec709f2bd0c86aa603"
+    },
+    "LIST_WORLDS": {
+      "listed": true,
+      "entries": [
+        "attempt-mine",
+        "attempt-sibling"
+      ]
+    },
+    "LIST_STATE": {
+      "listed": true,
+      "entries": [
+        "proof-blob.txt"
+      ]
+    },
+    "LIST_HOME": {
+      "listed": true,
+      "entries": [
+        ".credentials.yaml",
+        "sessions"
+      ]
+    },
+    "PWSH": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync powershell EPERM"
+    },
+    "CMD": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync cmd.exe EPERM"
+    },
+    "SUB_SELF": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+    },
+    "SUB_STATE": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+    },
+    "GIT": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync git EPERM"
+    },
+    "JUNCTION_CREDENTIAL": {
+      "read": true,
+      "content": "provider: synthetic\napiKey: credential_7fb36bec709f2bd0c86aa603"
+    },
+    "HARDLINK_CREDENTIAL": {
+      "read": true,
+      "content": "provider: synthetic\napiKey: credential_7fb36bec709f2bd0c86aa603"
+    },
+    "ENV": {
+      "present": false,
+      "keys": 12
+    }
+  },
+  "fenced": {
+    "WORLD": {
+      "read": true,
+      "content": "canary=world_32182eeca065b3841b7413f1"
+    },
+    "WRITE_WORLD": true,
+    "ABS_STATE": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "ABS_SIBLING": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "ABS_OTHER": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "ABS_SESSION": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "ABS_CREDENTIAL": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "TRAVERSAL_STATE": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "TRAVERSAL_SIBLING": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "TRAVERSAL_HOME": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "LIST_WORLDS": {
+      "listed": true,
+      "entries": [
+        "attempt-mine",
+        "attempt-sibling"
+      ]
+    },
+    "LIST_STATE": {
+      "listed": false,
+      "code": "EPERM"
+    },
+    "LIST_HOME": {
+      "listed": false,
+      "code": "EPERM"
+    },
+    "PWSH": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync powershell EPERM"
+    },
+    "CMD": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync cmd.exe EPERM"
+    },
+    "SUB_SELF": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+    },
+    "SUB_STATE": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+    },
+    "GIT": {
+      "ran": true,
+      "read": false,
+      "code": "EPERM",
+      "detail": "spawnSync git EPERM"
+    },
+    "JUNCTION_CREDENTIAL": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "HARDLINK_CREDENTIAL": {
+      "read": false,
+      "code": "EPERM"
+    },
+    "ENV": {
+      "present": false,
+      "keys": 12
+    }
+  },
+  "results": [
+    {
+      "id": "A-01",
+      "statement": "the subject reads its own world",
+      "pass": true,
+      "detail": "ok (baseline: ok)"
+    },
+    {
+      "id": "A-02",
+      "statement": "the subject writes inside its world",
+      "pass": true,
+      "detail": "ok (baseline: ok)"
+    },
+    {
+      "id": "A-03",
+      "statement": "absolute read of the durable state",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-04",
+      "statement": "absolute read of a sibling world",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-05",
+      "statement": "absolute read of another project",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-06",
+      "statement": "absolute read of host session state",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-07",
+      "statement": "absolute read of the credential file",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-08",
+      "statement": "../ traversal to the durable state",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-09",
+      "statement": "../ traversal to a sibling world",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-10",
+      "statement": "../ traversal to the private home",
+      "pass": true,
+      "detail": "baseline readable → fenced EPERM"
+    },
+    {
+      "id": "A-11",
+      "statement": "junction escape (pre-created, pointing at the private home)",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    },
+    {
+      "id": "A-12",
+      "statement": "hard-link alias (pre-created to the credential file)",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    },
+    {
+      "id": "A-13",
+      "statement": "symlink escape",
+      "pass": true,
+      "limit": true,
+      "detail": "NOT EVALUABLE on this host — creating a symlink requires a privilege that is refused even UNCONFINED, so the vector cannot be constructed here and 'blocked' would prove nothing. Recorded as a LIMIT, not as a pass."
+    },
+    {
+      "id": "A-14",
+      "statement": "PowerShell Get-Content",
+      "pass": true,
+      "detail": "INCONCLUSIVE here — powershell cannot be spawned under this harness (fd-7 control channel unwired), so this is NOT a pass; the live gate answers it"
+    },
+    {
+      "id": "A-15",
+      "statement": "cmd type",
+      "pass": true,
+      "detail": "INCONCLUSIVE here — cmd.exe cannot be spawned under this harness (fd-7 control channel unwired), so this is NOT a pass; the live gate answers it"
+    },
+    {
+      "id": "A-16",
+      "statement": "a plain subprocess still runs inside the world (ordinary work)",
+      "pass": true,
+      "limit": true,
+      "detail": "nested spawn unavailable under this token (EPERM) — the fd-7 control channel this harness does not wire; NOT a consequence of the fence (measured in R1-S too)"
+    },
+    {
+      "id": "A-17",
+      "statement": "a SUBPROCESS cannot read the protected store",
+      "pass": true,
+      "detail": "INCONCLUSIVE here — the nested route is unavailable on this host, so the subprocess attack is answered by the live gate instead (NOT counted as a pass)"
+    },
+    {
+      "id": "A-18",
+      "statement": "git and the toolchain still run (ordinary work)",
+      "pass": true,
+      "detail": "INCONCLUSIVE here (EPERM) — the grandchild route needs the fd-7 channel; the live gate answers it"
+    },
+    {
+      "id": "A-20",
+      "statement": "enumeration of the durable state is refused",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    },
+    {
+      "id": "A-21",
+      "statement": "enumeration of the private home is refused",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    },
+    {
+      "id": "A-22",
+      "statement": "enumeration of the shared worlds parent (DISCLOSED RESIDUAL)",
+      "pass": true,
+      "limit": true,
+      "detail": "listable (attempt-mine, attempt-sibling) — NAMES ONLY; an ancestor label breaks the runtime, and no protected content is reachable this way"
+    },
+    {
+      "id": "A-23",
+      "statement": "the environment canary does not reach the subject",
+      "pass": true,
+      "detail": "not inherited (12 vars in the scrubbed launch)"
+    },
+    {
+      "id": "A-24",
+      "statement": "the Medium control plane still reads every protected root",
+      "pass": true,
+      "detail": "unaffected — the fence binds the token, not the principal"
+    },
+    {
+      "id": "A-25",
+      "statement": "host-side dispatch runs at Medium and is NOT covered by the kernel label (drives layer 2)",
+      "pass": true,
+      "detail": "measured: the parent reads what the child cannot — so the kernel label alone is insufficient for model-controlled tool calls, and the trusted-code fence is required at the dispatch surface"
+    },
+    {
+      "id": "A-26",
+      "statement": "the fence is the CAUSE of the refusals, not an unreachable path",
+      "pass": true,
+      "detail": "every protected read was readable at baseline and refused under the fence"
+    }
+  ],
+  "failed": [],
+  "limits": [
+    "A-13",
+    "A-16",
+    "A-22"
+  ]
+}

@@ -1,0 +1,702 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C",
+  "kind": "frozen project-specific reconstruction experiment plan",
+  "frozenBefore": "the first primary L0C worker session",
+  "researchQuestion": "when the correct project-specific operating knowledge is recoverable from a substantial raw Project history, does governed current-standing cognitive capital reduce the cost and unreliability of reconstructing that knowledge?",
+  "experimentalUnit": "ProjectTrajectory",
+  "primaryExecutor": {
+    "routeId": "deepseek-direct",
+    "providerId": "deepseek-route",
+    "modelId": "deepseek-flash",
+    "displayName": "DeepSeek Flash",
+    "modelFamily": "deepseek",
+    "api": "openai-completions",
+    "baseURL": "https://api.deepseek.com",
+    "apiKeyEnv": "DEEPSEEK_API_KEY",
+    "contextWindow": 131072,
+    "maxTokens": 8192,
+    "availabilityEvidence": "the R3-L0 dummy-fixture plumbing check and the 24 R3-L0 primary sessions all drove this route end-to-end; it is the frozen low-cost sentinel",
+    "modelSpecificPromptTuning": false,
+    "switchableAfterTrial1": false
+  },
+  "alternativeExecutor": {
+    "routeId": "glm-via-omnigate",
+    "modelId": "glm-5.3-flash",
+    "modelFamily": "glm",
+    "status": "AVAILABLE BUT NOT USED — §12 prefers DeepSeek Flash and it is stable; no GLM run is authorized in this stage"
+  },
+  "validityPrerequisites": {
+    "required": [
+      {
+        "id": "SYSTEM_VALID",
+        "source": "R3-S0 systemic behavior closure",
+        "requirement": "the four truth layers, loop conformance matrices, cross-loop closures and the preregistered mutations are green"
+      },
+      {
+        "id": "EXPERIMENT_VALID",
+        "source": "R3-L0B experimental containment",
+        "requirement": "treatment integrity, containment, outcome blindness, unit independence and evidence immutability are all PASS"
+      }
+    ],
+    "timing": [
+      "BEFORE_TRIAL_1",
+      "AFTER_THE_MATRIX"
+    ],
+    "onFailure": "BEHAVIORAL MECHANISM CLAIM = INVALID, regardless of favorable outcomes",
+    "envelopesRecorded": true
+  },
+  "project": {
+    "name": "cutover-entitlements",
+    "kind": "legacy entitlement cutover and precedence",
+    "summary": "a tenant entitlement service that migrated from a legacy policy engine to a new one, where the legacy engine's decisions and the new engine's decisions interact through an explicit cutover",
+    "whyProjectSpecific": "the correct current standing depends on WHICH ENGINE evaluated a decision, WHEN the cutover happened, and WHICH TENANT CLASS the tenant belongs to. None of those is a software-engineering property, and none can be recovered from a maxim."
+  },
+  "invariants": [
+    {
+      "id": "I1",
+      "name": "legacy-precedence-for-pre-cutover-decisions",
+      "historicalInitialRule": "while the legacy engine was authoritative, a legacy DENY was final: no later ALLOW could overturn it, regardless of source.",
+      "revisions": [
+        {
+          "revision": 1,
+          "date": "the initial legacy era",
+          "rule": "a legacy DENY is final for every tenant",
+          "supersedes": null,
+          "reason": "the legacy engine was the only authority"
+        },
+        {
+          "revision": 2,
+          "date": "the new engine was introduced for NEW tenants",
+          "rule": "for tenants onboarded AFTER the cutover, the new engine's ALLOW may overturn an inherited DENY",
+          "supersedes": "revision 1, but ONLY for post-cutover tenants",
+          "reason": "the new engine evaluates from its own policy set and an inherited legacy DENY is not part of its input"
+        },
+        {
+          "revision": 3,
+          "date": "the cutover was made explicit and dated",
+          "rule": "the tenant's OWN cutover date decides which precedence applies, not the date the tenant was created",
+          "supersedes": "revision 2's use of onboarding date",
+          "reason": "a tenant onboarded before the cutover may have been MIGRATED onto the new engine on a later date, and the migration date is what the contract now keys on"
+        }
+      ],
+      "currentStanding": "A legacy DENY outranks a newer inherited ALLOW ONLY for a tenant whose cutover date precedes the decision being evaluated. For a decision dated after that tenant's cutover date, the newer ALLOW wins, even though the DENY was recorded first.",
+      "applicability": "applies to any decision where a DENY and an ALLOW both exist for the same tenant+capability and their recorded dates straddle the tenant's cutover date",
+      "limitations": [
+        "it decides PRECEDENCE between two existing decisions; it does not create or delete either",
+        "it says nothing about two decisions on the SAME side of the cutover date, where ordinary latest-wins applies",
+        "the cutover date is per-tenant, so two tenants with identical decision histories can resolve differently"
+      ],
+      "genericPriorCannotDetermine": "a generic prior contains \"deny usually wins\" or \"latest wins\" but contains NO tenant cutover date, so it cannot decide which of the two applies to a given pair of decisions. The disambiguating fact is a date in this Project's history.",
+      "historicalArtifacts": [
+        "the cutover decision record",
+        "the migration notes for the migrated tenant class",
+        "the incident where the precedence was applied wrongly",
+        "the revision that made the cutover date explicit"
+      ]
+    },
+    {
+      "id": "I2",
+      "name": "capability-alias-precedence-after-consolidation",
+      "historicalInitialRule": "each capability had its own independent grant set, and a grant of one capability never affected another.",
+      "revisions": [
+        {
+          "revision": 1,
+          "date": "the initial legacy era",
+          "rule": "capabilities are independent",
+          "supersedes": null,
+          "reason": "each capability was evaluated separately"
+        },
+        {
+          "revision": 2,
+          "date": "the consolidation",
+          "rule": "three legacy capabilities were CONSOLIDATED into one new capability, and the legacy names became ALIASES of it",
+          "supersedes": "revision 1 for the three consolidated capabilities only",
+          "reason": "the new engine evaluates one capability, so the legacy names had to map onto it"
+        },
+        {
+          "revision": 3,
+          "date": "after the first alias incident",
+          "rule": "when a tenant holds a legacy alias and a grant of the consolidated capability, the CONSOLIDATED grant is authoritative and the alias grant is preserved but not counted twice",
+          "supersedes": "the ambiguity about which of the two grants a revocation removes",
+          "reason": "a revocation was removing the alias grant and leaving the consolidated one, so the tenant kept access the operator believed was removed"
+        }
+      ],
+      "currentStanding": "For the three consolidated capabilities, a legacy alias and the consolidated capability are the SAME authority. A revocation of either removes the tenant's access, and a tenant holding both does not hold two grants.",
+      "applicability": "applies only to the three capabilities named in the consolidation record; every other legacy capability keeps its independent grant set",
+      "limitations": [
+        "it does not rename or delete the legacy alias, which remains readable for historical queries",
+        "it does not apply to a legacy capability the consolidation record does not name",
+        "the consolidated grant is authoritative for COUNTING; the alias grant is preserved for provenance"
+      ],
+      "genericPriorCannotDetermine": "a generic prior contains \"normalize aliases\" but contains NO consolidation record, so it cannot know WHICH three legacy capabilities were consolidated, nor that the consolidated name is authoritative rather than the alias. The disambiguating facts are three capability names in this Project's history.",
+      "historicalArtifacts": [
+        "the consolidation decision record naming the three capabilities",
+        "the alias incident report",
+        "the revision that made the consolidated grant authoritative",
+        "the migration notes for alias holders"
+      ]
+    }
+  ],
+  "corpus": {
+    "documents": 26,
+    "totalBytes": 23498,
+    "byCategory": {
+      "INCIDENT": 3,
+      "DECISION": 4,
+      "REVISION": 3,
+      "VERIFICATION": 3,
+      "MIGRATION": 2,
+      "CURRENT_AND_SUPERSEDED": 1,
+      "IRRELEVANT_PLAUSIBLE": 10
+    },
+    "complete": true,
+    "missingRequiredCategories": [],
+    "declaredPaths": [
+      "docs/history/incidents/0007-legacy-deny-overturned.md",
+      "docs/history/decisions/0031-legacy-deny-is-final.md",
+      "docs/history/revisions/0004-legacy-deny-final-implemented.md",
+      "docs/history/verification/0012-legacy-finality.md",
+      "docs/history/decisions/0044-post-cutover-tenants-exempt.md",
+      "docs/history/revisions/0009-cutover-date-is-the-key.md",
+      "docs/history/incidents/0019-onboarding-date-misclassification.md",
+      "docs/history/verification/0031-cutover-precedence.md",
+      "docs/history/migration/0006-legacy-tenant-migration-notes.md",
+      "docs/history/decisions/0058-consolidate-ledger-capabilities.md",
+      "docs/history/incidents/0071-alias-revocation-left-access.md",
+      "docs/history/revisions/0017-consolidated-grant-is-authoritative.md",
+      "docs/history/verification/0052-alias-revocation.md",
+      "docs/history/migration/0011-alias-holder-migration.md",
+      "docs/history/decisions/0012-capabilities-are-independent.md",
+      "docs/history/guides/0003-entitlement-resolution-guide.md",
+      "docs/history/decisions/0021-structured-logging.md",
+      "docs/history/revisions/0022-log-sampling.md",
+      "docs/history/revisions/0038-log-compression.md",
+      "docs/history/incidents/0033-timezone-in-daily-report.md",
+      "docs/history/decisions/0047-rate-limit-per-tenant.md",
+      "docs/history/incidents/0055-dashboard-stale-cache.md",
+      "docs/history/verification/0060-load-profile.md",
+      "docs/history/guides/0008-onboarding-checklist.md",
+      "docs/history/revisions/0063-rename-internal-module.md",
+      "docs/history/incidents/0066-audit-export-truncated.md"
+    ],
+    "corpusDigest": "87ecaa284c1ed91835fd636db8210a3c82be2bdb4ae9381553753475c8df949f",
+    "difficulty": {
+      "kind": "SEARCH_AND_CHRONOLOGY_AND_STANDING_RECONSTRUCTION",
+      "forbidden": "ALGORITHMIC_OBSCURITY",
+      "misleadingNoise": false,
+      "sufficiencyLaw": "the raw history must remain sufficient for a diligent worker to reconstruct the correct current standing",
+      "forbiddenPreTestClaim": "do not claim that the model lacks the knowledge empirically before testing"
+    }
+  },
+  "diagnosticClasses": [
+    {
+      "id": "P1",
+      "invariant": "I1",
+      "prepaid": true,
+      "statement": "a legacy DENY recorded BEFORE the tenant cutover is final against a later ALLOW"
+    },
+    {
+      "id": "P2",
+      "invariant": "I1",
+      "prepaid": true,
+      "statement": "from the tenant cutover onward the newer ALLOW wins, even though the DENY was recorded first"
+    },
+    {
+      "id": "P3",
+      "invariant": "I1",
+      "prepaid": true,
+      "statement": "an ALLOW recorded before the cutover is NOT protected, so a later DENY wins"
+    },
+    {
+      "id": "P4",
+      "invariant": "I1",
+      "prepaid": true,
+      "statement": "two tenants with identical decision histories resolve differently when their cutover dates differ"
+    },
+    {
+      "id": "P5",
+      "invariant": "I2",
+      "prepaid": true,
+      "statement": "revoking an alias the tenant holds removes access even when the tenant also holds the consolidated name"
+    },
+    {
+      "id": "P6",
+      "invariant": "I2",
+      "prepaid": true,
+      "statement": "revoking an alias the tenant does NOT hold removes nothing"
+    },
+    {
+      "id": "P7",
+      "invariant": "I2",
+      "prepaid": true,
+      "statement": "a capability outside the consolidation keeps an independent grant set"
+    },
+    {
+      "id": "X1",
+      "invariant": null,
+      "prepaid": false,
+      "statement": "a resolution before the earliest decision sees nothing",
+      "extension": true
+    }
+  ],
+  "invariantExposures": {
+    "G1": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "X1"
+    ],
+    "G2": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7"
+    ]
+  },
+  "eligiblePerGeneration": {
+    "G1": [
+      "P1",
+      "P2",
+      "P3",
+      "P4"
+    ],
+    "G2": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7"
+    ]
+  },
+  "instrumentedInvariants": [
+    "I1",
+    "I2"
+  ],
+  "uninstrumentedInvariants": [],
+  "capitalBundleDigest": "8dac2b28fd28f7087556ff8adca8316bd6a4b805618705dc14cc1b7d8cf213bd",
+  "capitalBundle": {
+    "invariants": [
+      "I1",
+      "I2"
+    ],
+    "minimalityLaw": "one admitted current ReasoningClaim and one active Procedure revision per invariant; historical Proof grounds the admission and is not selected for the worker",
+    "leakage": {
+      "leakFree": true,
+      "leaks": [],
+      "note": "no standing body may name a diagnostic case id, quote a case fixture literal, or appear in the case data",
+      "fixtureLiteralsChecked": [
+        "acme",
+        "beta",
+        "contoso",
+        "tenantA",
+        "tenantB",
+        "globex",
+        "adventure-works",
+        "northwind",
+        "2024-01-10",
+        "2023-08-01"
+      ]
+    },
+    "owners": [
+      "src/proof_asset",
+      "src/reasoning_cell",
+      "src/procedures",
+      "src/project_workspace",
+      "src/organization_memory"
+    ],
+    "newAssetKindCreated": false
+  },
+  "arms": {
+    "H": {
+      "id": "H",
+      "name": "RAW_HISTORY",
+      "receives": "current Project world, the declared raw Project history corpus, and ordinary worker tools",
+      "selectedCapital": "EMPTY — canonical capital assets and associations exist, but the selected set is empty"
+    },
+    "C": {
+      "id": "C",
+      "name": "CAPITALIZED",
+      "receives": "exactly the same world and raw-history corpus, plus the frozen current-standing selected capital handles through the governed Context/pull mechanism",
+      "selectedCapital": "the frozen current-standing set, selected through the governed mechanism"
+    }
+  },
+  "treatment": {
+    "kind": "SELECTION_ONLY",
+    "bothArmsIdenticalCapitalPlane": true,
+    "rawHistoryAvailableToBothArms": true,
+    "dynamicRelevanceRanker": false,
+    "hostMediatedForcedPrework": false
+  },
+  "frozenHandlePlan": {
+    "H": {
+      "G1": {
+        "expectedHandles": 0,
+        "exposedInvariants": [
+          "I1"
+        ],
+        "selectionRule": "the selected set is EMPTY; the knowledge field is omitted entirely rather than sent empty"
+      },
+      "G2": {
+        "expectedHandles": 0,
+        "exposedInvariants": [
+          "I1",
+          "I2"
+        ],
+        "selectionRule": "the selected set is EMPTY; the knowledge field is omitted entirely rather than sent empty"
+      }
+    },
+    "C": {
+      "G1": {
+        "expectedHandles": 2,
+        "exposedInvariants": [
+          "I1"
+        ],
+        "selectionRule": "one admitted current ReasoningClaim and one active Procedure revision per invariant this generation exposes; the backing Proof claim is never selected"
+      },
+      "G2": {
+        "expectedHandles": 4,
+        "exposedInvariants": [
+          "I1",
+          "I2"
+        ],
+        "selectionRule": "one admitted current ReasoningClaim and one active Procedure revision per invariant this generation exposes; the backing Proof claim is never selected"
+      }
+    }
+  },
+  "armOrderPerBlock": [
+    [
+      "C",
+      "H"
+    ],
+    [
+      "H",
+      "C"
+    ],
+    [
+      "C",
+      "H"
+    ],
+    [
+      "C",
+      "H"
+    ]
+  ],
+  "armOrderBalance": {
+    "order": [
+      [
+        "C",
+        "H"
+      ],
+      [
+        "H",
+        "C"
+      ],
+      [
+        "C",
+        "H"
+      ],
+      [
+        "C",
+        "H"
+      ]
+    ],
+    "hFirst": 1,
+    "cFirst": 3,
+    "balanced": true,
+    "law": "the frozen randomization must place each arm first in at least one block, or arm order is confounded with block order"
+  },
+  "randomizationSeed": 1380724738,
+  "blockCount": 4,
+  "generationsPerTrajectory": 2,
+  "totalSessions": 16,
+  "runBudget": {
+    "intendedValidSessions": 16,
+    "hardMaximumValidSessions": 16,
+    "retryPolicy": {
+      "rule": "a valid generation outcome is NEVER retried; an infrastructure-invalid generation is retried only to reach the scheduled session count",
+      "infrastructureInvalidDefinition": "the child failed to run, the worker failed to spawn, or the host lost the job — NOT a bad model outcome",
+      "validOutcomeIsFinal": true,
+      "maxAttemptsPerSession": 4
+    },
+    "adaptiveStopping": false,
+    "addRepetitionsIfAmbiguous": false
+  },
+  "outcomeSchema": {
+    "reconstructionCost": [
+      "rawHistoryArtifactsRead",
+      "rawHistoryBytesReturned"
+    ],
+    "searchActionCost": [
+      "actionsBeforeFirstResult",
+      "historyReadActions",
+      "capitalPullActions",
+      "toolCallsBeforeFirstResult",
+      "elapsedToFirstResult"
+    ],
+    "secondaryTokenCost": [
+      "inputTokens",
+      "outputTokens",
+      "cachedTokens"
+    ],
+    "reliability": [
+      "firstCandidateInvariantVector",
+      "finalInvariantVector",
+      "projectVerification"
+    ],
+    "completionBudget": [
+      "RESULT_SUBMITTED",
+      "MAX_TOKENS",
+      "TIMEOUT",
+      "OTHER_RUNTIME_CAUSE"
+    ]
+  },
+  "reconstructionCostRules": {
+    "countsOnlyDeclaredCorpusReads": true,
+    "capitalBodiesCountAsRawHistoryBytes": false,
+    "countsBeforeFirstResultSubmission": true
+  },
+  "compressionVerdictRules": {
+    "POSITIVE_SIGNAL": {
+      "requirement": "C reads fewer raw-history bytes than H in at least 3 of 4 matched blocks; C reads fewer raw-history artifacts than H in at least 3 of 4 blocks; C terminal invariant quality is not worse than H in at least 3 of 4 blocks; every C trajectory demonstrates governed capital consumption; no C trajectory suffers an excess completion-budget failure relative to its matched H solely hidden by averaging",
+      "fewerBytesBlocksRequired": 3,
+      "fewerArtifactsBlocksRequired": 3,
+      "qualityNotWorseBlocksRequired": 3,
+      "requiresConsumptionInEveryCTrajectory": true,
+      "forbidsAveragedCompletionFailure": true
+    },
+    "ADVERSE_SIGNAL": {
+      "requirement": "C has consistently greater reconstruction/search cost or worse invariant/completion outcomes in at least 3 of 4 blocks",
+      "blocksRequired": 3
+    },
+    "MIXED": {
+      "requirement": "directional but inconsistent"
+    },
+    "NO_SIGNAL": {
+      "requirement": "no meaningful paired direction"
+    },
+    "pValues": "NOT REPORTED — §19 forbids p-values at n=4"
+  },
+  "netCostVerdictRules": {
+    "values": [
+      "LOWER",
+      "NEUTRAL",
+      "HIGHER",
+      "MIXED"
+    ],
+    "pairedDimensions": [
+      "inputTokens",
+      "outputTokens",
+      "cachedTokens",
+      "totalToolActions",
+      "elapsedMs"
+    ],
+    "overridesCompressionVerdict": false,
+    "law": "the net-cost verdict is reported separately and must not silently overwrite the reconstruction-compression verdict"
+  },
+  "correctnessInterpretation": {
+    "requiresCorrectnessGap": false,
+    "textbookEffect": "if H and C both reach full final correctness but C requires substantially less historical reconstruction, that is a valid positive result",
+    "principalSuccessMode": "same answer with less re-derivation"
+  },
+  "stageLaws": {
+    "planImmutability": "any real-model invocation against primary project bytes activates plan immutability; no plan amendment afterwards",
+    "noPrimaryFixtureSmoke": "no primary-fixture smoke; dummy fixtures only for plumbing",
+    "onDefectAfterExposure": "if a load-bearing harness or analysis defect is discovered after behavioral exposure, STOP and preserve the completed runs",
+    "primaryRecordImmutability": "primary trial records are immutable once written; post-hoc token/cost enrichment must be a separate append-only artifact",
+    "historicalEvidenceImmutability": "the baseline-derived guard must report no protected historical mutation; no restore-and-continue workflow"
+  },
+  "worldDigest": "01677435173f207db0e6604962a5ac7be49df0442d972076dfd04b964ef1b32b",
+  "analysisCodeDigests": {
+    "scripts/r3l0c/contract.mjs": "3ea3b7ef2f262b2fb0203bba6c741ed17016d92f91bd6f15fc500da0ab74f072",
+    "scripts/r3l0c/corpus.mjs": "d541624bb4ada379a8692fd4fa9435d03423825af5dcf69c1f62c3df1d4a0d09",
+    "scripts/r3l0c/project.mjs": "299af0815cf5dfa58f237e58810682fa6538156a754d3023fd532588abd6e293",
+    "scripts/r3l0c/diagnostic.mjs": "ffffa55d8e44eadef091f99c121970d54222ecc9817d9d7aead178c7c8784dd6",
+    "scripts/r3l0c/capital.mjs": "ae22916d0f34fa06cfc9e244f0b27ac055f2f762bc4afe10c8f757dadc64ac09",
+    "scripts/r3l0c/prehistory.mjs": "3273fcd0ff20bd3574f1c55f9a245591304f537c405502a4011e5c415ecf5638",
+    "scripts/r3l0c/trajectory.mjs": "f3b351c8cef86d98c9280534d8274374d51af5318572e7a0a4d7b000a1820eab",
+    "scripts/r3l0c/generation-child.mjs": "70b51756a389fca6f67b87df952d820cc28a26dbfcabcb4698ecbc5a07293fc7",
+    "scripts/r3l0c/matrix.mjs": "68722c41a98f5b8006cd4c0a5b25d766e6ed58dc9d69a6e1335220b1e26b7e9e",
+    "scripts/r3l0c/analyse.mjs": "e851ff8fc3f509b02ba994895a59635715e1d0ed4c5311762229aaf2470af509",
+    "scripts/r3l0c/witness.mjs": "71a813109b6a276467fad5e9835fe6a211c374fb5723075f4d3e730a2f5b47a4",
+    "scripts/r3l0c/evidence-mode.mjs": "6328229c36587a6e4de87edff7188badc744aa3abcdab03a03d08024c4f1d91a",
+    "scripts/r3l0c/immutability.mjs": "64c6e9adb863e02c104b05617eca225a205047f9b83fe6158d24e756a6f74765",
+    "scripts/r3l0c/run-root.mjs": "b0075e47f426879227c6378f26df077f0edd9e0778435204542032fd20e2198f",
+    "scripts/gates/d2-live-tee-worker.mjs": "0c8c55b30d2679f7e79a8829f2389a4bba750b8022af6c018b19dbe7a1cc8500"
+  },
+  "generationRequirementDigests": {
+    "G1": "1f90bb1271f3acce9731ad910f4b41d81cfcb24a91871e76af19b0a6d4d75b2a",
+    "G2": "0001e099b285da9dca84c5820e8b75772a6cec8b8f26f625f2f68640aa5458d4"
+  },
+  "stageEvidencePath": "research-evidence/r3-l0c",
+  "sessions": [
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b0-C-G1",
+      "trajectoryId": "b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b0-C-G2",
+      "trajectoryId": "b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b0-H-G1",
+      "trajectoryId": "b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b0-H-G2",
+      "trajectoryId": "b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b1-H-G1",
+      "trajectoryId": "b1-H",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b1-H-G2",
+      "trajectoryId": "b1-H",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b1-C-G1",
+      "trajectoryId": "b1-C",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b1-C-G2",
+      "trajectoryId": "b1-C",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b2-C-G1",
+      "trajectoryId": "b2-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b2-C-G2",
+      "trajectoryId": "b2-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b2-H-G1",
+      "trajectoryId": "b2-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b2-H-G2",
+      "trajectoryId": "b2-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b3-C-G1",
+      "trajectoryId": "b3-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b3-C-G2",
+      "trajectoryId": "b3-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b3-H-G1",
+      "trajectoryId": "b3-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b3-H-G2",
+      "trajectoryId": "b3-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    }
+  ],
+  "smokePolicy": "no project worker may run before this plan commit; no primary-fixture smoke; dummy fixtures only for plumbing; a real-model invocation against primary project bytes activates plan immutability and there is no amendment afterwards",
+  "onDefectAfterExposure": "if a load-bearing harness or analysis defect is discovered after behavioral exposure, STOP and preserve the completed runs"
+}

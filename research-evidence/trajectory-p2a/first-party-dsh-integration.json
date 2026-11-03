@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_FIRST_PARTY_INTEGRATION",
+  "stage": "Trajectory-P2A",
+  "evidenceClass": "REAL_HOST_PARENT_INTEGRATION_NO_MODEL",
+  "sourceLocations": [
+    "host/dsh/lib/runner.js (runWorker: agents.create -> session identity report -> capability refusal)",
+    "host/dsh/lib/session-identity.js (the producer)",
+    "src/deployment/work_worker.ts (the parent port and its strict identity parser)"
+  ],
+  "method": "boot the CURRENT branch's host bundle in a test-owned DSH home via the SHIPPED worker port, with a test-owned profile that makes the SHIPPED capability refusal fire after session creation and before the first model turn; observe the identity on the real IPC channel",
+  "observations": {
+    "outcomeKind": "HOST_FAILURE",
+    "hostFailureDetail": "the worker reported an unusable outcome: worker result has unknown argument \"detail\": (node:44284) ExperimentalWarning: SQLite is an experimental feature and might change at any time | (Use `node --trace-warnings ...` to show where the warning was created)",
+    "identityObservationCount": 1,
+    "observedSessionId": "worker-c08068b1-f17c-4a02-9b04-7128e6f9558a",
+    "observedInvocationId": "wpi-859c7fd7-1f09-4f78-810a-d66f726dd6a8",
+    "observedSource": "DIRECT_CHILD_IPC_REPORT",
+    "observedSourceQualification": "FIRST_PARTY_DSH_QUALIFIED",
+    "observedState": "OBSERVED",
+    "observedDirectChildPid": 44284,
+    "sessionsWrittenByHost": 1,
+    "hostSessionIdsMatchObservation": true,
+    "turnEventCountInWrittenSessions": 0,
+    "sessionArtifactBytes": 337
+  },
+  "corroboratingRun": {
+    "note": "a second boot spawned directly with the SAME argv and stdio shape the port uses; it shows the worker's OWN telemetry and the refusal reason, proving the refusal fired rather than the worker dying for an unrelated reason",
+    "hostTelemetry": "{\"reported\":true,\"outcome\":\"REPORT_ATTEMPTED\",\"detail\":null}",
+    "workerResult": "{\"kind\":\"HOST_FAILURE\",\"detail\":\"refusing to run this worker: UNCLASSIFIED worker-visible capability(ies): p2a_refusal_probe — an unknown capability is not assumed safe, so the worker must not start\"}",
+    "captured": true
+  },
+  "expectedInvariant": "a real DSH session is created, its identity reaches the parent on the IPC channel, the parent stamps its own invocation, the worker is refused, and NO model turn runs",
+  "verdict": "REAL_HOST_PARENT_IDENTITY_ROUTE_QUALIFIED_NO_MODEL",
+  "noModelProof": {
+    "structuralExclusion": "the runner's capability refusal is thrown between `agents.create` and the only `agent.followup` call; on a refusal the runner disposes the handle and never reaches the first turn",
+    "runtimeMeasurement": {
+      "turnEventCountInWrittenSessions": 0,
+      "note": "a model turn appends turn/start and request/header events to the session artifact; zero such events is the measurement, not the assumption"
+    }
+  },
+  "realFirstPartyDshPathRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "testProfileProvenance": "a test-owned DSH home under the gate root, with a test-owned profile that mounts the current branch's host bundle; no user profile is loaded and no credential is copied",
+  "remainingUncertainty": [
+    "the refusal is the SHIPPED fail-closed path, made deterministic by a test-owned unclassified probe tool; a production worker would be ADMITTED and then run a model turn, which is out of P2-A scope",
+    "the identity observation is not a durable binding: nothing here persists an Attempt -> Session association"
+  ],
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "whatItProves": [
+    "a real first-party DSH Agent Session was created (a session artifact exists under the test-owned home)",
+    "the SessionId the Parent observed equals a session the Host actually wrote",
+    "the identity travelled on the Direct Child IPC channel and the Parent stamped its OWN wpi- invocation",
+    "the capability refusal is the SHIPPED fail-closed path (corroborated by the worker own result line)",
+    "zero turn/request events exist in the written session: no model turn ran"
+  ],
+  "whatItDoesNotProve": [
+    "a durable Attempt->Session binding",
+    "cold recovery",
+    "that a model turn would succeed",
+    "that the session belongs to a verified association",
+    "automatic Handoff"
+  ],
+  "primaryDisabled": true
+}
