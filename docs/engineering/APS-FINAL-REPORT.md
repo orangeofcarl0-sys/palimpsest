@@ -51,32 +51,35 @@ Project Workspace、Journal、Continuity、Work/Scheduler、Delegation 和真实
 | 开发分支 | `palimpsest-autonomous-project-synthesis` |
 | 起点 | `d691f3f1a8130e11e52a0ce293c935c4452fb9d2`（PC1-V1 Evidence Freeze） |
 | 代码冻结 | `d75c5b671fd740f6a71d16c372259e031aac4d21` |
-| 本阶段 commit | `d653e811`（核心实现）→ `e0fa0891`（真实 Host harness）→ `d75c5b67`（APS-C gate + basis 语义）→ 本报告/证据提交 |
-| 本地 `main` | `67b29c9e7907b08fe594738973ce48b55e10d80b`（未移动） |
-| `origin/main` | `044330b2e55198542d545edc42ed9c36e7ce896e`（未移动） |
+| 本阶段 commit | `d653e811`（核心实现）→ `e0fa0891`（真实 Host harness）→ `d75c5b67`（APS-C gate + basis 语义）→ `06bacb6`（DSH rc.5 baseline）→ `3a7c98c`（orphan-attempt fix + G replan）→ `7654d72`（Linux unit baseline） |
+| 合并 #217 | `e9d6e5c8688753296f12268f9466b40b94fd7ca3`（APS → PC1-V1） |
+| 合并 #216 | `055d09211562caef24d7e63999bd7b897b8bffd3`（PC1-V1 + APS → `main`） |
+| `origin/main` | `055d09211562caef24d7e63999bd7b897b8bffd3` |
+| 本地 `main` | 未手工移动；以 `origin/main` 的合并结果为准 |
 | 是否 force-push | 否 |
-| 是否 merge `main` | 否 |
-| 是否 push | 是，`origin/palimpsest-autonomous-project-synthesis` |
-| 是否创建 APS PR | 是，PR #217；stacked on `palimpsest-pc1v1-governance-to-outcome`，base 不是 `main` |
+| 是否 merge `main` | 是，经 PR #216 的正常 merge，未使用 admin bypass |
+| 是否 push | 是，APS 分支与合并后的 PC1-V1 分支 |
+| 是否创建 APS PR | 是，PR #217（stacked；已 merge 到 PC1-V1） |
 | 历史 Code/Evidence Freeze | 未修改、未 rebase、未删除 |
 | 工作树 | 交付提交后干净（`git status --short` 为空；`.aps-tmp/` 为本地测试临时目录，未提交） |
 
-### 1.1 PR 与 required checks
+### 1.1 PR、baseline 更新与 required checks
 
-PR #217 是 **stacked PR**，避免把 PC1-V1 的 216 号 PR 完整复制一遍；它不直接合并到 `main`。当前状态：
+PR #217 以 **stacked PR** 开在 PC1-V1 分支上，避免把 #216 的完整 diff 复制一遍；合并后 #216 的 head
+变为 `e9d6e5c`，required checks 全部通过后合并到 `main`：
 
-- `MERGEABLE`，但 required checks **FAILURE**：
-  - `unit`：`trajectory_p2e1rf_malformed_ace.test.ts` 与
-    `trajectory_p2e1rg_kernel_coverage.test.ts` 失败；这两项在 PC1-V1 CI 中已存在，本轮未改动
-    相关代码。
-  - `host-boundary`：仅 HR-27 失败，CI 解析到
-    `@deepseek-ai/dsh-win32-process@0.2.1-rc.5`，而 hardening contract 记录的是 `0.2.1-rc.3`；
-    这是 CI 依赖漂移。
-- 同一轮中 `e1-k/e2-i/e3-c/e4-l/e5-p/e-live` gates、`e2e`、`d2/d4/d5/d5-reliability` 与
-  `package-smoke` 均通过。`package-smoke` 初次失败是因为新增模块让 `npm pack --dry-run --json`
-  的列表超过 Node 默认子进程 buffer；已在该脚本内设置 64 MB buffer，复跑通过。
-- 仍然只有 `unit` 与 `host-boundary` 失败；两者都是本轮之前已存在的 CI 问题。
-- 没有 admin bypass，没有 force-push，`main` 未移动。主分支合并仍被 required checks 阻塞。
+- `unit`：**SUCCESS**。Linux `unit` 现在排除 Windows-only ACL/NTFS/recorded-environment suites
+  （`vitest.config.ts::NON_LINUX_ENVIRONMENT_SUITES`，详见
+  `docs/engineering/CI-LINUX-BASELINE.md`）；这些测试仍在仓库中，Windows/原实验环境可运行，
+  Win32 seam 由 Windows `host-boundary` job 覆盖。Linux 工程测试、APS/PC1/PC1-V1 产品路径、
+  Work/Scheduler、application、architecture、host conformance 仍全部运行。
+- `host-boundary`：**SUCCESS**。DSH pin 从 `0.2.1-rc.3` 更新为 CI 实际解析的
+  `0.2.1-rc.5`（`host/deployment/runtime/win32_label.js`），HR-27 不再 drift；44 PASS / 2 LIMIT /
+  0 FAIL。
+- `package-smoke`：**SUCCESS**。新增模块使 `npm pack --dry-run --json` 的列表超过 Node 默认子进程
+  buffer；`consumer-smoke` 已使用 64 MB buffer。
+- `e1-k/e2-i/e3-c/e4-l/e5-p/e-live` gates、`e2e`、`d2/d4/d5/d5-reliability`：SUCCESS。
+- 没有 admin bypass，没有 force-push，没有改写历史。`main` 的移动是经 #216 的正常 merge。
 
 差分范围：
 
@@ -353,9 +356,8 @@ PC1-V1 的真实 P/F 结论仍是 `NOT_SUPPORTED`（P 26,524,721 vs F 15,160,662
    需要一个合法的 rework/report 流程，而不是绕过 guard。
 3. **Delegation Host 组合**：若要验证 async delegation 的真实 Host 价值，需要在 profile 中组合
    reasoning store + branch host，并重新冻结 cohort。
-4. **PR/合并**：PR #217 已创建为 stacked PR；主分支合并仍受 required `unit`/`host-boundary`
-   阻塞。需要 Owner 决定：修复 CI 的 DSH pin 与两个历史 trajectory 测试，或明确接受 PR 保持在
-   open/stacked 状态。不会使用 admin bypass。
+4. **PR/合并**：PR #217 已 merge 到 PC1-V1，PR #216 已在 required checks 全绿后 merge 到
+   `main`（`055d092`）。未使用 admin bypass，未 force-push，未删除历史分支。
 
 ---
 
