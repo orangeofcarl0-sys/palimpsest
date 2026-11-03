@@ -1,0 +1,766 @@
+{
+  "schema": "lhape-host-run-summary/v1",
+  "runId": "lhape-main-2026-11-03",
+  "scenario": "main",
+  "createdAt": "2026-11-03T16:49:32.717Z",
+  "mode": "MOCK_MODEL_REAL_DSH_HOST",
+  "note": "The DSH host, Palimpsest product, SQLite state, worker subprocesses, native subagent sessions, tool calls and Git effects are real. The model is a deterministic Messages stand-in and produces NO model-cognition evidence. No provider was called and no paid tokens were spent.",
+  "providerCalls": 0,
+  "modelSpendTokens": 0,
+  "codeFreeze": "",
+  "project": {
+    "revision": 4,
+    "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+    "goal": "Evaluate a multi-site energy deployment and leave a consistent, reviewable package: baseline capacity and cost, a revised package after the measured corridor constraint, and an integrated decision artifact.",
+    "decisions": [
+      {
+        "decisionId": "ctd-f5cd41f49697705672bd914ee6165b4d",
+        "statement": "Principal revise plan: Check whether the measured site-B corridor admits the 900 mm unit.",
+        "rationale": "The measured 700 mm site-B corridor invalidates the 900 mm baseline assumption. Retire both baseline tasks and produce a revised package plus an integration task. [contribution ctb-b7926eba358674cb8bd66316027bf3ba; source NATIVE_SUBAGENT:subagent:constraint-check]"
+      }
+    ],
+    "tasks": [
+      {
+        "taskId": "capacity-v2",
+        "objective": "Write the revised capacity assessment for the measured 700 mm site-B corridor from sources/capacity.csv and sources/sites.md into deliverables/capacity-v2.md. The measured corridor is 700 mm.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/capacity-v2.md"
+        ]
+      },
+      {
+        "taskId": "cost-v2",
+        "objective": "Write the revised cost model for the admissible 700 mm unit from sources/capacity.csv into deliverables/cost-v2.md. The measured corridor is 700 mm, so the 900 mm unit is not admissible.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/cost-v2.md"
+        ]
+      },
+      {
+        "taskId": "integration",
+        "objective": "Combine the accepted capacity and cost deliverables into deliverables/integration.md, naming both accepted sources.",
+        "dependsOn": [
+          "capacity-v2",
+          "cost-v2"
+        ],
+        "requiredArtifacts": [
+          "deliverables/integration.md"
+        ]
+      }
+    ],
+    "status": [
+      {
+        "taskId": "capacity",
+        "state": "STALE"
+      },
+      {
+        "taskId": "capacity-v2",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "cost",
+        "state": "STALE"
+      },
+      {
+        "taskId": "cost-v2",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "integration",
+        "state": "SATISFIED"
+      }
+    ],
+    "nextAction": {
+      "kind": "NO_ACTION",
+      "executable": false,
+      "action": null,
+      "detail": "every declared task is terminal; there is no legal formal transition left",
+      "taskId": null,
+      "blockers": []
+    }
+  },
+  "execution": {
+    "placement": "worktree",
+    "jobs": [],
+    "attempts": [
+      {
+        "taskId": "capacity",
+        "state": "COMPLETED",
+        "taskState": "STALE",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "cost",
+        "state": "COMPLETED",
+        "taskState": "STALE",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "capacity-v2",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "cost-v2",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "cost-v2",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "integration",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      }
+    ],
+    "detail": "no worker transport is composed in this deployment; only canonical attempt state is observable"
+  },
+  "continuation": {
+    "state": "OK",
+    "results": [
+      {
+        "taskId": "capacity",
+        "taskState": "STALE",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "c4da45716dbb77f1fb0e495b22d90bf2cc9bae98fdc05c5acedd684f1db3cf5d",
+        "resultCommit": "04343d7a1ade436baa6823c901a3bc3a6c66519f",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "capacity-v2",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "4c7734710cd542df56a61a47ed7e43bda99e00dbee620dcb7d3d209aba7278d4",
+        "resultCommit": "454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "cost",
+        "taskState": "STALE",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "63717b1ceb4cc3415ed4c9c7c7acd191c539ce7a85f108b66bd6cb02580acbbb",
+        "resultCommit": "4442b2320c4994263b09a18cf68496db32280008",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "cost-v2",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "91f4870b3a0edc38d679830eb89aeb797894f9d378ef63612c28d61664ca3f52",
+        "resultCommit": "51a6e3d612dd58c4ea963105727fc45f475b9b71",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "integration",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "UNKNOWN",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "061a0a06b37b3a3b49d78082015729d3832de2ec5db295a10f6ac9b8dbf22385",
+        "resultCommit": "56c2ff90dd612f389dca934c9752101750a344fa",
+        "detail": "reuse is not proven (a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused); the work may still be redone on the current basis"
+      }
+    ],
+    "detail": "each result is historical until an authorized Promotion accepts it; the digest is the freshness fence for a continuation route"
+  },
+  "sessions": {
+    "principal": [
+      {
+        "match": "LHAPE_PRINCIPAL_S1A",
+        "sessionId": "session-0659c1f3-79e8-4771-ab64-1811e0270087",
+        "firstAt": "2026-11-03T16:46:17.426Z",
+        "lastAt": "2026-11-03T16:47:59.739Z",
+        "requests": 5,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "palimpsest_work",
+          "pwsh"
+        ]
+      },
+      {
+        "match": "LHAPE_PRINCIPAL_S1B",
+        "sessionId": "session-120591ba-70b7-4a5e-91ce-6d0312e31d75",
+        "firstAt": "2026-11-03T16:46:39.646Z",
+        "lastAt": "2026-11-03T16:48:21.834Z",
+        "requests": 5,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "palimpsest_work",
+          "pwsh"
+        ]
+      },
+      {
+        "match": "LHAPE_PRINCIPAL_S1C",
+        "sessionId": "session-acd562ed-67a6-40d9-9434-1ba765f4ba92",
+        "firstAt": "2026-11-03T16:47:02.800Z",
+        "lastAt": "2026-11-03T16:48:05.839Z",
+        "requests": 9,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "subagent",
+          "palimpsest_contribute",
+          "palimpsest_work",
+          "pwsh"
+        ]
+      },
+      {
+        "match": "LHAPE_PRINCIPAL_S1D",
+        "sessionId": "session-815b4b5a-1e67-4e5c-a67a-6d430820033e",
+        "firstAt": "2026-11-03T16:47:14.156Z",
+        "lastAt": "2026-11-03T16:48:16.768Z",
+        "requests": 6,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "palimpsest_work",
+          "pwsh"
+        ]
+      },
+      {
+        "match": "LHAPE_PRINCIPAL_S2",
+        "sessionId": "session-5c481418-819f-4207-971f-5e2a9dbeb7f8",
+        "firstAt": "2026-11-03T16:47:40.242Z",
+        "lastAt": "2026-11-03T16:48:28.880Z",
+        "requests": 8,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "palimpsest_work",
+          "pwsh"
+        ]
+      },
+      {
+        "match": "LHAPE_PRINCIPAL_S3",
+        "sessionId": "session-78ddce91-f2c0-412a-988a-34691f55f0ce",
+        "firstAt": "2026-11-03T16:48:40.201Z",
+        "lastAt": "2026-11-03T16:49:27.876Z",
+        "requests": 6,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "palimpsest_work",
+          "pwsh"
+        ]
+      }
+    ],
+    "workers": [
+      {
+        "match": "Your task: Write the baseline capacity assessment",
+        "sessionId": "worker-057cdcc2-94cc-419e-9fd2-237a3aceb023",
+        "firstAt": "2026-11-03T16:46:26.510Z",
+        "lastAt": "2026-11-03T16:47:16.633Z",
+        "requests": 5,
+        "toolCalls": [
+          "run_code"
+        ]
+      },
+      {
+        "match": "Your task: Write the baseline cost model",
+        "sessionId": "worker-f98eb5b7-1ece-4313-b736-d7a5e5a3d7b3",
+        "firstAt": "2026-11-03T16:46:49.088Z",
+        "lastAt": "2026-11-03T16:47:16.588Z",
+        "requests": 5,
+        "toolCalls": [
+          "run_code"
+        ]
+      },
+      {
+        "match": "Your task: Write the revised capacity assessment",
+        "sessionId": "worker-5d572667-94c1-43a6-a509-66dd08a00da9",
+        "firstAt": "2026-11-03T16:47:13.054Z",
+        "lastAt": "2026-11-03T16:47:17.388Z",
+        "requests": 4,
+        "toolCalls": [
+          "run_code"
+        ]
+      },
+      {
+        "match": "Your task: Write the revised cost model",
+        "sessionId": "worker-664d6f66-cb99-4a66-a568-1e2f0ab1b0f4",
+        "firstAt": "2026-11-03T16:47:24.085Z",
+        "lastAt": "2026-11-03T16:47:28.004Z",
+        "requests": 4,
+        "toolCalls": [
+          "run_code"
+        ]
+      },
+      {
+        "match": "Continuation context",
+        "sessionId": "worker-acae4701-d4cb-4039-b2e6-1c8c1c591d46",
+        "firstAt": "2026-11-03T16:47:51.200Z",
+        "lastAt": "2026-11-03T16:47:55.081Z",
+        "requests": 4,
+        "toolCalls": [
+          "run_code"
+        ]
+      },
+      {
+        "match": "Your task: Combine the accepted capacity and cost deliverables",
+        "sessionId": "worker-b6653b12-6c48-4417-ab4d-7c99fe2c2096",
+        "firstAt": "2026-11-03T16:48:49.952Z",
+        "lastAt": "2026-11-03T16:48:54.008Z",
+        "requests": 4,
+        "toolCalls": [
+          "run_code"
+        ]
+      }
+    ],
+    "nativeSubagents": [
+      {
+        "match": "LHAPE_CHILD_CONSTRAINT",
+        "sessionId": "d8d4f500-c7ac-4e91-905f-2ee70ee6e704",
+        "firstAt": "2026-11-03T16:47:03.159Z",
+        "lastAt": "2026-11-03T16:47:03.594Z",
+        "requests": 2
+      }
+    ],
+    "sessionFiles": [
+      {
+        "session": "d8d4f500-c7ac-4e91-905f-2ee70ee6e704",
+        "bytes": 19201,
+        "sha256": "822de59c84dcc5cba1e6ce0cde208f392c248286024d2cb3e58c49d6238bceda"
+      },
+      {
+        "session": "session-0659c1f3-79e8-4771-ab64-1811e0270087",
+        "bytes": 23511,
+        "sha256": "c0184938090a96c221fb2340b80238a930dbb2593459c33d8c32d4c1eed0c082"
+      },
+      {
+        "session": "session-120591ba-70b7-4a5e-91ce-6d0312e31d75",
+        "bytes": 23664,
+        "sha256": "00298a58979f2eb02309dc6f1404199805d791c4ab075409cca37205171cc809"
+      },
+      {
+        "session": "session-5c481418-819f-4207-971f-5e2a9dbeb7f8",
+        "bytes": 29853,
+        "sha256": "f0cf1f7a3d2b4743c68e95cd3aa338a3d6b49cf42c3d1433106570e561c39e93"
+      },
+      {
+        "session": "session-78ddce91-f2c0-412a-988a-34691f55f0ce",
+        "bytes": 26960,
+        "sha256": "0dd6559be495a7e127e618d1e198d3a2858f14507cc26f2a9fbebc5c67245e56"
+      },
+      {
+        "session": "session-815b4b5a-1e67-4e5c-a67a-6d430820033e",
+        "bytes": 26509,
+        "sha256": "c6280b1376c8d546b21687da2b4664cad6ebeba2843742d4f33185f13db64d8b"
+      },
+      {
+        "session": "session-acd562ed-67a6-40d9-9434-1ba765f4ba92",
+        "bytes": 32010,
+        "sha256": "b4763412763b10f3efc85b7b857a01204daca4924de0e19f14c21d1de989c1c9"
+      },
+      {
+        "session": "worker-5d572667-94c1-43a6-a509-66dd08a00da9",
+        "bytes": 22597,
+        "sha256": "2072e2e73b2fa0ba8d6d5524718b6a3d0c79dfba977e0591e0ef3f35a7102757"
+      },
+      {
+        "session": "worker-f98eb5b7-1ece-4313-b736-d7a5e5a3d7b3",
+        "bytes": 24332,
+        "sha256": "979e9fa3adf5aa1f0c732dfcd2c569a119ab3707b5d12dad8896d6ee68c5d9f5"
+      },
+      {
+        "session": "worker-057cdcc2-94cc-419e-9fd2-237a3aceb023",
+        "bytes": 24692,
+        "sha256": "be80d539b41a8db99050b3f29bb7d4c156a742a1b1cd278eecce22f571c90967"
+      },
+      {
+        "session": "worker-acae4701-d4cb-4039-b2e6-1c8c1c591d46",
+        "bytes": 22804,
+        "sha256": "4b2a4f3d694cf272e6e9361f136d46fcd935b5de513034808c3c842e8fd68387"
+      },
+      {
+        "session": "worker-664d6f66-cb99-4a66-a568-1e2f0ab1b0f4",
+        "bytes": 22308,
+        "sha256": "7a0e94bb2c9ca088dd1c1c54a7bf5517afb6b6b22c9b54ae4d1bc7ba1b29f30a"
+      },
+      {
+        "session": "worker-b6653b12-6c48-4417-ab4d-7c99fe2c2096",
+        "bytes": 22597,
+        "sha256": "266458de978b418035e3fb3e4bbfed26eff388a9f6fce3d508fbf528976b642b"
+      }
+    ]
+  },
+  "workerOverlapPairs": [
+    [
+      "worker-057cdcc2-94cc-419e-9fd2-237a3aceb023",
+      "worker-f98eb5b7-1ece-4313-b736-d7a5e5a3d7b3"
+    ],
+    [
+      "worker-057cdcc2-94cc-419e-9fd2-237a3aceb023",
+      "worker-5d572667-94c1-43a6-a509-66dd08a00da9"
+    ],
+    [
+      "worker-f98eb5b7-1ece-4313-b736-d7a5e5a3d7b3",
+      "worker-5d572667-94c1-43a6-a509-66dd08a00da9"
+    ]
+  ],
+  "artifacts": [
+    {
+      "path": "deliverables/capacity.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    },
+    {
+      "path": "deliverables/cost.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    },
+    {
+      "path": "deliverables/capacity-v2.md",
+      "present": true,
+      "sha256": "630882f345c5c83aa47e7e3851f0f9379879a8daa29066142fe1120cf8809909",
+      "bytes": 193
+    },
+    {
+      "path": "deliverables/cost-v2.md",
+      "present": true,
+      "sha256": "9017c20a8152e626c36b6cdbdc95f27a28558014f93be918305cbfb576ca472b",
+      "bytes": 215
+    },
+    {
+      "path": "deliverables/integration.md",
+      "present": true,
+      "sha256": "7423761cab06e171093aada30d29ee4aa8f4c0f9108ff9efb6b65071fa40c696",
+      "bytes": 322
+    },
+    {
+      "path": "deliverables/interrupted.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    }
+  ],
+  "operatorPromotions": [
+    {
+      "label": "capacity-v2",
+      "taskId": "capacity-v2",
+      "promoted": true,
+      "attemptId": "attempt-2529e9f62f502b8bb093fb3f36baf506",
+      "result": {
+        "promotionId": "promotion-6756e1f58461b01a0fe92480a516440b",
+        "sourceCommit": "454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+        "expectedHeadCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "resultingHeadCommit": "60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+      },
+      "after": {
+        "revision": 1,
+        "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "VERIFYING"
+          },
+          {
+            "taskId": "integration",
+            "state": "BLOCKED"
+          }
+        ]
+      }
+    },
+    {
+      "label": "cost-v2",
+      "taskId": "cost-v2",
+      "promoted": true,
+      "attemptId": "attempt-c418ae85024b0845a8a0e5ad7077d3df",
+      "result": {
+        "promotionId": "promotion-232e47a54f0da9d659b35e9102ec38f9",
+        "sourceCommit": "51a6e3d612dd58c4ea963105727fc45f475b9b71",
+        "expectedHeadCommit": "60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "resultingHeadCommit": "c852acd09863ac1f384193421255f67c581ae5db",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "51a6e3d612dd58c4ea963105727fc45f475b9b71",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "60c250622f38a416144dd038a0a8c8d38fddcb04"
+      },
+      "after": {
+        "revision": 3,
+        "headCommit": "c852acd09863ac1f384193421255f67c581ae5db",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "integration",
+            "state": "BLOCKED"
+          }
+        ]
+      }
+    },
+    {
+      "label": "integration",
+      "taskId": "integration",
+      "promoted": true,
+      "attemptId": "attempt-fa4d7eb90e90d4b08e14de6d2a53cbd5",
+      "result": {
+        "promotionId": "promotion-c5a02bad2d5a85c83af36dc44baf5ab1",
+        "sourceCommit": "56c2ff90dd612f389dca934c9752101750a344fa",
+        "expectedHeadCommit": "c852acd09863ac1f384193421255f67c581ae5db",
+        "resultingHeadCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "56c2ff90dd612f389dca934c9752101750a344fa",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "c852acd09863ac1f384193421255f67c581ae5db"
+      },
+      "after": {
+        "revision": 4,
+        "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "integration",
+            "state": "SATISFIED"
+          }
+        ]
+      }
+    }
+  ],
+  "pulse": {
+    "contributions": [
+      {
+        "contributionId": "ctb-b7926eba358674cb8bd66316027bf3ba",
+        "sourceKind": "NATIVE_SUBAGENT",
+        "sourceRef": "subagent:constraint-check",
+        "status": "PLAN_CHANGED",
+        "basisState": "STALE",
+        "latestDecision": "REVISE_PLAN",
+        "planChange": {
+          "fromRevision": 0,
+          "toRevision": 1,
+          "addedTaskIds": [
+            "capacity-v2",
+            "cost-v2",
+            "integration"
+          ],
+          "removedTaskIds": [
+            "capacity",
+            "cost"
+          ],
+          "changedTaskIds": [],
+          "changeClass": "behavior_change",
+          "changedIds": [
+            "capacity",
+            "cost"
+          ],
+          "reason": "the measured constraint changes the binding task assumptions"
+        },
+        "downstream": {
+          "planRevision": 1,
+          "addedTaskIds": [
+            "capacity-v2",
+            "cost-v2",
+            "integration"
+          ],
+          "taskStates": [
+            {
+              "taskId": "capacity-v2",
+              "state": "SATISFIED"
+            },
+            {
+              "taskId": "cost-v2",
+              "state": "SATISFIED"
+            },
+            {
+              "taskId": "integration",
+              "state": "SATISFIED"
+            }
+          ],
+          "acceptedTaskIds": [
+            "capacity-v2",
+            "cost-v2",
+            "integration"
+          ],
+          "observableOutcome": true
+        }
+      }
+    ],
+    "decisionQueue": [
+      {
+        "kind": "STALE_RESULT",
+        "ref": "task:capacity",
+        "detail": "a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes",
+        "who": "AGENT",
+        "advisory": true
+      },
+      {
+        "kind": "STALE_RESULT",
+        "ref": "task:cost",
+        "detail": "a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes",
+        "who": "AGENT",
+        "advisory": true
+      }
+    ],
+    "execution": {
+      "placement": "worktree",
+      "attempts": [
+        {
+          "taskId": "capacity",
+          "state": "COMPLETED",
+          "taskState": "STALE",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "cost",
+          "state": "COMPLETED",
+          "taskState": "STALE",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "capacity-v2",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "cost-v2",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "cost-v2",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "integration",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        }
+      ],
+      "jobs": [],
+      "detail": "this deployment composes no work-worker transport; canonical attempts are visible but no host job can be observed"
+    },
+    "nextActions": {
+      "mechanical": [
+        "agent: every declared task is terminal; there is no legal formal transition left",
+        "agent: address an open question by investigation or a proposal; do not treat it as accepted",
+        "agent: propose the next bounded step in the project journal"
+      ],
+      "decisionRelevant": [
+        "agent: a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes",
+        "agent: a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes"
+      ],
+      "distinction": "mechanical actions are what the scheduler/product can legally execute next; decisionRelevant items are advisory judgements about what may advance the project, not authority, acceptance or a promise of value"
+    }
+  },
+  "limitations": [
+    "The model is a deterministic Messages stand-in, not a language model. No cognition, quality, cost or comparative benefit is claimed.",
+    "The native subagent is a real child DSH session; its content is scripted. The product cannot observe its read footprint, so the contribution records the principal's declaration and says so.",
+    "The operator promotions are real canonical promotions, executed by a test-owned operator script that names only the task; the product derives attempt, source commit and expected head.",
+    "This is deterministic engineering qualification, not the LHAPE F/L/G model cohort. That cohort remains BLOCKED without a new spend authorization."
+  ]
+}

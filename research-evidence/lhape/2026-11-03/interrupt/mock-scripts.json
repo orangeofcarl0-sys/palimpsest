@@ -1,0 +1,121 @@
+{
+  "schema": "lhape-host-scripts/v1",
+  "note": "Deterministic Messages stand-in. NOT a model. The interrupted host and worker are real processes.",
+  "scripts": [
+    {
+      "match": "Your task: Write the interrupted recovery artifact",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_690721",
+              "name": "run_code",
+              "input": {
+                "description": "write, commit and park the interrupted artifact",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait tools.read({ file_path: \"sources/sites.md\" });\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/interrupted.md\", content: \"# Interrupted recovery artifact\\n\\nThis artifact was written and committed by a real worker before the host was killed. The worker did not report an outcome; the new host observes the world.\\n\" });\nreturn await shell({ command: \"git add -A; git -c user.email=lhape@fixture.invalid -c \\\"user.name=LHAPE worker\\\" commit -qm \\\"write interrupted artifact\\\"; while (-not (Test-Path ../../never-release)) { Start-Sleep -Seconds 1 }\", description: \"commit and stay alive until the host is killed\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "INTERRUPT_WORKER_PARKED"
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_IR1",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "ir1_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "ir1_delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "interrupted-write"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "ir1_hold",
+              "name": "pwsh",
+              "input": {
+                "command": "Start-Sleep -Seconds 120",
+                "description": "keep this host alive for the controlled kill"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_IR2",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "ir2_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "ir2_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "ir2_complete",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "complete",
+                "taskId": "interrupted-write",
+                "summary": "settle from the committed world after the old host was killed"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "ir2_results",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "results",
+                "taskId": "interrupted-write"
+              }
+            }
+          ]
+        },
+        {
+          "text": "LHAPE_IR2_DONE"
+        }
+      ]
+    }
+  ]
+}

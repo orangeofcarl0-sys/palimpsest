@@ -1,0 +1,239 @@
+{
+  "schema": "lhape-host-run-summary/v1",
+  "runId": "lhape-interrupt-2026-11-03",
+  "scenario": "interrupt",
+  "createdAt": "2026-11-03T16:50:29.435Z",
+  "mode": "MOCK_MODEL_REAL_DSH_HOST",
+  "note": "The DSH host, Palimpsest product, SQLite state, worker subprocesses, native subagent sessions, tool calls and Git effects are real. The model is a deterministic Messages stand-in and produces NO model-cognition evidence. No provider was called and no paid tokens were spent.",
+  "providerCalls": 0,
+  "modelSpendTokens": 0,
+  "codeFreeze": "",
+  "project": {
+    "revision": 1,
+    "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+    "goal": "Recover a delivered candidate after the host process is killed, without re-running the work.",
+    "decisions": [],
+    "tasks": [
+      {
+        "taskId": "interrupted-write",
+        "objective": "Write the interrupted recovery artifact from sources/sites.md into deliverables/interrupted.md.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/interrupted.md"
+        ]
+      }
+    ],
+    "status": [
+      {
+        "taskId": "interrupted-write",
+        "state": "SATISFIED"
+      }
+    ],
+    "nextAction": {
+      "kind": "NO_ACTION",
+      "executable": false,
+      "action": null,
+      "detail": "every declared task is terminal; there is no legal formal transition left",
+      "taskId": null,
+      "blockers": []
+    }
+  },
+  "execution": {
+    "placement": "worktree",
+    "jobs": [],
+    "attempts": [
+      {
+        "taskId": "interrupted-write",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      }
+    ],
+    "detail": "no worker transport is composed in this deployment; only canonical attempt state is observable"
+  },
+  "continuation": {
+    "state": "OK",
+    "results": [
+      {
+        "taskId": "interrupted-write",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "UNKNOWN",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "03ed4b2cb5a16d94f05e20ba98fb37f0678ded99611a9029109244f0da70b3eb",
+        "resultCommit": "fe4c0d561b9fcc109449222598af201e2f195ea7",
+        "detail": "reuse is not proven (a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused); the work may still be redone on the current basis"
+      }
+    ],
+    "detail": "each result is historical until an authorized Promotion accepts it; the digest is the freshness fence for a continuation route"
+  },
+  "sessions": {
+    "principal": [
+      {
+        "match": "LHAPE_PRINCIPAL_IR1",
+        "sessionId": "session-e3d09496-1657-4679-a3f5-c58fc6769aeb",
+        "firstAt": "2026-11-03T16:49:57.245Z",
+        "lastAt": "2026-11-03T16:49:58.241Z",
+        "requests": 3,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "palimpsest_work",
+          "pwsh"
+        ]
+      },
+      {
+        "match": "LHAPE_PRINCIPAL_IR2",
+        "sessionId": "session-76e35307-f502-4d95-b16c-b6711c41687f",
+        "firstAt": "2026-11-03T16:50:24.608Z",
+        "lastAt": "2026-11-03T16:50:25.961Z",
+        "requests": 5,
+        "toolCalls": [
+          "palimpsest_continuity",
+          "palimpsest_work"
+        ]
+      }
+    ],
+    "workers": [
+      {
+        "match": "Your task: Write the interrupted recovery artifact",
+        "sessionId": "worker-1e788091-02e6-439f-8b8c-9ee06f85bc97",
+        "firstAt": "2026-11-03T16:50:06.711Z",
+        "lastAt": "2026-11-03T16:50:06.711Z",
+        "requests": 1,
+        "toolCalls": [
+          "run_code"
+        ]
+      }
+    ],
+    "nativeSubagents": [],
+    "sessionFiles": [
+      {
+        "session": "session-76e35307-f502-4d95-b16c-b6711c41687f",
+        "bytes": 23418,
+        "sha256": "cc107421cfde73fad2d1b50d9f3abc7a520940cdf6dc0799761788082f4fb5be"
+      },
+      {
+        "session": "session-e3d09496-1657-4679-a3f5-c58fc6769aeb",
+        "bytes": 20787,
+        "sha256": "0b6fa954309c73d646f649e1e7ede36866cb970213e542affd14db4b54701fb3"
+      },
+      {
+        "session": "worker-1e788091-02e6-439f-8b8c-9ee06f85bc97",
+        "bytes": 17998,
+        "sha256": "12ef6b40d557b5adafefe1635cf043e4a51031737943385d83e6505bbd1f77ad"
+      }
+    ]
+  },
+  "workerOverlapPairs": [],
+  "artifacts": [
+    {
+      "path": "deliverables/capacity.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    },
+    {
+      "path": "deliverables/cost.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    },
+    {
+      "path": "deliverables/capacity-v2.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    },
+    {
+      "path": "deliverables/cost-v2.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    },
+    {
+      "path": "deliverables/integration.md",
+      "present": false,
+      "sha256": null,
+      "bytes": null
+    },
+    {
+      "path": "deliverables/interrupted.md",
+      "present": true,
+      "sha256": "7a4c7f3326cf71378e7d2688f5792757a3758f6ae0f0848f70386aa295ccb627",
+      "bytes": 192
+    }
+  ],
+  "operatorPromotions": [
+    {
+      "label": "interrupted-write",
+      "taskId": "interrupted-write",
+      "promoted": true,
+      "attemptId": "attempt-59321843b3fc4ed8199878eda7028311",
+      "result": {
+        "promotionId": "promotion-49ac1497bdc7c65c4002f5757b27be5f",
+        "sourceCommit": "fe4c0d561b9fcc109449222598af201e2f195ea7",
+        "expectedHeadCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "resultingHeadCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "fe4c0d561b9fcc109449222598af201e2f195ea7",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+      },
+      "after": {
+        "revision": 1,
+        "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+        "tasks": [
+          {
+            "taskId": "interrupted-write",
+            "state": "SATISFIED"
+          }
+        ]
+      }
+    }
+  ],
+  "pulse": {
+    "contributions": [],
+    "decisionQueue": [],
+    "execution": {
+      "placement": "worktree",
+      "attempts": [
+        {
+          "taskId": "interrupted-write",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        }
+      ],
+      "jobs": [],
+      "detail": "this deployment composes no work-worker transport; canonical attempts are visible but no host job can be observed"
+    },
+    "nextActions": {
+      "mechanical": [
+        "agent: every declared task is terminal; there is no legal formal transition left",
+        "agent: propose the next bounded step in the project journal"
+      ],
+      "decisionRelevant": [
+        "agent: no decision is pending; read the recent changes and propose the next bounded step if the goal is not yet met"
+      ],
+      "distinction": "mechanical actions are what the scheduler/product can legally execute next; decisionRelevant items are advisory judgements about what may advance the project, not authority, acceptance or a promise of value"
+    }
+  },
+  "limitations": [
+    "The model is a deterministic Messages stand-in, not a language model. No cognition, quality, cost or comparative benefit is claimed.",
+    "The native subagent is a real child DSH session; its content is scripted. The product cannot observe its read footprint, so the contribution records the principal's declaration and says so.",
+    "The operator promotions are real canonical promotions, executed by a test-owned operator script that names only the task; the product derives attempt, source commit and expected head.",
+    "This is deterministic engineering qualification, not the LHAPE F/L/G model cohort. That cohort remains BLOCKED without a new spend authorization."
+  ]
+}
