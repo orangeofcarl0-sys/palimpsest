@@ -98,7 +98,13 @@ let head = "unknown";
 try {
   head = execFileSync("git", ["-C", REPO, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 } catch {
-  blockers.push("the current Git HEAD could not be read");
+  /**
+   * A linked worktree's `.git` file can carry a host path WSL git cannot resolve. The caller may
+   * supply the exact commit it captured on the host; an absent value still blocks.
+   */
+  const supplied = process.env.APS_CODE_FREEZE_HEAD;
+  if (typeof supplied === "string" && /^[0-9a-f]{40}$/u.test(supplied)) head = supplied;
+  else blockers.push("the current Git HEAD could not be read");
 }
 if (typeof cohort.codeFreeze === "string" && cohort.codeFreeze !== head) {
   blockers.push(`cohort.codeFreeze ${cohort.codeFreeze} is not the current HEAD ${head}; freeze the exact build before a live run`);
