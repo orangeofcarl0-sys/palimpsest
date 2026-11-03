@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_T0_TRACE_ATTEMPT_AUDIT",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "sourceFile": "src/trajectory/projection.ts",
+  "finding": "traceAttempt() selects its node with node.label.includes(attemptId) combined with node.label.startsWith(\"ATTEMPT_CREATED\"). A label is display data, never identity, so a label merely CONTAINING the attempt id can be selected.",
+  "impactScope": "traceAttempt is a T0 PUBLIC helper. It is NOT used by the V0/V0S/H0 Attempt-scoped consumer path: the composition adapter resolves the attempt from canonical event identity (event.entity_id === attemptId) and builds its own relation context. So the ordinary Handoff Preview is NOT affected by this matcher.",
+  "whyNotCorrectedInH1": "an exact-identity fix requires new T0 domain structure (a canonical identity field on the node or a resolver over the Work events) and would touch T0 frozen projection semantics and historical digests. The ruling says to defer it to an independently reviewable T0 correctness slice.",
+  "deferredTo": "a separate forward-only T0 correctness slice",
+  "verdict": "DEFERRED — recorded with its precise impact, not corrected in H1",
+  "correctionAttempted": "an exact-label fix was drafted and REVERTED before commit, so src/trajectory/projection.ts is byte-identical to the baseline (verified by git diff)"
+}

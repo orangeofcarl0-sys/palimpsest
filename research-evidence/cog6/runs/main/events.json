@@ -1,0 +1,886 @@
+[
+  {
+    "eventId": 1,
+    "type": "PROJECT_CREATED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": null,
+    "payload": {
+      "project_ir": {
+        "revision": 0,
+        "digest": "4f769243b5487b9b2951f5b686cb7606e23b2288c9c8d72d369c84ff49043103",
+        "head_commit": "195d691f3569b45ca89d3ba131ee3cd30169f90d"
+      }
+    }
+  },
+  {
+    "eventId": 2,
+    "type": "GATE_DEFINED",
+    "entityId": "gate-release",
+    "entityType": "gate",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 3,
+    "type": "ROLE_TABLE_DEFINED",
+    "entityId": "sablewick",
+    "entityType": "role-table",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 4,
+    "type": "STAGE_GRAPH_DEFINED",
+    "entityId": "sablewick",
+    "entityType": "stage-graph",
+    "revision": 0,
+    "payload": {
+      "reason": "two independent programme work pieces must reach VERIFYING together so the continuation can be isolated from scheduling"
+    }
+  },
+  {
+    "eventId": 5,
+    "type": "TASK_CREATED",
+    "entityId": "technical-fit",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 6,
+    "type": "TASK_CREATED",
+    "entityId": "cost-schedule",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {}
+  },
+  {
+    "eventId": 7,
+    "type": "TASK_STARTED",
+    "entityId": "technical-fit",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {
+      "previous_state": "READY",
+      "new_state": "ACTIVE",
+      "reason": "deterministic batch activation"
+    }
+  },
+  {
+    "eventId": 8,
+    "type": "ATTEMPT_CREATED",
+    "entityId": "attempt-09f959ac1a902ee3d1eba3eabcc62334",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "task_id": "technical-fit"
+    }
+  },
+  {
+    "eventId": 9,
+    "type": "ATTEMPT_STARTED",
+    "entityId": "attempt-09f959ac1a902ee3d1eba3eabcc62334",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "previous_state": "CREATED",
+      "new_state": "RUNNING",
+      "reason": "Phase 2 deterministic mock start"
+    }
+  },
+  {
+    "eventId": 10,
+    "type": "CONTEXT_MANIFEST_ADDED",
+    "entityId": "context-manifest-7ea0de5a19c09a74b8bedb7e08e2f027",
+    "entityType": "context-manifest",
+    "revision": 0,
+    "payload": {
+      "task_id": "technical-fit"
+    }
+  },
+  {
+    "eventId": 11,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-bc2412b6554f457632fa223ac6c5f9b7",
+    "entityType": "evidence",
+    "revision": 0,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-bc2412b6554f457632fa223ac6c5f9b7",
+        "predicate": "write_scope_valid",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 12,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-1040ee6d0ae76a9f55e5d0f901b6ed4f",
+    "entityType": "evidence",
+    "revision": 0,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-1040ee6d0ae76a9f55e5d0f901b6ed4f",
+        "predicate": "expected_files_exist",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 13,
+    "type": "ATTEMPT_COMPLETED",
+    "entityId": "attempt-09f959ac1a902ee3d1eba3eabcc62334",
+    "entityType": "attempt",
+    "revision": 0,
+    "payload": {
+      "previous_state": "RUNNING",
+      "new_state": "COMPLETED",
+      "reason": "deterministic callback",
+      "attempt_report": {
+        "result_commit": "dd8ae020ebaf89dc4411c7b12f2736e046fa9302",
+        "changed_files": [
+          "deliverables/technical-fit.md"
+        ],
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world"
+      }
+    }
+  },
+  {
+    "eventId": 14,
+    "type": "TASK_VERIFYING",
+    "entityId": "technical-fit",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {
+      "previous_state": "ACTIVE",
+      "new_state": "VERIFYING",
+      "reason": "batch has a completed candidate"
+    }
+  },
+  {
+    "eventId": 15,
+    "type": "PROMOTION_PREPARED",
+    "entityId": "promotion-c8ace220c1df9c33ed7ec14c3be462bb",
+    "entityType": "promotion",
+    "revision": 0,
+    "payload": {
+      "reason": "promotion intent recorded before git.promote"
+    }
+  },
+  {
+    "eventId": 16,
+    "type": "PROMOTION_COMMITTED",
+    "entityId": "promotion-c8ace220c1df9c33ed7ec14c3be462bb",
+    "entityType": "promotion",
+    "revision": 0,
+    "payload": {
+      "reason": "promoted via Ordarium git.promote"
+    }
+  },
+  {
+    "eventId": 17,
+    "type": "TASK_SATISFIED",
+    "entityId": "technical-fit",
+    "entityType": "task",
+    "revision": 0,
+    "payload": {
+      "previous_state": "VERIFYING",
+      "new_state": "SATISFIED",
+      "reason": "matching promotion committed"
+    }
+  },
+  {
+    "eventId": 18,
+    "type": "PROJECT_REVISED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": 0,
+    "payload": {
+      "project_ir": {
+        "revision": 1,
+        "digest": "56962983ff3128dbe38bc6b3af7e1d4d22437896f40807f234f6a5cb5cf0eb6b",
+        "head_commit": "c6e0d3b8f63f24213fd30d99729ea6d6a6cba775"
+      }
+    }
+  },
+  {
+    "eventId": 19,
+    "type": "TASK_REAUTHORIZED",
+    "entityId": "cost-schedule",
+    "entityType": "task",
+    "revision": 1,
+    "payload": {}
+  },
+  {
+    "eventId": 20,
+    "type": "TASK_STARTED",
+    "entityId": "cost-schedule",
+    "entityType": "task",
+    "revision": 1,
+    "payload": {
+      "previous_state": "READY",
+      "new_state": "ACTIVE",
+      "reason": "deterministic batch activation"
+    }
+  },
+  {
+    "eventId": 21,
+    "type": "ATTEMPT_CREATED",
+    "entityId": "attempt-ba7373eff39434c817ceab1707c37f49",
+    "entityType": "attempt",
+    "revision": 1,
+    "payload": {
+      "task_id": "cost-schedule"
+    }
+  },
+  {
+    "eventId": 22,
+    "type": "ATTEMPT_STARTED",
+    "entityId": "attempt-ba7373eff39434c817ceab1707c37f49",
+    "entityType": "attempt",
+    "revision": 1,
+    "payload": {
+      "previous_state": "CREATED",
+      "new_state": "RUNNING",
+      "reason": "Phase 2 deterministic mock start"
+    }
+  },
+  {
+    "eventId": 23,
+    "type": "CONTEXT_MANIFEST_ADDED",
+    "entityId": "context-manifest-6cc8692bf6c61054186aecbe5d44db06",
+    "entityType": "context-manifest",
+    "revision": 1,
+    "payload": {
+      "task_id": "cost-schedule"
+    }
+  },
+  {
+    "eventId": 24,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-a484b8f75d82bccf8190e0f61fe28a28",
+    "entityType": "evidence",
+    "revision": 1,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-a484b8f75d82bccf8190e0f61fe28a28",
+        "predicate": "write_scope_valid",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 25,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-7605ceeb2ab257e510e782ac338c1862",
+    "entityType": "evidence",
+    "revision": 1,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-7605ceeb2ab257e510e782ac338c1862",
+        "predicate": "expected_files_exist",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 26,
+    "type": "ATTEMPT_COMPLETED",
+    "entityId": "attempt-ba7373eff39434c817ceab1707c37f49",
+    "entityType": "attempt",
+    "revision": 1,
+    "payload": {
+      "previous_state": "RUNNING",
+      "new_state": "COMPLETED",
+      "reason": "deterministic callback",
+      "attempt_report": {
+        "result_commit": "c4dee2441ca1acc81a1909b76ce1c9c5bf27d5db",
+        "changed_files": [
+          "deliverables/cost-schedule.md"
+        ],
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world"
+      }
+    }
+  },
+  {
+    "eventId": 27,
+    "type": "TASK_VERIFYING",
+    "entityId": "cost-schedule",
+    "entityType": "task",
+    "revision": 1,
+    "payload": {
+      "previous_state": "ACTIVE",
+      "new_state": "VERIFYING",
+      "reason": "batch has a completed candidate"
+    }
+  },
+  {
+    "eventId": 28,
+    "type": "PROMOTION_PREPARED",
+    "entityId": "promotion-1177fa56ec957372f5aa9f1df0a34f7b",
+    "entityType": "promotion",
+    "revision": 1,
+    "payload": {
+      "reason": "promotion intent recorded before git.promote"
+    }
+  },
+  {
+    "eventId": 29,
+    "type": "PROMOTION_COMMITTED",
+    "entityId": "promotion-1177fa56ec957372f5aa9f1df0a34f7b",
+    "entityType": "promotion",
+    "revision": 1,
+    "payload": {
+      "reason": "promoted via Ordarium git.promote"
+    }
+  },
+  {
+    "eventId": 30,
+    "type": "TASK_SATISFIED",
+    "entityId": "cost-schedule",
+    "entityType": "task",
+    "revision": 1,
+    "payload": {
+      "previous_state": "VERIFYING",
+      "new_state": "SATISFIED",
+      "reason": "matching promotion committed"
+    }
+  },
+  {
+    "eventId": 31,
+    "type": "PROJECT_REVISED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": 1,
+    "payload": {
+      "project_ir": {
+        "revision": 2,
+        "digest": "f38c25ba59d8bd01627af9f34b33dc9e24c6475b0c228cfa75108f3da308fe6b",
+        "head_commit": "73e7a3daf08c1450568a37e229547a0ec9df6154"
+      }
+    }
+  },
+  {
+    "eventId": 32,
+    "type": "PROJECT_REVISED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": 2,
+    "payload": {
+      "project_ir": {
+        "revision": 3,
+        "digest": "2b48da7db91142d6762d97b244a4c56e61679cac2a73e0bc1f60c27bcd86d119",
+        "head_commit": "73e7a3daf08c1450568a37e229547a0ec9df6154"
+      }
+    }
+  },
+  {
+    "eventId": 33,
+    "type": "TASK_CREATED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 3,
+    "payload": {}
+  },
+  {
+    "eventId": 34,
+    "type": "PROJECT_REVISED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": 3,
+    "payload": {
+      "project_ir": {
+        "revision": 4,
+        "digest": "8a7fe0332f22d9132a650fb758da06248d75ecda66785f53e072748769d05988",
+        "head_commit": "73e7a3daf08c1450568a37e229547a0ec9df6154"
+      }
+    }
+  },
+  {
+    "eventId": 35,
+    "type": "TASK_REAUTHORIZED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {}
+  },
+  {
+    "eventId": 36,
+    "type": "TASK_CREATED",
+    "entityId": "intake-vendor-2026-02-10",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {}
+  },
+  {
+    "eventId": 37,
+    "type": "TASK_STARTED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {
+      "previous_state": "READY",
+      "new_state": "ACTIVE",
+      "reason": "deterministic batch activation"
+    }
+  },
+  {
+    "eventId": 38,
+    "type": "ATTEMPT_CREATED",
+    "entityId": "attempt-a123e84a69339196cf19578185f3a8f4",
+    "entityType": "attempt",
+    "revision": 4,
+    "payload": {
+      "task_id": "technical-refresh"
+    }
+  },
+  {
+    "eventId": 39,
+    "type": "ATTEMPT_STARTED",
+    "entityId": "attempt-a123e84a69339196cf19578185f3a8f4",
+    "entityType": "attempt",
+    "revision": 4,
+    "payload": {
+      "previous_state": "CREATED",
+      "new_state": "RUNNING",
+      "reason": "Phase 2 deterministic mock start"
+    }
+  },
+  {
+    "eventId": 40,
+    "type": "CONTEXT_MANIFEST_ADDED",
+    "entityId": "context-manifest-59e349de3d07772d5d06ba0840a952e9",
+    "entityType": "context-manifest",
+    "revision": 4,
+    "payload": {
+      "task_id": "technical-refresh"
+    }
+  },
+  {
+    "eventId": 41,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-61bd080b1964563c6a846fe1f812e65e",
+    "entityType": "evidence",
+    "revision": 4,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-61bd080b1964563c6a846fe1f812e65e",
+        "predicate": "write_scope_valid",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 42,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-ba8da4cb84daa10d55c449a46867fdd8",
+    "entityType": "evidence",
+    "revision": 4,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-ba8da4cb84daa10d55c449a46867fdd8",
+        "predicate": "expected_files_exist",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 43,
+    "type": "ATTEMPT_COMPLETED",
+    "entityId": "attempt-a123e84a69339196cf19578185f3a8f4",
+    "entityType": "attempt",
+    "revision": 4,
+    "payload": {
+      "previous_state": "RUNNING",
+      "new_state": "COMPLETED",
+      "reason": "deterministic callback",
+      "attempt_report": {
+        "result_commit": "c8415401023f77ade4c36ba88ec175510dd224c7",
+        "changed_files": [
+          "deliverables/technical-refresh.md"
+        ],
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world"
+      }
+    }
+  },
+  {
+    "eventId": 44,
+    "type": "TASK_VERIFYING",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {
+      "previous_state": "ACTIVE",
+      "new_state": "VERIFYING",
+      "reason": "batch has a completed candidate"
+    }
+  },
+  {
+    "eventId": 45,
+    "type": "TASK_STARTED",
+    "entityId": "intake-vendor-2026-02-10",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {
+      "previous_state": "READY",
+      "new_state": "ACTIVE",
+      "reason": "deterministic batch activation"
+    }
+  },
+  {
+    "eventId": 46,
+    "type": "ATTEMPT_CREATED",
+    "entityId": "attempt-9c38eb28691667e5b1ae470ed0877a37",
+    "entityType": "attempt",
+    "revision": 4,
+    "payload": {
+      "task_id": "intake-vendor-2026-02-10"
+    }
+  },
+  {
+    "eventId": 47,
+    "type": "ATTEMPT_STARTED",
+    "entityId": "attempt-9c38eb28691667e5b1ae470ed0877a37",
+    "entityType": "attempt",
+    "revision": 4,
+    "payload": {
+      "previous_state": "CREATED",
+      "new_state": "RUNNING",
+      "reason": "Phase 2 deterministic mock start"
+    }
+  },
+  {
+    "eventId": 48,
+    "type": "CONTEXT_MANIFEST_ADDED",
+    "entityId": "context-manifest-2a687044d2de74d874b8a0c2818056ae",
+    "entityType": "context-manifest",
+    "revision": 4,
+    "payload": {
+      "task_id": "intake-vendor-2026-02-10"
+    }
+  },
+  {
+    "eventId": 49,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-4cea4dd0d64b08922c02c8467d4f55f8",
+    "entityType": "evidence",
+    "revision": 4,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-4cea4dd0d64b08922c02c8467d4f55f8",
+        "predicate": "write_scope_valid",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 50,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-6de9902c7379a3bbf66cb91c775e2835",
+    "entityType": "evidence",
+    "revision": 4,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-6de9902c7379a3bbf66cb91c775e2835",
+        "predicate": "expected_files_exist",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 51,
+    "type": "ATTEMPT_COMPLETED",
+    "entityId": "attempt-9c38eb28691667e5b1ae470ed0877a37",
+    "entityType": "attempt",
+    "revision": 4,
+    "payload": {
+      "previous_state": "RUNNING",
+      "new_state": "COMPLETED",
+      "reason": "deterministic callback",
+      "attempt_report": {
+        "result_commit": "16d30dee252397b53b89447e9523380e78f5b31a",
+        "changed_files": [
+          "sources/vendor-capabilities.csv"
+        ],
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world"
+      }
+    }
+  },
+  {
+    "eventId": 52,
+    "type": "TASK_VERIFYING",
+    "entityId": "intake-vendor-2026-02-10",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {
+      "previous_state": "ACTIVE",
+      "new_state": "VERIFYING",
+      "reason": "batch has a completed candidate"
+    }
+  },
+  {
+    "eventId": 53,
+    "type": "PROMOTION_PREPARED",
+    "entityId": "promotion-a12f950e81f1798585704e676f8d01c6",
+    "entityType": "promotion",
+    "revision": 4,
+    "payload": {
+      "reason": "promotion intent recorded before git.promote"
+    }
+  },
+  {
+    "eventId": 54,
+    "type": "PROMOTION_COMMITTED",
+    "entityId": "promotion-a12f950e81f1798585704e676f8d01c6",
+    "entityType": "promotion",
+    "revision": 4,
+    "payload": {
+      "reason": "promoted via Ordarium git.promote"
+    }
+  },
+  {
+    "eventId": 55,
+    "type": "TASK_SATISFIED",
+    "entityId": "intake-vendor-2026-02-10",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {
+      "previous_state": "VERIFYING",
+      "new_state": "SATISFIED",
+      "reason": "matching promotion committed"
+    }
+  },
+  {
+    "eventId": 56,
+    "type": "TASK_READY",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 4,
+    "payload": {
+      "previous_state": "VERIFYING",
+      "new_state": "READY",
+      "reason": "rework-admitted",
+      "rework_provenance": {
+        "schema_version": 1,
+        "origin_result_subject": {
+          "kind": "ATTEMPT_RESULT",
+          "ref": "attempt-a123e84a69339196cf19578185f3a8f4"
+        },
+        "origin_basis_digest": "f73718ea8b68d480dc24063a8bc1b0087c19a95ea8d13ec01b92d8138dbda9f7",
+        "target_observation_digest": "79a3a07650e8f8c98d6b9a9085634472e72c1869e1e30ff79d5eeb9fa7e8fb47",
+        "current_envelope_id": "envelope-8b0336b19f031bdd6af62b9ed04e137d",
+        "reason": "INCOMPATIBLE",
+        "continuation_assessment_digest": "1b05b9b1258d38cc02736bd7f4b4722b50f8664b37a609361a21bbf3173ff4d9"
+      }
+    }
+  },
+  {
+    "eventId": 57,
+    "type": "PROJECT_REVISED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": 4,
+    "payload": {
+      "project_ir": {
+        "revision": 5,
+        "digest": "9ee06c63c0ac4a094c4f08fd7c504f78d073682b5b3227e2b651140b13aa83aa",
+        "head_commit": "55370b0f5bd7740aba4dcbe3074fb6b545443f61"
+      }
+    }
+  },
+  {
+    "eventId": 58,
+    "type": "TASK_REAUTHORIZED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 5,
+    "payload": {}
+  },
+  {
+    "eventId": 59,
+    "type": "TASK_STARTED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 5,
+    "payload": {
+      "previous_state": "READY",
+      "new_state": "ACTIVE",
+      "reason": "deterministic batch activation"
+    }
+  },
+  {
+    "eventId": 60,
+    "type": "ATTEMPT_CREATED",
+    "entityId": "attempt-ab0cc63e32eb6ed1640c0ca5a21d8157",
+    "entityType": "attempt",
+    "revision": 5,
+    "payload": {
+      "task_id": "technical-refresh"
+    }
+  },
+  {
+    "eventId": 61,
+    "type": "ATTEMPT_STARTED",
+    "entityId": "attempt-ab0cc63e32eb6ed1640c0ca5a21d8157",
+    "entityType": "attempt",
+    "revision": 5,
+    "payload": {
+      "previous_state": "CREATED",
+      "new_state": "RUNNING",
+      "reason": "Phase 2 deterministic mock start"
+    }
+  },
+  {
+    "eventId": 62,
+    "type": "CONTEXT_MANIFEST_ADDED",
+    "entityId": "context-manifest-7a296cf620f53eb33c15b8e708439343",
+    "entityType": "context-manifest",
+    "revision": 5,
+    "payload": {
+      "task_id": "technical-refresh"
+    }
+  },
+  {
+    "eventId": 63,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-9e7ba62ea4987a53618e554159a0e935",
+    "entityType": "evidence",
+    "revision": 5,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-9e7ba62ea4987a53618e554159a0e935",
+        "predicate": "write_scope_valid",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 64,
+    "type": "EVIDENCE_ADDED",
+    "entityId": "evidence-e49f18610d369d3a582d3df5013ef06e",
+    "entityType": "evidence",
+    "revision": 5,
+    "payload": {
+      "evidence": {
+        "evidence_id": "evidence-e49f18610d369d3a582d3df5013ef06e",
+        "predicate": "expected_files_exist",
+        "status": "active",
+        "exit_code": null
+      }
+    }
+  },
+  {
+    "eventId": 65,
+    "type": "ATTEMPT_COMPLETED",
+    "entityId": "attempt-ab0cc63e32eb6ed1640c0ca5a21d8157",
+    "entityType": "attempt",
+    "revision": 5,
+    "payload": {
+      "previous_state": "RUNNING",
+      "new_state": "COMPLETED",
+      "reason": "deterministic callback",
+      "attempt_report": {
+        "result_commit": "7be38267ca994b1529e08e2ad77ebd23e845bc38",
+        "changed_files": [
+          "deliverables/technical-refresh.md"
+        ],
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world"
+      }
+    }
+  },
+  {
+    "eventId": 66,
+    "type": "TASK_VERIFYING",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 5,
+    "payload": {
+      "previous_state": "ACTIVE",
+      "new_state": "VERIFYING",
+      "reason": "batch has a completed candidate"
+    }
+  },
+  {
+    "eventId": 67,
+    "type": "PROMOTION_PREPARED",
+    "entityId": "promotion-b812c0ee8d34c92fa934014bd9edc4c5",
+    "entityType": "promotion",
+    "revision": 5,
+    "payload": {
+      "reason": "promotion intent recorded before git.promote"
+    }
+  },
+  {
+    "eventId": 68,
+    "type": "PROMOTION_COMMITTED",
+    "entityId": "promotion-b812c0ee8d34c92fa934014bd9edc4c5",
+    "entityType": "promotion",
+    "revision": 5,
+    "payload": {
+      "reason": "promoted via Ordarium git.promote"
+    }
+  },
+  {
+    "eventId": 69,
+    "type": "TASK_SATISFIED",
+    "entityId": "technical-refresh",
+    "entityType": "task",
+    "revision": 5,
+    "payload": {
+      "previous_state": "VERIFYING",
+      "new_state": "SATISFIED",
+      "reason": "matching promotion committed"
+    }
+  },
+  {
+    "eventId": 70,
+    "type": "PROJECT_REVISED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": 5,
+    "payload": {
+      "project_ir": {
+        "revision": 6,
+        "digest": "4170ef12758ab90fd0e145a638f8fd03ef2ff6c193e344b7039450150cf79641",
+        "head_commit": "22796231660d7915c561a34445aecbd7f1900159"
+      }
+    }
+  },
+  {
+    "eventId": 71,
+    "type": "PROJECT_REVISED",
+    "entityId": "sablewick",
+    "entityType": "project",
+    "revision": 6,
+    "payload": {
+      "project_ir": {
+        "revision": 7,
+        "digest": "de7ba4d405da3b79c85ee835bbc97d97a6cc958a04d0f5087c60fcf210bbe54e",
+        "head_commit": "22796231660d7915c561a34445aecbd7f1900159"
+      }
+    }
+  },
+  {
+    "eventId": 72,
+    "type": "TASK_CREATED",
+    "entityId": "post-control",
+    "entityType": "task",
+    "revision": 7,
+    "payload": {}
+  }
+]

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:handoff:1",
+  "title": "模型/Owner 交接包；不是 evidence authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "handoffId",
+    "sender",
+    "recipient",
+    "executionClass",
+    "projectBasis",
+    "task",
+    "sources",
+    "findings",
+    "limitations",
+    "artifactRefs",
+    "requestedDecisions"
+  ],
+  "properties": {
+    "handoffId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sender": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recipient": {
+      "type": "string",
+      "minLength": 1
+    },
+    "executionClass": {
+      "enum": [
+        "NATIVE_SUBAGENT",
+        "REASONING_BRANCH",
+        "MANAGED_WORKER",
+        "DURABLE_PEER",
+        "PRINCIPAL"
+      ]
+    },
+    "projectBasis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "rootSource",
+          "standing"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rootSource": {
+            "type": "string",
+            "minLength": 1
+          },
+          "standing": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "statement",
+          "sourceRefs",
+          "applicability",
+          "standing"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "applicability": {
+            "type": "string",
+            "minLength": 1
+          },
+          "standing": {
+            "enum": [
+              "OBSERVATION",
+              "HYPOTHESIS",
+              "EXPLORATORY",
+              "ACCEPTED_FOR_PURPOSE",
+              "CONTESTED"
+            ]
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "artifactRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "requestedDecisions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "budgetRemaining": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    }
+  }
+}

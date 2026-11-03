@@ -1,5 +1,5 @@
 {
-  "capturedFrom": "9e5de46236babf067b345c71006ad7831940d052",
+  "capturedFrom": "d691f3f1a8130e11e52a0ce293c935c4452fb9d2",
   "entries": {
     "dist/src/index.d.ts": [
       {
@@ -1487,7 +1487,7 @@
       {
         "name": "BranchExecutionResult",
         "kind": "type",
-        "from": "dist/src/reasoning_cell/branch_execution.d.ts"
+        "from": "dist/src/reasoning_cell/index.d.ts"
       },
       {
         "name": "BranchHostError",
@@ -1503,6 +1503,16 @@
         "name": "BudgetOptions",
         "kind": "type",
         "from": "dist/src/tools/index.d.ts"
+      },
+      {
+        "name": "BudgetState",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
+        "name": "BudgetWindow",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
       },
       {
         "name": "buildEvidenceBoundReasoningContext",
@@ -2060,6 +2070,11 @@
         "from": "dist/src/boundary_memory/artifacts.d.ts"
       },
       {
+        "name": "canStartSession",
+        "kind": "value",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
         "name": "CAPABILITY_EXTERNAL",
         "kind": "value",
         "from": "dist/src/project_management/index.d.ts"
@@ -2203,6 +2218,11 @@
         "name": "classifyLateResult",
         "kind": "value",
         "from": "dist/src/evidence/index.d.ts"
+      },
+      {
+        "name": "classifyRun",
+        "kind": "value",
+        "from": "dist/src/runtime/index.d.ts"
       },
       {
         "name": "COALITION_BASIS_DIGEST_DOMAIN",
@@ -2685,6 +2705,11 @@
         "from": "dist/src/runtime/index.d.ts"
       },
       {
+        "name": "ContributionApplicationSurface",
+        "kind": "type",
+        "from": "dist/src/application/surface.d.ts"
+      },
+      {
         "name": "ControllerStatusView",
         "kind": "type",
         "from": "dist/src/tools/index.d.ts"
@@ -3018,6 +3043,11 @@
         "name": "declaredCapabilityIndex",
         "kind": "value",
         "from": "dist/src/organization/index.d.ts"
+      },
+      {
+        "name": "dedupeUsage",
+        "kind": "value",
+        "from": "dist/src/runtime/index.d.ts"
       },
       {
         "name": "DEFAULT_ACTION_POLICY",
@@ -3505,6 +3535,31 @@
         "from": "dist/src/experiment/metrics.d.ts"
       },
       {
+        "name": "DOCTOR_STATUSES",
+        "kind": "value",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
+        "name": "DoctorCheck",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
+        "name": "DoctorInput",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
+        "name": "DoctorReport",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
+        "name": "DoctorStatus",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
         "name": "Dominance",
         "kind": "type",
         "from": "dist/src/organization_memory/artifacts.d.ts"
@@ -3517,7 +3572,7 @@
       {
         "name": "DSH_BRANCH_RESULT_PREFIX",
         "kind": "value",
-        "from": "dist/src/reasoning_cell/branch_execution.d.ts"
+        "from": "dist/src/reasoning_cell/index.d.ts"
       },
       {
         "name": "dshAgentsAttentionAdapter",
@@ -3527,7 +3582,7 @@
       {
         "name": "DshBranchExecutionOutcome",
         "kind": "type",
-        "from": "dist/src/reasoning_cell/branch_execution.d.ts"
+        "from": "dist/src/reasoning_cell/index.d.ts"
       },
       {
         "name": "DshContentBlock",
@@ -3542,12 +3597,12 @@
       {
         "name": "dshSubprocessBranchExecutionPort",
         "kind": "value",
-        "from": "dist/src/reasoning_cell/branch_execution.d.ts"
+        "from": "dist/src/reasoning_cell/index.d.ts"
       },
       {
         "name": "DshSubprocessBranchExecutionPortInput",
         "kind": "type",
-        "from": "dist/src/reasoning_cell/branch_execution.d.ts"
+        "from": "dist/src/reasoning_cell/index.d.ts"
       },
       {
         "name": "DshToolDefinition",
@@ -9857,7 +9912,7 @@
       {
         "name": "ReasoningBranchExecutionPort",
         "kind": "type",
-        "from": "dist/src/reasoning_cell/branch_execution.d.ts"
+        "from": "dist/src/reasoning_cell/index.d.ts"
       },
       {
         "name": "ReasoningBranchId",
@@ -10475,9 +10530,24 @@
         "from": "dist/src/organization_memory/artifacts.d.ts"
       },
       {
+        "name": "RunClassification",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
+        "name": "RunClassificationInput",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
         "name": "runDigestOf",
         "kind": "value",
         "from": "dist/src/organization_memory/artifacts.d.ts"
+      },
+      {
+        "name": "runDoctor",
+        "kind": "value",
+        "from": "dist/src/runtime/index.d.ts"
       },
       {
         "name": "runIdentityDigestOf",
@@ -11255,6 +11325,11 @@
         "from": "dist/src/experiment/metrics.d.ts"
       },
       {
+        "name": "sumUsage",
+        "kind": "value",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
         "name": "TASK_ANNOTATION_METHODS",
         "kind": "value",
         "from": "dist/src/organization_memory/artifacts.d.ts"
@@ -11373,6 +11448,11 @@
         "name": "TelemetryStateSync",
         "kind": "value",
         "from": "dist/src/telemetry/index.d.ts"
+      },
+      {
+        "name": "terminateProcessTree",
+        "kind": "value",
+        "from": "dist/src/runtime/index.d.ts"
       },
       {
         "name": "threadIdForRequest",
@@ -11773,6 +11853,16 @@
         "name": "unknownTaskProfile",
         "kind": "value",
         "from": "dist/src/advisor/task_profile.d.ts"
+      },
+      {
+        "name": "UsageEntry",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
+      },
+      {
+        "name": "UsageTotals",
+        "kind": "type",
+        "from": "dist/src/runtime/index.d.ts"
       },
       {
         "name": "UserManagementControlPort",

@@ -107,6 +107,20 @@ export interface WorkApplicationSurface {
     };
   }>;
   /**
+   * PC1 S02-R02: close the CURRENT placed attempt through the existing settlement owner. This is the
+   * principal-facing equivalent of `finish` for a deployment that places work in an isolated world:
+   * the product observes the world, exports the result, evaluates the completion contract and reports
+   * the attempt. It refuses when there is not exactly one RUNNING attempt.
+   */
+  completePlaced(input?: { readonly summary?: string | undefined } | undefined): Promise<{
+    readonly attemptId: string;
+    readonly state: "COMPLETED";
+    readonly resultCommit: string;
+    readonly changedFiles: readonly string[];
+    readonly evidenceRecorded: readonly string[];
+    readonly nextEvidenceNeeded: readonly string[];
+  }>;
+  /**
    * PLMP-LEAN-1 §5 / 2A-Q: readiness in two layers — what the DEPLOYMENT can do, and what the
    * CURRENT task requires. The deployment layer is answerable at startup; the task layer only once a
    * task exists. A deployment gap ("no independent verifier") is a task blocker only when this task
@@ -118,6 +132,25 @@ export interface WorkApplicationSurface {
   preview(): unknown;
   /** Work control verbs (pause/resume/next/run/claim/gate/report/plan/promote/holdSet/holdClear). */
   control(op: string, args: readonly unknown[]): unknown;
+  /**
+   * PC1 S02-R02: WHERE this deployment places work. The normal completion facade uses it to choose
+   * the real path instead of making the agent guess whether `finish` applies.
+   */
+  placement(): "in-place" | "worktree";
+  /**
+   * PC1-V1 R4: the ACTUAL filesystem boundary, stated before the first write.
+   *
+   * A non-moving canonical ProjectIR head does not mean the live Git tree or HEAD stayed still.
+   * This projection keeps the two protections distinct and never calls in-place work isolated.
+   */
+  boundary(): {
+    readonly placement: "in-place" | "worktree";
+    readonly liveRepositoryMutable: boolean;
+    readonly isolated: boolean;
+    readonly preAcceptance: boolean;
+    readonly detail: string;
+    readonly warning: string | null;
+  };
 }
 
 export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkApplicationSurface } {
@@ -167,11 +200,60 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           },
         };
       },
+      completePlaced: async (input) => {
+        const running = deps.controller.status().attempts.filter((attempt) => attempt.state === "RUNNING");
+        if (running.length !== 1) {
+          throw new Error(
+            running.length === 0
+              ? "no RUNNING attempt is available to complete; use `palimpsest_work action=run` to reach one"
+              : `${String(running.length)} attempts are RUNNING; the product refuses to guess which one this completion closes`,
+          );
+        }
+        const attemptId = running[0]!.attempt_id;
+        const settled = await deps.controller.settleMutatingWork({
+          attemptId,
+          workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input?.summary === undefined ? {} : { detail: input.summary }) },
+        });
+        if (settled.state !== "SETTLED") {
+          throw new Error(`${settled.state}: ${settled.detail}`);
+        }
+        deps.controller.step();
+        return {
+          attemptId,
+          state: "COMPLETED" as const,
+          resultCommit: settled.resultCommit,
+          changedFiles: settled.changedFiles,
+          evidenceRecorded: settled.evidenceRecorded,
+          nextEvidenceNeeded: Object.freeze([]),
+        };
+      },
       begin: (input) => deps.controller.begin(input),
       completionReadiness: () => deps.controller.completionReadiness(),
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),
+      placement: () => deps.controller.execution,
+      boundary: () =>
+        deps.controller.execution === "in-place"
+          ? Object.freeze({
+              placement: "in-place" as const,
+              liveRepositoryMutable: true,
+              isolated: false,
+              preAcceptance: true,
+              detail:
+                "DIRECT LOW-RISK EDITING: native file edits and commits change the live repository and its Git HEAD immediately. Work completion observes the changed paths and enforces the declared write scope, but it cannot prevent an earlier edit. The canonical ProjectIR head moves only when an authorized Promotion accepts a result.",
+              warning:
+                "before your first edit: this is the live project tree, not an isolated candidate. For high-impact governed work, use isolated (worktree) execution so acceptance remains separate.",
+            })
+          : Object.freeze({
+              placement: "worktree" as const,
+              liveRepositoryMutable: false,
+              isolated: true,
+              preAcceptance: true,
+              detail:
+                "GOVERNED ISOLATED CANDIDATE: work happens in an isolated Git worktree. Edits there do not change the canonical branch or its HEAD; the canonical head moves only when an authorized Promotion accepts the result.",
+              warning: null,
+            }),
       control: (op, args) => {
         // Reuse the existing Work control surface — Work stays Work-scoped.
         const surface = definePalimpsestControl(deps.controller) as unknown as Record<string, (...a: readonly unknown[]) => unknown>;

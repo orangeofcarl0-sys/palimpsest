@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:evaluation-subject:1",
+  "title": "评价绑定的世界与时点",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runId",
+    "scenarioId",
+    "observationTime",
+    "evaluatedAt",
+    "projectRef",
+    "sourceRefs",
+    "artifactRefs",
+    "oracleVersion",
+    "codeFreeze"
+  ],
+  "properties": {
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarioId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observationTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluatedAt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectRef": {
+      "type": "object",
+      "required": [
+        "projectId",
+        "revision",
+        "canonicalHead",
+        "liveHead"
+      ],
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canonicalHead": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "liveHead": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "sourceRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "digest",
+          "standing",
+          "revision"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "standing": {
+            "enum": [
+              "CANDIDATE",
+              "ACCEPTED_FOR_PURPOSE",
+              "HISTORICAL",
+              "UNQUALIFIED"
+            ]
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "gitBlobOid": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "artifactRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "oracleVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "codeFreeze": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+    }
+  }
+}

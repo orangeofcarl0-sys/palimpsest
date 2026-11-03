@@ -27,6 +27,7 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { installPalimpsest, trustedDefaultPolicy } from "../src/install.js";
 import { GitCliPort } from "../src/effects/index.js";
+import { commandDigest } from "../src/domain/command_identity.js";
 import {
   deriveAttemptCompletionContract,
   deriveCompletionReadiness,
@@ -91,7 +92,12 @@ describe("LEAN-A05: the requirement is DERIVED, and the envelope is basis rather
     const contract = contractFor({});
     const commands = contract.mechanical.filter((check) => check.kind === "run_standard_command");
     expect(commands).toEqual([
-      { kind: "run_standard_command", command: TEST_COMMAND, predicate: "tests_pass" },
+      {
+        kind: "run_standard_command",
+        command: TEST_COMMAND,
+        predicate: "tests_pass",
+        commandDigest: commandDigest(TEST_COMMAND),
+      },
     ]);
   });
 

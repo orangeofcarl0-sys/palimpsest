@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "stage": "R1-R",
+  "gateB": {
+    "name": "R1-R GATE B \u2014 full 30-run primary matrix",
+    "trialsPlanned": 30,
+    "trialsAccounted": 30,
+    "allConditionIdentitiesRecorded": true,
+    "noHiddenManualRescue": true,
+    "capitalPullsObservable": true,
+    "confoundedRunsIdentified": 0,
+    "allMechanicalOutputsRetained": true,
+    "hostFailures": 0,
+    "timeouts": 0,
+    "verdict": "GREEN \u2014 30/30 accounted for"
+  },
+  "gateC": {
+    "name": "R1-R GATE C \u2014 interpretation + regression",
+    "verdict": "NO_REPLICATION",
+    "criteriaSource": "docs/engineering/R1-PROTOCOL-AMENDMENT-A1.md \u00a76 and R1-STOCHASTIC-COMPOUNDING-PROTOCOL.md \u00a76",
+    "basis": {
+      "allPrimaryScenariosShowDirectionalBenefit": false,
+      "atLeastOnePrimaryScenarioShowsDirectionalBenefit": false,
+      "atLeastOnePrimaryScenarioShowsC2OverC1WithProcedurePull": false,
+      "anyHostFailureInUsableTrials": false
+    },
+    "regression": {
+      "build": "PASS (tsc -b, 0 errors)",
+      "unit": "PASS \u2014 3018 tests / 253 files, 0 errors",
+      "unitNote": "An earlier full-suite run showed one timeout in test/lean_work_delegation_transport.test.ts (\u00a7D2-d repeated followup). That file is untouched by this stage (no diff against dc5679d) and passes in isolation (10/10); it was load-induced under the parallel run. A subsequent full run passed 3018/3018.",
+      "e2e": "PASS \u2014 38",
+      "architecture": "PASS \u2014 0 violations, 9 accepted baseline exceptions",
+      "publicApi": "PASS \u2014 missing 0 / changed kind 0 / added 0",
+      "liveGates": {
+        "gate:e1-k-live": "PASS",
+        "gate:e2-i-live": "PASS",
+        "gate:e3-c-live": "PASS",
+        "gate:e4-l-live": "PASS",
+        "gate:e5-p-live": "PASS",
+        "gate:e-live": "PASS",
+        "gate:r1-l-live": "PASS (re-run after the C0 assertion was corrected)",
+        "gate:d2-live": "PASS",
+        "gate:d4-live": "PASS",
+        "gate:d5-live": "PASS"
+      },
+      "productionSemanticDiff": "ZERO \u2014 no src/ or host/ change",
+      "architectureIdentity": {
+        "capturedFrom": "e6994503006297073cddba3895fe84ed5b3445c3",
+        "capturedTree": "9793e63c9ff6cc1e9f5783ee19a1c6f5d7c8325e",
+        "changed": false
+      }
+    }
+  }
+}

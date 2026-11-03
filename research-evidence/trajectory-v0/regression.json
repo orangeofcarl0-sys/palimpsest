@@ -1,0 +1,74 @@
+{
+  "stage": "Trajectory-V0",
+  "commit": "C5",
+  "kind": "safe regression surface, measured",
+  "commands": {
+    "build": "npx tsc -b",
+    "architecture": "node scripts/audit/module-architecture.mjs --check",
+    "publicApi": "node scripts/audit/module-architecture.mjs --check-public-api",
+    "v0Tests": "npx vitest run test/trajectory_v0_*.test.ts",
+    "t0PlusV0Contract": "npx vitest run test/trajectory_t0_*.test.ts test/trajectory_v0_contract.test.ts --maxWorkers=4",
+    "workDelegationContinuationG1": "npx vitest run <16 delegation/continuation/context/G1 test files> --maxWorkers=4",
+    "fullSuite": "npx vitest run --maxWorkers=4"
+  },
+  "results": {
+    "build": { "status": "PASS", "detail": "tsc -b clean, no diagnostics" },
+    "architecture": { "status": "PASS", "violations": 0, "acceptedBaselineExceptionsObserved": 9, "detail": "the three new src/ files are under the existing L2 `trajectory` classification and the L5 `composition` classification; no new forbidden edge, no new cycle, no unclassified module" },
+    "publicApi": { "status": "PASS", "missing": 0, "changedKind": 0, "added": 0, "detail": "src/trajectory is not re-exported from the package entries, so the public surface is unchanged" },
+    "v0Tests": {
+      "status": "PASS",
+      "files": 4,
+      "tests": 56,
+      "passed": 56,
+      "breakdown": {
+        "test/trajectory_v0_contract.test.ts": 32,
+        "test/trajectory_v0_async_work.test.ts": 6,
+        "test/trajectory_v0_dsh_source.test.ts": 10,
+        "test/trajectory_v0_preview.test.ts": 8
+      }
+    },
+    "t0PlusV0Contract": { "status": "PASS", "files": 5, "tests": 103, "passed": 103, "detail": "the four T0 suites (71) plus the V0 contract suite (32) — T0 is unaffected by V0" },
+    "workDelegationContinuationG1": {
+      "status": "PASS",
+      "files": 16,
+      "tests": 191,
+      "passed": 191,
+      "detail": "lean_work_delegation_transport, lean_delegation_runtime/orthogonality/snapshot/surface, lean_d5a continuation assessment+composition, lean_d5c2 prior-result-context, lean_d5d result-continuation, r1l_worker_context_pull, and the five R3-L0C-G1/G1-B suites"
+    },
+    "historicalEvidenceImmutability": {
+      "status": "PASS",
+      "changed": 0,
+      "removed": 0,
+      "detail": "research-evidence/r3-l0c-g0, r3-l0c-g1, r3-l0c-g1b, r3-l0c-iar and trajectory-t0 are byte-identical; G1 tree 4c98ca488c20ae00722ebd802243e936ed587bc2, G1-B tree 571e6019dbe2cf66c98743f8a7e94a7b9e74c92c, T0 tree 58b699a28daac94db26bc6f0c343c9a0c655f419"
+    },
+    "fullSuite": {
+      "status": "PASS_WITH_PRE_EXISTING_FAILURES",
+      "files": 318,
+      "tests": 4516,
+      "passed": 4501,
+      "failed": 15,
+      "deltaVsT0Baseline": "T0 baseline was 314 files / 4460 tests; V0 adds exactly 4 files and 56 tests, all passing. The failing count is UNCHANGED at 15.",
+      "detail": "The 15 failures are the archived R3-L0C execution-plan closure-binding family, and the failing SET is identical to the T0 baseline: r3l0ciarl_gates (1), r3l0ciarlc_gates (2), r3l0ciarlcf_gates (2), r3l0ciarlcfs_gates (5), r3l0ciarlcfsh_persisted (5)."
+    }
+  },
+  "archivedClosureDrift": {
+    "classification": "DRIFTED_EXPECTED",
+    "reason": "The archived R3-L0C plans bind an EXECUTION_CLOSURE digest over the runtime manifest of dist/src modules plus a source-import graph. V0 adds three src/ modules, so that digest necessarily moves and the archived plan's recorded closure cannot match a changed source tree.",
+    "guardsWeakened": false,
+    "archivedPlansRegenerated": false,
+    "archivedPlansModified": false,
+    "isANewRegression": false,
+    "provenPreExisting": "In the T0 stage an isolated worktree at the baseline commit reproduced the identical 15 failures with zero trajectory code present; V0 changes no archived-plan input other than by adding product source, and the failing SET is byte-identical to the T0 baseline."
+  },
+  "safetyBlockedSuites": {
+    "unsafeLegacyCleanupTest": "NOT RUN against shared dependencies, as §13 requires",
+    "d2D4D5LiveModelGates": "NOT RUN",
+    "browserE2E": "NOT RUN — no UI was changed",
+    "concurrentSharedDshProfileInstallation": "AVOIDED — every V0 test ran at --maxWorkers=2 or 4 and no shared profile installer was invoked concurrently"
+  },
+  "realPrimaryExecution": "NOT_RUN",
+  "paidModelCalls": 0,
+  "dshModelWorkerLaunched": false,
+  "dsmWorkerStubUsed": "a LOCAL NON-MODEL Node child, which never imports @deepseek-ai/dsh and never contacts a provider",
+  "dshSessionReads": "real, read-only, through the first-party persistence reader — no model call and no agent activation"
+}

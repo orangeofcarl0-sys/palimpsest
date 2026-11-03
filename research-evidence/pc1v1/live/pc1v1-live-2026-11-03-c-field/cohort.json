@@ -1,0 +1,27 @@
+{
+  "schema": "pc1v1-live-cohort/v1",
+  "cohortId": "pc1v1-live-2026-11-03-c-field",
+  "codeFreeze": "92158e37b66b2a649093d870765b6e8b312d6d58",
+  "codeFreezeTree": "a0c4e007ca42fbb83f9c6b678a112d5c050ea340",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "oracleCopied": false,
+  "cohortDigest": "c759e01daeeae6ce86366f54a8157e1545b52383358a6dcb816c77ffd6f4527f",
+  "authorizationDigest": "213e2640b66d4d8ed9d0ed83faedd37d531684d27efab94d4c0acc5315a4029f",
+  "authorization": {
+    "owner": "owner:66494",
+    "authorizedAt": "2026-11-03T03:15:00.000Z",
+    "maxTokens": 24000000,
+    "conditions": [
+      "P",
+      "F"
+    ],
+    "note": "Owner authorized all PC1-V1 requests on 2026-11-03 (均授权). This field-study-only cohort uses the same frozen product code as Code Freeze 5; Code Freeze 6 changes only the prompt/script that states the exact required artifact paths to both conditions. The earlier field P run is excluded because that requirement was not stated."
+  },
+  "note": "Frozen cohort identity. Raw session streams are written next to this record; never overwrite them.",
+  "createdAt": "2026-11-02T19:11:02.312Z"
+}

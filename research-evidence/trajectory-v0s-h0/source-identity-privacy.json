@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_SOURCE_IDENTITY_PRIVACY",
+  "stage": "Trajectory-V0S-H0",
+  "before": "sourceIdentity = `dsh-session-persistence-jsonl@${packageRoot}` — the consumer-visible SUCCESSFUL page carried an absolute local installation path",
+  "after": {
+    "consumerSourceIdentity": "dsh-session-persistence-jsonl",
+    "consumerSourceEvidenceClass": "REAL_DSH_QUERY",
+    "internalDiagnosticField": "diagnosticSourcePath (not part of any consumer-visible page)"
+  },
+  "auditedSurfaces": ["successful Session page", "failed Session page", "sourceIdentity", "error detail", "event summaries", "header-derived metadata", "Handoff Preview serialization"],
+  "measurements": {
+    "successfulPageSourceIdentityHasPath": false,
+    "successfulPageDetailHasPath": false,
+    "serializedSuccessfulPageHasPath": false,
+    "adapterStillIdentifiable": true,
+    "errorDetailSanitized": true,
+    "windowsPathShapeCovered": true,
+    "posixHomePathShapeCovered": true,
+    "ordinaryTextPreserved": true
+  },
+  "pathShapesDetected": ["[A-Za-z]:\\\\", "[A-Za-z]:/", "/Users/", "/home/", ".dsh", "node_modules"],
+  "evidenceClass": "PASS_REAL_DSH_NO_MODEL (successful path exercised against a real first-party session)",
+  "tests": { "file": "test/trajectory_h0_source_privacy.test.ts", "count": 8, "failed": 0 }
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_READ_ONLY_SOURCE_COMPARISON",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "method": "the cold-preview gate composes the product, runs real work (Process A), then in Process B calls the read-only attributed Preview; the canonical Work store, the durable association store and the DSH session source are all read-only during the Preview",
+  "invariants": [
+    "building the Preview appends no Work event",
+    "building the Preview mutates no ProjectIR",
+    "building the Preview changes no Promotion",
+    "building the Preview appends no association observation",
+    "building the Preview resumes no DSH Session",
+    "building the Preview modifies no DSH Session Persistence"
+  ],
+  "observed": {
+    "processAAttemptState": "RUNNING",
+    "processAPromotionCount": 0,
+    "processBDoesNotChangeWork": true,
+    "previewIsReadOnly": true
+  },
+  "note": "read-only means no authority-bearing effects or source mutations; opening a local read handle is permitted and does not mutate the source (H1 established this for the reader and P2-C preserves it)",
+  "evidenceClass": "REAL_COLD_RECOVERED_ATTRIBUTED_PREVIEW",
+  "actualFirstPartyDshRan": true,
+  "actualCanonicalWorkRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "PREVIEW_IS_READ_ONLY"
+}

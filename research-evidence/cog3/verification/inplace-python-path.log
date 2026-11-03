@@ -1,0 +1,33 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mF:/Codex_Work_Space/Palimpsest/palimpsest-sr1[39m
+
+(node:12036) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/dedupe.ts', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m test/inplace_execution.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 6650[2mms[22m[39m
+     [33m[2m✓[22m[39m claim reports no worktree path; the report observes changed files and HEAD itself [33m 804[2mms[22m[39m
+     [33m[2m✓[22m[39m an out-of-scope change fails the report loudly, naming the path [33m 486[2mms[22m[39m
+     [33m[2m✓[22m[39m a second concurrent claim is refused in-place (one writer per tree) [33m 375[2mms[22m[39m
+     [33m[2m✓[22m[39m worktree mode is untouched: claim still creates the isolated worktree [33m 996[2mms[22m[39m
+     [33m[2m✓[22m[39m a missing executable observes as null, never NaN (the live defect) [33m 360[2mms[22m[39m
+     [33m[2m✓[22m[39m the gate executes in the repository and records the observed exit code [33m 505[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses promotion when work landed after the report, naming both commits [33m 905[2mms[22m[39m
+     [33m[2m✓[22m[39m allows promotion when the recorded commit IS the current head [33m 756[2mms[22m[39m
+     [33m[2m✓[22m[39m promotes: the task is satisfied and the ledger head becomes the recorded commit [33m 1243[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 08:32:19
+[2m   Duration [22m 14.93s[2m (transform 6.19s, setup 0ms, import 7.66s, tests 6.65s, environment 0ms)[22m
+
+
+[test temp hygiene] removed 8 leaked temp dir(s)

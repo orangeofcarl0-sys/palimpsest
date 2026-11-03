@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "real frozen journal and run claim integration",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "baselineDefect": {
+    "realRecordFields": [
+      "seq",
+      "kind",
+      "at",
+      "payload",
+      "digest"
+    ],
+    "g1RunIdentityVerdict": "SINGLE_RUN_IDENTITY",
+    "g1TrialMapSize": 1,
+    "g1CouldReadRealJournal": false
+  },
+  "corrected": {
+    "reader": "scripts/r3l0cf/journal.mjs readJournal()",
+    "writer": "scripts/r3l0cf/journal.mjs appendRecord()",
+    "claimReader": "scripts/r3l0cf/fail-stop.mjs verifyTrustedClaim()",
+    "journalExists": true,
+    "journalIntact": true,
+    "journalRecordCount": 2,
+    "claimVerified": true,
+    "trialIdentityVerified": true,
+    "hostJobAssociationVerified": true
+  },
+  "verificationRequirements": [
+    "the journal exists",
+    "JOURNAL_INTACT === true",
+    "no interrupted records",
+    "no leftover in-flight temporary records",
+    "record sequences are valid and unambiguous",
+    "exactly one RUN_STARTED",
+    "a valid runId",
+    "an actual corresponding run claim",
+    "the claim nonce matches the independently held claim witness",
+    "exactly one TRIAL_RECORDED for the session being correlated",
+    "outer payload.sessionId agrees with nested payload.record.sessionId",
+    "the durable AttemptId agrees with the actual Work Attempt",
+    "the host job association is checked where authoritative host evidence exists",
+    "unexpected duplicates and conflicting values are rejected"
+  ],
+  "syntheticFlattenedJournalUsedAsPositivePath": false,
+  "verdict": {
+    "ACTUAL_JOURNAL_SCHEMA_COMPATIBILITY": "PASS_REAL_JOURNAL_FORMAT_FIXTURE",
+    "JOURNAL_INTEGRITY_VERIFIED": "PASS_REAL_JOURNAL_FORMAT_FIXTURE",
+    "RUN_CLAIM_VERIFIED": "PASS_REAL_JOURNAL_FORMAT_FIXTURE",
+    "DURABLE_TRIAL_IDENTITY_VERIFIED": "PASS_REAL_JOURNAL_FORMAT_FIXTURE"
+  },
+  "law": "the integration test uses the actual writer and the actual reader; no test-only flattened object substitutes for the real positive journal path"
+}

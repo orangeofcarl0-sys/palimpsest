@@ -1,0 +1,14 @@
+{
+  "schema": "pc1v1-spend-authorization/v1",
+  "authorized": true,
+  "owner": "owner:66494",
+  "cohortId": "pc1v1-live-2026-11-03",
+  "authorizedAt": "2026-11-03T02:30:00.000Z",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "maxTokens": 24000000,
+  "conditions": ["P", "F"],
+  "note": "Owner authorized all PC1-V1 requests on 2026-11-03 (均授权), including the matched P/F cohort with real Subagents. The 24M token figure is a local safety reservation for this campaign, not a reduction of the authorization; no model call was made before this file and the frozen cohort were recorded."
+}

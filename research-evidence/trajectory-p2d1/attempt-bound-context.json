@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_context_delivery.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": true,
+  "positiveConsumerApiSucceeded": true,
+  "reachedWorkerContextBoundary": true,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_ATTEMPT_BOUND_CONTEXT",
+  "title": "Attempt-bound Capsule delivery through the Context Owner",
+  "method": "the install binds a late-bound delivery provider to the Context Owner; workWorkerContext(attemptId) passes THAT attempt id to the provider, which calls capsuleForConsumer with it",
+  "observed": "the correct consumer (A1) receives its permitted A0 Capsule in compiled.trajectoryCapsule with origin A0, framing HISTORICAL_DATA_NOT_INSTRUCTIONS, authority READ_ONLY_INSPECTION, a serialized byte count and a 64-hex content digest; the wrong consumer (A0) receives nothing; a forged attempt id resolves to null",
+  "expectedInvariant": "the model does not choose its own consumer identity, source Session or historical scope",
+  "verdict": "PASS",
+  "remainingUncertainty": "the origin Execution Association is a controlled fixture; the combined real-first-party-DSH + governed-delivery chain is not established"
+}

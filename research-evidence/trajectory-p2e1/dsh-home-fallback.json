@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "kind": "TRAJECTORY_P2E1_DSH_HOME_FALLBACK",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "strategies": [
+    "junction",
+    "copy",
+    "BLOCKED"
+  ],
+  "copyPathVerifiesEveryEntryExists": true,
+  "junctionFailureRemovesOwnLinksThenCopies": true,
+  "falseCopyClaimEliminated": true,
+  "diskPreflightBeforeCopy": true
+}

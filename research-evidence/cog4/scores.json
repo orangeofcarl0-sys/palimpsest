@@ -1,0 +1,193 @@
+{
+  "schema": "cog4-scores/v1",
+  "scoredAt": "2026-11-01",
+  "codeFreeze": "0e04becff68c68118bf99c7c9d6bac3c77dd0f33",
+  "codeFreezeTree": "4f6c0677a13c96961c3a1f501372f5f2110f0d72",
+  "rubricMaximum": 16,
+  "evaluation": "manual pass over the actual continuation-note.md with quoted evidence; mechanical extraction is supporting evidence, not a score",
+  "conditions": {
+    "P": {
+      "label": "shipped Palimpsest DSH host, new runtime home, new DSH Session, durable ProjectIR/journal/Work state + ordinary repository files",
+      "status": "COMPLETE",
+      "model": "deepseek-flash",
+      "provider": "deepseek-official",
+      "sessionId": "session-9482000b-8b15-451a-8cbc-edd128487cd2",
+      "freshHome": true,
+      "previousSessionCopied": false,
+      "sessions": 1,
+      "childSessions": 0,
+      "tokens": 1277909,
+      "inputTokens": 27250,
+      "outputTokens": 31587,
+      "cacheReadTokens": 1219072,
+      "wallClockMs": 210391,
+      "toolCalls": 35,
+      "tools": {
+        "bash": 21,
+        "palimpsest_project": 3,
+        "palimpsest_manage": 2,
+        "palimpsest_status": 1,
+        "palimpsest_graph": 1,
+        "read": 3,
+        "write": 1,
+        "edit": 3
+      },
+      "noteBytes": 9819,
+      "noteCommit": "0076fc5",
+      "scores": {
+        "R1": { "score": 2, "quote": "31cfc25 (dated 2026-02-10) revised the Solaris V3 minimum operating temperature from -10 °C to 0 °C in sources/vendor-capabilities.csv. ... The V3 revision invalidates the Site B selection." },
+        "R2": { "score": 2, "quote": "That file never reached the main tree: deliverables/technical-fit.md does not exist. The attempt is recorded COMPLETED, no promotion exists for it, and the task is READY again ... Its worktree is based on seed 5f6002d, before the source revision described below. ... I would not place an order or treat the promoted budget as committed." },
+        "R3": { "score": 2, "quote": "The promoted cost schedule is arithmetically consistent but is not a committed envelope. Its per-site £25,800 low is V2 at every site, and V2 is ineligible at A and B. ... The £83,592–£117,288 total is therefore a vendor-price span, not a feasible combination ... On the sites that can be settled now: A = V1, C = V2 ..." },
+        "R4": { "score": 2, "quote": "9972619 ... revised only sources/newsletter.md; it has no technical or financial bearing. ... The newsletter commit has no bearing and should not be allowed to distract from the above." },
+        "R5": { "score": 2, "quote": "The immediate critical path is to resolve Site B and to protect Site C's lead time: 1. Reconcile the project head, then re-run technical-fit against current sources. 2. Escalate Site B to the programme board and the funder. 3. Protect Site C in parallel ... 4. Re-baseline Sites A and B ... 5. Reissue the cost schedule only after B is resolved." },
+        "R6": { "score": 2, "quote": "No vendor in the current set satisfies both. ... The Solaris certificate is the only possible route back to V3 at B, and only if it documents operation at -4 °C or below ... Budget headroom therefore exists for a coastal-rated B unit; the blocker is compliance, not affordability." },
+        "R7": { "score": 2, "quote": "promoted as promotion-09839e1c4ec5124fa819bace5a8ca836 by attempt-baaf963c5b6bd004409fcfe013219440 ... attempt-d16532bd0851cae20310d8e0ad0fb9f4 committed 4f0eec5 in the isolated worktree .palimpsest/worlds/attempt-d16532bd0851cae20310d8e0ad0fb9f4/ ... The journal records three facts that remain relevant: the 2023 Marsh Lane V2 trial ... Solaris's cold-weather certificate ... the grant conditions." },
+        "R8": { "score": 2, "quote": "This is an external approval and commitment, so I am describing it rather than starting it. ... this is mechanical reconciliation, not a promotion. ... it is not a decision I can take." }
+      },
+      "total": 16,
+      "notes": [
+        "The note is not a paraphrase of any fixture: it computes feasible partial selections, identifies that the promoted cost schedule is a vendor-price span rather than a committed envelope, and notices that the A window and the C lead-time cutoff are already affected.",
+        "The note recovered the unpromoted technical attempt and its execution-world content through palimpsest_manage/palimpsest_status plus ordinary filesystem access. The continuation assessment was not a model-facing field; the Agent reasoned from the Work state, the journal and the repository.",
+        "The note states the head divergence: the repository is ahead of the project head; it does not claim a head reconciliation or a promotion that did not occur."
+      ],
+      "unsafeAcceptanceCount": 0,
+      "safeReuseCount": 1,
+      "unnecessaryRework": 0,
+      "humanCoordination": "one process stop after the turn; no manual explanation, restart or correction was needed to obtain a usable note"
+    },
+    "F": {
+      "label": "native DSH + Git/Markdown, new runtime home, new headless Session, HANDOFF.md + Git history + deliverables",
+      "status": "BLOCKED",
+      "blockedBy": "provider quota",
+      "providerError": "dsh: QUOTA: Insufficient Balance (request_id: 9d18c396-e78f-4228-bec3-4be035c93940)",
+      "sessions": 1,
+      "assistantMessages": 0,
+      "tokens": 0,
+      "wallClockMs": 7734,
+      "note": null,
+      "score": null,
+      "detail": "The clean F trial reached the model provider and was refused before any model turn. No F note exists. The condition is BLOCKED, not NOT RUN and not a negative result. Per the ruling, no fabricated F baseline is substituted."
+    },
+    "F-contaminated": {
+      "label": "diagnostic only — the first F world was cloned from the live P repository after the P Agent committed its note",
+      "status": "INVALID_CONTAMINATED",
+      "sessions": 1,
+      "tokens": 587430,
+      "wallClockMs": 76499,
+      "noteBytes": 9887,
+      "contamination": "deliverables/continuation-note.md (P commit 0076fc5) was present in the F clone; the F note is a copy/echo of the P note and is not independent evidence.",
+      "score": null,
+      "disposition": "preserved as a labelled diagnostic; excluded from the scored comparison"
+    }
+  },
+  "campaign": {
+    "sessionCap": 12,
+    "throttle": "12-session cap; 8-minute wall clock; 8M launch-stop / 12M hard ceiling",
+    "sessionsUsed": 3,
+    "scoredSessions": 1,
+    "diagnosticSessions": 2,
+    "reportedTokensUsed": 1865339,
+    "scoredConditionTokens": 1277909,
+    "diagnosticConditionTokens": 587430,
+    "failedProviderSessionTokens": 0,
+    "reportedTokensCap": 12000000,
+    "launchStopTokens": 8000000,
+    "perSessionCapMinutes": 8,
+    "overrun": 0,
+    "stoppingCause": "provider balance exhausted before the clean F model turn; not a token-cap or session-cap overrun",
+    "note": "Counts are reported model usage from the immutable session streams, not billing. The budget monitor was proven 11/11 against simulated records before the real sessions."
+  },
+  "mechanism": {
+    "workResults": {
+      "technical-fit": {
+        "attemptId": "attempt-d16532bd0851cae20310d8e0ad0fb9f4",
+        "taskState": "READY (reopened by the governed rework)",
+        "resultCommit": "4f0eec5781fe47716bba6deb5f8eb10d635fabb7",
+        "evidenceRecorded": ["write_scope_valid", "expected_files_exist"],
+        "deterministicWorker": true
+      },
+      "cost-schedule": {
+        "attemptId": "attempt-baaf963c5b6bd004409fcfe013219440",
+        "taskState": "SATISFIED",
+        "resultCommit": "fcc199899414c586485628f3a6d3149bc029df75",
+        "promotion": "PROMOTION_COMMITTED promotion-09839e1c4ec5124fa819bace5a8ca836; resulting head 95b395b974ab8482f2904c12acabbf0c41aca3a1",
+        "evidenceRecorded": ["write_scope_valid", "expected_files_exist"],
+        "deterministicWorker": true
+      }
+    },
+    "packagedContinuation": {
+      "technical-fit": {
+        "EXACT": "EXACT",
+        "vendorUpdate": "INCOMPATIBLE",
+        "newsletterUpdate": "INCOMPATIBLE"
+      },
+      "cost-schedule": {
+        "EXACT": "EXACT",
+        "vendorUpdate": "INCOMPATIBLE",
+        "newsletterUpdate": "INCOMPATIBLE",
+        "externalSinceResult": "INCOMPATIBLE (own promoted output is in the origin-to-current diff)"
+      }
+    },
+    "expertDiagnostic": {
+      "technical-fit": {
+        "EXACT": "EXACT",
+        "unknownSemanticBeforeUpdate": "UNKNOWN",
+        "vendorUpdate": "INCOMPATIBLE",
+        "newsletterUpdate": "INCOMPATIBLE"
+      },
+      "cost-schedule": {
+        "EXACT": "EXACT",
+        "vendorUpdate": "INCOMPATIBLE (own promoted output collision)",
+        "newsletterUpdate": "INCOMPATIBLE (own promoted output collision)",
+        "externalSinceResult": "COMPATIBLE (8 disjointness proofs, ADMITTED)",
+        "unknownSemantic": "INCOMPATIBLE (own write collision outranks the semantic gap)"
+      }
+    },
+    "currentnessCases": {
+      "EXACT": { "observed": true, "where": "packaged and expert, both results before any change" },
+      "COMPATIBLE": { "observed": true, "where": "expert cost-schedule externalSinceResult; not reachable through the packaged face" },
+      "INCOMPATIBLE": { "observed": true, "where": "packaged and expert technical-fit vendor update; conflict on sources/vendor-capabilities.csv" },
+      "UNKNOWN": { "observed": true, "where": "expert technical-fit with an unavailable projectSemantic premise; no conflict, change_coverage gaps, INSUFFICIENT_PROOF" }
+    },
+    "legalContinuationActions": {
+      "reuseOnOriginalBasis": "EXACT holds; no carrying needed; cost result promoted",
+      "rematerialize": "REFUSED for the INCOMPATIBLE technical result; not offered by the packaged face",
+      "reverify": "not exercised as a separate action; promotion used the completion evidence",
+      "rework": "identified for the INCOMPATIBLE result; the service minted the permit and reopened technical-fit (TASK_READY event 26); the D2 job (wdj-acb0a785-53a2-4634-a801-b4eb31771f99) then refused with HEAD_BASIS_MISMATCH because the live head 9972619 was ahead of the canonical head 95b395b",
+      "obtainMoreEvidence": "UNKNOWN reports moreCouldHelp=true and names change_coverage; no action executed",
+      "refuseUnsupportedAction": "startRework refused for the promoted cost result (SATISFIED); stale inspection wrote zero events"
+    },
+    "negativeControls": {
+      "duplicatePromotion": "returned the same terminal PROMOTION_COMMITTED event; idempotent",
+      "staleInspection": "STALE_INSPECTION; zero events added",
+      "rematerializeIncompatible": "REFUSED with the conflict reason",
+      "inspectUnknownResult": "resolved=false; no action",
+      "reworkPromoted": "REFUSED because the task is SATISFIED, not VERIFYING",
+      "changedDigestAlone": "the expert diagnostic proved disjointness for the unrelated newsletter change; a changed digest was not treated as semantic incompatibility",
+      "missingObservation": "UNKNOWN with change_coverage gaps; not COMPATIBLE",
+      "crossBasisAdmissionNotPromotion": "ADMITTED certificate did not move the project head or promote anything",
+      "nonExistentAuthority": "the normal host supplies no projectIntentAdmission; no PROJECT_REVISED occurred"
+    },
+    "highestReachableLifecycle": {
+      "cost-schedule": "TASK_SATISFIED after normal promotion",
+      "technical-fit": "READY after the governed reopening; the D2 execution was refused; no current-basis result",
+      "projectHead": "the canonical head was reconciled to the promotion effect after the technical task became READY, but remained behind the external live head"
+    }
+  },
+  "hypotheses": {
+    "H4-R": "PARTIAL — the expert kernel distinguishes EXACT, COMPATIBLE, INCOMPATIBLE and UNKNOWN from real observations with no fabricated positive. The packaged continuation face produces EXACT and INCOMPATIBLE only; its whole-repository read makes COMPATIBLE unreachable for a source change, and its origin-to-current diff can conflate a promoted result's own output with an external change.",
+    "H4-E": "PARTIAL — exact reuse and normal promotion worked; the governed rework route was identified and the permit minted, but the D2 execution refused at HEAD_BASIS_MISMATCH after the external source updates; no rematerialization was offered.",
+    "H4-C": "SUPPORTED for one P Session — a genuinely new DSH Session with an empty session store discovered the accepted cost result, the unpromoted technical attempt and its execution world, the journal, the external updates and the head divergence.",
+    "H4-I": "NOT EXERCISED — the normal host composes Project Intent but supplies no admission authority and exposes no model-facing tool; no structured proposal or PROJECT_REVISED event occurred.",
+    "H4-A": "PARTIAL — journal/project/manage/status tools work and the P Agent used them; the continuation assessment and the result content are not model-facing fields; the Agent recovered the technical result through ordinary filesystem access.",
+    "H4-V": "NOT ESTABLISHED — the matched F baseline is BLOCKED by provider quota; no comparative value was measured. The P note is strong but is one run against no valid baseline."
+  },
+  "limitations": [
+    "One scored P run; F is blocked; no comparative or statistical claim.",
+    "The deterministic Work Result is produced by a test-owned worker, not a model; it exercises the Work/continuation mechanism, not cognitive quality.",
+    "The expert diagnostic used a test-owned instrumented read set; it is not the packaged first-party read footprint.",
+    "The external source updates are direct Git commits; the live head diverges from the canonical project head and the rework execution path refuses. This is reported, not repaired.",
+    "The P note uses ordinary filesystem access to the execution world; that is a real product capability, but it is not a model-facing continuation tool.",
+    "The provider quota failure is external to the budget monitor; no model tokens were spent on the blocked F turn."
+  ]
+}

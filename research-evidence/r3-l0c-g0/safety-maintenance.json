@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G0",
+  "kind": "bounded safety-maintenance record",
+  "baseline": "751f2e2257dc00e4a5a289afa1bdd38a14f7d422",
+  "baselineBranch": "r3-l0c-iar-lcfsh-terminal-hotfix",
+  "maintenanceHead": "aaef17fbda922be5989c95338f7ee7f1273b4b24",
+  "branch": "r3-l0c-g0-execution-readiness",
+  "whatWasChecked": "two residual failure paths in the latest cleanup helper, identified by source review and reproduced against the committed baseline code before any edit",
+  "sourceOfTruth": {
+    "path": "scripts/r3l0ciarlcfsh/safe-cleanup.mjs",
+    "baselineBlob": "9b43caed0425eef84ede9fb312a240488bbaf95a",
+    "patchedBlob": "52a739744efa7a429710f823799009102e8ca53e",
+    "applicableCommit": "aaef17fbda922be5989c95338f7ee7f1273b4b24"
+  },
+  "defects": [
+    {
+      "id": "S1-A",
+      "title": "depth-limit exhaustion did not fail closed",
+      "baselineLocation": "scripts/r3l0ciarlcfsh/safe-cleanup.mjs enumerateLinks() — MAX_ENUMERATION_DEPTH = 12",
+      "observedBaseline": "a directory chain deeper than the bound was silently skipped: enumerateLinks returned ok:true with 0 links while a junction existed below the boundary; the caller received no signal to stop",
+      "measuredAgainst": "751f2e2257dc00e4a5a289afa1bdd38a14f7d422",
+      "measurementMethod": "disposable directory tree under the system temp root with a junction placed below the depth bound",
+      "defectConfirmed": true,
+      "confirmationMethod": "measured, not asserted",
+      "patch": "a named DEPTH_LIMIT_EXCEEDED condition is recorded when a further directory would require descending beyond the bound; enumerateLinks returns ok:false; destroyDisposableCheckout blocks with ENUMERATION_COMPLETE:false before the Git removal decision and preserves the tree",
+      "resourceBoundPreserved": true,
+      "boundRaisedToEvade": false,
+      "unboundedTraversalIntroduced": false,
+      "positiveControl": "S1-A: the over-deep tree inside an owned checkout yields CLEANUP_BLOCKED, ENUMERATION_COMPLETE:false, DEPTH_LIMIT_EXCEEDED:true, gitWorktreeRemoveForceExecuted:false, recursiveRemoveExecuted:false, worktreePreserved:true",
+      "negativeControl": "S1-A-DEFECT_PRESENT (C1): the same tree on the unpatched helper yielded ok:true and 0 links",
+      "operationCallHistory": "the injected filesystem adapter recorded no removeTree call and the injected Git adapter recorded no removeWorktreeForce call",
+      "targetSentinelStatus": "byte-identical (sha256 unchanged)"
+    },
+    {
+      "id": "S1-B",
+      "title": "deletion aftermath confused ENOENT with inspection failure",
+      "baselineLocation": "scripts/r3l0ciarlcfsh/safe-cleanup.mjs realFilesystemAdapter().exists() and the post-Git-removal branch reading fs.exists(resolvedRoot) !== true",
+      "observedBaseline": "exists() swallowed every lstat error into false; with Git removal returning without removing and postflight inspection failing with EPERM/EACCES, the helper reported CLEANED / worktreeRemoved:true / destructiveFallbackExecuted:true while the directory was physically still on disk",
+      "measuredAgainst": "751f2e2257dc00e4a5a289afa1bdd38a14f7d422",
+      "measurementMethod": "owned disposable checkout with a fault-injected adapter reporting a permission error on the root path and a Git adapter that returns without removing",
+      "defectConfirmed": true,
+      "confirmationMethod": "measured, not asserted",
+      "patch": "realFilesystemAdapter() gains an error-aware inspect(); classifyRemovalState() reports REMOVED_CONFIRMED only on ENOENT, STILL_PRESENT when present, STATE_UNKNOWN otherwise; the Git error and filesystem observation are carried as diagnostics; exists() is no longer the sole witness and CLEANED is never reported when the state is unknown",
+      "recursiveFallbackTaken": false,
+      "positiveControls": [
+        "S1-B1 Git throws + present -> STILL_PRESENT blocked",
+        "S1-B2 Git throws + EPERM -> STATE_UNKNOWN blocked",
+        "S1-B2b classifier fallback (no inspect) + EPERM -> STATE_UNKNOWN",
+        "S1-B3 Git returns + EACCES -> STATE_UNKNOWN blocked",
+        "S1-B4 Git returns + ENOENT -> REMOVED_CONFIRMED -> CLEANED",
+        "S1-B5 Git returns + present -> STILL_PRESENT blocked",
+        "S1-B6 no failure branch invokes a recursive removal"
+      ],
+      "negativeControl": "S1-B-DEFECT_PRESENT (C1): the unpatched helper reported CLEANED while the directory remained on disk",
+      "operationCallHistory": "the injected filesystem adapter recorded no removeTree call in any blocked branch; the injected Git adapter recorded removeWorktreeForce only in the S1-B4 success branch",
+      "targetSentinelStatus": "byte-identical (sha256 unchanged)",
+      "removalStateVocabulary": [
+        "REMOVED_CONFIRMED",
+        "STILL_PRESENT",
+        "STATE_UNKNOWN"
+      ]
+    }
+  ],
+  "scopeLimitHonored": {
+    "genericFilesystemSecurityFrameworkCreated": false,
+    "historicFrozenHelpersModified": false,
+    "existingGitWorktreesCleaned": false,
+    "unrelatedSharedDependenciesTouched": false
+  },
+  "threatModelExclusions": [
+    "an adversarial process able to modify arbitrary filesystem entries concurrently with the cleanup (not addressed, not tested)",
+    "a platform whose reparse-point semantics differ from the ones measured on this host"
+  ],
+  "finalSafetyVerdict": "PASS",
+  "evidenceLevel": "T2 (real filesystem operations on disposable directories under the system temp root, with fault-injected adapters for the dangerous branches)",
+  "law": "both corrections are bounded to the latest cleanup helper; every dangerous branch is measured through the real control flow with a fault-injected adapter, and no helper boolean stands in for proof that an operation ran"
+}

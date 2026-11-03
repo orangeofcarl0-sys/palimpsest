@@ -1,0 +1,6 @@
+(node:33540) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33540) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+PALIMPSEST_WORKER_ENV {"cwd":"<home>\<rig-path>","presentation":"ptc","deniedTools":[],"offeredTools":["run_code"]}
+PALIMPSEST_WORKER_PULL {"pulled":[]}
+PALIMPSEST_WORK_RESULT {"kind":"READY_FOR_SETTLEMENT","summary":"Rewrote src/config.ts so migrateConfig normalizes legacy key spellings and their case/separator variants into settings, rejects documents that read a setting two different ways (ambiguous) or declare unknown settings, validates every declared value in its own domain (non-empty strings for name/endpoint, whole retries >= 0, positive whole timeoutMs) before any defaulting, and only then applies the v2 policy defaults. The only change is to src/config.ts, committed as bff341d in the worktree."}

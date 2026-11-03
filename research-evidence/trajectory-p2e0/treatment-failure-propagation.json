@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_TREATMENT_FAILURE_PROPAGATION",
+  "testFile": "test/trajectory_p2e0_trial_integrity.test.ts (tests 13,14,18,21)",
+  "p2d2Defect": "src/composition/execution_association.ts returned bare null for EVERY refusal, so a failed TREATMENT was indistinguishable from OFF at the worker boundary (F4).",
+  "correction": "the provider now records the assigned arm, the source eligibility and the delivery state independently; null is returned ONLY for the OFF arm.",
+  "observedResults": {
+    "readerUnavailable": "assignedArm TREATMENT, eligibility SOURCE_UNAVAILABLE, deliveryState DELIVERY_PRECONDITION_NOT_MET, failureReason present",
+    "budgetRefusal": "assignedArm TREATMENT, eligibility QUALIFIED, capsule null on the budget path",
+    "neverDeliveryDisabled": "asserted: a missing TREATMENT is never DELIVERY_DISABLED without its assigned-arm fact"
+  },
+  "verdict": "PASS",
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false
+}

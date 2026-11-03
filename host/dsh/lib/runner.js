@@ -32,6 +32,94 @@ import { brandString } from '@deepseek-ai/dsh-brand';
 import { installModelSelection } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 
+import { composeLaunchMessage } from './project_hint.js';
+
+/**
+ * R2-U §7: the EXPERIMENTAL presentation seam. Loaded statically because it has no imports of its own and
+ * must never be the reason a worker fails to compose; the module carries the frozen clause and the
+ * fail-safe mode resolution. In the default mode `applyAffordance` returns its input unchanged, so the
+ * prompt this runner composes is byte-identical to production.
+ */
+import { AFFORDANCE_ENV, applyAffordance, resolveAffordanceMode } from './affordance.js';
+/**
+ * COG-3 §11: the branch task text is presentation over the composed capability set. It lives in its
+ * own import-free module so the RESULT_ONLY and PROJECT_READ_ONLY wordings can be tested directly.
+ */
+import { branchTask } from './branch_prompt.js';
+/**
+ * R2-E §8/§10: the EXPERIMENTAL efficacy seam. Loaded statically for the same reason as the affordance:
+ * it has no imports beyond `node:crypto` and must never be why a worker fails to compose. In the default
+ * mode it is inert.
+ */
+import { EFFICACY_ENV, EFFICACY_MODES, PREWORK_MECHANISM, applyEfficacyReview, bodyDigest, renderEfficacyReview, resolveEfficacyMode } from './efficacy.js';
+/**
+ * R2-M §4/§5: the EXPERIMENTAL decision-relevance seam. Loaded statically like the other two experimental
+ * modules — it imports only `node:crypto`, so it can never be why a worker fails to compose, and in the
+ * default mode it is inert. It changes the BYTES OF THE INDEX and nothing else: not what is selected, not
+ * what a body is, not how a pull resolves, not what a handle authorizes.
+ */
+import {
+  INDEX_METADATA_ENV,
+  INDEX_METADATA_MODES,
+  PREVIEW_MECHANISM,
+  PROCEDURE_RULING,
+  deriveIndexEntry,
+  indexSectionDigest,
+  manifestEntry,
+  renderIndexMetadata,
+  resolveIndexMetadataMode,
+} from './index-metadata.js';
+/**
+ * Trajectory-P2A §6: THE WORKER SESSION IDENTITY REPORT. Loaded statically like the other small
+ * host-side modules — it imports nothing, so it can never be why a worker fails to compose. In the
+ * default configuration it is inert unless the parent supplied an IPC channel.
+ */
+import { reportWorkerSessionIdentity } from './session-identity.js';
+/**
+ * Trajectory-P2-D2 §7/§8: THE MODEL-VISIBLE TRAJECTORY PRESENTATION SEAM. Loaded statically like the other
+ * small host-side modules — it imports only `node:crypto`, so it can never be why a worker fails to compose.
+ * In the default configuration no presentation is present, so `applyTrajectoryPresentation` is the identity
+ * function and the prompt is byte-identical to production.
+ */
+import { applyTrajectoryPresentation, userMessageDigest } from './trajectory-presentation.js';
+
+/**
+ * R1-H: the host-execution read boundary.
+ *
+ * Loaded DYNAMICALLY and CACHED, for two reasons. It is a sibling package (`palimpsest-host-deployment`),
+ * so this bundle does not statically depend on it and a deployment that composes no worker still loads. And
+ * a boundary that could not be loaded must be REPORTABLE rather than fatal: the runner records
+ * `installed: false` with the reason in its telemetry, and `gate:r1-h-live` asserts the boundary IS
+ * installed — so a packaging accident fails the gate instead of silently running a worker unprotected.
+ */
+let boundaryModule;
+let boundaryModuleError;
+/**
+ * E1RG RG-A §4.2: A PRE-CREATE REFUSAL IS A DISTINCT OUTCOME, NOT A MESSAGE.
+ *
+ * The class exists so the outer `catch` can tell "admission refused the worker" from "the worker ran and threw".
+ * Both end in HOST_FAILURE, but only the first must be impossible to override by a later Worker Result, and only
+ * the first carries the per-phase refusal list a receipt needs.
+ */
+class PreCreateRefusal extends Error {
+  /** @param {readonly { phase: string, detail: string }[]} refusals */
+  constructor(refusals) {
+    super(`refusing to run this worker: ${refusals.map((entry) => `${entry.phase}: ${entry.detail}`).join('; ')}`);
+    this.name = 'PreCreateRefusal';
+    this.refusals = refusals;
+    this.preCreateRefused = true;
+  }
+}
+async function loadBoundary() {
+  if (boundaryModule !== undefined || boundaryModuleError !== undefined) return { module: boundaryModule, error: boundaryModuleError };
+  try {
+    boundaryModule = await import('palimpsest-host-deployment/runtime/worker_fence.js');
+  } catch (error) {
+    boundaryModuleError = error?.message ?? String(error);
+  }
+  return { module: boundaryModule, error: boundaryModuleError };
+}
+
 export const name = 'palimpsest-runner';
 export const inject = ['agents', 'sessions', 'agentDefaultModel', 'palimpsestStartup', 'palimpsestHost'];
 
@@ -40,60 +128,9 @@ function userMessage(text) {
 }
 
 /**
- * The task text for ONE ephemeral reasoning branch. It carries the frozen brief and
- * (when supplied) the selector-only materialized evidence plus the frozen allowlist.
- * The capability boundary is NOT this text: the branch environment registers only
- * `palimpsest_branch_result`, so no other tool exists to call.
+ * COG-3 §11: branchTask now lives in ./branch_prompt.js. It is imported above and re-exported below,
+ * so existing callers and tests keep the same name.
  */
-function branchTask(payload) {
-  const brief = payload.brief;
-  const evidenceContext = payload.evidenceContext;
-  const allowed = Array.isArray(evidenceContext?.allowedEvidenceRefs)
-    ? evidenceContext.allowedEvidenceRefs.map((ref) => (typeof ref === 'string' ? ref : ref?.evidenceId)).filter((id) => typeof id === 'string' && id.length > 0)
-    : [];
-  const selections = Array.isArray(evidenceContext?.selections) ? evidenceContext.selections : [];
-  const hasEvidence = allowed.length > 0 || selections.length > 0;
-
-  const lines = [
-    'You are an EPHEMERAL reasoning branch of a Palimpsest ReasoningCell. You are NOT a durable principal: you create no peer, no persistent point and no durable session. You have exactly ONE tool, `palimpsest_branch_result`, and you call it exactly ONCE.',
-    '',
-    `cellId: ${payload.cellId}`,
-    `branchId: ${payload.branchId}`,
-    `objective: ${typeof brief.objective === 'string' ? brief.objective : ''}`,
-    `question: ${typeof brief.question === 'string' ? brief.question : ''}`,
-    `acceptedFrontierBasis: ${JSON.stringify(brief.frontierBasis ?? null)}`,
-    `acceptedClaims: ${JSON.stringify(brief.acceptedClaims ?? [])}`,
-  ];
-
-  if (hasEvidence) {
-    lines.push('', 'ALLOWED EVIDENCE (you may cite ONLY these evidence ids):');
-    for (const id of allowed) lines.push(`- ${id}`);
-    lines.push('', 'MATERIALIZED EVIDENCE SELECTIONS (the exact selected bytes; this is ALL you may read):');
-    for (const selection of selections) {
-      lines.push(
-        `--- evidenceId: ${String(selection?.evidenceId)} | kind: ${String(selection?.kind)} | mediaType: ${String(selection?.mediaType)} | digest: ${String(selection?.digest)} ---`,
-      );
-      lines.push(String(selection?.text ?? ''));
-    }
-    lines.push(
-      '',
-      'EVIDENCE RULES:',
-      '- You may cite ONLY evidence ids from the ALLOWED EVIDENCE list above; never invent, guess or cite any other id.',
-      '- You may NOT browse the Vault or read any other source; the materialized selections above are ALL the evidence you may use.',
-      '- Your result MUST include `evidenceRefs` set to the evidence ids you actually used (an array of id strings).',
-    );
-  }
-
-  lines.push('', 'Do this now:');
-  lines.push('1. Think briefly about the frozen question using ONLY the material above.');
-  lines.push(
-    '2. Call `palimpsest_branch_result` EXACTLY ONCE with {"statement":"<one concise, falsifiable statement that directly answers the question>"' +
-      (hasEvidence ? ',"evidenceRefs":["<only evidence ids you actually used from the ALLOWED list>"]' : '') +
-      '}. Do not call it again if it succeeds or fails.',
-  );
-  lines.push('3. Reply with one short line. Do nothing else.');
-  return lines.join('\n');
-}
 
 /** Machine-readable line the harness parses; exactly one is printed, even on failure. */
 function printBranchResult(result) {
@@ -113,7 +150,7 @@ function printWorkResult(result) {
  * where it may work (this world), that it must commit what it wants delivered, and that its outcome is
  * a report rather than a completion.
  */
-function workTask(context) {
+function workTask(context, indexText) {
   const list = (values) => (Array.isArray(values) && values.length > 0 ? values.map((value) => `  - ${value}`).join('\n') : '  (none)');
   /**
    * §D5-c3: the delivered context is ATTEMPT-CENTRIC — `{work, compiled}` — where `work` is the
@@ -155,12 +192,23 @@ function workTask(context) {
       `  - prior observed changes: ${Array.isArray(prior.observed_changed_files) && prior.observed_changed_files.length > 0 ? prior.observed_changed_files.join(', ') : '(none recorded)'}`,
     );
   }
+  /**
+   * R1-L §6: THE MODEL-VISIBLE PULL INDEX.
+   *
+   * R1 measured that this was missing: `compiled.handles` arrived in the payload and was dropped here,
+   * so all three R1 conditions produced byte-identical prompts and the primary experiment could not be
+   * formed. The TEXT is the product's (`contextIndexText`, rendered by `renderWorkerContextIndex` from
+   * the attempt's OWN compiled handles); this host only decides where it goes. It carries `kind` and
+   * `handle` only — never a body — so the index stays visible and the body stays pull-only (§4).
+   */
+  if (typeof indexText === 'string' && indexText.length > 0) lines.push(indexText);
   lines.push(
     '',
     'How to work:',
     '  - your working directory IS your world: read, search, edit, run tests and commands, experiment freely inside it;',
     '  - commit the changes you want delivered, inside this worktree, before you report — an uncommitted tree cannot be settled;',
     '  - when you are done, call `palimpsest_worker_result` ONCE with kind READY_FOR_SETTLEMENT and a short summary of what you did;',
+    '  - if the attempt lists project context above and a body would help, call `palimpsest_worker_context_pull` with exactly one listed handle; it is read-only background and never authority;',
     '  - if the task as defined cannot be finished inside your authority (scope too narrow, task wrong, a person must decide, an irreversible external action is needed), report kind NEEDS_ESCALATION with a reason instead — proposing is not authorizing;',
     '  - do not claim files, commits, passing tests, evidence or verification results in your report: the product observes all of that for itself.',
   );
@@ -183,6 +231,34 @@ function offeredToolNames(session) {
     for (const tool of tools) if (typeof tool?.name === 'string' && tool.name.length > 0) names.add(tool.name);
   }
   return [...names].sort();
+}
+
+/**
+ * R2-U §16: THE ORDERED ACTION LOG — tool NAMES only, in the order the model first used them.
+ *
+ * §16 asks whether a worker pulled BEFORE it started editing, before it ran the visible oracle, and before
+ * it committed. Those are ORDERING facts, so the telemetry has to preserve order rather than count.
+ *
+ * NAMES ONLY. No arguments, no results, no reasoning: a tool name is a host fact about which capability was
+ * used, while an argument would carry the worker's own text and a result would carry file content. The
+ * pull's own handle is already reported by the pull telemetry line, so nothing here needs to carry it.
+ *
+ * A tool call emits MORE THAN ONE session event (a start and an end), so consecutive repeats of one name
+ * are collapsed: the log records the ordinal of a tool's FIRST use, which is the fact §16 asks about.
+ */
+function toolActionLog(session) {
+  const firstUse = new Map();
+  let ordinal = 0;
+  for (let seq = 0; seq < session.seq; seq += 1) {
+    const event = session.eventAt(seq);
+    if (event === undefined || typeof event.type !== 'string' || !event.type.startsWith('tool/')) continue;
+    const name = event.data?.name ?? event.data?.call?.name ?? null;
+    if (typeof name !== 'string' || name.length === 0) continue;
+    if (firstUse.has(name)) continue;
+    firstUse.set(name, ordinal);
+    ordinal += 1;
+  }
+  return { order: [...firstUse.keys()], firstUse: Object.fromEntries(firstUse) };
 }
 
 /**
@@ -226,13 +302,290 @@ async function runWorker(ctx, deps) {
   let failure = null;
   let offeredTools = [];
   let denied = [];
+  /** E1RD §6: the capabilities WITHDRAWN from this worker's registry, as measured at setup. */
+  let withdrawn = [];
   let presentation = null;
+  /** R2-U §16: the ordered first-use log of the worker's tool actions. */
+  let actionLog = { order: [], firstUse: {} };
+  // R1-S §17: the handles the worker actually pulled. Hoisted for the same reason `offeredTools` is: the
+  // telemetry is emitted after the try/catch, where `environment` is no longer in scope.
+  let pulledHandles = [];
+  // R1-H: what the read boundary achieved, for the telemetry line. `undefined` until the boundary runs, so a
+  // worker that failed before installing it reports "not installed" rather than a false success.
+  let boundary = null;
+  // R1-HR §10: the fail-closed capability verdict, computed from the surface the worker ACTUALLY has.
+  let capability = null;
+  // R1-HC §4/§5: the confidential-profile admission slot, and its verdict for the telemetry line.
+  let capacity = null;
+  // R2-U §7: which presentation arm this worker was composed under. Read once so the telemetry line and
+  // the prompt cannot disagree, and defaulted to the production arm so a failed read is never an A1.
+  const affordanceMode = resolveAffordanceMode(process.env[AFFORDANCE_ENV]);
+  // R2-E §6/§8: which efficacy arm this worker was composed under, and what the prework phase achieved.
+  const efficacyMode = resolveEfficacyMode(process.env[EFFICACY_ENV]);
+  let prework = null;
+  // R2-M §4/§6: which index-presentation arm this worker was composed under, and what the derivation
+  // produced. `off` and `m0` both leave the production index bytes untouched; only `m1` rewrites entries.
+  const indexMode = resolveIndexMetadataMode(process.env[INDEX_METADATA_ENV]);
+  let indexMetadata = null;
+  /**
+   * Trajectory-P2-D2 §9.3: what the model-visible Trajectory delivery achieved, for the telemetry line.
+   * `null` until the prompt is composed, so a worker that failed before composing reports "not attempted"
+   * rather than a false success.
+   */
+  let trajectoryDelivery = null;
+  /**
+   * Trajectory-P2A §6: what the worker session identity report ATTEMPTED, for the noncanonical
+   * telemetry line. `null` until the report runs, so a worker that failed before creation reports
+   * "not attempted" rather than a false success. This records the host's own attempt, never a claim
+   * that the parent received anything.
+   */
+  let sessionIdentityReport = null;
+  /**
+   * E1RG RG-A §7.2: THE PRE-CREATE ADMISSION RECEIPT.
+   *
+   * Hoisted out of the `try` so the telemetry section — which runs after the catch — can report what admission
+   * decided. `null` until the phase runs, so a worker that failed before admission reports "not attempted"
+   * rather than a fabricated verdict.
+   */
+  let preCreate = null;
+  /** @type {undefined | (() => void)} */
+  let releaseCapacity;
+  /**
+   * The telemetry line's payload, computed from whatever `boundary` holds. Three states are distinguishable
+   * on purpose, because "not installed" and "installed but unsupported" are different facts and the live
+   * gate asserts on the difference: a boundary that silently failed to load must not read as a pass.
+   */
+  const readBoundaryTelemetry = () => {
+    if (boundary === null) return JSON.stringify({ installed: false });
+    if (typeof boundary.unavailable === 'string') return JSON.stringify({ installed: false, unavailable: boundary.unavailable });
+    const outcomes = boundary.kernel?.outcomes ?? [];
+    return JSON.stringify({
+      installed: true,
+      kernel: {
+        supported: boundary.kernel?.supported === true,
+        ...(boundary.kernel?.unavailable === undefined ? {} : { unavailable: boundary.kernel.unavailable }),
+        labelled: outcomes.filter((entry) => entry.verified).length,
+        attempted: outcomes.length,
+        unverified: outcomes.filter((entry) => !entry.verified).map((entry) => entry.path),
+        skipped: (boundary.kernel?.skipped ?? []).length,
+      },
+      guard: { installed: boundary.guardInstalled === true, scope: boundary.guardScope, tools: boundary.fencedTools ?? [] },
+      aliases: { clean: boundary.aliasesClean === true, found: (boundary.aliasScan?.aliases ?? []).length },
+      residuals: (boundary.config?.residuals ?? []).length,
+      contract: boundary.kernel?.contract === undefined
+        ? undefined
+        : { package: boundary.kernel.contract.package, resolvedVersion: boundary.kernel.contract.resolvedVersion, qualifiedVersion: boundary.kernel.contract.qualifiedVersion, drifted: boundary.kernel.contract.drifted === true },
+    });
+  };
 
   try {
     const environment = host.work;
     if (environment === undefined || environment.recorder === undefined) {
       failure = environment?.error ?? 'the worker environment was not composed';
     } else {
+      /**
+       * R1-H: INSTALL THE READ BOUNDARY before the agent exists.
+       *
+       * The worker's cwd IS its execution world (the port spawns with `cwd: workDir`), so the fence derives
+       * its own layout from the process position rather than being told: the world is cwd, the repository is
+       * the ancestor holding `.palimpsest`, and the host home is `DSH_HOME`. The KERNEL layer (a MEDIUM +
+       * NO_READ_UP label) is applied here, in the Medium-integrity host, which is exactly why it can fence
+       * the Low-integrity worker without fencing itself.
+       *
+       * The GUARD layer is registered GLOBALLY on `ctx` (R1-HR §10): the shipped `subagent`/`workflow`/
+       * `job_output` capabilities reach OTHER scopes whose children inherit `read`, so a guard registered on
+       * the worker's own agent scope would leave exactly the hole this stage exists to close.
+       */
+      const boundaryLoad = await loadBoundary();
+      /**
+       * E1RG RG-A §4.1/§4.2: PRE-CREATE ADMISSION IS A CONTROL-FLOW DECISION, NOT AN ASSIGNMENT.
+       *
+       * WHAT WAS MEASURED ON THE PARENT COMMIT (`test/trajectory_p2e1rg_baseline_admission.test.ts` F1/F2).
+       * Each refusal below assigned `failure` and then execution continued to `agents.create()`. An Agent was
+       * composed, a model turn could follow, and — because a reported Worker Result was printed with exit 0
+       * BEFORE `failure` was ever consulted — a refused worker could still report `READY_FOR_SETTLEMENT`.
+       *
+       * The invariant this block enforces:
+       *
+       *     PreCreateAdmissionRefused => NoAgentCreation => NoModelTurn
+       *                               => NoSuccessfulWorkerOutcome => HOST_FAILURE
+       *
+       * `preCreate` collects a NAMED refusal for each phase property rather than overwriting one string, so a
+       * refusal reports every guarantee that failed and not only the last one checked. `refusal` is the first
+       * refusal in precedence order; the rest are kept in `preCreate.refusals` for the receipt.
+       *
+       * EVERY PHASE BELOW IS A REQUIRED METHOD (§4.3). A missing `openConfidentialSlot`, a missing
+       * `admitWorker`, or a missing boundary module is a REFUSAL, never "the optional mechanism is unavailable,
+       * so continue".
+       */
+      preCreate = {
+        requestedWorker: { cwd: process.cwd() },
+        capacity: null,
+        aliases: null,
+        kernel: null,
+        boundaryModule: boundaryLoad.module !== undefined ? 'available' : 'missing',
+        agentCreationAttempted: false,
+        modelTurnAttempted: false,
+        finalResult: null,
+        refusals: [],
+      };
+      /** @type {{ phase: string, detail: string }[]} */
+      const refusals = [];
+      const refuse = (phase, detail) => {
+        refusals.push({ phase, detail });
+        if (failure === null) failure = `refusing to run this worker (${phase}): ${detail}`;
+      };
+
+      if (boundaryLoad.module === undefined) {
+        /** §4.3: without the boundary module there is no kernel fence, no guard and no admission — refuse. */
+        refuse('boundary-module', boundaryLoad.error ?? 'the host boundary module is unavailable');
+        boundary = { unavailable: boundaryLoad.error };
+      }
+
+      /**
+       * R1-HC §4/§5: THE CONFIDENTIAL PROFILE'S CAPACITY ADMISSION.
+       *
+       * This backend cannot read-fence two ACTIVE worlds at once — a running worker's own workspace write
+       * grant is the last writer of its world's label — so the host runs at most ONE confidential worker and
+       * refuses (or the caller queues) beyond that. The slot is host-local and carries no semantics; the
+       * refusal below is a HOST CAPACITY fact, never a Work outcome.
+       *
+       * It is taken BEFORE the agent exists, so a refused worker never composes anything.
+       */
+      if (boundaryLoad.module !== undefined) {
+        if (typeof boundaryLoad.module.openConfidentialSlot === 'function') {
+          /**
+           * S1R-A: THE SLOT IS KEYED BY THE WINDOWS PRINCIPAL, NOT BY THE REPOSITORY.
+           *
+           * Host-S1 keyed it by the protected repository. That premise was MEASURED and is false on this host:
+           * with two test-owned repositories whose worlds were both ACTIVE, a confined process granted only
+           * repository A's workspace read repository B's active-world canary (F3). The two worlds had different
+           * workspace write SIDs, so neither the workspace nor the repository is the isolation unit — what they
+           * share is the Low integrity level every confined process of this principal carries.
+           *
+           * The slot therefore lives in the principal's own local application data, and the repository is passed
+           * only as METADATA for the receipt. Passing it as a namespace key would re-create the defect.
+           */
+          const repositoryRoot = boundaryLoad.module.findRepository?.(process.cwd()) ?? undefined;
+          const slot = boundaryLoad.module.openConfidentialSlot({
+            home: process.env.DSH_HOME ?? process.cwd(),
+            ...(repositoryRoot === undefined ? {} : { domain: repositoryRoot }),
+          });
+          const acquired = slot.acquire();
+          capacity = { granted: acquired.granted, detail: acquired.detail };
+          preCreate.capacity = {
+            granted: acquired.granted === true,
+            detail: acquired.detail,
+            mechanism: slot.mechanism ?? null,
+            /** S1R-A: which security domain this exclusion actually covers, and the assumption it rests on. */
+            domain: slot.domain?.identity ?? null,
+            domainScope: slot.domain?.scope ?? null,
+            domainPrincipal: slot.domain?.principal ?? null,
+            capacityRoot: slot.domain?.capacityRoot ?? null,
+            domainAssumption: slot.domain?.assumption ?? null,
+            /** A namespace reachable through a reparse point is refused rather than used. */
+            reparseAncestors: slot.domain?.reparseAncestors ?? [],
+          };
+          if (acquired.granted) releaseCapacity = () => slot.release();
+          else refuse('capacity', acquired.detail);
+        } else {
+          /** §4.3: capacity is a security requirement for this profile, not a throughput preference. */
+          refuse('capacity', 'the boundary module exposes no openConfidentialSlot(), so the confidential capacity limit cannot be enforced');
+          preCreate.capacity = { granted: false, detail: 'the capacity mechanism is absent' };
+        }
+      }
+
+      if (boundaryLoad.module !== undefined) {
+        boundary = boundaryLoad.module.installWorkerReadBoundary({ world: process.cwd(), context: ctx });
+        preCreate.aliases = { clean: boundary.aliasesClean === true, found: (boundary.aliasScan?.aliases ?? []).length };
+        /**
+         * R1-HR: AN ALIAS THAT REACHES PROTECTED CONTENT REFUSES THE WORKER.
+         *
+         * A world sharing a file record with a protected file, or holding a reparse point into a protected
+         * root, cannot be fenced at all: the sandbox's own write grant re-labels the world tree, and through
+         * such an alias that grant overwrites the protected object's NO_READ_UP. The measurement is recorded
+         * in `alias_guard.js`. Refusing here is the fail-closed answer — running anyway would produce a
+         * worker that looks protected and is not.
+         *
+         * RG-0-F3: `installWorkerReadBoundary` now detects the alias BEFORE any label mutation, so a rejected
+         * world produces `kernel.applied: false` rather than writing through it.
+         */
+        if (boundary.aliasesClean === false) {
+          refuse('alias', boundary.aliasRefusal ?? 'the execution world can reach protected content by alias');
+        }
+        /**
+         * RG-B §5.6: THE KERNEL COVERAGE RESULT IS A REQUIRED ADMISSION INPUT.
+         *
+         * `kernel.supported` alone is not the claim. What matters is that every root that COULD be labelled was
+         * labelled and verified, and that every skipped ancestor's content was covered by a derived child. The
+         * Low-token probe measured why: without that coverage a synthetic canary is readable from the worker's
+         * own world.
+         */
+        const kernel = boundary.kernel ?? {};
+        const coverage = kernel.coverage ?? null;
+        /**
+         * HOST-S1 §7.2: THE DESCENDANT QUALIFICATION IS ITS OWN REFUSAL PHASE.
+         *
+         * A verified root label is not the claim that the CONTENT is protected. E1RG computed a descendant result
+         * but nothing here consumed it, so a tree with a blocked-inheritance child was admitted on the root
+         * outcome alone (measured as `baseline-and-falsifiers.json` F3). It is a separate phase rather than part
+         * of `kernel-coverage` because the two failures call for different repairs: incomplete coverage means a
+         * root was not labelled, incomplete descendants means a labelled root's content is not covered.
+         */
+        const verification = boundary.verification ?? null;
+        preCreate.kernel = {
+          supported: kernel.supported === true,
+          unavailable: kernel.unavailable ?? null,
+          coverageComplete: coverage === null ? false : coverage.complete === true,
+          planned: coverage?.planned?.length ?? 0,
+          labelled: coverage?.labelled?.length ?? 0,
+          verified: coverage?.verified?.length ?? 0,
+          unverified: coverage?.unverified?.length ?? null,
+          skipped: coverage?.skipped?.length ?? (kernel.skipped?.length ?? 0),
+          skippedWithoutDerivedCoverage: coverage?.skippedWithoutDerivedCoverage?.length ?? null,
+          /** §6.2: the spine the derivation followed, so a receipt names the path and not only the count. */
+          spine: coverage?.skipped?.flatMap((entry) => entry.spine ?? []) ?? [],
+          incompletePlans: coverage?.incompletePlans?.length ?? null,
+          drift: kernel.contract?.drifted === true,
+          /** §7.2: the content claim, reported separately from the root claim. */
+          descendantsQualified: verification?.descendantsQualified === true,
+          descendantTrees: verification?.trees?.length ?? 0,
+          descendantEntriesChecked: (verification?.trees ?? []).reduce((sum, entry) => sum + (entry.checked ?? 0), 0),
+          descendantUnverifiedRoots: verification?.unverifiedRoots?.length ?? null,
+        };
+        if (kernel.supported !== true) {
+          refuse('kernel', kernel.unavailable ?? 'the kernel fence could not be installed, so protected content is not enforced by process integrity');
+        } else if (coverage === null) {
+          refuse('kernel-coverage', 'the boundary reported no root coverage result, so complete protection cannot be demonstrated');
+        } else if (coverage.complete !== true) {
+          refuse(
+            'kernel-coverage',
+            `root coverage is INCOMPLETE: ${String(coverage.unverified.length)} unverified, ${String(coverage.unresolved.length)} unresolved, ${String(coverage.skippedWithoutDerivedCoverage.length)} skipped root(s) with no derived coverage, ${String((coverage.incompletePlans ?? []).length)} incomplete spine plan(s)`,
+          );
+        } else if (verification === null) {
+          refuse('kernel-descendants', 'the boundary reported no descendant verification, so a verified root label cannot be taken as content protection');
+        } else if (verification.descendantsQualified !== true) {
+          refuse(
+            'kernel-descendants',
+            `descendant verification is INCOMPLETE: ${String((verification.unverifiedRoots ?? []).length)} root(s) whose content was not shown to be covered${verification.reason === undefined ? '' : ` (${String(verification.reason)})`}`,
+          );
+        }
+        if (kernel.contract?.drifted === true) {
+          /** §4.3/§5.6: ABI drift means the fence ran against a seam it was not qualified for. */
+          refuse('kernel-drift', `the Win32 binding seam reports drift: resolved ${String(kernel.contract?.resolvedVersion)} against qualified ${String(kernel.contract?.qualifiedVersion)}`);
+        }
+      }
+      preCreate.refusals = refusals;
+      /**
+       * THE PRE-CREATE STOP. Execution does NOT continue to `agents.create()` when any phase refused.
+       *
+       * The refusal is reported as a HOST failure below — after the telemetry lines, so a reviewer can see WHICH
+       * phase refused — and the worker exits nonzero without ever creating an Agent.
+       */
+      if (refusals.length > 0) {
+        preCreate.finalResult = 'PRECREATE_REFUSED';
+        throw new PreCreateRefusal(refusals);
+      }
       // The name comes from the environment's OWN definition — the data Palimpsest sent — never from a
       // literal here, so the two sides cannot disagree about what the worker answers through.
       const resultToolName =
@@ -240,20 +593,111 @@ async function runWorker(ctx, deps) {
       if (resultToolName === undefined) {
         failure = 'the worker result tool name is unavailable; refusing to run a worker without a structural outcome boundary';
       } else {
-        const workerSetup = (agentCtx) => {
+        /**
+         * R1-L §7/§13: the SECOND worker-private tool. Both are registered for EVERY worker — the pull
+         * tool even when this attempt selected no capital — so the R1 conditions differ only in the
+         * visible index and the resolvable handles, never in the tool catalogue.
+         */
+        const pullToolName =
+          typeof environment.contextPullTool?.name === 'string' && environment.contextPullTool.name.length > 0
+            ? environment.contextPullTool.name
+            : undefined;
+        /** Set inside `workerSetup` when the capability gate refuses; checked immediately after creation. */
+        let capabilityRefusal = null;
+        const workerSetup = (agentCtx, agent) => {
           setup(agentCtx);
           // Enumerate what this scope INHERITS, then close the authority surface. The prefix comes from
           // the composed environment (one place knows what Palimpsest's tools are called).
           const prefix = typeof environment.deniedAuthorityPrefix === 'string' ? environment.deniedAuthorityPrefix : 'palimpsest_';
-          const visible = typeof agentCtx.tools.schemas === 'function' ? agentCtx.tools.schemas() : [];
-          denied = visible
+          const keep = [resultToolName, pullToolName].filter((name) => typeof name === 'string');
+          /**
+           * Trajectory-P2-E1RD: ENUMERATE THE AGENT'S OWN VIEW, NOT THE GLOBAL ONE.
+           *
+           * `tools.schemas()` with no scope returns the GLOBAL view, and a scope's `restrict()` filters only
+           * what that scope INHERITS — it never edits the global layer. Enumerating the global view therefore
+           * reports a surface the restriction cannot change, which made a withdrawal look applied while the
+           * gate still saw the tool. `tools.schemas(agent)` is the same projection the model-facing request
+           * uses (`sdkSchemas`/`schemas` are called with the agent as the scope key), so this is the surface
+           * that actually reaches the model.
+           */
+          const scopedNames = () => (typeof agentCtx.tools.schemas === 'function' ? agentCtx.tools.schemas(agent) : [])
             .map((entry) => (typeof entry?.name === 'string' ? entry.name : undefined))
-            .filter((name) => typeof name === 'string' && name.startsWith(prefix) && name !== resultToolName);
+            .filter((name) => typeof name === 'string');
+          const visible = scopedNames();
+          denied = visible.filter((name) => name.startsWith(prefix) && !keep.includes(name));
           if (denied.length > 0) agentCtx.tools.restrict({ deny: denied });
+          /**
+           * Trajectory-P2-E1RD §6 OPTION A — WITHDRAW THE MUTABLE-DIRECTORY CAPABILITY.
+           *
+           * DSH 0.2.1-rc.2 exposes `working_directory`, which moves the basis every later filesystem call
+           * resolves against. The trusted read guard resolves against the fixed execution world, so the two
+           * could disagree. The capability is removed from the ACTUAL registry this scope resolves, not merely
+           * hidden from a prompt — and it is removed BEFORE the gate below enumerates the surface, so the gate
+           * reports the surface the model will really see.
+           *
+           * The name stays absent from `CAPABILITY_CLASSES` on purpose: if a future composition re-exposes it,
+           * the gate refuses the worker instead of trusting it.
+           */
+          const withdrawal = boundaryLoad.module !== undefined && typeof boundaryLoad.module.withdrawalFilter === 'function'
+            ? boundaryLoad.module.withdrawalFilter(visible)
+            : { withdraw: [], absent: [] };
+          if (withdrawal.withdraw.length > 0) agentCtx.tools.restrict({ deny: [...withdrawal.withdraw] });
+          withdrawn = [...withdrawal.withdraw];
+          const surfaceAfter = [...scopedNames(), resultToolName, pullToolName].filter((name) => typeof name === 'string');
+          /**
+           * R1-HR §10/§11: THE FAIL-CLOSED CAPABILITY GATE.
+           *
+           * The surface is enumerated from the scope's OWN view — what this worker can actually reach, not
+           * what a declaration says it should — and every name must classify. An unclassified capability
+           * REFUSES THE WORKER START: unknown is not assumed safe.
+           *
+           * The second condition matters as much as the first. Several shipped capabilities reach OTHER
+           * scopes (`subagent` joins the parent preset for its child; `workflow` spawns those children;
+           * `job_output` returns a job's captured output). Those are only safe while the read guard is
+           * registered globally, so a per-agent registration is refused rather than silently leaving a hole.
+           */
+          if (boundaryLoad.module !== undefined && typeof boundaryLoad.module.admitWorker === 'function') {
+            /**
+             * E1RE RE-B: the INSTALLATION REPORT is passed with the surface, so the gate can require the whole
+             * boundary rather than only the capability classification. A missing basis fence or delegation
+             * fence refuses the worker instead of reading as "the read guard is installed, so this is safe".
+             */
+            capability = boundaryLoad.module.admitWorker({
+              visibleNames: surfaceAfter,
+              guardScope: boundary?.guardScope,
+              boundary: {
+                guardInstalled: boundary?.guardInstalled === true,
+                cwdFenceInstalled: boundary?.cwdFenceInstalled === true,
+                delegationFenceInstalled: boundary?.delegationFenceInstalled === true,
+                /**
+                 * E1RG RG-B §5.6: THE KERNEL FACTS ARE PASSED WITH THE GUARD FACTS. The gate already refused a
+                 * worker whose kernel coverage was incomplete at the pre-create phase; passing them again here
+                 * keeps the two phases consistent and makes the refusal visible in the capability receipt too.
+                 */
+                kernelSupported: preCreate?.kernel?.supported === true,
+                kernelRootsVerified: preCreate?.kernel?.coverageComplete === true && preCreate?.kernel?.verified > 0,
+                kernelCoverageComplete: preCreate?.kernel?.coverageComplete === true,
+                kernelContractNotDrifted: preCreate?.kernel?.drift !== true,
+                /** HOST-S1 §7.2: the content claim, passed with the root claim so the two phases agree. */
+                kernelDescendantsQualified: preCreate?.kernel?.descendantsQualified === true,
+              },
+            });
+            if (capability.allowed !== true) capabilityRefusal = capability.reason ?? 'the capability classification refused this worker';
+          } else {
+            /**
+             * E1RG RG-A §4.3: A MISSING REQUIRED METHOD IS A REFUSAL, NOT "THE MECHANISM IS UNAVAILABLE".
+             *
+             * The previous shape skipped the gate entirely when `admitWorker` was absent, so a composition that
+             * lost the classification module ran a worker with an unclassified surface. The surface has already
+             * been enumerated above, so refusing here costs nothing and closes the hole.
+             */
+            capabilityRefusal = 'the boundary module exposes no admitWorker(), so the capability surface cannot be classified; an unclassified surface is not assumed safe';
+          }
           // The worker's OWN layer: a restriction filters what a scope inherits and never what it
-          // registers, so the outcome tool survives the deny above. The definition arrives already
-          // converted by the plugin layer, which owns that conversion.
+          // registers, so the two worker-private tools survive the deny above. The definitions arrive
+          // already converted by the plugin layer, which owns that conversion.
           agentCtx.tools.register(environment.tool);
+          if (pullToolName !== undefined) agentCtx.tools.register(environment.contextPullTool);
           if (typeof agentCtx.tools.presentAs === 'function') {
             agentCtx.tools.presentAs('ptc');
             presentation = 'ptc';
@@ -265,11 +709,266 @@ async function runWorker(ctx, deps) {
           agentOptions,
           setup: workerSetup,
         });
+        /** §7.2: the Agent WAS created — recorded here so a receipt distinguishes the two admission phases. */
+        if (preCreate !== null) preCreate.agentCreationAttempted = true;
+        /**
+         * Trajectory-P2A §6.3: THE WORKER SESSION IDENTITY REPORT.
+         *
+         * Emitted HERE — after `agents.create()` resolved successfully and BEFORE any model turn —
+         * for three reasons:
+         *
+         *   · The identity EXISTS now. DSH stores the session and publishes the agent inside
+         *     `agents.create`, so a resolved handle is proof the Session Creation boundary was
+         *     crossed (measured: the created session's `seq` is 0, i.e. no turn was appended).
+         *   · It does NOT depend on the model. The first `agent.followup()` is a later statement, so
+         *     a report placed here cannot be affected by what a model does or fails to do.
+         *   · §6.5: a worker that is REFUSED next still reported a real created Session.
+         *     `SESSION_CREATED` does not imply `WORKER_ADMITTED` or `MODEL_TURN_STARTED`, and the
+         *     refusal below is unchanged by this report.
+         *
+         * The identity is read from the CREATED HANDLE, never from the candidate string passed in.
+         * A read that throws, a malformed identity or an absent IPC channel are all contained: the
+         * report is best-effort telemetry and can never change this worker's outcome (§6.4).
+         */
+        try {
+          sessionIdentityReport = reportWorkerSessionIdentity({
+            sessionId: handle?.agent?.session?.id,
+            /**
+             * BOUND to its receiver on purpose. Node's `process.send` reads `this.connected`, so an
+             * unbound reference throws `Cannot read properties of undefined (reading 'connected')` —
+             * measured by the Level C gate, where the report was attempted and failed for exactly this
+             * reason. The producer takes a send function; the runner supplies one that works.
+             */
+            send: typeof process.send === 'function' ? process.send.bind(process) : undefined,
+          });
+        } catch (error) {
+          sessionIdentityReport = { reported: false, outcome: 'REPORT_THREW', detail: error?.message ?? String(error) };
+        }
+        /**
+         * The gate fired: the worker's surface contained a capability the host cannot vouch for. The agent is
+         * disposed immediately and the attempt is reported as a HOST failure — never as a Work outcome,
+         * because no work happened. The setup closure runs during `agents.create`, so this is the first
+         * moment the verdict exists.
+         */
+        if (capabilityRefusal !== null) {
+          try {
+            await handle.dispose?.();
+          } catch {
+            /* the agent may not have finished composing */
+          }
+          throw new Error(`refusing to run this worker: ${capabilityRefusal}`);
+        }
         const agent = handle.agent;
         await agent.whenIdle();
-        agent.followup(userMessage(workTask(environment.context)));
+        /**
+         * R2-U §7: the affordance is applied to the COMPOSED PROMPT and nowhere else. In the default mode
+         * this is the identity function, so a production deployment's prompt is unchanged; in
+         * `explicit-review` it appends the one frozen clause.
+         */
+        /**
+         * R2-E §8/§9/§10: THE PREWORK REVIEW PHASE, before the first engineering turn.
+         *
+         * THE HOST DOES THE PULLING, through the worker's OWN pull tool — the same `execute` the model
+         * would have called, so it takes the same argument shape, the same local allowlist check, the same
+         * IPC envelope and the same parent-side resolver. There is no second fetch path: a handle this
+         * attempt did not bind is refused here exactly as it would be for a model-initiated pull, and the
+         * bodies come from the governed read, never from a backing store.
+         *
+         * It runs BEFORE the first turn exists, so "consumed before the first implementation mutation" is
+         * structural rather than a race the harness has to police.
+         */
+        let efficacyReview = { mode: efficacyMode, resolved: [], failures: [] };
+        if (efficacyMode === EFFICACY_MODES.E1) {
+          const pullTool = environment.contextPullTool;
+          const selected = (environment.context?.compiled?.handles ?? []).map((entry) => ({ handle: entry.handle, kind: entry.kind }));
+          const resolved = [];
+          const failures = [];
+          const startedAt = Date.now();
+          for (const entry of selected) {
+            if (pullTool === undefined || typeof pullTool.execute !== 'function') {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: 'this host composed no pull tool' });
+              continue;
+            }
+            try {
+              const answer = await pullTool.execute({ handle: entry.handle });
+              if (answer?.status === 'resolved') {
+                resolved.push({ handle: entry.handle, kind: entry.kind, body: answer.value, digest: bodyDigest(answer.value) });
+              } else {
+                failures.push({ handle: entry.handle, kind: entry.kind, detail: `${String(answer?.status ?? 'unknown')}${answer?.detail === undefined ? '' : `: ${String(answer.detail)}`}` });
+              }
+            } catch (error) {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: error?.message ?? String(error) });
+            }
+          }
+          /**
+           * §16: the CONSUMPTION PROOF. Handle identities and body digests only — never the body text. The
+           * bodies go into the prompt, which the model sees; the telemetry records that they were delivered
+           * and which object each was, so the record can prove consumption without persisting content.
+           */
+          prework = Object.freeze({
+            mechanism: PREWORK_MECHANISM,
+            selectedCount: selected.length,
+            resolvedCount: resolved.length,
+            failureCount: failures.length,
+            handles: resolved.map((entry) => entry.handle),
+            kinds: resolved.map((entry) => entry.kind),
+            digests: resolved.map((entry) => `${entry.kind}:${entry.handle}:${entry.digest}`),
+            failures: failures.map((entry) => ({ handle: entry.handle, detail: entry.detail })),
+            elapsedMs: Date.now() - startedAt,
+            /** §9: an E1 trial whose selected handles did not ALL materialize is not a clean observation. */
+            allConsumed: selected.length > 0 && failures.length === 0 && resolved.length === selected.length,
+          });
+          efficacyReview = { mode: efficacyMode, resolved, failures };
+        } else if (efficacyMode === EFFICACY_MODES.E0) {
+          /**
+           * §12: the CONTROL arm. The same section boundary and equivalent ordinary wording, and NO capital
+           * of any kind — no sham capital, because the treatment is relevant inherited capital rather than
+           * extra tokens. A model-mediated prework phase is deliberately NOT run here: the control's whole
+           * point is that nothing was inherited.
+           */
+          prework = Object.freeze({ mechanism: PREWORK_MECHANISM, selectedCount: 0, resolvedCount: 0, failureCount: 0, handles: [], kinds: [], digests: [], failures: [], elapsedMs: 0, allConsumed: true });
+          efficacyReview = { mode: efficacyMode, resolved: [], failures: [] };
+        }
+        /**
+         * R2-M §5/§6: THE M1 INDEX DERIVATION, before the first turn.
+         *
+         * §5 requires every body-derived M1 field to come through the SAME governed attempt-bound path
+         * R2-E proved: the worker's own pull tool, the parent's own resolver, and the attempt's own
+         * allowlist. So this calls the SAME `execute` a model call would, and a handle this attempt did not
+         * bind is refused here exactly as it would be for a model-initiated pull. No backing store is read,
+         * no global asset lookup exists, and the FULL BODY IS NEVER RENDERED — only the bounded projection
+         * `deriveIndexEntry` returns, plus owner metadata the manifest already froze.
+         *
+         * THE ACCOUNTING TRAP THIS AVOIDS. The child-side pull tool appends every RESOLVED handle to the
+         * array the worker's `PALIMPSEST_WORKER_PULL` telemetry reports. R2-E did not care, because R2-E
+         * removed voluntary uptake as a variable. R2-M is the opposite: voluntary pull IS the primary
+         * outcome, so a derivation pull that counted as a worker pull would manufacture the result. The
+         * derivation runs entirely BEFORE the first turn exists, so recording its offset and reporting only
+         * the handles pulled AFTER it separates the two mechanically rather than by inspection.
+         */
+        let indexTextForPrompt = environment.contextIndexText;
+        if (indexMode === INDEX_METADATA_MODES.M1) {
+          const pullTool = environment.contextPullTool;
+          const selected = (environment.context?.compiled?.handles ?? []).map((entry) => ({ handle: entry.handle, kind: entry.kind }));
+          const entries = [];
+          const failures = [];
+          const manifest = [];
+          const startedAt = Date.now();
+          for (const entry of selected) {
+            if (pullTool === undefined || typeof pullTool.execute !== 'function') {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: 'this host composed no pull tool' });
+              continue;
+            }
+            try {
+              const answer = await pullTool.execute({ handle: entry.handle });
+              if (answer?.status !== 'resolved') {
+                failures.push({ handle: entry.handle, kind: entry.kind, detail: `${String(answer?.status ?? 'unknown')}${answer?.detail === undefined ? '' : `: ${String(answer.detail)}`}` });
+                continue;
+              }
+              const derived = deriveIndexEntry(entry, answer.value);
+              entries.push(derived);
+              manifest.push(...manifestEntry(derived));
+            } catch (error) {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: error?.message ?? String(error) });
+            }
+          }
+          /**
+           * The array length AFTER the derivation loop. Every entry before this index is a handle the HOST
+           * materialized to build the index; everything from here on is the model's own voluntary choice.
+           * Recording the boundary rather than a count keeps the separation exact even when some handles
+           * fail to resolve (a failure pushes nothing).
+           */
+          const derivationPullOffset = Array.isArray(environment.pulledHandles) ? environment.pulledHandles.length : 0;
+          indexMetadata = Object.freeze({
+            mode: indexMode,
+            mechanism: PREVIEW_MECHANISM,
+            procedureRuling: PROCEDURE_RULING,
+            selectedCount: selected.length,
+            derivedCount: entries.length,
+            failureCount: failures.length,
+            /** Handles the HOST materialized to build the index — distinct from handles the WORKER pulled. */
+            derivationHandles: entries.map((entry) => entry.handle),
+            derivationPullOffset,
+            failures,
+            manifest,
+            elapsedMs: Date.now() - startedAt,
+            allDerived: selected.length > 0 && failures.length === 0 && entries.length === selected.length,
+          });
+          /**
+           * The index the worker sees. If every selected handle derived, the entries replace the
+           * production entry lines and everything else is byte-identical. If any handle failed, the
+           * production section is left ALONE rather than rendering a partial index — a half-derived index
+           * would be a different treatment from the one the protocol froze.
+           */
+          indexTextForPrompt = indexMetadata.allDerived
+            ? renderIndexMetadata(environment.contextIndexText, entries)
+            : environment.contextIndexText;
+        } else if (indexMode === INDEX_METADATA_MODES.M0) {
+          indexMetadata = Object.freeze({ mode: indexMode, mechanism: PREVIEW_MECHANISM, procedureRuling: PROCEDURE_RULING, selectedCount: (environment.context?.compiled?.handles ?? []).length, derivedCount: 0, failureCount: 0, derivationHandles: [], derivationPullOffset: 0, failures: [], manifest: [], elapsedMs: 0, allDerived: false });
+        }
+        /**
+         * §14/§19/§22: THE INDEX-PRESENTATION DIGEST.
+         *
+         * The telemetry carries the arm, the derived entries' manifest (handle, kind, both provenances,
+         * source and preview digests, lengths, truncation) and a digest of the section — but NOT the section
+         * TEXT. §22 resolves a real contradiction here: an earlier version stored `renderedSection` whole
+         * while its own comment claimed the line carried no preview text. The full bytes belong to the
+         * DURABLE SESSION ARTIFACT, which is the model-visible boundary and therefore the authoritative
+         * record; duplicating them into machine telemetry would be both redundant and misleading.
+         *
+         * The digest stays, so a reader can check that the session's section hashes to what the host says it
+         * rendered — and if the two ever disagree, the session is right.
+         */
+        indexMetadata = Object.freeze({ ...indexMetadata, renderedSectionDigest: indexSectionDigest(indexTextForPrompt) });
+        /**
+         * Trajectory-P2-D2 §8.3: THE MODEL-VISIBLE TRAJECTORY SECTION.
+         *
+         * The PRODUCT rendered the section (from this attempt's qualified Capsule and the TRUSTED arm) and
+         * the payload carries it. This host VALIDATES it (§8.2) and PLACES it at ONE deterministic point:
+         * appended after the composed task text, separated by one blank line. In OFF — or when the received
+         * presentation is malformed — `applyTrajectoryPresentation` returns the text UNCHANGED, so the prompt
+         * is byte-identical to the pre-D2 baseline.
+         *
+         * The full UserMessage digest is computed on the FINAL text, so it proves the delivered bytes rather
+         * than the intended ones, and the section digest proves WHICH section bytes entered that message.
+         */
+        const composedTaskText = workTask(environment.context, indexTextForPrompt);
+        /**
+         * P2-E0 §8.6/§8.9: the trial delivery record carries the THREE INDEPENDENT DIMENSIONS. The
+         * presentation the host places is `record.presentation`; the arm, the eligibility and the delivery
+         * state are recorded even when no section was placed, so a failed TREATMENT is never counted as OFF.
+         */
+        const deliveryRecord = environment.trajectoryDelivery;
+        const trajectorySection = deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.presentation ?? null;
+        const trajectoryPlacement = applyTrajectoryPresentation(composedTaskText, trajectorySection);
+        const placedTaskText = trajectoryPlacement.text;
+        const finalUserMessageText = applyEfficacyReview(applyAffordance(placedTaskText, affordanceMode), efficacyReview);
+        trajectoryDelivery = Object.freeze({
+          state: trajectoryPlacement.state,
+          placed: trajectoryPlacement.placed,
+          detail: trajectoryPlacement.detail,
+          assignedArm: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.assignedArm ?? null,
+          eligibility: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.eligibility ?? null,
+          deliveryState: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.deliveryState ?? null,
+          failureReason: deliveryRecord === null || typeof deliveryRecord !== 'object' ? null : deliveryRecord.failureReason ?? null,
+          sectionBytes: trajectoryPlacement.sectionBytes,
+          sectionDigest: trajectoryPlacement.sectionDigest,
+          userMessageDigest: userMessageDigest(finalUserMessageText),
+          userMessageBytes: Buffer.byteLength(finalUserMessageText, 'utf8'),
+        });
+        /** §7.2: a MODEL TURN is about to run. Recorded so a refusal receipt proves no turn was attempted. */
+        if (preCreate !== null) preCreate.modelTurnAttempted = true;
+        agent.followup(
+          userMessage(finalUserMessageText),
+        );
         await agent.whenIdle();
         offeredTools = offeredToolNames(agent.session);
+        /**
+         * R2-U §16: the ORDERED action log, read from the same session artifact as `offeredTools`. Read here
+         * — after the turn finished and before the session is flushed — so the ordering facts the trial
+         * record needs are captured from durable evidence rather than from a prompt line.
+         */
+        actionLog = toolActionLog(agent.session);
         if (typeof sessions?.flush === 'function') {
           try {
             await sessions.flush(agent.session);
@@ -277,6 +976,18 @@ async function runWorker(ctx, deps) {
             process.stderr.write(`palimpsest-runner: worker session flush failed: ${error?.message ?? String(error)}\n`);
           }
         }
+        /**
+         * R2-M §22: THE WORKER'S OWN PULLS, with the host's index-derivation pulls removed.
+         *
+         * The child-side pull tool records every resolved handle, and the M1 derivation above used that
+         * same tool. R2-M's PRIMARY OUTCOME is voluntary pull, so counting a derivation pull as a worker
+         * pull would manufacture the treatment effect. The derivation ran entirely before the first turn
+         * existed, so its handles are exactly the first `derivationPullOffset` entries; everything after is
+         * the model's own choice. In `off`/`m0` the offset is 0 and this is the identity.
+         */
+        const allPulled = Array.isArray(environment.pulledHandles) ? environment.pulledHandles : [];
+        const derivationPullOffset = indexMetadata === null ? 0 : (indexMetadata.derivationPullOffset ?? 0);
+        pulledHandles = derivationPullOffset === 0 ? allPulled : allPulled.slice(derivationPullOffset);
         const recorder = environment.recorder;
         if (recorder.status === 'reported') {
           reported = recorder.outcome;
@@ -292,10 +1003,145 @@ async function runWorker(ctx, deps) {
   // Noncanonical telemetry, exactly like PALIMPSEST_TURN: the worker's OWN recorded capability facts.
   // A reviewer (and the live gate) reads the firewall from here rather than from a prompt line.
   process.stdout.write(
-    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools })}
+    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, withdrawnTools: withdrawn, offeredTools, affordance: affordanceMode, index: indexMode })}
+`,
+  );
+  /**
+   * R1-L §17: WHICH HANDLES the worker actually pulled — and never a body.
+   *
+   * This is what gives the resumed R1 experiment a mechanical answer to "did the stochastic worker use
+   * the capital?" without persisting any model reasoning. It is noncanonical host telemetry, exactly
+   * like `PALIMPSEST_WORKER_ENV`.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_PULL ${JSON.stringify({ pulled: pulledHandles })}
+`,
+  );
+  /**
+   * R2-U §16: THE ORDERED ACTION LOG. Tool NAMES and their first-use ordinals only — no argument, no
+   * result, no reasoning. This is what lets a trial record answer "did the worker pull BEFORE it started
+   * editing / before it ran the oracle / before it committed" mechanically, rather than from a transcript.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_ACTIONS ${JSON.stringify({ order: actionLog.order, firstUse: actionLog.firstUse })}
+`,
+  );
+  /**
+   * R2-E §16: THE CAPITAL-CONSUMPTION PROOF. Handle identities and body DIGESTS only — never a body. A
+   * reviewer and the harness read from here whether every selected handle was materialized through the
+   * governed channel before the first engineering turn.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_EFFICACY ${JSON.stringify({ mode: efficacyMode, prework })}
+`,
+  );
+  /**
+   * R2-M §14/§19: THE INDEX-PRESENTATION PROOF. Which arm the worker was composed under, what the host
+   * derived to build the index, and the per-field preview manifest (handle, kind, both provenances, source
+   * digest, rendered digest, rendered length, truncation). Handle identities, field digests and lengths
+   * only — NEVER a body and never the full preview text. The `derivationPullOffset` is what lets the
+   * harness prove the worker's own pull count was not inflated by the host's derivation.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_INDEX ${JSON.stringify({ mode: indexMode, metadata: indexMetadata })}
+`,
+  );
+  /**
+   * Trajectory-P2-D2 §9.3: THE TRAJECTORY DELIVERY PROOF. The arm state, whether the section was PLACED,
+   * the section byte count and digest, and the FULL UserMessage digest and byte count — never the section
+   * text and never the message text. A reviewer reads from here whether the PRODUCT-rendered section
+   * actually entered the `agent.followup()` UserMessage, and the UserMessage digest is what a later trial
+   * freezes so one manifest cannot be misread as proof the delivered bytes stayed unchanged.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_TRAJECTORY ${JSON.stringify({ delivery: trajectoryDelivery })}
+`,
+  );
+  /**
+   * R1-H: WHAT THE READ BOUNDARY ACHIEVED — the noncanonical fact a reviewer and the live gate read instead
+   * of a prompt line. It reports counts and states only: no path, no body, no credential (§13/§16).
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_READ_BOUNDARY ${readBoundaryTelemetry()}
+`,
+  );
+  /**
+   * R1-HR §10: WHAT THE CAPABILITY CLASSIFICATION DECIDED — counts per class and the verdict, never a path
+   * and never a tool body. A reviewer and the live gate read the fail-closed decision from here.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_CAPACITY ${JSON.stringify(capacity ?? { granted: false, detail: 'the confidential profile slot was not consulted' })}
+`,
+  );
+  /**
+   * Trajectory-P2A §6: WHAT THE SESSION IDENTITY REPORT ATTEMPTED. Counts and outcome codes only —
+   * never a body and never a claim of delivery. A reviewer reads from here whether the host produced
+   * and attempted to send a well-formed created identity, which is the host-side half of the
+   * observation; the PARENT's receipt is a separate fact recorded on the parent side.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_SESSION_IDENTITY ${JSON.stringify(sessionIdentityReport ?? { reported: false, outcome: 'NOT_ATTEMPTED' })}
+`,
+  );
+  process.stdout.write(
+    `PALIMPSEST_WORKER_CAPABILITIES ${JSON.stringify(
+      capability === null
+        ? { classified: false }
+        : { classified: true, allowed: capability.allowed === true, counts: capability.counts, unclassified: capability.classification?.unclassified ?? [], requiresGlobalGuard: capability.classification?.requiresGlobalGuard === true },
+    )}
+`,
+  );
+  /**
+   * E1RG RG-A §7.2: THE PRE-CREATE ADMISSION RECEIPT.
+   *
+   * Which phase refused (if any), whether an Agent was created, whether a model turn was attempted, and the
+   * final host result. Counts and phases only — never a path body and never a capability body. A reviewer reads
+   * from here whether a refusal actually prevented execution, which is the claim this stage exists to make.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_PRECREATE ${JSON.stringify(
+      preCreate === null
+        ? { attempted: false }
+        : {
+            attempted: true,
+            boundaryModule: preCreate.boundaryModule,
+            capacity: preCreate.capacity,
+            aliases: preCreate.aliases,
+            kernel: preCreate.kernel,
+            refused: preCreate.refusals.length > 0,
+            refusals: preCreate.refusals,
+            agentCreationAttempted: preCreate.agentCreationAttempted,
+            modelTurnAttempted: preCreate.modelTurnAttempted,
+            finalResult: preCreate.finalResult ?? (preCreate.refusals.length > 0 ? 'PRECREATE_REFUSED' : 'ADMITTED'),
+          },
+    )}
 `,
   );
 
+  if (releaseCapacity !== undefined) {
+    releaseCapacity();
+    releaseCapacity = undefined;
+  }
+  /**
+   * E1RG RG-A §4.2: REFUSAL PRECEDENCE. A REFUSAL IS EVALUATED FIRST.
+   *
+   * MEASURED ON THE PARENT COMMIT. `failure` was assigned at the admission phases and then only consulted at
+   * the very end — AFTER this reported-result branch. So a worker whose capacity or alias admission was refused
+   * could still print a success-shaped `PALIMPSEST_WORK_RESULT` and exit 0. The refusal was recorded and
+   * discarded, which is the same as not having it.
+   *
+   * The order below is the invariant, not a style choice:
+   *
+   *     admission refused => HOST_FAILURE, regardless of what a reporter claims
+   *
+   * A refusal can only come from a phase that ran BEFORE the Agent existed or from a capability refusal that
+   * disposed it, so `reported` in this branch describes work that must never have started.
+   */
+  if (failure !== null) {
+    printWorkResult({ kind: 'HOST_FAILURE', detail: failure });
+    exitWith(1);
+    return;
+  }
   if (reported !== null && reported !== undefined) {
     printWorkResult({
       kind: reported.kind,
@@ -552,7 +1398,14 @@ async function run(ctx, deps) {
   });
 
   if (typeof startup.message === 'string' && startup.message.trim() !== '') {
-    await deliver(startup.message);
+    // COG-2 §15: a cold principal is told that recorded project work exists, in one sentence and
+    // without any entry content. Measured: without it, a later principal discovered nothing; with
+    // it, it read the journal and used it. Absence/empty/failure composes the message unchanged.
+    const launchMessage = await composeLaunchMessage(
+      host.deployment?.installed?.application?.projectWorkspace,
+      startup.message,
+    );
+    await deliver(launchMessage);
   }
 
   if (startup.once === true) {
@@ -623,4 +1476,4 @@ function apply(ctx) {
   });
 }
 
-export { apply, branchTask };
+export { apply, branchTask, runWorker, workTask, userMessage };

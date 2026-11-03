@@ -1,0 +1,170 @@
+{
+  "schema": "pc1-live-outcomes/v1",
+  "cohortId": "pc1-live-2026-11-02-c",
+  "codeFreeze": "2ed32bc954f7961bf19d8531d62b8f8f4088b7dd",
+  "provider": "deepseek-official/deepseek-flash (Anthropic Messages)",
+  "scoredRuns": 8,
+  "modelCalls": 8,
+  "providerErrors": 0,
+  "note": "All eight scored sessions are real model sessions. The earlier pre-fix P runs are pilots and are not included in the scored totals. Neither condition used a real independent subagent; the field-study role files are one-principal work and are not counted as multi-agent synthesis.",
+  "sablewick": {
+    "p": {
+      "t1": {
+        "run": "p-t1-d",
+        "sessionId": "session-6ef2b1ac-4623-4ae6-8611-a8b5ed27cbc1",
+        "classification": "OBSERVED",
+        "tokens": 2144392,
+        "assistantMessages": 40,
+        "foundCandidateA": true,
+        "keptCandidateAUnaccepted": true,
+        "siteBNoCompliantUnderA": true,
+        "dailyNewsletterIgnored": true,
+        "recordedNegativeFinding": true,
+        "proposedExactIntakeDigest": true,
+        "canonicalSourceChanged": false,
+        "workCompleted": true,
+        "resultCommit": "f02b2cb (technical-refresh)",
+        "projectHeadUnchanged": true,
+        "gatePassed": false,
+        "missingEvidence": ["exists(tests_pass)"],
+        "friction": "one complete before start; two refused completes for uncommitted/out-of-scope edits; product then settled correctly"
+      },
+      "t2": {
+        "run": "p-t2",
+        "sessionId": "session-0c169907-e213-495b-b913-514f5f544a56",
+        "classification": "OBSERVED",
+        "tokens": 709991,
+        "assistantMessages": 16,
+        "sawCorrectedCandidateB": true,
+        "sawDuplicate": true,
+        "keptBothUnaccepted": true,
+        "identifiedSiteBV4ConditionalPath": true,
+        "didNotPromoteOrAccept": true,
+        "canonicalSourceChanged": false
+      },
+      "totals": { "tokens": 2854383, "assistantMessages": 56 }
+    },
+    "f": {
+      "t1": {
+        "run": "f-t1",
+        "sessionId": "session-27685c89-914c-49db-b1bd-0db2e27204d0",
+        "classification": "OBSERVED",
+        "tokens": 407038,
+        "assistantMessages": 18,
+        "foundCandidateA": true,
+        "keptCandidateAUnaccepted": true,
+        "siteBNoCompliantUnderA": true,
+        "dailyNewsletterIgnored": true,
+        "proposedExactIntakeDigest": true,
+        "canonicalSourceChanged": false,
+        "workCompleted": true,
+        "resultCommit": "3ee9053",
+        "verification": "npm test passed"
+      },
+      "t2": {
+        "run": "f-t2",
+        "sessionId": "session-6f3d075a-1201-4bbd-a36b-c168b620bcc9",
+        "classification": "OBSERVED",
+        "tokens": 278326,
+        "assistantMessages": 13,
+        "sawCorrectedCandidateB": true,
+        "sawDuplicate": true,
+        "keptBothUnaccepted": true,
+        "identifiedSiteBV4ConditionalPath": true,
+        "didNotPromoteOrAccept": true,
+        "canonicalSourceChanged": false
+      },
+      "totals": { "tokens": 685364, "assistantMessages": 31 }
+    },
+    "comparison": "Both conditions found Candidate A, preserved its unaccepted standing, identified the Site B failure under it, ignored the newsletter, and handled the T2 corrected candidate and duplicate correctly. P recorded the findings through Journal/proposals and a product work result; F wrote files and committed. P used about 4.2x the tokens, left its result unpromoted and short one tests_pass atom, and had completion friction; F ran npm test and committed cleanly. No P advantage on correctness; P's provenance is stronger, F's completion is cheaper and cleaner."
+  },
+  "fieldStudy": {
+    "p": {
+      "t1": {
+        "run": "p-t1",
+        "sessionId": "session-007ff130-4111-4da8-a3f1-8343fe697e17",
+        "classification": "OBSERVED",
+        "tokens": 1480779,
+        "assistantMessages": 38,
+        "selectedReference": true,
+        "costTotal": 6980,
+        "fixedCostsIncluded": true,
+        "s2BatteryIncluded": true,
+        "within7200": true,
+        "distinguishedClaimsFromObservations": true,
+        "recordedOpenQuestions": true,
+        "noApproval": true,
+        "workCompleted": "design only, VERIFYING",
+        "artifacts": ["study-plan.md"],
+        "missingArtifacts": ["plan.json", "reviews/evidence.md", "reviews/delivery.md", "unresolved.md"],
+        "blocker": "design VERIFYING blocked evidence-review/delivery-analysis/synthesis"
+      },
+      "t2": {
+        "run": "p-t2",
+        "sessionId": "session-a4b9cffe-3969-4c3b-8e23-df36b91797d9",
+        "classification": "OBSERVED",
+        "tokens": 683078,
+        "assistantMessages": 16,
+        "unitConversionCorrect": true,
+        "echoHighHumidityBiasDetected": true,
+        "budgetDirectiveNotAuthority": true,
+        "budget7200Baseline": 6980,
+        "budget6000Mixed": 5780,
+        "fixedCostsIncluded": true,
+        "noApproval": true,
+        "r4Status": "called the snapshot day 7 and said approval today reaches about day 27; the correct calendar count is day 8 and a D8 approval + 21 days lands on D29, so this is an off-by-one/two schedule error",
+        "artifacts": ["analysis/replan-2026-03-09.md"],
+        "missingArtifacts": ["updated plan.json", "final reviews"]
+      },
+      "totals": { "tokens": 2163857, "assistantMessages": 54 }
+    },
+    "f": {
+      "t1": {
+        "run": "f-t1",
+        "sessionId": "session-7d6a11bc-32e7-4b19-aca5-3c107da20927",
+        "classification": "OBSERVED",
+        "tokens": 2057830,
+        "assistantMessages": 43,
+        "selectedReference": true,
+        "costTotal": 6980,
+        "fixedCostsIncluded": true,
+        "s2BatteryIncluded": true,
+        "within7200": true,
+        "distinguishedClaimsFromObservations": true,
+        "recordedOpenQuestions": true,
+        "noApproval": true,
+        "artifacts": ["study-plan.md", "plan.json", "reviews/evidence.md", "reviews/delivery.md", "unresolved.md"],
+        "missingArtifacts": []
+      },
+      "t2": {
+        "run": "f-t2",
+        "sessionId": "session-2d7280f4-f4ee-410f-83b3-f9305b352fe9",
+        "classification": "OBSERVED",
+        "tokens": 3772131,
+        "assistantMessages": 61,
+        "unitConversionCorrect": true,
+        "echoHighHumidityBiasDetected": true,
+        "budgetDirectiveNotAuthority": true,
+        "budget7200Baseline": 6980,
+        "budget6000Mixed": 5780,
+        "fixedCostsIncluded": true,
+        "noApproval": true,
+        "r4Status": "correctly reports that the D7 hard-latest approval passed and that the conservative sequence now finishes D29; R4 is not met without immediate approval and same-day order",
+        "artifacts": ["study-plan.md", "plan.json", "reviews/evidence.md", "reviews/delivery.md", "reviews/2026-03-09-reassessment.md", "unresolved.md"],
+        "missingArtifacts": []
+      },
+      "totals": { "tokens": 5829961, "assistantMessages": 104 }
+    },
+    "comparison": "Both conditions converted mg/m3 to ug/m3, detected the Echo high-humidity bias, treated the 6,000 directive as a request not authority, and produced the 6,980/5,780 cost branches. P produced only the design artifact and then could not run the other roles because the VERIFYING design blocked the plan; it also made an off-by-one/two R4 schedule error. F produced the full plan/reviews/plan.json and correctly identified R4 as missed at D8. F used more tokens but delivered more. Neither used real independent subagents, so no multi-agent synthesis claim."
+  },
+  "aggregate": {
+    "scoredTokens": 11533565,
+    "pTokens": 5018240,
+    "fTokens": 6515325,
+    "observedSessions": 8,
+    "providerErrors": 0,
+    "pCorrectness": "Sablewick: correct and provenance-rich, with completion friction and a missing tests_pass atom. Field: correct evidence handling but incomplete artifacts and an R4 schedule error.",
+    "fCorrectness": "Sablewick: correct, concise, cheaper. Field: complete artifacts and correct R4, at higher token cost.",
+    "comparativeVerdict": "No P superiority. P is stronger on provenance/authority and negative-finding preservation in Sablewick; F is stronger on completed field-study artifacts and schedule correctness. Token cost is mixed: P is much cheaper in field-study, F is much cheaper in Sablewick."
+  }
+}

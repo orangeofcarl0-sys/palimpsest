@@ -49,6 +49,7 @@ import { makeRematerializationRuntime, type RematerializationRuntime } from "../
 import type { AuthoritativeResultResolver } from "../result/subject.js";
 import type { ProjectWorldBasisRuntime, ProjectWorldObservationPort } from "../project_world/runtime.js";
 import { gitSourceChangeObserver, GIT_SOURCE_OBSERVER_ID, GIT_SOURCE_OBSERVER_VERSION, GIT_SOURCE_MECHANISM } from "../deployment/source_change_observer.js";
+import { gitAncestryProbe, resolvePromotionBaseline } from "../deployment/promotion_lineage.js";
 import { gitSourceRematerializer } from "../deployment/source_rematerializer.js";
 import { firstPartyResultResolver } from "../deployment/result_resolution.js";
 import { firstPartyAttemptResultVerificationSource } from "../project_verification/index.js";
@@ -85,6 +86,22 @@ export interface ContinuationCompositionOptions {
    * `READY_FOR_DELEGATION` — the capability is absent, never stubbed.
    */
   readonly workWorkerPort?: ((worldPath: string) => WorkWorkerRunPort) | undefined;
+  /**
+   * Trajectory-P2-C §7.3: the trusted execution-association recorder, when the deployment composed one.
+   *
+   * Supplying it wires the delegation service's `onCorrelatedSessionIdentity` sink to the recorder, so a
+   * real Parent-observed Session identity is durably recorded through the CONTROLLED ingestion path. The
+   * recorder is attached at the Parent/Delegation boundary — the one place that legitimately holds the
+   * canonical AttemptId and its own job id — so the worker or model can never name its own AttemptId.
+   *
+   * ABSENT ⇒ the delegation service records nothing, which is exactly the P2-B behavior.
+   */
+  readonly sessionIdentityRecorder?: import("../execution_association/index.js").ExecutionAssociationRecorder | undefined;
+  /**
+   * Trajectory-P2-C §7.4: how the deployment classifies the worker executable for identity observations.
+   * Absent ⇒ the port's own `DIRECT_CHILD_IPC` default applies.
+   */
+  readonly sessionSourceQualification?: import("../interaction/work_delegation.js").WorkerSessionSourceQualification | undefined;
 }
 
 export interface ContinuationCompositionInput {
@@ -212,7 +229,63 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
   const workDelegation: WorkDelegationService | undefined =
     options.workWorkerPort === undefined
       ? undefined
-      : makeWorkDelegationService({ controller, workerFor: options.workWorkerPort });
+      : makeWorkDelegationService({
+          controller,
+          workerFor: options.workWorkerPort,
+          /**
+           * Trajectory-P2-C §7.3 / P2-D0 §7.1–§7.2: wire the durable recorder at the Parent observation
+           * boundary when one was composed.
+           *
+           * THE FINALIZATION AUTHORITY IS THE OBSERVED CHILD EXIT, PER INVOCATION. The Delegation's
+           * `onTerminal` fires once per JOB and cannot say which Invocation closed, and the shipped Port
+           * resolves its promise from a timeout/abort/error handler as well as from an observed close — so
+           * neither a returned Port nor an Attempt-wide terminal is proof of closure. The Port's OWN
+           * observation stream carries the two facts that are: `DIRECT_CHILD_EXIT_OBSERVED` (a real exit)
+           * and `DIRECT_CHILD_EXIT_UNCONFIRMED` (a request that was never confirmed). Finalizing on the
+           * former, and only for the Invocation it names, is what makes closure Invocation-scoped and
+           * source-grounded. A timeout/abort therefore leaves its window INCOMPLETE rather than CLOSED.
+           *
+           * Both sinks are best-effort: a recorder failure cannot change the job's phase or the canonical
+           * Work state.
+           */
+          ...(options.sessionIdentityRecorder === undefined
+            ? {}
+            : {
+                /**
+                 * Trajectory-P2-D1 §6.3: the PRODUCT sink INSPECTS the Recorder's outcome. Before P2-D1 it
+                 * called `recordIdentity(entry)` and discarded the result, so a REJECTED append left no
+                 * completeness marker and a later finalization could record a CLOSED window over a
+                 * silently-truncated candidate set (F1). The Recorder now writes its own durable
+                 * INGESTION-INCOMPLETE marker, so this sink's job is to contain a THROW (a store failure)
+                 * so it cannot change the worker's outcome or the canonical Work state — the Recorder has
+                 * already recorded the incompleteness before the throw propagates.
+                 */
+                onCorrelatedSessionIdentity: (entry: import("../interaction/work_delegation.js").CorrelatedSessionIdentityObservation) => {
+                  try {
+                    options.sessionIdentityRecorder?.recordIdentity(entry);
+                  } catch {
+                    /* §6.3: an ingestion failure is recorded by the Recorder and must not change the Work outcome */
+                  }
+                },
+                onCorrelatedObservation: (entry: import("../interaction/work_delegation.js").CorrelatedHostObservation) => {
+                  /**
+                   * §7.2: only an OBSERVED exit establishes the boundary. `DIRECT_CHILD_EXIT_UNCONFIRMED`
+                   * deliberately does not finalize: the window stays incomplete, which is the honest state.
+                   */
+                  if (entry.observation.eventKind !== "DIRECT_CHILD_EXIT_OBSERVED") return;
+                  try {
+                    options.sessionIdentityRecorder?.finalizeInvocation({
+                      attemptId: entry.attemptId,
+                      invocationId: entry.invocationId,
+                      closeReason: "CHILD_EXIT_OBSERVED",
+                    });
+                  } catch {
+                    /* §6.4: a finalization append failure leaves the window OPEN, which prevents qualification */
+                  }
+                },
+              }),
+          ...(options.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: options.sessionSourceQualification }),
+        });
 
   // ── the narrow owner reads (SR-2 §20) ──
   /**
@@ -277,14 +350,42 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     const unavailable = (domain: "project_semantic" | "source" | "assets" | "environment", detail: string) =>
       conservative.unavailable({ domain, detail });
 
+    /**
+     * COG-5 §5.5 — WHICH INTERVAL ANSWERS "WHAT CHANGED AFTER THIS RESULT?".
+     *
+     * An unpromoted candidate's origin is the right baseline. A promoted result's own output is already in
+     * the accepted world, so its change interval starts at the ACCEPTED RESULTING HEAD recorded by the
+     * normal Promotion Lineage — never at the result commit by assumption, and never at the origin, which
+     * would report the result's own output as a later external change.
+     *
+     * `UNPROVEN` is UNAVAILABLE, not an origin fallback: the assessor then reports `UNKNOWN` (insufficient
+     * proof rather than a fabricated conflict or a fabricated compatibility).
+     */
+    const baseline = resolvePromotionBaseline({
+      attemptId: result.resultSubjectRef.ref,
+      resultCommit: result.sourceResult === null ? null : result.sourceResult.resultRevision,
+      currentSourceRevision: currentSource.ok ? currentSource.revision.revision : null,
+      promotionFacts: controller.promotions.promotionFactsSync(),
+      provesAncestry: gitAncestryProbe(repo),
+    });
     const changeRef =
-      originSourceRevision !== null && currentSource.ok
-        ? sourceObserver.observeChange({
-            fromRevision: originSourceRevision,
-            toRevision: currentSource.revision.revision,
-            scopeRef: repo,
-          })
-        : unavailable("source", "the basis-to-current source change could not be observed");
+      baseline.state === "UNPROVEN"
+        ? unavailable("source", `the post-promotion change interval could not be anchored: ${baseline.detail}`)
+        : baseline.state === "PROMOTED"
+          ? currentSource.ok
+            ? sourceObserver.observeChange({
+                fromRevision: baseline.baselineRevision,
+                toRevision: currentSource.revision.revision,
+                scopeRef: repo,
+              })
+            : unavailable("source", "the current source revision could not be observed")
+          : originSourceRevision !== null && currentSource.ok
+            ? sourceObserver.observeChange({
+                fromRevision: originSourceRevision,
+                toRevision: currentSource.revision.revision,
+                scopeRef: repo,
+              })
+            : unavailable("source", "the basis-to-current source change could not be observed");
     const writeRef =
       originSourceRevision !== null && result.sourceResult !== null
         ? sourceObserver.observeChange({
@@ -449,7 +550,9 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
             batch_activation_event_id: batchActivationEventId,
             target_state: "READY",
           }),
-          expected_project_revision: 0,
+          // A reopening is not a revision event, but every ordinary event must still name the
+          // ProjectIR revision it was composed against.
+          expected_project_revision: controller.work.project().revision,
         }),
         permit,
         { assessmentDigest },

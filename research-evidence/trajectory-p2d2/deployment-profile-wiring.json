@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_DEPLOYMENT_PROFILE_WIRING",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C6 §10",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "sourceReferences": [
+    "src/deployment/profile.ts (DeploymentTrajectoryConfig, parseTrajectory, exactKeys)",
+    "src/deployment/launch.ts (launchDeployment propagates the trajectory section to installPalimpsest)",
+    "src/composition/execution_association.ts (trajectoryPresentationMode, trajectorySectionMaxBytes)",
+    "src/install.ts (option pass-through)"
+  ],
+  "testFile": "test/trajectory_p2d2_deployment_profile.test.ts",
+  "supportedChain": [
+    "Trusted deployment configuration (a strict `trajectory` profile section)",
+    "launchDeployment / installPalimpsest",
+    "Context Owner (workWorkerContext materializes the presentation)",
+    "Worker Context (compiled.trajectoryCapsule.presentation)",
+    "Parent-generated Section (workWorkerEnvironmentPayload.trajectoryPresentation)",
+    "First-party DSH Host (applyTrajectoryPresentation)",
+    "Actual UserMessage construction (agent.followup)"
+  ],
+  "strictness": {
+    "exactKeys": ["mode", "capsuleMaxSerializedBytes", "sectionMaxBytes"],
+    "invalidModeRefused": true,
+    "nonfiniteBudgetRefused": true,
+    "negativeOrFractionalBudgetRefused": true,
+    "unknownFieldRefused": true,
+    "defaultOff": true
+  },
+  "observedResults": {
+    "defaultProfileComposesNothing": true,
+    "explicitSectionParsed": true,
+    "allThreeArmsAccepted": true,
+    "invalidConfigRefused": true,
+    "noModelSuppliedArmSelector": true,
+    "noOriginOrSessionField": true
+  },
+  "expectedInvariant": "a supported first-party product path can enable the experimental presentation explicitly, while the default packaged path remains unchanged, and no field lets a model pick an arm, an Origin or a Session",
+  "verdict": "PASS",
+  "remainingUncertainty": "the expert Install path and the packaged profile path are both verified; complete packaged-deployment qualification (a fully packaged binary) is not claimed from an install test alone",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

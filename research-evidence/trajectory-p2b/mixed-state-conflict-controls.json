@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_MIXED_STATE_CONFLICT_CONTROLS",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "h1LimitationAddressed": "the H1 Resolver filters to associations with observationState === PRODUCER_OBSERVED AND durableBindingRef !== null AND verification === VERIFIED before its identity-conflict check, so a genuinely observed but not-yet-qualified second identity could be silently excluded",
+  "p2bApproach": "conflicts are evaluated over the ACTUAL trusted-ingestion candidate set BEFORE qualification: every SESSION_IDENTITY_OBSERVED record for the invocation participates, whether or not a qualified association exists yet",
+  "observed": {
+    "aSecondObservedIdentityMakesTheInvocationConflict": true,
+    "theEarlierIdentityIsNotSilentlyPreferred": true,
+    "anUntrustedCallerClaimCannotBlockOrGrant": "there is no caller-claim path into the store; only the trusted recorder writes, and the read side refuses a basis mismatch"
+  },
+  "h1ResolverChangesMade": "none — P2-B does not modify src/trajectory/binding.ts; it produces H1-compatible associations without fabricating fields",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "MIXED_STATE_HANDLED_WITHOUT_H1_CHANGE"
+}

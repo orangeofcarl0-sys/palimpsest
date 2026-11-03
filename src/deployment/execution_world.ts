@@ -81,6 +81,17 @@ export interface ExecutionWorldPort {
     readonly attemptId: string;
     readonly commit: string;
   }): Promise<{ readonly imported: boolean; readonly detail: string }>;
+  /**
+   * The SYNCHRONOUS spelling of the same seam, for the one caller that is synchronous by contract:
+   * `ProjectController.report`. The report path records `result_commit` in the same turn it observes
+   * the world, so an asynchronous export cannot run there without making the ledger append
+   * asynchronous too. It performs exactly the same object-only import and readability check; it
+   * moves no ref, working tree or project revision.
+   */
+  exportResultCommitSync(input: {
+    readonly attemptId: string;
+    readonly commit: string;
+  }): { readonly imported: boolean; readonly detail: string };
   /** Release the world. ONLY ever called once its result is safely recorded or explicitly discarded. */
   release(attemptId: string): Promise<void>;
 }
@@ -102,6 +113,32 @@ export function gitRepositoryWorldPort(input: {
   const worldDir = (attemptId: string): string => `${input.worldsRoot}/${attemptId}`;
   const git = (cwd: string, args: readonly string[]): string =>
     execFileSync("git", [...args], { cwd, encoding: "utf8" }).trim();
+
+  const exportResultCommitSync = function exportResultCommitSync({
+    attemptId,
+    commit,
+  }: {
+    readonly attemptId: string;
+    readonly commit: string;
+  }): { readonly imported: boolean; readonly detail: string } {
+    const dir = worldDir(attemptId);
+    if (!existsSync(dir)) {
+      return { imported: false, detail: `WORLD_MISSING: attempt ${attemptId} has no execution world to export from` };
+    }
+    try {
+      // Object-only: fetch the world's HEAD into FETCH_HEAD. No refspec destination means no ref is
+      // created or moved, so the canonical project's state cannot change here — the objects simply
+      // become READABLE.
+      git(input.repository, ["fetch", "--no-tags", dir, "HEAD"]);
+      git(input.repository, ["cat-file", "-e", `${commit}^{commit}`]);
+      return { imported: true, detail: `the canonical object database can now read ${commit.slice(0, 12)}; no ref, working tree or project revision changed` };
+    } catch (error) {
+      return {
+        imported: false,
+        detail: `WORLD_EXPORT_FAILED: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  };
 
   return {
     adapterId: "git-repository-world",
@@ -139,24 +176,9 @@ export function gitRepositoryWorldPort(input: {
       }
     },
     async exportResultCommit({ attemptId, commit }) {
-      const dir = worldDir(attemptId);
-      if (!existsSync(dir)) {
-        return { imported: false, detail: `WORLD_MISSING: attempt ${attemptId} has no execution world to export from` };
-      }
-      try {
-        // Object-only: fetch the world's HEAD into FETCH_HEAD. No refspec destination means no ref is
-        // created or moved, so the canonical project's state cannot change here — the objects simply
-        // become READABLE.
-        git(input.repository, ["fetch", "--no-tags", dir, "HEAD"]);
-        git(input.repository, ["cat-file", "-e", `${commit}^{commit}`]);
-        return { imported: true, detail: `the canonical object database can now read ${commit.slice(0, 12)}; no ref, working tree or project revision changed` };
-      } catch (error) {
-        return {
-          imported: false,
-          detail: `WORLD_EXPORT_FAILED: ${error instanceof Error ? error.message : String(error)}`,
-        };
-      }
+      return exportResultCommitSync({ attemptId, commit });
     },
+    exportResultCommitSync,
     async release(attemptId) {
       const dir = worldDir(attemptId);
       if (!existsSync(dir)) return;

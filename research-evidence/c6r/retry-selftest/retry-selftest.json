@@ -1,0 +1,45 @@
+{
+  "schema": "c6r-retry-selftest/v1",
+  "at": "2026-11-01T18:46:00.499Z",
+  "label": "NO_MODEL",
+  "upstreamAttempts": 3,
+  "response": {
+    "status": 200,
+    "body": "{\"ok\":true,\"attempts\":3}"
+  },
+  "retryEntries": 2,
+  "proxyLog": [
+    {
+      "at": "2026-11-01T18:45:58.967Z",
+      "kind": "openai",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "attempt": 1,
+      "retry": true,
+      "delayMs": 500,
+      "error": "ECONNRESET"
+    },
+    {
+      "at": "2026-11-01T18:45:59.486Z",
+      "kind": "openai",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "attempt": 2,
+      "retry": true,
+      "delayMs": 1000,
+      "error": "ECONNRESET"
+    },
+    {
+      "at": "2026-11-01T18:46:00.496Z",
+      "kind": "openai",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "attempt": 3,
+      "status": 200,
+      "upstream": "http://127.0.0.1:52076/v1/chat/completions",
+      "ms": 8
+    }
+  ],
+  "proxyErr": "",
+  "passed": true
+}

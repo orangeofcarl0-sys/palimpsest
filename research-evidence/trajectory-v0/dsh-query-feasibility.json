@@ -1,0 +1,108 @@
+{
+  "stage": "Trajectory-V0",
+  "commit": "C1",
+  "kind": "DSH Session Query feasibility audit — measured, not assumed",
+  "baselineCommit": "ba334cede59b92a880467d03e67af849acbe90ed",
+  "dshImplementation": {
+    "distribution": "@deepseek-ai/dsh",
+    "version": "0.2.0-rc.2",
+    "installRoot": "~/.dsh/profiles/node_modules/@deepseek-ai/",
+    "verifiedBy": "reading each package.json `version` field on disk",
+    "packagesExamined": [
+      "@deepseek-ai/dsh-session (0.2.0-rc.2)",
+      "@deepseek-ai/dsh-session-query (0.2.0-rc.2)",
+      "@deepseek-ai/dsh-session-persistence (0.2.0-rc.2)",
+      "@deepseek-ai/dsh-session-persistence-jsonl (0.2.0-rc.2)",
+      "@deepseek-ai/dsh-session-query-sqlite (0.2.0-rc.2)",
+      "@deepseek-ai/dsh-client-ui-trajectory (0.2.0-rc.2)"
+    ],
+    "sessionFormatVersion": 4,
+    "note": "The ruling named source paths under `packages/**`. This deployment ships BUILT packages, so the equivalent inspected sources are the published `lib/types/*.d.ts` declaration files and `README.md` of each package above. The declarations are the same public surface the TypeScript sources compile to."
+  },
+  "verdict": "PERSISTED_READ_SUPPORTED",
+  "verdictDetail": "A supported first-party persistence reader (`readColdSessionLog` from `@deepseek-ai/dsh-session-query`) can inspect explicitly identified Session logs from the external Palimpsest process, WITHOUT resuming or activating an Agent and WITHOUT a model call. Measured end to end.",
+  "requiredMapping": {
+    "producerToSessionIdentity": "The DSH agent loop (`dsh-agent-loop`) appends events to a Session; the Session's identity is the `SessionHeader.id` (SessionId), persisted in the header frame of the session's own generation file.",
+    "sessionIdentityToStorageQueryOwner": "Storage is owned by `ctx.sessionPersistence`, provided by the mounted backend `@deepseek-ai/dsh-session-persistence-jsonl` (`JsonlSessionPersistence`, `readonly name = 'session-persistence-jsonl'`). The query surface is `ctx.sessionQuery` (`SessionQueryEngine`, provided by `@deepseek-ai/dsh-session-query` with the sqlite backend mounted).",
+    "supportedReadInterface": "`readColdSessionLog(persistence, sessionId, signal?)` — an EXPORTED STANDALONE FUNCTION in `@deepseek-ai/dsh-session-query` (declared in `lib/types/cold-read.d.ts`). It takes a `SessionPersistence` directly, so it does NOT require the full DSH host context. Also available: `SessionQueryEngine.readSession/listEvents/readEvent/readSurface/traceSession` when a query service is composed.",
+    "palimpsestConsumer": "The external Palimpsest process mounts `JsonlSessionPersistence` in a bare Cordis `Context` and calls `readColdSessionLog` — measured working.",
+    "missingEdge": "There is NO producer that binds a canonical Work AttemptId to a DSH SessionId. See `attempt-session-binding` below."
+  },
+  "reachabilityMeasurements": {
+    "canPalimpsestImportDshPackages": true,
+    "how": "Absolute `file://` ESM import of `~/.dsh/profiles/node_modules/@deepseek-ai/<pkg>/lib/index.js`. Palimpsest's own `node_modules` contains no `@deepseek-ai/*`, so the profile path is the only route.",
+    "canMountPersistenceStandalone": true,
+    "mountDetail": "`new Context()` then `await ctx.plugin(JsonlSessionPersistence, { root, compression: 'zstd' })` yields `ctx.sessionPersistence`. Measured: no DSH host, no agent, no provider.",
+    "canListSessions": true,
+    "listDetail": "`ctx.sessionPersistence.list()` returned 1142 session records; each record carries `{ header, revision, sizeBytes }`.",
+    "canReadAnExplicitlyNamedSession": true,
+    "readDetail": "`readColdSessionLog(sp, SessionId('session-2a47953a-c184-4797-89fb-2872da37e0a7'))` returned a 75-event log: header.version 4, isSeeded false, inheritedEventCount 0, cwd present.",
+    "readActivatesOrResumesAnAgent": false,
+    "readActivationDetail": "No `ctx.sessions` store was mounted, and the read path is documented as never making a session live; measured live-session count after two reads: no session store mounted.",
+    "readIsReadOnly": true,
+    "readOnlyDetail": "The generation file's mtime, size and sha256 were byte-identical before and after two reads.",
+    "readIsDeterministic": true,
+    "determinismDetail": "Two reads produced identical (seq, type) projections.",
+    "canQueryAfterWorkerProcessExits": true,
+    "postExitDetail": "The measured session belongs to a host process that is not the current process, and it read successfully from disk — i.e. the read is a pure storage read.",
+    "whichSessionIdIdentifiesTheExecutedAgent": "`SessionHeader.id`. The measured header also carries `cwd`, `createdAt`, `isSeeded`, `delegationDepth`, and optional `parentSession` / `origin` / `agentPreset`.",
+    "howSessionIdBecomesAvailableToPalimpsest": "NOT ESTABLISHED. See the missing-edge finding below.",
+    "howCallerIsRestrictedToTheRelevantAttempt": "NOT ESTABLISHED — there is no Work Attempt binding to restrict against, so V0 must restrict by an explicitly supplied SessionId plus an explicit header/scope check, and must refuse rather than guess.",
+    "installedVersionSupplyingTheVerifiedApi": "0.2.0-rc.2 (all packages), session format version 4."
+  },
+  "missingEdgeFinding": {
+    "id": "ATTEMPT_TO_SESSION_BINDING_PRODUCER_ABSENT",
+    "statement": "No component writes a durable, canonical binding from a Work AttemptId to a DSH SessionId.",
+    "evidence": [
+      "The worker port spawns DSH with `cwd: runInput.workDir` (src/deployment/work_worker.ts:756) and never records the child's SessionId.",
+      "A scan of all 1142 persisted session headers found 462 with a path containing `palimpsest`, but ZERO whose cwd is a `.palimpsest/worlds/<attemptId>` execution world. The observed palimpsest cwds are host directories (e.g. `C:\\Users\\66494\\.dsh\\palimpsest-dogfood\\real-host`).",
+      "G1-B's artifact locator can PARSE an AttemptId out of a worker session path (`worker-<uuid>/session.v4.jsonl.zstd` under a `-worlds-` slug), but it is a research-scope locator, not a canonical producer, and no such artifact exists in this deployment.",
+      "The DSH `SessionHeader` carries `cwd` and optional `parentSession`/`origin`, but no Work AttemptId field."
+    ],
+    "consequenceForV0": "The execution view must report SESSION_UNBOUND for real product attempts, and must refuse a caller-supplied SessionId as binding authority. The controlled fixture path is therefore required to exercise the reader.",
+    "smallestFutureIntegration": "The worker port would record the DSH SessionId it observes (or the session file path it created) into a durable, Attempt-keyed record — a host-lifecycle binding, not a new canonical owner. Not implemented in V0 per §11."
+  },
+  "callerAuthorizationBoundary": {
+    "dshSessionQueryIsTrustedHostInfrastructure": true,
+    "notAutomaticallyAnAuthorizationBoundary": true,
+    "v0Constraint": "V0 exposes NO generic `listSessions()` surface. A caller must supply an explicit SessionId, and the reader refuses unless the supplied id resolves to a header whose immutable identity matches the request. No mtime selection, no directory-similarity search, no scanning of personal histories."
+  },
+  "eventVocabulary": {
+    "source": "KNOWN_SESSION_EVENT_TYPES (runtime export of @deepseek-ai/dsh-session) — 57 types",
+    "rulingNamed": ["turn/start", "turn/end", "step/start", "step/end", "assistant/message", "assistant/attempt", "tool/call", "tool/result"],
+    "allRulingNamedTypesPresent": true,
+    "envelope": "{ type, seq, time, data } plus an optional `ignorable: true` marker; surface events additionally carry `surfaceOp` and `sourceEventSeqs`",
+    "payloadKeysObserved": {
+      "tool/call": ["turn", "step", "callId", "name", "arguments"],
+      "tool/result": ["turn", "step", "message"],
+      "assistant/message": ["turn", "step", "message", "usage", "stream"]
+    },
+    "turnEndReasons": "A closed union (`TurnEndReasonMap`) including `completed`, `aborted`, `blocked` — so a turn/end is NOT a success signal by itself.",
+    "unknownTypeHandling": "A type outside KNOWN_SESSION_EVENT_TYPES without `ignorable: true` MUST cause the reader to refuse the log rather than silently drop it. V0 preserves this: an unrecognised REQUIRED event is a read failure, not an empty stream."
+  },
+  "sensitiveContent": {
+    "v0DefaultMustNotReturn": ["raw model prompts", "hidden reasoning", "full tool arguments", "environment variables", "secrets", "personal files"],
+    "v0Returns": ["event kind", "local seq", "source reference", "observed status", "bounded sanitized summary", "duration only when real timing exists"],
+    "rawInspection": "deferred to a future separately-authorized capability"
+  },
+  "prohibitionsObserved": {
+    "modelCallsMade": 0,
+    "dshWorkerLaunched": false,
+    "providerProbed": false,
+    "primaryEnabled": false,
+    "newestSessionSelectedByMtime": false,
+    "arbitraryPersonalHistoriesSearched": false,
+    "replacementDshSessionEngineWritten": false,
+    "homeGrownParserForCompressedSessions": false
+  },
+  "sourceLocations": [
+    { "conclusion": "readColdSessionLog is an exported standalone function taking a SessionPersistence", "location": "~/.dsh/profiles/node_modules/@deepseek-ai/dsh-session-query/lib/types/cold-read.d.ts:24" },
+    { "conclusion": "ctx.sessionQuery is the unified query service with readSession/listEvents/readEvent/readSurface/traceSession", "location": "~/.dsh/profiles/node_modules/@deepseek-ai/dsh-session-query/lib/types/index.d.ts (SessionQueryEngine)" },
+    { "conclusion": "the persistence backend registers as ctx.sessionPersistence and requires a root directory", "location": "~/.dsh/profiles/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/types/index.d.ts (JsonlSessionPersistence, Config.root)" },
+    { "conclusion": "on-disk layout is <root>/--<cwd-slug>--/<encoded-id>/session.vN.jsonl[.zstd]", "location": "~/.dsh/profiles/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/README.md (On-disk layout)" },
+    { "conclusion": "SessionHeader carries version/id/createdAt/cwd/parentSession/isSeeded/origin/delegationDepth/agentPreset", "location": "~/.dsh/profiles/node_modules/@deepseek-ai/dsh-session/lib/types/types.d.ts (SessionHeader)" },
+    { "conclusion": "SessionEvent envelope is { type, seq, time, data } with an optional ignorable marker", "location": "~/.dsh/profiles/node_modules/@deepseek-ai/dsh-session/lib/types/types.d.ts (SessionEvent)" },
+    { "conclusion": "the worker port spawns DSH with cwd = the execution world and records no SessionId", "location": "src/deployment/work_worker.ts:756" },
+    { "conclusion": "the G1-B locator can parse an AttemptId from a worker session path, but no such artifact exists here", "location": "scripts/r3l0c_g1/artifact-locator.mjs:11-42" }
+  ]
+}

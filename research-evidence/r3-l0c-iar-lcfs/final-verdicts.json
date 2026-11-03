@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C-F-S",
+  "kind": "frozen evidence seal and safety closure final verdicts",
+  "baseline": "8bf8d42298aee3b8b267b3793e015900ca7cc2a7",
+  "planId": "r3-l0c-iar-lcfs-primary-plan",
+  "verdicts": {
+    "COMMITTED_PLAN_SELF_DIGEST": "MATCH",
+    "COMMITTED_PLAN_GIT_IDENTITY": "MATCH",
+    "CROSS_ARTIFACT_PLAN_BINDING": "MATCH",
+    "PRIMARY_PLAN_PREFLIGHT_INTEGRITY": "PASS",
+    "SAFE_WORKTREE_CLEANUP": "PASS",
+    "LEGACY_UNSAFE_HELPER_QUARANTINED": "DISCLOSED",
+    "DURABLE_TRIAL_EVIDENCE_IDENTITY": "PASS",
+    "ARTIFACT_EVENT_ENVELOPE_VALIDITY": "PASS",
+    "GENUINE_MEASURED_ZERO_DISTINCTION": "PASS",
+    "AUTHORIZATION_CONDITION_CONSISTENCY": "PASS",
+    "HOST_SPEND_ENFORCEMENT": "NOT_ESTABLISHED",
+    "EXECUTION_CLOSURE": "MATCH",
+    "HISTORICAL_EVIDENCE_IMMUTABILITY": "PASS",
+    "DETERMINISTIC_MEASUREMENT_QUALIFICATION": "PASS",
+    "REAL_DSH_ARTIFACT_COMPATIBILITY": "NOT_ESTABLISHED",
+    "LIVE_PRIMARY_PROVENANCE": "NOT_ESTABLISHED",
+    "EXTERNAL_AUTHORITY": "NOT_ESTABLISHED",
+    "PAID_EXECUTION": "NOT_RUN",
+    "CAUSAL_RESULT": "NOT_EVALUABLE"
+  },
+  "vocabularies": {
+    "COMMITTED_PLAN_SELF_DIGEST": [
+      "MATCH",
+      "DRIFTED",
+      "NOT_ESTABLISHED"
+    ],
+    "COMMITTED_PLAN_GIT_IDENTITY": [
+      "MATCH",
+      "DRIFTED",
+      "NOT_ESTABLISHED"
+    ],
+    "CROSS_ARTIFACT_PLAN_BINDING": [
+      "MATCH",
+      "MISMATCH",
+      "NOT_ESTABLISHED"
+    ],
+    "PRIMARY_PLAN_PREFLIGHT_INTEGRITY": [
+      "PASS",
+      "FAIL",
+      "NOT_ESTABLISHED"
+    ],
+    "SAFE_WORKTREE_CLEANUP": [
+      "PASS",
+      "FAIL",
+      "BLOCKED"
+    ],
+    "LEGACY_UNSAFE_HELPER_QUARANTINED": [
+      "PASS",
+      "FAIL",
+      "DISCLOSED"
+    ],
+    "DURABLE_TRIAL_EVIDENCE_IDENTITY": [
+      "PASS",
+      "FAIL"
+    ],
+    "ARTIFACT_EVENT_ENVELOPE_VALIDITY": [
+      "PASS",
+      "FAIL"
+    ],
+    "GENUINE_MEASURED_ZERO_DISTINCTION": [
+      "PASS",
+      "FAIL"
+    ],
+    "AUTHORIZATION_CONDITION_CONSISTENCY": [
+      "PASS",
+      "FAIL"
+    ],
+    "HOST_SPEND_ENFORCEMENT": [
+      "PASS",
+      "NOT_ESTABLISHED"
+    ],
+    "EXECUTION_CLOSURE": [
+      "MATCH",
+      "DRIFTED"
+    ],
+    "HISTORICAL_EVIDENCE_IMMUTABILITY": [
+      "PASS",
+      "FAIL"
+    ],
+    "DETERMINISTIC_MEASUREMENT_QUALIFICATION": [
+      "PASS",
+      "FAIL"
+    ],
+    "REAL_DSH_ARTIFACT_COMPATIBILITY": [
+      "PASS",
+      "NOT_ESTABLISHED"
+    ],
+    "LIVE_PRIMARY_PROVENANCE": [
+      "PASS",
+      "NOT_ESTABLISHED"
+    ],
+    "EXTERNAL_AUTHORITY": [
+      "PASS",
+      "NOT_ESTABLISHED"
+    ],
+    "PAID_EXECUTION": [
+      "NOT_RUN",
+      "RUN"
+    ],
+    "CAUSAL_RESULT": [
+      "NOT_EVALUABLE",
+      "EVALUABLE"
+    ]
+  },
+  "unearnedVerdicts": {
+    "REAL_DSH_ARTIFACT_COMPATIBILITY": "NOT_ESTABLISHED",
+    "LIVE_PRIMARY_PROVENANCE": "NOT_ESTABLISHED",
+    "EXTERNAL_AUTHORITY": "NOT_ESTABLISHED",
+    "HOST_SPEND_ENFORCEMENT": "NOT_ESTABLISHED",
+    "PAID_EXECUTION": "NOT_RUN",
+    "CAUSAL_RESULT": "NOT_EVALUABLE",
+    "neverPromotedToPass": true
+  },
+  "readiness": {
+    "DETERMINISTIC_MEASUREMENT_QUALIFIED": true,
+    "CROSS_ARTIFACT_EVIDENCE_SEALED": true,
+    "REAL_ARTIFACT_COMPATIBILITY_ESTABLISHED": false,
+    "PRIMARY_EXECUTION_AUTHORIZED": false,
+    "PRIMARY_CAUSAL_DATA_AVAILABLE": false,
+    "centralVerdicts": [
+      "COMMITTED_PLAN_SELF_DIGEST",
+      "COMMITTED_PLAN_GIT_IDENTITY",
+      "CROSS_ARTIFACT_PLAN_BINDING",
+      "PRIMARY_PLAN_PREFLIGHT_INTEGRITY",
+      "SAFE_WORKTREE_CLEANUP",
+      "DURABLE_TRIAL_EVIDENCE_IDENTITY",
+      "ARTIFACT_EVENT_ENVELOPE_VALIDITY",
+      "GENUINE_MEASURED_ZERO_DISTINCTION",
+      "AUTHORIZATION_CONDITION_CONSISTENCY"
+    ],
+    "collapsed": false,
+    "note": "the readiness statements are independent; DETERMINISTIC_MEASUREMENT_QUALIFIED is NOT an authorization and does NOT imply the others"
+  },
+  "readinessStatements": [
+    {
+      "id": "DETERMINISTIC_MEASUREMENT_QUALIFIED",
+      "detail": "the deterministic measurement machinery is qualified by this stage's gates"
+    },
+    {
+      "id": "CROSS_ARTIFACT_EVIDENCE_SEALED",
+      "detail": "the committed plan, the Qualification and the Stage Result carry one plan identity"
+    },
+    {
+      "id": "REAL_ARTIFACT_COMPATIBILITY_ESTABLISHED",
+      "detail": "an authentic current-run DSH artifact was discovered and attributed"
+    },
+    {
+      "id": "PRIMARY_EXECUTION_AUTHORIZED",
+      "detail": "an independently verified external authorization with proven spending enforcement exists"
+    },
+    {
+      "id": "PRIMARY_CAUSAL_DATA_AVAILABLE",
+      "detail": "live PRIMARY cost observations exist for the frozen scope"
+    }
+  ],
+  "stageStop": {
+    "paidExecution": "NOT_RUN",
+    "primaryAuthorization": "NOT_ESTABLISHED",
+    "realPrimaryCausalResult": "NOT_EVALUABLE",
+    "ranPaidMatrix": false,
+    "beganR3L1": false,
+    "beganFusion": false,
+    "modelCallsMade": 0,
+    "enteredPrimaryExecution": false,
+    "law": "PAID_EXECUTION = NOT_RUN, PRIMARY_AUTHORIZATION = NOT_ESTABLISHED and REAL_PRIMARY_CAUSAL_RESULT = NOT_EVALUABLE, then STOP"
+  },
+  "evidenceSeal": {
+    "committedPlanId": "r3-l0c-iar-lcfs-primary-plan",
+    "committedPlanContentDigest": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "committedGitBlob": "3e73aeadbb3e228cb755a5b0173e1a5ec0b1d3bb",
+    "executionClosureDigest": "35531f812b1e40e2f3c87eb8abe56eaed12067b46485177cc63b9598b5cb5cbb",
+    "qualificationPlanReference": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "stageResultPlanReference": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+    "identityChecks": {
+      "COMMITTED_PLAN_SELF_DIGEST": "MATCH",
+      "COMMITTED_PLAN_GIT_IDENTITY": "MATCH",
+      "QUALIFICATION_PLAN_REFERENCE": "MATCH",
+      "STAGE_RESULT_PLAN_REFERENCE": "MATCH",
+      "PLAN_CLOSURE_AGREEMENT": "MATCH"
+    }
+  },
+  "finalAcceptanceQuestion": {
+    "question": "Can a Qualification or Stage Result reference a different prospective plan from the committed plan, can an unverified Trial/Artifact masquerade as a measured endpoint, or can a failed cleanup proceed to a destructive operation outside the disposable environment?",
+    "answer": "NO — measured, with live provenance and real artifact compatibility NOT_ESTABLISHED",
+    "basis": "the Qualification and the Stage Result now reference the COMMITTED plan read back from disk; the durable trial reconciliation compares every load-bearing identity field; an artifact must satisfy a real event envelope before the frozen reconstruction runs; and a failed link unlink preserves the worktree and returns CLEANUP_BLOCKED without reaching git worktree remove --force or a recursive delete"
+  },
+  "combinedReadinessFlagComputed": false,
+  "note": "the nineteen verdicts are computed from the persisted evidence; the readiness statements are kept separate and no combined flag conceals the NOT_ESTABLISHED limitations"
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "pc1v1-session-run/v1",
+  "id": "sablewick-p-t2",
+  "scenario": "sablewick",
+  "condition": "P",
+  "stage": "T2",
+  "subagents": true,
+  "command": [
+    "wsl.exe",
+    "bash",
+    "-lc",
+    "set -e\nrm -rf /home/admini/pc1v1/runs/sablewick/p-t2/p1\ncp -a /home/admini/pc1v1/runs/sablewick/p-t1/p1 /home/admini/pc1v1/runs/sablewick/p-t2/p1\nexport C6R_P1_RUN=/home/admini/pc1v1/runs/sablewick/p-t2\nexport PC1V1_STAGE=T2\nexport C6R_INBOX_DIR=/home/admini/pc1v1/runs/sablewick/p-t2/p1/inbox-t2\nexport C6R_PROMPT=\"$(printf '%s' 'WW91IGFyZSB0aGUgcGxhbm5pbmcgYWdlbnQgZm9yIHRoZSBTYWJsZXdpY2sgY29tbXVuaXR5IGJhdHRlcnkgcHJvZ3JhbW1lLiBUaGlzIGlzIGEgbGF0ZXIgaGlzdG9yaWNhbCBwcm9qZWN0LXN0YXRlIHJlcGxheSBvYnNlcnZlZCBhdCAyMDI2LTAyLTE0IDA5OjEwIFVUQy4gVGhlIHByb2dyYW1tZSByZXBvc2l0b3J5IGlzIC9ydW4vcDEvd29ybGQgYW5kIHRoZSBwcm9ncmFtbWUgaW5ib3ggaXMgL3J1bi9wMS9pbmJveC4gQ29udGludWUgZnJvbSB0aGUgcHJvamVjdCBzdGF0ZSB5b3UgZmluZC4gTmV3IGl0ZW1zIG1heSBoYXZlIGFycml2ZWQgc2luY2UgdGhlIGVhcmxpZXIgb2JzZXJ2YXRpb24sIGluY2x1ZGluZyBhIGNvcnJlY3RlZCBjYXBhYmlsaXR5IGJ1bGxldGluIGFuZCBhIGJ5dGUtaWRlbnRpY2FsIGR1cGxpY2F0ZTsgYSBsYXRlIHJlcG9ydCBmcm9tIHRoZSBlYXJsaWVyIG9ic2VydmF0aW9uIG1heSBhbHNvIGJlIHByZXNlbnQuIERvIG5vdCB0cmVhdCBhIGZpbGUgb3IgYSBsYXRlIHJlcG9ydCBhcyBhY2NlcHRlZCBhdXRob3JpdHkuIERpc3Rpbmd1aXNoIHNvdXJjZSBzdGFuZGluZywgY2FuZGlkYXRlcywgYWNjZXB0ZWQgZmFjdHMsIG5lZ2F0aXZlIGZpbmRpbmdzIGFuZCBvcGVuIHF1ZXN0aW9uczsgcmVjb3JkIGNvbmNsdXNpb25zIGFuZCBwcm9wb3NlZCBhY3Rpb25zIHRocm91Z2ggdGhlIGF2YWlsYWJsZSBwcm9qZWN0IG1lY2hhbmlzbXMuIFVzZSB0aGUgaW5kZXBlbmRlbnQgYHN1YmFnZW50YCB0b29sIGZvciBhdCBsZWFzdCBvbmUgYm91bmRlZCBzdWItcXVlc3Rpb24gd2hlbiB0aGUgdGFzayBoYXMgaW5kZXBlbmRlbnQgcGFydHM7IHJlcG9ydCBpdHMgZmluZGluZyBzZXBhcmF0ZWx5IGFuZCBkbyBub3QgcHJlc2VudCBpdCBhcyBhY2NlcHRlZCB0cnV0aC4gV29yayBvbmx5IGluc2lkZSB0aGUgcHJvZ3JhbW1lIHJlcG9zaXRvcnkgYW5kIHRoZSBwcm9ncmFtbWUgaW5ib3gu' | base64 -d)\"\nbash /mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pc1v1/session_sablewick_p.sh; STATUS=$?\nmkdir -p '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03-b/sablewick-p-t2/wsl-out'\ncp -a '/home/admini/pc1v1/runs/../out/sablewick/p-T2/.' '/mnt/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/research-evidence/pc1v1/live/pc1v1-live-2026-11-03-b/sablewick-p-t2/wsl-out/' || true\nexit $STATUS"
+  ],
+  "cwd": ".",
+  "startedAt": "2026-11-02T18:49:22.050Z",
+  "finishedAt": "2026-11-02T18:49:23.378Z",
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "state": "FAILED",
+  "stdoutBytes": 0,
+  "stderrBytes": 99,
+  "note": "EXECUTED means the session process exited 0; it is not by itself a behavioral OBSERVED classification."
+}

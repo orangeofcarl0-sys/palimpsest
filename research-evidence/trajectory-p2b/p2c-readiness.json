@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_P2C_READINESS",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "target": "Trajectory-P2-C — Attributed Execution Trajectory & Handoff Preview",
+  "notImplementedHere": true,
+  "questions": [
+    {
+      "id": 1,
+      "question": "How does P2-C obtain a verified Session identity from the durable association service?",
+      "answer": "Call makeAssociationQualifier(...).qualifyAttempt({projectId, attemptId}) and consume a qualification whose state is ASSOCIATION_QUALIFIED. The service returns the verified SessionId, the owning InvocationId, the durable binding reference and an H1-compatible AttemptSessionAssociation."
+    },
+    {
+      "id": 2,
+      "question": "Why does the SessionId not come from Caller Claim?",
+      "answer": "The SessionId is taken from a committed durable observation whose sourceBasis matched the verifier's own trusted basis AND whose header was re-read through the official DSH reader. A caller claim has no path into the store, and the read side never consults the record's own declaration."
+    },
+    {
+      "id": 3,
+      "question": "How is the target Invocation selected?",
+      "answer": "P2-C must select an Invocation explicitly (or ask for all of them). The qualifier qualifies EACH invocation of an attempt independently and returns a summary, so P2-C can require exactly one qualified invocation or report the ambiguity."
+    },
+    {
+      "id": 4,
+      "question": "How are multiple Invocations for one Attempt represented?",
+      "answer": "The durable model is Attempt -> Invocation(s) -> Session candidate(s). qualifyAttempt returns one qualification per invocation; a retried attempt yields several. The latest Session is never auto-selected."
+    },
+    {
+      "id": 5,
+      "question": "How is a conflicting association refused?",
+      "answer": "An invocation with two or more distinct observed SessionIds returns state CONFLICT with ALL candidates visible; no single identity is established, so no verified SessionId is produced."
+    },
+    {
+      "id": 6,
+      "question": "How is the official DSH Reader invoked only after association admission?",
+      "answer": "The reader is invoked inside the qualifier, AFTER the durable record, basis match, Work re-read and cardinality checks pass. P2-C should keep the same order: admission first, read second."
+    },
+    {
+      "id": 7,
+      "question": "How are Session Header and Page Integrity rechecked?",
+      "answer": "The header is re-read at qualification time (readHeaderIdentity). P2-C should additionally run validateSessionEventPage over any event page it admits, exactly as H1 established."
+    },
+    {
+      "id": 8,
+      "question": "How are Event Durability and Fork Inheritance preserved?",
+      "answer": "P2-C should consume the existing DshSessionEventPage durability provenance (PERSISTED_DSH_EVENT vs SYNTHETIC_RECOVERY_EVENT) and the inherited flags from the official reader; P2-B stores no event bodies, so nothing is duplicated."
+    },
+    {
+      "id": 9,
+      "question": "How is ADMITTED_TO_ATTEMPT made consistent with BOUND_VERIFIED?",
+      "answer": "P2-C must enforce the cross-field invariant: a state with sessionBindingStatus = SESSION_CLAIMED_UNVERIFIED and dshSessionId = null must NOT carry sessionReadAdmission = ADMITTED_TO_ATTEMPT. Admission requires a qualified association. This is a FUTURE integration requirement; P2-B does not touch the preview path."
+    },
+    {
+      "id": 10,
+      "question": "Why can a structural Page Validator alone not establish producer authenticity?",
+      "answer": "Page integrity validates shape, contiguity and coverage; it says nothing about WHICH execution produced the session. Producer authenticity comes from the durable association, which requires a trusted basis match and a Work re-read."
+    },
+    {
+      "id": 11,
+      "question": "How is an unavailable Session represented without fabricating an empty history?",
+      "answer": "Qualification returns SOURCE_UNAVAILABLE with the reader's own readState and detail; P2-C must surface that state rather than an empty event list. A failed read is never an empty history."
+    },
+    {
+      "id": 12,
+      "question": "Why does a complete observed event range not prove Work settlement or Session termination?",
+      "answer": "Events describe what the Session did. Settlement is canonical Work's; termination is the Session's. P2-B's own gate demonstrates the separation: the Attempt remained RUNNING while a real session existed and was read."
+    },
+    {
+      "id": 13,
+      "question": "How may Project Evolution and Execution views be combined without a false atomic snapshot?",
+      "answer": "They are read from separate owners at separate times. P2-C should present them as separately-sourced views with their own timestamps and never claim a single atomic cross-owner snapshot."
+    },
+    {
+      "id": 14,
+      "question": "Which APIs must remain read-only?",
+      "answer": "The qualifier, the official DSH reader and the Trajectory preview are read-only. The ONLY writer is the trusted recorder on the ingestion path. P2-C must not add a write path."
+    },
+    {
+      "id": 15,
+      "question": "Which actual product paths still require live model testing later?",
+      "answer": "A production worker that passes capability admission and runs a real model turn; automatic Handoff; and any PRIMARY execution. P2-B exercised only the no-model creation+refusal seam."
+    }
+  ],
+  "crossFieldInvariantRemaining": {
+    "invalidCombination": ["sessionBindingStatus = SESSION_CLAIMED_UNVERIFIED", "dshSessionId = null", "sessionReadAdmission = ADMITTED_TO_ATTEMPT"],
+    "status": "FUTURE_INTEGRATION_REQUIREMENT"
+  },
+  "minimalNextSlice": "compose the qualifier into the Attempt Preview as a read-side source: obtain a verified SessionId only from an ASSOCIATION_QUALIFIED result, then read events through the official reader with page-integrity validation, and enforce the cross-field admission invariant.",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "P2C_READINESS_RECORDED"
+}

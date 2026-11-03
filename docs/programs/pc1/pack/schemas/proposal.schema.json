@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:proposal:1",
+  "title": "非权威提案 DTO；不得作为 approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "proposalId",
+    "actorId",
+    "projectId",
+    "projectBasis",
+    "objective",
+    "actionClass",
+    "sourceRefs",
+    "scope",
+    "expectedOutcome",
+    "unresolved",
+    "requiredAuthority",
+    "digest"
+  ],
+  "properties": {
+    "proposalId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actorId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectBasis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actionClass": {
+      "enum": [
+        "INVESTIGATE",
+        "SOURCE_INTAKE",
+        "WORK_CREATE",
+        "INTENT_REVISION",
+        "RESULT_REVIEW",
+        "OTHER_EXISTING_ACTION"
+      ]
+    },
+    "sourceRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "read",
+        "write",
+        "externalEffects"
+      ],
+      "properties": {
+        "read": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "write": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "externalEffects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "expectedOutcome": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "requiredAuthority": {
+      "type": "string",
+      "minLength": 1
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "existingJournalRef": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "existingTaskRef": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

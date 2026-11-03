@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A0",
+  "kind": "model-family discovery and availability evidence",
+  "baseline": "096008d7b005096ec83526b6c5fcb3e54ba4d12f",
+  "method": "the DSH provider/credential environment was inspected, the pi-ai provider catalog was enumerated, and each candidate route was exercised END-TO-END through a real DSH headless worker in an isolated DSH home. No secret value is recorded anywhere in this file.",
+  "environment": {
+    "dshHome": "<home>/.dsh",
+    "credentialRefsPresent": ["DEEPSEEK_API_KEY", "OPENCODE_GO_API_KEY", "OPENROUTER_API_KEY", "CA2A_API_KEY"],
+    "note": "only the credential NAMES are recorded; the values are supplied by the DSH credential plane and are never read by the harness",
+    "piAiProviderCatalog": "386 openrouter models, 41 openai, 15 anthropic, 30 opencode-go, 2 deepseek, and others, shipped in @earendil-works/pi-ai 0.87.1",
+    "localGateway": { "url": "http://127.0.0.1:7866/v1", "modelsListed": 39 }
+  },
+  "gatewayProbe": {
+    "note": "a single completion per model, to separate 'the route answers' from 'the route is usable in a worker'",
+    "answered": ["deepseek-v4.1-flash", "glm-5.3-flash", "kimi-k3", "gpt-5.6-luna", "grok-4.7", "gemini-3.8-flash", "hy4-preview"],
+    "refused503": ["deepseek-v4-pro", "minimax-m3", "qwen3.8-flash", "mimo-v2.6-flash", "longcat-2.0"]
+  },
+  "endToEndVerification": {
+    "note": "§8 forbids silently substituting another model, so a route counts only after it completed a real DSH worker task. Each verification ran in an isolated DSH home with a generated profile and the common renderer.",
+    "deepseek-flash": {
+      "route": "deepseek-route via https://api.deepseek.com",
+      "textTask": "PASS — replied with the requested token",
+      "toolTask": "PASS — read a file and wrote the requested token to a new file"
+    },
+    "glm-5.3-flash": {
+      "route": "omnigate via http://127.0.0.1:7866/v1",
+      "textTask": "PASS — replied with the requested token",
+      "toolTask": "PASS — read src.js and wrote out.txt containing the requested token"
+    },
+    "kimi-k3": {
+      "route": "omnigate via http://127.0.0.1:7866/v1",
+      "textTask": "PASS at the gateway",
+      "toolTask": "NOT VERIFIED end-to-end in a DSH worker in this stage",
+      "status": "GATEWAY_ONLY"
+    }
+  },
+  "verifiedFamilies": [
+    { "modelId": "deepseek-flash", "modelFamily": "deepseek", "vendor": "DeepSeek", "verifiedEndToEnd": true },
+    { "modelId": "glm-5.3-flash", "modelFamily": "glm", "vendor": "Zhipu / Z.ai", "verifiedEndToEnd": true }
+  ],
+  "materialDistinctness": {
+    "requirement": "families must differ in at least one of: tool-use post-training, reasoning architecture, vendor/model family, capability level",
+    "deepseek": "DeepSeek vendor; native deepseek reasoning-content channel",
+    "glm": "Zhipu / Z.ai vendor; non-DeepSeek reasoning formatting through an OpenAI-compatible surface; distinct post-training lineage",
+    "twoSizesOfOneFamily": false,
+    "verdict": "TWO MATERIALLY DISTINCT FAMILIES AVAILABLE"
+  },
+  "incidents": [
+    {
+      "symptom": "a probe home without the profiles/node_modules junction booted to `NO_ADAPTER: no adapter registered for provider \"omnigate\"`",
+      "cause": "the pi-ai plugin could not resolve its own package from a home lacking the shared node_modules junction the gates create",
+      "resolution": "the junction was created exactly as installHostBundle does; the route then completed tasks",
+      "note": "recorded because the failure mode is silent and would otherwise be mistaken for a model-availability result"
+    },
+    {
+      "symptom": "one early probe appeared to succeed and then failed on a repeat run",
+      "cause": "the first probe ran against a home whose plugin resolution happened to succeed before the junction was added",
+      "resolution": "the route was re-verified after the junction was in place, and the harness now always creates it",
+      "note": "the misleading first result is recorded rather than dropped"
+    }
+  ]
+}

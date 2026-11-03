@@ -1,0 +1,62 @@
+{
+  "schema": "pc1v1-freeze/v1",
+  "programme": "PC1-V1",
+  "branch": "palimpsest-pc1v1-governance-to-outcome",
+  "incoming": {
+    "branch": "palimpsest-product-convergence-v1",
+    "head": "e938502005e8d9334c2438fa47488f253bd78cc8",
+    "tree": "0749706c5cc4800b996e86eb728650bb1a1d8beb"
+  },
+  "protectedMain": "044330b2e55198542d545edc42ed9c36e7ce896b",
+  "codeFreeze": {
+    "version": 9,
+    "runtimePromptCommit": "92158e37b66b2a649093d870765b6e8b312d6d58",
+    "runtimePromptTree": "a0c4e007ca42fbb83f9c6b678a112d5c050ea340",
+    "finalExecutableCommit": "18a9c1cef45fda9373b50004ee70650b0e9579af",
+    "finalExecutableTree": "8914b91f708dd01b1f6fad26a03d5234f72e545d",
+    "deliveryToolingCommit": "b93f1ff991777ba9e702e657f0eda7bf0680e3bd",
+    "manifestToolingCommit": "410bc6e76f48e70b2b335c70697d4996195388ba",
+    "note": "1 b7cb43b, 2 bf5e59e, 3 e6159e6 (signed operator), 4 6c8ebd9 (Subagent/cohort tooling), 5 7edb4c6 (scoring isolation/start claim), 6 92158e3 (Field artifact contract), 7 b93f1ff (RC packaging only), 8 18a9c1c (facade/CI correction; behavior-preserving), 9 410bc6e (manifest tooling). The live cohort ran at Code Freeze 6; no new scored cohort is claimed for 8/9."
+  },
+  "releaseCandidate": {
+    "version": "0.2.0-pc1.1-pc1v1",
+    "sourceCommit": "18a9c1cef45fda9373b50004ee70650b0e9579af",
+    "sourceTree": "8914b91f708dd01b1f6fad26a03d5234f72e545d",
+    "head": "18a9c1cef45fda9373b50004ee70650b0e9579af",
+    "tarball": "dist-rc/palimpsest-0.2.0-pc1.1-pc1v1.tar.gz",
+    "tarballSha256": "844b6ee2b7b9b067844aed52a1d429cf6e8227aef32fbbdec0136cf34d2d4fdb",
+    "fileCount": 4042,
+    "dirty": false,
+    "installedSmoke": "PASS; Node 24.22.0, Git 2.53.0, DSH 0.2.1-rc.3, Ordarium 1.3.1, Windows sandbox WARN, liveModel BLOCKED"
+  },
+  "qualification": {
+    "build": "PASS",
+    "architecture": "PASS; 0 violations; 9 accepted baseline exceptions",
+    "publicApi": "PASS; 0 missing, 0 changed kind, 0 added",
+    "curatedTests": "PASS; 33 files / 241 tests",
+    "fullSuite": "Windows: NOT CLEANLY OBSERVED (36 failed files / 121 tests). WSL-native Git clone (pre-CF8): 37 failed files / 134 failed tests, 407 passed files / 5515 passed tests; CF8 fixes the adapter guard, but the full suite was not rerun.",
+    "manifests": "code 2634 files / evidence 297 files (manifest files excluded); 0 mismatches by blob OID",
+    "runtime": "Node 24.22.0; pnpm 11.21.0; Git 2.53.0; DSH 0.2.1-rc.3; Ordarium 1.3.1"
+  },
+  "live": {
+    "state": "EXECUTED",
+    "cohorts": ["pc1v1-live-2026-11-03-b", "pc1v1-live-2026-11-03-b-repair", "pc1v1-live-2026-11-03-c-field"],
+    "provider": "deepseek-official/deepseek-flash",
+    "principalRuns": 8,
+    "childSubagentSessions": 11,
+    "providerErrors": 0,
+    "tokens": 41685383,
+    "pTokens": 26524721,
+    "fTokens": 15160662,
+    "comparativeVerdict": "NOT_SUPPORTED; both conditions correct/complete; F cheaper; strong native DSH competitive or superior",
+    "protocol": "docs/programs/pc1v1/R9-LIVE-PROTOCOL.md",
+    "addendum": "docs/engineering/PC1V1-LIVE-ADDENDUM.md",
+    "runner": "scripts/pc1v1/run_live_cohort.mjs"
+  },
+  "deliveryCommit": "2b9b8155da943e8eedb4b172be462917fa8a64bd",
+  "evidenceFreeze": "the later commit containing manifest-code.json and manifest-evidence.json; this record, the final report and rc.json are in the delivery commit above",
+  "pr": "https://github.com/orangeofcarl0-sys/palimpsest/pull/216",
+  "prState": "OPEN / MERGEABLE / BLOCKED by unit (two pre-existing trajectory tests pass locally) and host-boundary (CI DSH rc.5 vs pinned rc.3); no admin bypass",
+  "mainMoved": false,
+  "generatedAt": "2026-11-03T00:00:00.000Z"
+}

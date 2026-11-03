@@ -1,0 +1,156 @@
+{
+  "stage": "Trajectory-T0",
+  "commit": "C1",
+  "kind": "source-grounded owner / read-capability inventory",
+  "baselineCommit": "fae6c668685a23da6839da3069707d3de2e91121",
+  "baselineBranch": "r3-l0c-g1b-evidence-binding",
+  "readOnlyAudit": true,
+  "noSourceModified": true,
+  "prohibitionCheck": {
+    "launchedRealDshWorker": false,
+    "madePaidModelCalls": false,
+    "enabledPrimary": false,
+    "modifiedFrozenR3L0cCodeOrEvidence": false,
+    "modifiedG1bEvidence": false,
+    "createdNewCanonicalStore": false,
+    "beganR3L1OrFusion": false,
+    "mergedToMain": false
+  },
+  "columns": ["owner", "durableSource", "readApi", "identity", "ordering", "basis", "authority", "missingCapability"],
+  "owners": [
+    {
+      "owner": "Work / Scheduler Event Log",
+      "durableSource": "sqlite `events` table (src/state/event_store.ts)",
+      "readApi": "EventStore.listEvents(projectId?): SchedulerEvent[] (event_store.ts:744); EventStore.getEvent(eventId): SchedulerEvent|undefined (:737); verifyEventChain(connection): SchedulerEvent[] (:121)",
+      "identity": "global event_id (integer, strictly increasing); per-project project_sequence; event_digest = computeEventDigest(event) (models.ts:2621); request_digest = computeRequestDigest(event) (models.ts:2606)",
+      "ordering": "per-project project_sequence 1..N; previous_event_digest links each event to the prior event's event_digest; EMPTY_PREVIOUS_EVENT_DIGEST = '0'.repeat(64) seeds the genesis",
+      "basis": "{projectSequence, eventDigest} — the last committed (project_sequence, event_digest) of the project",
+      "authority": "THE canonical Work history. parseSchedulerEvent (models.ts:2508) recomputes both digests and throws ContractError on mismatch; verifyEventChain throws EventChainError on sequence gap, digest discontinuity or a causation_id that does not reference an EARLIER event in the SAME project",
+      "missingCapability": "no as-of / cursor-bounded listEvents — the whole project chain is returned; getEvent is by GLOBAL id only, so a project-local window must be filtered by the caller"
+    },
+    {
+      "owner": "Work Attempt Authorization",
+      "durableSource": "derived from the Event Log: ATTEMPT_CREATED + TASK_CREATED/TASK_REAUTHORIZED (src/state/attempt_authorization.ts)",
+      "readApi": "resolveAttemptAuthorization({projectId, attemptId, events}) (attempt_authorization.ts:168); resolveAttemptAuthorizationFrom({source, projectId, attemptId}) (:136); WorkReadModel.attemptAuthorization(attemptId) (work/read_model.ts:224); ProjectController.attemptWorkRecord(attemptId) (tools/controller.ts:3568)",
+      "identity": "attemptId = stableEntityId('attempt', actionKey('attempt-create-v1', {project_id, task_id, envelope_id, project_revision, project_digest, batch_activation_event_id, attempt_no})) => `attempt-<32 hex>` (domain/idempotency.ts:12; minted scheduler/scheduler.ts:493)",
+      "ordering": "event_id order within the project; the ATTEMPT_CREATED event's position fixes the historical authorization",
+      "basis": "{createdEventId, authorizationEventId, envelopeId} — the authorization the attempt ACTUALLY had",
+      "authority": "the historical attempt authorization owner. Fails closed with typed reasons (ATTEMPT_NOT_RECORDED, AUTHORIZATION_NOT_FOUND, AUTHORIZATION_AMBIGUOUS, AUTHORIZATION_MISMATCH, AUTHORIZATION_WRONG_SUBJECT) and NEVER falls back to the task's current envelope",
+      "missingCapability": "none for T0 — this is exactly the read the ruling requires (historical authorization preserved)"
+    },
+    {
+      "owner": "ProjectIR",
+      "durableSource": "sqlite `projects` table holds ONE current row per project; the FULL revision history lives inside PROJECT_CREATED / PROJECT_REVISED event payloads (schema/models.ts:451)",
+      "readApi": "WorkReadModel.project()/projectOrNull() (work/read_model.ts:67); parseProjectIr(value) (models.ts:471)",
+      "identity": "revision (integer) + digest = projectIrDigestOf(value) (models.ts:467); parent_revision + parent_digest link each revision to its predecessor",
+      "ordering": "revision chain: parent_revision -> revision; PROJECT_REVISED carries the successor and the parent linkage",
+      "basis": "{revision, digest, headCommit} — ProjectIntentBasis shape (project_intent/proposal.ts:43)",
+      "authority": "parseProjectIr recomputes the digest and validates parent linkage; a tampered payload is refused",
+      "missingCapability": "NO read API for a ProjectIR revision BY NUMBER — only the current row is projected; historical revisions are recoverable ONLY by replaying the event log"
+    },
+    {
+      "owner": "Project World Basis",
+      "durableSource": "sqlite `attempt_world_basis` (src/project_world/basis_store.ts)",
+      "readApi": "AttemptWorldBasisStore.read({projectId, attemptId}): CapturedWorldBasis|null (basis_store.ts:55); ProjectWorldBasisRuntime.read({attemptId}) (project_world/runtime.ts:126); ProjectWorldBasisRuntime.assessCurrentness({attemptId}) (:134); ProjectController.attemptWorldBasis(attemptId) (controller.ts:3822); ProjectController.attemptCurrentness(attemptId) (:3868)",
+      "identity": "composite key (project_id, attempt_id); basisDigest = projectWorldBasisDigest(basis) (domain/world_basis.ts:267), domain 'palimpsest.project-world-basis.v1'",
+      "ordering": "one immutable record per attempt; capturedAt records when it was captured",
+      "basis": "{attemptId, basisDigest, capturedAtRevision, semanticProjectionDigest}",
+      "authority": "APPEND-ONCE with a composite PRIMARY KEY — there is no second row to write; a second capture returns {state:'EXISTING'} and never overwrites (basis_store.ts:95). A later world is what assessCurrentness reports, never a reason to rewrite the attempt's basis",
+      "missingCapability": "no basis HISTORY (exactly one immutable basis per attempt, no versions); on the retired-task/unobservable path currentBasisDigest is set EQUAL to basisDigest rather than a genuine B_1 (runtime.ts:243)"
+    },
+    {
+      "owner": "Result Continuation / Rework",
+      "durableSource": "TASK_READY.rework_provenance payload (schema/models.ts:1262) + src/domain/rework_admission.ts",
+      "readApi": "ResultContinuationService.inspect({result}) (continuation/service.ts:165); ContinuationWorkPort.reworkLineage({taskId, resultRef}) (continuation/ports.ts:174); ContextServicePorts.reworkProvenanceBefore({taskId, beforeEventId}) (context/service.ts:200)",
+      "identity": "result subject = {kind:'ATTEMPT_RESULT', ref: attemptId} (result/subject.ts:50); reworkProvenanceFromPermit(permit, assessmentDigest?) (domain/rework_admission.ts:297)",
+      "ordering": "the TASK_READY event's event_id within the project sequence",
+      "basis": "{origin_result_subject:{kind,ref}, origin_basis_digest, target_observation_digest, current_envelope_id, reason, continuation_assessment_digest?}",
+      "authority": "the admission verifies the landed payload equals the permit-derived provenance (domain/aggregate.ts:265); a caller-supplied provenance is DISCARDED",
+      "missingCapability": "NO first-class standalone read of the provenance BODY — reworkLineage returns ONLY {eventId}; the rich body is reachable only through context compilation or a raw event scan"
+    },
+    {
+      "owner": "Promotion / Project Head",
+      "durableSource": "sqlite `promotions` projection (src/effects/promotion.ts)",
+      "readApi": "readPromotionFacts(connection, projectId): readonly PromotionFact[] (domain/promotion_eligibility_read.ts:136); PromotionManager.promotionFactsSync() (effects/promotion.ts:166); readPromotionFenceRows(connection, projectId) (:55); deriveProjectHeadStatus({project, promotions}) (domain/project_head.ts:203)",
+      "identity": "promotionId = promotionIdFor(projectId, attemptId) (effects/promotion.ts:96); PromotionFact = {eventId, promotionId, attemptId, sourceCommit, expectedHeadCommit, resultingHeadCommit}",
+      "ordering": "committed promotions in event order; the head chain links resultingHeadCommit -> next expectedHeadCommit",
+      "basis": "{projectHeadCommit, promotionChainBasis(projectHeadCommit, promotions)}",
+      "authority": "the promotion ledger is the only owner of the promotion state machine and the project-head row",
+      "missingCapability": "NO per-attempt promotion-record read — #terminal/#terminalReplay are private; a caller must compute promotionIdFor(...) and scan readPromotionFacts"
+    },
+    {
+      "owner": "Reasoning Cell",
+      "durableSource": "sqlite reasoning cell store, per-cell chained sequence (src/reasoning_cell/store.ts)",
+      "readApi": "SqliteReasoningCellStore.replay(cellId): Promise<readonly ReasoningEvent[]> (store.ts:256); .basis(cellId): Promise<ReasoningStoreBasis|undefined> (:245); .definition(cellId) (:235); ReasoningCellService.cellView({cellId})/frontier({cellId})/activeClaims({cellId})/events({cellId}) (service.ts:184-188)",
+      "identity": "cellId (caller-chosen stable id); branch `br-<24hex>`; candidateDigest (bare 64-hex); claim `cl-<24hex>`; verification/admission digest (bare 64-hex); event `rce-<32hex>`",
+      "ordering": "PER-CELL seq 1..N with chainDigest (domain 'palimpsest.reasoning-cell-chain.v1'); frontierRevision increments on CLAIM_ADMITTED / CLAIM_INVALIDATED",
+      "basis": "ReasoningStoreBasis {cellId, throughSeq, chainDigest} AND ReasoningFrontierBasis {cellId, frontierRevision, frontierDigest} — two DISTINCT bases",
+      "authority": "replay validates seq-gap and chain corruption; a Candidate is NOT an admitted claim; a Reasoning Admission is NOT a ProjectIR revision",
+      "missingCapability": "NO projectId / project association anywhere in the plane (association lives in Project Workspace); NO get-candidate-by-id (only the full cellView().candidates list); no dedicated invalidation read API"
+    },
+    {
+      "owner": "Proof Asset",
+      "durableSource": "sqlite proof evidence store, single global scope 'proof' (src/proof_asset/store.ts)",
+      "readApi": "SqliteProofEvidenceStore.replay(): Promise<readonly ProofEvent[]> (store.ts:382); .basis(): Promise<ProofBasis|undefined> (:375); ProofEvidenceService.publishedClaims()/proofAssetView(claimId)/why(claimId)/sources()/evidence(evidenceId)/replay()/basis() (service.ts:233-281)",
+      "identity": "SourceRevision `psr-<32hex>`; EvidenceItem `pev-<32hex>`; CandidateClaim `pcc-<32hex>`; Verification/PublicationAdmission digest (bare 64-hex); PublishedClaim `pc-<32hex>`",
+      "ordering": "global scope seq 1..N with chainDigest (domain 'palimpsest.proof.event.v1')",
+      "basis": "ProofBasis {scopeId, throughSeq, chainDigest}",
+      "authority": "standing is TEMPORAL: baseStandingOf reads the latest assessment, effectiveStandingOf RECOMPUTES from the current plane on every read (service.ts:508); the assessment HISTORY is append-only and immutable",
+      "missingCapability": "NO candidate read API (candidates only via CANDIDATE_RECORDED replay); NO as-of/effective-standing-at-time API; NO projectId / project association in the plane"
+    },
+    {
+      "owner": "Project Journal",
+      "durableSource": "sqlite `project_journal_events`, PER-PROJECT chained sequence (src/project_workspace/journal.ts)",
+      "readApi": "SqliteProjectJournalStore.replay(projectId): Promise<readonly ProjectJournalEvent[]> (journal.ts:331); .basis(projectId): Promise<ProjectJournalBasis|undefined>; projectJournalView(events) (:619)",
+      "identity": "entry `pje-<32hex>` (projectJournalEntryIdOf, journal.ts:126); events `pjeo-`/`pjer-`/`pjex-<32hex>`",
+      "ordering": "PER-PROJECT seq 1..N with chainDigest (projectJournalChainDigest, journal.ts:263); seq=1 must be JOURNAL_OPENED",
+      "basis": "ProjectJournalBasis {scopeId, throughSeq, chainDigest}",
+      "authority": "append-only chain per project; entry kinds are IDEA | OPEN_QUESTION | NEGATIVE_RESULT | OPPORTUNITY | REFERENCE_NOTE — PROOF/DECISION/TASK/EXPERIMENT/COMMITMENT/BOUNDARY/SOURCE are structurally EXCLUDED. A NEGATIVE_RESULT must not become independent Proof truth",
+      "missingCapability": "NO entryById/findEntry on the store; service.journal() returns view entries WITHOUT seq"
+    },
+    {
+      "owner": "Project Association",
+      "durableSource": "sqlite project workspace association store (src/project_workspace/association.ts)",
+      "readApi": "ProjectWorkspaceService.assets()/projectScopedAssets(projectId) (service.ts:184-199); associatedAssetsOf(events): readonly ProjectAssetAssociation[] (association.ts:660)",
+      "identity": "association `paa-<32hex>` (association.ts:200); CanonicalAssetRef = {kind, id, digest?}",
+      "ordering": "per-project event sequence of the association store",
+      "basis": "{associationId, recordedAt, digest} — the association record's own digest",
+      "authority": "an association is a REFERENCE: it carries only {kind, id, digest?} and the digest is MANDATORY only for EXTERNAL_ASSET and PROCEDURE. An association does NOT transfer ownership or validate asset content",
+      "missingCapability": "NO associated(kind, id) check — callers must filter associatedAssetsOf(...) by assetKind + canonicalRef.id"
+    },
+    {
+      "owner": "Project Intent / Reconciliation",
+      "durableSource": "NO proposal or receipt store. The Accepted Reconciliation Receipt is persisted ONLY inside the PROJECT_REVISED event payload (payload.intent_reconciliation) (src/project_intent/receipt.ts)",
+      "readApi": "ProjectIntentService.prepare/assess/apply (service.ts:88) — apply RETURNS the receipt in memory; parseAcceptedIntentReconciliation(raw) (receipt.ts:184); EventStore.listEvents(projectId) then filter event_type='PROJECT_REVISED'",
+      "identity": "proposalId `pip-<32hex>` + content digest (proposal.ts:513); receipt has NO id — its identity IS its digest (acceptedIntentReceiptDigestOf, receipt.ts:152)",
+      "ordering": "the PROJECT_REVISED event's project_sequence",
+      "basis": "{proposalId, proposalDigest, proposalBasis:{projectId, revision, digest, headCommit}, groundBindings: IntentGround[]}",
+      "authority": "the receipt records the proposal basis, the grounded observations (groundBindings), the admission provenance (policyRef + provenanceDigest, decision hard-pinned to 'ADMIT') and the rationale; the Work owner (ProjectController.planReconciled, controller.ts:1381) writes PROJECT_REVISED through the trusted seam TrustedPlanOptions.acceptedIntentReconciliation",
+      "missingCapability": "NO receipt store and NO read API by id/proposalDigest — a caller scans the event log for PROJECT_REVISED and matches payload.intent_reconciliation.digest"
+    },
+    {
+      "owner": "Host Observation (G1-B)",
+      "durableSource": "local run-root observation records (scripts/r3l0c_g1/observation-correlation.mjs) — research-scope, NOT a product canonical owner",
+      "readApi": "G1-B correlateObservationRecord(...) — research script, not a product port",
+      "identity": "invocationId / attemptId / hostLocalJobId carried in the record",
+      "ordering": "per-invocation event sequence",
+      "basis": "the record's own digest",
+      "authority": "LIMITED. G1-B produces authentic local spawn/pid/exit observations on its healthy path, but its Correlator still exposes caller-controlled trust admission surfaces and does not enforce every claimed Run/Claim/Readback relationship for all inputs. T0 therefore classifies it conservatively",
+      "missingCapability": "no independent, authority-bearing readback contract — inside T0 its maximal admitted status is LOCAL_HOST_OBSERVATION_UNVERIFIED_FOR_CAUSAL_ADMISSION; it may NOT establish a verified execution-causation edge"
+    }
+  ],
+  "unsupportedRelationshipsIdentifiedBeforeImplementation": [
+    "No read API for a ProjectIR revision BY NUMBER (historical revisions require event replay).",
+    "No first-class read of the rework provenance BODY (only the TASK_READY event id).",
+    "No per-attempt promotion-record read (reconstruct via promotionIdFor + readPromotionFacts).",
+    "No projectId / project association inside the Reasoning Cell and Proof Asset planes (the association is owned by Project Workspace).",
+    "No accepted Intent Receipt store or read-by-id (scan PROJECT_REVISED payloads).",
+    "No as-of / cursor-bounded EventStore.listEvents.",
+    "No associated(kind, id) membership check on Project Workspace.",
+    "No candidate read API in either the Reasoning or Proof plane."
+  ],
+  "duplicateStoreDecision": {
+    "createdDuplicateStore": false,
+    "reason": "T0 owns only the INTERPRETATION and PRESENTATION of references. Every absent read capability above is satisfied by reading the owning store directly through a structural port (event-log replay, store.replay/basis) rather than by creating a second canonical store."
+  }
+}

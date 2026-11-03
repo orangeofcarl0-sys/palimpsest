@@ -1,0 +1,44 @@
+{
+  "schema": "aps-downstream-completion/v1",
+  "note": "Deterministic test-owned worker on the real Work/Promotion path; not a model result.",
+  "records": [
+    {
+      "taskId": "site-b-coastal",
+      "state": "SATISFIED",
+      "attemptId": "attempt-b92c76d1a8671fad316bb074ef536ee6",
+      "resultCommit": null,
+      "promotionId": "promotion-0bd67a8c06678d25649f55c8f3c24f0f",
+      "resultingHeadCommit": "4a1b505500e2c484fcf6e64358548e61fc4d03e9",
+      "artifact": "deliverables/site-b-coastal.md"
+    },
+    {
+      "taskId": "capacity-refresh",
+      "state": "SATISFIED",
+      "attemptId": "attempt-dab33dd364f76ae10e67f7742e996881",
+      "resultCommit": null,
+      "promotionId": "promotion-50ce4baeb7410a1eee17fea0961b05c1",
+      "resultingHeadCommit": "102679a2a6706512f35be33878dd759fb68cdc3c",
+      "artifact": "deliverables/capacity-refresh.md"
+    }
+  ],
+  "revision": 4,
+  "projectHead": "102679a2a6706512f35be33878dd759fb68cdc3c",
+  "tasks": [
+    {
+      "taskId": "capacity-refresh",
+      "state": "SATISFIED"
+    },
+    {
+      "taskId": "site-a",
+      "state": "SATISFIED"
+    },
+    {
+      "taskId": "site-b",
+      "state": "STALE"
+    },
+    {
+      "taskId": "site-b-coastal",
+      "state": "SATISFIED"
+    }
+  ]
+}

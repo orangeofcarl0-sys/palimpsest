@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_governed_authorization.test.ts",
+  "evidenceClass": "REAL_GOVERNED_REWORK",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": true,
+  "positiveConsumerApiSucceeded": true,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_CONSUMER_ORIGIN_AUTHORIZATION",
+  "title": "Origin authorization reuses the Context Owner lineage",
+  "method": "makeCapsuleAuthorization now delegates to ContextService.governedReworkOriginOf, the SAME resolution the PriorResultContext is compiled from, bounded by the consumer attempt creation event",
+  "observed": "A1 resolves to A0; A0 (no lineage) resolves to NO_LINEAGE; a non-canonical attempt resolves to CONSUMER_NOT_CANONICAL; the origin subject kind and canonicality are checked; a caller-named origin cannot override the lineage",
+  "expectedInvariant": "one meaning of Governed Rework lineage; a caller cannot create permission by naming an Attempt",
+  "verdict": "PASS",
+  "remainingUncertainty": "the origin Execution Association in the positive capsule test is a CONTROLLED FIXTURE (a real durable record built through the real Recorder), stated explicitly and NOT presented as first-party DSH evidence"
+}

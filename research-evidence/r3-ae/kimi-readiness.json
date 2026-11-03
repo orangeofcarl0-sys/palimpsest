@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-AE",
+  "kind": "optional §17 Kimi route readiness check",
+  "scope": "DUMMY plumbing/tool fixture ONLY — this is NOT R3-A qualification and NOT an F-A/F-B run",
+  "route": {
+    "modelId": "kimi-k3",
+    "modelFamily": "kimi",
+    "vendor": "Moonshot AI",
+    "providerId": "omnigate",
+    "providerRoute": "http://127.0.0.1:7866/v1",
+    "apiSurface": "openai-completions",
+    "rendererId": "dsh-common-worker",
+    "rendererVersion": 1
+  },
+  "fixture": {
+    "kind": "dummy plumbing fixture",
+    "contents": "a single file src.js exporting a marker constant",
+    "task": "read src.js, then write out.txt containing exactly the requested token",
+    "isPrimaryFixture": false,
+    "note": "created for this check only; not F-A, not F-B, not a qualification fixture"
+  },
+  "result": {
+    "status": "KIMI_ROUTE_E2E_READY",
+    "toolUseSucceeded": true,
+    "readSucceeded": true,
+    "writeSucceeded": true,
+    "observed": "read src.js (reported its content) and wrote out.txt containing exactly KIMI-TOOLS-OK",
+    "transcriptEvidence": "the worker's own summary names both the read and the write"
+  },
+  "notDone": [
+    "no F-A or F-B run on Kimi",
+    "no qualification trial on Kimi",
+    "no bounds, Nq or QC change",
+    "no additional model-family search merely because the gate is red"
+  ],
+  "pairEmissionGuard": "a plumbing-verified route with ZERO qualification runs is deliberately NOT emitted as a (fixture, model) pair, because it would report a spurious INFRASTRUCTURE_INVALID cell and inflate the pair count the gate reads",
+  "futureUse": "R3-A1 may include this route in its preregistered plan; it must be qualified on the frozen fixtures like any other model"
+}

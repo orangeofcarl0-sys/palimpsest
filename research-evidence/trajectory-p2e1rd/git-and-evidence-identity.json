@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RD_GIT_AND_EVIDENCE_IDENTITY",
+  "stage": "Trajectory-P2-E1RD",
+  "evidenceClass": "OBSERVED",
+  "parent": "3eb88dba1420b9d13c32926e0e9c064a8533ae53",
+  "codeFreezeHead": "d8cc481253ccaef65b2ac347e87dd011b6af7bf2",
+  "codeFreezeTree": "4ab09fcccf050876cd35da22f4f7cba01a9a4b0c",
+  "evidenceInputHead": "d8cc481253ccaef65b2ac347e87dd011b6af7bf2",
+  "evidenceInputTree": "4ab09fcccf050876cd35da22f4f7cba01a9a4b0c",
+  "evidenceContentDigest": "sha256-30ace1d6bdd769b2a327960b9e9b400c193a5b12b113d595d69b0085dc1164bb",
+  "artifactDigests": {
+    "baseline-and-environment.json": "sha256-b089ec76f5d165a4743d42f8c2e3dccbc027469fae862f8beade6a8505909304",
+    "dsh-version-semantics.json": "sha256-39737743afa467d41a9d8ab7a51e22f7bb3f7f37bfee993de5a0756d2f9d2765",
+    "capability-surface.json": "sha256-fbc1ceaf15f301fe37d9473c8c898c018eb8a5223874d75e546d6fa15ffa40fe",
+    "cwd-security-falsifiers.json": "sha256-76adb60d9fda27893d42f6e4dcef98fa94c4a5ea1d855376868522e7040ac181",
+    "host-security-conformance.json": "sha256-d1794ee514d8079ee31adfa0b350bc26c5458f2f59f26f86f2d6ac7f483cb2b9",
+    "assay-residual-corrections.json": "sha256-58122522c83fcab966121030c5f2dc0c0c2fdb8a095ecd028152d9b8f62d6721",
+    "dsh-execution-requalification.json": "sha256-19fa88be635398b4d97cc3f29d7b41dc2c2222f9734a12868bf28d12e69c7903",
+    "closure-gate.json": "sha256-5115b99c03846dd5ed8c74fe2525e83db2fe44e348bff5266b11543ec43ab945",
+    "final-verdicts.json": "sha256-c190a491fd47357e7840233a5e6965e9b864996633e0ed6a313db0e7ae1376de"
+  },
+  "artifactCount": 9,
+  "evidenceSelfReferenceNote": "this manifest hashes the real bytes of every OTHER artifact, including the verdicts. It does not hash itself and cannot name its own commit — a commit cannot contain its own SHA — so the final HEAD is reported in docs/engineering/trajectory-p2e1rd.md and the final engineering report.",
+  "protectedResearchEvidence": {
+    "declared": 52,
+    "verified": 52,
+    "mismatched": []
+  }
+}

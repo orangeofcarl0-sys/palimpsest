@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "context delivery proof",
+  "note": "§10.8/§10.9: the Capsule is delivered through the EXISTING attributed-Preview read service (one added read-only method), and its permission is the consumer Attempt's canonical lineage. No unrestricted Session-read tool was introduced.",
+  "mechanism": {
+    "existingOwner": "src/composition/attributed_preview.ts (the read-only attributed Preview the product already composes)",
+    "addedSurface": "capsuleForConsumer({ consumerAttemptId, requestedOriginAttemptId? })",
+    "authorizationPort": "src/composition/execution_association.ts makeCapsuleAuthorization — the SAME governed-rework lineage the Context owner resolves for PriorResultContext",
+    "notAdded": ["an unrestricted readAnyTrajectory(sessionId) tool", "a global Session lookup", "a new storage owner", "a change to the Context Pull allowlist or the immutable per-Attempt Manifest"]
+  },
+  "deliveryStates": ["AUTHORIZED", "CONSUMER_NOT_CANONICAL", "NO_LINEAGE", "ORIGIN_NOT_PERMITTED", "NO_QUALIFIED_ORIGIN"],
+  "evidence": {
+    "class": "CONTROLLED_FIXTURE + REAL_FIRST_PARTY_DSH_NO_MODEL",
+    "tests": ["test/trajectory_p2d0_context_capsule.test.ts", "test/trajectory_p2d0_cold_capsule.test.ts"],
+    "observed": [
+      "a permitted consumer's Capsule is AUTHORIZED with a real Preview",
+      "an arbitrary attempt is refused NO_LINEAGE through the ordinary product path",
+      "the real cold-recovered gate delivers a bounded Capsule with 3 real DSH events and no model call"
+    ]
+  },
+  "readyToDeliverVersusConsumed": {
+    "provenInD0": ["source qualified", "selected", "bounded", "delivered through a controlled non-model path", "cannot widen authority"],
+    "NOTProvenInD0": ["a real stochastic Agent understood the Capsule", "the Agent applied the history correctly", "the Capsule improved task quality — these are D1 questions"]
+  },
+  "verdict": "PASS",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "sourceDataChanged": false
+}

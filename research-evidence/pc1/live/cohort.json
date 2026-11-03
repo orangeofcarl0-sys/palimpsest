@@ -1,0 +1,53 @@
+{
+  "schema": "pc1-live-cohort/v1",
+  "cohortId": "pc1-live-2026-11-02-c",
+  "codeFreeze": "733e5d43c06ba067ede9f9093670dfb0f3374d77",
+  "createdAt": "2026-11-02T13:54:36.055Z",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "spendAuthorization": "owner: no special limit; PC1 live closure authorized 2026-11-02",
+  "scenarios": {
+    "sablewick": {
+      "t1": "2026-02-10T09:05:00Z",
+      "t2": "2026-02-14T09:10:00Z",
+      "pWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\sablewick\\p1\\world",
+      "fWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\sablewick\\f1\\world",
+      "inbox": {
+        "pT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\sablewick\\p1\\inbox-t1",
+        "pT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\sablewick\\p1\\inbox-t2",
+        "fT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\sablewick\\f1\\inbox-t1",
+        "fT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\sablewick\\f1\\inbox-t2"
+      },
+      "visibleSetDigest": {
+        "pT1": "66ce571429d114bbeb7c84c3884d5f91aa0655a1b2ddc5f0abca53eabf6621ef",
+        "pT2": "fdac3d7814a959ab65994a770add508fee439327822273b582fe6eac95c7e5dc",
+        "fT1": "66ce571429d114bbeb7c84c3884d5f91aa0655a1b2ddc5f0abca53eabf6621ef",
+        "fT2": "fdac3d7814a959ab65994a770add508fee439327822273b582fe6eac95c7e5dc"
+      }
+    },
+    "fieldStudy": {
+      "t1": "2026-03-02T09:00:00Z",
+      "t2": "2026-03-09T09:10:00Z",
+      "pWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\field-study\\p1\\world",
+      "fWorld": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\field-study\\f1\\world",
+      "inbox": {
+        "pT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\field-study\\p1\\inbox-t1",
+        "pT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\field-study\\p1\\inbox-t2",
+        "fT1": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\field-study\\f1\\inbox-t1",
+        "fT2": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\.pc1-rig\\field-study\\f1\\inbox-t2"
+      },
+      "visibleSetDigest": {
+        "pT1": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "pT2": "dc22bfe70d1e793e2ebcdb614eb91244a98515e59778fcca40c4ea371e607239",
+        "fT1": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "fT2": "dc22bfe70d1e793e2ebcdb614eb91244a98515e59778fcca40c4ea371e607239"
+      }
+    }
+  },
+  "oracleCopied": false,
+  "note": "Evaluator-only material is not included. T1/T2 inboxes are separate visible sets. The code/scenario/operator/rubric freeze is recorded before this cohort's first model call. The earlier pre-fix P pilot is preserved separately and is not part of this scored cohort."
+}

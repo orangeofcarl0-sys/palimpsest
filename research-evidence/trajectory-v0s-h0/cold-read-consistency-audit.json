@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_COLD_READ_CONSISTENCY_AUDIT",
+  "stage": "Trajectory-V0S-H0",
+  "question": "can readColdSessionLog() and readStoredPrefix() observe different storage states and produce an incorrect durability classification?",
+  "sourceGuarantee": {
+    "citation": "@deepseek-ai/dsh-session-persistence/lib/types/handle.d.ts",
+    "text": "Reads concurrent with a mutation carry no ordering promise beyond the valid contiguous prefix.",
+    "implication": "no ATOMIC SNAPSHOT guarantee spans two separate reads; the two-read sequence is NOT transactional"
+  },
+  "before": "the reader used the second read's stored count unconditionally, so a stored prefix that GREW between the two reads could classify stored events as synthetic closers",
+  "after": {
+    "check": "boundaryConsistent = stored.count <= all.length (the cold read's total)",
+    "failClosed": "when the second read reports more stored events than the first read returned in total, the two reads observed different snapshots and the boundary is reported DURABILITY_UNRESOLVED",
+    "notOverclaimed": "a consistent prefix is reported PERSISTED_AND_SYNTHETIC_SEPARATED; an inconsistent one is not"
+  },
+  "classification": "SOURCE_DEMONSTRATED",
+  "dynamicallyReproduced": false,
+  "note": "a source-structural race is not a dynamically reproduced failure; no concurrent-writer scenario was executed",
+  "privateParserIntroduced": false,
+  "dsHPersistenceRewrite": false,
+  "remainingLimitation": "the two reads are still not atomic, so a write that lands between them and GROWS the log yields DURABILITY_UNRESOLVED rather than a classification; the reader prefers the honest unresolved value over an unsupported assertion",
+  "tests": { "files": ["test/trajectory_v0s_cold_read.test.ts"], "failed": 0 }
+}

@@ -72,6 +72,20 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // owner of execution provenance, not kernel substrate and not a host adapter.
   project_world: "L2",
   project_workspace: "L2",
+  // PC1 S03/S05/S06: derived read facades and contract layers. They own no canonical store:
+  // continuity projects existing owners, handoff defines the collaboration contract, and
+  // domain_outcome evaluates an explicit domain contract.
+  project_continuity: "L2",
+  project_handoff: "L2",
+  domain_outcome: "L2",
+  // APS-A/B: the contribution chain appends only to the existing Journal and applies plan
+  // revisions through the controller; the pulse is a derived continuation view. Neither owns a
+  // canonical store, a scheduler or acceptance authority.
+  project_contribution: "L2",
+  project_pulse: "L2",
+  // PC1 S04: the proposal/review metadata capability. It drives the existing plan/intent owners
+  // through structural ports and owns only its non-authoritative review store.
+  project_review: "L3",
   boundary_memory: "L2",
   monitor: "L2",
   attention: "L2",
@@ -100,6 +114,11 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // EXISTING evolution histories and empirical memory — it owns no store, no Organization, no
   // RuntimeScope, no DynamicsProposal and no authority, so it sits beside the owners it connects.
   institutional_learning: "L2",
+  // Trajectory-T0 §10: the read-only TRAJECTORY PROJECTION. It owns no store, no scheduler, no
+  // canonical event, no promotion and no authority: it references facts other owners recorded and
+  // interprets their relationships and currentness. A pure semantic capability beside the owners it
+  // reads, which is why it is L2 and may name L1/L2 only.
+  trajectory: "L2",
   // E5-P §3/§30: the governed PROCEDURAL CAPITAL owner. The §2 gap test proved NEW_OWNER_JUSTIFIED —
   // learned procedure is durable semantic truth belonging to none of the existing owners (Recipe is
   // executable product config, Journal is a note, OrganizationMemory is observation, ExternalAsset is
@@ -109,6 +128,15 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   experiment: "L2",
   external_assets: "L2",
   recovery: "L2",
+  // Trajectory-P2-B §6/§12: the DURABLE EXECUTION-ASSOCIATION concern. It owns a typed, append-only
+  // record of what a trusted ingestion path actually OBSERVED (canonical AttemptId, Parent InvocationId,
+  // real DSH SessionId, the trusted source basis) and derives a qualification on the READ side by
+  // re-reading canonical Work and the real DSH Session header. It decides nothing about Work — no
+  // settlement, no verification, no promotion, no handoff — and owns no runtime or scheduler, so it is a
+  // semantic capability (L2) beside `project_world`, not kernel substrate and not a host adapter. It may
+  // name L1/L2 only; the L3/L5 producer passes its observation through a STRUCTURAL contract declared
+  // here (`ObservedIdentityInput`), which is what keeps the dependency direction one-way.
+  execution_association: "L2",
   // The durable transport plane embeds PeerRef and BoundaryRemoteOperation, so it is bound
   // to those capabilities rather than being layer-free substrate: it is part of the L2
   // peer/boundary cluster (measured: transport ↔ boundary_memory ↔ coordination form one SCC).
@@ -172,9 +200,31 @@ const FILE_LAYER_OVERRIDES: Readonly<Record<string, { readonly layer: LogicalLay
       layer: "L2",
       why: "executes gate commands through the effects runtime (semantic execution helper, not an adapter)",
     },
+    "src/product.ts": {
+      layer: "L5",
+      why: "the ordinary-user product composition entry (host/deployment wiring)",
+    },
+    "src/cli_product.ts": {
+      layer: "L5",
+      why: "the product CLI adapter (host entry point)",
+    },
     "src/tools/parallel.ts": {
       layer: "L2",
       why: "role-slot and budget policy for parallel work (semantic policy, no durable store)",
+    },
+    /**
+     * CI2 §10: the single Work-evidence writer.
+     *
+     * It sits beside `gate_runner.ts` for the same reason: a semantic helper that appends a canonical
+     * `EVIDENCE_ADDED` event through the store it is handed, not a host adapter. It was EXTRACTED from
+     * `ProjectController`'s two private builders — one implementation, moved rather than duplicated — so
+     * the delegated settlement route could reach the same writer without `src/work/` importing the
+     * controller, which firewall `work-not-host` forbids. Classifying it L5 would make its use by an L2
+     * owner a violation and would push the writer back into the controller: back to the gap.
+     */
+    "src/tools/work_evidence.ts": {
+      layer: "L2",
+      why: "the single Work-evidence event writer, extracted from the controller so both settlement routes share one implementation",
     },
     "src/tools/graph.ts": {
       layer: "L3",

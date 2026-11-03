@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0",
+  "kind": "dummy-fixture plumbing check (§27)",
+  "contributesToN": false,
+  "results": [
+    {
+      "label": "deepseek",
+      "route": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "ok": true,
+      "phase": "FINISHED",
+      "hostError": null,
+      "sourceAfter": "/** A dummy module. Set `answer` to 42. */\nexport const answer = 42;",
+      "visibleOracle": {
+        "ok": true,
+        "detail": "ok"
+      },
+      "payloadHandles": 0,
+      "transcriptBytes": 1932,
+      "stdout": "DUMMY_DONE ok=true phase=FINISHED"
+    },
+    {
+      "label": "glm",
+      "route": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "ok": true,
+      "phase": "FINISHED",
+      "hostError": null,
+      "sourceAfter": "/** A dummy module. Set `answer` to 42. */\nexport const answer = 42;",
+      "visibleOracle": {
+        "ok": true,
+        "detail": "ok"
+      },
+      "payloadHandles": 0,
+      "transcriptBytes": 1887,
+      "stdout": "DUMMY_DONE ok=true phase=FINISHED"
+    }
+  ]
+}

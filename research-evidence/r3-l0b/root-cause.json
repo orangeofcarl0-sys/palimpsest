@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0B",
+  "kind": "filesystem root-cause analysis",
+  "runDir": "C:\\Users\\66494\\.palimpsest-r3l0\\matrix\\run-2026-10-07T02-28-39-291Z",
+  "primaryCause": "RESEARCH_HARNESS_DIRECTORY_LAYOUT",
+  "layers": [
+    {
+      "layer": "RESEARCH_HARNESS_DIRECTORY_LAYOUT",
+      "verdict": "CAUSE",
+      "basis": "every exposed artifact was placed by the harness in an ANCESTOR or SIBLING of the worker world, and none was declared to the shipped fence; the fence derives its roots from the worker position, so an undeclared ancestor or sibling is outside its scope by construction",
+      "evidence": [
+        "control payload and generation spec written into the world ANCESTOR",
+        "every trajectory placed under ONE shared parent",
+        "the shared run progress record carried all units diagnostics",
+        "the checkout used as the harness host was never declared protected"
+      ]
+    },
+    {
+      "layer": "SECURITY_PROFILE_SCOPE",
+      "verdict": "CONTRIBUTING_FACTOR",
+      "basis": "the profile confines worker-to-worker and credential reach and does not enumerate a harness own private files; its scope is the reason the harness had to declare its roots, and the harness did not",
+      "evidence": [
+        "PALIMPSEST_WORKER_PROTECTED_ROOTS exists precisely for roots that are not derivable",
+        "the profile makes no claim about experimental layout"
+      ]
+    },
+    {
+      "layer": "PRODUCTION_RUNTIME_DESIGN",
+      "verdict": "NOT_IMPLICATED",
+      "basis": "the shipped runtime provides the mechanism that contains this class of defect and promises only what it delivers; no shipped promise was violated, so §9 forbids naming a production confidentiality defect",
+      "evidence": [
+        "the fence protects arbitrary declared roots, including siblings",
+        "the kernel and guard layers already block read-up and sibling content",
+        "the disclosed residual is sibling world NAMES, not sibling world CONTENT"
+      ]
+    }
+  ],
+  "layoutFacts": {
+    "runDir": "C:\\Users\\66494\\.palimpsest-r3l0\\matrix\\run-2026-10-07T02-28-39-291Z",
+    "runDirExists": true,
+    "rows": [
+      {
+        "id": "DIAGNOSTIC_ORACLE",
+        "r3l0Path": "CHECKOUT/scripts/r3l0/diagnostic.mjs",
+        "relationToWorld": "SIBLING of the repository, under the CHECKOUT (the harness host)",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "the checkout is where the harness process itself runs, so it was never named a protected root; the worker read it with an absolute path"
+      },
+      {
+        "id": "PRIMARY_EVIDENCE",
+        "r3l0Path": "RUN/trials.partial.json",
+        "relationToWorld": "SIBLING of the repository, under the shared RUN directory",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "the harness wrote its own progress record beside every trajectory and never declared RUN protected"
+      },
+      {
+        "id": "SCHEDULE",
+        "r3l0Path": "CHECKOUT/research-evidence/r3-l0/plan.json",
+        "relationToWorld": "inside the CHECKOUT",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "the frozen plan lives in the checkout the harness runs from"
+      },
+      {
+        "id": "CONTROL_PAYLOAD",
+        "r3l0Path": "ROOT/payload-*.json",
+        "relationToWorld": "ANCESTOR of the world (two levels above)",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "the harness wrote its control payload into the trajectory control directory, which CONTAINS the repository and therefore the world"
+      },
+      {
+        "id": "HARNESS_IMPLEMENTATION",
+        "r3l0Path": "ROOT/spec-*.json, ROOT/transcript-*.txt",
+        "relationToWorld": "ANCESTOR of the world",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "the generation spec and the transcript were written into the same containing directory"
+      },
+      {
+        "id": "SIBLING_TRAJECTORY_WORLDS",
+        "r3l0Path": "RUN/<other-trajectoryId>/repo/.palimpsest/worlds/attempt-*",
+        "relationToWorld": "SIBLING of the repository, under the shared RUN directory",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "every trajectory was placed under ONE shared parent, so each unit world is a sibling of every other unit world"
+      },
+      {
+        "id": "SIBLING_PROMOTED_SOURCE",
+        "r3l0Path": "RUN/<other-trajectoryId>/repo (HEAD:src/ledger.mjs)",
+        "relationToWorld": "SIBLING of the repository",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "the promoted source is inside the sibling unit repository"
+      },
+      {
+        "id": "ANALYSIS_CODE",
+        "r3l0Path": "CHECKOUT/scripts/r3l0a",
+        "relationToWorld": "inside the CHECKOUT",
+        "declaredToFence": "NO",
+        "reachableInR3L0": true,
+        "reason": "the analysis lives in the checkout"
+      }
+    ],
+    "structuralFacts": {
+      "sharedParentForEveryTrajectory": true,
+      "controlFilesInWorldAncestor": true,
+      "checkoutIsTheHarnessHost": true,
+      "anyRootDeclaredToTheFence": false
+    }
+  },
+  "hypothesis": {
+    "hypothesis": "the defect is the harness directory layout, not the runtime design",
+    "prediction": "declaring the undeclared roots to the EXISTING shipped fence contains every host-private artifact, with no change to product or runtime code",
+    "undeclaredRoots": [
+      "DIAGNOSTIC_ORACLE",
+      "PRIMARY_EVIDENCE",
+      "SCHEDULE",
+      "CONTROL_PAYLOAD",
+      "HARNESS_IMPLEMENTATION",
+      "SIBLING_TRAJECTORY_WORLDS",
+      "SIBLING_PROMOTED_SOURCE",
+      "ANALYSIS_CODE"
+    ],
+    "falsifier": "if any declared host-private root remains reachable through the shipped fence, the runtime design is implicated instead",
+    "requiresRuntimeChange": false
+  },
+  "fenceSourceEvidence": {
+    "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/host/deployment/runtime/worker_fence.js",
+    "bytes": 13088,
+    "declaresRootsEnvironment": true,
+    "derivesFromWorkerPosition": true,
+    "installsBoundary": true,
+    "protectsDeclaredRoots": true
+  },
+  "containmentHypothesis": {
+    "hypothesis": "the defect is the harness directory layout, not the runtime design",
+    "prediction": "declaring the undeclared roots to the EXISTING shipped fence contains every host-private artifact, with no change to product or runtime code",
+    "undeclaredRoots": [
+      "DIAGNOSTIC_ORACLE",
+      "PRIMARY_EVIDENCE",
+      "SCHEDULE",
+      "CONTROL_PAYLOAD",
+      "HARNESS_IMPLEMENTATION",
+      "SIBLING_TRAJECTORY_WORLDS",
+      "SIBLING_PROMOTED_SOURCE",
+      "ANALYSIS_CODE"
+    ],
+    "falsifier": "if any declared host-private root remains reachable through the shipped fence, the runtime design is implicated instead",
+    "requiresRuntimeChange": false
+  }
+}

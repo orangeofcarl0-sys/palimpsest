@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "real first-party non-model integration",
+  "gates": [
+    {
+      "name": "cold-capsule",
+      "script": "scripts/trajectory_p2d0/cold-capsule-gate.mjs",
+      "test": "test/trajectory_p2d0_cold_capsule.test.ts",
+      "evidence": "research-evidence/trajectory-p2d0/real-cold-capsule.json",
+      "outcome": "PASS",
+      "independentProcesses": true,
+      "realSessionCreated": true,
+      "modelTurns": 0,
+      "durableEvents": 2,
+      "previewEvents": 3,
+      "capsuleEvents": 3,
+      "capsuleAuthority": "READ_ONLY_INSPECTION",
+      "arbitraryAttemptRefused": "NO_LINEAGE"
+    },
+    {
+      "name": "canonical-correlation (P2-B, retained)",
+      "script": "scripts/trajectory_p2b/canonical-correlation-gate.mjs",
+      "outcome": "PASS",
+      "note": "updated to finalize the Invocation from its own observed child exit (P2-D0 §7.1); still PASS with qualifiedCount 1"
+    },
+    {
+      "name": "cold-recovery (P2-B, retained)",
+      "script": "scripts/trajectory_p2b/cold-recovery-gate.mjs",
+      "outcome": "PASS",
+      "note": "updated to finalize the Invocation from its own observed child exit; still PASS with matching recovered identity"
+    }
+  ],
+  "noFabrication": {
+    "workerOutcome": "not fabricated — the probe child refuses to run (HOST_FAILURE) and no settlement occurs",
+    "workVerification": "not fabricated — verificationState stays NOT_OBSERVED_BY_V0",
+    "promotion": "not fabricated — promotionState stays NOT_PROMOTED"
+  },
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "sourceDataChanged": false,
+  "verdict": "PASS"
+}

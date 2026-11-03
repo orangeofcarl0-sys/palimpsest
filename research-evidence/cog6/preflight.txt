@@ -1,0 +1,87 @@
+COG-6 read-only preflight, captured 2026-11-01T22:05:00+08:00
+repository: /f/Codex_Work_Space/Palimpsest/palimpsest-sr1
+
+$ git status --short
+(empty)
+
+$ git status --porcelain=v1 -uall
+(empty)
+
+$ git branch --show-current
+palimpsest-cog5-trustworthy-continuation
+
+$ git rev-parse HEAD
+60be154f7f776729698f316011670abd0bc4c0eb
+
+$ git rev-parse HEAD^{tree}
+10d22622a70064b5b9f963b59c1476276dcec273
+
+$ git log -1 --format='%H %T %s'
+60be154f7f776729698f316011670abd0bc4c0eb 10d22622a70064b5b9f963b59c1476276dcec273
+COG-5 Evidence Freeze: executable continuation results and hashed evidence
+
+$ git rev-parse origin/main
+044330b2e55198542d545edc42ed9c36e7ce896b
+
+$ git rev-parse origin/palimpsest-cog5-trustworthy-continuation
+60be154f7f776729698f316011670abd0bc4c0eb
+
+$ git stash list
+(empty)
+
+$ git branch --list palimpsest-cog6-agent-native-evolution
+(empty before creation)
+
+$ git branch -r --list origin/palimpsest-cog6-agent-native-evolution
+(empty; no remote occupancy)
+
+$ git rev-list --left-right --count origin/main...HEAD
+0	368
+
+$ git worktree list --porcelain (counts)
+worktrees: 95
+locked entries: 2 (both "locked initializing", detached at 50e2d92aa40936afb91caa80797a63ad99128fb3)
+prunable entries: 90
+
+$ protected resources
+gate roots (~/.palimpsest-gates): 19
+evidence trees (research-evidence/*/): 73 at the incoming HEAD
+stashes: 0
+
+$ branch creation
+git switch -c palimpsest-cog6-agent-native-evolution 60be154f7f776729698f316011670abd0bc4c0eb
+-> Switched to a new branch 'palimpsest-cog6-agent-native-evolution'
+
+$ post-creation
+palimpsest-cog6-agent-native-evolution
+60be154f7f776729698f316011670abd0bc4c0eb
+10d22622a70064b5b9f963b59c1476276dcec273
+(clean worktree)
+
+$ environment
+node            v24.14.1        (package.json engines: ">=24.15.0" — MISMATCH, unchanged from COG-5)
+pnpm            11.21.0
+git             2.53.0.windows.2
+python (py)     3.14.7          (`python`/`python3` are not on PATH; the `py` launcher is)
+dsh             0.2.1-rc.3      (global CLI; host/dsh package palimpsest-dsh-host 0.1.0)
+os              Windows 10.0.26200 x64, bash (Git Bash)
+
+$ pnpm config get engine-strict
+undefined  (pnpm does not enforce engines here; the engine violation is a warning, not a hard stop)
+
+$ environment decision
+No alternative Node >=24.15.0 installation exists on this host (no nvm/fnm/volta/scoop/choco node).
+Installing or switching a global Node runtime would be an owner-environment change, not a repository
+change, and is not required to build or test: COG-5 built and ran 259 targeted tests on v24.14.1.
+The mismatch is recorded as an environment prerequisite that remains open; it is not silently treated
+as satisfied.
+
+$ retained test directory
+F:\Codex_Work_Space\Palimpsest\.cog5-rig\ (outside the repository; main/main2..main5, newsletter1/2,
+outofscope1/2 and the two one-off evidence extractors). Retained deliberately for COG-5 reproduction.
+Not deleted, not modified.
+
+$ remote state
+origin/palimpsest-cog5-trustworthy-continuation = 60be154f7f776729698f316011670abd0bc4c0eb
+local main = 67b29c9... (unchanged; never checked out, never moved)
+No PR, tag, force-push, branch deletion, worktree prune, lock removal or cleanup was performed.

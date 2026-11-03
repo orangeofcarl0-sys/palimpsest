@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_HOST_USER_MESSAGE_CAPTURE",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C4 §8",
+  "evidenceClass": "HOST_INPUT_CAPTURED",
+  "sourceReferences": [
+    "host/dsh/lib/runner.js (workTask composition + applyTrajectoryPresentation placement + PALIMPSEST_WORKER_TRAJECTORY telemetry)",
+    "host/dsh/lib/trajectory-presentation.js (validatePresentation, applyTrajectoryPresentation)",
+    "host/dsh/lib/index.js (payload adapter forwards trajectoryPresentation verbatim)",
+    "src/deployment/work_worker.ts (workWorkerEnvironmentPayload carries trajectoryPresentation)"
+  ],
+  "testFile": "test/trajectory_p2d2_host_delivery.test.ts",
+  "method": "the REAL `runWorker` is driven with a controlled Agent interface, and the exact `UserMessage` argument passed to `agent.followup()` is captured",
+  "placementPoint": "appended AFTER the composed task text, separated by exactly one blank line; nothing before it is rewritten",
+  "observedResults": {
+    "offPlacesNoSection": true,
+    "offByteIdenticalWithOrWithoutPresentationField": true,
+    "controlPlacesBoundaryNoHistory": true,
+    "treatmentPlacesActualSection": true,
+    "hostSectionBytesEqualProductSectionBytes": true,
+    "hostUserMessageDigestEqualsCapturedTextDigest": true,
+    "taskTextBeforeSectionUnchanged": true,
+    "malformedPresentationRefused": true,
+    "injectionTextStaysInsideFramedSection": true
+  },
+  "expectedInvariant": "the actual first-party Host's UserMessage construction receives the product-rendered Trajectory Section under TREATMENT and omits it under OFF/CONTROL, with no change to the tool catalogue or the write scope",
+  "verdict": "PASS",
+  "remainingUncertainty": "L1 proves Host INPUT CONSTRUCTION, not real model consumption — it is never reported as MODEL_CONSUMED_CAPSULE",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": true,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

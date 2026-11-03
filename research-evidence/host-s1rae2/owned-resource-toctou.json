@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_E2_OWNED_RESOURCE_TOCTOU",
+  "arms": [
+    {
+      "arm": "1-baseline",
+      "description": "an untouched allocated root",
+      "owned": true,
+      "checks": [
+        "record:PASS",
+        "identityMatch:PASS",
+        "marker:PASS"
+      ],
+      "note": "the ordinary case is admitted"
+    },
+    {
+      "arm": "2-swap-after-proof",
+      "description": "the path is replaced AFTER revalidateOwnership returned, BEFORE rmSync",
+      "proofOwnedOriginal": true,
+      "foreignSurvived": false,
+      "rmSyncSucceeded": true,
+      "observation": "TOCTOU_WINDOW_IS_REAL: a directory swapped in after the proof was deleted",
+      "note": "the helper does not hold a handle across the check and the delete, so the two are not atomic"
+    },
+    {
+      "arm": "3-marker-removed",
+      "description": "the ownership marker is deleted before revalidation",
+      "owned": true,
+      "markerCheck": {
+        "check": "marker",
+        "passed": true,
+        "detail": "no marker present; ownership rests on the captured identity"
+      },
+      "finding": "A MISSING MARKER IS TREATED AS A PASS. The record falls back to the captured identity, so a root whose marker was removed is still deletable."
+    },
+    {
+      "arm": "4-marker-names-another-root",
+      "description": "the marker's runId matches but its ownedRoot names a different directory",
+      "owned": true,
+      "finding": "ACCEPTED: revalidateOwnership checks only runId, so a marker that names a DIFFERENT root still passes. The reaper checks ownedRoot; this path does not."
+    },
+    {
+      "arm": "5-identity-strength",
+      "description": "how strong the identity comparison actually is here",
+      "detail": "dev/ino match the allocation",
+      "inoUsable": true,
+      "finding": "dev/ino are usable and compared"
+    }
+  ]
+}

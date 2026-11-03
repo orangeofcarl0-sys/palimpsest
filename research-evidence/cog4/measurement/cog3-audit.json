@@ -1,0 +1,200 @@
+{
+  "schema": "cog4-cog3-audit/v1",
+  "at": "2026-11-01T09:19:56.225Z",
+  "readOnly": "research-evidence/cog3 was read, never written",
+  "codeFreezeOfAuditedEvidence": "bf21110497e8a15211899f0334795185ebeffff3",
+  "tokenReconciliation": {
+    "principal": {
+      "file": "sessions/P1/principal-session-d8ca633c-9238-412b-9d7c-073e1c00fa11.zstd",
+      "inputTokens": 94407,
+      "outputTokens": 170397,
+      "cacheReadTokens": 15929344,
+      "cacheWriteTokens": 0,
+      "totalTokens": 16194148,
+      "messages": 100,
+      "duplicates": [],
+      "firstSeq": 15,
+      "lastSeq": 857,
+      "events": 861,
+      "lines": 861,
+      "badLines": 0
+    },
+    "branch": {
+      "file": "sessions/P1/branch-65fa69d0-c8ef-4479-90dc-2aaf44d08d63.zstd",
+      "inputTokens": 3247,
+      "outputTokens": 1686,
+      "cacheReadTokens": 16640,
+      "cacheWriteTokens": 0,
+      "totalTokens": 21573,
+      "messages": 6,
+      "duplicates": [],
+      "firstSeq": 14,
+      "lastSeq": 52,
+      "events": 56,
+      "lines": 56,
+      "badLines": 0
+    },
+    "streamTotal": 16215721,
+    "runTwoRecordedTotal": 16215721,
+    "scoresRecordedTotal": 16221721,
+    "runTwoMatchesStream": true,
+    "scoreDiscrepancy": 6000,
+    "explanation": "scores.json is 6000 tokens above the immutable stream total; run-two.json already records the exact stream total, so the difference is a transcription/arithmetic error in the derived score record, not a later Session append (the streams end at turn/end with no duplicate seqs)",
+    "campaign": {
+      "scoredP": 16221721,
+      "streamP": 16215721,
+      "discrepancy": 6000,
+      "S": 1828481,
+      "F": 8544715,
+      "probes": 536463,
+      "reportedCampaignTotal": 27131380,
+      "correctedCampaignTotal": 27125380,
+      "cap": 25000000,
+      "reportedOverrun": 2131380,
+      "correctedOverrun": 2125380
+    },
+    "lastPrincipalEvent": "turn/end",
+    "lastPrincipalSeq": 859,
+    "lastBranchEvent": "turn/end"
+  },
+  "updateCommit": {
+    "recordedHead": "2d2aebd737836332e3e264abec774c9eb21eacce",
+    "worldStillPresent": false,
+    "stagedPathAllowlist": null,
+    "addCommand": "git add -A (scripts/cog3/rig3.mjs applyUpdate)",
+    "phaseOneWritePaths": [
+      "deliverables/plan.md"
+    ],
+    "phaseOneShellCommandsThatCouldWrite": [
+      "ls -la; echo \"---\"; ls -la sources deliverables 2>/dev/null",
+      "py - <<'PY'\nimport re\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\n# Check markdown table rows have consistent pipe counts within each table block\nblock=[]; start=0\nissues=[]\nfor i,l in enumerate(lines,1):\n    if l.strip().startswith('|'):\n        if not block: start=i\n        block.append((i,l))\n    else:\n        if block:\n            counts={len(x[1].split('|')) for x in block}\n            if len(counts)>1:\n                issues.append((start,block[0][1][:80],counts))\n            block=[]\nif block:\n    counts={len(x[1].split('|')) for x in block}\n    if len(counts)>1: issues.append((start,block[0][1][:80],counts))\nprint('table issues:',len(issues))\nfor x in issues: print(x)\n# Check headings\nfor l in lines:\n    if l.startswith('#'): print(l)\nPY",
+      "py - <<'PY'\nlines=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\nblock=[]; start=0; issues=[]\nfor i,l in enumerate(lines,1):\n    if l.strip().startswith('|'):\n        if not block: start=i\n        block.append((i,l))\n    else:\n        if block:\n            counts={len(x[1].split('|')) for x in block}\n            if len(counts)>1: issues.append((start,counts,block[0][1][:100]))\n            block=[]\nif block:\n    counts={len(x[1].split('|')) for x in block}\n    if len(counts)>1: issues.append((start,counts,block[0][1][:100]))\nprint('table issues:',len(issues))\nfor x in issues: print(x)\nprint('lines',len(lines),'words',sum(len(l.split()) for l in lines))\nPY",
+      "py - <<'PY'\nimport re\ntext=open('deliverables/plan.md',encoding='utf-8').read().splitlines()\nbudget=[]\nfor l in text:\n    m=re.match(r'\\|\\s*(A\\d|B\\d|C\\d|D\\d|E\\d)\\s*\\|([^|]*)\\|([^|]*)\\|\\s*([\\d,]+)\\s*\\|\\s*([\\d,]+)\\s*\\|\\s*([\\d,]+)\\s*\\|',l)\n    if m:\n        q=int(m.group(4).replace(',','')); r=int(m.group(5).replace(',','')); t=int(m.group(6).replace(',',''))\n        budget.append((m.group(1),q*r,t))\nprint('budget lines',len(budget),'sum',sum(t for _,_,t in budget),'all calc ok',all(c==t for _,c,t in budget))\n# table check\nblock=[]; issues=[]\nfor i,l in enumerate(text,1):\n    if l.strip().startswith('|'):\n        block.append((i,l))\n    else:\n        if block:\n            counts={len(x[1].split('|')) for x in block}\n            if len(counts)>1: issues.append((block[0][0],counts))\n            block=[]\nif block:\n    counts={len(x[1].split('|')) for x in block}\n    if len(counts)>1: issues.append((block[0][0],counts))\nprint('table issues',len(issues))\nPY"
+    ],
+    "gitStatusAtPhaseOne": "?? deliverables/\n---\n  610  9587 57636 deliverables/plan.md\n---\n",
+    "inference": "The test-owned world was removed after evidence collection, so the update commit object itself is not preserved. The recorded phase-one `git status --short` shows only `?? deliverables/`; the only observed write path is `deliverables/plan.md`. With `git add -A`, the update commit therefore captured the generated phase-one deliverable in addition to `updates/2026-01-20-northgate-booking.md` — and would have captured any other untracked path present at that instant, because no staged-path allowlist was verified before the commit.",
+    "disposition": "COG-3 is not rewritten. COG-4 stages only explicitly named update paths and verifies `git diff --cached --name-only` before committing."
+  },
+  "turnTelemetry": {
+    "principalTurns": [
+      {
+        "turn": 1,
+        "steps": 56,
+        "messages": 56,
+        "toolCalls": 114,
+        "tokens": 6174913,
+        "finalTextLength": 1970,
+        "finalTextStart": "Done — the plan is at `deliverables/plan.md`.\n\n**What it commits to**\n\n| Collection | Plan | Publication |\n|---|---|---|"
+      },
+      {
+        "turn": 2,
+        "steps": 8,
+        "messages": 8,
+        "toolCalls": 14,
+        "tokens": 1516287,
+        "finalTextLength": 932,
+        "finalTextStart": "The delegated finding aligns with the plan’s key judgement and confirms the three-week Filmtek booking. I have tightened"
+      },
+      {
+        "turn": 3,
+        "steps": 36,
+        "messages": 36,
+        "toolCalls": 52,
+        "tokens": 8502948,
+        "finalTextLength": 1569,
+        "finalTextStart": "Revised `deliverables/plan.md` for the 1 March room closure.\n\n**What changed**\n\n| Item | Before | Now |\n|---|---|---|\n| "
+      }
+    ],
+    "principalUniqueTurns": 3,
+    "branchTurns": 1,
+    "modelExecutionTurns": 4,
+    "runOneHostSummaryRecords": [
+      {
+        "at": "[2026-10-31T23:37:28.262Z]",
+        "textLength": 932,
+        "textStart": "The delegated finding aligns with the plan’s key judgement and confirms the three-week Filmtek booking. I have tightened",
+        "toolCalls": 256,
+        "firstCalls": [
+          "tool/call:bash",
+          "tool/result",
+          "tool/call:bash",
+          "tool/result",
+          "tool/call:read",
+          "tool/call:read"
+        ],
+        "lastCalls": [
+          "tool/call:edit",
+          "tool/result",
+          "tool/call:bash",
+          "tool/result"
+        ]
+      },
+      {
+        "at": "[2026-10-31T23:37:28.265Z]",
+        "textLength": 932,
+        "textStart": "The delegated finding aligns with the plan’s key judgement and confirms the three-week Filmtek booking. I have tightened",
+        "toolCalls": 220,
+        "firstCalls": [
+          "tool/call:write",
+          "tool/result",
+          "tool/call:bash",
+          "tool/result",
+          "tool/call:bash",
+          "tool/result"
+        ],
+        "lastCalls": [
+          "tool/call:edit",
+          "tool/result",
+          "tool/call:bash",
+          "tool/result"
+        ]
+      }
+    ],
+    "runOneHostSummaryRecordCount": 2,
+    "distinctTexts": [
+      "The delegated finding aligns with the plan’s key judgement and confirms the three-week Filmtek booking. I have tightened"
+    ],
+    "finding": "The session stream has exactly three principal turns (56 + 8 + 36 steps) and one branch turn. The two run-one `PALIMPSEST_TURN` records were emitted 3 ms apart and both end with turn 2's text; the first covers turn 1 + turn 2 (256 tool entries / 128 calls) and the second covers part of turn 1 + turn 2 (220 entries / 110 calls). No fourth model turn occurred. This is an observation/record overlap caused by `printTurn()` running after `whenIdle()` had also waited for the delegation follow-up turn, not a model-execution duplicate. The launch turn's own final text is not present in any summary record."
+  },
+  "broadEnvironment": {
+    "pythonOnPath": false,
+    "pythonPaths": [],
+    "pyAvailable": true,
+    "pyVersion": "Python 3.14.7",
+    "knownCog3Failure": "test/inplace_execution.test.ts: 3 tests; the gate command `python -c ...` produced no observable exit code",
+    "cog3Diagnostic": "PATH=/d/ProgramData/anaconda3:$PATH npx vitest run test/inplace_execution.test.ts --maxWorkers=1 -> 9/9 passed",
+    "cog4Rule": "before broad testing, verify a `python` executable is on the test PATH (or record the missing prerequisite); do not rerun the COG-3 suite to obtain a greener historical record"
+  },
+  "protectedResources": {
+    "worktrees": 95,
+    "locks": 2,
+    "gateRoots": 19,
+    "evidenceTrees": 72,
+    "stashes": 0
+  },
+  "budgetMonitor": {
+    "selftest": {
+      "passed": 11,
+      "failed": 0,
+      "cases": [
+        "duplicate observation is charged once",
+        "delayed event is charged once and flagged",
+        "a resumed Session is one Session and its events sum once",
+        "a child Session is counted separately",
+        "cache-read is reported separately from input/output",
+        "launch is refused when observed + live reserve + estimate crosses the launch-stop threshold",
+        "launch is allowed again after the live reserve is released and enough headroom remains",
+        "the hard stop is raised at the ceiling",
+        "unavailable usage is recorded without inventing tokens",
+        "a completed Session is accounted exactly once",
+        "a Session past its wall-clock bound is reported"
+      ]
+    },
+    "evidence": "budget-selftest.json"
+  },
+  "unresolved": [
+    "The exact path list of the COG-3 update commit cannot be recovered because the test-owned world is not preserved.",
+    "The COG-3 P score record remains 6,000 tokens above its immutable stream until a forward erratum is written; no historical file is rewritten.",
+    "The COG-2 concurrent targeted failures remain unattributed (COG-3 forward erratum §2)."
+  ]
+}

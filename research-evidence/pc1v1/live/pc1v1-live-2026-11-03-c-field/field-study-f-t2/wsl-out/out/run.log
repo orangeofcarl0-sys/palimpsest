@@ -1,0 +1,26 @@
+## Status: not approved, not deployable as of 2026-03-09T09:10Z
+
+I updated the five required artifacts in `/run/fs-f/world` and committed them:
+
+- `study-plan.md`
+- `plan.json` (valid JSON)
+- `reviews/evidence.md`
+- `reviews/delivery.md`
+- `unresolved.md`
+
+Commit: `03adfb7` — *Reassess 2026-03-09 state: pending 6000 request, field-validation units, missed R4 gate; no approval*
+
+### Bottom line
+
+- **No independent approval exists.** R5 is unmet, and the prior plan’s 2026-03-08 G1 gate passed without approval, triggering its own stop/re-plan rule.
+- **R4 is not met for the evidence-credible Reference configuration** on the conservative lead-time convention. Ordering today gives 2026-03-17 to 2026-03-30 (Day 29). Only an inclusive-convention, zero-buffer 2026-03-16 to 2026-03-29 path remains, requiring same-day approval and order — which do not exist.
+- **The 6,000 budget directive is a request, not authority.** The current stated cap remains 7,200. If 6,000 were independently approved: A 6,980 is over by 980; B resilience 6,760 is over by 760; B base 5,780 fits with 220 headroom; C 3,540 fits but is evidence-blocked at S2/S3.
+- **Field validation after correct unit conversion** (`reference_mg_m3 × 1,000`): Echo high-RH deviations are **+9.0 / +11.0 / +12.0 µg/m³** at 85/90/95% RH; Reference is +0.6 / +0.8 / −0.8. The data are candidate-only, n = 1 per condition, with no validated Echo correction. Echo is therefore presumptively inadmissible at S2/S3 pending independent replication.
+- **No candidate satisfies R1–R6 today.** The next step is an independent operator decision on budget status, source acceptance, R3 verification, R2 definition, and either an R4 rebase or an explicit R4 failure/re-plan.
+
+### Independent subagent checks — reported separately, unverified
+
+- `507b9b37-4782-44e5-a3cc-6b5ca6453472` — independently reproduced the unit conversion and all F01–F08 deviations; found the Echo high-RH bias and the same limitations. Its arithmetic matches; its interpretation is **not accepted truth**.
+- `2e84ecd6-5e7b-4e04-8458-2318d0de5d00` — independently re-derived the schedule and costs; confirmed the conservative R4 miss, the zero-buffer inclusive path, and the 7,200/6,000 cost differences. Its finding is **not an approval** and is not accepted truth.
+
+No deployment, order, source acceptance, or budget change is approved.

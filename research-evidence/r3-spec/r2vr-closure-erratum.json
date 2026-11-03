@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-SPEC",
+  "kind": "append-only R2-VR evidence-chain closure and erratum",
+  "baseline": "9f7eb188555b18c202e0d6d188546c914c394cb4",
+  "amendedCommits": null,
+  "note": "R2-V (845d2a2) and R2-VR (9f7eb18) are NOT amended; this record is appended instead",
+  "evidenceChainClosure": {
+    "requirement": "for every one of the 20 sources re-judged by R2-VR, record trialId, finalSourceSha256, acceptanceModuleSha256, perCaseVectorDigest, recordedTotal, rejudgedTotal; require recordedTotal == rejudgedTotal",
+    "sourcesRejudged": 20,
+    "sourcesMissing": [],
+    "limitation": null,
+    "allTotalsMatch": true,
+    "acceptanceModuleSha256": "1ad7ab8aa3a4cf1a",
+    "acceptanceModuleSha256Note": "the value is recorded in full in research-evidence/r3-spec/r2vr-source-closure.json",
+    "sourceRecord": "research-evidence/r3-spec/r2vr-source-closure.json",
+    "notReconstructed": "no final source was reconstructed from the outcome; every source was read from its committed bytes"
+  },
+  "perCaseVectorFinding": {
+    "distinctVectors": 2,
+    "vectorA": "ec17c9f30ff7d980ce0194f34e68014921b4f23a466275041c04a6e6b651ecb0 — 14 trials, all 14 cases pass",
+    "vectorB": "abc9fb9bc24067c22636ff64c4e06aa13fff13c5ba2ce00172443fee13f5bef3 — 6 trials, h14 fails",
+    "h14Passes": "14/20",
+    "nonH14FailuresAcrossAll20": 0,
+    "significance": "the digest-backed form of the R2-VR finding: exactly one case varies and no other case fails in any of the 20 candidates"
+  },
+  "h14DescriptionErratum": {
+    "frozenH14Contains": "broken: { deps: [] }",
+    "theMalformedField": "the malformed field is missing `value`, not missing `deps`",
+    "referenceCheck": "the reference implementation throws INVALID_ENTRY at `!Object.hasOwn(entry, 'value')`, before its deps-array check",
+    "priorProse": "an earlier R2-V-era chat description said the entry had \"no deps array\"",
+    "status": "descriptive error only; the acceptance bytes never changed",
+    "acceptanceBytesChanged": false,
+    "committedProseChecked": "the committed R2-V and R2-VR documents do not contain the \"no deps array\" phrasing; the error was confined to the interim prose description"
+  }
+}

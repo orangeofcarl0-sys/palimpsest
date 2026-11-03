@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_REGRESSION_RECONCILIATION",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "OBSERVED",
+  "note": "The historical 192/17 baseline is CONTEXT, not a target: this stage did not hard-code a failure count.",
+  "focusedSuites": {
+    "exitCode": 0,
+    "total": 48,
+    "passed": 48,
+    "failed": []
+  },
+  "suitesRun": {
+    "r1hr-conformance": {
+      "exitCode": 0,
+      "failed": [],
+      "limits": [
+        "HR-17",
+        "HR-39b",
+        "HR-33"
+      ]
+    },
+    "r1hc-conformance": {
+      "exitCode": 0,
+      "failed": [],
+      "limits": [
+        "HC-27"
+      ]
+    }
+  },
+  "exclusions": [
+    {
+      "test": "test/r3l0ciarlcf_gates.test.ts",
+      "why": "known unsafe against a shared working tree; the exclusion predates this stage and is unchanged"
+    }
+  ]
+}

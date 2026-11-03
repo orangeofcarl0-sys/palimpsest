@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "durable event persistence and readback",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "baselineDefect": {
+    "inMemoryObservations": 3,
+    "recorderAcceptedCount": 3,
+    "recorderRejectedCount": 0,
+    "durableEventCount": 3,
+    "written": true,
+    "durabilityVerified": true,
+    "falseDurabilitySuccess": true
+  },
+  "corrected": {
+    "acceptedEventCount": 3,
+    "rejectedEventCount": 0,
+    "persistedEventCount": 3,
+    "readBackEventCount": 3,
+    "countsAgree": true,
+    "lifecycle": {
+      "complete": true,
+      "spawnFailed": false,
+      "exitUnconfirmed": false,
+      "singleInvocation": true,
+      "singlePid": true,
+      "monotonic": true,
+      "valid": true,
+      "problems": []
+    },
+    "recordWritten": true,
+    "recordDurabilityVerified": true,
+    "recordIdentityMatches": true
+  },
+  "storageLayout": {
+    "perInvocation": true,
+    "directory": "host-observations/",
+    "fileName": "<invocationId>.json",
+    "atomicPublish": "write to a temporary file, then rename into place",
+    "traversalSafe": true,
+    "duplicateRefused": true,
+    "powerLossDurabilityGuaranteed": false
+  },
+  "verdict": {
+    "DURABLE_EVENT_READBACK": "PASS_LOCAL_NONMODEL",
+    "NONEMPTY_PROCESS_OBSERVATION": "PASS_LOCAL_NONMODEL"
+  },
+  "law": "a record with zero events cannot satisfy the process-lifecycle edge; a successful write is not by itself a power-loss durability guarantee, and the record says so"
+}

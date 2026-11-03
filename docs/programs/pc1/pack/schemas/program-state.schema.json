@@ -1,0 +1,1884 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:program-state:1",
+  "title": "PC1 工程执行状态；非产品 canonical state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "programId",
+    "branch",
+    "lastCheckedCommit",
+    "updatedAt",
+    "phases",
+    "pendingEffects",
+    "nextActions",
+    "lastCheckpoint"
+  ],
+  "properties": {
+    "programId": {
+      "const": "PALIMPSEST-PC1"
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lastCheckedCommit": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phases": {
+      "type": "object",
+      "required": [
+        "S00",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "S00": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S01": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S02": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S03": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S04": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S05": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S06": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S07": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S08": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S09": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "S10": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "deterministic",
+            "live",
+            "comparison",
+            "blockers",
+            "evidence"
+          ],
+          "properties": {
+            "implementation": {
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "IMPLEMENTED"
+              ]
+            },
+            "deterministic": {
+              "enum": [
+                "NOT_RUN",
+                "PASSED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "live": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "VERIFIED",
+                "FAILED",
+                "BLOCKED"
+              ]
+            },
+            "comparison": {
+              "enum": [
+                "NOT_REQUIRED",
+                "NOT_RUN",
+                "SUPPORTED",
+                "NO_ADVANTAGE",
+                "INCONCLUSIVE",
+                "BLOCKED"
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "scope",
+                  "kind",
+                  "detail",
+                  "unblocksWhen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "PROVIDER",
+                      "BUDGET",
+                      "AUTHORITY",
+                      "ENVIRONMENT",
+                      "DEPENDENCY",
+                      "SAFETY",
+                      "EXTERNAL_PERMISSION"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "unblocksWhen": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "doesNotBlock": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "kind",
+                  "ref",
+                  "subject",
+                  "codeFreeze"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "SOURCE_READ",
+                      "DETERMINISTIC_TEST",
+                      "PRODUCT_INTEGRATION_RUN",
+                      "REAL_AGENT_RUN",
+                      "MATCHED_COMPARISON",
+                      "OPERATOR_DECISION",
+                      "ARTIFACT",
+                      "ANALYSIS"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeFreeze": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "OBSERVED",
+                      "BLOCKED",
+                      "INCONCLUSIVE"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pendingEffects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "state",
+          "authorityRef"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authorityRef": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "nextActions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "lastCheckpoint": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_ATTRIBUTED_EVENT_READ",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "adapter": "src/composition/attributed_preview.ts",
+  "admissionOrder": [
+    "1. admit the canonical Work Attempt through the SAME admitAttempt the ordinary Preview uses (throws before any association or DSH access)",
+    "2. ask the qualifier for the attempt's qualifications",
+    "3. select exactly ONE qualified invocation per §8.3, or report why none was selected",
+    "4. read the DSH page through the official reader, for the SELECTED session only",
+    "5. validate the page structurally (validateSessionEventPage) and the cross-field invariants",
+    "6. build the Preview, where events are exposed only when the invariants and the page hold"
+  ],
+  "readAuthority": {
+    "source": "ONLY the qualifier's ASSOCIATION_QUALIFIED result",
+    "neverFrom": ["a caller-supplied sessionAssociations array", "claimedSessionId", "hostRecord.portInvocationId", "a string-shaped session candidate"]
+  },
+  "invocationSelection": {
+    "states": ["NO_DURABLE_EVIDENCE", "SELECTED_UNIQUE", "SELECTED_REQUESTED", "AMBIGUOUS_REQUIRES_SELECTION", "REQUESTED_NOT_QUALIFIED", "REQUESTED_FOREIGN"],
+    "latestNeverAutoSelected": true,
+    "callerSelectorIsSelectorOnly": true
+  },
+  "pageHandling": {
+    "officialReaderOnly": true,
+    "pageIntegrityValidated": true,
+    "invalidPageAdmitsNoEvents": true,
+    "partialCoverageStaysPartial": true,
+    "unavailableSourceIsNotAnEmptyHistory": true
+  },
+  "observed": {
+    "realProductColdPreview": {
+      "selectionState": "SELECTED_UNIQUE",
+      "bindingStatus": "BOUND_VERIFIED",
+      "readAdmission": "ADMITTED_TO_ATTEMPT",
+      "sessionReadState": "READ_OK",
+      "eventCount": 3,
+      "pageCoverage": "FULL"
+    }
+  },
+  "evidenceClass": "REAL_COLD_RECOVERED_ATTRIBUTED_PREVIEW",
+  "actualFirstPartyDshRan": true,
+  "actualCanonicalWorkRan": true,
+  "coldProcessRecoveryPerformed": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "ATTRIBUTED_EVENTS_ADMITTED_AFTER_QUALIFICATION"
+}

@@ -1,0 +1,124 @@
+{
+  "schema": "pc1v1-live-cohort/v1",
+  "cohortId": "pc1v1-live-REPLACE-WITH-DATE",
+  "codeFreeze": "REPLACE_WITH_40_CHARACTER_CODE_FREEZE_COMMIT",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "oracleCopied": false,
+  "sessions": [
+    {
+      "id": "sablewick-p-t1",
+      "scenario": "sablewick",
+      "condition": "P",
+      "stage": "t1",
+      "subagents": false,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_P_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T1_INBOX"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "sablewick-f-t1",
+      "scenario": "sablewick",
+      "condition": "F",
+      "stage": "t1",
+      "subagents": false,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_F_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T1_INBOX"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "sablewick-p-t2",
+      "scenario": "sablewick",
+      "condition": "P",
+      "stage": "t2",
+      "subagents": false,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_P_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T2_INBOX"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "sablewick-f-t2",
+      "scenario": "sablewick",
+      "condition": "F",
+      "stage": "t2",
+      "subagents": false,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_F_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T2_INBOX"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-p-t1",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "t1",
+      "subagents": true,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_P_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T1_INBOX"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-f-t1",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "t1",
+      "subagents": true,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_F_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T1_INBOX"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-p-t2",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "t2",
+      "subagents": true,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_P_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T2_INBOX"
+      },
+      "timeoutMs": 900000
+    },
+    {
+      "id": "field-study-f-t2",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "t2",
+      "subagents": true,
+      "cwd": ".",
+      "command": ["bash", "REPLACE_WITH_FROZEN_F_SESSION_COMMAND"],
+      "env": {
+        "PC1V1_PROMPT": "REPLACE_WITH_FROZEN_PROMPT",
+        "PC1V1_INBOX": "REPLACE_WITH_FROZEN_T2_INBOX"
+      },
+      "timeoutMs": 900000
+    }
+  ]
+}

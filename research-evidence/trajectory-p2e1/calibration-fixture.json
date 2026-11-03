@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_CALIBRATION_FIXTURE",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "fixtureId": "FIX-A-GOVERNED-PARTIAL-CONTINUATION",
+  "oracleVersion": "p2e1-source-aware-1",
+  "groundTruthDigest": "fnv1a-e40ab964-1170",
+  "actualGitHeadBasis": "the fixture reads the REAL commit of its own test-owned repository (see fixture-git-basis-real check)",
+  "realGitBasisUsed": true,
+  "syntheticGitBasisRemoved": true,
+  "frozenConditions": [
+    "task",
+    "initialGitState",
+    "allowedTools",
+    "writeScope",
+    "completionChecks",
+    "contextBudget",
+    "experimentalAssignment",
+    "oracle"
+  ],
+  "controlInput": "existing canonical Work Context + existing PriorResultContext",
+  "treatmentInput": "the SAME context + the qualified Trajectory Section",
+  "controlGivenIncorrectHistory": false,
+  "treatmentCommandPermissionsExpanded": false,
+  "groundTruthIndependentOfAnswer": true,
+  "evidenceAvailabilityRecordedPerArm": true,
+  "r2vrQualificationRequirements": [
+    {
+      "id": "baseline-neither-floor-nor-ceiling",
+      "statement": "the CONTROL baseline must be neither at the floor nor at the ceiling of the outcome scale",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "two-dimensions-vary",
+      "statement": "at least two outcome dimensions must vary across CONTROL repetitions",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "treatment-relevant-failure-varies",
+      "statement": "at least one treatment-relevant failure class must vary across CONTROL repetitions",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "trajectory-content-addresses-variation",
+      "statement": "the actual Trajectory content must address a varying outcome",
+      "statusInE1": "REQUIREMENT_ONLY"
+    },
+    {
+      "id": "not-residual-case-determined",
+      "statement": "the apparent result must not be entirely determined by an unrelated residual case",
+      "statusInE1": "REQUIREMENT_ONLY"
+    }
+  ],
+  "futureCalibrationParameters": [
+    "provider",
+    "modelVersion",
+    "repetitionCount",
+    "costBudget",
+    "runtimeLimit",
+    "taskFixture",
+    "toolSet",
+    "initialGitState",
+    "workAuthority",
+    "evaluationOracle",
+    "stopRules"
+  ],
+  "baselineOnlyDiscipline": "the first stochastic stage runs CONTROL only; Treatment is not enabled by the presence of a Capsule",
+  "stochasticCalibrationExecuted": false,
+  "treatmentTrialsExecuted": false,
+  "externalModelRequestOccurred": false,
+  "modelCallsMade": 0
+}

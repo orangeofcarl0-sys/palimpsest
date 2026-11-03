@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_COLD_RECOVERY_ORCHESTRATE",
+  "stage": "Trajectory-P2-B",
+  "phase": "orchestrate",
+  "outcome": "PASS",
+  "testRootContained": true,
+  "testRootIsReparsePoint": false,
+  "processA": {
+    "outcome": "PASS",
+    "recordedSessionId": "worker-7db4605e-6b51-47db-b6b0-efa782f2b8f6",
+    "durableEventCount": 2
+  },
+  "processB": {
+    "outcome": "PASS",
+    "recoveredSessionId": "worker-7db4605e-6b51-47db-b6b0-efa782f2b8f6",
+    "matches": true
+  },
+  "testRootCleanup": {
+    "cleaned": true
+  },
+  "independentProcesses": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "permittedOutcomes": [
+    "PASS",
+    "SKIPPED",
+    "BLOCKED",
+    "NOT_ESTABLISHED"
+  ],
+  "qualified": true
+}

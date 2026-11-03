@@ -156,7 +156,7 @@ describe("DEL-A08: the delegation is ADDITIVE — the blocking collaboration pat
 
       const delegate = toolOf(installed, "palimpsest_delegate");
       expect(delegate.mode).toBe("mutating");
-      expect(delegate.actions).toEqual(["start", "status", "inspect"]);
+      expect(delegate.actions).toEqual(["start", "status", "inspect", "consume"]);
       // The blocking path is the SAME tool it always was: same name, same mode, same action pair.
       const collaborate = toolOf(installed, "palimpsest_collaborate");
       expect(collaborate.mode).toBe("mutating");

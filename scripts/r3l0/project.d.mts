@@ -1,0 +1,20 @@
+/** R3-L0 project module type declarations (harness-only). */
+export declare const PREPAID_LESSONS: readonly any[];
+export declare const DIAGNOSTIC_CLASSES: readonly any[];
+export declare const PREPAID_EXPOSURES: Readonly<Record<string, readonly string[]>>;
+export declare const GENERATIONS: readonly any[];
+export declare const LEDGER_README: string;
+export declare const LEDGER_PLANS: string;
+export declare const LEDGER_ERRORS: string;
+export declare const PREHISTORY_PRIOR_ART: string;
+export declare const PREHISTORY_INCIDENT_1: string;
+export declare const PREHISTORY_INCIDENT_2: string;
+export declare const VISIBLE_ORACLE: string;
+export declare const LEDGER_PACKAGE_JSON: string;
+export declare const G1_SOURCE_H0: string;
+export declare const G2_SOURCE_H0: string;
+export declare const G3_SOURCE_H0: string;
+export declare const GENERATION_H0: Readonly<Record<string, string>>;
+export declare function generationOf(id: string): any;
+export declare function eligiblePrepaidExposures(generation: string): readonly string[];
+export declare function trajectoryEligibleExposures(): number;

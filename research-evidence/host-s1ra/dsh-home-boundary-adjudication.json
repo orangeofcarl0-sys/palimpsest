@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "kind": "HOST_S1RA_runtime_HOME_BOUNDARY_ADJUDICATION",
+  "stage": "Palimpsest Host-S1RA",
+  "measuredAt": "2026-10-24T18:01:45.796Z",
+  "canariesAreSynthetic": true,
+  "realInstallation": {
+    "home": "C:/Users/66494/.dsh",
+    "resolvedFrom": "default",
+    "homeIsReparsePoint": true,
+    "homeKind": "reparse",
+    "target": "D:/dsh",
+    "targetIsSameObject": false,
+    "targetKind": "directory",
+    "linkDescriptor": {
+      "exitCode": 0,
+      "mandatoryLabelLine": null,
+      "sample": [
+        "C:/Users/66494/.dsh NT AUTHORITY\\SYSTEM:(I)(OI)(CI)(F)",
+        "BUILTIN\\Administrators:(I)(OI)(CI)(F)",
+        "ORANGEOFCARL0\\66494:(I)(OI)(CI)(F)",
+        "�ѳɹ����� 1 ���ļ�; ���� 0 ���ļ�ʱʧ��"
+      ]
+    },
+    "targetDescriptor": {
+      "exitCode": 0,
+      "mandatoryLabelLine": null,
+      "sample": [
+        "D:\\dsh BUILTIN\\Administrators:(I)(F)",
+        "BUILTIN\\Administrators:(I)(OI)(CI)(IO)(F)",
+        "NT AUTHORITY\\SYSTEM:(I)(F)",
+        "NT AUTHORITY\\SYSTEM:(I)(OI)(CI)(IO)(F)",
+        "NT AUTHORITY\\Authenticated Users:(I)(M)",
+        "NT AUTHORITY\\Authenticated Users:(I)(OI)(CI)(IO)(M)"
+      ]
+    },
+    "dataClasses": {
+      "runtimePackages": {
+        "path": "profiles\\node_modules\\@deepseek-ai",
+        "present": true,
+        "kind": "directory",
+        "isReparsePoint": false
+      },
+      "profileConfiguration": {
+        "path": "profiles",
+        "present": true,
+        "kind": "directory",
+        "isReparsePoint": false
+      },
+      "sessionPersistence": {
+        "path": "sessions",
+        "present": true,
+        "kind": "directory",
+        "isReparsePoint": false
+      },
+      "credentials": {
+        "path": "credentials",
+        "present": false
+      },
+      "sessionEntryCount": 410
+    },
+    "dependencyJunctions": {
+      "totalEntries": 125,
+      "links": 98,
+      "linksResolvingInsideTarget": 0,
+      "linksResolvingOutsideTarget": 98
+    },
+    "trustedDependencyContract": {
+      "measured": true,
+      "verified": false,
+      "complete": false,
+      "reparsePoints": 234,
+      "reparseWithinRoot": 0,
+      "reparseIntoProtectedRoot": 0,
+      "reparseOutsideProtectionDomain": 234,
+      "dependencyRootsUsed": 0,
+      "unqualifiedExternalLinks": 234,
+      "admissionEligible": false
+    }
+  },
+  "syntheticArm": {
+    "root": "C:/Users/66494/AppData/Local/Temp/hosts1ra-home-l1B0Hu",
+    "canariesAreSynthetic": true,
+    "rigAclGranted": true,
+    "rigAclNote": "a label write needs WRITE_OWNER, which the volume's inherited ACL does not grant; the rig is granted explicitly and the outcome is recorded",
+    "relationship": {
+      "home": "home (junction)",
+      "target": "target (directory)",
+      "homeIsReparsePoint": true,
+      "targetIsSameObject": false
+    },
+    "mechanismAvailable": true,
+    "aclIndexPath": "C:/Users/66494/.dsh/profiles/node_modules/@deepseek-ai/dsh-sandbox-windows-acl/lib/index.js",
+    "driver": {
+      "status": 0,
+      "stderr": ""
+    },
+    "probe": {
+      "THROUGH_JUNCTION_RUNTIME": {
+        "read": true,
+        "content": "export const canary = \"HOSTS1RA-RUNTIME-CANARY-4f2a91-SYNTHETIC-ONLY\";"
+      },
+      "THROUGH_JUNCTION_SESSION": {
+        "read": true,
+        "content": "HOSTS1RA-SESSION-CANARY-9c7e03-SYNTHETIC-ONLY"
+      },
+      "TARGET_DIRECT_SESSION": {
+        "read": true,
+        "content": "HOSTS1RA-SESSION-CANARY-9c7e03-SYNTHETIC-ONLY"
+      }
+    },
+    "labelApplicationDiagnostic": {
+      "runtimeRootAtFenceImport": "C:/Users/66494/.dsh/profiles/node_modules/@deepseek-ai/dsh",
+      "runtimeRootLength": 58,
+      "runtimeRootResolves": true,
+      "supported": true,
+      "platform": "win32",
+      "unavailable": null,
+      "contract": {
+        "package": "@deepseek-ai/dsh-win32-process",
+        "qualifiedVersion": "0.2.1-rc.2",
+        "resolvedVersion": "0.2.1-rc.3",
+        "seam": "extendWin32ProcessBindings",
+        "ffi": {
+          "package": "koffi",
+          "qualifiedVersion": "3.1.1",
+          "resolvedVersion": "3.1.1"
+        },
+        "usable": true,
+        "drifted": true,
+        "versionMatches": false,
+        "ffiMatches": true
+      },
+      "outcomes": [
+        {
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1ra-home-l1B0Hu\\target\\sessions",
+          "applied": true,
+          "verified": true,
+          "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2",
+          "derivedFrom": "C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1ra-home-l1B0Hu\\target"
+        }
+      ],
+      "skipped": [
+        {
+          "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1ra-home-l1B0Hu\\target",
+          "why": "contains the execution world: labelling an ancestor of the world refuses the traverse every process needs to start",
+          "derivedRoots": [
+            "C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1ra-home-l1B0Hu\\target\\sessions"
+          ],
+          "enumerationFailed": false,
+          "spine": [
+            "C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1ra-home-l1B0Hu\\target\\profiles",
+            "C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1ra-home-l1B0Hu\\target\\profiles\\node_modules",
+            "C:\\Users\\66494\\AppData\\Local\\Temp\\hosts1ra-home-l1B0Hu\\target\\profiles\\node_modules\\pkg-runtime"
+          ],
+          "planComplete": true
+        }
+      ]
+    },
+    "targetLabelled": {
+      "rootsVerified": true,
+      "treesVerified": true
+    },
+    "labelledTargetArm": {
+      "driver": {
+        "status": 0,
+        "stderr": ""
+      },
+      "probe": {
+        "THROUGH_JUNCTION_RUNTIME": {
+          "read": true,
+          "content": "export const canary = \"HOSTS1RA-RUNTIME-CANARY-4f2a91-SYNTHETIC-ONLY\";"
+        },
+        "THROUGH_JUNCTION_SESSION": {
+          "read": false,
+          "code": "EPERM"
+        },
+        "TARGET_DIRECT_SESSION": {
+          "read": false,
+          "code": "EPERM"
+        }
+      }
+    },
+    "linkLabelled": {
+      "rootsVerified": true,
+      "treesVerified": false
+    },
+    "linkOnlyArm": {
+      "driver": {
+        "status": 0,
+        "stderr": ""
+      },
+      "probe": {
+        "THROUGH_JUNCTION_RUNTIME": {
+          "read": true,
+          "content": "export const canary = \"HOSTS1RA-RUNTIME-CANARY-4f2a91-SYNTHETIC-ONLY\";"
+        },
+        "THROUGH_JUNCTION_SESSION": {
+          "read": false,
+          "code": "EPERM"
+        },
+        "TARGET_DIRECT_SESSION": {
+          "read": false,
+          "code": "EPERM"
+        }
+      }
+    },
+    "observations": {
+      "targetLabelled_state": "PROTECTED",
+      "targetLabelled_directRead_state": "PROTECTED",
+      "linkLabelled_state": "PROTECTED",
+      "runtimeDependencyReadableWhenTargetLabelled": true,
+      "targetLabelled_stopsReadThroughJunction": true,
+      "linkLabelled_stopsReadThroughJunction": true
+    },
+    "canary": {
+      "run": "HOSTS1RA-RUNTIME-CANARY-4f2a91-SYNTHETIC-ONLY",
+      "session": "HOSTS1RA-SESSION-CANARY-9c7e03-SYNTHETIC-ONLY"
+    }
+  },
+  "adjudication": {
+    "realPathRelationship": {
+      "home": "C:/Users/66494/.dsh",
+      "isReparsePoint": true,
+      "target": "D:/dsh",
+      "targetKind": "directory",
+      "labelOnLinkProtects": "the link object only; traversal through it is a separate authorization decision",
+      "labelOnTargetProtects": "the target's contents, which is the object that actually holds runtime, session and credential data"
+    },
+    "realTargetLabelObserved": null,
+    "linkLabelObserved": null,
+    "syntheticMechanismEstablished": true,
+    "syntheticObservations": {
+      "targetLabelled_state": "PROTECTED",
+      "targetLabelled_directRead_state": "PROTECTED",
+      "linkLabelled_state": "PROTECTED",
+      "runtimeDependencyReadableWhenTargetLabelled": true,
+      "targetLabelled_stopsReadThroughJunction": true,
+      "linkLabelled_stopsReadThroughJunction": true
+    },
+    "realContentBoundaryEstablished": false,
+    "limitOfObservation": "icacls reports the absence of a Mandatory Label line for the real target. That absence is consistent both with 'no label' and with 'the label was not readable by this account'; the two are not distinguished without a descriptor write, which §7.1 forbids."
+  },
+  "verdict": "REAL_runtime_HOME_BOUNDARY_ADJUDICATED",
+  "contentBoundaryVerdict": "REAL_runtime_HOME_CONTENT_BOUNDARY_NOT_ESTABLISHED",
+  "evidenceClass": "READ_ONLY_RUNTIME_OBSERVATION"
+}

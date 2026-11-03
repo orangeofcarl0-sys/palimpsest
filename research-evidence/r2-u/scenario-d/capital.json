@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "scenario": "D",
+  "proof": {
+    "statement": "For an incremental cache, the difference between deleting the changed entries and freezing the affected closure is observable from outside: a cache invalidated from a closure computed in advance either keeps exactly the entries that are still correct or refuses the input leaving the caller's cache untouched, while one that deletes as it walks leaves dependents of a changed node holding values derived from sources that no longer exist and can leave the caller's cache partly invalidated after a refusal.",
+    "supporting": [
+      "generation D0, which deleted the changed entries and nothing else, left every dependent holding a stale value",
+      "generation D1, which validated the cache after the deletions, mutated the caller's cache before refusing an invalid input",
+      "generation D2, which computed a closure in both directions, discarded ancestors that were still correct",
+      "generation D3, which walked descendants only, preserved an entry whose dependency the cache did not hold",
+      "generation D4, which froze the affected set before the first deletion, was accepted on every case"
+    ]
+  },
+  "reasoning": {
+    "statement": "The obvious first move — delete the cache entries for the nodes whose source changed — is wrong because an entry's cached value was computed FROM its dependencies, so a dependency's change makes every transitive dependent stale as well; deleting only the directly-changed entries therefore leaves the cache internally consistent and silently incorrect, and because the caller keeps using the same object, the deletion also destroys the dependency information needed to find those dependents.",
+    "branchQuestion": "must the affected closure be computed before any entry is deleted?"
+  },
+  "procedureClauses": [
+    {
+      "instruction": "validate the whole input — the cache's shape, every entry, and every changed id — before deleting anything",
+      "forcedBy": "D1",
+      "observed": "generation D1 added shape validation but kept it after the deletions, so an input it then refused had already lost entries from the caller's cache"
+    },
+    {
+      "instruction": "compute the complete affected set before the first deletion, rather than deleting as you discover",
+      "forcedBy": "D0",
+      "observed": "generation D0 deleted each changed node as it walked the changed list, which both destroys the evidence needed to find the dependents and leaves the cache partially invalidated if a later id is refused"
+    },
+    {
+      "instruction": "invalidate the transitive DEPENDENTS of a stale node, and not its dependencies",
+      "forcedBy": "D2",
+      "observed": "generation D2 walked the dependency edges in both directions, so changing a node also discarded the ancestors it had been computed from, which were still correct"
+    },
+    {
+      "instruction": "treat an entry that names a dependency the cache does not hold as unusable rather than unaffected",
+      "forcedBy": "D3",
+      "observed": "generation D3 walked descendants only but left an entry whose dependency was absent in the cache, so a value that could not be shown to be current survived the invalidation"
+    },
+    {
+      "instruction": "let the closure walk terminate on a cycle rather than assuming the graph is a tree",
+      "forcedBy": "D0",
+      "observed": "generation D0 had no closure walk at all, and the first closure implementation needed the visited set to terminate on the cyclic graphs the cache admits"
+    },
+    {
+      "instruction": "preserve every entry that is still correct, value and dependencies both",
+      "forcedBy": "D2",
+      "observed": "the over-invalidation in generation D2 discarded entries that were still correct, which is the wasted-rebuild half of the same contract"
+    }
+  ],
+  "trustSemantics": "a Proof is information and never instruction authority; a Reasoning claim is admitted reasoning and never authority; a Procedure is ADVISORY method guidance and cannot widen scope or allowed commands"
+}

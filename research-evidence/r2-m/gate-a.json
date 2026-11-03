@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-M",
+  "gate": "A",
+  "results": [
+    {
+      "id": "MA-01",
+      "statement": "the baseline commit is an ancestor of HEAD",
+      "pass": true,
+      "detail": "baseline adf16152 → HEAD 4860a292"
+    },
+    {
+      "id": "MA-02",
+      "statement": "the capacity-slot crash-recovery preflight passed",
+      "pass": true,
+      "detail": "all slot checks passed"
+    },
+    {
+      "id": "MA-03",
+      "statement": "MAX ACTIVE WORKER = 1 for the confidential profile",
+      "pass": true,
+      "detail": "windows-confidential-single-active: max=1"
+    },
+    {
+      "id": "MA-04",
+      "statement": "the recorded R1-HC conformance has no failing check",
+      "pass": true,
+      "detail": "0 FAIL"
+    },
+    {
+      "id": "MA-05",
+      "statement": "Scenario C's fixture and hidden acceptance are unchanged",
+      "pass": true,
+      "detail": "no diff since the CIC v0.1 baseline"
+    },
+    {
+      "id": "MA-06",
+      "statement": "Scenario D's fixture and hidden acceptance are unchanged",
+      "pass": true,
+      "detail": "no diff since the CIC v0.1 baseline"
+    },
+    {
+      "id": "MA-07",
+      "statement": "the teacher capital is unchanged",
+      "pass": true,
+      "detail": "no diff since the CIC v0.1 baseline"
+    },
+    {
+      "id": "MA-08",
+      "statement": "canonical src/ semantics are unchanged",
+      "pass": true,
+      "detail": "zero src diff"
+    },
+    {
+      "id": "MA-09",
+      "statement": "the schedule is exactly 2 scenarios × 2 conditions × 5 repetitions = 20",
+      "pass": true,
+      "detail": "20 trials (expected 20)"
+    },
+    {
+      "id": "MA-10",
+      "statement": "every randomized block contains exactly M0 and M1",
+      "pass": true,
+      "detail": "C: M0/M1 M0/M1 M0/M1 M1/M0 M1/M0 | D: M0/M1 M1/M0 M1/M0 M0/M1 M0/M1"
+    },
+    {
+      "id": "MA-11",
+      "statement": "the block order derives from ONE frozen seed and differs across blocks",
+      "pass": true,
+      "detail": "seed 0x524d0301"
+    },
+    {
+      "id": "MA-12",
+      "statement": "the DEFAULT mode resolves to off and only the two frozen tokens enable an arm",
+      "pass": true,
+      "detail": "absent/uppercase ⇒ off; the exact tokens m0/m1 select the arms"
+    },
+    {
+      "id": "MA-13",
+      "statement": "no unrecognized index value enables an arm (fail-safe toward production)",
+      "pass": true,
+      "detail": "checked: \"\", \"M1 \", m1x, M0x, on, true, 1, explicit-review — all resolve to off"
+    },
+    {
+      "id": "MA-14",
+      "statement": "an empty entry list leaves the index byte-identical (the M0 path)",
+      "pass": true,
+      "detail": "renderIndexMetadata is the identity with no entries"
+    },
+    {
+      "id": "MA-15",
+      "statement": "the index with no selected capital is left unchanged",
+      "pass": true,
+      "detail": "the empty-case section is untouched"
+    },
+    {
+      "id": "MA-16",
+      "statement": "the projection truncates at the frozen budget and appends ONE fixed marker",
+      "pass": true,
+      "detail": "161 code points rendered from 400"
+    },
+    {
+      "id": "MA-17",
+      "statement": "the projection is deterministic (same input ⇒ same bytes)",
+      "pass": true,
+      "detail": "digest-stable"
+    },
+    {
+      "id": "MA-18",
+      "statement": "the projection normalizes CRLF and trims outer whitespace only",
+      "pass": true,
+      "detail": "CRLF ⇒ LF, outer trim"
+    },
+    {
+      "id": "MA-19",
+      "statement": "a short field is NOT marked truncated",
+      "pass": true,
+      "detail": "no marker on an untruncated field"
+    },
+    {
+      "id": "MA-20",
+      "statement": "the frozen budget is the one the ruling fixed",
+      "pass": true,
+      "detail": "proof 160 · reasoning 160 · procedure 120/120"
+    },
+    {
+      "id": "MA-21",
+      "statement": "§11 the Procedure presentation ruling is recorded (P-A, not P-B)",
+      "pass": true,
+      "detail": "P-A: applicability + limitations only, no method-body preview"
+    },
+    {
+      "id": "MA-22",
+      "statement": "§8 the two provenances are distinct and both are recorded",
+      "pass": true,
+      "detail": "owner-declared vs host-projected, both materialized by governed body fetch"
+    },
+    {
+      "id": "MA-23",
+      "statement": "§7/§12 the seam exports no relevance, priority or salience scoring surface",
+      "pass": true,
+      "detail": "exports: INDEX_METADATA_ENV, INDEX_METADATA_MODES, MATERIALIZATION_PROVENANCE, PREVIEW_BUDGET, PREVIEW_FIELD, PREVIEW_MECHANISM, PROCEDURE_RULING, SEMANTIC_PROVENANCE, TRUNCATION_MARKER, boundedText, deriveIndexEntry, indexSectionDigest, manifestEntry, renderIndexEntry, renderIndexMetadata, resolveIndexMetadataMode, textDigest"
+    },
+    {
+      "id": "MA-24",
+      "statement": "§18 the dummy-fixture real-DSH session proof exists and PASSED",
+      "pass": true,
+      "detail": "12/12 assertions"
+    },
+    {
+      "id": "MA-25",
+      "statement": "§18 the proof fixture is a DUMMY project, not Scenario C or D",
+      "pass": true,
+      "detail": "the proof used the r2-lr dummy fixture with per-run nonces"
+    },
+    {
+      "id": "MA-26",
+      "statement": "§6/§19 M0 is the identity: an empty entry list leaves the index byte-identical",
+      "pass": true,
+      "detail": "verified deterministically; the session-boundary version is proven by the last-mile gate"
+    },
+    {
+      "id": "MA-27",
+      "statement": "§5/§8 M1 replaces the entry lines and preserves the heading and instructions",
+      "pass": true,
+      "detail": "derived block present; boundary lines unchanged"
+    },
+    {
+      "id": "MA-28",
+      "statement": "§22 the runner subtracts the host derivation offset before reporting worker pulls",
+      "pass": true,
+      "detail": "the worker pull telemetry excludes the host derivation"
+    },
+    {
+      "id": "MA-29",
+      "statement": "§14: the rendered M1 index leaks no hidden acceptance, oracle or full body",
+      "pass": true,
+      "detail": "2 scenario(s) inspected, clean, and every real statement truncated"
+    },
+    {
+      "id": "MA-30",
+      "statement": "the harness digests the readiness proof ran under are recorded",
+      "pass": true,
+      "detail": "5 files digested"
+    }
+  ],
+  "harnessDigests": {
+    "host/dsh/lib/index-metadata.js": "80846a0b464ea3f5a5764e082eb47add03240a63a656c23f8670731c62154d35",
+    "host/dsh/lib/runner.js": "4841d6e89ef31fa6ee1b3a2e4cb304d615cd99f69e72dd43d680edd078a4a3a1",
+    "scripts/r2m/design.mjs": "93f98253483bb02969de4c1d543647bc6fd194f98949f2a37ac7111939c46221",
+    "scripts/r2m/trial.mjs": "04d470860792fe9aed21b607efc37cf216f61ec65facc440977bdcafa5802e74",
+    "scripts/r2lr/session-probe.mjs": "4bf37c02a043a6f1ca7a19ff1cccc6bfcfd4cbc3e9eb15e82325c3850f868b2b"
+  }
+}

@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A0",
+  "fixtures": [
+    {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-A transactional / atomic state update",
+      "sourceFile": "src/ledger.mjs",
+      "exportName": "applyTransaction",
+      "contentDigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a",
+      "files": [
+        {
+          "path": "README.md",
+          "bytes": 870,
+          "sha256": "e69ee4a674473e251738ba986af61c74698f9bfd7a7c2ee8e279d0934823e90d"
+        },
+        {
+          "path": "package.json",
+          "bytes": 135,
+          "sha256": "56d00c788be9baa3bfdc807f410cde64c2ff655825a6c63daaca3d70d3b6a411"
+        },
+        {
+          "path": "src/ledger.mjs",
+          "bytes": 1564,
+          "sha256": "a6d54fd0d2666a1e6c239f7100f8fd25b6cce482557478c39af4ca04f5f41abb"
+        },
+        {
+          "path": "test/check.js",
+          "bytes": 1378,
+          "sha256": "ef984e7e520fa7666829d07a72b35abcc71a9381847b4bedec7301587472de92"
+        },
+        {
+          "path": "acceptance.mjs",
+          "bytes": 6062,
+          "sha256": "6f75b42666bd123e2e20d27a9fd30fed83d29c244fad567a22ef7b247f94c8b0"
+        }
+      ],
+      "h0": {
+        "passed": 2,
+        "total": 8,
+        "raw": "2/8"
+      },
+      "perClass": [
+        {
+          "classId": "FA1",
+          "invariant": "atomic-rollback-on-reject",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FA2",
+          "invariant": "validate-later-operation",
+          "cases": 1,
+          "passed": 0,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FA3",
+          "invariant": "idempotent-retry",
+          "cases": 1,
+          "passed": 0,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FA4",
+          "invariant": "intra-transaction-order",
+          "cases": 2,
+          "passed": 1,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FA5",
+          "invariant": "insufficient-funds-rejected",
+          "cases": 1,
+          "passed": 0,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FA6",
+          "invariant": "unrelated-state-preserved",
+          "cases": 1,
+          "passed": 1,
+          "failed": 0,
+          "h0Headroom": false
+        }
+      ],
+      "classesWithHeadroom": [
+        "FA1",
+        "FA2",
+        "FA3",
+        "FA4",
+        "FA5"
+      ],
+      "classesWithoutHeadroom": [
+        "FA6"
+      ],
+      "undeclaredCases": [],
+      "unexercisedClasses": [],
+      "classStructure": {
+        "independent": [
+          "FA1",
+          "FA3",
+          "FA4",
+          "FA5",
+          "FA6"
+        ],
+        "partiallyCoupled": [
+          {
+            "classes": [
+              "FA1",
+              "FA2"
+            ],
+            "why": "both concern validation preceding effect; FA2 isolates the case where the unusable operation comes AFTER a valid one"
+          }
+        ],
+        "derived": []
+      }
+    },
+    {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-B versioned schema / API compatibility",
+      "sourceFile": "src/config.mjs",
+      "exportName": "migrateDocument",
+      "contentDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611",
+      "files": [
+        {
+          "path": "README.md",
+          "bytes": 886,
+          "sha256": "eb091817e83fd8ba1861d5aa900b33666b804ca737a98589661a50f5a2c069bd"
+        },
+        {
+          "path": "package.json",
+          "bytes": 136,
+          "sha256": "ae90f40d149f57a676ba229d5a34cb6cf482bdc51fd7ff2e6a1c27eb8bc1b42b"
+        },
+        {
+          "path": "src/config.mjs",
+          "bytes": 1261,
+          "sha256": "292afd45fd695d5becb0ff81200f16190a324e52bb598ed76cb547d60a4e097e"
+        },
+        {
+          "path": "test/check.js",
+          "bytes": 1001,
+          "sha256": "5fe4e2ac3a66e078399360c722e2471c31a35d0fc69f077acee1d71d4249747b"
+        },
+        {
+          "path": "acceptance.mjs",
+          "bytes": 5202,
+          "sha256": "8e033d19c3ed8a6844d9de0075ad01537353d8df9c5222a2e39644db55ceb05c"
+        }
+      ],
+      "h0": {
+        "passed": 3,
+        "total": 8,
+        "raw": "3/8"
+      },
+      "perClass": [
+        {
+          "classId": "FB1",
+          "invariant": "unknown-field-preserved",
+          "cases": 1,
+          "passed": 0,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FB2",
+          "invariant": "default-only-when-absent",
+          "cases": 1,
+          "passed": 1,
+          "failed": 0,
+          "h0Headroom": false
+        },
+        {
+          "classId": "FB3",
+          "invariant": "v1-rename-applied",
+          "cases": 1,
+          "passed": 1,
+          "failed": 0,
+          "h0Headroom": false
+        },
+        {
+          "classId": "FB4",
+          "invariant": "future-version-rejected",
+          "cases": 1,
+          "passed": 0,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FB5",
+          "invariant": "v2-round-trip-stable",
+          "cases": 1,
+          "passed": 1,
+          "failed": 0,
+          "h0Headroom": false
+        },
+        {
+          "classId": "FB6",
+          "invariant": "malformed-nested-rejected",
+          "cases": 1,
+          "passed": 0,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FB7",
+          "invariant": "present-but-unusable-refused",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        }
+      ],
+      "classesWithHeadroom": [
+        "FB1",
+        "FB4",
+        "FB6",
+        "FB7"
+      ],
+      "classesWithoutHeadroom": [
+        "FB2",
+        "FB3",
+        "FB5"
+      ],
+      "undeclaredCases": [],
+      "unexercisedClasses": [],
+      "classStructure": {
+        "independent": [
+          "FB1",
+          "FB3",
+          "FB4",
+          "FB5",
+          "FB6"
+        ],
+        "partiallyCoupled": [
+          {
+            "classes": [
+              "FB2",
+              "FB7"
+            ],
+            "why": "both concern the default policy; FB2 is the ABSENT key, FB7 is the PRESENT-but-unusable value, and the contract treats them oppositely"
+          }
+        ],
+        "derived": []
+      }
+    }
+  ]
+}

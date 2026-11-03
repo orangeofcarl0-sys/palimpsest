@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_ingestion_health.test.ts",
+  "evidenceClass": "REAL_PARENT_IPC",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_INVOCATION_COMPLETENESS",
+  "title": "Per-Invocation completeness ordering, stickiness and isolation",
+  "method": "fault injection on the 1st report, on finalization, a duplicate report, and two independent invocations",
+  "observed": "failure on first report leaves no complete association; a failed finalization append leaves the window OPEN; a duplicate identical report is IDEMPOTENT and not a failure; independent invocations do not share health; the ordinary single-identity path still yields CLOSED_CONSISTENT",
+  "expectedInvariant": "the failure state becomes sticky before finalization; concurrent distinct Invocations cannot share health state",
+  "verdict": "PASS",
+  "remainingUncertainty": "none material; the durable marker is the authority and is per-invocation"
+}

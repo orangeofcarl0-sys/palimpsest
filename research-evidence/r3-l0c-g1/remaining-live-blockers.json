@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1",
+  "kind": "remaining live-execution blockers",
+  "applicableCommit": "2a1e194f2baf295ceeba1801cd75ecbb83404425",
+  "whatWasChecked": "which prerequisites for a genuine PRIMARY run remain, and which producer or external decision each requires",
+  "blockers": [
+    {
+      "id": "B1",
+      "blocker": "a genuine DSH worker has never been observed; the direct-child observation is not the final DSH process",
+      "requiresProducer": "an authorized real worker launch",
+      "solvableByCode": false,
+      "requiresExternalApproval": true,
+      "evidenceLevelNow": "NOT_ESTABLISHED"
+    },
+    {
+      "id": "B2",
+      "blocker": "the provider/model route is declared but never attested from a real worker",
+      "requiresProducer": "a real worker echoing its own provider/model identity",
+      "solvableByCode": true,
+      "requiresExternalApproval": true,
+      "evidenceLevelNow": "NOT_ESTABLISHED"
+    },
+    {
+      "id": "B3",
+      "blocker": "no authentic project-specific DSH artifact has been observed, so the locator grammar is tested but not real-compatible",
+      "requiresProducer": "a genuine frozen-experiment session artifact",
+      "solvableByCode": false,
+      "requiresExternalApproval": true,
+      "evidenceLevelNow": "NOT_ESTABLISHED"
+    },
+    {
+      "id": "B4",
+      "blocker": "no execution witness can be corroborated: the durable record carries no runId and the port reports no worker process identity that a real route produced",
+      "requiresProducer": "the real runtime plus a durable run binding",
+      "solvableByCode": true,
+      "requiresExternalApproval": true,
+      "evidenceLevelNow": "NOT_ESTABLISHED"
+    },
+    {
+      "id": "B5",
+      "blocker": "no trusted external authority source exists",
+      "requiresProducer": "an independently controlled authorization record with issuer identity and revocation rules",
+      "solvableByCode": false,
+      "requiresExternalApproval": true,
+      "evidenceLevelNow": "NOT_ESTABLISHED"
+    },
+    {
+      "id": "B6",
+      "blocker": "no enforceable monetary ceiling exists",
+      "requiresProducer": "a host- or provider-enforced hard spend limit",
+      "solvableByCode": false,
+      "requiresExternalApproval": true,
+      "evidenceLevelNow": "NOT_ESTABLISHED"
+    },
+    {
+      "id": "B7",
+      "blocker": "no launch-capable PRIMARY implementation exists, and G1 does not create one",
+      "requiresProducer": "a separately authorized engineering decision plus a newly frozen executable plan",
+      "solvableByCode": true,
+      "requiresExternalApproval": true,
+      "evidenceLevelNow": "NOT_ESTABLISHED"
+    }
+  ],
+  "integrationSeamDocumented": "scripts/r3l0c/generation-child.mjs remains unmodified; a future live execution entry requires its own newly approved engineering contract",
+  "g1CreatesPaidLaunchPath": false,
+  "law": "these blockers are recorded, not implemented; each requires a separate authorized decision"
+}

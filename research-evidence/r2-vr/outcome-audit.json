@@ -1,0 +1,1903 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-VR",
+  "kind": "outcome-sensitivity and treatment-relevance audit",
+  "method": "the 20 stored final candidates re-judged against every hidden case with the same acceptance module; no worker ran and no R2-V record was modified",
+  "trialsJudged": 20,
+  "casesAudited": 14,
+  "caseAudit": [
+    {
+      "caseId": "h01",
+      "invariant": "dependent-closure-invalidated",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "C"
+      ]
+    },
+    {
+      "caseId": "h02",
+      "invariant": "dependent-closure-invalidated",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "C"
+      ]
+    },
+    {
+      "caseId": "h03",
+      "invariant": "ancestors-preserved",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": []
+    },
+    {
+      "caseId": "h04",
+      "invariant": "unresolvable-dependency-is-unusable",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": []
+    },
+    {
+      "caseId": "h05",
+      "invariant": "unresolvable-dependency-is-unusable",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": []
+    },
+    {
+      "caseId": "h06",
+      "invariant": "cycle-terminates",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": []
+    },
+    {
+      "caseId": "h07",
+      "invariant": "dependent-closure-invalidated",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "C"
+      ]
+    },
+    {
+      "caseId": "h08",
+      "invariant": "dependent-closure-invalidated",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "C"
+      ]
+    },
+    {
+      "caseId": "h09",
+      "invariant": "rejection-leaves-cache-untouched",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "caseId": "h10",
+      "invariant": "rejection-leaves-cache-untouched",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "caseId": "h11",
+      "invariant": "cycle-terminates",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": []
+    },
+    {
+      "caseId": "h12",
+      "invariant": "dependent-closure-invalidated",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "C"
+      ]
+    },
+    {
+      "caseId": "h13",
+      "invariant": "deep-chain-closure",
+      "passes": "20/20",
+      "varies": false,
+      "invariantAcrossAll": true,
+      "failureClasses": [],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": []
+    },
+    {
+      "caseId": "h14",
+      "invariant": "rejection-leaves-cache-untouched",
+      "passes": "14/20",
+      "varies": true,
+      "invariantAcrossAll": false,
+      "failureClasses": [
+        "ACCEPTED_INVALID_INPUT"
+      ],
+      "addressedBy": [
+        "D"
+      ],
+      "addressedGenericallyBy": [
+        "B",
+        "C"
+      ]
+    }
+  ],
+  "varyingCases": [
+    "h14"
+  ],
+  "invariantCases": [
+    "h01",
+    "h02",
+    "h03",
+    "h04",
+    "h05",
+    "h06",
+    "h07",
+    "h08",
+    "h09",
+    "h10",
+    "h11",
+    "h12",
+    "h13"
+  ],
+  "invariantCaseCount": 13,
+  "mechanism": {
+    "addedBundles": [
+      "B",
+      "C"
+    ],
+    "varyingAddressedByAdded": [],
+    "varyingAddressedByDOnly": [
+      "h14 (addressed by D, present in every arm)"
+    ],
+    "varyingAddressedGenerically": [
+      {
+        "caseId": "h14",
+        "by": [
+          "B",
+          "C"
+        ]
+      }
+    ],
+    "dIsConstantAcrossArms": true,
+    "note": "D is in every arm, so a case that only D addresses cannot vary WITH the treatment. A GENERIC clause (\"validate before mutating\", stated about another domain object) is not direct coverage of the cache-entry-shape check h14 performs; it is reported separately rather than counted as relevance."
+  },
+  "outcomeMismatch": true,
+  "ruling": "UTILITY_ASSAY_OUTCOME_MISMATCH",
+  "trials": [
+    {
+      "trialId": "D-V0-b0r0",
+      "condition": "V0",
+      "block": 0,
+      "consumedBundles": [
+        "D"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V0-b1r1",
+      "condition": "V0",
+      "block": 1,
+      "consumedBundles": [
+        "D"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": false,
+          "failureClass": "ACCEPTED_INVALID_INPUT",
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 13,
+      "total": 14
+    },
+    {
+      "trialId": "D-V0-b2r2",
+      "condition": "V0",
+      "block": 2,
+      "consumedBundles": [
+        "D"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V0-b3r3",
+      "condition": "V0",
+      "block": 3,
+      "consumedBundles": [
+        "D"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V0-b4r4",
+      "condition": "V0",
+      "block": 4,
+      "consumedBundles": [
+        "D"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": false,
+          "failureClass": "ACCEPTED_INVALID_INPUT",
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 13,
+      "total": 14
+    },
+    {
+      "trialId": "D-V1-b0r0",
+      "condition": "V1",
+      "block": 0,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V1-b1r1",
+      "condition": "V1",
+      "block": 1,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V1-b2r2",
+      "condition": "V1",
+      "block": 2,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": false,
+          "failureClass": "ACCEPTED_INVALID_INPUT",
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 13,
+      "total": 14
+    },
+    {
+      "trialId": "D-V1-b3r3",
+      "condition": "V1",
+      "block": 3,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V1-b4r4",
+      "condition": "V1",
+      "block": 4,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V2-b0r0",
+      "condition": "V2",
+      "block": 0,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V2-b1r1",
+      "condition": "V2",
+      "block": 1,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V2-b2r2",
+      "condition": "V2",
+      "block": 2,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V2-b3r3",
+      "condition": "V2",
+      "block": 3,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V2-b4r4",
+      "condition": "V2",
+      "block": 4,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": false,
+          "failureClass": "ACCEPTED_INVALID_INPUT",
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 13,
+      "total": 14
+    },
+    {
+      "trialId": "D-V3-b0r0",
+      "condition": "V3",
+      "block": 0,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": false,
+          "failureClass": "ACCEPTED_INVALID_INPUT",
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 13,
+      "total": 14
+    },
+    {
+      "trialId": "D-V3-b1r1",
+      "condition": "V3",
+      "block": 1,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": false,
+          "failureClass": "ACCEPTED_INVALID_INPUT",
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 13,
+      "total": 14
+    },
+    {
+      "trialId": "D-V3-b2r2",
+      "condition": "V3",
+      "block": 2,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V3-b3r3",
+      "condition": "V3",
+      "block": 3,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "trialId": "D-V3-b4r4",
+      "condition": "V3",
+      "block": 4,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "perCase": {
+        "h01": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h02": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h03": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "ancestors-preserved"
+        },
+        "h04": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h05": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "unresolvable-dependency-is-unusable"
+        },
+        "h06": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h07": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h08": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h09": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h10": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        },
+        "h11": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "cycle-terminates"
+        },
+        "h12": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "dependent-closure-invalidated"
+        },
+        "h13": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "deep-chain-closure"
+        },
+        "h14": {
+          "pass": true,
+          "failureClass": null,
+          "invariant": "rejection-leaves-cache-untouched"
+        }
+      },
+      "passed": 14,
+      "total": 14
+    }
+  ]
+}

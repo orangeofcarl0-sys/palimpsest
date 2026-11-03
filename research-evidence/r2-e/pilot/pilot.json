@@ -1,0 +1,1068 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-E",
+  "note": "GATE A pilot pairs; these do NOT count among the 20 primary trials",
+  "trials": [
+    {
+      "schemaVersion": 1,
+      "trialId": "C-E0-b500r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "E0",
+      "block": 500,
+      "repetition": 0,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "9401d82835cf7041e54ba6a6721ac42fcfc33341",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "efficacyArm": "E0",
+      "capital": {
+        "proofClaimId": "pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-835fc2b8783d033efbb96fec88332150@0",
+        "procedureDigest": "80a7c65ab5a14b099350de590f6924798bb37058aec7992d41acbe87e3ce087e"
+      },
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "jobId": "wdj-03db9f16-a7db-43d9-ac90-8287095355cd",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-18d737048aaa6b3ca27b8e41fda42a82",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+        "efficacySectionDigest": "257a699d1d2c291328083aaa77584fe0510ea68f853a0258d39da65c1d50cdfe",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 9401d82835cf7041e54ba6a6721ac42fcfc33341\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "reportedAffordance": "off",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Reworked src/reducer.ts so applyEventStream settles the validity of the whole delivery before writing anything, then replays the distinct log entries in ascending seq order. Events are validated as objects with a non-empty string id, a non-negative integer seq, an op of SET/PUT/DELETE (op, else kind, else implicit SET) and, for writes, a value under v/value/payload/data; a seq may repeat only for a redelivered event, while two different events claiming one position are rejected. Because nothing is written until the delivery is known valid, a rejected history leaves the caller's state untouched",
+        "escalationReason": "",
+        "transcriptBytes": 2549,
+        "actionOrder": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUseOrdinals": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "firstPullOrdinal": null,
+      "toolActionsBeforeFirstPull": "UNKNOWN",
+      "pulledBeforeFirstEdit": false,
+      "pulledBeforeFirstVisibleTest": false,
+      "pulledBeforeFirstHiddenSubmission": false,
+      "efficacy": {
+        "mode": "e0",
+        "prework": {
+          "mechanism": "HOST_MEDIATED_PREWORK",
+          "selectedCount": 0,
+          "resolvedCount": 0,
+          "failureCount": 0,
+          "handles": [],
+          "kinds": [],
+          "digests": [],
+          "failures": [],
+          "elapsedMs": 0,
+          "allConsumed": true
+        }
+      },
+      "prework": {
+        "mechanism": "HOST_MEDIATED_PREWORK",
+        "selectedCount": 0,
+        "resolvedCount": 0,
+        "failureCount": 0,
+        "handles": [],
+        "kinds": [],
+        "digests": [],
+        "failures": [],
+        "elapsedMs": 0,
+        "allConsumed": true
+      },
+      "preconditionMet": true,
+      "efficacyPrecondition": "CONTROL_NO_CAPITAL",
+      "consumedBeforeFirstEdit": "NOT_APPLICABLE_CONTROL",
+      "confidentiality": {
+        "capacity": {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        "boundary": {
+          "installed": true,
+          "kernel": {
+            "supported": true,
+            "labelled": 1,
+            "attempted": 1,
+            "unverified": [],
+            "skipped": 1
+          },
+          "guard": {
+            "installed": true,
+            "scope": "global",
+            "tools": [
+              "read",
+              "read_image",
+              "grep",
+              "glob",
+              "ls",
+              "str_replace_editor"
+            ]
+          },
+          "aliases": {
+            "clean": true,
+            "found": 0
+          },
+          "residuals": 1,
+          "contract": {
+            "package": "@deepseek-ai/dsh-win32-process",
+            "resolvedVersion": "0.2.0-rc.2",
+            "qualifiedVersion": "0.2.0-rc.2",
+            "drifted": false
+          }
+        },
+        "capabilities": {
+          "classified": true,
+          "allowed": true,
+          "counts": {
+            "WORKER_PRIVATE": 2,
+            "CONFINED_CHILD": 1,
+            "GUARDED_HOST_READ": 4,
+            "DELEGATED_SURFACE": 4,
+            "NO_HOST_FILE_READ": 15
+          },
+          "unclassified": [],
+          "requiresGlobalGuard": true
+        }
+      },
+      "worldObserved": true,
+      "workDir": "<home>\\.palimpsest-r2e\\pilot\\runs\\C-E0-b500r0\\repo\\.palimpsest\\worlds/attempt-18d737048aaa6b3ca27b8e41fda42a82",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6861,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": true,
+      "procedureMarkerFinal": {
+        "marker": "validatesWholeHistoryBeforeMutating",
+        "reflected": false,
+        "violations": [
+          {
+            "probe": "m01",
+            "why": "a refused log must leave the caller's state untouched",
+            "detail": "the invalid log was accepted"
+          }
+        ],
+        "probesRun": 2
+      },
+      "visibleOracleInvocations": 4,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 225695
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-E1-b500r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "E1",
+      "block": 500,
+      "repetition": 0,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "dbf616a5ef5b4d3549662c614dcf71b00e66cd53",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "efficacyArm": "E1",
+      "capital": {
+        "proofClaimId": "pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-835fc2b8783d033efbb96fec88332150@0",
+        "procedureDigest": "8a2d3c94c3c3bd1ca70444693e36460e1973102c5d1689ed9f606e3c9a2e6d28"
+      },
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 5
+      },
+      "jobId": "wdj-4bbc42a2-187d-4da1-9f56-44baeda3357e",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-5252213f63742932e5bc61c8a0fc05ff",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSectionDigest": "43a137e341572cc778db0f7f4b80b1f18e38003db06cd8fab36fc737f60a5b72",
+        "efficacySectionDigest": "dcac0786063082cef8aa726e72fc2ec9aa66622da327e0760f9a1bf6933a0b53",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n  [procedure] @ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "procedure:@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: dbf616a5ef5b4d3549662c614dcf71b00e66cd53\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "reportedAffordance": "off",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [
+          "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+        ],
+        "pullOrder": [
+          "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+        ],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote applyEventStream in src/reducer.ts as three strictly separated phases: (1) validate the whole log without touching the caller's state — every event must be an object with a non-empty string id, a non-negative integer seq and a known operation, positions must be unique (an exact redelivery is deduped as an idempotent replay, a differing event at the same position is refused) and continuous from zero across the entire log; (2) derive the next state into a private copy, folding the log's own ascending seq order so an older write is applied before a later delete and cannot resurrect the en",
+        "escalationReason": "",
+        "transcriptBytes": 3407,
+        "actionOrder": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUseOrdinals": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "firstPullOrdinal": null,
+      "toolActionsBeforeFirstPull": "UNKNOWN",
+      "pulledBeforeFirstEdit": "UNKNOWN",
+      "pulledBeforeFirstVisibleTest": "UNKNOWN",
+      "pulledBeforeFirstHiddenSubmission": "UNKNOWN",
+      "efficacy": {
+        "mode": "e1",
+        "prework": {
+          "mechanism": "HOST_MEDIATED_PREWORK",
+          "selectedCount": 3,
+          "resolvedCount": 3,
+          "failureCount": 0,
+          "handles": [
+            "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+            "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+            "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+          ],
+          "kinds": [
+            "proof",
+            "reasoning",
+            "procedure"
+          ],
+          "digests": [
+            "proof:@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5:9210667db6766452cab55865051e8fb7ce48d02fa32d088b7e44662dcd3f8bb9",
+            "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+            "procedure:@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0:10390b8bbbb1e68d9b9f3019f92225a16a6f852ed0b88287edc763dfe17770a0"
+          ],
+          "failures": [],
+          "elapsedMs": 38,
+          "allConsumed": true
+        }
+      },
+      "prework": {
+        "mechanism": "HOST_MEDIATED_PREWORK",
+        "selectedCount": 3,
+        "resolvedCount": 3,
+        "failureCount": 0,
+        "handles": [
+          "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+        ],
+        "kinds": [
+          "proof",
+          "reasoning",
+          "procedure"
+        ],
+        "digests": [
+          "proof:@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5:9210667db6766452cab55865051e8fb7ce48d02fa32d088b7e44662dcd3f8bb9",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "procedure:@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0:10390b8bbbb1e68d9b9f3019f92225a16a6f852ed0b88287edc763dfe17770a0"
+        ],
+        "failures": [],
+        "elapsedMs": 38,
+        "allConsumed": true
+      },
+      "preconditionMet": true,
+      "efficacyPrecondition": "MET",
+      "consumedBeforeFirstEdit": true,
+      "confidentiality": {
+        "capacity": {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        "boundary": {
+          "installed": true,
+          "kernel": {
+            "supported": true,
+            "labelled": 1,
+            "attempted": 1,
+            "unverified": [],
+            "skipped": 1
+          },
+          "guard": {
+            "installed": true,
+            "scope": "global",
+            "tools": [
+              "read",
+              "read_image",
+              "grep",
+              "glob",
+              "ls",
+              "str_replace_editor"
+            ]
+          },
+          "aliases": {
+            "clean": true,
+            "found": 0
+          },
+          "residuals": 1,
+          "contract": {
+            "package": "@deepseek-ai/dsh-win32-process",
+            "resolvedVersion": "0.2.0-rc.2",
+            "qualifiedVersion": "0.2.0-rc.2",
+            "drifted": false
+          }
+        },
+        "capabilities": {
+          "classified": true,
+          "allowed": true,
+          "counts": {
+            "WORKER_PRIVATE": 2,
+            "CONFINED_CHILD": 1,
+            "GUARDED_HOST_READ": 4,
+            "DELEGATED_SURFACE": 4,
+            "NO_HOST_FILE_READ": 15
+          },
+          "unclassified": [],
+          "requiresGlobalGuard": true
+        }
+      },
+      "worldObserved": true,
+      "workDir": "<home>\\.palimpsest-r2e\\pilot\\runs\\C-E1-b500r0\\repo\\.palimpsest\\worlds/attempt-5252213f63742932e5bc61c8a0fc05ff",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7343,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": true,
+      "procedureMarkerFinal": {
+        "marker": "validatesWholeHistoryBeforeMutating",
+        "reflected": true,
+        "violations": [],
+        "probesRun": 2
+      },
+      "visibleOracleInvocations": 4,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 150468
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "D-E0-b510r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "E0",
+      "block": 510,
+      "repetition": 0,
+      "knownFailureName": "invalidate the changed nodes before the affected closure is computed",
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "b541f96880322321e854139aab7e5b0a16d6685a",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "invalidateCacheReference"
+        ]
+      },
+      "efficacyArm": "E0",
+      "capital": {
+        "proofClaimId": "pc-1d1ab58f42a9185224bdb86c42613692",
+        "reasoningCellId": "cell-d",
+        "reasoningClaimId": "cl-347f9b12051d87b3048e01de",
+        "procedureRef": "prc-29674c5161d82bc0bbb5e708f6fb92c6@0",
+        "procedureDigest": "29b476a38a64c0e0d5db4f5913858cac9ef5f2b503e4bbeb54aa7f83c70376af"
+      },
+      "finalAcceptance": {
+        "passed": 11,
+        "total": 14,
+        "failures": [
+          "h04:WRONG_CACHE",
+          "h05:WRONG_CACHE",
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 11,
+        "total": 14,
+        "failures": [
+          "h04:WRONG_CACHE",
+          "h05:WRONG_CACHE",
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "invalidateBeforeClosureFrozen",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p03",
+            "why": "an entry naming a dependency the cache does not hold cannot be shown to be current",
+            "detail": "the stale entry \"orphan\" survived"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "invalidateBeforeClosureFrozen",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p03",
+            "why": "an entry naming a dependency the cache does not hold cannot be shown to be current",
+            "detail": "the stale entry \"orphan\" survived"
+          }
+        ],
+        "probesRun": 5
+      },
+      "jobId": "wdj-20733c01-f7af-43b6-83f7-76bc179f8327",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-e56d027a773e5c523b698e811e6452a3",
+      "prompt": {
+        "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+        "indexSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+        "efficacySectionDigest": "257a699d1d2c291328083aaa77584fe0510ea68f853a0258d39da65c1d50cdfe",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: keep an incremental build cache correct as its inputs change\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish invalidateCache so it updates the cache after a set of source nodes changed\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/cache.ts\nRequired artifacts:\n  (none)\nBase commit: b541f96880322321e854139aab7e5b0a16d6685a\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "reportedAffordance": "off",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished invalidateCache in src/cache.ts: it now validates all input up front, builds a reverse dependency index from every node's deps, computes the full transitive dependent closure of the changed set (including the changed nodes themselves, handling cycles and missing/ghost dep nodes) before deleting anything, then mutates the caller's cache object in place, discarding exactly the stale entries and no others.",
+        "escalationReason": "",
+        "transcriptBytes": 2234,
+        "actionOrder": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUseOrdinals": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "firstPullOrdinal": null,
+      "toolActionsBeforeFirstPull": "UNKNOWN",
+      "pulledBeforeFirstEdit": false,
+      "pulledBeforeFirstVisibleTest": false,
+      "pulledBeforeFirstHiddenSubmission": false,
+      "efficacy": {
+        "mode": "e0",
+        "prework": {
+          "mechanism": "HOST_MEDIATED_PREWORK",
+          "selectedCount": 0,
+          "resolvedCount": 0,
+          "failureCount": 0,
+          "handles": [],
+          "kinds": [],
+          "digests": [],
+          "failures": [],
+          "elapsedMs": 0,
+          "allConsumed": true
+        }
+      },
+      "prework": {
+        "mechanism": "HOST_MEDIATED_PREWORK",
+        "selectedCount": 0,
+        "resolvedCount": 0,
+        "failureCount": 0,
+        "handles": [],
+        "kinds": [],
+        "digests": [],
+        "failures": [],
+        "elapsedMs": 0,
+        "allConsumed": true
+      },
+      "preconditionMet": true,
+      "efficacyPrecondition": "CONTROL_NO_CAPITAL",
+      "consumedBeforeFirstEdit": "NOT_APPLICABLE_CONTROL",
+      "confidentiality": {
+        "capacity": {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        "boundary": {
+          "installed": true,
+          "kernel": {
+            "supported": true,
+            "labelled": 1,
+            "attempted": 1,
+            "unverified": [],
+            "skipped": 1
+          },
+          "guard": {
+            "installed": true,
+            "scope": "global",
+            "tools": [
+              "read",
+              "read_image",
+              "grep",
+              "glob",
+              "ls",
+              "str_replace_editor"
+            ]
+          },
+          "aliases": {
+            "clean": true,
+            "found": 0
+          },
+          "residuals": 1,
+          "contract": {
+            "package": "@deepseek-ai/dsh-win32-process",
+            "resolvedVersion": "0.2.0-rc.2",
+            "qualifiedVersion": "0.2.0-rc.2",
+            "drifted": false
+          }
+        },
+        "capabilities": {
+          "classified": true,
+          "allowed": true,
+          "counts": {
+            "WORKER_PRIVATE": 2,
+            "CONFINED_CHILD": 1,
+            "GUARDED_HOST_READ": 4,
+            "DELEGATED_SURFACE": 4,
+            "NO_HOST_FILE_READ": 15
+          },
+          "unclassified": [],
+          "requiresGlobalGuard": true
+        }
+      },
+      "worldObserved": true,
+      "workDir": "<home>\\.palimpsest-r2e\\pilot\\runs\\D-E0-b510r0\\repo\\.palimpsest\\worlds/attempt-e56d027a773e5c523b698e811e6452a3",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 4909,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "9e404d9012c8f5b967d805170466728f00273f3d14de06cc9a8d6d1307a07ef0",
+      "oracleFileUnmodified": true,
+      "procedureMarkerFinal": {
+        "marker": "freezesAffectedClosureBeforeMutating",
+        "reflected": false,
+        "violations": [
+          {
+            "probe": "m03",
+            "why": "an entry naming a dependency the cache does not hold cannot be shown to be current",
+            "detail": "\"orphan\" survived"
+          }
+        ],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 544493
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "D-E1-b510r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "E1",
+      "block": 510,
+      "repetition": 0,
+      "knownFailureName": "invalidate the changed nodes before the affected closure is computed",
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "e09c8bda73c2854caf6608aff9ce4fff39b63c57",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "invalidateCacheReference"
+        ]
+      },
+      "efficacyArm": "E1",
+      "capital": {
+        "proofClaimId": "pc-1d1ab58f42a9185224bdb86c42613692",
+        "reasoningCellId": "cell-d",
+        "reasoningClaimId": "cl-347f9b12051d87b3048e01de",
+        "procedureRef": "prc-29674c5161d82bc0bbb5e708f6fb92c6@0",
+        "procedureDigest": "ff79269b0ed6d58962f0abe5f40c87aae77a9b9ba7e0216a26da1764ea1c2582"
+      },
+      "finalAcceptance": {
+        "passed": 2,
+        "total": 14,
+        "failures": [
+          "h01:WRONG_CACHE",
+          "h02:WRONG_CACHE",
+          "h04:WRONG_CACHE",
+          "h05:WRONG_CACHE",
+          "h06:WRONG_CACHE",
+          "h07:WRONG_CACHE",
+          "h08:WRONG_CACHE",
+          "h10:ACCEPTED_INVALID_INPUT",
+          "h11:WRONG_CACHE",
+          "h12:WRONG_CACHE",
+          "h13:WRONG_CACHE",
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": null,
+        "total": null,
+        "failures": [],
+        "note": "NO_CANDIDATE_SUBMITTED — the worker committed no change to the target source"
+      },
+      "knownFailureFinal": {
+        "detector": "invalidateBeforeClosureFrozen",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p01",
+            "why": "a node computed from a changed node is stale and must not survive",
+            "detail": "the stale entry \"b\" survived"
+          },
+          {
+            "probe": "p01",
+            "why": "a node computed from a changed node is stale and must not survive",
+            "detail": "the stale entry \"c\" survived"
+          },
+          {
+            "probe": "p03",
+            "why": "an entry naming a dependency the cache does not hold cannot be shown to be current",
+            "detail": "the stale entry \"orphan\" survived"
+          },
+          {
+            "probe": "p04",
+            "why": "a refused call must leave the caller's cache exactly as it was",
+            "detail": "the caller's cache was mutated before the refusal ({\"a\":{\"value\":1,\"deps\":[]},\"b\":{\"value\":2,\"deps\":[\"a\"]}} -> {\"b\":{\"value\":2,\"deps\":[\"a\"]}})"
+          },
+          {
+            "probe": "p05",
+            "why": "the dependency graph may contain a cycle, which the closure walk must terminate on",
+            "detail": "the stale entry \"y\" survived"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "invalidateBeforeClosureFrozen",
+        "recurred": "UNKNOWN",
+        "violations": [],
+        "probesRun": 0,
+        "note": "NO_CANDIDATE_SUBMITTED"
+      },
+      "jobId": "wdj-6b6b753d-ba7b-4133-a220-c6747252f575",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-253e6283ae686b6ba3f0b38379ce9eb7",
+      "prompt": {
+        "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+        "indexSectionDigest": "81e1fc538e58627a1037d8225178bd7a235757f140d7c0ec8074ae7946ae34ad",
+        "efficacySectionDigest": "7027542d7333ae2785bb220f24c9aad0f462a85c9f3fa9ae19ff4b85629ae9e4",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692\n  [reasoning] @ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de\n  [procedure] @ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "procedure:@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: keep an incremental build cache correct as its inputs change\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish invalidateCache so it updates the cache after a set of source nodes changed\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/cache.ts\nRequired artifacts:\n  (none)\nBase commit: e09c8bda73c2854caf6608aff9ce4fff39b63c57\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "reportedAffordance": "off",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [
+          "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+        ],
+        "pullOrder": [
+          "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+        ],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "HOST_FAILURE",
+        "outcomeSummary": "",
+        "escalationReason": "",
+        "transcriptBytes": 2523,
+        "actionOrder": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write"
+        ],
+        "firstUseOrdinals": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4
+        }
+      },
+      "firstPullOrdinal": null,
+      "toolActionsBeforeFirstPull": "UNKNOWN",
+      "pulledBeforeFirstEdit": "UNKNOWN",
+      "pulledBeforeFirstVisibleTest": "UNKNOWN",
+      "pulledBeforeFirstHiddenSubmission": "UNKNOWN",
+      "efficacy": {
+        "mode": "e1",
+        "prework": {
+          "mechanism": "HOST_MEDIATED_PREWORK",
+          "selectedCount": 3,
+          "resolvedCount": 3,
+          "failureCount": 0,
+          "handles": [
+            "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+            "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+            "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+          ],
+          "kinds": [
+            "proof",
+            "reasoning",
+            "procedure"
+          ],
+          "digests": [
+            "proof:@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692:2d44cdf39120c3d613b1d4db87cf3143c75e4f6b065ba8fd676a1fa854d6d9f2",
+            "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+            "procedure:@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0:3c4472c105cabde49303c8cbcc6b85d1b10f4b007a1e625158ba29d42efd3419"
+          ],
+          "failures": [],
+          "elapsedMs": 36,
+          "allConsumed": true
+        }
+      },
+      "prework": {
+        "mechanism": "HOST_MEDIATED_PREWORK",
+        "selectedCount": 3,
+        "resolvedCount": 3,
+        "failureCount": 0,
+        "handles": [
+          "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+        ],
+        "kinds": [
+          "proof",
+          "reasoning",
+          "procedure"
+        ],
+        "digests": [
+          "proof:@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692:2d44cdf39120c3d613b1d4db87cf3143c75e4f6b065ba8fd676a1fa854d6d9f2",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0:3c4472c105cabde49303c8cbcc6b85d1b10f4b007a1e625158ba29d42efd3419"
+        ],
+        "failures": [],
+        "elapsedMs": 36,
+        "allConsumed": true
+      },
+      "preconditionMet": true,
+      "efficacyPrecondition": "MET",
+      "consumedBeforeFirstEdit": true,
+      "confidentiality": {
+        "capacity": {
+          "granted": true,
+          "detail": "1/1 confidential workers active; admission granted"
+        },
+        "boundary": {
+          "installed": true,
+          "kernel": {
+            "supported": true,
+            "labelled": 1,
+            "attempted": 1,
+            "unverified": [],
+            "skipped": 1
+          },
+          "guard": {
+            "installed": true,
+            "scope": "global",
+            "tools": [
+              "read",
+              "read_image",
+              "grep",
+              "glob",
+              "ls",
+              "str_replace_editor"
+            ]
+          },
+          "aliases": {
+            "clean": true,
+            "found": 0
+          },
+          "residuals": 1,
+          "contract": {
+            "package": "@deepseek-ai/dsh-win32-process",
+            "resolvedVersion": "0.2.0-rc.2",
+            "qualifiedVersion": "0.2.0-rc.2",
+            "drifted": false
+          }
+        },
+        "capabilities": {
+          "classified": true,
+          "allowed": true,
+          "counts": {
+            "WORKER_PRIVATE": 2,
+            "CONFINED_CHILD": 1,
+            "GUARDED_HOST_READ": 4,
+            "DELEGATED_SURFACE": 4,
+            "NO_HOST_FILE_READ": 15
+          },
+          "unclassified": [],
+          "requiresGlobalGuard": true
+        }
+      },
+      "worldObserved": true,
+      "workDir": "<home>\\.palimpsest-r2e\\pilot\\runs\\D-E1-b510r0\\repo\\.palimpsest\\worlds/attempt-253e6283ae686b6ba3f0b38379ce9eb7",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 0,
+      "commits": "2",
+      "submittedCandidate": false,
+      "sourceBytes": 2736,
+      "firstSourceEqualsFinal": false,
+      "oracleFileDigest": "9e404d9012c8f5b967d805170466728f00273f3d14de06cc9a8d6d1307a07ef0",
+      "oracleFileUnmodified": true,
+      "procedureMarkerFinal": {
+        "marker": "freezesAffectedClosureBeforeMutating",
+        "reflected": false,
+        "violations": [
+          {
+            "probe": "m01",
+            "why": "the changed node and its transitive dependents must be invalidated",
+            "detail": "\"b\" survived"
+          },
+          {
+            "probe": "m01",
+            "why": "the changed node and its transitive dependents must be invalidated",
+            "detail": "\"c\" survived"
+          },
+          {
+            "probe": "m03",
+            "why": "an entry naming a dependency the cache does not hold cannot be shown to be current",
+            "detail": "\"orphan\" survived"
+          }
+        ],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 2,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 666204
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_BASELINE_FALSIFIERS",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "evidenceClassesUsed": ["DYNAMICALLY_REPRODUCED", "SOURCE_DEMONSTRATED"],
+  "testFile": "test/trajectory_p2c_source_contract.test.ts",
+  "sourceMapScript": "scripts/trajectory_p2c/source-map.mjs",
+  "falsifiers": [
+    {
+      "id": "F1",
+      "claim": "the P2-B cold-recovery gate does not independently recover the verifier's trusted source basis",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "Process A writes its own `sourceBasis` into handoff.json and Process B uses `trustedBasis: handoff.sourceBasis`; the experiment establishes VALUE MATCHING, not independent recovery of the verifier's trusted configuration",
+      "expectedInvariant": "the read side must obtain its authority from a trusted product composition boundary, not from the producer's own handoff",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F2",
+      "claim": "computeTrustedSourceBasis hashes executable PATH STRINGS, not executable contents or a trusted manifest",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the digest input is the path string (`createHash('sha256').update(value,'utf8')`); no content read exists in the module",
+      "expectedInvariant": "path matching must be distinguished from producer authenticity",
+      "verdict": "LIMITATION_CONFIRMED"
+    },
+    {
+      "id": "F3",
+      "claim": "a CONTROLLED_STUB record with a matching basis can still return ASSOCIATION_QUALIFIED",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observation": "a recorder with sourceKind=CONTROLLED_STUB and the verifier's exact basis produces a record the qualifier returns ASSOCIATION_QUALIFIED for; the qualifier never reads sourceKind",
+      "expectedInvariant": "a controlled stub must not become first-party-verified merely because the path-based basis matches",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F4",
+      "claim": "a finalization recorded BEFORE the observation is accepted",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observation": "seq 1 CLOSED finalization (candidateCount 0) followed by seq 2 observation still yields ASSOCIATION_QUALIFIED; no ordering check exists",
+      "expectedInvariant": "no accepted observation may predate an improperly early finalization",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F5",
+      "claim": "a finalization whose observedCandidateCount disagrees with the actual candidate set is not detected",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observation": "a finalization claiming 99 candidates for an invocation that observed 1 still yields ASSOCIATION_QUALIFIED",
+      "expectedInvariant": "the observation count must match the finalized candidate set",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F6",
+      "claim": "the delegation collapses distinct child-lifecycle facts into one close reason",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the port emits DIRECT_CHILD_EXIT_OBSERVED / TIMEOUT_REQUESTED / ABORT_REQUESTED / EXIT_UNCONFIRMED separately, but the delegation records the single closeReason INVOCATION_RETURNED",
+      "expectedInvariant": "finalization must be grounded in the actual closure observation, distinguishing timeout from close",
+      "verdict": "LIMITATION_CONFIRMED"
+    },
+    {
+      "id": "F7",
+      "claim": "the qualifier can return a stale qualified association when a conflict is appended during the async Header read",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the qualifier reads the durable history once, then awaits the DSH header read, then returns without rechecking the store; there is no currentness protocol",
+      "expectedInvariant": "a detected relevant race must not return an unconditional stale ASSOCIATION_QUALIFIED",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F8",
+      "claim": "Store Append does not validate eventId against the canonical identity",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observation": "appending with eventId 'xas-deliberately-wrong' is accepted and replayed verbatim",
+      "expectedInvariant": "eventId must equal associationEventId(canonical identity) on append and replay",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F9",
+      "claim": "Store Replay does not check the SQLite columns against the payload",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "observation": "parseStoredEvent never reads row.attempt_id; the replayed event exposes only the payload's attemptId",
+      "expectedInvariant": "row.project_id/attempt_id/type must be validated against the payload",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F10",
+      "claim": "Work revalidation only requires a non-null Attempt record",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "WorkRevalidationPort.readAttempt returns {taskId,state}|null; the qualifier never verifies the exact historical ATTEMPT_CREATED event, while the V0 admission path already does",
+      "expectedInvariant": "the exact canonical historical Attempt identity must be validated; prefer reuse of the existing V0S/H0 admission logic",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F11",
+      "claim": "an internally inconsistent binding state can expose events",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "events are gated only on `sessionReadAdmission === 'ADMITTED_TO_ATTEMPT' && !pageRefused`; no validator refuses SESSION_CLAIMED_UNVERIFIED + null dshSessionId + ADMITTED_TO_ATTEMPT",
+      "expectedInvariant": "a small pure admission validator must prohibit contradictory combinations",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F12",
+      "claim": "a caller-built association object can satisfy the H1 resolver",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "resolveVerifiedSessionBinding accepts any object carrying observationState=PRODUCER_OBSERVED, durableBindingRef!==null and verification=VERIFIED; nothing ties the object to a durable store",
+      "expectedInvariant": "the production adapter must obtain qualifications from the durable read side, never a caller-supplied array",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F13",
+      "claim": "normal product composition does not establish the full path",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "host/dsh/lib/index.js derives a BRANCH port but never a WORK worker port; launch.ts never constructs one; install.ts composes neither the execution-association concern nor a trajectory surface",
+      "expectedInvariant": "the ordinary supported composition must be able to produce and query real association evidence",
+      "verdict": "GAP_CONFIRMED"
+    },
+    {
+      "id": "F14",
+      "claim": "the preview digest can stay unchanged while the observation basis changes",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the digest covers execution events and identity but not readWatermark or knownEventCount",
+      "expectedInvariant": "semantic-content stability must be distinguished from observation-basis stability",
+      "verdict": "LIMITATION_CONFIRMED"
+    },
+    {
+      "id": "F15",
+      "claim": "the P2-B mandatory wrappers can return ordinary PASS without running",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the wrappers early-return null when DSH/dist is absent and then assert the absence rather than an explicit SKIPPED/BLOCKED outcome",
+      "expectedInvariant": "a mandatory qualification gate must return PASS/BLOCKED/NOT_ESTABLISHED with actual execution evidence",
+      "verdict": "DEFECT_CONFIRMED"
+    }
+  ],
+  "verdict": "BASELINE_DEFECTS_PINNED"
+}

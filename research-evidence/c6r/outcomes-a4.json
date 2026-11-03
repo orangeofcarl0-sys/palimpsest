@@ -1,0 +1,134 @@
+{
+  "schema": "c6r-outcomes/v4",
+  "generatedAt": "2026-11-01T20:20:00.000Z",
+  "stage": "C6-R — Official-Channel P1 (Code Freeze 5)",
+  "provider": {
+    "name": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic",
+    "egress": "windows CONNECT proxy 127.0.0.1:7890 via https-proxy-agent",
+    "keySource": "owner DSH credential store, outside the sandbox",
+    "connectivityPrecheck": { "path": "research-evidence/c6r/deepseek-connect/precheck.json", "status": 401, "reachable": true, "keyPresent": true, "keyLength": 35 }
+  },
+  "codeFreezes": {
+    "original": "103c4eb107418e0d253d27681ec33f77b0514de3",
+    "providerA2": "508c9a07a4bbb9439947c8ae95eaa298ad7341ba",
+    "rigC1": "7b80a17ea4fd037b4ab1cbdc0b03828f6dad4ecf",
+    "rigC2": "7cd5e1c08448f82dec70441ad481329d89716311",
+    "officialA3": "39e1514617015981957814410ea2471b4d3eb834"
+  },
+  "p1": {
+    "run": "c6r-005",
+    "state": "P1_FINISHED",
+    "classification": "OBSERVED",
+    "sessionId": "session-f62d01cb-a165-4517-8c04-9e9a8acfb4d0",
+    "assistantMessages": 92,
+    "toolCalls": 126,
+    "tokens": 6298575,
+    "usage": { "inputTokens": 106263, "outputTokens": 38456, "cacheReadTokens": 6153856 },
+    "finalTextDigest": "d34b01d7f4382a913a2f99f903844762141571236cc27611d1f87e7f5f99fca5",
+    "discovery": {
+      "candidateA": true,
+      "candidateDigest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+      "v3MinimumChange": "-10 -> 0",
+      "siteBNoCompliantVendor": true,
+      "candidateTreatedAsUnaccepted": true,
+      "canonicalSourceChanged": false,
+      "newsletterIgnored": true,
+      "certificatePreservedAsPromiseNotEvidence": true,
+      "requirementsUnchanged": true
+    },
+    "work": {
+      "task": "technical-refresh",
+      "attemptId": "attempt-73616b76d9e6be3fb1329eb368efd35d",
+      "resultCommitAsReported": "f1536b8",
+      "resultCommitFull": "f1536b861f57e150f6b5609cc52a0f6d5416907e",
+      "gate": "PASS",
+      "verifyExitCode": 0,
+      "taskState": "VERIFYING"
+    },
+    "journal": [
+      { "kind": "NEGATIVE_RESULT", "entryId": "pje-8e0412522a8e83beeb63764d636b4668" },
+      { "kind": "OPEN_QUESTION", "entryId": "pje-b2a87b7bfdfacbc8ee8d85e9e0e1ee7a" },
+      { "kind": "OPEN_QUESTION", "entryId": "pje-b39629fbd7f910d928800af927ec46ee" },
+      { "kind": "IDEA", "entryId": "pje-d571678fb44ecf2c0fe1be2804780125" }
+    ],
+    "proposedTasks": ["technical-fit", "cost-schedule", "technical-refresh", "vendor-bulletin-intake", "technical-fit-post-intake", "cost-schedule-refresh"],
+    "planRevision": "BLOCKED_BY_QUIESCENCE (the Agent's own technical-refresh task was VERIFYING)"
+  },
+  "operator": {
+    "reviewPath": "research-evidence/c6r/runs/c6r-005/operator-review.json",
+    "policyChecks": {
+      "exactCandidateDigest": true,
+      "target": true,
+      "exactBytesNoMerge": true,
+      "exactWriteScope": true,
+      "noRequirementChange": true,
+      "noNewsletterOrLaterCandidate": true,
+      "certificateUnverified": true,
+      "operatorDidNotRewrite": true
+    },
+    "decision": "approved",
+    "authorizedScope": "the Agent's exact vendor-bulletin-intake task; operator did not rewrite it",
+    "promotion": {
+      "promotionId": "promotion-535c6d6f72ce7a6c7326ab8fe1ee5c38",
+      "state": "PREPARED",
+      "operationId": "op_d0dede47300aeb87dc28b8809441a01a2ff66e85",
+      "operationState": "uncertain",
+      "attempts": 5,
+      "reconcileAll": "blocked: promotion stays uncertain after reconciliation",
+      "liveHeadBefore": "e7eeb903476dc60c598a1824728da567d0944b4d",
+      "liveHeadAfter": "e7eeb903476dc60c598a1824728da567d0944b4d",
+      "canonicalSourceChanged": false,
+      "candidateAccepted": false
+    }
+  },
+  "productFinding": {
+    "kind": "PROMOTION_IDENTITY_RECOVERY_SEAM",
+    "detail": "The legacy palimpsest_report accepted a short resultCommit (f1536b8). The canonical AttemptReport.result_commit is short; the Ordarium palimpsest.git.promote operation went uncertain and PromotionManager.reconcileAll() could not settle it. The live head is unchanged and the task remains VERIFYING.",
+    "fullCommitInWorktree": "f1536b861f57e150f6b5609cc52a0f6d5416907e",
+    "ownerCandidate": "ProjectController.report / AttemptReport result-commit normalization; PromotionManager/GitCliPort canonical source resolution",
+    "patched": false,
+    "blindRetry": false,
+    "ledgerEdited": false
+  },
+  "f1": {
+    "state": "NOT_EXERCISED",
+    "reason": "campaign crossed the 5,000,000 stop-start threshold during P1; no new session may start",
+    "campaignTokensAfterP1": 7139036,
+    "sessionsUsed": 5,
+    "sessionsRemaining": 1
+  },
+  "gates": {
+    "R0": "ESTABLISHED",
+    "R1": "ESTABLISHED",
+    "R2": "ESTABLISHED (isolated runtime; Windows excluded)",
+    "R3": "ESTABLISHED",
+    "R4": "PARTIAL (P1 valid; F1 not run due to budget)",
+    "R5": "PARTIAL (proposal, policy approval and Work/gate established; Promotion blocked by product seam)",
+    "R6": "NOT EXERCISED",
+    "R7": "BLOCKED",
+    "R8": "ESTABLISHED"
+  },
+  "budget": {
+    "sessions": 5,
+    "maxSessions": 6,
+    "tokens": 7139036,
+    "maxTokens": 8000000,
+    "stopStartTokens": 5000000,
+    "stopStartCrossed": true,
+    "f1Started": false
+  },
+  "limitations": [
+    "F1 was not run; no matched pair or comparison.",
+    "The Agent's technical-refresh Work is not accepted; the task is VERIFYING.",
+    "The Promotion is uncertain (Ordarium op_d0dede47...); reconcileAll is blocked.",
+    "The legacy report result commit is short (f1536b8); the full commit is f1536b861f...",
+    "No canonical source/head change; the candidate remains unaccepted.",
+    "The operator approved the exact intake, but it was not executed because the prerequisite Promotion is blocked.",
+    "P1 read some files outside the stated workspace; no write occurred.",
+    "A matched pair would exceed the 8M token cap at this context size; a new owner budget window is required.",
+    "Node v24.14.1 is below the declared >=24.15.0."
+  ]
+}

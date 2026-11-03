@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I",
+  "kind": "evidence corrections (append-only)",
+  "testCount": {
+    "schemaVersion": 1,
+    "kind": "test count correction (append-only)",
+    "committedEvidence": {
+      "value": "3925/3925",
+      "artifact": "research-evidence/r3-l0c-f/regression.json",
+      "stage": "R3-L0C-F"
+    },
+    "laterRun": {
+      "value": "3926/3926",
+      "when": "a subsequent full local run",
+      "stage": "R3-L0C-F at commit f4e7c44"
+    },
+    "difference": "ONE test",
+    "explanation": "the count moved between the run that produced the committed evidence and the later run; the two runs did not agree, and neither number is treated as a fixed property of the stage",
+    "authoritativeFor": {
+      "committedEvidence": "3925/3925 — what the artifact says",
+      "currentSuite": "3926/3926 — what a re-run reports"
+    },
+    "resolvedByAssertion": false,
+    "resolvedByRerun": true,
+    "citing": [
+      "research-evidence/r3-l0c-f/regression.json (the committed artifact, 3925/3925)",
+      "the R3-L0C-I regression run, recorded in research-evidence/r3-l0c-i/regression.json"
+    ],
+    "law": "state both counts and name which one each artifact carries; do not silently prefer either"
+  },
+  "liveGates": {
+    "schemaVersion": 1,
+    "kind": "live-gate attempt record (append-only)",
+    "attempted": [
+      {
+        "script": "scripts/gates/d2-live-gate.mjs",
+        "command": "node scripts/gates/d2-live-gate.mjs",
+        "outcome": "FAIL",
+        "observed": "the worker finished without reporting an outcome, so the attempt never settled: settlement returned NOT_READY with reason HOST_FAILURE, and the downstream checks (attempt COMPLETED, result exported and readable) therefore failed",
+        "transcriptEvidence": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+        "sessionLogRecords": 1,
+        "sessionLogKinds": [
+          "session"
+        ],
+        "toolActions": 0,
+        "modelRequestsEmitted": 0
+      },
+      {
+        "script": "scripts/gates/d4-live-gate.mjs",
+        "command": "node scripts/gates/d4-live-gate.mjs",
+        "outcome": "FAIL",
+        "observed": "fatal: Not a valid object name null^{commit}; the rig then failed on `git diff --name-only <base>..null`, so the gate could not resolve a result commit to compare against",
+        "transcriptEvidence": "git stderr: fatal: ambiguous argument '<base>..null': unknown revision or path not in the working tree",
+        "sessionLogRecords": 1,
+        "sessionLogKinds": [
+          "session"
+        ],
+        "toolActions": 0,
+        "modelRequestsEmitted": 0
+      },
+      {
+        "script": "scripts/gates/d5-live-gate.mjs",
+        "command": "node scripts/gates/d5-live-gate.mjs",
+        "outcome": "FAIL",
+        "observed": "the delegated attempts returned NOT_READY with reason HOST_FAILURE, so neither task settled, and the gate then failed with PlanReconciliationError: plan revision blocked (quiescence_required)",
+        "transcriptEvidence": "PlanReconciliationError: plan revision blocked (quiescence_required): the project is not quiescent: every ACTIVE/VERIFYING task and every open (CREATED/LEASED/RUNNING) attempt must settle",
+        "sessionLogRecords": 1,
+        "sessionLogKinds": [
+          "session"
+        ],
+        "toolActions": 0,
+        "modelRequestsEmitted": 0
+      }
+    ],
+    "anyModelRequestEmitted": false,
+    "modelRequestEvidence": "every worker session log under the session log under each gate home contains exactly ONE record, the session header; there is no conversation record, no tool call and no completion request, and the worker transcripts report zero tool actions",
+    "modelRequestEvidenceIsMeasured": true,
+    "modelRequestEvidenceInferred": false,
+    "preExisting": true,
+    "identicalAtBaseline": true,
+    "baselineComparison": "verified in a scratch worktree at 19f0c69; the failures are byte-identical",
+    "introducedByThisStage": false,
+    "whyNotRepaired": "the gates require a model route, and this stage is forbidden model calls; src/**, host/** and scripts/gates/** are byte-identical to the baseline, so nothing here caused or could fix them",
+    "configuredRoute": {
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "credentialSupplied": "none observed in the gate home; no request was attempted"
+    }
+  },
+  "historicalCommitsRewritten": false,
+  "correctionMethod": "appended to this stage's own evidence namespace",
+  "law": "append a correction rather than rewriting the commit it corrects"
+}

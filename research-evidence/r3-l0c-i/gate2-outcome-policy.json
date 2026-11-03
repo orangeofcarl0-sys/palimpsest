@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I",
+  "kind": "behavioural outcome policy",
+  "policy": {
+    "schemaVersion": 1,
+    "kind": "behavioural outcome policy",
+    "separates": {
+      "admissibleObservation": [
+        "CORRECT_IMPLEMENTATION",
+        "INCORRECT_IMPLEMENTATION",
+        "LOW_HIDDEN_INVARIANT_COVERAGE",
+        "MODEL_DECLINED_VISIBLE_CAPITAL",
+        "COMPLETED_WORK_FAILS_CORRECTNESS",
+        "BUDGET_EXHAUSTED_WITHOUT_USABLE_RESULT"
+      ],
+      "infrastructureOrTreatmentFailure": [
+        "MISSING_WORKER_REPORT",
+        "HOST_FAILURE",
+        "GIT_OBJECT_RESOLUTION_FAILURE",
+        "UNAVAILABLE_WORKER_WORLD",
+        "ENVIRONMENTAL_COMMIT_FAILURE",
+        "CONSUMER_VISIBLE_TREATMENT_MISMATCH",
+        "CONTAINMENT_FAILURE",
+        "EXECUTION_CLOSURE_MISMATCH",
+        "PROVIDER_ROUTE_FAILURE_AFTER_INVOCATION",
+        "LAUNCH_THREW"
+      ],
+      "canonicalWorkBlockage": "CANONICAL_WORK_CANNOT_ADVANCE"
+    },
+    "incorrectOracleVectorIsAStop": false,
+    "declinedCapitalPullIsAStop": false,
+    "lowCoverageIsAStop": false,
+    "incorrectVectorIsRecorded": true,
+    "declinedPullIsRecorded": true,
+    "workBlockageIsAStop": true,
+    "forcesResultVerificationOrPromotion": false,
+    "requiresExplicitAdmissionEvidence": true,
+    "emptyObjectAdmitted": false,
+    "frozenEndpointsChanged": false,
+    "frozenThresholdsChanged": false,
+    "law": "a behavioural outcome is recorded, not a reason to terminate the study; only a machinery fault or a canonical Work blockage stops the matrix"
+  },
+  "BEHAVIORAL_OUTCOME_POLICY": "VALID"
+}

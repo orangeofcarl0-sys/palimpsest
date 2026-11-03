@@ -1,0 +1,182 @@
+/**
+ * R1-R §6/§8 — SCENARIO C — replay-correct reduction of a durable event log.
+ *
+ * The log is the source of truth and the array a replica receives is only *a delivery* of it: the
+ * transport may hand the events over in any order and may hand the same event over more than once.
+ * Two replicas given the same log therefore have to converge on the same state, which fixes the shape
+ * of a correct implementation:
+ *
+ *   1. ESTABLISH REPLAY VALIDITY FIRST. Nothing is written to the caller's `state` until the whole
+ *      delivered array has been checked. A history that turns out to be invalid is refused with the
+ *      caller's object untouched, instead of leaving it partially applied.
+ *   2. APPLY IN THE LOG'S OWN ORDER. Events carry the position `seq` the log assigned them, so they
+ *      are sorted by `seq` and reduced once per position — never folded in delivery order. An entity
+ *      written at one position and deleted at a later one must end up in the state that later position
+ *      implies no matter which of the two the transport delivered first.
+ *   3. BE IDEMPOTENT UNDER DUPLICATION. A position may be delivered many times; it is applied once.
+ *      Deliveries that agree about a position are the same event (values are compared canonically, so
+ *      key order in a delivered value cannot change the meaning). Deliveries that *disagree* about a
+ *      position cannot come from one log, and no replica-independent choice exists between them, so
+ *      the history is refused rather than resolved arbitrarily.
+ *   4. REFUSE WHAT CANNOT BE REPLAYED. An event that is not an object, carries no usable identity, or
+ *      carries no usable log position cannot be ordered or applied and makes the whole history invalid.
+ *
+ * The function mutates and returns the caller's own state object (the caller keeps using it), and only
+ * ever does so for a history that is wholly valid.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+type Operation = "SET" | "DELETE";
+
+/** One accepted position of the log, with everything needed to apply it and to compare deliveries. */
+interface LogEntry {
+  readonly id: string;
+  readonly op: Operation;
+  readonly value: unknown;
+  /** Canonical identity of the entry: two deliveries share it exactly when they mean the same event. */
+  readonly identity: string;
+}
+
+const hasOwn = (object: object, key: string): boolean =>
+  Object.prototype.hasOwnProperty.call(object, key);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/**
+ * Canonical text for a JSON-shaped value: object key order never changes it, so two deliveries that
+ * mean the same thing compare equal, and a cyclic value cannot hang the comparison.
+ */
+const canonical = (value: unknown, seen: Set<object> = new Set()): string => {
+  if (value === null) return "null";
+  switch (typeof value) {
+    case "number":
+      return `n:${value}`;
+    case "string":
+      return `s:${JSON.stringify(value)}`;
+    case "boolean":
+      return `b:${value}`;
+    case "undefined":
+      return "u:";
+    case "bigint":
+      return `i:${value}`;
+    case "function":
+    case "symbol":
+      return `x:${String(value)}`;
+    default:
+      break;
+  }
+
+  const object = value as object;
+  if (seen.has(object)) return "c:";
+  seen.add(object);
+  let text: string;
+  if (Array.isArray(object)) {
+    text = `[${object.map((item) => canonical(item, seen)).join(",")}]`;
+  } else {
+    const record = object as Record<string, unknown>;
+    text = `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonical(record[key], seen)}`)
+      .join(",")}}`;
+  }
+  seen.delete(object);
+  return text;
+};
+
+/** The operation a delivery describes; `PUT` is the log's other name for a write. */
+const operationOf = (event: Record<string, unknown>): Operation => {
+  const raw = event.op ?? event.kind ?? "SET";
+  if (raw === "SET" || raw === "PUT") return "SET";
+  if (raw === "DELETE") return "DELETE";
+  throw new StreamError("INVALID_OPERATION", `unknown event operation ${JSON.stringify(raw)}`);
+};
+
+/** The value a write carries, under whichever of the log's names the delivery used. */
+const valueOf = (event: Record<string, unknown>): unknown => {
+  if (hasOwn(event, "v")) return event.v;
+  if (hasOwn(event, "value")) return event.value;
+  if (hasOwn(event, "payload")) return event.payload;
+  if (hasOwn(event, "data")) return event.data;
+  return null;
+};
+
+/** Write an entity without letting an entity literally named `__proto__` reach the prototype chain. */
+const write = (state: State, id: string, value: unknown): void => {
+  if (id === "__proto__" && !hasOwn(state, id)) {
+    Object.defineProperty(state, id, { value, writable: true, enumerable: true, configurable: true });
+    return;
+  }
+  state[id] = value;
+};
+
+/**
+ * Apply an event stream to the current state.
+ *
+ * Validates the whole delivered history first, then reduces it in log order, once per position, and
+ * returns the caller's own state object. On a rejected history the caller's object is left untouched.
+ */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (!isRecord(state)) throw new StreamError("INVALID_STATE", "state must be an object keyed by entity id");
+  if (!Array.isArray(events)) throw new StreamError("INVALID_STREAM", "the delivered event stream must be an array");
+
+  // Phase 1 — establish replay validity. This phase never reads or writes `state`.
+  const log = new Map<number, LogEntry>();
+  for (const delivered of events) {
+    if (!isRecord(delivered)) throw new StreamError("INVALID_EVENT", "every event must be an object");
+
+    const id = delivered.id;
+    if (typeof id !== "string" || id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+
+    const seq = delivered.seq;
+    if (typeof seq !== "number" || !Number.isSafeInteger(seq) || seq < 0) {
+      throw new StreamError("INVALID_SEQUENCE", "every event must carry a non-negative integer seq");
+    }
+
+    const op = operationOf(delivered);
+    const value = op === "SET" ? valueOf(delivered) : undefined;
+    const identity = `${JSON.stringify(id)}\u0000${op}\u0000${canonical(value)}`;
+
+    const held = log.get(seq);
+    if (held === undefined) {
+      log.set(seq, { id, op, value, identity });
+    } else if (held.identity !== identity) {
+      throw new StreamError("CONFLICTING_SEQUENCE", `the delivered stream gives seq ${seq} to more than one event`);
+    }
+    // A repeat of a position already held is the same event delivered again: apply it once.
+  }
+
+  // Phase 2 — apply the accepted log in the order the log assigned, ignoring delivery order.
+  const positions = [...log.keys()].sort((left, right) => left - right);
+  for (const seq of positions) {
+    const entry = log.get(seq) as LogEntry;
+    if (entry.op === "DELETE") delete state[entry.id];
+    else write(state, entry.id, entry.value);
+  }
+
+  return state;
+}

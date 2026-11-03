@@ -1,0 +1,102 @@
+{
+  "kind": "HOST_S1R_LOCK_RECOVERY_AND_RELEASE",
+  "evidenceClass": "CROSS_PROCESS_RUNTIME_VERIFIED",
+  "staleRecovery": {
+    "successorInstalledBeforeRecoveryRename": false,
+    "recovererMovedTheSuccessor": false,
+    "thirdPartyAcquiredTheVacatedPathname": false,
+    "successorDisplacedFromPathname": false,
+    "childCompleted": true,
+    "childTimedOut": false,
+    "childExitCode": 0,
+    "finalPathnameOwnerToken": "observed-abandoned"
+  },
+  "staleRecoveryReproduced": false,
+  "releaseDefect": {
+    "granted": false,
+    "writeFailureInjected": false,
+    "releaseResult": {
+      "released": false,
+      "detail": "this handle holds no slot",
+      "retryable": false
+    },
+    "releaseThrew": null,
+    "retryResult": {
+      "released": false,
+      "detail": "this handle holds no slot",
+      "retryable": false
+    },
+    "holdersAfterFailedRelease": []
+  },
+  "releaseDefectReproduced": true,
+  "policy": {
+    "automaticReclamation": "DISABLED",
+    "ambiguousLock": "REFUSED with a named operator action",
+    "liveHolderEviction": "liveness only; an indeterminate answer counts as a holder",
+    "deadHolderEviction": "AUTOMATIC — a crashed worker frees capacity without operator action",
+    "criticalSection": "the lock is held only across the read-modify-write of the holder record",
+    "failedRelease": "retryable, and `held` stays true until the reduced record is durably written",
+    "unreadableRecord": "never rewritten; the bytes are preserved and the refusal is observable"
+  },
+  "controls": {
+    "id": "host-s1-capacity",
+    "command": "node node_modules/vitest/vitest.mjs run test/host_s1r_capacity_domain.test.ts",
+    "runId": "2d6a4217-e552-40b1-b8a9-a3e398e2b0b6",
+    "startedAt": "2026-10-21T07:10:37.501Z",
+    "exitCode": 0,
+    "total": 28,
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "duplicateTestIds": [],
+    "testIds": [
+      "S1R-B normal acquisition (DYNAMICALLY_VERIFIED) 1. a single slot is granted and released",
+      "S1R-B normal acquisition (DYNAMICALLY_VERIFIED) 2. a second handle is REFUSED while the first holds the slot",
+      "S1R-B normal acquisition (DYNAMICALLY_VERIFIED) 3. after release the slot can be acquired again",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 4. a malformed holder entry inside valid JSON is UNKNOWN ownership, not free capacity",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 5. a holder with a NEGATIVE pid is malformed",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 6. a holder with a NON-STRING token is malformed",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 7. an UNREADABLE record during acquire does not grant capacity",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 8. an UNREADABLE record during release is NOT rewritten as empty",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 9. an UNRELATED holder survives a normal release",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 10. a missing ownership token is treated as a valid holder (token is optional on read)",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 11. a release by a NON-OWNER does not remove the recorded holder",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 12. a REPEATED release is refused and observable",
+      "S1R-B malformed and unreadable state (DYNAMICALLY_VERIFIED) 27. a FAILED RECORD WRITE during release leaves the handle RETRYABLE — F2",
+      "S1R-B liveness and stale recovery (DYNAMICALLY_VERIFIED) 13. a LIVE holder beyond the old TTL is never evicted by age",
+      "S1R-B liveness and stale recovery (DYNAMICALLY_VERIFIED) 14. a DEAD holder is recovered so a crash does not block work forever",
+      "S1R-B liveness and stale recovery (DYNAMICALLY_VERIFIED) 15. an INDETERMINATE liveness answer counts as a holder, not as free capacity",
+      "S1R-B liveness and stale recovery (DYNAMICALLY_VERIFIED) 16. an INTERRUPTED OWNER PUBLICATION is refused, never reclaimed",
+      "S1R-B liveness and stale recovery (DYNAMICALLY_VERIFIED) 17. an ABANDONED lock is REFUSED rather than reclaimed — automatic reclamation is disabled",
+      "S1R-B liveness and stale recovery (DYNAMICALLY_VERIFIED) 18. a SUCCESSOR lock is not displaced by a recovery acting on an old observation — F1",
+      "S1R-B liveness and stale recovery (DYNAMICALLY_VERIFIED) 19. no private claim or release directory is left behind by any path",
+      "S1R-A capacity domain: the namespace is the Windows principal (DYNAMICALLY_VERIFIED) 20. TWO REPOSITORIES with one capacity root CONTEND — F3",
+      "S1R-A capacity domain: the namespace is the Windows principal (DYNAMICALLY_VERIFIED) 21. two DSH HOMES in one capacity root CONTEND",
+      "S1R-A capacity domain: the namespace is the Windows principal (DYNAMICALLY_VERIFIED) 22. the reported domain scope and its assumption cannot overclaim",
+      "S1R-A capacity domain: the namespace is the Windows principal (DYNAMICALLY_VERIFIED) 23. the production capacity root is the principal's own LOCALAPPDATA, not the repository",
+      "S1R-A capacity domain: the namespace is the Windows principal (DYNAMICALLY_VERIFIED) 28. a capacity root reachable through a reparse point REFUSES to operate",
+      "S1R-B in-process serialization (DYNAMICALLY_VERIFIED) 24. the queue never exceeds the configured maximum",
+      "S1R-B in-process serialization (DYNAMICALLY_VERIFIED) 25. the refuse policy returns a HOST_FAILURE rather than running a second worker",
+      "S1R-B in-process serialization (DYNAMICALLY_VERIFIED) 26. a real worker rejection releases the in-process slot exactly once"
+    ],
+    "observedVerdict": "PASS",
+    "failures": []
+  },
+  "limits": [
+    "a crash inside the critical section requires an operator to remove the lock; this is an availability cost accepted in exchange for provable exclusion",
+    "the indeterminate-liveness path has no reproducible fixture on this host: every real pid answers ESRCH or EPERM, so the tri-state rule is pinned from source"
+  ],
+  "runIdentity": {
+    "codeFreezeHead": "f76f376f63383a27e54eb41bc79bdb9d49a9ade6",
+    "executedCodeTree": "918c32359b7adb9f055b2455997378af1d81a00b",
+    "workingTreeDirty": false,
+    "runtimeNode": "24.22.0",
+    "runtimeExecutable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe",
+    "platform": "win32",
+    "arch": "x64",
+    "dshVersion": "0.2.1-rc.2",
+    "timestampIsNotFreshnessProof": true
+  },
+  "stage": "Palimpsest Host-S1R",
+  "schemaVersion": 1
+}

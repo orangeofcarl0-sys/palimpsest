@@ -1,0 +1,27 @@
+{
+  "schema": "pc1v1-live-cohort/v1",
+  "cohortId": "pc1v1-live-2026-11-03-b-repair",
+  "codeFreeze": "7edb4c622c62c9623767185ef87c3f32b5b6e901",
+  "codeFreezeTree": "bce3722ac14456cb89906f970e49d95413698a74",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "oracleCopied": false,
+  "cohortDigest": "297a378a04681df945b15f2b032c21d3e28582da3db4a9a716f2882dbc281ce0",
+  "authorizationDigest": "53a90885f0b12c904f5a71ae8c8f4a13820cfbaa42e78889770fc495bfabc5e1",
+  "authorization": {
+    "owner": "owner:66494",
+    "authorizedAt": "2026-11-03T02:55:00.000Z",
+    "maxTokens": 24000000,
+    "conditions": [
+      "P",
+      "F"
+    ],
+    "note": "Owner authorized all PC1-V1 requests on 2026-11-03 (均授权). Repair cohort after two environment-only setup failures: missing T2 parent directory and an empty field-study allowed_commands. Same frozen code, prompts and scenarios."
+  },
+  "note": "Frozen cohort identity. Raw session streams are written next to this record; never overwrite them.",
+  "createdAt": "2026-11-02T18:56:25.138Z"
+}

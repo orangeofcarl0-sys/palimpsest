@@ -1,0 +1,565 @@
+{
+  "at": "2026-11-01T17:14:59.974Z",
+  "observationTime": "2026-02-10T09:05:00Z",
+  "initialHead": "0ce4fc2911777663413f023399b89ace795b97fd",
+  "seed": {
+    "schema_version": 1,
+    "project_id": "sablewick",
+    "event_type": "PROJECT_CREATED",
+    "payload_version": 1,
+    "entity_type": "project",
+    "entity_id": "sablewick",
+    "payload": {
+      "project_ir": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "revision": 0,
+        "parent_revision": null,
+        "parent_digest": null,
+        "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+        "requirements": [
+          {
+            "requirement_id": "R1",
+            "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+            "priority": "critical",
+            "acceptance_refs": []
+          },
+          {
+            "requirement_id": "R2",
+            "statement": "No fossil-fuel backup may be installed.",
+            "priority": "critical",
+            "acceptance_refs": []
+          },
+          {
+            "requirement_id": "R3",
+            "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+            "priority": "critical",
+            "acceptance_refs": []
+          },
+          {
+            "requirement_id": "R4",
+            "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+            "priority": "critical",
+            "acceptance_refs": []
+          },
+          {
+            "requirement_id": "R5",
+            "statement": "Keep at least 8% of committed cost as contingency.",
+            "priority": "high",
+            "acceptance_refs": []
+          }
+        ],
+        "decisions": [],
+        "tasks": [
+          {
+            "task_id": "technical-fit",
+            "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+            "depends_on": [],
+            "write_paths": [
+              "deliverables/technical-fit.md"
+            ],
+            "required_artifacts": [
+              "deliverables/technical-fit.md"
+            ]
+          },
+          {
+            "task_id": "cost-schedule",
+            "objective": "Produce the programme cost and schedule envelope from the current pricing and installation windows, including the 8% contingency.",
+            "depends_on": [],
+            "write_paths": [
+              "deliverables/cost-schedule.md"
+            ],
+            "required_artifacts": [
+              "deliverables/cost-schedule.md"
+            ]
+          }
+        ],
+        "head_commit": "0ce4fc2911777663413f023399b89ace795b97fd",
+        "committed_at": "2026-11-01T17:14:59.982000Z",
+        "digest": "4627ee28475848e67a0845aeef2084ab508dba9663f449670b41f14ad1a76761"
+      }
+    },
+    "causation_id": null,
+    "correlation_id": "scheduler-project-create",
+    "idempotency_key": "029fc5b3819f954be07b3dc8f197a633f0548a95871f9ff01db5f55b835ff49d",
+    "expected_project_revision": null,
+    "event_id": 1,
+    "project_sequence": 1,
+    "request_digest": "20c3b98c609ca3350572648350dd2b9a1737818db23c55f76cd1c24137f52c4f",
+    "previous_event_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "event_digest": "cca16864a793396bd7be09684114022ff510a1f01b83a625de65cc22f8c4fe33",
+    "committed_at": "2026-11-01T17:14:59.991000Z"
+  },
+  "technicalFit": {
+    "drive": {
+      "jobId": "wdj-a0dc1f6d-be41-4f5d-a845-7ae091a24599",
+      "attemptId": "attempt-5157c92228739494240f22a27d19f61f",
+      "attemptState": "COMPLETED",
+      "phase": "FINISHED",
+      "settlement": {
+        "state": "SETTLED",
+        "attemptId": "attempt-5157c92228739494240f22a27d19f61f",
+        "resultCommit": "fedb29b37a35578a0191b0300dd5a5040606f357",
+        "changedFiles": [
+          "deliverables/technical-fit.md"
+        ],
+        "exported": true,
+        "evidenceRecorded": [
+          "write_scope_valid",
+          "expected_files_exist"
+        ],
+        "detail": "the attempt is COMPLETED with result commit fedb29b37a35; the canonical object database can now read fedb29b37a35; no ref, working tree or project revision changed; every mechanical check held for candidate fedb29b37a35"
+      },
+      "hostError": null,
+      "stepped": "TASK_VERIFYING",
+      "task": {
+        "taskId": "technical-fit",
+        "state": "VERIFYING",
+        "lastEventId": 14,
+        "batchActivationEventId": 7,
+        "envelopeId": "envelope-51a46a2cb961a569a53f7dbf8ae182c2"
+      }
+    },
+    "attempt": {
+      "attemptId": "attempt-5157c92228739494240f22a27d19f61f",
+      "state": "COMPLETED"
+    },
+    "result": {
+      "eventId": 13,
+      "resultCommit": "fedb29b37a35578a0191b0300dd5a5040606f357",
+      "report": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "attempt_id": "attempt-5157c92228739494240f22a27d19f61f",
+        "task_id": "technical-fit",
+        "envelope_id": "envelope-51a46a2cb961a569a53f7dbf8ae182c2",
+        "input_project_revision": 0,
+        "input_project_digest": "4627ee28475848e67a0845aeef2084ab508dba9663f449670b41f14ad1a76761",
+        "base_commit": "0ce4fc2911777663413f023399b89ace795b97fd",
+        "worktree_id": "worktree-7d19f61f",
+        "result_commit": "fedb29b37a35578a0191b0300dd5a5040606f357",
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world",
+        "changed_files": [
+          "deliverables/technical-fit.md"
+        ],
+        "produced_artifacts": [
+          "deliverables/technical-fit.md"
+        ],
+        "started_at": "2026-08-13T00:00:00.000000Z",
+        "finished_at": "2026-08-13T00:00:01.000000Z",
+        "runtime_metadata": {
+          "runner": "dsh-agent",
+          "runner_version": "1",
+          "argv": [
+            "dsh-agent"
+          ],
+          "exit_code": 0,
+          "duration_ms": 1,
+          "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "stdout_artifact": null,
+          "stderr_artifact": null
+        },
+        "context_manifest": "context-manifest-715390a1385db2f318c750a52054ea46"
+      }
+    },
+    "promotion": {
+      "outcome": {
+        "promotionId": "promotion-f1898b7b20036d8ac6bf7a1deb3b94e0",
+        "committed": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "PROMOTION_COMMITTED",
+          "payload_version": 1,
+          "entity_type": "promotion",
+          "entity_id": "promotion-f1898b7b20036d8ac6bf7a1deb3b94e0",
+          "payload": {
+            "promotion_id": "promotion-f1898b7b20036d8ac6bf7a1deb3b94e0",
+            "attempt_id": "attempt-5157c92228739494240f22a27d19f61f",
+            "source_commit": "fedb29b37a35578a0191b0300dd5a5040606f357",
+            "expected_head_commit": "0ce4fc2911777663413f023399b89ace795b97fd",
+            "resulting_head_commit": "ce17c2f62c65bd391ed4ccc4535880ed50994331",
+            "reason": "promoted via Ordarium git.promote",
+            "operation_id": "op_bd4fb5c66dcf2d40dc73b00652117c3ac4ff065a",
+            "outcome_basis": "invoke_result",
+            "outcome_digest": "51c5e596f0bd08967cb35bfee75e8661b627be27fc7cbe85256c60c1f16af216"
+          },
+          "causation_id": null,
+          "correlation_id": "promotion:promotion-f1898b7b20036d8ac6bf7a1deb3b94e0",
+          "idempotency_key": "2675094e6f3054cbbd35f8e255299c465096482144442bc9059ea3242ed150a8",
+          "expected_project_revision": 0,
+          "event_id": 16,
+          "project_sequence": 16,
+          "request_digest": "73f3f9ccac0cefc04a25857f2c68cabe9d859fb9ec5fb988932c9d68d1c7444b",
+          "previous_event_digest": "0068803753bfee1b2519c9991994e1867482439a2aa5f67187223314f0f75dff",
+          "event_digest": "b18e4e0c17b18bdf459201c8f4af9da6337bcb8d167111b88f6504c0201e5acd",
+          "committed_at": "2026-11-01T17:15:00.761000Z"
+        },
+        "resultingHeadCommit": "ce17c2f62c65bd391ed4ccc4535880ed50994331"
+      },
+      "stepped": "TASK_SATISFIED"
+    },
+    "reconcile": {
+      "status": "reconciled",
+      "revision": 1,
+      "fromHead": "0ce4fc2911777663413f023399b89ace795b97fd",
+      "toHead": "ce17c2f62c65bd391ed4ccc4535880ed50994331",
+      "blockers": []
+    }
+  },
+  "costSchedule": {
+    "drive": {
+      "jobId": "wdj-b9b333bf-0217-4706-9d9d-b89b16198703",
+      "attemptId": "attempt-dc7002743c313023866f8a713f567f61",
+      "attemptState": "COMPLETED",
+      "phase": "FINISHED",
+      "settlement": {
+        "state": "SETTLED",
+        "attemptId": "attempt-dc7002743c313023866f8a713f567f61",
+        "resultCommit": "254ee20c30169ad6ac010403da02ea055a34ae77",
+        "changedFiles": [
+          "deliverables/cost-schedule.md"
+        ],
+        "exported": true,
+        "evidenceRecorded": [
+          "write_scope_valid",
+          "expected_files_exist"
+        ],
+        "detail": "the attempt is COMPLETED with result commit 254ee20c3016; the canonical object database can now read 254ee20c3016; no ref, working tree or project revision changed; every mechanical check held for candidate 254ee20c3016"
+      },
+      "hostError": null,
+      "stepped": "TASK_VERIFYING",
+      "task": {
+        "taskId": "cost-schedule",
+        "state": "VERIFYING",
+        "lastEventId": 27,
+        "batchActivationEventId": 20,
+        "envelopeId": "envelope-e1758b4b2eca9f4482d732c637146f78"
+      }
+    },
+    "attempt": {
+      "attemptId": "attempt-dc7002743c313023866f8a713f567f61",
+      "state": "COMPLETED"
+    },
+    "result": {
+      "eventId": 26,
+      "resultCommit": "254ee20c30169ad6ac010403da02ea055a34ae77",
+      "report": {
+        "schema_version": 1,
+        "project_id": "sablewick",
+        "attempt_id": "attempt-dc7002743c313023866f8a713f567f61",
+        "task_id": "cost-schedule",
+        "envelope_id": "envelope-e1758b4b2eca9f4482d732c637146f78",
+        "input_project_revision": 1,
+        "input_project_digest": "ed03628199c87e8e6310262ba42235d5d0cd7c856f462ac98242d96181fc3646",
+        "base_commit": "ce17c2f62c65bd391ed4ccc4535880ed50994331",
+        "worktree_id": "worktree-3f567f61",
+        "result_commit": "254ee20c30169ad6ac010403da02ea055a34ae77",
+        "worker_status": "completed",
+        "summary": "delegated work settled from its execution world",
+        "changed_files": [
+          "deliverables/cost-schedule.md"
+        ],
+        "produced_artifacts": [
+          "deliverables/cost-schedule.md"
+        ],
+        "started_at": "2026-08-13T00:00:00.000000Z",
+        "finished_at": "2026-08-13T00:00:01.000000Z",
+        "runtime_metadata": {
+          "runner": "dsh-agent",
+          "runner_version": "1",
+          "argv": [
+            "dsh-agent"
+          ],
+          "exit_code": 0,
+          "duration_ms": 1,
+          "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "stdout_artifact": null,
+          "stderr_artifact": null
+        },
+        "context_manifest": "context-manifest-ad38b7d05a90f3d3ee7f94458672f5d7"
+      }
+    },
+    "promotion": {
+      "outcome": {
+        "promotionId": "promotion-38d5ff302465a86dc08e6444e4583107",
+        "committed": {
+          "schema_version": 1,
+          "project_id": "sablewick",
+          "event_type": "PROMOTION_COMMITTED",
+          "payload_version": 1,
+          "entity_type": "promotion",
+          "entity_id": "promotion-38d5ff302465a86dc08e6444e4583107",
+          "payload": {
+            "promotion_id": "promotion-38d5ff302465a86dc08e6444e4583107",
+            "attempt_id": "attempt-dc7002743c313023866f8a713f567f61",
+            "source_commit": "254ee20c30169ad6ac010403da02ea055a34ae77",
+            "expected_head_commit": "ce17c2f62c65bd391ed4ccc4535880ed50994331",
+            "resulting_head_commit": "e7eeb903476dc60c598a1824728da567d0944b4d",
+            "reason": "promoted via Ordarium git.promote",
+            "operation_id": "op_f19e2d4c5f99e4a9643c50edac96fd798ff3650d",
+            "outcome_basis": "invoke_result",
+            "outcome_digest": "40e024a4e579883eabd46f9604f986a43f226f6da83a669d415315f1237dd0c8"
+          },
+          "causation_id": null,
+          "correlation_id": "promotion:promotion-38d5ff302465a86dc08e6444e4583107",
+          "idempotency_key": "d36f85d4b0db984e4b9db3f014a461a1e99d4b498ceaedee7f5880cf91828110",
+          "expected_project_revision": 1,
+          "event_id": 29,
+          "project_sequence": 29,
+          "request_digest": "a1b658e25b156bf484ccaf8ed109b0254063fd963ed77298b78c765b484ceeb7",
+          "previous_event_digest": "8bdc29385956fe08e52f823347e79e13c2691a987af5722ef5e64259a1f07354",
+          "event_digest": "6d4726ff0f6d3ef5a573c7b548c273a0b0218c27d092959c04a8061ca1b8cd8e",
+          "committed_at": "2026-11-01T17:15:01.526000Z"
+        },
+        "resultingHeadCommit": "e7eeb903476dc60c598a1824728da567d0944b4d"
+      },
+      "stepped": "TASK_SATISFIED"
+    },
+    "reconcile": {
+      "status": "reconciled",
+      "revision": 2,
+      "fromHead": "ce17c2f62c65bd391ed4ccc4535880ed50994331",
+      "toHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+      "blockers": []
+    }
+  },
+  "journal": {
+    "negative": {
+      "entryId": "pje-2fee5934fe4f5e15977e7cd5500a6c08",
+      "digest": "62e6381bc414a77ee455d70b5b806018d6116729066bbc696f19df4f1ff88533",
+      "kind": "NEGATIVE_RESULT"
+    },
+    "question": {
+      "entryId": "pje-ddcdf12128f9673f6ad505f00c1f5b99",
+      "digest": "2953fd2e07a48060ac7314d1cdfbb680875896369e9b45453c55ea4d918db57a",
+      "kind": "OPEN_QUESTION"
+    },
+    "opportunity": {
+      "entryId": "pje-b7c4602201508b1b79b332786b37e564",
+      "digest": "5f9a970b01e56a6daba2e368f30b95e24bef306eee479ad42b82fae22be3527e",
+      "kind": "OPPORTUNITY",
+      "resolution": {
+        "status": "DISMISSED",
+        "detail": "rejected: V2 has no coastal warranty (grant condition 3); the saving does not justify an unqualified installation"
+      }
+    }
+  },
+  "currentTask": {
+    "eventType": "PROJECT_REVISED",
+    "eventId": 32,
+    "revision": 3,
+    "digest": "5ca237d809bfdcf4e70e8ff9e2f2d5502429ba76ead7800b23988f234769ae8f"
+  },
+  "snapshot": {
+    "head": "e7eeb903476dc60c598a1824728da567d0944b4d",
+    "liveHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+    "revision": 3,
+    "digest": "5ca237d809bfdcf4e70e8ff9e2f2d5502429ba76ead7800b23988f234769ae8f",
+    "goal": "Install battery backup at Sablewick's three community sites within the £120,000 grant by 30 June 2026.",
+    "requirements": [
+      {
+        "requirement_id": "R1",
+        "statement": "Use the selected local installer; installation labour is included in the vendor quotes.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R2",
+        "statement": "No fossil-fuel backup may be installed.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R3",
+        "statement": "Site B is coastal and flood-exposed: only a vendor whose warranty covers coastal sites may be used there, and its published minimum operating temperature must be at or below -4 C.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R4",
+        "statement": "Site C is a listed building: the unit must be no wider than 800 mm.",
+        "priority": "critical",
+        "acceptance_refs": []
+      },
+      {
+        "requirement_id": "R5",
+        "statement": "Keep at least 8% of committed cost as contingency.",
+        "priority": "high",
+        "acceptance_refs": []
+      }
+    ],
+    "requirementsDigest": "f341a9c3243c564fc5fec31fe31c0e08e94228c8ff228cb9902f3bd383e5688f",
+    "tasks": [
+      {
+        "taskId": "technical-fit",
+        "objective": "Select a technically compliant battery vendor for each site from the current capability data, or record that no compliant selection exists. State the constraint that decides each site.",
+        "writePaths": [
+          "deliverables/technical-fit.md"
+        ],
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "cost-schedule",
+        "objective": "Produce the programme cost and schedule envelope from the current pricing and installation windows, including the 8% contingency.",
+        "writePaths": [
+          "deliverables/cost-schedule.md"
+        ],
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "technical-refresh",
+        "objective": "Re-check the technical fit against the current site requirements and vendor capability data. For each site, name a compliant vendor or record that none exists; note any unresolved evidence question.",
+        "writePaths": [
+          "deliverables/technical-refresh.md"
+        ],
+        "state": "READY"
+      }
+    ],
+    "journal": [
+      {
+        "entryId": "pje-2fee5934fe4f5e15977e7cd5500a6c08",
+        "kind": "NEGATIVE_RESULT",
+        "title": "2023 Marsh Lane trial: V2 cold-start failure",
+        "provenance": "sources/prior-notes.md (2023 trial notes)",
+        "resolution": null
+      },
+      {
+        "entryId": "pje-ddcdf12128f9673f6ad505f00c1f5b99",
+        "kind": "OPEN_QUESTION",
+        "title": "Solaris V3 cold-weather certificate is not on file",
+        "provenance": "sources/prior-notes.md; inbox/2026-02-08/solaris-certificate-claim.md",
+        "resolution": null
+      },
+      {
+        "entryId": "pje-b7c4602201508b1b79b332786b37e564",
+        "kind": "OPPORTUNITY",
+        "title": "Switch Site B to V2 to reduce cost",
+        "provenance": "programme volunteer proposal, 2026-01-05 (rejected)",
+        "resolution": {
+          "status": "DISMISSED",
+          "detail": "rejected: V2 has no coastal warranty (grant condition 3); the saving does not justify an unqualified installation"
+        }
+      }
+    ]
+  },
+  "candidateOnDisk": {
+    "candidateId": "sablewick-capabilities-2026-02-10",
+    "relativePath": "2026-02-10/vendor-capabilities.csv",
+    "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+    "origin": "Solaris programme office bulletin SW-2026-02-10",
+    "target": "sources/vendor-capabilities.csv"
+  },
+  "inboxVisible": {
+    "observationTime": "2026-02-10T09:05:00Z",
+    "releasedAt": null,
+    "visibleEvents": [
+      {
+        "arrivedAt": "2026-02-08T10:00:00Z",
+        "item": "2026-02-08/solaris-certificate-claim.md",
+        "kind": "SUPPLIER_CORRESPONDENCE",
+        "sha256": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778",
+        "status": "UNACCEPTED"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:00:00Z",
+        "item": "2026-02-10/vendor-capabilities.csv",
+        "kind": "SUPPLIER_CAPABILITY_BULLETIN",
+        "sha256": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "status": "UNACCEPTED"
+      },
+      {
+        "arrivedAt": "2026-02-10T09:01:00Z",
+        "item": "2026-02-10/newsletter.md",
+        "kind": "PROGRAMME_NEWSLETTER",
+        "sha256": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4",
+        "status": "UNACCEPTED"
+      }
+    ],
+    "visibleSetDigest": "021b639db41a6fbc141b0d1add01e70e66dd674ac718ef0ac0a0bdeac6e5bf3b",
+    "treeDigest": "514fe7d23e454a8484462cacef6b1ccd32872c33fe5c34c9077e8cd2b530a5cf",
+    "files": [
+      {
+        "path": "2026-02-08/solaris-certificate-claim.md",
+        "digest": "b29ace125ef1161265ad35c87f5ffb865c014bb773126f20a75cb878ce6b9778",
+        "bytes": 406
+      },
+      {
+        "path": "2026-02-10/vendor-capabilities.csv",
+        "digest": "0e997cbcc04ac1ee4c9b8d2985e2dd97443136d0f57b838f01d25de2403f920c",
+        "bytes": 195
+      },
+      {
+        "path": "2026-02-10/newsletter.md",
+        "digest": "8bb1927b134326c2ed46857359305dae9b329d68d332767b2d4a6e994b712ee4",
+        "bytes": 236
+      }
+    ],
+    "leaks": [],
+    "sourceTreeDigest": "ddbee321584477c8c696fa48f2af287a1ef145f456c78e7949e0b8a0e29b2797",
+    "digest": "8f0ab3c0f866a66c93f5a55d5e539fd97c5a6c872c976fe14ee01804527c7135"
+  },
+  "sourceTreeDigest": {
+    "digest": "13fb0a63df76e1ac5481d0acf7b32396748361fec61d631322a771aca408282f",
+    "files": [
+      "brief.md",
+      "newsletter.md",
+      "operations.md",
+      "prior-notes.md",
+      "rollout-windows.md",
+      "sites.md",
+      "vendor-capabilities.csv",
+      "vendor-pricing.csv"
+    ]
+  },
+  "inboxTreeDigest": "514fe7d23e454a8484462cacef6b1ccd32872c33fe5c34c9077e8cd2b530a5cf",
+  "canonicalCapabilitiesDigest": "f81576167c284060eb494706e424204d99028823fe71bf56476883d49e4d9373",
+  "deployment": {
+    "schemaVersion": 1,
+    "profileId": "sablewick-p1",
+    "projectId": "sablewick",
+    "localPeer": "local-operator",
+    "repository": "/run/p1/world",
+    "execution": "worktree",
+    "concurrency": 2,
+    "policy": {
+      "allowed_commands": [
+        {
+          "executable": "node",
+          "argv_prefix": [
+            "verify.mjs"
+          ]
+        }
+      ]
+    },
+    "standard": {
+      "statement": "The package test script must pass and every change must stay inside the declared write scope."
+    },
+    "transport": {
+      "namespace": "sablewick-p1",
+      "databasePath": "/run/p1/state/transport.sqlite"
+    },
+    "databases": {
+      "orchestration": "/run/p1/state/palimpsest.sqlite",
+      "ordarium": "/run/p1/state/ordarium.sqlite",
+      "coordination": "/run/p1/state/coordination.sqlite",
+      "transportCursors": "/run/p1/state/transport-cursors.sqlite",
+      "projectJournal": "/run/p1/state/journal.sqlite",
+      "projectAssociations": "/run/p1/state/associations.sqlite"
+    }
+  },
+  "stateDir": "/home/admini/c6r/runs/qual-p1/p1/state",
+  "world": "/home/admini/c6r/runs/qual-p1/p1/world",
+  "inbox": "/home/admini/c6r/runs/qual-p1/p1/inbox",
+  "readyTasks": [
+    "technical-refresh"
+  ],
+  "satisfiedTasks": [
+    "technical-fit",
+    "cost-schedule"
+  ],
+  "projectRevision": 3,
+  "projectHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+  "liveHead": "e7eeb903476dc60c598a1824728da567d0944b4d",
+  "requirementsDigest": "f341a9c3243c564fc5fec31fe31c0e08e94228c8ff228cb9902f3bd383e5688f"
+}

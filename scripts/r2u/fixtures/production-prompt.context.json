@@ -1,0 +1,38 @@
+{
+  "context": {
+    "work": {
+      "projectGoal": "keep an incremental cache correct as its inputs change",
+      "requirements": [
+        "invalidate exactly what a change affects",
+        "leave everything else untouched"
+      ],
+      "decisions": [],
+      "objective": "finish invalidate so it updates the cache for a set of changed nodes",
+      "writeScope": [
+        "src/cache.ts"
+      ],
+      "requiredArtifacts": [],
+      "baseCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "completionChecks": [
+        "the black-box oracle reports every case as PASS",
+        "the write scope is respected"
+      ],
+      "independentVerificationRequired": true
+    },
+    "compiled": {
+      "continuation": {
+        "prior_execution": {
+          "worker_summary": "a prior attempt stopped early",
+          "observed_changed_files": [
+            "src/cache.ts"
+          ]
+        },
+        "world_transition": {
+          "from_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "to_head": "cccccccccccccccccccccccccccccccccccccccc"
+        }
+      }
+    }
+  },
+  "indexText": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [PROOF_CLAIM] @ctx/proof/pc-0123456789abcdef/1\n  [REASONING_CELL] @ctx/reasoning/cell-d/3\n  [PROCEDURE] @ctx/procedure/prc-fedcba9876543210/1\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused."
+}

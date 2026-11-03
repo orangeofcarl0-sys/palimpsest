@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RE_CWD_BOUNDARY_QUALIFICATION",
+  "stage": "Trajectory-P2-E1RE",
+  "evidenceClass": "DYNAMICALLY_VERIFIED",
+  "note": "These are the DECISION controls. The ordering claim is established separately by the first-party falsifiers.",
+  "vitest": {
+    "exitCode": 0,
+    "total": 48,
+    "passed": 48,
+    "failed": []
+  },
+  "admissionPrecondition": {
+    "required": [
+      "readGuardInstalled",
+      "cwdFenceInstalled",
+      "delegationFenceInstalled",
+      "globalGuardScope",
+      "capabilitySurfaceAdmitted"
+    ],
+    "note": "a missing installation report refuses; each missing guarantee is named in the reason"
+  }
+}

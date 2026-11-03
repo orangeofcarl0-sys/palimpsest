@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-S",
+  "kind": "regression evidence",
+  "note": "R2-M's own research-evidence/r2-m/gate-a.json is a HISTORICAL record of that stage and is deliberately NOT rewritten by R2-S; the R2-M gate was re-run under the current harness and passed, and that result is recorded here instead.",
+  "build": "PASS (tsc -b, clean)",
+  "unit": "3193/3193 passed (258 files)",
+  "e2e": "38/38 passed",
+  "architecture": { "violations": 0, "baselineExceptionsObserved": 9 },
+  "publicApi": { "missing": 0, "changedKind": 0, "added": 0 },
+  "r2sGates": {
+    "gateA": "GREEN 40/40 (deterministic; no stochastic C/D pilot per §19)",
+    "compileReadiness": "GREEN 12/12"
+  },
+  "r2mDeterministicGates": {
+    "gateA": "GREEN 30/30 — re-run under the current harness; the §5 renderer correction is backward compatible with R2-M's M1 assertions",
+    "note": "the R2-M gate record file is left as committed"
+  },
+  "r2lrGates": {
+    "gateR": "PASS 20/20",
+    "antiVacuity": "PASS — 0 unconditional forms (scripts/r2s now included in the scan scope)",
+    "lastMileProof": "12/12 (recorded in research-evidence/r2-lr/last-mile-proof.json)"
+  },
+  "liveGates": {
+    "r1-l-live": "PASS (repaired; asserts at the session boundary)",
+    "r1-h-live": "PASS",
+    "r1-hr-clean-env": "PASS 10/10",
+    "r1-hc-live": "PASS",
+    "e1-k-live": "PASS",
+    "e2-i-live": "PASS",
+    "e3-c-live": "PASS",
+    "e4-l-live": "PASS",
+    "e5-p-live": "PASS",
+    "e-live": "PASS",
+    "d2-live": "PASS",
+    "d4-live": "PASS",
+    "d5-live": "PASS"
+  },
+  "conformanceGates": {
+    "r1-h-conformance": "PASS",
+    "r1-hr-conformance": "PASS",
+    "r1-hc-conformance": "PASS",
+    "r1-s-conformance": "FAIL — the preserved historical negative baseline (a host offering no enforceable read primitive); unchanged"
+  },
+  "canonicalSurfaces": {
+    "srcDiffSinceBaseline": "ZERO",
+    "canonicalContextChange": "NONE",
+    "newOwner": "NONE",
+    "architectureWriteRun": false,
+    "hostChange": "host/dsh/lib/index-metadata.js — the experimental M1 renderer's duplicate-handle removal only; the production default remains `off` and production M0 is byte-identical"
+  }
+}

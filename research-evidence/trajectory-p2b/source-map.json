@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_SOURCE_MAP",
+  "stage": "Trajectory-P2-B",
+  "readOnly": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "dshHomeReported": "<local-path>",
+  "findings": {
+    "p2aGateMeasurement": {
+      "present": true,
+      "readsArtifactAsUtf8": true,
+      "matchesTextualEventTypes": true,
+      "usesOfficialReader": false,
+      "verdict": "MEASUREMENT_DEFECTIVE_COMPRESSED_ARTIFACT",
+      "note": "a UTF-8 text scan cannot read a Zstandard-compressed session artifact, so a zero match proves nothing about the number of turn events"
+    },
+    "sessionArtifactEncoding": {
+      "artifactSuffixObserved": "session.v4.jsonl.zstd",
+      "magicBytes": "28 b5 2f fd",
+      "magicMeaning": "Zstandard frame magic number",
+      "conclusion": "the P2-A zero-turn measurement is VACUOUS: it would report zero even for a session with turns",
+      "correctMethod": "read the logical Session Event stream through the official DSH SessionPersistence reader"
+    },
+    "identityOwnership": {
+      "attemptId": {
+        "owner": "Canonical Work (ProjectController.prepareMutatingWork)",
+        "observedInDelegation": true,
+        "note": "the delegation service takes it from prepare; the model never receives it"
+      },
+      "hostLocalJobId": {
+        "owner": "Work Delegation Service",
+        "observedInDelegation": true,
+        "durable": false,
+        "note": "host-local and ephemeral; must never be the sole durable anchor"
+      },
+      "invocationId": {
+        "owner": "Parent Worker Port",
+        "observedInPort": true,
+        "note": "minted by the port at run() time, before the spawn"
+      },
+      "dshSessionId": {
+        "owner": "Real DSH Agent Session",
+        "mintedWhere": "host bundle mints the candidate; DSH stores and publishes it",
+        "reportedBy": "host/dsh/lib/session-identity.js",
+        "readFromHandle": true
+      }
+    },
+    "durableFacilities": {
+      "coordinationStore": {
+        "path": "src/coordination/store.ts",
+        "domain": "palimpsest.coordination-event.v1",
+        "semanticOwnership": "peer coordination / federation (participation, collaboration, commitment, handoff)",
+        "appendOnly": true,
+        "stableEventId": true,
+        "byteIdempotency": true,
+        "conflictOnDivergent": true,
+        "atomicBatch": true,
+        "replay": true,
+        "failClosedMalformed": true,
+        "composedOnlyWithFederation": true
+      },
+      "workEventStore": {
+        "path": "src/state/event_store.ts",
+        "semanticOwnership": "canonical Work lifecycle transitions",
+        "warning": "§6.1: a Host observation is not a Work lifecycle transition; using Work events may introduce a new authority relationship"
+      },
+      "g1bRecorder": {
+        "path": "scripts/r3l0c_g1/observation-correlation.mjs",
+        "kind": "research reference",
+        "warning": "§6.3: not automatically a production Binding Owner"
+      }
+    },
+    "sourceQualificationProvenance": {
+      "field": "sessionSourceQualification",
+      "callerSupplied": true,
+      "defaultsToDirectChild": true,
+      "canCallerGrantQualification": true,
+      "verdict": "CALLER_LABEL_IS_NOT_INDEPENDENT_VERIFICATION",
+      "requiredP2bBehavior": "the durable read side must qualify the source from trusted deployment facts and actual reads, never from the message's own declaration"
+    },
+    "observationWindowClosure": {
+      "ipcMessagesArriveOn": "spawned.on(\"message\")",
+      "closureBoundary": "spawned.on(\"close\")",
+      "hasCloseHandler": true,
+      "distinguishesObservedFromUnconfirmed": true,
+      "portIsClosureOwner": true,
+      "note": "a Worker Result line does NOT prove IPC delivery is complete; a timeout does NOT prove all earlier messages arrived"
+    },
+    "p2aNotEstablished": {
+      "recordedP2aVerdictFile": "present",
+      "gapsP2bMustClose": [
+        "a durable Attempt -> Invocation -> Session association",
+        "an independent cold-process recovery",
+        "a real canonical Work -> DSH Session end-to-end correlation in one run",
+        "an official (non-UTF-8-scan) Session Event measurement",
+        "a source qualification that a caller cannot grant by label",
+        "production BOUND_VERIFIED admission (explicitly NOT P2-B)"
+      ]
+    }
+  }
+}

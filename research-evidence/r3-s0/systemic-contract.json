@@ -1,0 +1,1005 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-S0",
+  "kind": "systemic behavior closure contract (experimental; introduces no canonical owner)",
+  "constitutionalLaw": {
+    "taskSuccessIsNotSystemCorrectness": {
+      "id": "TASK_SUCCESS_NE_SYSTEM_CORRECTNESS",
+      "statement": "Task Success != System Correctness",
+      "meaning": "a benchmark or task PASS is a statement about a behavioural outcome, never about the mechanism that produced it",
+      "consequence": "no behavioural experiment may support a mechanism claim while SYSTEM_VALID is false"
+    },
+    "outcomeCannotRepairMechanism": {
+      "id": "OUTCOME_SUCCESS_CANNOT_REPAIR_INVALID_MECHANISM_TRACE",
+      "statement": "Outcome Success Cannot Repair an Invalid Mechanism Trace",
+      "meaning": "a graph, loop, authority, runtime or mechanism-witness failure is not overridden by a successful outcome",
+      "consequence": "a load-bearing mechanism failure makes the system invalid regardless of Y"
+    }
+  },
+  "truthLayers": {
+    "CANONICAL_TRUTH": {
+      "id": "CANONICAL_TRUTH",
+      "symbol": "G_C",
+      "definition": "the canonical project graph: the durable, append-only, hash-chained owner facts",
+      "observedBy": "the canonical stores and their read models, addressed by durable identity",
+      "mustNotBeInferredFrom": [
+        "BEHAVIORAL_OUTCOME",
+        "RUNTIME_TRUTH"
+      ]
+    },
+    "RUNTIME_TRUTH": {
+      "id": "RUNTIME_TRUTH",
+      "symbol": "G_R",
+      "definition": "the runtime realization graph: what the shipped runtime actually composed and executed",
+      "observedBy": "the runtime payload, the session artifact and the host telemetry",
+      "mustNotBeInferredFrom": [
+        "BEHAVIORAL_OUTCOME"
+      ]
+    },
+    "EVIDENCE_TRUTH": {
+      "id": "EVIDENCE_TRUTH",
+      "symbol": "G_E",
+      "definition": "the evidence/observation graph: what was recorded about an execution, with digests",
+      "observedBy": "the experimental trace and its digests",
+      "mustNotBeInferredFrom": [
+        "BEHAVIORAL_OUTCOME"
+      ]
+    },
+    "BEHAVIORAL_OUTCOME": {
+      "id": "BEHAVIORAL_OUTCOME",
+      "symbol": "Y",
+      "definition": "the behavioral outcome: what a task produced, judged by an acceptance oracle",
+      "observedBy": "an acceptance/verification module",
+      "mustNotBeInferredFrom": []
+    }
+  },
+  "forbiddenInferences": [
+    {
+      "from": "BEHAVIORAL_OUTCOME",
+      "to": "CANONICAL_TRUTH",
+      "id": "Y_IMPLIES_GC",
+      "why": "a passing task does not prove the canonical graph is well-formed"
+    },
+    {
+      "from": "BEHAVIORAL_OUTCOME",
+      "to": "RUNTIME_TRUTH",
+      "id": "Y_IMPLIES_GR",
+      "why": "a passing task does not prove the runtime realized the intended mechanism"
+    },
+    {
+      "from": "BEHAVIORAL_OUTCOME",
+      "to": "EVIDENCE_TRUTH",
+      "id": "Y_IMPLIES_GE",
+      "why": "a passing task does not prove the evidence chain is complete"
+    },
+    {
+      "from": "RUNTIME_TRUTH",
+      "to": "CANONICAL_TRUTH",
+      "id": "GR_IMPLIES_GC",
+      "why": "what ran is not what is canonically true"
+    }
+  ],
+  "consumerBoundaryLaw": {
+    "id": "CONSUMER_BOUNDARY_IS_AUTHORITATIVE_OBSERVATION_BOUNDARY",
+    "statement": "Consumer Boundary Is the Authoritative Observation Boundary",
+    "rules": [
+      {
+        "mechanism": "CONTEXT_DELIVERY",
+        "insufficient": "producer intent — the host believing it put a body in the payload",
+        "required": "the actual consumer-visible session: the model-visible prompt and the governed pull response",
+        "observationPoint": "the durable worker session artifact and the pull response"
+      },
+      {
+        "mechanism": "PROMOTION",
+        "insufficient": "function invocation — the promotion function having been called",
+        "required": "post-transaction canonical state: the canonical revision and the committed promotion fact",
+        "observationPoint": "the canonical ledger after the transaction"
+      },
+      {
+        "mechanism": "ADOPTION",
+        "insufficient": "remote fulfillment alone — the peer having delivered something",
+        "required": "local project state and future use: an explicit local act and a later local Work that consumes it",
+        "observationPoint": "the local project read model before and after, and the later local Work"
+      },
+      {
+        "mechanism": "INTENT_EVOLUTION",
+        "insufficient": "proposal approval alone — an authority having said yes",
+        "required": "future Work inheritance: a later attempt actually receiving the revised intent",
+        "observationPoint": "the requirements delivered to a later attempt"
+      }
+    ]
+  },
+  "lineages": {
+    "WORK": {
+      "id": "WORK",
+      "name": "Work lineage",
+      "conceptualPath": "Project -> Work -> Attempt -> Result -> Verification -> Promotion -> ProjectWorld",
+      "nodes": [
+        {
+          "node": "Project",
+          "conceptual": "Project",
+          "implementedBy": [
+            "ProjectIr"
+          ],
+          "owner": "src/schema",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "PROJECT_CREATED",
+          "note": "the intent root; projectId scopes every other node"
+        },
+        {
+          "node": "Work",
+          "conceptual": "Work",
+          "implementedBy": [
+            "TaskEnvelope",
+            "TaskSpec"
+          ],
+          "owner": "src/schema",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "TASK_CREATED",
+          "note": "a declared unit of work; the TaskEnvelope carries its policy binding"
+        },
+        {
+          "node": "Attempt",
+          "conceptual": "Attempt",
+          "implementedBy": [
+            "AttemptRef",
+            "AttemptReport"
+          ],
+          "identifierOwners": {
+            "AttemptRef": "src/identity",
+            "AttemptReport": "src/schema"
+          },
+          "owner": "src/identity",
+          "projectScoped": true,
+          "requiredAuthority": "resolveAttemptAuthorization",
+          "producedBy": "ATTEMPT_CREATED",
+          "note": "an attempt is authorized before it may execute"
+        },
+        {
+          "node": "Result",
+          "conceptual": "Result",
+          "implementedBy": [
+            "ResultSubjectRef",
+            "ResultDerivation",
+            "DerivedResultCandidate"
+          ],
+          "owner": "src/result",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "ATTEMPT_COMPLETED",
+          "note": "the observed outcome of an attempt, addressed by a durable subject ref"
+        },
+        {
+          "node": "Verification",
+          "conceptual": "Verification",
+          "implementedBy": [
+            "ProjectVerificationRun",
+            "ProjectVerificationRunEvent"
+          ],
+          "owner": "src/project_verification",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "TASK_VERIFYING",
+          "note": "INDEPENDENT of the producing attempt: a separate service judges it"
+        },
+        {
+          "node": "Promotion",
+          "conceptual": "Promotion",
+          "implementedBy": [
+            "PromotionFact",
+            "PromotionTerminalShape"
+          ],
+          "owner": "src/domain",
+          "projectScoped": true,
+          "requiredAuthority": "promotion eligibility (verified result + head basis)",
+          "producedBy": "PROMOTION_COMMITTED",
+          "note": "the ONLY path from an attempt result to canonical project state"
+        },
+        {
+          "node": "ProjectWorld",
+          "conceptual": "ProjectWorld",
+          "implementedBy": [
+            "ProjectWorldState",
+            "ProjectWorldBasis",
+            "AssetRevisionBinding"
+          ],
+          "owner": "src/domain",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "PROMOTION_COMMITTED",
+          "note": "the canonical world basis a later attempt inherits"
+        }
+      ]
+    },
+    "KNOWLEDGE": {
+      "id": "KNOWLEDGE",
+      "name": "Knowledge lineage",
+      "conceptualPath": "CognitiveCandidate -> Admission -> AssetRevision -> ProjectAssetAssociation -> FutureSelection",
+      "nodes": [
+        {
+          "node": "CognitiveCandidate",
+          "conceptual": "CognitiveCandidate",
+          "implementedBy": [
+            "ProofClaimCandidate",
+            "ReasoningCandidate",
+            "ProcedureCandidate"
+          ],
+          "identifierOwners": {
+            "ProofClaimCandidate": "src/proof_asset",
+            "ReasoningCandidate": "src/reasoning_cell",
+            "ProcedureCandidate": "src/procedures"
+          },
+          "owner": "src/proof_asset",
+          "projectScoped": false,
+          "requiredAuthority": null,
+          "producedBy": "CANDIDATE_PROPOSED",
+          "note": "per-owner candidate types; there is no single CognitiveCandidate type in the repository"
+        },
+        {
+          "node": "Admission",
+          "conceptual": "Admission",
+          "implementedBy": [
+            "ProofPublicationDecisionRecord",
+            "ReasoningAdmissionDecision",
+            "ProcedureAdmissionOutcome"
+          ],
+          "identifierOwners": {
+            "ProofPublicationDecisionRecord": "src/proof_asset",
+            "ReasoningAdmissionDecision": "src/reasoning_cell",
+            "ProcedureAdmissionOutcome": "src/procedures"
+          },
+          "owner": "src/proof_asset",
+          "projectScoped": false,
+          "requiredAuthority": "an admission/verification policy decision",
+          "producedBy": "CLAIM_PUBLISHED",
+          "note": "admission is a DECISION record, per owner; it is not called AdmissionDecision"
+        },
+        {
+          "node": "AssetRevision",
+          "conceptual": "AssetRevision",
+          "implementedBy": [
+            "ClaimAssessmentRevision",
+            "ProcedureRevision",
+            "AssetRevisionBinding"
+          ],
+          "identifierOwners": {
+            "ClaimAssessmentRevision": "src/proof_asset",
+            "ProcedureRevision": "src/procedures",
+            "AssetRevisionBinding": "src/domain"
+          },
+          "owner": "src/procedures",
+          "projectScoped": false,
+          "requiredAuthority": null,
+          "producedBy": "ASSESSMENT_REVISED",
+          "note": "the durable, revisioned capital body"
+        },
+        {
+          "node": "ProjectAssetAssociation",
+          "conceptual": "ProjectAssetAssociation",
+          "implementedBy": [
+            "ProjectAssetAssociation",
+            "CanonicalAssetRef"
+          ],
+          "owner": "src/project_workspace",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "ASSET_ASSOCIATED",
+          "note": "the ONLY thing that makes capital eligible for a project; without it the asset is unreachable"
+        },
+        {
+          "node": "FutureSelection",
+          "conceptual": "FutureSelection",
+          "implementedBy": [
+            "KnowledgeSelectionRequest",
+            "ProofKnowledgeBinding",
+            "ReasoningKnowledgeBinding",
+            "ProcedureKnowledgeBinding"
+          ],
+          "owner": "src/context",
+          "projectScoped": true,
+          "requiredAuthority": "the Context owner revalidates the selection during compilation",
+          "producedBy": "CONTEXT_MANIFEST_ADDED",
+          "note": "selection is a request plus its resolved bindings, not a FutureSelection type"
+        }
+      ]
+    },
+    "COLLABORATION": {
+      "id": "COLLABORATION",
+      "name": "Collaboration lineage",
+      "conceptualPath": "Project reality/Need ground -> Need -> Commitment -> SovereignRemoteWorkRef -> Fulfillment -> LocalAdoption -> LocalContinuation",
+      "nodes": [
+        {
+          "node": "ProjectReality",
+          "conceptual": "project reality / dependency (the need GROUND)",
+          "implementedBy": [
+            "CollaborationProjectBasis",
+            "BlockedTaskGround",
+            "FailedAttemptGround"
+          ],
+          "owner": "src/project_collaboration",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "TASK_BLOCKED / ATTEMPT_FAILED",
+          "note": "the OBSERVED local reality a need must be grounded on. NEED_GROUND_KINDS is exactly [BLOCKED_TASK, FAILED_ATTEMPT], so a need cannot be authored from nothing; the ground is a checkable observation carrying a digest"
+        },
+        {
+          "node": "Need",
+          "conceptual": "Need",
+          "implementedBy": [
+            "CollaborationNeedCandidate",
+            "AcceptedNeedDeclaration",
+            "ContactNeed"
+          ],
+          "identifierOwners": {
+            "CollaborationNeedCandidate": "src/project_collaboration",
+            "AcceptedNeedDeclaration": "src/project_collaboration",
+            "ContactNeed": "src/federation"
+          },
+          "owner": "src/federation",
+          "projectScoped": true,
+          "requiredAuthority": "a need admission decision (NeedAdmissionDecision) plus a currentness assessment of the ground",
+          "producedBy": "CONTACT_NEED_DECLARED",
+          "note": "the candidate and its acceptance receipt are owned by project_collaboration; the DURABLE canonical need is the federation ContactNeed, idempotent on the candidate digest"
+        },
+        {
+          "node": "Commitment",
+          "conceptual": "Commitment",
+          "implementedBy": [
+            "CommitmentOffer",
+            "CommitmentTerms",
+            "CommitmentState"
+          ],
+          "owner": "src/federation",
+          "projectScoped": true,
+          "requiredAuthority": "a durable need AND a prior contact request to the holder",
+          "producedBy": "COMMITMENT_ACCEPTED",
+          "note": "a commitment is a promise; it is NOT work authority over the peer"
+        },
+        {
+          "node": "SovereignRemoteWorkRef",
+          "conceptual": "SovereignRemoteWorkRef",
+          "implementedBy": [
+            "AttemptRef",
+            "PeerRef"
+          ],
+          "owner": "src/identity",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "ATTEMPT_COMPLETED (in the REMOTE project ledger)",
+          "note": "NO such type exists. The remote peer's Work stays in the peer's own canonical ledger; the local side holds only an opaque peer/attempt ref. This absence is the mechanism, not a gap."
+        },
+        {
+          "node": "Fulfillment",
+          "conceptual": "Fulfillment",
+          "implementedBy": [
+            "CommitmentFulfillmentSubmission",
+            "FulfillmentAdmissionDecision"
+          ],
+          "owner": "src/federation",
+          "projectScoped": true,
+          "requiredAuthority": "the submitter must be the current authenticated holder",
+          "producedBy": "FULFILLMENT_SUBMITTED",
+          "note": "a fulfillment is a delivery claim, NOT an adoption"
+        },
+        {
+          "node": "LocalAdoption",
+          "conceptual": "LocalAdoption",
+          "implementedBy": [
+            "ProjectJournalEntry",
+            "promoteOpportunity"
+          ],
+          "owner": "src/project_workspace",
+          "projectScoped": true,
+          "requiredAuthority": "an explicit local act",
+          "producedBy": "JOURNAL_ENTRY_RECORDED",
+          "note": "NO such type exists. Adoption is an explicit local journal entry and, if it becomes work, a local promotion. Fulfillment alone never writes local truth."
+        },
+        {
+          "node": "LocalContinuation",
+          "conceptual": "LocalContinuation",
+          "implementedBy": [
+            "TaskSpec"
+          ],
+          "identifierOwners": {
+            "TaskSpec": "src/schema"
+          },
+          "owner": "src/schema",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "TASK_CREATED",
+          "note": "NO such type exists in this sense. Continuation is ordinary local Work that the local project owns outright; ResultContinuationService is a DIFFERENT (D5 rework) concept and is not this node."
+        }
+      ]
+    },
+    "EVOLUTION": {
+      "id": "EVOLUTION",
+      "name": "Evolution lineage",
+      "conceptualPath": "Observation/Basis -> Proposal -> AuthorityDecision -> RevisionReceipt -> RevisedIntent/Organization/Runtime -> FutureWork",
+      "nodes": [
+        {
+          "node": "Observation/Basis",
+          "conceptual": "Observation/Basis",
+          "implementedBy": [
+            "OrganizationDynamicsSnapshot",
+            "StructuralDiagnosis",
+            "InterventionRecord",
+            "ProofClaimCandidate"
+          ],
+          "identifierOwners": {
+            "OrganizationDynamicsSnapshot": "src/organization_dynamics",
+            "StructuralDiagnosis": "src/organization_dynamics",
+            "InterventionRecord": "src/organization_memory",
+            "ProofClaimCandidate": "src/proof_asset"
+          },
+          "owner": "src/organization_dynamics",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "varies by basis kind",
+          "note": "a basis must be a durable, addressable fact; the intent path binds proofs, reasoning and negative results"
+        },
+        {
+          "node": "Proposal",
+          "conceptual": "Proposal",
+          "implementedBy": [
+            "ProjectIntentProposal",
+            "OrganizationDynamicsProposal",
+            "CompleteEvolutionCandidate",
+            "CompleteRuntimeEvolutionCandidate"
+          ],
+          "identifierOwners": {
+            "ProjectIntentProposal": "src/project_intent",
+            "OrganizationDynamicsProposal": "src/organization_dynamics",
+            "CompleteEvolutionCandidate": "src/organization_evolution",
+            "CompleteRuntimeEvolutionCandidate": "src/runtime_evolution"
+          },
+          "owner": "src/project_intent",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "CANDIDATE_PROPOSED",
+          "note": "a proposal is NOT canonical truth; prepare writes nothing"
+        },
+        {
+          "node": "AuthorityDecision",
+          "conceptual": "AuthorityDecision",
+          "implementedBy": [
+            "IntentAdmissionDecision",
+            "OrganizationEvolutionAuthorityOutcome",
+            "RuntimeStructuralEvolutionAuthorityOutcome",
+            "PROCEDURE_ADMISSION_DECISIONS"
+          ],
+          "identifierOwners": {
+            "IntentAdmissionDecision": "src/project_intent",
+            "OrganizationEvolutionAuthorityOutcome": "src/organization_evolution",
+            "RuntimeStructuralEvolutionAuthorityOutcome": "src/runtime_evolution",
+            "PROCEDURE_ADMISSION_DECISIONS": "src/procedures"
+          },
+          "owner": "src/project_intent",
+          "projectScoped": true,
+          "requiredAuthority": "an INDEPENDENT authority port; absent authority must mean UNRESOLVED, never approval",
+          "producedBy": "n/a (a decision, not an event)",
+          "note": "there is no single AuthorityDecision type; each owner has its own outcome union"
+        },
+        {
+          "node": "RevisionReceipt",
+          "conceptual": "RevisionReceipt",
+          "implementedBy": [
+            "AcceptedIntentReconciliationReceipt",
+            "AcceptedNeedDeclaration",
+            "EvolutionCaseRecord"
+          ],
+          "identifierOwners": {
+            "AcceptedIntentReconciliationReceipt": "src/project_intent",
+            "AcceptedNeedDeclaration": "src/project_collaboration",
+            "EvolutionCaseRecord": "src/organization_evolution"
+          },
+          "owner": "src/project_intent",
+          "projectScoped": true,
+          "requiredAuthority": "the accepted admission decision it records (the receipt re-derives its own digest, so it cannot be forged)",
+          "producedBy": "PROJECT_REVISED (payload key intent_reconciliation)",
+          "note": "no single RevisionReceipt type; the intent receipt is carried on PROJECT_REVISED"
+        },
+        {
+          "node": "RevisedIntent/Organization/Runtime",
+          "conceptual": "RevisedIntent/Organization/Runtime",
+          "implementedBy": [
+            "ProjectIr",
+            "OrganizationDefinition",
+            "RuntimeScopeDefinition"
+          ],
+          "identifierOwners": {
+            "ProjectIr": "src/schema",
+            "OrganizationDefinition": "src/organization",
+            "RuntimeScopeDefinition": "src/runtime_scope"
+          },
+          "owner": "src/schema",
+          "projectScoped": true,
+          "requiredAuthority": "the receipt that authorized the revision",
+          "producedBy": "PROJECT_REVISED",
+          "note": "the revised intent is a NEW ProjectIr revision, not a RevisedIntent type"
+        },
+        {
+          "node": "FutureWork",
+          "conceptual": "FutureWork",
+          "implementedBy": [
+            "TaskSpec",
+            "WorkWorkerTaskContext"
+          ],
+          "identifierOwners": {
+            "TaskSpec": "src/schema",
+            "WorkWorkerTaskContext": "src/context"
+          },
+          "owner": "src/work",
+          "projectScoped": true,
+          "requiredAuthority": null,
+          "producedBy": "TASK_CREATED",
+          "note": "the proof of evolution is that a LATER attempt receives the revised intent"
+        }
+      ]
+    }
+  },
+  "durableEventFamilies": [
+    {
+      "family": "ORCHESTRATION_LEDGER",
+      "eventTypes": [
+        "PROJECT_CREATED",
+        "PROJECT_REVISED",
+        "TASK_CREATED",
+        "TASK_BLOCKED",
+        "TASK_READY",
+        "TASK_STARTED",
+        "TASK_VERIFYING",
+        "TASK_SATISFIED",
+        "TASK_FAILED",
+        "TASK_STALE",
+        "TASK_REAUTHORIZED",
+        "ATTEMPT_CREATED",
+        "ATTEMPT_LEASED",
+        "ATTEMPT_STARTED",
+        "ATTEMPT_COMPLETED",
+        "ATTEMPT_FAILED",
+        "ATTEMPT_EXPIRED",
+        "ATTEMPT_CANCELLED",
+        "ATTEMPT_LATE_RESULT",
+        "EVIDENCE_ADDED",
+        "EVIDENCE_STALE",
+        "SCHEDULER_PAUSED",
+        "SCHEDULER_RESUMED",
+        "MANUAL_APPROVAL_RECORDED",
+        "PROMOTION_PREPARED",
+        "PROMOTION_GIT_STARTED",
+        "PROMOTION_GIT_COMPLETED",
+        "PROMOTION_COMMITTED",
+        "PROMOTION_FAILED",
+        "JUDGE_DECLARED",
+        "CANDIDATE_SELECTED",
+        "GATE_DEFINED",
+        "ROLE_TABLE_DEFINED",
+        "STAGE_GRAPH_DEFINED",
+        "CONTEXT_MANIFEST_ADDED",
+        "HOLD_SET",
+        "HOLD_CLEARED"
+      ],
+      "canonicalOwner": "src/schema (EVENT_TYPES) + src/state (projection)",
+      "store": "orchestration sqlite, table `events`",
+      "producer": "src/tools/controller.ts (the ONE command surface)",
+      "consumer": "src/state projection then the WorkReadModel read model (src/work/read_model.ts)",
+      "retry": "append is CAS-guarded by expected head; a conflicting append is REFUSED, not retried blindly",
+      "survivesRestart": true,
+      "flags": [],
+      "note": "every event type in EVENT_TYPES has a strict payload parser, so an unknown or malformed payload is refused at the boundary"
+    },
+    {
+      "family": "PROJECT_WORKSPACE",
+      "eventTypes": [
+        "PROJECT_WORKSPACE_OPENED",
+        "ASSET_ASSOCIATED"
+      ],
+      "canonicalOwner": "src/project_workspace",
+      "store": "association sqlite, table `project_asset_association_events`",
+      "producer": "SqliteProjectAssetAssociationStore.appendAtomic",
+      "consumer": "src/context resolveKnowledgeBindings (eligibility) and the workspace read model",
+      "retry": "appendAtomic is CAS-guarded on the prior chain digest",
+      "survivesRestart": true,
+      "flags": [],
+      "note": "ASSET_ASSOCIATED is the event that makes capital ELIGIBLE; omitting it leaves the asset admitted but unreachable"
+    },
+    {
+      "family": "PROOF_PLANE",
+      "eventTypes": [
+        "PROOF_PLANE_OPENED",
+        "SOURCE_REVISION_RECORDED",
+        "CANDIDATE_PROPOSED",
+        "CANDIDATE_SUBMITTED",
+        "VERIFICATION_RECORDED",
+        "CANDIDATE_ACCEPTED",
+        "CANDIDATE_REJECTED",
+        "CLAIM_PUBLISHED",
+        "ASSESSMENT_REVISED"
+      ],
+      "canonicalOwner": "src/proof_asset",
+      "store": "proof sqlite + content-addressed blob directory",
+      "producer": "proof service (importSource/recordEvidence/prepareCandidate/verify/decidePublication)",
+      "consumer": "src/context proof binding resolution, and the proof asset view",
+      "retry": "event id is derived from type+scope+payload, so a duplicate append is idempotent",
+      "survivesRestart": true,
+      "flags": [],
+      "note": "the blob store is a directory, so the BYTES survive a restart even though they are not in sqlite"
+    },
+    {
+      "family": "REASONING_PLANE",
+      "eventTypes": [
+        "REASONING_CELL_OPENED",
+        "CANDIDATE_SUBMITTED",
+        "CANDIDATE_ACCEPTED",
+        "CANDIDATE_REJECTED"
+      ],
+      "canonicalOwner": "src/reasoning_cell",
+      "store": "cells sqlite",
+      "producer": "reasoning service (openCell/openBranch/submitCandidate/evaluateCandidate)",
+      "consumer": "src/context reasoning binding resolution, and the reasoning frontier read",
+      "retry": "chain-digest guarded; reasoningChainDigest over the prior event chain",
+      "survivesRestart": true,
+      "flags": [],
+      "note": "admission can later move to INACTIVE; the compile-time binding stays immutable while `current` moves"
+    },
+    {
+      "family": "COORDINATION_FEDERATION",
+      "eventTypes": [
+        "INVOCATION_RECORDED",
+        "PARTICIPATION_STARTED",
+        "PARTICIPATION_ENDED",
+        "CONTACT_REQUESTED",
+        "CONTACT_NEED_DECLARED",
+        "MESSAGE_PREPARED",
+        "MESSAGE_DELIVERED",
+        "MESSAGE_RECEIVED",
+        "WAKE_SENT",
+        "ACK_RECORDED",
+        "COMMITMENT_OFFERED",
+        "COMMITMENT_ACCEPTED",
+        "COMMITMENT_REJECTED",
+        "COMMITMENT_RELEASED",
+        "COMMITMENT_SUPERSEDED",
+        "HANDOFF_OFFERED",
+        "HANDOFF_ACCEPTED",
+        "HANDOFF_REJECTED",
+        "FULFILLMENT_SUBMITTED",
+        "FULFILLMENT_DECIDED",
+        "COMMITMENT_FULFILLED"
+      ],
+      "canonicalOwner": "src/coordination (store) + src/federation (services)",
+      "store": "coordination sqlite",
+      "producer": "federation service (declareContactNeed/requestContact/offerCommitment/submitFulfillment/decideFulfillment)",
+      "consumer": "the federation read services and durableContactNeedScopeGuard (src/federation/federation_service.ts), which replays history",
+      "retry": "per-type payload parsers; the scope guard replays history rather than trusting a caller",
+      "survivesRestart": true,
+      "flags": [],
+      "note": "ONE physical store carries BOTH participation and collaboration streams, kept separate by typed parsers"
+    },
+    {
+      "family": "BOUNDARY_MEMORY",
+      "eventTypes": [
+        "WORKSPACE_OPENED",
+        "WORKSPACE_CLOSED",
+        "ARTIFACT_CREATED",
+        "MEMBERSHIP_PROPOSED",
+        "MEMBERSHIP_APPROVED",
+        "MEMBERSHIP_REVISION_ACCEPTED",
+        "REVISION_ACCEPTED"
+      ],
+      "canonicalOwner": "src/boundary_memory",
+      "store": "boundary sqlite",
+      "producer": "BoundaryMemoryService (src/boundary_memory/service.ts)",
+      "consumer": "the fulfillment output admission (a boundary_revision must be an EXACT accepted revision)",
+      "retry": "event id derived from type+workspace+payload",
+      "survivesRestart": true,
+      "flags": [],
+      "note": "the accepted-revision set is the authority a fulfillment output is validated against"
+    },
+    {
+      "family": "PROJECT_JOURNAL",
+      "eventTypes": [
+        "JOURNAL_ENTRY_RECORDED"
+      ],
+      "canonicalOwner": "src/project_workspace",
+      "store": "journal sqlite",
+      "producer": "projectWorkspace.recordJournalEntry",
+      "consumer": "the workspace view and promoteOpportunity (src/project_workspace), which turns an OPPORTUNITY into local Work",
+      "retry": "append-only; entryId is durable",
+      "survivesRestart": true,
+      "flags": [],
+      "note": "this is the LOCAL ADOPTION act in code; a fulfillment without a journal entry has not been adopted"
+    }
+  ],
+  "eventDefectFlags": {
+    "WRITE_ONLY_EVENT": "an event is produced durably but nothing ever consumes or reconciles it",
+    "UNCONSUMED_RECEIPT": "a receipt is written but no later read observes it",
+    "CONSUMER_WITHOUT_OWNER": "something consumes a record that has no canonical owner",
+    "ORPHANED_RUNTIME_PROJECTION": "a runtime projection exists with no canonical owner behind it"
+  },
+  "systemValidCategories": [
+    {
+      "id": "graph_integrity",
+      "gate": "S1",
+      "question": "are the canonical lineages well-formed, scoped, owned and receipted?"
+    },
+    {
+      "id": "loop_conformance",
+      "gate": "S2",
+      "question": "do the four loops and their cross-loop seams hold on every exercised load-bearing path?"
+    },
+    {
+      "id": "runtime_conformance",
+      "gate": "S2",
+      "question": "does the shipped runtime realize the configured mechanism, with the experimental flags off?"
+    },
+    {
+      "id": "authority_checks",
+      "gate": "S1",
+      "question": "is every authority-bearing write preceded by an independent decision?"
+    },
+    {
+      "id": "evidence_chain_checks",
+      "gate": "S2",
+      "question": "does every conformance run record digests sufficient to re-establish what was tested?"
+    },
+    {
+      "id": "forbidden_bypass_checks",
+      "gate": "S3",
+      "question": "are the known prohibited bypasses blocked, and do mutations get detected?"
+    }
+  ],
+  "matrixCells": {
+    "PASS": "PASS",
+    "FAIL": "FAIL",
+    "NOT_APPLICABLE": "NOT_APPLICABLE",
+    "NOT_EXERCISED": "NOT_EXERCISED"
+  },
+  "matrixPaths": [
+    {
+      "id": "happy",
+      "label": "happy path"
+    },
+    {
+      "id": "rejection",
+      "label": "rejection path"
+    },
+    {
+      "id": "stale",
+      "label": "stale/conflict path"
+    },
+    {
+      "id": "crash",
+      "label": "crash/reconciliation path"
+    },
+    {
+      "id": "coldRestart",
+      "label": "cold restart"
+    },
+    {
+      "id": "nextGeneration",
+      "label": "next-generation consumption/effect"
+    }
+  ],
+  "loopMatrixPlan": {
+    "WORK": {
+      "name": "Work loop",
+      "applies": [
+        "happy",
+        "rejection",
+        "stale",
+        "crash",
+        "coldRestart",
+        "nextGeneration"
+      ],
+      "notApplicable": []
+    },
+    "KNOWLEDGE": {
+      "name": "Knowledge loop",
+      "applies": [
+        "happy",
+        "rejection",
+        "stale",
+        "coldRestart",
+        "nextGeneration"
+      ],
+      "notApplicable": [
+        {
+          "path": "crash",
+          "reason": "the knowledge stores are append-only with CAS-guarded writes; a crash mid-append is covered by the store suites, not by this loop matrix"
+        }
+      ]
+    },
+    "COLLABORATION": {
+      "name": "Collaboration loop",
+      "applies": [
+        "happy",
+        "rejection",
+        "stale",
+        "coldRestart",
+        "nextGeneration"
+      ],
+      "notApplicable": [
+        {
+          "path": "crash",
+          "reason": "the coordination store is append-only and the federation services re-derive from history; a crash mid-append is a store concern"
+        }
+      ]
+    },
+    "EVOLUTION": {
+      "name": "Evolution loop",
+      "applies": [
+        "happy",
+        "rejection",
+        "stale",
+        "coldRestart",
+        "nextGeneration"
+      ],
+      "notApplicable": [
+        {
+          "path": "crash",
+          "reason": "the revision is one canonical append, so a crash either committed it or did not; the stale path already covers the move between prepare and apply"
+        }
+      ]
+    }
+  },
+  "crossLoopScenarios": [
+    {
+      "id": "WORK_TO_KNOWLEDGE_TO_FUTURE_WORK",
+      "statement": "a completed/verified project outcome becomes admitted durable capital and is consumable by a later cold-started attempt",
+      "from": "WORK",
+      "via": "KNOWLEDGE",
+      "to": "WORK"
+    },
+    {
+      "id": "COLLABORATION_TO_LOCAL_WORK",
+      "statement": "a remote fulfillment affects future local cognition only after explicit local adoption",
+      "from": "COLLABORATION",
+      "via": "COLLABORATION",
+      "to": "WORK"
+    },
+    {
+      "id": "EVOLUTION_TO_FUTURE_WORK",
+      "statement": "a governed revision actually changes future work inputs",
+      "from": "EVOLUTION",
+      "via": "EVOLUTION",
+      "to": "WORK"
+    }
+  ],
+  "preregisteredMutations": [
+    {
+      "id": "M1_DROP_CONTEXT_INDEX",
+      "description": "drop the worker contextIndexText, so the model-visible prompt loses the index",
+      "seam": "the worker port boundary in the test harness",
+      "detectedBy": "CONSUMER_BOUNDARY_PROOF",
+      "loadBearing": true
+    },
+    {
+      "id": "M2_BYPASS_ATTEMPT_ALLOWLIST",
+      "description": "remove or bypass the per-attempt handle allowlist, so any handle resolves",
+      "seam": "the pull resolver the host binds to the attempt",
+      "detectedBy": "FORBIDDEN_BYPASS_NO_UNLISTED_HANDLE_USE",
+      "loadBearing": true
+    },
+    {
+      "id": "M3_PROMOTE_WITHOUT_VERIFICATION",
+      "description": "attempt promotion without a successful independent verification",
+      "seam": "the promotion eligibility seam",
+      "detectedBy": "WORK_LOOP_REJECTION_PATH",
+      "loadBearing": true
+    },
+    {
+      "id": "M4_ACCEPT_STALE_RESULT",
+      "description": "accept a stale result where optimistic concurrency should reject or continue",
+      "seam": "the settlement / OCC seam",
+      "detectedBy": "WORK_LOOP_STALE_PATH",
+      "loadBearing": true
+    },
+    {
+      "id": "M5_OMIT_PROJECT_ASSET_ASSOCIATION",
+      "description": "omit the ProjectAssetAssociation after asset admission, so the capital is unreachable",
+      "seam": "the association store the harness injects",
+      "detectedBy": "KNOWLEDGE_LOOP_SELECTION",
+      "loadBearing": true
+    },
+    {
+      "id": "M6_EVOLUTION_RECEIPT_OLD_INTENT",
+      "description": "write an evolution receipt but feed the OLD intent to future Work",
+      "seam": "the intent port that supplies requirement statements to a later attempt",
+      "detectedBy": "EVOLUTION_TO_FUTURE_WORK_CLOSURE",
+      "loadBearing": true
+    }
+  ],
+  "mutationVerdicts": {
+    "DETECTED": "MUTATION_DETECTED",
+    "ESCAPED": "MUTATION_ESCAPED"
+  },
+  "historicalDefects": [
+    {
+      "id": "R1L_R2U_MISSING_INDEX_FORWARDING",
+      "description": "the worker index was not forwarded to the model-visible prompt, so a selected body never reached the consumer",
+      "caughtBy": "CONSUMER_BOUNDARY_PROOF",
+      "how": "the proof reads the model-visible session and fails when the index/body is absent, instead of trusting that the producer put it in the payload"
+    },
+    {
+      "id": "VACUOUS_CONDITION_OR_TRUE_GATE",
+      "description": "a gate whose assertion was written so it could never fail (the literal unconditional form)",
+      "caughtBy": "ANTI_VACUITY_SCAN",
+      "how": "the anti-vacuity scanner forbids the unconditional literal form in gate code, and this stage keeps its gates under a scanned directory"
+    },
+    {
+      "id": "R3A_NESTED_CLASSPASS_INTEGRATION",
+      "description": "the qualification engine read trial[classId] instead of trial.classPass[classId], so every class collapsed into one group",
+      "caughtBy": "EVIDENCE_CORRECTNESS_INTEGRATION",
+      "how": "the engine is driven with REAL nested records end to end, and the analysis must reproduce from the preserved trials"
+    }
+  ],
+  "bypassChecks": [
+    {
+      "id": "NO_DIRECT_BACKING_STORE_READ",
+      "question": "can a consumer read the backing store directly, bypassing the governed channel?"
+    },
+    {
+      "id": "NO_UNLISTED_HANDLE_USE",
+      "question": "can a consumer resolve a handle that was never compiled into its attempt?"
+    },
+    {
+      "id": "NO_WRONG_ATTEMPT_REUSE",
+      "question": "can a consumer use another attempt's identity or context?"
+    },
+    {
+      "id": "NO_CONTROL_PAYLOAD_DISCOVERY",
+      "question": "can a worker reach the host control payload where that is prohibited?"
+    },
+    {
+      "id": "NO_AUTHORITY_BYPASS",
+      "question": "can a write land without its required authority decision?"
+    },
+    {
+      "id": "NO_DIRECT_REMOTE_TO_LOCAL_OWNERSHIP_CONVERSION",
+      "question": "can a remote fulfillment become local canonical truth without an explicit local act?"
+    }
+  ],
+  "bypassClaim": {
+    "allowed": "KNOWN_BYPASSES_BLOCKED",
+    "forbidden": "NO_BYPASS_EXISTS",
+    "reason": "the checks enumerate known bypasses and block them; they are not a proof about unknown ones"
+  },
+  "mechanismWitnessChain": [
+    {
+      "step": "canonical_precondition",
+      "question": "what canonical fact had to be true before the mechanism could act?"
+    },
+    {
+      "step": "runtime_projection",
+      "question": "what did the runtime actually compose from it?"
+    },
+    {
+      "step": "actual_consumer_visible_state",
+      "question": "what did the CONSUMER actually see, at the boundary?"
+    },
+    {
+      "step": "allowed_action_or_tool",
+      "question": "which action/tool was the consumer permitted to use?"
+    },
+    {
+      "step": "authorized_owner_interaction",
+      "question": "which owner authorized the interaction?"
+    },
+    {
+      "step": "durable_consequence",
+      "question": "what durable fact resulted, addressable after a restart?"
+    }
+  ],
+  "witnessVerdicts": {
+    "DEMONSTRATED": "MECHANISM_DEMONSTRATED",
+    "NOT_DEMONSTRATED": "MECHANISM_NOT_DEMONSTRATED",
+    "taskSuccessWithoutWitness": {
+      "outcome": "TASK_SUCCESS",
+      "mechanism": "MECHANISM_NOT_DEMONSTRATED",
+      "ruling": "this is NOT mechanism success, and it may not support a mechanism claim"
+    }
+  }
+}

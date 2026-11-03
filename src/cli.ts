@@ -74,6 +74,7 @@ import {
 import { serveOrchestration } from "./serve.js";
 import { runTui } from "./tui.js";
 import { launchDeployment, loadDeploymentProfile } from "./deployment/index.js";
+import { runProductCommand } from "./cli_product.js";
 
 import { defaultOrdariumPath } from "./effects/index.js";
 import {
@@ -92,6 +93,15 @@ function parseArgs(argv: string[]): { options: Map<string, string>; positional: 
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index]!;
     if (token.startsWith("--")) {
+      /**
+       * PC1 S09: accept both `--key value` (the historical CLI form) and `--key=value` (the form the
+       * product scripts and user-facing examples use). Splitting here keeps one parser for both.
+       */
+      const equals = token.indexOf("=");
+      if (equals > 2) {
+        options.set(token.slice(0, equals), token.slice(equals + 1));
+        continue;
+      }
       const value = argv[index + 1];
       if (value !== undefined && !value.startsWith("--")) {
         options.set(token, value);
@@ -154,7 +164,11 @@ function policy() {
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
-  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status|manage> …");
+  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status|manage|init|continue|doctor|review|recover|outcomes|context-capsule> …");
+
+  // PC1 S09: the ordinary product commands run before the legacy Work-only setup. They install
+  // their own product composition and never fall through to the legacy controller.
+  if (await runProductCommand(command, parsed.options, parsed.positional)) return;
 
   // G10-P (CF-O-02): a profile-driven full-stack launch. The profile is HOST CONFIG —
   // it builds the services through installPalimpsest and serves the advanced application;

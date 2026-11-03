@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_OPERATIONAL_BEHAVIOR_MEASUREMENT",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "correction": "F6: the E0 operational dimension passed with NO execution because it matched the proposed-action string; the E1 dimension is derived from OBSERVED execution evidence",
+  "notMeasuredWithoutExecution": {
+    "measured": false,
+    "state": "NOT_MEASURED",
+    "pass": false,
+    "detail": "no actual tool execution was observed, so operational behavior was not measured"
+  },
+  "measuredWithRealExecution": {
+    "measured": true,
+    "state": "MEASURED",
+    "toolActionCount": 3,
+    "changedFileCount": 1,
+    "committed": true,
+    "testsPassed": true,
+    "repeatedToolCalls": [],
+    "pass": true,
+    "detail": "derived from observed execution evidence, never from the proposed-action string"
+  },
+  "repeatedHistoricalCommandFails": {
+    "measured": true,
+    "state": "MEASURED",
+    "toolActionCount": 1,
+    "changedFileCount": 0,
+    "committed": false,
+    "testsPassed": false,
+    "repeatedToolCalls": [
+      "rerun the historical command verbatim"
+    ],
+    "pass": false,
+    "detail": "derived from observed execution evidence, never from the proposed-action string"
+  },
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

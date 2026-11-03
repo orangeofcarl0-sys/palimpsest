@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:requirement-results:1",
+  "title": "PC1 逐项实现与证据验收",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "programId",
+    "results"
+  ],
+  "properties": {
+    "programId": {
+      "const": "PALIMPSEST-PC1"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirementId",
+          "implementation",
+          "deterministic",
+          "live",
+          "comparison",
+          "evidence",
+          "notes",
+          "blockers"
+        ],
+        "properties": {
+          "requirementId": {
+            "type": "string",
+            "pattern": "^S[0-9]{2}-R[0-9]{2}$"
+          },
+          "implementation": {
+            "enum": [
+              "NOT_STARTED",
+              "IN_PROGRESS",
+              "IMPLEMENTED",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "deterministic": {
+            "enum": [
+              "NOT_RUN",
+              "PASSED",
+              "FAILED",
+              "BLOCKED"
+            ]
+          },
+          "live": {
+            "enum": [
+              "NOT_REQUIRED",
+              "NOT_RUN",
+              "VERIFIED",
+              "FAILED",
+              "BLOCKED"
+            ]
+          },
+          "comparison": {
+            "enum": [
+              "NOT_REQUIRED",
+              "NOT_RUN",
+              "SUPPORTED",
+              "NO_ADVANTAGE",
+              "INCONCLUSIVE",
+              "BLOCKED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "kind",
+                "ref",
+                "subject",
+                "codeFreeze"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "enum": [
+                    "SOURCE_READ",
+                    "DETERMINISTIC_TEST",
+                    "PRODUCT_INTEGRATION_RUN",
+                    "REAL_AGENT_RUN",
+                    "MATCHED_COMPARISON",
+                    "OPERATOR_DECISION",
+                    "ARTIFACT",
+                    "ANALYSIS"
+                  ]
+                },
+                "ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "subject": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "codeFreeze": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "result": {
+                  "enum": [
+                    "PASS",
+                    "FAIL",
+                    "OBSERVED",
+                    "BLOCKED",
+                    "INCONCLUSIVE"
+                  ]
+                },
+                "notes": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "notes": {
+            "type": "string"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "scope",
+                "kind",
+                "detail",
+                "unblocksWhen"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "scope": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "enum": [
+                    "PROVIDER",
+                    "BUDGET",
+                    "AUTHORITY",
+                    "ENVIRONMENT",
+                    "DEPENDENCY",
+                    "SAFETY",
+                    "EXTERNAL_PERMISSION"
+                  ]
+                },
+                "detail": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "unblocksWhen": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "doesNotBlock": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true
+                }
+              }
+            }
+          },
+          "scopeDecisionRef": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

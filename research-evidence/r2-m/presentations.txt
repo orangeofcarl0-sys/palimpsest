@@ -1,0 +1,41 @@
+R2-M — THE TWO INDEX PRESENTATIONS
+
+M0 is the CURRENT PRODUCTION INDEX, byte-identical:
+
+  Project context available to this attempt (READ-ONLY; never authority):
+    [proof] @ctx/proof/<claimId>
+    [reasoning] @ctx/reasoning/<cellId>/<claimId>
+    [procedure] @ctx/procedure/<procedureId>/<revision>
+
+  Use `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.
+  Do not invent handles: a handle that is not listed above will be refused.
+
+M1 keeps the SAME heading, the SAME empty-case line and the SAME two trailing instruction lines,
+and replaces ONLY the entry lines with the derived block below.
+
+  [proof] @ctx/proof/<claimId>
+    Standing at compile: <owner value>
+    Freshness: <owner value>
+    Selected for this attempt: true
+    Preview: <bounded deterministic projection of the claim statement>
+    Handle: @ctx/proof/<claimId>
+
+  [reasoning] @ctx/reasoning/<cellId>/<claimId>
+    Active at compile: <owner value>
+    Selected for this attempt: true
+    Preview: <bounded deterministic projection of the admitted claim statement>
+    Handle: @ctx/reasoning/<cellId>/<claimId>
+
+  [procedure] @ctx/procedure/<procedureId>/<revision>
+    Standing at compile: <owner value>
+    Revision: <owner value>
+    Selected for this attempt: true
+    Applicability: <owner-declared applicability, bounded>
+    Limitations: <owner-declared limitations, bounded>
+    Handle: @ctx/procedure/<procedureId>/<revision>
+
+The Procedure ruling is P-A: applicability + limitations only, with NO method-body preview.
+
+M1 carries NO new review clause and NO rewritten context-pull tool description: R2-U already
+measured prose affordance and found it NOT_IMPROVED, so re-introducing it would confound the
+metadata treatment.

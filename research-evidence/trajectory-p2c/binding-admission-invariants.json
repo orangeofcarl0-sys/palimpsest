@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_BINDING_ADMISSION_INVARIANTS",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "closedDefect": {
+    "id": "F11",
+    "defect": "the Handoff Preview gated events on ONE flag, so SESSION_CLAIMED_UNVERIFIED + dshSessionId:null + ADMITTED_TO_ATTEMPT exposed the page's events"
+  },
+  "module": "src/trajectory/admission_invariants.ts",
+  "reasons": [
+    "ADMITTED_WITHOUT_SESSION_ID",
+    "ADMITTED_WITHOUT_VERIFIED_BINDING",
+    "BOUND_VERIFIED_WITHOUT_SESSION_ID",
+    "ADMITTED_WITH_UNBOUND_SESSION",
+    "PAGE_SESSION_DIFFERS_FROM_BINDING",
+    "PAGE_SUPPLIED_WITHOUT_ADMISSION"
+  ],
+  "wiring": "buildHandoffPreview now also requires validateAdmissionInvariants to pass before events enter the execution view; the refused case is reported through eventsDetail",
+  "designNote": "a small pure validator rather than a general-purpose state machine; the ruling explicitly asks for this shape and warns against relying solely on the composition always supplying self-consistent fields",
+  "tests": [
+    "P2C C5 §8.5 the canonical contradictory combination is refused",
+    "P2C C5 §8.5 BOUND_VERIFIED with a null session id is refused",
+    "P2C C5 §8.5 a page whose session differs from the binding is refused",
+    "P2C §11.5 invalid binding-state combinations cannot expose events",
+    "P2C C1 F11 now REFUSED"
+  ],
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "CROSS_FIELD_INVARIANTS_ENFORCED"
+}

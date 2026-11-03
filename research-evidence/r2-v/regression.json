@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-V",
+  "kind": "regression evidence",
+  "note": "Prior-stage evidence directories (r2-m, r2-s, r2-lr, r2-u, r2-e, r1-r) are byte-unchanged; no historical record is rewritten.",
+  "build": "PASS (tsc -b, clean)",
+  "unit": "3229/3229 passed (259 files)",
+  "e2e": "38/38 passed",
+  "architecture": { "violations": 0, "baselineExceptionsObserved": 9 },
+  "publicApi": { "missing": 0, "changedKind": 0, "added": 0 },
+  "r2vGates": {
+    "gateA": "GREEN 46/46 (deterministic; no behavioural pilot on D, per §10)"
+  },
+  "priorR2DeterministicGates": {
+    "r2sGateA": "GREEN 40/40",
+    "r2sCompileReadiness": "GREEN 12/12",
+    "r2mGateA": "GREEN 30/30",
+    "r2lrGateR": "PASS 20/20",
+    "r2lrAntiVacuity": "PASS — 0 unconditional forms (scripts/r2v now included in the scan scope)"
+  },
+  "liveGates": {
+    "r1-l-live": "PASS (repaired; asserts at the session boundary)",
+    "r1-h-live": "PASS",
+    "r1-hr-clean-env": "PASS",
+    "r1-hc-live": "PASS",
+    "e1-k-live": "PASS",
+    "e2-i-live": "PASS",
+    "e3-c-live": "PASS",
+    "e4-l-live": "PASS",
+    "e5-p-live": "PASS",
+    "e-live": "PASS",
+    "d2-live": "PASS",
+    "d4-live": "PASS",
+    "d5-live": "PASS"
+  },
+  "conformanceGates": {
+    "r1-h-conformance": "PASS",
+    "r1-hr-conformance": "PASS",
+    "r1-hc-conformance": "PASS",
+    "r1-s-conformance": "FAIL — the preserved historical negative baseline (a host offering no enforceable read primitive); unchanged"
+  },
+  "canonicalSurfaces": {
+    "srcDiffSinceBaseline": "ZERO",
+    "canonicalSemanticsChange": "ZERO",
+    "hostProductSemanticsChange": "ZERO",
+    "newOwner": "NONE",
+    "architectureWriteRun": false,
+    "m1RendererChanged": false,
+    "previewBudgetsChanged": false,
+    "newMetadataAdded": false,
+    "note": "R2-V is research harness and evidence only. It reuses the R2-E host-mediated consumption seam verbatim and adds no production code path."
+  }
+}

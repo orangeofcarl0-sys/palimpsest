@@ -1,0 +1,473 @@
+/**
+ * Trajectory-P2-C §6 — ASSOCIATION QUALIFICATION (THE READ SIDE), hardened.
+ *
+ * P2-B qualified an association from: a durable record, a Work RECORD existence check, a basis VALUE
+ * match, a CLOSED window and a single candidate. P2-C strengthens each of those, because each had a
+ * falsifier against it:
+ *
+ *   §6.1  the source is qualified against the VERIFIER'S OWN trusted epochs (F1/F2/F3), not the record's
+ *         basis compared to a caller-supplied value, and the record's KIND must agree with the matching
+ *         epoch. A CONTROLLED_STUB cannot ride a matching basis into first-party verification.
+ *   §6.4  the durable records were already validated at the store boundary (F8/F9); the qualifier refuses
+ *         a corrupted history rather than reading it as empty.
+ *   §6.5  canonical Work is revalidated through the EXISTING V0S/H0 admission logic (F10), which verifies
+ *         the exact historical ATTEMPT_CREATED event, rather than a non-null record.
+ *   §6.6  the window is validated structurally (F4/F5/F6) from the durable record order.
+ *   §6.7  a bounded CURRENTNESS protocol (F7): capture the store head before the async DSH read, and
+ *         re-check it after; a relevant change yields RACED rather than a stale ASSOCIATION_QUALIFIED.
+ *
+ * WHAT IT STILL DOES NOT CLAIM. The source basis is a PATH-based digest, so this is a local
+ * trusted-composition boundary, not content attestation. That limitation travels on the result.
+ *
+ * Layer: L2 (`src/execution_association/`). Read-only over its own store; Work and DSH are injected ports.
+ */
+import type { DshSessionReadPort } from "../trajectory/execution.js";
+import type { AttemptSessionAssociation } from "../trajectory/binding.js";
+import { sourceScopeKeyOf, type ExecutionAssociationEvent, type SessionIdentityObservedPayload, type TrustedSourceBasis } from "./contract.js";
+import { qualifyRecordSource, type TrustedSourceRegistry } from "./source.js";
+import { validateObservationWindow } from "./window_integrity.js";
+import type { ExecutionAssociationStore } from "./store.js";
+
+/**
+ * §9.2: the qualification outcome vocabulary.
+ *
+ * `RACED` is the P2-C addition: the durable history changed while the asynchronous source read was in
+ * flight, so the result is not bound to a single basis and must be re-evaluated.
+ */
+export const ASSOCIATION_QUALIFICATION_STATES = [
+  "NO_DURABLE_OBSERVATION",
+  "OBSERVATION_INCOMPLETE",
+  "SOURCE_UNAVAILABLE",
+  "SOURCE_REFUSED",
+  "CONFLICT",
+  "RACED",
+  "ASSOCIATION_QUALIFIED",
+] as const;
+export type AssociationQualificationState = (typeof ASSOCIATION_QUALIFICATION_STATES)[number];
+
+/**
+ * §6.5: the Work revalidation port. The verifier re-reads canonical Work through the EXISTING admission
+ * logic; it does not trust the record.
+ */
+export interface WorkRevalidationPort {
+  /**
+   * Re-read the canonical Attempt. Returns the exact historical identity, or a refusal explaining why the
+   * Attempt is not admissible. Implementations should REUSE the V0S/H0 `admitAttempt` logic.
+   */
+  readAttempt(input: { readonly projectId: string; readonly attemptId: string }):
+    | { readonly ok: true; readonly taskId: string | null; readonly state: string | null; readonly creationEventId: string | null }
+    | { readonly ok: false; readonly reason: string };
+}
+
+/** §6.1: the DSH source revalidation port, backed by the official reader. */
+export interface DshSourceRevalidationPort {
+  readHeaderIdentity(sessionId: string): ReturnType<DshSessionReadPort["readHeaderIdentity"]>;
+}
+
+/** §6.7: the currentness basis captured before the async read. */
+export interface QualificationBasis {
+  /** The store head at capture time. */
+  readonly storeHead: number;
+  /** The durable events the qualification was derived from, so a recheck compares like with like. */
+  readonly attemptEventCount: number;
+}
+
+/**
+ * Trajectory-P2-D1 §7.1: THE COMPLETE RELEVANT ASSOCIATION BASIS.
+ *
+ * The P2-D0 post-read check compared only the SELECTED invocation's event ids. That is narrower than the
+ * admission it claims to protect (F2/F3/F4). This basis names every association fact the selection and the
+ * Session ownership actually rest on, so a read-side recheck can detect a RELEVANT change without treating
+ * an unrelated project's append as a conflict (§7.4):
+ *
+ *   · the complete known Invocation set for this Attempt;
+ *   · the SELECTED Invocation's durable event set;
+ *   · the source-scoped foreign creator claims for the Session;
+ *   · the source qualification epoch;
+ *   · the association revision/watermark (store head).
+ */
+export interface AssociationRelevantBasis {
+  /** The store head at the moment the qualification was bound. */
+  readonly storeHead: number;
+  /** Every Invocation observed for this Attempt, sorted, so a new one is a relevant change. */
+  readonly attemptInvocationIds: readonly string[];
+  /** The selected Invocation's durable event ids, in seq order. */
+  readonly selectedInvocationEventIds: readonly string[];
+  /** The source-scoped competing creator Attempts for this Session, sorted. */
+  readonly foreignCreatorAttemptIds: readonly string[];
+  /** The trusted source epoch the qualification matched. */
+  readonly sourceEpochId: string;
+  /** The deployment source-scope key the foreign-creator probe uses, so a recheck uses the SAME scope. */
+  readonly sourceScopeKey: string;
+}
+
+export interface QualifiedAssociation {
+  readonly state: "ASSOCIATION_QUALIFIED";
+  readonly projectId: string;
+  readonly attemptId: string;
+  readonly invocationId: string;
+  readonly dshSessionId: string;
+  readonly durableBindingRef: string;
+  readonly hostLocalJobId: string | null;
+  readonly sourceEpochId: string;
+  /**
+   * P2-D0 §9.3: whether the association store this qualification was derived from is COLD-RECOVERABLE.
+   *
+   * `DURABLE` means the record lives in a file-backed store, so a restart can recover it. `EPHEMERAL`
+   * means the store is in-memory only, so the association exists for this process alone. An ephemeral
+   * qualification is a legitimate test-time result, but it must NEVER be presented as recoverable
+   * durable authority — a caller that needs durability must refuse an EPHEMERAL binding.
+   */
+  readonly durability: "DURABLE" | "EPHEMERAL";
+  readonly basis: {
+    readonly sourceEpochMatched: boolean;
+    readonly sourceKindAgreed: boolean;
+    readonly workAttemptConfirmed: boolean;
+    readonly dshHeaderConfirmed: boolean;
+    readonly windowClosedConsistently: boolean;
+    readonly candidateCount: number;
+    readonly currentness: QualificationBasis;
+  };
+  /**
+   * Trajectory-P2-D1 §7.1: the COMPLETE relevant association basis this qualification rests on, so a
+   * read-side recheck compares like with like rather than only the selected invocation's own event ids.
+   */
+  readonly relevantBasis: AssociationRelevantBasis;
+  /** §6.8: the H1-compatible association, assembled from REAL evidence — no fabricated fields. */
+  readonly h1Association: AttemptSessionAssociation;
+  /** §6.1: the honest limit of the local source boundary. */
+  readonly sourceLimit: string;
+}
+
+export interface UnqualifiedAssociation {
+  readonly state: Exclude<AssociationQualificationState, "ASSOCIATION_QUALIFIED">;
+  readonly projectId: string;
+  readonly attemptId: string;
+  readonly invocationId: string;
+  readonly detail: string;
+  readonly candidates: readonly { readonly dshSessionId: string; readonly eventId: string; readonly hostLocalJobId: string | null }[];
+}
+
+export type AssociationQualification = QualifiedAssociation | UnqualifiedAssociation;
+
+export interface AssociationQualifier {
+  /**
+   * P2-D0 §9.3: whether the underlying store is cold-recoverable. Exposed so a caller that REQUIRES
+   * durability can refuse an ephemeral qualification without inspecting the store itself.
+   */
+  readonly durability: "DURABLE" | "EPHEMERAL";
+  qualifyAttempt(input: { readonly projectId: string; readonly attemptId: string }): Promise<{
+    readonly attemptId: string;
+    readonly qualifications: readonly AssociationQualification[];
+    readonly summary: {
+      readonly invocationCount: number;
+      readonly qualifiedCount: number;
+      readonly conflictCount: number;
+      readonly incompleteCount: number;
+      readonly unavailableCount: number;
+      readonly refusedCount: number;
+      readonly racedCount: number;
+    };
+  }>;
+}
+
+const SOURCE_LIMIT =
+  "the source basis is a digest of the configured executable PATHS, so this is a local trusted-composition boundary: it establishes that the deployment was configured with this executable, not that the bytes on disk were the expected ones, and it is not remote attestation";
+
+/**
+ * Trajectory-P2-D1 §7.1/§7.3: compute the COMPLETE relevant association basis for ONE selected
+ * Invocation, from the durable store. BOTH the read-side Qualifier and the attributed Preview's post-read
+ * recheck call THIS, so the two compare like with like and a change to any relevant fact is detectable.
+ *
+ * It reads only the Attempt's own rows plus the cross-Attempt creator probe for the ONE session, so an
+ * unrelated project's append never enters the basis (§7.4) and no global snapshot is taken.
+ */
+export function associationRelevantBasisOf(input: {
+  readonly store: ExecutionAssociationStore;
+  readonly projectId: string;
+  readonly attemptId: string;
+  readonly invocationId: string;
+  readonly dshSessionId: string;
+  readonly sourceEpochId: string;
+}): AssociationRelevantBasis {
+  const events = input.store.replayForAttempt({ projectId: input.projectId, attemptId: input.attemptId });
+  const attemptInvocationIds = [...new Set(events.map((event) => event.payload.invocationId))].sort();
+  const selectedInvocationEventIds = events.filter((event) => event.payload.invocationId === input.invocationId).map((event) => event.eventId);
+  const observations = events.filter(
+    (event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED",
+  );
+  const chosen = observations.find((event) => event.payload.dshSessionId === input.dshSessionId);
+  const scopeKey = chosen === undefined ? "" : sourceScopeKeyOf(chosen.payload.sourceBasis);
+  const foreignCreatorAttemptIds =
+    scopeKey === ""
+      ? []
+      : [
+          ...new Set(
+            input.store
+              .replayForSession({ projectId: input.projectId, dshSessionId: input.dshSessionId })
+              .filter((event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED")
+              .filter((event) => event.payload.attemptId !== input.attemptId && sourceScopeKeyOf(event.payload.sourceBasis) === scopeKey)
+              .map((event) => event.payload.attemptId),
+          ),
+        ].sort();
+  return Object.freeze({
+    storeHead: input.store.head(),
+    attemptInvocationIds: Object.freeze(attemptInvocationIds),
+    selectedInvocationEventIds: Object.freeze(selectedInvocationEventIds),
+    foreignCreatorAttemptIds: Object.freeze(foreignCreatorAttemptIds),
+    sourceEpochId: input.sourceEpochId,
+    sourceScopeKey: scopeKey,
+  });
+}
+
+/**
+ * Trajectory-P2-D1 §7.3: compare two relevant bases and report the FIRST reason they differ, or null when
+ * they are equal. A difference means a RELEVANT change occurred (a new Invocation, a changed selected
+ * invocation history, or a competing creator claim), so the page must not be admitted.
+ *
+ * §7.4: the store head is used ONLY as a fast path. It is a GLOBAL watermark, so an unrelated project's
+ * append moves it without changing any fact this association rests on — that must NOT be a conflict. When
+ * the head is unchanged nothing relevant can have changed; when it moved, the SEMANTIC facts decide.
+ */
+export function relevantBasisDifference(before: AssociationRelevantBasis, after: AssociationRelevantBasis): string | null {
+  if (after.storeHead === before.storeHead) return null;
+  const sameSet = (a: readonly string[], b: readonly string[]): boolean => a.length === b.length && a.every((value, index) => value === b[index]);
+  if (after.attemptInvocationIds.length !== before.attemptInvocationIds.length || !sameSet(before.attemptInvocationIds, after.attemptInvocationIds)) {
+    return `the Attempt's Invocation set changed (${before.attemptInvocationIds.length} -> ${after.attemptInvocationIds.length})`;
+  }
+  if (!sameSet(before.selectedInvocationEventIds, after.selectedInvocationEventIds)) return "the selected Invocation's durable event set changed";
+  if (after.foreignCreatorAttemptIds.length > before.foreignCreatorAttemptIds.length || !sameSet(before.foreignCreatorAttemptIds, after.foreignCreatorAttemptIds)) {
+    return "a competing source-scoped creator claim for the Session appeared";
+  }
+  return null;
+}
+
+function observedEvents(events: readonly ExecutionAssociationEvent[]): readonly (ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload })[] {
+  return events.filter((event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED");
+}
+
+/**
+ * §6.8: assemble the H1 association from REAL evidence. `durableBindingRef` is the committed event id and
+ * `verification: "VERIFIED"` is set ONLY after the checks passed.
+ */
+function toH1Association(input: { readonly payload: SessionIdentityObservedPayload; readonly durableBindingRef: string }): AttemptSessionAssociation {
+  return Object.freeze({
+    schemaVersion: 1,
+    projectId: input.payload.projectId,
+    attemptId: input.payload.attemptId,
+    invocationId: input.payload.invocationId,
+    dshSessionId: input.payload.dshSessionId,
+    producerEvidence: Object.freeze({ source: "CANONICAL_ATTEMPT_BINDING" as const, reference: input.durableBindingRef }),
+    observationState: "PRODUCER_OBSERVED" as const,
+    durableBindingRef: input.durableBindingRef,
+    verification: "VERIFIED" as const,
+    conflictDetail: null,
+  });
+}
+
+export function makeAssociationQualifier(input: {
+  readonly store: ExecutionAssociationStore;
+  readonly work: WorkRevalidationPort;
+  readonly dsh: DshSourceRevalidationPort;
+  /** §6.1: the VERIFIER'S OWN trusted epochs. A record must match one, and its kind must agree. */
+  readonly registry: TrustedSourceRegistry;
+  /**
+   * P2-D0 §9.3: whether this store is cold-recoverable. Defaults to `DURABLE`; the product composition
+   * passes `EPHEMERAL` when it derived an in-memory path, so a qualification carries the honest value.
+   */
+  readonly durability?: "DURABLE" | "EPHEMERAL" | undefined;
+}): AssociationQualifier {
+  const durability: "DURABLE" | "EPHEMERAL" = input.durability ?? "DURABLE";
+  async function qualifyInvocation(input2: {
+    readonly projectId: string;
+    readonly attemptId: string;
+    readonly invocationId: string;
+    readonly events: readonly ExecutionAssociationEvent[];
+    readonly storeHeadAtStart: number;
+    readonly attemptEventCountAtStart: number;
+  }): Promise<AssociationQualification> {
+    const candidates = observedEvents(input2.events);
+    const unqualified = (state: UnqualifiedAssociation["state"], detail: string): UnqualifiedAssociation =>
+      Object.freeze({
+        state,
+        projectId: input2.projectId,
+        attemptId: input2.attemptId,
+        invocationId: input2.invocationId,
+        detail,
+        candidates: Object.freeze(candidates.map((event) => ({ dshSessionId: event.payload.dshSessionId, eventId: event.eventId, hostLocalJobId: event.payload.hostLocalJobId }))),
+      });
+
+    if (candidates.length === 0) {
+      return unqualified("NO_DURABLE_OBSERVATION", "no durable session-identity observation exists for this invocation");
+    }
+
+    /** §6.1: EVERY candidate's source must match a trusted epoch AND its kind must agree. */
+    let epochId = "";
+    for (const candidate of candidates) {
+      const source = qualifyRecordSource({ registry: input.registry, recordBasis: candidate.payload.sourceBasis, recordKind: candidate.payload.sourceKind });
+      if (!source.ok) {
+        return unqualified("SOURCE_REFUSED", source.detail);
+      }
+      epochId = source.epochId;
+    }
+
+    /** §6.5: re-read canonical Work through the EXISTING admission logic, verifying the creation event. */
+    const work = input.work.readAttempt({ projectId: input2.projectId, attemptId: input2.attemptId });
+    if (!work.ok) {
+      return unqualified("SOURCE_REFUSED", `canonical Work refused this attempt: ${work.reason}`);
+    }
+
+    /** §6.6: the window is validated from the durable record ORDER, not the finalization's own fields. */
+    const window = validateObservationWindow(input2.events);
+    if (window.state === "CONTRADICTORY") {
+      return unqualified("OBSERVATION_INCOMPLETE", `the observation window is contradictory: ${window.detail}`);
+    }
+    if (window.state !== "CLOSED_CONSISTENT") {
+      return unqualified("OBSERVATION_INCOMPLETE", `the observation window is not consistently closed: ${window.detail}`);
+    }
+
+    /** §9.3: cardinality over the COMPLETE candidate set. Two identities is a conflict. */
+    if (window.candidateSessionIds.length > 1) {
+      return unqualified(
+        "CONFLICT",
+        `this invocation is observed to have produced ${String(window.candidateSessionIds.length)} distinct sessions (${window.candidateSessionIds.join(", ")}), so no single identity is established`,
+      );
+    }
+
+    const sessionId = window.candidateSessionIds[0]!;
+
+    /**
+     * §6.5 CROSS-ATTEMPT CREATOR CONFLICT.
+     *
+     * The first-party Work Worker path CREATES a fresh Session. If a DIFFERENT Attempt claims the same
+     * SessionId under the SAME source scope, the two incompatible fresh-creation claims must not both
+     * qualify: at most one Attempt created that session, and this one cannot be assumed to be it.
+     *
+     * The scope is the deployment's own source identity, so two unrelated roots that merely contain an
+     * identical SessionId string do not manufacture a conflict. A same-Attempt duplicate is not a
+     * conflict (it is the same creator), and this is checked BEFORE the DSH header read so a conflict
+     * costs no source I/O.
+     */
+    const scopeKey = sourceScopeKeyOf(candidates[0]!.payload.sourceBasis);
+    const foreignCreatorsOf = (): readonly string[] =>
+      input.store
+        .replayForSession({ projectId: input2.projectId, dshSessionId: sessionId })
+        .filter((event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED")
+        .filter((event) => event.payload.attemptId !== input2.attemptId && sourceScopeKeyOf(event.payload.sourceBasis) === scopeKey)
+        .map((event) => event.payload.attemptId);
+    const foreignCreators = foreignCreatorsOf();
+    if (foreignCreators.length > 0) {
+      return unqualified(
+        "CONFLICT",
+        `session ${sessionId} is also claimed as created by attempt ${[...new Set(foreignCreators)].join(", ")} under the same DSH source scope, so this attempt's creation claim is not established`,
+      );
+    }
+
+    /** §6.1: read the REAL DSH Session header. */
+    const header = await input.dsh.readHeaderIdentity(sessionId);
+    if (header.readState !== "READ_OK" || header.header === null) {
+      return unqualified("SOURCE_UNAVAILABLE", `the DSH session source could not be read (${header.readState}): ${header.detail}`);
+    }
+    if (header.header.sessionId !== sessionId) {
+      return unqualified("SOURCE_REFUSED", `the DSH session header names "${header.header.sessionId}", which contradicts the observed identity "${sessionId}"`);
+    }
+
+    /**
+     * §6.7 CURRENTNESS: the asynchronous header read may have taken time. Re-read the store and refuse a
+     * result bound to a basis that no longer holds. This is a bounded optimistic read-check, not a
+     * transaction, and it makes a stale qualification impossible to return silently.
+     *
+     * P2-D0 §7.5: the basis covers BOTH this attempt's own durable history AND the cross-Attempt creator
+     * claim set for the session, so a conflict committed during the read is caught here too — not only a
+     * change to this attempt's own rows.
+     */
+    const headAfter = input.store.head();
+    const eventsAfter = input.store.replayForAttempt({ projectId: input2.projectId, attemptId: input2.attemptId });
+    const foreignCreatorsAfter = foreignCreatorsOf();
+    const relevantChanged =
+      headAfter !== input2.storeHeadAtStart &&
+      (eventsAfter.length !== input2.attemptEventCountAtStart ||
+        eventsAfter.some((event, index) => event.eventId !== input2.events[index]?.eventId) ||
+        foreignCreatorsAfter.length > 0);
+    if (relevantChanged) {
+      return unqualified(
+        "RACED",
+        `the durable association history changed while the DSH source was being read (head ${String(input2.storeHeadAtStart)} -> ${String(headAfter)}), so the qualification is not bound to a stable basis`,
+      );
+    }
+
+    const chosen = candidates.find((candidate) => candidate.payload.dshSessionId === sessionId)!;
+    const relevantBasis = associationRelevantBasisOf({
+      store: input.store,
+      projectId: input2.projectId,
+      attemptId: input2.attemptId,
+      invocationId: input2.invocationId,
+      dshSessionId: sessionId,
+      sourceEpochId: epochId,
+    });
+    return Object.freeze({
+      state: "ASSOCIATION_QUALIFIED" as const,
+      projectId: input2.projectId,
+      attemptId: input2.attemptId,
+      invocationId: input2.invocationId,
+      dshSessionId: sessionId,
+      durableBindingRef: chosen.eventId,
+      hostLocalJobId: chosen.payload.hostLocalJobId,
+      sourceEpochId: epochId,
+      durability,
+      basis: Object.freeze({
+        sourceEpochMatched: true,
+        sourceKindAgreed: true,
+        workAttemptConfirmed: true,
+        dshHeaderConfirmed: true,
+        windowClosedConsistently: true,
+        candidateCount: candidates.length,
+        currentness: Object.freeze({ storeHead: headAfter, attemptEventCount: eventsAfter.length }),
+      }),
+      relevantBasis,
+      h1Association: toH1Association({ payload: chosen.payload, durableBindingRef: chosen.eventId }),
+      sourceLimit: SOURCE_LIMIT,
+    });
+  }
+
+  return Object.freeze({
+    durability,
+    async qualifyAttempt(input2: { readonly projectId: string; readonly attemptId: string }) {
+      /** §6.7: capture the basis BEFORE any asynchronous source read. */
+      const storeHeadAtStart = input.store.head();
+      const events = input.store.replayForAttempt({ projectId: input2.projectId, attemptId: input2.attemptId });
+      const attemptEventCountAtStart = events.length;
+      const invocations = [...new Set(events.map((event) => event.payload.invocationId))].sort();
+      const qualifications: AssociationQualification[] = [];
+      for (const invocationId of invocations) {
+        qualifications.push(
+          await qualifyInvocation({
+            projectId: input2.projectId,
+            attemptId: input2.attemptId,
+            invocationId,
+            events: events.filter((event) => event.payload.invocationId === invocationId),
+            storeHeadAtStart,
+            attemptEventCountAtStart,
+          }),
+        );
+      }
+      const count = (state: AssociationQualificationState) => qualifications.filter((entry) => entry.state === state).length;
+      return Object.freeze({
+        attemptId: input2.attemptId,
+        qualifications: Object.freeze(qualifications),
+        summary: Object.freeze({
+          invocationCount: invocations.length,
+          qualifiedCount: count("ASSOCIATION_QUALIFIED"),
+          conflictCount: count("CONFLICT"),
+          incompleteCount: count("OBSERVATION_INCOMPLETE"),
+          unavailableCount: count("SOURCE_UNAVAILABLE"),
+          refusedCount: count("SOURCE_REFUSED"),
+          racedCount: count("RACED"),
+        }),
+      });
+    },
+  });
+}
+
+/** §6.1: a basis value the caller may compare against, re-exported so a caller need not reach into contract. */
+export type { TrustedSourceBasis };

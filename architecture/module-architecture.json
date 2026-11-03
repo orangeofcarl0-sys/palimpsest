@@ -1,34 +1,34 @@
 {
   "version": 4,
-  "capturedFrom": "e6994503006297073cddba3895fe84ed5b3445c3",
+  "capturedFrom": "d691f3f1a8130e11e52a0ce293c935c4452fb9d2",
   "totals": {
-    "files": 398,
-    "loc": 114025,
-    "bytes": 5019363,
-    "edges": 1644,
-    "externalImports": 19,
+    "files": 514,
+    "loc": 152272,
+    "bytes": 6894878,
+    "edges": 2000,
+    "externalImports": 21,
     "unresolvedImports": 0
   },
   "layers": [
     {
       "layer": "L1",
-      "files": 67
+      "files": 70
     },
     {
       "layer": "L2",
-      "files": 193
+      "files": 262
     },
     {
       "layer": "L3",
-      "files": 55
+      "files": 60
     },
     {
       "layer": "L4",
-      "files": 13
+      "files": 14
     },
     {
       "layer": "L5",
-      "files": 65
+      "files": 103
     },
     {
       "layer": "BARREL",
@@ -56,25 +56,25 @@
       "file": "src/application/surface.ts",
       "layer": "L4",
       "loc": 56,
-      "bytes": 2373,
+      "bytes": 2405,
       "fanOut": 9,
-      "fanIn": 17
+      "fanIn": 21
     },
     {
       "file": "src/deployment/launch.ts",
       "layer": "L5",
-      "loc": 667,
-      "bytes": 31617,
+      "loc": 702,
+      "bytes": 34227,
       "fanOut": 24,
       "fanIn": 1
     },
     {
       "file": "src/install.ts",
       "layer": "L5",
-      "loc": 410,
-      "bytes": 20234,
-      "fanOut": 13,
-      "fanIn": 2
+      "loc": 648,
+      "bytes": 33678,
+      "fanOut": 20,
+      "fanIn": 3
     },
     {
       "file": "src/tools/application_tools.ts",
@@ -87,8 +87,8 @@
     {
       "file": "src/tools/controller.ts",
       "layer": "L2",
-      "loc": 4828,
-      "bytes": 212379,
+      "loc": 4825,
+      "bytes": 215928,
       "fanOut": 39,
       "fanIn": 19
     }
@@ -122,7 +122,17 @@
     {
       "file": "src/composition/continuation.ts",
       "layer": "L5",
-      "fanOut": 21
+      "fanOut": 23
+    },
+    {
+      "file": "src/install.ts",
+      "layer": "L5",
+      "fanOut": 20
+    },
+    {
+      "file": "src/composition/application.ts",
+      "layer": "L5",
+      "fanOut": 19
     },
     {
       "file": "src/project_management/service.ts",
@@ -135,6 +145,21 @@
       "fanOut": 17
     },
     {
+      "file": "src/application/surfaces/project.ts",
+      "layer": "L4",
+      "fanOut": 16
+    },
+    {
+      "file": "src/composition/core.ts",
+      "layer": "L5",
+      "fanOut": 16
+    },
+    {
+      "file": "src/composition/execution_association.ts",
+      "layer": "L5",
+      "fanOut": 16
+    },
+    {
       "file": "src/composition/governance.ts",
       "layer": "L5",
       "fanOut": 16
@@ -145,7 +170,7 @@
       "fanOut": 16
     },
     {
-      "file": "src/composition/core.ts",
+      "file": "src/adapters/dsh/index.ts",
       "layer": "L5",
       "fanOut": 14
     },
@@ -160,61 +185,61 @@
       "fanOut": 14
     },
     {
-      "file": "src/composition/application.ts",
-      "layer": "L5",
-      "fanOut": 13
-    },
-    {
-      "file": "src/install.ts",
-      "layer": "L5",
+      "file": "src/federation/federation_service.ts",
+      "layer": "L2",
       "fanOut": 13
     },
     {
       "file": "src/interaction/collaboration.ts",
       "layer": "L3",
       "fanOut": 13
-    },
-    {
-      "file": "src/campaign/index.ts",
-      "layer": "L2",
-      "fanOut": 12
-    },
-    {
-      "file": "src/domain/aggregate.ts",
-      "layer": "L1",
-      "fanOut": 12
-    },
-    {
-      "file": "src/adapters/http/router.ts",
-      "layer": "L5",
-      "fanOut": 11
-    },
-    {
-      "file": "src/application/surfaces/project.ts",
-      "layer": "L4",
-      "fanOut": 11
     }
   ],
   "topFanIn": [
     {
       "file": "src/schema/canonical.ts",
       "layer": "L1",
-      "fanIn": 107
+      "fanIn": 133
     },
     {
       "file": "src/schema/index.ts",
       "layer": "L1",
-      "fanIn": 40
+      "fanIn": 52
     },
     {
       "file": "src/schema/identifier.ts",
       "layer": "L1",
-      "fanIn": 37
+      "fanIn": 38
     },
     {
       "file": "src/federation/peer.ts",
       "layer": "L2",
-      "fanIn": 34
+      "fanIn": 36
+    },
+    {
+      "file": "src/tools/dsh_types.ts",
+      "layer": "L5",
+      "fanIn": 23
+    },
+    {
+      "file": "src/project_workspace/index.ts",
+      "layer": "L2",
+      "fanIn": 22
+    },
+    {
+      "file": "src/application/surface.ts",
+      "layer": "L4",
+      "fanIn": 21
+    },
+    {
+      "file": "src/state/index.ts",
+      "layer": "L1",
+      "fanIn": 21
+    },
+    {
+      "file": "src/domain/errors.ts",
+      "layer": "L1",
+      "fanIn": 19
     },
     {
       "file": "src/tools/controller.ts",
@@ -222,22 +247,7 @@
       "fanIn": 19
     },
     {
-      "file": "src/tools/dsh_types.ts",
-      "layer": "L5",
-      "fanIn": 18
-    },
-    {
-      "file": "src/application/surface.ts",
-      "layer": "L4",
-      "fanIn": 17
-    },
-    {
       "file": "src/binding/contract.ts",
-      "layer": "L1",
-      "fanIn": 17
-    },
-    {
-      "file": "src/domain/errors.ts",
       "layer": "L1",
       "fanIn": 17
     },
@@ -257,101 +267,91 @@
       "fanIn": 15
     },
     {
-      "file": "src/state/index.ts",
+      "file": "src/proof_asset/index.ts",
+      "layer": "L2",
+      "fanIn": 15
+    },
+    {
+      "file": "src/schema/models.ts",
       "layer": "L1",
       "fanIn": 15
     },
     {
+      "file": "src/reasoning_cell/index.ts",
+      "layer": "L2",
+      "fanIn": 14
+    },
+    {
       "file": "src/recipes/execution.ts",
       "layer": "L3",
-      "fanIn": 14
+      "fanIn": 13
+    },
+    {
+      "file": "src/adapters/dsh/common.ts",
+      "layer": "L5",
+      "fanIn": 12
     },
     {
       "file": "src/adapters/http/common.ts",
       "layer": "L5",
       "fanIn": 12
-    },
-    {
-      "file": "src/domain/world_basis.ts",
-      "layer": "L1",
-      "fanIn": 12
-    },
-    {
-      "file": "src/organization/definition.ts",
-      "layer": "L2",
-      "fanIn": 12
-    },
-    {
-      "file": "src/project_verification/artifacts.ts",
-      "layer": "L2",
-      "fanIn": 12
-    },
-    {
-      "file": "src/runtime_scope/index.ts",
-      "layer": "L2",
-      "fanIn": 12
-    },
-    {
-      "file": "src/boundary_memory/index.ts",
-      "layer": "L2",
-      "fanIn": 11
     }
   ],
   "layerEdges": [
     {
       "fromLayer": "L2",
       "toLayer": "L2",
-      "count": 578
+      "count": 722
     },
     {
       "fromLayer": "L2",
       "toLayer": "L1",
-      "count": 203
-    },
-    {
-      "fromLayer": "L1",
-      "toLayer": "L1",
-      "count": 158
-    },
-    {
-      "fromLayer": "L3",
-      "toLayer": "L3",
-      "count": 115
+      "count": 250
     },
     {
       "fromLayer": "L5",
       "toLayer": "L2",
-      "count": 111
+      "count": 166
     },
     {
       "fromLayer": "L5",
       "toLayer": "L5",
-      "count": 111
+      "count": 165
+    },
+    {
+      "fromLayer": "L1",
+      "toLayer": "L1",
+      "count": 164
+    },
+    {
+      "fromLayer": "L3",
+      "toLayer": "L3",
+      "count": 122
     },
     {
       "fromLayer": "L4",
       "toLayer": "L2",
-      "count": 55
+      "count": 61
     },
     {
       "fromLayer": "L5",
       "toLayer": "L3",
-      "count": 50
+      "count": 52
     },
     {
       "fromLayer": "L3",
       "toLayer": "L2",
-      "count": 42
-    },
-    {
-      "fromLayer": "L3",
-      "toLayer": "L1",
-      "count": 34
+      "count": 48
     },
     {
       "fromLayer": "L5",
       "toLayer": "L1",
-      "count": 31
+      "count": 47
+    },
+    {
+      "fromLayer": "L3",
+      "toLayer": "L1",
+      "count": 38
     },
     {
       "fromLayer": "L4",
@@ -361,7 +361,7 @@
     {
       "fromLayer": "L4",
       "toLayer": "L4",
-      "count": 25
+      "count": 26
     },
     {
       "fromLayer": "ENTRY",
@@ -371,7 +371,7 @@
     {
       "fromLayer": "L5",
       "toLayer": "L4",
-      "count": 17
+      "count": 21
     },
     {
       "fromLayer": "ENTRY",
@@ -381,7 +381,12 @@
     {
       "fromLayer": "L5",
       "toLayer": "BARREL",
-      "count": 11
+      "count": 13
+    },
+    {
+      "fromLayer": "L4",
+      "toLayer": "L1",
+      "count": 6
     },
     {
       "fromLayer": "BARREL",
@@ -411,11 +416,6 @@
     {
       "fromLayer": "L2",
       "toLayer": "L3",
-      "count": 4
-    },
-    {
-      "fromLayer": "L4",
-      "toLayer": "L1",
       "count": 4
     },
     {
@@ -503,6 +503,11 @@
   ],
   "directoryEdges": [
     {
+      "from": "src",
+      "to": "src/composition",
+      "count": 18
+    },
+    {
       "from": "src/campaign",
       "to": "src/schema",
       "count": 16
@@ -510,7 +515,27 @@
     {
       "from": "src/domain",
       "to": "src/schema",
-      "count": 14
+      "count": 16
+    },
+    {
+      "from": "src/tools",
+      "to": "src/domain",
+      "count": 16
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/application",
+      "count": 15
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/tools",
+      "count": 15
+    },
+    {
+      "from": "src/composition",
+      "to": "src/interaction",
+      "count": 13
     },
     {
       "from": "src/composition",
@@ -518,18 +543,18 @@
       "count": 13
     },
     {
-      "from": "src/tools",
-      "to": "src/domain",
-      "count": 13
+      "from": "src/composition",
+      "to": "src/state",
+      "count": 11
     },
     {
       "from": "src/composition",
-      "to": "src/interaction",
-      "count": 12
+      "to": "src/project_workspace",
+      "count": 11
     },
     {
-      "from": "src/adapters",
-      "to": "src/application",
+      "from": "src/composition",
+      "to": "src/domain",
       "count": 11
     },
     {
@@ -538,8 +563,8 @@
       "count": 11
     },
     {
-      "from": "src/adapters",
-      "to": "src/tools",
+      "from": "src",
+      "to": "src/domain",
       "count": 10
     },
     {
@@ -549,13 +574,18 @@
     },
     {
       "from": "src/composition",
-      "to": "src/domain",
+      "to": "src/proof_asset",
+      "count": 10
+    },
+    {
+      "from": "src/federation",
+      "to": "src/identity",
       "count": 10
     },
     {
       "from": "src",
-      "to": "src/composition",
-      "count": 10
+      "to": "src/tools",
+      "count": 9
     },
     {
       "from": "src/application",
@@ -563,8 +593,8 @@
       "count": 9
     },
     {
-      "from": "src/federation",
-      "to": "src/identity",
+      "from": "src/composition",
+      "to": "src/schema",
       "count": 9
     },
     {
@@ -578,8 +608,13 @@
       "count": 9
     },
     {
-      "from": "src",
-      "to": "src/tools",
+      "from": "src/composition",
+      "to": "src/reasoning_cell",
+      "count": 8
+    },
+    {
+      "from": "src/composition",
+      "to": "src/deployment",
       "count": 8
     },
     {
@@ -613,13 +648,8 @@
       "count": 8
     },
     {
-      "from": "src",
-      "to": "src/domain",
-      "count": 7
-    },
-    {
-      "from": "src/composition",
-      "to": "src/state",
+      "from": "src/federation",
+      "to": "src/schema",
       "count": 7
     },
     {
@@ -629,6 +659,11 @@
     },
     {
       "from": "src/interaction",
+      "to": "src/schema",
+      "count": 7
+    },
+    {
+      "from": "src/procedures",
       "to": "src/schema",
       "count": 7
     },
@@ -643,8 +678,23 @@
       "count": 7
     },
     {
+      "from": "src/tools",
+      "to": "src/schema",
+      "count": 7
+    },
+    {
+      "from": "src/trajectory",
+      "to": "src/schema",
+      "count": 7
+    },
+    {
       "from": "src/transport",
       "to": "src/federation",
+      "count": 7
+    },
+    {
+      "from": "src/work",
+      "to": "src/domain",
       "count": 7
     },
     {
@@ -669,17 +719,7 @@
     },
     {
       "from": "src/composition",
-      "to": "src/proof_asset",
-      "count": 6
-    },
-    {
-      "from": "src/composition",
-      "to": "src/recipes",
-      "count": 6
-    },
-    {
-      "from": "src/composition",
-      "to": "src/deployment",
+      "to": "src/federation",
       "count": 6
     },
     {
@@ -695,11 +735,6 @@
     {
       "from": "src/external_assets",
       "to": "src/project_workspace",
-      "count": 6
-    },
-    {
-      "from": "src/federation",
-      "to": "src/schema",
       "count": 6
     },
     {
@@ -728,6 +763,11 @@
       "count": 6
     },
     {
+      "from": "src/tools",
+      "to": "src/work",
+      "count": 6
+    },
+    {
       "from": "src/application",
       "to": "src/campaign",
       "count": 5
@@ -739,12 +779,27 @@
     },
     {
       "from": "src/composition",
+      "to": "src/trajectory",
+      "count": 5
+    },
+    {
+      "from": "src/composition",
+      "to": "src/recipes",
+      "count": 5
+    },
+    {
+      "from": "src/composition",
       "to": "src/effects",
       "count": 5
     },
     {
       "from": "src/coordination",
       "to": "src/identity",
+      "count": 5
+    },
+    {
+      "from": "src/deployment",
+      "to": "src/interaction",
       "count": 5
     },
     {
@@ -784,11 +839,6 @@
     },
     {
       "from": "src/tools",
-      "to": "src/schema",
-      "count": 5
-    },
-    {
-      "from": "src/tools",
       "to": "src/effects",
       "count": 5
     },
@@ -805,6 +855,11 @@
     {
       "from": "src/application",
       "to": "src/reasoning_cell",
+      "count": 4
+    },
+    {
+      "from": "src/application",
+      "to": "src/domain",
       "count": 4
     },
     {
@@ -829,16 +884,6 @@
     },
     {
       "from": "src/composition",
-      "to": "src/federation",
-      "count": 4
-    },
-    {
-      "from": "src/composition",
-      "to": "src/advisor",
-      "count": 4
-    },
-    {
-      "from": "src/composition",
       "to": "src/campaign",
       "count": 4
     },
@@ -849,64 +894,19 @@
     },
     {
       "from": "src/composition",
-      "to": "src/project_workspace",
+      "to": "src/organization_memory",
       "count": 4
     },
     {
       "from": "src/composition",
-      "to": "src/project_verification",
-      "count": 4
-    },
-    {
-      "from": "src/deployment",
-      "to": "src/interaction",
-      "count": 4
-    },
-    {
-      "from": "src/evidence",
-      "to": "src/domain",
-      "count": 4
-    },
-    {
-      "from": "src/organization",
-      "to": "src/schema",
-      "count": 4
-    },
-    {
-      "from": "src/organization_evolution",
-      "to": "src/organization",
-      "count": 4
-    },
-    {
-      "from": "src/organization_evolution",
-      "to": "src/boundary_memory",
-      "count": 4
-    },
-    {
-      "from": "src/recipes",
-      "to": "src/federation",
-      "count": 4
-    },
-    {
-      "from": "src/runtime_evolution",
-      "to": "src/schema",
-      "count": 4
-    },
-    {
-      "from": "src/runtime_scope",
-      "to": "src/schema",
-      "count": 4
-    },
-    {
-      "from": "src/state",
-      "to": "src/domain",
+      "to": "src/context",
       "count": 4
     }
   ],
   "baseline": {
     "version": 4,
-    "capturedFrom": "e6994503006297073cddba3895fe84ed5b3445c3",
-    "capturedTree": "9793e63c9ff6cc1e9f5783ee19a1c6f5d7c8325e",
+    "capturedFrom": "d691f3f1a8130e11e52a0ce293c935c4452fb9d2",
+    "capturedTree": "3b5c0e26be5147c54719598e8edc354d238ad4eb",
     "permittedForbiddenEdges": [
       {
         "from": "src/monitor/driver.ts",
@@ -1131,7 +1131,7 @@
           "src/project_workspace/",
           "src/work/"
         ],
-        "reason": "E3-C §30/§34: the collaboration-need owner observes Project reality through its own consumer-owned read ports and declares a need through the EXISTING Federation port. It must not name a concrete Proof/Reasoning/Boundary/Workspace owner (a second reader of their semantics, and a mutation API one import away from the module that proposes a need), and it must not name the Work kernel at all — NeedCandidate ≠ ContactNeed and ContactNeed ≠ Assignment, so the module that authors a need can never reach a task, an attempt or the scheduler.",
+        "reason": "E3-C §30/§34: the collaboration-need owner observes Project reality through its own consumer-owned read ports and declares a need through the EXISTING Federation port. It must not name a concrete Proof/Reasoning/Boundary/Workspace owner (a second reader of their semantics, and a mutation API one import away from the module that proposes a need), and it must not name the Work kernel at all — `NeedCandidate ≠ ContactNeed` and `ContactNeed ≠ Assignment`, so the module that authors a need can never reach a task, an attempt or the scheduler.",
         "exclusions": []
       },
       {
@@ -1143,7 +1143,7 @@
           "src/coordination/",
           "src/state/"
         ],
-        "reason": "E3-C §4/§30: a CollaborationNeedCandidate is NON-CANONICAL and there is deliberately NO candidate store. The durable ContactNeed is Federation-owned coordination history, reached only through the declaration port, so the candidate module may not touch the coordination store (or the Work event log) directly. Holding the import out is what makes 'no candidate store' machine-checked rather than a promise in a comment.",
+        "reason": "E3-C §4/§30: a `CollaborationNeedCandidate` is NON-CANONICAL and there is deliberately NO candidate store. The durable `ContactNeed` is Federation-owned coordination history, reached only through the declaration port, so the candidate module may not touch the coordination store (or the Work event log) directly. Holding the import out is what makes 'no candidate store' machine-checked rather than a promise in a comment.",
         "exclusions": []
       },
       {
@@ -1157,7 +1157,7 @@
         "to": [
           "src/project_collaboration/"
         ],
-        "reason": "E3-C §2/§34: ContactNeed ≠ Assignment and Commitment ≠ Work ownership. The Work kernel may not consume a collaboration need as if it were work authority, and a project condition may not silently become a scheduled obligation. The only sanctioned direction is the collaboration owner READING Work facts; the kernel never reaches back into the module that authors needs.",
+        "reason": "E3-C §2/§34: `ContactNeed ≠ Assignment` and `Commitment ≠ Work ownership`. The Work kernel may not consume a collaboration need as if it were work authority, and a project condition may not silently become a scheduled obligation. The only sanctioned direction is the collaboration owner READING Work facts; the kernel never reaches back into the module that authors needs.",
         "exclusions": []
       },
       {
@@ -1169,7 +1169,7 @@
           "src/work/",
           "src/scheduler/"
         ],
-        "reason": "E3-C §2/§34: 'Project A may request and accept a contribution from Project B. Project A NEVER obtains authority over Project B's Work ledger.' Federation owns peers, needs, contact, commitments and fulfillment — never Work. If federation could name the Work kernel it could schedule, mutate or observe a project's tasks, which is exactly the global-scheduler / remote-Work-ownership failure this stage exists to prevent. There is no assignPeerToTask.",
+        "reason": "E3-C §2/§34: 'Project A may request and accept a contribution from Project B. Project A NEVER obtains authority over Project B's Work ledger.' Federation owns peers, needs, contact, commitments and fulfillment — never Work. If federation could name the Work kernel it could schedule, mutate or observe a project's tasks, which is exactly the global-scheduler / remote-Work-ownership failure this stage exists to prevent. There is no `assignPeerToTask`.",
         "exclusions": []
       },
       {
@@ -1180,7 +1180,7 @@
         "to": [
           "src/project_collaboration/"
         ],
-        "reason": "E3-C §8: ManagementMode grants ZERO contact-need admission authority. managementMode == DELEGATE must not imply an admitted need, and no caller boolean (approved: true) may stand in for the independent authority. Holding the import out means the management layer cannot reach the admission decision even by accident.",
+        "reason": "E3-C §8: ManagementMode grants ZERO contact-need admission authority. `managementMode == DELEGATE` must not imply an admitted need, and no caller boolean (`approved: true`) may stand in for the independent authority. Holding the import out means the management layer cannot reach the admission decision even by accident.",
         "exclusions": []
       },
       {
@@ -1194,7 +1194,7 @@
           "src/runtime_scope/",
           "src/organization/"
         ],
-        "reason": "E4-L §23/§30: the learning layer OBSERVES structural change and never makes it. Memory ≠ Structure mutation and Evaluation ≠ Governance: if this module could name an evolution service, a runtime scope or an Organization, an empirical result would be one import away from mutating the structure it merely studied — which is exactly the automatic self-modification loop the ruling forbids. It reads evolution history through its own consumer-owned port instead, and the composition adapter is the only place that sees both sides.",
+        "reason": "E4-L §23/§30: the learning layer OBSERVES structural change and never makes it. `Memory ≠ Structure mutation` and `Evaluation ≠ Governance`: if this module could name an evolution service, a runtime scope or an Organization, an empirical result would be one import away from mutating the structure it merely studied — which is exactly the automatic self-modification loop the ruling forbids. It reads evolution history through its own consumer-owned port instead, and the composition adapter is the only place that sees both sides.",
         "exclusions": []
       },
       {
@@ -1206,7 +1206,7 @@
           "src/organization_evolution/",
           "src/runtime_evolution/"
         ],
-        "reason": "E4-L §28/§30: this is the G-13 WRONG EDGE held out at the import. OrganizationMemory is empirical history — it is not, and must never become, a structural authority. If memory could name an evolution plane it could execute a transformation, and ArchitectureRecommendation → OrganizationDynamicsProposal would return indirectly through the back door. The direction is one-way by construction: evolution writes its own truth, learning reads it.",
+        "reason": "E4-L §28/§30: this is the G-13 WRONG EDGE held out at the import. `OrganizationMemory` is empirical history — it is not, and must never become, a structural authority. If memory could name an evolution plane it could execute a transformation, and `ArchitectureRecommendation → OrganizationDynamicsProposal` would return indirectly through the back door. The direction is one-way by construction: evolution writes its own truth, learning reads it.",
         "exclusions": []
       },
       {
@@ -1220,7 +1220,7 @@
           "src/organization_dynamics/",
           "src/runtime_scope/"
         ],
-        "reason": "E4-L §21/§28: the empirical architecture advisor RECOMMENDS and nothing more. Architecture recommendation ≠ OrganizationDynamicsProposal and Historical winner ≠ Future authority — a recommendation must not be convertible into a proposal or a mutation, not even by reaching the owner that would accept one. The advisor consumes OrganizationMemory and returns text; the governed structural path still begins with an independently authored DynamicsProposal.",
+        "reason": "E4-L §21/§28: the empirical architecture advisor RECOMMENDS and nothing more. `Architecture recommendation ≠ OrganizationDynamicsProposal` and `Historical winner ≠ Future authority` — a recommendation must not be convertible into a proposal or a mutation, not even by reaching the owner that would accept one. The advisor consumes OrganizationMemory and returns text; the governed structural path still begins with an independently authored DynamicsProposal.",
         "exclusions": []
       },
       {
@@ -1282,7 +1282,7 @@
         "to": [
           "src/procedures/"
         ],
-        "reason": "E5-P §23/§34: `Observation ≠ Procedure`. OrganizationMemory answers 'what did we observe?'; the procedure owner answers 'what method has the project admitted for reuse?'. Memory GROUNDS procedure authoring — the procedure owner reads it through its own narrow port — but it must not become procedure authority, and it must not be able to mutate a procedure standing. Holding the import out means an evaluation cannot promote, supersede or retire a method.",
+        "reason": "E5-P §23/§34: `Observation ≠ Procedure`. OrganizationMemory answers 'what did we observe?'; the procedure owner answers 'what method has the project admitted for reuse?'. Memory GROUNDS procedure authoring — the procedure owner reads it through its own narrow port — but it must not become procedure authority, and it must not be able to mutate a procedure's standing. Holding the import out means an evaluation cannot promote, supersede or retire a method.",
         "exclusions": []
       }
     ],

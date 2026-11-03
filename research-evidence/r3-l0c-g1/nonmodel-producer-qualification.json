@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1",
+  "kind": "non-model producer qualification",
+  "applicableCommit": "2a1e194f2baf295ceeba1801cd75ecbb83404425",
+  "whatWasChecked": "a real local child-process stub driven through the actual product port and the actual Work Delegation interface",
+  "evidenceClass": "PASS_LOCAL_NONMODEL",
+  "ranRealProductStack": true,
+  "stack": [
+    "installPalimpsest (real composition root)",
+    "the real ProjectController (real prepareMutateWork / settleMutatingWork)",
+    "makeWorkDelegationService (real host-local job lifetime)",
+    "dshSubprocessWorkWorkerPort (real Node spawn)"
+  ],
+  "usedLocalStub": true,
+  "stubIsNonModel": true,
+  "stubInvokedDshOrProvider": false,
+  "modelCallsMade": 0,
+  "observed": {
+    "directChildPid": 18140,
+    "processRole": "DIRECT_CHILD",
+    "exitObserved": true,
+    "exitCode": 0,
+    "eventKinds": [
+      "DIRECT_CHILD_SPAWN_ATTEMPTED",
+      "DIRECT_CHILD_SPAWN_OBSERVED",
+      "DIRECT_CHILD_EXIT_OBSERVED"
+    ],
+    "attemptId": "attempt-34c159e70d4c2bf13e9bf280b27f7a3c",
+    "hostLocalJobId": "wdj-fd032e5f-7299-4bac-af77-4572c0d7c935",
+    "jobPhase": "FINISHED",
+    "correlationIsExact": true,
+    "hostLocalJobIdMatches": true,
+    "recordWritten": true,
+    "recordDurabilityVerified": true,
+    "recordDigestOkOnReadBack": true
+  },
+  "isolationBetweenRuns": {
+    "secondRunDifferentPid": true,
+    "secondRunDifferentAttemptId": true,
+    "secondRunDifferentJobId": true
+  },
+  "modelVisiblePayloadUnchanged": true,
+  "workerOutcomeVocabularyUnchanged": true,
+  "observationIsNotSettlement": true,
+  "proves": [
+    "a real direct child process was created and its lifecycle was observed on this host",
+    "the observation was correlated to the AttemptId the product minted and to the host-local job id",
+    "the observation was preserved durably and the bytes were re-read and verified"
+  ],
+  "doesNotProve": [
+    "that a genuine DSH worker ran",
+    "that the provider/model route executed",
+    "that any LIVE_PRIMARY observation exists"
+  ],
+  "verdicts": {
+    "HOST_OBSERVATION_PRODUCER": "PASS_LOCAL_NONMODEL",
+    "DIRECT_CHILD_PID_OBSERVED": "PASS_LOCAL_NONMODEL",
+    "DIRECT_CHILD_EXIT_OBSERVED": "PASS_LOCAL_NONMODEL",
+    "DIRECT_CHILD_EXIT_UNCERTAINTY_PRESERVED": "PASS_LOCAL_NONMODEL",
+    "WORK_ATTEMPT_CORRELATION": "PASS_LOCAL_NONMODEL",
+    "HOST_LOCAL_JOB_CORRELATION": "PASS_LOCAL_NONMODEL",
+    "RUN_JOURNAL_BINDING": "PASS_LOCAL_NONMODEL",
+    "OBSERVATION_DURABILITY": "PASS_LOCAL_NONMODEL",
+    "OBSERVATION_ORIGIN_BOUNDARY": "PASS_LOCAL_NONMODEL",
+    "MODEL_VISIBLE_CONTEXT_UNCHANGED": "PASS",
+    "WORK_SEMANTICS_UNCHANGED": "PASS"
+  },
+  "law": "a qualified local non-model producer is labeled with its limited evidence class; it is never presented as a real DSH worker observation"
+}

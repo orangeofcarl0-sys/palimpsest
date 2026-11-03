@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1",
+  "kind": "run and attempt correlation contract",
+  "applicableCommit": "2a1e194f2baf295ceeba1801cd75ecbb83404425",
+  "chain": [
+    {
+      "step": "RUN_STARTED",
+      "owner": "the run journal"
+    },
+    {
+      "step": "VALIDATED_RUN_CLAIM",
+      "owner": "the run-root claim file, re-read and nonce-checked"
+    },
+    {
+      "step": "FROZEN_SCHEDULED_SESSION",
+      "owner": "the frozen schedule"
+    },
+    {
+      "step": "DURABLE_TRIAL_ATTEMPT_IDENTITY",
+      "owner": "the Work owner, via the journal TRIAL_RECORDED attemptId"
+    },
+    {
+      "step": "HOST_LOCAL_JOB_ASSOCIATION",
+      "owner": "the Work Delegation host service"
+    },
+    {
+      "step": "HOST_PRIVATE_PORT_INVOCATION",
+      "owner": "the Deployment port"
+    },
+    {
+      "step": "OBSERVED_DIRECT_CHILD_LIFECYCLE",
+      "owner": "the Deployment port observation callback"
+    }
+  ],
+  "evidenceStates": [
+    "DECLARATION_ONLY",
+    "LOCAL_HOST_OBSERVED",
+    "RUN_ATTEMPT_CORRELATED",
+    "PROVENANCE_INCOMPLETE",
+    "PROVENANCE_CONFLICT",
+    "LIVE_PRIMARY_NOT_ESTABLISHED"
+  ],
+  "runIdentitySource": "the run journal RUN_STARTED record, read by readRunIdentity(); a missing, malformed or conflicting run identity is refused",
+  "perTrialRunIdRequired": false,
+  "callerSuppliedRunIdIsNotVerification": true,
+  "attemptIdentitySource": "prepared.attemptId, captured at the host-private delegation boundary; never a caller claim and never reported by the model",
+  "durableRecord": {
+    "fileName": "host-observations.json",
+    "schemaVersion": 1,
+    "writeRefusesDuplicate": true,
+    "reReadsAndVerifiesBytes": true,
+    "contentDigest": "sha256 over the record excluding recordDigest"
+  },
+  "declarationVsObservation": {
+    "callerBuiltJsonCanOnlyReach": "DECLARATION_ONLY",
+    "originMarker": "G1_LOCAL_RECORDER, stamped only by createObservationRecorder",
+    "fabricatedRecordAcceptedAsHostProvenance": false
+  },
+  "trustLimitationDisclosed": true,
+  "selfSignedSignatureAdded": false,
+  "law": "a fabricated JSON object is a test fixture and does not become trusted evidence because the schema is valid; the record is trusted only to the extent the local host process that produced it is trusted"
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "pc1v1-cohort-run/v1",
+  "cohortId": "pc1v1-live-2026-11-03-c-field",
+  "codeFreeze": "92158e37b66b2a649093d870765b6e8b312d6d58",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "sessions": [
+    {
+      "id": "field-study-p-t1",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "T1",
+      "state": "FAILED",
+      "exitCode": 1,
+      "subagents": true
+    },
+    {
+      "id": "field-study-p-t2",
+      "scenario": "field-study",
+      "condition": "P",
+      "stage": "T2",
+      "state": "FAILED",
+      "exitCode": 1,
+      "subagents": true
+    },
+    {
+      "id": "field-study-f-t1",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "T1",
+      "state": "FAILED",
+      "exitCode": 1,
+      "subagents": true
+    },
+    {
+      "id": "field-study-f-t2",
+      "scenario": "field-study",
+      "condition": "F",
+      "stage": "T2",
+      "state": "FAILED",
+      "exitCode": 1,
+      "subagents": true
+    }
+  ],
+  "modelCalls": 4,
+  "note": "Raw stdout/stderr are preserved per session. Behavioral classification and scoring are separate, rubric-bound steps.",
+  "finishedAt": "2026-11-02T19:42:42.174Z"
+}

@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "stage": "R1-R",
+  "protocolDigest": "2d1dfecaf7feecc55601a00f0760cec7e95b667f2972ad34bb831740b006feca",
+  "amendmentDigest": "037fb577096d5763a86026a604673908f456e25611dddcf7423869acad88d186",
+  "blockOrdering": [
+    {
+      "block": 0,
+      "order": [
+        "C2",
+        "C0",
+        "C1"
+      ]
+    },
+    {
+      "block": 1,
+      "order": [
+        "C0",
+        "C1",
+        "C2"
+      ]
+    },
+    {
+      "block": 2,
+      "order": [
+        "C1",
+        "C0",
+        "C2"
+      ]
+    },
+    {
+      "block": 3,
+      "order": [
+        "C0",
+        "C1",
+        "C2"
+      ]
+    },
+    {
+      "block": 4,
+      "order": [
+        "C2",
+        "C0",
+        "C1"
+      ]
+    }
+  ],
+  "trialsPlanned": 30,
+  "trialsAccounted": 30,
+  "pairedStateBlocks": 10,
+  "confoundedBlocks": [],
+  "excludedTrials": 0,
+  "usableTrials": 30,
+  "scenarios": {
+    "B_CONFIG_MIGRATION": {
+      "conditions": {
+        "C0": {
+          "n": 5,
+          "finalSolved": "4/5",
+          "firstCandidateSolved": "4/5",
+          "knownFailureRecurred": "0/5",
+          "knownFailureUnknown": 0,
+          "procedurePulled": "0/5",
+          "epistemicPulled": "0/5",
+          "medianVisibleOracleInvocations": 3,
+          "medianImplementationRevisions": 0,
+          "medianElapsedMs": 162230,
+          "hostFailures": 0,
+          "timeouts": 0,
+          "manualInterventions": 0
+        },
+        "C1": {
+          "n": 5,
+          "finalSolved": "2/5",
+          "firstCandidateSolved": "2/5",
+          "knownFailureRecurred": "0/5",
+          "knownFailureUnknown": 0,
+          "procedurePulled": "0/5",
+          "epistemicPulled": "0/5",
+          "medianVisibleOracleInvocations": 3,
+          "medianImplementationRevisions": 0,
+          "medianElapsedMs": 172483,
+          "hostFailures": 0,
+          "timeouts": 0,
+          "manualInterventions": 0
+        },
+        "C2": {
+          "n": 5,
+          "finalSolved": "1/5",
+          "firstCandidateSolved": "1/5",
+          "knownFailureRecurred": "0/5",
+          "knownFailureUnknown": 0,
+          "procedurePulled": "0/5",
+          "epistemicPulled": "0/5",
+          "medianVisibleOracleInvocations": 0,
+          "medianImplementationRevisions": 0,
+          "medianElapsedMs": 175937,
+          "hostFailures": 0,
+          "timeouts": 0,
+          "manualInterventions": 0
+        }
+      },
+      "c2BetterRecurrence": false,
+      "c2OutcomeNotWorse": false,
+      "directionalBenefit": false,
+      "c2BeatsC1OnRecurrence": false,
+      "c2BeatsC1OnFirst": false,
+      "c2OverC1": false,
+      "procedureObserved": false
+    },
+    "C_REPLAY_SAFE_REDUCER": {
+      "conditions": {
+        "C0": {
+          "n": 5,
+          "finalSolved": "0/5",
+          "firstCandidateSolved": "0/5",
+          "knownFailureRecurred": "4/5",
+          "knownFailureUnknown": 0,
+          "procedurePulled": "0/5",
+          "epistemicPulled": "0/5",
+          "medianVisibleOracleInvocations": 3,
+          "medianImplementationRevisions": 0,
+          "medianElapsedMs": 193723,
+          "hostFailures": 0,
+          "timeouts": 0,
+          "manualInterventions": 0
+        },
+        "C1": {
+          "n": 5,
+          "finalSolved": "0/5",
+          "firstCandidateSolved": "0/5",
+          "knownFailureRecurred": "5/5",
+          "knownFailureUnknown": 0,
+          "procedurePulled": "0/5",
+          "epistemicPulled": "0/5",
+          "medianVisibleOracleInvocations": 3,
+          "medianImplementationRevisions": 0,
+          "medianElapsedMs": 236898,
+          "hostFailures": 0,
+          "timeouts": 0,
+          "manualInterventions": 0
+        },
+        "C2": {
+          "n": 5,
+          "finalSolved": "1/5",
+          "firstCandidateSolved": "1/5",
+          "knownFailureRecurred": "4/5",
+          "knownFailureUnknown": 0,
+          "procedurePulled": "0/5",
+          "epistemicPulled": "0/5",
+          "medianVisibleOracleInvocations": 0,
+          "medianImplementationRevisions": 0,
+          "medianElapsedMs": 183553,
+          "hostFailures": 0,
+          "timeouts": 0,
+          "manualInterventions": 0
+        }
+      },
+      "c2BetterRecurrence": false,
+      "c2OutcomeNotWorse": true,
+      "directionalBenefit": false,
+      "c2BeatsC1OnRecurrence": true,
+      "c2BeatsC1OnFirst": true,
+      "c2OverC1": false,
+      "procedureObserved": false
+    }
+  },
+  "totals": {
+    "n": 30,
+    "finalSolved": "8/30",
+    "firstCandidateSolved": "8/30",
+    "knownFailureRecurred": "13/30",
+    "knownFailureUnknown": 0,
+    "procedurePulled": "0/30",
+    "epistemicPulled": "0/30",
+    "medianVisibleOracleInvocations": 3,
+    "medianImplementationRevisions": 0,
+    "medianElapsedMs": 175825,
+    "hostFailures": 0,
+    "timeouts": 0,
+    "manualInterventions": 0
+  },
+  "verdict": "NO_REPLICATION",
+  "verdictBasis": {
+    "allPrimaryScenariosShowDirectionalBenefit": false,
+    "atLeastOnePrimaryScenarioShowsDirectionalBenefit": false,
+    "atLeastOnePrimaryScenarioShowsC2OverC1WithProcedurePull": false,
+    "anyHostFailureInUsableTrials": false
+  },
+  "criteriaSource": "docs/engineering/R1-PROTOCOL-AMENDMENT-A1.md §6 and R1-STOCHASTIC-COMPOUNDING-PROTOCOL.md §6, applied unchanged"
+}

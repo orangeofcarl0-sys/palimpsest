@@ -1,0 +1,340 @@
+{
+  "schemaVersion": 1,
+  "kind": "PALIMPSEST_CI3_EVIDENCE_MANIFEST",
+  "stage": "Palimpsest-CI3 — Evidence Identity, Staleness & Revision-Scoped Authority",
+  "measuredAt": "2026-10-26T22:10:00.000Z",
+  "node": {
+    "version": "v24.22.0",
+    "executable": "F:\\Codex_Work_Space\\Palimpsest\\.runtimes\\node-v24.22.0-win-x64\\node.exe"
+  },
+  "baseline": {
+    "branch": "palimpsest-ci3-evidence-applicability-authority",
+    "parent": "eac1c2d47864191a8568ac6a8725d2c4d179c916",
+    "parentTree": "e3f95303d20d4856a8e05729c6ecc522265e326b",
+    "ci2CodeFreeze": "bd1ff8d0f9f04befd5f05f5040dee9930f2a118e",
+    "ci2EvidenceFreeze": "eac1c2d47864191a8568ac6a8725d2c4d179c916",
+    "runtime": "0.2.1-rc.3",
+    "workingTreeCleanAtStart": true,
+    "verifiedBeforeMutation": {
+      "statusPorcelainLines": 0,
+      "stashEntries": 0,
+      "diffCheckClean": true,
+      "evidenceTrees": 67,
+      "worktreesRegistered": 95,
+      "gateRootEntries": 19,
+      "gateRootOwnedEntries": 5,
+      "runtimeVersion": "0.2.1-rc.3",
+      "ci2FreezeDiffClassification": [
+        "A\tdocs/engineering/ci2-delegated-completion-qualification.md",
+        "A\tresearch-evidence/ci2/ci2-evidence.json"
+      ],
+      "ci2EvidenceFreezeDiffExecutableFiles": 0
+    }
+  },
+  "codeFreeze": {
+    "commit": "899c252ff599aadbf7be61ba5a14537d778b2540",
+    "tree": "5a0d5e4d60531ea36de03075f5c79f1eb4cb55f4",
+    "changedPaths": [
+      "A\tdocs/engineering/ci3-a1-authority-audit.md",
+      "M\tsrc/tools/work_evidence.ts",
+      "A\ttest/ci3_compatibility.test.ts",
+      "A\ttest/ci3_evidence_identity.test.ts",
+      "A\ttest/ci3_negative_mutation_controls.test.ts",
+      "A\ttest/ci3_promotion_authority.test.ts",
+      "A\ttest/ci3_requalification.test.ts",
+      "A\ttest/ci3_revoked_convergence.test.ts",
+      "A\ttest/ci3_staleness_applicability.test.ts"
+    ],
+    "productionFilesChanged": 1,
+    "controllerUnmodified": true,
+    "controllerLoc": 4829,
+    "controllerLocCeiling": 4830
+  },
+  "selectionProducerCommit": {
+    "commit": "a8d5a2355c34d11af191500543ac445a9b1abc3e",
+    "tree": "9e56f4c31d24305aa342b34ad9bd257f1f3ab068",
+    "path": "scripts/ci3/derive-selection.mjs",
+    "reason": "§18 requires executable producers to live in the Code Freeze, not the Evidence Freeze. CI2 had to make the same correction; recording it makes the pattern visible rather than silent."
+  },
+  "theDefect": {
+    "reproducedAt": "eac1c2d47864191a8568ac6a8725d2c4d179c916",
+    "test": "test/ci3_revoked_convergence.test.ts",
+    "cause": "Two lookups answer 'is this observation already recorded'. The delegated route reads the evidence projection filtered to status='active'; the shared writer reads the event log by idempotency key. After an EVIDENCE_STALE they disagree, and the writer returned the REVOKED event as the observation just taken.",
+    "observed": {
+      "settlementState": "SETTLED",
+      "evidenceRecorded": [
+        "write_scope_valid",
+        "process_exit_zero",
+        "expected_files_exist"
+      ],
+      "atomsActiveAfter": 0,
+      "atomsStaleAfter": 3,
+      "gateVerdictAfter": "INCOMPLETE"
+    },
+    "consequence": "A false qualification CLAIM, not unsafe promotion — the Gate already read the authority column, so no stale atom could authorize anything.",
+    "correction": "src/tools/work_evidence.ts: findRecordedEvidence now also reads the atom's current authority from the projection, and requireActive refuses to converge on a revoked atom. It refuses rather than re-recording because one idempotency key cannot carry two authorities.",
+    "greenAfterCorrection": {
+      "settlement": "refused",
+      "atomsActiveAfter": 0,
+      "atomsStaleAfter": 3,
+      "gateVerdictAfter": "INCOMPLETE"
+    }
+  },
+  "falsifiers": {
+    "file": "test/ci3_evidence_identity.test.ts",
+    "tests": 6,
+    "passed": 6,
+    "cases": {
+      "F1_replay": "converges; no second atom, no second ATTEMPT_COMPLETED, no promotion",
+      "F2_conflict": "a differing exit code is refused, naming both observations",
+      "F3_two_candidates": "disjoint subjects, atoms and dependency digests; a candidate-scoped gate names only its own",
+      "F4_contract_change": "basisDigest differs between contracts, and appears in no atom; the old atoms still satisfy a gate written under the other standard — THE UNCLOSED GAP",
+      "F5_timestamp": "created_at is in every atom and in no key",
+      "F6_reevaluation": "a second attempt is a new subject; identical content is refused as NO_WORK"
+    }
+  },
+  "staleness": {
+    "file": "test/ci3_staleness_applicability.test.ts",
+    "tests": 6,
+    "passed": 6,
+    "mechanism": {
+      "trigger": "a plan revision that retires a task (removal or typed invalidation)",
+      "scope": "the retired tasks and their attempts, matched as exact (subject_type, subject_id) pairs",
+      "commitSubjectAtoms": "excluded from the automatic policy and reported in excludedBySubjectType",
+      "ordering": "EVIDENCE_STALE commits inside the same atomic batch, BEFORE PROJECT_REVISED",
+      "history": "the evidence_json blob is never rewritten; only the projection status column moves",
+      "currentView": "activeEvidenceViews filters status === 'active'"
+    },
+    "policyFinding": "invalidation follows TASK RETIREMENT, not the revision number — a revision that retires nothing revokes nothing"
+  },
+  "gate": {
+    "sevenCasesMeasured": 6,
+    "seventhCaseLocation": "ci3_staleness_applicability.test.ts R3 (a real revision produces the staleness)",
+    "results": {
+      "validCandidate": "PASS",
+      "differentCandidate": "INCOMPLETE with zero evidence_used",
+      "differentContract": "INCOMPLETE, satisfied clause still reported satisfied",
+      "requiredEvidenceAbsent": "INCOMPLETE, never FAIL",
+      "wrongAssociation": "old evidence not borrowed",
+      "newValidEvidence": "PASS re-established"
+    }
+  },
+  "promotion": {
+    "file": "test/ci3_promotion_authority.test.ts",
+    "tests": 5,
+    "passed": 5,
+    "P2": "the Git head does NOT move while the plan revision does; promoteWhenGatePasses returns promoted:false with the gate's verdict; zero PROMOTION_* events; candidate not in the canonical tree",
+    "P3": "after a real promotion advances the head, exactly one PROMOTION_COMMITTED and the canonical tree holds the promoted content",
+    "P4": "a cached PASS is held across a revocation, then promote() is called with NO gate argument; refused with typed blockers, nothing written",
+    "P4_finding": "the verdict is never carried into the mutation boundary — promote() calls assessEligibility, which calls GateEngine.evaluate again against the live projection. A projection-delay window in which a cached verdict carries authority does not exist in this design, and that is proved by exhausting the qualification and promoting with no gate at all.",
+    "independentObservation": "promotionEligibility(attemptId, 'gate-release') returns eligible:true before the revocation and eligible:false with a gate_not_pass blocker after it"
+  },
+  "requalification": {
+    "file": "test/ci3_requalification.test.ts",
+    "tests": 1,
+    "passed": 1,
+    "ladder": [
+      "A1 qualifies under revision 0 through real delegation: 3 active atoms, Gate PASS",
+      "an authorized typed invalidation retires A1's task: A1's atoms stale, Gate INCOMPLETE, task STALE",
+      "E1 survives with the same evidence ids and bytes, still naming candidate A1",
+      "the retained task becomes READY; the scheduler reaches TASK_STARTED; a new attempt runs a new worker body and a new evaluation",
+      "new atoms: new ids, disjoint from A1's, all palimpsest-delegated-settlement, all naming candidate B2",
+      "Gate PASS on B2's evidence only",
+      "promoteWhenGatePasses succeeds and the head advances; the canonical tree holds B2's content"
+    ],
+    "mechanismNote": "the promotion is a merge, so the resulting head is the merge commit — the candidate is asserted as an ANCESTOR of the promoted head, not as the head itself"
+  },
+  "compatibility": {
+    "file": "test/ci3_compatibility.test.ts",
+    "tests": 3,
+    "passed": 3,
+    "finishUnchanged": {
+      "predicates": [
+        "expected_files_exist",
+        "process_exit_zero",
+        "write_scope_valid"
+      ],
+      "commandAtomProducer": "palimpsest-gate",
+      "observedAtomProducer": "palimpsest-finish",
+      "candidateAttribution": "none — CI2's finding, unchanged",
+      "attemptCompletedEvents": 1
+    },
+    "oneWriterTwoRoutes": "same three predicates, different producers; no delegated atom carries the Finish producer",
+    "trajectory": "evidence ids and stale events survive; EVIDENCE_STALE carries causation_id null, so an ordering is not promoted into causality; the Gate reads no trajectory view"
+  },
+  "runs": {
+    "typescriptBuild": {
+      "command": "tsc -b",
+      "exitCode": 0
+    },
+    "moduleArchitecture": {
+      "command": "module-architecture.mjs --check",
+      "verdict": "PASS",
+      "violations": 0,
+      "baselineExceptions": 9
+    },
+    "publicApi": {
+      "command": "module-architecture.mjs --check-public-api",
+      "verdict": "PASS",
+      "missing": 0,
+      "changedKind": 0,
+      "added": 0
+    },
+    "ciAndRegression": {
+      "files": 31,
+      "tests": 227,
+      "passed": 227,
+      "exitCode": 0,
+      "note": "five CI1 files, seven CI2 files, seven CI3 files, plus lean_d5d_result_continuation_service, lean_finish, lean_completion_contract, y_evidence_authority, y_adversarial, z_adversarial, acceptance, gate_tool, gate_dsl, evidence_graph, w_revision_safe, lean_governance"
+    },
+    "selectionManifest": {
+      "derivedBy": "scripts/ci3/derive-selection.mjs",
+      "allTestFiles": 415,
+      "excludedR3l0": 39,
+      "excludedTrajectory": 78,
+      "includedFiles": 298,
+      "formulaCheck": "415 - 39 - 78 = 298; 298 = 291 (CI2) + 7 (CI3)"
+    },
+    "broadNonGate": {
+      "attempt": 1,
+      "unmodifiedSelection": true,
+      "files": 298,
+      "tests": 3769,
+      "passed": 3768,
+      "failed": 1,
+      "failedFile": "test/host_s1r_reparse_boundary.test.ts",
+      "errorType": "Test timed out in 30000ms",
+      "assertionFailures": 0,
+      "exitCode": 1,
+      "note": "TWO broad runs were attempted. The first had 5 timeouts; the second had 2; both exited 1. Neither is reported as green, and neither is replaced by the isolated retests that passed.",
+      "attempts": [
+        {
+          "attempt": 1,
+          "files": 298,
+          "filesFailed": 5,
+          "tests": 3769,
+          "testsPassed": 3764,
+          "testsFailed": 5,
+          "errorType": "Test timed out in 30000ms",
+          "assertionFailures": 0,
+          "exitCode": 1
+        },
+        {
+          "attempt": 2,
+          "files": 298,
+          "filesFailed": 2,
+          "tests": 3769,
+          "testsPassed": 3767,
+          "testsFailed": 2,
+          "errorType": "Test timed out in 30000ms",
+          "assertionFailures": 0,
+          "exitCode": 1
+        }
+      ],
+      "conclusion": "NOT GREEN. Both attempts exited 1 on 30s timeouts with zero assertion failures, and the failing set moved between runs. Reported as an unresolved verification item, not repaired."
+    },
+    "isolatedRetests": [
+      {
+        "files": [
+          "test/ci2_finish_reference.test.ts",
+          "test/ci2_project_continuity.test.ts",
+          "test/ci2_red_delegated_evidence.test.ts",
+          "test/host_s1r_reparse_boundary.test.ts",
+          "test/lean_d5d_result_continuation_service.test.ts"
+        ],
+        "tests": 33,
+        "passed": 33,
+        "exitCode": 0
+      },
+      {
+        "files": [
+          "test/ci2_negative_controls.test.ts",
+          "test/host_s1r_reparse_boundary.test.ts"
+        ],
+        "tests": 23,
+        "passed": 23,
+        "exitCode": 0
+      }
+    ],
+    "resourceDiagnosis": {
+      "tempDirectoriesFound": 422,
+      "tempDirectoriesSize": "144M",
+      "tempDirectoriesOwnership": "all matched ci2*/ci3*, i.e. this session's own artifacts; removed by exact name prefix, never by a recursive sweep of the shared temp root",
+      "diskBefore": "C: 89% used, 24G free",
+      "note": "the 5-file isolated retest ran after that cleanup; the second broad run then had 2 timeouts instead of 5"
+    },
+    "ci3Suites": {
+      "files": 7,
+      "tests": 30,
+      "passed": 30,
+      "exitCode": 0,
+      "command": "vitest run test/ci3_*.test.ts --maxConcurrency=2"
+    },
+    "invalidControl": {
+      "what": "a detached worktree at eac1c2d, to run the same broad selection and separate an environment-induced timeout from a CI3-caused one",
+      "ran": {
+        "files": 291,
+        "failed": 14,
+        "tests": 3722,
+        "testsFailed": 62
+      },
+      "invalidBecause": "that tree had no dist/ build, so tests importing compiled output failed with ENOENT scandir 'dist\\src'; the control measures nothing about CI3",
+      "usedAsEvidence": false,
+      "cleanup": "node_modules junction unlinked with unlinkSync before removal; worktree count verified back at 95"
+    }
+  },
+  "claims": {
+    "established": [
+      "the product distinguishes a replay of one verified fact from a genuinely different observation, and refuses to let a conflict inherit an earlier PASS",
+      "a candidate's evidence is bound to its own attempt, so a different candidate cannot spend it",
+      "a plan revision that retires a task revokes exactly that work's evidence authority, in the same atomic batch and before the revision it belongs to",
+      "a revocation never rewrites history: the atom's bytes, id, command, exit code, producer and created_at all survive, and EVIDENCE_STALE is an additive fact",
+      "the normal Gate excludes stale and foreign evidence and reports absence as INCOMPLETE, never FAIL",
+      "promotion re-derives the gate and the input world inside its own mutation boundary, so a cached PASS carries no authority and a stale PASS cannot cross it",
+      "a legitimate candidate can regain applicable qualification after its predecessor's evidence expired, through a new attempt, with the Gate passing on the new atoms alone and promotion succeeding",
+      "the Finish path's atom shape, predicates and producers are unchanged, and both routes still reach one writer with different attribution",
+      "the Trajectory projection preserves the evidence identity and the staleness history without turning an ordering into a causal relation"
+    ],
+    "notEstablished": [
+      "contract identity on the atom: basisDigest exists and is normative but is recorded nowhere, so an atom cannot say which bar it met (F4)",
+      "crash recovery from a real process kill between export and evaluation: the windows are measured as re-derivability",
+      "a green broad non-gate run: both attempts exited 1 on 30s timeouts, with zero assertion failures",
+      "hostile same-user isolation (no L2 claim)",
+      "two live model-driven runtime Agents: the carrier and worker ports remain test-owned"
+    ],
+    "limitationsCarried": [
+      "the atom blob still says status:'active' after revocation; the projection column is the authority",
+      "subject_digest is written and read by nothing",
+      "a STALE task cannot return to READY, so requalification needs a new task",
+      "E3 quarantine residual TOCTOU unchanged",
+      "the stale deployment copy in the real runtime home is unchanged and not on the executed path",
+      "rc.3 is qualified for the operations exercised, not every Win32 path"
+    ]
+  },
+  "verdicts": {
+    "V0": "ESTABLISHED",
+    "V1": "QUALIFIED — contract identity unrecorded",
+    "V2": "ESTABLISHED",
+    "V3": "ESTABLISHED",
+    "V4": "ESTABLISHED",
+    "V5": "ESTABLISHED",
+    "V6": "ESTABLISHED",
+    "V7": "PRESERVED",
+    "V8": "PRESERVED",
+    "V9": "CI3_QUALIFIED_FOR_REVISION_SCOPED_EVIDENCE_AUTHORITY"
+  },
+  "protectedAssets": {
+    "evidenceTrees": 68,
+    "preExistingTreesUnchanged": true,
+    "worktreesRegistered": 95,
+    "gateRootEntries": 19,
+    "runtimeModules": 195,
+    "runtimeVersion": "0.2.1-rc.3"
+  },
+  "disposableProbe": {
+    "path": "F:\\Codex_Work_Space\\Palimpsest\\ci3-parent-probe",
+    "purpose": "to run the same suites and the same broad selection at the CI2 Evidence Freeze, so an environment-induced timeout could be separated from a CI3-caused one",
+    "nodeModulesHandling": "linked as a junction from the main worktree; removed with unlinkSync before the tree is deleted, never by descending through it",
+    "removed": true
+  }
+}

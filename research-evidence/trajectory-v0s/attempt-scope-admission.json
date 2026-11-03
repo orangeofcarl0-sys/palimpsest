@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_ATTEMPT_SCOPE_ADMISSION",
+  "stage": "Trajectory-V0S",
+  "invariant": "S-I1: no DSH session access may occur through an Attempt Preview before that Attempt has been verified against its canonical project history",
+  "gateOrder": [
+    "1. read the canonical Work events for the configured project",
+    "2. require exactly one ATTEMPT_CREATED with entity_id === attemptId",
+    "3. require that event's project_id === projectId",
+    "4. require the canonical Work record to exist and not contradict the creation event",
+    "5. only then examine any claimed session or host record"
+  ],
+  "refusals": {
+    "ATTEMPT_NOT_FOUND": "no canonical ATTEMPT_CREATED names the attempt in this project",
+    "FOREIGN_ATTEMPT": "the attempt exists under a different project id",
+    "ATTEMPT_SOURCE_CONFLICT": "the canonical Work record contradicts its own creation event or is unreadable",
+    "HOST_RECORD_CONFLICT": "a supplied host record names a different attempt"
+  },
+  "measurements": {
+    "S1-A1_unknownAttempt": { "code": "ATTEMPT_NOT_FOUND", "readPortCalls": 0 },
+    "S1-A2_A5_foreignAttempt": { "code": "ATTEMPT_NOT_FOUND", "readPortCalls": 0, "note": "a Palimpsest controller is scoped to one project, so a foreign attempt is invisible through this route; the FOREIGN_ATTEMPT branch is a defensive distinction for a multi-project store" },
+    "S1-A3_taskIdNotSufficient": { "realAttemptAdmitted": true, "differentAttemptIdRefused": true },
+    "S1-A4_typedRefusal": { "instanceOf": "AttemptAdmissionRefusal", "codeInMessage": true },
+    "S1-A6_canonicalAttempt": { "admitted": true, "ownIdentityReported": true }
+  },
+  "noLabelFallback": "the gate never consults a display label, a task title or a substring match",
+  "noSecondStateMachine": "the gate uses the Work owner's own attempt record and event parser; no new Work state machine was implemented"
+}

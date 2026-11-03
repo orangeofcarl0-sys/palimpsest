@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_HOST_OBSERVATION_SEMANTICS",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "sourceLocations": [
+    "src/interaction/work_delegation.ts (the observation contract and the per-invocation tracker)"
+  ],
+  "observationStates": [
+    "NOT_OBSERVED",
+    "OBSERVED",
+    "CONFLICT"
+  ],
+  "sourceQualifications": [
+    "CONTROLLED_STUB",
+    "DIRECT_CHILD_IPC",
+    "FIRST_PARTY_DSH_QUALIFIED"
+  ],
+  "separationRule": "observation state and source qualification are INDEPENDENT dimensions, never one confidence ladder",
+  "whatAnObservationProves": [
+    "the Parent received a well-formed session-identity message on the channel of a ChildProcess it spawned",
+    "the Parent associated the report with its OWN invocation identity",
+    "the message reported a specific, well-formed DSH SessionId"
+  ],
+  "whatItDoesNotProve": [
+    "that the configured executable was an authentic first-party DSH Host",
+    "that the Session was created by an actual agents.create call",
+    "that a model turn ran",
+    "that the Session history is durable or complete",
+    "that the Worker passed capability admission",
+    "that the Attempt completed, was verified or was promoted",
+    "that the association survives a Parent restart",
+    "that the Session belongs to a durable verified association"
+  ],
+  "verdict": "OBSERVATION_IS_NOT_AUTHORITY",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

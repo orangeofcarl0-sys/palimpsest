@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_QUALIFICATION_CURRENTNESS",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "module": "src/execution_association/qualification.ts",
+  "closedDefect": {
+    "id": "F7",
+    "defect": "the qualifier read durable history once, then awaited the DSH header read, then returned without rechecking the store — so a conflict appended during the read yielded a stale ASSOCIATION_QUALIFIED"
+  },
+  "protocol": {
+    "kind": "bounded optimistic read-check",
+    "steps": [
+      "capture store.head() BEFORE any asynchronous source read",
+      "replay the attempt's durable events and record their count",
+      "validate source epoch, canonical Work, window integrity and cardinality",
+      "await the official DSH header read",
+      "re-read the store head and the attempt's events",
+      "if the head changed AND the attempt's event set changed, return RACED"
+    ],
+    "note": "an unrelated-project change advances the global head but not the attempt's event set, so it does NOT spuriously produce RACED; a relevant change always does"
+  },
+  "outcome": "RACED is a distinct qualification state; it never returns a stale ASSOCIATION_QUALIFIED",
+  "tests": [
+    "P2C C2 §6.7 a conflict appended during the Header read yields RACED, never a stale qualification",
+    "P2C C2 §6.7 an unrelated change does not disturb a stable qualification"
+  ],
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "CURRENTNESS_PROTOCOL_ENFORCED"
+}

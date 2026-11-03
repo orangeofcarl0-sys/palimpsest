@@ -1,0 +1,7 @@
+Created and committed `deliverables/selection.md` (commit `619115e`).
+
+**Decisions**
+- **Site A — Kestrel V2 selected:** rated to -20 °C against the -12 °C design minimum, and 900 mm wide against the 1200 mm limit (`sources/vendor-capabilities.csv:2`). Solaris V3 also meets both hard constraints, so the deliverable discloses that and uses a documented cold-margin/lead-time tie-break; Halcyon V4 fails the temperature requirement.
+- **Site B — selection withheld:** no vendor has a verified current 2026 coastal-rated warranty. All `coastal_2024` values are “no,” and Halcyon’s 2026 certificate is only *expected* and explicitly **not on file** (`inbox/2026-02-10/vendor-update.md:3-4`). No certificate is claimed to be current.
+
+All decisions cite `TASK.md`, `sources/sites.md`, `sources/vendor-capabilities.csv`, and the inbox update by file/line.

@@ -1,0 +1,18 @@
+Completed the `technical-refresh` task.
+
+## Deliverables
+- **`deliverables/technical-refresh.md`** — refreshed site-by-site technical assessment, evidence status, schedule implications, and next actions.
+- **`proposal.md`** — operator intake proposal for the new capability bulletin, with exact paths and digests. No canonical source was changed.
+
+## Key findings
+- On **accepted canonical data**, the existing selection still works: **A: V1; B: V3; C: V3**.
+- The unaccepted **2026-02-10 capability bulletin** reports V3’s minimum operating temperature as **0 °C** instead of **-10 °C**. If that bulletin is accurate and accepted:
+  - **Site B has no compliant vendor**: V3 fails the -4 °C requirement, and V1/V2/V4 lack a coastal warranty.
+  - **Sites A and C remain compliant** (A: V1; C: V3 at 750 mm, above its 2 °C ambient minimum).
+- The Solaris certificate claim remains an unverified promise and cannot establish a rating. The newsletter has no technical or financial relevance.
+- The accepted cost envelope depends on V3 at Site B. If Site B has no compliant vendor, the envelope is no longer executable.
+- Schedule is urgent: Site B’s last defensible order date for end-of-window delivery is about **13 February 2026**; Site C needs a decision by about **23 February**. Site A’s original window is already at risk if it was not ordered.
+
+The bulletin intake, any requirement change, and any Site B fallback are **operator decisions**. The refresh explicitly avoids accepting the source or relaxing R3.
+
+Verification: `npm test` passes, canonical `sources/` are unchanged, and the work is committed as `3ee9053`.

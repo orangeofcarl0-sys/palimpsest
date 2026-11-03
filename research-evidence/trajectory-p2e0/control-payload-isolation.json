@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E0",
+  "baseline": "8ba9ca3df4399eabc686fd23c24c7c0b2ba61290",
+  "kind": "TRAJECTORY_P2E0_CONTROL_PAYLOAD_ISOLATION",
+  "testFile": "test/trajectory_p2e0_trial_integrity.test.ts (tests 12,19/20)",
+  "p2d2Defect": "the worker payload shipped the WHOLE attempt context, so a CONTROL arm still transported the raw historical Capsule body in worker-context.json (F5/F12).",
+  "correction": "workWorkerEnvironmentPayload now strips compiled.trajectoryCapsule.capsule from the CHILD payload (workerContextWithoutCapsuleBody); the Parent keeps the body for diagnostics. CONTROL additionally never materializes a body at all.",
+  "observedResults": {
+    "controlCapsule": "null (CONTROL renders a fixed no-history boundary)",
+    "childPayloadCapsuleField": "undefined (withheld)",
+    "childPayloadCarriesTrialRecord": true,
+    "childPayloadCarriesRenderedSection": true,
+    "renderedPrompt": "contains the CONTROL boundary and no historical content"
+  },
+  "expectedInvariant": "CONTROL transports no historical body through the Worker Environment, the Worker Context JSON or any unguarded field",
+  "verdict": "PASS",
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false
+}

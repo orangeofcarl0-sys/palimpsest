@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_INVOCATION_SELECTION",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "states": {
+    "NO_DURABLE_EVIDENCE": "no invocation is qualified; Work-only preview, no session read",
+    "SELECTED_UNIQUE": "exactly one qualified invocation and no unresolved alternative; selected automatically",
+    "SELECTED_REQUESTED": "the caller named an invocation that is qualified",
+    "AMBIGUOUS_REQUIRES_SELECTION": "several invocations are qualified; an explicit invocationId is required",
+    "REQUESTED_NOT_QUALIFIED": "the requested invocation belongs to this attempt but is not qualified",
+    "REQUESTED_FOREIGN": "the requested invocation does not belong to this attempt"
+  },
+  "rules": [
+    "a caller-supplied invocationId is a SELECTOR, never authority",
+    "the latest invocation is never auto-selected",
+    "a caller Claim never becomes the read authority",
+    "a hostRecord.portInvocationId is never proof of invocation ownership"
+  ],
+  "tests": [
+    "P2C C3 §8.3 with no durable evidence a requested invocation selector is refused",
+    "P2C §11.5 several qualified invocations require explicit selection",
+    "P2C C5 §8.3 a caller Claim never becomes the read authority"
+  ],
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "INVOCATION_SELECTION_EXPLICIT"
+}

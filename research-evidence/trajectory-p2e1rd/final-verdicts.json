@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1RD_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-E1RD",
+  "evidenceClass": "DERIVED_FROM_THE_ABOVE",
+  "verdicts": {
+    "E1RD_A_DSH_CWD_SEMANTICS_ADJUDICATED": "QUALIFIED",
+    "E1RD_B_CONFIDENTIAL_WORKER_BOUNDARY_QUALIFIED": "QUALIFIED",
+    "E1RD_C_DSH_RUNTIME_COMPATIBILITY_QUALIFIED": "NOT_ESTABLISHED",
+    "E1RD_D_TRAJECTORY_DSH_EXECUTION_REQUALIFIED": "QUALIFIED"
+  },
+  "basis": {
+    "E1RD_A": "13/13 source findings hold against the installed 0.2.1-rc.2 packages and the integrity-verified 0.2.0-rc.2 tarballs",
+    "E1RD_B": "20/20 dynamic CWD controls pass; R1-HC conformance passes 26 PASS / 1 disclosed LIMIT / 0 FAIL",
+    "E1RD_C": "closure CLOSURE_ESTABLISHED under Node 24.22.0 against declared >=24.15.0, BUT R1-HR reports FAIL on HR-27: installed dsh-win32-process 0.2.1-rc.2 != qualified 0.2.0-rc.2",
+    "E1RD_D": "the closure gate requires both arms to complete a real first-party DSH turn, persist an assistant message, have it extracted from DSH persistence and scored by the official oracle"
+  },
+  "unresolvedConditions": {
+    "E1RD_C": [
+      "the read-boundary contract is pinned to @deepseek-ai/dsh-win32-process@0.2.0-rc.2 and the installed release is 0.2.1-rc.2; HR-27 reports that drift, and §9 forbids updating the pin to silence it",
+      "requalifying the Win32 label seam against 0.2.1-rc.2 is a separate bounded security task with its own conformance evidence; it is not established by the CWD work in this stage"
+    ]
+  },
+  "separatelyTracked": {
+    "E1RC_ADMISSION_RESIDUALS_CLOSED": "see assay-residual-corrections.json — four corrections, each with a defect statement",
+    "CONTROL_BASELINE_TECHNICALLY_READY": "NOT_ESTABLISHED — restoring one DSH execution path does not supply the frozen experiment specification, the external-model authorization or the calibration itself"
+  },
+  "notAwarded": {
+    "TRAJECTORY_FIRST_PARTY_ORIGIN_SETTLEMENT_QUALIFIED": "NOT_ESTABLISHED",
+    "BENCHMARK_QUALIFIED": "NOT_ESTABLISHED",
+    "MODEL_CONSUMED_CAPSULE": "NOT_ESTABLISHED",
+    "UTILITY_POSITIVE_SIGNAL": "NOT_ESTABLISHED",
+    "UTILITY_NEGATIVE_SIGNAL": "NOT_ESTABLISHED",
+    "WORK_UTILITY_IMPROVED": "NOT_ESTABLISHED",
+    "AGENT_COOPERATION_IMPROVED": "NOT_ESTABLISHED"
+  },
+  "modelCallsMade": 0,
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "note": "Every verdict above is a function of an observed artifact. None was written as a constant."
+}

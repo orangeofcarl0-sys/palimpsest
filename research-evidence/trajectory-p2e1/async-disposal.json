@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "kind": "TRAJECTORY_P2E1_ASYNC_DISPOSAL",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "gateAwaitsDispose": true,
+  "fixtureAwaitsDispose": true,
+  "filesystemCleanupBeginsAfterDisposalResolves": true,
+  "note": "the install reader close disposes a mounted Cordis fiber and owns SQLite handles; dispose is now awaited in the finally / release path"
+}

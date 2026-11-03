@@ -1,0 +1,133 @@
+{
+  "schema": "cog5-verification/v1",
+  "at": "2026-11-01T20:40:00Z",
+  "codeFreeze": {
+    "commit": "af4cb65736d82419b151b3c4eccc75621ee1aea5",
+    "tree": "f854222a300f32bd24e0753398469ca86fd9545c"
+  },
+  "model": {
+    "used": false,
+    "providerCalls": 0,
+    "tokens": 0,
+    "note": "No model was used in COG-5. The mechanism tracks are deterministic. The provider quota was not assumed restored; no model tokens were spent."
+  },
+  "build": {
+    "command": "pnpm run build",
+    "exit": 0,
+    "log": "verification/build.log",
+    "note": "pnpm reported an engine warning: package wants Node >=24.15.0, runtime is v24.14.1. The build succeeded."
+  },
+  "architecture": {
+    "command": "pnpm run architecture:check",
+    "exit": 0,
+    "verdict": "PASS",
+    "violations": 0,
+    "baselineExceptions": 9,
+    "log": "verification/architecture.log"
+  },
+  "publicApi": {
+    "command": "pnpm run architecture:check-public-api",
+    "exit": 0,
+    "verdict": "PASS",
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0,
+    "log": "verification/public-api.log"
+  },
+  "targeted": {
+    "command": "npx vitest run <fixed 19-file set> --maxWorkers=1",
+    "batches": [
+      {
+        "command": "npx vitest run <10 files> --maxWorkers=1",
+        "files": 10,
+        "tests": 161,
+        "passed": 161,
+        "failed": 0,
+        "exit": 0,
+        "log": "verification/targeted-1.log"
+      },
+      {
+        "command": "npx vitest run <9 files> --maxWorkers=1",
+        "files": 9,
+        "tests": 98,
+        "passed": 98,
+        "failed": 0,
+        "exit": 0,
+        "log": "verification/targeted-2.log"
+      }
+    ],
+    "files": 19,
+    "tests": 259,
+    "failed": 0,
+    "includes": [
+      "test/cog5_promotion_lineage.test.ts",
+      "test/lean_world_basis_runtime.test.ts",
+      "test/lean_cross_basis_composition.test.ts",
+      "test/lean_cross_basis_admission.test.ts",
+      "test/lean_compatibility.test.ts",
+      "test/lean_d5a_continuation_assessment.test.ts",
+      "test/lean_d5d_result_continuation_service.test.ts",
+      "test/lean_d5b2_governed_rework.test.ts",
+      "test/lean_d5c3_current_basis_reexecution.test.ts",
+      "test/lean_d3d_composition.test.ts",
+      "test/lean_d5c1_head_sync_composition.test.ts",
+      "test/lean_d5c2_prior_result_context.test.ts",
+      "test/lean_delegation_runtime.test.ts",
+      "test/ci1_stale_and_duplicate.test.ts",
+      "test/ci3_staleness_applicability.test.ts",
+      "test/ci3_promotion_authority.test.ts",
+      "test/ci3_requalification.test.ts",
+      "test/trajectory_p2d1_currentness.test.ts",
+      "test/e2i_intent_reconciliation.test.ts"
+    ]
+  },
+  "broad": {
+    "status": "NOT RUN",
+    "complete": false,
+    "note": "The broad suite was not run in COG-5. No broad pass is claimed. The fixed targeted 259-test run is the authoritative mechanism verification. The COG-4 broad PARTIAL record remains visible and is not reclassified."
+  },
+  "experiments": {
+    "main": {
+      "path": "runs/main/run.json",
+      "exitCode": 0,
+      "errors": 0,
+      "note": "lawful intake, promotion, head reconciliation, governed rework, D2 execution, promotion; includes wrong-source, wrong-head, duplicate-promotion and unauthorized-live-head controls"
+    },
+    "newsletter": {
+      "path": "runs/newsletter/run.json",
+      "exitCode": 0,
+      "errors": 0,
+      "note": "unrelated-change control: packaged INCOMPATIBLE; expert COMPATIBLE with test facets, UNKNOWN with the semantic facet unavailable"
+    },
+    "outofscope": {
+      "path": "runs/outofscope/run.json",
+      "exitCode": 0,
+      "errors": 0,
+      "note": "unapproved-write control: settlement NOT_READY / OUT_OF_SCOPE; no ATTEMPT_COMPLETED; no promotion"
+    }
+  },
+  "protectedAssets": {
+    "worktrees": 95,
+    "locks": 2,
+    "gateRoots": 19,
+    "evidenceTreesBeforeCog5": 72,
+    "evidenceTreesIncludingCog5": 73,
+    "stashes": 0,
+    "changed": false
+  },
+  "historicalObservations": {
+    "cog4HeadBasisMismatch": "COG-4's governed rework was authorized but the D2 job refused because a direct external commit moved the live head ahead of the canonical head. The same refusal is preserved and reproduced as the COG-5 negative control.",
+    "cog4FBlocked": "The COG-4 clean F baseline was blocked by provider quota; no COG-5 model comparison was attempted, so the blocked condition remains visible and unchanged.",
+    "cog4BroadPartial": "The COG-4 broad run was partial; no broad pass is claimed there or here."
+  },
+  "limitations": [
+    "No model; no cognitive or comparative claim.",
+    "The deterministic worker is an in-process test port, not the DSH subprocess worker; the host read fence was characterized but not exercised.",
+    "The packaged face cannot issue a positive COMPATIBLE for a changed source world.",
+    "TaskEnvelope.read_paths is not enforced and was factually wrong in the run.",
+    "The asset, environment and project-semantic change domains remain UNAVAILABLE.",
+    "The documentation/data write scope narrowed out the standard command; evidence is scope + artifact, not a command pass.",
+    "No fresh-session model trial; the durable state is present.",
+    "The final negative control intentionally leaves the live head ahead of the project head."
+  ]
+}

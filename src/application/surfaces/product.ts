@@ -20,12 +20,26 @@ import type {
 } from "../../interaction/delegation.js";
 import { parsePeerMessage } from "../../federation/messages.js";
 import type { PeerRef } from "../../federation/peer.js";
+import type {
+  ContributionChainEntry,
+  ContributionService,
+  DecideContributionInput,
+  DecideContributionResult,
+  RecordContributionInput,
+  RecordContributionResult,
+  RecordDelegationStartInput,
+  RecordDelegationStartResult,
+} from "../../project_contribution/index.js";
+
+/** The contribution service as the aggregate factory needs to know it. */
+export type ContributionServicePort = ContributionService;
 
 /** Exactly the dependencies this cluster reads — nothing else is visible to it (§9). */
 export interface ProductSurfaceDeps {
   readonly collaboration?: CollaborationService | undefined;
   readonly crossProject?: CrossProjectService | undefined;
   readonly delegation?: DelegationService | undefined;
+  readonly contribution?: ContributionService | undefined;
   readonly federation?: FederationService | undefined;
 }
 
@@ -103,12 +117,35 @@ export interface DelegationApplicationSurface {
   status(input: { readonly delegationRef: string }): Promise<DelegationStatusView>;
   /** Progressive disclosure: the same state plus the question, the basis and the conclusion. */
   inspect(input: { readonly delegationRef: string }): Promise<DelegationInspection>;
+  /** R8: record the principal's decision about a terminal finding (non-canonical consumption). */
+  consume(input: {
+    readonly delegationRef: string;
+    readonly decisionNote: string;
+    readonly changedPlan?: boolean | undefined;
+  }): Promise<import("../../interaction/delegation.js").DelegationConsumption>;
+}
+
+/**
+ * APS-A/B — the project contribution chain.
+ *
+ * A contribution is a finding that ARRIVED from another executor, recorded as a non-canonical
+ * Journal note. `decide` records the principal's decision and, only for REVISE_PLAN, applies the
+ * COMPLETE new task graph through the existing controller plan-revision path. Nothing here accepts
+ * a result, creates Evidence or promotes anything.
+ */
+export interface ContributionApplicationSurface {
+  record(input: RecordContributionInput): Promise<RecordContributionResult>;
+  recordDelegationStart(input: RecordDelegationStartInput): Promise<RecordDelegationStartResult>;
+  decide(input: DecideContributionInput): Promise<DecideContributionResult>;
+  list(): Promise<readonly ContributionChainEntry[]>;
+  changeClasses(): readonly string[];
 }
 
 export function makeProductSurfaces(deps: ProductSurfaceDeps): {
   readonly collaboration: CollaborationApplicationSurface | undefined;
   readonly crossProject: CrossProjectApplicationSurface | undefined;
   readonly delegation: DelegationApplicationSurface | undefined;
+  readonly contribution: ContributionApplicationSurface | undefined;
 } {
     const collaboration: CollaborationApplicationSurface | undefined =
       deps.collaboration === undefined
@@ -158,8 +195,20 @@ export function makeProductSurfaces(deps: ProductSurfaceDeps): {
             start: (input) => deps.delegation!.start(input),
             status: (input) => deps.delegation!.status(input),
             inspect: (input) => deps.delegation!.inspect(input),
+            consume: (input) => deps.delegation!.consume(input),
+          };
+
+    const contribution: ContributionApplicationSurface | undefined =
+      deps.contribution === undefined
+        ? undefined
+        : {
+            record: (input) => deps.contribution!.record(input),
+            recordDelegationStart: (input) => deps.contribution!.recordDelegationStart(input),
+            decide: (input) => deps.contribution!.decide(input),
+            list: () => deps.contribution!.list(),
+            changeClasses: () => deps.contribution!.changeClasses(),
           };
 
 
-  return { collaboration, crossProject, delegation };
+  return { collaboration, crossProject, delegation, contribution };
 }

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2E1_ORACLE_NEGATIVE_CONTROLS",
+  "stage": "Trajectory-P2-E1",
+  "baseline": "beec3cc488dfbd97dd929bea73a19c99703a9dbe",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "controls": [
+    {
+      "id": "incorrect-cross-owner-inference",
+      "expected": "historicalUnderstanding=false",
+      "observed": true
+    },
+    {
+      "id": "unsupported-verification-claim",
+      "expected": "historicalUnderstanding=false",
+      "observed": true
+    },
+    {
+      "id": "incorrect-session-completeness",
+      "expected": "historicalUnderstanding=false",
+      "observed": true
+    },
+    {
+      "id": "fake-evidence-reference",
+      "expected": "historicalUnderstanding=false",
+      "observed": true
+    },
+    {
+      "id": "generic-refusal",
+      "expected": "refusalWithoutSubstance=true and decisionQuality=false",
+      "observed": true
+    },
+    {
+      "id": "invalid-settlement-suggestion",
+      "expected": "decisionQuality=false",
+      "observed": true
+    },
+    {
+      "id": "no-tool-activity",
+      "expected": "operationalBehavior=NOT_MEASURED",
+      "observed": true
+    },
+    {
+      "id": "correct-negation",
+      "expected": "accepted (no violation)",
+      "observed": true
+    },
+    {
+      "id": "correct-non-settlement",
+      "expected": "accepted",
+      "observed": true
+    },
+    {
+      "id": "justified-deferral",
+      "expected": "accepted",
+      "observed": true
+    },
+    {
+      "id": "ground-truth-leak",
+      "expected": "detected when an oracle token appears in delivered text",
+      "observed": true
+    }
+  ],
+  "p2e0FalsePositivesGone": {
+    "F2_positiveVectorPasses": true,
+    "F3_flagsCorrectNegation": [
+      "history-exhausted"
+    ],
+    "F4_flagsCorrectNonSettlement": 1,
+    "F5_flagsCorrectCrossOwner": [
+      "origin-completed"
+    ],
+    "F6_operationalPassWithoutExecution": true,
+    "F7_refusalFlagged": true,
+    "F8_fabricatedReferenceAccepted": true
+  },
+  "externalModelRequestOccurred": false,
+  "stochasticTrialOccurred": false,
+  "modelCallsMade": 0
+}

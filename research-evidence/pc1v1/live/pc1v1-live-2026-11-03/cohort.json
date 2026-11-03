@@ -1,0 +1,27 @@
+{
+  "schema": "pc1v1-live-cohort/v1",
+  "cohortId": "pc1v1-live-2026-11-03",
+  "codeFreeze": "6c8ebd98f9e8f89804201d0b77c6d57d96ff0898",
+  "codeFreezeTree": "8ade5b49b2f2ceee0838ea619d8e996500df2cff",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash",
+    "protocol": "anthropic-messages",
+    "baseUrl": "https://api.deepseek.com/anthropic"
+  },
+  "oracleCopied": false,
+  "cohortDigest": "efa6f856ccc1e1d8ead0541a88ddbafba93f6245112777c0181fc6f08de1a257",
+  "authorizationDigest": "bbe7cde68ac6d357e030f5efc998b9b9dc4add1e5b94c586e0114cbfe5aa15f8",
+  "authorization": {
+    "owner": "owner:66494",
+    "authorizedAt": "2026-11-03T02:30:00.000Z",
+    "maxTokens": 24000000,
+    "conditions": [
+      "P",
+      "F"
+    ],
+    "note": "Owner authorized all PC1-V1 requests on 2026-11-03 (均授权), including the matched P/F cohort with real Subagents. The 24M token figure is a local safety reservation for this campaign, not a reduction of the authorization; no model call was made before this file and the frozen cohort were recorded."
+  },
+  "note": "Frozen cohort identity. Raw session streams are written next to this record; never overwrite them.",
+  "createdAt": "2026-11-02T18:31:32.988Z"
+}

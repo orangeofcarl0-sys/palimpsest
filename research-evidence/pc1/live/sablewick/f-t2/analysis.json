@@ -1,0 +1,74 @@
+{
+  "schema": "pc1-session-analysis/v1",
+  "at": "2026-11-02T14:21:45.809Z",
+  "paths": [
+    "research-evidence\\pc1\\live\\sablewick\\f-t2\\session\\session.v4.jsonl.zstd"
+  ],
+  "streams": [
+    {
+      "path": "research-evidence\\pc1\\live\\sablewick\\f-t2\\session\\session.v4.jsonl.zstd",
+      "sessionId": "session-6f3d075a-1201-4bbd-a36b-c168b620bcc9",
+      "complete": true,
+      "frames": 67,
+      "truncatedFrames": 0,
+      "malformedLines": 0,
+      "toolCalls": 22,
+      "toolResults": 22,
+      "catalogue": [
+        [
+          "bash",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "read",
+          "read_image",
+          "skill",
+          "todo_write",
+          "update_goal",
+          "working_directory",
+          "write"
+        ]
+      ]
+    }
+  ],
+  "account": {
+    "sessionCount": 1,
+    "totals": {
+      "inputTokens": 14978,
+      "outputTokens": 20404,
+      "cacheReadTokens": 242944,
+      "cacheWriteTokens": 0,
+      "totalTokens": 278326,
+      "usageEvents": 13
+    },
+    "problems": [],
+    "sessions": [
+      {
+        "sessionId": "session-6f3d075a-1201-4bbd-a36b-c168b620bcc9",
+        "streams": 1,
+        "complete": true,
+        "providerErrors": 0,
+        "assistantMessages": 13,
+        "usageEvents": 13,
+        "duplicateEvents": 0,
+        "missingUsageMessages": 0,
+        "inputTokens": 14978,
+        "outputTokens": 20404,
+        "cacheReadTokens": 242944,
+        "cacheWriteTokens": 0,
+        "totalTokens": 278326,
+        "classification": {
+          "classification": "OBSERVED",
+          "reason": null
+        }
+      }
+    ]
+  },
+  "interpretation": "This is a mechanical analysis of session events. OBSERVED means the turn completed; it does not mean the answer was correct or useful. Deterministic tests are not a substitute for a live model result."
+}

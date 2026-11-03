@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:palimpsest:pc1:review-record:1",
+  "title": "既有 operator authority 的审阅记录引用；非新权限根",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reviewId",
+    "proposalId",
+    "proposalDigest",
+    "reviewerId",
+    "authorityRef",
+    "decision",
+    "approvedSourceDigests",
+    "projectBasis",
+    "effectReceiptRefs",
+    "reason"
+  ],
+  "properties": {
+    "reviewId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposalId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposalDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorityRef": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision": {
+      "enum": [
+        "APPROVE",
+        "REJECT",
+        "REQUEST_CHANGES",
+        "STALE",
+        "AUTHORITY_UNRESOLVED"
+      ]
+    },
+    "approvedSourceDigests": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "projectBasis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "effectReceiptRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changedByOperator": {
+      "type": "boolean"
+    }
+  }
+}

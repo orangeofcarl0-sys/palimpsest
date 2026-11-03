@@ -39,7 +39,7 @@ export type {
   OrganizationApplicationSurface,
   RuntimeApplicationSurface,
 } from "./surfaces/organization.js";
-export type { CollaborationApplicationSurface, CrossProjectApplicationSurface } from "./surfaces/product.js";
+export type { CollaborationApplicationSurface, ContributionApplicationSurface, CrossProjectApplicationSurface } from "./surfaces/product.js";
 export type { DisclosureApplicationSurface, ProofApplicationSurface } from "./surfaces/proof.js";
 export type {
   ExternalAssetPrepareImportCommand,

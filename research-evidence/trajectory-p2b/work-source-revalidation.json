@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_WORK_SOURCE_REVALIDATION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "method": "the qualifier re-reads the canonical Attempt through the Work owner (ProjectController.attemptWorkRecord) in a FRESH process; it never trusts the record's own claim",
+  "checks": [
+    "the Attempt exists in THIS project's history",
+    "the Attempt's taskId/state are read from Work, not from the record",
+    "a historical COMPLETED Attempt still retains a recoverable association (§9.1: an attempt need not remain RUNNING)"
+  ],
+  "observed": {
+    "unknownAttemptRefused": true,
+    "completedAttemptStillQualifies": true
+  },
+  "evidenceClass": "REAL_CANONICAL_WORK_NO_MODEL",
+  "actualCanonicalWorkRan": true,
+  "coldProcessRecoveryPerformed": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "WORK_REVALIDATED_FROM_OWNER"
+}
