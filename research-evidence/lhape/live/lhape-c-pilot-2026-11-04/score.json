@@ -1,0 +1,216 @@
+{
+  "schema": "lhape-pilot-score/v1",
+  "cohortId": "lhape-c-pilot-2026-11-04",
+  "codeFreeze": "c283bb156d17269436d30c6356a6b1dee1329090",
+  "scoredAt": "2026-11-04T10:25:46.084Z",
+  "rubric": [
+    "package present and non-trivial",
+    "both sites addressed",
+    "measured 700 mm constraint used",
+    "baseline 900 mm unit rejected at site B where 900 is mentioned",
+    "2024/expected coastal claim not accepted as current",
+    "cost and schedule present",
+    "risk and integrated decision present"
+  ],
+  "conditions": {
+    "F": {
+      "condition": "F",
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": true,
+        "bytes": 36472,
+        "sha256": "2a45b378321489a2513e846e35789cb5af5bc457941c7cdecfea66b8e23b59ba"
+      },
+      "criteria": {
+        "package_present": true,
+        "both_sites": true,
+        "measured_700mm_used": true,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": true,
+        "cost_and_schedule": true,
+        "risk_and_decision": true
+      },
+      "score": "7/7",
+      "run": {
+        "schema": "lhape-pilot-condition-run-recovered/v1",
+        "condition": "F",
+        "cohortId": "lhape-c-pilot-2026-11-04",
+        "codeFreeze": "81f230fbf6f488777a25814a177b0c8b17864ce6",
+        "world": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\worlds\\F",
+        "profile": "headless",
+        "startedAt": "2026-11-04T10:04:20.822Z",
+        "injectedAt": "2026-11-04T10:05:05.840Z",
+        "endedAt": "2026-11-04T10:09:29.739Z",
+        "exitCode": 1,
+        "signal": null,
+        "error": null,
+        "stopped": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "observedAt": "2026-11-04T10:09:29.739Z",
+          "maxTokens": 2500000,
+          "totalTokens": 2528297,
+          "sessionFiles": 2,
+          "state": "STOPPED"
+        },
+        "maxTokens": 2500000,
+        "note": "The outer cohort guard killed the condition runner at the first observation above 2.5M (2,528,297), before the runner could write its own run.json. This record is reconstructed from the guard ledger/STOPPED fact and the runner start/injection timestamps; the package and session streams are the real artifacts."
+      },
+      "operatorAcceptance": null,
+      "project": null
+    },
+    "L": {
+      "condition": "L",
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": true,
+        "bytes": 31591,
+        "sha256": "bfba89e1445faeb47f5295fddaf77fb81d7a168e874d57fc1ccddad6e6523bc7"
+      },
+      "criteria": {
+        "package_present": true,
+        "both_sites": true,
+        "measured_700mm_used": true,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": true,
+        "cost_and_schedule": true,
+        "risk_and_decision": true
+      },
+      "score": "7/7",
+      "run": {
+        "schema": "lhape-pilot-condition-run/v1",
+        "condition": "L",
+        "cohortId": "lhape-c-pilot-2026-11-04",
+        "codeFreeze": "81f230fbf6f488777a25814a177b0c8b17864ce6",
+        "world": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\worlds\\L",
+        "profile": "lhape-pilot",
+        "startedAt": "2026-11-04T10:09:29.886Z",
+        "injectedAt": "2026-11-04T10:10:14.890Z",
+        "endedAt": "2026-11-04T10:13:46.446Z",
+        "exitCode": 1,
+        "signal": null,
+        "error": null,
+        "stopped": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "observedAt": "2026-11-04T10:13:46.391Z",
+          "maxTokens": 2500000,
+          "totalTokens": 2562093,
+          "sessionFiles": 2,
+          "state": "STOPPED"
+        },
+        "maxTokens": 2500000
+      },
+      "operatorAcceptance": null,
+      "project": {
+        "revision": 0,
+        "headCommit": "948f5c30854404ee87356e29423abe15190ba983",
+        "tasks": [],
+        "contributions": 0,
+        "decisionQueue": []
+      }
+    },
+    "G": {
+      "condition": "G",
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": true,
+        "bytes": 33272,
+        "sha256": "119ab9c81879a61b54cfef57b0154bdf58f728bcc164cb743a1bc24c9121e3ad"
+      },
+      "criteria": {
+        "package_present": true,
+        "both_sites": true,
+        "measured_700mm_used": true,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": true,
+        "cost_and_schedule": true,
+        "risk_and_decision": true
+      },
+      "score": "7/7",
+      "run": {
+        "schema": "lhape-pilot-condition-run/v1",
+        "condition": "G",
+        "cohortId": "lhape-c-pilot-2026-11-04",
+        "codeFreeze": "c283bb156d17269436d30c6356a6b1dee1329090",
+        "world": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\worlds\\G",
+        "profile": "lhape-pilot",
+        "startedAt": "2026-11-04T10:17:15.571Z",
+        "injectedAt": "2026-11-04T10:18:00.586Z",
+        "endedAt": "2026-11-04T10:22:23.135Z",
+        "exitCode": 1,
+        "signal": null,
+        "error": null,
+        "stopped": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "observedAt": "2026-11-04T10:22:23.093Z",
+          "maxTokens": 2300000,
+          "totalTokens": 2332140,
+          "sessionFiles": 3,
+          "state": "STOPPED"
+        },
+        "maxTokens": 2300000
+      },
+      "operatorAcceptance": {
+        "schema": "lhape-pilot-g-acceptance/v1",
+        "taskId": "package",
+        "attemptId": "attempt-22e2c15a3025c4de02bb12be2c41aa2d",
+        "promoted": true,
+        "before": {
+          "revision": 0,
+          "headCommit": "948f5c30854404ee87356e29423abe15190ba983",
+          "tasks": [
+            {
+              "taskId": "package",
+              "state": "VERIFYING"
+            }
+          ]
+        },
+        "recovery": {
+          "state": "SETTLED",
+          "taskId": "package",
+          "detail": "the attempt is COMPLETED with result commit 3789dec2a75e; the canonical object database can now read 3789dec2a75e; no ref, working tree or project revision changed; every mechanical check held for candidate 3789dec2a75e — this host observed the world; it does not claim the previous worker process is still alive",
+          "resultCommit": "3789dec2a75eafacff6883584ba1cd2f13aeb4b5",
+          "changedFiles": [
+            "deliverables/package.md"
+          ]
+        },
+        "eligibility": {
+          "eligible": true,
+          "blockers": [],
+          "sourceCommit": "3789dec2a75eafacff6883584ba1cd2f13aeb4b5",
+          "taskState": "VERIFYING"
+        },
+        "result": {
+          "promotionId": "promotion-538246e10369be9a17a6600dc503f805",
+          "sourceCommit": "3789dec2a75eafacff6883584ba1cd2f13aeb4b5",
+          "expectedHeadCommit": "948f5c30854404ee87356e29423abe15190ba983",
+          "resultingHeadCommit": "1d4132b635944ae017e7531e3631b515c550fc6b"
+        },
+        "after": {
+          "revision": 1,
+          "headCommit": "1d4132b635944ae017e7531e3631b515c550fc6b",
+          "tasks": [
+            {
+              "taskId": "package",
+              "state": "SATISFIED"
+            }
+          ]
+        }
+      },
+      "project": {
+        "revision": 1,
+        "headCommit": "1d4132b635944ae017e7531e3631b515c550fc6b",
+        "tasks": [
+          {
+            "taskId": "package",
+            "state": "SATISFIED"
+          }
+        ],
+        "contributions": 0,
+        "decisionQueue": []
+      }
+    }
+  }
+}

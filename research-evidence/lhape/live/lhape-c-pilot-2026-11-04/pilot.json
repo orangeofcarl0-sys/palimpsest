@@ -1,0 +1,92 @@
+{
+  "schema": "lhape-pilot-prep/v1",
+  "cohortId": "lhape-c-pilot-2026-11-04",
+  "codeFreeze": "c283bb156d17269436d30c6356a6b1dee1329090",
+  "mode": "REAL_MODEL_PILOT",
+  "goal": "Evaluate a multi-site energy deployment and produce ONE reviewable package covering technical capacity, vendor compliance, cost, implementation schedule, risk/uncertainty, and an integrated decision. Respect every binding requirement. Do not treat an unverified claim as accepted. Do not approve expenditure without authority.",
+  "requirements": [
+    {
+      "requirement_id": "R1",
+      "statement": "The package must name the deciding constraint for each site.",
+      "priority": "critical",
+      "acceptance_refs": []
+    },
+    {
+      "requirement_id": "R2",
+      "statement": "A 2024 coastal column is not a current coastal certificate; an expected certificate is not a current certificate.",
+      "priority": "critical",
+      "acceptance_refs": []
+    }
+  ],
+  "worlds": {
+    "F": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\worlds\\F",
+    "L": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\worlds\\L",
+    "G": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\worlds\\G"
+  },
+  "homes": {
+    "F": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-F",
+    "L": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-L",
+    "G": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-G"
+  },
+  "constraints": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\constraint.md",
+  "budget": {
+    "perCondition": 2500000,
+    "aggregate": 7500000,
+    "preflightTokens": 6238,
+    "pilotAggregateAfterPreflight": 7493762,
+    "gCapAfterFAndL": 2300000
+  },
+  "sessions": [
+    {
+      "id": "pilot-f-1",
+      "condition": "F",
+      "maxTokens": 2500000,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=F",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "cwd": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1",
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-F\\sessions",
+      "env": {
+        "LHAPE_PILOT_RUN": "C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      },
+      "timeoutMs": 1800000
+    },
+    {
+      "id": "pilot-l-1",
+      "condition": "L",
+      "maxTokens": 2500000,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=L",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "cwd": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1",
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-L\\sessions",
+      "env": {
+        "LHAPE_PILOT_RUN": "C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      },
+      "timeoutMs": 1800000
+    },
+    {
+      "id": "pilot-g-1",
+      "condition": "G",
+      "maxTokens": 2300000,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=G",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "cwd": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1",
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-G\\sessions",
+      "env": {
+        "LHAPE_PILOT_RUN": "C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      },
+      "timeoutMs": 1800000
+    }
+  ]
+}

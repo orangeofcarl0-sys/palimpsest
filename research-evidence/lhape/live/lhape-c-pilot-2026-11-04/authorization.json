@@ -1,0 +1,12 @@
+{
+  "schema": "lhape-spend-authorization/v1",
+  "authorized": true,
+  "owner": "Owner (authorized 2026-11-04)",
+  "cohortId": "lhape-c-pilot-2026-11-04",
+  "authorizedAt": "2026-11-04T00:00:00.000Z",
+  "expiresAt": "2026-11-11T00:00:00.000Z",
+  "provider": { "id": "deepseek-official", "model": "deepseek-flash" },
+  "maxTokens": 7500000,
+  "conditions": ["F", "L", "G"],
+  "note": "Bounded LHAPE-C pilot: 3 conditions, 2.5M tokens each, 7.5M aggregate. The APS pilot authorization is not reused."
+}
