@@ -256,7 +256,8 @@ const cohort = {
   sessions: ["F", "L", "G"].map((condition) => ({
     id: `pilot-${condition.toLowerCase()}-1`,
     condition,
-    maxTokens: 2_500_000,
+    // The 6,238-token F profile preflight is part of the owner's 7.5M aggregate; reserve it here.
+    maxTokens: condition === "G" ? 2_493_762 : 2_500_000,
     command: ["node", join("scripts", "lhape", "run_condition.mjs"), `--condition=${condition}`, `--run=${RUN}`],
     cwd: process.cwd(),
     sessionRoot: join(RUN, `home-${condition}`, "sessions"),
@@ -275,7 +276,7 @@ writeJson(join(RUN, "pilot.json"), {
   worlds: Object.fromEntries(Object.entries(worlds).map(([condition, value]) => [condition, value.world])),
   homes: Object.fromEntries(["F", "L", "G"].map((condition) => [condition, join(RUN, `home-${condition}`)])),
   constraints: join(RUN, "constraint.md"),
-  budget: { perCondition: 2_500_000, aggregate: 7_500_000 },
+  budget: { perCondition: 2_500_000, aggregate: 7_500_000, preflightTokens: 6_238, pilotAggregateAfterPreflight: 7_493_762 },
   sessions: cohort.sessions,
 });
 process.stdout.write(`${JSON.stringify({ run: RUN, cohortId: COHORT, worlds: Object.keys(worlds) }, null, 2)}\n`);
