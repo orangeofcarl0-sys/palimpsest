@@ -47,7 +47,7 @@ for (let tick = 0; tick < 16; tick += 1) {
 }
 const before = installed.controller.status();
 const candidates = before.attempts.filter((attempt) => attempt.task_id === "package" && attempt.state === "COMPLETED");
-const attempt = candidates[candidates.length - 1];
+let attempt = candidates[candidates.length - 1];
 const record = {
   schema: "lhape-pilot-g-acceptance/v1",
   taskId: "package",
@@ -59,6 +59,34 @@ const record = {
     tasks: before.tasks.map((task) => ({ taskId: task.task_id, state: task.state })),
   },
 };
+/**
+ * The budget guard stopped G's host before the worker could report, but the worker had already
+ * committed its package in the execution world. This host has no job for that attempt; it observes
+ * the world and settles it, exactly as the interruption scenario does. It does not claim the old
+ * worker process is alive.
+ */
+if (attempt === undefined) {
+  const running = before.attempts.filter((entry) => entry.task_id === "package" && entry.state === "RUNNING");
+  if (running.length === 1) {
+    record.recovery = await installed.application.work.completeTask({
+      taskId: "package",
+      summary: "operator settles the committed execution world after the budget stop",
+    });
+    for (let tick = 0; tick < 16; tick += 1) {
+      const event = installed.controller.step();
+      if (event === null) break;
+    }
+    const refreshed = installed.controller.status();
+    const completed = refreshed.attempts.filter((entry) => entry.task_id === "package" && entry.state === "COMPLETED");
+    attempt = completed[completed.length - 1];
+    record.attemptId = attempt?.attempt_id ?? record.attemptId;
+    record.before = {
+      revision: refreshed.revision,
+      headCommit: refreshed.headCommit,
+      tasks: refreshed.tasks.map((task) => ({ taskId: task.task_id, state: task.state })),
+    };
+  }
+}
 if (attempt === undefined) {
   record.detail = "no COMPLETED package attempt exists; acceptance was not fabricated";
 } else {
