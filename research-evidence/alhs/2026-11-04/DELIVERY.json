@@ -8,16 +8,51 @@
     "e4d1fb1",
     "1227a74"
   ],
-  "reportCommit": "0f8b4135b01241bf35832c9814005e1173fa17e4",
-  "note": "This manifest is committed immediately after the report commit; the branch head after that commit is the delivery head. No push, PR or merge was performed.",
-  "modelCalls": 0,
+  "reportCommit": "PENDING",
+  "note": "This manifest records the core real-model run and the engineering evidence. No push, PR or merge was performed.",
+  "modelCalls": {
+    "realModelSessions": 4,
+    "providerRequests": 103,
+    "providerSuccess": 102,
+    "providerUpstreamTimeout": 1,
+    "tokens": 4609104
+  },
   "cohort": {
     "id": "alhs-c-2026-11-04",
-    "state": "PRE_REGISTERED_NOT_AUTHORIZED",
-    "gateResult": "research-evidence/alhs/live/BLOCKED.json",
-    "plan": "research-evidence/alhs/live/run-plan.json",
+    "state": "CORE_EXECUTED_DIAGNOSTIC_NOT_AUTHORIZED",
+    "authorization": "research-evidence/alhs/live/authorization.json",
     "protocol": "docs/programs/alhs/ALHS-C-PROTOCOL.md",
-    "reason": "no alhs-spend-authorization/v1 exists; the LHAPE-C 7.5M pilot authorization is a different schema and cohort and does not transfer"
+    "coreResult": "docs/engineering/ALHS-C-CORE-RESULT.md",
+    "coreEvidence": "research-evidence/alhs/core-2026-11-04/",
+    "coreSummary": "research-evidence/alhs/core-2026-11-04/core-summary.json",
+    "diagnostic": "NOT_AUTHORIZED_NOT_RUN",
+    "preAuthorizationBlock": "research-evidence/alhs/live/BLOCKED.json"
+  },
+  "core": {
+    "F": {
+      "rubric": "7/7",
+      "tokens": 3065535,
+      "naturalEnd": false,
+      "packagesBytes": 32228,
+      "packageSha256": "f9f6e922634c7c2ad24181723d214823618be8a10867d857975df93c0d24bc33"
+    },
+    "A": {
+      "rubric": "7/7",
+      "tokens": 1543569,
+      "naturalEnd": true,
+      "episode": "episode-4f2b6270922b14e03cecae0e",
+      "packagesBytes": 29848,
+      "packageSha256": "0d77121ba0037836a40d91c0da462e23b63d08c24b3cba426fbfc9baf8ef0c3d"
+    },
+    "aggregateTokens": 4609104,
+    "authorizedTokens": 12000000,
+    "budgetStop": {
+      "session": "F-2",
+      "ledgerTokens": 2899572,
+      "softCeiling": 2850000,
+      "overshoot": 49572,
+      "underHardCeiling": 100428
+    }
   },
   "evidence": {
     "report": "docs/engineering/ALHS-FINAL-REPORT.md",
@@ -46,16 +81,17 @@
     }
   },
   "capabilities": {
-    "episodeConclusion": "implemented; model judgement + mechanical consistency check; pulse-derived; never acceptance",
+    "episodeConclusion": "implemented; real model used it to end A-2 with DELIVER; model judgement + mechanical consistency check; never acceptance",
     "episodeReopen": "implemented; revision/head/journal change reopens the conclusion",
-    "pathLevelReuse": "implemented as read-only continuation facts; a new governed attempt consumes them",
+    "pathLevelReuse": "implemented as read-only continuation facts; a new governed attempt consumes them (deterministic host run only)",
     "resultCommitExposure": "implemented in the continuation inspection",
     "realHostVerticalRun": "implemented and run: A1-A4 exit 0, 2 operator promotions, DELIVER recorded",
-    "budgetReserve": "implemented in scripts/aps/budget_guard.mjs (--reserve-tokens)"
+    "budgetReserve": "implemented and validated: F-2 stopped 49,572 above the soft ceiling and 100,428 below the hard ceiling"
   },
   "notClaimed": [
-    "real-model natural convergence",
+    "repeated-sample real-model convergence advantage",
     "F/A quality or cost advantage",
+    "real-model governed cooperation (A chose direct work plus one native subagent)",
     "autonomous discovery of the reuse path by a model",
     "semantic reuse beyond path-level facts"
   ]
