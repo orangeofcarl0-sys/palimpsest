@@ -13,8 +13,8 @@ Branch: `palimpsest-autonomous-long-horizon-synthesis`. Base: LHAPE `3782b01`; `
 | Branch | `palimpsest-autonomous-long-horizon-synthesis` |
 | Product commits | `e4d1fb1` (episode + reuse + offline diagnosis), `1227a74` (result commit, real-host run, budget reserve) |
 | Report/protocol commit | recorded by `research-evidence/alhs/2026-11-04/DELIVERY.json` |
-| Diff from LHAPE `3782b01..HEAD` | 65 files, +4,917 / −86 |
-| Diff from APS main `d16800f..HEAD` | 237 files, +17,691 / −104 |
+| Diff from LHAPE `3782b01..HEAD` | 73 files, +5,811 / −86 |
+| Diff from APS main `d16800f..HEAD` | 245 files, +18,585 / −104 |
 | Push / PR / merge | none |
 | `origin/main` | `d16800fbe3d1a6172b66b466b227c5fddbb45b98` (unchanged) |
 
