@@ -15,6 +15,7 @@ export {
   EPISODE_MARKER,
   EPISODE_STATES,
   buildPulseEpisode,
+  episodeArtifactWarnings,
   episodeConclusionBody,
   evaluateEpisodeReadiness,
   makeEpisodeConclusion,
@@ -22,6 +23,7 @@ export {
   validateEpisodeConclusion,
 } from "./episode.js";
 export type {
+  EpisodeArtifactState,
   EpisodeConclusion,
   EpisodeConclusionInput,
   EpisodeConclusionResult,

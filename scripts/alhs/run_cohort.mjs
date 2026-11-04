@@ -78,8 +78,9 @@ if (!Array.isArray(stage.conditions) || stage.conditions.length === 0) problems.
 for (const condition of stage.conditions ?? []) {
   if (cohort.conditions?.[condition] === undefined) problems.push(`condition "${condition}" is not defined`);
 }
-if (!Number.isSafeInteger(stage.sessionsPerCondition) || stage.sessionsPerCondition < 1) {
-  problems.push("sessionsPerCondition must be a positive integer");
+const hasSessionPlan = Array.isArray(stage.sessionPlan) && stage.sessionPlan.length > 0;
+if (!hasSessionPlan && (!Number.isSafeInteger(stage.sessionsPerCondition) || stage.sessionsPerCondition < 1)) {
+  problems.push("sessionsPerCondition must be a positive integer (or supply sessionPlan)");
 }
 if (!Number.isSafeInteger(stage.sessionCeiling) || stage.sessionCeiling < 1) {
   problems.push("sessionCeiling must be a positive integer");
@@ -93,16 +94,41 @@ if (!Number.isSafeInteger(stage.aggregateCeiling) || stage.aggregateCeiling < 1)
 if (!Number.isSafeInteger(cohort.localHardCap) || cohort.localHardCap < 1) {
   problems.push("localHardCap must be a positive integer");
 }
-const sessions = (stage.conditions ?? []).flatMap((condition) =>
-  Array.from({ length: stage.sessionsPerCondition ?? 0 }, (_, index) => ({
-    sessionId: `${String(condition)}-${String(index + 1)}`,
-    condition,
-    ceiling: stage.sessionCeiling,
-    reserveTokens: stage.reserveTokens,
-    softStopAt: stage.sessionCeiling - stage.reserveTokens,
-    profile: cohort.conditions?.[condition]?.profile ?? null,
-  })),
-);
+const sessions = hasSessionPlan
+  ? stage.sessionPlan.map((entry, index) => {
+      const condition = String(entry.condition ?? "");
+      const ceiling = Number(entry.ceiling ?? stage.sessionCeiling);
+      const reserveTokens = Number(entry.reserveTokens ?? stage.reserveTokens);
+      if (!(stage.conditions ?? []).includes(condition)) problems.push(`sessionPlan[${String(index)}] names condition "${condition}" outside the stage`);
+      if (!Number.isSafeInteger(ceiling) || ceiling < 1) problems.push(`sessionPlan[${String(index)}].ceiling must be a positive integer`);
+      if (!Number.isSafeInteger(reserveTokens) || reserveTokens < 0 || reserveTokens >= ceiling) {
+        problems.push(`sessionPlan[${String(index)}].reserveTokens must be below its ceiling`);
+      }
+      if (entry.killAtTokens !== undefined && (!Number.isSafeInteger(entry.killAtTokens) || entry.killAtTokens < 1 || entry.killAtTokens >= ceiling)) {
+        problems.push(`sessionPlan[${String(index)}].killAtTokens must be a positive integer below its ceiling`);
+      }
+      return {
+        sessionId: String(entry.sessionId ?? `${condition}-${String(index + 1)}`),
+        condition,
+        index: Number(entry.index ?? index + 1),
+        ceiling,
+        reserveTokens,
+        softStopAt: ceiling - reserveTokens,
+        ...(entry.killAtTokens === undefined ? {} : { killAtTokens: entry.killAtTokens }),
+        profile: cohort.conditions?.[condition]?.profile ?? null,
+      };
+    })
+  : (stage.conditions ?? []).flatMap((condition) =>
+      Array.from({ length: stage.sessionsPerCondition ?? 0 }, (_, index) => ({
+        sessionId: `${String(condition)}-${String(index + 1)}`,
+        condition,
+        index: index + 1,
+        ceiling: stage.sessionCeiling,
+        reserveTokens: stage.reserveTokens,
+        softStopAt: stage.sessionCeiling - stage.reserveTokens,
+        profile: cohort.conditions?.[condition]?.profile ?? null,
+      })),
+    );
 const plannedCeiling = sessions.reduce((sum, session) => sum + session.ceiling, 0);
 if (plannedCeiling > stage.aggregateCeiling) {
   problems.push(`the expanded session ceilings (${String(plannedCeiling)}) exceed the stage aggregate (${String(stage.aggregateCeiling)})`);

@@ -8,25 +8,33 @@ set -euo pipefail
 
 REPO="$(pwd)"
 BASE="${ALHS_BASE:-$HOME/alhs}"
-RUN="$BASE/core-2026-11-04"
-COHORT="alhs-c-2026-11-04"
+STAGE="${ALHS_STAGE:-core}"
+if [ "$STAGE" = "repeat" ]; then
+  RUN="$BASE/repeat-core-2026-11-04"
+  COHORT="alhs-c-repeat-2026-11-04"
+  COHORT_FILE="$REPO/research-evidence/alhs/live/cohort-repeat-pre-registration.json"
+  AUTH="$REPO/research-evidence/alhs/live/authorization-repeat.json"
+else
+  RUN="$BASE/core-2026-11-04"
+  COHORT="alhs-c-2026-11-04"
+  COHORT_FILE="$REPO/research-evidence/alhs/live/cohort-pre-registration.json"
+  AUTH="$REPO/research-evidence/alhs/live/authorization.json"
+fi
 CODE_FREEZE="$(git -C "$REPO" rev-parse HEAD)"
 DSH_BIN="/c/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/lib/bin.js"
 DSH_HOME_REAL="$HOME/.dsh"
 DSH_MODULES="$DSH_HOME_REAL/profiles/node_modules/@deepseek-ai"
 SEAM="$BASE/seam"
-AUTH="$REPO/research-evidence/alhs/live/authorization.json"
 PROXY_PORT=18087
 
 if [ ! -f "$DSH_BIN" ]; then echo "DSH bin missing at $DSH_BIN" >&2; exit 2; fi
 if [ ! -f "$DSH_HOME_REAL/.credentials.yaml" ]; then echo "owner credential store missing" >&2; exit 2; fi
-if [ ! -f "$AUTH" ]; then echo "ALHS authorization missing at $AUTH" >&2; exit 2; fi
 if [ ! -d "$SEAM/node_modules/@deepseek-ai/dsh-win32-process" ]; then
   mkdir -p "$SEAM"
   npm install --prefix "$SEAM" @deepseek-ai/dsh-win32-process@0.2.1-rc.5 --no-save --no-package-lock >/dev/null 2>&1
 fi
 
-node "$REPO/scripts/alhs/prepare_core.mjs" --run="$RUN" --cohort="$COHORT" --codeFreeze="$CODE_FREEZE" > "$BASE/prepare-core.json"
+node "$REPO/scripts/alhs/prepare_core.mjs" --run="$RUN" --cohort="$COHORT" --stage="$STAGE" --codeFreeze="$CODE_FREEZE" > "$BASE/prepare-$STAGE.json"
 mkdir -p "$RUN/out"
 
 PROFILE_PATCH_F() {
@@ -95,7 +103,9 @@ JSON
 YAML
 }
 
-for id in F-1 F-2 A-1 A-2; do
+SUFFIX=""
+[ "$STAGE" = "repeat" ] && SUFFIX="b"
+for id in "F-1$SUFFIX" "F-2$SUFFIX" "A-1$SUFFIX" "A-2$SUFFIX"; do
   HOME_SESSION="$RUN/home-$id"
   rm -rf "$HOME_SESSION"
   mkdir -p "$HOME_SESSION/profiles/node_modules" "$HOME_SESSION/profiles/alhs-core" "$RUN/tmp" "$RUN/worker-logs"
@@ -121,9 +131,10 @@ export ALHS_REPOSITORY="$REPO"
 export C6R_PLACEHOLDER="c6r-placeholder-not-a-credential"
 
 if [ "${ALHS_SETUP_ONLY:-0}" = "1" ]; then
-  echo "setup-only: worlds, profiles and the authorization are ready; no model session started"
+  echo "setup-only: worlds and profiles are ready; no model session started"
   exit 0
 fi
+if [ ! -f "$AUTH" ]; then echo "ALHS authorization missing at $AUTH" >&2; exit 2; fi
 
 if curl -fsS --max-time 2 "http://127.0.0.1:${PROXY_PORT}/" >/dev/null 2>&1; then
   echo "a stale proxy is already listening on ${PROXY_PORT}; stop it before this run" >&2
@@ -147,9 +158,9 @@ if ! kill -0 "$PROXY_PID" 2>/dev/null; then
 fi
 
 node "$REPO/scripts/alhs/run_cohort.mjs" \
-  --cohort="$REPO/research-evidence/alhs/live/cohort-pre-registration.json" \
+  --cohort="$COHORT_FILE" \
   --authorization="$AUTH" \
-  --stage=core \
+  --stage="$STAGE" \
   --out="$RUN/out/gate" \
   --adapter="$REPO/scripts/alhs/run_core_session.mjs" \
   --execute \

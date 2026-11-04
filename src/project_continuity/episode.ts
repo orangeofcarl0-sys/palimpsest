@@ -132,6 +132,15 @@ export function evaluateEpisodeReadiness(facts: EpisodeReadinessFacts): EpisodeR
   });
 }
 
+export interface EpisodeArtifactState {
+  readonly path: string;
+  readonly present: boolean;
+  readonly tracked: boolean;
+  /** Present in HEAD with no working-tree change for this path. */
+  readonly committed: boolean;
+  readonly detail: string;
+}
+
 export interface EpisodeConclusion {
   readonly schema: "pc1-episode-conclusion/v1";
   readonly conclusionId: string;
@@ -154,6 +163,12 @@ export interface EpisodeConclusion {
     readonly openAttempts: readonly string[];
     readonly unresolvedQuestions: readonly string[];
     readonly blockedEffects: readonly string[];
+    /**
+     * Provenance facts for the named artifacts. Additive: a conclusion recorded before this field
+     * existed parses with it absent. DELIVER does not require a commit; the facts are reported so a
+     * reader can see that the final bytes are only in the working tree.
+     */
+    readonly artifacts?: readonly EpisodeArtifactState[];
   };
 }
 
@@ -174,6 +189,8 @@ export interface EpisodeConclusionResult {
   readonly detail: string;
   readonly blockers: readonly string[];
   readonly readiness: EpisodeReadiness | null;
+  /** Facts about the named artifacts' Git provenance; never a refusal by themselves. */
+  readonly warnings?: readonly string[];
   readonly session: {
     readonly mayEnd: boolean;
     readonly detail: string;
@@ -250,6 +267,7 @@ export function makeEpisodeConclusion(input: {
   readonly readiness: EpisodeReadiness;
   readonly basis: EpisodeConclusion["basis"];
   readonly recordedAt: string;
+  readonly artifactStates?: readonly EpisodeArtifactState[] | undefined;
 }): EpisodeConclusion {
   const body = {
     schema: "pc1-episode-conclusion/v1" as const,
@@ -272,9 +290,25 @@ export function makeEpisodeConclusion(input: {
       ),
       unresolvedQuestions: Object.freeze([...input.readiness.unresolvedQuestions]),
       blockedEffects: Object.freeze([...input.readiness.blockedEffects]),
+      artifacts: Object.freeze((input.artifactStates ?? []).map((state) => Object.freeze({ ...state }))),
     }),
   };
   return Object.freeze({ ...body, conclusionId: `episode-${canonicalDigest(body).slice(0, 24)}` });
+}
+
+/** Provenance facts are reported, never turned into an acceptance or a refusal by themselves. */
+export function episodeArtifactWarnings(states: readonly EpisodeArtifactState[]): readonly string[] {
+  const warnings: string[] = [];
+  for (const state of states) {
+    if (!state.present) {
+      warnings.push(`artifact ${state.path} was not found`);
+    } else if (!state.tracked) {
+      warnings.push(`artifact ${state.path} is not tracked by Git; the final bytes exist only in the working tree`);
+    } else if (!state.committed) {
+      warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);
+    }
+  }
+  return Object.freeze(warnings);
 }
 
 /** Parse a recorded conclusion from an ordinary journal entry, ignoring anything else. */
@@ -384,6 +418,14 @@ export function episodeConclusionBody(conclusion: EpisodeConclusion): string {
     `Next step: ${conclusion.nextStep ?? "(none)"}`,
     `Evidence: ${conclusion.evidenceRefs.length === 0 ? "(none)" : conclusion.evidenceRefs.join(", ")}`,
     `Basis: revision ${String(conclusion.basis.projectRevision)}, head ${conclusion.basis.headCommit}`,
+    conclusion.check.artifacts === undefined || conclusion.check.artifacts.length === 0
+      ? "Artifact provenance: (not recorded)"
+      : `Artifact provenance:\n${conclusion.check.artifacts
+          .map(
+            (state) =>
+              `- ${state.path}: present=${String(state.present)} tracked=${String(state.tracked)} committed=${String(state.committed)}`,
+          )
+          .join("\n")}`,
     "",
     "This record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.",
     "",

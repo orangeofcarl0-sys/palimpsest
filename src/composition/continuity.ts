@@ -5,15 +5,18 @@
  * promotion facts into the read-only continuity facade and the explicit domain-outcome service.
  * It owns no store and decides no authority; install.ts only decides to compose it.
  */
+import { execFileSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
-import { isAbsolute, resolve } from "node:path";
+import { isAbsolute, relative, resolve } from "node:path";
 
 import { makeProjectContinuityService } from "../project_continuity/index.js";
 import type { ProjectContinuityService } from "../project_continuity/index.js";
 import {
+  episodeArtifactWarnings,
   episodeConclusionBody,
   makeEpisodeConclusion,
   validateEpisodeConclusion,
+  type EpisodeArtifactState,
   type EpisodeConclusionInput,
   type EpisodeConclusionResult,
   type EpisodeService,
@@ -179,11 +182,87 @@ function makeEpisodeService(input: {
           }
         };
 
+  /**
+   * ALHS-C follow-up: a DELIVER is a judgement, but the reader is entitled to know whether the final
+   * bytes are in Git. These are facts, not a refusal: an untracked artifact warns, it does not block.
+   */
+  const artifactState = (path: string): EpisodeArtifactState => {
+    if (input.repository === undefined) {
+      return { path, present: false, tracked: false, committed: false, detail: "repository not observable" };
+    }
+    const repository = input.repository;
+    const absolute = isAbsolute(path) ? path : resolve(repository, path);
+    if (!existsSync(absolute) || !statSync(absolute).isFile()) {
+      return { path, present: false, tracked: false, committed: false, detail: "not found" };
+    }
+    const rel = relative(repository, absolute).replaceAll("\\", "/");
+    if (rel.startsWith("..")) {
+      return { path, present: true, tracked: false, committed: false, detail: "outside the repository" };
+    }
+    let tracked = false;
+    try {
+      execFileSync("git", ["-C", repository, "ls-files", "--error-unmatch", "--", rel], { stdio: "ignore" });
+      tracked = true;
+    } catch {
+      tracked = false;
+    }
+    let inHead = false;
+    try {
+      execFileSync("git", ["-C", repository, "cat-file", "-e", `HEAD:${rel}`], { stdio: "ignore" });
+      inHead = true;
+    } catch {
+      inHead = false;
+    }
+    let dirty = true;
+    try {
+      dirty = execFileSync("git", ["-C", repository, "status", "--porcelain", "--", rel], { encoding: "utf8" }).trim() !== "";
+    } catch {
+      dirty = true;
+    }
+    return {
+      path,
+      present: true,
+      tracked,
+      committed: inHead && !dirty,
+      detail: !tracked
+        ? "not tracked by Git"
+        : !inHead
+          ? "tracked but not in HEAD"
+          : dirty
+            ? "tracked with uncommitted changes"
+            : "committed at HEAD",
+    };
+  };
+
+  const provenance = (conclusionInput: EpisodeConclusionInput): {
+    readonly states: readonly EpisodeArtifactState[];
+    readonly warnings: readonly string[];
+  } => {
+    if (input.repository === undefined) {
+      const requested = (conclusionInput.artifacts ?? []).filter((path) => path.trim() !== "");
+      return {
+        states: Object.freeze([]),
+        warnings:
+          requested.length === 0
+            ? Object.freeze([])
+            : Object.freeze(["the repository is not observable, so artifact provenance was not checked"]),
+      };
+    }
+    const states = Object.freeze(
+      (conclusionInput.artifacts ?? [])
+        .map((path) => path.trim())
+        .filter((path) => path !== "")
+        .map(artifactState),
+    );
+    return { states, warnings: episodeArtifactWarnings(states) };
+  };
+
   return Object.freeze({
     async conclude(conclusionInput: EpisodeConclusionInput): Promise<EpisodeConclusionResult> {
       const current = await input.pulse.pulse();
       const readiness = current.episode.readiness;
       const validation = validateEpisodeConclusion({ conclusion: conclusionInput, readiness, artifactExists });
+      const artifactProvenance = provenance(conclusionInput);
       if (!validation.ok) {
         return Object.freeze({
           state: "REFUSED" as const,
@@ -192,6 +271,7 @@ function makeEpisodeService(input: {
           detail: `the episode conclusion was refused: ${validation.blockers.join("; ")}`,
           blockers: validation.blockers,
           readiness,
+          warnings: artifactProvenance.warnings,
           session: Object.freeze({
             mayEnd: false,
             detail:
@@ -208,6 +288,7 @@ function makeEpisodeService(input: {
           headCommit: current.basis.headCommit,
         },
         recordedAt: now(),
+        artifactStates: artifactProvenance.states,
       });
       await input.workspace.recordJournalEntry({
         projectId: input.projectId,
@@ -224,9 +305,11 @@ function makeEpisodeService(input: {
         episode: after.episode,
         detail:
           `${conclusionInput.intent} recorded at revision ${String(conclusion.basis.projectRevision)}. ` +
-          "This is an advisory episode judgement: it accepts no artifact, promotes no result and approves no expenditure. The operator retains authority.",
+          "This is an advisory episode judgement: it accepts no artifact, promotes no result and approves no expenditure. The operator retains authority." +
+          (artifactProvenance.warnings.length === 0 ? "" : ` Provenance: ${artifactProvenance.warnings.join("; ")}.`),
         blockers: Object.freeze([]),
         readiness,
+        warnings: artifactProvenance.warnings,
         session: Object.freeze({
           mayEnd,
           detail: mayEnd

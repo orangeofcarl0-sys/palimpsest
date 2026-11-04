@@ -140,12 +140,33 @@ const injectionTimer =
 
 const killTimer = setTimeout(() => killHostTree("scenario_kill"), session.killAfterMs);
 
+/**
+ * ALHS-C repeat: a TOKEN-MILESTONE interruption. The fixed-wall-clock kill in the core gave the two
+ * conditions different amounts of work before the interruption; a milestone at the same reported
+ * usage gives them the same budget. The wall-clock timer above stays as a backstop.
+ */
+let tokenPoll = null;
+if (Number.isSafeInteger(session.killAtTokens) && session.killAtTokens > 0) {
+  tokenPoll = setInterval(() => {
+    try {
+      const ledgerNow = JSON.parse(readFileSync(ledger, "utf8"));
+      if ((ledgerNow.totalTokens ?? 0) >= session.killAtTokens) {
+        if (tokenPoll !== null) clearInterval(tokenPoll);
+        killHostTree("token_milestone");
+      }
+    } catch {
+      /* the ledger may not exist yet */
+    }
+  }, 1_000);
+}
+
 const outcome = await new Promise((resolve) => {
   host.on("error", (error) => resolve({ code: null, signal: null, error: error.message }));
   host.on("exit", (code, signal) => resolve({ code, signal, error: null }));
 });
 if (injectionTimer !== null) clearTimeout(injectionTimer);
 clearTimeout(killTimer);
+if (tokenPoll !== null) clearInterval(tokenPoll);
 try {
   guard.kill("SIGTERM");
 } catch {
@@ -186,6 +207,7 @@ const record = {
   maxTokens: session.maxTokens,
   reserveTokens: session.reserveTokens,
   softStopAt: session.maxTokens - session.reserveTokens,
+  killAtTokens: session.killAtTokens ?? null,
   natural: outcome.code === 0 && !stopped && killedAt === null,
 };
 writeFileSync(join(out, "run.json"), `${JSON.stringify(record, null, 2)}\n`);

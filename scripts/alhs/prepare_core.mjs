@@ -23,6 +23,8 @@ const args = new Map(
 );
 const RUN = resolve(String(args.get("run") ?? join(process.env.USERPROFILE ?? ".", "alhs-core")));
 const COHORT = String(args.get("cohort") ?? "alhs-c-2026-11-04");
+const STAGE = String(args.get("stage") ?? "core");
+if (!["core", "repeat"].includes(STAGE)) throw new Error(`unknown stage "${STAGE}"`);
 const CODE_FREEZE = String(args.get("codeFreeze") ?? "");
 const PROJECT = "alhs-core";
 
@@ -222,15 +224,17 @@ writeJson(join(RUN, "deployments", "A.json"), deploymentA());
 write(join(RUN, "constraint.md"), CONSTRAINT);
 for (const [name, text] of Object.entries(PROMPTS)) write(join(RUN, "prompts", `${name}.txt`), `${text}\n`);
 
+const SUFFIX = STAGE === "repeat" ? "b" : "";
 const sessions = [
-  { id: "F-1", condition: "F", index: 1, prompt: "F", injectAtMs: 60_000, killAfterMs: 240_000 },
-  { id: "F-2", condition: "F", index: 2, prompt: "F2", injectAtMs: null, killAfterMs: 720_000 },
-  { id: "A-1", condition: "A", index: 1, prompt: "A", injectAtMs: 60_000, killAfterMs: 240_000 },
-  { id: "A-2", condition: "A", index: 2, prompt: "A2", injectAtMs: null, killAfterMs: 720_000 },
+  { id: `F-1${SUFFIX}`, condition: "F", index: 1, prompt: "F", injectAtMs: 60_000, killAfterMs: STAGE === "repeat" ? 600_000 : 240_000 },
+  { id: `F-2${SUFFIX}`, condition: "F", index: 2, prompt: "F2", injectAtMs: null, killAfterMs: 720_000 },
+  { id: `A-1${SUFFIX}`, condition: "A", index: 1, prompt: "A", injectAtMs: 60_000, killAfterMs: STAGE === "repeat" ? 600_000 : 240_000 },
+  { id: `A-2${SUFFIX}`, condition: "A", index: 2, prompt: "A2", injectAtMs: null, killAfterMs: 720_000 },
 ].map((session) => ({
   ...session,
-  maxTokens: 3_000_000,
+  maxTokens: STAGE === "repeat" && session.index === 1 ? 1_500_000 : STAGE === "repeat" ? 2_500_000 : 3_000_000,
   reserveTokens: 150_000,
+  ...(STAGE === "repeat" && session.index === 1 ? { killAtTokens: 1_200_000 } : {}),
   world: worlds[session.condition].world,
   state: session.condition === "A" ? aState : null,
   home: join(RUN, `home-${session.id}`),
@@ -241,8 +245,9 @@ const sessions = [
 writeJson(join(RUN, "core.json"), {
   schema: "alhs-core-prep/v1",
   cohortId: COHORT,
+  stage: STAGE,
   codeFreeze: CODE_FREEZE,
-  mode: "REAL_MODEL_CORE",
+  mode: STAGE === "repeat" ? "REAL_MODEL_REPEAT_CORE" : "REAL_MODEL_CORE",
   goal: GOAL,
   requirements: REQUIREMENTS,
   worlds: Object.fromEntries(Object.entries(worlds).map(([condition, value]) => [condition, value.world])),
@@ -250,8 +255,13 @@ writeJson(join(RUN, "core.json"), {
   states: { A: aState },
   constraint: join(RUN, "constraint.md"),
   sessions,
-  budget: { perSession: 3_000_000, reserve: 150_000, softStop: 2_850_000, aggregate: 12_000_000, sessions: 4 },
+  budget:
+    STAGE === "repeat"
+      ? { session1: 1_500_000, session2: 2_500_000, reserve: 150_000, killAtTokens: 1_200_000, aggregate: 8_000_000, sessions: 4 }
+      : { perSession: 3_000_000, reserve: 150_000, softStop: 2_850_000, aggregate: 12_000_000, sessions: 4 },
   note:
-    "F and A share byte-identical sources. The constraint is injected at T+60s in session 1 and is not in the initial world. Session 1 is killed at T+240s if the host is still running; session 2 is a new principal session on the same project state.",
+    STAGE === "repeat"
+      ? "F and A share byte-identical sources. The constraint is injected at T+60s in session 1. Session 1 is killed at the same reported token milestone (1,200,000) in both conditions, with a wall-clock backstop; session 2 is a new principal session on the same project state."
+      : "F and A share byte-identical sources. The constraint is injected at T+60s in session 1 and is not in the initial world. Session 1 is killed at T+240s if the host is still running; session 2 is a new principal session on the same project state.",
 });
 process.stdout.write(`${JSON.stringify({ run: RUN, worlds: Object.keys(worlds), sessions: sessions.map((s) => s.id) })}\n`);
