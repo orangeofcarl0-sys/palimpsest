@@ -56,3 +56,15 @@ request returned 502 UPSTREAM_TIMEOUT during F-2; the proxy retried and the sess
 - The token totals are descriptive: the fixed 240s kill gave the two conditions different amounts of
   work in session 1 (A-1 1.29M vs F-1 166k). The clean difference is the ending.
 - No F/A quality or cost advantage is claimed.
+
+## Post-run follow-up
+
+- `offline-session-analysis.json` / `offline-analysis.md` classify what happened after the first 7/7
+  package: F-2 made 27 further package edits with 12 re-reads, 13 verification commands and 11 state
+  queries; A-2 did a bounded verification pass and then concluded.
+- The product now records artifact provenance (tracked/committed) in `conclude` and warns when the
+  final bytes are only in the working tree. These core packages were untracked; a rerun would report
+  that warning. DELIVER is not refused for it.
+- A balanced repeat-core stage is pre-registered in
+  `docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md` (token-milestone kill at 1,200,000) and is **not
+  authorized**; its gate plan and `BLOCKED.json` are in `../live/repeat-plan/`.

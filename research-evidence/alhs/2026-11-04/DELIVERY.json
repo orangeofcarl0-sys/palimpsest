@@ -26,6 +26,9 @@
     "coreEvidence": "research-evidence/alhs/core-2026-11-04/",
     "coreSummary": "research-evidence/alhs/core-2026-11-04/core-summary.json",
     "diagnostic": "NOT_AUTHORIZED_NOT_RUN",
+    "repeatCore": "PRE_REGISTERED_NOT_AUTHORIZED",
+    "repeatProtocol": "docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md",
+    "repeatPlan": "research-evidence/alhs/live/repeat-plan/run-plan.json",
     "preAuthorizationBlock": "research-evidence/alhs/live/BLOCKED.json"
   },
   "core": {
@@ -71,7 +74,7 @@
     "architecture": "PASS (0 violations, 9 accepted exceptions; factory fan-out 37 recorded)",
     "publicApi": "PASS (0 missing/changed/added)",
     "testSuites": {
-      "alhs_episode_convergence": 6,
+      "alhs_episode_convergence": 7,
       "alhs_partial_reuse": 1,
       "broad_hotspot_files": 30,
       "broad_hotspot_tests": 230,
@@ -81,7 +84,7 @@
     }
   },
   "capabilities": {
-    "episodeConclusion": "implemented; real model used it to end A-2 with DELIVER; model judgement + mechanical consistency check; never acceptance",
+    "episodeConclusion": "implemented; real model used it to end A-2 with DELIVER; model judgement + mechanical consistency check; artifact provenance (tracked/committed) recorded with warnings; never acceptance",
     "episodeReopen": "implemented; revision/head/journal change reopens the conclusion",
     "pathLevelReuse": "implemented as read-only continuation facts; a new governed attempt consumes them (deterministic host run only)",
     "resultCommitExposure": "implemented in the continuation inspection",
