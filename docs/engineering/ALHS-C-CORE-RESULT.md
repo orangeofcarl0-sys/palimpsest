@@ -95,7 +95,20 @@ the files were available.
   and the different first-window progress make that a descriptive number, not a matched cost result.
 - **The diagnostic L/G stage did not run** and is not authorized.
 
-## 7. Artifacts
+## 7. Post-run follow-up
+
+The run exposed two gaps that the product now reports rather than guesses:
+
+- **Artifact provenance.** `conclude` now records, for each named artifact, whether it is present,
+  tracked by Git and committed at HEAD, and returns a warning when the final bytes exist only in the
+  working tree. The core packages were untracked; a rerun would show that warning. DELIVER is not
+  refused for an untracked artifact — the fact is made visible to the principal and the operator.
+- **Balanced interruption.** A repeat-core stage is pre-registered in
+  `docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md` with a token-milestone kill (1,200,000) instead of a
+  fixed wall clock. It is **not authorized** and did not run. The fail-closed gate has its plan and
+  `BLOCKED.json` under `research-evidence/alhs/live/repeat-plan/`.
+
+## 8. Artifacts
 
 Evidence: `research-evidence/alhs/core-2026-11-04/`.
 

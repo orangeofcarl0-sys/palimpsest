@@ -13,9 +13,10 @@ Branch: `palimpsest-autonomous-long-horizon-synthesis`. Base: LHAPE `3782b01`; `
 | Branch | `palimpsest-autonomous-long-horizon-synthesis` |
 | Product commits | `e4d1fb1` (episode + reuse + offline diagnosis), `1227a74` (result commit, real-host run, budget reserve) |
 | Core run commit | `6527f22` (authorized F/A core harness, result and evidence) |
+| Post-core commit | `a62fc32` (artifact provenance, offline session analysis, repeat-interruption harness) |
 | Report/protocol commit | recorded by `research-evidence/alhs/2026-11-04/DELIVERY.json` |
-| Diff from LHAPE `3782b01..HEAD` | 117 files, +8,957 / −86 |
-| Diff from APS main `d16800f..HEAD` | 289 files, +21,731 / −104 |
+| Diff from LHAPE `3782b01..HEAD` | 120 files, +10,149 / −86 |
+| Diff from APS main `d16800f..HEAD` | 292 files, +22,923 / −104 |
 | Push / PR / merge | none |
 | `origin/main` | `d16800fbe3d1a6172b66b466b227c5fddbb45b98` (unchanged) |
 
@@ -157,7 +158,8 @@ this path unaided, or that reuse is cheaper or better in general.
 
 All of the following passed on the final tree:
 
-- `test/alhs_episode_convergence.test.ts` — 6;
+- `test/alhs_episode_convergence.test.ts` — 7 (including artifact provenance on an untracked and a
+  committed package);
 - `test/alhs_partial_reuse.test.ts` — 1;
 - broad hotspot run (30 files): 230 tests, including `promotion`, `promotion_gate`, `h1_recovery`,
   `r3wr4_*`, `trajectory_t0_*`, `ci1_*`, `ci2_*`, `ci3_promotion_authority`, `scheduler.replay`,
@@ -213,6 +215,17 @@ Budget-guard change: `scripts/aps/budget_guard.mjs` takes `--reserve-tokens` and
 +32,140). The guard still observes usage only after a message, so a reserve is a buffer, not an exact
 no-overspend proof.
 
+### 7.1 Post-core follow-up
+
+- **Artifact provenance is now a recorded fact.** `conclude` stores each named artifact’s
+  `present/tracked/committed` state and returns a warning when the final bytes exist only in the
+  working tree. The core packages were untracked; a rerun would report that. DELIVER is not refused
+  for it — the fact is visible to the principal and the operator.
+- **A balanced repeat is pre-registered, not authorized.** `docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md`
+  and `cohort-repeat-pre-registration.json` add one F/A pair with a 1,200,000-token interruption
+  milestone instead of the core’s fixed 240s. Aggregate 8,000,000. The gate plan and `BLOCKED.json`
+  are in `research-evidence/alhs/live/repeat-plan/`; no model ran.
+
 ## 8. Architecture convergence
 
 Reused, not rebuilt:
@@ -230,6 +243,8 @@ Added and justified:
 - one `conclude` action on the existing normal Work tool;
 - one optional `reusePlan` port on the existing continuation world port and one `resultCommit` field
   on the existing inspection;
+- artifact provenance facts (`present/tracked/committed`) on the existing episode conclusion, read
+  through Git, with warnings rather than a new acceptance rule;
 - one reserve option on the existing budget guard;
 - one test-owned host scenario under `scripts/alhs/`.
 
@@ -249,8 +264,9 @@ promotion path, a filesystem sandbox, a LayerFS integration, or a durable agent 
   saturated. A used 50.4% of F's tokens in this pair, but that is descriptive, not a matched cost
   result.
 - **Both packages were left untracked.** Neither condition committed the final artifact; A's DELIVER
-  evidence ref cites the base commit, not a commit containing the package. DELIVER checks the project
-  facts and artifact existence, not the provenance a model asserts.
+  evidence ref cites the base commit, not a commit containing the package. The new provenance facts
+  record `tracked=false` and warn; the core run predates that field, so this result is reconstructed
+  from the filesystem and Git state.
 - **The host run's reuse was scenario-directed.** The scripted principal in the deterministic run was
   given the old result and the product supplied the path facts; that run does not show the agent
   discovering the reuse.
@@ -268,8 +284,8 @@ promotion path, a filesystem sandbox, a LayerFS integration, or a durable agent 
 
 ## 10. Next decision
 
-The core stage is complete. The next real-model step is either a **repeated-sample core** (the same
-F/A pair, more than once, under a new authorization) or the **diagnostic L/G stage**; neither is
-authorized. The pre-registration and the fail-closed runner are in place, the reserve guard is
-validated, and the core result gives one concrete question for a repeated run: does A still conclude
-on evidence when the kill timing and the first-window work are balanced?
+The core stage is complete. The next real-model step is pre-registered but **not authorized**:
+`repeat-core` adds one F/A pair with a 1,200,000-token interruption milestone (8,000,000 aggregate),
+to test whether the core convergence difference survives a balanced first window. The diagnostic L/G
+stage (10,000,000) is a separate, unauthorized question. Both need a new
+`alhs-spend-authorization/v1`; the core authorization covered only its four completed sessions.

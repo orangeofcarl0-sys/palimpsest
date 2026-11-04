@@ -37,3 +37,11 @@ exit 2). The diagnostic L/G stage was **not** authorized and did not run; it req
 `alhs-spend-authorization/v1` naming stage `diagnostic` and conditions L/G.
 
 Nothing here is a repeated-sample comparison, a quality score or a cost advantage.
+
+## Repeat-core (pre-registered, not authorized)
+
+`cohort-repeat-pre-registration.json` registers one additional F/A pair with a token-milestone
+interruption (kill at 1,200,000 reported tokens, not a fixed wall clock), aggregate 8,000,000.
+`repeat-plan/run-plan.json` is the 4-session plan; `repeat-plan/BLOCKED.json` records the fail-closed
+result (`modelCalls=0`, exit 2) because no `authorization-repeat.json` exists. Protocol:
+`docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md`.
