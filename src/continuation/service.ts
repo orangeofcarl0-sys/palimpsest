@@ -83,6 +83,11 @@ export interface ContinuationInspection {
   readonly resolved: boolean;
   readonly taskId: string | null;
   readonly targetObservationDigest: string | null;
+  /**
+   * ALHS-B: the result's own source revision, when the owner resolved one. It is the commit a new
+   * attempt may read to reuse unaffected content; it is not a promotion and grants no acceptance.
+   */
+  readonly resultCommit: string | null;
   /** D3-b's conclusion and the certificate that carries it (an authority record, not a verdict string). */
   readonly compatibility: {
     readonly outcome: string;
@@ -278,6 +283,7 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
         resolved: true,
         taskId,
         targetObservationDigest: target?.digest ?? null,
+        resultCommit: resolved.sourceResult?.resultRevision ?? null,
         compatibility: {
           outcome: certificate === null ? "NOT_ASSESSED" : certificate.outcome,
           issuanceDigest: certificate === null ? null : certificate.issuanceDigest,
@@ -301,6 +307,7 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
       resolved: false,
       taskId: null,
       targetObservationDigest: null,
+      resultCommit: null,
       compatibility: { outcome: "NOT_ASSESSED", issuanceDigest: null },
       assessment: null,
       reuse: null,
