@@ -1,0 +1,62 @@
+{
+  "schema": "alhs-delivery/v1",
+  "programme": "ALHS",
+  "branch": "palimpsest-autonomous-long-horizon-synthesis",
+  "baseLhape": "3782b01bd2d23325ceb77df53be5732acaa4517e",
+  "originMain": "d16800fbe3d1a6172b66b466b227c5fddbb45b98",
+  "productCommits": [
+    "e4d1fb1",
+    "1227a74"
+  ],
+  "reportCommit": "0b9199024be3d92945ebdc09859e96bfa9848ec5",
+  "note": "This manifest is committed immediately after the report commit; the branch head after that commit is the delivery head. No push, PR or merge was performed.",
+  "modelCalls": 0,
+  "cohort": {
+    "id": "alhs-c-2026-11-04",
+    "state": "PRE_REGISTERED_NOT_AUTHORIZED",
+    "gateResult": "research-evidence/alhs/live/BLOCKED.json",
+    "plan": "research-evidence/alhs/live/run-plan.json",
+    "protocol": "docs/programs/alhs/ALHS-C-PROTOCOL.md",
+    "reason": "no alhs-spend-authorization/v1 exists; the LHAPE-C 7.5M pilot authorization is a different schema and cohort and does not transfer"
+  },
+  "evidence": {
+    "report": "docs/engineering/ALHS-FINAL-REPORT.md",
+    "offlineDiagnosis": "research-evidence/alhs/2026-11-04/offline-convergence-analysis.json",
+    "hostRun": "research-evidence/alhs/2026-11-04/host-run/",
+    "hostRunSummary": "research-evidence/alhs/2026-11-04/host-run/alhs-summary.json",
+    "hostRunArtifacts": {
+      "deliverables/capacity.md": "b2d37c8173049fa9bd289a0ca043356567ae541d4b1a747dd8f557c89f4ad0fa",
+      "deliverables/cost-v2.md": "72d4278090cd879dd17c5a1473fa690351b6d060d59407483a4cac295eed17e6"
+    },
+    "deterministicLhape": "research-evidence/lhape/2026-11-03/",
+    "lhapePilot": "research-evidence/lhape/live/lhape-c-pilot-2026-11-04/"
+  },
+  "checks": {
+    "build": "pass",
+    "architecture": "PASS (0 violations, 9 accepted exceptions; factory fan-out 37 recorded)",
+    "publicApi": "PASS (0 missing/changed/added)",
+    "testSuites": {
+      "alhs_episode_convergence": 6,
+      "alhs_partial_reuse": 1,
+      "broad_hotspot_files": 30,
+      "broad_hotspot_tests": 230,
+      "pulse_and_continuation_tests": 101,
+      "mixed_product_tests": 28,
+      "windows_host_boundary_tests": 32
+    }
+  },
+  "capabilities": {
+    "episodeConclusion": "implemented; model judgement + mechanical consistency check; pulse-derived; never acceptance",
+    "episodeReopen": "implemented; revision/head/journal change reopens the conclusion",
+    "pathLevelReuse": "implemented as read-only continuation facts; a new governed attempt consumes them",
+    "resultCommitExposure": "implemented in the continuation inspection",
+    "realHostVerticalRun": "implemented and run: A1-A4 exit 0, 2 operator promotions, DELIVER recorded",
+    "budgetReserve": "implemented in scripts/aps/budget_guard.mjs (--reserve-tokens)"
+  },
+  "notClaimed": [
+    "real-model natural convergence",
+    "F/A quality or cost advantage",
+    "autonomous discovery of the reuse path by a model",
+    "semantic reuse beyond path-level facts"
+  ]
+}
