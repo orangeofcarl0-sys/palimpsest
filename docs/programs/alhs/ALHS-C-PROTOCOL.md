@@ -1,9 +1,10 @@
 # ALHS-C — Adaptive Long-Horizon Synthesis comparison (pre-registration)
 
-Status: **PRE-REGISTRATION ONLY. NOT AUTHORIZED. NOT RUN.**
-No ALHS model spend authorization exists. The LHAPE-C 7.5M pilot authorization does **not** transfer.
-The deterministic 2026-11-04 host run (`research-evidence/alhs/2026-11-04/host-run/`) is an engineering
-qualification with a scripted Messages stand-in, not this cohort.
+Status: **CORE STAGE AUTHORIZED AND EXECUTED (2026-11-04); DIAGNOSTIC L/G NOT AUTHORIZED.**
+The owner authorized the core stage only (F and A, 2 sessions each, 12,000,000 aggregate). The core
+result is `docs/engineering/ALHS-C-CORE-RESULT.md` and
+`research-evidence/alhs/core-2026-11-04/`. The diagnostic L/G stage remains pre-registered and
+unauthorized; it did not run.
 
 Code freeze: `1227a7478d20954e0366d8e9ccec8c62763171b9`.
 
@@ -128,18 +129,26 @@ conditions, session ceilings, reserve and aggregate, it writes `BLOCKED.json` an
 ## 9. Staged scope
 
 - **core** — F and A, 2 sessions per condition, 3,000,000 per session, 150,000 reserve,
-  aggregate 12,000,000. This is the primary comparison.
+  aggregate 12,000,000. **Authorized and executed on 2026-11-04.** Result:
+  `docs/engineering/ALHS-C-CORE-RESULT.md`; 4,609,104 tokens used.
 - **diagnostic** — L and G, 2 sessions per condition, 2,500,000 per session, 125,000 reserve,
-  aggregate 10,000,000. Only after the core stage is reported.
+  aggregate 10,000,000. **Not authorized; did not run.** Only after a new authorization and a core
+  report review.
 
-The total proposed ceiling is 22,000,000 tokens. The local hard cap in the runner is 25,000,000. No
-stage is authorized.
+The total proposed ceiling for both stages is 22,000,000 tokens. The local hard cap in the runner is
+25,000,000. Only the core stage is authorized.
 
 ## 10. Scope limits
 
 This document registers a comparison; it does not claim one. The current evidence is:
 
+- the authorized **core** run: `research-evidence/alhs/core-2026-11-04/` and
+  `docs/engineering/ALHS-C-CORE-RESULT.md` (F and A, one session pair each, 4,609,104 tokens);
 - deterministic real-host engineering: `research-evidence/alhs/2026-11-04/host-run/` (scripted
   Messages stand-in; real host, workers, Git, Work/Promotion and operator actions);
-- offline diagnosis of the LHAPE-C pilot: `research-evidence/alhs/2026-11-04/offline-convergence-analysis.json`;
-- no real-model ALHS-C session, no F/A comparison, no natural-convergence claim.
+- offline diagnosis of the LHAPE-C pilot: `research-evidence/alhs/2026-11-04/offline-convergence-analysis.json`.
+
+The core run is one pair per condition: it reports that A recorded `DELIVER` and ended while F was
+budget-stopped, and that both reached the same 7-fact floor. It does **not** establish a repeated-sample
+effect, a quality advantage, a matched cost advantage, or real-model governed cooperation (A chose
+direct work plus one native subagent). The diagnostic L/G stage did not run.

@@ -1,10 +1,10 @@
 {
   "schema": "alhs-cohort/v1",
   "cohortId": "alhs-c-2026-11-04",
-  "status": "PRE_REGISTERED_NOT_AUTHORIZED",
+  "status": "CORE_AUTHORIZED_AND_EXECUTED_DIAGNOSTIC_NOT_AUTHORIZED",
   "protocol": "docs/programs/alhs/ALHS-C-PROTOCOL.md",
   "codeFreeze": "1227a7478d20954e0366d8e9ccec8c62763171b9",
-  "note": "Pre-registration only. No ALHS spend authorization exists; the LHAPE-C 7.5M pilot authorization does not transfer. The runner is fail-closed.",
+  "note": "The owner authorized the core stage only (F/A, 12M) on 2026-11-04. It ran and is reported in docs/engineering/ALHS-C-CORE-RESULT.md. The diagnostic L/G stage is not authorized and did not run.",
   "provider": "deepseek-official/deepseek-flash",
   "localHardCap": 25000000,
   "conditions": {
@@ -42,7 +42,10 @@
       "sessionCeiling": 3000000,
       "reserveTokens": 150000,
       "aggregateCeiling": 12000000,
-      "authorized": false
+      "authorized": true,
+      "executed": true,
+      "authorization": "research-evidence/alhs/live/authorization.json",
+      "result": "research-evidence/alhs/core-2026-11-04/core-summary.json"
     },
     {
       "id": "diagnostic",
@@ -52,7 +55,8 @@
       "sessionCeiling": 2500000,
       "reserveTokens": 125000,
       "aggregateCeiling": 10000000,
-      "authorized": false
+      "authorized": false,
+      "executed": false
     }
   ],
   "timeline": [
