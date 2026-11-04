@@ -32,9 +32,10 @@ session on the same durable state.
 | Formal Work/Worker | n/a | none; one native subagent |
 
 Aggregate 4,609,104; 7,390,896 under the authorization. F-2’s stop was 49,572 above the soft ceiling
-and 100,428 below the hard 3M ceiling; the reserve worked as a one-message buffer. One provider
-request returned 502 UPSTREAM_TIMEOUT during F-2; the proxy retried and the session continued
-(102 of 103 POSTs returned 200).
+and 100,428 below the hard 3M ceiling; the reserve worked as a one-message buffer. Two provider
+requests returned 502 `UPSTREAM_TIMEOUT`: one during F-2 (retried) and one at 14:23:21 after every
+session ended (no recorded session usage; client identity not observed). 102 of 104 POSTs returned
+200.
 
 ## Files
 

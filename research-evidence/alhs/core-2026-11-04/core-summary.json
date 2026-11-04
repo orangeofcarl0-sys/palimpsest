@@ -193,19 +193,30 @@
     "perSession": 3000000,
     "reserve": 150000,
     "softStopAt": 2850000,
-    "budgetStopOvershoot": 49572,
-    "budgetStopUnderHardCeiling": 100428,
-    "note": "The guard observes usage after a message. F-2 stopped at the first observation above the 2,850,000 soft ceiling; the 150,000 reserve kept it under the 3,000,000 hard per-session ceiling."
+    "budgetStop": {
+      "sessionId": "F-2",
+      "ledgerTokens": 2899572,
+      "softStopAt": 2850000,
+      "maxTokens": 3000000,
+      "overshoot": 49572,
+      "underHardCeiling": 100428
+    },
+    "note": "The guard observes usage after a message. A stop happens at the first observation above that session's soft ceiling; the reserve keeps it under the hard per-session ceiling."
   },
   "proxy": {
-    "posts": 103,
+    "posts": 104,
     "statuses": {
       "200": 102,
-      "502": 1
+      "502": 2
     },
     "upstreamErrors": [
       {
         "at": "2026-11-04T14:12:33.363Z",
+        "status": 502,
+        "error": "UPSTREAM_TIMEOUT"
+      },
+      {
+        "at": "2026-11-04T14:23:21.621Z",
         "status": 502,
         "error": "UPSTREAM_TIMEOUT"
       }
@@ -216,7 +227,7 @@
     "The 7-fact rubric is a floor on the final package, not a business-quality or cognition score. Both conditions reached 7/7.",
     "A chose direct file work plus one native subagent; it did not create a formal Work task or a governed Worker. That is a valid adaptive choice, not evidence of governed cooperation.",
     "Both packages were left untracked in Git; neither condition committed the final artifact. A's DELIVER conclusion cited the base commit, not a commit containing the package.",
-    "One provider request returned 502 UPSTREAM_TIMEOUT during F-2; the proxy retried and the session continued. It is recorded, not hidden.",
+    "One provider request returned 502 UPSTREAM_TIMEOUT during the run; the proxy retried and the session continued. It is recorded, not hidden.",
     "The scenario kill is a harness event, not a product failure; it is applied equally to F and A.",
     "Natural convergence is reported separately from the rubric. F was budget-stopped; A recorded DELIVER and exited on its own."
   ]
