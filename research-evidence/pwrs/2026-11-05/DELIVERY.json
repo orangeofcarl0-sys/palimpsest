@@ -12,9 +12,12 @@
   "report": "docs/engineering/PWRS-RESULT.md",
   "evidence": "research-evidence/pwrs/2026-11-05/",
   "modelCalls": {
-    "realModelSessions": 0,
-    "paidTokens": 0,
-    "note": "This stage was executed without a paid-model authorization. The deterministic real host used the labelled Messages stand-in; the ALHS authorizations do not transfer."
+    "realModelSessions": 4,
+    "paidTokens": 5656746,
+    "providerRequests": 118,
+    "providerSuccess": 116,
+    "providerUpstreamTimeout": 2,
+    "note": "PWRS-R F/A pair under research-evidence/pwrs/live/authorization-pwrs-r.json (10,000,000 aggregate). The deterministic host run used the labelled Messages stand-in and consumed no model tokens; the ALHS authorizations did not transfer."
   },
   "relay": {
     "routes": ["RESUME", "TAKEOVER", "SUCCESSOR"],
@@ -42,5 +45,43 @@
       "supersededAssumptionAbsent": true
     }
   },
-  "note": "No push, PR or merge was performed; main and origin/main were not moved. No historical Code/Evidence Freeze, Ordarium ledger, lock or gate root was modified. This manifest is committed immediately after the product commit it names."
+  "realModelCohort": {
+    "cohortId": "pwrs-r-2026-11-05",
+    "report": "docs/engineering/PWRS-R-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r/",
+    "conditions": ["F", "A"],
+    "sessions": 4,
+    "tokens": {
+      "F": 2857944,
+      "A": 2798802,
+      "total": 5656746,
+      "aggregate": 10000000,
+      "remaining": 4343254
+    },
+    "rubric": { "F": "7/7", "A": "5/7" },
+    "naturalEnd": { "F": false, "A": false },
+    "A": {
+      "relayAttribution": "PRINCIPAL_RECOVERY",
+      "relayLiveness": "DECLARED_ABANDONED",
+      "independenceEligible": false,
+      "resultCommit": "d8dc41f8c4147fe57513397c3e7fd117680a9b62",
+      "taskState": "VERIFYING",
+      "promotion": null,
+      "episode": null,
+      "reuseOfInterruptedDraft": 1.0
+    },
+    "F": {
+      "finalBytes": 44372,
+      "reuseOfInterruptedDraft": 0.584,
+      "committed": false
+    },
+    "note": "A's candidate is the pre-constraint draft settled unchanged; it states the superseded 1200 mm assumption and not the measured 700 mm. The operator gate held: no promotion, task VERIFYING."
+  },
+  "git": {
+    "pushed": true,
+    "pullRequest": "https://github.com/orangeofcarl0-sys/palimpsest/pull/219",
+    "merged": false,
+    "mainMoved": false
+  },
+  "note": "The branch was pushed and PR #219 opened with the owner's authorization; no merge and no move of main/origin/main. No historical Code/Evidence Freeze, Ordarium ledger, lock or gate root was modified."
 }

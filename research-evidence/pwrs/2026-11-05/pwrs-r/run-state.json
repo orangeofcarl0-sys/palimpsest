@@ -1,0 +1,57 @@
+{
+  "schema": "alhs-cohort-run-state/v1",
+  "cohortId": "pwrs-r-2026-11-05",
+  "stage": "pwrs-r",
+  "authorization": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\pwrs\\live\\authorization-pwrs-r.json",
+  "adapter": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\pwrs\\interruption_adapter.mjs",
+  "startedAt": "2026-11-04T19:53:45.145Z",
+  "sessions": [
+    {
+      "sessionId": "F-1",
+      "condition": "F",
+      "index": 1,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "killAtTokens": 400000,
+      "profile": "headless",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T19:56:46.301Z"
+    },
+    {
+      "sessionId": "F-2",
+      "condition": "F",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "profile": "headless",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T20:00:59.290Z"
+    },
+    {
+      "sessionId": "A-1",
+      "condition": "A",
+      "index": 1,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "killAtTokens": 400000,
+      "profile": "palimpsest-governed",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T20:03:53.033Z"
+    },
+    {
+      "sessionId": "A-2",
+      "condition": "A",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "profile": "palimpsest-governed",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T20:07:42.231Z"
+    }
+  ],
+  "endedAt": "2026-11-04T20:07:42.232Z"
+}

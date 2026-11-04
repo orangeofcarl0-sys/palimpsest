@@ -1,0 +1,79 @@
+{
+  "schema": "alhs-cohort/v1",
+  "cohortId": "pwrs-r-2026-11-05",
+  "title": "PWRS-R — interrupted work: native continuation vs governed relay",
+  "codeFreeze": "507aac250c329e7c936f1d81f209fabe727118e3",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 25000000,
+  "conditions": {
+    "F": {
+      "profile": "headless",
+      "definition": "Native DSH: native tools, native subagents and Git. No Palimpsest project, Work, World, relay or episode conclusion."
+    },
+    "A": {
+      "profile": "palimpsest-governed",
+      "definition": "Governed Palimpsest recovery: the full product with a confirmed standard and a formal package task in an isolated execution world. The prompt does not mention the relay, takeover or successor; the new principal must discover the retained work and choose what to do."
+    }
+  },
+  "stages": [
+    {
+      "id": "pwrs-r",
+      "conditions": [
+        "F",
+        "A"
+      ],
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 10000000,
+      "sessionPlan": [
+        {
+          "sessionId": "F-1",
+          "condition": "F",
+          "index": 1,
+          "ceiling": 2500000,
+          "reserveTokens": 125000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "F-2",
+          "condition": "F",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 125000
+        },
+        {
+          "sessionId": "A-1",
+          "condition": "A",
+          "index": 1,
+          "ceiling": 2500000,
+          "reserveTokens": 125000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "A-2",
+          "condition": "A",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 125000
+        }
+      ]
+    }
+  ],
+  "measurement": {
+    "business": "7-fact package rubric (presence, both sites, measured 700 mm, baseline 900 mm rejected, coastal claim not accepted, cost/schedule, risk/decision), reported per condition and separated from governance.",
+    "interruption": "session 1 is killed at the same reported 400,000-token milestone in both conditions; the artifact and Git state at that moment are snapshotted OUTSIDE the run and never injected into a session.",
+    "continuation": "session 2 is a new principal on durable state only; no transcript or evaluator fact is injected.",
+    "reuse": "line-level overlap between the package bytes that existed at the interruption and the final package, plus whether the superseded 1200 mm assumption is gone and the 700 mm measurement is stated.",
+    "governance": "A: task/attempt states, candidate artifact and provenance, relay record/attribution, episode intent. F: Git state and exit.",
+    "natural_end": "A: a recorded episode conclusion. F: a clean session exit. A token-ceiling stop is not natural."
+  },
+  "fairness": {
+    "sameSources": true,
+    "sameModel": true,
+    "sameConstraintInjection": "inbox/2026-11-03/corridor-measurement.md at T+60s in both session 1s",
+    "noRelayHint": "no prompt names relay, takeover, successor, reuse, or the expected outcome",
+    "notWeakenedF": "F keeps native subagents and tools; it is not told to avoid them"
+  },
+  "note": "One pair per condition. This is a first real-model probe of interrupted-work continuation, not a repeated-sample or quality comparison.",
+  "codeFreezeNote": "product code under test (PWRS stage); the PWRS-R harness was added after this commit and does not change src/."
+}

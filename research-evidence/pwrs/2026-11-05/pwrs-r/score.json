@@ -1,0 +1,212 @@
+{
+  "schema": "pwrs-r-score/v1",
+  "cohortId": "pwrs-r-2026-11-05",
+  "generatedAt": "2026-11-04T20:07:42.403Z",
+  "conditions": {
+    "F": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7
+      },
+      "final": {
+        "source": "CANONICAL_WORKTREE",
+        "commit": null,
+        "path": "deliverables/package.md",
+        "bytes": 44372,
+        "sha256": "b6ff62489e83730fc0f91a8ca4c3948357ec2f433c6258b9f5cb0a2b07d5615c"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-04T19:56:46.110Z",
+        "canonicalHead": "9b8a94ee6ef1662b4b426f6cdb6b4ebd3c852a9e",
+        "canonicalStatus": "?? .palimpsest/\n?? deliverables/",
+        "deliverables": [
+          "package.md"
+        ],
+        "retainedWorlds": [],
+        "longestTextSource": "canonical/package.md",
+        "longestTextBytes": 33998
+      },
+      "reuse": {
+        "beforeLines": 310,
+        "carriedLines": 181,
+        "carriedRatio": 0.584
+      },
+      "sessions": [
+        {
+          "sessionId": "F-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": 1,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 441167,
+          "maxTokens": 2500000,
+          "calls": {
+            "pwsh": 15,
+            "read": 11,
+            "todo_write": 1,
+            "write": 1,
+            "subagent_fork": 1,
+            "send_message": 1,
+            "glob": 1
+          }
+        },
+        {
+          "sessionId": "F-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 1,
+          "stopped": true,
+          "natural": false,
+          "totalTokens": 2416777,
+          "maxTokens": 2500000,
+          "calls": {
+            "working_directory": 1,
+            "pwsh": 21,
+            "read": 22,
+            "todo_write": 2,
+            "write": 1,
+            "subagent": 1,
+            "edit": 14,
+            "list_agents": 4
+          }
+        }
+      ],
+      "governance": null
+    },
+    "A": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": false,
+          "baseline_900mm_rejected": false,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 5
+      },
+      "final": {
+        "source": "RESULT_COMMIT",
+        "commit": "d8dc41f8c4147fe57513397c3e7fd117680a9b62",
+        "path": "deliverables/package.md",
+        "bytes": 48332,
+        "sha256": "fda61737cee023d6f33d056c68a008a6a7074c557915e02fe8eab9e657c8ab60"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-04T20:03:52.823Z",
+        "canonicalHead": "9b8a94ee6ef1662b4b426f6cdb6b4ebd3c852a9e",
+        "canonicalStatus": "?? .palimpsest/",
+        "deliverables": [],
+        "retainedWorlds": [
+          {
+            "name": "attempt-8b1fba00c404fbeaa09534ffbb2ebd6f",
+            "head": "9b8a94ee6ef1662b4b426f6cdb6b4ebd3c852a9e",
+            "subject": "scenario base",
+            "status": "?? deliverables/",
+            "deliverables": [
+              "package.md"
+            ]
+          }
+        ],
+        "longestTextSource": "attempt-8b1fba00c404fbeaa09534ffbb2ebd6f/package.md",
+        "longestTextBytes": 48332
+      },
+      "reuse": {
+        "beforeLines": 496,
+        "carriedLines": 496,
+        "carriedRatio": 1
+      },
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": 1,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 411657,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 5,
+            "palimpsest_continuity": 1,
+            "pwsh": 9,
+            "read": 6,
+            "palimpsest_work": 7,
+            "todo_write": 1
+          }
+        },
+        {
+          "sessionId": "A-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 1,
+          "stopped": true,
+          "natural": false,
+          "totalTokens": 2387145,
+          "maxTokens": 2500000,
+          "calls": {
+            "palimpsest_continuity": 2,
+            "palimpsest_work": 13,
+            "pwsh": 9,
+            "read": 12,
+            "grep": 1,
+            "edit": 17
+          }
+        }
+      ],
+      "governance": {
+        "tasks": [
+          {
+            "taskId": "package",
+            "state": "VERIFYING"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-8b1fba00c404fbeaa09534ffbb2ebd6f",
+            "taskId": "package",
+            "state": "COMPLETED",
+            "resultCommit": "d8dc41f8c4147fe57513397c3e7fd117680a9b62"
+          }
+        ],
+        "promotions": [],
+        "relay": [
+          {
+            "schema": "pc1-execution-relay/v1",
+            "taskId": "package",
+            "attemptId": "attempt-8b1fba00c404fbeaa09534ffbb2ebd6f",
+            "resultCommit": "d8dc41f8c4147fe57513397c3e7fd117680a9b62",
+            "baseCommit": "9b8a94ee6ef1662b4b426f6cdb6b4ebd3c852a9e",
+            "attribution": {
+              "schema": "pc1-execution-attribution/v1",
+              "attribution": "PRINCIPAL_RECOVERY",
+              "executor": "PRINCIPAL",
+              "settledBy": "PRINCIPAL",
+              "workerInvocations": 0,
+              "matchedInvocationId": null,
+              "liveness": "DECLARED_ABANDONED",
+              "independenceEligible": false,
+              "evidence": "DECLARED",
+              "detail": "the principal declared a continuation of this attempt's world (DECLARED_ABANDONED) and no worker invocation was observed by this host; the bytes are recorded as principal recovery, eligible for operator acceptance and NOT as independent worker production"
+            },
+            "recordedAt": "2026-11-04T20:04:56.195Z",
+            "recordId": "relay-ee5965521d06a59ddb16b903"
+          }
+        ],
+        "episodes": []
+      }
+    }
+  }
+}
