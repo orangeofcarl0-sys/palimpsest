@@ -30,16 +30,6 @@ const repo = process.cwd();
 const world = pilot.worlds[condition];
 const home = pilot.homes[condition];
 const out = join(run, "out", condition);
-/**
- * F is PLAIN DSH: it has no Palimpsest host bundle and therefore no `--once` runner plugin. It uses
- * the shipped `headless` profile with the same model/permission patch. L/G use the Palimpsest host
- * bundle's `--once` runner.
- */
-const plain = condition === "F";
-const profile = plain ? "headless" : "lhape-pilot";
-const hostArgs = plain
-  ? [dshBin, "--profile", "headless", "--patch", join(home, "profiles", "lhape-pilot", "cordis.patch.yml"), prompt]
-  : [dshBin, "--profile", "lhape-pilot", "--once", prompt];
 const dshBin = process.env.LHAPE_DSH_BIN;
 const dshRoot = process.env.LHAPE_DSH_ROOT;
 if (![dshBin, dshRoot].every((value) => typeof value === "string" && value.trim() !== "")) {
@@ -54,6 +44,16 @@ if (session === undefined) {
   process.exit(2);
 }
 const maxTokens = session.maxTokens;
+/**
+ * F is PLAIN DSH: it has no Palimpsest host bundle and therefore no `--once` runner plugin. It uses
+ * the shipped `headless` profile with the same model/permission patch. L/G use the Palimpsest host
+ * bundle's `--once` runner.
+ */
+const plain = condition === "F";
+const profile = plain ? "headless" : "lhape-pilot";
+const hostArgs = plain
+  ? [dshBin, "--profile", "headless", "--patch", join(home, "profiles", "lhape-pilot", "cordis.patch.yml"), prompt]
+  : [dshBin, "--profile", "lhape-pilot", "--once", prompt];
 mkdirSync(out, { recursive: true });
 mkdirSync(join(world, "inbox", "2026-11-03"), { recursive: true });
 mkdirSync(join(run, "tmp"), { recursive: true });
