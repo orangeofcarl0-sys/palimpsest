@@ -52,6 +52,18 @@ export interface PulseExecutionView {
     readonly taskState: string | null;
     readonly orphaned: boolean;
     readonly hostObserved: boolean;
+    /**
+     * PWRS-A: the durable settlement attribution for this task's latest result, when one was
+     * recorded. `null` means no settlement record exists — not that a worker wrote it.
+     */
+    readonly relay?: {
+      readonly attribution: string;
+      readonly executor: string;
+      readonly settledBy: string;
+      readonly resultCommit: string;
+      readonly independenceEligible: boolean;
+      readonly detail: string;
+    } | null;
   }[];
   readonly jobs: readonly {
     readonly taskId: string;

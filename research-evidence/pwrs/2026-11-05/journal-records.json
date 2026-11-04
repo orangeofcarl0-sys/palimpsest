@@ -1,0 +1,121 @@
+{
+  "schema": "pwrs-journal-records/v1",
+  "records": [
+    {
+      "seq": 2,
+      "kind": "relay",
+      "record": {
+        "schema": "pc1-execution-relay/v1",
+        "taskId": "package",
+        "attemptId": "attempt-aeedfe8c810c273fc9b5a6084389f73d",
+        "resultCommit": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
+        "baseCommit": "468aa42909859ec855f2f24f3e1c98e5962bca2c",
+        "attribution": {
+          "schema": "pc1-execution-attribution/v1",
+          "attribution": "PRINCIPAL_RECOVERY",
+          "executor": "PRINCIPAL",
+          "settledBy": "PRINCIPAL",
+          "workerInvocations": 0,
+          "matchedInvocationId": null,
+          "liveness": "DECLARED_ABANDONED",
+          "independenceEligible": false,
+          "evidence": "DECLARED",
+          "detail": "the principal declared a continuation of this attempt's world (DECLARED_ABANDONED) and no worker invocation was observed by this host; the bytes are recorded as principal recovery, eligible for operator acceptance and NOT as independent worker production"
+        },
+        "recordedAt": "2026-11-04T19:21:57.260Z",
+        "recordId": "relay-574bf30669338a67b3ebd7d0"
+      }
+    },
+    {
+      "seq": 3,
+      "kind": "episode",
+      "record": {
+        "schema": "pc1-episode-conclusion/v1",
+        "intent": "WAIT_FOR_OPERATOR",
+        "statement": "The killed worker's retained pricing was reused, the superseded corridor assumption was recomputed on the measured basis, and the synthesized candidate awaits operator acceptance.",
+        "artifacts": [
+          "deliverables/package.md"
+        ],
+        "waitingOn": "operator acceptance of the synthesized package candidate",
+        "nextStep": null,
+        "evidenceRefs": [],
+        "recordedAt": "2026-11-04T19:21:57.400Z",
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "78696dfc372158d77073b04a0bb8e9efcb5945b43980f7eac95b2e013d348fe9",
+          "headCommit": "468aa42909859ec855f2f24f3e1c98e5962bca2c"
+        },
+        "check": {
+          "deliveryBlockers": [
+            "task package is VERIFYING",
+            "task:package awaits an operator acceptance decision"
+          ],
+          "awaitingOperator": [
+            "task:package"
+          ],
+          "openTasks": [
+            "package:VERIFYING"
+          ],
+          "openAttempts": [],
+          "unresolvedQuestions": [],
+          "blockedEffects": [],
+          "artifacts": [
+            {
+              "path": "deliverables/package.md",
+              "present": true,
+              "tracked": true,
+              "committed": true,
+              "digest": "46ba8227837e3004c7425a954ff3c639e1a327f88fbeab06281c3cca1fe375c4",
+              "source": "RESULT_COMMIT",
+              "commit": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
+              "detail": "present in the result commit 167e5a015224 of attempt attempt-aeedfe8c810c273fc9b5a6084389f73d — a governed candidate, not an accepted project asset"
+            }
+          ]
+        },
+        "conclusionId": "episode-e7b04e10197332e07c1564c4"
+      }
+    },
+    {
+      "seq": 4,
+      "kind": "episode",
+      "record": {
+        "schema": "pc1-episode-conclusion/v1",
+        "intent": "DELIVER",
+        "statement": "The operator accepted the synthesized package; the measured basis and the reused vendor pricing are in the canonical asset.",
+        "artifacts": [
+          "deliverables/package.md"
+        ],
+        "waitingOn": null,
+        "nextStep": null,
+        "evidenceRefs": [],
+        "recordedAt": "2026-11-04T19:22:13.043Z",
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "45cb1e0abab5e9166cb8fb658066a0eb21bdae44e63ef3e74e019d10773e120e",
+          "headCommit": "7eb35937abc55ee7d96ce7caafd913b22eca78b0"
+        },
+        "check": {
+          "deliveryBlockers": [],
+          "awaitingOperator": [],
+          "openTasks": [],
+          "openAttempts": [],
+          "unresolvedQuestions": [],
+          "blockedEffects": [],
+          "artifacts": [
+            {
+              "path": "deliverables/package.md",
+              "present": true,
+              "tracked": true,
+              "committed": true,
+              "digest": "46ba8227837e3004c7425a954ff3c639e1a327f88fbeab06281c3cca1fe375c4",
+              "source": "WORKTREE",
+              "commit": null,
+              "detail": "committed at HEAD"
+            }
+          ]
+        },
+        "conclusionId": "episode-4c42445259d618b82df705a6"
+      }
+    }
+  ]
+}

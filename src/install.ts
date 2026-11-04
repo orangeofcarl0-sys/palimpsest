@@ -28,6 +28,7 @@ import { composeProjectCollaborationCapability } from "./composition/project_col
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import { composeProcedureCapability } from "./composition/procedures.js";
 import { composeContinuityCapability } from "./composition/continuity.js";
+import { makeExecutionRelayRecorder } from "./composition/execution_relay.js";
 import { composeExecutionAssociationCluster, type ExecutionAssociationInstallOptions, type ExecutionAssociationInstallResult } from "./composition/execution_association.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
@@ -166,6 +167,21 @@ export function installPalimpsest(
     externalAssetsRef,
     projectWorkspace,
   } = cognition;
+
+  /*
+   * PWRS-A: ONE durable execution-relay recorder, shared by the delegation transport (worker-path
+   * settlements) and the work surface (principal-path settlements). It writes an ordinary journal
+   * note through the existing workspace; absent workspace ⇒ absent recorder, and the attribution
+   * still travels in the settlement result.
+   */
+  const executionRelay =
+    projectWorkspace === undefined
+      ? undefined
+      : makeExecutionRelayRecorder({
+          projectId: options.projectId,
+          workspace: projectWorkspace,
+          ...(options.clock === undefined ? {} : { clock: options.clock }),
+        });
 
 
   // G10-V: the bounded management service exists only alongside a workspace (it composes the
@@ -377,6 +393,7 @@ export function installPalimpsest(
       workWorkerPort: workWorkerPortFactory,
       ...(executionAssociationRecorder === undefined ? {} : { sessionIdentityRecorder: executionAssociationRecorder }),
       sessionSourceQualification,
+      ...(executionRelay === undefined ? {} : { executionRelay }),
     },
     store,
     controller,
@@ -520,6 +537,17 @@ export function installPalimpsest(
           .filter((event) => event.event_type === "PROJECT_CREATED" || event.event_type === "PROJECT_REVISED")
           .map((event) => event.payload.project_ir as ProjectIr)
           .sort((left, right) => left.revision - right.revision),
+      /**
+       * PWRS-C: the result commit a governed candidate was exported under. Reading it lets the episode
+       * name and digest a candidate that the canonical worktree does not contain.
+       */
+      attemptResultCommit: (attemptId: string) => {
+        try {
+          return controller.promotions.canonicalAttemptResultCommit(attemptId);
+        } catch {
+          return null;
+        }
+      },
     },
     projectWorkspace,
     ...(delegation === undefined ? {} : { delegation }),
@@ -549,6 +577,7 @@ export function installPalimpsest(
     ...(episode === undefined ? {} : { episode }),
     ...(workDelegation === undefined ? {} : { workDelegation }),
     ...(continuation === undefined ? {} : { continuation }),
+    ...(executionRelay === undefined ? {} : { executionRelay }),
     assemblyOptions: options,
   });
   const { application, tools } = assembly;

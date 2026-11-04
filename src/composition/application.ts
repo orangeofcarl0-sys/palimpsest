@@ -57,6 +57,8 @@ export interface ApplicationAssemblyInput {
   readonly workDelegation?: WorkDelegationFace | undefined;
   /** LHAPE-B: the existing packaged result-continuation authority. */
   readonly continuation?: ResultContinuationFace | undefined;
+  /** PWRS-A: the durable execution-relay recorder, shared with the delegation transport. */
+  readonly executionRelay?: import("./execution_relay.js").ExecutionRelayRecorder | undefined;
   /** Exactly the option fields the assembly reads. */
   readonly assemblyOptions: ApplicationAssemblyOptions;
 }
@@ -112,6 +114,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     episode,
     workDelegation,
     continuation,
+    executionRelay,
     assemblyOptions,
   } = input;
   void campaignEvidence;
@@ -175,6 +178,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     ...(episode === undefined ? {} : { episode }),
     ...(workDelegation === undefined ? {} : { workDelegation }),
     ...(continuation === undefined ? {} : { continuation }),
+    ...(executionRelay === undefined ? {} : { executionRelay }),
     ...(assemblyOptions.remoteTransport === undefined ? {} : { remoteTransport: assemblyOptions.remoteTransport }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),

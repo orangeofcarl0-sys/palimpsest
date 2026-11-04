@@ -14,6 +14,7 @@ export {
   EPISODE_INTENTS,
   EPISODE_MARKER,
   EPISODE_STATES,
+  artifactChangeReasons,
   buildPulseEpisode,
   episodeArtifactWarnings,
   episodeConclusionBody,
