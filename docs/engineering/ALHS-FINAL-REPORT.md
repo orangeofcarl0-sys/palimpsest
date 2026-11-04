@@ -15,9 +15,10 @@ Branch: `palimpsest-autonomous-long-horizon-synthesis`. Base: LHAPE `3782b01`; `
 | Core run commit | `6527f22` (authorized F/A core harness, result and evidence) |
 | Post-core commit | `a62fc32` (artifact provenance, offline session analysis, repeat-interruption harness) |
 | Repeat-core commit | `a18ce88` (authorized repeat pair, harness fixes, result and evidence) |
+| Diagnostic commit | `e418d70` (authorized L/G pair, harness, result and evidence) |
 | Report/protocol commit | recorded by `research-evidence/alhs/2026-11-04/DELIVERY.json` |
-| Diff from LHAPE `3782b01..HEAD` | 165 files, +13,412 / −86 |
-| Diff from APS main `d16800f..HEAD` | 337 files, +26,186 / −104 |
+| Diff from LHAPE `3782b01..HEAD` | 204 files, +16,321 / −86 |
+| Diff from APS main `d16800f..HEAD` | 376 files, +29,095 / −104 |
 | Push / PR / merge | none |
 | `origin/main` | `d16800fbe3d1a6172b66b466b227c5fddbb45b98` (unchanged) |
 
