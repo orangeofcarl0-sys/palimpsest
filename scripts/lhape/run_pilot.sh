@@ -24,6 +24,7 @@ if [ ! -d "$SEAM/node_modules/@deepseek-ai/dsh-win32-process" ]; then
 fi
 
 node "$REPO/scripts/lhape/prepare_pilot.mjs" --run="$RUN" --cohort="$COHORT" --codeFreeze="$CODE_FREEZE" > "$BASE/prepare-pilot.json"
+mkdir -p "$RUN/out"
 
 for condition in F L G; do
   HOME_COND="$RUN/home-$condition"
