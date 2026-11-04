@@ -24,9 +24,10 @@ const args = new Map(
 const RUN = resolve(String(args.get("run") ?? join(process.env.USERPROFILE ?? ".", "alhs-core")));
 const COHORT = String(args.get("cohort") ?? "alhs-c-2026-11-04");
 const STAGE = String(args.get("stage") ?? "core");
-if (!["core", "repeat"].includes(STAGE)) throw new Error(`unknown stage "${STAGE}"`);
+if (!["core", "repeat", "diagnostic"].includes(STAGE)) throw new Error(`unknown stage "${STAGE}"`);
 const CODE_FREEZE = String(args.get("codeFreeze") ?? "");
 const PROJECT = "alhs-core";
+const CONDITIONS = STAGE === "diagnostic" ? ["L", "G"] : ["F", "A"];
 
 const GOAL =
   "Evaluate a multi-site energy deployment and produce ONE reviewable package covering technical capacity, vendor compliance, cost, implementation schedule, risk/uncertainty, and an integrated decision. Respect every binding requirement. Do not treat an unverified claim as accepted. Do not approve expenditure without authority.";
@@ -112,6 +113,32 @@ const PROMPTS = {
     "Finish deliverables/package.md as the single reviewable package described in TASK.md, and record your final episode judgement in the project when the work is done.",
     "Re-check inbox/ before finalizing. Work only inside this repository.",
   ].join(" "),
+  L: [
+    "ALHS_CORE_L You are the principal for a community energy deployment. The repository is your world.",
+    "This is an ongoing Palimpsest project with lightweight project context. Call palimpsest_continuity action=pulse first; use the project tools only when they genuinely help.",
+    "Do not create a formal Work task or a governed World unless you have a concrete reason; this is the lightweight path.",
+    "Read TASK.md, sources/ and inbox/. Produce deliverables/package.md as the single reviewable package described in TASK.md.",
+    "Re-check inbox/ for any newly arrived measured data before you finalize. Use Git and Markdown. Work only inside this repository.",
+  ].join(" "),
+  L2: [
+    "ALHS_CORE_L_S2 This is a continuation of the same lightweight Palimpsest project after the previous session was interrupted.",
+    "Read the pulse and the current files. Do not assume anything that is not present in the project state.",
+    "Finish deliverables/package.md as the single reviewable package described in TASK.md, and record your final episode judgement in the project when the work is done.",
+    "Re-check inbox/ before finalizing. Work only inside this repository.",
+  ].join(" "),
+  G: [
+    "ALHS_CORE_G You are the principal for a community energy deployment. The repository is your world.",
+    "This is a governed Palimpsest project with a confirmed completion standard. Call palimpsest_continuity action=pulse first.",
+    "Use the governed Work path for the package deliverable. Workers settle through the product; an operator decides acceptance — do not promote or accept your own result.",
+    "Read TASK.md, sources/ and inbox/. The package must satisfy TASK.md.",
+    "Re-check inbox/ for any newly arrived measured data before you finalize. Use Git and Markdown. Work only inside this repository.",
+  ].join(" "),
+  G2: [
+    "ALHS_CORE_G_S2 This is a continuation of the same governed Palimpsest project after the previous session was interrupted.",
+    "Read the pulse and the current execution state. Do not assume anything that is not present in the project state.",
+    "Recover the committed work if there is any, finish the package through the governed path, and record the episode state for operator acceptance. Do not promote or accept your own result.",
+    "Re-check inbox/ before finalizing. Work only inside this repository.",
+  ].join(" "),
 };
 
 const CONSTRAINT = [
@@ -157,7 +184,7 @@ function reset(root) {
 
 reset(RUN);
 const worlds = {};
-for (const condition of ["F", "A"]) {
+for (const condition of CONDITIONS) {
   const world = join(RUN, "worlds", condition);
   mkdirSync(world, { recursive: true });
   for (const [relative, content] of Object.entries(SOURCES)) write(join(world, relative), content);
@@ -172,71 +199,108 @@ for (const condition of ["F", "A"]) {
   worlds[condition] = { world, head: git(world, ["rev-parse", "HEAD"]) };
 }
 
-// A: the full product is composed, with a goal-only project (no formal task). The standard only
-// declares the release gate; it does not force governed work.
-const aState = join(RUN, "state-A");
-const aInstalled = installProduct(
-  { tools: { register: () => () => undefined } },
-  {
-    projectId: PROJECT,
-    repository: worlds.A.world,
-    stateDir: aState,
-    execution: "in-place",
-    policy: trustedDefaultPolicy({ allowed_commands: [] }),
-    toolProfile: "normal",
-    standard: STANDARD,
-    advanced: { concurrency: 2 },
-  },
-);
-aInstalled.controller.start({ projectId: PROJECT, goal: GOAL, headCommit: worlds.A.head, requirements: REQUIREMENTS, tasks: [] });
-await aInstalled.dispose();
+const states = {};
+const PACKAGE_TASK = {
+  task_id: "package",
+  objective:
+    "Produce the complete multi-site energy deployment package in deliverables/package.md, including capacity, vendor compliance, cost, schedule, risk and an integrated decision.",
+  depends_on: [],
+  write_paths: ["deliverables/package.md"],
+  required_artifacts: ["deliverables/package.md"],
+};
 
-function deploymentA() {
+// F: no Palimpsest. A: full product, goal-only, no formal task. L: lightweight Palimpsest, goal-only,
+// in-place, no standard and no governed Worlds. G: forced governed, one formal task + standard +
+// isolated world.
+for (const condition of CONDITIONS) {
+  if (condition === "F") continue;
+  const state = join(RUN, `state-${condition}`);
+  const l = condition === "L";
+  const tasks = condition === "G" ? [PACKAGE_TASK] : [];
+  const installed = installProduct(
+    { tools: { register: () => () => undefined } },
+    {
+      projectId: PROJECT,
+      repository: worlds[condition].world,
+      stateDir: state,
+      execution: "in-place",
+      policy: trustedDefaultPolicy({ allowed_commands: [] }),
+      toolProfile: "normal",
+      ...(l ? {} : { standard: STANDARD }),
+      advanced: { concurrency: 2 },
+    },
+  );
+  installed.controller.start({ projectId: PROJECT, goal: GOAL, headCommit: worlds[condition].head, requirements: REQUIREMENTS, tasks });
+  await installed.dispose();
+  states[condition] = state;
+}
+
+function deployment(condition) {
+  const state = states[condition];
   const windows = process.platform === "win32";
-  const world = windows ? worlds.A.world.replaceAll("\\", "/") : "/run/alhs/worlds/A";
-  const state = windows ? aState.replaceAll("\\", "/") : "/run/alhs/state-A";
+  const world = windows ? worlds[condition].world.replaceAll("\\", "/") : `/run/alhs/worlds/${condition}`;
+  const statePath = windows ? state.replaceAll("\\", "/") : `/run/alhs/state-${condition}`;
   return {
     schemaVersion: 1,
-    profileId: "alhs-core-a",
+    profileId: `alhs-core-${condition.toLowerCase()}`,
     projectId: PROJECT,
     localPeer: "local-operator",
     repository: world,
-    execution: "worktree",
+    execution: condition === "L" ? "in-place" : "worktree",
     concurrency: 2,
     toolProfile: "normal",
     policy: { allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] },
-    standard: { statement: STANDARD.statement },
-    transport: { namespace: "alhs-core-a", databasePath: `${state}/transport.sqlite` },
+    ...(condition === "L" ? {} : { standard: { statement: STANDARD.statement } }),
+    transport: { namespace: `alhs-core-${condition.toLowerCase()}`, databasePath: `${statePath}/transport.sqlite` },
     databases: {
-      orchestration: `${state}/palimpsest.sqlite`,
-      ordarium: `${state}/ordarium.sqlite`,
-      coordination: `${state}/coordination.sqlite`,
-      transportCursors: `${state}/transport-cursors.sqlite`,
-      projectJournal: `${state}/journal.sqlite`,
-      projectAssociations: `${state}/associations.sqlite`,
-      management: `${state}/management.sqlite`,
+      orchestration: `${statePath}/palimpsest.sqlite`,
+      ordarium: `${statePath}/ordarium.sqlite`,
+      coordination: `${statePath}/coordination.sqlite`,
+      transportCursors: `${statePath}/transport-cursors.sqlite`,
+      projectJournal: `${statePath}/journal.sqlite`,
+      projectAssociations: `${statePath}/associations.sqlite`,
+      management: `${statePath}/management.sqlite`,
     },
     reasoning: {},
   };
 }
 
-writeJson(join(RUN, "deployments", "A.json"), deploymentA());
+for (const condition of CONDITIONS) {
+  if (condition === "F") continue;
+  writeJson(join(RUN, "deployments", `${condition}.json`), deployment(condition));
+}
 write(join(RUN, "constraint.md"), CONSTRAINT);
 for (const [name, text] of Object.entries(PROMPTS)) write(join(RUN, "prompts", `${name}.txt`), `${text}\n`);
 
 const SUFFIX = STAGE === "repeat" ? "b" : "";
-const sessions = [
-  { id: `F-1${SUFFIX}`, condition: "F", index: 1, prompt: "F", injectAtMs: 60_000, killAfterMs: STAGE === "repeat" ? 900_000 : 240_000 },
-  { id: `F-2${SUFFIX}`, condition: "F", index: 2, prompt: "F2", injectAtMs: null, killAfterMs: 720_000 },
-  { id: `A-1${SUFFIX}`, condition: "A", index: 1, prompt: "A", injectAtMs: 60_000, killAfterMs: STAGE === "repeat" ? 900_000 : 240_000 },
-  { id: `A-2${SUFFIX}`, condition: "A", index: 2, prompt: "A2", injectAtMs: null, killAfterMs: 720_000 },
-].map((session) => ({
+const sessions = (
+  STAGE === "diagnostic"
+    ? [
+        { id: "L-1", condition: "L", index: 1, prompt: "L", injectAtMs: 60_000, killAfterMs: 900_000, killAtTokens: 400_000 },
+        { id: "L-2", condition: "L", index: 2, prompt: "L2", injectAtMs: null, killAfterMs: 900_000 },
+        { id: "G-1", condition: "G", index: 1, prompt: "G", injectAtMs: 60_000, killAfterMs: 900_000, killAtTokens: 400_000 },
+        { id: "G-2", condition: "G", index: 2, prompt: "G2", injectAtMs: null, killAfterMs: 900_000 },
+      ]
+    : [
+        { id: `F-1${SUFFIX}`, condition: "F", index: 1, prompt: "F", injectAtMs: 60_000, killAfterMs: STAGE === "repeat" ? 900_000 : 240_000 },
+        { id: `F-2${SUFFIX}`, condition: "F", index: 2, prompt: "F2", injectAtMs: null, killAfterMs: 720_000 },
+        { id: `A-1${SUFFIX}`, condition: "A", index: 1, prompt: "A", injectAtMs: 60_000, killAfterMs: STAGE === "repeat" ? 900_000 : 240_000 },
+        { id: `A-2${SUFFIX}`, condition: "A", index: 2, prompt: "A2", injectAtMs: null, killAfterMs: 720_000 },
+      ]
+).map((session) => ({
   ...session,
-  maxTokens: STAGE === "repeat" && session.index === 1 ? 1_500_000 : STAGE === "repeat" ? 2_500_000 : 3_000_000,
-  reserveTokens: 150_000,
+  maxTokens:
+    STAGE === "diagnostic"
+      ? 2_500_000
+      : STAGE === "repeat" && session.index === 1
+        ? 1_500_000
+        : STAGE === "repeat"
+          ? 2_500_000
+          : 3_000_000,
+  reserveTokens: STAGE === "diagnostic" ? 125_000 : 150_000,
   ...(STAGE === "repeat" && session.index === 1 ? { killAtTokens: 400_000 } : {}),
   world: worlds[session.condition].world,
-  state: session.condition === "A" ? aState : null,
+  state: states[session.condition] ?? null,
   home: join(RUN, `home-${session.id}`),
   promptPath: join(RUN, "prompts", `${session.prompt}.txt`),
   out: join(RUN, "out", session.id),
@@ -247,20 +311,30 @@ writeJson(join(RUN, "core.json"), {
   cohortId: COHORT,
   stage: STAGE,
   codeFreeze: CODE_FREEZE,
-  mode: STAGE === "repeat" ? "REAL_MODEL_REPEAT_CORE" : "REAL_MODEL_CORE",
+  mode:
+    STAGE === "diagnostic"
+      ? "REAL_MODEL_DIAGNOSTIC"
+      : STAGE === "repeat"
+        ? "REAL_MODEL_REPEAT_CORE"
+        : "REAL_MODEL_CORE",
+  conditions: CONDITIONS,
   goal: GOAL,
   requirements: REQUIREMENTS,
   worlds: Object.fromEntries(Object.entries(worlds).map(([condition, value]) => [condition, value.world])),
   heads: Object.fromEntries(Object.entries(worlds).map(([condition, value]) => [condition, value.head])),
-  states: { A: aState },
+  states,
   constraint: join(RUN, "constraint.md"),
   sessions,
   budget:
-    STAGE === "repeat"
-      ? { session1: 1_500_000, session2: 2_500_000, reserve: 150_000, killAtTokens: 400_000, aggregate: 8_000_000, sessions: 4 }
-      : { perSession: 3_000_000, reserve: 150_000, softStop: 2_850_000, aggregate: 12_000_000, sessions: 4 },
+    STAGE === "diagnostic"
+      ? { perSession: 2_500_000, reserve: 125_000, softStop: 2_375_000, killAtTokens: 400_000, aggregate: 10_000_000, sessions: 4 }
+      : STAGE === "repeat"
+        ? { session1: 1_500_000, session2: 2_500_000, reserve: 150_000, killAtTokens: 400_000, aggregate: 8_000_000, sessions: 4 }
+        : { perSession: 3_000_000, reserve: 150_000, softStop: 2_850_000, aggregate: 12_000_000, sessions: 4 },
   note:
-    STAGE === "repeat"
+    STAGE === "diagnostic"
+      ? "L and G share byte-identical sources. The constraint is injected at T+60s in session 1. Session 1 is killed at the same 400,000-token milestone in both conditions; session 2 is a new principal session on the same project state. L has no formal task; G has one formal package task and a confirmed standard."
+      : STAGE === "repeat"
       ? "F and A share byte-identical sources. The constraint is injected at T+60s in session 1. Session 1 is killed at the same reported token milestone (400,000) in both conditions, with a wall-clock backstop; session 2 is a new principal session on the same project state."
       : "F and A share byte-identical sources. The constraint is injected at T+60s in session 1 and is not in the initial world. Session 1 is killed at T+240s if the host is still running; session 2 is a new principal session on the same project state.",
 });

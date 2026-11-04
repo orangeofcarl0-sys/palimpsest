@@ -1,10 +1,9 @@
 # ALHS-C — Adaptive Long-Horizon Synthesis comparison (pre-registration)
 
-Status: **CORE STAGE AUTHORIZED AND EXECUTED (2026-11-04); DIAGNOSTIC L/G NOT AUTHORIZED.**
-The owner authorized the core stage only (F and A, 2 sessions each, 12,000,000 aggregate). The core
-result is `docs/engineering/ALHS-C-CORE-RESULT.md` and
-`research-evidence/alhs/core-2026-11-04/`. The diagnostic L/G stage remains pre-registered and
-unauthorized; it did not run.
+Status: **CORE, REPEAT-CORE AND DIAGNOSTIC EXECUTED (2026-11-04); NO STAGE REMAINS UNAUTHORIZED-AND-PLANNED.**
+Core result: `docs/engineering/ALHS-C-CORE-RESULT.md`; repeat:
+`docs/engineering/ALHS-C-REPEAT-RESULT.md`; diagnostic:
+`docs/engineering/ALHS-C-DIAGNOSTIC-RESULT.md`.
 
 Code freeze: `1227a7478d20954e0366d8e9ccec8c62763171b9`.
 
@@ -132,11 +131,11 @@ conditions, session ceilings, reserve and aggregate, it writes `BLOCKED.json` an
   aggregate 12,000,000. **Authorized and executed on 2026-11-04.** Result:
   `docs/engineering/ALHS-C-CORE-RESULT.md`; 4,609,104 tokens used.
 - **diagnostic** — L and G, 2 sessions per condition, 2,500,000 per session, 125,000 reserve,
-  aggregate 10,000,000. **Not authorized; did not run.** Only after a new authorization and a core
-  report review.
+  aggregate 10,000,000. **Authorized and executed on 2026-11-04.** Result:
+  `docs/engineering/ALHS-C-DIAGNOSTIC-RESULT.md`; 2,686,115 tokens used.
 
 The total proposed ceiling for both stages is 22,000,000 tokens. The local hard cap in the runner is
-25,000,000. Only the core stage is authorized.
+25,000,000. Core, repeat-core and diagnostic have all run; no authorized model stage remains.
 
 ## 10. Scope limits
 

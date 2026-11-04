@@ -103,7 +103,7 @@ function classify(name, payload) {
 }
 
 const result = { schema: "alhs-core-session-analysis/v1", generatedAt: new Date().toISOString(), conditions: {} };
-for (const condition of ["F", "A"]) {
+for (const condition of core.conditions ?? ["F", "A"]) {
   const firstValid = score.conditions[condition].firstValid;
   const sessions = core.sessions.filter((session) => session.condition === condition);
   const perSession = [];

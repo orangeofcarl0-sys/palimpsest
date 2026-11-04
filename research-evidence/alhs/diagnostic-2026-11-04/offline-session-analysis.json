@@ -1,0 +1,543 @@
+{
+  "schema": "alhs-core-session-analysis/v1",
+  "generatedAt": "2026-11-04T16:14:35.715Z",
+  "conditions": {
+    "L": {
+      "firstValid": {
+        "time": 1793807536325,
+        "tokensBefore": 227962,
+        "bytes": 34866,
+        "versions": 2,
+        "at": "2026-11-04T15:52:16.325Z"
+      },
+      "sessions": [
+        {
+          "sessionId": "L-1",
+          "startedAt": "2026-11-04T15:49:51.232Z",
+          "endedAt": "2026-11-04T15:52:36.034Z",
+          "tokens": 470926,
+          "assistantMessages": 15,
+          "toolCalls": 23,
+          "tokensAfterFirstValid": 242964,
+          "callsAfterFirstValid": 6,
+          "afterKinds": {
+            "edit_package": 4,
+            "read_package": 2
+          },
+          "afterDetail": [
+            {
+              "at": "2026-11-04T15:52:18.884Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:52:21.173Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:52:26.770Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:52:28.469Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:52:34.217Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:52:35.997Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            }
+          ]
+        },
+        {
+          "sessionId": "L-2",
+          "startedAt": "2026-11-04T15:52:45.149Z",
+          "endedAt": "2026-11-04T15:54:53.664Z",
+          "tokens": 1287008,
+          "assistantMessages": 29,
+          "toolCalls": 59,
+          "tokensAfterFirstValid": 1287008,
+          "callsAfterFirstValid": 59,
+          "afterKinds": {
+            "pulse": 1,
+            "other": 1,
+            "search": 4,
+            "read_other": 8,
+            "read_package": 6,
+            "verify": 4,
+            "edit_package": 30,
+            "shell": 2,
+            "work": 1,
+            "conclude": 2
+          },
+          "afterDetail": [
+            {
+              "at": "2026-11-04T15:52:46.748Z",
+              "tool": "palimpsest_continuity",
+              "kind": "pulse",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:52:47.909Z",
+              "tool": "working_directory",
+              "kind": "other",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:52:47.916Z",
+              "tool": "glob",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:52:50.457Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "L/TASK.md"
+            },
+            {
+              "at": "2026-11-04T15:52:50.459Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:52:50.460Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/sites.md"
+            },
+            {
+              "at": "2026-11-04T15:52:50.460Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/vendors.md"
+            },
+            {
+              "at": "2026-11-04T15:52:50.461Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/capacity.csv"
+            },
+            {
+              "at": "2026-11-04T15:52:50.462Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "inbox/README.md"
+            },
+            {
+              "at": "2026-11-04T15:52:50.462Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "2026-11-03/corridor-measurement.md"
+            },
+            {
+              "at": "2026-11-04T15:52:50.463Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "retained-baseline/README.md"
+            },
+            {
+              "at": "2026-11-04T15:52:59.858Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Check time, git state, and inbox contents"
+            },
+            {
+              "at": "2026-11-04T15:53:04.395Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "L/.gitignore"
+            },
+            {
+              "at": "2026-11-04T15:53:04.406Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Inspect base commit and untracked files"
+            },
+            {
+              "at": "2026-11-04T15:53:08.092Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:53:27.410Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:27.439Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:27.458Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:31.944Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:31.966Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:31.984Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:34.603Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:34.643Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:34.660Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:38.844Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:38.866Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:38.885Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:40.609Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:44.677Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:44.718Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:44.736Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:44.754Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:51.028Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:51.055Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:51.073Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:51.090Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:52.629Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:56.817Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:56.858Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:56.876Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:56.893Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:53:58.776Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "Re-check inbox and record current time"
+            },
+            {
+              "at": "2026-11-04T15:53:59.907Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:54:03.890Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:54:10.689Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:10.711Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:10.729Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:12.755Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "Final inbox re-check before finalizing"
+            },
+            {
+              "at": "2026-11-04T15:54:19.368Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:20.754Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:23.036Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:27.413Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:27.439Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:28.641Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T15:54:35.980Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Commit the completed review package"
+            },
+            {
+              "at": "2026-11-04T15:54:39.760Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Verify commit and working tree state"
+            },
+            {
+              "at": "2026-11-04T15:54:40.829Z",
+              "tool": "palimpsest_work",
+              "kind": "work",
+              "summary": "status"
+            },
+            {
+              "at": "2026-11-04T15:54:47.530Z",
+              "tool": "palimpsest_work",
+              "kind": "conclude",
+              "summary": "conclude"
+            },
+            {
+              "at": "2026-11-04T15:54:50.165Z",
+              "tool": "palimpsest_work",
+              "kind": "conclude",
+              "summary": "conclude"
+            }
+          ]
+        }
+      ]
+    },
+    "G": {
+      "firstValid": {
+        "time": 1793807886814,
+        "tokensBefore": 612261,
+        "bytes": 21365,
+        "versions": 1,
+        "at": "2026-11-04T15:58:06.814Z"
+      },
+      "sessions": [
+        {
+          "sessionId": "G-1",
+          "startedAt": "2026-11-04T15:55:02.410Z",
+          "endedAt": "2026-11-04T15:56:14.642Z",
+          "tokens": 402516,
+          "assistantMessages": 26,
+          "toolCalls": 26,
+          "tokensAfterFirstValid": 0,
+          "callsAfterFirstValid": 0,
+          "afterKinds": {},
+          "afterDetail": []
+        },
+        {
+          "sessionId": "G-2",
+          "startedAt": "2026-11-04T15:56:26.435Z",
+          "endedAt": "2026-11-04T15:58:48.696Z",
+          "tokens": 525665,
+          "assistantMessages": 18,
+          "toolCalls": 29,
+          "tokensAfterFirstValid": 315920,
+          "callsAfterFirstValid": 9,
+          "afterKinds": {
+            "verify": 4,
+            "search": 1,
+            "work": 2,
+            "pulse": 1,
+            "conclude": 1
+          },
+          "afterDetail": [
+            {
+              "at": "2026-11-04T15:58:09.762Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Check package stats and re-check inbox"
+            },
+            {
+              "at": "2026-11-04T15:58:11.008Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:58:16.698Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Validate eligibility arithmetic and package headings"
+            },
+            {
+              "at": "2026-11-04T15:58:19.667Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Commit candidate package in attempt worktree"
+            },
+            {
+              "at": "2026-11-04T15:58:24.262Z",
+              "tool": "palimpsest_work",
+              "kind": "work",
+              "summary": "complete"
+            },
+            {
+              "at": "2026-11-04T15:58:26.968Z",
+              "tool": "palimpsest_work",
+              "kind": "work",
+              "summary": "results"
+            },
+            {
+              "at": "2026-11-04T15:58:27.263Z",
+              "tool": "palimpsest_continuity",
+              "kind": "pulse",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T15:58:31.423Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Final inbox and artifact verification"
+            },
+            {
+              "at": "2026-11-04T15:58:35.888Z",
+              "tool": "palimpsest_work",
+              "kind": "conclude",
+              "summary": "conclude"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

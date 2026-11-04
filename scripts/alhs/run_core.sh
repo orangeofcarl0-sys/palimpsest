@@ -15,6 +15,12 @@ if [ "$STAGE" = "repeat" ]; then
   COHORT="alhs-c-repeat-2026-11-04"
   COHORT_FILE="$REPO/research-evidence/alhs/live/cohort-repeat-pre-registration.json"
   AUTH="$REPO/research-evidence/alhs/live/authorization-repeat.json"
+elif [ "$STAGE" = "diagnostic" ]; then
+  COHORT_STAGE="diagnostic"
+  RUN="$BASE/diagnostic-2026-11-04"
+  COHORT="alhs-c-2026-11-04"
+  COHORT_FILE="$REPO/research-evidence/alhs/live/cohort-pre-registration.json"
+  AUTH="$REPO/research-evidence/alhs/live/authorization-diagnostic.json"
 else
   COHORT_STAGE="core"
   RUN="$BASE/core-2026-11-04"
@@ -69,8 +75,9 @@ JSON
 YAML
 }
 
-PROFILE_PATCH_A() {
+PROFILE_PATCH_PAL() {
   local home="$1"
+  local condition="$2"
   cat > "$home/profiles/alhs-core/package.json" <<'JSON'
 { "name": "dsh-profile-alhs-core", "private": true, "dependencies": {}, "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "palimpsest-dsh-host"], "patchReload": "startup" } } }
 JSON
@@ -99,15 +106,18 @@ JSON
 - id: palimpsest-tools
   config:
     palimpsestEntry: '$(cygpath -w "$REPO/dist/src/advanced.js" | sed 's|\\|/|g')'
-    deploymentProfile: '$(cygpath -w "$RUN/deployments/A.json" | sed 's|\\|/|g')'
+    deploymentProfile: '$(cygpath -w "$RUN/deployments/$condition.json" | sed 's|\\|/|g')'
     serve: false
     openDashboard: false
 YAML
 }
 
-SUFFIX=""
-[ "$STAGE" = "repeat" ] && SUFFIX="b"
-for id in "F-1$SUFFIX" "F-2$SUFFIX" "A-1$SUFFIX" "A-2$SUFFIX"; do
+case "$STAGE" in
+  repeat) IDS="F-1b F-2b A-1b A-2b" ;;
+  diagnostic) IDS="L-1 L-2 G-1 G-2" ;;
+  *) IDS="F-1 F-2 A-1 A-2" ;;
+esac
+for id in $IDS; do
   HOME_SESSION="$RUN/home-$id"
   rm -rf "$HOME_SESSION"
   mkdir -p "$HOME_SESSION/profiles/node_modules" "$HOME_SESSION/profiles/alhs-core" "$RUN/tmp" "$RUN/worker-logs"
@@ -122,7 +132,7 @@ YAML
   cp -r "$REPO/host/deployment" "$HOME_SESSION/profiles/node_modules/palimpsest-host-deployment"
   case "$id" in
     F-*) PROFILE_PATCH_F "$HOME_SESSION" ;;
-    A-*) PROFILE_PATCH_A "$HOME_SESSION" ;;
+    A-*|L-*|G-*) PROFILE_PATCH_PAL "$HOME_SESSION" "${id%%-*}" ;;
   esac
 done
 

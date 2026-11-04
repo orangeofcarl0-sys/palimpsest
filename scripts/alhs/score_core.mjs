@@ -4,6 +4,7 @@
  * nothing. A condition that did not reach an episode conclusion is recorded as such, not guessed.
  */
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { zstdDecompressSync } from "node:zlib";
@@ -225,7 +226,7 @@ function streamTokens(home) {
 }
 
 const conditions = {};
-for (const condition of ["F", "A"]) {
+for (const condition of core.conditions ?? ["F", "A"]) {
   const sessions = core.sessions.filter((entry) => entry.condition === condition);
   const events = sessions.flatMap((session) => readEvents(join(session.home, "sessions")));
   const replayed = replay(events);
@@ -248,21 +249,24 @@ for (const condition of ["F", "A"]) {
   let episode = null;
   let tasks = null;
   let promotions = [];
-  if (condition === "A") {
+  let status = null;
+  let candidate = null;
+  if (condition !== "F") {
+    const lightweight = condition === "L";
     const installed = installProduct(
       { tools: { register: () => () => undefined } },
       {
         projectId: PROJECT,
-        repository: core.worlds.A,
-        stateDir: core.states.A,
-        execution: "worktree",
+        repository: core.worlds[condition],
+        stateDir: core.states[condition],
+        execution: lightweight ? "in-place" : "worktree",
         policy: trustedDefaultPolicy({ allowed_commands: [] }),
         toolProfile: "normal",
-        standard: STANDARD,
+        ...(lightweight ? {} : { standard: STANDARD }),
       },
     );
     const pulse = await installed.application.projectWorkspace.pulse();
-    const status = installed.controller.status();
+    status = installed.controller.status();
     episode = {
       state: pulse.episode.state,
       current: pulse.episode.current,
@@ -277,6 +281,42 @@ for (const condition of ["F", "A"]) {
     };
     tasks = status.tasks.map((task) => ({ taskId: task.task_id, state: task.state }));
     promotions = status.promotions.map((promotion) => ({ promotionId: promotion.promotion_id, state: promotion.state }));
+    /**
+     * A governed candidate is NOT in the canonical world until an operator Promotion. Its rubric is
+     * read from the attempt's result commit and labelled as a candidate; the canonical file is absent.
+     */
+    if (!existsSync(artifactPath)) {
+      const attempt = status.attempts.find((entry) => entry.task_id === "package" && entry.state === "COMPLETED");
+      if (attempt !== undefined) {
+        let resultCommit = null;
+        try {
+          resultCommit = installed.controller.promotions.canonicalAttemptResultCommit(attempt.attempt_id);
+        } catch {
+          resultCommit = null;
+        }
+        if (resultCommit !== null) {
+          try {
+            const text = execFileSync("git", ["-C", core.worlds[condition], "show", `${resultCommit}:deliverables/package.md`], {
+              encoding: "utf8",
+            });
+            const rubric = rubricFor(text);
+            candidate = {
+              attemptId: attempt.attempt_id,
+              resultCommit,
+              taskState: status.tasks.find((task) => task.task_id === "package")?.state ?? null,
+              present: true,
+              bytes: Buffer.byteLength(text, "utf8"),
+              sha256: sha(Buffer.from(text, "utf8")),
+              rubric: rubric.criteria,
+              passed: rubric.passed,
+              detail: "read from the governed attempt's result commit; it is a candidate until an operator Promotion",
+            };
+          } catch {
+            candidate = null;
+          }
+        }
+      }
+    }
     await installed.dispose();
   }
   conditions[condition] = {
@@ -288,7 +328,13 @@ for (const condition of ["F", "A"]) {
       sha256: finalText.length === 0 ? null : sha(Buffer.from(finalText, "utf8")),
     },
     rubric: finalRubric.criteria,
-    score: `${String(finalRubric.passed)}/7`,
+    score:
+      finalRubric.passed === 7
+        ? "7/7"
+        : candidate !== null && candidate.passed === 7
+          ? "7/7 (candidate, not accepted)"
+          : `${String(finalRubric.passed)}/7`,
+    candidate,
     sessions: runs,
     tokens: {
       total: totalTokens,

@@ -56,3 +56,20 @@ Result: `research-evidence/alhs/repeat-2026-11-04/`, write-up
 | Committed package | no | **yes**, `f38f084` |
 
 First windows: 427,070 vs 449,012 reported tokens. Aggregate 3,856,096, 4,143,904 under 8M.
+
+## Diagnostic L/G (executed)
+
+`authorization-diagnostic.json` authorized L/G: 4 sessions, 2,500,000 each, 125,000 reserve, 10M
+aggregate. Result: `research-evidence/alhs/diagnostic-2026-11-04/`, write-up
+`docs/engineering/ALHS-C-DIAGNOSTIC-RESULT.md`.
+
+| | L | G |
+|---|---:|---:|
+| Rubric | 7/7 | **7/7 candidate, not accepted** |
+| Tokens | 1,757,934 | 928,181 |
+| Natural end | **DELIVERED** | **AWAITING_OPERATOR** |
+| Package | 39,222 bytes, committed | 21,365-byte candidate at `8b21b46` |
+
+G’s worker did not survive the session-1 kill; the continuation principal wrote and committed the
+package in the attempt world, settled it to VERIFYING, and concluded for operator acceptance. No
+Promotion exists. Aggregate 2,686,115, 7,313,885 under 10M.
