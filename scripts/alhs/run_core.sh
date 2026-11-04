@@ -10,11 +10,13 @@ REPO="$(pwd)"
 BASE="${ALHS_BASE:-$HOME/alhs}"
 STAGE="${ALHS_STAGE:-core}"
 if [ "$STAGE" = "repeat" ]; then
+  COHORT_STAGE="repeat-core"
   RUN="$BASE/repeat-core-2026-11-04"
   COHORT="alhs-c-repeat-2026-11-04"
   COHORT_FILE="$REPO/research-evidence/alhs/live/cohort-repeat-pre-registration.json"
   AUTH="$REPO/research-evidence/alhs/live/authorization-repeat.json"
 else
+  COHORT_STAGE="core"
   RUN="$BASE/core-2026-11-04"
   COHORT="alhs-c-2026-11-04"
   COHORT_FILE="$REPO/research-evidence/alhs/live/cohort-pre-registration.json"
@@ -136,7 +138,13 @@ if [ "${ALHS_SETUP_ONLY:-0}" = "1" ]; then
 fi
 if [ ! -f "$AUTH" ]; then echo "ALHS authorization missing at $AUTH" >&2; exit 2; fi
 
-if curl -fsS --max-time 2 "http://127.0.0.1:${PROXY_PORT}/" >/dev/null 2>&1; then
+# A previous run can leave the dedicated provider proxy alive if the shell trap was skipped.
+for pid in $(powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { \$_.CommandLine -like '*provider_proxy_tcp.mjs*' } | Select-Object -ExpandProperty ProcessId" | tr -d '\r'); do
+  echo "stopping stale provider proxy $pid"
+  taskkill //PID "$pid" //T //F >/dev/null 2>&1 || true
+done
+sleep 1
+if curl -s --max-time 2 "http://127.0.0.1:${PROXY_PORT}/" >/dev/null 2>&1; then
   echo "a stale proxy is already listening on ${PROXY_PORT}; stop it before this run" >&2
   exit 7
 fi
@@ -160,13 +168,17 @@ fi
 node "$REPO/scripts/alhs/run_cohort.mjs" \
   --cohort="$COHORT_FILE" \
   --authorization="$AUTH" \
-  --stage="$STAGE" \
+  --stage="$COHORT_STAGE" \
   --out="$RUN/out/gate" \
   --adapter="$REPO/scripts/alhs/run_core_session.mjs" \
   --execute \
   > "$RUN/out/cohort-run.json" 2> "$RUN/out/cohort-run.err" || true
 
-node "$REPO/scripts/alhs/score_core.mjs" --run="$RUN" > "$RUN/out/score-summary.json" 2> "$RUN/out/score.err" || true
+if [ -s "$RUN/out/gate/run-state.json" ]; then
+  node "$REPO/scripts/alhs/score_core.mjs" --run="$RUN" > "$RUN/out/score-summary.json" 2> "$RUN/out/score.err" || true
+else
+  echo "no run-state.json: the cohort did not start any session; score skipped" > "$RUN/out/score.err"
+fi
 
 echo "cohort:"; cat "$RUN/out/cohort-run.json" 2>/dev/null || true
 echo "score:"; cat "$RUN/out/score-summary.json" 2>/dev/null || true

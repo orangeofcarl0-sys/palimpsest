@@ -38,10 +38,21 @@ exit 2). The diagnostic L/G stage was **not** authorized and did not run; it req
 
 Nothing here is a repeated-sample comparison, a quality score or a cost advantage.
 
-## Repeat-core (pre-registered, not authorized)
+## Repeat-core (executed)
 
-`cohort-repeat-pre-registration.json` registers one additional F/A pair with a token-milestone
-interruption (kill at 1,200,000 reported tokens, not a fixed wall clock), aggregate 8,000,000.
-`repeat-plan/run-plan.json` is the 4-session plan; `repeat-plan/BLOCKED.json` records the fail-closed
-result (`modelCalls=0`, exit 2) because no `authorization-repeat.json` exists. Protocol:
-`docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md`.
+`cohort-repeat-pre-registration.json` registered one additional F/A pair with a token-milestone
+interruption. The owner authorized it; `authorization-repeat.json` is the authorization. Amendment 1
+lowered the milestone from 1,200,000 to 400,000 and extended the wall-clock backstop to 900s before
+any repeat session (the first launch failed at the proxy bind with 0 model calls, 0 tokens).
+
+Result: `research-evidence/alhs/repeat-2026-11-04/`, write-up
+`docs/engineering/ALHS-C-REPEAT-RESULT.md`.
+
+| | F | A |
+|---|---:|---:|
+| Rubric | 7/7 | 7/7 |
+| Tokens | 2,797,303 | 1,058,793 |
+| Natural end | no (budget stop) | **yes** (`conclude DELIVER`) |
+| Committed package | no | **yes**, `f38f084` |
+
+First windows: 427,070 vs 449,012 reported tokens. Aggregate 3,856,096, 4,143,904 under 8M.

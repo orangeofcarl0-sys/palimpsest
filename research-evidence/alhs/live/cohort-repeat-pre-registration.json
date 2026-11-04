@@ -1,10 +1,10 @@
 {
   "schema": "alhs-cohort/v1",
   "cohortId": "alhs-c-repeat-2026-11-04",
-  "status": "PRE_REGISTERED_NOT_AUTHORIZED",
+  "status": "EXECUTED",
   "protocol": "docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md",
   "codeFreeze": "a62fc32a554448f5f8cfb67801a7e0b7094c9100",
-  "note": "One additional F/A pair. Session 1 is killed at the same 1,200,000-token milestone in both conditions, fixing the fixed-wall-clock confound in the core pair. No authorization exists for this cohort.",
+  "note": "One additional F/A pair, executed 2026-11-04 under authorization-repeat.json. Amendment 1 lowered the interruption milestone to 400,000 and extended the wall-clock backstop to 900s before any repeat session. Total 3,856,096 tokens.",
   "provider": "deepseek-official/deepseek-flash",
   "localHardCap": 10000000,
   "conditions": {
@@ -25,12 +25,15 @@
     {
       "id": "repeat-core",
       "purpose": "replicate the core F/A pair with a token-milestone interruption",
-      "conditions": ["F", "A"],
+      "conditions": [
+        "F",
+        "A"
+      ],
       "sessionCeiling": 2500000,
       "reserveTokens": 150000,
       "aggregateCeiling": 8000000,
-      "authorized": false,
-      "executed": false,
+      "authorized": true,
+      "executed": true,
       "sessionPlan": [
         {
           "sessionId": "F-1b",
@@ -38,7 +41,7 @@
           "index": 1,
           "ceiling": 1500000,
           "reserveTokens": 150000,
-          "killAtTokens": 1200000
+          "killAtTokens": 400000
         },
         {
           "sessionId": "F-2b",
@@ -53,7 +56,7 @@
           "index": 1,
           "ceiling": 1500000,
           "reserveTokens": 150000,
-          "killAtTokens": 1200000
+          "killAtTokens": 400000
         },
         {
           "sessionId": "A-2b",
@@ -62,7 +65,9 @@
           "ceiling": 2500000,
           "reserveTokens": 150000
         }
-      ]
+      ],
+      "authorization": "research-evidence/alhs/live/authorization-repeat.json",
+      "result": "research-evidence/alhs/repeat-2026-11-04/core-summary.json"
     }
   ],
   "timeline": [
@@ -74,7 +79,7 @@
     "T5 autonomous assessment",
     "T6 actual execution change",
     "T7 late result / continuation (if the model creates one)",
-    "T8 kill at 1,200,000 reported tokens",
+    "T8 kill at 400,000 reported tokens (Amendment 1)",
     "T9 new principal session, deliverable or waiting state",
     "T10 natural episode termination"
   ],

@@ -127,35 +127,55 @@ for (const condition of ["F", "A"]) {
 }
 
 const totalTokens = Object.values(conditions).reduce((sum, entry) => sum + entry.tokens.total, 0);
-const f2 = conditions.F.sessions.find((session) => session.sessionId === "F-2");
+const budget = core.budget ?? {};
+const authorized = Number.isSafeInteger(budget.aggregate) ? budget.aggregate : 12_000_000;
+const stoppedSession = Object.values(conditions)
+  .flatMap((entry) => entry.sessions)
+  .find((session) => session.stopped === true);
+const isRepeat = core.stage === "repeat";
 const summary = {
   schema: "alhs-core-result/v1",
   cohortId: core.cohortId,
   codeFreeze: core.codeFreeze,
-  mode: "REAL_MODEL_CORE",
+  mode: core.mode ?? "REAL_MODEL_CORE",
   provider: "deepseek-official/deepseek-flash",
-  note:
-    "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at T+240s in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt.",
+  note: isRepeat
+    ? "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at the same reported token milestone (400,000; first observation above it) in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt."
+    : "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at T+240s in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt.",
   conditions,
   aggregate: {
     totalTokens,
-    authorizedTokens: 12_000_000,
-    remainingTokens: 12_000_000 - totalTokens,
-    perSession: 3_000_000,
-    reserve: 150_000,
-    softStopAt: 2_850_000,
-    budgetStopOvershoot: f2 === undefined ? null : (f2.ledgerTokens ?? 0) - 2_850_000,
-    budgetStopUnderHardCeiling: f2 === undefined ? null : 3_000_000 - (f2.ledgerTokens ?? 0),
+    authorizedTokens: authorized,
+    remainingTokens: authorized - totalTokens,
+    ...(Number.isSafeInteger(budget.perSession) ? { perSession: budget.perSession } : {}),
+    ...(Number.isSafeInteger(budget.session1) ? { session1: budget.session1, session2: budget.session2, killAtTokens: budget.killAtTokens } : {}),
+    reserve: budget.reserve ?? 150_000,
+    ...(Number.isSafeInteger(budget.softStop) ? { softStopAt: budget.softStop } : {}),
+    budgetStop:
+      stoppedSession === undefined
+        ? null
+        : {
+            sessionId: stoppedSession.sessionId,
+            ledgerTokens: stoppedSession.ledgerTokens,
+            softStopAt: stoppedSession.softStopAt,
+            maxTokens: stoppedSession.maxTokens,
+            overshoot: (stoppedSession.ledgerTokens ?? 0) - (stoppedSession.softStopAt ?? 0),
+            underHardCeiling: (stoppedSession.maxTokens ?? 0) - (stoppedSession.ledgerTokens ?? 0),
+          },
     note:
-      "The guard observes usage after a message. F-2 stopped at the first observation above the 2,850,000 soft ceiling; the 150,000 reserve kept it under the 3,000,000 hard per-session ceiling.",
+      "The guard observes usage after a message. A stop happens at the first observation above that session's soft ceiling; the reserve keeps it under the hard per-session ceiling.",
   },
   proxy,
   limitations: [
-    "One session pair per condition; this is not a repeated-sample comparison.",
+    isRepeat
+      ? "One additional pair per condition; combined with the core this is two pairs, not a powered sample."
+      : "One session pair per condition; this is not a repeated-sample comparison.",
     "The 7-fact rubric is a floor on the final package, not a business-quality or cognition score. Both conditions reached 7/7.",
     "A chose direct file work plus one native subagent; it did not create a formal Work task or a governed Worker. That is a valid adaptive choice, not evidence of governed cooperation.",
-    "Both packages were left untracked in Git; neither condition committed the final artifact. A's DELIVER conclusion cited the base commit, not a commit containing the package.",
-    "One provider request returned 502 UPSTREAM_TIMEOUT during F-2; the proxy retried and the session continued. It is recorded, not hidden.",
+    isRepeat
+      ? "A committed the final package and the product recorded tracked=true/committed=true; F left deliverables/ untracked. The provenance facts are in A's episode conclusion."
+      : "Both packages were left untracked in Git; neither condition committed the final artifact. A's DELIVER conclusion cited the base commit, not a commit containing the package.",
+    "One provider request returned 502 UPSTREAM_TIMEOUT during the run; the proxy retried and the session continued. It is recorded, not hidden.",
     "The scenario kill is a harness event, not a product failure; it is applied equally to F and A.",
     "Natural convergence is reported separately from the rubric. F was budget-stopped; A recorded DELIVER and exited on its own.",
   ],

@@ -180,7 +180,7 @@ Build and gates:
 The application-factory fan-out ratchet moved 36 → 37 for the episode face; the reason is recorded in
 `tools/architecture/baseline-reasons.ts` and the baseline was regenerated.
 
-## 7. ALHS-C core — executed; diagnostic — blocked
+## 7. ALHS-C core and repeat-core — executed; diagnostic — blocked
 
 `docs/programs/alhs/ALHS-C-PROTOCOL.md` pre-registers F (strong native DSH), L (lightweight), A
 (adaptive Palimpsest) and G (forced governed) on a T0–T10 scenario.
@@ -215,16 +215,31 @@ Budget-guard change: `scripts/aps/budget_guard.mjs` takes `--reserve-tokens` and
 +32,140). The guard still observes usage only after a message, so a reserve is a buffer, not an exact
 no-overspend proof.
 
-### 7.1 Post-core follow-up
+### 7.1 Repeat-core — executed
 
-- **Artifact provenance is now a recorded fact.** `conclude` stores each named artifact’s
-  `present/tracked/committed` state and returns a warning when the final bytes exist only in the
-  working tree. The core packages were untracked; a rerun would report that. DELIVER is not refused
-  for it — the fact is visible to the principal and the operator.
-- **A balanced repeat is pre-registered, not authorized.** `docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md`
-  and `cohort-repeat-pre-registration.json` add one F/A pair with a 1,200,000-token interruption
-  milestone instead of the core’s fixed 240s. Aggregate 8,000,000. The gate plan and `BLOCKED.json`
-  are in `research-evidence/alhs/live/repeat-plan/`; no model ran.
+The core’s fixed 240s kill gave the conditions different first-window work (F-1 165,963; A-1
+1,292,562). A second pair was authorized (`authorization-repeat.json`, 8,000,000) and executed with a
+**400,000-token interruption milestone** (Amendment 1; the original 1.2M was unreachable for F inside
+the backstop; the backstop was extended to 900s). Evidence:
+`research-evidence/alhs/repeat-2026-11-04/`, write-up `docs/engineering/ALHS-C-REPEAT-RESULT.md`.
+
+| Pair | F ending | A ending | F tokens | A tokens |
+|---|---|---|---:|---:|
+| core | budget stop | `DELIVER` | 3,065,535 | 1,543,569 |
+| repeat-core | budget stop | `DELIVER` | 2,797,303 | 1,058,793 |
+
+- Repeat first windows: **427,070** (F-1b) vs **449,012** (A-1b), a 4.9% difference.
+- A-2b recorded `DELIVER` (`episode-7bfc0aac…`, current) and exited 0; F-2b was stopped at
+  **2,370,233** (20,233 over the 2,350,000 soft ceiling; 129,767 under the 2,500,000 hard ceiling).
+- A committed the package (`f38f084`) and the provenance check recorded `tracked=true,
+  committed=true`; F left `deliverables/` untracked. This closes the provenance gap seen in the core.
+- After the first 7/7, F-2b made 51 further package edits, 6 re-reads, 8 verifications and 12 state
+  queries; A-2b made 3 reads, 7 verifications and 3 edits, then concluded.
+- Aggregate 3,856,096, 4,143,904 under 8,000,000. One 502 `UPSTREAM_TIMEOUT` during A-2b was retried;
+  90 of 91 POSTs returned 200.
+
+The core pattern replicated: both conditions 7/7; A converged on a recorded judgement; F was
+budget-stopped. This is two pairs per condition, not a powered sample.
 
 ## 8. Architecture convergence
 
@@ -253,20 +268,20 @@ promotion path, a filesystem sandbox, a LayerFS integration, or a durable agent 
 
 ## 9. Limitations and negative results
 
-- **One real-model pair shows a convergence difference, not a general effect.** A recorded `DELIVER`
-  and exited; F was budget-stopped. With one session pair per condition, no repeated-sample or paired
-  claim is possible, and the token totals are not matched work (the fixed 240s kill gave A-1 1.29M
-  and F-1 166k in the first window).
+- **Two real-model pairs show a repeated convergence difference, not a general effect.** A recorded
+  `DELIVER` and exited in both pairs; F was budget-stopped in both. The repeat used a 400,000-token
+  interruption milestone, so its first windows were balanced (427,070 vs 449,012). Two pairs per
+  condition is still small; no statistical or paired claim is possible.
 - **A chose direct work, not governed cooperation.** A used files plus one native subagent, with no
-  formal Work, World, Worker or Promotion. The real-model run therefore does not demonstrate governed
+  formal Work, World, Worker or Promotion. The real-model runs therefore do not demonstrate governed
   multi-agent production; the deterministic host run covers that mechanic separately.
 - **No F/A quality or cost advantage.** Both packages reached the same 7/7 floor; the rubric
-  saturated. A used 50.4% of F's tokens in this pair, but that is descriptive, not a matched cost
-  result.
-- **Both packages were left untracked.** Neither condition committed the final artifact; A's DELIVER
-  evidence ref cites the base commit, not a commit containing the package. The new provenance facts
-  record `tracked=false` and warn; the core run predates that field, so this result is reconstructed
-  from the filesystem and Git state.
+  saturated. A used 50.4% of F's tokens in the core pair and 37.8% in the repeat, but those are
+  descriptive, not matched cost estimates.
+- **The core pair left both packages untracked; the repeat A committed.** A's core DELIVER cited the
+  base commit; the repeat A committed `f38f084` and the provenance check recorded `tracked=true,
+  committed=true`. F remains untracked in both. The provenance facts now make this visible; the core
+  run predates the field, so its state is reconstructed from the filesystem and Git.
 - **The host run's reuse was scenario-directed.** The scripted principal in the deterministic run was
   given the old result and the product supplied the path facts; that run does not show the agent
   discovering the reuse.
@@ -284,8 +299,15 @@ promotion path, a filesystem sandbox, a LayerFS integration, or a durable agent 
 
 ## 10. Next decision
 
-The core stage is complete. The next real-model step is pre-registered but **not authorized**:
-`repeat-core` adds one F/A pair with a 1,200,000-token interruption milestone (8,000,000 aggregate),
-to test whether the core convergence difference survives a balanced first window. The diagnostic L/G
-stage (10,000,000) is a separate, unauthorized question. Both need a new
-`alhs-spend-authorization/v1`; the core authorization covered only its four completed sessions.
+The core and repeat-core stages are complete. The same convergence difference appeared in both pairs:
+A recorded `DELIVER` and exited; F was budget-stopped. This is still two pairs per condition.
+
+The remaining real-model questions both require a new authorization:
+
+- **diagnostic L/G** (10,000,000): does lightweight context or forced governance change the ending or
+  the token path?
+- **more core pairs**: would the difference survive, and does A ever fail to converge or accept a
+  stale claim? A larger sample is the only way to answer that.
+
+No further model call is authorized by the core or repeat authorizations; both covered their four
+completed sessions only.
