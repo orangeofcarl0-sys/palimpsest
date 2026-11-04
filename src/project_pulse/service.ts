@@ -1,5 +1,11 @@
 import { canonicalDigest } from "../schema/canonical.js";
-import type { ProjectSummary } from "../project_continuity/index.js";
+import {
+  EPISODE_MARKER,
+  buildPulseEpisode,
+  evaluateEpisodeReadiness,
+  type EpisodeReadiness,
+  type ProjectSummary,
+} from "../project_continuity/index.js";
 import type { ProjectJournalViewEntry } from "../project_workspace/index.js";
 import {
   CONTRIBUTION_DECISION_MARKER,
@@ -68,7 +74,8 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
         entry.entry.body.includes(CONTRIBUTION_MARKER) ||
         entry.entry.body.includes(CONTRIBUTION_DECISION_MARKER) ||
         entry.entry.body.includes(DELEGATION_START_MARKER) ||
-        entry.entry.body.includes("<!-- pc1-consumption:v1 -->")
+        entry.entry.body.includes("<!-- pc1-consumption:v1 -->") ||
+        entry.entry.body.includes(EPISODE_MARKER)
       ) {
         structuredJournalIds.add(`journal:${entry.entry.entryId}`);
       }
@@ -126,6 +133,30 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
           }
         : await deps.execution.view();
     const activeJobs = execution.jobs.filter((job) => job.phase === "QUEUED" || job.phase === "RUNNING");
+
+    /**
+     * ALHS-A: the episode view is derived here, from the same facts the pulse already projects. The
+     * conclusion is a journal record; the readiness check is factual. Neither is an acceptance.
+     */
+    const readiness: EpisodeReadiness = evaluateEpisodeReadiness({
+      tasks: summary.tasks,
+      attempts: execution.attempts,
+      awaitingOperator: summary.pendingWork.filter((task) => task.state === "VERIFYING").map((task) => `task:${task.taskId}`),
+      unresolvedQuestions: openQuestions.map((question) => ({ id: question.id, title: question.title })),
+      blockedEffects: summary.blocked.map((item) => ({ id: item.id, detail: item.detail })),
+      negativeFindingRefs: summary.negativeFindings.map((finding) => finding.id),
+      mechanicalActions: summary.nextActions,
+    });
+    const episode = buildPulseEpisode({
+      entries: entries.map((view) => ({
+        entryId: view.entry.entryId,
+        kind: view.entry.kind,
+        title: view.entry.title,
+        body: view.entry.body,
+      })),
+      readiness,
+      basis: summary.basis,
+    });
 
     const decisionQueue: PulseDecisionItem[] = [];
     const seen = new Set<string>();
@@ -243,6 +274,15 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
         advisory: true,
       });
     }
+    if (episode.state === "REOPENED") {
+      queue({
+        kind: "EPISODE_REOPENED",
+        ref: episode.conclusion?.conclusionId ?? "episode",
+        detail: episode.detail,
+        who: "AGENT",
+        advisory: true,
+      });
+    }
     decisionQueue.sort((left, right) => {
       const kind = left.kind.localeCompare(right.kind);
       return kind !== 0 ? kind : left.ref.localeCompare(right.ref);
@@ -253,7 +293,7 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
     );
     if (decisionRelevant.length === 0) {
       decisionRelevant.push(
-        "agent: no decision is pending; read the recent changes and propose the next bounded step if the goal is not yet met",
+        "agent: no decision is pending; if the goal has been handled, record an episode conclusion (palimpsest_work action=conclude) instead of continuing optional edits — otherwise take the next bounded step",
       );
     }
 
@@ -275,6 +315,7 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
     }
     for (const delegation of delegations) sources.add(`delegation:${delegation.delegationRef}`);
     for (const job of execution.jobs) sources.add(`worker:${job.taskId}:${job.phase}`);
+    if (episode.conclusion !== null) sources.add(`episode:${episode.conclusion.conclusionId}`);
 
     const unavailable = [...summary.coverage.unavailable];
     if (deps.delegation === undefined) unavailable.push("delegation runtime (not composed)");
@@ -302,6 +343,7 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
       contributions,
       delegations: Object.freeze(delegations),
       execution,
+      episode,
       decisionQueue: Object.freeze(decisionQueue),
       nextActions: Object.freeze({
         mechanical: Object.freeze([...summary.nextActions]),

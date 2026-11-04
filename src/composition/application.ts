@@ -51,6 +51,8 @@ export interface ApplicationAssemblyInput {
   readonly contribution?: ContributionService | undefined;
   /** APS-A: the derived continuation view; absent without a contribution chain. */
   readonly pulse?: ProjectPulseService | undefined;
+  /** ALHS-A: the episode conclusion service; absent without a journal and pulse. */
+  readonly episode?: import("../project_continuity/index.js").EpisodeService | undefined;
   /** LHAPE-A: the existing async work-worker transport, when this deployment composed a worker port. */
   readonly workDelegation?: WorkDelegationFace | undefined;
   /** LHAPE-B: the existing packaged result-continuation authority. */
@@ -107,6 +109,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     domainOutcome,
     contribution,
     pulse,
+    episode,
     workDelegation,
     continuation,
     assemblyOptions,
@@ -169,6 +172,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     // APS-A/B: the contribution chain and the derived pulse. ABSENT ⇒ no such surface, never a stub.
     ...(contribution === undefined ? {} : { contribution }),
     ...(pulse === undefined ? {} : { projectPulse: pulse }),
+    ...(episode === undefined ? {} : { episode }),
     ...(workDelegation === undefined ? {} : { workDelegation }),
     ...(continuation === undefined ? {} : { continuation }),
     ...(assemblyOptions.remoteTransport === undefined ? {} : { remoteTransport: assemblyOptions.remoteTransport }),

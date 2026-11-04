@@ -16,6 +16,7 @@
  *     a tool that cannot work there.
  */
 import type { PalimpsestApplicationSurface } from "../../application/surface.js";
+import { EPISODE_INTENTS, type EpisodeIntent } from "../../project_continuity/index.js";
 import type { DshToolDefinition } from "../../tools/dsh_types.js";
 import { safeStatus, tool, ToolArgsError, requiredString, stringArray } from "./common.js";
 
@@ -47,7 +48,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
   return tool({
     name: "palimpsest_work",
     description:
-      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), start a REAL worker in its own execution world (`delegate`), observe who is actually running (`workers`), request a stop without pretending it happened (`stop`), inspect a delivered result and choose a safe continuation route (`results`, `continue`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `delegate` executes an EXISTING canonical task; it does not invent work, and the worker may only report; the product observes the world and settles. `workers` distinguishes canonical attempt state from host-local job observation: a RUNNING attempt with no job in this host is NOT proven alive. `stop` is a REQUEST. `results` reports the packaged continuation assessment for the latest COMPLETED result, and `continue` carries the inspection digest into rematerialization or governed rework; neither accepts or promotes anything. `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately, while worktree edits are an isolated candidate until an authorized Promotion. A proposal is NON-AUTHORITATIVE.",
+      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), start a REAL worker in its own execution world (`delegate`), observe who is actually running (`workers`), request a stop without pretending it happened (`stop`), inspect a delivered result and choose a safe continuation route (`results`, `continue`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), record the EPISODE-LEVEL conclusion when the current work episode should stop (`conclude`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `delegate` executes an EXISTING canonical task; it does not invent work, and the worker may only report; the product observes the world and settles. `workers` distinguishes canonical attempt state from host-local job observation: a RUNNING attempt with no job in this host is NOT proven alive. `stop` is a REQUEST. `results` reports the packaged continuation assessment for the latest COMPLETED result, including path-level reuse facts (unaffected / conflicted / already-present) that a NEW governed task may use without accepting the old result, and `continue` carries the inspection digest into rematerialization or governed rework; neither accepts or promotes anything. `conclude` records YOUR judgement about the episode (DELIVER / WAIT_FOR_OPERATOR / WAIT_FOR_EXTERNAL_EVENT / REPLAN / CONTINUE / CHECKPOINT) and the product checks it against real facts: open tasks, live attempts, pending operator acceptance, blocked effects and artifact existence. A refused conclusion names the contradiction; a recorded one is still NOT acceptance or promotion. After a recorded conclusion with `session.mayEnd=true`, reply to the user and stop calling tools unless something contradicts it. `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately, while worktree edits are an isolated candidate until an authorized Promotion. A proposal is NON-AUTHORITATIVE.",
     mode: "mutating",
     actions: [
       "status",
@@ -57,6 +58,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       "start",
       "begin",
       "complete",
+      "conclude",
       "delegate",
       "workers",
       "stop",
@@ -71,6 +73,16 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       writePaths: { type: "array", items: { type: "string" }, description: "for begin/propose: the paths this work or proposed action may change" },
       requiredArtifacts: { type: "array", items: { type: "string" }, description: "for begin: paths the work must leave in place" },
       summary: { type: "string", description: "for complete: what you consider done, in your own words" },
+      intent: {
+        type: "string",
+        enum: [...EPISODE_INTENTS],
+        description:
+          "for conclude: DELIVER (the goal is handled, including a well-founded negative conclusion), WAIT_FOR_OPERATOR (delivered work needs acceptance), WAIT_FOR_EXTERNAL_EVENT (a measured input or async result is pending), REPLAN (the plan is invalid), CONTINUE (clear work remains), or CHECKPOINT (resources/context are ending; preserve the next step)",
+      },
+      statement: { type: "string", description: "for conclude: why this is the honest state of the episode, in your own words" },
+      waitingOn: { type: "string", description: "for conclude: the external fact, acceptance or event the next episode depends on" },
+      nextStep: { type: "string", description: "for conclude: the concrete next action for CONTINUE/REPLAN/CHECKPOINT" },
+      evidenceRefs: { type: "array", items: { type: "string" }, description: "for conclude: journal/commit/result refs supporting the judgement; a negative DELIVER must cite a recorded negative finding" },
       tasks: {
         type: "array",
         items: {
@@ -103,7 +115,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       objective: { type: "string", description: "for propose: the Work objective for an approved source intake" },
       finding: { type: "string", description: "for explore: what was observed, with the limits of the observation" },
       uncertainty: { type: "string", description: "for explore: what remains uncertain or unverified" },
-      artifacts: { type: "array", items: { type: "string" }, description: "for explore: candidate files this finding refers to (not accepted artifacts)" },
+      artifacts: { type: "array", items: { type: "string" }, description: "for explore: candidate files this finding refers to (not accepted artifacts); for conclude: delivered artifact paths for DELIVER, each of which the product checks for existence" },
       explorationStatus: { type: "string", enum: [...EXPLORATION_STATUSES], description: "for explore: OPEN (default), CLOSED, NEGATIVE or CANDIDATE; this is exploratory standing, never Work acceptance" },
     },
     run: async (action, object) => {
@@ -289,6 +301,29 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
           boundary: work.boundary(),
           nextActions: ["an operator must review and accept the delivered result"],
         };
+      }
+      if (action === "conclude") {
+        const workspace = application.projectWorkspace;
+        if (workspace === undefined) {
+          throw new ToolArgsError("this deployment composes no project journal, so an episode conclusion cannot be recorded");
+        }
+        const intent = requiredString(object, "intent");
+        if (!(EPISODE_INTENTS as readonly string[]).includes(intent)) {
+          throw new ToolArgsError(`argument "intent" must be one of ${EPISODE_INTENTS.join(", ")}`);
+        }
+        const statement = requiredString(object, "statement");
+        const artifacts = object.artifacts === undefined ? [] : stringArray(object.artifacts, "artifacts");
+        const evidenceRefs = object.evidenceRefs === undefined ? [] : stringArray(object.evidenceRefs, "evidenceRefs");
+        const waitingOn = object.waitingOn === undefined ? null : requiredString(object, "waitingOn");
+        const nextStep = object.nextStep === undefined ? null : requiredString(object, "nextStep");
+        return workspace.concludeEpisode({
+          intent: intent as EpisodeIntent,
+          statement,
+          artifacts,
+          evidenceRefs,
+          waitingOn,
+          nextStep,
+        });
       }
       if (action === "explore" || action === "explorations") {
         const workspace = application.projectWorkspace;

@@ -176,6 +176,8 @@ export interface ApplicationSurfaceDeps {
   readonly contribution?: ContributionServicePort | undefined;
   /** APS-A: the derived continuation view; absent ⇒ the workspace exposes no pulse. */
   readonly projectPulse?: ProjectPulseServicePort | undefined;
+  /** ALHS-A: the episode conclusion face; absent ⇒ `concludeEpisode` reports UNAVAILABLE. */
+  readonly episode?: import("../project_continuity/index.js").EpisodeService | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence service; absent ⇒ no proof surface. */
   readonly proof?: ProofEvidenceService | undefined;
   /** G10-T CF-T-02 (additive): evidence-grounded extraction behind the proof surface. */

@@ -112,6 +112,35 @@ export interface ContinuationWorldPort {
    * reach the admission — but it is a world fact, not a Work one, and it belongs here.
    */
   hasCapturedBasis(input: { readonly attemptId: string }): boolean;
+  /**
+   * ALHS-B: the PATH-LEVEL reuse facts for one resolved result, read from the same source backend.
+   *
+   * This is NOT a second reuse engine and it decides nothing: it reports which paths the result
+   * changed, which of those the current world also changed (conservatively a conflict unless the
+   * content is already identical), and which stayed untouched. A caller uses it to decide what work
+   * a new attempt may legitimately reuse; it never authorizes carrying anything.
+   *
+   * Absent ⇒ this deployment cannot read path-level history; no plan is fabricated.
+   */
+  reusePlan?(input: { readonly resolved: ContinuationResolvedResult }): ContinuationReusePlan | null;
+}
+
+/** The path-level facts a principal can use to plan a partial reuse, with no authority attached. */
+export interface ContinuationReusePlan {
+  readonly baseRevision: string;
+  readonly resultRevision: string;
+  readonly currentRevision: string;
+  /** Paths the result itself changed. */
+  readonly resultPaths: readonly string[];
+  /** Result paths the current world left untouched since the result's base. */
+  readonly unaffectedPaths: readonly string[];
+  /** Conflicting paths whose bytes already equal the result's bytes in the current world. */
+  readonly alreadyPresentPaths: readonly string[];
+  /** Paths changed by both the result and the current world, with different content. */
+  readonly conflictedPaths: readonly string[];
+  /** False when the revision history could not be fully read; the path lists are then partial. */
+  readonly complete: boolean;
+  readonly detail: string;
 }
 
 /**

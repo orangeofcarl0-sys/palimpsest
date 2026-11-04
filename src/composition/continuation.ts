@@ -34,6 +34,7 @@
  * COMPOSITION ONLY. No policy, no discovery, no string-keyed lookup; the input
  * is a narrow record of already-composed locals.
  */
+import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 
 import {
@@ -60,6 +61,7 @@ import type {
   ContinuationCanonicalPort,
   ContinuationExecutionPort,
   ContinuationResolvedResult,
+  ContinuationReusePlan,
   ContinuationResultPort,
   ContinuationWorkPort,
   ContinuationWorldPort,
@@ -423,6 +425,69 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     });
   }
 
+  /**
+   * ALHS-B: the path-level reuse facts. A tree diff between the result's base/result and the current
+   * head; a path both sides changed is a conflict UNLESS the bytes already agree. This reads Git and
+   * decides nothing: it never carries content and never accepts a result.
+   */
+  function reusePlanFor(resolved: ContinuationResolvedResult): ContinuationReusePlan | null {
+    const sourceResult = resolved.sourceResult;
+    if (repository === undefined || sourceResult === null) return null;
+    const baseRevision = sourceResult.baseRevision;
+    const resultRevision = sourceResult.resultRevision;
+    if (baseRevision === "" || resultRevision === "") return null;
+    const observed = worldObservation?.observeSource();
+    const currentRevision = observed !== undefined && observed.ok ? observed.revision.revision : "";
+    if (currentRevision === "") return null;
+    const nameOnly = (from: string, to: string): readonly string[] | null => {
+      if (from === to) return [];
+      try {
+        return execFileSync("git", ["-C", repository, "diff", "--name-only", "--no-renames", from, to], {
+          encoding: "utf8",
+          maxBuffer: 8 * 1024 * 1024,
+        })
+          .split(/\r?\n/u)
+          .map((line) => line.trim())
+          .filter((line) => line !== "");
+      } catch {
+        return null;
+      }
+    };
+    const resultPaths = nameOnly(baseRevision, resultRevision);
+    const currentPaths = nameOnly(baseRevision, currentRevision);
+    if (resultPaths === null || currentPaths === null) return null;
+    const current = new Set(currentPaths);
+    const conflicted: string[] = [];
+    const alreadyPresent: string[] = [];
+    for (const path of resultPaths) {
+      if (!current.has(path)) continue;
+      const blob = (revision: string): string | null => {
+        try {
+          return execFileSync("git", ["-C", repository, "rev-parse", `${revision}:${path}`], { encoding: "utf8" }).trim();
+        } catch {
+          return null;
+        }
+      };
+      const resultBlob = blob(resultRevision);
+      const currentBlob = blob(currentRevision);
+      if (resultBlob !== null && resultBlob === currentBlob) alreadyPresent.push(path);
+      else conflicted.push(path);
+    }
+    const unaffected = resultPaths.filter((path) => !current.has(path));
+    return Object.freeze({
+      baseRevision,
+      resultRevision,
+      currentRevision,
+      resultPaths: Object.freeze(resultPaths),
+      unaffectedPaths: Object.freeze(unaffected),
+      alreadyPresentPaths: Object.freeze(alreadyPresent),
+      conflictedPaths: Object.freeze(conflicted),
+      complete: true,
+      detail:
+        "read from the source tree diff at path granularity. `unaffectedPaths` may still be invalidated by a semantic change the tree diff cannot see; `conflictedPaths` must be recomputed, never overwritten from the old result",
+    });
+  }
+
   /** The WORLD port: D3-a + the authority-bearing observations + the existing D3-b issuer. */
   const worldPort: ContinuationWorldPort = {
     inspect: ({ result }) => {
@@ -446,6 +511,7 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     observeTarget: (taskId) => crossBasis.observeTarget(taskId),
     rematerializationAvailable: rematerialization !== null && admissions !== null,
     hasCapturedBasis: ({ attemptId }) => basisRuntime.read({ attemptId }) !== null,
+    reusePlan: ({ resolved }) => reusePlanFor(resolved),
   };
 
   /** The RESULT port: D3-c admission ≺ D3-d carry, as ONE ordered chain. */

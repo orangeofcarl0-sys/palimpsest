@@ -18,6 +18,7 @@ import type { ProjectOperatingHistory } from "../../project_operating/history.js
 import type { ExternalAssetImportCandidate, ExternalAssetImportCommit, ExternalAssetImportPreparation, ExternalAssetInspection, ExternalAssetInspectInput, ExternalAssetPrepareImportInput, ExternalAssetPreparePublicationInput, ExternalAssetPrepareReferenceInput, ExternalAssetProviderDescriptor, ExternalAssetPublicationPreview, ExternalAssetPublicationResult, ExternalAssetReferenceCandidate, ExternalAssetReferenceCommit, ExternalAssetReferencePreparation, ExternalAssetSearchInput, ExternalAssetSearchPage } from "../../external_assets/index.js";
 import type { WorkModeBaseMode, WorkModeModifier } from "../../project_operating/work_mode_profile.js";
 import type { ProjectPulse, ProjectPulseService } from "../../project_pulse/index.js";
+import type { EpisodeConclusionInput, EpisodeConclusionResult, EpisodeService } from "../../project_continuity/index.js";
 import { makeWorkspaceExtraSurface, type ContinuityFaces, type WorkspaceExtraSurface } from "../workspace_extra.js";
 
 /** The pulse service as the aggregate factory needs to know it. */
@@ -36,6 +37,8 @@ export interface ProjectSurfaceDeps {
   readonly domainOutcome?: ContinuityFaces["domainOutcome"];
   /** APS-A: the derived decision-oriented continuation view. */
   readonly projectPulse?: ProjectPulseService | undefined;
+  /** ALHS-A: record an episode conclusion; absent ⇒ the conclusion action is unavailable. */
+  readonly episode?: EpisodeService | undefined;
   readonly verification?: { readonly service: Pick< ProjectVerificationService, "status" | "history" | "verifyCurrentHead" >; } | undefined;
 }
 
@@ -87,6 +90,12 @@ export interface ProjectWorkspaceApplicationSurface extends WorkspaceExtraSurfac
   summary(): Promise<import("../../project_continuity/index.js").ProjectSummary>;
   /** APS-A: the decision-oriented continuation view over the same owners. */
   pulse(): Promise<ProjectPulse>;
+  /**
+   * ALHS-A: record the principal's episode-level convergence judgement. The product checks it against
+   * open work, attempts, operator acceptance, blocked effects and artifact existence; it never accepts
+   * or promotes anything, and a later project fact reopens the conclusion.
+   */
+  concludeEpisode(input: EpisodeConclusionInput): Promise<EpisodeConclusionResult>;
   explain(subject: string): Promise<import("../../project_continuity/index.js").ProjectExplanation>;
   contextCapsule(input?: { readonly maxBytes?: number | undefined }): Promise<import("../../project_continuity/index.js").ContextCapsule>;
   /** PC1 S06: the registered domain contracts (descriptive only). */
@@ -275,6 +284,24 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
                   throw new Error("this deployment composes no project pulse");
                 }
                 return deps.projectPulse.pulse();
+              },
+              concludeEpisode: (input) => {
+                if (deps.episode === undefined) {
+                  return Promise.resolve({
+                    state: "UNAVAILABLE" as const,
+                    conclusion: null,
+                    episode: null,
+                    detail:
+                      "this deployment composes no episode conclusion path; the project journal or the pulse is absent, so a convergence judgement cannot be recorded",
+                    blockers: Object.freeze([]),
+                    readiness: null,
+                    session: Object.freeze({
+                      mayEnd: false,
+                      detail: "no episode state can be recorded here; keep working or use the ordinary project surfaces",
+                    }),
+                  });
+                }
+                return deps.episode.conclude(input);
               },
             };
           })();

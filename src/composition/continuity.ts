@@ -5,8 +5,19 @@
  * promotion facts into the read-only continuity facade and the explicit domain-outcome service.
  * It owns no store and decides no authority; install.ts only decides to compose it.
  */
+import { existsSync, statSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
+
 import { makeProjectContinuityService } from "../project_continuity/index.js";
 import type { ProjectContinuityService } from "../project_continuity/index.js";
+import {
+  episodeConclusionBody,
+  makeEpisodeConclusion,
+  validateEpisodeConclusion,
+  type EpisodeConclusionInput,
+  type EpisodeConclusionResult,
+  type EpisodeService,
+} from "../project_continuity/index.js";
 import { makeDomainOutcomeService } from "../domain_outcome/index.js";
 import type { DomainOutcomeService } from "../domain_outcome/index.js";
 import { makeContributionService } from "../project_contribution/index.js";
@@ -91,6 +102,8 @@ export interface ContinuityComposition {
   readonly contribution: ContributionService | undefined;
   /** APS-A: the derived continuation view, present with the contribution chain. */
   readonly pulse: ProjectPulseService | undefined;
+  /** ALHS-A: record an episode conclusion over the same journal and pulse, never an acceptance. */
+  readonly episode: EpisodeService | undefined;
 }
 
 /**
@@ -139,6 +152,90 @@ export function appliedDecisionFromHistory(
         "recovered from the canonical ProjectIR revision that already carries this decision; the journal record was missing, so no second plan revision was applied",
     }),
   };
+}
+
+/**
+ * ALHS-A: the episode-conclusion service. It records the principal's convergence judgement as an
+ * ordinary journal note and never accepts, promotes or approves. The product only refuses a
+ * conclusion whose own mechanical facts contradict it.
+ */
+function makeEpisodeService(input: {
+  readonly projectId: string;
+  readonly workspace: Pick<ProjectWorkspaceService, "recordJournalEntry">;
+  readonly pulse: Pick<ProjectPulseService, "pulse">;
+  readonly repository?: string | undefined;
+  readonly clock?: (() => string) | undefined;
+}): EpisodeService {
+  const now = (): string => (input.clock ?? (() => new Date().toISOString()))();
+  const artifactExists =
+    input.repository === undefined
+      ? undefined
+      : (path: string): boolean => {
+          try {
+            const absolute = isAbsolute(path) ? path : resolve(input.repository!, path);
+            return existsSync(absolute) && statSync(absolute).isFile();
+          } catch {
+            return false;
+          }
+        };
+
+  return Object.freeze({
+    async conclude(conclusionInput: EpisodeConclusionInput): Promise<EpisodeConclusionResult> {
+      const current = await input.pulse.pulse();
+      const readiness = current.episode.readiness;
+      const validation = validateEpisodeConclusion({ conclusion: conclusionInput, readiness, artifactExists });
+      if (!validation.ok) {
+        return Object.freeze({
+          state: "REFUSED" as const,
+          conclusion: null,
+          episode: current.episode,
+          detail: `the episode conclusion was refused: ${validation.blockers.join("; ")}`,
+          blockers: validation.blockers,
+          readiness,
+          session: Object.freeze({
+            mayEnd: false,
+            detail:
+              "the episode stays open. Resolve the named blockers, or record the intent that matches the actual state (WAIT_FOR_OPERATOR / WAIT_FOR_EXTERNAL_EVENT / CHECKPOINT / CONTINUE)",
+          }),
+        });
+      }
+      const conclusion = makeEpisodeConclusion({
+        conclusion: conclusionInput,
+        readiness,
+        basis: {
+          projectRevision: current.basis.projectRevision,
+          projectDigest: current.basis.projectDigest,
+          headCommit: current.basis.headCommit,
+        },
+        recordedAt: now(),
+      });
+      await input.workspace.recordJournalEntry({
+        projectId: input.projectId,
+        kind: "REFERENCE_NOTE",
+        title: `Episode conclusion: ${conclusionInput.intent}`,
+        body: episodeConclusionBody(conclusion),
+        provenance: `episode:${conclusion.conclusionId}`,
+      });
+      const after = await input.pulse.pulse();
+      const mayEnd = conclusionInput.intent !== "CONTINUE";
+      return Object.freeze({
+        state: "RECORDED" as const,
+        conclusion,
+        episode: after.episode,
+        detail:
+          `${conclusionInput.intent} recorded at revision ${String(conclusion.basis.projectRevision)}. ` +
+          "This is an advisory episode judgement: it accepts no artifact, promotes no result and approves no expenditure. The operator retains authority.",
+        blockers: Object.freeze([]),
+        readiness,
+        session: Object.freeze({
+          mayEnd,
+          detail: mayEnd
+            ? "the episode has a recorded stopping state. If nothing contradicts it, reply to the user and stop calling tools; a new session resumes from the same project state"
+            : "CONTINUE is recorded, so the episode has not ended. Take the named next step, then conclude again when the state changes",
+        }),
+      });
+    },
+  });
 }
 
 export function composeContinuityCapability(input: ContinuityCompositionInput): ContinuityComposition {
@@ -272,5 +369,16 @@ export function composeContinuityCapability(input: ContinuityCompositionInput): 
           ...(input.clock === undefined ? {} : { clock: input.clock }),
         });
 
-  return Object.freeze({ continuity, domainOutcome, contribution, pulse });
+  const episode =
+    workspace === undefined || pulse === undefined
+      ? undefined
+      : makeEpisodeService({
+          projectId: input.projectId,
+          workspace,
+          pulse,
+          ...(input.repository === undefined ? {} : { repository: input.repository }),
+          ...(input.clock === undefined ? {} : { clock: input.clock }),
+        });
+
+  return Object.freeze({ continuity, domainOutcome, contribution, pulse, episode });
 }

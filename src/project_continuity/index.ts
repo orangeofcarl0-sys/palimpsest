@@ -10,3 +10,26 @@ export type {
   ProjectSummary,
 } from "./types.js";
 export { FACT_STANDINGS } from "./types.js";
+export {
+  EPISODE_INTENTS,
+  EPISODE_MARKER,
+  EPISODE_STATES,
+  buildPulseEpisode,
+  episodeConclusionBody,
+  evaluateEpisodeReadiness,
+  makeEpisodeConclusion,
+  parseEpisodeConclusion,
+  validateEpisodeConclusion,
+} from "./episode.js";
+export type {
+  EpisodeConclusion,
+  EpisodeConclusionInput,
+  EpisodeConclusionResult,
+  EpisodeIntent,
+  EpisodeReadiness,
+  EpisodeReadinessFacts,
+  EpisodeService,
+  EpisodeState,
+  EpisodeValidation,
+  PulseEpisode,
+} from "./episode.js";
