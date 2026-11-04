@@ -1,0 +1,52 @@
+{
+  "schema": "alhs-cohort-plan/v1",
+  "cohortId": "alhs-c-2026-11-04",
+  "stage": "core",
+  "codeFreeze": "1227a7478d20954e0366d8e9ccec8c62763171b9",
+  "provider": "deepseek-official/deepseek-flash",
+  "generatedAt": "2026-11-04T13:41:58.610Z",
+  "modelCalls": 0,
+  "sessions": [
+    {
+      "sessionId": "F-1",
+      "condition": "F",
+      "ceiling": 3000000,
+      "reserveTokens": 150000,
+      "softStopAt": 2850000,
+      "profile": "headless"
+    },
+    {
+      "sessionId": "F-2",
+      "condition": "F",
+      "ceiling": 3000000,
+      "reserveTokens": 150000,
+      "softStopAt": 2850000,
+      "profile": "headless"
+    },
+    {
+      "sessionId": "A-1",
+      "condition": "A",
+      "ceiling": 3000000,
+      "reserveTokens": 150000,
+      "softStopAt": 2850000,
+      "profile": "palimpsest-full"
+    },
+    {
+      "sessionId": "A-2",
+      "condition": "A",
+      "ceiling": 3000000,
+      "reserveTokens": 150000,
+      "softStopAt": 2850000,
+      "profile": "palimpsest-full"
+    }
+  ],
+  "totals": {
+    "sessions": 4,
+    "plannedCeiling": 12000000,
+    "plannedReserve": 600000,
+    "effectiveStopSum": 11400000,
+    "aggregateCeiling": 12000000,
+    "localHardCap": 25000000
+  },
+  "note": "A plan only. Each session stops at `softStopAt`, leaving its reserve for the in-flight message. Child sessions are counted through the whole session root."
+}
