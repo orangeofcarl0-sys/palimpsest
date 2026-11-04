@@ -30,7 +30,16 @@ const repo = process.cwd();
 const world = pilot.worlds[condition];
 const home = pilot.homes[condition];
 const out = join(run, "out", condition);
-const profile = "lhape-pilot";
+/**
+ * F is PLAIN DSH: it has no Palimpsest host bundle and therefore no `--once` runner plugin. It uses
+ * the shipped `headless` profile with the same model/permission patch. L/G use the Palimpsest host
+ * bundle's `--once` runner.
+ */
+const plain = condition === "F";
+const profile = plain ? "headless" : "lhape-pilot";
+const hostArgs = plain
+  ? [dshBin, "--profile", "headless", "--patch", join(home, "profiles", "lhape-pilot", "cordis.patch.yml"), prompt]
+  : [dshBin, "--profile", "lhape-pilot", "--once", prompt];
 const dshBin = process.env.LHAPE_DSH_BIN;
 const dshRoot = process.env.LHAPE_DSH_ROOT;
 if (![dshBin, dshRoot].every((value) => typeof value === "string" && value.trim() !== "")) {
@@ -39,7 +48,12 @@ if (![dshBin, dshRoot].every((value) => typeof value === "string" && value.trim(
 }
 const prompt = readFileSync(join(run, "prompts", `${condition}.txt`), "utf8").trim();
 const constraint = readFileSync(join(run, "constraint.md"), "utf8");
-const maxTokens = 2_500_000;
+const session = pilot.sessions.find((entry) => entry.condition === condition);
+if (session === undefined) {
+  process.stderr.write("the prepared pilot has no session for this condition\n");
+  process.exit(2);
+}
+const maxTokens = session.maxTokens;
 mkdirSync(out, { recursive: true });
 mkdirSync(join(world, "inbox", "2026-11-03"), { recursive: true });
 mkdirSync(join(run, "tmp"), { recursive: true });
@@ -55,7 +69,7 @@ const env = {
   PALIMPSEST_HOST_CAPACITY_ROOT: join(run, `capacity-${condition}`),
 };
 
-const host = spawn(process.execPath, [dshBin, "--profile", profile, "--once", prompt], {
+const host = spawn(process.execPath, hostArgs, {
   cwd: world,
   env,
   stdio: ["ignore", "pipe", "pipe"],
