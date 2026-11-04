@@ -1,7 +1,7 @@
 {
   "schema": "alhs-cohort/v1",
   "cohortId": "alhs-c-2026-11-04",
-  "status": "CORE_AUTHORIZED_AND_EXECUTED_DIAGNOSTIC_NOT_AUTHORIZED",
+  "status": "CORE_REPEAT_AND_DIAGNOSTIC_EXECUTED",
   "protocol": "docs/programs/alhs/ALHS-C-PROTOCOL.md",
   "codeFreeze": "1227a7478d20954e0366d8e9ccec8c62763171b9",
   "note": "The owner authorized the core stage only (F/A, 12M) on 2026-11-04. It ran and is reported in docs/engineering/ALHS-C-CORE-RESULT.md. The diagnostic L/G stage is not authorized and did not run.",
@@ -37,7 +37,10 @@
     {
       "id": "core",
       "purpose": "primary F/A comparison",
-      "conditions": ["F", "A"],
+      "conditions": [
+        "F",
+        "A"
+      ],
       "sessionsPerCondition": 2,
       "sessionCeiling": 3000000,
       "reserveTokens": 150000,
@@ -50,13 +53,18 @@
     {
       "id": "diagnostic",
       "purpose": "L/G cost and context diagnostics after the core stage",
-      "conditions": ["L", "G"],
+      "conditions": [
+        "L",
+        "G"
+      ],
       "sessionsPerCondition": 2,
       "sessionCeiling": 2500000,
       "reserveTokens": 125000,
       "aggregateCeiling": 10000000,
-      "authorized": false,
-      "executed": false
+      "authorized": true,
+      "executed": true,
+      "authorization": "research-evidence/alhs/live/authorization-diagnostic.json",
+      "result": "research-evidence/alhs/diagnostic-2026-11-04/core-summary.json"
     }
   ],
   "timeline": [

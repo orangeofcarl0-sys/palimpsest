@@ -3,6 +3,7 @@
  * artifacts into the evidence directory, and writes one compact summary. It never edits a world.
  */
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -47,7 +48,7 @@ function filesUnder(root) {
 mkdirSync(EVIDENCE, { recursive: true });
 mkdirSync(join(EVIDENCE, "artifacts"), { recursive: true });
 mkdirSync(join(EVIDENCE, "runs"), { recursive: true });
-for (const condition of ["F", "A"]) {
+for (const condition of core.conditions ?? ["F", "A"]) {
   const artifact = join(core.worlds[condition], "deliverables", "package.md");
   if (existsSync(artifact)) copyFileSync(artifact, join(EVIDENCE, "artifacts", `${condition}-package.md`));
 }
@@ -90,7 +91,7 @@ const proxy = (() => {
 })();
 
 const conditions = {};
-for (const condition of ["F", "A"]) {
+for (const condition of core.conditions ?? ["F", "A"]) {
   const entry = score.conditions[condition];
   const sessions = core.sessions.filter((session) => session.condition === condition);
   conditions[condition] = {
@@ -105,6 +106,7 @@ for (const condition of ["F", "A"]) {
     tasks: entry.tasks,
     promotions: entry.promotions,
     artifact: entry.artifact,
+    candidate: entry.candidate ?? null,
     sessions: sessions.map((session) => {
       const run = JSON.parse(readFileSync(join(RUN, "out", session.id, "run.json"), "utf8"));
       return {
@@ -126,6 +128,18 @@ for (const condition of ["F", "A"]) {
   };
 }
 
+for (const [condition, entry] of Object.entries(conditions)) {
+  if (entry.artifact.present || entry.candidate?.resultCommit === null || entry.candidate?.resultCommit === undefined) continue;
+  try {
+    const text = execFileSync("git", ["-C", core.worlds[condition], "show", `${entry.candidate.resultCommit}:deliverables/package.md`], {
+      encoding: "utf8",
+    });
+    writeFileSync(join(EVIDENCE, "artifacts", `${condition}-package-candidate.md`), text);
+  } catch {
+    /* the candidate bytes are already summarized; no fabricated copy */
+  }
+}
+
 const totalTokens = Object.values(conditions).reduce((sum, entry) => sum + entry.tokens.total, 0);
 const budget = core.budget ?? {};
 const authorized = Number.isSafeInteger(budget.aggregate) ? budget.aggregate : 12_000_000;
@@ -133,15 +147,18 @@ const stoppedSession = Object.values(conditions)
   .flatMap((entry) => entry.sessions)
   .find((session) => session.stopped === true);
 const isRepeat = core.stage === "repeat";
+const isDiagnostic = core.stage === "diagnostic";
 const summary = {
   schema: "alhs-core-result/v1",
   cohortId: core.cohortId,
   codeFreeze: core.codeFreeze,
   mode: core.mode ?? "REAL_MODEL_CORE",
   provider: "deepseek-official/deepseek-flash",
-  note: isRepeat
-    ? "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at the same reported token milestone (400,000; first observation above it) in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt."
-    : "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at T+240s in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt.",
+  note: isDiagnostic
+    ? "L (lightweight, in-place) and G (governed, one formal task + confirmed standard + isolated world) received byte-identical sources and the same measured update at T+60s. Session 1 was killed at the same 400,000-token milestone; session 2 was a new principal session on the same durable state."
+    : isRepeat
+      ? "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at the same reported token milestone (400,000; first observation above it) in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt."
+      : "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at T+240s in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt.",
   conditions,
   aggregate: {
     totalTokens,
@@ -166,19 +183,35 @@ const summary = {
       "The guard observes usage after a message. A stop happens at the first observation above that session's soft ceiling; the reserve keeps it under the hard per-session ceiling.",
   },
   proxy,
-  limitations: [
-    isRepeat
-      ? "One additional pair per condition; combined with the core this is two pairs, not a powered sample."
-      : "One session pair per condition; this is not a repeated-sample comparison.",
-    "The 7-fact rubric is a floor on the final package, not a business-quality or cognition score. Both conditions reached 7/7.",
-    "A chose direct file work plus one native subagent; it did not create a formal Work task or a governed Worker. That is a valid adaptive choice, not evidence of governed cooperation.",
-    isRepeat
-      ? "A committed the final package and the product recorded tracked=true/committed=true; F left deliverables/ untracked. The provenance facts are in A's episode conclusion."
-      : "Both packages were left untracked in Git; neither condition committed the final artifact. A's DELIVER conclusion cited the base commit, not a commit containing the package.",
-    "One provider request returned 502 UPSTREAM_TIMEOUT during the run; the proxy retried and the session continued. It is recorded, not hidden.",
-    "The scenario kill is a harness event, not a product failure; it is applied equally to F and A.",
-    "Natural convergence is reported separately from the rubric. F was budget-stopped; A recorded DELIVER and exited on its own.",
-  ],
+  limitations: isDiagnostic
+    ? [
+        "One pair per condition (L/G); this is a diagnostic, not a repeated sample.",
+        "The 7-fact rubric is a floor. L's accepted package and G's candidate both reach 7/7; no quality advantage is claimed.",
+        "L is lightweight and in-place: it wrote and committed the package itself and recorded DELIVER.",
+        "G is governed: the original worker did not survive the session-1 kill; the continuation principal recovered the attempt world, wrote and committed the package there, settled it through `complete`, and recorded WAIT_FOR_OPERATOR. The candidate is at commit 8b21b462 and the task is VERIFYING; it is not accepted.",
+        "G's candidate is read from the attempt result commit, not the canonical world. The canonical artifact is absent until an operator Promotion; the provenance check therefore reports `not found` for the canonical path.",
+        "The scenario kill is a harness event, applied equally to L and G.",
+        "One provider request returned 502 UPSTREAM_TIMEOUT at 15:59:31, after both sessions ended; it produced no recorded session usage and its client identity was not observed.",
+      ]
+    : [
+        isRepeat
+          ? "One additional pair per condition; combined with the core this is two pairs, not a powered sample."
+          : "One session pair per condition; this is not a repeated-sample comparison.",
+        "The 7-fact rubric is a floor on the final package, not a business-quality or cognition score. Both conditions reached 7/7.",
+        "A chose direct file work plus one native subagent; it did not create a formal Work task or a governed Worker. That is a valid adaptive choice, not evidence of governed cooperation.",
+        isRepeat
+          ? "A committed the final package and the product recorded tracked=true/committed=true; F left deliverables/ untracked. The provenance facts are in A's episode conclusion."
+          : "Both packages were left untracked in Git; neither condition committed the final artifact. A's DELIVER conclusion cited the base commit, not a commit containing the package.",
+        "One provider request returned 502 UPSTREAM_TIMEOUT during the run; the proxy retried and the session continued. It is recorded, not hidden.",
+        "The scenario kill is a harness event, not a product failure; it is applied equally to F and A.",
+        "Natural convergence is reported separately from the rubric. F was budget-stopped; A recorded DELIVER and exited on its own.",
+      ],
 };
 writeFileSync(join(EVIDENCE, "core-summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
-process.stdout.write(`${JSON.stringify({ evidence: EVIDENCE, totalTokens, conditions: { F: conditions.F.natural, A: conditions.A.natural } })}\n`);
+process.stdout.write(
+  `${JSON.stringify({
+    evidence: EVIDENCE,
+    totalTokens,
+    conditions: Object.fromEntries((core.conditions ?? ["F", "A"]).map((condition) => [condition, conditions[condition].natural])),
+  })}\n`,
+);

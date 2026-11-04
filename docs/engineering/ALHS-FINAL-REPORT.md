@@ -181,7 +181,7 @@ Build and gates:
 The application-factory fan-out ratchet moved 36 → 37 for the episode face; the reason is recorded in
 `tools/architecture/baseline-reasons.ts` and the baseline was regenerated.
 
-## 7. ALHS-C core and repeat-core — executed; diagnostic — blocked
+## 7. ALHS-C core, repeat-core and diagnostic — executed
 
 `docs/programs/alhs/ALHS-C-PROTOCOL.md` pre-registers F (strong native DSH), L (lightweight), A
 (adaptive Palimpsest) and G (forced governed) on a T0–T10 scenario.
@@ -207,10 +207,10 @@ The owner authorized **only the core stage** (F and A, 2 sessions each, 12,000,0
   returned `502 UPSTREAM_TIMEOUT`: one during F-2 (retried) and one at 14:23:21 after every session
   ended (no recorded session usage; client identity not observed). 102 of 104 POSTs returned 200.
 
-The diagnostic L/G stage was **not authorized and did not run**. The gate remains fail-closed:
-without an `alhs-spend-authorization/v1` it writes `BLOCKED.json` and exits 2 with `modelCalls=0`;
-with an authorization but no adapter it refuses with `ADAPTER_NOT_CONFIGURED` (exit 3). The recorded
-pre-authorization block is `research-evidence/alhs/live/BLOCKED.json`.
+The diagnostic L/G stage was authorized and executed after the core report; see §7.2. The gate remains
+fail-closed for any future cohort: without an `alhs-spend-authorization/v1` it writes `BLOCKED.json`
+and exits 2 with `modelCalls=0`; with an authorization but no adapter it refuses with
+`ADAPTER_NOT_CONFIGURED` (exit 3).
 
 Budget-guard change: `scripts/aps/budget_guard.mjs` takes `--reserve-tokens` and stops at
 `maxTokens - reserve`. This addresses the LHAPE-C one-message overshoot (F +28,297, L +62,093, G
@@ -242,6 +242,36 @@ the backstop; the backstop was extended to 900s). Evidence:
 
 The core pattern replicated: both conditions 7/7; A converged on a recorded judgement; F was
 budget-stopped. This is two pairs per condition, not a powered sample.
+
+### 7.2 Diagnostic L/G — executed
+
+`authorization-diagnostic.json` authorized L and G: 4 sessions, 2,500,000 each, 125,000 reserve,
+10,000,000 aggregate, session 1 killed at the same 400,000-token milestone. Evidence:
+`research-evidence/alhs/diagnostic-2026-11-04/`, write-up
+`docs/engineering/ALHS-C-DIAGNOSTIC-RESULT.md`.
+
+| | L | G |
+|---|---:|---:|
+| 7-fact rubric | 7/7 | **7/7 candidate, not accepted** |
+| Tokens | 1,757,934 | 928,181 |
+| Natural end | **DELIVERED** | **AWAITING_OPERATOR** |
+| Package | 39,222 bytes, committed `a824eda` | 21,365-byte candidate at `8b21b46` |
+
+- First windows: 470,926 (L) vs 402,516 (G). No budget stop.
+- G-1 delegated the formal task; the worker was killed with the host before it committed. G-2
+  recovered the attempt world, wrote and committed the package **in that world**, called `complete`,
+  and concluded `WAIT_FOR_OPERATOR`. The task is VERIFYING; there is no Promotion.
+- The canonical artifact is absent for G, so the provenance check reports `not found`; the candidate
+  bytes are in the result commit. The provenance check does not inspect result commits yet.
+- L committed its package and recorded `DELIVER` with `tracked=true, committed=true`.
+
+**The diagnostic finding:** the principal can write in a dead worker’s attempt world and settle it.
+The product checks the task envelope and the committed world, not that the worker authored the bytes.
+Operator acceptance still protects the result, but “worker-produced” is not authenticated. This is a
+real governance gap.
+
+L used 1.89× G’s tokens in this pair, but the packages and task shapes differ; this is not a matched
+cost comparison and does not show a governance cost advantage.
 
 ## 8. Architecture convergence
 
@@ -293,23 +323,43 @@ promotion path, a filesystem sandbox, a LayerFS integration, or a durable agent 
   by the new worker, which is the intended partial reuse, not a promotion.
 - **LHAPE-C remains n=1 per condition and ceiling-stopped.** The ALHS diagnosis reuses those sessions;
   it does not turn them into convergence evidence.
-- **The ALHS core run had one provider 502.** An `UPSTREAM_TIMEOUT` during F-2 was retried; the
-  session continued. It is recorded in `core-summary.json`, not hidden.
+- **The diagnostic is one pair per condition.** L recorded `DELIVER`; G recorded `AWAITING_OPERATOR`
+  with a 7/7 candidate at commit `8b21b46`, task VERIFYING and no Promotion. This is a diagnostic, not
+  a repeated sample.
+- **G’s candidate was written by the continuation principal, not the killed worker.** The worker was
+  killed with the host before it committed; G-2 recovered the attempt world, wrote and committed the
+  package there, and settled it through `complete`. The product checked the task envelope and the
+  committed world, not authorship. “Worker-produced” is not authenticated.
+- **G’s candidate is not canonical.** The canonical artifact is absent, so the provenance check
+  reports `not found`; the candidate bytes are in the result commit. The check does not inspect result
+  commits yet.
+- **L used 1.89× G’s tokens in the diagnostic**, but the packages and task shapes differ (39 KB direct
+  package vs 21 KB governed candidate). It is not a matched cost comparison and does not show a
+  governance cost advantage.
+- **The ALHS runs had post-run provider 502s.** The core log has one at 14:23:21 and the diagnostic log
+  one at 15:59:31, after every session ended; they produced no recorded session usage and their client
+  identities were not observed. The in-session 502s (core F-2, repeat A-2b) were retried.
 - **The episode conclusion is a judgement, not truth.** DELIVER means the principal judged the
   episode sufficient and no mechanical fact contradicted it. It does not mean the business goal is
   true, and the operator may still refuse acceptance.
 
 ## 10. Next decision
 
-The core and repeat-core stages are complete. The same convergence difference appeared in both pairs:
-A recorded `DELIVER` and exited; F was budget-stopped. This is still two pairs per condition.
+All three authorized stages are complete: core, repeat-core and diagnostic. The observed results are:
 
-The remaining real-model questions both require a new authorization:
+- **F/A:** two pairs; A recorded `DELIVER` and exited, F was budget-stopped in both.
+- **L/G:** L recorded `DELIVER`; G recorded `AWAITING_OPERATOR` with an unaccepted candidate. G’s
+  worker did not survive the kill; the continuation principal wrote the candidate in the attempt world.
 
-- **diagnostic L/G** (10,000,000): does lightweight context or forced governance change the ending or
-  the token path?
-- **more core pairs**: would the difference survive, and does A ever fail to converge or accept a
-  stale claim? A larger sample is the only way to answer that.
+No further model call is authorized by any of the three authorizations; each covered only its
+completed sessions. The remaining real-model questions require a new authorization:
 
-No further model call is authorized by the core or repeat authorizations; both covered their four
-completed sessions only.
+- **more core pairs** — does the F/A difference survive, and does A ever fail to converge or accept a
+  stale claim?
+- **a governed-authorship probe** — can the product distinguish a worker-produced candidate from one
+  the principal wrote in the attempt world? This is the most concrete product gap the diagnostic
+  exposed.
+
+The engineering work itself (episode conclusion, provenance facts, reuse facts, fail-closed budgets)
+is complete and tested. The next step is a product decision on worker authorship, not another
+harness.

@@ -11,22 +11,28 @@
   "reportCommit": "ce5dc2df2777494aeacfe03bec5b1de4613c4b5f",
   "note": "This manifest records the core real-model run and the engineering evidence. No push, PR or merge was performed.",
   "modelCalls": {
-    "realModelSessions": 8,
-    "providerRequests": 195,
-    "providerSuccess": 192,
-    "providerUpstreamTimeout": 3,
-    "tokens": 8465200,
-    "note": "Core: 104 POSTs (102x200, 2x502; one 502 was a post-run lingering-client request with no recorded session usage). Repeat: 91 POSTs (90x200, 1x502)."
+    "realModelSessions": 12,
+    "providerRequests": 274,
+    "providerSuccess": 270,
+    "providerUpstreamTimeout": 4,
+    "tokens": 11151315,
+    "note": "Core 104 POSTs (102x200, 2x502; one post-run), repeat 91 (90x200, 1x502), diagnostic 79 (78x200, 1x502 post-run)."
   },
   "cohort": {
     "id": "alhs-c-2026-11-04",
-    "state": "CORE_AND_REPEAT_EXECUTED_DIAGNOSTIC_NOT_AUTHORIZED",
+    "state": "CORE_REPEAT_AND_DIAGNOSTIC_EXECUTED",
     "authorization": "research-evidence/alhs/live/authorization.json",
     "protocol": "docs/programs/alhs/ALHS-C-PROTOCOL.md",
     "coreResult": "docs/engineering/ALHS-C-CORE-RESULT.md",
     "coreEvidence": "research-evidence/alhs/core-2026-11-04/",
     "coreSummary": "research-evidence/alhs/core-2026-11-04/core-summary.json",
-    "diagnostic": "NOT_AUTHORIZED_NOT_RUN",
+    "diagnostic": {
+      "state": "EXECUTED",
+      "authorization": "research-evidence/alhs/live/authorization-diagnostic.json",
+      "result": "docs/engineering/ALHS-C-DIAGNOSTIC-RESULT.md",
+      "evidence": "research-evidence/alhs/diagnostic-2026-11-04/",
+      "summary": "research-evidence/alhs/diagnostic-2026-11-04/core-summary.json"
+    },
     "repeatCore": {
       "state": "EXECUTED",
       "authorization": "research-evidence/alhs/live/authorization-repeat.json",
@@ -138,9 +144,32 @@
     }
   },
   "combined": {
-    "totalTokens": 8465200,
-    "authorizedTokens": 20000000,
-    "remainingTokens": 11534800,
-    "note": "Core 12M + repeat-core 8M authorizations, both fully consumed in planned sessions."
+    "totalTokens": 11151315,
+    "authorizedTokens": 30000000,
+    "remainingTokens": 18848685,
+    "note": "Core 12M + repeat-core 8M + diagnostic 10M; all three authorizations fully consumed in planned sessions."
+  },
+  "diagnostic": {
+    "L": {
+      "rubric": "7/7",
+      "tokens": 1757934,
+      "naturalEnd": true,
+      "episode": "episode-212b47e274daaa91c7964441",
+      "committed": "a824eda"
+    },
+    "G": {
+      "rubric": "7/7 candidate, not accepted",
+      "tokens": 928181,
+      "naturalEnd": true,
+      "episode": "episode-97a773c7a72e344e375af4ec",
+      "candidateCommit": "8b21b462cd40eca9c44263f020836008e2479f9c",
+      "taskState": "VERIFYING"
+    },
+    "aggregateTokens": 2686115,
+    "authorizedTokens": 10000000,
+    "firstWindows": {
+      "L": 470926,
+      "G": 402516
+    }
   }
 }
