@@ -1,0 +1,46 @@
+{
+  "schema": "pwrs-delivery/v1",
+  "programme": "PWRS",
+  "title": "Project Work Relay & Synthetic Continuity",
+  "branch": "palimpsest-autonomous-long-horizon-synthesis",
+  "developmentBase": "b3690881bb4d195975a0edd35a5f0bb78e992881",
+  "developmentBaseTree": "11e8382e7da0bf053c709a882f1b5282fc3caf4b",
+  "baseLhape": "3782b01bd2d23325ceb77df53be5732acaa4517e",
+  "originMain": "d16800fbe3d1a6172b66b466b227c5fddbb45b98",
+  "productCommit": "507aac250c329e7c936f1d81f209fabe727118e3",
+  "productTree": "e58038fe1224529d4d08070d56a2f31cdb7f58c5",
+  "report": "docs/engineering/PWRS-RESULT.md",
+  "evidence": "research-evidence/pwrs/2026-11-05/",
+  "modelCalls": {
+    "realModelSessions": 0,
+    "paidTokens": 0,
+    "note": "This stage was executed without a paid-model authorization. The deterministic real host used the labelled Messages stand-in; the ALHS authorizations do not transfer."
+  },
+  "relay": {
+    "routes": ["RESUME", "TAKEOVER", "SUCCESSOR"],
+    "attributions": ["ORIGINAL_WORKER_OBSERVED", "SUBSEQUENT_WORKER_OBSERVED", "PRINCIPAL_RECOVERY", "MULTI_EXECUTOR", "UNATTRIBUTED"],
+    "durableRecord": "project journal note (pc1-execution-relay/v1)",
+    "invocationLedger": "host-local, non-durable by design"
+  },
+  "hostRun": {
+    "summary": "research-evidence/pwrs/2026-11-05/pwrs-summary.json",
+    "task": "package",
+    "attemptStateAfterKill": "RUNNING",
+    "retainedWorldHead": "a056722a274f704ce38a709ffb0904e41b0f3257",
+    "relayAttribution": "PRINCIPAL_RECOVERY",
+    "relayLiveness": "DECLARED_ABANDONED",
+    "independenceEligible": false,
+    "resultCommit": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
+    "promotion": "promotion-5a789d958bd68d7548b820879c645134",
+    "promotionState": "COMMITTED",
+    "episodes": ["WAIT_FOR_OPERATOR", "DELIVER"],
+    "canonicalHead": "7eb35937abc55ee7d96ce7caafd913b22eca78b0",
+    "canonicalTreeClean": true,
+    "reuse": {
+      "pricingInherited": true,
+      "measuredBasisPresent": true,
+      "supersededAssumptionAbsent": true
+    }
+  },
+  "note": "No push, PR or merge was performed; main and origin/main were not moved. No historical Code/Evidence Freeze, Ordarium ledger, lock or gate root was modified. This manifest is committed immediately after the product commit it names."
+}
