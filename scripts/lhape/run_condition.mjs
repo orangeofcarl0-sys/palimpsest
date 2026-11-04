@@ -67,6 +67,11 @@ const env = {
   PALIMPSEST_DSH_BIN: dshBin,
   PALIMPSEST_DSH_ROOT: dshRoot,
   PALIMPSEST_HOST_CAPACITY_ROOT: join(run, `capacity-${condition}`),
+  /**
+   * The provider proxy injects the real credential; DSH only needs a non-empty placeholder for the
+   * route. The runner sets it itself so a recovered condition run cannot accidentally omit it.
+   */
+  C6R_PLACEHOLDER: process.env.C6R_PLACEHOLDER ?? "c6r-placeholder-not-a-credential",
 };
 
 const host = spawn(process.execPath, hostArgs, {
