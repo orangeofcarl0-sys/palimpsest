@@ -45,6 +45,10 @@ YAML
 { "name": "dsh-profile-lhape-pilot", "private": true, "dependencies": {}, "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base"], "patchReload": "startup" } } }
 JSON
     cat > "$PROFILE_DIR/cordis.patch.yml" <<'YAML'
+- id: llm-deepseek
+  config:
+    baseURL: http://127.0.0.1:18085
+    apiKeyEnv: C6R_PLACEHOLDER
 - id: llm-pi-ai
   disabled: true
 - id: permission
@@ -64,6 +68,10 @@ YAML
 { "name": "dsh-profile-lhape-pilot", "private": true, "dependencies": {}, "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "palimpsest-dsh-host"], "patchReload": "startup" } } }
 JSON
     cat > "$PROFILE_DIR/cordis.patch.yml" <<YAML
+- id: llm-deepseek
+  config:
+    baseURL: http://127.0.0.1:18085
+    apiKeyEnv: C6R_PLACEHOLDER
 - id: llm-pi-ai
   disabled: true
 - id: permission
@@ -104,6 +112,24 @@ JSON
 
 export LHAPE_DSH_BIN="$(cygpath -w "$DSH_BIN")"
 export LHAPE_DSH_ROOT="$(cygpath -w "$SEAM")"
+export C6R_PLACEHOLDER="c6r-placeholder-not-a-credential"
+
+C6R_PROVIDER_KIND=anthropic C6R_PROXY_PORT=18085 \
+  C6R_UPSTREAM="https://api.deepseek.com/anthropic" \
+  C6R_CREDENTIAL_FILE="$DSH_HOME_REAL/.credentials.yaml" \
+  C6R_PROXY_LOG="$RUN/out/proxy.jsonl" \
+  node "$REPO/scripts/lhape/provider_proxy_tcp.mjs" > "$RUN/out/proxy.log" 2>&1 &
+PROXY_PID=$!
+trap 'taskkill //PID "$PROXY_PID" //T //F >/dev/null 2>&1 || true' EXIT
+for _ in $(seq 1 100); do
+  if curl -s --max-time 1 "http://127.0.0.1:18085/" >/dev/null 2>&1; then break; fi
+  sleep 0.1
+done
+if ! kill -0 "$PROXY_PID" 2>/dev/null; then
+  echo "the provider proxy did not start" >&2
+  cat "$RUN/out/proxy.log" >&2 || true
+  exit 5
+fi
 
 if [ "${LHAPE_SETUP_ONLY:-0}" = "1" ]; then
   echo "setup-only: profiles written; no model session started"
