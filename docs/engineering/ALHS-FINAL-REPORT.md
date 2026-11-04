@@ -203,8 +203,9 @@ The owner authorized **only the core stage** (F and A, 2 sessions each, 12,000,0
 - A-1 was killed at T+240s (1,292,562); A-2 read the pulse and files, recorded `DELIVER`
   (`episode-4f2b627…`, current), and exited 0 after 251,007 tokens. A did **not** create a formal Work
   task, a governed World or a Worker; it chose direct work plus one native subagent.
-- Aggregate **4,609,104**, 7,390,896 under the 12,000,000 authorization. One provider request returned
-  `502 UPSTREAM_TIMEOUT` during F-2 and was retried; 102 of 103 POSTs returned 200.
+- Aggregate **4,609,104**, 7,390,896 under the 12,000,000 authorization. Two provider requests
+  returned `502 UPSTREAM_TIMEOUT`: one during F-2 (retried) and one at 14:23:21 after every session
+  ended (no recorded session usage; client identity not observed). 102 of 104 POSTs returned 200.
 
 The diagnostic L/G stage was **not authorized and did not run**. The gate remains fail-closed:
 without an `alhs-spend-authorization/v1` it writes `BLOCKED.json` and exits 2 with `modelCalls=0`;

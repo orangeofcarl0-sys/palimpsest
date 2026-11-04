@@ -12,10 +12,11 @@
   "note": "This manifest records the core real-model run and the engineering evidence. No push, PR or merge was performed.",
   "modelCalls": {
     "realModelSessions": 8,
-    "providerRequests": 194,
+    "providerRequests": 195,
     "providerSuccess": 192,
-    "providerUpstreamTimeout": 2,
-    "tokens": 8465200
+    "providerUpstreamTimeout": 3,
+    "tokens": 8465200,
+    "note": "Core: 104 POSTs (102x200, 2x502; one 502 was a post-run lingering-client request with no recorded session usage). Repeat: 91 POSTs (90x200, 1x502)."
   },
   "cohort": {
     "id": "alhs-c-2026-11-04",

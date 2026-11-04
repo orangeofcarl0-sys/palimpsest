@@ -76,8 +76,10 @@ the files were available.
   this is the intended behaviour, not an exact no-overspend proof.
 - A had no budget stop.
 - Total 4,609,104; the aggregate stayed 7,390,896 below the authorization.
-- One provider request returned `502 UPSTREAM_TIMEOUT` at 14:12:33 during F-2. The proxy retried and
-  the session continued; 102 of 103 POSTs returned 200.
+- One provider request returned `502 UPSTREAM_TIMEOUT` at 14:12:33 during F-2; the proxy retried and
+  the session continued. A second 502 arrived at 14:23:21, after every session had ended. It is a
+  POST from a lingering client, produced no recorded session usage, and its client identity was not
+  observed. 102 of 104 POSTs returned 200.
 
 ## 6. Limitations
 
