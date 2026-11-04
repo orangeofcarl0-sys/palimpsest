@@ -1,0 +1,565 @@
+{
+  "scripts": [
+    {
+      "match": "Your task: Write the baseline cost model",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_373776",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/cost.md, deliverables/assumptions.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare the deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/cost.md\", content: \"# Cost model (baseline)\\n\\nVendor: Kestrel-900.\\nUnit price: 1200 EUR.\\nLead time: 8 weeks.\\n\\n## Assumptions\\n\\nThe site-B corridor is assumed to be 1200 mm; this is not a measurement.\\n\" });\nawait tools.write({ file_path: \"deliverables/assumptions.md\", content: \"# Baseline assumptions\\n\\n- Site B corridor: 1200 mm (assumed, not measured).\\n- Unit: Kestrel-900, 900 mm width.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_325538",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverables",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=alhs@fixture.invalid -c \\\"user.name=ALHS worker\\\" commit -qm \\\"write cost baseline\\\"\", description: \"commit the deliverables before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_733918",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (1/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-cost\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_060396",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (2/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-cost\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_644887",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (3/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-cost\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_839804",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverables\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Write the revised capacity assessment",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_888276",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/capacity.md, deliverables/assumptions.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare the deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/capacity.md\", content: \"# Capacity assessment (revision 2)\\n\\nMeasured site-B corridor: 700 mm (2026-11-03).\\n\\nThe baseline 900 mm unit is NOT admissible at site B. No listed unit is width-admissible at site B.\\n\" });\nawait tools.write({ file_path: \"deliverables/assumptions.md\", content: \"# Revised assumptions\\n\\n- Site B corridor: 700 mm (measured 2026-11-03). The 1200 mm baseline is superseded.\\n- The 900 mm unit is not admissible at site B.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_511250",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverables",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=alhs@fixture.invalid -c \\\"user.name=ALHS worker\\\" commit -qm \\\"write revised capacity\\\"\", description: \"commit the deliverables before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_500062",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverables\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Reuse the vendor pricing",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_491645",
+              "name": "run_code",
+              "input": {
+                "description": "reuse the unaffected cost model and recompute the assumptions",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst old = await shell({ command: \"git show __TASK_COMMIT__:deliverables/cost.md\", description: \"read the unaffected cost model from the older result commit\" });\nconst oldText = old.kind === \"foreground\" ? old.stdout.text : \"\";\nconst vendor = oldText.split(\"## Assumptions\")[0].trim();\nconst content = \"# Cost model v2\\n\\nReused vendor pricing from result commit `__TASK_COMMIT__`.\\n\\n\" + vendor + \"\\n\\n## Revised assumptions\\n\\nCorridor measured at 700 mm on 2026-11-03. The baseline 900 mm assumption is superseded.\\n\";\nawait tools.write({ file_path: \"deliverables/cost-v2.md\", content });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_638545",
+              "name": "run_code",
+              "input": {
+                "description": "commit the cost v2 deliverable",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=alhs@fixture.invalid -c \\\"user.name=ALHS worker\\\" commit -qm \\\"write reused cost model\\\"\", description: \"commit the reused cost model\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_967728",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverables\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "ALHS_PRINCIPAL_A1",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "a1_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a1_delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "cost"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_246824",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_549176",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_340473",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a1_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "ALHS_A1_DONE"
+        }
+      ]
+    },
+    {
+      "match": "ALHS_PRINCIPAL_A2",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "a2_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a2_record",
+              "name": "palimpsest_contribute",
+              "input": {
+                "action": "record",
+                "sourceKind": "EXPLORATION",
+                "sourceRef": ".palimpsest/inputs/corridor-measurement",
+                "task": "Check the measured site-B corridor against the baseline assumption.",
+                "finding": "The measured corridor is 700 mm; the 900 mm unit is not admissible at site B. The 1200 mm baseline is superseded.",
+                "declaredReadFootprint": [
+                  ".palimpsest/inputs/corridor-measurement.md",
+                  "sources/sites.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a2_decide",
+              "name": "palimpsest_contribute",
+              "input": {
+                "action": "decide",
+                "contributionId": "__CONTRIBUTION_ID__",
+                "decision": "REVISE_PLAN",
+                "decisionNote": "The measured 700 mm site-B corridor invalidates both baseline tasks; retire them and write the revised capacity assessment on the measured basis.",
+                "reason": "the measured constraint changes the binding task assumptions",
+                "changeClass": "behavior_change",
+                "changedIds": [
+                  "cost",
+                  "capacity"
+                ],
+                "declaredChangedPlan": true,
+                "tasks": [
+                  {
+                    "task_id": "capacity-v2",
+                    "objective": "Write the revised capacity assessment after the measured corridor constraint.",
+                    "depends_on": [],
+                    "write_paths": [
+                      "deliverables/capacity.md",
+                      "deliverables/assumptions.md"
+                    ],
+                    "required_artifacts": [
+                      "deliverables/capacity.md",
+                      "deliverables/assumptions.md"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a2_delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "capacity-v2"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_190742",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_943828",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_528543",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a2_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "ALHS_A2_DONE"
+        }
+      ]
+    },
+    {
+      "match": "ALHS_PRINCIPAL_A3",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "a3_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a3_results",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "results",
+                "taskId": "cost"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a3_plan",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "plan",
+                "reason": "The late cost result still holds valid vendor pricing, but its baseline assumptions conflict with the measured corridor. Add a governed task that reuses the unaffected cost model and recomputes the assumptions.",
+                "tasks": [
+                  {
+                    "task_id": "capacity-v2",
+                    "objective": "Write the revised capacity assessment after the measured corridor constraint.",
+                    "depends_on": [],
+                    "write_paths": [
+                      "deliverables/capacity.md",
+                      "deliverables/assumptions.md"
+                    ],
+                    "required_artifacts": [
+                      "deliverables/capacity.md",
+                      "deliverables/assumptions.md"
+                    ]
+                  },
+                  {
+                    "task_id": "cost-v2",
+                    "objective": "Reuse the vendor pricing recorded in result commit __RESULT_COMMIT__ and recompute the assumptions affected by the measured corridor. Write deliverables/cost-v2.md.",
+                    "depends_on": [],
+                    "write_paths": [
+                      "deliverables/cost-v2.md"
+                    ],
+                    "required_artifacts": [
+                      "deliverables/cost-v2.md"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a3_delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "cost-v2"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_360690",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a3) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_480613",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a3) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_599980",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-a3) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a3_run",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "run",
+                "maxSteps": 8
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a3_conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "WAIT_FOR_OPERATOR",
+                "statement": "The reused cost package is delivered and awaits the operator's acceptance decision.",
+                "waitingOn": "operator acceptance of the delivered cost-v2 result",
+                "evidenceRefs": [
+                  "commit:reused-cost"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "ALHS_A3_DONE"
+        }
+      ]
+    },
+    {
+      "match": "ALHS_PRINCIPAL_A4",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "a4_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "a4_conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "DELIVER",
+                "statement": "The measured capacity assessment and the reused cost package are both accepted; the package is complete for this episode.",
+                "artifacts": [
+                  "deliverables/capacity.md",
+                  "deliverables/cost-v2.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "ALHS_A4_DONE"
+        }
+      ]
+    }
+  ]
+}

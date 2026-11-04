@@ -88,6 +88,22 @@ function substitute(value, parsed) {
       const commit = matches.length === 0 ? "" : matches[matches.length - 1][1];
       value = value.replaceAll("__RESULT_COMMIT__", commit);
     }
+    if (value.includes("__CONTRIBUTION_ID__")) {
+      const matches = [...text.matchAll(/"contributionId"\s*:\s*"([^"]+)"/gu)];
+      const id = matches.length === 0 ? "" : matches[matches.length - 1][1];
+      value = value.replaceAll("__CONTRIBUTION_ID__", id);
+    }
+    if (value.includes("__TASK_COMMIT__")) {
+      /**
+       * A worker's request carries the substituted task objective, not the JSON field, so the commit
+       * is read as the last 40-hex token in the request. This is a stand-in convenience, not a model
+       * capability; the worker still has to read the commit with a real command.
+       */
+      const named = [...text.matchAll(/result commit\s+([0-9a-f]{40})/gu)];
+      const any = [...text.matchAll(/\b[0-9a-f]{40}\b/gu)];
+      const commit = named.length > 0 ? named[named.length - 1][1] : any.length === 0 ? "" : any[any.length - 1][0];
+      value = value.replaceAll("__TASK_COMMIT__", commit);
+    }
     return value;
   }
   if (Array.isArray(value)) return value.map((entry) => substitute(entry, parsed));

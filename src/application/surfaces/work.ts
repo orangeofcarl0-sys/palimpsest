@@ -81,6 +81,8 @@ export interface ResultContinuationFace {
     } | null;
     /** ALHS-B: path-level reuse facts, when the deployment can read them. */
     readonly reuse?: import("../../continuation/ports.js").ContinuationReusePlan | null;
+    /** ALHS-B: the result's own source revision, for reading unaffected content. */
+    readonly resultCommit?: string | null;
     readonly availableActions: { readonly rematerialize: boolean; readonly rework: boolean };
     readonly detail: string;
   };
@@ -550,7 +552,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
             exactCurrent: inspection.assessment?.reuse.exactCurrent ?? false,
             actions: inspection.availableActions,
             assessmentDigest: inspection.assessment?.assessmentDigest ?? null,
-            resultCommit,
+            resultCommit: inspection.resultCommit ?? resultCommit,
             reuse: inspection.reuse ?? null,
             detail: inspection.detail,
           };
