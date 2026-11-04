@@ -1,7 +1,9 @@
 # LHAPE-C — Long-Horizon F/L/G Protocol (pre-registration)
 
-Status: **BLOCKED — no LHAPE spend authorization exists.** This document registers the comparison
-that would be run after a new, explicit owner authorization. It is not a result.
+Status: **pre-registration for the FULL long-horizon cohort; that cohort has not run.**
+The owner authorized a bounded one-session-per-condition pilot on 2026-11-04 (7.5M aggregate); it
+ran F/L/G and is reported in `docs/engineering/LHAPE-C-PILOT-RESULT.md`. The pilot is not the full
+T1–T7 cohort described here: it has no cross-session principal sequence and no repeated samples.
 
 ## 1. Question
 
