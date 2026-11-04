@@ -7,7 +7,7 @@
  */
 
 import { makeWorkSurfaces } from "./surfaces/work.js";
-import type { ResultContinuationFace, WorkApplicationSurface, WorkDelegationFace } from "./surfaces/work.js";
+import type { ExecutionRelayRecorderPort, ResultContinuationFace, WorkApplicationSurface, WorkDelegationFace } from "./surfaces/work.js";
 import { makeProductSurfaces } from "./surfaces/product.js";
 import type { CollaborationApplicationSurface, ContributionApplicationSurface, ContributionServicePort, CrossProjectApplicationSurface, DelegationApplicationSurface } from "./surfaces/product.js";
 import { makeFederationSurfaces } from "./surfaces/federation.js";
@@ -218,6 +218,11 @@ export interface ApplicationSurfaceDeps {
   readonly workDelegation?: WorkDelegationFace | undefined;
   /** LHAPE-B: the composed result-continuation authority; absent ⇒ no result inspection. */
   readonly continuation?: ResultContinuationFace | undefined;
+  /**
+   * PWRS-A: the durable execution-relay recorder. Absent ⇒ settlements still carry their observed
+   * attribution, but no journal note is written from the principal path.
+   */
+  readonly executionRelay?: ExecutionRelayRecorderPort | undefined;
 }
 
 

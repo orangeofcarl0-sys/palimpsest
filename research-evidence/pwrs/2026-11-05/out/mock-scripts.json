@@ -1,0 +1,318 @@
+{
+  "scripts": [
+    {
+      "match": "Your task: Write the package deliverable",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_048991",
+              "name": "run_code",
+              "input": {
+                "description": "write the partial package",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare the deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/partial.md\", content: \"# Vendor pricing (worker-produced)\\n\\nVendor: Kestrel-900.\\nUnit price: 1200 EUR.\\nLead time: 8 weeks.\\n\\n## Assumptions\\n\\nThe site-B corridor is assumed to be 1200 mm; this is not a measurement.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_342690",
+              "name": "run_code",
+              "input": {
+                "description": "commit the partial package",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=pwrs@fixture.invalid -c \\\"user.name=PWRS worker\\\" commit -qm \\\"write worker pricing partial\\\"\", description: \"commit the partial package\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_328324",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (1/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-worker\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_980511",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (2/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-worker\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_685269",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (3/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-worker\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_564844",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the package deliverable\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PWRS_PRINCIPAL_P1",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p1_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p1_delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "package"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_822334",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_103091",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_608811",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p1_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PWRS_P1_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PWRS_PRINCIPAL_P2",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p2_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_synthesize",
+              "name": "pwsh",
+              "input": {
+                "command": "$ErrorActionPreference='Stop'; $worlds = Get-ChildItem -Directory '.palimpsest/worlds' | Select-Object -ExpandProperty FullName; $world = $null; foreach ($w in $worlds) { if (Test-Path -LiteralPath ($w + '/deliverables/partial.md')) { $world = $w; break } }; if ($null -eq $world) { Write-Output 'NO_RETAINED_WORLD'; exit 3 }; $partial = Get-Content -Raw -LiteralPath ($world + '/deliverables/partial.md'); $measured = Get-Content -Raw -LiteralPath 'sources/measured-corridor.md'; $pricing = ($partial -split '## Assumptions')[0].Trim(); $content = \"# Deployment package (synthesized)`n`n\" + $pricing + \"`n`n## Current measured basis`n`n\" + $measured.Trim() + \"`n`n## Reuse note`n`nThe vendor pricing above is inherited from the retained worker commit; the baseline corridor assumption is NOT carried forward.`n\"; Set-Content -LiteralPath ($world + '/deliverables/package.md') -Value $content -Encoding utf8; git -C $world add -A; git -C $world -c user.email=pwrs@fixture.invalid -c 'user.name=PWRS principal' commit -qm 'principal synthesis from retained worker work'; Write-Output ('WORLD=' + $world); git -C $world rev-parse HEAD",
+                "description": "reuse the retained pricing and recompute the measured basis"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_relay",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "relay",
+                "taskId": "package",
+                "relayRoute": "takeover",
+                "declareExecutorAbandoned": true,
+                "summary": "the killed worker's world was continued by the principal under the measured basis"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "WAIT_FOR_OPERATOR",
+                "statement": "The killed worker's retained pricing was reused, the superseded corridor assumption was recomputed on the measured basis, and the synthesized candidate awaits operator acceptance.",
+                "waitingOn": "operator acceptance of the synthesized package candidate",
+                "artifacts": [
+                  "deliverables/package.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_578953",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_392092",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_745444",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_workers_end",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PWRS_P2_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PWRS_PRINCIPAL_P3",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p3_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p3_conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "DELIVER",
+                "statement": "The operator accepted the synthesized package; the measured basis and the reused vendor pricing are in the canonical asset.",
+                "artifacts": [
+                  "deliverables/package.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "PWRS_P3_DONE"
+        }
+      ]
+    }
+  ]
+}

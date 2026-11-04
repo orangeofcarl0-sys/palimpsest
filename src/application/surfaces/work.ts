@@ -10,6 +10,53 @@ import type { ProjectController } from "../../tools/controller.js";
 import type { HostDeploymentFactsPort } from "../common.js";
 import type { ProjectStandard } from "../../domain/standard.js";
 import { definePalimpsestControl } from "../../tools/control_surface.js";
+import { gitTextRunner, planPathReuse, type PathReuseFacts } from "../../work/path_reuse.js";
+
+/** PWRS-A: the durable relay recorder port, re-exported so the factory keeps its existing edges. */
+export type { ExecutionRelayRecorderPort } from "../../work/execution_relay.js";
+
+/**
+ * PWRS-B: path-level reuse facts for a RETAINED attempt world.
+ *
+ * The same diff the continuation face runs for a COMPLETED result (`work/path_reuse.ts`), applied to
+ * an attempt that never settled: a worker stopped, its world may still hold a commit, and a successor
+ * needs to know what is still valid before it inherits or redoes. It is a READ — no ref moves, nothing
+ * is promoted and no path is accepted.
+ */
+function relaySourceFacts(
+  controller: ProjectController,
+  attemptId: string,
+): {
+  readonly attemptId: string;
+  readonly worldPath: string | null;
+  readonly resultRevision: string | null;
+  readonly currentRevision: string | null;
+  readonly facts: PathReuseFacts | null;
+} {
+  const currentRevision = (controller.status() as { headCommit?: string }).headCommit ?? null;
+  let observed: ReturnType<ProjectController["observeAttemptResult"]>;
+  try {
+    observed = controller.observeAttemptResult(attemptId);
+  } catch {
+    observed = null;
+  }
+  if (observed === null || currentRevision === null) {
+    return { attemptId, worldPath: null, resultRevision: null, currentRevision, facts: null };
+  }
+  const baseCommit = controller.attemptWorkRecord(attemptId)?.envelope?.base_commit ?? "";
+  return {
+    attemptId,
+    worldPath: observed.workDir,
+    resultRevision: observed.observedHead,
+    currentRevision,
+    facts: planPathReuse({
+      run: gitTextRunner(observed.workDir),
+      baseRevision: baseCommit,
+      resultRevision: observed.observedHead,
+      currentRevision,
+    }),
+  };
+}
 
 /**
  * PLMP-LEAN-1 §B.15: the narrow verification face the finish composition needs. Structural on
@@ -46,6 +93,7 @@ export interface WorkDelegationFace {
     readonly attemptId: string | null;
     readonly phase: string;
     readonly settlement: unknown;
+    readonly attribution: import("../../work/execution_relay.js").ExecutionAttribution | null;
     readonly hostError: string | null;
     readonly stopRequested: boolean;
   }[]>;
@@ -113,6 +161,11 @@ export interface WorkSurfaceDeps {
   readonly workDelegation?: WorkDelegationFace | undefined;
   /** LHAPE-B: the composed result-continuation authority; absent ⇒ no continuation inspection. */
   readonly continuation?: ResultContinuationFace | undefined;
+  /**
+   * PWRS-A: the durable settlement record. Absent ⇒ the attribution is still returned to the caller
+   * and appears in the pulse, but it is not written to the project journal.
+   */
+  readonly executionRelay?: import("../../work/execution_relay.js").ExecutionRelayRecorderPort | undefined;
 }
 
 export interface WorkApplicationSurface {
@@ -200,6 +253,8 @@ export interface WorkApplicationSurface {
     readonly changedFiles: readonly string[];
     readonly evidenceRecorded: readonly string[];
     readonly nextEvidenceNeeded: readonly string[];
+    /** PWRS-A: which execution window the product observed for the settled bytes. */
+    readonly attribution: import("../../work/execution_relay.js").ExecutionAttribution;
   }>;
   /**
    * LHAPE-A: start a REAL work worker for one existing canonical task, in its own execution world.
@@ -232,6 +287,12 @@ export interface WorkApplicationSurface {
       readonly taskState: string | null;
       readonly orphaned: boolean;
       readonly hostObserved: boolean;
+      /**
+       * PWRS-A: where this attempt's world is, when it is observable. A path is not authority: the
+       * transport still refuses a second writer into an unobserved world, and a principal that reads
+       * or writes there must settle through `relay` so the attribution is recorded honestly.
+       */
+      readonly worldPath: string | null;
     }[];
     readonly detail: string;
   }>;
@@ -293,6 +354,40 @@ export interface WorkApplicationSurface {
     readonly detail: string;
     readonly resultCommit: string | null;
     readonly changedFiles: readonly string[];
+    /** PWRS-A: present when the attempt settled; the product's own observed attribution. */
+    readonly attribution?: import("../../work/execution_relay.js").ExecutionAttribution | null;
+  }>;
+  /**
+   * PWRS-A: continue an attempt whose worker is no longer running.
+   *
+   * `takeover` closes the SAME attempt after an observed invocation exit (or an explicit declaration
+   * that the previous executor is abandoned) and records principal recovery. `successor` closes an
+   * attempt this host cannot prove quiescent and returns the retained world's path-level reuse facts,
+   * so a NEW attempt can continue the still-valid work in a fresh world at the same basis.
+   *
+   * Neither route accepts, promotes or verifies anything; both are recorded as declarations or
+   * observations, never as worker production.
+   */
+  relay(input: {
+    readonly taskId: string;
+    readonly route: "takeover" | "successor";
+    /** Required for `takeover` when no invocation exit was observed; recorded as DECLARED. */
+    readonly declareExecutorAbandoned?: boolean | undefined;
+    readonly summary?: string | undefined;
+  }): Promise<{
+    readonly state: "TAKEOVER_SETTLED" | "SUCCESSOR_READY" | "REFUSED" | "NOT_READY";
+    readonly taskId: string;
+    readonly route: "takeover" | "successor";
+    readonly attemptId: string | null;
+    readonly detail: string;
+    readonly resultCommit: string | null;
+    readonly changedFiles: readonly string[];
+    readonly attribution: import("../../work/execution_relay.js").ExecutionAttribution | null;
+    /** For `successor`: the retained world and its path-level reuse facts against the current head. */
+    readonly retainedWorldPath: string | null;
+    readonly reuse: import("../../work/path_reuse.js").PathReuseFacts | null;
+    /** For `successor`: the task state after the scheduler tick, so the caller knows what to do next. */
+    readonly taskState: string | null;
   }>;
   /**
    * PLMP-LEAN-1 §5 / 2A-Q: readiness in two layers — what the DEPLOYMENT can do, and what the
@@ -328,6 +423,29 @@ export interface WorkApplicationSurface {
 }
 
 export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkApplicationSurface } {
+    /**
+     * PWRS-A: persist ONE settlement attribution as the durable relay record. The recorder is the
+     * project journal (an ordinary REFERENCE_NOTE with one marker), not a new store. A recorder
+     * failure is reported but never turns a completed settlement into a failure.
+     */
+    const recordRelay = async (
+      surfaceDeps: WorkSurfaceDeps,
+      attemptId: string,
+      resultCommit: string,
+      attribution: import("../../work/execution_relay.js").ExecutionAttribution,
+    ): Promise<void> => {
+      if (surfaceDeps.executionRelay === undefined) return;
+      const record = surfaceDeps.controller.attemptWorkRecord(attemptId);
+      const taskId = record?.taskId ?? "";
+      const baseCommit = record?.envelope?.base_commit ?? "";
+      if (taskId === "") return;
+      try {
+        await surfaceDeps.executionRelay.record({ taskId, attemptId, baseCommit, resultCommit, attribution });
+      } catch {
+        /* the settlement is canonical; a derived record failure must not undo it */
+      }
+    };
+
     const work: WorkApplicationSurface = {
       dashboardUrl: () => deps.hostFacts?.dashboardUrl() ?? null,
       dashboardAuth: () => deps.hostFacts?.dashboardAuth() ?? null,
@@ -387,11 +505,15 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
         const settled = await deps.controller.settleMutatingWork({
           attemptId,
           workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input?.summary === undefined ? {} : { detail: input.summary }) },
+          // PWRS-A: the principal path is named as such. The Work owner still attributes the bytes
+          // from its own observations; naming the path cannot manufacture worker production.
+          observation: { path: "PRINCIPAL" },
         });
         if (settled.state !== "SETTLED") {
           throw new Error(`${settled.state}: ${settled.detail}`);
         }
         deps.controller.step();
+        await recordRelay(deps, attemptId, settled.resultCommit, settled.attribution);
         return {
           attemptId,
           state: "COMPLETED" as const,
@@ -399,6 +521,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           changedFiles: settled.changedFiles,
           evidenceRecorded: settled.evidenceRecorded,
           nextEvidenceNeeded: Object.freeze([]),
+          attribution: settled.attribution,
         };
       },
       startWorker: async (input) => {
@@ -480,6 +603,13 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           orphaned: attempt.orphaned === true,
           hostObserved:
             attempt.task_id !== null && activeJobs.some((job) => job.taskId === attempt.task_id),
+          worldPath: (() => {
+            try {
+              return deps.controller.observeAttemptResult(attempt.attempt_id)?.workDir ?? null;
+            } catch {
+              return null;
+            }
+          })(),
         }));
         return {
           placement: deps.controller.execution,
@@ -674,15 +804,18 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           const settled = await deps.controller.settleMutatingWork({
             attemptId,
             workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input.summary === undefined ? {} : { detail: input.summary }) },
+            observation: { path: "PRINCIPAL" },
           });
           if (settled.state === "SETTLED") {
             deps.controller.step();
+            await recordRelay(deps, attemptId, settled.resultCommit, settled.attribution);
             return {
               state: "SETTLED" as const,
               taskId: input.taskId,
               detail: `${settled.detail} — this host observed the world; it does not claim the previous worker process is still alive`,
               resultCommit: settled.resultCommit,
               changedFiles: settled.changedFiles,
+              attribution: settled.attribution,
             };
           }
           return {
@@ -701,6 +834,169 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
             changedFiles: Object.freeze([]),
           };
         }
+      },
+      relay: async (input) => {
+        const status = deps.controller.status() as {
+          attempts?: Array<{ attempt_id: string; task_id: string | null; state: string }>;
+          tasks?: Array<{ task_id: string; state: string }>;
+        };
+        const running = (status.attempts ?? []).filter((attempt) => {
+          if (attempt.task_id !== input.taskId) return false;
+          const record = deps.controller.attemptWorkRecord(attempt.attempt_id) as { state?: string } | null;
+          return record?.state === "RUNNING";
+        });
+        const refused = (detail: string): Awaited<ReturnType<WorkApplicationSurface["relay"]>> => ({
+          state: "REFUSED" as const,
+          taskId: input.taskId,
+          route: input.route,
+          attemptId: running.length === 1 ? running[0]!.attempt_id : null,
+          detail,
+          resultCommit: null,
+          changedFiles: Object.freeze([]),
+          attribution: null,
+          retainedWorldPath: null,
+          reuse: null,
+          taskState: null,
+        });
+        if (running.length === 0) {
+          return refused(
+            "this task has no canonically RUNNING attempt; a relay continues an attempt that exists. If its result already settled, inspect `results` instead",
+          );
+        }
+        if (running.length > 1) {
+          return refused(`${String(running.length)} RUNNING attempts exist for this task; the product refuses to guess which one the relay continues`);
+        }
+        const attemptId = running[0]!.attempt_id;
+        const jobs = deps.workDelegation === undefined ? [] : await deps.workDelegation.jobs();
+        const active = jobs.find(
+          (job) => job.taskId === input.taskId && (job.phase === "QUEUED" || job.phase === "RUNNING"),
+        );
+        if (active !== undefined) {
+          return refused(
+            `this host still observes an active worker job (${active.jobId}, ${active.phase}) for the task; a relay would race a writer it can see — stop it or wait for its observed exit`,
+          );
+        }
+        const invocations = deps.controller.executionInvocations.list(attemptId);
+        const open = invocations.find((invocation) => invocation.outcome === "OPEN");
+        if (open !== undefined) {
+          return refused(
+            `this host still observes worker invocation ${open.invocationId} as OPEN; the world is being written, so no takeover or successor is recorded`,
+          );
+        }
+
+        if (input.route === "takeover") {
+          const last = invocations.length === 0 ? null : invocations[invocations.length - 1]!;
+          const observedExit = last?.outcome === "ENDED";
+          /**
+           * PWRS-A §6.3: only an OBSERVED exit authorizes a same-world takeover without a statement.
+           * No invocation at all (a restart, another host) and an UNCONFIRMED exit both mean the world
+           * may still have a writer, so the principal must DECLARE the abandonment — recorded as
+           * declared, never as observed — or choose the isolated successor route.
+           */
+          if (!observedExit && input.declareExecutorAbandoned !== true) {
+            return refused(
+              last?.outcome === "UNCONFIRMED"
+                ? "this host's last worker invocation ended without a confirmed process exit. A same-world takeover needs an explicit `declareExecutorAbandoned=true` declaration (recorded as DECLARED, never as observed), or choose `relayRoute=successor` to continue in an isolated world"
+                : "this host observed no worker invocation for the attempt, so its world may still have a writer. A same-world takeover needs an explicit `declareExecutorAbandoned=true` declaration (recorded as DECLARED, never as observed), or choose `relayRoute=successor` to continue in an isolated world",
+            );
+          }
+          const declaration = observedExit
+            ? { declaredAt: new Date().toISOString(), declaredBy: "PRINCIPAL" as const, livenessBasis: "OBSERVED_EXIT" as const }
+            : { declaredAt: new Date().toISOString(), declaredBy: "PRINCIPAL" as const, livenessBasis: "DECLARED_ABANDONED" as const };
+          try {
+            const settled = await deps.controller.settleMutatingWork({
+              attemptId,
+              workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input.summary === undefined ? {} : { detail: input.summary }) },
+              observation: { path: "PRINCIPAL", takeover: declaration },
+            });
+            if (settled.state !== "SETTLED") {
+              return {
+                ...refused(`${settled.state}: ${settled.detail}`),
+                state: "NOT_READY" as const,
+                resultCommit: settled.state === "BASE_DRIFT" ? settled.resultCommit : null,
+              };
+            }
+            deps.controller.step();
+            await recordRelay(deps, attemptId, settled.resultCommit, settled.attribution);
+            return {
+              state: "TAKEOVER_SETTLED" as const,
+              taskId: input.taskId,
+              route: "takeover" as const,
+              attemptId,
+              detail:
+                `${settled.detail} — the product observed the attempt's world and recorded ${settled.attribution.attribution} ` +
+                `(liveness ${settled.attribution.liveness}); independenceEligible=${String(settled.attribution.independenceEligible)}. ` +
+                "This is a settlement, not an acceptance or a promotion",
+              resultCommit: settled.resultCommit,
+              changedFiles: settled.changedFiles,
+              attribution: settled.attribution,
+              retainedWorldPath: null,
+              reuse: null,
+              taskState: null,
+            };
+          } catch (error) {
+            return refused(error instanceof Error ? error.message : String(error));
+          }
+        }
+
+        /**
+         * SUCCESSOR: close the unobserved/unconfirmed attempt and hand back the retained world's
+         * path-level reuse facts. The next `delegate` opens a NEW attempt in a NEW world at the same
+         * basis, so no second process is ever pointed at the old world.
+         */
+        const retained = relaySourceFacts(deps.controller, attemptId);
+        try {
+          deps.controller.report(attemptId, {
+            workerStatus: "cancelled",
+            summary: input.summary ?? "closed as a successor: the previous executor is not observed and a new world continues the work",
+          });
+          deps.controller.step();
+        } catch (error) {
+          return refused(error instanceof Error ? error.message : String(error));
+        }
+        const after = deps.controller.status() as { tasks?: Array<{ task_id: string; state: string }> };
+        const taskState = (after.tasks ?? []).find((task) => task.task_id === input.taskId)?.state ?? null;
+        if (deps.executionRelay !== undefined) {
+          try {
+            await deps.executionRelay.record({
+              taskId: input.taskId,
+              attemptId,
+              baseCommit: retained.resultRevision ?? "",
+              resultCommit: retained.resultRevision ?? "",
+              attribution: {
+                schema: "pc1-execution-attribution/v1" as const,
+                attribution: "UNATTRIBUTED" as const,
+                executor: "UNKNOWN" as const,
+                settledBy: "PRINCIPAL" as const,
+                workerInvocations: invocations.filter((invocation) => invocation.outcome === "ENDED").length,
+                matchedInvocationId: null,
+                liveness: "DECLARED_ABANDONED" as const,
+                independenceEligible: false,
+                evidence: "DECLARED" as const,
+                detail:
+                  "the principal closed this attempt as a SUCCESSOR because no writer was observed; the retained world stays available for reuse, and no result was settled or accepted",
+              },
+            });
+          } catch {
+            /* the canonical cancellation stands; the derived record is best-effort */
+          }
+        }
+        return {
+          state: "SUCCESSOR_READY" as const,
+          taskId: input.taskId,
+          route: "successor" as const,
+          attemptId,
+          detail:
+            `the attempt was closed as a successor (task is ${taskState ?? "unknown"}); the retained world is ${retained.worldPath ?? "not observable"} ` +
+            `and its work is at ${(retained.resultRevision ?? "").slice(0, 12) || "no commit"}. ` +
+            "Inherit only the paths the facts show as unaffected or already present, re-derive anything conflicted, then delegate the new attempt",
+          resultCommit: null,
+          changedFiles: Object.freeze([]),
+          attribution: null,
+          retainedWorldPath: retained.worldPath,
+          reuse: retained.facts,
+          taskState,
+        };
       },
       begin: (input) => deps.controller.begin(input),
       completionReadiness: () => deps.controller.completionReadiness(),

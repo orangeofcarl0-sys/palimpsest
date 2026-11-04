@@ -138,6 +138,16 @@ export interface EpisodeArtifactState {
   readonly tracked: boolean;
   /** Present in HEAD with no working-tree change for this path. */
   readonly committed: boolean;
+  /**
+   * PWRS-C: the artifact's content digest at the basis the conclusion recorded, so a later read can
+   * tell that the bytes changed even when the ProjectIR revision and the Git HEAD did not. Absent on
+   * conclusions recorded before this field existed.
+   */
+  readonly digest?: string | null | undefined;
+  /** Where the bytes were found: the live worktree, a governed candidate's result commit, or nowhere. */
+  readonly source?: "WORKTREE" | "RESULT_COMMIT" | "ABSENT" | undefined;
+  /** The result commit a governed candidate was read from, when `source` is RESULT_COMMIT. */
+  readonly commit?: string | null | undefined;
   readonly detail: string;
 }
 
@@ -311,6 +321,35 @@ export function episodeArtifactWarnings(states: readonly EpisodeArtifactState[])
   return Object.freeze(warnings);
 }
 
+/**
+ * PWRS-C: why a recorded artifact state is no longer current, as bare facts.
+ *
+ * Used by the pure episode builder AND by the composition's per-read overlay, so the two cannot drift
+ * on what counts as "the artifact changed". Only recorded facts can be compared: an old conclusion
+ * without a digest is not reopened by a digest it never had.
+ */
+export function artifactChangeReasons(
+  recorded: readonly EpisodeArtifactState[],
+  now: readonly EpisodeArtifactState[],
+): readonly string[] {
+  const current = new Map(now.map((state) => [state.path, state]));
+  const reasons: string[] = [];
+  for (const before of recorded) {
+    const after = current.get(before.path);
+    if (after === undefined) continue;
+    if (before.digest !== undefined && before.digest !== null) {
+      if (after.digest !== before.digest) {
+        reasons.push(
+          `artifact ${before.path} changed content (${(before.digest ?? "").slice(0, 12)} → ${(after.digest ?? "absent").slice(0, 12)})`,
+        );
+      }
+    } else if (before.present !== after.present) {
+      reasons.push(`artifact ${before.path} is now ${after.present ? "present" : "absent"}`);
+    }
+  }
+  return Object.freeze(reasons);
+}
+
 /** Parse a recorded conclusion from an ordinary journal entry, ignoring anything else. */
 export function parseEpisodeConclusion(body: string): EpisodeConclusion | null {
   const at = body.indexOf(EPISODE_MARKER);
@@ -360,6 +399,20 @@ export function buildPulseEpisode(input: {
   readonly entries: readonly JournalFact[];
   readonly readiness: EpisodeReadiness;
   readonly basis: { readonly projectRevision: number; readonly projectDigest: string; readonly headCommit: string };
+  /**
+   * PWRS-C: the CURRENT state of the artifacts the conclusion named, when the caller can observe
+   * them. A digest/source change reopens the conclusion even if the project revision and HEAD did
+   * not move — which is exactly the case a file edit without a commit produces.
+   */
+  readonly artifactStatesNow?: readonly EpisodeArtifactState[] | undefined;
+  /** Current task states, so a resolved operator acceptance can be named rather than inferred. */
+  readonly taskStates?: ReadonlyMap<string, string> | undefined;
+  /**
+   * Which journal entries are BASIS-BEARING. Default: every entry after the conclusion reopens it
+   * (the pre-PWRS behavior). The pulse passes a predicate that keeps only structured records, so an
+   * unrelated plain note no longer reopens every delivery for no reason.
+   */
+  readonly basisRelevant?: ((entry: JournalFact) => boolean) | undefined;
 }): PulseEpisode {
   let lastIndex = -1;
   let conclusion: EpisodeConclusion | null = null;
@@ -389,8 +442,28 @@ export function buildPulseEpisode(input: {
   if (conclusion.basis.headCommit !== input.basis.headCommit) {
     changedSince.push(`repository head moved from ${conclusion.basis.headCommit.slice(0, 12)} to ${input.basis.headCommit.slice(0, 12)}`);
   }
+  const relevant = input.basisRelevant;
   for (const entry of input.entries.slice(lastIndex + 1)) {
+    if (relevant !== undefined && !relevant(entry)) continue;
     changedSince.push(`journal ${entry.entryId} (${entry.kind}) "${entry.title}" was recorded after the conclusion`);
+  }
+  /**
+   * PWRS-C artifact currentness. Compared only when BOTH sides carry a digest: an old conclusion
+   * (recorded before digests existed) cannot be reopened by a fact it never recorded, and pretending
+   * otherwise would manufacture a change.
+   */
+  if (input.artifactStatesNow !== undefined) {
+    changedSince.push(...artifactChangeReasons(conclusion.check.artifacts ?? [], input.artifactStatesNow));
+  }
+  /** A pending operator acceptance that was resolved is a real change, not a stale judgement. */
+  if (input.taskStates !== undefined) {
+    for (const ref of conclusion.check.awaitingOperator) {
+      const taskId = ref.startsWith("task:") ? ref.slice("task:".length) : ref;
+      const state = input.taskStates.get(taskId);
+      if (state === "SATISFIED") {
+        changedSince.push(`the operator accepted task ${taskId}; the pending acceptance the conclusion named is resolved`);
+      }
+    }
   }
   const current = changedSince.length === 0;
 
@@ -423,7 +496,9 @@ export function episodeConclusionBody(conclusion: EpisodeConclusion): string {
       : `Artifact provenance:\n${conclusion.check.artifacts
           .map(
             (state) =>
-              `- ${state.path}: present=${String(state.present)} tracked=${String(state.tracked)} committed=${String(state.committed)}`,
+              `- ${state.path}: present=${String(state.present)} tracked=${String(state.tracked)} committed=${String(state.committed)} ` +
+              `source=${state.source ?? "unrecorded"} digest=${(state.digest ?? "unrecorded").slice(0, 12)}` +
+              `${state.commit === undefined || state.commit === null ? "" : ` commit=${state.commit.slice(0, 12)}`}`,
           )
           .join("\n")}`,
     "",

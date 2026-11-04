@@ -48,7 +48,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
   return tool({
     name: "palimpsest_work",
     description:
-      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), start a REAL worker in its own execution world (`delegate`), observe who is actually running (`workers`), request a stop without pretending it happened (`stop`), inspect a delivered result and choose a safe continuation route (`results`, `continue`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), record the EPISODE-LEVEL conclusion when the current work episode should stop (`conclude`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `delegate` executes an EXISTING canonical task; it does not invent work, and the worker may only report; the product observes the world and settles. `workers` distinguishes canonical attempt state from host-local job observation: a RUNNING attempt with no job in this host is NOT proven alive. `stop` is a REQUEST. `results` reports the packaged continuation assessment for the latest COMPLETED result, including path-level reuse facts (unaffected / conflicted / already-present) that a NEW governed task may use without accepting the old result, and `continue` carries the inspection digest into rematerialization or governed rework; neither accepts or promotes anything. `conclude` records YOUR judgement about the episode (DELIVER / WAIT_FOR_OPERATOR / WAIT_FOR_EXTERNAL_EVENT / REPLAN / CONTINUE / CHECKPOINT) and the product checks it against real facts: open tasks, live attempts, pending operator acceptance, blocked effects, artifact existence and artifact Git provenance. A refused conclusion names the contradiction; a recorded one is still NOT acceptance or promotion. Provenance warnings (an artifact untracked or uncommitted) are reported in the result and in the pulse; they do not by themselves refuse DELIVER. After a recorded conclusion with `session.mayEnd=true`, reply to the user and stop calling tools unless something contradicts it. `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately, while worktree edits are an isolated candidate until an authorized Promotion. A proposal is NON-AUTHORITATIVE.",
+      "The NORMAL project work path. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), start a REAL worker in its own execution world (`delegate`), observe who is actually running (`workers`), request a stop without pretending it happened (`stop`), inspect a delivered result and choose a safe continuation route (`results`, `continue`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), record the EPISODE-LEVEL conclusion when the current work episode should stop (`conclude`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `delegate` executes an EXISTING canonical task; it does not invent work, and the worker may only report; the product observes the world and settles. `workers` distinguishes canonical attempt state from host-local job observation: a RUNNING attempt with no job in this host is NOT proven alive. `stop` is a REQUEST. `results` reports the packaged continuation assessment for the latest COMPLETED result, including path-level reuse facts (unaffected / conflicted / already-present) that a NEW governed task may use without accepting the old result, and `continue` carries the inspection digest into rematerialization or governed rework; neither accepts or promotes anything. `relay` continues an attempt whose worker is no longer running: `takeover` keeps the SAME attempt and world after an observed worker exit (or your explicit `declareExecutorAbandoned` declaration) and records PRINCIPAL_RECOVERY; `successor` closes an attempt this host cannot prove quiescent, keeps its world, and returns path-level reuse facts so a NEW attempt continues the still-valid work in a new world at the same basis. Every settlement reports the execution window the product OBSERVED (`ORIGINAL_WORKER_OBSERVED` / `SUBSEQUENT_WORKER_OBSERVED` / `PRINCIPAL_RECOVERY` / `MULTI_EXECUTOR` / `UNATTRIBUTED`); your own writing is never reported as worker production, and a principal takeover is not independent verification. `conclude` records YOUR judgement about the episode (DELIVER / WAIT_FOR_OPERATOR / WAIT_FOR_EXTERNAL_EVENT / REPLAN / CONTINUE / CHECKPOINT) and the product checks it against real facts: open tasks, live attempts, pending operator acceptance, blocked effects, artifact existence and artifact Git provenance. A refused conclusion names the contradiction; a recorded one is still NOT acceptance or promotion. Provenance warnings (an artifact untracked or uncommitted) are reported in the result and in the pulse; they do not by themselves refuse DELIVER. After a recorded conclusion with `session.mayEnd=true`, reply to the user and stop calling tools unless something contradicts it. `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately, while worktree edits are an isolated candidate until an authorized Promotion. A proposal is NON-AUTHORITATIVE.",
     mode: "mutating",
     actions: [
       "status",
@@ -64,6 +64,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       "stop",
       "results",
       "continue",
+      "relay",
       "propose",
       "explore",
       "explorations",
@@ -111,6 +112,8 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       targetPath: { type: "string", description: "for propose: the project path the source would occupy" },
       taskId: { type: "string", description: "the Work task: for delegate/stop/continue (required there), for results/complete (optional; complete then settles THAT task rather than guessing the single RUNNING attempt), for propose an approved source intake, or for explore an optional related task" },
       route: { type: "string", enum: ["rematerialize", "rework"], description: "for continue: carry a compatible result onto the current world, or reopen the task for governed rework" },
+      relayRoute: { type: "string", enum: ["takeover", "successor"], description: "for relay: takeover closes the SAME attempt after an observed worker exit (or an explicit abandonment declaration) and records principal recovery; successor closes an attempt this host cannot prove quiescent and returns the retained world's reuse facts so a NEW attempt continues in a new world" },
+      declareExecutorAbandoned: { type: "boolean", description: "for relay route=takeover: your explicit declaration that the previous executor is abandoned when this host observed no confirmed exit. It is recorded as DECLARED, never as observed" },
       expectedAssessmentDigest: { type: "string", description: "for continue: the assessment digest returned by `results`; a stale digest is refused rather than applied to a moved world" },
       objective: { type: "string", description: "for propose: the Work objective for an approved source intake" },
       finding: { type: "string", description: "for explore: what was observed, with the limits of the observation" },
@@ -162,6 +165,25 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         }
         const expectedAssessmentDigest = requiredString(object, "expectedAssessmentDigest");
         return await work.continueResult({ taskId, route, expectedAssessmentDigest });
+      }
+      if (action === "relay") {
+        const taskId = requiredString(object, "taskId");
+        const relayRoute = requiredString(object, "relayRoute");
+        if (relayRoute !== "takeover" && relayRoute !== "successor") {
+          throw new ToolArgsError('argument "relayRoute" must be "takeover" or "successor"');
+        }
+        const declareExecutorAbandoned = object.declareExecutorAbandoned;
+        if (declareExecutorAbandoned !== undefined && typeof declareExecutorAbandoned !== "boolean") {
+          throw new ToolArgsError('argument "declareExecutorAbandoned" must be a boolean when given');
+        }
+        const summary = object.summary;
+        if (summary !== undefined && typeof summary !== "string") throw new ToolArgsError('argument "summary" must be a string when given');
+        return await work.relay({
+          taskId,
+          route: relayRoute,
+          ...(declareExecutorAbandoned === undefined ? {} : { declareExecutorAbandoned }),
+          ...(summary === undefined ? {} : { summary }),
+        });
       }
       if (action === "start") {
         if (work.placement() !== "in-place") {
@@ -284,6 +306,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
             changedFiles: result.changedFiles,
             evidenceRecorded: result.evidenceRecorded,
             nextEvidenceNeeded: result.nextEvidenceNeeded,
+            attribution: result.attribution,
             boundary: work.boundary(),
             nextActions: ["an operator must review and accept the delivered result"],
           };

@@ -6,12 +6,14 @@
  * It owns no store and decides no authority; install.ts only decides to compose it.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
 import { makeProjectContinuityService } from "../project_continuity/index.js";
 import type { ProjectContinuityService } from "../project_continuity/index.js";
 import {
+  artifactChangeReasons,
   episodeArtifactWarnings,
   episodeConclusionBody,
   makeEpisodeConclusion,
@@ -71,6 +73,12 @@ interface ContinuityWorkOwner {
   }[];
   /** LHAPE-B: the canonical ProjectIR revisions in ascending order, for crash reconciliation. */
   revisionHistory?(): readonly ProjectIr[];
+  /**
+   * PWRS-C: the result commit recorded for a COMPLETED attempt, or null when it has none. The
+   * canonical object database can read it because settlement exported it; reading it here is how a
+   * governed candidate becomes visible to the episode without pretending the canonical tree holds it.
+   */
+  attemptResultCommit?(attemptId: string): string | null;
 }
 
 export interface ContinuityCompositionInput {
@@ -162,83 +170,141 @@ export function appliedDecisionFromHistory(
  * ordinary journal note and never accepts, promotes or approves. The product only refuses a
  * conclusion whose own mechanical facts contradict it.
  */
+/**
+ * PWRS-C: observe ONE artifact's real bytes, wherever the current work path put them.
+ *
+ * The ALHS diagnostic measured the failure: a governed candidate lives in the attempt's RESULT
+ * COMMIT and the canonical worktree has no such file, so the old check reported `not found` for a
+ * candidate that existed. The order is therefore: live worktree → the latest completed attempt's
+ * result commit (a candidate) → absent. Source and commit are recorded, so a reader can tell a
+ * delivered file from an unaccepted candidate, and the digest lets a later read detect a real change
+ * even when the project revision and HEAD did not move.
+ */
+function makeArtifactObserver(input: {
+  readonly repository?: string | undefined;
+  readonly candidates?: (() => readonly { attemptId: string; taskId: string | null; resultCommit: string }[]) | undefined;
+}): (path: string) => EpisodeArtifactState {  const digestOf = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
+  const absent = (path: string, detail: string): EpisodeArtifactState => ({
+    path,
+    present: false,
+    tracked: false,
+    committed: false,
+    digest: null,
+    source: "ABSENT" as const,
+    commit: null,
+    detail,
+  });
+  return (path: string): EpisodeArtifactState => {
+    if (input.repository === undefined) return absent(path, "repository not observable");
+    const repository = input.repository;
+    const absolute = isAbsolute(path) ? path : resolve(repository, path);
+    const rel = relative(repository, absolute).replaceAll("\\", "/");
+    if (rel.startsWith("..")) return absent(path, "outside the repository");
+
+    if (existsSync(absolute) && statSync(absolute).isFile()) {
+      let tracked = false;
+      try {
+        execFileSync("git", ["-C", repository, "ls-files", "--error-unmatch", "--", rel], { stdio: "ignore" });
+        tracked = true;
+      } catch {
+        tracked = false;
+      }
+      let inHead = false;
+      try {
+        execFileSync("git", ["-C", repository, "cat-file", "-e", `HEAD:${rel}`], { stdio: "ignore" });
+        inHead = true;
+      } catch {
+        inHead = false;
+      }
+      let dirty = true;
+      try {
+        dirty = execFileSync("git", ["-C", repository, "status", "--porcelain", "--", rel], { encoding: "utf8" }).trim() !== "";
+      } catch {
+        dirty = true;
+      }
+      const committed = inHead && !dirty;
+      /**
+       * PWRS-C: a COMMITTED artifact is digested from its Git blob, not from the checked-out bytes.
+       * The worktree may normalize line endings (CRLF on Windows) while the blob stores LF, and the
+       * same artifact read from a result commit is a blob — hashing raw worktree bytes made the SAME
+       * committed content look changed after a promotion. An uncommitted file is digested as it
+       * actually is on disk, because that is the bytes a reader would get.
+       */
+      const blobDigest = ((): string | null => {
+        if (!committed) return null;
+        try {
+          const bytes = execFileSync("git", ["-C", repository, "cat-file", "blob", `HEAD:${rel}`], { maxBuffer: 8 * 1024 * 1024 });
+          return digestOf(bytes);
+        } catch {
+          return null;
+        }
+      })();
+      return {
+        path,
+        present: true,
+        tracked,
+        committed,
+        digest: blobDigest ?? digestOf(readFileSync(absolute)),
+        source: "WORKTREE" as const,
+        commit: null,
+        detail: !tracked
+          ? "not tracked by Git"
+          : !inHead
+            ? "tracked but not in HEAD"
+            : dirty
+              ? "tracked with uncommitted changes"
+              : "committed at HEAD",
+      };
+    }
+
+    /**
+     * A governed candidate is NOT in the canonical worktree. Its bytes are in the attempt's exported
+     * result commit, which is readable in the canonical object database — the same read the
+     * continuation face performs. Newest first, so the current candidate wins over an older one.
+     */
+    const candidates = [...(input.candidates?.() ?? [])].reverse();
+    for (const candidate of candidates) {
+      try {
+        const bytes = execFileSync("git", ["-C", repository, "cat-file", "blob", `${candidate.resultCommit}:${rel}`], {
+          maxBuffer: 8 * 1024 * 1024,
+        });
+        return {
+          path,
+          present: true,
+          tracked: true,
+          committed: true,
+          digest: digestOf(bytes),
+          source: "RESULT_COMMIT" as const,
+          commit: candidate.resultCommit,
+          detail:
+            `present in the result commit ${candidate.resultCommit.slice(0, 12)} of attempt ${candidate.attemptId}` +
+            " — a governed candidate, not an accepted project asset",
+        };
+      } catch {
+        continue;
+      }
+    }
+    return absent(path, "not found in the worktree or in any completed attempt's result commit");
+  };
+}
+
 function makeEpisodeService(input: {
   readonly projectId: string;
   readonly workspace: Pick<ProjectWorkspaceService, "recordJournalEntry">;
   readonly pulse: Pick<ProjectPulseService, "pulse">;
-  readonly repository?: string | undefined;
+  readonly repositoryObservable: boolean;
+  readonly artifactState: (path: string) => EpisodeArtifactState;
   readonly clock?: (() => string) | undefined;
 }): EpisodeService {
   const now = (): string => (input.clock ?? (() => new Date().toISOString()))();
   const artifactExists =
-    input.repository === undefined
-      ? undefined
-      : (path: string): boolean => {
-          try {
-            const absolute = isAbsolute(path) ? path : resolve(input.repository!, path);
-            return existsSync(absolute) && statSync(absolute).isFile();
-          } catch {
-            return false;
-          }
-        };
-
-  /**
-   * ALHS-C follow-up: a DELIVER is a judgement, but the reader is entitled to know whether the final
-   * bytes are in Git. These are facts, not a refusal: an untracked artifact warns, it does not block.
-   */
-  const artifactState = (path: string): EpisodeArtifactState => {
-    if (input.repository === undefined) {
-      return { path, present: false, tracked: false, committed: false, detail: "repository not observable" };
-    }
-    const repository = input.repository;
-    const absolute = isAbsolute(path) ? path : resolve(repository, path);
-    if (!existsSync(absolute) || !statSync(absolute).isFile()) {
-      return { path, present: false, tracked: false, committed: false, detail: "not found" };
-    }
-    const rel = relative(repository, absolute).replaceAll("\\", "/");
-    if (rel.startsWith("..")) {
-      return { path, present: true, tracked: false, committed: false, detail: "outside the repository" };
-    }
-    let tracked = false;
-    try {
-      execFileSync("git", ["-C", repository, "ls-files", "--error-unmatch", "--", rel], { stdio: "ignore" });
-      tracked = true;
-    } catch {
-      tracked = false;
-    }
-    let inHead = false;
-    try {
-      execFileSync("git", ["-C", repository, "cat-file", "-e", `HEAD:${rel}`], { stdio: "ignore" });
-      inHead = true;
-    } catch {
-      inHead = false;
-    }
-    let dirty = true;
-    try {
-      dirty = execFileSync("git", ["-C", repository, "status", "--porcelain", "--", rel], { encoding: "utf8" }).trim() !== "";
-    } catch {
-      dirty = true;
-    }
-    return {
-      path,
-      present: true,
-      tracked,
-      committed: inHead && !dirty,
-      detail: !tracked
-        ? "not tracked by Git"
-        : !inHead
-          ? "tracked but not in HEAD"
-          : dirty
-            ? "tracked with uncommitted changes"
-            : "committed at HEAD",
-    };
-  };
+    input.repositoryObservable ? (path: string): boolean => input.artifactState(path).present : undefined;
 
   const provenance = (conclusionInput: EpisodeConclusionInput): {
     readonly states: readonly EpisodeArtifactState[];
     readonly warnings: readonly string[];
   } => {
-    if (input.repository === undefined) {
+    if (!input.repositoryObservable) {
       const requested = (conclusionInput.artifacts ?? []).filter((path) => path.trim() !== "");
       return {
         states: Object.freeze([]),
@@ -252,7 +318,7 @@ function makeEpisodeService(input: {
       (conclusionInput.artifacts ?? [])
         .map((path) => path.trim())
         .filter((path) => path !== "")
-        .map(artifactState),
+        .map(input.artifactState),
     );
     return { states, warnings: episodeArtifactWarnings(states) };
   };
@@ -452,16 +518,80 @@ export function composeContinuityCapability(input: ContinuityCompositionInput): 
           ...(input.clock === undefined ? {} : { clock: input.clock }),
         });
 
+  /**
+   * PWRS-C: the completed attempts whose result commits a candidate artifact may live in. A VERIFYING
+   * task's candidate is preferred over older history; within each group the newest attempt wins.
+   */
+  const candidates = (): readonly { attemptId: string; taskId: string | null; resultCommit: string }[] => {
+    if (input.controller.attemptResultCommit === undefined) return [];
+    const status = input.controller.status();
+    const taskStates = new Map(status.tasks.map((task) => [task.task_id, task.state]));
+    const rows = [...status.attempts]
+      .filter((attempt) => attempt.state === "COMPLETED")
+      .reverse()
+      .map((attempt) => {
+        let resultCommit: string | null = null;
+        try {
+          resultCommit = input.controller.attemptResultCommit!(attempt.attempt_id);
+        } catch {
+          resultCommit = null;
+        }
+        if (resultCommit === null || resultCommit === "") return null;
+        const taskState = attempt.task_id === null ? null : taskStates.get(attempt.task_id) ?? null;
+        return { attemptId: attempt.attempt_id, taskId: attempt.task_id, taskState, resultCommit };
+      })
+      .filter((row): row is { attemptId: string; taskId: string | null; taskState: string | null; resultCommit: string } => row !== null);
+    rows.sort((left, right) => (left.taskState === "VERIFYING" ? 0 : 1) - (right.taskState === "VERIFYING" ? 0 : 1));
+    return Object.freeze(rows.map(({ attemptId, taskId, resultCommit }) => ({ attemptId, taskId, resultCommit })));
+  };
+  const artifactState = makeArtifactObserver({
+    ...(input.repository === undefined ? {} : { repository: input.repository }),
+    candidates,
+  });
+
+  /**
+   * PWRS-C: the per-read artifact overlay. `buildPulseEpisode` already compares revisions, head and
+   * basis-bearing journal records; this adds the fact those cannot see — the named bytes changed while
+   * the project revision and HEAD stayed put. It never invents a change: unrecorded digests are not
+   * compared.
+   */
+  const observedPulse: ProjectPulseService | undefined =
+    pulse === undefined
+      ? undefined
+      : Object.freeze({
+          async pulse() {
+            const base = await pulse.pulse();
+            if (input.repository === undefined || base.episode.conclusion === null) return base;
+            const recorded = base.episode.conclusion.check.artifacts ?? [];
+            if (recorded.length === 0) return base;
+            const nowStates = recorded.map((state) => artifactState(state.path));
+            const reasons = artifactChangeReasons(recorded, nowStates);
+            if (reasons.length === 0) return base;
+            const changedSince = [...base.episode.changedSince, ...reasons];
+            return Object.freeze({
+              ...base,
+              episode: Object.freeze({
+                ...base.episode,
+                state: "REOPENED" as const,
+                current: false,
+                changedSince: Object.freeze(changedSince),
+                detail: `the conclusion is REOPENED: ${changedSince.join("; ")}. Re-read the current state before relying on the earlier judgement`,
+              }),
+            });
+          },
+        });
+
   const episode =
-    workspace === undefined || pulse === undefined
+    workspace === undefined || observedPulse === undefined
       ? undefined
       : makeEpisodeService({
           projectId: input.projectId,
           workspace,
-          pulse,
-          ...(input.repository === undefined ? {} : { repository: input.repository }),
+          pulse: observedPulse,
+          repositoryObservable: input.repository !== undefined,
+          artifactState,
           ...(input.clock === undefined ? {} : { clock: input.clock }),
         });
 
-  return Object.freeze({ continuity, domainOutcome, contribution, pulse, episode });
+  return Object.freeze({ continuity, domainOutcome, contribution, pulse: observedPulse, episode });
 }

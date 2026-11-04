@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "profileId": "pwrs-host",
+  "projectId": "pwrs",
+  "localPeer": "local-operator",
+  "repository": "C:/Users/66494/pwrs/host-1/world",
+  "execution": "worktree",
+  "concurrency": 1,
+  "toolProfile": "normal",
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "-e",
+          "process.exit(0)"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "Stay inside the declared write scope, leave the required artifact, and do not treat an unverified source claim as accepted."
+  },
+  "transport": {
+    "namespace": "pwrs-host",
+    "databasePath": "C:/Users/66494/pwrs/host-1/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "C:/Users/66494/pwrs/host-1/state/palimpsest.sqlite",
+    "ordarium": "C:/Users/66494/pwrs/host-1/state/ordarium.sqlite",
+    "coordination": "C:/Users/66494/pwrs/host-1/state/coordination.sqlite",
+    "transportCursors": "C:/Users/66494/pwrs/host-1/state/transport-cursors.sqlite",
+    "projectJournal": "C:/Users/66494/pwrs/host-1/state/journal.sqlite",
+    "projectAssociations": "C:/Users/66494/pwrs/host-1/state/associations.sqlite",
+    "management": "C:/Users/66494/pwrs/host-1/state/management.sqlite"
+  },
+  "reasoning": {}
+}

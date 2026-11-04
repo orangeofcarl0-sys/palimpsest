@@ -57,6 +57,7 @@ import { firstPartyAttemptResultVerificationSource } from "../project_verificati
 import type { WorkDelegationService, WorkWorkerRunPort } from "../interaction/work_delegation.js";
 import { makeWorkDelegationService } from "../interaction/work_delegation.js";
 import { makeResultContinuationService, type ResultContinuationService } from "../continuation/service.js";
+import { gitTextRunner, planPathReuse } from "../work/path_reuse.js";
 import type {
   ContinuationCanonicalPort,
   ContinuationExecutionPort,
@@ -104,6 +105,11 @@ export interface ContinuationCompositionOptions {
    * Absent ⇒ the port's own `DIRECT_CHILD_IPC` default applies.
    */
   readonly sessionSourceQualification?: import("../interaction/work_delegation.js").WorkerSessionSourceQualification | undefined;
+  /**
+   * PWRS-A: the durable execution-relay record, written after a worker-path settlement. Absent ⇒ the
+   * settlement still carries its attribution, but no journal note is written for this route.
+   */
+  readonly executionRelay?: import("./execution_relay.js").ExecutionRelayRecorder | undefined;
 }
 
 export interface ContinuationCompositionInput {
@@ -234,6 +240,28 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
       : makeWorkDelegationService({
           controller,
           workerFor: options.workWorkerPort,
+          /**
+           * PWRS-A: the worker-path settlement is recorded through the SAME durable relay recorder the
+           * principal path uses. Awaited BEFORE the job turns terminal, so a caller that observes
+           * FINISHED can read the record.
+           */
+          ...(options.executionRelay === undefined
+            ? {}
+            : {
+                onSettlement: async (record: {
+                  readonly taskId: string;
+                  readonly attemptId: string;
+                  readonly baseCommit: string;
+                  readonly resultCommit: string;
+                  readonly attribution: import("../work/execution_relay.js").ExecutionAttribution;
+                }) => {
+                  try {
+                    await options.executionRelay!.record(record);
+                  } catch {
+                    /* the settlement is canonical; a derived record failure must not undo it */
+                  }
+                },
+              }),
           /**
            * Trajectory-P2-C §7.3 / P2-D0 §7.1–§7.2: wire the durable recorder at the Parent observation
            * boundary when one was composed.
@@ -439,53 +467,13 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     const observed = worldObservation?.observeSource();
     const currentRevision = observed !== undefined && observed.ok ? observed.revision.revision : "";
     if (currentRevision === "") return null;
-    const nameOnly = (from: string, to: string): readonly string[] | null => {
-      if (from === to) return [];
-      try {
-        return execFileSync("git", ["-C", repository, "diff", "--name-only", "--no-renames", from, to], {
-          encoding: "utf8",
-          maxBuffer: 8 * 1024 * 1024,
-        })
-          .split(/\r?\n/u)
-          .map((line) => line.trim())
-          .filter((line) => line !== "");
-      } catch {
-        return null;
-      }
-    };
-    const resultPaths = nameOnly(baseRevision, resultRevision);
-    const currentPaths = nameOnly(baseRevision, currentRevision);
-    if (resultPaths === null || currentPaths === null) return null;
-    const current = new Set(currentPaths);
-    const conflicted: string[] = [];
-    const alreadyPresent: string[] = [];
-    for (const path of resultPaths) {
-      if (!current.has(path)) continue;
-      const blob = (revision: string): string | null => {
-        try {
-          return execFileSync("git", ["-C", repository, "rev-parse", `${revision}:${path}`], { encoding: "utf8" }).trim();
-        } catch {
-          return null;
-        }
-      };
-      const resultBlob = blob(resultRevision);
-      const currentBlob = blob(currentRevision);
-      if (resultBlob !== null && resultBlob === currentBlob) alreadyPresent.push(path);
-      else conflicted.push(path);
-    }
-    const unaffected = resultPaths.filter((path) => !current.has(path));
-    return Object.freeze({
-      baseRevision,
-      resultRevision,
-      currentRevision,
-      resultPaths: Object.freeze(resultPaths),
-      unaffectedPaths: Object.freeze(unaffected),
-      alreadyPresentPaths: Object.freeze(alreadyPresent),
-      conflictedPaths: Object.freeze(conflicted),
-      complete: true,
-      detail:
-        "read from the source tree diff at path granularity. `unaffectedPaths` may still be invalidated by a semantic change the tree diff cannot see; `conflictedPaths` must be recomputed, never overwritten from the old result",
-    });
+    /**
+     * PWRS-B: the diff is the SHARED path-reuse computation (`src/work/path_reuse.ts`), also used for
+     * a retained relay world. One implementation, so a completed result and an abandoned attempt can
+     * never disagree about what "unaffected" means.
+     */
+    const facts = planPathReuse({ run: gitTextRunner(repository), baseRevision, resultRevision, currentRevision });
+    return facts === null ? null : Object.freeze({ ...facts });
   }
 
   /** The WORLD port: D3-a + the authority-bearing observations + the existing D3-b issuer. */

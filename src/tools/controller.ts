@@ -52,7 +52,8 @@ import {
 import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
-import { makeMutatingAttemptService } from "../work/attempt_execution.js";
+import { makeMutatingAttemptService, makeExecutionInvocationLedger } from "../work/attempt_execution.js";
+import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
 import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
@@ -409,31 +410,11 @@ interface WorkWorkerAttemptContext {
  * `BASE_DRIFT` means the world's result is real but no longer based on the project's head; it is NOT
  * destroyed, and the attempt is NOT terminalised, because an external head move must not hand mutation
  * authority back as a side effect.
+ *
+ * PWRS-A: the shape now lives with the execution owner (`src/work/attempt_execution.ts`), which also
+ * carries the observed settlement attribution. This file imports it rather than redeclaring a second
+ * copy that silently drifts.
  */
-type MutatingWorkSettlement =
-  | {
-      readonly state: "SETTLED";
-      readonly attemptId: string;
-      readonly resultCommit: string;
-      readonly changedFiles: readonly string[];
-      readonly exported: boolean;
-      readonly evidenceRecorded: readonly string[];
-      readonly detail: string;
-    }
-  | {
-      readonly state: "NOT_READY";
-      readonly attemptId: string;
-      readonly reason: string;
-      readonly detail: string;
-    }
-  | {
-      readonly state: "BASE_DRIFT";
-      readonly attemptId: string;
-      readonly resultCommit: string;
-      /** The result is retained in its world; it is D3's transplant input, never deleted here. */
-      readonly worldRetained: boolean;
-      readonly detail: string;
-    };
 
 /**
  * PLMP-LEAN-1 §D2-e1: the ONE thing settlement needs from an execution world.
@@ -622,6 +603,13 @@ export interface ProjectControllerOptions {
    * without the write, and so a test can assess a basis it recorded itself.
    */
   worldBasisRead?: WorldBasisReadPort | undefined;
+  /**
+   * PWRS-A: the HOST-LOCAL execution-invocation ledger, when this deployment observes worker
+   * invocations. Non-durable by design — after a restart an empty ledger means "not observed", never
+   * "no worker ran". Injected so the delegation transport and the principal surface share ONE memory
+   * of what this process actually saw.
+   */
+  executionInvocations?: ExecutionInvocationLedger | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   contextKnowledge?: (() => ContextKnowledgePorts | undefined) | undefined; // E1-K §10.3 read-through provider
@@ -654,6 +642,13 @@ export class ProjectController {
   readonly #worldBasisPort: WorldBasisCapturePort | undefined;
   /** §D3-a: the currentness read port. Composed together with the capture port, read independently. */
   readonly #worldBasisReadPort: WorldBasisReadPort | undefined;
+  /**
+   * PWRS-A: what THIS host process observed about worker invocations. Non-canonical and non-durable:
+   * the durable statement is the settlement's relay record in the project journal. It is public only
+   * so the one composition can bind the delegation transport and the principal surface to the SAME
+   * memory; it is not a work authority.
+   */
+  readonly executionInvocations: ExecutionInvocationLedger;
   /**
    * Transient gate diagnostics: the output tail of the last observation per (attempt, predicate,
    * command). Deliberately NOT persisted — the evidence atom's bytes are pinned by the Python
@@ -987,6 +982,8 @@ export class ProjectController {
       attemptContext: (attemptId: string) => this.#attemptContext(attemptId),
       attemptWorkDir: (attemptId: string) => this.#attemptWorkDirSync(attemptId),
       observeAttemptResult: (attemptId: string, baseCommit: string) => this.#observeAttemptResultSync(attemptId, baseCommit),
+      /** PWRS-A: the host's own invocation windows for one attempt. Non-durable observation memory. */
+      executionInvocations: (attemptId: string) => this.executionInvocations.list(attemptId),
       exportResultCommit: async ({ attemptId, commit }) => {
         const port = this.#executionWorldPort;
         if (port === undefined) return { imported: false, detail: "no execution world port is composed" };
@@ -1061,6 +1058,9 @@ export class ProjectController {
     this.#declaredConcurrency = options.concurrency;
     this.#worldBasisPort = options.worldBasis;
     this.#worldBasisReadPort = options.worldBasisRead;
+    // PWRS-A: ONE ledger per host process — the transport records the invocation windows and settlement
+    // reads them; an empty ledger means UNATTRIBUTED, never "no worker ran".
+    this.executionInvocations = options.executionInvocations ?? makeExecutionInvocationLedger({ ...(options.clock === undefined ? {} : { now: options.clock }) });
     this.#capabilities = options.capabilities ?? {
       independentVerifierAvailable: false,
       attemptResultVerificationAvailable: false,
@@ -2862,6 +2862,8 @@ export class ProjectController {
     readonly baseCommit: string;
     /** True when an existing attempt already holds the lane, so the delegation resumes rather than starts. */
     readonly resumed: boolean;
+    /** PWRS-A: the attempt that holds the lane on a RESUME — the identity a liveness read is about. */
+    readonly openAttempt: { readonly attemptId: string; readonly state: string } | null;
   } {
     // SR-2 §十一: the D2 decision ladder is the execution owner's; this is the compatibility façade.
     return this.attemptExecution.target(input);
@@ -2890,6 +2892,8 @@ export class ProjectController {
   async settleMutatingWork(input: {
     readonly attemptId: string;
     readonly workerOutcome: { readonly kind: "READY_FOR_SETTLEMENT" | "NEEDS_ESCALATION" | "HOST_FAILURE"; readonly detail?: string | undefined };
+    /** PWRS-A: which path closes the attempt, and whether a principal declared a continuation. */
+    readonly observation?: SettlementObservation | undefined;
   }): Promise<MutatingWorkSettlement> {
     return this.attemptExecution.settle(input);
   }

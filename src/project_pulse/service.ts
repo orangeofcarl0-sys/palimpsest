@@ -15,6 +15,7 @@ import {
   type ContributionChainEntry,
   type DelegationPulseEntry,
 } from "../project_contribution/index.js";
+import { EXECUTION_RELAY_MARKER, executionRelayRecords } from "../work/execution_relay.js";
 
 import type { ProjectPulse, PulseDecisionItem, PulseExecutionView } from "./types.js";
 
@@ -75,11 +76,26 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
         entry.entry.body.includes(CONTRIBUTION_DECISION_MARKER) ||
         entry.entry.body.includes(DELEGATION_START_MARKER) ||
         entry.entry.body.includes("<!-- pc1-consumption:v1 -->") ||
-        entry.entry.body.includes(EPISODE_MARKER)
+        entry.entry.body.includes(EPISODE_MARKER) ||
+        entry.entry.body.includes(EXECUTION_RELAY_MARKER)
       ) {
         structuredJournalIds.add(`journal:${entry.entry.entryId}`);
       }
     }
+    /**
+     * PWRS-C: only BASIS-BEARING records reopen a conclusion.
+     *
+     * The product cannot judge whether a plain human/agent note is semantically related to a delivery,
+     * so it stays conservative and lets such a note reopen the episode — a measured fact arriving as a
+     * note is exactly the ALHS scenario. What it no longer does is let its OWN BOOKKEEPING reopen
+     * deliveries: an undecided contribution record is routine accounting, not a new project fact. A
+     * contribution DECISION, a new delegation, a settlement record and a new episode conclusion are
+     * facts and do reopen.
+     */
+    const basisRelevant = (entry: { readonly body: string }): boolean =>
+      !entry.body.includes(CONTRIBUTION_MARKER) ||
+      entry.body.includes(CONTRIBUTION_DECISION_MARKER) ||
+      entry.body.includes(DELEGATION_START_MARKER);
     const openQuestions = summary.openQuestions.filter((item) => !structuredJournalIds.has(item.id));
 
     const delegations: DelegationPulseEntry[] = [];
@@ -156,6 +172,38 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
       })),
       readiness,
       basis: summary.basis,
+      taskStates: new Map(summary.tasks.map((task) => [task.taskId, task.state])),
+      basisRelevant,
+    });
+    /**
+     * PWRS-A: the durable settlement attributions, keyed by task. This is what lets a NEW session see
+     * that a result was written by the principal (or is unattributed) instead of reading a COMPLETED
+     * attempt as worker production.
+     */
+    const relayByTask = new Map(executionRelayRecords(entries.map((view) => ({ body: view.entry.body }))).map((record) => [record.taskId, record]));
+    const executionWithRelay: PulseExecutionView = Object.freeze({
+      ...execution,
+      attempts: Object.freeze(
+        execution.attempts.map((attempt) =>
+          Object.freeze({
+            ...attempt,
+            relay:
+              attempt.taskId === null || !relayByTask.has(attempt.taskId)
+                ? null
+                : (() => {
+                    const record = relayByTask.get(attempt.taskId)!;
+                    return {
+                      attribution: record.attribution.attribution,
+                      executor: record.attribution.executor,
+                      settledBy: record.attribution.settledBy,
+                      resultCommit: record.resultCommit,
+                      independenceEligible: record.attribution.independenceEligible,
+                      detail: record.attribution.detail,
+                    };
+                  })(),
+          }),
+        ),
+      ),
     });
 
     const decisionQueue: PulseDecisionItem[] = [];
@@ -229,8 +277,8 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
           kind: "EXECUTION_UNOBSERVED",
           ref: `task:${attempt.taskId ?? "unknown"}`,
           detail:
-            "the canonical attempt is open, but this host holds no job for it. It is NOT proven to be running: inspect the execution world and settle only from an observation, never by re-running the task blindly",
-          who: "OPERATOR",
+            "the canonical attempt is open, but this host holds no job for it. It is NOT proven to be running: inspect the execution world, then choose an explicit relay route — `takeover` to continue the same attempt after an observed exit or an explicit abandonment declaration, or `successor` to close it and continue in a NEW world with the retained reuse facts. Never re-run the task blindly into the same world",
+          who: "AGENT",
           advisory: true,
         });
       }
@@ -342,7 +390,7 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
       blocked: summary.blocked,
       contributions,
       delegations: Object.freeze(delegations),
-      execution,
+      execution: executionWithRelay,
       episode,
       decisionQueue: Object.freeze(decisionQueue),
       nextActions: Object.freeze({
