@@ -65,6 +65,7 @@ import { assessContinuation, type ContinuationAssessment } from "./assessment.js
 import type {
   ContinuationResolvedResult,
   ContinuationResultRef,
+  ContinuationReusePlan,
   ResultContinuationPorts,
 } from "./ports.js";
 
@@ -89,6 +90,11 @@ export interface ContinuationInspection {
   };
   /** Present exactly when the result resolved; the packaged assessment ALWAYS ran D3-b. */
   readonly assessment: ContinuationAssessment | null;
+  /**
+   * ALHS-B: path-level reuse facts, when this deployment can read them. Advisory only: a path here
+   * is not accepted content, and a conflict here is not an authorization to overwrite anything.
+   */
+  readonly reuse: ContinuationReusePlan | null;
   readonly availableActions: ContinuationAvailableActions;
   readonly detail: string;
 }
@@ -263,6 +269,7 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
 
     const reworkReason = reworkReasonFor(assessment);
     const reworkOpen = task?.state === "VERIFYING" && reworkReason !== null && assessment.rework.available;
+    const reuse = deps.world.reusePlan === undefined ? null : deps.world.reusePlan({ resolved });
     return {
       resolved,
       inspection: {
@@ -276,6 +283,7 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
           issuanceDigest: certificate === null ? null : certificate.issuanceDigest,
         },
         assessment,
+        reuse,
         availableActions: {
           rematerialize: assessment.reuse.rematerializationAvailable,
           rework: reworkOpen,
@@ -295,6 +303,7 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
       targetObservationDigest: null,
       compatibility: { outcome: "NOT_ASSESSED", issuanceDigest: null },
       assessment: null,
+      reuse: null,
       availableActions: { rematerialize: false, rework: false },
       detail,
     };

@@ -10,7 +10,7 @@
  *
  * Only the first is an executable fact. The second is not authority.
  */
-import type { ContinuityBasis, ContinuityItem, ContinuityTask, ProjectSummary } from "../project_continuity/index.js";
+import type { ContinuityBasis, ContinuityItem, ContinuityTask, ProjectSummary, PulseEpisode } from "../project_continuity/index.js";
 import type { ContributionChainEntry, DelegationPulseEntry } from "../project_contribution/types.js";
 
 export const PULSE_DECISION_KINDS = [
@@ -23,6 +23,7 @@ export const PULSE_DECISION_KINDS = [
   "ORPHANED_EXECUTION",
   "STOP_REQUESTED",
   "STALE_RESULT",
+  "EPISODE_REOPENED",
   "BLOCKED_EFFECT",
   "OPEN_QUESTION",
 ] as const;
@@ -77,6 +78,11 @@ export interface ProjectPulse {
   readonly contributions: readonly ContributionChainEntry[];
   readonly delegations: readonly DelegationPulseEntry[];
   readonly execution: PulseExecutionView;
+  /**
+   * ALHS-A: the episode's own convergence state. It is a judgement recorded by the principal plus the
+   * product's factual readiness check — never an acceptance, and never proof that the goal is met.
+   */
+  readonly episode: PulseEpisode;
   readonly decisionQueue: readonly PulseDecisionItem[];
   readonly nextActions: {
     /** What the scheduler/product can mechanically execute next. */

@@ -79,6 +79,8 @@ export interface ResultContinuationFace {
       };
       readonly rework: { readonly available: boolean; readonly blocker: string | null };
     } | null;
+    /** ALHS-B: path-level reuse facts, when the deployment can read them. */
+    readonly reuse?: import("../../continuation/ports.js").ContinuationReusePlan | null;
     readonly availableActions: { readonly rematerialize: boolean; readonly rework: boolean };
     readonly detail: string;
   };
@@ -254,6 +256,11 @@ export interface WorkApplicationSurface {
       readonly assessmentDigest: string | null;
       /** The observable candidate commit, when the attempt has a completed report. */
       readonly resultCommit: string | null;
+      /**
+       * ALHS-B: path-level reuse facts. `unaffectedPaths` may be reused by a NEW governed attempt;
+       * `conflictedPaths` must be recomputed. This is planning evidence, not acceptance.
+       */
+      readonly reuse: import("../../continuation/ports.js").ContinuationReusePlan | null;
       readonly detail: string;
     }[];
     readonly detail: string;
@@ -544,6 +551,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
             actions: inspection.availableActions,
             assessmentDigest: inspection.assessment?.assessmentDigest ?? null,
             resultCommit,
+            reuse: inspection.reuse ?? null,
             detail: inspection.detail,
           };
         });
