@@ -113,7 +113,12 @@ type Conclude = {
   state: string;
   blockers: string[];
   detail: string;
-  conclusion: { intent: string; conclusionId: string } | null;
+  warnings?: string[];
+  conclusion: {
+    intent: string;
+    conclusionId: string;
+    check?: { artifacts?: Array<{ path: string; present: boolean; tracked: boolean; committed: boolean }> };
+  } | null;
   episode: { state: string; current: boolean; changedSince: string[]; conclusion: { intent: string } | null } | null;
   session: { mayEnd: boolean; detail: string };
 };
@@ -226,6 +231,13 @@ describe("ALHS-A episode conclusion", () => {
     })) as unknown as Conclude;
     expect(delivered.state).toBe("RECORDED");
     expect(delivered.session.mayEnd).toBe(true);
+    expect(delivered.warnings?.join(" ")).toMatch(/not tracked/iu);
+    expect(delivered.conclusion?.check?.artifacts?.[0]).toMatchObject({
+      path: "deliverables/package.md",
+      present: true,
+      tracked: false,
+      committed: false,
+    });
 
     const before = (await call(installed, "palimpsest_continuity", { action: "pulse" })) as unknown as Pulse;
     expect(before.episode.state).toBe("DELIVERED");
@@ -244,6 +256,31 @@ describe("ALHS-A episode conclusion", () => {
     expect(after.episode.current).toBe(false);
     expect(after.episode.changedSince.join(" ")).toMatch(/journal/iu);
     expect(after.decisionQueue.some((item) => item.kind === "EPISODE_REOPENED")).toBe(true);
+  });
+
+  it("reports a committed artifact without a provenance warning", async () => {
+    const { repo, head, stateDir } = workspace("committed");
+    const installed = install(repo, stateDir);
+    await start(installed, head, []);
+    mkdirSync(join(repo, "deliverables"), { recursive: true });
+    writeFileSync(join(repo, "deliverables", "package.md"), "# Package\n\nA committed deployment package.\n");
+    execFileSync("git", ["add", "-A"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "package"], { cwd: repo });
+
+    const delivered = (await call(installed, "palimpsest_work", {
+      action: "conclude",
+      intent: "DELIVER",
+      statement: "The committed package is complete for this episode.",
+      artifacts: ["deliverables/package.md"],
+    })) as unknown as Conclude;
+    expect(delivered.state).toBe("RECORDED");
+    expect(delivered.warnings ?? []).toEqual([]);
+    expect(delivered.conclusion?.check?.artifacts?.[0]).toMatchObject({
+      path: "deliverables/package.md",
+      present: true,
+      tracked: true,
+      committed: true,
+    });
   });
 
   it("CONTINUE requires a next step and does not pretend the episode ended", async () => {

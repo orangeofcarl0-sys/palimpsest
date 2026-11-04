@@ -295,6 +295,7 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
                       "this deployment composes no episode conclusion path; the project journal or the pulse is absent, so a convergence judgement cannot be recorded",
                     blockers: Object.freeze([]),
                     readiness: null,
+                    warnings: Object.freeze([]),
                     session: Object.freeze({
                       mayEnd: false,
                       detail: "no episode state can be recorded here; keep working or use the ordinary project surfaces",
