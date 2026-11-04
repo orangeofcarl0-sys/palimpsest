@@ -86,10 +86,13 @@ for (const condition of ["F", "L", "G"]) {
   const criteria = criteriaFor(text);
   const passed = criteria.filter(([, ok]) => ok).length;
   let run = null;
-  try {
-    run = JSON.parse(readFileSync(join(RUN, "out", condition, "run.json"), "utf8"));
-  } catch {
-    run = null;
+  for (const name of ["run.json", "run-recovered.json"]) {
+    try {
+      run = JSON.parse(readFileSync(join(RUN, "out", condition, name), "utf8"));
+      break;
+    } catch {
+      run = null;
+    }
   }
   let acceptance = null;
   try {

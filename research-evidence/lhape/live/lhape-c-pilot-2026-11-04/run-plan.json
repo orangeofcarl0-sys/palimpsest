@@ -1,0 +1,48 @@
+{
+  "schema": "lhape-live-run-plan/v1",
+  "cohortId": "lhape-c-pilot-2026-11-04",
+  "codeFreeze": "81f230fbf6f488777a25814a177b0c8b17864ce6",
+  "requestedTokens": 7493762,
+  "hardCapTokens": 8000000,
+  "execute": true,
+  "sessions": [
+    {
+      "id": "pilot-f-1",
+      "condition": "F",
+      "maxTokens": 2500000,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=F",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-F\\sessions"
+    },
+    {
+      "id": "pilot-l-1",
+      "condition": "L",
+      "maxTokens": 2500000,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=L",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-L\\sessions"
+    },
+    {
+      "id": "pilot-g-1",
+      "condition": "G",
+      "maxTokens": 2493762,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=G",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-G\\sessions"
+    }
+  ],
+  "budgetGuard": "scripts/aps/budget_guard.mjs watches the real DSH usage stream and terminates the target above its session ceiling",
+  "startedAt": "2026-11-04T10:04:19.618Z"
+}

@@ -1,8 +1,12 @@
 # LHAPE — Long-Horizon Adaptive Project Execution 最终报告
 
-Status: **engineering qualification complete; paid model cohort BLOCKED.**
-本轮没有新的付费模型授权，因此没有任何真实模型调用。以下所有“模型”内容均为确定性 Messages
-替身，所有 Host、Worker 进程、工具执行、文件写入、Git commit、Promotion 和 Host kill 都是真实的。
+Status: **engineering qualification complete; bounded real-model F/L/G pilot executed under the
+2026-11-04 authorization; the full long-horizon cohort was not run.**
+
+确定性 Windows Host 场景中的模型内容仍是 Messages 替身；本轮后半段 owner 明确授权后，另行运行了一个
+有界的真实模型 F/L/G pilot（`deepseek-official/deepseek-flash`，7.5M aggregate）。结果见第 4 节和
+`docs/engineering/LHAPE-C-PILOT-RESULT.md`。所有 Host、Worker 进程、工具执行、文件写入、Git
+commit、Promotion 和 Host kill 都是真实的。
 
 ## 0. 结论
 
@@ -139,7 +143,7 @@ LayerFS 集成。
 | Public API (`--check-public-api`) | PASS，0 missing/changed/added |
 | 真实 Windows Host main scenario | PASS（revision 4，三任务 SATISFIED） |
 | 真实 Windows Host interrupt scenario | PASS（kill 后新 Host 恢复并 Promotion） |
-| 真实付费模型调用 | **0**；LHAPE-C cohort **BLOCKED** |
+| 真实付费模型调用 | 有界 F/L/G pilot：**7,428,768 tokens**（含 6,238 preflight），低于 7.5M；full cohort 未运行 |
 
 说明：本地 Windows 全局 DSH host 是 `0.2.1-rc.3`，项目 pin 的 Win32 seam 是
 `0.2.1-rc.5`；worker pre-create receipt 显示 `resolvedVersion=0.2.1-rc.5, drifted=false`。这不是
@@ -147,19 +151,33 @@ LayerFS 集成。
 
 ## 4. LHAPE-C 状态
 
-已准备：
+**已执行有界真实模型 pilot；完整长程 cohort 没有运行。**
 
-- `docs/programs/lhape/LHAPE-C-PROTOCOL.md`：F/L/G 定义、公平性约束、指标、预算/stop 规则。
-- `scripts/lhape/run_cohort.mjs`：fail-closed cohort gate。要求 `lhape-spend-authorization/v1`
-  覆盖本 cohort、provider、F/L/G、aggregate ceiling 和未来 expiry；本地硬上限 8,000,000 tokens；
-  `--execute` 时每 session 仍经真实 usage 读取的 budget guard。
-- `scripts/lhape/cohort_session.mjs`：authorized session entry；没有同一 authorization 时拒绝启动。
-- `research-evidence/lhape/live/cohort-pre-registration.json`：预注册 cohort。
-- `research-evidence/lhape/live/lhape-c-long-horizon-2026-11-03/BLOCKED.json`：
-  `state=BLOCKED`，`modelCalls=0`，blocker 是“no LHAPE spend authorization”。
+Owner 于 2026-11-04 授权后，运行了一个 session-per-condition 的 F/L/G pilot：
 
-结论：**LHAPE-C 的付费 F/L/G 长程 cohort 没有运行，也不得运行**。本轮没有任何模型成本优势、
-业务质量或跨条件比较的结论。
+| Condition | Rubric | Tokens | Ceiling stop | 最终 artifact |
+|---|---|---:|---|---|
+| F | **7/7** | 2,528,297 | 是（2.5M） | 36,472 bytes |
+| L | **7/7** | 2,562,093 | 是（2.5M） | 31,591 bytes |
+| G | **7/7** | 2,332,140 | 是（2.3M） | 33,272 bytes |
+
+- 总用量 **7,428,768**（含 6,238 preflight），低于 7.5M；每个条件都在 ceiling 停止，停止点比各自
+  ceiling 高 0.03–0.06M（usage 在 assistant-message 边界写入，guard 在首次观察到超限时终止）。
+- 三个 condition 都在 session 运行中收到了 700 mm measured constraint；三个最终 package 都真正
+  使用了 700 mm 并排除了 site B 的 900 mm unit。prompt 没有泄露 hidden dependency 或预期 replan。
+- G 使用正式 Work task + 独立 world + 真实 worker；worker 已 commit package 但在 budget stop 前
+  未 report。新 Host 从已提交 world 观察并 SETTLED，再经 operator Promotion 接受（task SATISFIED）。
+- **没有质量或成本优势结论**：三个 condition 都是 7/7，n=1；G 的 cap 因 F/L 已用尽 aggregate 而降为
+  2.3M，因此 token 数不是匹配成本比较；三者都被 budget stop，不是自然完成。
+- 完整长程 cohort（T1–T7、跨 session principal 序列、重复/配对样本）**仍未运行**。
+
+已准备的入口仍保留：
+
+- `docs/programs/lhape/LHAPE-C-PROTOCOL.md`、`scripts/lhape/run_cohort.mjs`（fail-closed）、
+  `scripts/lhape/run_condition.mjs`、`scripts/lhape/score_pilot.mjs`。
+- 证据：`research-evidence/lhape/live/lhape-c-pilot-2026-11-04/`；
+  详细结果：`docs/engineering/LHAPE-C-PILOT-RESULT.md`。
+- 授权前的 `lhape-c-long-horizon-2026-11-03/BLOCKED.json` 保留为历史记录，不代表本次 pilot。
 
 ## 5. 架构收敛
 
@@ -194,7 +212,8 @@ Promotion、ProjectJournal、ProjectContinuity、ProjectPulse。没有第二套 
   或 project source 传递。
 - Operator acceptance 仍需显式 tick 才能把 ACTIVE 完成迁移到 VERIFYING；这是既有 D5 合同，
   不是本轮新增的自动接受。
-- 没有 real-model 长程行为、没有 F/L/G cohort、没有成本结论。
+- 只有 one-session-per-condition 的真实模型 pilot，没有完整 T1–T7 长程 cohort、跨 session principal
+  序列或重复/配对样本；没有质量或成本优势结论。
 - 旧 baseline 结果的 compatibility 是 `INCOMPATIBLE`，因此本轮选择了 rework，而不是 reuse；没有
   证明“部分有价值的旧结果被复用”的收益。
 
@@ -209,6 +228,8 @@ Promotion、ProjectJournal、ProjectContinuity、ProjectPulse。没有第二套 
 continuation 完成；真实 Host kill 后的已提交世界被新 Host 结算；最终三个任务通过既有 Promotion
 被接受，revision 4，`NO_ACTION`。
 
-但这不是“Palimpsest 优于强原生 DSH”的证明：模型是确定性替身，F/L/G 真实 cohort 因无新授权而
-BLOCKED，且 Windows 单 Host 的 worker 容量限制真实存在。若要回答业务价值和比较收益，必须获得新的
-明确模型授权后运行 LHAPE-C；不得把本轮结果当作该比较的替代品。
+但这不是“Palimpsest 优于强原生 DSH”的证明。确定性场景的模型是替身；获得 2026-11-04 授权后的
+有界真实模型 pilot 中，F/L/G 都达到 7/7，三者都被各自的 token ceiling 停止，G 的 worker 在 stop
+前已 commit、由新 Host 从 world 结算并经 Promotion 接受；没有质量或成本优势。完整长程 cohort
+仍未运行，Windows 单 Host 的 worker 容量限制也真实存在。不得把本轮 pilot 当作完整 LHAPE-C 或
+Palimpsest 优越性的替代品。

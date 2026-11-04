@@ -51,6 +51,10 @@ JSON
     apiKeyEnv: C6R_PLACEHOLDER
 - id: llm-pi-ai
   disabled: true
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: deepseek-flash
 - id: permission
   config:
     presets:
@@ -74,6 +78,10 @@ JSON
     apiKeyEnv: C6R_PLACEHOLDER
 - id: llm-pi-ai
   disabled: true
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: deepseek-flash
 - id: permission
   config:
     presets:
