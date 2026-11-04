@@ -41,7 +41,7 @@ YAML
   cp -r "$REPO/host/deployment" "$HOME_COND/profiles/node_modules/palimpsest-host-deployment"
   if [ "$condition" = "F" ]; then
     cat > "$PROFILE_DIR/package.json" <<'JSON'
-{ "name": "dsh-profile-lhape-f", "private": true, "dependencies": {}, "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base"], "patchReload": "startup" } } }
+{ "name": "dsh-profile-lhape-pilot", "private": true, "dependencies": {}, "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base"], "patchReload": "startup" } } }
 JSON
     cat > "$PROFILE_DIR/cordis.patch.yml" <<'YAML'
 - id: llm-pi-ai
