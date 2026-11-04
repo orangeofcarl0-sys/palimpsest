@@ -11,22 +11,29 @@
   "reportCommit": "a267632f99611f9e355377396d2804ed8b91ab9d",
   "note": "This manifest records the core real-model run and the engineering evidence. No push, PR or merge was performed.",
   "modelCalls": {
-    "realModelSessions": 4,
-    "providerRequests": 103,
-    "providerSuccess": 102,
-    "providerUpstreamTimeout": 1,
-    "tokens": 4609104
+    "realModelSessions": 8,
+    "providerRequests": 194,
+    "providerSuccess": 192,
+    "providerUpstreamTimeout": 2,
+    "tokens": 8465200
   },
   "cohort": {
     "id": "alhs-c-2026-11-04",
-    "state": "CORE_EXECUTED_DIAGNOSTIC_NOT_AUTHORIZED",
+    "state": "CORE_AND_REPEAT_EXECUTED_DIAGNOSTIC_NOT_AUTHORIZED",
     "authorization": "research-evidence/alhs/live/authorization.json",
     "protocol": "docs/programs/alhs/ALHS-C-PROTOCOL.md",
     "coreResult": "docs/engineering/ALHS-C-CORE-RESULT.md",
     "coreEvidence": "research-evidence/alhs/core-2026-11-04/",
     "coreSummary": "research-evidence/alhs/core-2026-11-04/core-summary.json",
     "diagnostic": "NOT_AUTHORIZED_NOT_RUN",
-    "repeatCore": "PRE_REGISTERED_NOT_AUTHORIZED",
+    "repeatCore": {
+      "state": "EXECUTED",
+      "authorization": "research-evidence/alhs/live/authorization-repeat.json",
+      "protocol": "docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md",
+      "result": "docs/engineering/ALHS-C-REPEAT-RESULT.md",
+      "evidence": "research-evidence/alhs/repeat-2026-11-04/",
+      "summary": "research-evidence/alhs/repeat-2026-11-04/core-summary.json"
+    },
     "repeatProtocol": "docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md",
     "repeatPlan": "research-evidence/alhs/live/repeat-plan/run-plan.json",
     "preAuthorizationBlock": "research-evidence/alhs/live/BLOCKED.json"
@@ -92,10 +99,47 @@
     "budgetReserve": "implemented and validated: F-2 stopped 49,572 above the soft ceiling and 100,428 below the hard ceiling"
   },
   "notClaimed": [
-    "repeated-sample real-model convergence advantage",
+    "powered repeated-sample convergence advantage",
     "F/A quality or cost advantage",
     "real-model governed cooperation (A chose direct work plus one native subagent)",
     "autonomous discovery of the reuse path by a model",
     "semantic reuse beyond path-level facts"
-  ]
+  ],
+  "repeat": {
+    "F": {
+      "rubric": "7/7",
+      "tokens": 2797303,
+      "naturalEnd": false,
+      "packagesBytes": 28308,
+      "packageSha256": "bcae7d3db7175d30c4274c87109d379e4198f887f27c85dabff5a133a52e7edc"
+    },
+    "A": {
+      "rubric": "7/7",
+      "tokens": 1058793,
+      "naturalEnd": true,
+      "episode": "episode-7bfc0aac64f7bb5af3158a62",
+      "committed": "f38f084d301dbd4a2ea9c4d13aae51b2424ab011",
+      "packagesBytes": 28251,
+      "packageSha256": "8661b87fbd19290a2b48d0a46b835db4d87ba70e0df77bbea334a50dc0a11d84"
+    },
+    "aggregateTokens": 3856096,
+    "authorizedTokens": 8000000,
+    "budgetStop": {
+      "session": "F-2b",
+      "ledgerTokens": 2370233,
+      "softCeiling": 2350000,
+      "overshoot": 20233,
+      "underHardCeiling": 129767
+    },
+    "firstWindows": {
+      "F": 427070,
+      "A": 449012
+    }
+  },
+  "combined": {
+    "totalTokens": 8465200,
+    "authorizedTokens": 20000000,
+    "remainingTokens": 11534800,
+    "note": "Core 12M + repeat-core 8M authorizations, both fully consumed in planned sessions."
+  }
 }

@@ -1,10 +1,25 @@
 # ALHS-C repeat-core — balanced-interruption pre-registration
 
-Status: **PRE-REGISTERED ONLY. NOT AUTHORIZED. NOT RUN.**
-This is a new stage, not the executed core. The core result is
-`docs/engineering/ALHS-C-CORE-RESULT.md`.
+Status: **EXECUTED 2026-11-04 under the owner's repeat-core authorization (8,000,000 aggregate).**
+Result: `docs/engineering/ALHS-C-REPEAT-RESULT.md`;
+evidence: `research-evidence/alhs/repeat-2026-11-04/`. The diagnostic L/G stage did not run.
 
 Code freeze for the product: `a62fc32a554448f5f8cfb67801a7e0b7094c9100`.
+
+## Amendment 1 (before any repeat model session)
+
+The first repeat launch failed at the provider-proxy bind (`EADDRINUSE` on 18087): **0 model calls,
+0 tokens**. While validating the relaunch, the 1,200,000-token milestone was found unreachable for F
+within the 600s wall-clock backstop, using the core's measured rates (F-1: 165,963 tokens in 240s;
+A-1: 1,292,562 in 240s). F would have hit the backstop first, so the interruption would not be the
+same token milestone.
+
+The milestone is therefore lowered to **400,000 reported tokens** for both conditions. It is still
+above both core first-valid thresholds (F 240,070; A 282,186), so each condition has produced a
+package before the interruption. The wall-clock backstop is extended from 600s to **900s** so F can
+reach the milestone at its measured rate; the milestone remains the primary rule. Ceilings, reserve,
+session count and the 8,000,000 aggregate are unchanged. No repeat session data existed when this was
+applied.
 
 ## 1. Why repeat
 
@@ -14,7 +29,7 @@ conditions very different first-window work (A-1 1,292,562 tokens; F-1 165,963).
 totals are therefore not a matched-work comparison.
 
 This stage repeats the pair with one design change: **the interruption is a token milestone, not a
-wall clock**. Session 1 is killed when the real-usage guard reports the same threshold (1,200,000
+wall clock**. Session 1 is killed when the real-usage guard reports the same threshold (400,000
 tokens) in both conditions, with a wall-clock backstop. The constraint still arrives at T+60s.
 
 ## 2. Design
@@ -23,7 +38,7 @@ tokens) in both conditions, with a wall-clock backstop. The constraint still arr
 |---|---|
 | Conditions | F (strong native DSH), A (adaptive Palimpsest) |
 | New pairs | 1 per condition (this is pair #2 overall; the core was pair #1) |
-| Session 1 | ceiling 1,500,000; killed at the 1,200,000-token milestone; wall-clock backstop 600s |
+| Session 1 | ceiling 1,500,000; killed at the 400,000-token milestone (Amendment 1); wall-clock backstop 900s |
 | Session 2 | ceiling 2,500,000; new principal session on the same durable state |
 | Reserve | 150,000 per session; soft stop = ceiling − reserve |
 | Aggregate | 8,000,000 |
@@ -31,7 +46,7 @@ tokens) in both conditions, with a wall-clock backstop. The constraint still arr
 | Prompts | identical to the core stage; no expected replan, no evaluator oracle |
 
 The token milestone is read from the real-usage ledger, which observes usage after a message; the
-kill therefore happens at the first observation at or above 1,200,000, not at an exact token count.
+kill therefore happens at the first observation at or above 400,000, not at an exact token count.
 
 ## 3. Measurements
 
