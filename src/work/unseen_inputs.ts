@@ -19,8 +19,8 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, realpathSync, statSync } from "node:fs";
+import { join, sep } from "node:path";
 
 const STATUS_PREFIX = 3;
 /** A single input larger than this is reported as unreadable, not silently dropped. */
@@ -101,6 +101,41 @@ function safeRelativePath(path: string): boolean {
 }
 
 /**
+ * The ONE bounded read of a project-relative file.
+ *
+ * Three properties are enforced here rather than at each caller: the path is project-relative (no
+ * traversal, no drive), the RESOLVED path stays inside the repository (a symlink or junction must not
+ * turn an input handle into a host filesystem read), and the bytes fit the observation budget. A
+ * caller that only needs "is it readable" can treat any detail as unreadable; a caller that needs the
+ * bytes gets them or an honest reason.
+ */
+export function readBoundedProjectFile(
+  repository: string,
+  path: string,
+  maxBytes: number,
+): { readonly bytes: Buffer } | { readonly detail: string; readonly code?: string } {
+  if (!safeRelativePath(path)) return { detail: "the path is not a project-relative input path" };
+  let root: string;
+  let target: string;
+  try {
+    root = realpathSync(repository);
+    target = realpathSync(join(repository, path));
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    return { detail: error instanceof Error ? error.message : String(error), ...(code === undefined ? {} : { code }) };
+  }
+  const prefix = root.endsWith(sep) ? root : `${root}${sep}`;
+  if (target !== root && !target.toLowerCase().startsWith(prefix.toLowerCase())) {
+    return { detail: `the path resolves outside the repository (${target}); a project input must live inside it` };
+  }
+  const size = statSync(target).size;
+  if (size > maxBytes) {
+    return { detail: `content is ${String(size)} bytes, above the ${String(maxBytes)}-byte observation budget` };
+  }
+  return { bytes: readFileSync(target) };
+}
+
+/**
  * Observe the canonical project inputs relevant to one attempt basis.
  *
  * The observation is bounded and honest about its limits: it uses the canonical repository, it does
@@ -152,18 +187,16 @@ export function observeProjectInputs(input: {
   const addWorktree = (path: string, identity: ProjectInputIdentity): void => {
     if (!safeRelativePath(path) || path.startsWith(".palimpsest/") || seen.has(path)) return;
     seen.add(path);
-    let bytes: Buffer;
-    try {
-      bytes = readFileSync(join(input.repository, path));
-    } catch (error) {
-      const code = (error as { code?: string }).code;
-      if (code === "ENOENT") {
+    const read = readBoundedProjectFile(input.repository, path, maxBytes);
+    if ("detail" in read) {
+      if (read.code === "ENOENT") {
         inputs.push(Object.freeze({ path, identity, content: "ABSENT", digest: null, bytes: 0, revision: input.baseCommit, observedAt: now() }));
         return;
       }
-      unreadable.push(Object.freeze({ path, detail: error instanceof Error ? error.message : String(error) }));
+      unreadable.push(Object.freeze({ path, detail: read.detail }));
       return;
     }
+    const bytes = read.bytes;
     if (bytes.byteLength > maxBytes) {
       unreadable.push(Object.freeze({ path, detail: `content is ${String(bytes.byteLength)} bytes, above the ${String(maxBytes)}-byte observation budget` }));
       return;
@@ -278,23 +311,27 @@ export function readProjectInput(request: ReadProjectInputRequest): ProjectInput
   }
   const maxBytes = request.maxBytes ?? MAX_PROJECT_INPUT_BYTES;
   let bytes: Buffer;
-  try {
-    if (request.content === "COMMIT") {
+  if (request.content === "COMMIT") {
+    try {
       bytes = execFileSync("git", ["-C", request.repository, "cat-file", "blob", `${request.revision}:${request.path}`], {
         maxBuffer: maxBytes + 1024,
         stdio: ["ignore", "pipe", "ignore"],
       });
-    } else if (request.content === "WORKTREE") {
-      bytes = readFileSync(join(request.repository, request.path));
-    } else {
-      return Object.freeze({ state: "CHANGED" as const, path: request.path, expectedDigest: request.expectedDigest ?? null, currentDigest: null, detail: "the input was observed as absent" });
+    } catch (error) {
+      return Object.freeze({
+        state: "UNAVAILABLE" as const,
+        path: request.path,
+        detail: error instanceof Error ? error.message : String(error),
+      });
     }
-  } catch (error) {
-    return Object.freeze({
-      state: "UNAVAILABLE" as const,
-      path: request.path,
-      detail: error instanceof Error ? error.message : String(error),
-    });
+  } else if (request.content === "WORKTREE") {
+    const read = readBoundedProjectFile(request.repository, request.path, maxBytes);
+    if ("detail" in read) {
+      return Object.freeze({ state: "UNAVAILABLE" as const, path: request.path, detail: read.detail });
+    }
+    bytes = read.bytes;
+  } else {
+    return Object.freeze({ state: "CHANGED" as const, path: request.path, expectedDigest: request.expectedDigest ?? null, currentDigest: null, detail: "the input was observed as absent" });
   }
   const digest = sha256(bytes);
   if (request.expectedDigest !== undefined && digest !== request.expectedDigest) {
@@ -350,9 +387,13 @@ export function canonicalWorktreeChanges(repository: string): readonly string[] 
  * ODPE-A: is every dirty canonical path a CURRENT INPUT the new attempt can be given, or is some of
  * it unowned work the product cannot attribute?
  *
- * A path counts as covered when the input observation read it (a digest for content, an explicit
- * absence for a deletion). A status directory entry (`updates/`) is covered when every observed
- * input lives under it. An observation that could not run at all covers nothing.
+ * The rule is the WRITE SCOPE, not readability. A dirty path inside a task's declared write scope is
+ * ambiguous with that task's own output, so it stays unowned work and blocks. A dirty path outside
+ * every scope cannot be an attempt's legitimate output at all — an envelope forbids it — so it is
+ * external reality even when its bytes do not fit the observation budget; a huge unrelated file must
+ * not stop every managed task. The observation still lists it (or names it unreadable), and a
+ * principal settlement over it is refused until the principal acknowledges it, so "not blocking the
+ * start" never becomes "not a fact".
  */
 export function assessCanonicalInputs(input: {
   readonly repository: string;
@@ -370,29 +411,15 @@ export function assessCanonicalInputs(input: {
         `the working tree already has changes that belong to no attempt: ${input.unownedPaths.join(", ")} — the project's inputs could not be observed (${observation.detail}), so managed work does not begin on an unknown tree`,
     });
   }
-  const observed = new Set(observation.inputs.map((entry) => entry.path));
-  const covered = (path: string): boolean => {
-    const normalized = path.replace(/\/+$/u, "");
-    if (observed.has(normalized)) return true;
-    return [...observed].some((entry) => entry.startsWith(`${normalized}/`));
-  };
   const inScope = (path: string): boolean =>
     input.writeScopes.some((scope) => path === scope.replace(/\/+$/u, "") || path.startsWith(`${scope.replace(/\/+$/u, "")}/`));
-  /**
-   * A dirty path INSIDE a task's write scope is ambiguous with that task's output: it stays unowned
-   * work and blocks. A dirty path outside every scope can only be external reality, so a readable
-   * observation makes it a current input rather than a writer the product cannot attribute.
-   */
-  const stillUnowned = input.unownedPaths.filter((path) => {
-    const normalized = path.replace(/\/+$/u, "");
-    return inScope(normalized) || !covered(path);
-  });
+  const stillUnowned = input.unownedPaths.filter((path) => inScope(path.replace(/\/+$/u, "")));
   return Object.freeze({
     state: stillUnowned.length === 0 ? ("COVERED" as const) : ("BLOCKED" as const),
     stillUnowned: Object.freeze(stillUnowned),
     detail:
       stillUnowned.length === 0
-        ? "every dirty canonical path is a current input the new attempt can be given"
-        : `the working tree has changes that belong to no attempt and were not observable as project inputs: ${stillUnowned.join(", ")} — deal with them before managed work begins, or the product cannot prove which changes belong to this task`,
+        ? `every dirty canonical path is outside every task's write scope, so it is external reality rather than unowned work (${String(observation.inputs.length)} input(s) read, ${String(observation.unreadable.length)} unreadable)`
+        : `the working tree has changes inside a task's write scope that belong to no attempt: ${stillUnowned.join(", ")} — deal with them before managed work begins, or the product cannot prove which changes belong to this task`,
   });
 }
