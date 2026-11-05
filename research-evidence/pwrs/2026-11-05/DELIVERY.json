@@ -12,12 +12,12 @@
   "report": "docs/engineering/PWRS-RESULT.md",
   "evidence": "research-evidence/pwrs/2026-11-05/",
   "modelCalls": {
-    "realModelSessions": 8,
-    "paidTokens": 10293717,
-    "providerRequests": 271,
-    "providerSuccess": 267,
-    "providerUpstreamTimeout": 4,
-    "note": "PWRS-R F/A (4 sessions, 5,656,746), PWRS-R2 A-only (2 sessions, 2,807,867) and PWRS-R3 A-only (2 sessions, 1,829,104), each under its own research-evidence/pwrs/live authorization. The deterministic host run used the labelled Messages stand-in and consumed no model tokens."
+    "realModelSessions": 12,
+    "paidTokens": 15958310,
+    "providerRequests": 417,
+    "providerSuccess": 411,
+    "providerUpstreamTimeout": 6,
+    "note": "PWRS-R F/A (4 sessions, 5,656,746), PWRS-R2 A-only (2, 2,807,867), PWRS-R3 A-only (2, 1,829,104) and PWRS-R4 F/A (4, 5,664,593), each under its own research-evidence/pwrs/live authorization. The deterministic host run used the labelled Messages stand-in and consumed no model tokens."
   },
   "relay": {
     "routes": [
@@ -163,5 +163,49 @@
       "taskState": "SATISFIED",
       "revision": 1
     }
+  },
+  "retest4": {
+    "cohortId": "pwrs-r4-2026-11-05",
+    "report": "docs/engineering/PWRS-R4-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r4/",
+    "product": "e3110c8debaf15a9486720d9d36dbbd7c370e236",
+    "conditions": [
+      "F",
+      "A"
+    ],
+    "sessions": 4,
+    "tokens": {
+      "F": 2822617,
+      "A": 2841976,
+      "total": 5664593,
+      "aggregate": 10000000,
+      "remaining": 4335407
+    },
+    "rubric": {
+      "F": "7/7",
+      "A": "7/7"
+    },
+    "naturalEnd": {
+      "F": false,
+      "A": false
+    },
+    "final": {
+      "F": {
+        "bytes": 40974,
+        "settled": false
+      },
+      "A": {
+        "bytes": 25790,
+        "settled": false,
+        "attemptState": "RUNNING",
+        "taskState": "ACTIVE"
+      }
+    },
+    "reuse": {
+      "F": 0.954,
+      "A": null
+    },
+    "inputGateExercised": false,
+    "note": "Both conditions reached 7/7 and both were budget-stopped. A acknowledged the input preemptively, started a new attempt and produced a correct package but did not settle it. The R3 convergence did not replicate; no advantage is claimed."
   }
 }
