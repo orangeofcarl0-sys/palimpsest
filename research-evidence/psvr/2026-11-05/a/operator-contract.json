@@ -1,0 +1,76 @@
+{
+  "schema": "psvr-operator-acceptance/v1",
+  "label": "contract",
+  "projectId": "psvr-a",
+  "taskId": "contract",
+  "operator": "owner-authorized deterministic acceptance",
+  "acceptedAt": "2026-11-05T12:02:42.462Z",
+  "promoted": true,
+  "attemptId": "attempt-f9fa872820b0b7734dc611786188ef0b",
+  "before": {
+    "revision": 0,
+    "headCommit": "4121a0bc11edfa935381ba5f361647cd0631db94",
+    "tasks": [
+      {
+        "taskId": "client",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "contract",
+        "state": "VERIFYING"
+      },
+      {
+        "taskId": "server",
+        "state": "BLOCKED"
+      }
+    ]
+  },
+  "verification": {
+    "status": "recorded",
+    "typedReasonCode": "verified",
+    "verdict": "PASS",
+    "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+    "runRef": "pvrun-c4b70eed837c89ebd2d83988173b0f98",
+    "subjectDigest": "3494870a45bd08d47d4d690af5351af26fcc8ef191b108dd61954911496594c2"
+  },
+  "eligibility": {
+    "eligible": true,
+    "blockers": [],
+    "sourceCommit": "a3ae4fea35f53b9a8f5f9f4e77c16ff4a3413627",
+    "taskState": "VERIFYING",
+    "attemptState": "COMPLETED",
+    "canonicalExpectedHead": "4121a0bc11edfa935381ba5f361647cd0631db94"
+  },
+  "result": {
+    "promotionId": "promotion-84b7679f9f60495c86889e0fab37a4f8",
+    "sourceCommit": "a3ae4fea35f53b9a8f5f9f4e77c16ff4a3413627",
+    "expectedHeadCommit": "4121a0bc11edfa935381ba5f361647cd0631db94",
+    "resultingHeadCommit": "17f112edd0bbee2cf67fcbeeded6d9ddcb81244d",
+    "eventType": "PROMOTION_COMMITTED"
+  },
+  "headReconciliation": {
+    "status": "reconciled",
+    "revision": 1,
+    "fromHead": "4121a0bc11edfa935381ba5f361647cd0631db94",
+    "toHead": "17f112edd0bbee2cf67fcbeeded6d9ddcb81244d",
+    "blockers": []
+  },
+  "after": {
+    "revision": 1,
+    "headCommit": "17f112edd0bbee2cf67fcbeeded6d9ddcb81244d",
+    "tasks": [
+      {
+        "taskId": "client",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "contract",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "server",
+        "state": "READY"
+      }
+    ]
+  }
+}

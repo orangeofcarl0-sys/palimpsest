@@ -1,0 +1,54 @@
+{
+  "schema": "psvr-cohort-plan/v1",
+  "cohortId": "psvr-c-2026-11",
+  "stage": "psvr-c",
+  "provider": "deepseek-official/deepseek-flash",
+  "scenarios": [
+    "grpc-migration",
+    "energy-package"
+  ],
+  "sessions": [
+    {
+      "sessionId": "F-1",
+      "condition": "F",
+      "index": 1,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "interruption": [
+        "MATCHED_TOKEN",
+        "MATCHED_WORK_STATE"
+      ]
+    },
+    {
+      "sessionId": "F-2",
+      "condition": "F",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "interruption": []
+    },
+    {
+      "sessionId": "A-1",
+      "condition": "A",
+      "index": 1,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "interruption": [
+        "MATCHED_TOKEN",
+        "MATCHED_WORK_STATE"
+      ]
+    },
+    {
+      "sessionId": "A-2",
+      "condition": "A",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "interruption": []
+    }
+  ],
+  "aggregateCeiling": 12000000,
+  "plannedCeiling": 10000000,
+  "execution": "requested",
+  "modelCalls": 0
+}

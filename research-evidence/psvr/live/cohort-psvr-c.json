@@ -1,0 +1,140 @@
+{
+  "schema": "psvr-cohort/v1",
+  "cohortId": "psvr-c-2026-11",
+  "title": "PSVR-C — project continuity vs a strong native baseline on two interdependent project workloads",
+  "codeFreeze": "PENDING",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 12000000,
+  "status": "BLOCKED_NO_AUTHORIZATION",
+  "statusNote": "No paid session is authorized. This file is a pre-registration; scripts/psvr/run_psvr_c.mjs validates it and refuses to start a model without a current psvr-spend-authorization/v1. The ALHS/ODPE-R authorizations do NOT transfer (different schema and cohort id).",
+  "hypotheses": [
+    {
+      "id": "H1",
+      "statement": "On an interrupted multi-artifact project, project continuity reduces repeated investigation and re-implementation of work that already exists.",
+      "null": "The F baseline re-investigates and re-writes the same amount as A after the interruption.",
+      "observable": [
+        "files read again after the interruption that the agent had already read before it",
+        "lines rewritten that survive to the final result",
+        "tokens spent between the new session start and the first result-producing action"
+      ]
+    },
+    {
+      "id": "H2",
+      "statement": "When a new fact invalidates part of the work, result continuation preserves the still-valid part instead of restarting the artifact.",
+      "null": "The revised artifact differs from a from-scratch rewrite by no less than the preserved work.",
+      "observable": [
+        "artifact lines that predate the new fact and remain in the accepted result",
+        "the count of downstream artifacts revised only where the fact requires it",
+        "the checker's pass/fail on the accepted head"
+      ]
+    },
+    {
+      "id": "H3",
+      "statement": "On-demand governance (A) costs less than default governed execution (G) for the same usable outcome.",
+      "null": "A and G have the same total tokens per usable outcome.",
+      "observable": ["total tokens", "tool calls", "cost per usable outcome"],
+      "note": "G is diagnostic only and is not required in every cohort."
+    },
+    {
+      "id": "H4",
+      "statement": "In tasks with asynchronous cross-artifact dependencies, the governed path reduces wrong acceptance or mutually inconsistent artifacts.",
+      "null": "F and A produce the same number of source-inconsistent artifacts.",
+      "observable": [
+        "the scenario checker's assertions on the accepted head",
+        "operator findings that name an inconsistency the checker did not"
+      ]
+    }
+  ],
+  "conditions": {
+    "F": {
+      "profile": "headless",
+      "definition": "F+Finish+Commit: native DSH with native tools, subagents, worktrees and Git; ONE explicit instruction to stop when the deliverable is complete and to commit it. No Palimpsest project, Work, World, relay or episode."
+    },
+    "A": {
+      "profile": "palimpsest-adaptive",
+      "definition": "The adaptive product path: the principal starts from the user goal and decides whether to work directly, use a native subagent, delegate formal Work, continue an interrupted attempt, finalize and conclude. No fixed agent count and no pre-declared task graph in the prompt."
+    },
+    "G": {
+      "profile": "palimpsest-governed",
+      "definition": "Diagnostic only: the full governed Work path with a declared plan, used to separate the cost of complete governance from adaptation."
+    }
+  },
+  "scenarios": [
+    {
+      "id": "grpc-migration",
+      "domain": "software",
+      "fixture": "fixtures/psvr/grpc-migration",
+      "deliverable": "a runnable REST->gRPC migration with server-streaming readings, a client and integration tests",
+      "acceptance": ["node --test exits 0 on the accepted head", "the streaming RPC is declared and consumed incrementally", "the REST baseline tests still pass"],
+      "newFact": "updates/2026-11-03/compat-streaming.md (untracked, after the basis)"
+    },
+    {
+      "id": "energy-package",
+      "domain": "cross-domain",
+      "fixture": "fixtures/psvr/energy-deployment",
+      "deliverable": "six interdependent deployment artifacts with a consistent recommendation",
+      "acceptance": ["node check.mjs --final exits 0 on the accepted head", "the cost arithmetic and the schedule dates are re-derived from the sources", "the measured corridor supersedes the drawing"],
+      "newFact": "updates/2026-11-04/corridor-survey.md (untracked, after the basis)"
+    }
+  ],
+  "stages": [
+    {
+      "id": "psvr-c",
+      "conditions": ["F", "A"],
+      "sessionsPerCondition": 2,
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 12000000,
+      "interruptionControls": {
+        "MATCHED_TOKEN": "session 1 is stopped at the same reported-token milestone in both conditions",
+        "MATCHED_WORK_STATE": "session 1 is stopped after the first valid commit (grpc-migration) or after the first complete artifact pair (energy-package), whichever the scenario defines"
+      }
+    }
+  ],
+  "measurement": {
+    "business": "does the accepted head pass the scenario's own executable check",
+    "durability": "is the deliverable committed, and can it be rebuilt from the accepted commit alone",
+    "governance": "was the result accepted by the operator through the product's own path",
+    "autonomy": "did the agent choose collaboration, replanning and the end of the episode itself",
+    "cost": "total reported tokens, tool calls, wall time, and cost per usable outcome",
+    "separation": [
+      "Artifact exists",
+      "Artifact is correct",
+      "Artifact is committed",
+      "Candidate is settled",
+      "Asset is accepted",
+      "Episode is concluded"
+    ]
+  },
+  "metrics": [
+    "business_outcome_correctness",
+    "cross_artifact_consistency",
+    "executable_verification",
+    "actual_collaboration",
+    "causal_contribution",
+    "interruption_recovery",
+    "valid_work_reuse",
+    "invalid_work_rejection",
+    "final_asset_durability",
+    "natural_convergence",
+    "human_intervention",
+    "total_tokens",
+    "tool_calls",
+    "wall_time",
+    "rework_cost",
+    "cost_per_usable_outcome"
+  ],
+  "controls": {
+    "no_oracle": "no evaluator oracle, no correct task graph and no final solution in any prompt",
+    "no_post_hoc_repair": "a prompt is not repaired after the run starts",
+    "labelled_standins": "a deterministic stand-in is labelled and never scored as a cognitive agent",
+    "scoring": "business scoring is a separate pass over the accepted head; it is not read by the running agent"
+  },
+  "stopping": [
+    "the authorization expires",
+    "the aggregate ceiling is reached",
+    "a condition's session ceiling is reached",
+    "the adapter reports a provider failure twice in a row"
+  ],
+  "note": "One pair per condition and per scenario. Descriptive first: the cohort estimates effect size, it does not establish reliability. A sample-size increase needs a new authorization."
+}
