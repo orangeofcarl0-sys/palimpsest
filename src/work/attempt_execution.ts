@@ -74,6 +74,8 @@ export type MutatingWorkSettlement =
       readonly evidenceRecorded: readonly string[];
       /** PWRS-A: which execution window the product observed for the settled bytes. */
       readonly attribution: ExecutionAttribution;
+      /** PWRS-D: project inputs the attempt's basis did not contain, recorded even when not blocking. */
+      readonly inputsNotInBasis: readonly string[];
       readonly detail: string;
     }
   | { readonly state: "NOT_READY"; readonly attemptId: string; readonly reason: string; readonly detail: string }
@@ -163,6 +165,13 @@ export interface MutatingExecutionPorts {
    * while an observed invocation is still open.
    */
   executionInvocations(attemptId: string): readonly ExecutionInvocation[];
+  /**
+   * PWRS-D: project paths present now that the attempt's base commit does not contain.
+   *
+   * A non-empty list means the attempt worked on a basis the current tree has moved past without a
+   * commit recording it — a measured source dropped into the project, or an edited tracked file.
+   */
+  inputsNotInBasis(baseCommit: string): readonly string[];
   /** Export a frozen revision into the canonical object database. */
   exportResultCommit(input: { readonly attemptId: string; readonly commit: string }): Promise<{ readonly imported: boolean; readonly detail: string }>;
   /** Whether an execution-world port is composed at all. */
@@ -515,6 +524,27 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
       }
 
       /**
+       * PWRS-D — THE BASIS THE ATTEMPT NEVER SAW.
+       *
+       * A principal about to close the attempt must confront any project input that arrived after the
+       * attempt's base (the PWRS-R failure: a measured source was read, then a pre-measurement draft
+       * was settled). The product lists the paths and refuses until the caller ACKNOWLEDGES them; it
+       * does not judge whether they invalidate the work. The worker path records the fact without
+       * blocking, because no model is in that loop to act on a refusal.
+       */
+      const unseenInputs = ports.inputsNotInBasis(envelope.base_commit);
+      if (unseenInputs.length > 0 && observation.path === "PRINCIPAL" && observation.acknowledgeInputs !== true) {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "INPUTS_CHANGED_SINCE_BASIS",
+          detail:
+            `the project now holds inputs that this attempt's base ${envelope.base_commit.slice(0, 12)} never contained: ${unseenInputs.join(", ")} — ` +
+            "re-read them and decide whether the result still holds; if it does, settle again with acknowledgeInputs=true. This is a basis fact, not a content judgement",
+        });
+      }
+
+      /**
        * PWRS-A: WHAT THE PRODUCT CAN SAY ABOUT WHO EXECUTED. Computed before the effect chain so the
        * returned settlement and the durable relay record carry the same fact, and computed from the
        * host's own invocation windows — never from a caller's claim about authorship.
@@ -614,6 +644,7 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         exported,
         evidenceRecorded: evaluation.evidenceRecorded,
         attribution,
+        inputsNotInBasis: unseenInputs,
         detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}; ${evaluation.detail}; ${attribution.attribution}`,
       });
     },
@@ -626,3 +657,6 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
  * it keeps the host façade from acquiring another direct edge for a capability it only carries.
  */
 export * from "./execution_relay.js";
+
+/** PWRS-D: the unseen-input reader, re-exported so the host façade keeps one edge to this owner. */
+export { unseenInputs } from "./unseen_inputs.js";

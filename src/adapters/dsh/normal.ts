@@ -114,6 +114,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       route: { type: "string", enum: ["rematerialize", "rework"], description: "for continue: carry a compatible result onto the current world, or reopen the task for governed rework" },
       relayRoute: { type: "string", enum: ["takeover", "successor"], description: "for relay: takeover closes the SAME attempt after an observed worker exit (or an explicit abandonment declaration) and records principal recovery; successor closes an attempt this host cannot prove quiescent and returns the retained world's reuse facts so a NEW attempt continues in a new world" },
       declareExecutorAbandoned: { type: "boolean", description: "for relay route=takeover: your explicit declaration that the previous executor is abandoned when this host observed no confirmed exit. It is recorded as DECLARED, never as observed" },
+      acknowledgeInputs: { type: "boolean", description: "for complete/relay: your confirmation that you re-read project inputs that arrived after the attempt's base. The product lists such paths and refuses a principal settlement until you acknowledge them" },
       expectedAssessmentDigest: { type: "string", description: "for continue: the assessment digest returned by `results`; a stale digest is refused rather than applied to a moved world" },
       objective: { type: "string", description: "for propose: the Work objective for an approved source intake" },
       finding: { type: "string", description: "for explore: what was observed, with the limits of the observation" },
@@ -176,12 +177,17 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         if (declareExecutorAbandoned !== undefined && typeof declareExecutorAbandoned !== "boolean") {
           throw new ToolArgsError('argument "declareExecutorAbandoned" must be a boolean when given');
         }
+        const acknowledgeInputs = object.acknowledgeInputs;
+        if (acknowledgeInputs !== undefined && typeof acknowledgeInputs !== "boolean") {
+          throw new ToolArgsError('argument "acknowledgeInputs" must be a boolean when given');
+        }
         const summary = object.summary;
         if (summary !== undefined && typeof summary !== "string") throw new ToolArgsError('argument "summary" must be a string when given');
         return await work.relay({
           taskId,
           route: relayRoute,
           ...(declareExecutorAbandoned === undefined ? {} : { declareExecutorAbandoned }),
+          ...(acknowledgeInputs === undefined ? {} : { acknowledgeInputs }),
           ...(summary === undefined ? {} : { summary }),
         });
       }
@@ -285,11 +291,19 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       if (action === "complete") {
         const summary = object.summary;
         if (summary !== undefined && typeof summary !== "string") throw new ToolArgsError('argument "summary" must be a string when given');
+        const acknowledgeInputs = object.acknowledgeInputs;
+        if (acknowledgeInputs !== undefined && typeof acknowledgeInputs !== "boolean") {
+          throw new ToolArgsError('argument "acknowledgeInputs" must be a boolean when given');
+        }
         if (work.placement() !== "in-place") {
           const taskId = object.taskId;
           if (taskId !== undefined && typeof taskId !== "string") throw new ToolArgsError('argument "taskId" must be a string when given');
           if (taskId !== undefined) {
-            const result = await work.completeTask(summary === undefined ? { taskId } : { taskId, summary });
+            const result = await work.completeTask({
+              taskId,
+              ...(summary === undefined ? {} : { summary }),
+              ...(acknowledgeInputs === undefined ? {} : { acknowledgeInputs }),
+            });
             return {
               ...result,
               boundary: work.boundary(),
@@ -299,7 +313,10 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
                   : ["palimpsest_work action=workers", "palimpsest_work action=status"],
             };
           }
-          const result = await work.completePlaced(summary === undefined ? {} : { summary });
+          const result = await work.completePlaced({
+            ...(summary === undefined ? {} : { summary }),
+            ...(acknowledgeInputs === undefined ? {} : { acknowledgeInputs }),
+          });
           return {
             state: result.state,
             resultCommit: result.resultCommit,

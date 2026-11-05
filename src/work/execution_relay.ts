@@ -78,6 +78,12 @@ export interface SettlementObservation {
         readonly livenessBasis: "OBSERVED_EXIT" | "DECLARED_ABANDONED";
       }
     | undefined;
+  /**
+   * PWRS-D: the principal's explicit acknowledgement that the canonical tree holds inputs the
+   * attempt's base never contained. Required for a principal settlement when such inputs exist; the
+   * product lists them in the refusal, and the acknowledgement is recorded as a declaration.
+   */
+  readonly acknowledgeInputs?: boolean | undefined;
 }
 
 export const EXECUTION_ATTRIBUTIONS = [

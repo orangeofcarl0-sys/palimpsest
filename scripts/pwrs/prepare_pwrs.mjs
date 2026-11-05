@@ -308,6 +308,7 @@ function scripts() {
                   taskId: "package",
                   relayRoute: "takeover",
                   declareExecutorAbandoned: true,
+                  acknowledgeInputs: true,
                   summary: "the killed worker's world was continued by the principal under the measured basis",
                 },
               },
