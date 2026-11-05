@@ -107,6 +107,22 @@
         "MATCHED_WORK_STATE": "session 1 is stopped after the first valid commit of the migration work (the token milestone is the primary control; the work-state control is recorded from the snapshot)"
       },
       "scenario": "grpc-migration"
+    },
+    {
+      "id": "psvr-c-energy",
+      "scenario": "energy-package",
+      "conditions": [
+        "F",
+        "A"
+      ],
+      "sessionsPerCondition": 2,
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 12000000,
+      "interruptionControls": {
+        "MATCHED_TOKEN": "session 1 is stopped at 400,000 reported tokens in both conditions",
+        "MATCHED_WORK_STATE": "session 1 is stopped after the first valid commit of package work (the token milestone is the primary control; the snapshot records the work state)"
+      }
     }
   ],
   "measurement": {

@@ -59,3 +59,16 @@ streams; `c/proxy.jsonl` request metadata only.
 A's session 2 called `palimpsest_start` twice, `plan`, `delegate`, `relay`, `results`, `status`,
 `workers` and `complete` once — and **never `readiness` or `finalize`**. The one mechanism built for
 "correct work, no settlement" was not used by the real model.
+
+## PSVR-C cross-domain stage (`c-energy/`)
+
+| | F | A |
+|---|---|---|
+| tokens | 887,331 (432,619 + 454,712) | 2,858,481 (480,706 + 2,377,775) |
+| session 2 end | natural exit 0 | budget stop |
+| commit | `0e980ec` | `e631160` |
+| checker | PASS 8/8 facts | PASS 8/8 facts |
+| governed project | n/a | task ACTIVE, 1 RUNNING attempt, settlement refused (`NO_WORK`), no promotion |
+
+Aggregate **3,745,812 / 12,000,000**; four sessions. A used `readiness` once and `complete` twice, but
+its worker's world was empty and the package it committed was written outside the governed attempt.
