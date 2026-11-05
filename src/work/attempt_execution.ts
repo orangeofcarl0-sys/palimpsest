@@ -539,6 +539,24 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
       const unseenInputs =
         inputObservation.state === "OBSERVED" ? inputObservation.inputs.map((entry) => entry.path) : [];
       /**
+       * An OBSERVED walk can still leave paths unread (over the observation budget, a permission
+       * failure, a link outside the repository). Their CONTENT is UNKNOWN, so a principal settlement
+       * must not read `state=OBSERVED` as "nothing else changed"; the same declaration that covers a
+       * changed input covers these, and the record names them.
+       */
+      const unreadableInputs =
+        inputObservation.state === "OBSERVED" ? inputObservation.unreadable.map((entry) => entry.path) : [];
+      if (unreadableInputs.length > 0 && observation.path === "PRINCIPAL" && observation.acknowledgeInputs !== true) {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "INPUTS_UNREADABLE",
+          detail:
+            `the project observation could not read ${unreadableInputs.join(", ")} — the content is UNKNOWN, not an absent input, so no principal settlement is recorded. ` +
+            "Decide whether the unreadable fact bears on this result; if it does not, settle again with acknowledgeInputs=true",
+        });
+      }
+      /**
        * "Could not observe" is never "no change": a principal settlement over an unreadable repository
        * is refused, because the product cannot establish that the candidate still reflects reality.
        */
@@ -664,7 +682,10 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         attribution,
         inputsNotInBasis: unseenInputs,
         inputsState: inputObservation.state,
-        inputsDetail: inputObservation.detail,
+        inputsDetail:
+          unreadableInputs.length === 0
+            ? inputObservation.detail
+            : `${inputObservation.detail}; unreadable: ${unreadableInputs.join(", ")}`,
         detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}; ${evaluation.detail}; ${attribution.attribution}`,
       });
     },

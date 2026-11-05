@@ -3844,13 +3844,13 @@ export class ProjectController {
    * this task actually requires one — marking every project NOT READY because some task somewhere
    * might need verification would be dishonest.
    */
-  completionReadiness(): import("../domain/completion_contract.js").CompletionReadiness {
+  completionReadiness(attemptId?: string): import("../domain/completion_contract.js").CompletionReadiness {
     let contract: import("../domain/completion_contract.js").AttemptCompletionContract | undefined;
     if (this.#standard !== undefined) {
-      const running = this.store.connection
-        .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND state=? ORDER BY attempt_id LIMIT 1")
-        .get(this.projectId, "RUNNING") as { attempt_id: string } | undefined;
-      if (running !== undefined) contract = this.#completionContractFor(running.attempt_id);
+      // PER-ATTEMPT when the caller names one: the task layer is derived from THAT attempt's
+      // contract, not from whichever attempt the store happens to return first.
+      const target = attemptId ?? this.#principalAttemptInState("RUNNING") ?? undefined;
+      if (target !== undefined) contract = this.#completionContractFor(target);
     }
     return deriveCompletionReadiness({
       standard: this.#standard,

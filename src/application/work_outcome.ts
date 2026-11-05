@@ -167,13 +167,14 @@ async function snapshot(
   });
   const missing = artifacts.filter((artifact) => !artifact.present || (resultCommitted && !artifact.committed));
 
-  const readiness = deps.controller.completionReadiness();
+  const readiness = deps.controller.completionReadiness(attemptId ?? undefined);
   const contract = attemptId === null ? null : deps.controller.completionContract(attemptId);
   const verificationRequired = contract?.verification.required === true;
   const verificationSatisfiable = readiness.task?.verificationSatisfiable ?? false;
 
   const reasons: string[] = [];
-  const acknowledged = input.acknowledgeInputs === true && inputState === "OBSERVED" && inputPaths.length > 0;
+  const acknowledged =
+    input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
   let action: OutcomeAction;
   if (task === null) {
     action = "CONTINUE_WORK";
@@ -215,6 +216,19 @@ async function snapshot(
   } else if (inputState === "UNAVAILABLE") {
     action = "SEMANTIC_JUDGEMENT";
     reasons.push(`the project's current inputs could not be observed (${inputObservation?.detail ?? "no observation"}); UNKNOWN is not an absence of change`);
+  } else if (unreadable.length > 0 && !acknowledged) {
+    /**
+     * An OBSERVED repository can still hold a path whose bytes were not read (over the budget, a
+     * permission failure, an unreadable link). `state === "OBSERVED"` is about the repository walk,
+     * not about every file in it: treating this as "no input" is how an unreadable measured fact
+     * becomes a silent absence. It is a SEMANTIC item — the content is UNKNOWN, so no mechanical
+     * chain can claim it does not bear on the candidate — and the principal's explicit declaration
+     * is what moves it to the mechanical class.
+     */
+    action = "SEMANTIC_JUDGEMENT";
+    reasons.push(
+      `the project observation could not read ${unreadable.join(", ")} — the content is UNKNOWN, not an absent input. Decide whether it bears on the candidate, then finalize with acknowledgeInputs=true if it does not`,
+    );
   } else if (inputPaths.length > 0 && !acknowledged) {
     action = "SEMANTIC_JUDGEMENT";
     reasons.push(
@@ -243,6 +257,7 @@ async function snapshot(
     artifacts,
     inputState,
     inputs: (inputObservation?.inputs ?? []).map((entry) => ({ path: entry.path, digest: entry.digest, identity: entry.identity })),
+    unreadable: [...unreadable].sort(),
     revision: status.revision ?? null,
     headCommit: status.headCommit ?? null,
     verificationRequired,
@@ -352,11 +367,18 @@ export function makeWorkOutcomeSurface(
     });
     const after = await snapshot(deps, { taskId: input.taskId });
     if (settled.state !== "SETTLED") {
+      /**
+       * `NO_RUNNING_ATTEMPT` means the attempt disappeared between the fresh observation and the
+       * settlement — another actor cancelled it, or a concurrent settlement won. It is NOT evidence
+       * that a result exists. Only a re-observed COMPLETED attempt with a result commit may be
+       * reported as already settled; anything else is the current, unsettled state.
+       */
+      const completed = after.readiness.attempt?.state === "COMPLETED" && after.readiness.attempt.resultCommit !== null;
       return Object.freeze({
-        state: settled.state === "NO_RUNNING_ATTEMPT" ? ("ALREADY_SETTLED" as const) : ("NOT_READY" as const),
+        state: settled.state === "NO_RUNNING_ATTEMPT" && completed ? ("ALREADY_SETTLED" as const) : ("NOT_READY" as const),
         taskId: input.taskId,
         detail: settled.detail,
-        resultCommit: settled.resultCommit,
+        resultCommit: completed ? (after.readiness.attempt?.resultCommit ?? settled.resultCommit) : settled.resultCommit,
         attribution: settled.attribution ?? null,
         taskState: after.readiness.task?.state ?? null,
         readiness: after.readiness,

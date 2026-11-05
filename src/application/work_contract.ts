@@ -455,8 +455,10 @@ export interface WorkApplicationSurface {
    * CURRENT task requires. The deployment layer is answerable at startup; the task layer only once a
    * task exists. A deployment gap ("no independent verifier") is a task blocker only when this task
    * actually needs one, so a project is never marked NOT READY for a requirement it does not have.
+   * Pass `attemptId` to derive the task layer from THAT attempt's contract; without it the first
+   * RUNNING attempt stands in, which is only unambiguous while one attempt is in flight.
    */
-  completionReadiness(): import("../domain/completion_contract.js").CompletionReadiness;
+  completionReadiness(attemptId?: string): import("../domain/completion_contract.js").CompletionReadiness;
   status(): unknown;
   graph(): unknown;
   preview(): unknown;
