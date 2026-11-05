@@ -129,7 +129,7 @@ artifact" chain, recorded in real files and real commits.
 ## 5. Tests
 
 - `pnpm run build` — clean.
-- `architecture:check` — PASS (controller 4,830 LOC / fan-out 39, at its ratchet).
+- `architecture:check` — PASS (controller 4,829 LOC / fan-out 39, at its ratchet).
 - `architecture:check-public-api` — PASS (0 missing / 0 changed / 0 added).
 - `test/psvr_hotspots.test.ts` — 7/7.
 - Hotspot suites (`odpe_*`, `pwrs_relay`, `context_distribution`, `lean_d5c3`, `pc1_placed_completion`,
