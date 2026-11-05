@@ -1,0 +1,15 @@
+{
+  "schema": "alhs-spend-authorization/v1",
+  "cohortId": "alhs-c-2026-11-04",
+  "authorizedBy": "Owner (ALHS-C diagnostic L/G only, 2026-11-04)",
+  "authorizedAt": "2026-11-04T15:40:00.000Z",
+  "expiresAt": "2026-11-11T00:00:00.000Z",
+  "provider": "deepseek-official/deepseek-flash",
+  "stages": ["diagnostic"],
+  "conditions": ["L", "G"],
+  "aggregateTokens": 10000000,
+  "perSessionCeiling": 2500000,
+  "reserveTokens": 125000,
+  "maxSessions": 4,
+  "note": "Diagnostic only: L and G, 2 sessions each, 2,500,000 per session, 125,000 reserve. Session 1 is killed at the same 400,000-token milestone used by repeat-core. No F/A or repeat spend is authorized by this file."
+}

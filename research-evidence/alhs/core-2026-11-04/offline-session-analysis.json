@@ -1,0 +1,754 @@
+{
+  "schema": "alhs-core-session-analysis/v1",
+  "generatedAt": "2026-11-04T14:51:52.027Z",
+  "conditions": {
+    "F": {
+      "firstValid": {
+        "time": 1793801490469,
+        "tokensBefore": 240070,
+        "bytes": 31506,
+        "versions": 1,
+        "at": "2026-11-04T14:11:30.469Z"
+      },
+      "sessions": [
+        {
+          "sessionId": "F-1",
+          "startedAt": "2026-11-04T14:05:28.008Z",
+          "endedAt": "2026-11-04T14:08:30.246Z",
+          "tokens": 165963,
+          "assistantMessages": 10,
+          "toolCalls": 20,
+          "tokensAfterFirstValid": 0,
+          "callsAfterFirstValid": 0,
+          "afterKinds": {},
+          "afterDetail": []
+        },
+        {
+          "sessionId": "F-2",
+          "startedAt": "2026-11-04T14:09:27.353Z",
+          "endedAt": "2026-11-04T14:15:07.556Z",
+          "tokens": 2899572,
+          "assistantMessages": 60,
+          "toolCalls": 99,
+          "tokensAfterFirstValid": 2825465,
+          "callsAfterFirstValid": 84,
+          "afterKinds": {
+            "verify": 13,
+            "coordination": 3,
+            "read_package": 12,
+            "other": 1,
+            "search": 5,
+            "read_other": 7,
+            "shell": 5,
+            "state_query": 11,
+            "edit_package": 27
+          },
+          "afterDetail": [
+            {
+              "at": "2026-11-04T14:11:40.813Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Re-check inbox contents and timestamps"
+            },
+            {
+              "at": "2026-11-04T14:11:42.037Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Check git status and package size"
+            },
+            {
+              "at": "2026-11-04T14:11:47.675Z",
+              "tool": "subagent",
+              "kind": "coordination",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:11:48.925Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:11:49.515Z",
+              "tool": "working_directory",
+              "kind": "other",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:11:49.524Z",
+              "tool": "glob",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:11:51.442Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:11:51.515Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "F/TASK.md"
+            },
+            {
+              "at": "2026-11-04T14:11:51.516Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:11:54.054Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/sites.md"
+            },
+            {
+              "at": "2026-11-04T14:11:54.056Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/vendors.md"
+            },
+            {
+              "at": "2026-11-04T14:11:54.057Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/capacity.csv"
+            },
+            {
+              "at": "2026-11-04T14:11:54.058Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "inbox/README.md"
+            },
+            {
+              "at": "2026-11-04T14:11:54.058Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "2026-11-03/corridor-measurement.md"
+            },
+            {
+              "at": "2026-11-04T14:11:54.059Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "retained-baseline/README.md"
+            },
+            {
+              "at": "2026-11-04T14:11:55.336Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Show git status and log"
+            },
+            {
+              "at": "2026-11-04T14:11:56.905Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "List all files with metadata"
+            },
+            {
+              "at": "2026-11-04T14:11:58.427Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:01.624Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Inspect palimpsest, gitignore, commit contents"
+            },
+            {
+              "at": "2026-11-04T14:12:18.126Z",
+              "tool": "list_agents",
+              "kind": "state_query",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:12:26.182Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "Brief pause then recheck inbox timestamps"
+            },
+            {
+              "at": "2026-11-04T14:12:39.167Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Grep key numbers in package"
+            },
+            {
+              "at": "2026-11-04T14:12:39.315Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:39.359Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:39.384Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:39.408Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:39.434Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:41.888Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Count table rows and show commit date"
+            },
+            {
+              "at": "2026-11-04T14:12:44.011Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:44.044Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:44.066Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:44.089Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:44.111Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:47.737Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:47.767Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:47.793Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:47.818Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:49.090Z",
+              "tool": "list_agents",
+              "kind": "state_query",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:12:49.202Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Hash and timestamp package file"
+            },
+            {
+              "at": "2026-11-04T14:12:50.544Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:12:51.629Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:12:51.883Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Spot-check numeric references in package"
+            },
+            {
+              "at": "2026-11-04T14:12:53.218Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:01.006Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:01.039Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:01.066Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:01.094Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:01.121Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:08.906Z",
+              "tool": "list_agents",
+              "kind": "state_query",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:13:18.346Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Wait briefly and recheck deliverable state"
+            },
+            {
+              "at": "2026-11-04T14:13:31.868Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:33.464Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:37.064Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:37.096Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:38.248Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:13:39.638Z",
+              "tool": "list_agents",
+              "kind": "state_query",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:13:43.886Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:13:49.927Z",
+              "tool": "list_agents",
+              "kind": "state_query",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:13:52.060Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "Independently recompute all compliance margins"
+            },
+            {
+              "at": "2026-11-04T14:13:55.624Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "Independently recompute compliance margins"
+            }
+          ]
+        }
+      ]
+    },
+    "A": {
+      "firstValid": {
+        "time": 1793801861113,
+        "tokensBefore": 282186,
+        "bytes": 26326,
+        "versions": 2,
+        "at": "2026-11-04T14:17:41.113Z"
+      },
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "startedAt": "2026-11-04T14:15:20.390Z",
+          "endedAt": "2026-11-04T14:19:10.095Z",
+          "tokens": 1292562,
+          "assistantMessages": 37,
+          "toolCalls": 46,
+          "tokensAfterFirstValid": 1010376,
+          "callsAfterFirstValid": 29,
+          "afterKinds": {
+            "edit_package": 22,
+            "search": 2,
+            "read_package": 1,
+            "shell": 1,
+            "coordination": 1,
+            "read_other": 2
+          },
+          "afterDetail": [
+            {
+              "at": "2026-11-04T14:17:43.724Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:17:46.361Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:17:48.265Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:17:51.163Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:17:52.700Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:17:56.482Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:17:59.112Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:00.824Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:03.600Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:05.734Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:09.759Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:11.666Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:14.081Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:20.626Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:22.951Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:25.426Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:27.608Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:30.734Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:32.791Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:18:36.793Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:43.733Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:43.758Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:43.777Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:18:43.796Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:19:01.417Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "Re-check inbox after revisions"
+            },
+            {
+              "at": "2026-11-04T14:19:06.566Z",
+              "tool": "subagent",
+              "kind": "coordination",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:19:08.081Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "A/TASK.md"
+            },
+            {
+              "at": "2026-11-04T14:19:08.092Z",
+              "tool": "glob",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:19:10.095Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/sites.md"
+            }
+          ]
+        },
+        {
+          "sessionId": "A-2",
+          "startedAt": "2026-11-04T14:19:19.812Z",
+          "endedAt": "2026-11-04T14:20:02.747Z",
+          "tokens": 251007,
+          "assistantMessages": 11,
+          "toolCalls": 19,
+          "tokensAfterFirstValid": 251007,
+          "callsAfterFirstValid": 19,
+          "afterKinds": {
+            "pulse": 1,
+            "other": 1,
+            "search": 3,
+            "read_other": 7,
+            "read_package": 2,
+            "verify": 1,
+            "shell": 1,
+            "edit_package": 2,
+            "conclude": 1
+          },
+          "afterDetail": [
+            {
+              "at": "2026-11-04T14:19:21.401Z",
+              "tool": "palimpsest_continuity",
+              "kind": "pulse",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:19:22.720Z",
+              "tool": "working_directory",
+              "kind": "other",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:19:22.747Z",
+              "tool": "glob",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:19:24.505Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "A/TASK.md"
+            },
+            {
+              "at": "2026-11-04T14:19:24.506Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:19:24.508Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "inbox/README.md"
+            },
+            {
+              "at": "2026-11-04T14:19:24.508Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "2026-11-03/corridor-measurement.md"
+            },
+            {
+              "at": "2026-11-04T14:19:26.658Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/sites.md"
+            },
+            {
+              "at": "2026-11-04T14:19:26.659Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/capacity.csv"
+            },
+            {
+              "at": "2026-11-04T14:19:26.660Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "sources/vendors.md"
+            },
+            {
+              "at": "2026-11-04T14:19:26.661Z",
+              "tool": "read",
+              "kind": "read_other",
+              "summary": "retained-baseline/README.md"
+            },
+            {
+              "at": "2026-11-04T14:19:33.460Z",
+              "tool": "pwsh",
+              "kind": "verify",
+              "summary": "Check git state, time, inbox contents"
+            },
+            {
+              "at": "2026-11-04T14:19:46.681Z",
+              "tool": "glob",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:19:46.872Z",
+              "tool": "pwsh",
+              "kind": "shell",
+              "summary": "Timestamp and inventory the inbox files"
+            },
+            {
+              "at": "2026-11-04T14:19:50.194Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:19:51.859Z",
+              "tool": "edit",
+              "kind": "edit_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:19:53.748Z",
+              "tool": "grep",
+              "kind": "search",
+              "summary": ""
+            },
+            {
+              "at": "2026-11-04T14:19:53.955Z",
+              "tool": "read",
+              "kind": "read_package",
+              "summary": "deliverables/package.md"
+            },
+            {
+              "at": "2026-11-04T14:19:59.117Z",
+              "tool": "palimpsest_work",
+              "kind": "conclude",
+              "summary": "conclude"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

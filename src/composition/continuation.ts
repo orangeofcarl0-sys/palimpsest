@@ -34,6 +34,7 @@
  * COMPOSITION ONLY. No policy, no discovery, no string-keyed lookup; the input
  * is a narrow record of already-composed locals.
  */
+import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 
 import {
@@ -56,10 +57,12 @@ import { firstPartyAttemptResultVerificationSource } from "../project_verificati
 import type { WorkDelegationService, WorkWorkerRunPort } from "../interaction/work_delegation.js";
 import { makeWorkDelegationService } from "../interaction/work_delegation.js";
 import { makeResultContinuationService, type ResultContinuationService } from "../continuation/service.js";
+import { gitTextRunner, planPathReuse } from "../work/path_reuse.js";
 import type {
   ContinuationCanonicalPort,
   ContinuationExecutionPort,
   ContinuationResolvedResult,
+  ContinuationReusePlan,
   ContinuationResultPort,
   ContinuationWorkPort,
   ContinuationWorldPort,
@@ -102,6 +105,11 @@ export interface ContinuationCompositionOptions {
    * Absent ⇒ the port's own `DIRECT_CHILD_IPC` default applies.
    */
   readonly sessionSourceQualification?: import("../interaction/work_delegation.js").WorkerSessionSourceQualification | undefined;
+  /**
+   * PWRS-A: the durable execution-relay record, written after a worker-path settlement. Absent ⇒ the
+   * settlement still carries its attribution, but no journal note is written for this route.
+   */
+  readonly executionRelay?: import("./execution_relay.js").ExecutionRelayRecorder | undefined;
 }
 
 export interface ContinuationCompositionInput {
@@ -232,6 +240,28 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
       : makeWorkDelegationService({
           controller,
           workerFor: options.workWorkerPort,
+          /**
+           * PWRS-A: the worker-path settlement is recorded through the SAME durable relay recorder the
+           * principal path uses. Awaited BEFORE the job turns terminal, so a caller that observes
+           * FINISHED can read the record.
+           */
+          ...(options.executionRelay === undefined
+            ? {}
+            : {
+                onSettlement: async (record: {
+                  readonly taskId: string;
+                  readonly attemptId: string;
+                  readonly baseCommit: string;
+                  readonly resultCommit: string;
+                  readonly attribution: import("../work/execution_relay.js").ExecutionAttribution;
+                }) => {
+                  try {
+                    await options.executionRelay!.record(record);
+                  } catch {
+                    /* the settlement is canonical; a derived record failure must not undo it */
+                  }
+                },
+              }),
           /**
            * Trajectory-P2-C §7.3 / P2-D0 §7.1–§7.2: wire the durable recorder at the Parent observation
            * boundary when one was composed.
@@ -423,6 +453,29 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     });
   }
 
+  /**
+   * ALHS-B: the path-level reuse facts. A tree diff between the result's base/result and the current
+   * head; a path both sides changed is a conflict UNLESS the bytes already agree. This reads Git and
+   * decides nothing: it never carries content and never accepts a result.
+   */
+  function reusePlanFor(resolved: ContinuationResolvedResult): ContinuationReusePlan | null {
+    const sourceResult = resolved.sourceResult;
+    if (repository === undefined || sourceResult === null) return null;
+    const baseRevision = sourceResult.baseRevision;
+    const resultRevision = sourceResult.resultRevision;
+    if (baseRevision === "" || resultRevision === "") return null;
+    const observed = worldObservation?.observeSource();
+    const currentRevision = observed !== undefined && observed.ok ? observed.revision.revision : "";
+    if (currentRevision === "") return null;
+    /**
+     * PWRS-B: the diff is the SHARED path-reuse computation (`src/work/path_reuse.ts`), also used for
+     * a retained relay world. One implementation, so a completed result and an abandoned attempt can
+     * never disagree about what "unaffected" means.
+     */
+    const facts = planPathReuse({ run: gitTextRunner(repository), baseRevision, resultRevision, currentRevision });
+    return facts === null ? null : Object.freeze({ ...facts });
+  }
+
   /** The WORLD port: D3-a + the authority-bearing observations + the existing D3-b issuer. */
   const worldPort: ContinuationWorldPort = {
     inspect: ({ result }) => {
@@ -446,6 +499,7 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     observeTarget: (taskId) => crossBasis.observeTarget(taskId),
     rematerializationAvailable: rematerialization !== null && admissions !== null,
     hasCapturedBasis: ({ attemptId }) => basisRuntime.read({ attemptId }) !== null,
+    reusePlan: ({ resolved }) => reusePlanFor(resolved),
   };
 
   /** The RESULT port: D3-c admission ≺ D3-d carry, as ONE ordered chain. */

@@ -1,0 +1,15 @@
+{
+  "schema": "alhs-spend-authorization/v1",
+  "cohortId": "alhs-c-2026-11-04",
+  "authorizedBy": "Owner (ALHS-C core stage only, 2026-11-04)",
+  "authorizedAt": "2026-11-04T14:00:00.000Z",
+  "expiresAt": "2026-11-11T00:00:00.000Z",
+  "provider": "deepseek-official/deepseek-flash",
+  "stages": ["core"],
+  "conditions": ["F", "A"],
+  "aggregateTokens": 12000000,
+  "perSessionCeiling": 3000000,
+  "reserveTokens": 150000,
+  "maxSessions": 4,
+  "note": "Core stage only: F and A, 2 sessions per condition. The diagnostic L/G stage is NOT authorized. Each session stops at 2,850,000 (3,000,000 minus a 150,000 one-message reserve); child sessions count. No LHAPE or APS authorization is reused."
+}

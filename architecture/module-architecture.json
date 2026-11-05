@@ -1,11 +1,11 @@
 {
   "version": 4,
-  "capturedFrom": "d691f3f1a8130e11e52a0ce293c935c4452fb9d2",
+  "capturedFrom": "3782b01bd2d23325ceb77df53be5732acaa4517e",
   "totals": {
-    "files": 514,
-    "loc": 152272,
-    "bytes": 6894878,
-    "edges": 2000,
+    "files": 515,
+    "loc": 154019,
+    "bytes": 6976488,
+    "edges": 2007,
     "externalImports": 21,
     "unresolvedImports": 0
   },
@@ -16,7 +16,7 @@
     },
     {
       "layer": "L2",
-      "files": 262
+      "files": 263
     },
     {
       "layer": "L3",
@@ -71,9 +71,9 @@
     {
       "file": "src/install.ts",
       "layer": "L5",
-      "loc": 648,
-      "bytes": 33678,
-      "fanOut": 20,
+      "loc": 664,
+      "bytes": 34607,
+      "fanOut": 21,
       "fanIn": 3
     },
     {
@@ -87,8 +87,8 @@
     {
       "file": "src/tools/controller.ts",
       "layer": "L2",
-      "loc": 4825,
-      "bytes": 215928,
+      "loc": 4824,
+      "bytes": 216133,
       "fanOut": 39,
       "fanIn": 19
     }
@@ -112,7 +112,7 @@
     {
       "file": "src/application/factory.ts",
       "layer": "L4",
-      "fanOut": 36
+      "fanOut": 37
     },
     {
       "file": "src/deployment/launch.ts",
@@ -127,12 +127,12 @@
     {
       "file": "src/install.ts",
       "layer": "L5",
-      "fanOut": 20
+      "fanOut": 21
     },
     {
       "file": "src/composition/application.ts",
       "layer": "L5",
-      "fanOut": 19
+      "fanOut": 20
     },
     {
       "file": "src/project_management/service.ts",
@@ -199,7 +199,7 @@
     {
       "file": "src/schema/canonical.ts",
       "layer": "L1",
-      "fanIn": 133
+      "fanIn": 134
     },
     {
       "file": "src/schema/index.ts",
@@ -262,6 +262,11 @@
       "fanIn": 16
     },
     {
+      "file": "src/schema/models.ts",
+      "layer": "L1",
+      "fanIn": 16
+    },
+    {
       "file": "src/architecture/index.ts",
       "layer": "L1",
       "fanIn": 15
@@ -269,11 +274,6 @@
     {
       "file": "src/proof_asset/index.ts",
       "layer": "L2",
-      "fanIn": 15
-    },
-    {
-      "file": "src/schema/models.ts",
-      "layer": "L1",
       "fanIn": 15
     },
     {
@@ -301,17 +301,17 @@
     {
       "fromLayer": "L2",
       "toLayer": "L2",
-      "count": 722
+      "count": 723
     },
     {
       "fromLayer": "L2",
       "toLayer": "L1",
-      "count": 250
+      "count": 251
     },
     {
       "fromLayer": "L5",
       "toLayer": "L2",
-      "count": 166
+      "count": 167
     },
     {
       "fromLayer": "L5",
@@ -331,7 +331,7 @@
     {
       "fromLayer": "L4",
       "toLayer": "L2",
-      "count": 61
+      "count": 62
     },
     {
       "fromLayer": "L5",
@@ -346,7 +346,7 @@
     {
       "fromLayer": "L5",
       "toLayer": "L1",
-      "count": 47
+      "count": 48
     },
     {
       "fromLayer": "L3",
@@ -356,7 +356,7 @@
     {
       "fromLayer": "L4",
       "toLayer": "L3",
-      "count": 27
+      "count": 28
     },
     {
       "fromLayer": "L4",
@@ -371,7 +371,7 @@
     {
       "fromLayer": "L5",
       "toLayer": "L4",
-      "count": 21
+      "count": 22
     },
     {
       "fromLayer": "ENTRY",
@@ -779,6 +779,11 @@
     },
     {
       "from": "src/composition",
+      "to": "src/application",
+      "count": 5
+    },
+    {
+      "from": "src/composition",
       "to": "src/trajectory",
       "count": 5
     },
@@ -810,6 +815,11 @@
     {
       "from": "src/institution",
       "to": "src/organization",
+      "count": 5
+    },
+    {
+      "from": "src/project_continuity",
+      "to": "src/schema",
       "count": 5
     },
     {
@@ -879,11 +889,6 @@
     },
     {
       "from": "src/composition",
-      "to": "src/application",
-      "count": 4
-    },
-    {
-      "from": "src/composition",
       "to": "src/campaign",
       "count": 4
     },
@@ -896,17 +901,12 @@
       "from": "src/composition",
       "to": "src/organization_memory",
       "count": 4
-    },
-    {
-      "from": "src/composition",
-      "to": "src/context",
-      "count": 4
     }
   ],
   "baseline": {
     "version": 4,
-    "capturedFrom": "d691f3f1a8130e11e52a0ce293c935c4452fb9d2",
-    "capturedTree": "3b5c0e26be5147c54719598e8edc354d238ad4eb",
+    "capturedFrom": "3782b01bd2d23325ceb77df53be5732acaa4517e",
+    "capturedTree": "689af2d3816d8b9a4400f2b5803f839afb10d3b6",
     "permittedForbiddenEdges": [
       {
         "from": "src/monitor/driver.ts",
@@ -1304,9 +1304,9 @@
       {
         "file": "src/application/factory.ts",
         "maxLoc": null,
-        "maxFanOut": 36,
+        "maxFanOut": 37,
         "maxFanIn": null,
-        "reason": "the application factory composes every face; its fan-out is the assembly. Ratcheted on fan-out only, because that is the number that grows when a face is added without a decision."
+        "reason": "the application factory composes every face; its fan-out is the assembly. Ratcheted on fan-out only, because that is the number that grows when a face is added without a decision. ALHS-A raised it by exactly one (36 -> 37) for the episode-conclusion face: it writes only through the existing project journal and reads only the existing pulse, so it is one face, not a new subsystem."
       },
       {
         "file": "src/advanced.ts",

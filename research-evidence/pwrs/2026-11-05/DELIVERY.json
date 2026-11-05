@@ -1,0 +1,211 @@
+{
+  "schema": "pwrs-delivery/v1",
+  "programme": "PWRS",
+  "title": "Project Work Relay & Synthetic Continuity",
+  "branch": "palimpsest-autonomous-long-horizon-synthesis",
+  "developmentBase": "b3690881bb4d195975a0edd35a5f0bb78e992881",
+  "developmentBaseTree": "11e8382e7da0bf053c709a882f1b5282fc3caf4b",
+  "baseLhape": "3782b01bd2d23325ceb77df53be5732acaa4517e",
+  "originMain": "d16800fbe3d1a6172b66b466b227c5fddbb45b98",
+  "productCommit": "507aac250c329e7c936f1d81f209fabe727118e3",
+  "productTree": "e58038fe1224529d4d08070d56a2f31cdb7f58c5",
+  "report": "docs/engineering/PWRS-RESULT.md",
+  "evidence": "research-evidence/pwrs/2026-11-05/",
+  "modelCalls": {
+    "realModelSessions": 12,
+    "paidTokens": 15958310,
+    "providerRequests": 417,
+    "providerSuccess": 411,
+    "providerUpstreamTimeout": 6,
+    "note": "PWRS-R F/A (4 sessions, 5,656,746), PWRS-R2 A-only (2, 2,807,867), PWRS-R3 A-only (2, 1,829,104) and PWRS-R4 F/A (4, 5,664,593), each under its own research-evidence/pwrs/live authorization. The deterministic host run used the labelled Messages stand-in and consumed no model tokens."
+  },
+  "relay": {
+    "routes": [
+      "RESUME",
+      "TAKEOVER",
+      "SUCCESSOR"
+    ],
+    "attributions": [
+      "ORIGINAL_WORKER_OBSERVED",
+      "SUBSEQUENT_WORKER_OBSERVED",
+      "PRINCIPAL_RECOVERY",
+      "MULTI_EXECUTOR",
+      "UNATTRIBUTED"
+    ],
+    "durableRecord": "project journal note (pc1-execution-relay/v1)",
+    "invocationLedger": "host-local, non-durable by design"
+  },
+  "hostRun": {
+    "summary": "research-evidence/pwrs/2026-11-05/pwrs-summary.json",
+    "task": "package",
+    "attemptStateAfterKill": "RUNNING",
+    "retainedWorldHead": "a056722a274f704ce38a709ffb0904e41b0f3257",
+    "relayAttribution": "PRINCIPAL_RECOVERY",
+    "relayLiveness": "DECLARED_ABANDONED",
+    "independenceEligible": false,
+    "resultCommit": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
+    "promotion": "promotion-5a789d958bd68d7548b820879c645134",
+    "promotionState": "COMMITTED",
+    "episodes": [
+      "WAIT_FOR_OPERATOR",
+      "DELIVER"
+    ],
+    "canonicalHead": "7eb35937abc55ee7d96ce7caafd913b22eca78b0",
+    "canonicalTreeClean": true,
+    "reuse": {
+      "pricingInherited": true,
+      "measuredBasisPresent": true,
+      "supersededAssumptionAbsent": true
+    }
+  },
+  "realModelCohort": {
+    "cohortId": "pwrs-r-2026-11-05",
+    "report": "docs/engineering/PWRS-R-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r/",
+    "conditions": [
+      "F",
+      "A"
+    ],
+    "sessions": 4,
+    "tokens": {
+      "F": 2857944,
+      "A": 2798802,
+      "total": 5656746,
+      "aggregate": 10000000,
+      "remaining": 4343254
+    },
+    "rubric": {
+      "F": "7/7",
+      "A": "5/7"
+    },
+    "naturalEnd": {
+      "F": false,
+      "A": false
+    },
+    "A": {
+      "relayAttribution": "PRINCIPAL_RECOVERY",
+      "relayLiveness": "DECLARED_ABANDONED",
+      "independenceEligible": false,
+      "resultCommit": "d8dc41f8c4147fe57513397c3e7fd117680a9b62",
+      "taskState": "VERIFYING",
+      "promotion": null,
+      "episode": null,
+      "reuseOfInterruptedDraft": 1
+    },
+    "F": {
+      "finalBytes": 44372,
+      "reuseOfInterruptedDraft": 0.584,
+      "committed": false
+    },
+    "note": "A's candidate is the pre-constraint draft settled unchanged; it states the superseded 1200 mm assumption and not the measured 700 mm. The operator gate held: no promotion, task VERIFYING."
+  },
+  "git": {
+    "pushed": true,
+    "pullRequest": "https://github.com/orangeofcarl0-sys/palimpsest/pull/219",
+    "merged": false,
+    "mainMoved": false
+  },
+  "note": "The branch was pushed and PR #219 opened with the owner's authorization; no merge and no move of main/origin/main. No historical Code/Evidence Freeze, Ordarium ledger, lock or gate root was modified.",
+  "retest": {
+    "cohortId": "pwrs-r2-2026-11-05",
+    "report": "docs/engineering/PWRS-R2-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r2/",
+    "product": "adbcd420749b435462f95ed599d1b4b6e546a714",
+    "condition": "A",
+    "sessions": 2,
+    "tokens": {
+      "total": 2807867,
+      "aggregate": 5000000,
+      "remaining": 2192133
+    },
+    "rubric": "7/7",
+    "finalArtifact": {
+      "bytes": 45385,
+      "commit": "09bf7ab",
+      "settled": false,
+      "attemptState": "RUNNING",
+      "taskState": "ACTIVE"
+    },
+    "route": "takeover refused NO_WORK; successor; new attempt; delegate; committed package; no settlement",
+    "inputGateExercised": false,
+    "naturalEnd": false,
+    "note": "The PWRS-D unseen-input acknowledgement was not triggered because the model chose successor; the model copied the untracked measured input into the new world, and the worker produced a 7/7 package that was never settled before the budget stop."
+  },
+  "retest3": {
+    "cohortId": "pwrs-r3-2026-11-05",
+    "report": "docs/engineering/PWRS-R3-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r3/",
+    "product": "e3110c8debaf15a9486720d9d36dbbd7c370e236",
+    "condition": "A",
+    "sessions": 2,
+    "tokens": {
+      "total": 1829104,
+      "aggregate": 5000000,
+      "remaining": 3170896
+    },
+    "rubric": "7/7",
+    "finalArtifact": {
+      "bytes": 19878,
+      "commit": "ddf8bf3",
+      "settled": true,
+      "source": "RESULT_COMMIT",
+      "taskState": "VERIFYING"
+    },
+    "episode": "WAIT_FOR_OPERATOR",
+    "naturalEnd": true,
+    "inputGateExercised": true,
+    "attribution": "old attempt UNATTRIBUTED (successor); new attempt MULTI_EXECUTOR; independenceEligible=false",
+    "note": "The successor gate refused with INPUTS_CHANGED_SINCE_BASIS, the principal acknowledged the exact path, started a new attempt, settled a 7/7 candidate and recorded WAIT_FOR_OPERATOR; the owner-authorized operator then accepted the candidate through the existing Promotion path.",
+    "operatorAcceptance": {
+      "promotionId": "promotion-b70b3bc749dad377cc99aeb7075d40dc",
+      "sourceCommit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b",
+      "resultingHeadCommit": "eaa86fcd1295219a25ce0441d43aa72594ebf0f8",
+      "taskState": "SATISFIED",
+      "revision": 1
+    }
+  },
+  "retest4": {
+    "cohortId": "pwrs-r4-2026-11-05",
+    "report": "docs/engineering/PWRS-R4-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r4/",
+    "product": "e3110c8debaf15a9486720d9d36dbbd7c370e236",
+    "conditions": [
+      "F",
+      "A"
+    ],
+    "sessions": 4,
+    "tokens": {
+      "F": 2822617,
+      "A": 2841976,
+      "total": 5664593,
+      "aggregate": 10000000,
+      "remaining": 4335407
+    },
+    "rubric": {
+      "F": "7/7",
+      "A": "7/7"
+    },
+    "naturalEnd": {
+      "F": false,
+      "A": false
+    },
+    "final": {
+      "F": {
+        "bytes": 40974,
+        "settled": false
+      },
+      "A": {
+        "bytes": 25790,
+        "settled": false,
+        "attemptState": "RUNNING",
+        "taskState": "ACTIVE"
+      }
+    },
+    "reuse": {
+      "F": 0.954,
+      "A": null
+    },
+    "inputGateExercised": false,
+    "note": "Both conditions reached 7/7 and both were budget-stopped. A acknowledged the input preemptively, started a new attempt and produced a correct package but did not settle it. The R3 convergence did not replicate; no advantage is claimed."
+  }
+}

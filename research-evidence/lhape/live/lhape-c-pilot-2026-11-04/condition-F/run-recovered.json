@@ -1,0 +1,25 @@
+{
+  "schema": "lhape-pilot-condition-run-recovered/v1",
+  "condition": "F",
+  "cohortId": "lhape-c-pilot-2026-11-04",
+  "codeFreeze": "81f230fbf6f488777a25814a177b0c8b17864ce6",
+  "world": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\worlds\\F",
+  "profile": "headless",
+  "startedAt": "2026-11-04T10:04:20.822Z",
+  "injectedAt": "2026-11-04T10:05:05.840Z",
+  "endedAt": "2026-11-04T10:09:29.739Z",
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "stopped": true,
+  "usage": {
+    "schema": "aps-budget-ledger/v1",
+    "observedAt": "2026-11-04T10:09:29.739Z",
+    "maxTokens": 2500000,
+    "totalTokens": 2528297,
+    "sessionFiles": 2,
+    "state": "STOPPED"
+  },
+  "maxTokens": 2500000,
+  "note": "The outer cohort guard killed the condition runner at the first observation above 2.5M (2,528,297), before the runner could write its own run.json. This record is reconstructed from the guard ledger/STOPPED fact and the runner start/injection timestamps; the package and session streams are the real artifacts."
+}

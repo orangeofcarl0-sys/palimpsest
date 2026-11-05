@@ -37,6 +37,13 @@
  */
 import { DomainValidationError } from "../domain/errors.js";
 import type { TaskEnvelope } from "../schema/index.js";
+import {
+  attributeSettlement,
+  type ExecutionAttribution,
+  type ExecutionInvocation,
+  type SettlementObservation,
+} from "./execution_relay.js";
+import type { ProjectInputObservation } from "./unseen_inputs.js";
 
 /** What a caller needs to place a worker, and nothing about how to run one. */
 export interface PreparedMutatingWork {
@@ -59,7 +66,21 @@ export interface PreparedMutatingWork {
 
 /** The outcome of closing one worker's result into canonical Work. */
 export type MutatingWorkSettlement =
-  | { readonly state: "SETTLED"; readonly attemptId: string; readonly resultCommit: string; readonly changedFiles: readonly string[]; readonly exported: boolean; readonly evidenceRecorded: readonly string[]; readonly detail: string }
+  | {
+      readonly state: "SETTLED";
+      readonly attemptId: string;
+      readonly resultCommit: string;
+      readonly changedFiles: readonly string[];
+      readonly exported: boolean;
+      readonly evidenceRecorded: readonly string[];
+      /** PWRS-A: which execution window the product observed for the settled bytes. */
+      readonly attribution: ExecutionAttribution;
+      /** ODPE-A: current inputs the attempt's basis did not contain, with the observation state. */
+      readonly inputsNotInBasis: readonly string[];
+      readonly inputsState: ProjectInputObservation["state"];
+      readonly inputsDetail: string;
+      readonly detail: string;
+    }
   | { readonly state: "NOT_READY"; readonly attemptId: string; readonly reason: string; readonly detail: string }
   | { readonly state: "BASE_DRIFT"; readonly attemptId: string; readonly resultCommit: string; readonly worldRetained: true; readonly detail: string };
 
@@ -139,6 +160,21 @@ export interface MutatingExecutionPorts {
   attemptWorkDir(attemptId: string): { readonly placement: string; readonly workDir: string } | null;
   /** D2-a's observation of the world. */
   observeAttemptResult(attemptId: string, baseCommit: string): AttemptResultObservation | null;
+  /**
+   * PWRS-A: the worker invocation windows THIS host observed for the attempt.
+   *
+   * Non-durable observation memory: an empty list after a restart means "not observed", never "no
+   * worker ran". Settlement uses it to attribute the settled bytes and to refuse a principal takeover
+   * while an observed invocation is still open.
+   */
+  executionInvocations(attemptId: string): readonly ExecutionInvocation[];
+  /**
+   * PWRS-D: project paths present now that the attempt's base commit does not contain.
+   *
+   * A non-empty list means the attempt worked on a basis the current tree has moved past without a
+   * commit recording it — a measured source dropped into the project, or an edited tracked file.
+   */
+  projectInputs(baseCommit: string): ProjectInputObservation;
   /** Export a frozen revision into the canonical object database. */
   exportResultCommit(input: { readonly attemptId: string; readonly commit: string }): Promise<{ readonly imported: boolean; readonly detail: string }>;
   /** Whether an execution-world port is composed at all. */
@@ -181,6 +217,12 @@ export interface MutatingAttemptService {
     readonly taskId: string;
     readonly baseCommit: string;
     readonly resumed: boolean;
+    /**
+     * PWRS-A: the attempt that already holds the lane, when the admission is a RESUME. The transport
+     * needs its identity to ask what this host observed about it before it puts a second writer into
+     * the world.
+     */
+    readonly openAttempt: { readonly attemptId: string; readonly state: string } | null;
   };
   /** Prepare (or resume) an isolated execution position for one canonical Work task. */
   prepare(input: { readonly expectedTaskId?: string | undefined }): Promise<PreparedMutatingWork>;
@@ -191,6 +233,12 @@ export interface MutatingAttemptService {
       readonly kind: "READY_FOR_SETTLEMENT" | "NEEDS_ESCALATION" | "HOST_FAILURE";
       readonly detail?: string | undefined;
     };
+    /**
+     * PWRS-A: which product path is closing the attempt, and whether a principal DECLARED a
+     * continuation. Absent is read as the worker path; the attribution still cannot claim worker
+     * production without an observed invocation window.
+     */
+    readonly observation?: SettlementObservation | undefined;
   }): Promise<MutatingWorkSettlement>;
 }
 
@@ -238,10 +286,16 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
        * tasks may be in flight is what the PLAN declares, not a product-wide constant.
        */
       const admission = assertAdmission(expectedTaskId);
+      const holder =
+        admission.kind === "RESUME"
+          ? ports.nonterminalAttempts().find((attempt) => attempt.taskId === admission.taskId) ?? null
+          : null;
       return Object.freeze({
         taskId: admission.taskId,
         baseCommit: ports.taskEnvelope(admission.taskId).base_commit,
         resumed: admission.kind === "RESUME",
+        openAttempt:
+          holder === null ? null : Object.freeze({ attemptId: holder.attemptId, state: holder.state }),
       });
     },
 
@@ -372,8 +426,51 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         readonly kind: "READY_FOR_SETTLEMENT" | "NEEDS_ESCALATION" | "HOST_FAILURE";
         readonly detail?: string | undefined;
       };
+      readonly observation?: SettlementObservation | undefined;
     }): Promise<MutatingWorkSettlement> {
       const { attemptId } = input;
+      const observation: SettlementObservation = input.observation ?? { path: "WORKER" };
+      const invocations = ports.executionInvocations(attemptId);
+
+      /**
+       * PWRS-A order: an OPEN invocation is a writer this host can still see. Closing the attempt
+       * underneath it would either discard work it is about to commit or record a race as a result.
+       * The worker transport ends its own window before it settles, so this can only fire on a real
+       * concurrent settlement attempt — which is exactly when it must.
+       */
+      const openInvocation = invocations.find((invocation) => invocation.outcome === "OPEN");
+      if (openInvocation !== undefined) {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "WORKER_STILL_RUNNING",
+          detail:
+            `this host still observes worker invocation ${openInvocation.invocationId} as OPEN for this attempt — the world may still be written, ` +
+            "so no settlement, takeover or attribution is recorded until that invocation reports its own end or the host loses the process",
+        });
+      }
+
+      /**
+       * A principal closing a world whose last observed invocation ended WITHOUT a confirmed exit is
+       * the unsafe case PWRS-A §6.3 names: an empty job map is not evidence the old writer stopped.
+       * The refusal offers the isolated successor route instead of pretending the world is quiescent.
+       */
+      const lastInvocation = [...invocations].reverse()[0];
+      if (
+        observation.path === "PRINCIPAL" &&
+        observation.takeover === undefined &&
+        lastInvocation?.outcome === "UNCONFIRMED"
+      ) {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "EXECUTOR_LIVENESS_UNCONFIRMED",
+          detail:
+            "this host's last worker invocation for the attempt ended without a confirmed process exit, so an in-place " +
+            "takeover is refused: the world may still be written. Continue in an isolated successor world, or record an " +
+            "explicit takeover declaration if the previous executor is known to be abandoned",
+        });
+      }
 
       // A worker that did not hand over work keeps everything: escalation and host failure are facts
       // about a worker, and D2-c already refused to turn them into canonical outcomes.
@@ -428,6 +525,53 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
           detail: `the world changed paths outside the task envelope's write_paths [${envelope.write_paths.join(", ")}]: ${outOfScope.join(", ")}`,
         });
       }
+
+      /**
+       * PWRS-D — THE BASIS THE ATTEMPT NEVER SAW.
+       *
+       * A principal about to close the attempt must confront any project input that arrived after the
+       * attempt's base (the PWRS-R failure: a measured source was read, then a pre-measurement draft
+       * was settled). The product lists the paths and refuses until the caller ACKNOWLEDGES them; it
+       * does not judge whether they invalidate the work. The worker path records the fact without
+       * blocking, because no model is in that loop to act on a refusal.
+       */
+      const inputObservation = ports.projectInputs(envelope.base_commit);
+      const unseenInputs =
+        inputObservation.state === "OBSERVED" ? inputObservation.inputs.map((entry) => entry.path) : [];
+      /**
+       * "Could not observe" is never "no change": a principal settlement over an unreadable repository
+       * is refused, because the product cannot establish that the candidate still reflects reality.
+       */
+      if (inputObservation.state === "UNAVAILABLE" && observation.path === "PRINCIPAL") {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "INPUTS_UNOBSERVABLE",
+          detail:
+            `the project's current inputs could not be observed (${inputObservation.detail}) — this is UNKNOWN, not an absence of change, so no principal settlement is recorded. Repair the repository observation and settle again`,
+        });
+      }
+      if (unseenInputs.length > 0 && observation.path === "PRINCIPAL" && observation.acknowledgeInputs !== true) {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "INPUTS_CHANGED_SINCE_BASIS",
+          detail:
+            `the project now holds inputs that this attempt's base ${envelope.base_commit.slice(0, 12)} never contained: ${unseenInputs.join(", ")} — ` +
+            "re-read them and decide whether the result still holds; if it does, settle again with acknowledgeInputs=true. This is a basis fact, not a content judgement",
+        });
+      }
+
+      /**
+       * PWRS-A: WHAT THE PRODUCT CAN SAY ABOUT WHO EXECUTED. Computed before the effect chain so the
+       * returned settlement and the durable relay record carry the same fact, and computed from the
+       * host's own invocation windows — never from a caller's claim about authorship.
+       */
+      const attribution = attributeSettlement({
+        invocations,
+        observation,
+        settledHead: observed.observedHead,
+      });
 
       // BASIS ADMISSION, before any effect: the project head must still be what the world was cut
       // from. This is §D2.6's exit re-check, and it is the same four-way agreement P7 applies inward.
@@ -517,8 +661,23 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         changedFiles: observed.changedFiles,
         exported,
         evidenceRecorded: evaluation.evidenceRecorded,
-        detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}; ${evaluation.detail}`,
+        attribution,
+        inputsNotInBasis: unseenInputs,
+        inputsState: inputObservation.state,
+        inputsDetail: inputObservation.detail,
+        detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}; ${evaluation.detail}; ${attribution.attribution}`,
       });
     },
   });
 }
+
+/**
+ * PWRS-A: the relay vocabulary is part of the ATTEMPT EXECUTION contract, so this owner re-exports
+ * it. The controller already consumes this module; routing the ledger and settlement types through
+ * it keeps the host façade from acquiring another direct edge for a capability it only carries.
+ */
+export * from "./execution_relay.js";
+
+/** ODPE-A: the project-input observer, re-exported so the host façade keeps one edge to this owner. */
+export { assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput, unseenInputs } from "./unseen_inputs.js";
+export type { ProjectInput, ProjectInputBody, ProjectInputObservation, ProjectInputIdentity } from "./unseen_inputs.js";

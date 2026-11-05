@@ -1,0 +1,124 @@
+{
+  "schema": "alhs-cohort/v1",
+  "cohortId": "alhs-c-2026-11-04",
+  "status": "CORE_REPEAT_AND_DIAGNOSTIC_EXECUTED",
+  "protocol": "docs/programs/alhs/ALHS-C-PROTOCOL.md",
+  "codeFreeze": "1227a7478d20954e0366d8e9ccec8c62763171b9",
+  "note": "The owner authorized the core stage only (F/A, 12M) on 2026-11-04. It ran and is reported in docs/engineering/ALHS-C-CORE-RESULT.md. The diagnostic L/G stage is not authorized and did not run.",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 25000000,
+  "conditions": {
+    "F": {
+      "role": "strong native DSH baseline",
+      "palimpsest": false,
+      "forcedGovernance": false,
+      "profile": "headless"
+    },
+    "L": {
+      "role": "lightweight project-context diagnostic",
+      "palimpsest": true,
+      "forcedGovernance": false,
+      "profile": "palimpsest-lightweight"
+    },
+    "A": {
+      "role": "adaptive Palimpsest; the agent chooses its collaboration and governance topology",
+      "palimpsest": true,
+      "forcedGovernance": false,
+      "profile": "palimpsest-full"
+    },
+    "G": {
+      "role": "forced governed diagnostic; not the product default",
+      "palimpsest": true,
+      "forcedGovernance": true,
+      "profile": "palimpsest-governed"
+    }
+  },
+  "stages": [
+    {
+      "id": "core",
+      "purpose": "primary F/A comparison",
+      "conditions": [
+        "F",
+        "A"
+      ],
+      "sessionsPerCondition": 2,
+      "sessionCeiling": 3000000,
+      "reserveTokens": 150000,
+      "aggregateCeiling": 12000000,
+      "authorized": true,
+      "executed": true,
+      "authorization": "research-evidence/alhs/live/authorization.json",
+      "result": "research-evidence/alhs/core-2026-11-04/core-summary.json"
+    },
+    {
+      "id": "diagnostic",
+      "purpose": "L/G cost and context diagnostics after the core stage",
+      "conditions": [
+        "L",
+        "G"
+      ],
+      "sessionsPerCondition": 2,
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 10000000,
+      "authorized": true,
+      "executed": true,
+      "authorization": "research-evidence/alhs/live/authorization-diagnostic.json",
+      "result": "research-evidence/alhs/diagnostic-2026-11-04/core-summary.json"
+    }
+  ],
+  "timeline": [
+    "T0 user intent",
+    "T1 project reality read",
+    "T2 work/collaboration decision",
+    "T3 real asset production",
+    "T4 measured constraint arrives",
+    "T5 autonomous assessment",
+    "T6 actual execution change",
+    "T7 late result and partial reuse",
+    "T8 host kill and new principal session",
+    "T9 deliverable or waiting state",
+    "T10 natural episode termination"
+  ],
+  "measurements": [
+    "goal_completion",
+    "natural_convergence",
+    "time_to_first_valid_artifact",
+    "tokens_to_first_valid_artifact",
+    "tokens_after_first_valid_artifact",
+    "tool_calls_after_first_valid_artifact",
+    "actual_parallel_work",
+    "autonomous_collaboration",
+    "reality_driven_replan",
+    "execution_changed_by_replan",
+    "late_result_handling",
+    "partial_reuse_content",
+    "partial_reuse_stale_claim_refused",
+    "cross_session_continuation",
+    "host_recovery",
+    "cross_artifact_consistency",
+    "unsafe_acceptance",
+    "human_intervention",
+    "tool_calls",
+    "tokens_by_cache_class",
+    "wall_time",
+    "monetary_cost"
+  ],
+  "fairness": {
+    "sameGoal": true,
+    "sameSources": true,
+    "sameModel": true,
+    "sameInjectedEvents": true,
+    "noHiddenAnswerInPrompt": true,
+    "noEvaluatorOracle": true,
+    "noForcedAgentCount": true,
+    "businessAndGovernanceScoredSeparately": true
+  },
+  "budget": {
+    "reserveRationale": "usage is observed after a message; stopping at ceiling minus reserve removes the one-message overshoot measured in the LHAPE-C pilot",
+    "childSessionsCounted": true,
+    "concurrentAllocationExplicit": true,
+    "finalReconciliationRequired": true,
+    "sampleIncreaseRequiresNewAuthorization": true
+  }
+}

@@ -1,0 +1,807 @@
+{
+  "schema": "lhape-host-scripts/v1",
+  "note": "Deterministic Messages stand-in. NOT a model. The DSH host, worker subprocesses, tool calls and Git effects are real.",
+  "scripts": [
+    {
+      "match": "Continuation context",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_691146",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/cost-v2.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait tools.read({ file_path: \"sources/capacity.csv\" });\nawait tools.read({ file_path: \"deliverables/capacity-v2.md\" });\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/cost-v2.md\", content: \"# Revised cost model (reworked on the current basis)\\n\\nThe accepted capacity-v2 result excludes the 900 mm unit at site B. The cost model now uses the 700 mm-compatible unit; the baseline cost line is not reused.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_173336",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverable",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=lhape@fixture.invalid -c \\\"user.name=LHAPE worker\\\" commit -qm \\\"write deliverables/cost-v2.md\\\"\", description: \"commit the deliverable before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_581915",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverable\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Write the baseline capacity assessment",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_409678",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/capacity.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait tools.read({ file_path: \"sources/capacity.csv\" });\nawait tools.read({ file_path: \"sources/sites.md\" });\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/capacity.md\", content: \"# Baseline capacity assessment\\n\\nSite A: Kestrel-900 meets -12 °C and 1200 mm. Site B: Kestrel-900 meets -4 °C; the 1200 mm corridor is the BASELINE ASSUMPTION, not measured.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_965540",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverable",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=lhape@fixture.invalid -c \\\"user.name=LHAPE worker\\\" commit -qm \\\"write deliverables/capacity.md\\\"\", description: \"commit the deliverable before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_122750",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"while (-not (Test-Path ../../release-baseline)) { Start-Sleep -Milliseconds 200 }\", description: \"park after the commit until the operator releases\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_499457",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverable\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Write the baseline cost model",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_844581",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/cost.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait tools.read({ file_path: \"sources/capacity.csv\" });\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/cost.md\", content: \"# Baseline cost model\\n\\nOne 900 mm Kestrel-900 unit per site; eight-week lead time. This model depends on the assumed 1200 mm site-B corridor.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_736909",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverable",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=lhape@fixture.invalid -c \\\"user.name=LHAPE worker\\\" commit -qm \\\"write deliverables/cost.md\\\"\", description: \"commit the deliverable before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_746470",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"while (-not (Test-Path ../../release-baseline)) { Start-Sleep -Milliseconds 200 }\", description: \"park after the commit until the operator releases\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_619830",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverable\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Write the revised capacity assessment",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_306412",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/capacity-v2.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait tools.read({ file_path: \"sources/capacity.csv\" });\nawait tools.read({ file_path: \"sources/sites.md\" });\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/capacity-v2.md\", content: \"# Revised capacity assessment\\n\\nThe measured site-B corridor is 700 mm. The 900 mm unit is NOT admissible at site B; site A remains admissible. The baseline 1200 mm assumption is superseded.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_754038",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverable",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=lhape@fixture.invalid -c \\\"user.name=LHAPE worker\\\" commit -qm \\\"write deliverables/capacity-v2.md\\\"\", description: \"commit the deliverable before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_798192",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverable\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Write the revised cost model",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_298480",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/cost-v2.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait tools.read({ file_path: \"sources/capacity.csv\" });\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/cost-v2.md\", content: \"# Revised cost model\\n\\nThe 900 mm unit is excluded by the measured 700 mm site-B corridor. Use the 700 mm-compatible unit; the baseline cost line is invalid and must not be reused.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_241411",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverable",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=lhape@fixture.invalid -c \\\"user.name=LHAPE worker\\\" commit -qm \\\"write deliverables/cost-v2.md\\\"\", description: \"commit the deliverable before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_678013",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverable\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Combine the accepted capacity and cost deliverables",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_547944",
+              "name": "run_code",
+              "input": {
+                "description": "write deliverables/integration.md",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait tools.read({ file_path: \"deliverables/capacity-v2.md\" });\nawait tools.read({ file_path: \"deliverables/cost-v2.md\" });\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/integration.md\", content: \"# Integrated deployment decision\\n\\nThis package is consistent with the accepted capacity-v2 and cost-v2 results: the measured 700 mm site-B corridor excludes the 900 mm unit, and the revised cost model uses the compatible unit. The baseline capacity/cost results are historical and are not part of the accepted package.\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_203934",
+              "name": "run_code",
+              "input": {
+                "description": "commit the deliverable",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=lhape@fixture.invalid -c \\\"user.name=LHAPE worker\\\" commit -qm \\\"write deliverables/integration.md\\\"\", description: \"commit the deliverable before reporting\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_036838",
+              "name": "run_code",
+              "input": {
+                "description": "report the worker outcome",
+                "code": "return await tools.palimpsest_worker_result({ kind: \"READY_FOR_SETTLEMENT\", summary: \"wrote and committed the required deliverable\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_DONE"
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_S1A",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "s1a_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1a_delegate_a",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "capacity"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1a_hold",
+              "name": "pwsh",
+              "input": {
+                "command": "Start-Sleep -Seconds 100",
+                "description": "keep this host and its real worker alive"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1a_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "LHAPE_S1A_DONE"
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_S1B",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "s1b_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1b_delegate_b",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "cost"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1b_hold",
+              "name": "pwsh",
+              "input": {
+                "command": "Start-Sleep -Seconds 100",
+                "description": "keep this host and its parked worker alive"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1b_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "LHAPE_S1B_DONE"
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_S1C",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_subagent",
+              "name": "subagent",
+              "input": {
+                "description": "check the measured corridor",
+                "prompt": "LHAPE_CHILD_CONSTRAINT Read .palimpsest/inputs/constraint-update.md and sources/sites.md. State whether the 900 mm unit is admissible at site B. Return ONLY the finding in one sentence. Do not edit anything."
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_record",
+              "name": "palimpsest_contribute",
+              "input": {
+                "action": "record",
+                "sourceKind": "NATIVE_SUBAGENT",
+                "sourceRef": "subagent:constraint-check",
+                "task": "Check whether the measured site-B corridor admits the 900 mm unit.",
+                "finding": "The measured site-B corridor is 700 mm, so the 900 mm unit used by the baseline cost model is not admissible; the baseline cost assumption is invalid.",
+                "declaredReadFootprint": [
+                  ".palimpsest/inputs/constraint-update.md",
+                  "sources/sites.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_decide",
+              "name": "palimpsest_contribute",
+              "input": {
+                "action": "decide",
+                "contributionId": "ctb-b7926eba358674cb8bd66316027bf3ba",
+                "decision": "REVISE_PLAN",
+                "decisionNote": "The measured 700 mm site-B corridor invalidates the 900 mm baseline assumption. Retire both baseline tasks and produce a revised package plus an integration task.",
+                "reason": "the measured constraint changes the binding task assumptions",
+                "changeClass": "behavior_change",
+                "changedIds": [
+                  "capacity",
+                  "cost"
+                ],
+                "declaredChangedPlan": true,
+                "tasks": [
+                  {
+                    "task_id": "capacity-v2",
+                    "objective": "Write the revised capacity assessment for the measured 700 mm site-B corridor from sources/capacity.csv and sources/sites.md into deliverables/capacity-v2.md. The measured corridor is 700 mm.",
+                    "depends_on": [],
+                    "write_paths": [
+                      "deliverables/capacity-v2.md"
+                    ],
+                    "required_artifacts": [
+                      "deliverables/capacity-v2.md"
+                    ]
+                  },
+                  {
+                    "task_id": "cost-v2",
+                    "objective": "Write the revised cost model for the admissible 700 mm unit from sources/capacity.csv into deliverables/cost-v2.md. The measured corridor is 700 mm, so the 900 mm unit is not admissible.",
+                    "depends_on": [],
+                    "write_paths": [
+                      "deliverables/cost-v2.md"
+                    ],
+                    "required_artifacts": [
+                      "deliverables/cost-v2.md"
+                    ]
+                  },
+                  {
+                    "task_id": "integration",
+                    "objective": "Combine the accepted capacity and cost deliverables into deliverables/integration.md, naming both accepted sources.",
+                    "depends_on": [
+                      "capacity-v2",
+                      "cost-v2"
+                    ],
+                    "write_paths": [
+                      "deliverables/integration.md"
+                    ],
+                    "required_artifacts": [
+                      "deliverables/integration.md"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_delegate_a2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "capacity-v2"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_hold",
+              "name": "pwsh",
+              "input": {
+                "command": "Start-Sleep -Seconds 60",
+                "description": "keep this host and its real worker alive"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1c_results",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "results",
+                "taskId": "cost"
+              }
+            }
+          ]
+        },
+        {
+          "text": "LHAPE_S1C_DONE"
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_S1D",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "s1d_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1d_delegate_b2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "cost-v2"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1d_hold",
+              "name": "pwsh",
+              "input": {
+                "command": "Start-Sleep -Seconds 60",
+                "description": "keep this host and its real worker alive"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1d_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s1d_results",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "results",
+                "taskId": "cost-v2"
+              }
+            }
+          ]
+        },
+        {
+          "text": "LHAPE_S1D_DONE"
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_CHILD_CONSTRAINT",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "child_read_constraint",
+              "name": "read",
+              "input": {
+                "file_path": ".palimpsest/inputs/constraint-update.md"
+              }
+            },
+            {
+              "id": "child_read_sites",
+              "name": "read",
+              "input": {
+                "file_path": "sources/sites.md"
+              }
+            }
+          ]
+        },
+        {
+          "text": "The measured site-B corridor is 700 mm, so the 900 mm unit used by the baseline cost model is not admissible; the baseline cost assumption is invalid."
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_S2",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "s2_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s2_results",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "results",
+                "taskId": "cost-v2"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s2_inspect_stale",
+              "name": "pwsh",
+              "input": {
+                "command": "git show __RESULT_COMMIT__:deliverables/cost-v2.md",
+                "description": "read the late result that was computed on the retired basis"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s2_rework",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "continue",
+                "taskId": "cost-v2",
+                "route": "rework",
+                "expectedAssessmentDigest": "__DIGEST__"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s2_wait_worker",
+              "name": "pwsh",
+              "input": {
+                "command": "Start-Sleep -Seconds 45",
+                "description": "keep the host alive while the rework worker finishes"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s2_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s2_results_after",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "results",
+                "taskId": "cost-v2"
+              }
+            }
+          ]
+        },
+        {
+          "text": "LHAPE_S2_DONE"
+        }
+      ]
+    },
+    {
+      "match": "LHAPE_PRINCIPAL_S3",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "s3_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s3_next",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "next"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s3_delegate_integration",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "integration"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s3_wait_worker",
+              "name": "pwsh",
+              "input": {
+                "command": "Start-Sleep -Seconds 45",
+                "description": "keep the host alive while the integration worker finishes"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "s3_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "LHAPE_S3_DONE"
+        }
+      ]
+    }
+  ]
+}

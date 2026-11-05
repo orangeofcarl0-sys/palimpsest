@@ -1,0 +1,56 @@
+{
+  "schema": "lhape-live-run-state/v1",
+  "state": "STOPPED_BY_BUDGET",
+  "cohortId": "lhape-c-pilot-2026-11-04",
+  "codeFreeze": "81f230fbf6f488777a25814a177b0c8b17864ce6",
+  "requestedTokens": 7493762,
+  "modelCalls": 3,
+  "results": [
+    {
+      "sessionId": "pilot-f-1",
+      "condition": "F",
+      "code": 1,
+      "signal": null,
+      "usage": {
+        "schema": "aps-budget-ledger/v1",
+        "observedAt": "2026-11-04T10:09:29.739Z",
+        "maxTokens": 2500000,
+        "totalTokens": 2528297,
+        "sessionFiles": 2,
+        "state": "STOPPED"
+      },
+      "stopped": true
+    },
+    {
+      "sessionId": "pilot-l-1",
+      "condition": "L",
+      "code": 1,
+      "signal": null,
+      "usage": {
+        "schema": "aps-budget-ledger/v1",
+        "observedAt": "2026-11-04T10:13:46.468Z",
+        "maxTokens": 2500000,
+        "totalTokens": 2562093,
+        "sessionFiles": 2,
+        "state": "STOPPED"
+      },
+      "stopped": true
+    },
+    {
+      "sessionId": "pilot-g-1",
+      "condition": "G",
+      "code": 1,
+      "signal": null,
+      "usage": {
+        "schema": "aps-budget-ledger/v1",
+        "observedAt": "2026-11-04T10:13:47.140Z",
+        "maxTokens": 2493762,
+        "totalTokens": 0,
+        "sessionFiles": 0,
+        "state": "RUNNING"
+      },
+      "stopped": false
+    }
+  ],
+  "at": "2026-11-04T10:13:50.298Z"
+}

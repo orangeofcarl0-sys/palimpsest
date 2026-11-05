@@ -1,0 +1,35 @@
+{
+  "schema": "lhape-live-cohort/v1",
+  "cohortId": "lhape-c-long-horizon-2026-11-03",
+  "codeFreeze": "e59a9112c11ea45e4300e20e30ca7e2136d7cf24",
+  "conditions": ["F", "L", "G"],
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "oracleCopied": false,
+  "hiddenDependenciesDisclosed": false,
+  "sessions": [
+    {
+      "id": "F-1",
+      "condition": "F",
+      "maxTokens": 2500000,
+      "command": ["node", "scripts/lhape/cohort_session.mjs", "--condition=F"],
+      "sessionRoot": "research-evidence/lhape/live/sessions/F-1"
+    },
+    {
+      "id": "L-1",
+      "condition": "L",
+      "maxTokens": 2500000,
+      "command": ["node", "scripts/lhape/cohort_session.mjs", "--condition=L"],
+      "sessionRoot": "research-evidence/lhape/live/sessions/L-1"
+    },
+    {
+      "id": "G-1",
+      "condition": "G",
+      "maxTokens": 2500000,
+      "command": ["node", "scripts/lhape/cohort_session.mjs", "--condition=G"],
+      "sessionRoot": "research-evidence/lhape/live/sessions/G-1"
+    }
+  ]
+}

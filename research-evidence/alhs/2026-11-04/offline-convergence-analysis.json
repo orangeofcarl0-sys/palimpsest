@@ -1,0 +1,1219 @@
+{
+  "schema": "alhs-offline-convergence-analysis/v1",
+  "generatedAt": "2026-11-04T12:38:06.123Z",
+  "pilot": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\lhape\\live\\lhape-c-pilot-2026-11-04",
+  "method": "Replays the recorded write/edit/run_code calls per condition; the rubric is the pilot's pre-registered 7-fact rubric. Token values are the recorded per-message usage. No model call was made.",
+  "note": "Token counts after the first valid artifact are the recorded usage of all later assistant messages, including any message that started before the artifact write and finished after it. Values are therefore upper bounds on post-artifact spend.",
+  "conditions": {
+    "F": {
+      "sessions": [
+        {
+          "sessionId": "9e608e20-96a5-4709-a681-0d93f7aaddb2",
+          "workspace": "host-workspace",
+          "events": 94,
+          "assistantMessages": 7,
+          "tokens": 245203,
+          "firstEvent": "2026-11-04T10:07:00.351Z",
+          "lastEvent": "2026-11-04T10:09:13.360Z"
+        },
+        {
+          "sessionId": "session-b92d5b30-5547-410d-8a8b-d3ce1ccd3b1d",
+          "workspace": "host-workspace",
+          "events": 368,
+          "assistantMessages": 52,
+          "tokens": 2283094,
+          "firstEvent": "2026-11-04T10:04:28.990Z",
+          "lastEvent": "2026-11-04T10:09:29.517Z"
+        }
+      ],
+      "totals": {
+        "tokens": 2528297,
+        "assistantMessages": 59,
+        "toolCalls": 78,
+        "wallMs": 300527
+      },
+      "artifact": {
+        "bytes": 36472,
+        "replayPassed": 7,
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "versions": 19,
+        "changedAfterFirstValid": 18
+      },
+      "firstValid": {
+        "time": 1793786810319,
+        "sessionId": "session-b92d5b30-5547-410d-8a8b-d3ce1ccd3b1d",
+        "workspace": "host-workspace",
+        "label": "write:write",
+        "tokensBefore": 104081,
+        "bytes": 34849
+      },
+      "afterFirstValid": {
+        "tokens": 2424216,
+        "toolCalls": 65,
+        "toolCallsByName": {
+          "pwsh": 15,
+          "subagent": 1,
+          "working_directory": 1,
+          "glob": 1,
+          "read": 15,
+          "edit": 19,
+          "grep": 5,
+          "list_agents": 8
+        },
+        "artifactChanges": 18,
+        "repeatedStateQueries": 8,
+        "packageReads": 8
+      },
+      "closingText": null,
+      "lastAssistantMessage": {
+        "time": "2026-11-04T10:09:29.490Z",
+        "toolCalls": 1,
+        "text": ""
+      },
+      "postArtifactCalls": [
+        {
+          "time": 1793786815326,
+          "name": "pwsh",
+          "summary": "pwsh: Commit initial review package",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786820314,
+          "name": "subagent",
+          "summary": "subagent: Independent package review",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786821412,
+          "name": "working_directory",
+          "summary": "working_directory",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786821422,
+          "name": "glob",
+          "summary": "glob",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786821946,
+          "name": "pwsh",
+          "summary": "pwsh: Re-check inbox for new measured data",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823909,
+          "name": "read",
+          "summary": "read: F/TASK.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823910,
+          "name": "read",
+          "summary": "read: sources/sites.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823912,
+          "name": "read",
+          "summary": "read: sources/capacity.csv",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823912,
+          "name": "read",
+          "summary": "read: sources/vendors.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823913,
+          "name": "read",
+          "summary": "read: inbox/README.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823913,
+          "name": "read",
+          "summary": "read: 2026-11-03/corridor-measurement.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823914,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786823914,
+          "name": "read",
+          "summary": "read: retained-baseline/README.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786833459,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786835674,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786839880,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786843913,
+          "name": "pwsh",
+          "summary": "pwsh: Re-check inbox again",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786849114,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786850688,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786852080,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786855585,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786857175,
+          "name": "grep",
+          "summary": "grep",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786860876,
+          "name": "pwsh",
+          "summary": "pwsh: Count table columns in key tables",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786864320,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786865960,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786867342,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786869487,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786871523,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786875591,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786878074,
+          "name": "pwsh",
+          "summary": "pwsh: Validate table column consistency",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786886839,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786888072,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786889338,
+          "name": "pwsh",
+          "summary": "pwsh: Check diffs and inbox",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786895252,
+          "name": "pwsh",
+          "summary": "pwsh: List hidden files and check git history",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786895431,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786896422,
+          "name": "grep",
+          "summary": "grep",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786897410,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786899857,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786900145,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786900177,
+          "name": "pwsh",
+          "summary": "pwsh: Show diff and current file metadata",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786901708,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786909511,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786916891,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786918076,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786919795,
+          "name": "pwsh",
+          "summary": "pwsh: Check inbox for additional updates",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786924826,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786928526,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786936303,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786938929,
+          "name": "pwsh",
+          "summary": "pwsh: Final inbox scan before finalizing",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786942206,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786944807,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786945066,
+          "name": "pwsh",
+          "summary": "pwsh: Check current time, all files, and git commit details",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786946275,
+          "name": "grep",
+          "summary": "grep",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786946489,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786948330,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786949110,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786949111,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786949127,
+          "name": "pwsh",
+          "summary": "pwsh: Capture current file hash and mtime",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786950629,
+          "name": "grep",
+          "summary": "grep",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786950823,
+          "name": "grep",
+          "summary": "grep",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786951954,
+          "name": "pwsh",
+          "summary": "pwsh: Show latest diff of package",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786956915,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786959123,
+          "name": "pwsh",
+          "summary": "pwsh: Validate tables and list headings",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793786967908,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793786969491,
+          "name": "pwsh",
+          "summary": "pwsh: Review working tree changes",
+          "changedArtifact": false,
+          "changeKind": null
+        }
+      ]
+    },
+    "L": {
+      "sessions": [
+        {
+          "sessionId": "65904959-c04b-4c01-bf36-8f99ff3605bf",
+          "workspace": "host-workspace",
+          "events": 56,
+          "assistantMessages": 4,
+          "tokens": 98235,
+          "firstEvent": "2026-11-04T10:12:37.978Z",
+          "lastEvent": "2026-11-04T10:13:39.790Z"
+        },
+        {
+          "sessionId": "session-45a61a26-70f9-4704-9781-6ce19b27fba2",
+          "workspace": "host-workspace",
+          "events": 349,
+          "assistantMessages": 52,
+          "tokens": 2463858,
+          "firstEvent": "2026-11-04T10:09:38.509Z",
+          "lastEvent": "2026-11-04T10:13:46.230Z"
+        }
+      ],
+      "totals": {
+        "tokens": 2562093,
+        "assistantMessages": 56,
+        "toolCalls": 69,
+        "wallMs": 247721
+      },
+      "artifact": {
+        "bytes": 31591,
+        "replayPassed": 7,
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "versions": 29,
+        "changedAfterFirstValid": 27
+      },
+      "firstValid": {
+        "time": 1793787094458,
+        "sessionId": "session-45a61a26-70f9-4704-9781-6ce19b27fba2",
+        "workspace": "host-workspace",
+        "label": "edit:edit",
+        "tokensBefore": 188715,
+        "bytes": 27039
+      },
+      "afterFirstValid": {
+        "tokens": 2373378,
+        "toolCalls": 54,
+        "toolCallsByName": {
+          "edit": 28,
+          "read": 16,
+          "grep": 2,
+          "subagent": 1,
+          "glob": 1,
+          "pwsh": 2,
+          "list_agents": 3,
+          "job_list": 1
+        },
+        "artifactChanges": 27,
+        "repeatedStateQueries": 4,
+        "packageReads": 10
+      },
+      "closingText": null,
+      "lastAssistantMessage": {
+        "time": "2026-11-04T10:13:46.199Z",
+        "toolCalls": 1,
+        "text": ""
+      },
+      "postArtifactCalls": [
+        {
+          "time": 1793787095968,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787098801,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787104799,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787105839,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787110748,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787114642,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787115986,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787117263,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787121814,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787124883,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787126198,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787129798,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787135871,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787137388,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787143400,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787145501,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787148608,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787149998,
+          "name": "grep",
+          "summary": "grep",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787157942,
+          "name": "subagent",
+          "summary": "subagent: Independent package review",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787159266,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787160504,
+          "name": "read",
+          "summary": "read: L/TASK.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787160506,
+          "name": "read",
+          "summary": "read: sources/sites.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787160507,
+          "name": "read",
+          "summary": "read: sources/capacity.csv",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787160507,
+          "name": "read",
+          "summary": "read: sources/vendors.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787160508,
+          "name": "read",
+          "summary": "read: inbox/README.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787160509,
+          "name": "read",
+          "summary": "read: 2026-11-03/corridor-measurement.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787160509,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787161129,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787163294,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787166787,
+          "name": "glob",
+          "summary": "glob",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787167047,
+          "name": "pwsh",
+          "summary": "pwsh: Show repository file status and recent history",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787171165,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787172899,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787174889,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787176520,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787179455,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787181287,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787183672,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787186471,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787188556,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787190464,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787193673,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787195632,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787200800,
+          "name": "pwsh",
+          "summary": "pwsh: Check git status and inbox contents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787204418,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787213703,
+          "name": "job_list",
+          "summary": "job_list",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787216182,
+          "name": "grep",
+          "summary": "grep",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787216191,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787217662,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787218890,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787219432,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787220839,
+          "name": "list_agents",
+          "summary": "list_agents",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787225037,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787226200,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        }
+      ]
+    },
+    "G": {
+      "sessions": [
+        {
+          "sessionId": "session-6ba168df-94a7-44d5-afcc-e955128fd6cc",
+          "workspace": "host-workspace",
+          "events": 361,
+          "assistantMessages": 45,
+          "tokens": 1529698,
+          "firstEvent": "2026-11-04T10:17:23.784Z",
+          "lastEvent": "2026-11-04T10:22:22.669Z"
+        },
+        {
+          "sessionId": "session-72299e75-dec1-4e6e-ae31-2b403adcc1a4",
+          "workspace": "host-workspace",
+          "events": 17,
+          "assistantMessages": 0,
+          "tokens": 0,
+          "firstEvent": "2026-11-04T10:15:43.326Z",
+          "lastEvent": "2026-11-04T10:15:43.715Z"
+        },
+        {
+          "sessionId": "worker-be66982d-3e1b-454b-9e55-ddcd8b056668",
+          "workspace": "worker-workspace",
+          "events": 274,
+          "assistantMessages": 25,
+          "tokens": 802442,
+          "firstEvent": "2026-11-04T10:17:51.066Z",
+          "lastEvent": "2026-11-04T10:21:19.334Z"
+        }
+      ],
+      "totals": {
+        "tokens": 2332140,
+        "assistantMessages": 70,
+        "toolCalls": 83,
+        "wallMs": 399343
+      },
+      "artifact": {
+        "bytes": 32911,
+        "replayPassed": 7,
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "versions": 4,
+        "changedAfterFirstValid": 2
+      },
+      "firstValid": {
+        "time": 1793787660890,
+        "sessionId": "worker-be66982d-3e1b-454b-9e55-ddcd8b056668",
+        "workspace": "worker-workspace",
+        "label": "run_code:run_code-full-write",
+        "tokensBefore": 1287138,
+        "bytes": 32857
+      },
+      "afterFirstValid": {
+        "tokens": 1045002,
+        "toolCalls": 20,
+        "toolCallsByName": {
+          "palimpsest_work": 5,
+          "pwsh": 8,
+          "run_code": 4,
+          "read": 1,
+          "edit": 2
+        },
+        "artifactChanges": 2,
+        "repeatedStateQueries": 0,
+        "packageReads": 1
+      },
+      "closingText": {
+        "time": 1793787679332,
+        "text": "Package complete and committed. **What was produced — `deliverables/package.md` (371 lines, commit `5e068ba`)** - **Evidence discipline:** every value tagged `[S]` sourced, `[M]` measured, `[D]` derived, `[A]` assumption, `[C]` unverified claim, `[G]` gap. - **Deciding constraints named per site:** - **Site A — −12 °C design minimum.** Halcyon-850 (rated −10 °C) is excluded by 2 K; Kestrel-900 (+8"
+      },
+      "lastAssistantMessage": {
+        "time": "2026-11-04T10:22:22.668Z",
+        "toolCalls": 1,
+        "text": ""
+      },
+      "postArtifactCalls": [
+        {
+          "time": 1793787663819,
+          "name": "palimpsest_work",
+          "summary": "palimpsest_work",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787663834,
+          "name": "pwsh",
+          "summary": "pwsh: Check worktree git status and log",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787664343,
+          "name": "run_code",
+          "summary": "run_code: Validate rewritten package structure",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787666509,
+          "name": "pwsh",
+          "summary": "pwsh: Show in-progress package diff",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787667847,
+          "name": "run_code",
+          "summary": "run_code: Re-check inbox, amend commit, verify clean tree",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787670099,
+          "name": "pwsh",
+          "summary": "pwsh: Wait then check worktree status",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787671517,
+          "name": "run_code",
+          "summary": "run_code: Verify executive summary after rewrite",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787674940,
+          "name": "run_code",
+          "summary": "run_code: Finalize todos and report worker result",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787706135,
+          "name": "palimpsest_work",
+          "summary": "palimpsest_work",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787706148,
+          "name": "read",
+          "summary": "read: deliverables/package.md",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787713190,
+          "name": "pwsh",
+          "summary": "pwsh: Verify committed package revision",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787716024,
+          "name": "pwsh",
+          "summary": "pwsh: Final re-check of canonical inbox",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787719274,
+          "name": "palimpsest_work",
+          "summary": "palimpsest_work",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787725172,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787726865,
+          "name": "pwsh",
+          "summary": "pwsh: Commit final package and measured evidence",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787730028,
+          "name": "palimpsest_work",
+          "summary": "palimpsest_work",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787736344,
+          "name": "pwsh",
+          "summary": "pwsh: Remove copied inbox evidence from worktree commit",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787738631,
+          "name": "edit",
+          "summary": "edit",
+          "changedArtifact": true,
+          "changeKind": "edit"
+        },
+        {
+          "time": 1793787740074,
+          "name": "pwsh",
+          "summary": "pwsh: Amend package commit to stay within write scope",
+          "changedArtifact": false,
+          "changeKind": null
+        },
+        {
+          "time": 1793787742669,
+          "name": "palimpsest_work",
+          "summary": "palimpsest_work",
+          "changedArtifact": false,
+          "changeKind": null
+        }
+      ]
+    }
+  }
+}

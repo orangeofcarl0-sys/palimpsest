@@ -1,0 +1,58 @@
+{
+  "schema": "alhs-cohort-plan/v1",
+  "cohortId": "alhs-c-repeat-2026-11-04",
+  "stage": "repeat-core",
+  "codeFreeze": "a62fc32a554448f5f8cfb67801a7e0b7094c9100",
+  "provider": "deepseek-official/deepseek-flash",
+  "generatedAt": "2026-11-04T15:15:22.792Z",
+  "modelCalls": 0,
+  "sessions": [
+    {
+      "sessionId": "F-1b",
+      "condition": "F",
+      "index": 1,
+      "ceiling": 1500000,
+      "reserveTokens": 150000,
+      "softStopAt": 1350000,
+      "killAtTokens": 400000,
+      "profile": "headless"
+    },
+    {
+      "sessionId": "F-2b",
+      "condition": "F",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 150000,
+      "softStopAt": 2350000,
+      "profile": "headless"
+    },
+    {
+      "sessionId": "A-1b",
+      "condition": "A",
+      "index": 1,
+      "ceiling": 1500000,
+      "reserveTokens": 150000,
+      "softStopAt": 1350000,
+      "killAtTokens": 400000,
+      "profile": "palimpsest-full"
+    },
+    {
+      "sessionId": "A-2b",
+      "condition": "A",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 150000,
+      "softStopAt": 2350000,
+      "profile": "palimpsest-full"
+    }
+  ],
+  "totals": {
+    "sessions": 4,
+    "plannedCeiling": 8000000,
+    "plannedReserve": 600000,
+    "effectiveStopSum": 7400000,
+    "aggregateCeiling": 8000000,
+    "localHardCap": 10000000
+  },
+  "note": "A plan only. Each session stops at `softStopAt`, leaving its reserve for the in-flight message. Child sessions are counted through the whole session root."
+}

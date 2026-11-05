@@ -1,0 +1,75 @@
+{
+  "scenario": "main",
+  "projectId": "lhape",
+  "goal": "Evaluate a multi-site energy deployment and leave a consistent, reviewable package: baseline capacity and cost, a revised package after the measured corridor constraint, and an integrated decision artifact.",
+  "head": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+  "basis": {
+    "projectRevision": 0,
+    "projectDigest": "abf6364ae542a25a8520da9e2d01782fa466e9ea9c035f286986ddacc8b93a37",
+    "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+  },
+  "contributionId": "ctb-b7926eba358674cb8bd66316027bf3ba",
+  "initialTasks": [
+    {
+      "task_id": "capacity",
+      "objective": "Write the baseline capacity assessment for site A and site B from sources/capacity.csv and sources/sites.md into deliverables/capacity.md.",
+      "depends_on": [],
+      "write_paths": [
+        "deliverables/capacity.md"
+      ],
+      "required_artifacts": [
+        "deliverables/capacity.md"
+      ]
+    },
+    {
+      "task_id": "cost",
+      "objective": "Write the baseline cost model for the selected 900 mm unit from sources/capacity.csv into deliverables/cost.md.",
+      "depends_on": [],
+      "write_paths": [
+        "deliverables/cost.md"
+      ],
+      "required_artifacts": [
+        "deliverables/cost.md"
+      ]
+    }
+  ],
+  "replannedTasks": [
+    {
+      "task_id": "capacity-v2",
+      "objective": "Write the revised capacity assessment for the measured 700 mm site-B corridor from sources/capacity.csv and sources/sites.md into deliverables/capacity-v2.md. The measured corridor is 700 mm.",
+      "depends_on": [],
+      "write_paths": [
+        "deliverables/capacity-v2.md"
+      ],
+      "required_artifacts": [
+        "deliverables/capacity-v2.md"
+      ]
+    },
+    {
+      "task_id": "cost-v2",
+      "objective": "Write the revised cost model for the admissible 700 mm unit from sources/capacity.csv into deliverables/cost-v2.md. The measured corridor is 700 mm, so the 900 mm unit is not admissible.",
+      "depends_on": [],
+      "write_paths": [
+        "deliverables/cost-v2.md"
+      ],
+      "required_artifacts": [
+        "deliverables/cost-v2.md"
+      ]
+    },
+    {
+      "task_id": "integration",
+      "objective": "Combine the accepted capacity and cost deliverables into deliverables/integration.md, naming both accepted sources.",
+      "depends_on": [
+        "capacity-v2",
+        "cost-v2"
+      ],
+      "write_paths": [
+        "deliverables/integration.md"
+      ],
+      "required_artifacts": [
+        "deliverables/integration.md"
+      ]
+    }
+  ],
+  "finding": "The measured site-B corridor is 700 mm, so the 900 mm unit used by the baseline cost model is not admissible; the baseline cost assumption is invalid."
+}

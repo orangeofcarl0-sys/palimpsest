@@ -40,6 +40,10 @@ const PERMITTED_BELOW_FACADE: Readonly<Record<string, readonly string[]>> = Obje
   "src/interaction/index.ts": ["COLLABORATION_INTENTS", "MAX_BRANCH_HINT", "MIN_BRANCH_HINT"],
   "src/project_management/index.ts": ["MANAGEMENT_INVOLVEMENTS"],
   "src/project_operating/work_mode_profile.ts": ["WORK_MODE_BASE_MODES", "WORK_MODE_MODIFIERS"],
+  // ODPE: the long normal-work actions moved to the application layer so the adapter stays a
+  // translation layer. The helper owns no store, no service and no authority: it receives the same
+  // façade the adapter received and returns plain values.
+  "src/application/normal_work.ts": ["EPISODE_INTENTS", "EXPLORATION_STATUSES", "makeNormalWorkActions", "projectTaskInput"],
 });
 
 /** Named imports an adapter declares from one specifier. */

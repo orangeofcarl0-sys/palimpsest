@@ -1,0 +1,36 @@
+{
+  "schema": "pwrs-r3-usage/v1",
+  "sessions": [
+    {
+      "id": "A-1",
+      "tokens": 404956,
+      "stopped": false,
+      "killedBy": "token_milestone",
+      "natural": false,
+      "exitCode": 1,
+      "maxTokens": 2500000
+    },
+    {
+      "id": "A-2",
+      "tokens": 1424148,
+      "stopped": false,
+      "killedBy": null,
+      "natural": true,
+      "exitCode": 0,
+      "maxTokens": 2500000
+    }
+  ],
+  "total": 1829104,
+  "authorization": {
+    "aggregate": 5000000,
+    "perSession": 2500000,
+    "reserve": 125000
+  },
+  "remaining": 3170896,
+  "provider": {
+    "posts": 74,
+    "ok": 72,
+    "upstreamTimeout": 2,
+    "getForbidden": 1
+  }
+}

@@ -1,0 +1,322 @@
+{
+  "schema": "alhs-core-score/v1",
+  "cohortId": "alhs-c-2026-11-04",
+  "codeFreeze": "d6d2a246784dca52291af22b2f1d4281652f3544",
+  "scoredAt": "2026-11-04T16:05:24.878Z",
+  "note": "The 7-fact rubric is a floor on the final package, not a quality score. `natural` separates a session that ended on its own from a budget stop or the scenario kill. `firstValid` is replayed from the recorded writes; it is not the user's full goal.",
+  "conditions": {
+    "L": {
+      "condition": "L",
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": true,
+        "bytes": 39222,
+        "sha256": "7eaff8bebb99537e75d60c3f62a4edc3e45b86d8f85446d2c5ba776eeba9c1d2"
+      },
+      "rubric": {
+        "package_present": true,
+        "both_sites": true,
+        "measured_700mm_used": true,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": true,
+        "cost_and_schedule": true,
+        "risk_and_decision": true
+      },
+      "score": "7/7",
+      "candidate": null,
+      "sessions": [
+        {
+          "sessionId": "L-1",
+          "run": {
+            "schema": "alhs-core-session-run/v1",
+            "cohortId": "alhs-c-2026-11-04",
+            "sessionId": "L-1",
+            "condition": "L",
+            "index": 1,
+            "world": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\worlds\\L",
+            "home": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\home-L-1",
+            "profile": "alhs-core",
+            "startedAt": "2026-11-04T15:49:41.397Z",
+            "injectedAt": "2026-11-04T15:50:41.805Z",
+            "endedAt": "2026-11-04T15:52:36.783Z",
+            "exitCode": 1,
+            "signal": null,
+            "error": null,
+            "killedAt": "2026-11-04T15:52:36.057Z",
+            "killPid": 47344,
+            "killedBy": "token_milestone",
+            "stopped": false,
+            "usage": {
+              "schema": "aps-budget-ledger/v1",
+              "observedAt": "2026-11-04T15:52:36.342Z",
+              "maxTokens": 2500000,
+              "reserveTokens": 125000,
+              "softCeiling": 2375000,
+              "totalTokens": 470926,
+              "sessionFiles": 1,
+              "state": "RUNNING"
+            },
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softStopAt": 2375000,
+            "killAtTokens": 400000,
+            "natural": false
+          },
+          "ledgerUsage": 470926,
+          "streamUsage": 470926
+        },
+        {
+          "sessionId": "L-2",
+          "run": {
+            "schema": "alhs-core-session-run/v1",
+            "cohortId": "alhs-c-2026-11-04",
+            "sessionId": "L-2",
+            "condition": "L",
+            "index": 2,
+            "world": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\worlds\\L",
+            "home": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\home-L-2",
+            "profile": "alhs-core",
+            "startedAt": "2026-11-04T15:52:36.898Z",
+            "injectedAt": null,
+            "endedAt": "2026-11-04T15:54:54.118Z",
+            "exitCode": 0,
+            "signal": null,
+            "error": null,
+            "killedAt": null,
+            "killPid": null,
+            "killedBy": null,
+            "stopped": false,
+            "usage": {
+              "schema": "aps-budget-ledger/v1",
+              "observedAt": "2026-11-04T15:54:50.601Z",
+              "maxTokens": 2500000,
+              "reserveTokens": 125000,
+              "softCeiling": 2375000,
+              "totalTokens": 1216871,
+              "sessionFiles": 1,
+              "state": "RUNNING"
+            },
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softStopAt": 2375000,
+            "killAtTokens": null,
+            "natural": true
+          },
+          "ledgerUsage": 1216871,
+          "streamUsage": 1287008
+        }
+      ],
+      "tokens": {
+        "total": 1757934,
+        "bySession": {
+          "L-1": 470926,
+          "L-2": 1287008
+        },
+        "ledgerBySession": {
+          "L-1": 470926,
+          "L-2": 1216871
+        },
+        "note": "stream totals are the recorded per-assistant-message usage across every session in the home (children included); the ledger is the guard's last observation and can trail the final message."
+      },
+      "firstValid": {
+        "time": 1793807536325,
+        "tokensBefore": 227962,
+        "bytes": 34866,
+        "versions": 2
+      },
+      "afterFirstValid": {
+        "toolCalls": 65,
+        "artifactChanges": 34,
+        "tokens": 1529972
+      },
+      "versions": 36,
+      "natural": {
+        "sessionNatural": true,
+        "firstSessionNatural": false,
+        "naturalEnd": true,
+        "killedInSession1": true,
+        "budgetStopped": false,
+        "episodeEnded": true,
+        "episodeState": "DELIVERED"
+      },
+      "episode": {
+        "state": "DELIVERED",
+        "current": true,
+        "intent": "DELIVER",
+        "conclusionId": "episode-212b47e274daaa91c7964441",
+        "changedSince": [],
+        "ended": true
+      },
+      "tasks": [],
+      "promotions": []
+    },
+    "G": {
+      "condition": "G",
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "rubric": {
+        "package_present": false,
+        "both_sites": false,
+        "measured_700mm_used": false,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": false,
+        "cost_and_schedule": false,
+        "risk_and_decision": false
+      },
+      "score": "7/7 (candidate, not accepted)",
+      "candidate": {
+        "attemptId": "attempt-7dcf8ee1bf371ad706fb9d89bd748aed",
+        "resultCommit": "8b21b462cd40eca9c44263f020836008e2479f9c",
+        "taskState": "VERIFYING",
+        "present": true,
+        "bytes": 21365,
+        "sha256": "a68ff2c5e03e931367a3a99a81e348218c4ccb074c522532c1c425aa1178c8ad",
+        "rubric": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7,
+        "detail": "read from the governed attempt's result commit; it is a candidate until an operator Promotion"
+      },
+      "sessions": [
+        {
+          "sessionId": "G-1",
+          "run": {
+            "schema": "alhs-core-session-run/v1",
+            "cohortId": "alhs-c-2026-11-04",
+            "sessionId": "G-1",
+            "condition": "G",
+            "index": 1,
+            "world": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\worlds\\G",
+            "home": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\home-G-1",
+            "profile": "alhs-core",
+            "startedAt": "2026-11-04T15:54:54.251Z",
+            "injectedAt": "2026-11-04T15:55:54.295Z",
+            "endedAt": "2026-11-04T15:56:17.975Z",
+            "exitCode": 1,
+            "signal": null,
+            "error": null,
+            "killedAt": "2026-11-04T15:56:17.240Z",
+            "killPid": 42716,
+            "killedBy": "token_milestone",
+            "stopped": false,
+            "usage": {
+              "schema": "aps-budget-ledger/v1",
+              "observedAt": "2026-11-04T15:56:14.940Z",
+              "maxTokens": 2500000,
+              "reserveTokens": 125000,
+              "softCeiling": 2375000,
+              "totalTokens": 402516,
+              "sessionFiles": 2,
+              "state": "RUNNING"
+            },
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softStopAt": 2375000,
+            "killAtTokens": 400000,
+            "natural": false
+          },
+          "ledgerUsage": 402516,
+          "streamUsage": 402516
+        },
+        {
+          "sessionId": "G-2",
+          "run": {
+            "schema": "alhs-core-session-run/v1",
+            "cohortId": "alhs-c-2026-11-04",
+            "sessionId": "G-2",
+            "condition": "G",
+            "index": 2,
+            "world": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\worlds\\G",
+            "home": "C:\\Users\\66494\\alhs\\diagnostic-2026-11-04\\home-G-2",
+            "profile": "alhs-core",
+            "startedAt": "2026-11-04T15:56:18.082Z",
+            "injectedAt": null,
+            "endedAt": "2026-11-04T15:58:49.130Z",
+            "exitCode": 0,
+            "signal": null,
+            "error": null,
+            "killedAt": null,
+            "killPid": null,
+            "killedBy": null,
+            "stopped": false,
+            "usage": {
+              "schema": "aps-budget-ledger/v1",
+              "observedAt": "2026-11-04T15:58:36.343Z",
+              "maxTokens": 2500000,
+              "reserveTokens": 125000,
+              "softCeiling": 2375000,
+              "totalTokens": 479549,
+              "sessionFiles": 1,
+              "state": "RUNNING"
+            },
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softStopAt": 2375000,
+            "killAtTokens": null,
+            "natural": true
+          },
+          "ledgerUsage": 479549,
+          "streamUsage": 525665
+        }
+      ],
+      "tokens": {
+        "total": 928181,
+        "bySession": {
+          "G-1": 402516,
+          "G-2": 525665
+        },
+        "ledgerBySession": {
+          "G-1": 402516,
+          "G-2": 479549
+        },
+        "note": "stream totals are the recorded per-assistant-message usage across every session in the home (children included); the ledger is the guard's last observation and can trail the final message."
+      },
+      "firstValid": {
+        "time": 1793807886814,
+        "tokensBefore": 612261,
+        "bytes": 21365,
+        "versions": 1
+      },
+      "afterFirstValid": {
+        "toolCalls": 9,
+        "artifactChanges": 0,
+        "tokens": 315920
+      },
+      "versions": 1,
+      "natural": {
+        "sessionNatural": true,
+        "firstSessionNatural": false,
+        "naturalEnd": true,
+        "killedInSession1": true,
+        "budgetStopped": false,
+        "episodeEnded": true,
+        "episodeState": "AWAITING_OPERATOR"
+      },
+      "episode": {
+        "state": "AWAITING_OPERATOR",
+        "current": true,
+        "intent": "WAIT_FOR_OPERATOR",
+        "conclusionId": "episode-97a773c7a72e344e375af4ec",
+        "changedSince": [],
+        "ended": true
+      },
+      "tasks": [
+        {
+          "taskId": "package",
+          "state": "VERIFYING"
+        }
+      ],
+      "promotions": []
+    }
+  }
+}

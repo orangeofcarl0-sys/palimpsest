@@ -1,0 +1,15 @@
+{
+  "schema": "alhs-spend-authorization/v1",
+  "cohortId": "pwrs-r2-2026-11-05",
+  "authorizedBy": "Owner (PWRS-R2 A-only retest, 2026-11-05)",
+  "authorizedAt": "2026-11-05T00:00:00.000Z",
+  "expiresAt": "2026-11-12T00:00:00.000Z",
+  "provider": "deepseek-official/deepseek-flash",
+  "stages": ["pwrs-r2"],
+  "conditions": ["A"],
+  "aggregateTokens": 5000000,
+  "perSessionCeiling": 2500000,
+  "reserveTokens": 125000,
+  "maxSessions": 2,
+  "note": "PWRS-R2 only: one governed-recovery A pair, 2,500,000 per session with a 125,000 one-message reserve; session 1 killed at 400,000 reported tokens. No F condition, sample increase or other cohort is authorized by this file."
+}

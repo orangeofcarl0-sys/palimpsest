@@ -150,10 +150,18 @@ function resolutionBases() {
   /** @type {string[]} */
   const bases = [import.meta.url];
   const asUrl = (/** @type {string} */ p) => `file:///${p.replace(/\\/gu, '/')}`;
+  /**
+   * THE DEPLOYMENT'S EXPLICIT SEAM ROOT WINS.
+   *
+   * This variable is how a deployment names the exact `@deepseek-ai/dsh-win32-process` every worker it
+   * starts must resolve. It used to be pushed BELOW the running entry point, so a global DSH install
+   * silently won and an explicitly requested seam was ignored — the drift check then refused a worker
+   * that had been given the qualified package. The entry point remains the fallback, never the override.
+   */
   const dshRoot = process.env.PALIMPSEST_DSH_ROOT?.trim();
   if (dshRoot !== undefined && dshRoot !== '') bases.unshift(asUrl(`${dshRoot}/node_modules/@deepseek-ai/dsh-win32-process/lib/index.js`));
   const entry = process.argv[1];
-  if (typeof entry === 'string' && entry.length > 0) bases.unshift(asUrl(entry));
+  if (typeof entry === 'string' && entry.length > 0) bases.push(asUrl(entry));
   return bases;
 }
 

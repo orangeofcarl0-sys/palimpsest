@@ -43,6 +43,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { ProjectController } from "../tools/controller.js";
+import type { ExecutionAttribution, ExecutionInvocation } from "../work/execution_relay.js";
 
 /**
  * R3-L0C-G1 §4/§5 — THE HOST PROCESS-OBSERVATION CONTRACT.
@@ -482,8 +483,28 @@ export interface WorkJobView {
   readonly phase: WorkJobPhase;
   /** The settlement outcome, once settle ran. A `NOT_READY`/`BASE_DRIFT` here is a NORMAL outcome. */
   readonly settlement: unknown;
+  /**
+   * PWRS-A: the settlement's execution attribution, when this job settled. This is the host's
+   * observation of which invocation produced the bytes — never a worker's claim about itself.
+   */
+  readonly attribution: ExecutionAttribution | null;
   /** The host-side failure detail, when this process could not continue. Never a project fact. */
   readonly hostError: string | null;
+  /**
+   * Whether a stop was REQUESTED for this job's worker. This is a host request, never an observation
+   * that the process stopped: `phase` and the canonical attempt stay authoritative until the port
+   * reports what it actually observed.
+   */
+  readonly stopRequested: boolean;
+}
+
+/** The honest answer to a stop request. `STOP_REQUESTED` is not `STOPPED`. */
+export interface WorkDelegationStopResult {
+  readonly jobId: string;
+  readonly taskId: string;
+  readonly phase: WorkJobPhase;
+  readonly state: "STOP_REQUESTED" | "ALREADY_TERMINAL" | "UNKNOWN";
+  readonly detail: string;
 }
 
 export interface WorkDelegationStartResult {
@@ -500,6 +521,8 @@ export interface WorkDelegationTerminal {
   readonly attemptId: string | null;
   readonly phase: Extract<WorkJobPhase, "FINISHED" | "HOST_ERROR">;
   readonly settlement: unknown;
+  /** PWRS-A: the settlement's observed attribution, when this job settled. */
+  readonly attribution: ExecutionAttribution | null;
   readonly hostError: string | null;
 }
 
@@ -509,7 +532,7 @@ export interface WorkDelegationServiceDeps {
     // R1-L §10: `fetchContext` is the narrow READ the host uses to answer a worker's context pull. It
     // is the SAME method the E1-K/E5-P gates already resolve handles with; the host binds it to the
     // attempt it prepared, and the model never receives that attempt id.
-    "mutatingWorkTarget" | "prepareMutatingWork" | "workWorkerAttemptContext" | "settleMutatingWork" | "attemptWorkRecord" | "fetchContext"
+    "mutatingWorkTarget" | "prepareMutatingWork" | "workWorkerAttemptContext" | "settleMutatingWork" | "attemptWorkRecord" | "fetchContext" | "observeAttemptResult" | "executionInvocations"
   >;
   /** A port PER job, bound to the world the job's prepare materializes. */
   readonly workerFor: (worldPath: string) => WorkWorkerRunPort;
@@ -543,6 +566,20 @@ export interface WorkDelegationServiceDeps {
   readonly sessionSourceQualification?: WorkerSessionSourceQualification | undefined;
   /** Terminal delivery (attention / followup). Only ever called once per job, with a terminal phase. */
   readonly onTerminal?: ((terminal: WorkDelegationTerminal) => void) | undefined;
+  /**
+   * PWRS-A: the durable relay recorder, called after a SETTLED settlement and BEFORE the job turns
+   * terminal. Host-private, non-authoritative and best-effort: a recorder failure is swallowed and
+   * never changes the canonical settlement.
+   */
+  readonly onSettlement?:
+    | ((input: {
+        readonly taskId: string;
+        readonly attemptId: string;
+        readonly baseCommit: string;
+        readonly resultCommit: string;
+        readonly attribution: ExecutionAttribution;
+      }) => Promise<void> | void)
+    | undefined;
 }
 
 export interface WorkDelegationService {
@@ -561,6 +598,13 @@ export interface WorkDelegationService {
   }): Promise<WorkDelegationStartResult>;
   /** READ-ONLY. Never retries, resumes, settles, verifies or promotes — it is not a command channel. */
   followup(input: { readonly jobId: string }): Promise<WorkJobView | { readonly jobId: string; readonly phase: "UNKNOWN"; readonly detail: string }>;
+  /** READ-ONLY listing of THIS host's jobs. Host-local and non-durable, like the job map itself. */
+  jobs(): Promise<readonly WorkJobView[]>;
+  /**
+   * Request that a job's worker stop. The worker port observes the abort signal; this call reports the
+   * REQUEST, not a stopped process. A worker that cannot be observed stopping keeps `phase` RUNNING.
+   */
+  stop(input: { readonly jobId?: string | undefined; readonly taskId?: string | undefined }): Promise<WorkDelegationStopResult>;
   /** READ-ONLY canonical inspection, addressed by the DURABLE identity rather than the host handle. */
   inspectAttempt(input: { readonly attemptId: string }): Promise<{
     readonly attemptId: string;
@@ -659,6 +703,18 @@ function correlateSessionIdentity(
 }
 
 /**
+ * PWRS-A: the attempt's world HEAD, read without letting an unobservable world abort a run that may
+ * already have done real work. An empty string is the honest "not observed" value.
+ */
+function observedHeadOf(controller: WorkDelegationServiceDeps["controller"], attemptId: string): string {
+  try {
+    return controller.observeAttemptResult(attemptId)?.observedHead ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/**
  * THE ONE BLOCKING KERNEL: prepare → run → settle, synchronously awaited.
  *
  * Both the blocking entry point and every async job call THIS. Nothing here re-resolves the task after
@@ -692,21 +748,61 @@ export async function executeMutatingWorkBlocking(
    * has no host job — the honest value, never an invented id.
    */
   const observeSessionIdentity = correlateSessionIdentity(deps.onCorrelatedSessionIdentity, { hostLocalJobId: "", attemptId: prepared.attemptId });
-  const workerOutcome = await worker.run({
-    workDir: prepared.worldPath,
-    context,
-    // §10: the canonical read, closed over THIS attempt. The worker asks by handle; only the parent
-    // knows which attempt the handle belongs to.
-    contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
-    ...(observe === undefined ? {} : { observe }),
-    ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
-    ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
-    ...(input.signal === undefined ? {} : { signal: input.signal }),
-  });
+  const workerOutcome = await (async () => {
+    /**
+     * PWRS-A: the invocation window. The ledger records the world HEAD before the port runs and after
+     * it returns, so settlement can attribute the settled bytes to an OBSERVED window instead of to
+     * whoever calls settle. A port that throws ends the window UNCONFIRMED — the process exit was not
+     * observed, and the world stays suspect until someone isolates it.
+     */
+    const invocation = deps.controller.executionInvocations.begin({
+      attemptId: prepared.attemptId,
+      taskId: prepared.taskId,
+      headAtStart: observedHeadOf(deps.controller, prepared.attemptId),
+    });
+    try {
+      const outcome = await worker.run({
+        workDir: prepared.worldPath,
+        context,
+        // §10: the canonical read, closed over THIS attempt. The worker asks by handle; only the parent
+        // knows which attempt the handle belongs to.
+        contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
+        ...(observe === undefined ? {} : { observe }),
+        ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
+        ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
+        ...(input.signal === undefined ? {} : { signal: input.signal }),
+      });
+      deps.controller.executionInvocations.end(invocation.invocationId, {
+        headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
+        outcome: "ENDED",
+      });
+      return outcome;
+    } catch (error) {
+      deps.controller.executionInvocations.end(invocation.invocationId, {
+        headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
+        outcome: "UNCONFIRMED",
+      });
+      throw error;
+    }
+  })();
   const settlement = await deps.controller.settleMutatingWork({
     attemptId: prepared.attemptId,
     workerOutcome,
+    observation: { path: "WORKER", invocationId: deps.controller.executionInvocations.lastEndedFor(prepared.attemptId)?.invocationId ?? null },
   });
+  if (settlement.state === "SETTLED" && deps.onSettlement !== undefined) {
+    try {
+      await deps.onSettlement({
+        taskId: prepared.taskId,
+        attemptId: prepared.attemptId,
+        baseCommit: prepared.baseCommit,
+        resultCommit: settlement.resultCommit,
+        attribution: settlement.attribution,
+      });
+    } catch {
+      /* derived record only; the canonical settlement stands */
+    }
+  }
   return Object.freeze({ taskId: prepared.taskId, attemptId: prepared.attemptId, settlement });
 }
 
@@ -715,17 +811,48 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
    * The HOST-LOCAL half: thin on purpose. Nothing here is canonical, nothing here is durable, and
    * nothing here may grow into a second scheduler store.
    */
-  const jobs = new Map<string, WorkJobView & { readonly promise: Promise<void> }>();
+  /** Host-private mutable job entry. The PUBLIC view is frozen; this object is not exposed. */
+  interface WorkJobEntry {
+    readonly jobId: string;
+    readonly taskId: string;
+    attemptId: string | null;
+    phase: WorkJobPhase;
+    settlement: unknown;
+    hostError: string | null;
+    stopRequested: boolean;
+    readonly abort: AbortController;
+    promise: Promise<void>;
+  }
 
-  function viewOf(entry: WorkJobView & { readonly promise: Promise<void> }): WorkJobView {
+  const jobs = new Map<string, WorkJobEntry>();
+
+  function viewOf(entry: WorkJobEntry): WorkJobView {
     return Object.freeze({
       jobId: entry.jobId,
       taskId: entry.taskId,
       attemptId: entry.attemptId,
       phase: entry.phase,
       settlement: entry.settlement,
+      attribution: attributionOf(entry.settlement),
       hostError: entry.hostError,
+      stopRequested: entry.stopRequested,
     });
+  }
+
+  /** PWRS-A: the attribution a settlement carries, or null when it did not settle. */
+  function attributionOf(settlement: unknown): ExecutionAttribution | null {
+    if (typeof settlement !== "object" || settlement === null) return null;
+    const value = (settlement as { attribution?: unknown }).attribution;
+    if (typeof value !== "object" || value === null) return null;
+    return "attribution" in value ? (value as ExecutionAttribution) : null;
+  }
+
+  /** The active host job for one task, if any. Host-local only; never canonical. */
+  function activeJobForTask(taskId: string): WorkJobView | undefined {
+    for (const entry of jobs.values()) {
+      if (entry.taskId === taskId && (entry.phase === "QUEUED" || entry.phase === "RUNNING")) return viewOf(entry);
+    }
+    return undefined;
   }
 
   return Object.freeze({
@@ -739,6 +866,45 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
       const target = deps.controller.mutatingWorkTarget(
         input.expectedTaskId === undefined ? {} : { expectedTaskId: input.expectedTaskId },
       );
+      /**
+       * HOST-LOCAL DUPLICATE GUARD. The canonical lane can legitimately be RESUMED, but this host must
+       * not spawn a SECOND worker onto the same task and world while the first is still active: the
+       * project would still hold one attempt, while two processes wrote into one world. That is a host
+       * safety fact (two live jobs), not a Work authority fact, so it is enforced here and never
+       * converted into an attempt failure.
+       */
+      const running = activeJobForTask(target.taskId);
+      if (running !== undefined) {
+        throw new WorkDelegationError(
+          `WORK_ALREADY_RUNNING: task "${target.taskId}" already has an active host job (${running.jobId}, ${running.phase}); wait for it to finish or stop it before starting another`,
+        );
+      }
+      /**
+       * PWRS-A §6.3 — AN EMPTY JOB MAP IS NOT AN EMPTY WORLD.
+       *
+       * The canonical lane can say RESUME while this host has never observed this attempt's worker:
+       * a restart, a different host, or a killed host. Running a NEW worker into that world would put
+       * two writers on one tree with no observed exclusivity, so it is refused. The principal can then
+       * inspect the world and choose an explicit relay route (takeover with a declaration, or a
+       * successor in a NEW world) instead of the product silently racing the old process.
+       */
+      if (target.resumed && target.openAttempt !== null && target.openAttempt.state !== "CREATED") {
+        const observed = deps.controller.executionInvocations.list(target.openAttempt.attemptId);
+        const open = observed.find((invocation) => invocation.outcome === "OPEN");
+        if (open !== undefined) {
+          throw new WorkDelegationError(
+            `WORK_ALREADY_RUNNING: attempt ${target.openAttempt.attemptId} has an OPEN worker invocation (${open.invocationId}) in this host; the world is still being written`,
+          );
+        }
+        if (observed.length === 0) {
+          throw new WorkDelegationError(
+            `EXECUTOR_LIVENESS_UNKNOWN: this host has never observed a worker invocation for attempt ${target.openAttempt.attemptId}, ` +
+              "so a second writer into the same execution world is refused. Inspect the world and choose an explicit relay route: " +
+              "`palimpsest_work action=relay relayRoute=takeover` to continue it as the principal (recorded as principal recovery), or " +
+              "`relayRoute=successor` to close it and continue in a NEW world at the same basis",
+          );
+        }
+      }
       const jobId = `wdj-${randomUUID()}`;
       const entry = {
         jobId,
@@ -747,6 +913,8 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
         phase: "QUEUED" as WorkJobPhase,
         settlement: null as unknown,
         hostError: null as string | null,
+        stopRequested: false,
+        abort: new AbortController(),
         promise: Promise.resolve(),
       };
       jobs.set(jobId, entry);
@@ -760,6 +928,7 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
             attemptId: entry.attemptId,
             phase,
             settlement: entry.settlement,
+            attribution: attributionOf(entry.settlement),
             hostError: entry.hostError,
           });
         } catch {
@@ -795,18 +964,76 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
             input.knowledge === undefined
               ? await deps.controller.workWorkerAttemptContext(prepared.attemptId)
               : await deps.controller.workWorkerAttemptContext(prepared.attemptId, { knowledge: input.knowledge });
-          const workerOutcome = await deps.workerFor(prepared.worldPath).run({
-            workDir: prepared.worldPath,
-            context,
-            contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
-            ...(observe === undefined ? {} : { observe }),
-            ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
-            ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
-          });
+          const workerOutcome = await (async () => {
+            /**
+             * PWRS-A: the SAME invocation window the blocking kernel records, on the async transport.
+             * `entry.attemptId` is canonical; the head reads are this host's own observation.
+             */
+            const invocation = deps.controller.executionInvocations.begin({
+              attemptId: prepared.attemptId,
+              taskId: prepared.taskId,
+              headAtStart: observedHeadOf(deps.controller, prepared.attemptId),
+            });
+            try {
+              const outcome = await deps.workerFor(prepared.worldPath).run({
+                workDir: prepared.worldPath,
+                context,
+                contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
+                signal: entry.abort.signal,
+                ...(observe === undefined ? {} : { observe }),
+                ...(observeSessionIdentity === undefined ? {} : { observeSessionIdentity }),
+                ...(deps.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: deps.sessionSourceQualification }),
+              });
+              deps.controller.executionInvocations.end(invocation.invocationId, {
+                headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
+                outcome: "ENDED",
+              });
+              return outcome;
+            } catch (error) {
+              deps.controller.executionInvocations.end(invocation.invocationId, {
+                headAtEnd: observedHeadOf(deps.controller, prepared.attemptId),
+                outcome: "UNCONFIRMED",
+              });
+              throw error;
+            }
+          })();
           entry.settlement = await deps.controller.settleMutatingWork({
             attemptId: prepared.attemptId,
             workerOutcome,
+            observation: {
+              path: "WORKER",
+              invocationId: deps.controller.executionInvocations.lastEndedFor(prepared.attemptId)?.invocationId ?? null,
+            },
           });
+          /**
+           * PWRS-A: record the observed attribution BEFORE the job reports FINISHED. The record is
+           * derived; a failure here is swallowed and cannot undo the canonical settlement.
+           */
+          const settled = entry.settlement as { state?: unknown; resultCommit?: unknown; attribution?: unknown } | null;
+          if (
+            deps.onSettlement !== undefined &&
+            settled !== null &&
+            settled.state === "SETTLED" &&
+            typeof settled.resultCommit === "string" &&
+            settled.attribution !== undefined
+          ) {
+            try {
+              await deps.onSettlement({
+                taskId: prepared.taskId,
+                attemptId: prepared.attemptId,
+                baseCommit: prepared.baseCommit,
+                resultCommit: settled.resultCommit,
+                attribution: settled.attribution as ExecutionAttribution,
+              });
+            } catch {
+              /* derived record only; the canonical settlement stands */
+            }
+          }
+          /**
+           * Settlement is INERT with respect to the scheduler: it records the worker's observed
+           * result, and the caller decides when to take the next legal lifecycle tick. That keeps the
+           * D5 continuation flows, which advance the scheduler themselves, on one contract.
+           */
           terminal("FINISHED");
         } catch (error) {
           /**
@@ -814,7 +1041,10 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
            * attempt keeps whatever state it really has (RUNNING, with its world and any commit in it),
            * the lane stays fenced, and no `ATTEMPT_FAILED` is fabricated.
            */
-          entry.hostError = error instanceof Error ? error.message : String(error);
+          const detail = error instanceof Error ? error.message : String(error);
+          entry.hostError = entry.stopRequested
+            ? `a stop was requested by this host; the worker ended with: ${detail} — the canonical attempt was not failed by this`
+            : detail;
           terminal("HOST_ERROR");
         }
       })();
@@ -848,6 +1078,52 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
         });
       }
       return viewOf(entry);
+    },
+
+    async jobs(): Promise<readonly WorkJobView[]> {
+      return Object.freeze(
+        [...jobs.values()]
+          .sort((left, right) => left.jobId.localeCompare(right.jobId))
+          .map((entry) => viewOf(entry)),
+      );
+    },
+
+    async stop(input: { readonly jobId?: string | undefined; readonly taskId?: string | undefined }): Promise<WorkDelegationStopResult> {
+      const entry =
+        input.jobId === undefined
+          ? input.taskId === undefined
+            ? undefined
+            : [...jobs.values()].find((candidate) => candidate.taskId === input.taskId)
+          : jobs.get(input.jobId);
+      if (entry === undefined) {
+        return Object.freeze({
+          jobId: input.jobId ?? "",
+          taskId: input.taskId ?? "",
+          phase: "QUEUED" as WorkJobPhase,
+          state: "UNKNOWN" as const,
+          detail:
+            "this host has no such job; host-local jobs are not durable, and an attempt left by a previous host is inspected by its canonical state rather than stopped through a job that no longer exists",
+        });
+      }
+      if (entry.phase === "FINISHED" || entry.phase === "HOST_ERROR") {
+        return Object.freeze({
+          jobId: entry.jobId,
+          taskId: entry.taskId,
+          phase: entry.phase,
+          state: "ALREADY_TERMINAL" as const,
+          detail: "this host already observed the job reach a terminal phase; there is nothing left to stop",
+        });
+      }
+      entry.stopRequested = true;
+      entry.abort.abort();
+      return Object.freeze({
+        jobId: entry.jobId,
+        taskId: entry.taskId,
+        phase: entry.phase,
+        state: "STOP_REQUESTED" as const,
+        detail:
+          "a stop was requested and the worker port was signalled; this is NOT an observation that the process stopped, so the phase and the canonical attempt remain unchanged until the port reports what it actually saw",
+      });
     },
 
     async inspectAttempt(input: { readonly attemptId: string }) {

@@ -1,0 +1,57 @@
+{
+  "schema": "lhape-operator-promotions/v1",
+  "records": [
+    {
+      "schema": "lhape-operator-promotion/v1",
+      "label": "interrupted-write",
+      "projectId": "lhape-interrupt",
+      "taskId": "interrupted-write",
+      "operator": "owner-authorized deterministic acceptance",
+      "acceptedAt": "2026-11-03T16:50:27.692Z",
+      "promoted": true,
+      "attemptId": "attempt-59321843b3fc4ed8199878eda7028311",
+      "before": {
+        "revision": 0,
+        "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "tasks": [
+          {
+            "taskId": "interrupted-write",
+            "state": "VERIFYING"
+          }
+        ]
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "fe4c0d561b9fcc109449222598af201e2f195ea7",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+      },
+      "result": {
+        "promotionId": "promotion-49ac1497bdc7c65c4002f5757b27be5f",
+        "sourceCommit": "fe4c0d561b9fcc109449222598af201e2f195ea7",
+        "expectedHeadCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "resultingHeadCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "headReconciliation": {
+        "status": "reconciled",
+        "revision": 1,
+        "fromHead": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "toHead": "5042ccb167248a7f8087b04817da23d6712e8c14",
+        "blockers": []
+      },
+      "after": {
+        "revision": 1,
+        "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+        "tasks": [
+          {
+            "taskId": "interrupted-write",
+            "state": "SATISFIED"
+          }
+        ]
+      }
+    }
+  ]
+}

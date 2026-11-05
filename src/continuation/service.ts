@@ -65,6 +65,7 @@ import { assessContinuation, type ContinuationAssessment } from "./assessment.js
 import type {
   ContinuationResolvedResult,
   ContinuationResultRef,
+  ContinuationReusePlan,
   ResultContinuationPorts,
 } from "./ports.js";
 
@@ -82,6 +83,11 @@ export interface ContinuationInspection {
   readonly resolved: boolean;
   readonly taskId: string | null;
   readonly targetObservationDigest: string | null;
+  /**
+   * ALHS-B: the result's own source revision, when the owner resolved one. It is the commit a new
+   * attempt may read to reuse unaffected content; it is not a promotion and grants no acceptance.
+   */
+  readonly resultCommit: string | null;
   /** D3-b's conclusion and the certificate that carries it (an authority record, not a verdict string). */
   readonly compatibility: {
     readonly outcome: string;
@@ -89,6 +95,11 @@ export interface ContinuationInspection {
   };
   /** Present exactly when the result resolved; the packaged assessment ALWAYS ran D3-b. */
   readonly assessment: ContinuationAssessment | null;
+  /**
+   * ALHS-B: path-level reuse facts, when this deployment can read them. Advisory only: a path here
+   * is not accepted content, and a conflict here is not an authorization to overwrite anything.
+   */
+  readonly reuse: ContinuationReusePlan | null;
   readonly availableActions: ContinuationAvailableActions;
   readonly detail: string;
 }
@@ -263,6 +274,7 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
 
     const reworkReason = reworkReasonFor(assessment);
     const reworkOpen = task?.state === "VERIFYING" && reworkReason !== null && assessment.rework.available;
+    const reuse = deps.world.reusePlan === undefined ? null : deps.world.reusePlan({ resolved });
     return {
       resolved,
       inspection: {
@@ -271,11 +283,13 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
         resolved: true,
         taskId,
         targetObservationDigest: target?.digest ?? null,
+        resultCommit: resolved.sourceResult?.resultRevision ?? null,
         compatibility: {
           outcome: certificate === null ? "NOT_ASSESSED" : certificate.outcome,
           issuanceDigest: certificate === null ? null : certificate.issuanceDigest,
         },
         assessment,
+        reuse,
         availableActions: {
           rematerialize: assessment.reuse.rematerializationAvailable,
           rework: reworkOpen,
@@ -293,8 +307,10 @@ export function makeResultContinuationService(deps: ResultContinuationServiceDep
       resolved: false,
       taskId: null,
       targetObservationDigest: null,
+      resultCommit: null,
       compatibility: { outcome: "NOT_ASSESSED", issuanceDigest: null },
       assessment: null,
+      reuse: null,
       availableActions: { rematerialize: false, rework: false },
       detail,
     };

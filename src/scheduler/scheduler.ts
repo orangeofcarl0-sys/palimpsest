@@ -636,7 +636,21 @@ export class Scheduler {
     if (allowed[eventType] === undefined) {
       throw new DomainValidationError("unsupported terminal callback EventType");
     }
-    const [row, envelope] = this.#attemptContext(attemptId);
+    /**
+     * LHAPE-B: the attempt's envelope revision is its HISTORICAL authorization, not the event log's
+     * current position. A result can legitimately arrive after a plan revision retired the task or
+     * reauthorized it (a worker was already running). The callback event is appended to the CURRENT
+     * log, so the optimistic-concurrency fence must be the CURRENT project revision. The report's
+     * own `input_project_revision` still names the envelope it was authorized under, and the
+     * aggregate validator checks that identity separately.
+     */
+    const [row] = this.#attemptContext(attemptId);
+    const projectRow = this.connection
+      .prepare("SELECT revision FROM projects WHERE project_id=?")
+      .get(this.projectId) as { revision: number } | undefined;
+    if (projectRow === undefined) {
+      throw new DomainValidationError("project does not exist");
+    }
     // Python canonicalizes datetime in model_dump(mode="python") before the
     // digest; the micro-form digest is what the aggregate recomputes.
     const reportDigest =
@@ -684,7 +698,7 @@ export class Scheduler {
         causation_id: row.last_event_id,
         correlation_id: `attempt:${attemptId}`,
         idempotency_key: key,
-        expected_project_revision: envelope.project_revision,
+        expected_project_revision: projectRow.revision,
       }),
     );
   }

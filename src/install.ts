@@ -26,7 +26,7 @@ import { composeProjectIntentCapability } from "./composition/project_intent.js"
 import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import { composeProcedureCapability } from "./composition/procedures.js";
-import { composeContinuityCapability } from "./composition/continuity.js";
+import { composeContinuityCapability, makeExecutionRelayRecorder, type ProjectIr } from "./composition/continuity.js";
 import { composeExecutionAssociationCluster, type ExecutionAssociationInstallOptions, type ExecutionAssociationInstallResult } from "./composition/execution_association.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
@@ -165,6 +165,21 @@ export function installPalimpsest(
     externalAssetsRef,
     projectWorkspace,
   } = cognition;
+
+  /*
+   * PWRS-A: ONE durable execution-relay recorder, shared by the delegation transport (worker-path
+   * settlements) and the work surface (principal-path settlements). It writes an ordinary journal
+   * note through the existing workspace; absent workspace ⇒ absent recorder, and the attribution
+   * still travels in the settlement result.
+   */
+  const executionRelay =
+    projectWorkspace === undefined
+      ? undefined
+      : makeExecutionRelayRecorder({
+          projectId: options.projectId,
+          workspace: projectWorkspace,
+          ...(options.clock === undefined ? {} : { clock: options.clock }),
+        });
 
 
   // G10-V: the bounded management service exists only alongside a workspace (it composes the
@@ -376,6 +391,7 @@ export function installPalimpsest(
       workWorkerPort: workWorkerPortFactory,
       ...(executionAssociationRecorder === undefined ? {} : { sessionIdentityRecorder: executionAssociationRecorder }),
       sessionSourceQualification,
+      ...(executionRelay === undefined ? {} : { executionRelay }),
     },
     store,
     controller,
@@ -502,16 +518,39 @@ export function installPalimpsest(
    * owner, workspace/journal and promotion facts, and owns nothing; install.ts only decides to
    * compose it.
    */
-  const { continuity, domainOutcome, contribution, pulse } = composeContinuityCapability({
+  const { continuity, domainOutcome, contribution, pulse, episode } = composeContinuityCapability({
     projectId: options.projectId,
     controller: {
       project: () => controller.work.project(),
       status: () => controller.status(),
       plan: (input) => controller.plan(input),
       promotionFacts: () => controller.promotions.promotionFactsSync(),
+      /**
+       * LHAPE-B: the canonical ProjectIR revisions, ascending. The ProjectIR itself is carried in the
+       * `PROJECT_REVISED` payload, so this is a READ over the ONE event log — not a second history.
+       */
+      revisionHistory: () =>
+        controller.store
+          .listEvents(options.projectId)
+          .filter((event) => event.event_type === "PROJECT_CREATED" || event.event_type === "PROJECT_REVISED")
+          .map((event) => event.payload.project_ir as ProjectIr)
+          .sort((left, right) => left.revision - right.revision),
+      /**
+       * PWRS-C: the result commit a governed candidate was exported under. Reading it lets the episode
+       * name and digest a candidate that the canonical worktree does not contain.
+       */
+      attemptResultCommit: (attemptId: string) => {
+        try {
+          return controller.promotions.canonicalAttemptResultCommit(attemptId);
+        } catch {
+          return null;
+        }
+      },
     },
     projectWorkspace,
     ...(delegation === undefined ? {} : { delegation }),
+    ...(workDelegation === undefined ? {} : { workDelegation }),
+    executionPlacement: controller.execution,
     ...(options.repository === undefined ? {} : { repository: options.repository }),
     ...(options.clock === undefined ? {} : { clock: options.clock }),
     operatorIntentAdmission: options.projectIntentAdmission !== undefined,
@@ -533,6 +572,10 @@ export function installPalimpsest(
     domainOutcome,
     ...(contribution === undefined ? {} : { contribution }),
     ...(pulse === undefined ? {} : { pulse }),
+    ...(episode === undefined ? {} : { episode }),
+    ...(workDelegation === undefined ? {} : { workDelegation }),
+    ...(continuation === undefined ? {} : { continuation }),
+    ...(executionRelay === undefined ? {} : { executionRelay }),
     assemblyOptions: options,
   });
   const { application, tools } = assembly;
