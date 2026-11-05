@@ -1,8 +1,8 @@
 # PSVR — Project Synthesis Value Realization
 
-Status: **PSVR-0, -A, -B and -C executed.** A and B ran on the real Windows DSH host with a labelled
-deterministic stand-in for model content; **C ran real deepseek-flash sessions** under the owner's
-authorization (4,851,976 tokens of 12,000,000). The host, workers, Git, execution worlds, context
+Status: **PSVR-0, -A, -B and -C executed on both scenarios.** A and B ran on the real Windows DSH host
+with a labelled deterministic stand-in for model content; **C ran real deepseek-flash sessions** on the
+software scenario (4,851,976 / 12,000,000) and the cross-domain scenario (3,745,812 / 12,000,000). The host, workers, Git, execution worlds, context
 delivery, Work, Scheduler, Promotion and verification are real throughout.
 
 Evidence: `research-evidence/psvr/2026-11-05/`.
@@ -122,7 +122,7 @@ artifact" chain, recorded in real files and real commits.
 | Q3 | Do persistent assets reduce rework across sessions/workers? | **Partly.** The contract's proto/codec survived and were revised rather than rewritten; the partial server's unary handler survived. In PSVR-A the *successor* rewrote the server file as a whole (the stand-in's script), so the measured reuse is at the file-selection level, not line level. |
 | Q4 | Does current reality change execution naturally? | **Yes.** The untracked note/survey arrived after the basis, reached the next attempt through the compiled context, and changed the artifacts; settlement required the acknowledgement. |
 | Q5 | Do results reach delivery/acceptance/resumability at reasonable cost? | **Mechanically yes, in the deterministic runs.** Three promotions per scenario, verified and head-reconciled, episodes ended with DELIVER. In the real A run the work was committed but the project reached no settlement, acceptance or episode conclusion before the budget stop. |
-| Q6 | Net value vs F+Finish+Commit? | **No advantage in this pair.** Both reached 7/7; F used 2,046,205 tokens and ended naturally, A used 2,805,771 (1.37×) and was budget-stopped with the project unsettled (§8). |
+| Q6 | Net value vs F+Finish+Commit? | **No advantage in either pair.** Software: both 7/7; F 2,046,205 and natural, A 2,805,771 (1.37×) and budget-stopped. Cross-domain: both 8/8; F 887,331 and natural, A 2,858,481 (3.2×) and budget-stopped (§8). |
 | Q7 | Which mechanisms should stay core, be on-demand, or be simplified? | See §6. |
 
 ## 5. Tests
@@ -175,8 +175,8 @@ What the runs exposed as friction:
 - **A and B used a labelled stand-in.** Every agent action in the two project runs is a deterministic
   stand-in; those runs prove the host/product path, not model judgement. C is the only real-model
   evidence in this stage, and it is one pair per condition.
-- **One pair per condition, one scenario.** C compares F and A on the software migration only; the
-  cross-domain scenario is pre-registered as a separate stage and was not run.
+- **One pair per condition per scenario.** C compares F and A on the software migration and on the
+  cross-domain package; two pairs total, descriptive only.
 - **PSVR-A's successor commit cites an empty digest.** The stand-in wrote
   `// Compatibility basis: … (sha256 )`: the mock's digest substitution did not reach the nested
   pull result. The pull itself is proven by the worker's guard (`returns (stream Reading)` must be
@@ -251,7 +251,33 @@ settlement" shape, was not used by the real model.
 - **Q6: no net value advantage for A in this pair.** F is cheaper and converges; A leaves the project
   unsettled. One pair per condition, descriptive only.
 
-### 8.5 The fail-closed gate
+### 8.5 Cross-domain stage (`psvr-c-energy`)
+
+Run on 2026-11-06 under the separate stage authorization (12,000,000; four sessions).
+
+| Session | Tokens | End | Left behind |
+|---|---:|---|---|
+| F-1 | 432,619 | killed at the 400k milestone | no commit |
+| F-2 | 454,712 | **natural exit 0** | commit `0e980ec`, package 439 lines |
+| A-1 | 480,706 | killed at the 400k milestone | no commit |
+| A-2 | 2,377,775 | **budget-stopped** | commit `e631160`, package 8/8 on the rubric; project left ACTIVE |
+
+Aggregate **3,745,812 / 12,000,000**. Both packages pass `node check.mjs --final` (8/8 facts:
+six artifacts, 536,000 USD, K-900 at both sites, the 1,050 mm corridor in force, committed).
+
+The difference is again cost and convergence:
+
+- F: **887,331** tokens, natural exit, package delivered.
+- A: **2,858,481** tokens (3.2×), budget stop, and the governed project left unsettled:
+  `decision-package` ACTIVE with one RUNNING attempt, no promotion, no episode conclusion.
+
+A's session 2 *did* use the product more than in the software stage — `palimpsest_start` ×3,
+`delegate`, `workers` ×5, `readiness` ×1, `complete` ×2, `stop`, `results` — but its worker's world
+was empty, so the settlement was refused (`NO_WORK: the world holds no observable change against its
+base`), and the package it actually committed was written outside the governed attempt. The one
+readiness call and the two completion attempts did not produce a settlement.
+
+### 8.6 The fail-closed gate
 
 `scripts/psvr/run_psvr_c.mjs` was exercised in all four states: plan-only (`modelCalls: 0`, exit 0);
 `--execute` without an authorization (exit 2); an ALHS/ODPE-R authorization (schema mismatch, exit 2);

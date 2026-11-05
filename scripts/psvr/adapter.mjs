@@ -66,9 +66,13 @@ if (existsSync(worldsRoot)) {
 }
 
 const tracked = git(world, ["ls-tree", "-r", "--name-only", "HEAD"])?.split(/\r?\n/u).filter(Boolean) ?? [];
+const interested = (path) =>
+  path.startsWith("deliverables/") || path.startsWith("proto/") || path.startsWith("service/") || path.startsWith("test/") || path === "MIGRATION.md";
 const files = {};
-for (const path of ["proto/energy.proto", "service/wire.js", "service/grpc_server.js", "service/grpc_client.js", "test/server.test.js", "test/integration.test.js", "MIGRATION.md"]) {
-  if (tracked.includes(path)) files[path] = git(world, ["show", `HEAD:${path}`]);
+for (const path of tracked) {
+  if (!interested(path)) continue;
+  const content = git(world, ["show", `HEAD:${path}`]);
+  if (content !== null && content.length <= 200_000) files[path] = content;
 }
 
 writeFileSync(
