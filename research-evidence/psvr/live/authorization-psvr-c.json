@@ -1,0 +1,20 @@
+{
+  "schema": "psvr-spend-authorization/v1",
+  "cohortId": "psvr-c-2026-11",
+  "authorizedBy": "Owner (PSVR-C, 2026-11-05, blanket authorization)",
+  "authorizedAt": "2026-11-05T00:00:00.000Z",
+  "expiresAt": "2026-11-12T00:00:00.000Z",
+  "provider": "deepseek-official/deepseek-flash",
+  "stages": [
+    "psvr-c"
+  ],
+  "conditions": [
+    "F",
+    "A"
+  ],
+  "aggregateTokens": 12000000,
+  "perSessionCeiling": 2500000,
+  "reserveTokens": 125000,
+  "maxSessions": 4,
+  "note": "PSVR-C stage psvr-c only: the software migration scenario, F and A, two sessions each, 2,500,000 per session with a 125,000 one-message reserve; session 1 killed at 400,000 reported tokens. The cross-domain stage is NOT covered."
+}

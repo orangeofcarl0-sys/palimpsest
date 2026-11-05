@@ -48,8 +48,12 @@ jobs:
       # The fence resolves its Win32 binding seam from the installed DSH, and the gates locate that
       # installation the same way a deployment does. It is installed here rather than assumed, so a runner
       # without it fails loudly instead of skipping the boundary.
+      #
+      # PINNED to the version the hardening contract QUALIFIES (0.2.1-rc.5). An unpinned install moved to
+      # 0.2.2-rc.1 on 2026-11-05 and HR-27 correctly reported the drift; pinning keeps the measured
+      # environment the qualified one until 0.2.2-rc.1 is re-qualified, rather than silencing the check.
       - name: Install the DSH host the fence binds against
-        run: npm install --global @deepseek-ai/dsh
+        run: npm install --global @deepseek-ai/dsh@0.2.1-rc.5
         continue-on-error: true
 
       - name: Locate the DSH installation

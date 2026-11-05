@@ -38,3 +38,24 @@ are real.
   sequential tasks with operator acceptance.
 - PSVR-B's cost and schedule are checked for consistency with the sources, not for engineering
   quality.
+
+## PSVR-C — the authorized real-model cohort
+
+`c/` holds the real deepseek-flash run of the software scenario (F+Finish+Commit vs adaptive A).
+
+| | F | A |
+|---|---|---|
+| tokens | 2,046,205 (497,542 + 1,548,663) | 2,805,771 (421,118 + 2,384,653) |
+| session 2 end | natural exit 0 | budget stop |
+| commit | `930d9c5` | `453aa7f` |
+| suite | 16/16 | 26/26 |
+| rubric | 7/7 | 7/7 |
+| governed project | n/a | 3 tasks, 1 RUNNING attempt, no settlement, no acceptance |
+
+Aggregate **4,851,976 / 12,000,000**; four sessions. `c/score.json` is the mechanical pass; `c/out/*`
+holds each session's run record, budget ledger and post-session snapshot; `c/sessions/` the real
+streams; `c/proxy.jsonl` request metadata only.
+
+A's session 2 called `palimpsest_start` twice, `plan`, `delegate`, `relay`, `results`, `status`,
+`workers` and `complete` once — and **never `readiness` or `finalize`**. The one mechanism built for
+"correct work, no settlement" was not used by the real model.

@@ -2,11 +2,11 @@
   "schema": "psvr-cohort/v1",
   "cohortId": "psvr-c-2026-11",
   "title": "PSVR-C — project continuity vs a strong native baseline on two interdependent project workloads",
-  "codeFreeze": "PENDING",
+  "codeFreeze": "5726e86ff59afbfc27ecc2e0c512e4281b4909ee",
   "provider": "deepseek-official/deepseek-flash",
   "localHardCap": 12000000,
-  "status": "BLOCKED_NO_AUTHORIZATION",
-  "statusNote": "No paid session is authorized. This file is a pre-registration; scripts/psvr/run_psvr_c.mjs validates it and refuses to start a model without a current psvr-spend-authorization/v1. The ALHS/ODPE-R authorizations do NOT transfer (different schema and cohort id).",
+  "status": "AUTHORIZED",
+  "statusNote": "The owner authorized the cohort on 2026-11-05 ('均授权'). This stage runs the SOFTWARE scenario only; the cross-domain scenario is a separate stage that needs its own authorization.",
   "hypotheses": [
     {
       "id": "H1",
@@ -32,7 +32,11 @@
       "id": "H3",
       "statement": "On-demand governance (A) costs less than default governed execution (G) for the same usable outcome.",
       "null": "A and G have the same total tokens per usable outcome.",
-      "observable": ["total tokens", "tool calls", "cost per usable outcome"],
+      "observable": [
+        "total tokens",
+        "tool calls",
+        "cost per usable outcome"
+      ],
       "note": "G is diagnostic only and is not required in every cohort."
     },
     {
@@ -65,30 +69,44 @@
       "domain": "software",
       "fixture": "fixtures/psvr/grpc-migration",
       "deliverable": "a runnable REST->gRPC migration with server-streaming readings, a client and integration tests",
-      "acceptance": ["node --test exits 0 on the accepted head", "the streaming RPC is declared and consumed incrementally", "the REST baseline tests still pass"],
-      "newFact": "updates/2026-11-03/compat-streaming.md (untracked, after the basis)"
+      "acceptance": [
+        "node --test exits 0 on the accepted head",
+        "the streaming RPC is declared and consumed incrementally",
+        "the REST baseline tests still pass"
+      ],
+      "newFact": "updates/2026-11-03/compat-streaming.md (untracked, after the basis)",
+      "stage": "psvr-c"
     },
     {
       "id": "energy-package",
       "domain": "cross-domain",
       "fixture": "fixtures/psvr/energy-deployment",
       "deliverable": "six interdependent deployment artifacts with a consistent recommendation",
-      "acceptance": ["node check.mjs --final exits 0 on the accepted head", "the cost arithmetic and the schedule dates are re-derived from the sources", "the measured corridor supersedes the drawing"],
-      "newFact": "updates/2026-11-04/corridor-survey.md (untracked, after the basis)"
+      "acceptance": [
+        "node check.mjs --final exits 0 on the accepted head",
+        "the cost arithmetic and the schedule dates are re-derived from the sources",
+        "the measured corridor supersedes the drawing"
+      ],
+      "newFact": "updates/2026-11-04/corridor-survey.md (untracked, after the basis)",
+      "stage": "psvr-c-energy"
     }
   ],
   "stages": [
     {
       "id": "psvr-c",
-      "conditions": ["F", "A"],
+      "conditions": [
+        "F",
+        "A"
+      ],
       "sessionsPerCondition": 2,
       "sessionCeiling": 2500000,
       "reserveTokens": 125000,
       "aggregateCeiling": 12000000,
       "interruptionControls": {
-        "MATCHED_TOKEN": "session 1 is stopped at the same reported-token milestone in both conditions",
-        "MATCHED_WORK_STATE": "session 1 is stopped after the first valid commit (grpc-migration) or after the first complete artifact pair (energy-package), whichever the scenario defines"
-      }
+        "MATCHED_TOKEN": "session 1 is stopped at 400,000 reported tokens in both conditions",
+        "MATCHED_WORK_STATE": "session 1 is stopped after the first valid commit of the migration work (the token milestone is the primary control; the work-state control is recorded from the snapshot)"
+      },
+      "scenario": "grpc-migration"
     }
   ],
   "measurement": {
@@ -136,5 +154,5 @@
     "a condition's session ceiling is reached",
     "the adapter reports a provider failure twice in a row"
   ],
-  "note": "One pair per condition and per scenario. Descriptive first: the cohort estimates effect size, it does not establish reliability. A sample-size increase needs a new authorization."
+  "note": "Stage psvr-c covers the software scenario (4 sessions). The cross-domain scenario is pre-registered here but requires a separate authorization and stage (psvr-c-energy)."
 }
