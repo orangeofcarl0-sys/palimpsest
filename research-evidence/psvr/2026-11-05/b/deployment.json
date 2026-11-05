@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "profileId": "psvr-b-host",
+  "projectId": "psvr-b",
+  "localPeer": "local-operator",
+  "repository": "C:/Users/66494/AppData/Local/Temp/psvr4/b/world",
+  "execution": "worktree",
+  "concurrency": 1,
+  "toolProfile": "normal",
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "check.mjs"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "The package is consistent with its sources as the checker derives them, the artifacts exist, and every write stays in scope."
+  },
+  "transport": {
+    "namespace": "psvr-b-host",
+    "databasePath": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/palimpsest.sqlite",
+    "ordarium": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/ordarium.sqlite",
+    "coordination": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/coordination.sqlite",
+    "transportCursors": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/transport-cursors.sqlite",
+    "projectJournal": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/journal.sqlite",
+    "projectAssociations": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/associations.sqlite",
+    "management": "C:/Users/66494/AppData/Local/Temp/psvr4/b/state/management.sqlite"
+  },
+  "reasoning": {}
+}

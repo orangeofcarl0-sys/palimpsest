@@ -1,0 +1,82 @@
+{
+  "schema": "psvr-operator-acceptance/v1",
+  "label": "recommendation",
+  "projectId": "psvr-b",
+  "taskId": "recommendation",
+  "operator": "owner-authorized deterministic acceptance",
+  "acceptedAt": "2026-11-05T12:26:09.815Z",
+  "promoted": true,
+  "attemptId": "attempt-f931bcb3b7b5d6248bb5fc4f7765685c",
+  "before": {
+    "revision": 2,
+    "headCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+    "tasks": [
+      {
+        "taskId": "commercial",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "recommendation",
+        "state": "VERIFYING"
+      },
+      {
+        "taskId": "technical",
+        "state": "SATISFIED"
+      }
+    ]
+  },
+  "verification": {
+    "status": "recorded",
+    "typedReasonCode": "verified",
+    "verdict": "PASS",
+    "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+    "runRef": "pvrun-fcf85fbf8b20c3772b04c46fb5ca4503",
+    "subjectDigest": "fad964d50e3e662a2a54fcd3821811c6e249382ed244be120930899ae3cfed7f"
+  },
+  "recovery": {
+    "prepared": 0,
+    "terminal": [],
+    "inFlight": [],
+    "blocked": []
+  },
+  "eligibility": {
+    "eligible": true,
+    "blockers": [],
+    "sourceCommit": "e0fe9a94a9cb134253416a64a32dd9fd58a31aff",
+    "taskState": "VERIFYING",
+    "attemptState": "COMPLETED",
+    "canonicalExpectedHead": "cff50861d09bcc3a764b846baee9dea391b8c228"
+  },
+  "result": {
+    "promotionId": "promotion-bdb0cd0b7e2c44fb5e7246f8e755497d",
+    "sourceCommit": "e0fe9a94a9cb134253416a64a32dd9fd58a31aff",
+    "expectedHeadCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+    "resultingHeadCommit": "45250ebc32f05275bca70ae15c3beb5f02c2ff8d",
+    "eventType": "PROMOTION_COMMITTED"
+  },
+  "headReconciliation": {
+    "status": "reconciled",
+    "revision": 3,
+    "fromHead": "cff50861d09bcc3a764b846baee9dea391b8c228",
+    "toHead": "45250ebc32f05275bca70ae15c3beb5f02c2ff8d",
+    "blockers": []
+  },
+  "after": {
+    "revision": 3,
+    "headCommit": "45250ebc32f05275bca70ae15c3beb5f02c2ff8d",
+    "tasks": [
+      {
+        "taskId": "commercial",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "recommendation",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "technical",
+        "state": "SATISFIED"
+      }
+    ]
+  }
+}

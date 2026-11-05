@@ -1,0 +1,555 @@
+{
+  "schema": "psvr-mock-scripts/v1",
+  "note": "Deterministic Messages stand-in for PSVR-B. File bodies are the scripted actor's output; every write, check run and commit happens through the real worker session. The survey copy is written from the context-pull bytes.",
+  "scripts": [
+    {
+      "match": "PSVR_B_PRINCIPAL_P1",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p1-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p1-delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "technical"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-1-technica",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: technical: constraints and compliance",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"technical: constraints and compliance\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: technical: constraints and compliance\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-2-technica",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: technical: constraints and compliance",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"technical: constraints and compliance\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: technical: constraints and compliance\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-pause-6",
+              "name": "pwsh",
+              "input": {
+                "description": "let the worker's exit become observable",
+                "command": "Start-Sleep -Seconds 6; \"settled\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-technical-readiness-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "technical"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-technical-finalize-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "technical",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "summary": "the technical assessment and the certificate standing are committed and the checker passes"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-technical-readiness-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "technical"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-technical-finalize-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "technical",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "summary": "the technical assessment and the certificate standing are committed and the checker passes"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_B_P1_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_B_PRINCIPAL_P2",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p2-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2-delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "commercial"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-1-commerci",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: commercial: cost and schedule on the measured corridor",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"commercial: cost and schedule on the measured corridor\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: commercial: cost and schedule on the measured corridor\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-2-commerci",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: commercial: cost and schedule on the measured corridor",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"commercial: cost and schedule on the measured corridor\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: commercial: cost and schedule on the measured corridor\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-pause-6",
+              "name": "pwsh",
+              "input": {
+                "description": "let the worker's exit become observable",
+                "command": "Start-Sleep -Seconds 6; \"settled\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-commercial-readiness-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "commercial"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-commercial-finalize-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "commercial",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "acknowledgeInputs": true,
+                "summary": "the measured corridor superseded the drawing; the cost model and schedule were rebuilt on the measured selection"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-commercial-readiness-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "commercial"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-commercial-finalize-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "commercial",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "acknowledgeInputs": true,
+                "summary": "the measured corridor superseded the drawing; the cost model and schedule were rebuilt on the measured selection"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_B_P2_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_B_PRINCIPAL_P3",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p3-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p3-delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "recommendation"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-1-recommen",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: recommendation: integrated decision",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"recommendation: integrated decision\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: recommendation: integrated decision\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-2-recommen",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: recommendation: integrated decision",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"recommendation: integrated decision\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: recommendation: integrated decision\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-pause-6",
+              "name": "pwsh",
+              "input": {
+                "description": "let the worker's exit become observable",
+                "command": "Start-Sleep -Seconds 6; \"settled\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-recommendation-readiness-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "recommendation"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-recommendation-finalize-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "recommendation",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "summary": "the risk review and the integrated recommendation are committed over the current package"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-recommendation-readiness-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "recommendation"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-recommendation-finalize-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "recommendation",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "summary": "the risk review and the integrated recommendation are committed over the current package"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p3-conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "WAIT_FOR_OPERATOR",
+                "statement": "All three package tasks are settled and the checker passes; the recommendation needs the operator's acceptance before delivery.",
+                "artifacts": [
+                  "deliverables/risk-review.md",
+                  "deliverables/recommendation.md"
+                ],
+                "waitingOn": "operator acceptance of the recommendation"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_B_P3_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_B_PRINCIPAL_P4",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p4-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p4-conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "DELIVER",
+                "statement": "The deployment package is accepted: technical, compliance, cost, schedule, risk and the integrated recommendation are canonical and consistent with the measured corridor.",
+                "artifacts": [
+                  "deliverables/technical-capacity.md",
+                  "deliverables/vendor-compliance.md",
+                  "deliverables/cost-model.json",
+                  "deliverables/schedule.md",
+                  "deliverables/risk-review.md",
+                  "deliverables/recommendation.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_B_P4_DONE"
+        }
+      ]
+    },
+    {
+      "match": "@ctx/input/updates/2026-11-04/corridor-survey.md",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "w-pull-and-write",
+              "name": "run_code",
+              "input": {
+                "description": "revise the selection from the pulled survey and rebuild the cost and schedule",
+                "code": "const pulled = await tools.palimpsest_worker_context_pull({ handle: \"@ctx/input/updates/2026-11-04/corridor-survey.md\" });\nconst body = typeof pulled === \"string\" ? pulled : String(pulled?.value?.body?.text ?? pulled?.body?.text ?? pulled?.text ?? JSON.stringify(pulled));\nif (!/measured corridor width:\\s*1050/iu.test(body)) throw new Error(\"the measured corridor did not arrive through the context pull: \" + body.slice(0, 400));\nconst files = {\n  \"deliverables/technical-capacity.md\": \"# Technical capacity assessment\\n\\n## Deciding constraints\\n\\n**North Ridge** — design minimum **−18 °C**. The Kestrel K-900 is rated to −22 °C and delivers\\n880 kW at the design condition (requirement 850 kW). The Solaris S-1080 is rated only to −16 °C and\\nis not admissible here. The Halcyon H-1320 meets the temperature but holds only an *expected*\\ncertificate, so it is not compliant.\\n\\n**Harbor Flats** — service corridor **1,050 mm**, measured by the 2026-11-04 field survey\\n(`updates/2026-11-04/corridor-survey.md`). The survey supersedes drawing HF-A-114 (2024), which\\nshowed 1,250 mm before the cable tray was installed. At 1,050 mm the Solaris S-1080 (1,080 mm) no\\nlonger fits; the Kestrel K-900 (900 mm) does, and its certificate is current. The Halcyon H-1320\\n(1,320 mm) does not fit and is not compliant in any case.\\n\\nThe earlier draft selected the S-1080 for Harbor Flats on the drawing width. That selection is\\nsuperseded: only the North Ridge section of the earlier assessment stands unchanged.\\n\\n## Selected units\\n\\n| site | model | capacity at design condition | requirement |\\n|---|---|---:|---:|\\n| North Ridge | Kestrel K-900 | 880 kW | 850 kW |\\n| Harbor Flats | Kestrel K-900 | 860 kW | 620 kW |\\n\\n<!-- data:start -->\\n```json\\n{\\n  \\\"sites\\\": [\\n    { \\\"site\\\": \\\"NR\\\", \\\"model\\\": \\\"K-900\\\", \\\"constraint\\\": \\\"design minimum -18 C\\\", \\\"capacityKw\\\": 880 },\\n    { \\\"site\\\": \\\"HF\\\", \\\"model\\\": \\\"K-900\\\", \\\"constraint\\\": \\\"corridor 1050 mm (2026-11-04 survey supersedes HF-A-114)\\\", \\\"capacityKw\\\": 860 }\\n  ]\\n}\\n```\\n<!-- data:end -->\\n\",\n  \"deliverables/cost-model.json\": \"{\\n  \\\"currency\\\": \\\"USD\\\",\\n  \\\"basis\\\": \\\"quotes.csv (valid on 2026-11-05) and the technical selection revised by the 2026-11-04 corridor survey\\\",\\n  \\\"lines\\\": [\\n    { \\\"site\\\": \\\"NR\\\", \\\"model\\\": \\\"K-900\\\", \\\"unitPrice\\\": 250000, \\\"freight\\\": 18000, \\\"lineTotal\\\": 268000 },\\n    { \\\"site\\\": \\\"HF\\\", \\\"model\\\": \\\"K-900\\\", \\\"unitPrice\\\": 250000, \\\"freight\\\": 18000, \\\"lineTotal\\\": 268000 }\\n  ],\\n  \\\"total\\\": 536000\\n}\\n\",\n  \"deliverables/schedule.md\": \"# Implementation schedule\\n\\nBoth sites now take the Kestrel K-900, whose lead time is 14 weeks from the 2026-11-10 order date.\\n\\n| site | model | lead | install start | commissioning |\\n|---|---|---:|---|---|\\n| North Ridge | K-900 | 14 weeks | 2027-02-16 | 2027-03-02 |\\n| Harbor Flats | K-900 | 14 weeks | 2027-02-16 | 2027-03-02 |\\n\\nThe two installs run in parallel; commissioning follows a two-week installation per site. The earlier\\ndraft's Harbor Flats date (2027-01-12) assumed the Solaris 9-week lead and is superseded with the\\nunit selection.\\n\\n<!-- data:start -->\\n```json\\n{\\n  \\\"start\\\": \\\"2026-11-10\\\",\\n  \\\"installs\\\": [\\n    { \\\"site\\\": \\\"NR\\\", \\\"model\\\": \\\"K-900\\\", \\\"leadWeeks\\\": 14, \\\"installStart\\\": \\\"2027-02-16\\\", \\\"commission\\\": \\\"2027-03-02\\\" },\\n    { \\\"site\\\": \\\"HF\\\", \\\"model\\\": \\\"K-900\\\", \\\"leadWeeks\\\": 14, \\\"installStart\\\": \\\"2027-02-16\\\", \\\"commission\\\": \\\"2027-03-02\\\" }\\n  ]\\n}\\n```\\n<!-- data:end -->\\n\"\n};\nfor (const [path, content] of Object.entries(files)) {\n  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }\n  await tools.write({ file_path: path, content });\n}\nawait tools.write({ file_path: \"updates/2026-11-04/corridor-survey.md\", content: body });\nreturn \"written from the pulled survey\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-check",
+              "name": "run_code",
+              "input": {
+                "description": "run the consistency check",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst result = await shell({ command: \"node check.mjs\", description: \"run the consistency check\" });\nconst output = typeof result === \"string\" ? result : JSON.stringify(result);\nif (/check: FAIL/u.test(output)) throw new Error(\"the package is inconsistent:\\n\" + output.slice(-2000));\nreturn output.slice(-600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-commit-commercial-cos",
+              "name": "run_code",
+              "input": {
+                "description": "commit commercial: cost and schedule on the measured corridor",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"git add -A; git -c user.email=worker@psvr.test -c user.name=worker commit -qm 'commercial: cost and schedule on the measured corridor'\", description: \"commit the work\" });\nconst head = await shell({ command: \"git log -1 --format=%s\", description: \"read the commit subject\" });\nif (!JSON.stringify(head).includes(\"commercial: cost and schedule on the measured corridor\")) throw new Error(\"the commit did not land: \" + JSON.stringify(head).slice(0, 300));\nreturn \"committed: commercial: cost and schedule on the measured corridor\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_EXITED_WITHOUT_REPORT"
+        }
+      ]
+    },
+    {
+      "match": "Assess the site constraints, select the units",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "w-write-the-technica",
+              "name": "run_code",
+              "input": {
+                "description": "write the technical assessment and the compliance record",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path updates/2026-11-04 | Out-Null\", description: \"prepare the survey directory\" });\nconst files = {\n  \"deliverables/technical-capacity.md\": \"# Technical capacity assessment\\n\\n## Deciding constraints\\n\\n**North Ridge** — design minimum **−18 °C**. The Kestrel K-900 is rated to −22 °C and delivers\\n880 kW at the design condition (requirement 850 kW). The Solaris S-1080 is rated only to −16 °C and\\nis not admissible here. The Halcyon H-1320 meets the temperature but holds only an *expected*\\ncertificate, so it is not compliant.\\n\\n**Harbor Flats** — service corridor **1,250 mm** per drawing HF-A-114 (2024). The Solaris S-1080\\n(1,080 mm) and the Kestrel K-900 (900 mm) fit; the Halcyon H-1320 (1,320 mm) does not. With a current\\ncertificate required, the S-1080 is the lower-cost admissible unit at this width.\\n\\n## Selected units\\n\\n| site | model | capacity at design condition | requirement |\\n|---|---|---:|---:|\\n| North Ridge | Kestrel K-900 | 880 kW | 850 kW |\\n| Harbor Flats | Solaris S-1080 | 900 kW | 620 kW |\\n\\n<!-- data:start -->\\n```json\\n{\\n  \\\"sites\\\": [\\n    { \\\"site\\\": \\\"NR\\\", \\\"model\\\": \\\"K-900\\\", \\\"constraint\\\": \\\"design minimum -18 C\\\", \\\"capacityKw\\\": 880 },\\n    { \\\"site\\\": \\\"HF\\\", \\\"model\\\": \\\"S-1080\\\", \\\"constraint\\\": \\\"corridor 1250 mm (HF-A-114)\\\", \\\"capacityKw\\\": 900 }\\n  ]\\n}\\n```\\n<!-- data:end -->\\n\",\n  \"deliverables/vendor-compliance.md\": \"# Vendor compliance assessment\\n\\nThe certificate standing is the one thing a price comparison must not flatten: a certificate that is\\n*expected* is not a certificate the deployment may rely on today.\\n\\n| model | certificate | valid to | standing |\\n|---|---|---|---|\\n| Kestrel K-900 | IEC 61439 | 2027-03-31 | current |\\n| Solaris S-1080 | IEC 61439 | 2027-01-31 | current |\\n| Halcyon H-1320 | expected 2026, not issued | — | **not current** |\\n\\n- Halcyon H-1320 is named as a future option only. It may not be selected for either site, and its\\n  price may not enter the cost model: the quote expired on 2026-09-30.\\n- Kestrel and Solaris certificates cover their scheduled installation and commissioning windows.\\n  The Solaris certificate expires 2027-01-31; the schedule commissions that unit before that date.\\n\\n<!-- data:start -->\\n```json\\n{\\n  \\\"vendors\\\": [\\n    { \\\"model\\\": \\\"K-900\\\", \\\"certificate\\\": \\\"CURRENT\\\", \\\"validTo\\\": \\\"2027-03-31\\\" },\\n    { \\\"model\\\": \\\"S-1080\\\", \\\"certificate\\\": \\\"CURRENT\\\", \\\"validTo\\\": \\\"2027-01-31\\\" },\\n    { \\\"model\\\": \\\"H-1320\\\", \\\"certificate\\\": \\\"EXPECTED_NOT_CURRENT\\\", \\\"validTo\\\": null }\\n  ]\\n}\\n```\\n<!-- data:end -->\\n\"\n};\nfor (const [path, content] of Object.entries(files)) {\n  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }\n  await tools.write({ file_path: path, content });\n}\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-check",
+              "name": "run_code",
+              "input": {
+                "description": "run the consistency check",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst result = await shell({ command: \"node check.mjs\", description: \"run the consistency check\" });\nconst output = typeof result === \"string\" ? result : JSON.stringify(result);\nif (/check: FAIL/u.test(output)) throw new Error(\"the package is inconsistent:\\n\" + output.slice(-2000));\nreturn output.slice(-600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-commit-technical-cons",
+              "name": "run_code",
+              "input": {
+                "description": "commit technical: constraints and compliance",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"git add -A; git -c user.email=worker@psvr.test -c user.name=worker commit -qm 'technical: constraints and compliance'\", description: \"commit the work\" });\nconst head = await shell({ command: \"git log -1 --format=%s\", description: \"read the commit subject\" });\nif (!JSON.stringify(head).includes(\"technical: constraints and compliance\")) throw new Error(\"the commit did not land: \" + JSON.stringify(head).slice(0, 300));\nreturn \"committed: technical: constraints and compliance\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_EXITED_WITHOUT_REPORT"
+        }
+      ]
+    },
+    {
+      "match": "Review the risks and record the integrated recommendation",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "w-write-the-risk-rev",
+              "name": "run_code",
+              "input": {
+                "description": "write the risk review and the integrated recommendation",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path updates/2026-11-04 | Out-Null\", description: \"prepare the survey directory\" });\nconst files = {\n  \"deliverables/risk-review.md\": \"# Risk and evidence review\\n\\n| id | risk | source |\\n|---|---|---|\\n| R1 | The Harbor Flats clear corridor measured 1,050 mm on 2026-11-04, below the 1,250 mm drawing. Units wider than 1,050 mm are not admissible, and the drawing must not be used again for this decision. | `updates/2026-11-04/corridor-survey.md` |\\n| R2 | Halcyon holds only an *expected* 2026 certificate, which is not a current certificate; it cannot be selected, and its expired quote cannot be costed. | `sources/vendors.md`, `sources/quotes.csv` |\\n| R3 | The corridor change moved Harbor Flats from the Solaris S-1080 to the Kestrel K-900: the capital cost rises by 51,000 USD and commissioning moves from 2027-01-26 to 2027-03-02. | `deliverables/cost-model.json`, `deliverables/schedule.md` |\\n| R4 | The Solaris certificate expires 2027-01-31. It is not on the critical path after the corridor change, but it would have been under the earlier selection. | `sources/vendors.md` |\\n\\nThe measurement is the reason the package changed: it is a property of the site, not a vendor claim,\\nand it is verifiable by re-measuring the corridor. The certificate standing is a documentary fact and\\nis the one item the package cannot verify itself.\\n\\n<!-- data:start -->\\n```json\\n{\\n  \\\"risks\\\": [\\n    { \\\"id\\\": \\\"R1\\\", \\\"statement\\\": \\\"Harbor Flats clear corridor measured 1,050 mm on 2026-11-04, superseding the 1,250 mm drawing; wider units are inadmissible.\\\", \\\"source\\\": \\\"updates/2026-11-04/corridor-survey.md\\\" },\\n    { \\\"id\\\": \\\"R2\\\", \\\"statement\\\": \\\"Halcyon holds only an expected 2026 certificate and its quote has expired; it may not be selected or costed.\\\", \\\"source\\\": \\\"sources/vendors.md\\\" },\\n    { \\\"id\\\": \\\"R3\\\", \\\"statement\\\": \\\"The corridor change moved Harbor Flats to the Kestrel K-900, raising capital cost by 51,000 USD and moving commissioning to 2027-03-02.\\\", \\\"source\\\": \\\"updates/2026-11-04/corridor-survey.md\\\" },\\n    { \\\"id\\\": \\\"R4\\\", \\\"statement\\\": \\\"The Solaris certificate expires 2027-01-31; it is off the critical path after the corridor change.\\\", \\\"source\\\": \\\"sources/vendors.md\\\" }\\n  ]\\n}\\n```\\n<!-- data:end -->\\n\",\n  \"deliverables/recommendation.md\": \"# Integrated recommendation\\n\\n## Decision\\n\\nInstall the **Kestrel K-900** at both sites.\\n\\n- **North Ridge**: the K-900 is the only unit with a current certificate rated to the −18 °C design\\n  minimum, and it delivers 880 kW against an 850 kW requirement.\\n- **Harbor Flats**: the 2026-11-04 survey measured a **1,050 mm** clear corridor, not the 1,250 mm on\\n  drawing HF-A-114. The K-900 (900 mm) fits; the Solaris S-1080 (1,080 mm) no longer does. The\\n  earlier S-1080 selection is withdrawn, not because its price changed but because the site did.\\n\\n## Cost and schedule\\n\\nCapital cost is **536,000 USD** (two K-900 units at 250,000 USD plus 18,000 USD freight each). Both\\nunits share a 14-week lead time, so installation starts 2027-02-16 and commissioning follows\\n2027-03-02. The corridor change costs 51,000 USD more than the superseded selection and moves\\ncommissioning by five weeks; those are the price of an admissible unit, not an optimisation choice.\\n\\n## Conditions\\n\\n- Halcyon's certificate is expected, not current. Do not substitute the H-1320 on price.\\n- Re-measure the corridor if the cable tray is modified again; the drawing is not a substitute for\\n  the measurement.\\n- This recommendation is a proposal for the operator. It approves no expenditure by itself.\\n\\n<!-- data:start -->\\n```json\\n{\\n  \\\"north\\\": \\\"K-900\\\",\\n  \\\"harbor\\\": \\\"K-900\\\",\\n  \\\"totalUsd\\\": 536000,\\n  \\\"corridorMm\\\": 1050,\\n  \\\"supersedes\\\": \\\"Solaris S-1080 at Harbor Flats (drawing HF-A-114, 1,250 mm)\\\",\\n  \\\"summary\\\": \\\"Kestrel K-900 at both sites: 536,000 USD, install 2027-02-16, commission 2027-03-02; the 1,050 mm measured corridor supersedes the 1,250 mm drawing.\\\"\\n}\\n```\\n<!-- data:end -->\\n\"\n};\nfor (const [path, content] of Object.entries(files)) {\n  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }\n  await tools.write({ file_path: path, content });\n}\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-check",
+              "name": "run_code",
+              "input": {
+                "description": "run the consistency check",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst result = await shell({ command: \"node check.mjs\", description: \"run the consistency check\" });\nconst output = typeof result === \"string\" ? result : JSON.stringify(result);\nif (/check: FAIL/u.test(output)) throw new Error(\"the package is inconsistent:\\n\" + output.slice(-2000));\nreturn output.slice(-600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-commit-recommendation",
+              "name": "run_code",
+              "input": {
+                "description": "commit recommendation: integrated decision",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"git add -A; git -c user.email=worker@psvr.test -c user.name=worker commit -qm 'recommendation: integrated decision'\", description: \"commit the work\" });\nconst head = await shell({ command: \"git log -1 --format=%s\", description: \"read the commit subject\" });\nif (!JSON.stringify(head).includes(\"recommendation: integrated decision\")) throw new Error(\"the commit did not land: \" + JSON.stringify(head).slice(0, 300));\nreturn \"committed: recommendation: integrated decision\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_EXITED_WITHOUT_REPORT"
+        }
+      ]
+    }
+  ]
+}

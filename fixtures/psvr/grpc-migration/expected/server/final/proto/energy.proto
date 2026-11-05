@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package energy.v1;
+
+// One site, for a unary lookup.
+message SiteRequest {
+  string site_id = 1;
+}
+
+// One sample. at_ms is an epoch millisecond integer, never a locale string.
+message Reading {
+  string site_id = 1;
+  int32 watts = 2;
+  int64 at_ms = 3;
+}
+
+// A bounded request for a site's readings.
+message StreamRequest {
+  string site_id = 1;
+  int32 limit = 2;
+}
+
+// Carried in a frame for a non-OK grpc-status, so the client can surface the reason.
+message Status {
+  string code = 1;
+  string message = 2;
+}
+
+service EnergyService {
+  rpc GetReading (SiteRequest) returns (Reading);
+  // The fleet client renders samples as they arrive; one frame per Reading.
+  rpc StreamReadings (StreamRequest) returns (stream Reading);
+}

@@ -1,0 +1,773 @@
+{
+  "schema": "psvr-mock-scripts/v1",
+  "note": "Deterministic Messages stand-in. File bodies are the scripted actor's output; every write, test run and commit happens through the real worker session.",
+  "scripts": [
+    {
+      "match": "PSVR_PRINCIPAL_P1",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p1-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p1-delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "contract"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-1-contract",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: contract: proto and wire codec",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"contract: proto and wire codec\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: contract: proto and wire codec\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-2-contract",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: contract: proto and wire codec",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"contract: proto and wire codec\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: contract: proto and wire codec\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-pause-6",
+              "name": "pwsh",
+              "input": {
+                "description": "let the worker's exit become observable",
+                "command": "Start-Sleep -Seconds 6; \"settled\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-contract-readiness-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "contract"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-contract-finalize-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "contract",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "summary": "the contract task left a committed proto, codec and codec tests; the suite is green"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-contract-readiness-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "contract"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-contract-finalize-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "contract",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "summary": "the contract task left a committed proto, codec and codec tests; the suite is green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_P1_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_PRINCIPAL_P2",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p2-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2-delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "server"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-1-server-u",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: server: unary batch GetReadings",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"server: unary batch GetReadings\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: server: unary batch GetReadings\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-2-server-u",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: server: unary batch GetReadings",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"server: unary batch GetReadings\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: server: unary batch GetReadings\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2-park-0",
+              "name": "pwsh",
+              "input": {
+                "description": "keep the host alive (1/3)",
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }; \"still here\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2-park-1",
+              "name": "pwsh",
+              "input": {
+                "description": "keep the host alive (2/3)",
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }; \"still here\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2-park-2",
+              "name": "pwsh",
+              "input": {
+                "description": "keep the host alive (3/3)",
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }; \"still here\""
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_P2_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_PRINCIPAL_CLOSE",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p3-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p3-workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p3-relay",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "relay",
+                "taskId": "server",
+                "relayRoute": "successor",
+                "acknowledgeInputs": true,
+                "summary": "the killed worker's attempt is closed; the retained world is kept and the next attempt starts on the current basis"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_CLOSE_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_PRINCIPAL_CONTINUE",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p3b-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p3b-delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "server"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-1-server-s",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: server: server-streaming readings",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"server: server-streaming readings\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: server: server-streaming readings\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-2-server-s",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: server: server-streaming readings",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"server: server-streaming readings\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: server: server-streaming readings\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-pause-6",
+              "name": "pwsh",
+              "input": {
+                "description": "let the worker's exit become observable",
+                "command": "Start-Sleep -Seconds 6; \"settled\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-server-readiness-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "server"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-server-finalize-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "server",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "acknowledgeInputs": true,
+                "summary": "the new attempt applied the fleet compatibility note through the context pull and the suite is green"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-server-readiness-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "server"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-server-finalize-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "server",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "acknowledgeInputs": true,
+                "summary": "the new attempt applied the fleet compatibility note through the context pull and the suite is green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_CONTINUE_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_PRINCIPAL_P4",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p4-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p4-delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "client"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-1-client-i",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: client: integration test and migration notes",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"client: integration test and migration notes\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: client: integration test and migration notes\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-wait-2-client-i",
+              "name": "pwsh",
+              "input": {
+                "description": "wait for the worker commit: client: integration test and migration notes",
+                "command": "$deadline=(Get-Date).AddSeconds(100); $found=$false\nwhile (-not $found -and (Get-Date) -lt $deadline) {\n  foreach ($w in Get-ChildItem -Directory .palimpsest/worlds -ErrorAction SilentlyContinue) {\n    if ((git -C $w.FullName log -1 --format=%s 2>$null) -match \"client: integration test and migration notes\") { $found=$true; break }\n  }\n  if (-not $found) { Start-Sleep -Milliseconds 500 }\n}\nif (-not $found) { throw \"timed out waiting for: client: integration test and migration notes\" }\n\"commit observed\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-pause-6",
+              "name": "pwsh",
+              "input": {
+                "description": "let the worker's exit become observable",
+                "command": "Start-Sleep -Seconds 6; \"settled\""
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-client-readiness-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "client"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-client-finalize-1",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "client",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "acknowledgeInputs": true,
+                "summary": "the client task left the client, the integration test and the migration notes; the suite is green"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-client-readiness-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "client"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p-client-finalize-2",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "client",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "acknowledgeInputs": true,
+                "summary": "the client task left the client, the integration test and the migration notes; the suite is green"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p4-conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "WAIT_FOR_OPERATOR",
+                "statement": "All three migration tasks are settled with green suites; the client result needs the operator's acceptance before delivery.",
+                "artifacts": [
+                  "service/grpc_client.js",
+                  "test/integration.test.js",
+                  "MIGRATION.md"
+                ],
+                "waitingOn": "operator acceptance of the client result"
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_P4_DONE"
+        }
+      ]
+    },
+    {
+      "match": "PSVR_PRINCIPAL_P5",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p5-pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p5-conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "DELIVER",
+                "statement": "The REST to gRPC migration is accepted: proto, server, client and integration test are canonical, and the suite runs on the accepted head.",
+                "artifacts": [
+                  "proto/energy.proto",
+                  "service/grpc_server.js",
+                  "service/grpc_client.js",
+                  "test/integration.test.js",
+                  "MIGRATION.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "PSVR_P5_DONE"
+        }
+      ]
+    },
+    {
+      "match": "Deliver the gRPC client, the integration test and the migration notes",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "w-write-the-client-the",
+              "name": "run_code",
+              "input": {
+                "description": "write the client, the integration test and the migration notes",
+                "code": "const files = {\n  \"service/grpc_client.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The fleet console's client.\\n *\\n * `streamReadings` calls `onReading` for each frame AS IT ARRIVES and resolves with the collected\\n * list. It never waits for the response to end before invoking the callback: that is the difference\\n * this migration exists to deliver.\\n */\\nconst http2 = require(\\\"node:http2\\\");\\n\\nconst {\\n  decodeReading,\\n  decodeStatus,\\n  drainFrames,\\n  encodeSiteRequest,\\n  encodeStreamRequest,\\n  frame,\\n} = require(\\\"./wire.js\\\");\\n\\nconst SERVICE = \\\"/energy.v1.EnergyService\\\";\\n\\nfunction createGrpcClient(port) {\\n  const session = http2.connect(`http://127.0.0.1:${String(port)}`);\\n  session.on(\\\"error\\\", () => undefined);\\n\\n  function call(path, payload, onMessage) {\\n    return new Promise((resolve, reject) => {\\n      const stream = session.request({\\n        \\\":method\\\": \\\"POST\\\",\\n        \\\":path\\\": path,\\n        \\\"content-type\\\": \\\"application/grpc\\\",\\n        \\\"te\\\": \\\"trailers\\\",\\n      });\\n      let buffered = Buffer.alloc(0);\\n      const messages = [];\\n      let status = null;\\n      let message = \\\"\\\";\\n      stream.on(\\\"response\\\", (headers) => {\\n        status = headers[\\\"grpc-status\\\"] === undefined ? null : String(headers[\\\"grpc-status\\\"]);\\n      });\\n      stream.on(\\\"trailers\\\", (headers) => {\\n        status = String(headers[\\\"grpc-status\\\"] ?? \\\"0\\\");\\n        message = headers[\\\"grpc-message\\\"] === undefined ? \\\"\\\" : decodeURIComponent(String(headers[\\\"grpc-message\\\"]));\\n      });\\n      stream.on(\\\"data\\\", (chunk) => {\\n        buffered = Buffer.concat([buffered, chunk]);\\n        const drained = drainFrames(buffered);\\n        buffered = drained.rest;\\n        for (const encoded of drained.messages) {\\n          const decoded = onMessage(encoded);\\n          messages.push(decoded);\\n        }\\n      });\\n      stream.on(\\\"error\\\", reject);\\n      stream.on(\\\"end\\\", () => {\\n        if (status !== null && status !== \\\"0\\\") {\\n          reject(Object.assign(new Error(message === \\\"\\\" ? `grpc_status_${status}` : message), { code: Number(status) }));\\n          return;\\n        }\\n        resolve(messages);\\n      });\\n      stream.end(frame(payload));\\n    });\\n  }\\n\\n  return {\\n    async getReading(siteId) {\\n      const messages = await call(`${SERVICE}/GetReading`, encodeSiteRequest({ siteId }), decodeReading);\\n      return messages[0];\\n    },\\n    async streamReadings(siteId, limit, onReading) {\\n      return await call(`${SERVICE}/StreamReadings`, encodeStreamRequest({ siteId, limit }), (encoded) => {\\n        const reading = decodeReading(encoded);\\n        if (typeof onReading === \\\"function\\\") onReading(reading);\\n        return reading;\\n      });\\n    },\\n    close() {\\n      session.close();\\n    },\\n  };\\n}\\n\\nmodule.exports = { createGrpcClient, decodeStatus };\\n\",\n  \"test/integration.test.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The integration test the migration is judged by: the PRODUCTION client against the PRODUCTION\\n * server, with the REST baseline running beside it so \\\"preserved behaviour\\\" is an observed fact.\\n */\\nconst assert = require(\\\"node:assert/strict\\\");\\nconst { after, before, test } = require(\\\"node:test\\\");\\n\\nconst { FRAME_GAP_MS, createGrpcServer } = require(\\\"../service/grpc_server.js\\\");\\nconst { createGrpcClient } = require(\\\"../service/grpc_client.js\\\");\\nconst { createRestClient } = require(\\\"../service/rest_client.js\\\");\\nconst { createRestServer } = require(\\\"../service/rest_server.js\\\");\\n\\nlet grpcServer;\\nlet restServer;\\nlet grpc;\\nlet rest;\\n\\nbefore(async () => {\\n  grpcServer = createGrpcServer(require(\\\"../service/data.js\\\"));\\n  await new Promise((resolve) => grpcServer.listen(0, \\\"127.0.0.1\\\", resolve));\\n  restServer = createRestServer();\\n  await new Promise((resolve) => restServer.listen(0, \\\"127.0.0.1\\\", resolve));\\n  grpc = createGrpcClient(grpcServer.address().port);\\n  rest = createRestClient(restServer.address().port);\\n});\\n\\nafter(async () => {\\n  grpc.close();\\n  await new Promise((resolve) => grpcServer.close(resolve));\\n  await new Promise((resolve) => restServer.close(resolve));\\n});\\n\\ntest(\\\"gRPC GetReading returns the same reading as the REST baseline\\\", async () => {\\n  const [migrated, baseline] = await Promise.all([grpc.getReading(\\\"site-a\\\"), rest.getReading(\\\"site-a\\\")]);\\n  assert.deepEqual(migrated, baseline);\\n});\\n\\ntest(\\\"the client receives each streamed reading before the stream ends\\\", async () => {\\n  const arrivals = [];\\n  const readings = await grpc.streamReadings(\\\"site-b\\\", 3, () => arrivals.push(Date.now()));\\n  assert.equal(readings.length, 3);\\n  const span = arrivals[arrivals.length - 1] - arrivals[0];\\n  assert.ok(\\n    span >= FRAME_GAP_MS * 2,\\n    `the callback fired as frames arrived (span ${String(span)}ms), not after the response ended`,\\n  );\\n  assert.deepEqual(readings, await rest.getReadings(\\\"site-b\\\", 3));\\n});\\n\\ntest(\\\"an unknown site surfaces the server's error, not an empty result\\\", async () => {\\n  await assert.rejects(() => grpc.getReading(\\\"site-zz\\\"), /unknown_site/u);\\n});\\n\",\n  \"MIGRATION.md\": \"# Migration notes — REST to gRPC\\n\\n## Mapping\\n\\n| REST baseline | gRPC |\\n|---|---|\\n| `GET /sites/:id/reading` | `EnergyService.GetReading(SiteRequest) -> Reading` |\\n| `GET /sites/:id/readings?limit=N` | `EnergyService.StreamReadings(StreamRequest) -> stream Reading` |\\n| `404 { error: \\\"unknown_site\\\" }` | `grpc-status: 5`, `grpc-message: unknown_site` |\\n| JSON `{ siteId, watts, atMs }` | protobuf `Reading` (field 1 string, 2 int32, 3 int64) |\\n\\nThe console keeps its REST client; the fleet console uses `service/grpc_client.js`. Both read the\\nsame source of truth and the integration test compares them directly.\\n\\n## Streaming, not a batch\\n\\nThe first draft of this migration returned the readings as one `Readings` message (a unary\\n`GetReadings`). The fleet compatibility note of 2026-11-03\\n(`updates/2026-11-03/compat-streaming.md`) rules that out: the fleet client renders each sample as it\\narrives and its buffer is 256 KiB, while 30 readings at 12 KiB each do not fit. The note requires:\\n\\n- `StreamReadings` to be declared `returns (stream Reading)`;\\n- one `Reading` per frame;\\n- every frame under 16 KiB;\\n- `GetReading` to stay unary.\\n\\nThe implementation therefore writes one frame per reading with a 60 ms gap, and both\\n`test/server.test.js` and `test/integration.test.js` assert that the client callback fires while the\\nstream is still open (a batch written at the end would arrive in one burst). The `Readings` message\\nand its codec were removed with the batch RPC: keeping a codec for a message the contract no longer\\ndeclares would be dead wire surface.\\n\\n## Wire details\\n\\nA gRPC message is `[compressed:1][length:4 big-endian][protobuf bytes]`, carried over HTTP/2 with\\n`content-type: application/grpc`, `te: trailers`, and a `grpc-status` trailer. No third-party package\\nis used: `node:http2` and a small protobuf subset (`service/wire.js`) are the whole transport.\\n\\n## Verification\\n\\n`node --test` from the repository root. The suite covers the codec, the server's own wire behaviour,\\nthe production client against the production server, and the untouched REST baseline.\\n\"\n};\nconst unsubstituted = [\"__INPUT_\", \"DIGEST__\"].join(\"\");\nfor (const [path, content] of Object.entries(files)) {\n  if (String(content).includes(unsubstituted)) throw new Error(`an unsubstituted placeholder reached ${path}`);\n  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }\n  await tools.write({ file_path: path, content });\n}\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-tests",
+              "name": "run_code",
+              "input": {
+                "description": "run the suite file by file",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst result = await shell({ command: \"$failed=@(); Get-ChildItem -Path test -Filter *.test.js | ForEach-Object { node $_.FullName; if ($LASTEXITCODE -ne 0) { $failed += $_.Name } }; if ($failed.Count -gt 0) { throw ('suite failed: ' + ($failed -join ',')) } else { 'suite green' }\", description: \"run the suite\" });\nconst output = typeof result === \"string\" ? result : JSON.stringify(result);\nif (/suite failed/u.test(output)) throw new Error(\"the suite is not green:\\n\" + output.slice(-2000));\nreturn output.slice(-600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-commit-client-integrati",
+              "name": "run_code",
+              "input": {
+                "description": "commit client: integration test and migration notes",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"git add -A; git -c user.email=worker@psvr.test -c user.name=worker commit -qm 'client: integration test and migration notes'\", description: \"commit the work\" });\nconst head = await shell({ command: \"git log -1 --format=%s\", description: \"read the commit subject\" });\nif (!JSON.stringify(head).includes(\"client: integration test and migration notes\")) throw new Error(\"the commit did not land: \" + JSON.stringify(head).slice(0, 300));\nreturn \"committed: client: integration test and migration notes\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_EXITED_WITHOUT_REPORT"
+        }
+      ]
+    },
+    {
+      "match": "@ctx/input/updates/2026-11-03/compat-streaming.md",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "w2b-pull",
+              "name": "run_code",
+              "input": {
+                "description": "pull the fleet compatibility note through the attempt's context handle",
+                "code": "const pulled = await tools.palimpsest_worker_context_pull({ handle: \"@ctx/input/updates/2026-11-03/compat-streaming.md\" });\nconst body = typeof pulled === \"string\" ? pulled : String(pulled?.value?.body?.text ?? pulled?.body?.text ?? pulled?.text ?? JSON.stringify(pulled));\nif (!body.includes(\"returns (stream Reading)\")) throw new Error(\"the compatibility note was not delivered through the context pull: \" + body.slice(0, 400));\nreturn body.slice(0, 600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-rewrite-the-contract",
+              "name": "run_code",
+              "input": {
+                "description": "rewrite the contract, codec, server and server tests for server-streaming",
+                "code": "const files = {\n  \"proto/energy.proto\": \"syntax = \\\"proto3\\\";\\n\\npackage energy.v1;\\n\\n// One site, for a unary lookup.\\nmessage SiteRequest {\\n  string site_id = 1;\\n}\\n\\n// One sample. at_ms is an epoch millisecond integer, never a locale string.\\nmessage Reading {\\n  string site_id = 1;\\n  int32 watts = 2;\\n  int64 at_ms = 3;\\n}\\n\\n// A bounded request for a site's readings.\\nmessage StreamRequest {\\n  string site_id = 1;\\n  int32 limit = 2;\\n}\\n\\n// Carried in a frame for a non-OK grpc-status, so the client can surface the reason.\\nmessage Status {\\n  string code = 1;\\n  string message = 2;\\n}\\n\\nservice EnergyService {\\n  rpc GetReading (SiteRequest) returns (Reading);\\n  // The fleet client renders samples as they arrive; one frame per Reading.\\n  rpc StreamReadings (StreamRequest) returns (stream Reading);\\n}\\n\",\n  \"service/wire.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The protobuf subset the service contract needs, plus the gRPC message framing.\\n *\\n * Wire types used: 0 (varint) for int32/int64 and 2 (length-delimited) for string and nested\\n * messages. A gRPC message is a 5-byte header — one compressed-flag byte (always 0 here) and a 4-byte\\n * big-endian length — followed by the protobuf bytes.\\n *\\n * The encoder is driven by the field numbers declared in proto/energy.proto. A change to a field\\n * number is a wire change and must be treated as one.\\n */\\n\\n// ── protobuf primitives ───────────────────────────────────────────────────────────────────────────\\n\\nfunction encodeVarint(value) {\\n  let remaining = typeof value === \\\"bigint\\\" ? value : BigInt(value);\\n  if (remaining < 0n) throw new RangeError(\\\"varint cannot encode a negative value\\\");\\n  const bytes = [];\\n  while (remaining > 0x7fn) {\\n    bytes.push(Number(remaining & 0x7fn) | 0x80);\\n    remaining >>= 7n;\\n  }\\n  bytes.push(Number(remaining));\\n  return Buffer.from(bytes);\\n}\\n\\nfunction decodeVarint(buffer, offset) {\\n  let value = 0n;\\n  let shift = 0n;\\n  let index = offset;\\n  for (;;) {\\n    if (index >= buffer.length) throw new RangeError(\\\"truncated varint\\\");\\n    const byte = buffer[index];\\n    index += 1;\\n    value |= BigInt(byte & 0x7f) << shift;\\n    if ((byte & 0x80) === 0) break;\\n    shift += 7n;\\n    if (shift > 63n) throw new RangeError(\\\"varint is too long\\\");\\n  }\\n  return { value, offset: index };\\n}\\n\\nfunction tag(field, wireType) {\\n  return encodeVarint((field << 3) | wireType);\\n}\\n\\nfunction encodeString(field, value) {\\n  const bytes = Buffer.from(value, \\\"utf8\\\");\\n  return Buffer.concat([tag(field, 2), encodeVarint(bytes.length), bytes]);\\n}\\n\\nfunction encodeInt(field, value) {\\n  return Buffer.concat([tag(field, 0), encodeVarint(value)]);\\n}\\n\\nfunction readFields(buffer) {\\n  const fields = new Map();\\n  let offset = 0;\\n  while (offset < buffer.length) {\\n    const header = decodeVarint(buffer, offset);\\n    offset = header.offset;\\n    const field = Number(header.value >> 3n);\\n    const wireType = Number(header.value & 7n);\\n    if (wireType === 0) {\\n      const value = decodeVarint(buffer, offset);\\n      offset = value.offset;\\n      fields.set(field, value.value);\\n    } else if (wireType === 2) {\\n      const length = decodeVarint(buffer, offset);\\n      offset = length.offset;\\n      const end = offset + Number(length.value);\\n      if (end > buffer.length) throw new RangeError(\\\"truncated length-delimited field\\\");\\n      fields.set(field, buffer.subarray(offset, end));\\n      offset = end;\\n    } else {\\n      throw new RangeError(`unsupported wire type ${String(wireType)}`);\\n    }\\n  }\\n  return fields;\\n}\\n\\n// ── messages ─────────────────────────────────────────────────────────────────────────────────────\\n\\nfunction encodeSiteRequest(request) {\\n  return encodeString(1, request.siteId);\\n}\\n\\nfunction decodeSiteRequest(buffer) {\\n  const fields = readFields(buffer);\\n  return { siteId: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\" };\\n}\\n\\nfunction encodeReading(reading) {\\n  return Buffer.concat([encodeString(1, reading.siteId), encodeInt(2, reading.watts), encodeInt(3, reading.atMs)]);\\n}\\n\\nfunction decodeReading(buffer) {\\n  const fields = readFields(buffer);\\n  return {\\n    siteId: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\",\\n    watts: Number(fields.get(2) ?? 0n),\\n    atMs: Number(fields.get(3) ?? 0n),\\n  };\\n}\\n\\nfunction encodeStreamRequest(request) {\\n  return Buffer.concat([encodeString(1, request.siteId), encodeInt(2, request.limit)]);\\n}\\n\\nfunction decodeStreamRequest(buffer) {\\n  const fields = readFields(buffer);\\n  return { siteId: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\", limit: Number(fields.get(2) ?? 0n) };\\n}\\n\\nfunction encodeStatus(status) {\\n  return Buffer.concat([encodeString(1, status.code), encodeString(2, status.message)]);\\n}\\n\\nfunction decodeStatus(buffer) {\\n  const fields = readFields(buffer);\\n  return { code: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\", message: fields.get(2)?.toString(\\\"utf8\\\") ?? \\\"\\\" };\\n}\\n\\n// ── gRPC framing ─────────────────────────────────────────────────────────────────────────────────\\n\\nconst FRAME_HEADER_BYTES = 5;\\n\\nfunction frame(payload) {\\n  const header = Buffer.alloc(FRAME_HEADER_BYTES);\\n  header[0] = 0; // not compressed\\n  header.writeUInt32BE(payload.length, 1);\\n  return Buffer.concat([header, payload]);\\n}\\n\\n/** One frame from a complete buffer; throws when the length prefix does not match. */\\nfunction unframe(buffer) {\\n  if (buffer.length < FRAME_HEADER_BYTES) throw new RangeError(\\\"truncated frame header\\\");\\n  const length = buffer.readUInt32BE(1);\\n  if (buffer.length !== FRAME_HEADER_BYTES + length) {\\n    throw new RangeError(`frame length ${String(length)} does not match ${String(buffer.length - FRAME_HEADER_BYTES)} bytes`);\\n  }\\n  return buffer.subarray(FRAME_HEADER_BYTES);\\n}\\n\\n/** Every complete frame in an accumulated buffer, plus the bytes of a partial trailing frame. */\\nfunction drainFrames(buffer) {\\n  const messages = [];\\n  let offset = 0;\\n  while (buffer.length - offset >= FRAME_HEADER_BYTES) {\\n    const length = buffer.readUInt32BE(offset + 1);\\n    if (buffer.length - offset - FRAME_HEADER_BYTES < length) break;\\n    messages.push(buffer.subarray(offset + FRAME_HEADER_BYTES, offset + FRAME_HEADER_BYTES + length));\\n    offset += FRAME_HEADER_BYTES + length;\\n  }\\n  return { messages, rest: buffer.subarray(offset) };\\n}\\n\\nmodule.exports = {\\n  FRAME_HEADER_BYTES,\\n  decodeReading,\\n  decodeSiteRequest,\\n  decodeStatus,\\n  decodeStreamRequest,\\n  drainFrames,\\n  encodeReading,\\n  encodeSiteRequest,\\n  encodeStatus,\\n  encodeStreamRequest,\\n  frame,\\n  unframe,\\n};\\n\",\n  \"test/wire.test.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The codec is the part a wire change would silently break, so it is tested before anything runs on\\n * top of it: field numbers, varint width (atMs does not fit in 32 bits), UTF-8 site ids, and the\\n * framing boundary between two messages in one buffer.\\n */\\nconst assert = require(\\\"node:assert/strict\\\");\\nconst { test } = require(\\\"node:test\\\");\\n\\nconst {\\n  decodeReading,\\n  decodeSiteRequest,\\n  decodeStreamRequest,\\n  drainFrames,\\n  encodeReading,\\n  encodeSiteRequest,\\n  encodeStreamRequest,\\n  frame,\\n  unframe,\\n} = require(\\\"../service/wire.js\\\");\\n\\ntest(\\\"a Reading round-trips with a 64-bit timestamp\\\", () => {\\n  const reading = { siteId: \\\"site-a\\\", watts: 4120, atMs: 1762300000000 };\\n  assert.deepEqual(decodeReading(unframe(frame(encodeReading(reading)))), reading);\\n});\\n\\ntest(\\\"a SiteRequest round-trips a non-ASCII site id\\\", () => {\\n  const request = { siteId: \\\"sítio-ç\\\" };\\n  assert.deepEqual(decodeSiteRequest(encodeSiteRequest(request)), request);\\n});\\n\\ntest(\\\"a StreamRequest round-trips its limit\\\", () => {\\n  const request = { siteId: \\\"site-b\\\", limit: 3 };\\n  assert.deepEqual(decodeStreamRequest(encodeStreamRequest(request)), request);\\n});\\n\\ntest(\\\"two frames in one buffer are drained in order and a partial frame is kept\\\", () => {\\n  const first = frame(encodeReading({ siteId: \\\"site-a\\\", watts: 1, atMs: 2 }));\\n  const second = frame(encodeReading({ siteId: \\\"site-b\\\", watts: 3, atMs: 4 }));\\n  const drained = drainFrames(Buffer.concat([first, second, first.subarray(0, 3)]));\\n  assert.equal(drained.messages.length, 2);\\n  assert.deepEqual(decodeReading(drained.messages[1]), { siteId: \\\"site-b\\\", watts: 3, atMs: 4 });\\n  assert.equal(drained.rest.length, 3);\\n});\\n\\ntest(\\\"a truncated frame is refused, not guessed\\\", () => {\\n  const encoded = frame(encodeReading({ siteId: \\\"site-a\\\", watts: 1, atMs: 2 }));\\n  assert.throws(() => unframe(encoded.subarray(0, encoded.length - 1)), /does not match/u);\\n});\\n\",\n  \"service/grpc_server.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The gRPC service: HTTP/2 transport, `application/grpc` framing, and the two RPCs.\\n *\\n *   /energy.v1.EnergyService/GetReading      unary\\n *   /energy.v1.EnergyService/StreamReadings  server-streaming, one Reading per frame\\n *\\n * The stream is deliberately written one frame at a time with a small gap, because the fleet client\\n * renders samples as they arrive: buffering the whole answer and sending it at the end would look\\n * identical on the wire only if the client waited for the response to end, which it does not.\\n */\\nconst http2 = require(\\\"node:http2\\\");\\n\\nconst {\\n  decodeSiteRequest,\\n  decodeStreamRequest,\\n  encodeReading,\\n  encodeStatus,\\n  frame,\\n  unframe,\\n} = require(\\\"./wire.js\\\");\\n\\n// Compatibility basis: updates/2026-11-03/compat-streaming.md (sha256 __INPUT_DIGEST__)\\nconst SERVICE = \\\"/energy.v1.EnergyService\\\";\\nconst FRAME_GAP_MS = 60;\\n\\nfunction fail(stream, status, message) {\\n  stream.respond({ \\\":status\\\": 200, \\\"content-type\\\": \\\"application/grpc\\\" }, { waitForTrailers: true });\\n  stream.on(\\\"wantTrailers\\\", () => {\\n    stream.sendTrailers({ \\\"grpc-status\\\": String(status), \\\"grpc-message\\\": encodeURIComponent(message) });\\n  });\\n  stream.end(frame(encodeStatus({ code: message, message })));\\n}\\n\\nfunction createGrpcServer(source) {\\n  const server = http2.createServer();\\n  server.on(\\\"stream\\\", (stream, headers) => {\\n    const path = headers[\\\":path\\\"];\\n    const chunks = [];\\n    stream.on(\\\"data\\\", (chunk) => chunks.push(chunk));\\n    stream.on(\\\"error\\\", () => undefined);\\n    stream.on(\\\"end\\\", () => {\\n      let request;\\n      try {\\n        request = unframe(Buffer.concat(chunks));\\n      } catch {\\n        return fail(stream, 3, \\\"invalid_request_frame\\\");\\n      }\\n      if (path === `${SERVICE}/GetReading`) {\\n        const { siteId } = decodeSiteRequest(request);\\n        const reading = source.readingFor(siteId);\\n        if (reading === null) return fail(stream, 5, \\\"unknown_site\\\");\\n        stream.respond({ \\\":status\\\": 200, \\\"content-type\\\": \\\"application/grpc\\\" }, { waitForTrailers: true });\\n        stream.on(\\\"wantTrailers\\\", () => stream.sendTrailers({ \\\"grpc-status\\\": \\\"0\\\" }));\\n        stream.end(frame(encodeReading(reading)));\\n        return;\\n      }\\n      if (path === `${SERVICE}/StreamReadings`) {\\n        const { siteId, limit } = decodeStreamRequest(request);\\n        const readings = source.readingsFor(siteId);\\n        if (readings === null) return fail(stream, 5, \\\"unknown_site\\\");\\n        const bounded = readings.slice(0, Math.max(0, limit));\\n        stream.respond({ \\\":status\\\": 200, \\\"content-type\\\": \\\"application/grpc\\\" }, { waitForTrailers: true });\\n        stream.on(\\\"wantTrailers\\\", () => stream.sendTrailers({ \\\"grpc-status\\\": \\\"0\\\" }));\\n        let index = 0;\\n        const writeNext = () => {\\n          if (index >= bounded.length) {\\n            stream.end();\\n            return;\\n          }\\n          stream.write(frame(encodeReading(bounded[index])));\\n          index += 1;\\n          setTimeout(writeNext, FRAME_GAP_MS);\\n        };\\n        writeNext();\\n        return;\\n      }\\n      fail(stream, 12, \\\"unimplemented\\\");\\n    });\\n  });\\n  return server;\\n}\\n\\nmodule.exports = { createGrpcServer, FRAME_GAP_MS };\\n\",\n  \"test/server.test.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The server's own tests. They speak the wire directly (http2 + frames) on purpose: a test that used\\n * the production client would let a matching bug in both halves pass unnoticed.\\n */\\nconst assert = require(\\\"node:assert/strict\\\");\\nconst http2 = require(\\\"node:http2\\\");\\nconst { after, before, test } = require(\\\"node:test\\\");\\n\\nconst { readingsFor } = require(\\\"../service/data.js\\\");\\nconst { FRAME_GAP_MS, createGrpcServer } = require(\\\"../service/grpc_server.js\\\");\\nconst {\\n  decodeReading,\\n  drainFrames,\\n  encodeSiteRequest,\\n  encodeStreamRequest,\\n  frame,\\n} = require(\\\"../service/wire.js\\\");\\n\\nconst SERVICE = \\\"/energy.v1.EnergyService\\\";\\nconst MAX_FRAME_BYTES = 16 * 1024;\\n\\nlet server;\\nlet session;\\n\\nbefore(async () => {\\n  server = createGrpcServer(require(\\\"../service/data.js\\\"));\\n  await new Promise((resolve) => server.listen(0, \\\"127.0.0.1\\\", resolve));\\n  session = http2.connect(`http://127.0.0.1:${String(server.address().port)}`);\\n});\\n\\nafter(async () => {\\n  session.close();\\n  await new Promise((resolve) => server.close(resolve));\\n});\\n\\n/** Send one framed request and collect the framed answer. */\\nfunction call(path, payload, onMessage) {\\n  return new Promise((resolve, reject) => {\\n    const stream = session.request({\\n      \\\":method\\\": \\\"POST\\\",\\n      \\\":path\\\": `${SERVICE}${path}`,\\n      \\\"content-type\\\": \\\"application/grpc\\\",\\n      \\\"te\\\": \\\"trailers\\\",\\n    });\\n    let buffered = Buffer.alloc(0);\\n    const messages = [];\\n    let status = \\\"0\\\";\\n    stream.on(\\\"trailers\\\", (headers) => {\\n      status = String(headers[\\\"grpc-status\\\"] ?? \\\"0\\\");\\n    });\\n    stream.on(\\\"data\\\", (chunk) => {\\n      buffered = Buffer.concat([buffered, chunk]);\\n      const drained = drainFrames(buffered);\\n      buffered = drained.rest;\\n      for (const encoded of drained.messages) {\\n        assert.ok(encoded.length <= MAX_FRAME_BYTES, `frame is ${String(encoded.length)} bytes`);\\n        messages.push(onMessage(encoded));\\n      }\\n    });\\n    stream.on(\\\"error\\\", reject);\\n    stream.on(\\\"end\\\", () => resolve({ messages, status }));\\n    stream.end(frame(payload));\\n  });\\n}\\n\\ntest(\\\"GetReading returns one reading\\\", async () => {\\n  const result = await call(\\\"/GetReading\\\", encodeSiteRequest({ siteId: \\\"site-a\\\" }), decodeReading);\\n  assert.equal(result.status, \\\"0\\\");\\n  assert.deepEqual(result.messages, [{ siteId: \\\"site-a\\\", watts: 4120, atMs: 1762300000000 }]);\\n});\\n\\ntest(\\\"StreamReadings sends one bounded frame per reading, incrementally\\\", async () => {\\n  const arrivals = [];\\n  const result = await call(\\\"/StreamReadings\\\", encodeStreamRequest({ siteId: \\\"site-a\\\", limit: 6 }), (encoded) => {\\n    arrivals.push(Date.now());\\n    return decodeReading(encoded);\\n  });\\n  assert.equal(result.status, \\\"0\\\");\\n  assert.deepEqual(result.messages, readingsFor(\\\"site-a\\\").slice(0, 6));\\n  assert.ok(arrivals.length >= 6, \\\"every reading arrived in its own frame\\\");\\n  const span = arrivals[arrivals.length - 1] - arrivals[0];\\n  assert.ok(\\n    span >= FRAME_GAP_MS * 4,\\n    `readings arrived incrementally (span ${String(span)}ms); a batch written at the end would span ~0ms`,\\n  );\\n});\\n\\ntest(\\\"an unknown site is grpc-status 5, not an empty stream\\\", async () => {\\n  const result = await call(\\\"/GetReading\\\", encodeSiteRequest({ siteId: \\\"site-zz\\\" }), (encoded) => encoded);\\n  assert.equal(result.status, \\\"5\\\");\\n});\\n\"\n};\nconst unsubstituted = [\"__INPUT_\", \"DIGEST__\"].join(\"\");\nfor (const [path, content] of Object.entries(files)) {\n  if (String(content).includes(unsubstituted)) throw new Error(`an unsubstituted placeholder reached ${path}`);\n  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }\n  await tools.write({ file_path: path, content });\n}\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-tests",
+              "name": "run_code",
+              "input": {
+                "description": "run the suite file by file",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst result = await shell({ command: \"$failed=@(); Get-ChildItem -Path test -Filter *.test.js | ForEach-Object { node $_.FullName; if ($LASTEXITCODE -ne 0) { $failed += $_.Name } }; if ($failed.Count -gt 0) { throw ('suite failed: ' + ($failed -join ',')) } else { 'suite green' }\", description: \"run the suite\" });\nconst output = typeof result === \"string\" ? result : JSON.stringify(result);\nif (/suite failed/u.test(output)) throw new Error(\"the suite is not green:\\n\" + output.slice(-2000));\nreturn output.slice(-600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-commit-server-server-st",
+              "name": "run_code",
+              "input": {
+                "description": "commit server: server-streaming readings",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"git add -A; git -c user.email=worker@psvr.test -c user.name=worker commit -qm 'server: server-streaming readings'\", description: \"commit the work\" });\nconst head = await shell({ command: \"git log -1 --format=%s\", description: \"read the commit subject\" });\nif (!JSON.stringify(head).includes(\"server: server-streaming readings\")) throw new Error(\"the commit did not land: \" + JSON.stringify(head).slice(0, 300));\nreturn \"committed: server: server-streaming readings\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_EXITED_WITHOUT_REPORT"
+        }
+      ]
+    },
+    {
+      "match": "Declare the gRPC contract and the wire codec",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "w-write-the-proto-cont",
+              "name": "run_code",
+              "input": {
+                "description": "write the proto contract, the wire codec and its tests",
+                "code": "const files = {\n  \"proto/energy.proto\": \"syntax = \\\"proto3\\\";\\n\\npackage energy.v1;\\n\\n// One site, for a unary lookup.\\nmessage SiteRequest {\\n  string site_id = 1;\\n}\\n\\n// One sample. at_ms is an epoch millisecond integer, never a locale string.\\nmessage Reading {\\n  string site_id = 1;\\n  int32 watts = 2;\\n  int64 at_ms = 3;\\n}\\n\\n// A bounded request for a site's readings.\\nmessage StreamRequest {\\n  string site_id = 1;\\n  int32 limit = 2;\\n}\\n\\n// The whole answer in one message: the shape the first draft assumed.\\nmessage Readings {\\n  repeated Reading readings = 1;\\n}\\n\\n// Carried in a frame for a non-OK grpc-status, so the client can surface the reason.\\nmessage Status {\\n  string code = 1;\\n  string message = 2;\\n}\\n\\nservice EnergyService {\\n  rpc GetReading (SiteRequest) returns (Reading);\\n  rpc GetReadings (StreamRequest) returns (Readings);\\n}\\n\",\n  \"service/wire.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The protobuf subset the service contract needs, plus the gRPC message framing.\\n *\\n * Wire types used: 0 (varint) for int32/int64 and 2 (length-delimited) for string and nested\\n * messages. A gRPC message is a 5-byte header — one compressed-flag byte (always 0 here) and a 4-byte\\n * big-endian length — followed by the protobuf bytes.\\n *\\n * The encoder is driven by the field numbers declared in proto/energy.proto. A change to a field\\n * number is a wire change and must be treated as one.\\n */\\n\\n// ── protobuf primitives ───────────────────────────────────────────────────────────────────────────\\n\\nfunction encodeVarint(value) {\\n  let remaining = typeof value === \\\"bigint\\\" ? value : BigInt(value);\\n  if (remaining < 0n) throw new RangeError(\\\"varint cannot encode a negative value\\\");\\n  const bytes = [];\\n  while (remaining > 0x7fn) {\\n    bytes.push(Number(remaining & 0x7fn) | 0x80);\\n    remaining >>= 7n;\\n  }\\n  bytes.push(Number(remaining));\\n  return Buffer.from(bytes);\\n}\\n\\nfunction decodeVarint(buffer, offset) {\\n  let value = 0n;\\n  let shift = 0n;\\n  let index = offset;\\n  for (;;) {\\n    if (index >= buffer.length) throw new RangeError(\\\"truncated varint\\\");\\n    const byte = buffer[index];\\n    index += 1;\\n    value |= BigInt(byte & 0x7f) << shift;\\n    if ((byte & 0x80) === 0) break;\\n    shift += 7n;\\n    if (shift > 63n) throw new RangeError(\\\"varint is too long\\\");\\n  }\\n  return { value, offset: index };\\n}\\n\\nfunction tag(field, wireType) {\\n  return encodeVarint((field << 3) | wireType);\\n}\\n\\nfunction encodeString(field, value) {\\n  const bytes = Buffer.from(value, \\\"utf8\\\");\\n  return Buffer.concat([tag(field, 2), encodeVarint(bytes.length), bytes]);\\n}\\n\\nfunction encodeInt(field, value) {\\n  return Buffer.concat([tag(field, 0), encodeVarint(value)]);\\n}\\n\\nfunction readFields(buffer) {\\n  const fields = new Map();\\n  let offset = 0;\\n  while (offset < buffer.length) {\\n    const header = decodeVarint(buffer, offset);\\n    offset = header.offset;\\n    const field = Number(header.value >> 3n);\\n    const wireType = Number(header.value & 7n);\\n    if (wireType === 0) {\\n      const value = decodeVarint(buffer, offset);\\n      offset = value.offset;\\n      fields.set(field, value.value);\\n    } else if (wireType === 2) {\\n      const length = decodeVarint(buffer, offset);\\n      offset = length.offset;\\n      const end = offset + Number(length.value);\\n      if (end > buffer.length) throw new RangeError(\\\"truncated length-delimited field\\\");\\n      fields.set(field, buffer.subarray(offset, end));\\n      offset = end;\\n    } else {\\n      throw new RangeError(`unsupported wire type ${String(wireType)}`);\\n    }\\n  }\\n  return fields;\\n}\\n\\n// ── messages ─────────────────────────────────────────────────────────────────────────────────────\\n\\nfunction encodeSiteRequest(request) {\\n  return encodeString(1, request.siteId);\\n}\\n\\nfunction decodeSiteRequest(buffer) {\\n  const fields = readFields(buffer);\\n  return { siteId: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\" };\\n}\\n\\nfunction encodeReading(reading) {\\n  return Buffer.concat([encodeString(1, reading.siteId), encodeInt(2, reading.watts), encodeInt(3, reading.atMs)]);\\n}\\n\\nfunction decodeReading(buffer) {\\n  const fields = readFields(buffer);\\n  return {\\n    siteId: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\",\\n    watts: Number(fields.get(2) ?? 0n),\\n    atMs: Number(fields.get(3) ?? 0n),\\n  };\\n}\\n\\nfunction encodeStreamRequest(request) {\\n  return Buffer.concat([encodeString(1, request.siteId), encodeInt(2, request.limit)]);\\n}\\n\\nfunction decodeStreamRequest(buffer) {\\n  const fields = readFields(buffer);\\n  return { siteId: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\", limit: Number(fields.get(2) ?? 0n) };\\n}\\n\\nfunction encodeStatus(status) {\\n  return Buffer.concat([encodeString(1, status.code), encodeString(2, status.message)]);\\n}\\n\\nfunction decodeStatus(buffer) {\\n  const fields = readFields(buffer);\\n  return { code: fields.get(1)?.toString(\\\"utf8\\\") ?? \\\"\\\", message: fields.get(2)?.toString(\\\"utf8\\\") ?? \\\"\\\" };\\n}\\n\\n/** The batch message: field 1 is a repeated Reading, encoded as nested length-delimited messages. */\\nfunction encodeReadings(readings) {\\n  const parts = [];\\n  for (const reading of readings) {\\n    const encoded = encodeReading(reading);\\n    parts.push(tag(1, 2), encodeVarint(encoded.length), encoded);\\n  }\\n  return Buffer.concat(parts);\\n}\\n\\nfunction decodeReadings(buffer) {\\n  const readings = [];\\n  let offset = 0;\\n  while (offset < buffer.length) {\\n    const header = decodeVarint(buffer, offset);\\n    offset = header.offset;\\n    if (Number(header.value >> 3n) !== 1 || Number(header.value & 7n) !== 2) {\\n      throw new RangeError(\\\"a Readings message only carries field 1\\\");\\n    }\\n    const length = decodeVarint(buffer, offset);\\n    offset = length.offset;\\n    const end = offset + Number(length.value);\\n    readings.push(decodeReading(buffer.subarray(offset, end)));\\n    offset = end;\\n  }\\n  return readings;\\n}\\n\\n// ── gRPC framing ─────────────────────────────────────────────────────────────────────────────────\\n\\nconst FRAME_HEADER_BYTES = 5;\\n\\nfunction frame(payload) {\\n  const header = Buffer.alloc(FRAME_HEADER_BYTES);\\n  header[0] = 0; // not compressed\\n  header.writeUInt32BE(payload.length, 1);\\n  return Buffer.concat([header, payload]);\\n}\\n\\n/** One frame from a complete buffer; throws when the length prefix does not match. */\\nfunction unframe(buffer) {\\n  if (buffer.length < FRAME_HEADER_BYTES) throw new RangeError(\\\"truncated frame header\\\");\\n  const length = buffer.readUInt32BE(1);\\n  if (buffer.length !== FRAME_HEADER_BYTES + length) {\\n    throw new RangeError(`frame length ${String(length)} does not match ${String(buffer.length - FRAME_HEADER_BYTES)} bytes`);\\n  }\\n  return buffer.subarray(FRAME_HEADER_BYTES);\\n}\\n\\n/** Every complete frame in an accumulated buffer, plus the bytes of a partial trailing frame. */\\nfunction drainFrames(buffer) {\\n  const messages = [];\\n  let offset = 0;\\n  while (buffer.length - offset >= FRAME_HEADER_BYTES) {\\n    const length = buffer.readUInt32BE(offset + 1);\\n    if (buffer.length - offset - FRAME_HEADER_BYTES < length) break;\\n    messages.push(buffer.subarray(offset + FRAME_HEADER_BYTES, offset + FRAME_HEADER_BYTES + length));\\n    offset += FRAME_HEADER_BYTES + length;\\n  }\\n  return { messages, rest: buffer.subarray(offset) };\\n}\\n\\nmodule.exports = {\\n  FRAME_HEADER_BYTES,\\n  decodeReading,\\n  decodeReadings,\\n  decodeSiteRequest,\\n  decodeStatus,\\n  decodeStreamRequest,\\n  drainFrames,\\n  encodeReading,\\n  encodeReadings,\\n  encodeSiteRequest,\\n  encodeStatus,\\n  encodeStreamRequest,\\n  frame,\\n  unframe,\\n};\\n\",\n  \"test/wire.test.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The codec is the part a wire change would silently break, so it is tested before anything runs on\\n * top of it: field numbers, varint width (atMs does not fit in 32 bits), UTF-8 site ids, the batch\\n * message, and the framing boundary between two messages in one buffer.\\n */\\nconst assert = require(\\\"node:assert/strict\\\");\\nconst { test } = require(\\\"node:test\\\");\\n\\nconst {\\n  decodeReadings,\\n  decodeReading,\\n  decodeSiteRequest,\\n  decodeStreamRequest,\\n  drainFrames,\\n  encodeReadings,\\n  encodeReading,\\n  encodeSiteRequest,\\n  encodeStreamRequest,\\n  frame,\\n  unframe,\\n} = require(\\\"../service/wire.js\\\");\\n\\ntest(\\\"a Reading round-trips with a 64-bit timestamp\\\", () => {\\n  const reading = { siteId: \\\"site-a\\\", watts: 4120, atMs: 1762300000000 };\\n  assert.deepEqual(decodeReading(unframe(frame(encodeReading(reading)))), reading);\\n});\\n\\ntest(\\\"a SiteRequest round-trips a non-ASCII site id\\\", () => {\\n  const request = { siteId: \\\"sítio-ç\\\" };\\n  assert.deepEqual(decodeSiteRequest(encodeSiteRequest(request)), request);\\n});\\n\\ntest(\\\"a StreamRequest round-trips its limit\\\", () => {\\n  const request = { siteId: \\\"site-b\\\", limit: 3 };\\n  assert.deepEqual(decodeStreamRequest(encodeStreamRequest(request)), request);\\n});\\n\\ntest(\\\"a Readings batch preserves order\\\", () => {\\n  const readings = [\\n    { siteId: \\\"site-a\\\", watts: 1, atMs: 2 },\\n    { siteId: \\\"site-a\\\", watts: 3, atMs: 4 },\\n  ];\\n  assert.deepEqual(decodeReadings(encodeReadings(readings)), readings);\\n});\\n\\ntest(\\\"two frames in one buffer are drained in order and a partial frame is kept\\\", () => {\\n  const first = frame(encodeReading({ siteId: \\\"site-a\\\", watts: 1, atMs: 2 }));\\n  const second = frame(encodeReading({ siteId: \\\"site-b\\\", watts: 3, atMs: 4 }));\\n  const drained = drainFrames(Buffer.concat([first, second, first.subarray(0, 3)]));\\n  assert.equal(drained.messages.length, 2);\\n  assert.deepEqual(decodeReading(drained.messages[1]), { siteId: \\\"site-b\\\", watts: 3, atMs: 4 });\\n  assert.equal(drained.rest.length, 3);\\n});\\n\\ntest(\\\"a truncated frame is refused, not guessed\\\", () => {\\n  const encoded = frame(encodeReading({ siteId: \\\"site-a\\\", watts: 1, atMs: 2 }));\\n  assert.throws(() => unframe(encoded.subarray(0, encoded.length - 1)), /does not match/u);\\n});\\n\"\n};\nconst unsubstituted = [\"__INPUT_\", \"DIGEST__\"].join(\"\");\nfor (const [path, content] of Object.entries(files)) {\n  if (String(content).includes(unsubstituted)) throw new Error(`an unsubstituted placeholder reached ${path}`);\n  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }\n  await tools.write({ file_path: path, content });\n}\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-tests",
+              "name": "run_code",
+              "input": {
+                "description": "run the suite file by file",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst result = await shell({ command: \"$failed=@(); Get-ChildItem -Path test -Filter *.test.js | ForEach-Object { node $_.FullName; if ($LASTEXITCODE -ne 0) { $failed += $_.Name } }; if ($failed.Count -gt 0) { throw ('suite failed: ' + ($failed -join ',')) } else { 'suite green' }\", description: \"run the suite\" });\nconst output = typeof result === \"string\" ? result : JSON.stringify(result);\nif (/suite failed/u.test(output)) throw new Error(\"the suite is not green:\\n\" + output.slice(-2000));\nreturn output.slice(-600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-commit-contract-proto-a",
+              "name": "run_code",
+              "input": {
+                "description": "commit contract: proto and wire codec",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"git add -A; git -c user.email=worker@psvr.test -c user.name=worker commit -qm 'contract: proto and wire codec'\", description: \"commit the work\" });\nconst head = await shell({ command: \"git log -1 --format=%s\", description: \"read the commit subject\" });\nif (!JSON.stringify(head).includes(\"contract: proto and wire codec\")) throw new Error(\"the commit did not land: \" + JSON.stringify(head).slice(0, 300));\nreturn \"committed: contract: proto and wire codec\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_EXITED_WITHOUT_REPORT"
+        }
+      ]
+    },
+    {
+      "match": "Implement the gRPC server for the site readings service",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "w-write-the-unary-batc",
+              "name": "run_code",
+              "input": {
+                "description": "write the unary batch server and its tests",
+                "code": "const files = {\n  \"service/grpc_server.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The gRPC service: HTTP/2 transport, `application/grpc` framing, and the two RPCs.\\n *\\n *   /energy.v1.EnergyService/GetReading   unary\\n *   /energy.v1.EnergyService/GetReadings  unary, the whole batch in one Readings message\\n */\\nconst http2 = require(\\\"node:http2\\\");\\n\\nconst {\\n  decodeSiteRequest,\\n  decodeStreamRequest,\\n  encodeReadings,\\n  encodeReading,\\n  encodeStatus,\\n  frame,\\n  unframe,\\n} = require(\\\"./wire.js\\\");\\n\\nconst SERVICE = \\\"/energy.v1.EnergyService\\\";\\n\\nfunction fail(stream, status, message) {\\n  stream.respond({ \\\":status\\\": 200, \\\"content-type\\\": \\\"application/grpc\\\" }, { waitForTrailers: true });\\n  stream.on(\\\"wantTrailers\\\", () => {\\n    stream.sendTrailers({ \\\"grpc-status\\\": String(status), \\\"grpc-message\\\": encodeURIComponent(message) });\\n  });\\n  stream.end(frame(encodeStatus({ code: message, message })));\\n}\\n\\nfunction createGrpcServer(source) {\\n  const server = http2.createServer();\\n  server.on(\\\"stream\\\", (stream, headers) => {\\n    const path = headers[\\\":path\\\"];\\n    const chunks = [];\\n    stream.on(\\\"data\\\", (chunk) => chunks.push(chunk));\\n    stream.on(\\\"error\\\", () => undefined);\\n    stream.on(\\\"end\\\", () => {\\n      let request;\\n      try {\\n        request = unframe(Buffer.concat(chunks));\\n      } catch {\\n        return fail(stream, 3, \\\"invalid_request_frame\\\");\\n      }\\n      if (path === `${SERVICE}/GetReading`) {\\n        const { siteId } = decodeSiteRequest(request);\\n        const reading = source.readingFor(siteId);\\n        if (reading === null) return fail(stream, 5, \\\"unknown_site\\\");\\n        stream.respond({ \\\":status\\\": 200, \\\"content-type\\\": \\\"application/grpc\\\" }, { waitForTrailers: true });\\n        stream.on(\\\"wantTrailers\\\", () => stream.sendTrailers({ \\\"grpc-status\\\": \\\"0\\\" }));\\n        stream.end(frame(encodeReading(reading)));\\n        return;\\n      }\\n      if (path === `${SERVICE}/GetReadings`) {\\n        const { siteId, limit } = decodeStreamRequest(request);\\n        const readings = source.readingsFor(siteId);\\n        if (readings === null) return fail(stream, 5, \\\"unknown_site\\\");\\n        const bounded = readings.slice(0, Math.max(0, limit));\\n        stream.respond({ \\\":status\\\": 200, \\\"content-type\\\": \\\"application/grpc\\\" }, { waitForTrailers: true });\\n        stream.on(\\\"wantTrailers\\\", () => stream.sendTrailers({ \\\"grpc-status\\\": \\\"0\\\" }));\\n        stream.end(frame(encodeReadings(bounded)));\\n        return;\\n      }\\n      fail(stream, 12, \\\"unimplemented\\\");\\n    });\\n  });\\n  return server;\\n}\\n\\nmodule.exports = { createGrpcServer };\\n\",\n  \"test/server.test.js\": \"\\\"use strict\\\";\\n\\n/**\\n * The server's own tests. They speak the wire directly (http2 + frames) on purpose: a test that used\\n * the production client would let a matching bug in both halves pass unnoticed.\\n */\\nconst assert = require(\\\"node:assert/strict\\\");\\nconst http2 = require(\\\"node:http2\\\");\\nconst { after, before, test } = require(\\\"node:test\\\");\\n\\nconst { readingsFor } = require(\\\"../service/data.js\\\");\\nconst { createGrpcServer } = require(\\\"../service/grpc_server.js\\\");\\nconst {\\n  decodeReadings,\\n  decodeReading,\\n  drainFrames,\\n  encodeSiteRequest,\\n  encodeStreamRequest,\\n  frame,\\n} = require(\\\"../service/wire.js\\\");\\n\\nconst SERVICE = \\\"/energy.v1.EnergyService\\\";\\nconst MAX_FRAME_BYTES = 16 * 1024;\\n\\nlet server;\\nlet session;\\n\\nbefore(async () => {\\n  server = createGrpcServer(require(\\\"../service/data.js\\\"));\\n  await new Promise((resolve) => server.listen(0, \\\"127.0.0.1\\\", resolve));\\n  session = http2.connect(`http://127.0.0.1:${String(server.address().port)}`);\\n});\\n\\nafter(async () => {\\n  session.close();\\n  await new Promise((resolve) => server.close(resolve));\\n});\\n\\n/** Send one framed request and collect the framed answer. */\\nfunction call(path, payload, onMessage) {\\n  return new Promise((resolve, reject) => {\\n    const stream = session.request({\\n      \\\":method\\\": \\\"POST\\\",\\n      \\\":path\\\": `${SERVICE}${path}`,\\n      \\\"content-type\\\": \\\"application/grpc\\\",\\n      \\\"te\\\": \\\"trailers\\\",\\n    });\\n    let buffered = Buffer.alloc(0);\\n    const messages = [];\\n    let status = \\\"0\\\";\\n    stream.on(\\\"trailers\\\", (headers) => {\\n      status = String(headers[\\\"grpc-status\\\"] ?? \\\"0\\\");\\n    });\\n    stream.on(\\\"data\\\", (chunk) => {\\n      buffered = Buffer.concat([buffered, chunk]);\\n      const drained = drainFrames(buffered);\\n      buffered = drained.rest;\\n      for (const encoded of drained.messages) {\\n        assert.ok(encoded.length <= MAX_FRAME_BYTES, `frame is ${String(encoded.length)} bytes`);\\n        messages.push(onMessage(encoded));\\n      }\\n    });\\n    stream.on(\\\"error\\\", reject);\\n    stream.on(\\\"end\\\", () => resolve({ messages, status }));\\n    stream.end(frame(payload));\\n  });\\n}\\n\\ntest(\\\"GetReading returns one reading\\\", async () => {\\n  const result = await call(\\\"/GetReading\\\", encodeSiteRequest({ siteId: \\\"site-a\\\" }), decodeReading);\\n  assert.equal(result.status, \\\"0\\\");\\n  assert.deepEqual(result.messages, [{ siteId: \\\"site-a\\\", watts: 4120, atMs: 1762300000000 }]);\\n});\\n\\ntest(\\\"GetReadings returns the bounded batch in source order\\\", async () => {\\n  const result = await call(\\\"/GetReadings\\\", encodeStreamRequest({ siteId: \\\"site-a\\\", limit: 6 }), decodeReadings);\\n  assert.equal(result.status, \\\"0\\\");\\n  assert.equal(result.messages.length, 1);\\n  assert.deepEqual(result.messages[0], readingsFor(\\\"site-a\\\").slice(0, 6));\\n});\\n\\ntest(\\\"an unknown site is grpc-status 5, not an empty batch\\\", async () => {\\n  const result = await call(\\\"/GetReadings\\\", encodeStreamRequest({ siteId: \\\"site-zz\\\", limit: 3 }), (encoded) => encoded);\\n  assert.equal(result.status, \\\"5\\\");\\n});\\n\"\n};\nconst unsubstituted = [\"__INPUT_\", \"DIGEST__\"].join(\"\");\nfor (const [path, content] of Object.entries(files)) {\n  if (String(content).includes(unsubstituted)) throw new Error(`an unsubstituted placeholder reached ${path}`);\n  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }\n  await tools.write({ file_path: path, content });\n}\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-tests",
+              "name": "run_code",
+              "input": {
+                "description": "run the suite file by file",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst result = await shell({ command: \"$failed=@(); Get-ChildItem -Path test -Filter *.test.js | ForEach-Object { node $_.FullName; if ($LASTEXITCODE -ne 0) { $failed += $_.Name } }; if ($failed.Count -gt 0) { throw ('suite failed: ' + ($failed -join ',')) } else { 'suite green' }\", description: \"run the suite\" });\nconst output = typeof result === \"string\" ? result : JSON.stringify(result);\nif (/suite failed/u.test(output)) throw new Error(\"the suite is not green:\\n\" + output.slice(-2000));\nreturn output.slice(-600);"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-commit-server-unary-bat",
+              "name": "run_code",
+              "input": {
+                "description": "commit server: unary batch GetReadings",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"git add -A; git -c user.email=worker@psvr.test -c user.name=worker commit -qm 'server: unary batch GetReadings'\", description: \"commit the work\" });\nconst head = await shell({ command: \"git log -1 --format=%s\", description: \"read the commit subject\" });\nif (!JSON.stringify(head).includes(\"server: unary batch GetReadings\")) throw new Error(\"the commit did not land: \" + JSON.stringify(head).slice(0, 300));\nreturn \"committed: server: unary batch GetReadings\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-park-60",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit",
+                "code": "const deadline = Date.now() + 60000;\nwhile (Date.now() < deadline) { await new Promise((resolve) => setTimeout(resolve, 1000)); }\nreturn \"parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "w-park-60",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit",
+                "code": "const deadline = Date.now() + 60000;\nwhile (Date.now() < deadline) { await new Promise((resolve) => setTimeout(resolve, 1000)); }\nreturn \"parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_PARKED"
+        }
+      ]
+    }
+  ]
+}
