@@ -11,6 +11,7 @@ import type { HostDeploymentFactsPort } from "../common.js";
 import type { ProjectStandard } from "../../domain/standard.js";
 import { definePalimpsestControl } from "../../tools/control_surface.js";
 import { gitTextRunner, planPathReuse, type PathReuseFacts } from "../../work/path_reuse.js";
+import { unseenInputs } from "../../work/unseen_inputs.js";
 
 /** PWRS-A: the durable relay recorder port, re-exported so the factory keeps its existing edges. */
 export type { ExecutionRelayRecorderPort } from "../../work/execution_relay.js";
@@ -299,6 +300,8 @@ export interface WorkApplicationSurface {
       /** True when the world has commits/changes the result commit does not contain. */
       readonly worldMovedAfterResult: boolean;
       readonly resultCommit: string | null;
+      /** PWRS-E: canonical inputs the attempt's base never contained. */
+      readonly inputsNotInBasis: readonly string[];
     }[];
     readonly detail: string;
   }>;
@@ -402,6 +405,8 @@ export interface WorkApplicationSurface {
     /** For `successor`: the retained world and its path-level reuse facts against the current head. */
     readonly retainedWorldPath: string | null;
     readonly reuse: import("../../work/path_reuse.js").PathReuseFacts | null;
+    /** PWRS-E: project inputs the attempt's base never contained; successor requires acknowledgement. */
+    readonly inputsNotInBasis: readonly string[];
     /** For `successor`: the task state after the scheduler tick, so the caller knows what to do next. */
     readonly taskState: string | null;
   }>;
@@ -634,6 +639,8 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
             resultCommit = null;
           }
           const historical = ["COMPLETED", "FAILED", "CANCELLED", "EXPIRED", "STALE"].includes(attempt.state);
+          const baseCommit = deps.controller.attemptWorkRecord(attempt.attempt_id)?.envelope?.base_commit ?? "";
+          const repositoryPath = deps.controller.effects.git.repository;
           return {
             taskId: attempt.task_id,
             state: attempt.state,
@@ -646,6 +653,10 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
             worldHead,
             worldMovedAfterResult: historical && (dirty || resultCommit === null || worldHead !== resultCommit),
             resultCommit,
+            inputsNotInBasis:
+              baseCommit === "" || repositoryPath === undefined
+                ? Object.freeze([] as string[])
+                : unseenInputs({ repository: repositoryPath, baseCommit }),
           };
         });
         return {
@@ -896,6 +907,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           attribution: null,
           retainedWorldPath: null,
           reuse: null,
+          inputsNotInBasis: Object.freeze([]),
           taskState: null,
         });
         if (running.length === 0) {
@@ -976,6 +988,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
               attribution: settled.attribution,
               retainedWorldPath: null,
               reuse: null,
+              inputsNotInBasis: settled.inputsNotInBasis,
               taskState: null,
             };
           } catch (error) {
@@ -987,7 +1000,26 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
          * SUCCESSOR: close the unobserved/unconfirmed attempt and hand back the retained world's
          * path-level reuse facts. The next `delegate` opens a NEW attempt in a NEW world at the same
          * basis, so no second process is ever pointed at the old world.
+         *
+         * PWRS-E: a successor is a NEW basis decision, so it is held to the same unseen-input fact as
+         * a settlement. The caller must acknowledge the paths first; the acknowledgement is a
+         * declaration, not a content judgement.
          */
+        const baseCommit = deps.controller.attemptWorkRecord(attemptId)?.envelope?.base_commit ?? "";
+        const repositoryPath = deps.controller.effects.git.repository;
+        const unseen =
+          baseCommit === "" || repositoryPath === undefined
+            ? Object.freeze([] as string[])
+            : unseenInputs({ repository: repositoryPath, baseCommit });
+        if (unseen.length > 0 && input.acknowledgeInputs !== true) {
+          return {
+            ...refused(
+              `INPUTS_CHANGED_SINCE_BASIS: the project holds inputs this attempt's base never contained: ${unseen.join(", ")} — ` +
+                "read them first; if a new attempt should proceed on that basis, call again with acknowledgeInputs=true",
+            ),
+            inputsNotInBasis: unseen,
+          };
+        }
         const retained = relaySourceFacts(deps.controller, attemptId);
         try {
           deps.controller.report(attemptId, {
@@ -1039,6 +1071,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           attribution: null,
           retainedWorldPath: retained.worldPath,
           reuse: retained.facts,
+          inputsNotInBasis: unseen,
           taskState,
         };
       },

@@ -143,6 +143,7 @@ type RelayResult = {
   attribution: { attribution: string; executor: string; settledBy: string; independenceEligible: boolean; liveness: string } | null;
   retainedWorldPath: string | null;
   reuse: { unaffectedPaths: string[]; conflictedPaths: string[]; alreadyPresentPaths: string[] } | null;
+  inputsNotInBasis: readonly string[];
   taskState: string | null;
 };
 
@@ -468,6 +469,39 @@ describe("PWRS real Work paths", () => {
     expect(attempt?.worldState).toBe("HISTORICAL");
     expect(attempt?.worldMovedAfterResult).toBe(true);
     expect(attempt?.resultCommit).toMatch(/^[0-9a-f]{40}$/u);
+  });
+
+  it("requires the same input acknowledgement before starting a successor on a moved basis", async () => {
+    const { repo, head, stateDir } = workspace("successor-inputs");
+    const installed = install(repo, stateDir);
+    await start(installed, head);
+    await runningAttempt(installed);
+    mkdirSync(join(repo, "inbox"), { recursive: true });
+    writeFileSync(join(repo, "inbox", "measured.md"), "# Measured corridor\n\n700 mm.\n");
+
+    const workers = (await call(installed, "palimpsest_work", { action: "workers" })) as unknown as {
+      attempts: Array<{ taskId: string | null; inputsNotInBasis?: string[] }>;
+    };
+    expect(workers.attempts.find((entry) => entry.taskId === "package")?.inputsNotInBasis).toContain("inbox/measured.md");
+
+    const refused = (await call(installed, "palimpsest_work", {
+      action: "relay",
+      taskId: "package",
+      relayRoute: "successor",
+    })) as unknown as RelayResult;
+    expect(refused.state).toBe("REFUSED");
+    expect(refused.detail).toMatch(/INPUTS_CHANGED_SINCE_BASIS|inbox\/measured\.md/u);
+    expect(refused.inputsNotInBasis).toContain("inbox/measured.md");
+
+    const successor = (await call(installed, "palimpsest_work", {
+      action: "relay",
+      taskId: "package",
+      relayRoute: "successor",
+      acknowledgeInputs: true,
+    })) as unknown as RelayResult;
+    expect(successor.state).toBe("SUCCESSOR_READY");
+    expect(successor.taskState).toBe("READY");
+    expect(successor.inputsNotInBasis).toContain("inbox/measured.md");
   });
 
   it("refuses any settlement while this host still observes the invocation as OPEN", async () => {

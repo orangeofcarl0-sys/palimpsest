@@ -1,0 +1,36 @@
+{
+  "schema": "alhs-cohort/v1",
+  "cohortId": "pwrs-r3-2026-11-05",
+  "title": "PWRS-R3 — governed recovery with the successor input acknowledgement",
+  "codeFreeze": "",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 25000000,
+  "conditions": {
+    "A": {
+      "profile": "palimpsest-governed",
+      "definition": "Governed Palimpsest recovery with PWRS-D/E: a principal settlement AND a successor both refuse while the canonical tree holds inputs the attempt's base never contained, until the caller acknowledges them. The prompt names neither the gate nor the route."
+    }
+  },
+  "stages": [
+    {
+      "id": "pwrs-r3",
+      "conditions": ["A"],
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 5000000,
+      "sessionPlan": [
+        { "sessionId": "A-1", "condition": "A", "index": 1, "ceiling": 2500000, "reserveTokens": 125000, "killAtTokens": 400000 },
+        { "sessionId": "A-2", "condition": "A", "index": 2, "ceiling": 2500000, "reserveTokens": 125000 }
+      ]
+    }
+  ],
+  "measurement": {
+    "business": "7-fact package rubric, unchanged.",
+    "gate": "the measured input is an untracked file under inbox/. Both takeover/complete and successor must report INPUTS_CHANGED_SINCE_BASIS until acknowledgeInputs=true.",
+    "continuation": "did the principal acknowledge the listed paths, and did the resulting attempt settle within budget (candidate + episode) rather than remain RUNNING?",
+    "governance": "relay records, task/attempt states, candidate commit, episode intent.",
+    "reuse": "line overlap where a draft exists."
+  },
+  "comparison": "Descriptive comparison with PWRS-R2 (same scenario, same budget, pre-successor-gate). One pair; no quality or cost advantage claim.",
+  "note": "Minimal retest of the successor half of the PWRS-E repair."
+}
