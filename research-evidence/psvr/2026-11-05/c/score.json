@@ -1,0 +1,309 @@
+{
+  "schema": "psvr-c-score/v1",
+  "cohortId": "psvr-c-2026-11",
+  "scoredAt": "2026-11-05T13:38:59.555Z",
+  "scenario": "grpc-migration",
+  "conditions": {
+    "F": {
+      "baseHead": "4121a0bc11edfa935381ba5f361647cd0631db94",
+      "sessions": [
+        {
+          "sessionId": "F-1",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T13:23:07.538Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 497542,
+            "sessionFiles": 1,
+            "state": "RUNNING"
+          },
+          "killedBy": "token_milestone",
+          "natural": false,
+          "injectedAt": "2026-11-05T13:20:48.022Z",
+          "started": true
+        },
+        {
+          "sessionId": "F-2",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T13:28:00.126Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 1548663,
+            "sessionFiles": 1,
+            "state": "RUNNING"
+          },
+          "killedBy": null,
+          "natural": true,
+          "injectedAt": null,
+          "started": true
+        }
+      ],
+      "canonical": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\F",
+        "head": "930d9c53148f48ff847e506be9d27cffc403e554",
+        "status": "",
+        "log": [
+          "930d9c5 Migrate site readings service to gRPC",
+          "4121a0b scenario base: REST service"
+        ],
+        "facts": {
+          "protoDeclaresStreaming": true,
+          "serverPresent": true,
+          "clientStreamsPerMessage": true,
+          "integrationPresent": true,
+          "suiteGreen": true,
+          "committed": true,
+          "restPreserved": true,
+          "inputArrived": true
+        },
+        "rubric": [
+          {
+            "fact": 1,
+            "passed": true
+          },
+          {
+            "fact": 2,
+            "passed": true
+          },
+          {
+            "fact": 3,
+            "passed": true
+          },
+          {
+            "fact": 4,
+            "passed": true
+          },
+          {
+            "fact": 5,
+            "passed": true
+          },
+          {
+            "fact": 6,
+            "passed": true
+          },
+          {
+            "fact": 7,
+            "passed": true
+          }
+        ],
+        "score": 7,
+        "suite": {
+          "tests": 16,
+          "pass": 16,
+          "fail": 0,
+          "error": null
+        }
+      },
+      "retained": [],
+      "best": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\F",
+        "score": 7,
+        "facts": {
+          "protoDeclaresStreaming": true,
+          "serverPresent": true,
+          "clientStreamsPerMessage": true,
+          "integrationPresent": true,
+          "suiteGreen": true,
+          "committed": true,
+          "restPreserved": true,
+          "inputArrived": true
+        },
+        "suite": {
+          "tests": 16,
+          "pass": 16,
+          "fail": 0,
+          "error": null
+        }
+      }
+    },
+    "A": {
+      "baseHead": "4121a0bc11edfa935381ba5f361647cd0631db94",
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T13:30:53.558Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 421118,
+            "sessionFiles": 1,
+            "state": "RUNNING"
+          },
+          "killedBy": "token_milestone",
+          "natural": false,
+          "injectedAt": "2026-11-05T13:29:01.571Z",
+          "started": true
+        },
+        {
+          "sessionId": "A-2",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T13:35:05.543Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 2384653,
+            "sessionFiles": 2,
+            "state": "STOPPED"
+          },
+          "killedBy": null,
+          "natural": false,
+          "injectedAt": null,
+          "started": true
+        }
+      ],
+      "canonical": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\A",
+        "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+        "status": "",
+        "log": [
+          "453aa7f Migrate site readings service to gRPC",
+          "4121a0b scenario base: REST service"
+        ],
+        "facts": {
+          "protoDeclaresStreaming": true,
+          "serverPresent": true,
+          "clientStreamsPerMessage": true,
+          "integrationPresent": true,
+          "suiteGreen": true,
+          "committed": true,
+          "restPreserved": true,
+          "inputArrived": true
+        },
+        "rubric": [
+          {
+            "fact": 1,
+            "passed": true
+          },
+          {
+            "fact": 2,
+            "passed": true
+          },
+          {
+            "fact": 3,
+            "passed": true
+          },
+          {
+            "fact": 4,
+            "passed": true
+          },
+          {
+            "fact": 5,
+            "passed": true
+          },
+          {
+            "fact": 6,
+            "passed": true
+          },
+          {
+            "fact": 7,
+            "passed": true
+          }
+        ],
+        "score": 7,
+        "suite": {
+          "tests": 26,
+          "pass": 26,
+          "fail": 0,
+          "error": null
+        }
+      },
+      "retained": [
+        {
+          "name": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+          "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\A\\.palimpsest\\worlds\\attempt-94bcc7ae85e75141e064397cfa1186e6",
+          "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "status": "",
+          "log": [
+            "453aa7f Migrate site readings service to gRPC",
+            "4121a0b scenario base: REST service"
+          ],
+          "facts": {
+            "protoDeclaresStreaming": true,
+            "serverPresent": true,
+            "clientStreamsPerMessage": true,
+            "integrationPresent": true,
+            "suiteGreen": true,
+            "committed": true,
+            "restPreserved": true,
+            "inputArrived": true
+          },
+          "rubric": [
+            {
+              "fact": 1,
+              "passed": true
+            },
+            {
+              "fact": 2,
+              "passed": true
+            },
+            {
+              "fact": 3,
+              "passed": true
+            },
+            {
+              "fact": 4,
+              "passed": true
+            },
+            {
+              "fact": 5,
+              "passed": true
+            },
+            {
+              "fact": 6,
+              "passed": true
+            },
+            {
+              "fact": 7,
+              "passed": true
+            }
+          ],
+          "score": 7,
+          "suite": {
+            "tests": 26,
+            "pass": 26,
+            "fail": 0,
+            "error": null
+          }
+        }
+      ],
+      "best": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\A",
+        "score": 7,
+        "facts": {
+          "protoDeclaresStreaming": true,
+          "serverPresent": true,
+          "clientStreamsPerMessage": true,
+          "integrationPresent": true,
+          "suiteGreen": true,
+          "committed": true,
+          "restPreserved": true,
+          "inputArrived": true
+        },
+        "suite": {
+          "tests": 26,
+          "pass": 26,
+          "fail": 0,
+          "error": null
+        }
+      }
+    }
+  },
+  "comparison": {
+    "rubric": {
+      "F": 7,
+      "A": 7
+    },
+    "tokens": {
+      "F": 2046205,
+      "A": 2805771
+    },
+    "note": "One pair per condition; descriptive. A rubric fact is presence, not quality."
+  }
+}

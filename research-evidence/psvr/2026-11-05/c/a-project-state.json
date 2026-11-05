@@ -1,0 +1,61 @@
+{
+  "tasks": [
+    {
+      "task_id": "grpc-contract",
+      "state": "ACTIVE"
+    },
+    {
+      "task_id": "grpc-service",
+      "state": "BLOCKED"
+    },
+    {
+      "task_id": "verify-migration",
+      "state": "BLOCKED"
+    }
+  ],
+  "attempts": [
+    {
+      "attempt_id": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+      "task_id": "grpc-contract",
+      "state": "RUNNING"
+    }
+  ],
+  "events": [
+    {
+      "event_type": "ATTEMPT_CREATED",
+      "c": 1
+    },
+    {
+      "event_type": "ATTEMPT_STARTED",
+      "c": 1
+    },
+    {
+      "event_type": "CONTEXT_MANIFEST_ADDED",
+      "c": 1
+    },
+    {
+      "event_type": "GATE_DEFINED",
+      "c": 1
+    },
+    {
+      "event_type": "PROJECT_CREATED",
+      "c": 1
+    },
+    {
+      "event_type": "ROLE_TABLE_DEFINED",
+      "c": 1
+    },
+    {
+      "event_type": "STAGE_GRAPH_DEFINED",
+      "c": 1
+    },
+    {
+      "event_type": "TASK_CREATED",
+      "c": 3
+    },
+    {
+      "event_type": "TASK_STARTED",
+      "c": 1
+    }
+  ]
+}
