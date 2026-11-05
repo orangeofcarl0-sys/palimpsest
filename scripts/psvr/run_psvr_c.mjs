@@ -144,7 +144,7 @@ const plan = {
   cohortId: cohort.cohortId,
   stage: STAGE_ID,
   provider: cohort.provider,
-  scenarios: scenarios.map((scenario) => scenario.id),
+  scenarios: [stage.scenario ?? scenarios[0]?.id ?? null].filter((id) => id !== null),
   sessions,
   aggregateCeiling: stage.aggregateCeiling,
   plannedCeiling: sessions.length * stage.sessionCeiling,
@@ -207,7 +207,12 @@ if (!existsSync(ADAPTER)) fail(3, [`ADAPTER_NOT_FOUND: ${ADAPTER}`], { authoriza
 
 // ── execute exactly one session through the named adapter ──────────────────────────────────────
 
-const sessionIndex = Math.max(0, Math.min(sessions.length - 1, Number(args.get("sessionIndex") ?? 0)));
+const requestedSession = args.get("session") === undefined ? null : String(args.get("session"));
+const sessionIndex =
+  requestedSession === null
+    ? Math.max(0, Math.min(sessions.length - 1, Number(args.get("sessionIndex") ?? 0)))
+    : sessions.findIndex((entry) => entry.sessionId === requestedSession);
+if (sessionIndex < 0) fail(2, [`the stage has no session "${String(requestedSession)}"`], { plan: planPath });
 const session = sessions[sessionIndex];
 const child = spawn(process.execPath, [ADAPTER, `--cohort=${COHORT_PATH}`, `--stage=${STAGE_ID}`, `--session=${session.sessionId}`], {
   stdio: "inherit",

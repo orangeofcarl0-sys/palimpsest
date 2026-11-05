@@ -1,0 +1,102 @@
+{
+  "schema": "alhs-core-prep/v1",
+  "cohortId": "psvr-c-2026-11",
+  "stage": "psvr-c",
+  "codeFreeze": "00e9df4dc866298971ee3591b13d6208639a66d9",
+  "mode": "PSVR_C_REAL_MODEL",
+  "conditions": [
+    "F",
+    "A"
+  ],
+  "goal": "Migrate the site readings service in this repository from REST to gRPC, preserving the behaviour the dispatch console relies on. Update the implementation and the integration tests. Deliver a runnable, reviewable migration. Do not claim a successful integration without running it.",
+  "scenario": "grpc-migration",
+  "worlds": {
+    "F": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\F",
+    "A": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\A"
+  },
+  "heads": {
+    "F": "4121a0bc11edfa935381ba5f361647cd0631db94",
+    "A": "4121a0bc11edfa935381ba5f361647cd0631db94"
+  },
+  "states": {
+    "F": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\state-F",
+    "A": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\state-A"
+  },
+  "constraint": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\constraint.md",
+  "sessions": [
+    {
+      "id": "F-1",
+      "condition": "F",
+      "index": 1,
+      "prompt": "F",
+      "injectAtMs": 60000,
+      "killAfterMs": 3600000,
+      "killAtTokens": 400000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\F",
+      "state": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\state-F",
+      "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\home-F-1",
+      "promptPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\prompts\\F.txt",
+      "out": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\out\\F-1",
+      "injectionRel": "updates/2026-11-03/compat-streaming.md"
+    },
+    {
+      "id": "F-2",
+      "condition": "F",
+      "index": 2,
+      "prompt": "F2",
+      "injectAtMs": null,
+      "killAfterMs": 3600000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\F",
+      "state": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\state-F",
+      "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\home-F-2",
+      "promptPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\prompts\\F2.txt",
+      "out": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\out\\F-2",
+      "injectionRel": "updates/2026-11-03/compat-streaming.md"
+    },
+    {
+      "id": "A-1",
+      "condition": "A",
+      "index": 1,
+      "prompt": "A",
+      "injectAtMs": 60000,
+      "killAfterMs": 3600000,
+      "killAtTokens": 400000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\A",
+      "state": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\state-A",
+      "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\home-A-1",
+      "promptPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\prompts\\A.txt",
+      "out": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\out\\A-1",
+      "injectionRel": "updates/2026-11-03/compat-streaming.md"
+    },
+    {
+      "id": "A-2",
+      "condition": "A",
+      "index": 2,
+      "prompt": "A2",
+      "injectAtMs": null,
+      "killAfterMs": 3600000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\A",
+      "state": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\state-A",
+      "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\home-A-2",
+      "promptPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\prompts\\A2.txt",
+      "out": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\out\\A-2",
+      "injectionRel": "updates/2026-11-03/compat-streaming.md"
+    }
+  ],
+  "budget": {
+    "perSession": 2500000,
+    "reserve": 125000,
+    "killAtTokens": 400000,
+    "aggregate": 12000000,
+    "sessions": 4
+  },
+  "note": "PSVR-C software scenario. F is native DSH with ONE finish-and-commit instruction. A is the adaptive product path with no pre-seeded project and no task graph in the prompt. The compatibility fact arrives at T+60s as an UNTRACKED file; no prompt names the streaming requirement, the product's readiness, finalize or any recovery route."
+}

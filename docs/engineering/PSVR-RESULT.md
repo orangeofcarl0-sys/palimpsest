@@ -1,10 +1,9 @@
 # PSVR — Project Synthesis Value Realization
 
-Status: **PSVR-0, -A and -B implemented and executed on the real Windows DSH host; PSVR-C
-pre-registered and fail-closed.** No paid model session was started: the PSVR prompt authorizes none
-by itself, and none was requested. Every agent in the two project runs is a **labelled deterministic
-Messages stand-in**; the host, workers, Git, execution worlds, context delivery, Work, Scheduler,
-Promotion and verification are real.
+Status: **PSVR-0, -A, -B and -C executed.** A and B ran on the real Windows DSH host with a labelled
+deterministic stand-in for model content; **C ran real deepseek-flash sessions** under the owner's
+authorization (4,851,976 tokens of 12,000,000). The host, workers, Git, execution worlds, context
+delivery, Work, Scheduler, Promotion and verification are real throughout.
 
 Evidence: `research-evidence/psvr/2026-11-05/`.
 Attribution detail: `docs/engineering/PSVR-0-ATTRIBUTION.md`.
@@ -118,12 +117,12 @@ artifact" chain, recorded in real files and real commits.
 
 | Q | Question | Verdict |
 |---|---|---|
-| Q1 | Can agents organise real cooperation without a preset governance topology? | **Not with a model.** The stand-in principals delegated a fixed three-task plan. The product's formal path admits **one RUNNING attempt per project**, so the three tasks ran sequentially with operator acceptance between them; parallelism existed only inside a worker's own session. |
+| Q1 | Can agents organise real cooperation without a preset governance topology? | **Partly, and not to completion.** With no project pre-seeded, the real A model started a governed project in session 2 (`palimpsest_start` ×2, `plan`, `delegate`, `relay`, `complete` ×1) — but left 3 tasks and a RUNNING attempt unresolved. The formal path also admits one RUNNING attempt per project, so the deterministic runs were sequential. |
 | Q2 | Do contributions change each other and improve consistency? | **Yes on the deterministic host.** B's commercial task rewrote A's selection and every downstream number; the checker proves the agreement. Whether a model would do it is untested. |
 | Q3 | Do persistent assets reduce rework across sessions/workers? | **Partly.** The contract's proto/codec survived and were revised rather than rewritten; the partial server's unary handler survived. In PSVR-A the *successor* rewrote the server file as a whole (the stand-in's script), so the measured reuse is at the file-selection level, not line level. |
 | Q4 | Does current reality change execution naturally? | **Yes.** The untracked note/survey arrived after the basis, reached the next attempt through the compiled context, and changed the artifacts; settlement required the acknowledgement. |
-| Q5 | Do results reach delivery/acceptance/resumability at reasonable cost? | **Yes, mechanically.** Three promotions per scenario, each verified and head-reconciled; episodes ended with DELIVER. Cost is not measurable without a model. |
-| Q6 | Net value vs F+Finish+Commit? | **Not established.** No paid comparison was authorized or run. |
+| Q5 | Do results reach delivery/acceptance/resumability at reasonable cost? | **Mechanically yes, in the deterministic runs.** Three promotions per scenario, verified and head-reconciled, episodes ended with DELIVER. In the real A run the work was committed but the project reached no settlement, acceptance or episode conclusion before the budget stop. |
+| Q6 | Net value vs F+Finish+Commit? | **No advantage in this pair.** Both reached 7/7; F used 2,046,205 tokens and ended naturally, A used 2,805,771 (1.37×) and was budget-stopped with the project unsettled (§8). |
 | Q7 | Which mechanisms should stay core, be on-demand, or be simplified? | See §6. |
 
 ## 5. Tests
@@ -173,10 +172,11 @@ What the runs exposed as friction:
 
 ## 7. Negative results and honest limits
 
-- **No model was involved.** Every agent action is a labelled deterministic stand-in; the prompt was
-  written by the experimenter, and the artifacts are the scripted actor's output. This proves the
-  host/product path, not model judgement.
-- **The 7-fact/quality question is untouched.** There is no comparison with F+Finish+Commit.
+- **A and B used a labelled stand-in.** Every agent action in the two project runs is a deterministic
+  stand-in; those runs prove the host/product path, not model judgement. C is the only real-model
+  evidence in this stage, and it is one pair per condition.
+- **One pair per condition, one scenario.** C compares F and A on the software migration only; the
+  cross-domain scenario is pre-registered as a separate stage and was not run.
 - **PSVR-A's successor commit cites an empty digest.** The stand-in wrote
   `// Compatibility basis: … (sha256 )`: the mock's digest substitution did not reach the nested
   pull result. The pull itself is proven by the worker's guard (`returns (stream Reading)` must be
@@ -190,19 +190,73 @@ What the runs exposed as friction:
 - **The scenario fixtures are small.** They are runnable and their checks are real, but they are not
   production systems.
 
-## 8. PSVR-C — pre-registration and the fail-closed gate
+## 8. PSVR-C — the authorized real-model cohort
 
-`research-evidence/psvr/live/cohort-psvr-c.json` pre-registers four hypotheses with null results and
-observables, the F/A/G conditions, two interruption controls (matched token, matched work state), the
-15 metrics and the statement separation. `scripts/psvr/run_psvr_c.mjs`:
+Pre-registered in `research-evidence/psvr/live/cohort-psvr-c.json` (software scenario, F and A, two
+sessions each), authorized in `authorization-psvr-c.json` (12,000,000 aggregate, 2,500,000 per
+session, 125,000 reserve), and run through the fail-closed gate on 2026-11-05.
 
-- without `--execute`: validates the cohort and writes a plan with **`modelCalls: 0`**, exit 0;
-- `--execute` without a `psvr-spend-authorization/v1`: `BLOCKED.json`, exit **2**, modelCalls 0;
-- an ALHS/ODPE-R authorization is rejected by schema;
-- a valid authorization without an adapter: `ADAPTER_NOT_CONFIGURED`, exit **3**, modelCalls 0;
-- only a valid authorization plus a named adapter spawns one session.
+### 8.1 Execution
 
-The gate was exercised in all four states. The ALHS/ODPE-R authorizations do not transfer.
+| Session | Tokens | End | Left behind |
+|---|---:|---|---|
+| F-1 | 497,542 | killed at the 400k milestone | no commit; 6 files written in the worktree |
+| F-2 | 1,548,663 | **natural exit 0** | commit `930d9c5`, 16/16 tests |
+| A-1 | 421,118 | killed at the 400k milestone | no commit; no product action |
+| A-2 | 2,384,653 | **budget-stopped** (`stopped: true`) | commit `453aa7f`, 26/26 tests; project left ACTIVE with a RUNNING attempt |
+
+Aggregate **4,851,976 / 12,000,000**; four sessions, no retries.
+
+### 8.2 What each condition produced
+
+Both conditions delivered a runnable migration and **both reach 7/7** on the scenario's mechanical
+rubric:
+
+| Fact | F | A |
+|---|---|---|
+| `StreamReadings … returns (stream Reading)` | yes | yes |
+| gRPC server present | yes | yes |
+| client consumes frames incrementally | callback per frame | `for await` over frames |
+| integration test present | yes | yes |
+| suite green | 16/16 | 26/26 |
+| committed | `930d9c5` | `453aa7f` |
+| REST baseline still present | yes | yes |
+
+The difference is **cost and convergence**, not the artifact:
+
+- F cost **2,046,205** tokens and **ended naturally** on its finish instruction.
+- A cost **2,805,771** tokens (1.37×) and was **stopped by its budget guard**. It had already
+  committed the migration, but the project it created was left with `grpc-contract` ACTIVE,
+  `grpc-service` and `verify-migration` BLOCKED, one attempt RUNNING, and no settlement,
+  promotion or episode conclusion.
+
+### 8.3 Adoption, at tool level
+
+A-1 used **no product calls at all** (21 calls: reads, writes, shell). A-2 then called
+`palimpsest_start` twice, `plan`, `delegate`, `relay`, `results`, `status`, `workers` and
+`complete` once — but **never `readiness` and never `finalize`**, and never accepted or promoted
+anything. The ODPE-B finalization path, the one mechanism built for exactly this "correct work, no
+settlement" shape, was not used by the real model.
+
+### 8.4 What this pair supports
+
+- **H1 (continuity reduces re-investigation): not supported.** F re-read 9 paths in session 2 that it
+  had read in session 1 (29 → 11 reads); A re-read none of its 7 session-1 paths (7 → 18). The
+  absolute numbers reflect different progress, not a continuity benefit.
+- **H2 (continuation preserves valid work): not separable here.** Both sessions produced their
+  commit in session 2; neither condition had a committed artifact to inherit at the interruption.
+- **H3 (on-demand governance cheaper than governed): not testable in this cohort** (G was not run).
+- **H4 (governed path reduces inconsistent artifacts): not supported.** Both artifacts pass the same
+  mechanical rubric; A's extra governance added tests, not consistency.
+- **Q6: no net value advantage for A in this pair.** F is cheaper and converges; A leaves the project
+  unsettled. One pair per condition, descriptive only.
+
+### 8.5 The fail-closed gate
+
+`scripts/psvr/run_psvr_c.mjs` was exercised in all four states: plan-only (`modelCalls: 0`, exit 0);
+`--execute` without an authorization (exit 2); an ALHS/ODPE-R authorization (schema mismatch, exit 2);
+a valid authorization without an adapter (`ADAPTER_NOT_CONFIGURED`, exit 3). Only the authorized run
+with a named adapter started a session.
 
 ## 9. Git
 

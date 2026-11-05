@@ -131,7 +131,7 @@ const injectionTimer =
   session.injectAtMs === null
     ? null
     : setTimeout(() => {
-        const path = join(world, "inbox", "2026-11-03", "corridor-measurement.md");
+        const path = join(world, String(session.injectionRel ?? "inbox/2026-11-03/corridor-measurement.md"));
         mkdirSync(join(path, ".."), { recursive: true });
         writeFileSync(path, readFileSync(core.constraint, "utf8"));
         injectedAt = new Date().toISOString();
