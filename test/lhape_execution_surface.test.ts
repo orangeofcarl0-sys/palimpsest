@@ -264,12 +264,23 @@ describe("LHAPE-A: the product surface runs independent workers concurrently", (
     expect(observed.attempts.find((attempt) => attempt.taskId === "capacity")!.hostObserved).toBe(false);
 
     /**
-     * A NEW host (here: the job is terminal, so no active worker) settles from the WORLD. The
-     * committed work survives the failed host process, and no ATTEMPT_FAILED was ever fabricated.
+     * The job is terminal, so no active worker is observed — but THIS host's last invocation ended
+     * without a confirmed process exit. A stop REQUEST is not a stopped process, so a principal
+     * settlement must not silently treat the world as quiescent. The legal recovery path is a
+     * declared takeover: the committed work survives, and the product records DECLARED_ABANDONED
+     * (never OBSERVED_EXIT), which is not eligible as independent verification.
      */
-    const recovered = await surface.completeTask({ taskId: "capacity" });
-    expect(recovered.state).toBe("SETTLED");
+    const recovered = await surface.relay({
+      taskId: "capacity",
+      route: "takeover",
+      declareExecutorAbandoned: true,
+      summary: "settle the committed world after the failed host process",
+    });
+    expect(recovered.state).toBe("TAKEOVER_SETTLED");
     expect(recovered.resultCommit).toMatch(/^[0-9a-f]{40}$/u);
+    expect(recovered.attribution?.attribution).toBe("PRINCIPAL_RECOVERY");
+    expect(recovered.attribution?.liveness).toBe("DECLARED_ABANDONED");
+    expect(recovered.attribution?.independenceEligible).toBe(false);
     expect(installed.controller.attemptWorkRecord(attemptId)?.state).toBe("COMPLETED");
     expect(git(repo, ["rev-parse", "HEAD"])).toBe(head);
   });

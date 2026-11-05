@@ -52,7 +52,7 @@ import {
 import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
-import { makeMutatingAttemptService, makeExecutionInvocationLedger, unseenInputs } from "../work/attempt_execution.js";
+import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
 import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
@@ -771,6 +771,17 @@ export class ProjectController {
           })),
         };
       },
+      projectInputs: (attemptId: string) => {
+        const record = this.attemptWorkRecord(attemptId);
+        const baseCommit = record?.envelope?.base_commit;
+        const repository = this.effects.git.repository;
+        // No canonical repository ⇒ this deployment has no repository observation to offer; the
+        // manifest reports NOT_CONFIGURED rather than a fabricated empty set.
+        if (baseCommit === undefined || baseCommit === "" || repository === undefined || repository === "") return null;
+        return observeProjectInputs({ repository, baseCommit });
+      },
+      readProjectInput: (input: { readonly path: string; readonly content: "WORKTREE" | "COMMIT" | "ABSENT"; readonly revision: string; readonly expectedDigest?: string | undefined }) =>
+        readProjectInput({ repository: this.effects.git.repository ?? "", ...input }),
       projectGoal: () => this.work.project().goal,
       requirementStatements: () => this.work.project().requirements.map((entry) => entry.statement),
       decisionStatements: () => this.work.project().decisions.map((entry) => entry.statement),
@@ -979,8 +990,8 @@ export class ProjectController {
       observeAttemptResult: (attemptId: string, baseCommit: string) => this.#observeAttemptResultSync(attemptId, baseCommit),
       /** PWRS-A: the host's own invocation windows for one attempt. Non-durable observation memory. */
       executionInvocations: (attemptId: string) => this.executionInvocations.list(attemptId),
-      /** PWRS-D: project paths the attempt's base never contained. */
-      inputsNotInBasis: (baseCommit: string) => unseenInputs({ repository: this.#canonicalRepository(), baseCommit }),
+      /** ODPE-A: what the project holds now that the attempt's base never contained. */
+      projectInputs: (baseCommit: string) => observeProjectInputs({ repository: this.#canonicalRepository(), baseCommit }),
       exportResultCommit: async ({ attemptId, commit }) => {
         const port = this.#executionWorldPort;
         if (port === undefined) return { imported: false, detail: "no execution world port is composed" };
@@ -3028,24 +3039,18 @@ export class ProjectController {
    * scaffolding, and a naive `git status --porcelain` would let the product deadlock on its own state
    * directory.
    */
-  #observeCanonicalMutationBasis(repository: string): { readonly unownedPaths: readonly string[] } {
-    const unownedPaths = execFileSync("git", ["status", "--porcelain"], { cwd: repository, encoding: "utf8" })
-      .split(String.fromCharCode(10))
-      .filter((line: string) => line.trim() !== "")
-      .map((line: string) => line.slice(3).trim())
-      .filter((path: string) => !path.startsWith(".palimpsest/"));
-    return Object.freeze({ unownedPaths: Object.freeze(unownedPaths) });
-  }
 
-  /**
-   * Unowned project changes must be zero before an attempt exists (§E.7).
-   */
+
   #assertNoUnownedWork(repository: string): void {
-    const unowned = this.#observeCanonicalMutationBasis(repository).unownedPaths;
+    const unowned = canonicalWorktreeChanges(repository);
+    if (unowned === null) throw new DomainValidationError("the canonical working tree could not be observed, so managed work does not begin on an unknown tree");
     if (unowned.length === 0) return;
-    throw new DomainValidationError(
-      `the working tree already has changes that belong to no attempt: ${unowned.join(", ")} — deal with them before managed work begins, or the product cannot prove which changes belong to this task`,
-    );
+    // In-place work edits the live tree, so an unowned change cannot be separated from the result.
+    if (this.execution === "in-place") throw new DomainValidationError(`the working tree already has changes that belong to no attempt: ${unowned.join(", ")} — deal with them before managed work begins, or the product cannot prove which changes belong to this task`);
+    const writeScopes = this.work.project().tasks.flatMap((task) => task.write_paths);
+    const verdict = assessCanonicalInputs({ repository, headCommit: this.#observedHead(repository), unownedPaths: unowned, writeScopes });
+    if (verdict.state === "COVERED") return;
+    throw new DomainValidationError(verdict.detail);
   }
 
   /**

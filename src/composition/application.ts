@@ -18,8 +18,8 @@ import type { DelegationService } from "../interaction/delegation.js";
 import type { ContributionService } from "../project_contribution/index.js";
 import type { ProjectPulseService } from "../project_pulse/index.js";
 import type { PalimpsestApplicationSurface } from "../application/surface.js";
+import type { ResultContinuationFace, WorkDelegationFace } from "../application/work_contract.js";
 import { makePalimpsestApplicationSurface } from "../application/surface.js";
-import type { ResultContinuationFace, WorkDelegationFace } from "../application/surfaces/work.js";
 import { defineApplicationTools } from "../tools/application_tools.js";
 import { defineNormalWorkTool } from "../adapters/dsh/normal.js";
 import { applyToolProfile } from "../adapters/dsh/tool_profile.js";
@@ -58,7 +58,7 @@ export interface ApplicationAssemblyInput {
   /** LHAPE-B: the existing packaged result-continuation authority. */
   readonly continuation?: ResultContinuationFace | undefined;
   /** PWRS-A: the durable execution-relay recorder, shared with the delegation transport. */
-  readonly executionRelay?: import("./execution_relay.js").ExecutionRelayRecorder | undefined;
+  readonly executionRelay?: import("./continuity.js").ExecutionRelayRecorder | undefined;
   /** Exactly the option fields the assembly reads. */
   readonly assemblyOptions: ApplicationAssemblyOptions;
 }

@@ -57,6 +57,8 @@ import {
 } from "../context/index.js";
 import { compileContextRequirement } from "../context/requirement.js";
 import { compilePriorResultContext, type PriorResultContext } from "../context/prior_result.js";
+import type { ContextInputBinding } from "./manifest.js";
+import type { ProjectInputBody, ProjectInputObservation } from "../work/unseen_inputs.js";
 import {
   PROOF_HANDLE_PREFIX,
   REASONING_HANDLE_PREFIX,
@@ -220,6 +222,10 @@ export interface WorkWorkerAttemptContext {
     readonly boot: readonly Readonly<{ handle: string; kind: string; ref: string; bytes: number }>[];
     readonly handles: readonly Readonly<{ handle: string; kind: string; ref: string }>[];
     readonly continuation?: PriorResultContext | undefined;
+    /** ODPE-A: the current-input bindings this attempt was compiled against (identity only). */
+    readonly inputs?: readonly ContextInputBinding[] | undefined;
+    /** ODPE-A: whether the project's current inputs could be observed at all. */
+    readonly inputObservation?: "OBSERVED" | "UNAVAILABLE" | "NOT_CONFIGURED" | undefined;
     /**
      * Trajectory-P2-D1 §11: the QUALIFIED TRAJECTORY CONTEXT CAPSULE for THIS attempt, when the deployment
      * composed the experimental delivery port and the attempt has a governed lineage to a qualified origin.
@@ -353,6 +359,20 @@ export interface ContextServicePorts {
   existingManifest?(manifestId: string): ContextManifest | null;
   /** One evidence atom's body, for a resolved `@ctx/evidence:…` handle. */
   evidenceBody?(evidenceId: string): unknown;
+  /**
+   * ODPE-A: what the project holds NOW that this attempt's basis never contained. The port is
+   * attempt-bound because only the Work owner knows the basis; an absent port means the deployment
+   * composes no repository observation, which the manifest records as NOT_CONFIGURED rather than as
+   * an empty set.
+   */
+  projectInputs?(attemptId: string): ProjectInputObservation | null;
+  /** ODPE-A: read the exact bytes behind one input binding, or report that they moved. */
+  readProjectInput?(input: {
+    readonly path: string;
+    readonly content: "WORKTREE" | "COMMIT" | "ABSENT";
+    readonly revision: string;
+    readonly expectedDigest?: string | undefined;
+  }): ProjectInputBody;
   /** The project's goal, for the worker's task half. */
   projectGoal(): string;
   /** The project's requirement statements. */
@@ -462,6 +482,8 @@ export interface ProcedureKnowledgePull {
 
 export type ContextFetchResult =
   | { readonly kind: "exact" | "source" | "evidence"; readonly ref: string; readonly body: unknown }
+  /** ODPE-A: the exact current-input bytes this attempt was given, or the fact that they moved. */
+  | { readonly kind: "input"; readonly ref: string; readonly body: ProjectInputBody }
   | ProofKnowledgePull
   | ReasoningKnowledgePull
   | ProcedureKnowledgePull;
@@ -596,6 +618,36 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       query: `${task.objective} ${task.requiredArtifacts.join(" ")}`,
     });
 
+    /**
+     * ODPE-A: the current inputs this attempt is compiled against. The binding records identity only
+     * (path, kind, digest, revision, observation time); the body stays pull-only. An UNAVAILABLE
+     * observation is recorded as a fact, never collapsed into "no inputs".
+     */
+    const inputObservation = ports.projectInputs?.(attemptId) ?? null;
+    const inputBindings: readonly ContextInputBinding[] =
+      inputObservation === null
+        ? Object.freeze([])
+        : Object.freeze(
+            inputObservation.state === "OBSERVED"
+              ? inputObservation.inputs.map((entry) =>
+                  Object.freeze({
+                    path: entry.path,
+                    identity: entry.identity,
+                    content: entry.content,
+                    digest: entry.digest,
+                    bytes: entry.bytes,
+                    observed_revision: entry.revision,
+                    observed_at: entry.observedAt,
+                    standing: "OBSERVED" as const,
+                  }),
+                )
+              : [],
+          );
+    // `null` means THIS DEPLOYMENT has no repository observation (no repository, no basis, or no
+    // port); an OBSERVED observation that failed is UNAVAILABLE and is never collapsed into "none".
+    const inputState: "OBSERVED" | "UNAVAILABLE" | "NOT_CONFIGURED" =
+      inputObservation === null ? ("NOT_CONFIGURED" as const) : inputObservation.state;
+
     // §D5-c2: the PRIOR RESULT CONTEXT — compiled only for an attempt whose task was reopened by a
     // governed rework, and only from owners that already hold each fact. An ordinary attempt's
     // manifest carries no continuation block.
@@ -676,6 +728,8 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       semantic,
       continuation,
       ...(knowledge.length === 0 ? {} : { knowledge }),
+      ...(inputBindings.length === 0 ? {} : { inputs: inputBindings }),
+      inputObservation: inputState,
       createdAt: now(),
     });
     ports.appendManifest({ attemptId, manifest, expectedProjectRevision: project.revision });
@@ -709,6 +763,17 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       if (entry.kind === "source") {
         const source = manifest.source.find((candidate) => candidate.path === entry.ref);
         return source === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: source };
+      }
+      if (entry.kind === "input") {
+        const binding = manifest.inputs?.find((candidate) => candidate.path === entry.ref);
+        if (binding === undefined || ports.readProjectInput === undefined) return undefined;
+        const body = ports.readProjectInput({
+          path: binding.path,
+          content: binding.content,
+          revision: binding.observed_revision,
+          ...(binding.digest === null ? {} : { expectedDigest: binding.digest }),
+        });
+        return { kind: entry.kind, ref: entry.ref, body };
       }
       /**
        * E1-K §9/§10.1/§7.7: a knowledge handle PULLS the canonical body through the narrow read port
@@ -871,6 +936,10 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
           boot: Object.freeze(compiled.distribution.boot.map((entry) => Object.freeze({ ...entry }))),
           handles: Object.freeze(compiled.distribution.handles.map((entry) => Object.freeze({ ...entry }))),
           ...(compiled.manifest.continuation === undefined ? {} : { continuation: compiled.manifest.continuation }),
+          ...(compiled.manifest.inputs === undefined ? {} : { inputs: compiled.manifest.inputs }),
+          ...((compiled.manifest.inputs?.length ?? 0) === 0 && compiled.manifest.input_observation !== "UNAVAILABLE"
+            ? {}
+            : { inputObservation: compiled.manifest.input_observation }),
           ...(trajectoryCapsule === undefined ? {} : { trajectoryCapsule }),
         }),
       });
