@@ -1,0 +1,389 @@
+{
+  "scripts": [
+    {
+      "match": "@ctx/input/updates/2026-11-03/payload-measurement.md",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "pull_measured",
+              "name": "run_code",
+              "input": {
+                "description": "pull the measured input through this attempt's context handle",
+                "code": "return await tools.palimpsest_worker_context_pull({ handle: \"@ctx/input/updates/2026-11-03/payload-measurement.md\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_220442",
+              "name": "run_code",
+              "input": {
+                "description": "write the plan from the pulled measured input",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst measured = __INPUT_TEXT_JSON__;\nif (typeof measured !== \"string\" || measured.trim() === \"\") { throw new Error(\"the measured input did not arrive through the context pull\"); }\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare the deliverable directory\" });\nconst plan = [\n  \"# Billing cutover — migration plan\",\n  \"\",\n  \"## Current measured basis\",\n  \"\",\n  measured.trim(),\n  \"\",\n  \"## Decision\",\n  \"\",\n  \"Use client-streaming RPCs for the batch path. A unary call is not admissible at the measured payload size.\",\n  \"\",\n  \"## Modules in scope\",\n  \"\",\n  \"- orders: keep the existing REST facade; no payload change.\",\n  \"- billing: replace the batch REST endpoint with a streaming gRPC method; tests cover the measured sizes.\",\n  \"- gateway: enable streaming passthrough; the legacy assumption is not part of the new path.\",\n  \"\",\n].join(\"\\n\");\nawait tools.write({ file_path: \"deliverables/migration-plan.md\", content: plan });\nreturn \"written from the pulled input\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_633042",
+              "name": "run_code",
+              "input": {
+                "description": "commit the plan",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=odpe@fixture.invalid -c \\\"user.name=ODPE worker\\\" commit -qm \\\"commit the migration plan on the measured basis\\\"\", description: \"commit the plan\" });"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_EXITED_WITHOUT_REPORT"
+        }
+      ]
+    },
+    {
+      "match": "Your task: Produce the migration plan",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "code_268682",
+              "name": "run_code",
+              "input": {
+                "description": "write the partial migration plan",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nawait shell({ command: \"New-Item -ItemType Directory -Force -Path deliverables | Out-Null\", description: \"prepare the deliverable directory\" });\nawait tools.write({ file_path: \"deliverables/migration-plan.md\", content: \"# Billing cutover — migration plan (partial)\\n\\n## Proposed approach\\n\\nMove the billing batch endpoint to a unary gRPC method. The batch payload is assumed to be well\\nunder the legacy 64 KiB gateway limit, so no streaming is needed.\\n\\n## Open items\\n\\n- gateway limits\\n- rollout order\\n\" });\nreturn \"written\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_403371",
+              "name": "run_code",
+              "input": {
+                "description": "commit the partial plan",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nreturn await shell({ command: \"git add -A; git -c user.email=odpe@fixture.invalid -c \\\"user.name=ODPE worker\\\" commit -qm \\\"write worker migration plan partial\\\"\", description: \"commit the partial plan\" });"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_997431",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (1/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-worker\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_675298",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (2/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-worker\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "code_283351",
+              "name": "run_code",
+              "input": {
+                "description": "park after the commit (3/3)",
+                "code": "const shell = typeof tools.pwsh === \"function\" ? tools.pwsh : tools.bash;\nconst deadline = Date.now() + 100000;\nwhile (Date.now() < deadline) {\n  const r = await shell({ command: \"Test-Path ../../release-worker\", description: \"check the release marker\" });\n  if (r.kind === \"foreground\" && /True/i.test(r.stdout.text)) return \"released\";\n  await shell({ command: \"Start-Sleep -Seconds 2\", description: \"wait for the release marker\" });\n}\nreturn \"still-parked\";"
+              }
+            }
+          ]
+        },
+        {
+          "text": "WORKER_PARKED"
+        }
+      ]
+    },
+    {
+      "match": "ODPE_PRINCIPAL_P1",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p1_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p1_delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "billing-cutover"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_532902",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_476908",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_823379",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p1) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p1_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "ODPE_P1_DONE"
+        }
+      ]
+    },
+    {
+      "match": "ODPE_PRINCIPAL_P2",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p2_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_workers",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_successor",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "relay",
+                "taskId": "billing-cutover",
+                "relayRoute": "successor",
+                "acknowledgeInputs": true,
+                "summary": "the killed worker's attempt is closed; the new attempt continues at the same basis"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_delegate",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "delegate",
+                "taskId": "billing-cutover"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_wait_commit",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(180); $found=$false; while (-not $found -and (Get-Date) -lt $deadline) {;   foreach ($w in Get-ChildItem -Directory '.palimpsest/worlds' -ErrorAction SilentlyContinue) {;     $subject = (git -C $w.FullName log -1 --format=%s 2>$null);     if ($subject -like '*measured basis*') { $found=$true };   };   if (-not $found) { Start-Sleep -Milliseconds 300 }; }; Start-Sleep -Seconds 5; Write-Output ('MEASURED_COMMIT=' + $found)",
+                "description": "wait for the worker commit and observed process exit"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_readiness",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "readiness",
+                "taskId": "billing-cutover"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_finalize",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "finalize",
+                "taskId": "billing-cutover",
+                "expectedObservationDigest": "__OBSERVATION_DIGEST__",
+                "acknowledgeInputs": true,
+                "summary": "the measured worker left a clean committed candidate; settle it without a second model pass"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "WAIT_FOR_OPERATOR",
+                "statement": "The new attempt received the measured payload fact through the context pull, the plan was committed on that basis, and the candidate awaits operator acceptance.",
+                "waitingOn": "operator acceptance of the migration plan candidate",
+                "artifacts": [
+                  "deliverables/migration-plan.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_994498",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_926663",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "hold_236637",
+              "name": "pwsh",
+              "input": {
+                "command": "$deadline=(Get-Date).AddSeconds(100); while (-not (Test-Path .palimpsest/release-host-p2) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 200 }",
+                "description": "keep this principal host alive until the operator releases it"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p2_workers_end",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "workers"
+              }
+            }
+          ]
+        },
+        {
+          "text": "ODPE_P2_DONE"
+        }
+      ]
+    },
+    {
+      "match": "ODPE_PRINCIPAL_P3",
+      "turns": [
+        {
+          "tool_calls": [
+            {
+              "id": "p3_pulse",
+              "name": "palimpsest_continuity",
+              "input": {
+                "action": "pulse"
+              }
+            }
+          ]
+        },
+        {
+          "tool_calls": [
+            {
+              "id": "p3_conclude",
+              "name": "palimpsest_work",
+              "input": {
+                "action": "conclude",
+                "intent": "DELIVER",
+                "statement": "The operator accepted the migration plan; the measured payload basis and the streaming decision are in the canonical asset.",
+                "artifacts": [
+                  "deliverables/migration-plan.md"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "ODPE_P3_DONE"
+        }
+      ]
+    }
+  ]
+}

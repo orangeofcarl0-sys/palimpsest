@@ -1,0 +1,32 @@
+{
+  "state": "SUCCESSOR_READY",
+  "taskId": "billing-cutover",
+  "route": "successor",
+  "attemptId": "attempt-afc792e5f4b8706ae3209ad4cfebe7f4",
+  "detail": "the attempt was closed as a successor (task is READY); the retained world is C:\\Users\\66494\\odpe-runs\\host-1\\world\\.palimpsest\\worlds/attempt-afc792e5f4b8706ae3209ad4cfebe7f4 and its work is at c14540fcf679. Inherit only the paths the facts show as unaffected or already present, re-derive anything conflicted, then delegate the new attempt",
+  "resultCommit": null,
+  "changedFiles": [],
+  "attribution": null,
+  "retainedWorldPath": "C:\\Users\\66494\\odpe-runs\\host-1\\world\\.palimpsest\\worlds/attempt-afc792e5f4b8706ae3209ad4cfebe7f4",
+  "reuse": {
+    "baseRevision": "d922c5de1a0a55183f9122e4f1461a1ad3c32e1b",
+    "resultRevision": "c14540fcf679a72ceb36730ceacd76aebc10dbcb",
+    "currentRevision": "d922c5de1a0a55183f9122e4f1461a1ad3c32e1b",
+    "resultPaths": [
+      "deliverables/migration-plan.md"
+    ],
+    "unaffectedPaths": [
+      "deliverables/migration-plan.md"
+    ],
+    "alreadyPresentPaths": [],
+    "conflictedPaths": [],
+    "complete": true,
+    "detail": "read from the source tree diff at path granularity. `unaffectedPaths` may still be invalidated by a semantic change the tree diff cannot see; `conflictedPaths` must be recomputed, never overwritten from the old result"
+  },
+  "inputsNotInBasis": [
+    "updates/2026-11-03/payload-measurement.md"
+  ],
+  "inputsState": "OBSERVED",
+  "inputsDetail": "1 current project input(s) differ from the basis d922c5de1a0a",
+  "taskState": "READY"
+}
