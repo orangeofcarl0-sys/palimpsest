@@ -1,0 +1,111 @@
+{
+  "schema": "alhs-core-prep/v1",
+  "cohortId": "odpe-r-2026-11-05",
+  "stage": "odpe-r",
+  "codeFreeze": "105903f49c43e4cb738bc15dc68eb454c687f0a3",
+  "mode": "REAL_MODEL_PWRS_R4",
+  "conditions": [
+    "F",
+    "A"
+  ],
+  "goal": "Evaluate a multi-site energy deployment and produce ONE reviewable package covering technical capacity, vendor compliance, cost, implementation schedule, risk/uncertainty, and an integrated decision. Respect every binding requirement. Do not treat an unverified claim as accepted. Do not approve expenditure without authority.",
+  "requirements": [
+    {
+      "requirement_id": "R1",
+      "statement": "The package must name the deciding constraint for each site.",
+      "priority": "critical",
+      "acceptance_refs": []
+    },
+    {
+      "requirement_id": "R2",
+      "statement": "A 2024 coastal column is not a current coastal certificate; an expected certificate is not a current certificate.",
+      "priority": "critical",
+      "acceptance_refs": []
+    }
+  ],
+  "worlds": {
+    "F": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\worlds\\F",
+    "A": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\worlds\\A"
+  },
+  "heads": {
+    "F": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+    "A": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03"
+  },
+  "states": {
+    "A": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\state-A"
+  },
+  "constraint": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\constraint.md",
+  "sessions": [
+    {
+      "id": "F-1",
+      "condition": "F",
+      "index": 1,
+      "prompt": "F",
+      "injectAtMs": 60000,
+      "killAfterMs": 900000,
+      "killAtTokens": 400000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\worlds\\F",
+      "state": null,
+      "home": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\home-F-1",
+      "promptPath": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\prompts\\F.txt",
+      "out": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\out\\F-1"
+    },
+    {
+      "id": "F-2",
+      "condition": "F",
+      "index": 2,
+      "prompt": "F2",
+      "injectAtMs": null,
+      "killAfterMs": 900000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\worlds\\F",
+      "state": null,
+      "home": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\home-F-2",
+      "promptPath": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\prompts\\F2.txt",
+      "out": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\out\\F-2"
+    },
+    {
+      "id": "A-1",
+      "condition": "A",
+      "index": 1,
+      "prompt": "A",
+      "injectAtMs": 60000,
+      "killAfterMs": 900000,
+      "killAtTokens": 400000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\worlds\\A",
+      "state": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\state-A",
+      "home": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\home-A-1",
+      "promptPath": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\prompts\\A.txt",
+      "out": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\out\\A-1"
+    },
+    {
+      "id": "A-2",
+      "condition": "A",
+      "index": 2,
+      "prompt": "A2",
+      "injectAtMs": null,
+      "killAfterMs": 900000,
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "world": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\worlds\\A",
+      "state": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\state-A",
+      "home": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\home-A-2",
+      "promptPath": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\prompts\\A2.txt",
+      "out": "C:\\Users\\66494\\odpe-r\\run-2026-11-05\\out\\A-2"
+    }
+  ],
+  "budget": {
+    "perSession": 2500000,
+    "reserve": 125000,
+    "softStop": 2375000,
+    "killAtTokens": 400000,
+    "aggregate": 10000000,
+    "sessions": 4
+  },
+  "note": "ODPE-R matched comparison. F is native DSH with ONE explicit finish instruction (F+Finish); A is the ADAPTIVE product path (not forced governed recovery). Both conditions share byte-identical sources; the measured source is injected at T+60s as an UNTRACKED file under inbox/. Session 1 is killed at 400,000 reported tokens; session 2 is a new principal on the same durable state. No prompt names readiness, finalize, the acknowledgement, relay, takeover or successor; the product's own tool descriptions and refusals do."
+}
