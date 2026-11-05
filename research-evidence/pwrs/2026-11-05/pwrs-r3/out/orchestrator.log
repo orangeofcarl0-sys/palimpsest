@@ -1,0 +1,190 @@
+(node:49676) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'TASK.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'inbox/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/capacity.csv', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/sites.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/vendors.md', LF will be replaced by CRLF the next time Git touches it
+stopping stale provider proxy 47872
+stopping stale provider proxy 18320
+cohort:
+{"runState":"C:\\Users\\66494\\pwrs-r3\\run-2026-11-05\\out\\gate\\run-state.json","sessions":2}
+score:
+{
+  "schema": "pwrs-r-score/v1",
+  "cohortId": "pwrs-r3-2026-11-05",
+  "generatedAt": "2026-11-05T02:37:19.315Z",
+  "conditions": {
+    "A": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7
+      },
+      "final": {
+        "source": "RESULT_COMMIT",
+        "commit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b",
+        "path": "deliverables/package.md",
+        "bytes": 19878,
+        "sha256": "fd628f2342c49ab824136db6d565ee09d106709cfc1db549b665d666bccfe0e2"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-05T02:34:05.768Z",
+        "canonicalHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+        "canonicalStatus": "?? .palimpsest/\n?? inbox/2026-11-03/",
+        "deliverables": [],
+        "retainedWorlds": [
+          {
+            "name": "attempt-175ec632571744742dd9e7161d155ea2",
+            "head": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "subject": "scenario base",
+            "status": "",
+            "deliverables": []
+          }
+        ],
+        "longestTextSource": null,
+        "longestTextBytes": 0
+      },
+      "reuse": {
+        "beforeLines": 0,
+        "carriedLines": 0,
+        "carriedRatio": null
+      },
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": 1,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 404956,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 5,
+            "palimpsest_continuity": 1,
+            "pwsh": 10,
+            "read": 6,
+            "palimpsest_work": 6,
+            "job_list": 1
+          }
+        },
+        {
+          "sessionId": "A-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 0,
+          "stopped": false,
+          "natural": true,
+          "totalTokens": 1424148,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 5,
+            "palimpsest_continuity": 2,
+            "pwsh": 24,
+            "read": 7,
+            "palimpsest_work": 23,
+            "job_output": 1,
+            "write": 1
+          }
+        }
+      ],
+      "governance": {
+        "tasks": [
+          {
+            "taskId": "package",
+            "state": "VERIFYING"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-175ec632571744742dd9e7161d155ea2",
+            "taskId": "package",
+            "state": "CANCELLED",
+            "resultCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03"
+          },
+          {
+            "attemptId": "attempt-8762438837b9869ac9a52e8d230625c6",
+            "taskId": "package",
+            "state": "COMPLETED",
+            "resultCommit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b"
+          }
+        ],
+        "promotions": [],
+        "relay": [
+          {
+            "schema": "pc1-execution-relay/v1",
+            "taskId": "package",
+            "attemptId": "attempt-175ec632571744742dd9e7161d155ea2",
+            "resultCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "baseCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "attribution": {
+              "schema": "pc1-execution-attribution/v1",
+              "attribution": "UNATTRIBUTED",
+              "executor": "UNKNOWN",
+              "settledBy": "PRINCIPAL",
+              "workerInvocations": 0,
+              "matchedInvocationId": null,
+              "liveness": "DECLARED_ABANDONED",
+              "independenceEligible": false,
+              "evidence": "DECLARED",
+              "detail": "the principal closed this attempt as a SUCCESSOR because no writer was observed; the retained world stays available for reuse, and no result was settled or accepted"
+            },
+            "recordedAt": "2026-11-05T02:34:50.323Z",
+            "recordId": "relay-ed496b348ab026b55e3bb1a6"
+          },
+          {
+            "schema": "pc1-execution-relay/v1",
+            "taskId": "package",
+            "attemptId": "attempt-8762438837b9869ac9a52e8d230625c6",
+            "resultCommit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b",
+            "baseCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "attribution": {
+              "schema": "pc1-execution-attribution/v1",
+              "attribution": "MULTI_EXECUTOR",
+              "executor": "MULTIPLE",
+              "settledBy": "PRINCIPAL",
+              "workerInvocations": 1,
+              "matchedInvocationId": null,
+              "liveness": "UNOBSERVED",
+              "independenceEligible": false,
+              "evidence": "UNKNOWN",
+              "detail": "the attempt had 1 observed worker invocation(s), but the settled head ddf8bf3eab46 is not any invocation's end head — the work contains changes made outside the observed worker window, so it is recorded as multi-executor and is NOT eligible as independent worker production"
+            },
+            "recordedAt": "2026-11-05T02:37:00.797Z",
+            "recordId": "relay-1d1498c2a86cdf9b668738a1"
+          }
+        ],
+        "episodes": [
+          {
+            "intent": "WAIT_FOR_OPERATOR",
+            "recordedAt": "2026-11-05T02:37:14.470Z",
+            "artifacts": [
+              "deliverables/package.md"
+            ],
+            "artifactStates": [
+              {
+                "path": "deliverables/package.md",
+                "present": true,
+                "tracked": true,
+                "committed": true,
+                "digest": "fd628f2342c49ab824136db6d565ee09d106709cfc1db549b665d666bccfe0e2",
+                "source": "RESULT_COMMIT",
+                "commit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b",
+                "detail": "present in the result commit ddf8bf3eab46 of attempt attempt-8762438837b9869ac9a52e8d230625c6 — a governed candidate, not an accepted project asset"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

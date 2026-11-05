@@ -12,12 +12,12 @@
   "report": "docs/engineering/PWRS-RESULT.md",
   "evidence": "research-evidence/pwrs/2026-11-05/",
   "modelCalls": {
-    "realModelSessions": 6,
-    "paidTokens": 8464613,
-    "providerRequests": 197,
-    "providerSuccess": 195,
-    "providerUpstreamTimeout": 2,
-    "note": "PWRS-R F/A pair (4 sessions, 5,656,746) and the PWRS-R2 A-only retest (2 sessions, 2,807,867), each under its own research-evidence/pwrs/live authorization. The deterministic host run used the labelled Messages stand-in and consumed no model tokens."
+    "realModelSessions": 8,
+    "paidTokens": 10293717,
+    "providerRequests": 271,
+    "providerSuccess": 267,
+    "providerUpstreamTimeout": 4,
+    "note": "PWRS-R F/A (4 sessions, 5,656,746), PWRS-R2 A-only (2 sessions, 2,807,867) and PWRS-R3 A-only (2 sessions, 1,829,104), each under its own research-evidence/pwrs/live authorization. The deterministic host run used the labelled Messages stand-in and consumed no model tokens."
   },
   "relay": {
     "routes": [
@@ -130,5 +130,31 @@
     "inputGateExercised": false,
     "naturalEnd": false,
     "note": "The PWRS-D unseen-input acknowledgement was not triggered because the model chose successor; the model copied the untracked measured input into the new world, and the worker produced a 7/7 package that was never settled before the budget stop."
+  },
+  "retest3": {
+    "cohortId": "pwrs-r3-2026-11-05",
+    "report": "docs/engineering/PWRS-R3-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r3/",
+    "product": "e3110c8debaf15a9486720d9d36dbbd7c370e236",
+    "condition": "A",
+    "sessions": 2,
+    "tokens": {
+      "total": 1829104,
+      "aggregate": 5000000,
+      "remaining": 3170896
+    },
+    "rubric": "7/7",
+    "finalArtifact": {
+      "bytes": 19878,
+      "commit": "ddf8bf3",
+      "settled": true,
+      "source": "RESULT_COMMIT",
+      "taskState": "VERIFYING"
+    },
+    "episode": "WAIT_FOR_OPERATOR",
+    "naturalEnd": true,
+    "inputGateExercised": true,
+    "attribution": "old attempt UNATTRIBUTED (successor); new attempt MULTI_EXECUTOR; independenceEligible=false",
+    "note": "The successor gate refused with INPUTS_CHANGED_SINCE_BASIS, the principal acknowledged the exact path, started a new attempt, settled a 7/7 candidate and recorded WAIT_FOR_OPERATOR; no promotion."
   }
 }
