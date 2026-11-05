@@ -1,0 +1,39 @@
+{
+  "schema": "alhs-cohort-plan/v1",
+  "cohortId": "pwrs-r2-2026-11-05",
+  "stage": "pwrs-r2",
+  "codeFreeze": "adbcd420749b435462f95ed599d1b4b6e546a714",
+  "provider": "deepseek-official/deepseek-flash",
+  "generatedAt": "2026-11-05T01:57:37.705Z",
+  "modelCalls": 0,
+  "sessions": [
+    {
+      "sessionId": "A-1",
+      "condition": "A",
+      "index": 1,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "killAtTokens": 400000,
+      "profile": "palimpsest-governed"
+    },
+    {
+      "sessionId": "A-2",
+      "condition": "A",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "profile": "palimpsest-governed"
+    }
+  ],
+  "totals": {
+    "sessions": 2,
+    "plannedCeiling": 5000000,
+    "plannedReserve": 250000,
+    "effectiveStopSum": 4750000,
+    "aggregateCeiling": 5000000,
+    "localHardCap": 25000000
+  },
+  "note": "A plan only. Each session stops at `softStopAt`, leaving its reserve for the in-flight message. Child sessions are counted through the whole session root."
+}

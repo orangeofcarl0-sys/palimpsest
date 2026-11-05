@@ -12,16 +12,26 @@
   "report": "docs/engineering/PWRS-RESULT.md",
   "evidence": "research-evidence/pwrs/2026-11-05/",
   "modelCalls": {
-    "realModelSessions": 4,
-    "paidTokens": 5656746,
-    "providerRequests": 118,
-    "providerSuccess": 116,
+    "realModelSessions": 6,
+    "paidTokens": 8464613,
+    "providerRequests": 197,
+    "providerSuccess": 195,
     "providerUpstreamTimeout": 2,
-    "note": "PWRS-R F/A pair under research-evidence/pwrs/live/authorization-pwrs-r.json (10,000,000 aggregate). The deterministic host run used the labelled Messages stand-in and consumed no model tokens; the ALHS authorizations did not transfer."
+    "note": "PWRS-R F/A pair (4 sessions, 5,656,746) and the PWRS-R2 A-only retest (2 sessions, 2,807,867), each under its own research-evidence/pwrs/live authorization. The deterministic host run used the labelled Messages stand-in and consumed no model tokens."
   },
   "relay": {
-    "routes": ["RESUME", "TAKEOVER", "SUCCESSOR"],
-    "attributions": ["ORIGINAL_WORKER_OBSERVED", "SUBSEQUENT_WORKER_OBSERVED", "PRINCIPAL_RECOVERY", "MULTI_EXECUTOR", "UNATTRIBUTED"],
+    "routes": [
+      "RESUME",
+      "TAKEOVER",
+      "SUCCESSOR"
+    ],
+    "attributions": [
+      "ORIGINAL_WORKER_OBSERVED",
+      "SUBSEQUENT_WORKER_OBSERVED",
+      "PRINCIPAL_RECOVERY",
+      "MULTI_EXECUTOR",
+      "UNATTRIBUTED"
+    ],
     "durableRecord": "project journal note (pc1-execution-relay/v1)",
     "invocationLedger": "host-local, non-durable by design"
   },
@@ -36,7 +46,10 @@
     "resultCommit": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
     "promotion": "promotion-5a789d958bd68d7548b820879c645134",
     "promotionState": "COMMITTED",
-    "episodes": ["WAIT_FOR_OPERATOR", "DELIVER"],
+    "episodes": [
+      "WAIT_FOR_OPERATOR",
+      "DELIVER"
+    ],
     "canonicalHead": "7eb35937abc55ee7d96ce7caafd913b22eca78b0",
     "canonicalTreeClean": true,
     "reuse": {
@@ -49,7 +62,10 @@
     "cohortId": "pwrs-r-2026-11-05",
     "report": "docs/engineering/PWRS-R-RESULT.md",
     "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r/",
-    "conditions": ["F", "A"],
+    "conditions": [
+      "F",
+      "A"
+    ],
     "sessions": 4,
     "tokens": {
       "F": 2857944,
@@ -58,8 +74,14 @@
       "aggregate": 10000000,
       "remaining": 4343254
     },
-    "rubric": { "F": "7/7", "A": "5/7" },
-    "naturalEnd": { "F": false, "A": false },
+    "rubric": {
+      "F": "7/7",
+      "A": "5/7"
+    },
+    "naturalEnd": {
+      "F": false,
+      "A": false
+    },
     "A": {
       "relayAttribution": "PRINCIPAL_RECOVERY",
       "relayLiveness": "DECLARED_ABANDONED",
@@ -68,7 +90,7 @@
       "taskState": "VERIFYING",
       "promotion": null,
       "episode": null,
-      "reuseOfInterruptedDraft": 1.0
+      "reuseOfInterruptedDraft": 1
     },
     "F": {
       "finalBytes": 44372,
@@ -83,5 +105,30 @@
     "merged": false,
     "mainMoved": false
   },
-  "note": "The branch was pushed and PR #219 opened with the owner's authorization; no merge and no move of main/origin/main. No historical Code/Evidence Freeze, Ordarium ledger, lock or gate root was modified."
+  "note": "The branch was pushed and PR #219 opened with the owner's authorization; no merge and no move of main/origin/main. No historical Code/Evidence Freeze, Ordarium ledger, lock or gate root was modified.",
+  "retest": {
+    "cohortId": "pwrs-r2-2026-11-05",
+    "report": "docs/engineering/PWRS-R2-RESULT.md",
+    "evidence": "research-evidence/pwrs/2026-11-05/pwrs-r2/",
+    "product": "adbcd420749b435462f95ed599d1b4b6e546a714",
+    "condition": "A",
+    "sessions": 2,
+    "tokens": {
+      "total": 2807867,
+      "aggregate": 5000000,
+      "remaining": 2192133
+    },
+    "rubric": "7/7",
+    "finalArtifact": {
+      "bytes": 45385,
+      "commit": "09bf7ab",
+      "settled": false,
+      "attemptState": "RUNNING",
+      "taskState": "ACTIVE"
+    },
+    "route": "takeover refused NO_WORK; successor; new attempt; delegate; committed package; no settlement",
+    "inputGateExercised": false,
+    "naturalEnd": false,
+    "note": "The PWRS-D unseen-input acknowledgement was not triggered because the model chose successor; the model copied the untracked measured input into the new world, and the worker produced a 7/7 package that was never settled before the budget stop."
+  }
 }
