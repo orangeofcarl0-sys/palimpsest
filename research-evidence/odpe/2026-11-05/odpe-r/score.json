@@ -1,0 +1,229 @@
+{
+  "schema": "pwrs-r-score/v1",
+  "cohortId": "odpe-r-2026-11-05",
+  "generatedAt": "2026-11-05T08:47:55.801Z",
+  "conditions": {
+    "F": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7
+      },
+      "final": {
+        "source": "CANONICAL_WORKTREE",
+        "commit": null,
+        "path": "deliverables/package.md",
+        "bytes": 27472,
+        "sha256": "06bf522f15372987c4d5519ab7274f0c8fd604ac34fe27d0354512c232602515"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-05T08:40:04.241Z",
+        "canonicalHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+        "canonicalStatus": "?? .palimpsest/\n?? deliverables/\n?? inbox/2026-11-03/",
+        "deliverables": [
+          "package.md"
+        ],
+        "retainedWorlds": [],
+        "longestTextSource": "canonical/package.md",
+        "longestTextBytes": 27472
+      },
+      "reuse": {
+        "beforeLines": 206,
+        "carriedLines": 206,
+        "carriedRatio": 1
+      },
+      "sessions": [
+        {
+          "sessionId": "F-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": null,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 431393,
+          "maxTokens": 2500000,
+          "calls": {
+            "working_directory": 1,
+            "read": 16,
+            "pwsh": 12,
+            "todo_write": 1,
+            "write": 1,
+            "subagent": 1,
+            "job_list": 1,
+            "list_agents": 1,
+            "edit": 7
+          }
+        },
+        {
+          "sessionId": "F-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 0,
+          "stopped": false,
+          "natural": true,
+          "totalTokens": 184436,
+          "maxTokens": 2500000,
+          "calls": {
+            "working_directory": 1,
+            "pwsh": 10,
+            "read": 8,
+            "grep": 1
+          }
+        }
+      ],
+      "governance": null
+    },
+    "A": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7
+      },
+      "final": {
+        "source": "RESULT_COMMIT",
+        "commit": "100a2b13cd6d0586267a963f3bd9fcd8a94fa7c4",
+        "path": "deliverables/package.md",
+        "bytes": 30610,
+        "sha256": "ae62612b65fb03dd33313a4258189562796cfc9f27ea8d11bcffd40006f74c94"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-05T08:43:51.289Z",
+        "canonicalHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+        "canonicalStatus": "?? .palimpsest/\n?? inbox/2026-11-03/",
+        "deliverables": [],
+        "retainedWorlds": [
+          {
+            "name": "attempt-9572db233dffcb86201e934a7739f8a1",
+            "head": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "subject": "scenario base",
+            "status": "",
+            "deliverables": []
+          }
+        ],
+        "longestTextSource": null,
+        "longestTextBytes": 0
+      },
+      "reuse": {
+        "beforeLines": 0,
+        "carriedLines": 0,
+        "carriedRatio": null
+      },
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": null,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 418106,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 3,
+            "palimpsest_continuity": 1,
+            "palimpsest_work": 12,
+            "read": 7,
+            "glob": 8,
+            "pwsh": 5
+          }
+        },
+        {
+          "sessionId": "A-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 0,
+          "stopped": false,
+          "natural": true,
+          "totalTokens": 614275,
+          "maxTokens": 2500000,
+          "calls": {
+            "palimpsest_continuity": 1,
+            "palimpsest_work": 12,
+            "pwsh": 9,
+            "read": 6,
+            "palimpsest_project": 2,
+            "todo_write": 2,
+            "write": 1
+          }
+        }
+      ],
+      "governance": {
+        "tasks": [
+          {
+            "taskId": "package",
+            "state": "VERIFYING"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-9572db233dffcb86201e934a7739f8a1",
+            "taskId": "package",
+            "state": "COMPLETED",
+            "resultCommit": "100a2b13cd6d0586267a963f3bd9fcd8a94fa7c4"
+          }
+        ],
+        "promotions": [],
+        "relay": [
+          {
+            "schema": "pc1-execution-relay/v1",
+            "taskId": "package",
+            "attemptId": "attempt-9572db233dffcb86201e934a7739f8a1",
+            "resultCommit": "100a2b13cd6d0586267a963f3bd9fcd8a94fa7c4",
+            "baseCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "attribution": {
+              "schema": "pc1-execution-attribution/v1",
+              "attribution": "UNATTRIBUTED",
+              "executor": "UNKNOWN",
+              "settledBy": "PRINCIPAL",
+              "workerInvocations": 0,
+              "matchedInvocationId": null,
+              "liveness": "UNOBSERVED",
+              "independenceEligible": false,
+              "evidence": "UNKNOWN",
+              "detail": "this host observed no worker invocation for the attempt (a restart, another host, or the bytes moved outside any observed window), and no principal takeover was declared, so the product records the result as unattributed rather than guessing who wrote it"
+            },
+            "recordedAt": "2026-11-05T08:46:29.166Z",
+            "recordId": "relay-3429502e909487b8c96556c3"
+          }
+        ],
+        "episodes": [
+          {
+            "intent": "WAIT_FOR_OPERATOR",
+            "recordedAt": "2026-11-05T08:46:38.566Z",
+            "artifacts": [
+              "deliverables/package.md"
+            ],
+            "artifactStates": [
+              {
+                "path": "deliverables/package.md",
+                "present": true,
+                "tracked": true,
+                "committed": true,
+                "digest": "ae62612b65fb03dd33313a4258189562796cfc9f27ea8d11bcffd40006f74c94",
+                "source": "RESULT_COMMIT",
+                "commit": "100a2b13cd6d0586267a963f3bd9fcd8a94fa7c4",
+                "detail": "present in the result commit 100a2b13cd6d of attempt attempt-9572db233dffcb86201e934a7739f8a1 — a governed candidate, not an accepted project asset"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

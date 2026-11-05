@@ -1,0 +1,73 @@
+{
+  "schema": "alhs-cohort/v1",
+  "cohortId": "odpe-r-2026-11-05",
+  "title": "ODPE-R — interrupted work: native DSH + finish guidance (F) vs the adaptive product (A)",
+  "codeFreeze": "105903f49c43e4cb738bc15dc68eb454c687f0a3",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 10000000,
+  "conditions": {
+    "F": {
+      "profile": "headless",
+      "definition": "F+Finish: native DSH with native tools, subagents and Git, plus ONE explicit finish instruction ('when the package is complete, stop working and end the session; do not keep polling'). No Palimpsest project, Work, World, relay or episode. Same sources and same interruption."
+    },
+    "A": {
+      "profile": "palimpsest-adaptive",
+      "definition": "The ADAPTIVE product path, not forced governed recovery: the principal chooses when to work, delegate, continue an interrupted attempt, finalize and conclude through the product's ordinary tools. The prompt does not name readiness, finalize, the acknowledgement, relay, takeover or successor."
+    }
+  },
+  "stages": [
+    {
+      "id": "odpe-r",
+      "conditions": [
+        "F",
+        "A"
+      ],
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 10000000,
+      "sessionPlan": [
+        {
+          "sessionId": "F-1",
+          "condition": "F",
+          "index": 1,
+          "ceiling": 2500000,
+          "reserveTokens": 125000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "F-2",
+          "condition": "F",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 125000
+        },
+        {
+          "sessionId": "A-1",
+          "condition": "A",
+          "index": 1,
+          "ceiling": 2500000,
+          "reserveTokens": 125000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "A-2",
+          "condition": "A",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 125000
+        }
+      ]
+    }
+  ],
+  "measurement": {
+    "business": "the unchanged 7-fact package rubric, reported per condition and separated from governance.",
+    "interruption": "session 1 killed at the same 400,000 reported-token milestone in both conditions; the artifact and Git state at that moment are snapshotted outside the run.",
+    "input": "the measured corridor fact is an UNTRACKED file under inbox/ that the original basis never contained; A must confront it before a settlement or successor.",
+    "outcome": "for A: readiness class, finalize/ALREADY_SETTLED, candidate commit, task state, episode conclusion. For F: Git state, the committed or uncommitted package, and the session end.",
+    "settlement": "was a correct candidate settled, was a stale candidate settled, and did the episode converge naturally (not budget-stopped)?",
+    "cost": "total reported tokens per condition, and tokens at first valid candidate when one exists."
+  },
+  "comparison": "Matched F/A under the same scenario, budget and milestone. Descriptive; one pair per condition; no quality or cost advantage claim.",
+  "note": "F carries the simple finish instruction the ODPE design recommends; A is the adaptive product path. G (forced governed recovery) is deliberately absent so the comparison does not mix forced governance with adaptation.",
+  "codeFreezeNote": "product tree at 105903f (the PR #219 head merged as abc9d96); the ODPE-R harness is committed after this product commit and does not change src/."
+}
