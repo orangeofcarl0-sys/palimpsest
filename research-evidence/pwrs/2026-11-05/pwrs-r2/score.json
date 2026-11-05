@@ -1,0 +1,139 @@
+{
+  "schema": "pwrs-r-score/v1",
+  "cohortId": "pwrs-r2-2026-11-05",
+  "generatedAt": "2026-11-05T02:06:37.100Z",
+  "conditions": {
+    "A": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7
+      },
+      "final": {
+        "source": "ATTEMPT_WORLD",
+        "commit": null,
+        "path": ".palimpsest\\worlds\\attempt-2e1675d0d47b737468d6bc4f824b283e\\deliverables\\package.md",
+        "bytes": 45385,
+        "sha256": "be9b0dfffd0a08e670c7d50ca4b6f190a2c3c19bcfcdca56dd0917e7fd7c7cc7"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-05T02:00:35.799Z",
+        "canonicalHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+        "canonicalStatus": "?? .palimpsest/\n?? inbox/2026-11-03/",
+        "deliverables": [],
+        "retainedWorlds": [
+          {
+            "name": "attempt-488298f11840917b8245d5c7ce3254cf",
+            "head": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "subject": "scenario base",
+            "status": "",
+            "deliverables": []
+          }
+        ],
+        "longestTextSource": null,
+        "longestTextBytes": 0
+      },
+      "reuse": {
+        "beforeLines": 0,
+        "carriedLines": 0,
+        "carriedRatio": null
+      },
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": 1,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 410744,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 6,
+            "palimpsest_continuity": 1,
+            "working_directory": 1,
+            "pwsh": 12,
+            "read": 6,
+            "palimpsest_work": 5,
+            "job_list": 1
+          }
+        },
+        {
+          "sessionId": "A-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 1,
+          "stopped": true,
+          "natural": false,
+          "totalTokens": 2397123,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 27,
+            "palimpsest_continuity": 1,
+            "palimpsest_work": 12,
+            "pwsh": 14,
+            "read": 12,
+            "grep": 1,
+            "list_agents": 1,
+            "job_output": 1
+          }
+        }
+      ],
+      "governance": {
+        "tasks": [
+          {
+            "taskId": "package",
+            "state": "ACTIVE"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-488298f11840917b8245d5c7ce3254cf",
+            "taskId": "package",
+            "state": "CANCELLED",
+            "resultCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03"
+          },
+          {
+            "attemptId": "attempt-2e1675d0d47b737468d6bc4f824b283e",
+            "taskId": "package",
+            "state": "RUNNING",
+            "resultCommit": null
+          }
+        ],
+        "promotions": [],
+        "relay": [
+          {
+            "schema": "pc1-execution-relay/v1",
+            "taskId": "package",
+            "attemptId": "attempt-488298f11840917b8245d5c7ce3254cf",
+            "resultCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "baseCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "attribution": {
+              "schema": "pc1-execution-attribution/v1",
+              "attribution": "UNATTRIBUTED",
+              "executor": "UNKNOWN",
+              "settledBy": "PRINCIPAL",
+              "workerInvocations": 0,
+              "matchedInvocationId": null,
+              "liveness": "DECLARED_ABANDONED",
+              "independenceEligible": false,
+              "evidence": "DECLARED",
+              "detail": "the principal closed this attempt as a SUCCESSOR because no writer was observed; the retained world stays available for reuse, and no result was settled or accepted"
+            },
+            "recordedAt": "2026-11-05T02:01:23.302Z",
+            "recordId": "relay-549afe7440ce9814f9b96c93"
+          }
+        ],
+        "episodes": []
+      }
+    }
+  }
+}

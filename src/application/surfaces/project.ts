@@ -15,10 +15,11 @@ import type { ProjectVerificationOutcome, ProjectVerificationRun, ProjectVerific
 import type { ProjectOperatingPostureView } from "../../project_operating/posture.js";
 import type { ManagementActivityRecord } from "../../project_operating/activity.js";
 import type { ProjectOperatingHistory } from "../../project_operating/history.js";
-import type { ExternalAssetImportCandidate, ExternalAssetImportCommit, ExternalAssetImportPreparation, ExternalAssetInspection, ExternalAssetInspectInput, ExternalAssetPrepareImportInput, ExternalAssetPreparePublicationInput, ExternalAssetPrepareReferenceInput, ExternalAssetProviderDescriptor, ExternalAssetPublicationPreview, ExternalAssetPublicationResult, ExternalAssetReferenceCandidate, ExternalAssetReferenceCommit, ExternalAssetReferencePreparation, ExternalAssetSearchInput, ExternalAssetSearchPage } from "../../external_assets/index.js";
 import type { WorkModeBaseMode, WorkModeModifier } from "../../project_operating/work_mode_profile.js";
 import type { ProjectPulse, ProjectPulseService } from "../../project_pulse/index.js";
+import type { EpisodeConclusionInput, EpisodeConclusionResult, EpisodeService } from "../../project_continuity/index.js";
 import { makeWorkspaceExtraSurface, type ContinuityFaces, type WorkspaceExtraSurface } from "../workspace_extra.js";
+import { makeExternalAssetsSurface, type ExternalAssetPrepareImportCommand, type ExternalAssetPreparePublicationCommand, type ExternalAssetPrepareReferenceCommand, type ExternalAssetsApplicationSurface } from "../project_assets.js";
 
 /** The pulse service as the aggregate factory needs to know it. */
 export type ProjectPulseServicePort = ProjectPulseService;
@@ -36,6 +37,8 @@ export interface ProjectSurfaceDeps {
   readonly domainOutcome?: ContinuityFaces["domainOutcome"];
   /** APS-A: the derived decision-oriented continuation view. */
   readonly projectPulse?: ProjectPulseService | undefined;
+  /** ALHS-A: record an episode conclusion; absent ⇒ the conclusion action is unavailable. */
+  readonly episode?: EpisodeService | undefined;
   readonly verification?: { readonly service: Pick< ProjectVerificationService, "status" | "history" | "verifyCurrentHead" >; } | undefined;
 }
 
@@ -87,6 +90,12 @@ export interface ProjectWorkspaceApplicationSurface extends WorkspaceExtraSurfac
   summary(): Promise<import("../../project_continuity/index.js").ProjectSummary>;
   /** APS-A: the decision-oriented continuation view over the same owners. */
   pulse(): Promise<ProjectPulse>;
+  /**
+   * ALHS-A: record the principal's episode-level convergence judgement. The product checks it against
+   * open work, attempts, operator acceptance, blocked effects and artifact existence; it never accepts
+   * or promotes anything, and a later project fact reopens the conclusion.
+   */
+  concludeEpisode(input: EpisodeConclusionInput): Promise<EpisodeConclusionResult>;
   explain(subject: string): Promise<import("../../project_continuity/index.js").ProjectExplanation>;
   contextCapsule(input?: { readonly maxBytes?: number | undefined }): Promise<import("../../project_continuity/index.js").ContextCapsule>;
   /** PC1 S06: the registered domain contracts (descriptive only). */
@@ -189,41 +198,12 @@ export interface VerificationApplicationSurface {
   }): Promise<ProjectVerificationOutcome>;
 }
 
-export interface ExternalAssetsApplicationSurface {
-  /** Deployment config descriptors (capabilities). Never asset truth. */
-  providers(): Promise<readonly ExternalAssetProviderDescriptor[]>;
-  /** §8: an EPHEMERAL page of hits. Zero project mutation, zero persistence. */
-  search(input: ExternalAssetSearchInput): Promise<ExternalAssetSearchPage>;
-  /** §9: an EXACT-digest snapshot (never a silent "latest"). */
-  inspect(input: ExternalAssetInspectInput): Promise<ExternalAssetInspection>;
-  /** §11: a read-only reference candidate bound to the exact external digest. */
-  prepareReference(input: ExternalAssetPrepareReferenceCommand): Promise<ExternalAssetReferencePreparation>;
-  /** §14/§15: an explicit Journal kind + exact materialized text, read-only. */
-  prepareImport(input: ExternalAssetPrepareImportCommand): Promise<ExternalAssetImportPreparation>;
-  /** §20: the EXACT outbound payload, with zero external effect. */
-  preparePublication(input: ExternalAssetPreparePublicationCommand): Promise<ExternalAssetPublicationPreview>;
-  /** OPERATOR-EXPLICIT: one `EXTERNAL_ASSET` association (copies no content). */
-  commitReference(candidate: ExternalAssetReferenceCandidate): Promise<ExternalAssetReferenceCommit>;
-  /** OPERATOR-EXPLICIT: one Journal entry with structured external provenance. */
-  commitImport(candidate: ExternalAssetImportCandidate): Promise<ExternalAssetImportCommit>;
-  /**
-   * OPERATOR-EXPLICIT approval + governed publication. The decision itself comes
-   * from the separate admission port (or the call returns `NOT_APPROVED`).
-   */
-  approveAndPublish(preview: ExternalAssetPublicationPreview): Promise<ExternalAssetPublicationResult>;
-}
-
-export type ExternalAssetPrepareReferenceCommand = Omit<ExternalAssetPrepareReferenceInput, "projectId"> & {
-  readonly projectId?: string | undefined;
-};
-
-export type ExternalAssetPrepareImportCommand = Omit<ExternalAssetPrepareImportInput, "projectId"> & {
-  readonly projectId?: string | undefined;
-};
-
-export type ExternalAssetPreparePublicationCommand = Omit<ExternalAssetPreparePublicationInput, "projectId"> & {
-  readonly projectId?: string | undefined;
-};
+export type {
+  ExternalAssetPrepareImportCommand,
+  ExternalAssetPreparePublicationCommand,
+  ExternalAssetPrepareReferenceCommand,
+  ExternalAssetsApplicationSurface,
+} from "../project_assets.js";
 
 export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projectWorkspace: ProjectWorkspaceApplicationSurface | undefined; readonly projectManagement: ProjectManagementApplicationSurface | undefined; readonly monitor: MonitorApplicationSurface | undefined; readonly verification: VerificationApplicationSurface | undefined; readonly externalAssets: ExternalAssetsApplicationSurface | undefined } {
     const projectWorkspace: ProjectWorkspaceApplicationSurface | undefined =
@@ -275,6 +255,25 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
                   throw new Error("this deployment composes no project pulse");
                 }
                 return deps.projectPulse.pulse();
+              },
+              concludeEpisode: (input) => {
+                if (deps.episode === undefined) {
+                  return Promise.resolve({
+                    state: "UNAVAILABLE" as const,
+                    conclusion: null,
+                    episode: null,
+                    detail:
+                      "this deployment composes no episode conclusion path; the project journal or the pulse is absent, so a convergence judgement cannot be recorded",
+                    blockers: Object.freeze([]),
+                    readiness: null,
+                    warnings: Object.freeze([]),
+                    session: Object.freeze({
+                      mayEnd: false,
+                      detail: "no episode state can be recorded here; keep working or use the ordinary project surfaces",
+                    }),
+                  });
+                }
+                return deps.episode.conclude(input);
               },
             };
           })();
@@ -358,33 +357,7 @@ export function makeProjectSurfaces(deps: ProjectSurfaceDeps): { readonly projec
     // HTTP authentication never stands in for that approval.
 
     const externalAssets: ExternalAssetsApplicationSurface | undefined =
-      deps.externalAssets === undefined
-        ? undefined
-        : (() => {
-            const bridge = deps.externalAssets!;
-            // The installation's project. A caller may name a projectId, but the plane
-            // refuses one this deployment does not hold (unknown_project), so naming
-            // another project can never widen the bridge's scope.
-            const localProjectId = deps.controller.projectId;
-            return {
-              providers: () => bridge.providers(),
-              search: (input: ExternalAssetSearchInput) => bridge.search(input),
-              inspect: (input: ExternalAssetInspectInput) => bridge.inspect(input),
-              prepareReference: (input: ExternalAssetPrepareReferenceCommand) =>
-                bridge.prepareReference({ ...input, projectId: input.projectId ?? localProjectId }),
-              prepareImport: (input: ExternalAssetPrepareImportCommand) =>
-                bridge.prepareImport({ ...input, projectId: input.projectId ?? localProjectId }),
-              preparePublication: (input: ExternalAssetPreparePublicationCommand) =>
-                bridge.preparePublication({ ...input, projectId: input.projectId ?? localProjectId }),
-              commitReference: (candidate: ExternalAssetReferenceCandidate) =>
-                bridge.commitReference(candidate),
-              commitImport: (candidate: ExternalAssetImportCandidate) =>
-                bridge.commitImport(candidate),
-              approveAndPublish: (preview: ExternalAssetPublicationPreview) =>
-                bridge.approveAndPublish(preview),
-            };
-          })();
-
+      deps.externalAssets === undefined ? undefined : makeExternalAssetsSurface(deps.externalAssets, deps.controller.projectId);
 
   return { projectWorkspace, projectManagement, monitor, verification, externalAssets };
 }

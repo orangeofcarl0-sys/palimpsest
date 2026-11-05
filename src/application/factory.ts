@@ -7,7 +7,7 @@
  */
 
 import { makeWorkSurfaces } from "./surfaces/work.js";
-import type { WorkApplicationSurface } from "./surfaces/work.js";
+import type { ExecutionRelayRecorderPort, ResultContinuationFace, WorkApplicationSurface, WorkDelegationFace } from "./surfaces/work.js";
 import { makeProductSurfaces } from "./surfaces/product.js";
 import type { CollaborationApplicationSurface, ContributionApplicationSurface, ContributionServicePort, CrossProjectApplicationSurface, DelegationApplicationSurface } from "./surfaces/product.js";
 import { makeFederationSurfaces } from "./surfaces/federation.js";
@@ -176,6 +176,8 @@ export interface ApplicationSurfaceDeps {
   readonly contribution?: ContributionServicePort | undefined;
   /** APS-A: the derived continuation view; absent ⇒ the workspace exposes no pulse. */
   readonly projectPulse?: ProjectPulseServicePort | undefined;
+  /** ALHS-A: the episode conclusion face; absent ⇒ `concludeEpisode` reports UNAVAILABLE. */
+  readonly episode?: import("../project_continuity/index.js").EpisodeService | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence service; absent ⇒ no proof surface. */
   readonly proof?: ProofEvidenceService | undefined;
   /** G10-T CF-T-02 (additive): evidence-grounded extraction behind the proof surface. */
@@ -212,6 +214,15 @@ export interface ApplicationSurfaceDeps {
    * bypass and no second approval path.
    */
   readonly externalAssets?: ExternalAssetsApplicationSurface | undefined;
+  /** LHAPE-A: the composed async work-worker transport; absent ⇒ no worker can start. */
+  readonly workDelegation?: WorkDelegationFace | undefined;
+  /** LHAPE-B: the composed result-continuation authority; absent ⇒ no result inspection. */
+  readonly continuation?: ResultContinuationFace | undefined;
+  /**
+   * PWRS-A: the durable execution-relay recorder. Absent ⇒ settlements still carry their observed
+   * attribution, but no journal note is written from the principal path.
+   */
+  readonly executionRelay?: ExecutionRelayRecorderPort | undefined;
 }
 
 

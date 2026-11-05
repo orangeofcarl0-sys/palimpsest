@@ -1,0 +1,73 @@
+{
+  "schema": "alhs-cohort/v1",
+  "cohortId": "pwrs-r4-2026-11-05",
+  "title": "PWRS-R4 — interrupted work: native F vs governed recovery A under the PWRS-D/E gates",
+  "codeFreeze": "e3110c8debaf15a9486720d9d36dbbd7c370e236",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 25000000,
+  "conditions": {
+    "F": {
+      "profile": "headless",
+      "definition": "Native DSH: native tools, native subagents and Git. No Palimpsest project, Work, World, relay or episode conclusion. Same sources and same interruption."
+    },
+    "A": {
+      "profile": "palimpsest-governed",
+      "definition": "Governed Palimpsest recovery with PWRS-D/E: a principal settlement AND a successor refuse while the canonical tree holds inputs the attempt's base never contained, until the caller acknowledges them. The prompt names neither the gate nor the route."
+    }
+  },
+  "stages": [
+    {
+      "id": "pwrs-r4",
+      "conditions": [
+        "F",
+        "A"
+      ],
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 10000000,
+      "sessionPlan": [
+        {
+          "sessionId": "F-1",
+          "condition": "F",
+          "index": 1,
+          "ceiling": 2500000,
+          "reserveTokens": 125000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "F-2",
+          "condition": "F",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 125000
+        },
+        {
+          "sessionId": "A-1",
+          "condition": "A",
+          "index": 1,
+          "ceiling": 2500000,
+          "reserveTokens": 125000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "A-2",
+          "condition": "A",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 125000
+        }
+      ]
+    }
+  ],
+  "measurement": {
+    "business": "7-fact package rubric, unchanged, reported per condition and separated from governance.",
+    "interruption": "session 1 killed at the same 400,000 reported-token milestone in both conditions; the artifact and Git state at that moment are snapshotted outside the run.",
+    "gate": "the measured input is an untracked file under inbox/; A must acknowledge it before a settlement or a successor.",
+    "continuation": "did the work settle and the episode converge within budget, and was the measured input applied?",
+    "reuse": "line overlap with the interruption draft where one exists.",
+    "governance": "A: relay records, attribution, task/attempt states, candidate commit, episode. F: Git state and exit."
+  },
+  "comparison": "Matched F/A under the same scenario, budget and milestone. Descriptive; one pair per condition; no quality or cost advantage claim.",
+  "note": "This is the comparative cohort requested after the PWRS-R3 convergence.",
+  "codeFreezeNote": "product code under test (PWRS-D/E); the R4 harness was committed after this product commit and does not change src/."
+}

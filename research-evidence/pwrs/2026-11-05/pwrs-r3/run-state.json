@@ -1,0 +1,34 @@
+{
+  "schema": "alhs-cohort-run-state/v1",
+  "cohortId": "pwrs-r3-2026-11-05",
+  "stage": "pwrs-r3",
+  "authorization": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\pwrs\\live\\authorization-pwrs-r3.json",
+  "adapter": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\pwrs\\interruption_adapter.mjs",
+  "startedAt": "2026-11-05T02:32:05.158Z",
+  "sessions": [
+    {
+      "sessionId": "A-1",
+      "condition": "A",
+      "index": 1,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "killAtTokens": 400000,
+      "profile": "palimpsest-governed",
+      "exitCode": 0,
+      "endedAt": "2026-11-05T02:34:05.983Z"
+    },
+    {
+      "sessionId": "A-2",
+      "condition": "A",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "softStopAt": 2375000,
+      "profile": "palimpsest-governed",
+      "exitCode": 0,
+      "endedAt": "2026-11-05T02:37:19.166Z"
+    }
+  ],
+  "endedAt": "2026-11-05T02:37:19.167Z"
+}

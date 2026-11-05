@@ -1,0 +1,258 @@
+{
+  "schema": "lhape-operator-promotions/v1",
+  "records": [
+    {
+      "schema": "lhape-operator-promotion/v1",
+      "label": "capacity-v2",
+      "projectId": "lhape",
+      "taskId": "capacity-v2",
+      "operator": "owner-authorized deterministic acceptance",
+      "acceptedAt": "2026-11-03T16:47:30.133Z",
+      "promoted": true,
+      "attemptId": "attempt-2529e9f62f502b8bb093fb3f36baf506",
+      "before": {
+        "revision": 1,
+        "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "VERIFYING"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "VERIFYING"
+          },
+          {
+            "taskId": "integration",
+            "state": "BLOCKED"
+          }
+        ]
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+      },
+      "result": {
+        "promotionId": "promotion-6756e1f58461b01a0fe92480a516440b",
+        "sourceCommit": "454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+        "expectedHeadCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "resultingHeadCommit": "60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "headReconciliation": {
+        "status": "blocked",
+        "fromHead": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "toHead": "60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "blockers": [
+          "quiescence_required: the project must be quiescent before the head advances: every ACTIVE/VERIFYING task and open attempt must settle (a promoted task must reach SATISFIED first)"
+        ]
+      },
+      "after": {
+        "revision": 1,
+        "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "VERIFYING"
+          },
+          {
+            "taskId": "integration",
+            "state": "BLOCKED"
+          }
+        ]
+      }
+    },
+    {
+      "schema": "lhape-operator-promotion/v1",
+      "label": "cost-v2",
+      "projectId": "lhape",
+      "taskId": "cost-v2",
+      "operator": "owner-authorized deterministic acceptance",
+      "acceptedAt": "2026-11-03T16:48:30.293Z",
+      "promoted": true,
+      "attemptId": "attempt-c418ae85024b0845a8a0e5ad7077d3df",
+      "before": {
+        "revision": 2,
+        "headCommit": "60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "VERIFYING"
+          },
+          {
+            "taskId": "integration",
+            "state": "BLOCKED"
+          }
+        ]
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "51a6e3d612dd58c4ea963105727fc45f475b9b71",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "60c250622f38a416144dd038a0a8c8d38fddcb04"
+      },
+      "result": {
+        "promotionId": "promotion-232e47a54f0da9d659b35e9102ec38f9",
+        "sourceCommit": "51a6e3d612dd58c4ea963105727fc45f475b9b71",
+        "expectedHeadCommit": "60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "resultingHeadCommit": "c852acd09863ac1f384193421255f67c581ae5db",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "headReconciliation": {
+        "status": "reconciled",
+        "revision": 3,
+        "fromHead": "60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "toHead": "c852acd09863ac1f384193421255f67c581ae5db",
+        "blockers": []
+      },
+      "after": {
+        "revision": 3,
+        "headCommit": "c852acd09863ac1f384193421255f67c581ae5db",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "integration",
+            "state": "BLOCKED"
+          }
+        ]
+      }
+    },
+    {
+      "schema": "lhape-operator-promotion/v1",
+      "label": "integration",
+      "projectId": "lhape",
+      "taskId": "integration",
+      "operator": "owner-authorized deterministic acceptance",
+      "acceptedAt": "2026-11-03T16:49:29.174Z",
+      "promoted": true,
+      "attemptId": "attempt-fa4d7eb90e90d4b08e14de6d2a53cbd5",
+      "before": {
+        "revision": 3,
+        "headCommit": "c852acd09863ac1f384193421255f67c581ae5db",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "integration",
+            "state": "VERIFYING"
+          }
+        ]
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "56c2ff90dd612f389dca934c9752101750a344fa",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "c852acd09863ac1f384193421255f67c581ae5db"
+      },
+      "result": {
+        "promotionId": "promotion-c5a02bad2d5a85c83af36dc44baf5ab1",
+        "sourceCommit": "56c2ff90dd612f389dca934c9752101750a344fa",
+        "expectedHeadCommit": "c852acd09863ac1f384193421255f67c581ae5db",
+        "resultingHeadCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "headReconciliation": {
+        "status": "reconciled",
+        "revision": 4,
+        "fromHead": "c852acd09863ac1f384193421255f67c581ae5db",
+        "toHead": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+        "blockers": []
+      },
+      "after": {
+        "revision": 4,
+        "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+        "tasks": [
+          {
+            "taskId": "capacity",
+            "state": "STALE"
+          },
+          {
+            "taskId": "capacity-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "cost",
+            "state": "STALE"
+          },
+          {
+            "taskId": "cost-v2",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "integration",
+            "state": "SATISFIED"
+          }
+        ]
+      }
+    }
+  ]
+}

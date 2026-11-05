@@ -10,6 +10,7 @@
  * Usage:
  *   node budget_guard.mjs --session-root <dir> --max-tokens <n> --target-pid <pid>
  *                         --ledger <path> [--stopped <path>] [--poll-ms 500]
+ *                         [--reserve-tokens <n>]   # one-message buffer; stops below the ceiling
  */
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -23,6 +24,14 @@ const args = new Map(
 );
 const sessionRoot = resolve(String(args.get("session-root") ?? ""));
 const maxTokens = Number(args.get("max-tokens") ?? "0");
+/**
+ * ALHS-C: the one-message buffer. The guard observes usage only AFTER a message completes, so a stop
+ * at exactly `maxTokens` can overshoot by one message. A reserve stops at `maxTokens - reserve`, which
+ * keeps the session (and the aggregate, when every allocation carries the same discipline) inside the
+ * authorization. It is a ceiling, not a promise: the last in-flight message can still be billed.
+ */
+const reserveTokens = Number(args.get("reserve-tokens") ?? "0");
+const softCeiling = maxTokens - reserveTokens;
 const targetPid = Number(args.get("target-pid") ?? "0");
 const ledgerPath = String(args.get("ledger") ?? "");
 const stoppedPath = String(args.get("stopped") ?? "");
@@ -30,6 +39,10 @@ const pollMs = Math.max(100, Number(args.get("poll-ms") ?? "500"));
 
 if (!Number.isSafeInteger(maxTokens) || maxTokens < 1) {
   process.stderr.write("budget_guard: --max-tokens must be a positive integer\n");
+  process.exit(2);
+}
+if (!Number.isSafeInteger(reserveTokens) || reserveTokens < 0 || reserveTokens >= maxTokens) {
+  process.stderr.write("budget_guard: --reserve-tokens must be a non-negative integer below --max-tokens\n");
   process.exit(2);
 }
 if (!Number.isSafeInteger(targetPid) || targetPid < 1) {
@@ -136,6 +149,9 @@ function stopTarget(reason) {
     stoppedAt: new Date().toISOString(),
     reason,
     maxTokens,
+    reserveTokens,
+    softCeiling,
+    totalTokens: usage.total,
     targetPid,
     sessionRoot,
   };
@@ -143,6 +159,8 @@ function stopTarget(reason) {
     schema: "aps-budget-ledger/v1",
     observedAt: stopped.stoppedAt,
     maxTokens,
+    reserveTokens,
+    softCeiling,
     totalTokens: usage.total,
     sessionFiles: usage.files,
     state: "STOPPED",
@@ -171,14 +189,20 @@ const timer = setInterval(() => {
       schema: "aps-budget-ledger/v1",
       observedAt: new Date().toISOString(),
       maxTokens,
+      reserveTokens,
+      softCeiling,
       totalTokens: usage.total,
       sessionFiles: usage.files,
-      state: usage.total > maxTokens ? "STOPPED" : "RUNNING",
+      state: usage.total > softCeiling ? "STOPPED" : "RUNNING",
     });
   }
-  if (usage.total > maxTokens) {
+  if (usage.total > softCeiling) {
     clearInterval(timer);
-    stopTarget("the reported cumulative tokens exceeded the authorized ceiling");
+    stopTarget(
+      reserveTokens === 0
+        ? "the reported cumulative tokens exceeded the authorized ceiling"
+        : `the reported cumulative tokens reached the reserved soft ceiling (${String(softCeiling)} = ${String(maxTokens)} - ${String(reserveTokens)} reserve)`,
+    );
   }
 }, pollMs);
 
@@ -189,6 +213,8 @@ process.on("SIGTERM", () => {
     schema: "aps-budget-ledger/v1",
     observedAt: new Date().toISOString(),
     maxTokens,
+    reserveTokens,
+    softCeiling,
     totalTokens: usage.total,
     sessionFiles: usage.files,
     state: "GUARD_TERMINATED",

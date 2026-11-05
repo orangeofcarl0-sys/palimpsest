@@ -27,6 +27,7 @@ import {
   makeWorkDelegationService,
   type CorrelatedSessionIdentityObservation as Correlated,
 } from "../src/interaction/work_delegation.js";
+import { makeExecutionInvocationLedger } from "../src/work/execution_relay.js";
 import {
   SqliteExecutionAssociationStore,
   computeTrustedSourceBasis,
@@ -178,6 +179,9 @@ describe("P2D0 §6.4 — real Parent IPC: three distinct identities survive to t
         settleMutatingWork: async () => ({ state: "READY" }),
         attemptWorkRecord: () => null,
         fetchContext: async () => undefined,
+        // PWRS-A: the real controller exposes the invocation ledger; the fixture must supply the same
+        // narrow port or the service refuses before spawning the real child.
+        executionInvocations: makeExecutionInvocationLedger(),
       } as never,
       workerFor: () => port,
       onCorrelatedSessionIdentity: (entry) => recorder.recordIdentity(entry),

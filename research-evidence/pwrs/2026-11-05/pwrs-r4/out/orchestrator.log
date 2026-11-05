@@ -1,0 +1,238 @@
+(node:44644) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+warning: in the working copy of 'TASK.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'inbox/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/capacity.csv', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/sites.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/vendors.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'TASK.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'inbox/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/capacity.csv', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/sites.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources/vendors.md', LF will be replaced by CRLF the next time Git touches it
+stopping stale provider proxy 49400
+stopping stale provider proxy 42852
+cohort:
+{"runState":"C:\\Users\\66494\\pwrs-r4\\run-2026-11-05\\out\\gate\\run-state.json","sessions":4}
+score:
+{
+  "schema": "pwrs-r-score/v1",
+  "cohortId": "pwrs-r4-2026-11-05",
+  "generatedAt": "2026-11-05T03:17:25.156Z",
+  "conditions": {
+    "F": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7
+      },
+      "final": {
+        "source": "CANONICAL_WORKTREE",
+        "commit": null,
+        "path": "deliverables/package.md",
+        "bytes": 40974,
+        "sha256": "9fe954ea76934d63447ae9dc8b8d6a6513249f4f1c0b4fbf349cc781e944c120"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-05T03:05:26.162Z",
+        "canonicalHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+        "canonicalStatus": "?? .palimpsest/\n?? deliverables/\n?? inbox/2026-11-03/",
+        "deliverables": [
+          "package.md"
+        ],
+        "retainedWorlds": [],
+        "longestTextSource": "canonical/package.md",
+        "longestTextBytes": 39939
+      },
+      "reuse": {
+        "beforeLines": 350,
+        "carriedLines": 334,
+        "carriedRatio": 0.954
+      },
+      "sessions": [
+        {
+          "sessionId": "F-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": 1,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 418992,
+          "maxTokens": 2500000,
+          "calls": {
+            "working_directory": 2,
+            "glob": 3,
+            "read": 14,
+            "pwsh": 17,
+            "todo_write": 1,
+            "subagent": 1,
+            "job_output": 2,
+            "job_kill": 1,
+            "write": 1,
+            "grep": 3,
+            "send_message": 1
+          }
+        },
+        {
+          "sessionId": "F-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 1,
+          "stopped": true,
+          "natural": false,
+          "totalTokens": 2403625,
+          "maxTokens": 2500000,
+          "calls": {
+            "pwsh": 27,
+            "read": 23,
+            "grep": 3,
+            "edit": 21,
+            "subagent": 1,
+            "list_agents": 9,
+            "send_message": 1,
+            "interrupt_agent": 1
+          }
+        }
+      ],
+      "governance": null
+    },
+    "A": {
+      "rubric": {
+        "criteria": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7
+      },
+      "final": {
+        "source": "ATTEMPT_WORLD",
+        "commit": null,
+        "path": ".palimpsest\\worlds\\attempt-c462521f299c2a7a760ea08ceb746b53\\deliverables\\package.md",
+        "bytes": 25790,
+        "sha256": "9bc495b0d3bda40bd18da47ba4188d607599e55f46203aa23df695aa9617be76"
+      },
+      "interruption": {
+        "exists": true,
+        "at": "2026-11-05T03:10:24.182Z",
+        "canonicalHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+        "canonicalStatus": "?? .palimpsest/\n?? inbox/2026-11-03/",
+        "deliverables": [],
+        "retainedWorlds": [
+          {
+            "name": "attempt-8cd6e9cd0d81eaadf9a78610547db899",
+            "head": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "subject": "scenario base",
+            "status": "",
+            "deliverables": []
+          }
+        ],
+        "longestTextSource": null,
+        "longestTextBytes": 0
+      },
+      "reuse": {
+        "beforeLines": 0,
+        "carriedLines": 0,
+        "carriedRatio": null
+      },
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "index": 1,
+          "killedBy": "token_milestone",
+          "exitCode": 1,
+          "stopped": false,
+          "natural": false,
+          "totalTokens": 421015,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 4,
+            "palimpsest_continuity": 1,
+            "pwsh": 9,
+            "read": 6,
+            "palimpsest_work": 8,
+            "job_list": 1
+          }
+        },
+        {
+          "sessionId": "A-2",
+          "index": 2,
+          "killedBy": null,
+          "exitCode": 1,
+          "stopped": true,
+          "natural": false,
+          "totalTokens": 2420961,
+          "maxTokens": 2500000,
+          "calls": {
+            "run_code": 7,
+            "palimpsest_continuity": 1,
+            "pwsh": 20,
+            "read": 7,
+            "palimpsest_work": 21,
+            "job_output": 1,
+            "edit": 16
+          }
+        }
+      ],
+      "governance": {
+        "tasks": [
+          {
+            "taskId": "package",
+            "state": "ACTIVE"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-8cd6e9cd0d81eaadf9a78610547db899",
+            "taskId": "package",
+            "state": "CANCELLED",
+            "resultCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03"
+          },
+          {
+            "attemptId": "attempt-c462521f299c2a7a760ea08ceb746b53",
+            "taskId": "package",
+            "state": "RUNNING",
+            "resultCommit": null
+          }
+        ],
+        "promotions": [],
+        "relay": [
+          {
+            "schema": "pc1-execution-relay/v1",
+            "taskId": "package",
+            "attemptId": "attempt-8cd6e9cd0d81eaadf9a78610547db899",
+            "resultCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "baseCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+            "attribution": {
+              "schema": "pc1-execution-attribution/v1",
+              "attribution": "UNATTRIBUTED",
+              "executor": "UNKNOWN",
+              "settledBy": "PRINCIPAL",
+              "workerInvocations": 0,
+              "matchedInvocationId": null,
+              "liveness": "DECLARED_ABANDONED",
+              "independenceEligible": false,
+              "evidence": "DECLARED",
+              "detail": "the principal closed this attempt as a SUCCESSOR because no writer was observed; the retained world stays available for reuse, and no result was settled or accepted"
+            },
+            "recordedAt": "2026-11-05T03:11:33.974Z",
+            "recordId": "relay-71c6c3616f7c4237f24b07f7"
+          }
+        ],
+        "episodes": []
+      }
+    }
+  }
+}

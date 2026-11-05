@@ -1,0 +1,276 @@
+{
+  "schema": "lhape-final-pulse/v1",
+  "scenario": "interrupt",
+  "note": "Derived product read after the deterministic host run. The model content is scripted; the host, workers and effects are real.",
+  "project": {
+    "goal": "Recover a delivered candidate after the host process is killed, without re-running the work.",
+    "revision": 1,
+    "digest": "f386c467b5d6bca3c61cb5bb7939d2e50c527983ba592527067766b576482b5c",
+    "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+    "decisions": [],
+    "tasks": [
+      {
+        "taskId": "interrupted-write",
+        "objective": "Write the interrupted recovery artifact from sources/sites.md into deliverables/interrupted.md.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/interrupted.md"
+        ]
+      }
+    ]
+  },
+  "status": {
+    "tasks": [
+      {
+        "taskId": "interrupted-write",
+        "state": "SATISFIED"
+      }
+    ],
+    "attempts": [
+      {
+        "attemptId": "attempt-59321843b3fc4ed8199878eda7028311",
+        "taskId": "interrupted-write",
+        "state": "COMPLETED",
+        "orphaned": false,
+        "taskState": null
+      }
+    ],
+    "nextAction": {
+      "kind": "NO_ACTION",
+      "executable": false,
+      "action": null,
+      "detail": "every declared task is terminal; there is no legal formal transition left",
+      "taskId": null,
+      "blockers": []
+    }
+  },
+  "journal": [],
+  "artifacts": [
+    {
+      "path": "deliverables/capacity.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    {
+      "path": "deliverables/cost.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    {
+      "path": "deliverables/capacity-v2.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    {
+      "path": "deliverables/cost-v2.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    {
+      "path": "deliverables/integration.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    {
+      "path": "deliverables/interrupted.md",
+      "present": true,
+      "sha256": "7a4c7f3326cf71378e7d2688f5792757a3758f6ae0f0848f70386aa295ccb627",
+      "text": "# Interrupted recovery artifact\r\n\r\nThis artifact was written and committed by a real worker before the host was killed. The worker did not report an outcome; the new host observes the world.\r\n"
+    }
+  ],
+  "pulse": {
+    "schema": "pc1-project-pulse/v1",
+    "projectId": "lhape-interrupt",
+    "goal": "Recover a delivered candidate after the host process is killed, without re-running the work.",
+    "basis": {
+      "projectRevision": 1,
+      "projectDigest": "f386c467b5d6bca3c61cb5bb7939d2e50c527983ba592527067766b576482b5c",
+      "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+      "observedAt": "2026-11-03T16:50:28.984Z"
+    },
+    "requirements": [
+      {
+        "id": "requirement:R1",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "R1 (critical)",
+        "detail": "Every deliverable must stay inside its declared write scope.",
+        "sourceRefs": [
+          "requirement:R1",
+          "revision:1"
+        ],
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "f386c467b5d6bca3c61cb5bb7939d2e50c527983ba592527067766b576482b5c",
+          "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+          "observedAt": "2026-11-03T16:50:28.984Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the project's current ProjectIR revision",
+        "reopenConditions": [
+          "an operator intent revision that changes or removes this requirement"
+        ]
+      },
+      {
+        "id": "requirement:R2",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "R2 (critical)",
+        "detail": "A measured constraint supersedes an assumed one; do not silently keep the assumption.",
+        "sourceRefs": [
+          "requirement:R2",
+          "revision:1"
+        ],
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "f386c467b5d6bca3c61cb5bb7939d2e50c527983ba592527067766b576482b5c",
+          "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+          "observedAt": "2026-11-03T16:50:28.984Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the project's current ProjectIR revision",
+        "reopenConditions": [
+          "an operator intent revision that changes or removes this requirement"
+        ]
+      }
+    ],
+    "acceptedAssets": [
+      {
+        "id": "promotion:promotion-49ac1497bdc7c65c4002f5757b27be5f",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "Accepted result for interrupted-write",
+        "detail": "source commit fe4c0d561b9fcc109449222598af201e2f195ea7 was promoted onto 95ee8152002ecd1f1b202ca2e2cfb67f54bc362e; resulting head 5042ccb167248a7f8087b04817da23d6712e8c14",
+        "sourceRefs": [
+          "promotion:promotion-49ac1497bdc7c65c4002f5757b27be5f",
+          "commit:fe4c0d561b9fcc109449222598af201e2f195ea7",
+          "commit:5042ccb167248a7f8087b04817da23d6712e8c14"
+        ],
+        "basis": {
+          "projectRevision": 1,
+          "projectDigest": "f386c467b5d6bca3c61cb5bb7939d2e50c527983ba592527067766b576482b5c",
+          "headCommit": "5042ccb167248a7f8087b04817da23d6712e8c14",
+          "observedAt": "2026-11-03T16:50:28.984Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the promotion effect recorded by the canonical Promotion path",
+        "reopenConditions": [
+          "a later accepted source revision or a re-evaluation of the result's subject"
+        ],
+        "historicalAcceptance": "ACCEPTED",
+        "currentApplicability": "UNKNOWN",
+        "applicabilityBasis": "no current-world compatibility assessment is composed for this result; historical acceptance is not proof that it still applies"
+      }
+    ],
+    "candidates": [],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "recentChanges": [],
+    "pendingWork": [],
+    "blocked": [],
+    "contributions": [],
+    "delegations": [],
+    "execution": {
+      "placement": "worktree",
+      "attempts": [
+        {
+          "taskId": "interrupted-write",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        }
+      ],
+      "jobs": [],
+      "detail": "this deployment composes no work-worker transport; canonical attempts are visible but no host job can be observed"
+    },
+    "decisionQueue": [],
+    "nextActions": {
+      "mechanical": [
+        "agent: every declared task is terminal; there is no legal formal transition left",
+        "agent: propose the next bounded step in the project journal"
+      ],
+      "decisionRelevant": [
+        "agent: no decision is pending; read the recent changes and propose the next bounded step if the goal is not yet met"
+      ],
+      "distinction": "mechanical actions are what the scheduler/product can legally execute next; decisionRelevant items are advisory judgements about what may advance the project, not authority, acceptance or a promise of value"
+    },
+    "authorityBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "sources": [
+      {
+        "ref": "commit:5042ccb167248a7f8087b04817da23d6712e8c14",
+        "digest": "5042ccb167248a7f8087b04817da23d6712e8c14"
+      },
+      {
+        "ref": "commit:fe4c0d561b9fcc109449222598af201e2f195ea7",
+        "digest": "fe4c0d561b9fcc109449222598af201e2f195ea7"
+      },
+      {
+        "ref": "promotion:promotion-49ac1497bdc7c65c4002f5757b27be5f",
+        "digest": null
+      },
+      {
+        "ref": "requirement:R1",
+        "digest": null
+      },
+      {
+        "ref": "requirement:R2",
+        "digest": null
+      },
+      {
+        "ref": "revision:1",
+        "digest": null
+      }
+    ],
+    "coverage": {
+      "complete": false,
+      "unavailable": [
+        "delegation runtime (not composed)"
+      ],
+      "omitted": []
+    },
+    "digest": "a6a7b310e3f48bddafc5e12cf47e4e4ff2d00bf130fa9207e5e7ca2e9ca98324"
+  },
+  "workers": {
+    "placement": "worktree",
+    "jobs": [],
+    "attempts": [
+      {
+        "taskId": "interrupted-write",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      }
+    ],
+    "detail": "no worker transport is composed in this deployment; only canonical attempt state is observable"
+  },
+  "results": {
+    "state": "OK",
+    "results": [
+      {
+        "taskId": "interrupted-write",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "UNKNOWN",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "03ed4b2cb5a16d94f05e20ba98fb37f0678ded99611a9029109244f0da70b3eb",
+        "resultCommit": "fe4c0d561b9fcc109449222598af201e2f195ea7",
+        "detail": "reuse is not proven (a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused); the work may still be redone on the current basis"
+      }
+    ],
+    "detail": "each result is historical until an authorized Promotion accepts it; the digest is the freshness fence for a continuation route"
+  }
+}

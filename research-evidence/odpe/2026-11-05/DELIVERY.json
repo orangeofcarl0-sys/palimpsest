@@ -1,0 +1,101 @@
+{
+  "schema": "odpe-delivery/v1",
+  "stage": "ODPE",
+  "date": "2026-11-05",
+  "baseline": {
+    "main": "d16800fbe3d1a6172b66b466b227c5fddbb45b98",
+    "branch": "palimpsest-autonomous-long-horizon-synthesis",
+    "stageStart": "99539549d89b64301bdb82cdd70d2880bc13e43a"
+  },
+  "productCommit": "80358dbfb65026517e14d5e32a694fa6783a00b7",
+  "resultCommit": null,
+  "resultCommitNote": "the commit that adds this evidence directory and docs/engineering/ODPE-RESULT.md",
+  "modelCalls": {
+    "realModelSessions": 0,
+    "paidTokens": 0,
+    "note": "ODPE-A/B/C were executed with the deterministic labelled Messages stand-in on a real Windows DSH host. No paid provider call was made; the PWRS/ALHS authorizations do not transfer."
+  },
+  "hostRun": {
+    "schema": "odpe-host-summary/v1",
+    "sessions": 3,
+    "projectId": "odpe",
+    "taskId": "billing-cutover",
+    "inputPath": "updates/2026-11-03/payload-measurement.md",
+    "inputDigest": "9f15b493d96f70b6c91aa6a3e9890c0089f34a082c687ea77b3f82ec6693299b */c/Users/66494/odpe-runs/host-1/world/updates/2026-11-03/payload-measurement.md",
+    "inputInCanonicalCommit": false,
+    "deliveredToAnAttempt": true,
+    "workerPulls": [
+      {
+        "log": "worker-3324.log",
+        "pulled": [
+          "@ctx/input/updates/2026-11-03/payload-measurement.md"
+        ]
+      }
+    ],
+    "attempts": [
+      {
+        "attemptId": "attempt-afc792e5f4b8706ae3209ad4cfebe7f4",
+        "state": "CANCELLED",
+        "resultCommit": "c14540fcf679a72ceb36730ceacd76aebc10dbcb"
+      },
+      {
+        "attemptId": "attempt-3b2a6e1f6ee4bbee5e22412c96761d03",
+        "state": "COMPLETED",
+        "resultCommit": "c37b04b694e25cdb8314ea8c5dc5809d8f73f828"
+      }
+    ],
+    "relay": "ORIGINAL_WORKER_OBSERVED",
+    "liveness": "OBSERVED_EXIT",
+    "promotion": "promotion-424f55dd0cf5e132d84964812fd380c4",
+    "taskState": "SATISFIED",
+    "episode": "DELIVERED",
+    "gitHead": "be6c0d9e41d944ac055624311a9113ae1a4924ea"
+  },
+  "tests": {
+    "build": "pass",
+    "architecture": "pass (0 violations; controller 4828 LOC / fanOut 39)",
+    "publicApi": "pass (0 missing / 0 changed / 0 added)",
+    "hotspotFiles": 16,
+    "hotspotTests": 143,
+    "fullUnitSuiteLocal": {
+      "passedFiles": 422,
+      "failedFiles": 32,
+      "note": "before the last three fixes; the 32-file re-run is 3 passed / 29 failed, all 29 pre-existing local Windows/DSH groups confirmed on a stashed clean HEAD"
+    },
+    "windowsHostBoundary": "covered by the real host run and the existing r1-hr workflow; unchanged by ODPE"
+  },
+  "changedFiles": [
+    "scripts/lhape/mock_llm.mjs",
+    "scripts/odpe/prepare_odpe.mjs",
+    "scripts/odpe/run_odpe_host.sh",
+    "scripts/odpe/stop_hosts.ps1",
+    "scripts/odpe/summarize_odpe.mjs",
+    "src/adapters/dsh/normal.ts",
+    "src/application/normal_work.ts",
+    "src/application/project_assets.ts",
+    "src/application/surfaces/project.ts",
+    "src/application/surfaces/work.ts",
+    "src/application/work_contract.ts",
+    "src/application/work_execution.ts",
+    "src/application/work_outcome.ts",
+    "src/application/work_projection.ts",
+    "src/application/work_runtime.ts",
+    "src/application/work_settlement.ts",
+    "src/composition/application.ts",
+    "src/composition/continuity.ts",
+    "src/context/distribution.ts",
+    "src/context/manifest.ts",
+    "src/context/service.ts",
+    "src/install.ts",
+    "src/schema/models.ts",
+    "src/tools/controller.ts",
+    "src/work/attempt_execution.ts",
+    "src/work/unseen_inputs.ts",
+    "test/architecture/dsh_adapter_clusters.test.ts",
+    "test/lhape_execution_surface.test.ts",
+    "test/odpe_current_inputs.test.ts",
+    "test/odpe_outcome.test.ts",
+    "test/trajectory_p2d0_ipc_preservation.test.ts"
+  ],
+  "note": "The PR's cumulative diff includes LHAPE/ALHS/PWRS; this list is the ODPE net change only."
+}

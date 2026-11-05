@@ -14,7 +14,7 @@ import { knowledgeHandleBytes, type KnowledgeBinding } from "./knowledge.js";
 
 export interface ContextDistributionEntry {
   readonly handle: string;
-  readonly kind: "exact" | "source" | "evidence" | "proof" | "reasoning" | "procedure";
+  readonly kind: "exact" | "source" | "evidence" | "proof" | "reasoning" | "procedure" | "input";
   readonly ref: string;
   readonly bytes: number;
 }
@@ -67,6 +67,11 @@ export function distributeContext(
       handles.push({ handle, kind: "source", ref: source.path });
     }
   }
+  // ODPE-A: a current input is PULL-ONLY. The index carries its path, identity and digest; the body
+  // is read at pull time and refused if the canonical bytes moved after this attempt was compiled.
+  for (const input of manifest.inputs ?? []) {
+    handles.push({ handle: `@ctx/input/${input.path}`, kind: "input", ref: input.path });
+  }
   for (const evidenceId of manifest.evidence) {
     const handle = `@ctx/evidence/${evidenceId}`;
     const bytes = Buffer.byteLength(evidenceId, "utf8");
@@ -82,7 +87,7 @@ export function distributeContext(
 
 /** PLMP-CTX-4 §1.1 (E1-K §9 / E5-P §17): the handle kinds and their prefixes. */
 export function contextHandle(
-  kind: "exact" | "source" | "evidence" | "proof" | "reasoning" | "procedure",
+  kind: "exact" | "source" | "evidence" | "proof" | "reasoning" | "procedure" | "input",
   ref: string,
 ): string {
   switch (kind) {
@@ -98,6 +103,8 @@ export function contextHandle(
       return `@ctx/reasoning/${ref}`;
     case "procedure":
       return `@ctx/procedure/${ref}`;
+    case "input":
+      return `@ctx/input/${ref}`;
   }
 }
 

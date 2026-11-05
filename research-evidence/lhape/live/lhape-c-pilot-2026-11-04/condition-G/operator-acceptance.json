@@ -1,0 +1,47 @@
+{
+  "schema": "lhape-pilot-g-acceptance/v1",
+  "taskId": "package",
+  "attemptId": "attempt-22e2c15a3025c4de02bb12be2c41aa2d",
+  "promoted": true,
+  "before": {
+    "revision": 0,
+    "headCommit": "948f5c30854404ee87356e29423abe15190ba983",
+    "tasks": [
+      {
+        "taskId": "package",
+        "state": "VERIFYING"
+      }
+    ]
+  },
+  "recovery": {
+    "state": "SETTLED",
+    "taskId": "package",
+    "detail": "the attempt is COMPLETED with result commit 3789dec2a75e; the canonical object database can now read 3789dec2a75e; no ref, working tree or project revision changed; every mechanical check held for candidate 3789dec2a75e — this host observed the world; it does not claim the previous worker process is still alive",
+    "resultCommit": "3789dec2a75eafacff6883584ba1cd2f13aeb4b5",
+    "changedFiles": [
+      "deliverables/package.md"
+    ]
+  },
+  "eligibility": {
+    "eligible": true,
+    "blockers": [],
+    "sourceCommit": "3789dec2a75eafacff6883584ba1cd2f13aeb4b5",
+    "taskState": "VERIFYING"
+  },
+  "result": {
+    "promotionId": "promotion-538246e10369be9a17a6600dc503f805",
+    "sourceCommit": "3789dec2a75eafacff6883584ba1cd2f13aeb4b5",
+    "expectedHeadCommit": "948f5c30854404ee87356e29423abe15190ba983",
+    "resultingHeadCommit": "1d4132b635944ae017e7531e3631b515c550fc6b"
+  },
+  "after": {
+    "revision": 1,
+    "headCommit": "1d4132b635944ae017e7531e3631b515c550fc6b",
+    "tasks": [
+      {
+        "taskId": "package",
+        "state": "SATISFIED"
+      }
+    ]
+  }
+}

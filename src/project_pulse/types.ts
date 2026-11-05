@@ -10,7 +10,7 @@
  *
  * Only the first is an executable fact. The second is not authority.
  */
-import type { ContinuityBasis, ContinuityItem, ContinuityTask, ProjectSummary } from "../project_continuity/index.js";
+import type { ContinuityBasis, ContinuityItem, ContinuityTask, ProjectSummary, PulseEpisode } from "../project_continuity/index.js";
 import type { ContributionChainEntry, DelegationPulseEntry } from "../project_contribution/types.js";
 
 export const PULSE_DECISION_KINDS = [
@@ -19,6 +19,11 @@ export const PULSE_DECISION_KINDS = [
   "STALE_CONTRIBUTION",
   "TERMINAL_DELEGATION",
   "INTERRUPTED_DELEGATION",
+  "EXECUTION_UNOBSERVED",
+  "ORPHANED_EXECUTION",
+  "STOP_REQUESTED",
+  "STALE_RESULT",
+  "EPISODE_REOPENED",
   "BLOCKED_EFFECT",
   "OPEN_QUESTION",
 ] as const;
@@ -31,6 +36,42 @@ export interface PulseDecisionItem {
   readonly who: "OPERATOR" | "AGENT";
   /** Always true: this is a judgement prompt, never a permission or an acceptance. */
   readonly advisory: true;
+}
+
+/**
+ * LHAPE-A/B: what this host can honestly say about execution right now.
+ *
+ * `hostObserved` is the load-bearing distinction: a canonical attempt may be RUNNING while no worker
+ * exists in THIS process (a restart, a killed host, a different host). That is UNOBSERVED, not alive.
+ */
+export interface PulseExecutionView {
+  readonly placement: "in-place" | "worktree" | "UNKNOWN";
+  readonly attempts: readonly {
+    readonly taskId: string | null;
+    readonly state: string;
+    readonly taskState: string | null;
+    readonly orphaned: boolean;
+    readonly hostObserved: boolean;
+    /**
+     * PWRS-A: the durable settlement attribution for this task's latest result, when one was
+     * recorded. `null` means no settlement record exists — not that a worker wrote it.
+     */
+    readonly relay?: {
+      readonly attribution: string;
+      readonly executor: string;
+      readonly settledBy: string;
+      readonly resultCommit: string;
+      readonly independenceEligible: boolean;
+      readonly detail: string;
+    } | null;
+  }[];
+  readonly jobs: readonly {
+    readonly taskId: string;
+    readonly phase: string;
+    readonly settlementState: string | null;
+    readonly stopRequested: boolean;
+  }[];
+  readonly detail: string;
 }
 
 export interface ProjectPulse {
@@ -48,6 +89,12 @@ export interface ProjectPulse {
   readonly blocked: readonly ContinuityItem[];
   readonly contributions: readonly ContributionChainEntry[];
   readonly delegations: readonly DelegationPulseEntry[];
+  readonly execution: PulseExecutionView;
+  /**
+   * ALHS-A: the episode's own convergence state. It is a judgement recorded by the principal plus the
+   * product's factual readiness check — never an acceptance, and never proof that the goal is met.
+   */
+  readonly episode: PulseEpisode;
   readonly decisionQueue: readonly PulseDecisionItem[];
   readonly nextActions: {
     /** What the scheduler/product can mechanically execute next. */

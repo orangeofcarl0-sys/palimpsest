@@ -1,0 +1,225 @@
+{
+  "schema": "odpe-host-summary/v1",
+  "run": "C:\\Users\\66494\\odpe-runs\\host-1",
+  "projectId": "odpe",
+  "taskId": "billing-cutover",
+  "generatedAt": "2026-11-05T07:09:29.547Z",
+  "timeline": {
+    "partialCommittedAt": "2026-11-05T07:05:58Z",
+    "killedAt": "2026-11-05T07:06:02Z",
+    "constraintArrivedAt": "2026-11-05T07:06:03Z",
+    "measuredCommitAt": "2026-11-05T07:06:30Z",
+    "finalizedAt": "2026-11-05T07:06:37Z",
+    "promotedAt": "2026-11-05T07:06:43Z"
+  },
+  "recovery": {
+    "attemptStateAfterKill": "RUNNING",
+    "retainedWorldHeadBeforeSuccessor": "c14540fcf679a72ceb36730ceacd76aebc10dbcb",
+    "retainedWorldSubjectBeforeSuccessor": "write worker migration plan partial"
+  },
+  "tasks": [
+    {
+      "taskId": "billing-cutover",
+      "state": "SATISFIED"
+    }
+  ],
+  "attempts": [
+    {
+      "attemptId": "attempt-afc792e5f4b8706ae3209ad4cfebe7f4",
+      "taskId": "billing-cutover",
+      "state": "CANCELLED",
+      "report": {
+        "resultCommit": "c14540fcf679a72ceb36730ceacd76aebc10dbcb",
+        "workerStatus": "cancelled",
+        "changedFiles": [
+          "deliverables/migration-plan.md"
+        ]
+      }
+    },
+    {
+      "attemptId": "attempt-3b2a6e1f6ee4bbee5e22412c96761d03",
+      "taskId": "billing-cutover",
+      "state": "COMPLETED",
+      "report": {
+        "resultCommit": "c37b04b694e25cdb8314ea8c5dc5809d8f73f828",
+        "workerStatus": "completed",
+        "changedFiles": [
+          "deliverables/migration-plan.md"
+        ]
+      }
+    }
+  ],
+  "promotions": [
+    {
+      "promotionId": "promotion-424f55dd0cf5e132d84964812fd380c4",
+      "state": "COMMITTED",
+      "taskId": "billing-cutover",
+      "attemptId": "attempt-3b2a6e1f6ee4bbee5e22412c96761d03"
+    }
+  ],
+  "relay": {
+    "schema": "pc1-execution-relay/v1",
+    "taskId": "billing-cutover",
+    "attemptId": "attempt-3b2a6e1f6ee4bbee5e22412c96761d03",
+    "resultCommit": "c37b04b694e25cdb8314ea8c5dc5809d8f73f828",
+    "baseCommit": "d922c5de1a0a55183f9122e4f1461a1ad3c32e1b",
+    "attribution": {
+      "schema": "pc1-execution-attribution/v1",
+      "attribution": "ORIGINAL_WORKER_OBSERVED",
+      "executor": "ORIGINAL_WORKER",
+      "settledBy": "PRINCIPAL",
+      "workerInvocations": 1,
+      "matchedInvocationId": "wiv-1-29e97755",
+      "liveness": "OBSERVED_EXIT",
+      "independenceEligible": true,
+      "evidence": "OBSERVED",
+      "detail": "the settled head c37b04b694e2 equals the head observed when worker invocation wiv-1-29e97755 ended; a principal closed an attempt the worker had already finished. This is an observed window, not a byte-level authorship proof, and Git author metadata was not consulted"
+    },
+    "recordedAt": "2026-11-05T07:06:37.301Z",
+    "recordId": "relay-735b2f75bacebf317e0e4c78"
+  },
+  "relayRecordCount": 2,
+  "episode": {
+    "state": "DELIVERED",
+    "intent": "DELIVER",
+    "conclusion": {
+      "schema": "pc1-episode-conclusion/v1",
+      "intent": "DELIVER",
+      "statement": "The operator accepted the migration plan; the measured payload basis and the streaming decision are in the canonical asset.",
+      "artifacts": [
+        "deliverables/migration-plan.md"
+      ],
+      "waitingOn": null,
+      "nextStep": null,
+      "evidenceRefs": [],
+      "recordedAt": "2026-11-05T07:06:55.835Z",
+      "basis": {
+        "projectRevision": 1,
+        "projectDigest": "d83e98a159ec4463f830a69151144a37fce830bb7d58cd81f0f69b0f6a9a9344",
+        "headCommit": "be6c0d9e41d944ac055624311a9113ae1a4924ea"
+      },
+      "check": {
+        "deliveryBlockers": [],
+        "awaitingOperator": [],
+        "openTasks": [],
+        "openAttempts": [],
+        "unresolvedQuestions": [],
+        "blockedEffects": [],
+        "artifacts": [
+          {
+            "path": "deliverables/migration-plan.md",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "166c3dabe8f131c3629e1baba79d09b8a35604978b9a8af5f415288000c7e159",
+            "source": "WORKTREE",
+            "commit": null,
+            "detail": "committed at HEAD"
+          }
+        ]
+      },
+      "conclusionId": "episode-dfcf9e92e98b0562006a451d"
+    }
+  },
+  "episodeRecords": [
+    {
+      "conclusionId": "episode-919ea413a4882ef7b48c4672",
+      "intent": "WAIT_FOR_OPERATOR",
+      "recordedAt": "2026-11-05T07:06:37.784Z",
+      "artifacts": [
+        "deliverables/migration-plan.md"
+      ]
+    },
+    {
+      "conclusionId": "episode-55b43b22b15892bec694c002",
+      "intent": "DELIVER",
+      "recordedAt": "2026-11-05T07:06:54.803Z",
+      "artifacts": [
+        "deliverables/migration-plan.md"
+      ]
+    },
+    {
+      "conclusionId": "episode-dfcf9e92e98b0562006a451d",
+      "intent": "DELIVER",
+      "recordedAt": "2026-11-05T07:06:55.835Z",
+      "artifacts": [
+        "deliverables/migration-plan.md"
+      ]
+    }
+  ],
+  "episodeRecordCount": 3,
+  "duplicateConclusionIds": 0,
+  "contextManifests": [
+    {
+      "manifestId": "context-manifest-b0424ffa5a18fe83aadd4c8ba049d452",
+      "taskId": "billing-cutover",
+      "inputObservation": "OBSERVED",
+      "inputPaths": [],
+      "inputDigests": []
+    },
+    {
+      "manifestId": "context-manifest-4dc43a1e80bc0fb893bed090f6c7d6b6",
+      "taskId": "billing-cutover",
+      "inputObservation": "OBSERVED",
+      "inputPaths": [
+        "updates/2026-11-03/payload-measurement.md"
+      ],
+      "inputDigests": [
+        {
+          "path": "updates/2026-11-03/payload-measurement.md",
+          "digest": "9f15b493d96f70b6c91aa6a3e9890c0089f34a082c687ea77b3f82ec6693299b",
+          "bytes": 337,
+          "identity": "UNTRACKED"
+        }
+      ]
+    }
+  ],
+  "workerPulls": [
+    {
+      "log": "worker-3324.log",
+      "pulled": [
+        "@ctx/input/updates/2026-11-03/payload-measurement.md"
+      ]
+    }
+  ],
+  "input": {
+    "path": "updates/2026-11-03/payload-measurement.md",
+    "canonicalPresentBeforePromotion": true,
+    "recordedSha256": "9f15b493d96f70b6c91aa6a3e9890c0089f34a082c687ea77b3f82ec6693299b",
+    "inCanonicalCommit": false,
+    "deliveredToAnAttempt": true
+  },
+  "canonicalArtifact": {
+    "path": "deliverables/migration-plan.md",
+    "present": true,
+    "sha256": "186f3fb2062cb7b7084b9eab41069cac6aa4adb5f2f1cbf6296963c03eb38135",
+    "blobSha256": "166c3dabe8f131c3629e1baba79d09b8a35604978b9a8af5f415288000c7e159",
+    "bytes": 826,
+    "committed": true,
+    "atHead": "be6c0d9e41d944ac055624311a9113ae1a4924ea"
+  },
+  "retainedWorld": {
+    "name": "attempt-afc792e5f4b8706ae3209ad4cfebe7f4",
+    "path": "C:\\Users\\66494\\odpe-runs\\host-1\\world\\.palimpsest\\worlds\\attempt-afc792e5f4b8706ae3209ad4cfebe7f4",
+    "head": "c14540fcf679a72ceb36730ceacd76aebc10dbcb",
+    "subject": "write worker migration plan partial",
+    "hasPlan": true
+  },
+  "reuse": {
+    "partialSha256": "71fa21dd7efd3383ec01275ca8b9665f9e5bdfe380106a15db631a866b3ca2d8",
+    "finalSha256": "186f3fb2062cb7b7084b9eab41069cac6aa4adb5f2f1cbf6296963c03eb38135",
+    "partialIsNotFinal": true,
+    "measuredBasisPresent": true,
+    "streamingDecisionPresent": true,
+    "supersededAssumptionAbsent": true
+  },
+  "git": {
+    "head": "be6c0d9e41d944ac055624311a9113ae1a4924ea",
+    "log": [
+      "be6c0d9 promote promotion-424f55dd0cf5e132d84964812fd380c4",
+      "c37b04b commit the migration plan on the measured basis",
+      "d922c5d scenario base"
+    ],
+    "status": "clean"
+  }
+}

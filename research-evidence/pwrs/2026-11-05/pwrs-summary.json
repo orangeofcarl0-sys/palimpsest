@@ -1,0 +1,161 @@
+{
+  "schema": "pwrs-host-summary/v1",
+  "run": "C:\\Users\\66494\\pwrs\\host-1",
+  "projectId": "pwrs",
+  "generatedAt": "2026-11-04T19:22:14.264Z",
+  "timeline": {
+    "partialCommittedAt": "2026-11-04T19:16:34Z",
+    "killedAt": "2026-11-04T19:21:41Z",
+    "constraintArrivedAt": "2026-11-04T19:21:42Z",
+    "takeoverSettledAt": "2026-11-04T19:21:57Z",
+    "promotedAt": "2026-11-04T19:22:03Z"
+  },
+  "recovery": {
+    "attemptStateAfterKill": "RUNNING",
+    "retainedWorldHeadBeforeTakeover": "a056722a274f704ce38a709ffb0904e41b0f3257",
+    "retainedWorldSubjectBeforeTakeover": "write worker pricing partial"
+  },
+  "tasks": [
+    {
+      "taskId": "package",
+      "state": "SATISFIED"
+    }
+  ],
+  "attempts": [
+    {
+      "attemptId": "attempt-aeedfe8c810c273fc9b5a6084389f73d",
+      "taskId": "package",
+      "state": "COMPLETED",
+      "report": {
+        "resultCommit": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
+        "workerStatus": "completed",
+        "changedFiles": [
+          "deliverables/package.md",
+          "deliverables/partial.md"
+        ]
+      }
+    }
+  ],
+  "promotions": [
+    {
+      "promotionId": "promotion-5a789d958bd68d7548b820879c645134",
+      "state": "COMMITTED",
+      "taskId": "package",
+      "attemptId": "attempt-aeedfe8c810c273fc9b5a6084389f73d"
+    }
+  ],
+  "relay": {
+    "schema": "pc1-execution-relay/v1",
+    "taskId": "package",
+    "attemptId": "attempt-aeedfe8c810c273fc9b5a6084389f73d",
+    "resultCommit": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
+    "baseCommit": "468aa42909859ec855f2f24f3e1c98e5962bca2c",
+    "attribution": {
+      "schema": "pc1-execution-attribution/v1",
+      "attribution": "PRINCIPAL_RECOVERY",
+      "executor": "PRINCIPAL",
+      "settledBy": "PRINCIPAL",
+      "workerInvocations": 0,
+      "matchedInvocationId": null,
+      "liveness": "DECLARED_ABANDONED",
+      "independenceEligible": false,
+      "evidence": "DECLARED",
+      "detail": "the principal declared a continuation of this attempt's world (DECLARED_ABANDONED) and no worker invocation was observed by this host; the bytes are recorded as principal recovery, eligible for operator acceptance and NOT as independent worker production"
+    },
+    "recordedAt": "2026-11-04T19:21:57.260Z",
+    "recordId": "relay-574bf30669338a67b3ebd7d0"
+  },
+  "relayRecordCount": 1,
+  "episode": {
+    "state": "DELIVERED",
+    "intent": "DELIVER",
+    "conclusion": {
+      "schema": "pc1-episode-conclusion/v1",
+      "intent": "DELIVER",
+      "statement": "The operator accepted the synthesized package; the measured basis and the reused vendor pricing are in the canonical asset.",
+      "artifacts": [
+        "deliverables/package.md"
+      ],
+      "waitingOn": null,
+      "nextStep": null,
+      "evidenceRefs": [],
+      "recordedAt": "2026-11-04T19:22:13.043Z",
+      "basis": {
+        "projectRevision": 1,
+        "projectDigest": "45cb1e0abab5e9166cb8fb658066a0eb21bdae44e63ef3e74e019d10773e120e",
+        "headCommit": "7eb35937abc55ee7d96ce7caafd913b22eca78b0"
+      },
+      "check": {
+        "deliveryBlockers": [],
+        "awaitingOperator": [],
+        "openTasks": [],
+        "openAttempts": [],
+        "unresolvedQuestions": [],
+        "blockedEffects": [],
+        "artifacts": [
+          {
+            "path": "deliverables/package.md",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "46ba8227837e3004c7425a954ff3c639e1a327f88fbeab06281c3cca1fe375c4",
+            "source": "WORKTREE",
+            "commit": null,
+            "detail": "committed at HEAD"
+          }
+        ]
+      },
+      "conclusionId": "episode-4c42445259d618b82df705a6"
+    }
+  },
+  "episodeRecords": [
+    {
+      "intent": "WAIT_FOR_OPERATOR",
+      "recordedAt": "2026-11-04T19:21:57.400Z",
+      "artifacts": [
+        "deliverables/package.md"
+      ]
+    },
+    {
+      "intent": "DELIVER",
+      "recordedAt": "2026-11-04T19:22:13.043Z",
+      "artifacts": [
+        "deliverables/package.md"
+      ]
+    }
+  ],
+  "canonicalArtifact": {
+    "path": "deliverables/package.md",
+    "present": true,
+    "sha256": "68cbef57562aefe3c0fda6319eecdfeaf6a8401d6da2755db19683052163faaf",
+    "blobSha256": "46ba8227837e3004c7425a954ff3c639e1a327f88fbeab06281c3cca1fe375c4",
+    "bytes": 551,
+    "committed": true,
+    "atHead": "7eb35937abc55ee7d96ce7caafd913b22eca78b0"
+  },
+  "retainedWorld": {
+    "name": "attempt-aeedfe8c810c273fc9b5a6084389f73d",
+    "path": "C:\\Users\\66494\\pwrs\\host-1\\world\\.palimpsest\\worlds\\attempt-aeedfe8c810c273fc9b5a6084389f73d",
+    "head": "167e5a01522432fb1fb40bc8ee24dfb3f47f9d79",
+    "subject": "principal synthesis from retained worker work",
+    "hasPartial": true
+  },
+  "reuse": {
+    "partialSha256": "f5a12bca848a82e7a93dc933bf261860059b06ed7cbe6a93bdfc64d0c5cb8dea",
+    "finalSha256": "68cbef57562aefe3c0fda6319eecdfeaf6a8401d6da2755db19683052163faaf",
+    "pricingInherited": true,
+    "measuredBasisPresent": true,
+    "supersededAssumptionAbsent": true,
+    "reuseNotePresent": true
+  },
+  "git": {
+    "head": "7eb35937abc55ee7d96ce7caafd913b22eca78b0",
+    "log": [
+      "7eb3593 promote promotion-5a789d958bd68d7548b820879c645134",
+      "167e5a0 principal synthesis from retained worker work",
+      "a056722 write worker pricing partial",
+      "468aa42 scenario base"
+    ],
+    "status": "clean"
+  }
+}

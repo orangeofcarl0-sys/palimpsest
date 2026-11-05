@@ -1,0 +1,254 @@
+{
+  "schema": "alhs-core-result/v1",
+  "cohortId": "alhs-c-2026-11-04",
+  "codeFreeze": "d6d2a246784dca52291af22b2f1d4281652f3544",
+  "mode": "REAL_MODEL_DIAGNOSTIC",
+  "provider": "deepseek-official/deepseek-flash",
+  "note": "L (lightweight, in-place) and G (governed, one formal task + confirmed standard + isolated world) received byte-identical sources and the same measured update at T+60s. Session 1 was killed at the same 400,000-token milestone; session 2 was a new principal session on the same durable state.",
+  "conditions": {
+    "L": {
+      "score": "7/7",
+      "rubric": {
+        "package_present": true,
+        "both_sites": true,
+        "measured_700mm_used": true,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": true,
+        "cost_and_schedule": true,
+        "risk_and_decision": true
+      },
+      "tokens": {
+        "total": 1757934,
+        "bySession": {
+          "L-1": 470926,
+          "L-2": 1287008
+        },
+        "ledgerBySession": {
+          "L-1": 470926,
+          "L-2": 1216871
+        },
+        "note": "stream totals are the recorded per-assistant-message usage across every session in the home (children included); the ledger is the guard's last observation and can trail the final message."
+      },
+      "firstValid": {
+        "time": 1793807536325,
+        "tokensBefore": 227962,
+        "bytes": 34866,
+        "versions": 2
+      },
+      "afterFirstValid": {
+        "toolCalls": 65,
+        "artifactChanges": 34,
+        "tokens": 1529972
+      },
+      "versions": 36,
+      "natural": {
+        "sessionNatural": true,
+        "firstSessionNatural": false,
+        "naturalEnd": true,
+        "killedInSession1": true,
+        "budgetStopped": false,
+        "episodeEnded": true,
+        "episodeState": "DELIVERED"
+      },
+      "episode": {
+        "state": "DELIVERED",
+        "current": true,
+        "intent": "DELIVER",
+        "conclusionId": "episode-212b47e274daaa91c7964441",
+        "changedSince": [],
+        "ended": true
+      },
+      "tasks": [],
+      "promotions": [],
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": true,
+        "bytes": 39222,
+        "sha256": "7eaff8bebb99537e75d60c3f62a4edc3e45b86d8f85446d2c5ba776eeba9c1d2"
+      },
+      "candidate": null,
+      "sessions": [
+        {
+          "sessionId": "L-1",
+          "startedAt": "2026-11-04T15:49:41.397Z",
+          "endedAt": "2026-11-04T15:52:36.783Z",
+          "exitCode": 1,
+          "killedAt": "2026-11-04T15:52:36.057Z",
+          "killedBy": "token_milestone",
+          "stopped": false,
+          "natural": false,
+          "ledgerTokens": 470926,
+          "streamTokens": 470926,
+          "maxTokens": 2500000,
+          "reserveTokens": 125000,
+          "softStopAt": 2375000
+        },
+        {
+          "sessionId": "L-2",
+          "startedAt": "2026-11-04T15:52:36.898Z",
+          "endedAt": "2026-11-04T15:54:54.118Z",
+          "exitCode": 0,
+          "killedAt": null,
+          "killedBy": null,
+          "stopped": false,
+          "natural": true,
+          "ledgerTokens": 1216871,
+          "streamTokens": 1287008,
+          "maxTokens": 2500000,
+          "reserveTokens": 125000,
+          "softStopAt": 2375000
+        }
+      ]
+    },
+    "G": {
+      "score": "7/7 (candidate, not accepted)",
+      "rubric": {
+        "package_present": false,
+        "both_sites": false,
+        "measured_700mm_used": false,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": false,
+        "cost_and_schedule": false,
+        "risk_and_decision": false
+      },
+      "tokens": {
+        "total": 928181,
+        "bySession": {
+          "G-1": 402516,
+          "G-2": 525665
+        },
+        "ledgerBySession": {
+          "G-1": 402516,
+          "G-2": 479549
+        },
+        "note": "stream totals are the recorded per-assistant-message usage across every session in the home (children included); the ledger is the guard's last observation and can trail the final message."
+      },
+      "firstValid": {
+        "time": 1793807886814,
+        "tokensBefore": 612261,
+        "bytes": 21365,
+        "versions": 1
+      },
+      "afterFirstValid": {
+        "toolCalls": 9,
+        "artifactChanges": 0,
+        "tokens": 315920
+      },
+      "versions": 1,
+      "natural": {
+        "sessionNatural": true,
+        "firstSessionNatural": false,
+        "naturalEnd": true,
+        "killedInSession1": true,
+        "budgetStopped": false,
+        "episodeEnded": true,
+        "episodeState": "AWAITING_OPERATOR"
+      },
+      "episode": {
+        "state": "AWAITING_OPERATOR",
+        "current": true,
+        "intent": "WAIT_FOR_OPERATOR",
+        "conclusionId": "episode-97a773c7a72e344e375af4ec",
+        "changedSince": [],
+        "ended": true
+      },
+      "tasks": [
+        {
+          "taskId": "package",
+          "state": "VERIFYING"
+        }
+      ],
+      "promotions": [],
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": false,
+        "bytes": 0,
+        "sha256": null
+      },
+      "candidate": {
+        "attemptId": "attempt-7dcf8ee1bf371ad706fb9d89bd748aed",
+        "resultCommit": "8b21b462cd40eca9c44263f020836008e2479f9c",
+        "taskState": "VERIFYING",
+        "present": true,
+        "bytes": 21365,
+        "sha256": "a68ff2c5e03e931367a3a99a81e348218c4ccb074c522532c1c425aa1178c8ad",
+        "rubric": {
+          "package_present": true,
+          "both_sites": true,
+          "measured_700mm_used": true,
+          "baseline_900mm_rejected": true,
+          "coastal_claim_not_accepted": true,
+          "cost_and_schedule": true,
+          "risk_and_decision": true
+        },
+        "passed": 7,
+        "detail": "read from the governed attempt's result commit; it is a candidate until an operator Promotion"
+      },
+      "sessions": [
+        {
+          "sessionId": "G-1",
+          "startedAt": "2026-11-04T15:54:54.251Z",
+          "endedAt": "2026-11-04T15:56:17.975Z",
+          "exitCode": 1,
+          "killedAt": "2026-11-04T15:56:17.240Z",
+          "killedBy": "token_milestone",
+          "stopped": false,
+          "natural": false,
+          "ledgerTokens": 402516,
+          "streamTokens": 402516,
+          "maxTokens": 2500000,
+          "reserveTokens": 125000,
+          "softStopAt": 2375000
+        },
+        {
+          "sessionId": "G-2",
+          "startedAt": "2026-11-04T15:56:18.082Z",
+          "endedAt": "2026-11-04T15:58:49.130Z",
+          "exitCode": 0,
+          "killedAt": null,
+          "killedBy": null,
+          "stopped": false,
+          "natural": true,
+          "ledgerTokens": 479549,
+          "streamTokens": 525665,
+          "maxTokens": 2500000,
+          "reserveTokens": 125000,
+          "softStopAt": 2375000
+        }
+      ]
+    }
+  },
+  "aggregate": {
+    "totalTokens": 2686115,
+    "authorizedTokens": 10000000,
+    "remainingTokens": 7313885,
+    "perSession": 2500000,
+    "reserve": 125000,
+    "softStopAt": 2375000,
+    "budgetStop": null,
+    "note": "The guard observes usage after a message. A stop happens at the first observation above that session's soft ceiling; the reserve keeps it under the hard per-session ceiling."
+  },
+  "proxy": {
+    "posts": 79,
+    "statuses": {
+      "200": 78,
+      "502": 1
+    },
+    "upstreamErrors": [
+      {
+        "at": "2026-11-04T15:59:31.373Z",
+        "status": 502,
+        "error": "UPSTREAM_TIMEOUT"
+      }
+    ]
+  },
+  "limitations": [
+    "One pair per condition (L/G); this is a diagnostic, not a repeated sample.",
+    "The 7-fact rubric is a floor. L's accepted package and G's candidate both reach 7/7; no quality advantage is claimed.",
+    "L is lightweight and in-place: it wrote and committed the package itself and recorded DELIVER.",
+    "G is governed: the original worker did not survive the session-1 kill; the continuation principal recovered the attempt world, wrote and committed the package there, settled it through `complete`, and recorded WAIT_FOR_OPERATOR. The candidate is at commit 8b21b462 and the task is VERIFYING; it is not accepted.",
+    "G's candidate is read from the attempt result commit, not the canonical world. The canonical artifact is absent until an operator Promotion; the provenance check therefore reports `not found` for the canonical path.",
+    "The scenario kill is a harness event, applied equally to L and G.",
+    "One provider request returned 502 UPSTREAM_TIMEOUT at 15:59:31, after both sessions ended; it produced no recorded session usage and its client identity was not observed."
+  ]
+}

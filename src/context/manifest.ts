@@ -19,6 +19,25 @@ import type { KnowledgeBinding } from "./knowledge.js";
 
 export const CONTEXT_RETRIEVAL_METHOD = "lexical";
 
+/**
+ * ODPE-A: ONE current project input THIS attempt was compiled against.
+ *
+ * It is a HISTORICAL binding: the identity of the exact bytes the attempt was given, with the source
+ * that produced them. `standing` never means "accepted source" — delivery is context, not ProjectIR.
+ */
+export interface ContextInputBinding {
+  readonly path: string;
+  readonly identity: "UNTRACKED" | "TRACKED_MODIFIED" | "COMMITTED_SINCE_BASE" | "REGISTERED";
+  readonly content: "WORKTREE" | "COMMIT" | "ABSENT";
+  /** sha256 of the exact bytes; null when the observed path is absent. */
+  readonly digest: string | null;
+  readonly bytes: number;
+  /** The revision the bytes belong to (HEAD for a commit, the attempt basis for a worktree read). */
+  readonly observed_revision: string;
+  readonly observed_at: string;
+  readonly standing: "OBSERVED";
+}
+
 /** Coverage classes below this confidence recommend additional exploration. */
 export const COVERAGE_RECOMMENDATION_THRESHOLD = 0.75;
 
@@ -49,6 +68,9 @@ export interface ContextManifestInput {
    * binding", which is what every pre-E1-K manifest says.
    */
   readonly knowledge?: readonly KnowledgeBinding[] | undefined;
+  /** ODPE-A: current project inputs this attempt was compiled against (identity only; body is pulled). */
+  readonly inputs?: readonly ContextInputBinding[] | undefined;
+  readonly inputObservation?: "OBSERVED" | "UNAVAILABLE" | "NOT_CONFIGURED" | undefined;
   readonly createdAt: string;
 }
 
@@ -69,6 +91,9 @@ export interface ContextManifest {
   readonly continuation?: PriorResultContext | undefined;
   /** E1-K §7: the optional GOVERNED KNOWLEDGE BINDINGS. Old manifests simply omit it. */
   readonly knowledge?: readonly KnowledgeBinding[] | undefined;
+  /** ODPE-A: the input bindings. Old manifests simply omit them. */
+  readonly inputs?: readonly ContextInputBinding[] | undefined;
+  readonly input_observation?: "OBSERVED" | "UNAVAILABLE" | "NOT_CONFIGURED" | undefined;
   readonly evidence: readonly string[];
   readonly excluded_stale: readonly string[];
   readonly retrieval: readonly string[];
@@ -91,6 +116,10 @@ export function buildContextManifest(input: ContextManifestInput): ContextManife
     ...(input.knowledge === undefined || input.knowledge.length === 0
       ? {}
       : { knowledge: Object.freeze(input.knowledge.map((binding) => Object.freeze({ ...binding }))) }),
+    ...(input.inputs === undefined || input.inputs.length === 0
+      ? {}
+      : { inputs: Object.freeze(input.inputs.map((binding) => Object.freeze({ ...binding }))) }),
+    ...(input.inputObservation === undefined || input.inputObservation === "NOT_CONFIGURED" ? {} : { input_observation: input.inputObservation }),
     evidence: [...input.requirement.evidenceSubjects],
     excluded_stale: [...input.requirement.forbiddenStale],
     retrieval:

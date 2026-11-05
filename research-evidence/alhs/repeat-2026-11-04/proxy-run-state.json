@@ -1,0 +1,57 @@
+{
+  "schema": "alhs-cohort-run-state/v1",
+  "cohortId": "alhs-c-repeat-2026-11-04",
+  "stage": "repeat-core",
+  "authorization": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\alhs\\live\\authorization-repeat.json",
+  "adapter": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\alhs\\run_core_session.mjs",
+  "startedAt": "2026-11-04T15:15:22.799Z",
+  "sessions": [
+    {
+      "sessionId": "F-1b",
+      "condition": "F",
+      "index": 1,
+      "ceiling": 1500000,
+      "reserveTokens": 150000,
+      "softStopAt": 1350000,
+      "killAtTokens": 400000,
+      "profile": "headless",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T15:17:35.162Z"
+    },
+    {
+      "sessionId": "F-2b",
+      "condition": "F",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 150000,
+      "softStopAt": 2350000,
+      "profile": "headless",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T15:21:48.138Z"
+    },
+    {
+      "sessionId": "A-1b",
+      "condition": "A",
+      "index": 1,
+      "ceiling": 1500000,
+      "reserveTokens": 150000,
+      "softStopAt": 1350000,
+      "killAtTokens": 400000,
+      "profile": "palimpsest-full",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T15:25:07.366Z"
+    },
+    {
+      "sessionId": "A-2b",
+      "condition": "A",
+      "index": 2,
+      "ceiling": 2500000,
+      "reserveTokens": 150000,
+      "softStopAt": 2350000,
+      "profile": "palimpsest-full",
+      "exitCode": 0,
+      "endedAt": "2026-11-04T15:27:19.910Z"
+    }
+  ],
+  "endedAt": "2026-11-04T15:27:19.911Z"
+}

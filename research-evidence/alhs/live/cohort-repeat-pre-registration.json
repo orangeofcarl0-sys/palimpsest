@@ -1,0 +1,117 @@
+{
+  "schema": "alhs-cohort/v1",
+  "cohortId": "alhs-c-repeat-2026-11-04",
+  "status": "EXECUTED",
+  "protocol": "docs/programs/alhs/ALHS-C-REPEAT-PROTOCOL.md",
+  "codeFreeze": "a62fc32a554448f5f8cfb67801a7e0b7094c9100",
+  "note": "One additional F/A pair, executed 2026-11-04 under authorization-repeat.json. Amendment 1 lowered the interruption milestone to 400,000 and extended the wall-clock backstop to 900s before any repeat session. Total 3,856,096 tokens.",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 10000000,
+  "conditions": {
+    "F": {
+      "role": "strong native DSH baseline",
+      "palimpsest": false,
+      "forcedGovernance": false,
+      "profile": "headless"
+    },
+    "A": {
+      "role": "adaptive Palimpsest; the agent chooses its collaboration and governance topology",
+      "palimpsest": true,
+      "forcedGovernance": false,
+      "profile": "palimpsest-full"
+    }
+  },
+  "stages": [
+    {
+      "id": "repeat-core",
+      "purpose": "replicate the core F/A pair with a token-milestone interruption",
+      "conditions": [
+        "F",
+        "A"
+      ],
+      "sessionCeiling": 2500000,
+      "reserveTokens": 150000,
+      "aggregateCeiling": 8000000,
+      "authorized": true,
+      "executed": true,
+      "sessionPlan": [
+        {
+          "sessionId": "F-1b",
+          "condition": "F",
+          "index": 1,
+          "ceiling": 1500000,
+          "reserveTokens": 150000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "F-2b",
+          "condition": "F",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 150000
+        },
+        {
+          "sessionId": "A-1b",
+          "condition": "A",
+          "index": 1,
+          "ceiling": 1500000,
+          "reserveTokens": 150000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "A-2b",
+          "condition": "A",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 150000
+        }
+      ],
+      "authorization": "research-evidence/alhs/live/authorization-repeat.json",
+      "result": "research-evidence/alhs/repeat-2026-11-04/core-summary.json"
+    }
+  ],
+  "timeline": [
+    "T0 user intent",
+    "T1 project reality read",
+    "T2 work/collaboration decision",
+    "T3 real asset production",
+    "T4 measured constraint at T+60s",
+    "T5 autonomous assessment",
+    "T6 actual execution change",
+    "T7 late result / continuation (if the model creates one)",
+    "T8 kill at 400,000 reported tokens (Amendment 1)",
+    "T9 new principal session, deliverable or waiting state",
+    "T10 natural episode termination"
+  ],
+  "measurements": [
+    "natural_convergence",
+    "episode_state",
+    "goal_completion",
+    "tokens_to_first_valid_artifact",
+    "tokens_after_first_valid_artifact",
+    "tool_calls_after_first_valid_artifact",
+    "governed_work_used",
+    "cross_session_continuation",
+    "unsafe_acceptance",
+    "provider_failures",
+    "wall_time",
+    "monetary_cost"
+  ],
+  "fairness": {
+    "sameGoal": true,
+    "sameSources": true,
+    "sameModel": true,
+    "sameInjectedEvents": true,
+    "sameInterruptionThreshold": true,
+    "noHiddenAnswerInPrompt": true,
+    "noEvaluatorOracle": true,
+    "noForcedAgentCount": true,
+    "businessAndGovernanceScoredSeparately": true
+  },
+  "budget": {
+    "reserveRationale": "usage is observed after a message; stopping at ceiling minus reserve removes the one-message overshoot measured in the core run (F-2 +49,572 over soft, 100,428 under hard)",
+    "childSessionsCounted": true,
+    "finalReconciliationRequired": true,
+    "sampleIncreaseRequiresNewAuthorization": true
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "schema": "alhs-host-run/v1",
+  "mode": "DETERMINISTIC_MODEL_SUBSTITUTE_REAL_HOST",
+  "note": "The DSH host, worker processes, Git effects, Palimpsest Work/Promotion and operator actions are real. The model content is a deterministic Messages stand-in; this run makes no cognitive, quality or cost claim.",
+  "project": {
+    "id": "alhs",
+    "revision": 4,
+    "headCommit": "a9bf7cbfd7036864ac33177562ce227328b423f2"
+  },
+  "tasks": [
+    {
+      "taskId": "capacity",
+      "state": "STALE"
+    },
+    {
+      "taskId": "capacity-v2",
+      "state": "SATISFIED"
+    },
+    {
+      "taskId": "cost",
+      "state": "STALE"
+    },
+    {
+      "taskId": "cost-v2",
+      "state": "SATISFIED"
+    }
+  ],
+  "attempts": [
+    {
+      "attemptId": "attempt-e67b5cc4c18a14afe5b8ab65870d1e04",
+      "taskId": "capacity-v2",
+      "state": "COMPLETED",
+      "taskState": null
+    },
+    {
+      "attemptId": "attempt-8b9c0d89153ada4d431eb4860f37d370",
+      "taskId": "cost",
+      "state": "COMPLETED",
+      "taskState": null
+    },
+    {
+      "attemptId": "attempt-1a2a5bdc280b33497273349e3be06b1b",
+      "taskId": "cost-v2",
+      "state": "COMPLETED",
+      "taskState": null
+    }
+  ],
+  "promotions": [
+    {
+      "promotionId": "promotion-afbae706f6a3a8c8bb8ea9898f1a68f3",
+      "taskId": "capacity-v2",
+      "attemptId": "attempt-e67b5cc4c18a14afe5b8ab65870d1e04",
+      "sourceCommit": "d53ff315f27efb52689006e57353ba71447def96",
+      "resultingHeadCommit": "d47a11d8e079f79be1bccafae241ce0c7879abc8"
+    },
+    {
+      "promotionId": "promotion-98acd358ca3794efbdda00802cdd6314",
+      "taskId": "cost-v2",
+      "attemptId": "attempt-1a2a5bdc280b33497273349e3be06b1b",
+      "sourceCommit": "5e743218417fbe70c1c548a5e4cd680de6588c14",
+      "resultingHeadCommit": "a9bf7cbfd7036864ac33177562ce227328b423f2"
+    }
+  ],
+  "episode": {
+    "state": "DELIVERED",
+    "current": true,
+    "conclusion": {
+      "schema": "pc1-episode-conclusion/v1",
+      "intent": "DELIVER",
+      "statement": "The measured capacity assessment and the reused cost package are both accepted; the package is complete for this episode.",
+      "artifacts": [
+        "deliverables/capacity.md",
+        "deliverables/cost-v2.md"
+      ],
+      "waitingOn": null,
+      "nextStep": null,
+      "evidenceRefs": [],
+      "recordedAt": "2026-11-04T13:35:52.326Z",
+      "basis": {
+        "projectRevision": 4,
+        "projectDigest": "ec1126a2a284aff93db661e5f906e9903bb8467b693ebff7157c52ac825e3095",
+        "headCommit": "a9bf7cbfd7036864ac33177562ce227328b423f2"
+      },
+      "check": {
+        "deliveryBlockers": [],
+        "awaitingOperator": [],
+        "openTasks": [],
+        "openAttempts": [],
+        "unresolvedQuestions": [],
+        "blockedEffects": []
+      },
+      "conclusionId": "episode-167b9682b53dca2581ba60d8"
+    },
+    "readiness": {
+      "openTasks": [],
+      "failedOrBlockedTasks": [],
+      "openAttempts": [],
+      "awaitingOperator": [],
+      "unresolvedQuestions": [],
+      "blockedEffects": [],
+      "negativeFindingRefs": [],
+      "mechanicalActions": [
+        "agent: every declared task is terminal; there is no legal formal transition left",
+        "agent: address an open question by investigation or a proposal; do not treat it as accepted",
+        "agent: propose the next bounded step in the project journal"
+      ],
+      "deliveryBlockers": [],
+      "detail": "no mechanical project fact contradicts a DELIVER conclusion; this does not mean the goal is met — that remains the principal's judgement and the operator's acceptance"
+    },
+    "changedSince": []
+  },
+  "reuse": {
+    "baseRevision": "7ee1a781d543b1fe157d4a071dcb3f3a526ab48e",
+    "resultRevision": "438c93bc71cf8734300c9526fab2271d6977a0df",
+    "currentRevision": "a9bf7cbfd7036864ac33177562ce227328b423f2",
+    "resultPaths": [
+      "deliverables/assumptions.md",
+      "deliverables/cost.md"
+    ],
+    "unaffectedPaths": [
+      "deliverables/cost.md"
+    ],
+    "alreadyPresentPaths": [],
+    "conflictedPaths": [
+      "deliverables/assumptions.md"
+    ],
+    "complete": true,
+    "detail": "read from the source tree diff at path granularity. `unaffectedPaths` may still be invalidated by a semantic change the tree diff cannot see; `conflictedPaths` must be recomputed, never overwritten from the old result"
+  },
+  "oldResult": {
+    "taskId": "cost",
+    "taskState": "STALE",
+    "compatibility": "INCOMPATIBLE",
+    "currentness": "STALE",
+    "resultCommit": "438c93bc71cf8734300c9526fab2271d6977a0df",
+    "actions": {
+      "rematerialize": false,
+      "rework": false
+    }
+  },
+  "artifacts": {
+    "capacity": {
+      "path": "deliverables/capacity.md",
+      "present": true,
+      "sha256": "b2d37c8173049fa9bd289a0ca043356567ae541d4b1a747dd8f557c89f4ad0fa",
+      "text": "# Capacity assessment (revision 2)\r\n\r\nMeasured site-B corridor: 700 mm (2026-11-03).\r\n\r\nThe baseline 900 mm unit is NOT admissible at site B. No listed unit is width-admissible at site B.\r\n"
+    },
+    "costV2": {
+      "path": "deliverables/cost-v2.md",
+      "present": true,
+      "sha256": "72d4278090cd879dd17c5a1473fa690351b6d060d59407483a4cac295eed17e6",
+      "text": "# Cost model v2\r\n\r\nReused vendor pricing from result commit `438c93bc71cf8734300c9526fab2271d6977a0df`.\r\n\r\n# Cost model (baseline)\r\n\r\nVendor: Kestrel-900.\r\nUnit price: 1200 EUR.\r\nLead time: 8 weeks.\r\n\r\n## Revised assumptions\r\n\r\nCorridor measured at 700 mm on 2026-11-03. The baseline 900 mm assumption is superseded.\r\n"
+    },
+    "costBaseline": {
+      "path": "deliverables/cost.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    "costV2ReusesVendorPrice": true,
+    "costV2UsesMeasurement": true,
+    "costV2NamesOldCommit": true
+  },
+  "journal": [
+    {
+      "entryId": "pje-807ba1e8bd73f9d71f9a9cab4ef4f25e",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution: Check the measured site-B corridor against the baseline assumption.",
+      "provenance": "contribution:.palimpsest/inputs/corridor-measurement"
+    },
+    {
+      "entryId": "pje-97ecab4643364aa88cd7f78919153d18",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution decision: REVISE_PLAN",
+      "provenance": "contribution:ctb-fd0c18612e02a7c3f64ec1b1326c1d8d"
+    },
+    {
+      "entryId": "pje-1a09241c604629bda90e9c33b296ce64",
+      "kind": "REFERENCE_NOTE",
+      "title": "Episode conclusion: WAIT_FOR_OPERATOR",
+      "provenance": "episode:episode-d287aeea487e7d8a1ce36e56"
+    },
+    {
+      "entryId": "pje-c2154d6acdf75df9cbb1b368f7e6eaff",
+      "kind": "REFERENCE_NOTE",
+      "title": "Episode conclusion: DELIVER",
+      "provenance": "episode:episode-167b9682b53dca2581ba60d8"
+    }
+  ],
+  "naturalExit": true,
+  "sessionExits": {
+    "A1": 0,
+    "A2": 0,
+    "A3": 0,
+    "A4": 0
+  },
+  "checks": {
+    "baselineCostWasProduced": true,
+    "capacityPromoted": true,
+    "costV2Promoted": true,
+    "oldCostRetiredNotPromoted": true,
+    "reuseFactsPresent": true,
+    "deliveredEpisode": true
+  }
+}

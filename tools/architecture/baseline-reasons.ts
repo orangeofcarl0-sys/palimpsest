@@ -360,11 +360,14 @@ export const HOTSPOT_RATCHETS: readonly HotspotRatchet[] = Object.freeze([
   {
     file: "src/application/factory.ts",
     maxLoc: null,
-    maxFanOut: 36,
+    maxFanOut: 37,
     maxFanIn: null,
     reason:
       "the application factory composes every face; its fan-out is the assembly. Ratcheted on " +
-      "fan-out only, because that is the number that grows when a face is added without a decision.",
+      "fan-out only, because that is the number that grows when a face is added without a decision. " +
+      "ALHS-A raised it by exactly one (36 -> 37) for the episode-conclusion face: it writes only " +
+      "through the existing project journal and reads only the existing pulse, so it is one face, " +
+      "not a new subsystem.",
   },
   {
     file: "src/advanced.ts",

@@ -1,0 +1,748 @@
+{
+  "schema": "lhape-final-pulse/v1",
+  "scenario": "main",
+  "note": "Derived product read after the deterministic host run. The model content is scripted; the host, workers and effects are real.",
+  "project": {
+    "goal": "Evaluate a multi-site energy deployment and leave a consistent, reviewable package: baseline capacity and cost, a revised package after the measured corridor constraint, and an integrated decision artifact.",
+    "revision": 4,
+    "digest": "8a4c5411edd5b1b158fc618998ebc4e0839126a86cadc2d7d65aa44a91b2c9ff",
+    "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+    "decisions": [
+      {
+        "decisionId": "ctd-f5cd41f49697705672bd914ee6165b4d",
+        "statement": "Principal revise plan: Check whether the measured site-B corridor admits the 900 mm unit.",
+        "rationale": "The measured 700 mm site-B corridor invalidates the 900 mm baseline assumption. Retire both baseline tasks and produce a revised package plus an integration task. [contribution ctb-b7926eba358674cb8bd66316027bf3ba; source NATIVE_SUBAGENT:subagent:constraint-check]"
+      }
+    ],
+    "tasks": [
+      {
+        "taskId": "capacity-v2",
+        "objective": "Write the revised capacity assessment for the measured 700 mm site-B corridor from sources/capacity.csv and sources/sites.md into deliverables/capacity-v2.md. The measured corridor is 700 mm.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/capacity-v2.md"
+        ]
+      },
+      {
+        "taskId": "cost-v2",
+        "objective": "Write the revised cost model for the admissible 700 mm unit from sources/capacity.csv into deliverables/cost-v2.md. The measured corridor is 700 mm, so the 900 mm unit is not admissible.",
+        "dependsOn": [],
+        "requiredArtifacts": [
+          "deliverables/cost-v2.md"
+        ]
+      },
+      {
+        "taskId": "integration",
+        "objective": "Combine the accepted capacity and cost deliverables into deliverables/integration.md, naming both accepted sources.",
+        "dependsOn": [
+          "capacity-v2",
+          "cost-v2"
+        ],
+        "requiredArtifacts": [
+          "deliverables/integration.md"
+        ]
+      }
+    ]
+  },
+  "status": {
+    "tasks": [
+      {
+        "taskId": "capacity",
+        "state": "STALE"
+      },
+      {
+        "taskId": "capacity-v2",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "cost",
+        "state": "STALE"
+      },
+      {
+        "taskId": "cost-v2",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "integration",
+        "state": "SATISFIED"
+      }
+    ],
+    "attempts": [
+      {
+        "attemptId": "attempt-c3f5b8611866eb90a61854aa45ffff9b",
+        "taskId": "capacity",
+        "state": "COMPLETED",
+        "orphaned": false,
+        "taskState": null
+      },
+      {
+        "attemptId": "attempt-743817257d5fffd564a16aedd641793c",
+        "taskId": "cost",
+        "state": "COMPLETED",
+        "orphaned": false,
+        "taskState": null
+      },
+      {
+        "attemptId": "attempt-2529e9f62f502b8bb093fb3f36baf506",
+        "taskId": "capacity-v2",
+        "state": "COMPLETED",
+        "orphaned": false,
+        "taskState": null
+      },
+      {
+        "attemptId": "attempt-c4813090e7b81b900a1b8218f0739f25",
+        "taskId": "cost-v2",
+        "state": "COMPLETED",
+        "orphaned": false,
+        "taskState": null
+      },
+      {
+        "attemptId": "attempt-c418ae85024b0845a8a0e5ad7077d3df",
+        "taskId": "cost-v2",
+        "state": "COMPLETED",
+        "orphaned": false,
+        "taskState": null
+      },
+      {
+        "attemptId": "attempt-fa4d7eb90e90d4b08e14de6d2a53cbd5",
+        "taskId": "integration",
+        "state": "COMPLETED",
+        "orphaned": false,
+        "taskState": null
+      }
+    ],
+    "nextAction": {
+      "kind": "NO_ACTION",
+      "executable": false,
+      "action": null,
+      "detail": "every declared task is terminal; there is no legal formal transition left",
+      "taskId": null,
+      "blockers": []
+    }
+  },
+  "journal": [
+    {
+      "entryId": "pje-67a618230bf4feea6455ef7363696c98",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution: Check whether the measured site-B corridor admits the 900 mm unit.",
+      "provenance": "contribution:subagent:constraint-check",
+      "digest": "e6689a1911e82dc6dcab284de861e40749fbb6e2058927b46238afb088669f58"
+    },
+    {
+      "entryId": "pje-d42963162bf64e72582283e5e8a1a2cb",
+      "kind": "REFERENCE_NOTE",
+      "title": "Contribution decision: REVISE_PLAN",
+      "provenance": "contribution:ctb-b7926eba358674cb8bd66316027bf3ba",
+      "digest": "4876dedb70b8d00bbaf17f506735e8e85aaa425c4ebf34b924c28c6639c9b073"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "deliverables/capacity.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    {
+      "path": "deliverables/cost.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    },
+    {
+      "path": "deliverables/capacity-v2.md",
+      "present": true,
+      "sha256": "630882f345c5c83aa47e7e3851f0f9379879a8daa29066142fe1120cf8809909",
+      "text": "# Revised capacity assessment\r\n\r\nThe measured site-B corridor is 700 mm. The 900 mm unit is NOT admissible at site B; site A remains admissible. The baseline 1200 mm assumption is superseded.\r\n"
+    },
+    {
+      "path": "deliverables/cost-v2.md",
+      "present": true,
+      "sha256": "9017c20a8152e626c36b6cdbdc95f27a28558014f93be918305cbfb576ca472b",
+      "text": "# Revised cost model (reworked on the current basis)\r\n\r\nThe accepted capacity-v2 result excludes the 900 mm unit at site B. The cost model now uses the 700 mm-compatible unit; the baseline cost line is not reused.\r\n"
+    },
+    {
+      "path": "deliverables/integration.md",
+      "present": true,
+      "sha256": "7423761cab06e171093aada30d29ee4aa8f4c0f9108ff9efb6b65071fa40c696",
+      "text": "# Integrated deployment decision\r\n\r\nThis package is consistent with the accepted capacity-v2 and cost-v2 results: the measured 700 mm site-B corridor excludes the 900 mm unit, and the revised cost model uses the compatible unit. The baseline capacity/cost results are historical and are not part of the accepted package.\r\n"
+    },
+    {
+      "path": "deliverables/interrupted.md",
+      "present": false,
+      "sha256": null,
+      "text": null
+    }
+  ],
+  "pulse": {
+    "schema": "pc1-project-pulse/v1",
+    "projectId": "lhape",
+    "goal": "Evaluate a multi-site energy deployment and leave a consistent, reviewable package: baseline capacity and cost, a revised package after the measured corridor constraint, and an integrated decision artifact.",
+    "basis": {
+      "projectRevision": 4,
+      "projectDigest": "8a4c5411edd5b1b158fc618998ebc4e0839126a86cadc2d7d65aa44a91b2c9ff",
+      "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+      "observedAt": "2026-11-03T16:49:30.938Z"
+    },
+    "requirements": [
+      {
+        "id": "requirement:R1",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "R1 (critical)",
+        "detail": "Every deliverable must stay inside its declared write scope.",
+        "sourceRefs": [
+          "requirement:R1",
+          "revision:4"
+        ],
+        "basis": {
+          "projectRevision": 4,
+          "projectDigest": "8a4c5411edd5b1b158fc618998ebc4e0839126a86cadc2d7d65aa44a91b2c9ff",
+          "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+          "observedAt": "2026-11-03T16:49:30.938Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the project's current ProjectIR revision",
+        "reopenConditions": [
+          "an operator intent revision that changes or removes this requirement"
+        ]
+      },
+      {
+        "id": "requirement:R2",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "R2 (critical)",
+        "detail": "A measured constraint supersedes an assumed one; do not silently keep the assumption.",
+        "sourceRefs": [
+          "requirement:R2",
+          "revision:4"
+        ],
+        "basis": {
+          "projectRevision": 4,
+          "projectDigest": "8a4c5411edd5b1b158fc618998ebc4e0839126a86cadc2d7d65aa44a91b2c9ff",
+          "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+          "observedAt": "2026-11-03T16:49:30.938Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the project's current ProjectIR revision",
+        "reopenConditions": [
+          "an operator intent revision that changes or removes this requirement"
+        ]
+      }
+    ],
+    "acceptedAssets": [
+      {
+        "id": "promotion:promotion-6756e1f58461b01a0fe92480a516440b",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "Accepted result for capacity-v2",
+        "detail": "source commit 454f3dc0d8eee8df376a048ec41a3045819ef4e2 was promoted onto 95ee8152002ecd1f1b202ca2e2cfb67f54bc362e; resulting head 60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "sourceRefs": [
+          "promotion:promotion-6756e1f58461b01a0fe92480a516440b",
+          "commit:454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+          "commit:60c250622f38a416144dd038a0a8c8d38fddcb04"
+        ],
+        "basis": {
+          "projectRevision": 4,
+          "projectDigest": "8a4c5411edd5b1b158fc618998ebc4e0839126a86cadc2d7d65aa44a91b2c9ff",
+          "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+          "observedAt": "2026-11-03T16:49:30.938Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the promotion effect recorded by the canonical Promotion path",
+        "reopenConditions": [
+          "a later accepted source revision or a re-evaluation of the result's subject"
+        ],
+        "historicalAcceptance": "ACCEPTED",
+        "currentApplicability": "UNKNOWN",
+        "applicabilityBasis": "no current-world compatibility assessment is composed for this result; historical acceptance is not proof that it still applies"
+      },
+      {
+        "id": "promotion:promotion-232e47a54f0da9d659b35e9102ec38f9",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "Accepted result for cost-v2",
+        "detail": "source commit 51a6e3d612dd58c4ea963105727fc45f475b9b71 was promoted onto 60c250622f38a416144dd038a0a8c8d38fddcb04; resulting head c852acd09863ac1f384193421255f67c581ae5db",
+        "sourceRefs": [
+          "promotion:promotion-232e47a54f0da9d659b35e9102ec38f9",
+          "commit:51a6e3d612dd58c4ea963105727fc45f475b9b71",
+          "commit:c852acd09863ac1f384193421255f67c581ae5db"
+        ],
+        "basis": {
+          "projectRevision": 4,
+          "projectDigest": "8a4c5411edd5b1b158fc618998ebc4e0839126a86cadc2d7d65aa44a91b2c9ff",
+          "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+          "observedAt": "2026-11-03T16:49:30.938Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the promotion effect recorded by the canonical Promotion path",
+        "reopenConditions": [
+          "a later accepted source revision or a re-evaluation of the result's subject"
+        ],
+        "historicalAcceptance": "ACCEPTED",
+        "currentApplicability": "UNKNOWN",
+        "applicabilityBasis": "no current-world compatibility assessment is composed for this result; historical acceptance is not proof that it still applies"
+      },
+      {
+        "id": "promotion:promotion-c5a02bad2d5a85c83af36dc44baf5ab1",
+        "standing": "ACCEPTED_FOR_PURPOSE",
+        "title": "Accepted result for integration",
+        "detail": "source commit 56c2ff90dd612f389dca934c9752101750a344fa was promoted onto c852acd09863ac1f384193421255f67c581ae5db; resulting head 0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+        "sourceRefs": [
+          "promotion:promotion-c5a02bad2d5a85c83af36dc44baf5ab1",
+          "commit:56c2ff90dd612f389dca934c9752101750a344fa",
+          "commit:0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe"
+        ],
+        "basis": {
+          "projectRevision": 4,
+          "projectDigest": "8a4c5411edd5b1b158fc618998ebc4e0839126a86cadc2d7d65aa44a91b2c9ff",
+          "headCommit": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+          "observedAt": "2026-11-03T16:49:30.938Z"
+        },
+        "applicability": "this project, at the recorded basis",
+        "adoptionBasis": "the promotion effect recorded by the canonical Promotion path",
+        "reopenConditions": [
+          "a later accepted source revision or a re-evaluation of the result's subject"
+        ],
+        "historicalAcceptance": "ACCEPTED",
+        "currentApplicability": "UNKNOWN",
+        "applicabilityBasis": "no current-world compatibility assessment is composed for this result; historical acceptance is not proof that it still applies"
+      }
+    ],
+    "candidates": [],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "recentChanges": [
+      {
+        "id": "journal:pje-67a618230bf4feea6455ef7363696c98",
+        "kind": "REFERENCE_NOTE",
+        "title": "Contribution: Check whether the measured site-B corridor admits the 900 mm unit."
+      },
+      {
+        "id": "journal:pje-d42963162bf64e72582283e5e8a1a2cb",
+        "kind": "REFERENCE_NOTE",
+        "title": "Contribution decision: REVISE_PLAN"
+      }
+    ],
+    "pendingWork": [],
+    "blocked": [],
+    "contributions": [
+      {
+        "record": {
+          "schema": "pc1-contribution/v1",
+          "contributionId": "ctb-b7926eba358674cb8bd66316027bf3ba",
+          "projectId": "lhape",
+          "sourceKind": "NATIVE_SUBAGENT",
+          "sourceRef": "subagent:constraint-check",
+          "task": "Check whether the measured site-B corridor admits the 900 mm unit.",
+          "finding": "The measured site-B corridor is 700 mm, so the 900 mm unit used by the baseline cost model is not admissible; the baseline cost assumption is invalid.",
+          "basis": {
+            "projectRevision": 0,
+            "projectDigest": "abf6364ae542a25a8520da9e2d01782fa466e9ea9c035f286986ddacc8b93a37",
+            "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+          },
+          "observation": "PRINCIPAL_DECLARED",
+          "declaredReadFootprint": [
+            ".palimpsest/inputs/constraint-update.md",
+            "sources/sites.md"
+          ],
+          "readFootprintObservation": "DECLARED",
+          "artifacts": [],
+          "independentVerification": false,
+          "createdAt": "2026-11-03T16:47:03.088Z"
+        },
+        "journalEntryId": "pje-67a618230bf4feea6455ef7363696c98",
+        "decisions": [
+          {
+            "record": {
+              "schema": "pc1-contribution-decision/v1",
+              "decisionId": "ctd-f5cd41f49697705672bd914ee6165b4d",
+              "projectId": "lhape",
+              "contributionId": "ctb-b7926eba358674cb8bd66316027bf3ba",
+              "decision": "REVISE_PLAN",
+              "decisionNote": "The measured 700 mm site-B corridor invalidates the 900 mm baseline assumption. Retire both baseline tasks and produce a revised package plus an integration task.",
+              "basisAtDecision": {
+                "projectRevision": 0,
+                "projectDigest": "abf6364ae542a25a8520da9e2d01782fa466e9ea9c035f286986ddacc8b93a37",
+                "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+              },
+              "basisState": "CURRENT",
+              "declaredChangedPlan": true,
+              "planChange": {
+                "fromRevision": 0,
+                "toRevision": 1,
+                "addedTaskIds": [
+                  "capacity-v2",
+                  "cost-v2",
+                  "integration"
+                ],
+                "removedTaskIds": [
+                  "capacity",
+                  "cost"
+                ],
+                "changedTaskIds": [],
+                "changeClass": "behavior_change",
+                "changedIds": [
+                  "capacity",
+                  "cost"
+                ],
+                "reason": "the measured constraint changes the binding task assumptions"
+              },
+              "createdAt": "2026-11-03T16:47:03.248Z"
+            },
+            "journalEntryId": "pje-d42963162bf64e72582283e5e8a1a2cb"
+          }
+        ],
+        "latestDecision": {
+          "record": {
+            "schema": "pc1-contribution-decision/v1",
+            "decisionId": "ctd-f5cd41f49697705672bd914ee6165b4d",
+            "projectId": "lhape",
+            "contributionId": "ctb-b7926eba358674cb8bd66316027bf3ba",
+            "decision": "REVISE_PLAN",
+            "decisionNote": "The measured 700 mm site-B corridor invalidates the 900 mm baseline assumption. Retire both baseline tasks and produce a revised package plus an integration task.",
+            "basisAtDecision": {
+              "projectRevision": 0,
+              "projectDigest": "abf6364ae542a25a8520da9e2d01782fa466e9ea9c035f286986ddacc8b93a37",
+              "headCommit": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e"
+            },
+            "basisState": "CURRENT",
+            "declaredChangedPlan": true,
+            "planChange": {
+              "fromRevision": 0,
+              "toRevision": 1,
+              "addedTaskIds": [
+                "capacity-v2",
+                "cost-v2",
+                "integration"
+              ],
+              "removedTaskIds": [
+                "capacity",
+                "cost"
+              ],
+              "changedTaskIds": [],
+              "changeClass": "behavior_change",
+              "changedIds": [
+                "capacity",
+                "cost"
+              ],
+              "reason": "the measured constraint changes the binding task assumptions"
+            },
+            "createdAt": "2026-11-03T16:47:03.248Z"
+          },
+          "journalEntryId": "pje-d42963162bf64e72582283e5e8a1a2cb"
+        },
+        "status": "PLAN_CHANGED",
+        "basisState": "STALE",
+        "downstream": {
+          "planRevision": 1,
+          "addedTaskIds": [
+            "capacity-v2",
+            "cost-v2",
+            "integration"
+          ],
+          "taskStates": [
+            {
+              "taskId": "capacity-v2",
+              "state": "SATISFIED"
+            },
+            {
+              "taskId": "cost-v2",
+              "state": "SATISFIED"
+            },
+            {
+              "taskId": "integration",
+              "state": "SATISFIED"
+            }
+          ],
+          "acceptedTaskIds": [
+            "capacity-v2",
+            "cost-v2",
+            "integration"
+          ],
+          "observableOutcome": true
+        }
+      }
+    ],
+    "delegations": [],
+    "execution": {
+      "placement": "worktree",
+      "attempts": [
+        {
+          "taskId": "capacity",
+          "state": "COMPLETED",
+          "taskState": "STALE",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "cost",
+          "state": "COMPLETED",
+          "taskState": "STALE",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "capacity-v2",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "cost-v2",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "cost-v2",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        },
+        {
+          "taskId": "integration",
+          "state": "COMPLETED",
+          "taskState": "SATISFIED",
+          "orphaned": false,
+          "hostObserved": false
+        }
+      ],
+      "jobs": [],
+      "detail": "this deployment composes no work-worker transport; canonical attempts are visible but no host job can be observed"
+    },
+    "decisionQueue": [
+      {
+        "kind": "STALE_RESULT",
+        "ref": "task:capacity",
+        "detail": "a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes",
+        "who": "AGENT",
+        "advisory": true
+      },
+      {
+        "kind": "STALE_RESULT",
+        "ref": "task:cost",
+        "detail": "a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes",
+        "who": "AGENT",
+        "advisory": true
+      }
+    ],
+    "nextActions": {
+      "mechanical": [
+        "agent: every declared task is terminal; there is no legal formal transition left",
+        "agent: address an open question by investigation or a proposal; do not treat it as accepted",
+        "agent: propose the next bounded step in the project journal"
+      ],
+      "decisionRelevant": [
+        "agent: a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes",
+        "agent: a COMPLETED result exists for a retired task; it is historical, it holds no promotion authority, and it may still be reusable through the continuation routes"
+      ],
+      "distinction": "mechanical actions are what the scheduler/product can legally execute next; decisionRelevant items are advisory judgements about what may advance the project, not authority, acceptance or a promise of value"
+    },
+    "authorityBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "sources": [
+      {
+        "ref": "commit:0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe",
+        "digest": "0ff650ab5a0c42bbb23686dfa8ad4e3957708dbe"
+      },
+      {
+        "ref": "commit:454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+        "digest": "454f3dc0d8eee8df376a048ec41a3045819ef4e2"
+      },
+      {
+        "ref": "commit:51a6e3d612dd58c4ea963105727fc45f475b9b71",
+        "digest": "51a6e3d612dd58c4ea963105727fc45f475b9b71"
+      },
+      {
+        "ref": "commit:56c2ff90dd612f389dca934c9752101750a344fa",
+        "digest": "56c2ff90dd612f389dca934c9752101750a344fa"
+      },
+      {
+        "ref": "commit:60c250622f38a416144dd038a0a8c8d38fddcb04",
+        "digest": "60c250622f38a416144dd038a0a8c8d38fddcb04"
+      },
+      {
+        "ref": "commit:c852acd09863ac1f384193421255f67c581ae5db",
+        "digest": "c852acd09863ac1f384193421255f67c581ae5db"
+      },
+      {
+        "ref": "decision:ctd-f5cd41f49697705672bd914ee6165b4d",
+        "digest": null
+      },
+      {
+        "ref": "journal:pje-67a618230bf4feea6455ef7363696c98",
+        "digest": null
+      },
+      {
+        "ref": "journal:pje-d42963162bf64e72582283e5e8a1a2cb",
+        "digest": null
+      },
+      {
+        "ref": "promotion:promotion-232e47a54f0da9d659b35e9102ec38f9",
+        "digest": null
+      },
+      {
+        "ref": "promotion:promotion-6756e1f58461b01a0fe92480a516440b",
+        "digest": null
+      },
+      {
+        "ref": "promotion:promotion-c5a02bad2d5a85c83af36dc44baf5ab1",
+        "digest": null
+      },
+      {
+        "ref": "requirement:R1",
+        "digest": null
+      },
+      {
+        "ref": "requirement:R2",
+        "digest": null
+      },
+      {
+        "ref": "revision:4",
+        "digest": null
+      }
+    ],
+    "coverage": {
+      "complete": false,
+      "unavailable": [
+        "delegation runtime (not composed)"
+      ],
+      "omitted": []
+    },
+    "digest": "8bcd58c2aaaec128a4f5e82baeb139bb020079ddd141f2515efed13706862a5f"
+  },
+  "workers": {
+    "placement": "worktree",
+    "jobs": [],
+    "attempts": [
+      {
+        "taskId": "capacity",
+        "state": "COMPLETED",
+        "taskState": "STALE",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "cost",
+        "state": "COMPLETED",
+        "taskState": "STALE",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "capacity-v2",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "cost-v2",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "cost-v2",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      },
+      {
+        "taskId": "integration",
+        "state": "COMPLETED",
+        "taskState": "SATISFIED",
+        "orphaned": false,
+        "hostObserved": false
+      }
+    ],
+    "detail": "no worker transport is composed in this deployment; only canonical attempt state is observable"
+  },
+  "results": {
+    "state": "OK",
+    "results": [
+      {
+        "taskId": "capacity",
+        "taskState": "STALE",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "c4da45716dbb77f1fb0e495b22d90bf2cc9bae98fdc05c5acedd684f1db3cf5d",
+        "resultCommit": "04343d7a1ade436baa6823c901a3bc3a6c66519f",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "capacity-v2",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "4c7734710cd542df56a61a47ed7e43bda99e00dbee620dcb7d3d209aba7278d4",
+        "resultCommit": "454f3dc0d8eee8df376a048ec41a3045819ef4e2",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "cost",
+        "taskState": "STALE",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "63717b1ceb4cc3415ed4c9c7c7acd191c539ce7a85f108b66bd6cb02580acbbb",
+        "resultCommit": "4442b2320c4994263b09a18cf68496db32280008",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "cost-v2",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "INCOMPATIBLE",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "91f4870b3a0edc38d679830eb89aeb797894f9d378ef63612c28d61664ca3f52",
+        "resultCommit": "51a6e3d612dd58c4ea963105727fc45f475b9b71",
+        "detail": "this result cannot be reused (a positive conflict witness exists: accepting both this result and the current world would supersede an input it was computed from, or collide with a resource it writes — no further evidence makes THIS result reusable), and its work must be redone on the current basis"
+      },
+      {
+        "taskId": "integration",
+        "taskState": "SATISFIED",
+        "resolved": true,
+        "compatibility": "UNKNOWN",
+        "currentness": "STALE",
+        "exactCurrent": false,
+        "actions": {
+          "rematerialize": false,
+          "rework": false
+        },
+        "assessmentDigest": "061a0a06b37b3a3b49d78082015729d3832de2ec5db295a10f6ac9b8dbf22385",
+        "resultCommit": "56c2ff90dd612f389dca934c9752101750a344fa",
+        "detail": "reuse is not proven (a compatibility proof was attempted and could not be completed, so non-interference is unproven rather than refused); the work may still be redone on the current basis"
+      }
+    ],
+    "detail": "each result is historical until an authorized Promotion accepts it; the digest is the freshness fence for a continuation route"
+  }
+}

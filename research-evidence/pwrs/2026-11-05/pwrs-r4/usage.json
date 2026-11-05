@@ -1,0 +1,54 @@
+{
+  "schema": "pwrs-r4-usage/v1",
+  "sessions": [
+    {
+      "id": "F-1",
+      "tokens": 418992,
+      "stopped": false,
+      "killedBy": "token_milestone",
+      "natural": false,
+      "exitCode": 1,
+      "maxTokens": 2500000
+    },
+    {
+      "id": "F-2",
+      "tokens": 2403625,
+      "stopped": true,
+      "killedBy": null,
+      "natural": false,
+      "exitCode": 1,
+      "maxTokens": 2500000
+    },
+    {
+      "id": "A-1",
+      "tokens": 421015,
+      "stopped": false,
+      "killedBy": "token_milestone",
+      "natural": false,
+      "exitCode": 1,
+      "maxTokens": 2500000
+    },
+    {
+      "id": "A-2",
+      "tokens": 2420961,
+      "stopped": true,
+      "killedBy": null,
+      "natural": false,
+      "exitCode": 1,
+      "maxTokens": 2500000
+    }
+  ],
+  "total": 5664593,
+  "authorization": {
+    "aggregate": 10000000,
+    "perSession": 2500000,
+    "reserve": 125000
+  },
+  "remaining": 4335407,
+  "provider": {
+    "posts": 146,
+    "ok": 144,
+    "upstreamTimeout": 2,
+    "getForbidden": 1
+  }
+}

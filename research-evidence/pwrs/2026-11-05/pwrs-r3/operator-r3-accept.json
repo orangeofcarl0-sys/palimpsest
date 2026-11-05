@@ -1,0 +1,52 @@
+{
+  "schema": "pwrs-operator-acceptance/v1",
+  "label": "r3-accept",
+  "projectId": "pwrs-r3",
+  "taskId": "package",
+  "operator": "owner-authorized deterministic acceptance",
+  "acceptedAt": "2026-11-05T02:59:45.230Z",
+  "promoted": true,
+  "attemptId": "attempt-8762438837b9869ac9a52e8d230625c6",
+  "before": {
+    "revision": 0,
+    "headCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+    "tasks": [
+      {
+        "taskId": "package",
+        "state": "VERIFYING"
+      }
+    ]
+  },
+  "eligibility": {
+    "eligible": true,
+    "blockers": [],
+    "sourceCommit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b",
+    "taskState": "VERIFYING",
+    "attemptState": "COMPLETED",
+    "canonicalExpectedHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03"
+  },
+  "result": {
+    "promotionId": "promotion-b70b3bc749dad377cc99aeb7075d40dc",
+    "sourceCommit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b",
+    "expectedHeadCommit": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+    "resultingHeadCommit": "eaa86fcd1295219a25ce0441d43aa72594ebf0f8",
+    "eventType": "PROMOTION_COMMITTED"
+  },
+  "headReconciliation": {
+    "status": "reconciled",
+    "revision": 1,
+    "fromHead": "272a4c7c97352a9f2e48c8b7ab93d9ed28fc9e03",
+    "toHead": "eaa86fcd1295219a25ce0441d43aa72594ebf0f8",
+    "blockers": []
+  },
+  "after": {
+    "revision": 1,
+    "headCommit": "eaa86fcd1295219a25ce0441d43aa72594ebf0f8",
+    "tasks": [
+      {
+        "taskId": "package",
+        "state": "SATISFIED"
+      }
+    ]
+  }
+}

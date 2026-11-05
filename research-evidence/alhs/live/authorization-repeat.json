@@ -1,0 +1,15 @@
+{
+  "schema": "alhs-spend-authorization/v1",
+  "cohortId": "alhs-c-repeat-2026-11-04",
+  "authorizedBy": "Owner (ALHS-C repeat-core only, 2026-11-04)",
+  "authorizedAt": "2026-11-04T15:05:00.000Z",
+  "expiresAt": "2026-11-11T00:00:00.000Z",
+  "provider": "deepseek-official/deepseek-flash",
+  "stages": ["repeat-core"],
+  "conditions": ["F", "A"],
+  "aggregateTokens": 8000000,
+  "perSessionCeiling": 2500000,
+  "reserveTokens": 150000,
+  "maxSessions": 4,
+  "note": "Repeat-core only: one additional F/A pair, session 1 killed at the 1,200,000-token milestone, session 2 ceiling 2,500,000. Diagnostic L/G is NOT authorized. The core authorization (alhs-c-2026-11-04) is a different cohort and does not transfer."
+}

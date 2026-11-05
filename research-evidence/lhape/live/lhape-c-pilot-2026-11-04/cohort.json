@@ -1,0 +1,69 @@
+{
+  "schema": "lhape-live-cohort/v1",
+  "cohortId": "lhape-c-pilot-2026-11-04",
+  "codeFreeze": "81f230fbf6f488777a25814a177b0c8b17864ce6",
+  "provider": {
+    "id": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "conditions": [
+    "F",
+    "L",
+    "G"
+  ],
+  "oracleCopied": false,
+  "hiddenDependenciesDisclosed": false,
+  "sessions": [
+    {
+      "id": "pilot-f-1",
+      "condition": "F",
+      "maxTokens": 2500000,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=F",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "cwd": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1",
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-F\\sessions",
+      "env": {
+        "LHAPE_PILOT_RUN": "C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      },
+      "timeoutMs": 1800000
+    },
+    {
+      "id": "pilot-l-1",
+      "condition": "L",
+      "maxTokens": 2500000,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=L",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "cwd": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1",
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-L\\sessions",
+      "env": {
+        "LHAPE_PILOT_RUN": "C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      },
+      "timeoutMs": 1800000
+    },
+    {
+      "id": "pilot-g-1",
+      "condition": "G",
+      "maxTokens": 2493762,
+      "command": [
+        "node",
+        "scripts\\lhape\\run_condition.mjs",
+        "--condition=G",
+        "--run=C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      ],
+      "cwd": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1",
+      "sessionRoot": "C:\\Users\\66494\\lhape\\pilot-2026-11-04\\home-G\\sessions",
+      "env": {
+        "LHAPE_PILOT_RUN": "C:\\Users\\66494\\lhape\\pilot-2026-11-04"
+      },
+      "timeoutMs": 1800000
+    }
+  ]
+}

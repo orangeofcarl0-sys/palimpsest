@@ -1,0 +1,52 @@
+{
+  "schema": "alhs-cohort/v1",
+  "cohortId": "pwrs-r2-2026-11-05",
+  "title": "PWRS-R2 — governed recovery retest with a pre-settlement input acknowledgement",
+  "codeFreeze": "adbcd420749b435462f95ed599d1b4b6e546a714",
+  "provider": "deepseek-official/deepseek-flash",
+  "localHardCap": 25000000,
+  "conditions": {
+    "A": {
+      "profile": "palimpsest-governed",
+      "definition": "Governed Palimpsest recovery: the full product with a confirmed standard and a formal package task in an isolated execution world. PWRS-D refuses a principal settlement while the project holds inputs the attempt's base never contained, until the caller acknowledges them; the prompt does not mention this gate, the relay, takeover or successor."
+    }
+  },
+  "stages": [
+    {
+      "id": "pwrs-r2",
+      "conditions": [
+        "A"
+      ],
+      "sessionCeiling": 2500000,
+      "reserveTokens": 125000,
+      "aggregateCeiling": 5000000,
+      "sessionPlan": [
+        {
+          "sessionId": "A-1",
+          "condition": "A",
+          "index": 1,
+          "ceiling": 2500000,
+          "reserveTokens": 125000,
+          "killAtTokens": 400000
+        },
+        {
+          "sessionId": "A-2",
+          "condition": "A",
+          "index": 2,
+          "ceiling": 2500000,
+          "reserveTokens": 125000
+        }
+      ]
+    }
+  ],
+  "measurement": {
+    "business": "7-fact package rubric, unchanged from PWRS-R.",
+    "interruption": "session 1 killed at the same 400,000 reported-token milestone; the artifact and Git state at that moment are snapshotted outside the run.",
+    "gate": "the measured input is an UNTRACKED file under inbox/ (not gitignored), so the product can establish that the attempt's base never contained it. A principal settlement must either acknowledge the listed paths or remain refused.",
+    "governance": "relay attribution, task/attempt states, candidate commit and episode intent.",
+    "reuse": "line overlap with the interrupted draft, plus whether the 700 mm measurement is used and the 1200 mm assumption rejected."
+  },
+  "comparison": "Descriptive comparison with the PWRS-R A pair (same scenario, same milestone, pre-fix). A-only: only the A path has the PWRS-D gate. One pair; no quality or cost advantage claim.",
+  "note": "This is the minimal discriminating retest of the PWRS-D repair, not a repeated sample.",
+  "codeFreezeNote": "product code under test (PWRS-D gate); the retest harness was committed with it."
+}

@@ -1,0 +1,230 @@
+{
+  "schema": "alhs-core-result/v1",
+  "cohortId": "alhs-c-repeat-2026-11-04",
+  "codeFreeze": "629d17ad4a74a96753f6504d69855ed85eda62e3",
+  "mode": "REAL_MODEL_REPEAT_CORE",
+  "provider": "deepseek-official/deepseek-flash",
+  "note": "F and A received byte-identical sources and the same measured update at T+60s. Session 1 was killed at the same reported token milestone (400,000; first observation above it) in both conditions; session 2 was a new principal session on the same durable state. A's model content is real; no evaluator oracle is in any prompt.",
+  "conditions": {
+    "F": {
+      "score": "7/7",
+      "rubric": {
+        "package_present": true,
+        "both_sites": true,
+        "measured_700mm_used": true,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": true,
+        "cost_and_schedule": true,
+        "risk_and_decision": true
+      },
+      "tokens": {
+        "total": 2797303,
+        "bySession": {
+          "F-1b": 427070,
+          "F-2b": 2370233
+        },
+        "ledgerBySession": {
+          "F-1b": 427070,
+          "F-2b": 2370233
+        },
+        "note": "stream totals are the recorded per-assistant-message usage across every session in the home (children included); the ledger is the guard's last observation and can trail the final message."
+      },
+      "firstValid": {
+        "time": 1793805426791,
+        "tokensBefore": 185926,
+        "bytes": 21327,
+        "versions": 3
+      },
+      "afterFirstValid": {
+        "toolCalls": 115,
+        "artifactChanges": 60,
+        "tokens": 2611377
+      },
+      "versions": 63,
+      "natural": {
+        "sessionNatural": false,
+        "firstSessionNatural": false,
+        "naturalEnd": false,
+        "killedInSession1": true,
+        "budgetStopped": true,
+        "episodeEnded": null,
+        "episodeState": null
+      },
+      "episode": null,
+      "tasks": null,
+      "promotions": [],
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": true,
+        "bytes": 28308,
+        "sha256": "bcae7d3db7175d30c4274c87109d379e4198f887f27c85dabff5a133a52e7edc"
+      },
+      "sessions": [
+        {
+          "sessionId": "F-1b",
+          "startedAt": "2026-11-04T15:15:22.891Z",
+          "endedAt": "2026-11-04T15:17:35.148Z",
+          "exitCode": 1,
+          "killedAt": "2026-11-04T15:17:34.482Z",
+          "killedBy": "token_milestone",
+          "stopped": false,
+          "natural": false,
+          "ledgerTokens": 427070,
+          "streamTokens": 427070,
+          "maxTokens": 1500000,
+          "reserveTokens": 150000,
+          "softStopAt": 1350000
+        },
+        {
+          "sessionId": "F-2b",
+          "startedAt": "2026-11-04T15:17:35.257Z",
+          "endedAt": "2026-11-04T15:21:48.124Z",
+          "exitCode": 1,
+          "killedAt": null,
+          "killedBy": null,
+          "stopped": true,
+          "natural": false,
+          "ledgerTokens": 2370233,
+          "streamTokens": 2370233,
+          "maxTokens": 2500000,
+          "reserveTokens": 150000,
+          "softStopAt": 2350000
+        }
+      ]
+    },
+    "A": {
+      "score": "7/7",
+      "rubric": {
+        "package_present": true,
+        "both_sites": true,
+        "measured_700mm_used": true,
+        "baseline_900mm_rejected": true,
+        "coastal_claim_not_accepted": true,
+        "cost_and_schedule": true,
+        "risk_and_decision": true
+      },
+      "tokens": {
+        "total": 1058793,
+        "bySession": {
+          "A-1b": 462482,
+          "A-2b": 596311
+        },
+        "ledgerBySession": {
+          "A-1b": 449012,
+          "A-2b": 548583
+        },
+        "note": "stream totals are the recorded per-assistant-message usage across every session in the home (children included); the ledger is the guard's last observation and can trail the final message."
+      },
+      "firstValid": {
+        "time": 1793805884709,
+        "tokensBefore": 287738,
+        "bytes": 28162,
+        "versions": 2
+      },
+      "afterFirstValid": {
+        "toolCalls": 45,
+        "artifactChanges": 3,
+        "tokens": 771055
+      },
+      "versions": 5,
+      "natural": {
+        "sessionNatural": true,
+        "firstSessionNatural": false,
+        "naturalEnd": true,
+        "killedInSession1": true,
+        "budgetStopped": false,
+        "episodeEnded": true,
+        "episodeState": "DELIVERED"
+      },
+      "episode": {
+        "state": "DELIVERED",
+        "current": true,
+        "intent": "DELIVER",
+        "conclusionId": "episode-7bfc0aac64f7bb5af3158a62",
+        "changedSince": [],
+        "ended": true
+      },
+      "tasks": [],
+      "promotions": [],
+      "artifact": {
+        "path": "deliverables/package.md",
+        "present": true,
+        "bytes": 28251,
+        "sha256": "8661b87fbd19290a2b48d0a46b835db4d87ba70e0df77bbea334a50dc0a11d84"
+      },
+      "sessions": [
+        {
+          "sessionId": "A-1b",
+          "startedAt": "2026-11-04T15:21:48.660Z",
+          "endedAt": "2026-11-04T15:25:07.343Z",
+          "exitCode": 1,
+          "killedAt": "2026-11-04T15:25:06.585Z",
+          "killedBy": "token_milestone",
+          "stopped": false,
+          "natural": false,
+          "ledgerTokens": 449012,
+          "streamTokens": 462482,
+          "maxTokens": 1500000,
+          "reserveTokens": 150000,
+          "softStopAt": 1350000
+        },
+        {
+          "sessionId": "A-2b",
+          "startedAt": "2026-11-04T15:25:07.470Z",
+          "endedAt": "2026-11-04T15:27:19.899Z",
+          "exitCode": 0,
+          "killedAt": null,
+          "killedBy": null,
+          "stopped": false,
+          "natural": true,
+          "ledgerTokens": 548583,
+          "streamTokens": 596311,
+          "maxTokens": 2500000,
+          "reserveTokens": 150000,
+          "softStopAt": 2350000
+        }
+      ]
+    }
+  },
+  "aggregate": {
+    "totalTokens": 3856096,
+    "authorizedTokens": 8000000,
+    "remainingTokens": 4143904,
+    "session1": 1500000,
+    "session2": 2500000,
+    "killAtTokens": 400000,
+    "reserve": 150000,
+    "budgetStop": {
+      "sessionId": "F-2b",
+      "ledgerTokens": 2370233,
+      "softStopAt": 2350000,
+      "maxTokens": 2500000,
+      "overshoot": 20233,
+      "underHardCeiling": 129767
+    },
+    "note": "The guard observes usage after a message. A stop happens at the first observation above that session's soft ceiling; the reserve keeps it under the hard per-session ceiling."
+  },
+  "proxy": {
+    "posts": 91,
+    "statuses": {
+      "200": 90,
+      "502": 1
+    },
+    "upstreamErrors": [
+      {
+        "at": "2026-11-04T15:25:56.026Z",
+        "status": 502,
+        "error": "UPSTREAM_TIMEOUT"
+      }
+    ]
+  },
+  "limitations": [
+    "One additional pair per condition; combined with the core this is two pairs, not a powered sample.",
+    "The 7-fact rubric is a floor on the final package, not a business-quality or cognition score. Both conditions reached 7/7.",
+    "A chose direct file work plus one native subagent; it did not create a formal Work task or a governed Worker. That is a valid adaptive choice, not evidence of governed cooperation.",
+    "A committed the final package and the product recorded tracked=true/committed=true; F left deliverables/ untracked. The provenance facts are in A's episode conclusion.",
+    "One provider request returned 502 UPSTREAM_TIMEOUT during the run; the proxy retried and the session continued. It is recorded, not hidden.",
+    "The scenario kill is a harness event, not a product failure; it is applied equally to F and A.",
+    "Natural convergence is reported separately from the rubric. F was budget-stopped; A recorded DELIVER and exited on its own."
+  ]
+}

@@ -54,7 +54,16 @@ export interface WorkEvidenceContext {
   readonly attemptId: string;
   /** The attempt's `last_event_id`, so the atom's causation points at the attempt's own history. */
   readonly causationId: number;
+  /** The revision the ATOM records as its input (the attempt's authorization revision). */
   readonly projectRevision: number;
+  /**
+   * The event log's CURRENT revision, used as the optimistic-concurrency fence.
+   *
+   * These diverge exactly when a late result arrives after a plan revision: the atom still describes
+   * the world the attempt was authorized in, while the append lands on the current log. Using the
+   * envelope revision as the fence would make every such result unrecordable.
+   */
+  readonly expectedProjectRevision: number;
   readonly projectDigest: string;
   readonly requiredArtifacts: readonly string[];
   readonly now: () => string;
@@ -188,7 +197,7 @@ export function recordObservedEvidence(
       causation_id: context.causationId,
       correlation_id: `evidence:${evidenceId}`,
       idempotency_key: key,
-      expected_project_revision: context.projectRevision,
+      expected_project_revision: context.expectedProjectRevision,
     }),
   );
 }
@@ -280,7 +289,7 @@ export function recordCommandEvidence(
       causation_id: context.causationId,
       correlation_id: `evidence:${evidenceId}`,
       idempotency_key: key,
-      expected_project_revision: context.projectRevision,
+      expected_project_revision: context.expectedProjectRevision,
     }),
   );
 }

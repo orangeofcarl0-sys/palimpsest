@@ -18,6 +18,7 @@ import type { DelegationService } from "../interaction/delegation.js";
 import type { ContributionService } from "../project_contribution/index.js";
 import type { ProjectPulseService } from "../project_pulse/index.js";
 import type { PalimpsestApplicationSurface } from "../application/surface.js";
+import type { ResultContinuationFace, WorkDelegationFace } from "../application/work_contract.js";
 import { makePalimpsestApplicationSurface } from "../application/surface.js";
 import { defineApplicationTools } from "../tools/application_tools.js";
 import { defineNormalWorkTool } from "../adapters/dsh/normal.js";
@@ -50,6 +51,14 @@ export interface ApplicationAssemblyInput {
   readonly contribution?: ContributionService | undefined;
   /** APS-A: the derived continuation view; absent without a contribution chain. */
   readonly pulse?: ProjectPulseService | undefined;
+  /** ALHS-A: the episode conclusion service; absent without a journal and pulse. */
+  readonly episode?: import("../project_continuity/index.js").EpisodeService | undefined;
+  /** LHAPE-A: the existing async work-worker transport, when this deployment composed a worker port. */
+  readonly workDelegation?: WorkDelegationFace | undefined;
+  /** LHAPE-B: the existing packaged result-continuation authority. */
+  readonly continuation?: ResultContinuationFace | undefined;
+  /** PWRS-A: the durable execution-relay recorder, shared with the delegation transport. */
+  readonly executionRelay?: import("./continuity.js").ExecutionRelayRecorder | undefined;
   /** Exactly the option fields the assembly reads. */
   readonly assemblyOptions: ApplicationAssemblyOptions;
 }
@@ -92,7 +101,22 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
   const { organization, institution, runtimeScopes, holons, organizationDynamics, organizationEvolutionInstalled, runtimeEvolutionInstalled, reasoningCellsInstalled } = input.organization;
   const { proofExtraction, organizationMemory, recipeRegistry, taskProfiler, verificationWiring, liveVerification, advisor, recipeExecution, recipeExecutionStatus, attention, externalAssetsRef, projectWorkspace } = input.cognition;
   const { verification, externalAssets, projectManagement, operatingStores, monitor } = input.governance;
-  const { controller, baseTools, collaborationService, crossProjectService, delegationService, continuity, domainOutcome, contribution, pulse, assemblyOptions } = input;
+  const {
+    controller,
+    baseTools,
+    collaborationService,
+    crossProjectService,
+    delegationService,
+    continuity,
+    domainOutcome,
+    contribution,
+    pulse,
+    episode,
+    workDelegation,
+    continuation,
+    executionRelay,
+    assemblyOptions,
+  } = input;
   void campaignEvidence;
   void boundaryHome;
   void federatedBoundaryMemory;
@@ -151,6 +175,10 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     // APS-A/B: the contribution chain and the derived pulse. ABSENT ⇒ no such surface, never a stub.
     ...(contribution === undefined ? {} : { contribution }),
     ...(pulse === undefined ? {} : { projectPulse: pulse }),
+    ...(episode === undefined ? {} : { episode }),
+    ...(workDelegation === undefined ? {} : { workDelegation }),
+    ...(continuation === undefined ? {} : { continuation }),
+    ...(executionRelay === undefined ? {} : { executionRelay }),
     ...(assemblyOptions.remoteTransport === undefined ? {} : { remoteTransport: assemblyOptions.remoteTransport }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),

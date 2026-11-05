@@ -1,0 +1,19 @@
+{
+  "scenario": "interrupt",
+  "projectId": "lhape-interrupt",
+  "goal": "Recover a delivered candidate after the host process is killed, without re-running the work.",
+  "head": "95ee8152002ecd1f1b202ca2e2cfb67f54bc362e",
+  "tasks": [
+    {
+      "task_id": "interrupted-write",
+      "objective": "Write the interrupted recovery artifact from sources/sites.md into deliverables/interrupted.md.",
+      "depends_on": [],
+      "write_paths": [
+        "deliverables/interrupted.md"
+      ],
+      "required_artifacts": [
+        "deliverables/interrupted.md"
+      ]
+    }
+  ]
+}
