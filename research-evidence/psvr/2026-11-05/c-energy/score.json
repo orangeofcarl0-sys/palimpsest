@@ -1,0 +1,209 @@
+{
+  "schema": "psvr-c-energy-score/v1",
+  "cohortId": "psvr-c-2026-11",
+  "stage": "psvr-c-energy",
+  "scenario": "energy-package",
+  "scoredAt": "2026-11-05T18:31:43.642Z",
+  "conditions": {
+    "F": {
+      "baseHead": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+      "sessions": [
+        {
+          "sessionId": "F-1",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T18:22:23.514Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 432619,
+            "sessionFiles": 1,
+            "state": "RUNNING"
+          },
+          "killedBy": "token_milestone",
+          "natural": false,
+          "injectedAt": "2026-11-05T18:19:43.915Z",
+          "stopped": false,
+          "started": true
+        },
+        {
+          "sessionId": "F-2",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T18:24:33.001Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 454712,
+            "sessionFiles": 1,
+            "state": "RUNNING"
+          },
+          "killedBy": null,
+          "natural": true,
+          "injectedAt": null,
+          "stopped": false,
+          "started": true
+        }
+      ],
+      "canonical": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-e-real\\run-2026-11-05\\worlds\\F",
+        "head": "0e980ec16dbb660b35eb59f9ed492316e3936130",
+        "status": "",
+        "log": [
+          "0e980ec Add two-site deployment decision package",
+          "f9d6f6f scenario base: sources and checker"
+        ],
+        "facts": {
+          "technical": true,
+          "compliance": true,
+          "cost": true,
+          "schedule": true,
+          "risk": true,
+          "recommendation": true,
+          "checker": true,
+          "committed": true
+        },
+        "score": 8,
+        "checker": {
+          "pass": true,
+          "output": "check: PASS (final) (46 assertions; corridor 1050 mm; selection NR=K-900 HF=K-900; total 536000 USD)",
+          "detail": null
+        }
+      },
+      "retained": [],
+      "best": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-e-real\\run-2026-11-05\\worlds\\F",
+        "score": 8,
+        "facts": {
+          "technical": true,
+          "compliance": true,
+          "cost": true,
+          "schedule": true,
+          "risk": true,
+          "recommendation": true,
+          "checker": true,
+          "committed": true
+        }
+      }
+    },
+    "A": {
+      "baseHead": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+      "sessions": [
+        {
+          "sessionId": "A-1",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T18:27:05.979Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 480706,
+            "sessionFiles": 1,
+            "state": "RUNNING"
+          },
+          "killedBy": "token_milestone",
+          "natural": false,
+          "injectedAt": "2026-11-05T18:25:40.108Z",
+          "stopped": false,
+          "started": true
+        },
+        {
+          "sessionId": "A-2",
+          "usage": {
+            "schema": "aps-budget-ledger/v1",
+            "observedAt": "2026-11-05T18:30:09.598Z",
+            "maxTokens": 2500000,
+            "reserveTokens": 125000,
+            "softCeiling": 2375000,
+            "totalTokens": 2377775,
+            "sessionFiles": 2,
+            "state": "STOPPED"
+          },
+          "killedBy": null,
+          "natural": false,
+          "injectedAt": null,
+          "stopped": true,
+          "started": true
+        }
+      ],
+      "canonical": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-e-real\\run-2026-11-05\\worlds\\A",
+        "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+        "status": "",
+        "log": [
+          "e631160 Add two-site deployment decision package",
+          "f9d6f6f scenario base: sources and checker"
+        ],
+        "facts": {
+          "technical": true,
+          "compliance": true,
+          "cost": true,
+          "schedule": true,
+          "risk": true,
+          "recommendation": true,
+          "checker": true,
+          "committed": true
+        },
+        "score": 8,
+        "checker": {
+          "pass": true,
+          "output": "check: PASS (final) (46 assertions; corridor 1050 mm; selection NR=K-900 HF=K-900; total 536000 USD)",
+          "detail": null
+        }
+      },
+      "retained": [
+        {
+          "name": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+          "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-e-real\\run-2026-11-05\\worlds\\A\\.palimpsest\\worlds\\attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+          "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "status": "",
+          "log": [
+            "e631160 Add two-site deployment decision package",
+            "f9d6f6f scenario base: sources and checker"
+          ],
+          "facts": {
+            "technical": true,
+            "compliance": true,
+            "cost": true,
+            "schedule": true,
+            "risk": true,
+            "recommendation": true,
+            "checker": true,
+            "committed": true
+          },
+          "score": 8,
+          "checker": {
+            "pass": true,
+            "output": "check: PASS (final) (46 assertions; corridor 1050 mm; selection NR=K-900 HF=K-900; total 536000 USD)",
+            "detail": null
+          }
+        }
+      ],
+      "best": {
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-e-real\\run-2026-11-05\\worlds\\A",
+        "score": 8,
+        "facts": {
+          "technical": true,
+          "compliance": true,
+          "cost": true,
+          "schedule": true,
+          "risk": true,
+          "recommendation": true,
+          "checker": true,
+          "committed": true
+        }
+      }
+    }
+  },
+  "comparison": {
+    "rubric": {
+      "F": 8,
+      "A": 8
+    },
+    "tokens": {
+      "F": 887331,
+      "A": 2858481
+    },
+    "note": "One pair per condition; descriptive. The checker is the acceptance gate; the rubric only localizes a failure."
+  }
+}
