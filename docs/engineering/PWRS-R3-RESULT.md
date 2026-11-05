@@ -76,7 +76,24 @@ invocation (the principal also wrote/committed), so it is not `independenceEligi
 - **The two post-run 502s** arrived after both sessions ended and are recorded as such; they did not
   affect an ending.
 
-## 5. Limitations
+## 5. Operator acceptance (after the run)
+
+The owner-authorized operator action was performed through the existing Promotion path
+(`scripts/pwrs/operator_accept.mjs`, the same `promoteAttempt` route):
+
+| | |
+|---|---|
+| Candidate | `ddf8bf3` (attempt `8762438837b9869ac9a52e8d230625c6`) |
+| Promotion | `promotion-b70b3bc749dad377cc99aeb7075d40dc` (`PROMOTION_COMMITTED`) |
+| Canonical head | `eaa86fc` (from `272a4c7`), revision 1 |
+| Task | `SATISFIED` |
+| Evidence | `operator-r3-accept.json`, `operator-promotions.json`, `final/canonical-log.txt` |
+
+This is a real operator decision, not a model action and not an evaluator oracle. The episode that was
+recorded as `WAIT_FOR_OPERATOR` now has its waiting condition satisfied; a later pulse reads it as
+`REOPENED` with "the operator accepted task package", which is the product's correct behaviour.
+
+## 6. Limitations
 
 - One A pair; no F control; no repeated sample. The PWRS-R F result (7/7, budget stop) remains a
   descriptive reference only.

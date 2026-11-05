@@ -155,6 +155,13 @@
     "naturalEnd": true,
     "inputGateExercised": true,
     "attribution": "old attempt UNATTRIBUTED (successor); new attempt MULTI_EXECUTOR; independenceEligible=false",
-    "note": "The successor gate refused with INPUTS_CHANGED_SINCE_BASIS, the principal acknowledged the exact path, started a new attempt, settled a 7/7 candidate and recorded WAIT_FOR_OPERATOR; no promotion."
+    "note": "The successor gate refused with INPUTS_CHANGED_SINCE_BASIS, the principal acknowledged the exact path, started a new attempt, settled a 7/7 candidate and recorded WAIT_FOR_OPERATOR; the owner-authorized operator then accepted the candidate through the existing Promotion path.",
+    "operatorAcceptance": {
+      "promotionId": "promotion-b70b3bc749dad377cc99aeb7075d40dc",
+      "sourceCommit": "ddf8bf3eab46686c4884974d0af83a5fccb69d2b",
+      "resultingHeadCommit": "eaa86fcd1295219a25ce0441d43aa72594ebf0f8",
+      "taskState": "SATISFIED",
+      "revision": 1
+    }
   }
 }
