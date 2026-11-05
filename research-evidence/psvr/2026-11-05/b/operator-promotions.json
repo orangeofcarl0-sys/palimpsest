@@ -1,0 +1,251 @@
+{
+  "schema": "psvr-operator-promotions/v1",
+  "records": [
+    {
+      "schema": "psvr-operator-acceptance/v1",
+      "label": "technical",
+      "projectId": "psvr-b",
+      "taskId": "technical",
+      "operator": "owner-authorized deterministic acceptance",
+      "acceptedAt": "2026-11-05T12:24:40.997Z",
+      "promoted": true,
+      "attemptId": "attempt-343e51ae6448e914495ab9bedc4308e7",
+      "before": {
+        "revision": 0,
+        "headCommit": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+        "tasks": [
+          {
+            "taskId": "commercial",
+            "state": "BLOCKED"
+          },
+          {
+            "taskId": "recommendation",
+            "state": "BLOCKED"
+          },
+          {
+            "taskId": "technical",
+            "state": "VERIFYING"
+          }
+        ]
+      },
+      "verification": {
+        "status": "recorded",
+        "typedReasonCode": "verified",
+        "verdict": "PASS",
+        "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+        "runRef": "pvrun-89231f812d2c0f3331064d68911f1cab",
+        "subjectDigest": "5ae8455a36eca0d1f6ff585e5da7a615a2fadc9da1f3efef166be496e06167b3"
+      },
+      "recovery": {
+        "prepared": 0,
+        "terminal": [],
+        "inFlight": [],
+        "blocked": []
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "bee1d062f9a5fcbc40bc96477afc01e4f1e33acb",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6"
+      },
+      "result": {
+        "promotionId": "promotion-bd4f29d6ff4220bba5fd987cd2bf294a",
+        "sourceCommit": "bee1d062f9a5fcbc40bc96477afc01e4f1e33acb",
+        "expectedHeadCommit": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+        "resultingHeadCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "headReconciliation": {
+        "status": "reconciled",
+        "revision": 1,
+        "fromHead": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+        "toHead": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+        "blockers": []
+      },
+      "after": {
+        "revision": 1,
+        "headCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+        "tasks": [
+          {
+            "taskId": "commercial",
+            "state": "READY"
+          },
+          {
+            "taskId": "recommendation",
+            "state": "BLOCKED"
+          },
+          {
+            "taskId": "technical",
+            "state": "SATISFIED"
+          }
+        ]
+      }
+    },
+    {
+      "schema": "psvr-operator-acceptance/v1",
+      "label": "commercial",
+      "projectId": "psvr-b",
+      "taskId": "commercial",
+      "operator": "owner-authorized deterministic acceptance",
+      "acceptedAt": "2026-11-05T12:25:21.705Z",
+      "promoted": true,
+      "attemptId": "attempt-d037967088ba974bd3854457ffe138c5",
+      "before": {
+        "revision": 1,
+        "headCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+        "tasks": [
+          {
+            "taskId": "commercial",
+            "state": "VERIFYING"
+          },
+          {
+            "taskId": "recommendation",
+            "state": "BLOCKED"
+          },
+          {
+            "taskId": "technical",
+            "state": "SATISFIED"
+          }
+        ]
+      },
+      "verification": {
+        "status": "recorded",
+        "typedReasonCode": "verified",
+        "verdict": "PASS",
+        "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+        "runRef": "pvrun-51504ebf3447d526f3c3948cba316a8d",
+        "subjectDigest": "fec41137cd6790b86d3be723a6ec311d88e258593eac0385d619521d1d40af6e"
+      },
+      "recovery": {
+        "prepared": 0,
+        "terminal": [],
+        "inFlight": [],
+        "blocked": []
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "7d205387e31c0560686c8d425f17dab47855cf06",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723"
+      },
+      "result": {
+        "promotionId": "promotion-5665e0f3f55b80d8f685fb7c2476e5d6",
+        "sourceCommit": "7d205387e31c0560686c8d425f17dab47855cf06",
+        "expectedHeadCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+        "resultingHeadCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "headReconciliation": {
+        "status": "reconciled",
+        "revision": 2,
+        "fromHead": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+        "toHead": "cff50861d09bcc3a764b846baee9dea391b8c228",
+        "blockers": []
+      },
+      "after": {
+        "revision": 2,
+        "headCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+        "tasks": [
+          {
+            "taskId": "commercial",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "recommendation",
+            "state": "READY"
+          },
+          {
+            "taskId": "technical",
+            "state": "SATISFIED"
+          }
+        ]
+      }
+    },
+    {
+      "schema": "psvr-operator-acceptance/v1",
+      "label": "recommendation",
+      "projectId": "psvr-b",
+      "taskId": "recommendation",
+      "operator": "owner-authorized deterministic acceptance",
+      "acceptedAt": "2026-11-05T12:26:09.815Z",
+      "promoted": true,
+      "attemptId": "attempt-f931bcb3b7b5d6248bb5fc4f7765685c",
+      "before": {
+        "revision": 2,
+        "headCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+        "tasks": [
+          {
+            "taskId": "commercial",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "recommendation",
+            "state": "VERIFYING"
+          },
+          {
+            "taskId": "technical",
+            "state": "SATISFIED"
+          }
+        ]
+      },
+      "verification": {
+        "status": "recorded",
+        "typedReasonCode": "verified",
+        "verdict": "PASS",
+        "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+        "runRef": "pvrun-fcf85fbf8b20c3772b04c46fb5ca4503",
+        "subjectDigest": "fad964d50e3e662a2a54fcd3821811c6e249382ed244be120930899ae3cfed7f"
+      },
+      "recovery": {
+        "prepared": 0,
+        "terminal": [],
+        "inFlight": [],
+        "blocked": []
+      },
+      "eligibility": {
+        "eligible": true,
+        "blockers": [],
+        "sourceCommit": "e0fe9a94a9cb134253416a64a32dd9fd58a31aff",
+        "taskState": "VERIFYING",
+        "attemptState": "COMPLETED",
+        "canonicalExpectedHead": "cff50861d09bcc3a764b846baee9dea391b8c228"
+      },
+      "result": {
+        "promotionId": "promotion-bdb0cd0b7e2c44fb5e7246f8e755497d",
+        "sourceCommit": "e0fe9a94a9cb134253416a64a32dd9fd58a31aff",
+        "expectedHeadCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+        "resultingHeadCommit": "45250ebc32f05275bca70ae15c3beb5f02c2ff8d",
+        "eventType": "PROMOTION_COMMITTED"
+      },
+      "headReconciliation": {
+        "status": "reconciled",
+        "revision": 3,
+        "fromHead": "cff50861d09bcc3a764b846baee9dea391b8c228",
+        "toHead": "45250ebc32f05275bca70ae15c3beb5f02c2ff8d",
+        "blockers": []
+      },
+      "after": {
+        "revision": 3,
+        "headCommit": "45250ebc32f05275bca70ae15c3beb5f02c2ff8d",
+        "tasks": [
+          {
+            "taskId": "commercial",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "recommendation",
+            "state": "SATISFIED"
+          },
+          {
+            "taskId": "technical",
+            "state": "SATISFIED"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -29,6 +29,8 @@ const shell = 'const shell = typeof tools.pwsh === "function" ? tools.pwsh : too
 
 function writeTurn(files, description) {
   const code = [
+    shell,
+    'await shell({ command: "New-Item -ItemType Directory -Force -Path updates/2026-11-04 | Out-Null", description: "prepare the survey directory" });',
     `const files = ${JSON.stringify(files, null, 2)};`,
     "for (const [path, content] of Object.entries(files)) {",
     "  try { await tools.read({ file_path: path }); } catch { /* a new file has nothing to read */ }",

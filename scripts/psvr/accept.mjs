@@ -79,7 +79,8 @@ const record = {
 if (attempt === undefined) {
   record.detail = `no COMPLETED attempt exists for task ${TASK}; acceptance was not fabricated`;
   writeFileSync(join(RUN, `operator-${LABEL}.json`), `${JSON.stringify(record, null, 2)}\n`);
-  await installed.dispose();
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+await installed.dispose();
   process.stderr.write(`${record.detail}\n`);
   process.exit(1);
 }
@@ -105,6 +106,19 @@ if (verificationService !== undefined) {
 }
 record.verification = verification;
 
+/**
+ * A previous acceptance process may have exited while an Ordarium operation was still in flight; the
+ * next promotion then meets OPERATION_UNCERTAIN and refuses a blind retry. Reconcile the open
+ * operations first — the product's own recovery owner decides what actually happened.
+ */
+let recovery = null;
+try {
+  recovery = await installed.controller.recovery.reconcileAll();
+} catch (error) {
+  recovery = { status: "unavailable", detail: error instanceof Error ? error.message : String(error) };
+}
+record.recovery = recovery;
+
 const eligibility = installed.controller.promotions.assessEligibility(attempt.attempt_id);
 record.eligibility = {
   eligible: eligibility.eligible,
@@ -117,6 +131,15 @@ record.eligibility = {
 
 try {
   const result = await installed.controller.promoteAttempt({ attemptId: attempt.attempt_id, gateId: "gate-release" });
+  // The promotion is committed; the scheduler must process it before the head can move, and the
+  // head can only move once this task is SATISFIED (quiescence).
+  for (let tick = 0; tick < 8; tick += 1) {
+    const current = installed.controller.status().tasks.find((entry) => entry.task_id === TASK);
+    if (current?.state === "SATISFIED") break;
+    const event = installed.controller.step();
+    if (event === null) break;
+  }
+  const head = await installed.controller.reconcileProjectHead();
   // Make the NEXT task schedulable without creating its attempt: commit TASK_READY and stop, so the
   // pending decision is TASK_STARTED — exactly what `delegate` bootstraps.
   for (let tick = 0; tick < 4; tick += 1) {
@@ -124,7 +147,6 @@ try {
     if (preview.decision !== "next" || preview.eventType !== "TASK_READY") break;
     installed.controller.step();
   }
-  const head = await installed.controller.reconcileProjectHead();
   const after = installed.controller.status();
   const payload = result.committed?.payload ?? {};
   record.promoted = true;

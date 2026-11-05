@@ -1,0 +1,82 @@
+{
+  "schema": "psvr-operator-acceptance/v1",
+  "label": "technical",
+  "projectId": "psvr-b",
+  "taskId": "technical",
+  "operator": "owner-authorized deterministic acceptance",
+  "acceptedAt": "2026-11-05T12:24:40.997Z",
+  "promoted": true,
+  "attemptId": "attempt-343e51ae6448e914495ab9bedc4308e7",
+  "before": {
+    "revision": 0,
+    "headCommit": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+    "tasks": [
+      {
+        "taskId": "commercial",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "recommendation",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "technical",
+        "state": "VERIFYING"
+      }
+    ]
+  },
+  "verification": {
+    "status": "recorded",
+    "typedReasonCode": "verified",
+    "verdict": "PASS",
+    "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+    "runRef": "pvrun-89231f812d2c0f3331064d68911f1cab",
+    "subjectDigest": "5ae8455a36eca0d1f6ff585e5da7a615a2fadc9da1f3efef166be496e06167b3"
+  },
+  "recovery": {
+    "prepared": 0,
+    "terminal": [],
+    "inFlight": [],
+    "blocked": []
+  },
+  "eligibility": {
+    "eligible": true,
+    "blockers": [],
+    "sourceCommit": "bee1d062f9a5fcbc40bc96477afc01e4f1e33acb",
+    "taskState": "VERIFYING",
+    "attemptState": "COMPLETED",
+    "canonicalExpectedHead": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6"
+  },
+  "result": {
+    "promotionId": "promotion-bd4f29d6ff4220bba5fd987cd2bf294a",
+    "sourceCommit": "bee1d062f9a5fcbc40bc96477afc01e4f1e33acb",
+    "expectedHeadCommit": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+    "resultingHeadCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+    "eventType": "PROMOTION_COMMITTED"
+  },
+  "headReconciliation": {
+    "status": "reconciled",
+    "revision": 1,
+    "fromHead": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+    "toHead": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+    "blockers": []
+  },
+  "after": {
+    "revision": 1,
+    "headCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+    "tasks": [
+      {
+        "taskId": "commercial",
+        "state": "READY"
+      },
+      {
+        "taskId": "recommendation",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "technical",
+        "state": "SATISFIED"
+      }
+    ]
+  }
+}

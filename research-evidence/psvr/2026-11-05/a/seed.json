@@ -1,0 +1,69 @@
+{
+  "schema": "psvr-a-seed/v1",
+  "projectId": "psvr-a",
+  "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr2\\a\\world",
+  "head": "4121a0bc11edfa935381ba5f361647cd0631db94",
+  "tasks": [
+    {
+      "taskId": "contract",
+      "dependsOn": [],
+      "writePaths": [
+        "proto",
+        "service/wire.js",
+        "test/wire.test.js"
+      ]
+    },
+    {
+      "taskId": "server",
+      "dependsOn": [
+        "contract"
+      ],
+      "writePaths": [
+        "proto/energy.proto",
+        "service/wire.js",
+        "service/grpc_server.js",
+        "test/wire.test.js",
+        "test/server.test.js"
+      ]
+    },
+    {
+      "taskId": "client",
+      "dependsOn": [
+        "server"
+      ],
+      "writePaths": [
+        "service/grpc_client.js",
+        "test/integration.test.js",
+        "MIGRATION.md"
+      ]
+    }
+  ],
+  "standard": {
+    "statement": "The suite runs, the declared artifacts exist, and every write stays inside the task's scope.",
+    "clauses": [
+      {
+        "kind": "command_succeeds",
+        "command": [
+          "node",
+          "--test"
+        ],
+        "predicate": "tests_pass"
+      },
+      {
+        "kind": "scope_respected"
+      },
+      {
+        "kind": "files_exist",
+        "paths": []
+      }
+    ],
+    "derivedFrom": [
+      "package.json:scripts.test",
+      "fixture policy"
+    ],
+    "confirmed": true,
+    "notes": []
+  },
+  "input": "updates/2026-11-03/compat-streaming.md",
+  "baselineTests": true
+}

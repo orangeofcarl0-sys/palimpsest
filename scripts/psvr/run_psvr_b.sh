@@ -210,6 +210,12 @@ date -u +%Y-%m-%dT%H:%M:%SZ > "$OUT/survey-arrived-at.txt"
 start_host P2 "PSVR_B_PRINCIPAL_P2 You are the principal. Delegate the commercial task and settle its result; the package must agree with the current sources."
 wait_host P2
 date -u +%Y-%m-%dT%H:%M:%SZ > "$OUT/commercial-settled-at.txt"
+# The commercial candidate commits the survey as its basis copy, so the loose untracked file would
+# collide with the incoming tracked path during promotion. The bytes are now in the candidate; the
+# loose copy is removed before the operator accepts it.
+rm -f "$WORLD/$INPUT_REL"
+rmdir "$WORLD/updates/2026-11-04" "$WORLD/updates" 2>/dev/null || true
+git -C "$WORLD" status --porcelain > "$OUT/canonical-status-before-promotion.txt"
 promote commercial
 
 # ── T5–T6: recommendation, settlement, acceptance ───────────────────────────────────────────────
