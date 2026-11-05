@@ -427,6 +427,49 @@ describe("PWRS real Work paths", () => {
     expect(parseExecutionRelay(body!)?.attribution.attribution).toBe("PRINCIPAL_RECOVERY");
   });
 
+  it("forces a principal to acknowledge inputs that arrived after the attempt's base, then marks the world historical", async () => {
+    const { repo, head, stateDir } = workspace("unseen-inputs");
+    const installed = install(repo, stateDir);
+    await start(installed, head);
+    const { workDir } = await runningAttempt(installed);
+    writeCandidate(workDir, "# Package\n\nA draft written before the measured input.\n");
+    commitAll(workDir, "draft package");
+
+    // A measured source arrives in the canonical project, uncommitted and not in the attempt's base.
+    mkdirSync(join(repo, "inbox"), { recursive: true });
+    writeFileSync(join(repo, "inbox", "measured.md"), "# Measured corridor\n\n700 mm.\n");
+
+    const refused = (await call(installed, "palimpsest_work", {
+      action: "relay",
+      taskId: "package",
+      relayRoute: "takeover",
+      declareExecutorAbandoned: true,
+    })) as unknown as RelayResult;
+    expect(refused.state).toBe("NOT_READY");
+    expect(refused.detail).toMatch(/INPUTS_CHANGED_SINCE_BASIS|inbox\/measured\.md/u);
+
+    const accepted = (await call(installed, "palimpsest_work", {
+      action: "relay",
+      taskId: "package",
+      relayRoute: "takeover",
+      declareExecutorAbandoned: true,
+      acknowledgeInputs: true,
+    })) as unknown as RelayResult;
+    expect(accepted.state).toBe("TAKEOVER_SETTLED");
+    expect(accepted.attribution?.attribution).toBe("PRINCIPAL_RECOVERY");
+
+    // A later write to the settled attempt's world is NOT the result; the product must say so.
+    writeCandidate(workDir, "# Package\n\nPost-settlement edit that is not in the result.\n");
+    commitAll(workDir, "post-settlement edit");
+    const workers = (await call(installed, "palimpsest_work", { action: "workers" })) as unknown as {
+      attempts: Array<{ taskId: string | null; worldState?: string; worldMovedAfterResult?: boolean; resultCommit?: string | null }>;
+    };
+    const attempt = workers.attempts.find((entry) => entry.taskId === "package");
+    expect(attempt?.worldState).toBe("HISTORICAL");
+    expect(attempt?.worldMovedAfterResult).toBe(true);
+    expect(attempt?.resultCommit).toMatch(/^[0-9a-f]{40}$/u);
+  });
+
   it("refuses any settlement while this host still observes the invocation as OPEN", async () => {
     const { repo, head, stateDir } = workspace("open-invocation");
     const installed = install(repo, stateDir);

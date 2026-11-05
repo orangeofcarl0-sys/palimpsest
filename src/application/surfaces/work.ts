@@ -246,7 +246,7 @@ export interface WorkApplicationSurface {
    * the product observes the world, exports the result, evaluates the completion contract and reports
    * the attempt. It refuses when there is not exactly one RUNNING attempt.
    */
-  completePlaced(input?: { readonly summary?: string | undefined } | undefined): Promise<{
+  completePlaced(input?: { readonly summary?: string | undefined; readonly acknowledgeInputs?: boolean | undefined } | undefined): Promise<{
     readonly attemptId: string;
     readonly state: "COMPLETED";
     readonly resultCommit: string;
@@ -293,6 +293,12 @@ export interface WorkApplicationSurface {
        * or writes there must settle through `relay` so the attribution is recorded honestly.
        */
       readonly worldPath: string | null;
+      /** PWRS-D: a settled attempt's world is HISTORY; its result commit is the artifact. */
+      readonly worldState: "LIVE" | "HISTORICAL";
+      readonly worldHead: string | null;
+      /** True when the world has commits/changes the result commit does not contain. */
+      readonly worldMovedAfterResult: boolean;
+      readonly resultCommit: string | null;
     }[];
     readonly detail: string;
   }>;
@@ -348,7 +354,12 @@ export interface WorkApplicationSurface {
    * path after a host without its job map: the observation of the world decides, and an active host job
    * for the same task is refused rather than raced.
    */
-  completeTask(input: { readonly taskId: string; readonly summary?: string | undefined }): Promise<{
+  completeTask(input: {
+    readonly taskId: string;
+    readonly summary?: string | undefined;
+    /** PWRS-D: acknowledge project inputs that arrived after the attempt's base. */
+    readonly acknowledgeInputs?: boolean | undefined;
+  }): Promise<{
     readonly state: "SETTLED" | "NOT_READY" | "BASE_DRIFT" | "NO_RUNNING_ATTEMPT" | "MULTIPLE_ATTEMPTS" | "WORKER_ACTIVE";
     readonly taskId: string;
     readonly detail: string;
@@ -373,6 +384,11 @@ export interface WorkApplicationSurface {
     readonly route: "takeover" | "successor";
     /** Required for `takeover` when no invocation exit was observed; recorded as DECLARED. */
     readonly declareExecutorAbandoned?: boolean | undefined;
+    /**
+     * PWRS-D: the principal's confirmation that it re-read project inputs that arrived after the
+     * attempt's base. Without it, a principal settlement is refused while such inputs exist.
+     */
+    readonly acknowledgeInputs?: boolean | undefined;
     readonly summary?: string | undefined;
   }): Promise<{
     readonly state: "TAKEOVER_SETTLED" | "SUCCESSOR_READY" | "REFUSED" | "NOT_READY";
@@ -507,7 +523,10 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input?.summary === undefined ? {} : { detail: input.summary }) },
           // PWRS-A: the principal path is named as such. The Work owner still attributes the bytes
           // from its own observations; naming the path cannot manufacture worker production.
-          observation: { path: "PRINCIPAL" },
+          observation: {
+            path: "PRINCIPAL",
+            ...(input?.acknowledgeInputs === true ? { acknowledgeInputs: true } : {}),
+          },
         });
         if (settled.state !== "SETTLED") {
           throw new Error(`${settled.state}: ${settled.detail}`);
@@ -596,21 +615,39 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
         const taskStates = new Map((status.tasks ?? []).map((task) => [task.task_id, task.state]));
         const jobs = deps.workDelegation === undefined ? [] : await deps.workDelegation.jobs();
         const activeJobs = jobs.filter((job) => job.phase === "QUEUED" || job.phase === "RUNNING");
-        const attempts = (status.attempts ?? []).map((attempt) => ({
-          taskId: attempt.task_id,
-          state: attempt.state,
-          taskState: attempt.task_state ?? (attempt.task_id === null ? null : taskStates.get(attempt.task_id) ?? null),
-          orphaned: attempt.orphaned === true,
-          hostObserved:
-            attempt.task_id !== null && activeJobs.some((job) => job.taskId === attempt.task_id),
-          worldPath: (() => {
-            try {
-              return deps.controller.observeAttemptResult(attempt.attempt_id)?.workDir ?? null;
-            } catch {
-              return null;
-            }
-          })(),
-        }));
+        const attempts = (status.attempts ?? []).map((attempt) => {
+          let worldPath: string | null = null;
+          let worldHead: string | null = null;
+          let dirty = false;
+          try {
+            const observed = deps.controller.observeAttemptResult(attempt.attempt_id);
+            worldPath = observed?.workDir ?? null;
+            worldHead = observed?.observedHead ?? null;
+            dirty = (observed?.uncommittedChanges.length ?? 0) > 0;
+          } catch {
+            worldPath = null;
+          }
+          let resultCommit: string | null = null;
+          try {
+            resultCommit = deps.controller.promotions.canonicalAttemptResultCommit(attempt.attempt_id);
+          } catch {
+            resultCommit = null;
+          }
+          const historical = ["COMPLETED", "FAILED", "CANCELLED", "EXPIRED", "STALE"].includes(attempt.state);
+          return {
+            taskId: attempt.task_id,
+            state: attempt.state,
+            taskState: attempt.task_state ?? (attempt.task_id === null ? null : taskStates.get(attempt.task_id) ?? null),
+            orphaned: attempt.orphaned === true,
+            hostObserved:
+              attempt.task_id !== null && activeJobs.some((job) => job.taskId === attempt.task_id),
+            worldPath,
+            worldState: historical ? ("HISTORICAL" as const) : ("LIVE" as const),
+            worldHead,
+            worldMovedAfterResult: historical && (dirty || resultCommit === null || worldHead !== resultCommit),
+            resultCommit,
+          };
+        });
         return {
           placement: deps.controller.execution,
           jobs: jobs.map((job) => ({
@@ -804,7 +841,10 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
           const settled = await deps.controller.settleMutatingWork({
             attemptId,
             workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input.summary === undefined ? {} : { detail: input.summary }) },
-            observation: { path: "PRINCIPAL" },
+            observation: {
+              path: "PRINCIPAL",
+              ...(input.acknowledgeInputs === true ? { acknowledgeInputs: true } : {}),
+            },
           });
           if (settled.state === "SETTLED") {
             deps.controller.step();
@@ -907,7 +947,11 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
             const settled = await deps.controller.settleMutatingWork({
               attemptId,
               workerOutcome: { kind: "READY_FOR_SETTLEMENT", ...(input.summary === undefined ? {} : { detail: input.summary }) },
-              observation: { path: "PRINCIPAL", takeover: declaration },
+              observation: {
+                path: "PRINCIPAL",
+                takeover: declaration,
+                ...(input.acknowledgeInputs === true ? { acknowledgeInputs: true } : {}),
+              },
             });
             if (settled.state !== "SETTLED") {
               return {

@@ -52,7 +52,7 @@ import {
 import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
-import { makeMutatingAttemptService, makeExecutionInvocationLedger } from "../work/attempt_execution.js";
+import { makeMutatingAttemptService, makeExecutionInvocationLedger, unseenInputs } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
 import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
@@ -642,12 +642,7 @@ export class ProjectController {
   readonly #worldBasisPort: WorldBasisCapturePort | undefined;
   /** §D3-a: the currentness read port. Composed together with the capture port, read independently. */
   readonly #worldBasisReadPort: WorldBasisReadPort | undefined;
-  /**
-   * PWRS-A: what THIS host process observed about worker invocations. Non-canonical and non-durable:
-   * the durable statement is the settlement's relay record in the project journal. It is public only
-   * so the one composition can bind the delegation transport and the principal surface to the SAME
-   * memory; it is not a work authority.
-   */
+  /** PWRS-A: this host's invocation memory. Non-canonical; the durable record is the journal note. */
   readonly executionInvocations: ExecutionInvocationLedger;
   /**
    * Transient gate diagnostics: the output tail of the last observation per (attempt, predicate,
@@ -984,6 +979,8 @@ export class ProjectController {
       observeAttemptResult: (attemptId: string, baseCommit: string) => this.#observeAttemptResultSync(attemptId, baseCommit),
       /** PWRS-A: the host's own invocation windows for one attempt. Non-durable observation memory. */
       executionInvocations: (attemptId: string) => this.executionInvocations.list(attemptId),
+      /** PWRS-D: project paths the attempt's base never contained. */
+      inputsNotInBasis: (baseCommit: string) => unseenInputs({ repository: this.#canonicalRepository(), baseCommit }),
       exportResultCommit: async ({ attemptId, commit }) => {
         const port = this.#executionWorldPort;
         if (port === undefined) return { imported: false, detail: "no execution world port is composed" };
