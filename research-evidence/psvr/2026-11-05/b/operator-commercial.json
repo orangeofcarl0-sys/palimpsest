@@ -1,0 +1,82 @@
+{
+  "schema": "psvr-operator-acceptance/v1",
+  "label": "commercial",
+  "projectId": "psvr-b",
+  "taskId": "commercial",
+  "operator": "owner-authorized deterministic acceptance",
+  "acceptedAt": "2026-11-05T12:25:21.705Z",
+  "promoted": true,
+  "attemptId": "attempt-d037967088ba974bd3854457ffe138c5",
+  "before": {
+    "revision": 1,
+    "headCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+    "tasks": [
+      {
+        "taskId": "commercial",
+        "state": "VERIFYING"
+      },
+      {
+        "taskId": "recommendation",
+        "state": "BLOCKED"
+      },
+      {
+        "taskId": "technical",
+        "state": "SATISFIED"
+      }
+    ]
+  },
+  "verification": {
+    "status": "recorded",
+    "typedReasonCode": "verified",
+    "verdict": "PASS",
+    "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+    "runRef": "pvrun-51504ebf3447d526f3c3948cba316a8d",
+    "subjectDigest": "fec41137cd6790b86d3be723a6ec311d88e258593eac0385d619521d1d40af6e"
+  },
+  "recovery": {
+    "prepared": 0,
+    "terminal": [],
+    "inFlight": [],
+    "blocked": []
+  },
+  "eligibility": {
+    "eligible": true,
+    "blockers": [],
+    "sourceCommit": "7d205387e31c0560686c8d425f17dab47855cf06",
+    "taskState": "VERIFYING",
+    "attemptState": "COMPLETED",
+    "canonicalExpectedHead": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723"
+  },
+  "result": {
+    "promotionId": "promotion-5665e0f3f55b80d8f685fb7c2476e5d6",
+    "sourceCommit": "7d205387e31c0560686c8d425f17dab47855cf06",
+    "expectedHeadCommit": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+    "resultingHeadCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+    "eventType": "PROMOTION_COMMITTED"
+  },
+  "headReconciliation": {
+    "status": "reconciled",
+    "revision": 2,
+    "fromHead": "3baf0c2763ac9cbe0cac18f4bb42a6e5028ee723",
+    "toHead": "cff50861d09bcc3a764b846baee9dea391b8c228",
+    "blockers": []
+  },
+  "after": {
+    "revision": 2,
+    "headCommit": "cff50861d09bcc3a764b846baee9dea391b8c228",
+    "tasks": [
+      {
+        "taskId": "commercial",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "recommendation",
+        "state": "READY"
+      },
+      {
+        "taskId": "technical",
+        "state": "SATISFIED"
+      }
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schema": "psvr-operator-acceptance/v1",
+  "label": "client",
+  "projectId": "psvr-a",
+  "taskId": "client",
+  "operator": "owner-authorized deterministic acceptance",
+  "acceptedAt": "2026-11-05T12:05:04.098Z",
+  "promoted": true,
+  "attemptId": "attempt-242efab3c3a7175d4f5dad0253d26c06",
+  "before": {
+    "revision": 2,
+    "headCommit": "08d2c522ae47beee68d5a9603cf8e3563cfe03ab",
+    "tasks": [
+      {
+        "taskId": "client",
+        "state": "VERIFYING"
+      },
+      {
+        "taskId": "contract",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "server",
+        "state": "SATISFIED"
+      }
+    ]
+  },
+  "verification": {
+    "status": "recorded",
+    "typedReasonCode": "verified",
+    "verdict": "PASS",
+    "detail": "the verifier protocol \"project.attempt.git-diff-check.v1\" returned PASS (CURRENT)",
+    "runRef": "pvrun-edfb9b80c8634994f90acb82901a10e0",
+    "subjectDigest": "5e5a78f8a820e729155134db0d164bc00e9dea5c72c3f9bef2768bc4d11fb3dc"
+  },
+  "eligibility": {
+    "eligible": true,
+    "blockers": [],
+    "sourceCommit": "500b1b38fac6c0ab080560805f96b79cacb93671",
+    "taskState": "VERIFYING",
+    "attemptState": "COMPLETED",
+    "canonicalExpectedHead": "08d2c522ae47beee68d5a9603cf8e3563cfe03ab"
+  },
+  "result": {
+    "promotionId": "promotion-afec4323cdc3611403df3306398a30de",
+    "sourceCommit": "500b1b38fac6c0ab080560805f96b79cacb93671",
+    "expectedHeadCommit": "08d2c522ae47beee68d5a9603cf8e3563cfe03ab",
+    "resultingHeadCommit": "ace55e081c367d5e5b508aa1272f5b35d68bb514",
+    "eventType": "PROMOTION_COMMITTED"
+  },
+  "headReconciliation": {
+    "status": "reconciled",
+    "revision": 3,
+    "fromHead": "08d2c522ae47beee68d5a9603cf8e3563cfe03ab",
+    "toHead": "ace55e081c367d5e5b508aa1272f5b35d68bb514",
+    "blockers": []
+  },
+  "after": {
+    "revision": 3,
+    "headCommit": "ace55e081c367d5e5b508aa1272f5b35d68bb514",
+    "tasks": [
+      {
+        "taskId": "client",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "contract",
+        "state": "SATISFIED"
+      },
+      {
+        "taskId": "server",
+        "state": "SATISFIED"
+      }
+    ]
+  }
+}

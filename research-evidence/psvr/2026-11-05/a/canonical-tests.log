@@ -1,0 +1,22 @@
+✔ gRPC GetReading returns the same reading as the REST baseline (38.0306ms)
+✔ the client receives each streamed reading before the stream ends (202.5768ms)
+✔ an unknown site surfaces the server's error, not an empty result (3.4275ms)
+✔ GET one reading returns the current sample (23.282ms)
+✔ GET readings honours the limit and preserves order (4.6045ms)
+✔ an unknown site is an error, not an empty list (5.0754ms)
+✔ GetReading returns one reading (19.7467ms)
+✔ StreamReadings sends one bounded frame per reading, incrementally (397.4756ms)
+✔ an unknown site is grpc-status 5, not an empty stream (3.9805ms)
+✔ a Reading round-trips with a 64-bit timestamp (3.6247ms)
+✔ a SiteRequest round-trips a non-ASCII site id (0.4005ms)
+✔ a StreamRequest round-trips its limit (0.5223ms)
+✔ two frames in one buffer are drained in order and a partial frame is kept (0.5698ms)
+✔ a truncated frame is refused, not guessed (0.908ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 670.6256

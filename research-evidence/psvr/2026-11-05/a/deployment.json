@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "profileId": "psvr-a-host",
+  "projectId": "psvr-a",
+  "localPeer": "local-operator",
+  "repository": "C:/Users/66494/AppData/Local/Temp/psvr2/a/world",
+  "execution": "worktree",
+  "concurrency": 1,
+  "toolProfile": "normal",
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "--test"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "The suite runs, the declared artifacts exist, and every write stays inside the task's scope."
+  },
+  "transport": {
+    "namespace": "psvr-a-host",
+    "databasePath": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/palimpsest.sqlite",
+    "ordarium": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/ordarium.sqlite",
+    "coordination": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/coordination.sqlite",
+    "transportCursors": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/transport-cursors.sqlite",
+    "projectJournal": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/journal.sqlite",
+    "projectAssociations": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/associations.sqlite",
+    "management": "C:/Users/66494/AppData/Local/Temp/psvr2/a/state/management.sqlite"
+  },
+  "reasoning": {}
+}

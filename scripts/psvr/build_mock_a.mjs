@@ -356,7 +356,7 @@ const clientWorker = worker("Deliver the gRPC client, the integration test and t
 const scripts = {
   schema: "psvr-mock-scripts/v1",
   note: "Deterministic Messages stand-in. File bodies are the scripted actor's output; every write, test run and commit happens through the real worker session.",
-  scripts: [p1, p2, p3, p3b, p4, p5, serverSuccessor, contractWorker, serverPartialWorker, clientWorker],
+  scripts: [p1, p2, p3, p3b, p4, p5, clientWorker, serverSuccessor, contractWorker, serverPartialWorker],
 };
 
 writeFileSync(OUT, `${JSON.stringify(scripts, null, 2)}\n`);

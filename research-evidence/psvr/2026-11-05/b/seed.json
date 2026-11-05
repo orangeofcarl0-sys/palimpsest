@@ -1,0 +1,62 @@
+{
+  "schema": "psvr-b-seed/v1",
+  "projectId": "psvr-b",
+  "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr4\\b\\world",
+  "head": "f9d6f6f349d35f3b17dc5e07db1124a68d5b35f6",
+  "tasks": [
+    {
+      "taskId": "technical",
+      "dependsOn": [],
+      "writePaths": [
+        "deliverables"
+      ]
+    },
+    {
+      "taskId": "commercial",
+      "dependsOn": [
+        "technical"
+      ],
+      "writePaths": [
+        "deliverables",
+        "updates/2026-11-04"
+      ]
+    },
+    {
+      "taskId": "recommendation",
+      "dependsOn": [
+        "commercial"
+      ],
+      "writePaths": [
+        "deliverables"
+      ]
+    }
+  ],
+  "standard": {
+    "statement": "The package is consistent with its sources as the checker derives them, the artifacts exist, and every write stays in scope.",
+    "clauses": [
+      {
+        "kind": "command_succeeds",
+        "command": [
+          "node",
+          "check.mjs"
+        ],
+        "predicate": "tests_pass"
+      },
+      {
+        "kind": "scope_respected"
+      },
+      {
+        "kind": "files_exist",
+        "paths": []
+      }
+    ],
+    "derivedFrom": [
+      "package.json:scripts.test",
+      "fixture policy"
+    ],
+    "confirmed": true,
+    "notes": []
+  },
+  "input": "updates/2026-11-04/corridor-survey.md",
+  "checker": true
+}
