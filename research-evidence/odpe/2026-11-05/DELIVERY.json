@@ -11,9 +11,12 @@
   "resultCommit": null,
   "resultCommitNote": "the commit that adds this evidence directory and docs/engineering/ODPE-RESULT.md",
   "modelCalls": {
-    "realModelSessions": 0,
-    "paidTokens": 0,
-    "note": "ODPE-A/B/C were executed with the deterministic labelled Messages stand-in on a real Windows DSH host. No paid provider call was made; the PWRS/ALHS authorizations do not transfer."
+    "realModelSessions": 4,
+    "paidTokens": 1648210,
+    "providerRequests": 67,
+    "providerSuccess": 66,
+    "providerOther": 1,
+    "note": "ODPE-R only (F+Finish/A, 4 sessions, 1,648,210 tokens). The deterministic ODPE-C host run used the labelled Messages stand-in and consumed no model tokens."
   },
   "hostRun": {
     "schema": "odpe-host-summary/v1",
@@ -97,5 +100,64 @@
     "test/odpe_outcome.test.ts",
     "test/trajectory_p2d0_ipc_preservation.test.ts"
   ],
-  "note": "The PR's cumulative diff includes LHAPE/ALHS/PWRS; this list is the ODPE net change only."
+  "note": "The PR's cumulative diff includes LHAPE/ALHS/PWRS; this list is the ODPE net change only.",
+  "merged": {
+    "pr": 219,
+    "mergeCommit": "abc9d969a7456b8c35ea0ba69b55a5c29d324613",
+    "mergedAt": "2026-11-05T08:32:35Z",
+    "note": "Owner-authorized merge after the ODPE head 105903f passed r0-gates, ci (unit+e2e) and r1-hr-windows-host-boundary."
+  },
+  "cohort": {
+    "cohortId": "odpe-r-2026-11-05",
+    "report": "docs/engineering/ODPE-R-RESULT.md",
+    "evidence": "research-evidence/odpe/2026-11-05/odpe-r/",
+    "product": "105903f49c43e4cb738bc15dc68eb454c687f0a3",
+    "conditions": [
+      "F",
+      "A"
+    ],
+    "sessions": 4,
+    "tokens": {
+      "F": 615829,
+      "A": 1032381,
+      "total": 1648210,
+      "aggregate": 10000000,
+      "remaining": 8351790
+    },
+    "rubric": {
+      "F": "7/7",
+      "A": "7/7"
+    },
+    "naturalEnd": {
+      "F": {
+        "session1": false,
+        "session2": true
+      },
+      "A": {
+        "session1": false,
+        "session2": true
+      }
+    },
+    "final": {
+      "F": {
+        "bytes": 27472,
+        "committed": false,
+        "source": "CANONICAL_WORKTREE"
+      },
+      "A": {
+        "bytes": 30610,
+        "committed": true,
+        "resultCommit": "100a2b13cd6d0586267a963f3bd9fcd8a94fa7c4",
+        "taskState": "VERIFYING",
+        "attribution": "UNATTRIBUTED",
+        "independenceEligible": false,
+        "episode": "WAIT_FOR_OPERATOR"
+      }
+    },
+    "reuse": {
+      "F": 1,
+      "A": null
+    },
+    "note": "Both conditions reached 7/7 and both second sessions ended naturally. F left an uncommitted package; A settled a canonical candidate and recorded WAIT_FOR_OPERATOR. One pair per condition; no quality or cost advantage is claimed. The current-input context path was not exercised in A because the attempt predated the input."
+  }
 }
