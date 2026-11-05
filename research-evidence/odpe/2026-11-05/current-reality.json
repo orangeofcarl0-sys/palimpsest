@@ -1,0 +1,52 @@
+{
+  "schema": "odpe-current-reality/v1",
+  "input": {
+    "path": "updates/2026-11-03/payload-measurement.md",
+    "canonicalPresentBeforePromotion": true,
+    "recordedSha256": "9f15b493d96f70b6c91aa6a3e9890c0089f34a082c687ea77b3f82ec6693299b */c/Users/66494/odpe-runs/host-1/world/updates/2026-11-03/payload-measurement.md",
+    "inCanonicalCommit": false,
+    "deliveredToAnAttempt": true
+  },
+  "manifests": [
+    {
+      "manifestId": "context-manifest-b0424ffa5a18fe83aadd4c8ba049d452",
+      "taskId": "billing-cutover",
+      "inputObservation": "OBSERVED",
+      "inputPaths": [],
+      "inputDigests": []
+    },
+    {
+      "manifestId": "context-manifest-4dc43a1e80bc0fb893bed090f6c7d6b6",
+      "taskId": "billing-cutover",
+      "inputObservation": "OBSERVED",
+      "inputPaths": [
+        "updates/2026-11-03/payload-measurement.md"
+      ],
+      "inputDigests": [
+        {
+          "path": "updates/2026-11-03/payload-measurement.md",
+          "digest": "9f15b493d96f70b6c91aa6a3e9890c0089f34a082c687ea77b3f82ec6693299b",
+          "bytes": 337,
+          "identity": "UNTRACKED"
+        }
+      ]
+    }
+  ],
+  "pulls": [
+    {
+      "log": "worker-3324.log",
+      "pulled": [
+        "@ctx/input/updates/2026-11-03/payload-measurement.md"
+      ]
+    }
+  ],
+  "reuse": {
+    "partialSha256": "71fa21dd7efd3383ec01275ca8b9665f9e5bdfe380106a15db631a866b3ca2d8",
+    "finalSha256": "186f3fb2062cb7b7084b9eab41069cac6aa4adb5f2f1cbf6296963c03eb38135",
+    "partialIsNotFinal": true,
+    "measuredBasisPresent": true,
+    "streamingDecisionPresent": true,
+    "supersededAssumptionAbsent": true
+  },
+  "note": "The input was untracked, delivered through the compiled context and pulled by the worker; it was never copied into an attempt world and is not in the canonical commit."
+}

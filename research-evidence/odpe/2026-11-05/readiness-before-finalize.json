@@ -1,0 +1,56 @@
+{
+  "schema": "odpe-outcome-readiness/v1",
+  "action": "SEMANTIC_JUDGEMENT",
+  "reasons": [
+    "current inputs arrived after the attempt's basis (updates/2026-11-03/payload-measurement.md); decide whether the candidate still holds, then finalize with acknowledgeInputs=true if it does"
+  ],
+  "observationDigest": "88e6da4c6ca7818130bf6fed91eb60c7ea662b5617181ecb75826c04bede46d8",
+  "task": {
+    "taskId": "billing-cutover",
+    "state": "ACTIVE",
+    "objective": null
+  },
+  "attempt": {
+    "attemptId": "attempt-3b2a6e1f6ee4bbee5e22412c96761d03",
+    "state": "RUNNING",
+    "baseCommit": "d922c5de1a0a55183f9122e4f1461a1ad3c32e1b",
+    "worldPath": "C:\\Users\\66494\\odpe-runs\\host-1\\world\\.palimpsest\\worlds/attempt-3b2a6e1f6ee4bbee5e22412c96761d03",
+    "worldHead": "c37b04b694e25cdb8314ea8c5dc5809d8f73f828",
+    "uncommittedChanges": [],
+    "resultCommit": "c37b04b694e25cdb8314ea8c5dc5809d8f73f828",
+    "resultCommitted": true
+  },
+  "execution": {
+    "jobPhase": "FINISHED",
+    "active": false,
+    "stopRequested": false,
+    "processExit": "OBSERVED"
+  },
+  "artifacts": [
+    {
+      "path": "deliverables/migration-plan.md",
+      "present": true,
+      "committed": true
+    }
+  ],
+  "inputs": {
+    "state": "OBSERVED",
+    "paths": [
+      "updates/2026-11-03/payload-measurement.md"
+    ],
+    "unreadable": [],
+    "relevance": "NEEDS_SEMANTIC_ASSESSMENT",
+    "detail": "1 current project input(s) differ from the basis d922c5de1a0a"
+  },
+  "completion": {
+    "mechanicalChecksEvaluable": true,
+    "readinessState": "READY",
+    "blockers": [],
+    "verificationRequired": false,
+    "verificationSatisfiable": true
+  },
+  "next": [
+    "inspect the named facts",
+    "decide, then either finalize with the digest or conclude the episode"
+  ]
+}
