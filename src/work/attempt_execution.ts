@@ -43,6 +43,7 @@ import {
   type ExecutionInvocation,
   type SettlementObservation,
 } from "./execution_relay.js";
+import type { ProjectInputObservation } from "./unseen_inputs.js";
 
 /** What a caller needs to place a worker, and nothing about how to run one. */
 export interface PreparedMutatingWork {
@@ -74,8 +75,10 @@ export type MutatingWorkSettlement =
       readonly evidenceRecorded: readonly string[];
       /** PWRS-A: which execution window the product observed for the settled bytes. */
       readonly attribution: ExecutionAttribution;
-      /** PWRS-D: project inputs the attempt's basis did not contain, recorded even when not blocking. */
+      /** ODPE-A: current inputs the attempt's basis did not contain, with the observation state. */
       readonly inputsNotInBasis: readonly string[];
+      readonly inputsState: ProjectInputObservation["state"];
+      readonly inputsDetail: string;
       readonly detail: string;
     }
   | { readonly state: "NOT_READY"; readonly attemptId: string; readonly reason: string; readonly detail: string }
@@ -171,7 +174,7 @@ export interface MutatingExecutionPorts {
    * A non-empty list means the attempt worked on a basis the current tree has moved past without a
    * commit recording it — a measured source dropped into the project, or an edited tracked file.
    */
-  inputsNotInBasis(baseCommit: string): readonly string[];
+  projectInputs(baseCommit: string): ProjectInputObservation;
   /** Export a frozen revision into the canonical object database. */
   exportResultCommit(input: { readonly attemptId: string; readonly commit: string }): Promise<{ readonly imported: boolean; readonly detail: string }>;
   /** Whether an execution-world port is composed at all. */
@@ -532,7 +535,22 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
        * does not judge whether they invalidate the work. The worker path records the fact without
        * blocking, because no model is in that loop to act on a refusal.
        */
-      const unseenInputs = ports.inputsNotInBasis(envelope.base_commit);
+      const inputObservation = ports.projectInputs(envelope.base_commit);
+      const unseenInputs =
+        inputObservation.state === "OBSERVED" ? inputObservation.inputs.map((entry) => entry.path) : [];
+      /**
+       * "Could not observe" is never "no change": a principal settlement over an unreadable repository
+       * is refused, because the product cannot establish that the candidate still reflects reality.
+       */
+      if (inputObservation.state === "UNAVAILABLE" && observation.path === "PRINCIPAL") {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "INPUTS_UNOBSERVABLE",
+          detail:
+            `the project's current inputs could not be observed (${inputObservation.detail}) — this is UNKNOWN, not an absence of change, so no principal settlement is recorded. Repair the repository observation and settle again`,
+        });
+      }
       if (unseenInputs.length > 0 && observation.path === "PRINCIPAL" && observation.acknowledgeInputs !== true) {
         return Object.freeze({
           state: "NOT_READY" as const,
@@ -645,6 +663,8 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         evidenceRecorded: evaluation.evidenceRecorded,
         attribution,
         inputsNotInBasis: unseenInputs,
+        inputsState: inputObservation.state,
+        inputsDetail: inputObservation.detail,
         detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}; ${evaluation.detail}; ${attribution.attribution}`,
       });
     },
@@ -658,5 +678,6 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
  */
 export * from "./execution_relay.js";
 
-/** PWRS-D: the unseen-input reader, re-exported so the host façade keeps one edge to this owner. */
-export { unseenInputs } from "./unseen_inputs.js";
+/** ODPE-A: the project-input observer, re-exported so the host façade keeps one edge to this owner. */
+export { assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput, unseenInputs } from "./unseen_inputs.js";
+export type { ProjectInput, ProjectInputBody, ProjectInputObservation, ProjectInputIdentity } from "./unseen_inputs.js";

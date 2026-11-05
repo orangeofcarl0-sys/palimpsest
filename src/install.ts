@@ -16,7 +16,6 @@ import { composeCognitionCapabilities } from "./composition/cognition.js";
 import { composeGovernanceCapabilities } from "./composition/governance.js";
 import { composeInstalledLifecycle } from "./composition/lifecycle.js";
 import type { DshPluginContext } from "./tools/dsh_types.js";
-import type { ProjectIr } from "./schema/models.js";
 import { evaluate } from "./experiment/index.js";
 import { makeCollaborationService, makeCrossProjectService } from "./interaction/index.js";
 import type { CollaborationService, CrossProjectService } from "./interaction/index.js";
@@ -27,8 +26,7 @@ import { composeProjectIntentCapability } from "./composition/project_intent.js"
 import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import { composeProcedureCapability } from "./composition/procedures.js";
-import { composeContinuityCapability } from "./composition/continuity.js";
-import { makeExecutionRelayRecorder } from "./composition/execution_relay.js";
+import { composeContinuityCapability, makeExecutionRelayRecorder, type ProjectIr } from "./composition/continuity.js";
 import { composeExecutionAssociationCluster, type ExecutionAssociationInstallOptions, type ExecutionAssociationInstallResult } from "./composition/execution_association.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };

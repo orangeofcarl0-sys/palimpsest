@@ -2096,6 +2096,8 @@ export function normalizeEventPayload(
           "semantic",
           "continuation",
           "knowledge",
+          "inputs",
+          "input_observation",
           "created_at",
         ],
         "context manifest",
@@ -2163,6 +2165,50 @@ export function normalizeEventPayload(
           ...(manifest.knowledge === undefined
             ? {}
             : { knowledge: expectArray(manifest.knowledge).map((entry) => parseKnowledgeBinding(entry)) }),
+          // ODPE-A: the optional CURRENT INPUT BINDINGS (identity only; the body is pull-only).
+          ...(manifest.inputs === undefined
+            ? {}
+            : {
+                inputs: expectArray(manifest.inputs).map((entry) => {
+                  const item = expectObject(entry);
+                  requireFields(item, "path", "identity", "content", "digest", "bytes", "observed_revision", "observed_at", "standing");
+                  rejectUnknownFields(
+                    item,
+                    ["path", "identity", "content", "digest", "bytes", "observed_revision", "observed_at", "standing"],
+                    "manifest input binding",
+                  );
+                  const identity = expectString(item.identity);
+                  if (!["UNTRACKED", "TRACKED_MODIFIED", "COMMITTED_SINCE_BASE", "REGISTERED"].includes(identity)) {
+                    throw new ContractError("manifest input identity: invalid literal");
+                  }
+                  const content = expectString(item.content);
+                  if (!["WORKTREE", "COMMIT", "ABSENT"].includes(content)) {
+                    throw new ContractError("manifest input content: invalid literal");
+                  }
+                  if (expectString(item.standing) !== "OBSERVED") {
+                    throw new ContractError("manifest input standing: invalid literal");
+                  }
+                  return {
+                    path: field(item.path, "path", (inner) => nonEmpty(expectString(inner))),
+                    identity: identity as "UNTRACKED" | "TRACKED_MODIFIED" | "COMMITTED_SINCE_BASE" | "REGISTERED",
+                    content: content as "WORKTREE" | "COMMIT" | "ABSENT",
+                    digest: item.digest === null ? null : field(item.digest, "digest", (inner) => nonEmpty(expectString(inner))),
+                    bytes: field(item.bytes, "bytes", expectInt),
+                    observed_revision: field(item.observed_revision, "observed_revision", (inner) => nonEmpty(expectString(inner))),
+                    observed_at: field(item.observed_at, "observed_at", (inner) => nonEmpty(expectString(inner))),
+                    standing: "OBSERVED" as const,
+                  };
+                }),
+              }),
+          ...(manifest.input_observation === undefined
+            ? {}
+            : (() => {
+                const state = expectString(manifest.input_observation);
+                if (!["OBSERVED", "UNAVAILABLE", "NOT_CONFIGURED"].includes(state)) {
+                  throw new ContractError("manifest input_observation: invalid literal");
+                }
+                return { input_observation: state as "OBSERVED" | "UNAVAILABLE" | "NOT_CONFIGURED" };
+              })()),
         },
       };
     }

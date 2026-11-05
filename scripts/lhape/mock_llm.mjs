@@ -88,6 +88,33 @@ function substitute(value, parsed) {
       const commit = matches.length === 0 ? "" : matches[matches.length - 1][1];
       value = value.replaceAll("__RESULT_COMMIT__", commit);
     }
+    if (value.includes("__OBSERVATION_DIGEST__")) {
+      const matches = [...text.matchAll(/"observationDigest"\s*:\s*"([0-9a-f]{64})"/gu)];
+      const digest = matches.length === 0 ? "" : matches[matches.length - 1][1];
+      value = value.replaceAll("__OBSERVATION_DIGEST__", digest);
+    }
+    if (value.includes("__INPUT_DIGEST__") || value.includes("__INPUT_TEXT_JSON__")) {
+      /**
+       * ODPE: the WORKER's pull result carries the exact bytes the attempt was given. The stand-in
+       * extracts them from the tool result so the scripted turn can write an artifact that really
+       * came through the product's context-pull path — the fixture never injects the body.
+       */
+      const digestMatches = [...text.matchAll(/"kind"\s*:\s*"input"[\s\S]{0,4000}?"digest"\s*:\s*"([0-9a-f]{64})"/gu)];
+      const digest = digestMatches.length === 0 ? "" : digestMatches[digestMatches.length - 1][1];
+      value = value.replaceAll("__INPUT_DIGEST__", digest);
+      if (value.includes("__INPUT_TEXT_JSON__")) {
+        const textMatch = /"kind"\s*:\s*"input"[\s\S]{0,4000}?"text"\s*:\s*"((?:[^"\\]|\\.)*)"/u.exec(text);
+        let decoded = "";
+        if (textMatch !== null) {
+          try {
+            decoded = JSON.parse(`"${textMatch[1]}"`);
+          } catch {
+            decoded = "";
+          }
+        }
+        value = value.replaceAll("__INPUT_TEXT_JSON__", JSON.stringify(decoded));
+      }
+    }
     if (value.includes("__CONTRIBUTION_ID__")) {
       const matches = [...text.matchAll(/"contributionId"\s*:\s*"([^"]+)"/gu)];
       const id = matches.length === 0 ? "" : matches[matches.length - 1][1];
