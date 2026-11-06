@@ -1,0 +1,32 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "pnwf-r1-broken-alternates",
+  "configDigest": "942542fb65f24ed4986da3d5710797364ffe25c3d0f9dd74a3a402e1d6e41849",
+  "state": "STOPPED",
+  "reason": "Command failed: docker exec --user 1001:1001 -e PNWF_EXPECTED_HEAD=453aa7f005edb7612cf4edc1d8ec3b68efed5b4d f98fcae985e490362e99146215ce09922b6e11c4ce9ff7874eae07e29c733da2 node /qualification/world_preflight.mjs\nfile:///qualification/world_preflight.mjs:29\n    if (alternates !== null && resolve(dir, \".git/objects\", alternates) !== join(repository, \".git/objects\")) throw new Error(`ALTERNATES_NOT_PORTABLE: ${attemptId}`);\n                                                                                                                    ^\n\nError: ALTERNATES_NOT_PORTABLE: attempt-94bcc7ae85e75141e064397cfa1186e6\n    at file:///qualification/world_preflight.mjs:29:117\n    at Array.map (<anonymous>)\n    at file:///qualification/world_preflight.mjs:23:22\n\nNode.js v24.21.0\n",
+  "confirmed": 0,
+  "reserved": 0,
+  "aggregateCeiling": 2000000,
+  "sessions": [
+    {
+      "id": "software",
+      "ordinal": 0,
+      "state": "STOPPED",
+      "ceiling": 1000000,
+      "softCeiling": 999000,
+      "confirmed": 0,
+      "reserved": 0
+    },
+    {
+      "id": "energy",
+      "ordinal": 1,
+      "state": "NOT_STARTED",
+      "ceiling": 1000000,
+      "softCeiling": 999000,
+      "confirmed": 0,
+      "reserved": 0
+    }
+  ],
+  "requests": [],
+  "refusals": []
+}

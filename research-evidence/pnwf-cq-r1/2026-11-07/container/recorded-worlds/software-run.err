@@ -1,0 +1,102 @@
+dsh: fatal uncaught exception: Error: dsh: host preparation failed: No usable native binding found for node-addon-require-builtin-linux-x64-gnu (auto)
+    at boot (file:///usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:4560:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runProfile (file:///usr/local/lib/node_modules/@deepseek-ai/dsh/lib/profile-boot-C14i-8IN.js:302:15)
+    at async runCli (file:///usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js:215:5)
+    at async file:///usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js:252:23 {
+  [cause]: Error: No usable native binding found for node-addon-require-builtin-linux-x64-gnu (auto)
+      at noUsableBindingError (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:490:19)
+      at loadEntry (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:554:11)
+      at createEntryApi (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:567:20)
+      at Object.<anonymous> (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/lib/index.js:11:13)
+      at Module._compile (node:internal/modules/cjs/loader:1929:14)
+      at Object..js (node:internal/modules/cjs/loader:2060:10)
+      at Module.load (node:internal/modules/cjs/loader:1651:32)
+      at Module._load (node:internal/modules/cjs/loader:1443:12)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+      at Module.require (node:internal/modules/cjs/loader:1674:12) {
+    attempts: [
+      {
+        source: 'optional-package',
+        request: 'node-addon-require-builtin-linux-x64-gnu',
+        error: Error: No usable prebuilt binary found in linux-x64-gnu
+            at loadPrebuild (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:448:19)
+            at Object.<anonymous> (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin-linux-x64-gnu/index.js:5:18)
+            at Module._compile (node:internal/modules/cjs/loader:1929:14)
+            at Object..js (node:internal/modules/cjs/loader:2060:10)
+            at Module.load (node:internal/modules/cjs/loader:1651:32)
+            at Module._load (node:internal/modules/cjs/loader:1443:12)
+            at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+            at Module.require (node:internal/modules/cjs/loader:1674:12)
+            at require (node:internal/modules/helpers:157:16)
+            at tryRequirePackage (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:454:25) {
+          attempts: [Array]
+        },
+        message: 'No usable prebuilt binary found in linux-x64-gnu',
+        attempts: [ [Object] ]
+      },
+      {
+        source: 'local-build',
+        path: '/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/build/nodeabi/node-v137-linux-x64-gnu/require_builtin.node',
+        loadPath: undefined,
+        backend: 'nodeabi',
+        abi: 'node-v137',
+        error: Error: Cannot find module '/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/build/nodeabi/node-v137-linux-x64-gnu/require_builtin.node'
+        Require stack:
+        - /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js
+        - /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/lib/index.js
+        - /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js
+            at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+            at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+            at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+            at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+            at Module._load (node:internal/modules/cjs/loader:1341:5)
+            at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+            at Module.require (node:internal/modules/cjs/loader:1674:12)
+            at require (node:internal/modules/helpers:157:16)
+            at tryRequireLocal (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:467:25)
+            at loadEntry (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:536:24) {
+          code: 'MODULE_NOT_FOUND',
+          requireStack: [Array]
+        },
+        message: "Cannot find module '/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/build/nodeabi/node-v137-linux-x64-gnu/require_builtin.node'\n" +
+          'Require stack:\n' +
+          '- /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js\n' +
+          '- /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/lib/index.js\n' +
+          '- /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js',
+        attempts: undefined
+      },
+      {
+        source: 'local-build',
+        path: '/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/build/napi/napi-v9-linux-x64-gnu/require_builtin.node',
+        loadPath: undefined,
+        backend: 'napi',
+        abi: 'napi-v9',
+        error: Error: Cannot find module '/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/build/napi/napi-v9-linux-x64-gnu/require_builtin.node'
+        Require stack:
+        - /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js
+        - /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/lib/index.js
+        - /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js
+            at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+            at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+            at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+            at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+            at Module._load (node:internal/modules/cjs/loader:1341:5)
+            at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+            at Module.require (node:internal/modules/cjs/loader:1674:12)
+            at require (node:internal/modules/helpers:157:16)
+            at tryRequireLocal (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:467:25)
+            at loadEntry (/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js:536:24) {
+          code: 'MODULE_NOT_FOUND',
+          requireStack: [Array]
+        },
+        message: "Cannot find module '/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/build/napi/napi-v9-linux-x64-gnu/require_builtin.node'\n" +
+          'Require stack:\n' +
+          '- /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-native-custom-loader/lib/index.js\n' +
+          '- /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/node-addon-require-builtin/lib/index.js\n' +
+          '- /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js',
+        attempts: undefined
+      }
+    ]
+  }
+}

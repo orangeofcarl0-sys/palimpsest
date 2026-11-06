@@ -9,7 +9,7 @@
  * Usage: node scripts/pnwf/prepare_continuation.mjs --run=<dir> --repo=<repo>
  */
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const args = new Map(
@@ -49,7 +49,7 @@ for (const [stage, input] of Object.entries(BASES)) {
   const root = join(RUN, "stages", stage);
   const world = join(root, "world");
   const state = join(root, "state");
-  rmSync(root, { recursive: true, force: true });
+  if (existsSync(root)) throw new Error(`${stage}: preparation requires a fresh run directory; existing state must not be overwritten`);
   mkdirSync(root, { recursive: true });
   cpSync(join(input.source, "worlds", "A"), world, { recursive: true });
   cpSync(join(input.source, "state-A"), state, { recursive: true });
@@ -105,6 +105,7 @@ for (const [stage, input] of Object.entries(BASES)) {
     condition: "PNWF_FULL",
     stage,
     world,
+    expectedHead: head,
     state,
     home: join(RUN, `home-${stage}`),
     promptPath,

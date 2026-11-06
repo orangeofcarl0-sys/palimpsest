@@ -34,6 +34,7 @@ import { definePalimpsestTools } from "../tools/tools.js";
 
 /** Exactly the options the core composition needs — nothing else is visible to it. */
 export interface CoreCompositionOptions {
+  readonly operatorAuthority?: import("../work/head.js").BasisOperatorAuthority | undefined;
   readonly projectId: string;
   readonly repository?: string | undefined;
   readonly git?: GitPort | undefined;
@@ -282,6 +283,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     },
   });
   const controller = new ProjectController({
+    operatorAuthority: options.operatorAuthority,
     store,
     effects,
     projectId: options.projectId,

@@ -1,0 +1,69 @@
+{
+  "schema": "pnwf-container-qualification/v1",
+  "name": "recorded-worlds",
+  "passed": true,
+  "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-recorded-worlds-ehlpNZ",
+  "outcomes": [
+    {
+      "sessionId": "software",
+      "exitCode": 0
+    },
+    {
+      "sessionId": "energy",
+      "exitCode": 0
+    }
+  ],
+  "mockRequests": 2,
+  "mockTokenTotal": 207743,
+  "paidModelCalls": 0,
+  "accounting": {
+    "schema": "pnwf-spend-snapshot/v1",
+    "cohortId": "pnwf-r1-recorded-worlds",
+    "configDigest": "2db7434a5f2d03df51196cacd5432355a56e9949efb241b573dce708b520a6d8",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 207743,
+    "reserved": 0,
+    "aggregateCeiling": 2000000,
+    "sessions": [
+      {
+        "id": "software",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": 1000000,
+        "softCeiling": 950000,
+        "confirmed": 103795,
+        "reserved": 0
+      },
+      {
+        "id": "energy",
+        "ordinal": 1,
+        "state": "ENDED",
+        "ceiling": 1000000,
+        "softCeiling": 950000,
+        "confirmed": 103948,
+        "reserved": 0
+      }
+    ],
+    "requests": [
+      {
+        "id": "25b91beb-d955-4b3e-b3d2-2208ab51054b",
+        "session": "software",
+        "digest": "b7c02f0b0a79ccd001b4d07132117844d6adc95141f277b157e83a534f68d9e8",
+        "reserved": 359731,
+        "actual": 103795,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "5254b4ed-d046-4eab-8721-dab88eae5c65",
+        "session": "energy",
+        "digest": "ead1fec32cfe4baeeaeca761123744c93b40b17ced199bcd71593d984822a06c",
+        "reserved": 359884,
+        "actual": 103948,
+        "state": "SETTLED",
+        "reason": null
+      }
+    ]
+  }
+}

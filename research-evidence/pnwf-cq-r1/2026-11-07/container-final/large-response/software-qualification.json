@@ -1,0 +1,237 @@
+{
+  "schema": "pnwf-actual-isolation/v2",
+  "status": "EVALUATION_ISOLATION_QUALIFIED",
+  "containerId": "a90f91965a3728e2ee036f88d2a96de760f37e323efadaae50e04a4fbecf6083",
+  "descriptor": {
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "readonlyRootfs": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "adapterFiles": {
+      "container_adapter.mjs": "594b80cae1b20929df81684ac679afed6f8a386db32112bcc624cd551fa57dd8",
+      "container_runtime.mjs": "6c7fef968c302b6bd1fe2299e145a1b8732b48a762a20a077e5ac7c72d310029",
+      "container_bridge.mjs": "7167a8a9894e1130145c456918cfa82d99a10f583be2b5a5943aa4c822b299a8",
+      "world_preflight.mjs": "55bf6a8781a0b4ae4fc4d7ce6b950fcaeecff751c2383fe6fc8343c6b32c82d7",
+      "bounded_provider.mjs": "ad3cf73b623e42908ad92a807d17d871d47ac1fa10b6fcbd56338908acf1b3d8",
+      "execution_budget.mjs": "5db427bd80cc3041a9fabf32c02958bb4edf48a967862434f1060acc3147051d",
+      "mock_provider.mjs": "f4a14328932628d01daf80896d0111aa4f2fc7b5400741140de41cd680144464",
+      "run_pnwf_live.mjs": "d6d17f61737dbdde9bd172ef3ac625a6d3388f70a037f07966cdd343896f3ccc"
+    },
+    "mounts": [
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\node_modules",
+        "destination": "/mnt/host/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+        "writable": false
+      },
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-qualified-a0576271-ca48-4189-934f-b1d65a28b7f9-harness/_data",
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\dist",
+        "destination": "/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/dist",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\host",
+        "destination": "/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/host",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\node_modules",
+        "destination": "/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-large-response-JRm69r\\stages\\software",
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-large-response-JRm69r\\runtime-software",
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\pnwf\\world_preflight.mjs",
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      }
+    ]
+  },
+  "descriptorDigest": "fc37210f68f6aa3e4859c0af0bd062fda6b9c4c1aecb23a7f986add2409bb076",
+  "harnessPresent": true,
+  "externalScorerRead": true,
+  "checks": [
+    {
+      "name": "principal_uid",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_shell_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "write_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "git_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "node_build_fixture",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_version",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_native_addon",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "native_shell_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_proc_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_parent_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "rootfs_readonly",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "no_owner_credential",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_provider_credential_env",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_routes",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    }
+  ],
+  "worlds": {
+    "schema": "pnwf-world-preflight/v1",
+    "status": "QUALIFIED",
+    "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+    "worlds": [
+      {
+        "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+        "basis": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+        "result": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+        "alternates": "../../../../../.git/objects",
+        "diff": "",
+        "status": "M .gitignore\n M README.md\n M TASK.md\n M package.json\n M proto/energy.proto\n M service/data.js\n M service/grpc_client.js\n M service/grpc_server.js\n M service/rest_client.js\n M service/rest_server.js\n M service/wire.js\n M test/integration.test.js\n M test/rest.test.js\n M test/server.test.js\n M updates/2026-11-03/compat-streaming.md",
+        "observation": {
+          "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+          "placement": "worktree",
+          "workDir": "/run/stage/world/.palimpsest/worlds/attempt-94bcc7ae85e75141e064397cfa1186e6",
+          "baseCommit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "observedHead": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "committedChanges": [],
+          "uncommittedChanges": [
+            ".gitignore",
+            "README.md",
+            "TASK.md",
+            "package.json",
+            "proto/energy.proto",
+            "service/data.js",
+            "service/grpc_client.js",
+            "service/grpc_server.js",
+            "service/rest_client.js",
+            "service/rest_server.js",
+            "service/wire.js",
+            "test/integration.test.js",
+            "test/rest.test.js",
+            "test/server.test.js",
+            "updates/2026-11-03/compat-streaming.md"
+          ],
+          "changedFiles": [
+            ".gitignore",
+            "README.md",
+            "TASK.md",
+            "package.json",
+            "proto/energy.proto",
+            "service/data.js",
+            "service/grpc_client.js",
+            "service/grpc_server.js",
+            "service/rest_client.js",
+            "service/rest_server.js",
+            "service/wire.js",
+            "test/integration.test.js",
+            "test/rest.test.js",
+            "test/server.test.js",
+            "updates/2026-11-03/compat-streaming.md"
+          ],
+          "requiredArtifacts": [
+            {
+              "path": "proto/energy.proto",
+              "present": true
+            },
+            {
+              "path": "service/wire.js",
+              "present": true
+            }
+          ]
+        }
+      }
+    ],
+    "product": {
+      "repositoryHead": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+      "projectHead": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+      "relation": "IN_SYNC",
+      "uncommittedPaths": [],
+      "admittedDirectCommit": null
+    }
+  },
+  "checkedAt": "2026-11-06T22:37:03.996Z"
+}

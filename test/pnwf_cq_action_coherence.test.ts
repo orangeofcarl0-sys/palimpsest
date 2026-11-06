@@ -269,6 +269,7 @@ describe("PNWF-CQ-C — mechanical next and semantic decision are shown together
         repositoryHead: "a".repeat(40),
         projectHead: "a".repeat(40),
         relation: "IN_SYNC",
+        admittedDirectCommit: "a".repeat(40),
         uncommittedPaths: [],
       },
     });
