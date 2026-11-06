@@ -109,8 +109,16 @@ export class ExecutionWorldError extends Error {
 export function gitRepositoryWorldPort(input: {
   readonly repository: string;
   readonly worldsRoot: string;
+  /**
+   * PNWF-CQ-B: the world path the GIT PORT actually materialized, when the caller supplied its own
+   * port (a test backend, or a deployment with a different root). Without this the exporter looked in
+   * `.palimpsest/worlds` while the port had created `.palimpsest/worktrees/<id>`, and settlement
+   * returned RESULT_NOT_EXPORTED/WORLD_MISSING for a world that was present. The default port keeps
+   * the single `worldsRoot` spelling; a custom port's own path wins.
+   */
+  readonly worldDir?: ((attemptId: string) => string) | undefined;
 }): ExecutionWorldPort {
-  const worldDir = (attemptId: string): string => `${input.worldsRoot}/${attemptId}`;
+  const worldDir = (attemptId: string): string => input.worldDir?.(attemptId) ?? `${input.worldsRoot}/${attemptId}`;
   const git = (cwd: string, args: readonly string[]): string =>
     execFileSync("git", [...args], { cwd, encoding: "utf8" }).trim();
 

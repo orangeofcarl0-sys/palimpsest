@@ -332,7 +332,13 @@ export function observeStatusFacts<T extends { readonly attempt_id: string; read
       const invocations = controller.executionInvocations.list(attempt.attempt_id);
       const open = invocations.some((invocation) => invocation.outcome === "OPEN");
       const last = invocations[invocations.length - 1];
-      liveness = open ? "ACTIVE" : last === undefined ? "NEVER_STARTED" : last.outcome === "ENDED" ? "EXITED" : "UNKNOWN";
+      /**
+       * PNWF-CQ-B: the invocation ledger is HOST-LOCAL and non-durable. An empty list means "this
+       * host observed no invocation window", NOT "no worker ever started" and NOT "the previous
+       * writer is gone". `UNOBSERVED` is the honest word; settlement still attributes the bytes
+       * from its own observation (usually UNATTRIBUTED) and never claims a worker exit.
+       */
+      liveness = open ? "ACTIVE" : last === undefined ? "UNOBSERVED" : last.outcome === "ENDED" ? "EXITED" : "UNKNOWN";
     } catch {
       liveness = "UNKNOWN";
     }
@@ -392,3 +398,36 @@ export function observeStatusFacts<T extends { readonly attempt_id: string; read
   });
 }
 export type { ProjectInput, ProjectInputBody, ProjectInputObservation, ProjectInputIdentity } from "./unseen_inputs.js";
+
+/**
+ * PNWF-CQ-D: the final-owner quiescence read for a plan revision.
+ *
+ * The DSH adapter sees the host job map just before it calls the plan; a worker can begin in the
+ * gap. The invocation ledger is the owner-local fact the transport writes before it runs a worker,
+ * so the revision owner can re-read it for the exact tasks the revision would stale.
+ */
+export interface OpenWorkerInvocation {
+  readonly taskId: string;
+  readonly attemptId: string;
+  readonly invocationId: string;
+}
+
+export function findOpenWorkerInvocations(input: {
+  readonly connection: DatabaseSync;
+  readonly projectId: string;
+  readonly taskIds: readonly string[];
+  readonly invocations: (attemptId: string) => readonly { readonly invocationId: string; readonly outcome: string }[];
+}): readonly OpenWorkerInvocation[] {
+  const found: OpenWorkerInvocation[] = [];
+  for (const taskId of input.taskIds) {
+    const attempts = input.connection
+      .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=? ORDER BY attempt_id")
+      .all(input.projectId, taskId) as Array<{ attempt_id: unknown }>;
+    for (const attempt of attempts) {
+      const attemptId = String(attempt.attempt_id);
+      const open = input.invocations(attemptId).find((invocation) => invocation.outcome === "OPEN");
+      if (open !== undefined) found.push({ taskId, attemptId, invocationId: open.invocationId });
+    }
+  }
+  return Object.freeze(found);
+}

@@ -264,7 +264,7 @@ describe("PNWF — reality-aware guidance and redundant Work", () => {
     expect(status.nextAction.detail).toMatch(/cannot|NO_WORK|no commit beyond/iu);
     expect(status.nextAction.session?.mayEnd).toBe(true);
     expect(status.nextAction.session?.action).toMatch(/conclude/u);
-    expect(status.attempts[0]?.execution).toMatchObject({ baseCommit: head, worldHead: head, liveness: "NEVER_STARTED" });
+    expect(status.attempts[0]?.execution).toMatchObject({ baseCommit: head, worldHead: head, liveness: "UNOBSERVED" });
 
     // The taskId-less path must also return guidance, not a bare thrown refusal.
     const placed = (await call(installed, "palimpsest_work", {

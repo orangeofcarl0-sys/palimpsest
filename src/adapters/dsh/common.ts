@@ -129,6 +129,11 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
         action?: unknown;
         detail?: unknown;
       };
+      semantic?: {
+        question?: unknown;
+        facts?: unknown;
+        options?: unknown;
+      };
     };
     directOutcome?: {
       repositoryHead?: unknown;
@@ -183,6 +188,19 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
                   detail: String(view.nextAction.session.detail ?? ""),
                 },
               }),
+          ...(view.nextAction.semantic === undefined
+            ? {}
+            : {
+                semantic: {
+                  question: String(view.nextAction.semantic.question ?? ""),
+                  facts: Array.isArray(view.nextAction.semantic.facts)
+                    ? view.nextAction.semantic.facts.map((entry) => String(entry))
+                    : [],
+                  options: Array.isArray(view.nextAction.semantic.options)
+                    ? view.nextAction.semantic.options.map((entry) => String(entry))
+                    : [],
+                },
+              }),
         };
   const nextActions =
     nextAction === undefined
@@ -199,6 +217,9 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
               ? [`session: ${nextAction.session.action}`]
               : []),
           ];
+  if (nextAction?.semantic !== undefined) {
+    nextActions.push(`decision: ${String(nextAction.semantic.question ?? "")}`);
+  }
   const directOutcome =
     view.directOutcome === undefined
       ? undefined

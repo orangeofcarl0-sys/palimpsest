@@ -303,6 +303,15 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
           executionWorld: gitRepositoryWorldPort({
             repository,
             worldsRoot,
+            // A caller-supplied Git port may materialize its worlds somewhere else; ask the port
+            // before falling back to the deployment's own root.
+            worldDir: (attemptId) => {
+              try {
+                return git.worktreePath?.(attemptId) ?? join(worldsRoot, attemptId);
+              } catch {
+                return join(worldsRoot, attemptId);
+              }
+            },
           }),
         }),
     /**

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "profileId": "pnwf-direct-governed-host",
+  "projectId": "pnwf-direct-governed",
+  "localPeer": "local-operator",
+  "repository": "C:/Users/66494/pnwf-direct-governed/run/world",
+  "execution": "worktree",
+  "concurrency": 1,
+  "toolProfile": "normal",
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "--test"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "The governed continuation starts from the canonical basis and leaves its declared artifact."
+  },
+  "transport": {
+    "namespace": "pnwf-direct-governed-host",
+    "databasePath": "C:/Users/66494/pnwf-direct-governed/run/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "C:/Users/66494/pnwf-direct-governed/run/state/palimpsest.sqlite",
+    "ordarium": "C:/Users/66494/pnwf-direct-governed/run/state/ordarium.sqlite",
+    "coordination": "C:/Users/66494/pnwf-direct-governed/run/state/coordination.sqlite",
+    "transportCursors": "C:/Users/66494/pnwf-direct-governed/run/state/transport-cursors.sqlite",
+    "projectJournal": "C:/Users/66494/pnwf-direct-governed/run/state/journal.sqlite",
+    "projectAssociations": "C:/Users/66494/pnwf-direct-governed/run/state/associations.sqlite",
+    "management": "C:/Users/66494/pnwf-direct-governed/run/state/management.sqlite"
+  },
+  "reasoning": {}
+}

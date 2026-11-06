@@ -101,6 +101,44 @@ function factsOf(text) {
   return facts;
 }
 
+/**
+ * PNWF-CQ-G §9.4: a DOMAIN refusal is a normal tool result whose business state says the product
+ * declined the action. It is not a protocol error (`isError`), but it still cost a model step, so the
+ * scorer must be able to count it separately.
+ */
+const DOMAIN_REFUSAL_STATES = new Set([
+  "REFUSED",
+  "NOT_READY",
+  "WORKER_ACTIVE",
+  "NO_RUNNING_ATTEMPT",
+  "MULTIPLE_ATTEMPTS",
+  "STALE_OBSERVATION",
+  "WORKER_STILL_RUNNING",
+  "EXECUTOR_LIVENESS_UNCONFIRMED",
+  "SUCCESSOR_REQUIRED",
+]);
+function domainRefusalOf(text) {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("{")) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+  const candidates = [parsed, parsed?.result, parsed?.outcome, parsed?.settlement, parsed?.data];
+  for (const candidate of candidates) {
+    if (candidate && typeof candidate === "object") {
+      const state = typeof candidate.state === "string" ? candidate.state : null;
+      if (state !== null && DOMAIN_REFUSAL_STATES.has(state)) return state;
+      if (state !== null && Array.isArray(candidate.blockers) && candidate.blockers.length > 0) {
+        return `${state}:BLOCKED`;
+      }
+    }
+  }
+  return null;
+}
+
 const gitCommand = (command = "") => /\bgit\b/u.test(command);
 const commitCommand = (command = "") => /\bgit\b[^\n]*\bcommit\b/u.test(command);
 
@@ -190,6 +228,7 @@ function main() {
           callKind: call?.kind,
           ok: !failed,
           facts,
+          refusal: failed ? null : domainRefusalOf(text),
         });
         break;
       }
@@ -215,6 +254,17 @@ function main() {
   const byKind = {};
   for (const row of toolCalls) byKind[row.detail.split(" ")[0]] = (byKind[row.detail.split(" ")[0]] ?? 0) + 1;
   const errors = results.filter((row) => row.ok === false);
+  const refusals = results.filter((row) => typeof row.refusal === "string");
+  const repeatedRefusals = (() => {
+    const seen = new Map();
+    let repeated = 0;
+    for (const row of refusals) {
+      const key = `${String(row.callKind ?? "?")}:${String(row.refusal)}`;
+      if (seen.has(key)) repeated += 1;
+      seen.set(key, true);
+    }
+    return repeated;
+  })();
   const stateQueries = toolCalls.filter((row) => STATE_ACTIONS.has(row.detail.split(" ")[0]));
   const commitCalls = toolCalls.filter((row) => row.detail.startsWith("shell:git-commit"));
 
@@ -231,6 +281,9 @@ function main() {
       turns: events.filter((event) => event.type === "turn/start").length,
       toolCalls: toolCalls.length,
       toolErrors: errors.length,
+      domainRefusals: refusals.length,
+      repeatedRefusals,
+      noProgressToolCalls: errors.length + refusals.length,
       stateQueries: stateQueries.length,
       commits: commitCalls.length,
       jobs: jobs.size,
@@ -238,6 +291,14 @@ function main() {
     byKind,
     stateQueries: stateQueries.map((row) => `${row.offsetMs}ms ${row.detail}`),
     calls: toolCalls.map((row) => ({ offsetMs: row.offsetMs, kind: row.detail, args: row.args })),
+    results: results.map((row) => ({
+      offsetMs: row.offsetMs,
+      callKind: row.callKind ?? null,
+      ok: row.ok,
+      state: row.facts?.state ?? null,
+      refusal: row.refusal ?? null,
+      facts: row.facts ?? {},
+    })),
   };
 
   const md = [
