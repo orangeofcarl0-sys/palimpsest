@@ -85,6 +85,6 @@ scorer read the state and streams on the host. The isolation canary remains
 
 ## Limit
 
-No further paid call was made after this cohort. The product fixes in `77ffa10`/`be01d96` and the
-basis-admission work remain valid; this cohort does not establish a clean CQ effect and must not be
-reported as one.
+No further paid call was made after this cohort. The product fixes in `77ffa10`/`be01d96`, the
+operator basis admission and adapter fixes in `ead3cd39` remain valid; this cohort does not establish
+a clean CQ effect and must not be reported as one.

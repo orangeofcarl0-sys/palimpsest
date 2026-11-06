@@ -252,10 +252,12 @@ direct outcome exists). No worker result or promotion was fabricated.
 The canary runs as the principal uid in the same container/mount namespace a future session must
 use. The scorer reads the harness as root outside that namespace.
 
-**Important limit:** the current Windows `run_pnwf_live.sh` still launches DSH on the host, not in
-this container. `run_pnwf_live.mjs` now refuses an execute run without a `container` isolation
-record, but the record is not yet bound to a containerized adapter. The isolation infrastructure is
-qualified; the live adapter integration is **NOT_EXERCISED**. No paid cohort was run.
+**Important limit:** `run_pnwf_live.sh` still launches DSH on the host, not in this container.
+`run_pnwf_live.mjs` refuses an execute run without a `container` isolation record, and a
+container adapter (`scripts/pnwf/container_adapter.mjs`) now runs the principal in the qualified
+namespace. That adapter executed the 2026-11-07 cohort, which is **INVALID for different reasons**
+(portable alternates and budget enforcement); see §4.3. The host script remains fail-closed without
+a container record.
 
 ## 4.3 Container cohort (2026-11-07) — INVALID / OVER BUDGET
 
@@ -466,7 +468,7 @@ explicit.
 |---|---|
 | Baseline commit | `464ae5fc086af5e372295d047c98144dc22a5c77` |
 | Branch | `palimpsest-pnwf-action-coherence` |
-| Implementation HEAD | `77ffa10726a305a2a568e3cd273c5e99557ccd20` |
+| Implementation HEAD | `ead3cd39c4679a1a0b44e043baaf25f0580d5528` |
 | Changed production files | `src/domain/work_state.ts`, `src/work/read_model.ts`, `src/application/work_outcome.ts`, `src/application/work_contract.ts`, `src/application/work_settlement.ts`, `src/adapters/dsh/common.ts`, `src/adapters/dsh/normal.ts`, `src/project_continuity/service.ts`, `src/deployment/execution_world.ts`, `src/composition/core.ts`, `src/tools/controller.ts`, `src/cli_product.ts`, `src/cli.ts` |
 | New tests | `test/pnwf_cq_action_coherence.test.ts`, `test/pnwf_cq_direct_governed.test.ts`, `test/pnwf_cq_basis_admission.test.ts` |
 | New scripts | `scripts/pnwf/isolation_gate.mjs`, `scripts/pnwf/prepare_direct_governed.mjs`, `scripts/pnwf/run_direct_governed_host.sh` |
