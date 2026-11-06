@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "profileId": "pnwf-cont-energy",
+  "projectId": "psvr-c-energy",
+  "localPeer": "local-operator",
+  "repository": "C:/Users/66494/pnwf-live/run/stages/energy/world",
+  "execution": "worktree",
+  "concurrency": 2,
+  "toolProfile": "normal",
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "check.mjs"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "The package checker passes on the accepted head and every write stays inside its task's scope."
+  },
+  "transport": {
+    "namespace": "pnwf-cont-energy",
+    "databasePath": "C:/Users/66494/pnwf-live/run/stages/energy/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "C:/Users/66494/pnwf-live/run/stages/energy/state/palimpsest.sqlite",
+    "ordarium": "C:/Users/66494/pnwf-live/run/stages/energy/state/ordarium.sqlite",
+    "coordination": "C:/Users/66494/pnwf-live/run/stages/energy/state/coordination.sqlite",
+    "transportCursors": "C:/Users/66494/pnwf-live/run/stages/energy/state/transport-cursors.sqlite",
+    "projectJournal": "C:/Users/66494/pnwf-live/run/stages/energy/state/journal.sqlite",
+    "projectAssociations": "C:/Users/66494/pnwf-live/run/stages/energy/state/associations.sqlite",
+    "management": "C:/Users/66494/pnwf-live/run/stages/energy/state/management.sqlite"
+  },
+  "reasoning": {}
+}

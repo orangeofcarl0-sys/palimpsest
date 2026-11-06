@@ -1,0 +1,30 @@
+{
+  "schema": "pnwf-cohort-plan/v1",
+  "cohortId": "pnwf-continuation-2026-11",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "sessions": [
+    {
+      "sessionId": "software",
+      "stage": "software",
+      "condition": "PNWF_FULL",
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "artifactCommit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+      "historicalClosureTokens": 1331902
+    },
+    {
+      "sessionId": "energy",
+      "stage": "energy",
+      "condition": "PNWF_FULL",
+      "ceiling": 2500000,
+      "reserveTokens": 125000,
+      "artifactCommit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+      "historicalClosureTokens": 1901695
+    }
+  ],
+  "aggregateCeiling": 5000000,
+  "plannedCeiling": 5000000,
+  "execution": "requested",
+  "modelCalls": 0
+}

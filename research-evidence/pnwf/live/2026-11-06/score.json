@@ -1,0 +1,184 @@
+{
+  "schema": "pnwf-continuation-score/v1",
+  "cohortId": "pnwf-continuation-2026-11",
+  "scoredAt": "2026-11-06T11:52:28.386Z",
+  "stages": [
+    {
+      "stage": "software",
+      "sessionId": "software",
+      "historical": {
+        "session": "PSVR-C A-2",
+        "closureTokens": 1331902,
+        "completeCalls": 1,
+        "concludeCalls": 0,
+        "finalTaskState": "ACTIVE",
+        "finalAttemptState": "RUNNING",
+        "exit": "budget_stop"
+      },
+      "tokens": {
+        "total": 1579080,
+        "max": 2500000,
+        "reserve": 125000,
+        "softStopAt": 2375000
+      },
+      "exit": {
+        "natural": true,
+        "stopped": false,
+        "killedBy": null,
+        "exitCode": 0
+      },
+      "calls": {
+        "complete": 0,
+        "conclude": 1,
+        "readiness": 2,
+        "finalize": 0,
+        "relay": 2,
+        "stop": 0,
+        "plan": 2,
+        "typedPlan": 2,
+        "toolErrors": 0,
+        "total": 52
+      },
+      "state": {
+        "tasks": [
+          {
+            "taskId": "grpc-contract",
+            "state": "STALE"
+          },
+          {
+            "taskId": "grpc-service",
+            "state": "STALE"
+          },
+          {
+            "taskId": "verify-migration",
+            "state": "STALE"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+            "taskId": "grpc-contract",
+            "state": "CANCELLED"
+          }
+        ],
+        "promotions": 0,
+        "promotionCommitted": 0,
+        "projectRevised": 1,
+        "episodeIntent": "DELIVER",
+        "conclusion": {
+          "seq": 4,
+          "type": "JOURNAL_ENTRY_RECORDED",
+          "intent": "DELIVER"
+        },
+        "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+        "status": ""
+      },
+      "facts": {
+        "completeAtMostOnce": true,
+        "conclusionOrRetirement": true,
+        "noPromotion": true,
+        "headUnchanged": true,
+        "tokensBelowHistoricalClosure": false,
+        "sessionEnded": true
+      },
+      "score": 5,
+      "primary": true,
+      "stream": "C:\\Users\\66494\\pnwf-live\\run\\home-software\\sessions\\--C-Users-66494-pnwf-live-run-stages-software-world--\\session-ac680b5c-499e-4f63-b89d-d012e246a9d2\\session.v4.jsonl.zstd"
+    },
+    {
+      "stage": "energy",
+      "sessionId": "energy",
+      "historical": {
+        "session": "PSVR-C energy A-2",
+        "closureTokens": 1901695,
+        "completeCalls": 2,
+        "concludeCalls": 0,
+        "finalTaskState": "ACTIVE",
+        "finalAttemptState": "RUNNING",
+        "exit": "budget_stop"
+      },
+      "tokens": {
+        "total": 1008844,
+        "max": 2500000,
+        "reserve": 125000,
+        "softStopAt": 2375000
+      },
+      "exit": {
+        "natural": true,
+        "stopped": false,
+        "killedBy": null,
+        "exitCode": 0
+      },
+      "calls": {
+        "complete": 0,
+        "conclude": 1,
+        "readiness": 1,
+        "finalize": 0,
+        "relay": 2,
+        "stop": 0,
+        "plan": 2,
+        "typedPlan": 2,
+        "toolErrors": 0,
+        "total": 44
+      },
+      "state": {
+        "tasks": [
+          {
+            "taskId": "decision-package",
+            "state": "STALE"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+            "taskId": "decision-package",
+            "state": "CANCELLED"
+          }
+        ],
+        "promotions": 0,
+        "promotionCommitted": 0,
+        "projectRevised": 1,
+        "episodeIntent": "DELIVER",
+        "conclusion": {
+          "seq": 4,
+          "type": "JOURNAL_ENTRY_RECORDED",
+          "intent": "DELIVER"
+        },
+        "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+        "status": ""
+      },
+      "facts": {
+        "completeAtMostOnce": true,
+        "conclusionOrRetirement": true,
+        "noPromotion": true,
+        "headUnchanged": true,
+        "tokensBelowHistoricalClosure": true,
+        "sessionEnded": true
+      },
+      "score": 6,
+      "primary": true,
+      "stream": "C:\\Users\\66494\\pnwf-live\\run\\home-energy\\sessions\\--C-Users-66494-pnwf-live-run-stages-energy-world--\\session-60d19d84-cce4-49dc-884f-e15ba4186f02\\session.v4.jsonl.zstd"
+    }
+  ],
+  "comparison": {
+    "primaryPassed": 2,
+    "stages": 2,
+    "completeCalls": {
+      "software": 0,
+      "energy": 0
+    },
+    "concludeCalls": {
+      "software": 1,
+      "energy": 1
+    },
+    "tokens": {
+      "software": 1579080,
+      "energy": 1008844
+    },
+    "historicalClosure": {
+      "software": 1331902,
+      "energy": 1901695
+    },
+    "note": "The score is descriptive and mechanical; it does not turn a CHECKPOINT into project completion, acceptance or promotion. The historical sessions are the PSVR-C A-2 closures on the same states."
+  }
+}
