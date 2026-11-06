@@ -358,6 +358,18 @@ export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
     return runningAttemptAction(running[0]!, running.length);
   }
 
+  const verifying = input.tasks.filter((task) => task.state === "VERIFYING");
+  if (verifying.length > 0) {
+    return action(
+      "WAIT_OPERATOR_ACCEPT",
+      false,
+      null,
+      `the Scheduler's VERIFYING latch is held by ${verifying.map((task) => task.taskId).join(", ")}; action=next will make no progress until an operator accepts or reworks that result. Investigation and proposals may still proceed outside the formal plan`,
+      verifying[0]!.taskId,
+      verifying.map((task) => `task:${task.taskId}:VERIFYING`),
+    );
+  }
+
   /**
    * PNWF-C: a direct commit ahead of the canonical ProjectIR head. The physical Git HEAD and the
    * governed basis are different facts; the product never promotes one into the other. Governed work
@@ -384,18 +396,6 @@ export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
       "palimpsest_work action=next",
       `the Scheduler's next decision is ${input.schedulerDecision.eventType}; calling next commits exactly that transition`,
       input.schedulerDecision.entityId,
-    );
-  }
-
-  const verifying = input.tasks.filter((task) => task.state === "VERIFYING");
-  if (verifying.length > 0) {
-    return action(
-      "WAIT_OPERATOR_ACCEPT",
-      false,
-      null,
-      `the Scheduler's VERIFYING latch is held by ${verifying.map((task) => task.taskId).join(", ")}; action=next will make no progress until an operator accepts or reworks that result. Investigation and proposals may still proceed outside the formal plan`,
-      verifying[0]!.taskId,
-      verifying.map((task) => `task:${task.taskId}:VERIFYING`),
     );
   }
 
