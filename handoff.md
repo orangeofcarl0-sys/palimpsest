@@ -17,7 +17,7 @@
   git switch -c codex/<your-branch> origin/main
   ```
 - 最近完成：PNWF-CQ-R1 请求前预算预留、实际容器/World 资格、Mock 身份隔离、Operator/Head 最终复核、Direct→真实子进程 Worker→Settlement→Promotion→依赖续作。
-- **付费模型预算已耗尽且超支，当前禁止启动任何新的付费 session。** 详见 §6。
+- **旧付费预算已耗尽且超支；owner 于 2026-11-07 已新授权启动付费模型调用。** 授权保留，但真实 Provider 上界尚未获技术资格，当前 runner 仍拒绝 paid execution。详见 §6。
 - 当前 **所有 paid Provider 均未取得可执行单次计费上界资格，runner 明确拒绝付费执行**。20 项预算故障测试与 6 组真实 DSH 容器实验通过，只证明 Mock 合同；不能据此开启 paid cohort。
 
 ---
@@ -258,7 +258,9 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
-### 当前状态：预算耗尽 + 超支，禁止继续
+### 当前状态：旧预算超支；新授权已收到，技术资格仍未满足
+
+Owner 在本轮发布指令中明确表示“授权启动付费模型调用”（2026-11-07）。这是一项新的有效授权，不应再次请求同一权限；没有据此将旧 5M 额度恢复或把历史 cohort 改判有效。当前指令未指定新 cohort 的量化 ceiling，尚未初始化任何 paid ledger。发布/CI 工作不需要模型调用，本轮新增 paid calls 仍为 0。实际启动前仍需落实具体可执行预算和 Provider 技术资格。
 
 | 项 | tokens |
 |---|---:|
@@ -281,11 +283,11 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 1. 具体真实 Provider/模型/兼容路径取得**可执行的单次输入与输出计费上界**。当前没有，所有 paid 执行被代码拒绝。末尾 usage 后再 429 不构成硬上界；定时 watchdog 也不是。
 2. 每个请求先持久预留 session/cohort 额度，pending 全计入；未知 usage 保留预留并停止后续 session。当前实现只在确定性 Mock 合同下完成资格。
-3. 新的、明确的 owner 付费授权（当前 5M 已超支，没有剩余额度）；新授权也不能覆盖技术资格缺失。
+3. 新的 owner 付费授权已经在 2026-11-07 收到。实际运行需把具体 session/cohort ceiling 写入新 ledger；旧 5M 不能复用，新授权不改变 Provider 技术资格未满足的事实。
 4. 本次实际 adapter/container 的 uid/network/mounts/canary/World 校验通过；不能借旧隔离 JSON。Principal 不得有可绕过代理的付费出口。
 5. 同一运行链路先通过 **0 付费** 的身份/端口冲突、晚 usage、并发、中断、大请求/响应和精确计数测试。
 
-**不要**用“均授权”自动推断新的付费授权；只覆盖当时列出的三项。
+此前“均授权”仅覆盖历史三项；本轮明确的新授权单独记录于上文，不得与旧额度混算。
 
 ---
 
@@ -369,6 +371,7 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 | 2026-11-07 | 新增本 handoff；PR #228 merged | `7658527` | 活文档 |
 | 2026-11-07 | 同步 origin/main 到 handoff merge；说明 SHA 需现场核实 | `docs/handoff-sync` | 防止把快照当永久基线 |
 | 2026-11-07 | PNWF-CQ-R1：请求前预算预留、Mock/实际容器/World 资格；Operator/HEAD 复核与职责归位；真实子进程纵向治理链 | `docs/engineering/PNWF-CQ-R1-QUALIFICATION.md`；`research-evidence/pnwf-cq-r1/2026-11-07/` | 新增 paid calls 0；20 项预算测试、6 组容器场景；真实 Provider 仍 BLOCKED |
+| 2026-11-07 | Owner 授权推送、创建 PR、跟进并修复 CI、全绿后合并及更新 handoff；另明确授权启动付费模型调用 | 本轮用户指令 | 新付费授权有效；尚无新量化 ledger，Provider 技术资格仍 BLOCKED，发布/CI paid calls 0 |
 
 ---
 
