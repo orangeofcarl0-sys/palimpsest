@@ -50,7 +50,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
-import { makeWorkReadModel } from "../work/read_model.js";
+import { makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
@@ -4340,19 +4340,16 @@ export class ProjectController {
       const taskId = row.task_id === null ? null : String(row.task_id);
       const taskState = taskId === null ? undefined : tasks.find((task) => task.task_id === taskId)?.state;
       // A retired task's attempt is historical, even if its row still says RUNNING.
-      const orphaned =
-        taskState !== undefined &&
-        ["STALE", "FAILED", "SATISFIED"].includes(taskState) &&
-        ["CREATED", "LEASED", "RUNNING"].includes(String(row.state));
+      const orphaned = taskState !== undefined && ["STALE", "FAILED", "SATISFIED"].includes(taskState) && ["CREATED", "LEASED", "RUNNING"].includes(String(row.state));
       return {
         attempt_id: String(row.attempt_id),
         task_id: taskId,
         state: orphaned ? "STALE" : String(row.state),
         ...(orphaned ? { orphaned: true as const, task_state: taskState } : {}),
-        attempt_no:
-          typeof state.attempt_no === "number" ? state.attempt_no : null,
+        attempt_no: typeof state.attempt_no === "number" ? state.attempt_no : null,
       };
     });
+    const statusFacts = observeStatusFacts(this, attempts, project.head_commit, this.effects.git.repository ?? null);
     const evidence = (
       this.store.connection
         .prepare("SELECT evidence_id, status FROM evidence WHERE project_id=?")
@@ -4402,10 +4399,11 @@ export class ProjectController {
       schedulerDecision,
       schedulerError,
       tasks,
-      attempts,
+      attempts: statusFacts.attempts,
       holds,
       promotionFence,
       headState: headStatus.state,
+      directOutcome: statusFacts.directOutcome,
     });
     return {
       projectId: this.projectId,
@@ -4416,7 +4414,8 @@ export class ProjectController {
       holds,
       nextAction,
       tasks,
-      attempts,
+      attempts: statusFacts.attempts,
+      directOutcome: statusFacts.directOutcome,
       evidence,
       promotions,
       promotionFence,

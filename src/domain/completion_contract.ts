@@ -314,7 +314,13 @@ export function effectiveReleaseGateDefinition(
 }
 
 export { explainStatusWorkState } from "./work_state.js";
-export type { ControllerStatusView, WorkNextAction, WorkNextActionKind } from "./work_state.js";
+export type {
+  ControllerStatusView,
+  WorkAttemptExecution,
+  WorkDirectOutcome,
+  WorkNextAction,
+  WorkNextActionKind,
+} from "./work_state.js";
 
 /* -------------------------------------------------------------------------- *
  * Readiness — two layers, because they answer different questions

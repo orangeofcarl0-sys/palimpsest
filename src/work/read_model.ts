@@ -26,7 +26,11 @@
  * Layer: L2 (`src/work/`). Consumed by the controller, the composition, and anything else that
  * needs a Work fact.
  */
+import { execFileSync } from "node:child_process";
 import type { DatabaseSync } from "node:sqlite";
+
+import type { WorkAttemptExecution, WorkDirectOutcome } from "../domain/work_state.js";
+import { canonicalWorktreeChanges } from "./unseen_inputs.js";
 
 import { DomainValidationError } from "../domain/errors.js";
 import { parseProjectIr, parseTaskEnvelope, type ProjectIr, type TaskEnvelope } from "../schema/index.js";
@@ -279,3 +283,112 @@ export function makeWorkReadModel(input: {
     },
   });
 }
+
+/**
+ * PNWF-A/B/C — the bounded status observation.
+ *
+ * The lifecycle says a RUNNING attempt can be completed; the world and the host's invocation window
+ * decide whether that is true NOW. This read-only owner returns the per-attempt execution facts and
+ * the physical/canonical head relation. It decides nothing, writes nothing, and never advances the
+ * canonical ProjectIR head. It lives here, not in the controller, so the measured orchestration
+ * hotspot does not grow.
+ */
+export interface StatusFactPort {
+  readonly attemptWorkRecord: (attemptId: string) => { readonly envelope?: { readonly base_commit?: string } | null } | null;
+  readonly observeAttemptResult: (attemptId: string) => {
+    readonly observedHead?: string | null;
+    readonly uncommittedChanges?: readonly string[];
+  } | null;
+  readonly executionInvocations: {
+    readonly list: (attemptId: string) => readonly { readonly outcome: string }[];
+  };
+}
+
+export function observeStatusFacts<T extends { readonly attempt_id: string; readonly state: string }>(
+  controller: StatusFactPort,
+  attempts: readonly T[],
+  projectHead: string,
+  repository: string | null,
+): { readonly attempts: Array<T & { readonly execution?: WorkAttemptExecution }>; readonly directOutcome: WorkDirectOutcome } {
+  const rows = attempts.map((attempt) => {
+    if (attempt.state !== "RUNNING") return attempt;
+    let baseCommit = "";
+    try {
+      baseCommit = controller.attemptWorkRecord(attempt.attempt_id)?.envelope?.base_commit ?? "";
+    } catch {
+      baseCommit = "";
+    }
+    let worldHead: string | null = null;
+    let uncommittedChanges: string[] = [];
+    try {
+      const observed = controller.observeAttemptResult(attempt.attempt_id);
+      worldHead = observed?.observedHead ?? null;
+      uncommittedChanges = [...(observed?.uncommittedChanges ?? [])];
+    } catch {
+      worldHead = null;
+    }
+    let liveness: WorkAttemptExecution["liveness"] = "UNKNOWN";
+    try {
+      const invocations = controller.executionInvocations.list(attempt.attempt_id);
+      const open = invocations.some((invocation) => invocation.outcome === "OPEN");
+      const last = invocations[invocations.length - 1];
+      liveness = open ? "ACTIVE" : last === undefined ? "NEVER_STARTED" : last.outcome === "ENDED" ? "EXITED" : "UNKNOWN";
+    } catch {
+      liveness = "UNKNOWN";
+    }
+    return {
+      ...attempt,
+      execution: Object.freeze({
+        attemptId: attempt.attempt_id,
+        baseCommit,
+        worldHead,
+        uncommittedChanges: Object.freeze(uncommittedChanges),
+        liveness,
+      }),
+    };
+  });
+
+  const repositoryHead =
+    repository === null
+      ? null
+      : ((): string | null => {
+          try {
+            return execFileSync("git", ["rev-parse", "HEAD"], { cwd: repository, encoding: "utf8" }).trim();
+          } catch {
+            return null;
+          }
+        })();
+  let uncommittedPaths: string[] = [];
+  if (repository !== null) {
+    try {
+      uncommittedPaths = [...(canonicalWorktreeChanges(repository) ?? [])];
+    } catch {
+      uncommittedPaths = [];
+    }
+  }
+  const relation: WorkDirectOutcome["relation"] =
+    repositoryHead === null
+      ? "UNOBSERVABLE"
+      : repositoryHead === projectHead
+        ? "IN_SYNC"
+        : ((): boolean => {
+            try {
+              execFileSync("git", ["merge-base", "--is-ancestor", projectHead, repositoryHead], { cwd: repository ?? undefined, stdio: "ignore" });
+              return true;
+            } catch {
+              return false;
+            }
+          })()
+          ? "DIRECT_AHEAD"
+          : "DIVERGED";
+  return Object.freeze({
+    attempts: rows,
+    directOutcome: Object.freeze({
+      repositoryHead,
+      projectHead,
+      relation,
+      uncommittedPaths: Object.freeze(uncommittedPaths),
+    }),
+  });
+}
+export type { ProjectInput, ProjectInputBody, ProjectInputObservation, ProjectInputIdentity } from "./unseen_inputs.js";
