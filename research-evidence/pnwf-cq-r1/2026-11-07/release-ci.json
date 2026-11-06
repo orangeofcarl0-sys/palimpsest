@@ -1,0 +1,1202 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-06 23:16:24 UTC",
+  "scope": "PR #230 checks on the exact head before merge; later commits and main push runs are separate observations.",
+  "repository": "orangeofcarl0-sys/palimpsest",
+  "pullRequest": {
+    "number": 230,
+    "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/230",
+    "head": "b1554f89ecfa0dacf98e7f52b3ddc677600da051",
+    "baseBeforeMerge": "6b021dda77ee8c3f8010db5071b0896aee7ab232",
+    "merged": true,
+    "mergeCommit": "b7460f3785406ba8ad3c1a4a5f19f275a38813ad",
+    "mergedAt": "2026-11-06T23:14:21Z"
+  },
+  "ci": {
+    "checkJobs": 14,
+    "successfulJobs": 14,
+    "failedJobs": 0,
+    "rerunsIssued": 0,
+    "workflows": [
+      {
+        "id": 42309132640,
+        "name": "r0-gates",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640",
+        "status": "completed",
+        "conclusion": "success",
+        "jobs": [
+          {
+            "id": 128205936548,
+            "name": "gates (gate:e4-l-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936548",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm gate:e4-l-live",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936565,
+            "name": "gates (gate:e-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936565",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm gate:e-live",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936596,
+            "name": "gates-host-dependent (gate:d4-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936596",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Is a DSH host available for this job?",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run echo \"skipped - no DSH host in this environment\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run pnpm gate:d4-live",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936659,
+            "name": "gates-host-dependent (gate:d2-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936659",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Is a DSH host available for this job?",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run echo \"skipped - no DSH host in this environment\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run pnpm gate:d2-live",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936661,
+            "name": "gates-host-dependent (gate:d5-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936661",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Is a DSH host available for this job?",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run echo \"skipped - no DSH host in this environment\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run pnpm gate:d5-live",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936663,
+            "name": "gates (gate:e2-i-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936663",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm gate:e2-i-live",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936668,
+            "name": "package-smoke",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936668",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm release:consumer-smoke",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936677,
+            "name": "d5-reliability",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936677",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Is a DSH host available for this job?",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run echo \"skipped - no DSH host in this environment\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run gate:d5-live 20 times and record every outcome",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936695,
+            "name": "gates (gate:e1-k-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936695",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm gate:e1-k-live",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936773,
+            "name": "gates (gate:e3-c-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936773",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm gate:e3-c-live",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936873,
+            "name": "gates (gate:e5-p-live)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640/job/128205936873",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run git config --global user.email \"ci@palimpsest.test\"",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm gate:e5-p-live",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 42309132630,
+        "name": "ci",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132630",
+        "status": "completed",
+        "conclusion": "success",
+        "jobs": [
+          {
+            "id": 128205936820,
+            "name": "unit",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132630/job/128205936820",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run node --test scripts/pnwf/qualification.test.mjs",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm test",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm architecture:check",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm architecture:check-public-api",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build:web",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 128205936821,
+            "name": "e2e",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132630/job/128205936821",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm build:web",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm exec playwright install --with-deps chromium",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm exec playwright test",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/upload-artifact@v4",
+                "status": "completed",
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 42309132623,
+        "name": "r1-hr-windows-host-boundary",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132623",
+        "status": "completed",
+        "conclusion": "success",
+        "jobs": [
+          {
+            "id": 128205936595,
+            "name": "host-boundary",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132623/job/128205936595",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Install the DSH host the fence binds against",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Locate the DSH installation",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Build",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "gate:r1-h-conformance (kernel fence + guard)",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "gate:r1-hr-conformance (host-hardening contract)",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "gate:r1-hc-conformance (residual closure)",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "gate:r1-hr-clean-env (dependency closure under isolation)",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "architecture and public API",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Upload the conformance evidence",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/setup-node@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run pnpm/action-setup@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "actualValidation": {
+    "requestBudget": {
+      "passed": 20,
+      "failed": 0
+    },
+    "vitest": {
+      "filesPassed": 423,
+      "filesSkipped": 2,
+      "testsPassed": 4981,
+      "testsSkipped": 33,
+      "failed": 0
+    },
+    "browserE2E": {
+      "passed": 38,
+      "failed": 0
+    },
+    "r0Executed": [
+      "gate:e-live",
+      "gate:e1-k-live",
+      "gate:e2-i-live",
+      "gate:e3-c-live",
+      "gate:e4-l-live",
+      "gate:e5-p-live",
+      "package-smoke"
+    ],
+    "hostDependentSkipped": {
+      "gates": [
+        "gate:d2-live",
+        "gate:d4-live",
+        "gate:d5-live",
+        "d5-reliability"
+      ],
+      "reason": "Existing workflow host-environment availability condition; successful jobs did not execute these gates."
+    },
+    "windows": {
+      "r1h": {
+        "passed": 17,
+        "limits": 0,
+        "failed": 0
+      },
+      "r1hr": {
+        "passed": 45,
+        "limits": 2,
+        "failed": 0
+      },
+      "r1hc": {
+        "passed": 26,
+        "limits": 1,
+        "failed": 0
+      },
+      "cleanEnvironment": {
+        "passed": 10,
+        "failed": 0
+      },
+      "architecture": "PASS",
+      "publicApi": "PASS",
+      "disclosedLimits": [
+        "HR-39b: arbitrary raw-code read isolation between concurrently ACTIVE worlds is not guaranteed.",
+        "HR-33: sibling-world name metadata confidentiality is not guaranteed.",
+        "HC-27: parallel ACTIVE confidential workers unsupported; profile serializes workers."
+      ]
+    }
+  },
+  "paidExecution": {
+    "newPaidCalls": 0,
+    "newOwnerAuthorizationReceived": "2026-11-07",
+    "newQuantifiedPaidLedgerInitialized": false,
+    "providerBoundStatus": "PROVIDER_BOUND_UNQUALIFIED",
+    "historicalCohortStatus": "INVALID / OVER BUDGET"
+  },
+  "evidencePolicy": "This added release receipt does not modify historical provider/accounting evidence or the earlier local verification.json snapshot."
+}

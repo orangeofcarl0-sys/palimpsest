@@ -111,9 +111,9 @@ node scripts/pnwf/qualify_execution.mjs --out=<新的证据目录>
 node node_modules/vitest/vitest.mjs run --maxWorkers=1 --fileParallelism=false <handoff.md 中的验收文件>
 ```
 
-容器复现依赖本机尚存的 PSVR-C/energy recorded sources（见 `prepare_continuation.mjs`），脚本不会下载或伪造这些原始状态。目标目录已存在时拒绝覆盖。轻量 Node 故障测试和产品测试使用新建临时目录，独立于这些旧源数据。没有无休止重跑 Windows 全量套件；历史全量失败未经本轮逐项排除，不宣称全库回归全绿。
+容器复现依赖本机尚存的 PSVR-C/energy recorded sources（见 `prepare_continuation.mjs`），脚本不会下载或伪造这些原始状态。目标目录已存在时拒绝覆盖。轻量 Node 故障测试和产品测试使用新建临时目录，独立于这些旧源数据。没有无休止重跑本地 Windows 全量套件；其历史失败未经本轮逐项排除，不宣称本地 Windows 全量回归全绿。远程 Linux 全量结果单列于 §8。
 
-20 项轻量故障测试已接入 `.github/workflows/ci.yml` 的 unit job，使用纯本地 Mock，无凭证、无 Docker 依赖。本轮尚未推送，远程 CI 尚未执行。
+20 项轻量故障测试已接入 `.github/workflows/ci.yml` 的 unit job，使用纯本地 Mock，无凭证、无 Docker 依赖。发布前本地快照 `verification.json` 不含远程 CI；随后 PR #230 的远程验证和合并记录见 §8，原始快照未改写。
 
 `scripts/lhape/provider_proxy_tcp.mjs` 保留兼容文件名，但旧的仅凭环境凭证启动方式已关闭。其他历史实验脚本也不能借该入口继续无预算转发。新结果以请求准入账本为执行控制真值；旧 `score_continuation.mjs` 只用于历史模型轨迹分析，不用于给 Mock 资格认定产品 primary endpoint。
 
@@ -121,4 +121,14 @@ node node_modules/vitest/vitest.mjs run --maxWorkers=1 --fileParallelism=false <
 
 本轮可建立的结论限定为：被测 Mock 合同下的请求准入、实际隔离容器与 copied Worlds、窄产品权限/当前性规则和确定性治理链。没有建立真实 Provider 的可执行计费上界、付费实验有效性、模型自主行为收益、跨 Host 强静止性或 Git/SQLite 跨系统原子性。
 
-下一次付费运行仍需**全部**满足：具体 Provider/模型/兼容路径的输入与输出上界获得可执行资格；新 owner 明确授权额度；同一 actual adapter/container 的零付费故障链通过。当前代码对所有 paid execution 保持关闭，新授权本身也不能覆盖技术资格缺失。
+Owner 已于 2026-11-07 明确授权启动付费模型调用，该授权记录于 `handoff.md` §6，不应再次请求同一权限。下一次付费运行仍需**全部**满足：具体 Provider/模型/兼容路径的输入与输出上界获得可执行资格；将新的具体 session/cohort ceiling 写入独立 ledger；同一 actual adapter/container 的零付费故障链通过。旧 5M 不可复用，当前尚无新量化 ledger。当前代码对所有 paid execution 保持关闭，新授权本身也不能覆盖技术资格缺失。
+
+## 8. 远程发布验证（2026-11-07）
+
+[PR #230](https://github.com/orangeofcarl0-sys/palimpsest/pull/230) 的被检验 head 为 `b1554f89ecfa0dacf98e7f52b3ddc677600da051`。三套工作流的 14 个 check job 首次运行全部成功，随后合并到 main，merge SHA 为 `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`。本轮远程检查无失败、无重跑，未修改断言或门槛来取得绿灯。
+
+- [Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132630)：预算故障 20/20；Vitest 423 个文件通过、2 个跳过，4,981 项测试通过、33 项跳过；浏览器 E2E 38/38；构建、architecture 与 public API 通过。这是独立于 §5 本地分批回归的全量结果。
+- [R0 gates](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640)：六个 E gate 和 package-smoke 实际通过。D2、D4、D5 与 D5 reliability 的 job 成功，但 gate 执行因既有外部 DSH 环境条件而跳过；不能称为四项真实 Host 验证通过。
+- [Windows Host Boundary](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132623)：R1-H 17 PASS；R1-HR 45 PASS / 2 LIMIT；R1-HC 26 PASS / 1 LIMIT；clean-env 10 PASS，均 0 FAIL。architecture / public API 通过。HR-39b、HR-33、HC-27 的并行 ACTIVE world 原生互读、元数据保密与并行能力限制保持披露，不因 job 成功而消失。
+
+新增 [release-ci.json](../../research-evidence/pnwf-cq-r1/2026-11-07/release-ci.json) 保存 head、merge、job/step 结果与跳过原因。该记录不将后续提交的检查结果归给旧 head，也不覆盖原始本地或历史付费证据。发布与 CI 新增付费模型调用为 0；已记录的 owner 新授权继续有效。
