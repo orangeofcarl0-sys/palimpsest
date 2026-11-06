@@ -1,0 +1,47 @@
+{
+  "schema": "pnwf-continuation-prep/v1",
+  "cohortId": "pnwf-continuation-2026-11",
+  "stage": "pnwf-continuation",
+  "mode": "PNWF_REAL_MODEL",
+  "sessions": [
+    {
+      "id": "software",
+      "condition": "PNWF_FULL",
+      "stage": "software",
+      "world": "C:\\Users\\66494\\pnwf-live\\run\\stages\\software\\world",
+      "state": "C:\\Users\\66494\\pnwf-live\\run\\stages\\software\\state",
+      "home": "C:\\Users\\66494\\pnwf-live\\run\\home-software",
+      "promptPath": "C:\\Users\\66494\\pnwf-live\\run\\prompts\\software.txt",
+      "out": "C:\\Users\\66494\\pnwf-live\\run\\out\\software",
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "injectAtMs": null,
+      "killAfterMs": 3600000,
+      "injectionRel": null,
+      "deployment": "C:\\Users\\66494\\pnwf-live\\run\\stages\\software\\deployment.json"
+    },
+    {
+      "id": "energy",
+      "condition": "PNWF_FULL",
+      "stage": "energy",
+      "world": "C:\\Users\\66494\\pnwf-live\\run\\stages\\energy\\world",
+      "state": "C:\\Users\\66494\\pnwf-live\\run\\stages\\energy\\state",
+      "home": "C:\\Users\\66494\\pnwf-live\\run\\home-energy",
+      "promptPath": "C:\\Users\\66494\\pnwf-live\\run\\prompts\\energy.txt",
+      "out": "C:\\Users\\66494\\pnwf-live\\run\\out\\energy",
+      "maxTokens": 2500000,
+      "reserveTokens": 125000,
+      "injectAtMs": null,
+      "killAfterMs": 3600000,
+      "injectionRel": null,
+      "deployment": "C:\\Users\\66494\\pnwf-live\\run\\stages\\energy\\deployment.json"
+    }
+  ],
+  "budget": {
+    "perSession": 2500000,
+    "reserve": 125000,
+    "aggregate": 5000000,
+    "sessions": 2
+  },
+  "note": "Two recorded-state continuations; the prompt is the exact PSVR-C A2 text; no injection and no evaluator material."
+}

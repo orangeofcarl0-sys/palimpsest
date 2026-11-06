@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "profileId": "pnwf-cont-software",
+  "projectId": "psvr-c",
+  "localPeer": "local-operator",
+  "repository": "C:/Users/66494/pnwf-live/run/stages/software/world",
+  "execution": "worktree",
+  "concurrency": 2,
+  "toolProfile": "normal",
+  "policy": {
+    "allowed_commands": [
+      {
+        "executable": "node",
+        "argv_prefix": [
+          "--test"
+        ]
+      }
+    ]
+  },
+  "standard": {
+    "statement": "The suite runs on the accepted head and every write stays inside its task's scope."
+  },
+  "transport": {
+    "namespace": "pnwf-cont-software",
+    "databasePath": "C:/Users/66494/pnwf-live/run/stages/software/state/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "C:/Users/66494/pnwf-live/run/stages/software/state/palimpsest.sqlite",
+    "ordarium": "C:/Users/66494/pnwf-live/run/stages/software/state/ordarium.sqlite",
+    "coordination": "C:/Users/66494/pnwf-live/run/stages/software/state/coordination.sqlite",
+    "transportCursors": "C:/Users/66494/pnwf-live/run/stages/software/state/transport-cursors.sqlite",
+    "projectJournal": "C:/Users/66494/pnwf-live/run/stages/software/state/journal.sqlite",
+    "projectAssociations": "C:/Users/66494/pnwf-live/run/stages/software/state/associations.sqlite",
+    "management": "C:/Users/66494/pnwf-live/run/stages/software/state/management.sqlite"
+  },
+  "reasoning": {}
+}
