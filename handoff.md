@@ -8,7 +8,8 @@
 ## 0. 30 秒版本
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
-- 当前正式主线：`origin/main` = **`1766a794a52fcdda323331429b6881d2b1dc8636`**（PR #227 merge）。
+- 最近同步的正式主线：`origin/main` = **`76585274856a444f5600623a55af3513d306193b`**（handoff PR #228 merge）。
+  接手时先运行 `git rev-parse origin/main`，以实际值为准；不要把本行当成永久基线。
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
 - 新工作从 `origin/main` 开新分支：
   ```bash
@@ -40,14 +41,14 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-07）
+## 2. 当前 Git / 分支状态（2026-11-07，最近同步）
 
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | `1766a794a52fcdda323331429b6881d2b1dc8636` |
-| PR #227 | MERGED；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
-| 当前本地分支 | `docs/handoff`（从 `origin/main` 新建，仅用于本文件） |
+| `origin/main` | 以 `git rev-parse origin/main` 为准；最近同步 `76585274856a444f5600623a55af3513d306193b`（handoff PR #228） |
+| PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
+| 当前本地分支 | `docs/handoff-sync`（从 `origin/main` 新建，仅用于本文件） |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | clean |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -333,7 +334,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 |---|---|---|---|
 | 2026-11-07 | PR #227 merged：PNWF-CQ action coherence、UNOBSERVED liveness、plan invalidation、journal 投影、isolation gate、评分修正、operator basis admission | `1766a79` | CI 全绿 |
 | 2026-11-07 | 容器 cohort 执行 | `research-evidence/pnwf-cq/live/2026-11-07/` | **INVALID / +190,778 over budget**；禁止继续付费 |
-| 2026-11-07 | 新增本 handoff | `docs/handoff` branch | 活文档 |
+| 2026-11-07 | 新增本 handoff；PR #228 merged | `7658527` | 活文档 |
+| 2026-11-07 | 同步 origin/main 到 handoff merge；说明 SHA 需现场核实 | `docs/handoff-sync` | 防止把快照当永久基线 |
 
 ---
 
