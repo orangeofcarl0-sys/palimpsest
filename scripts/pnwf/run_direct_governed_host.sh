@@ -150,19 +150,33 @@ wait_host() {
   return "$code"
 }
 
-for name in P0 P1 P2; do
+for name in P0 P1; do
   start_host "$name"
   wait_host "$name"
 done
 
 BASE_HEAD="$(node -e 'process.stdout.write(require(process.argv[1]).head)' "$RUN/core.json")"
 WORLD_HEAD="$(git -C "$WORLD" rev-parse HEAD)"
-DIRECT_HEAD="$(git -C "$WORLD" log -1 --format=%H)"
 REFUSAL="$(grep -c 'HEAD_BASIS_MISMATCH' "$OUT/mock.jsonl" 2>/dev/null || true)"
 
-REFUSAL="$REFUSAL" node - "$STATE" "$BASE_HEAD" "$WORLD_HEAD" <<'NODE' > "$OUT/result.json"
+# The operator decision is OUTSIDE the principal. The CLI verifies the signed credential before it
+# admits the checked-out direct commit as the canonical basis; no promotion is written.
+node "$REPO/dist/src/cli.js" basis admit \
+  --profile-file="$RUN/operator/profile.json" \
+  --commit="$WORLD_HEAD" \
+  --reason="The direct commit is the intended governed basis; the formal task was retired by the successor and the operator admits this commit explicitly." \
+  --operator-token="$RUN/operator/operator.token" > "$OUT/basis-admit.json"
+
+for name in P2; do
+  start_host "$name"
+  wait_host "$name"
+done
+
+REFUSAL="$REFUSAL" node - "$STATE" "$BASE_HEAD" "$WORLD_HEAD" "$OUT/basis-admit.json" <<'NODE' > "$OUT/result.json"
 const { DatabaseSync } = require("node:sqlite");
-const [state, baseHead, worldHead] = process.argv.slice(2);
+const { readFileSync } = require("node:fs");
+const [state, baseHead, worldHead, basisPath] = process.argv.slice(2);
+const basis = JSON.parse(readFileSync(basisPath, "utf8"));
 const db = new DatabaseSync(`${state}/palimpsest.sqlite`);
 const tasks = db.prepare("SELECT task_id, state FROM tasks ORDER BY task_id").all();
 const attempts = db.prepare("SELECT COUNT(*) AS n FROM attempts").get();
@@ -175,6 +189,8 @@ const result = {
   schema: "pnwf-direct-governed-host/v1",
   baseHead,
   worldHead,
+  basisAdmitted: basis.state === "ADMITTED" && basis.commit === worldHead,
+  basisFromHead: basis.fromHead ?? null,
   tasks,
   attempts: Number(attempts.n),
   promotions: Number(promotions.n),
@@ -196,7 +212,9 @@ const db = new DatabaseSync(`${state}/palimpsest.sqlite`);
 const project = db.prepare("SELECT state_json FROM projects ORDER BY revision DESC LIMIT 1").get();
 const canonical = JSON.parse(Buffer.from(project.state_json).toString("utf8")).head_commit;
 const failures = [];
-if (canonical !== baseHead) failures.push(`canonical head ${canonical} != base ${baseHead}`);
+if (canonical !== worldHead) failures.push(`canonical head ${canonical} != admitted commit ${worldHead}`);
+if (result.basisFromHead !== baseHead) failures.push(`basis fromHead ${result.basisFromHead} != base ${baseHead}`);
+if (!result.basisAdmitted) failures.push("the operator admission did not report ADMITTED");
 if (worldHead === baseHead) failures.push("the direct commit did not move the world");
 if (result.attempts !== 0) failures.push(`attempts=${result.attempts}`);
 if (result.promotions !== 0) failures.push(`promotions=${result.promotions}`);
@@ -204,6 +222,9 @@ if (result.attemptStarted) failures.push("ATTEMPT_STARTED was fabricated");
 if (result.promotionCommitted) failures.push("PROMOTION_COMMITTED was fabricated");
 if (!result.checkpointRecorded) failures.push("no CHECKPOINT conclusion");
 if (!result.directRefusalObserved) failures.push("the product did not refuse HEAD_BASIS_MISMATCH");
+if (!result.tasks.some((task) => task.task_id === "governed-next" && task.state === "READY")) {
+  failures.push("the retained task is not READY on the admitted basis");
+}
 if (failures.length > 0) {
   process.stderr.write(`PNWF-CQ direct-governed assertions failed:\n- ${failures.join("\n- ")}\n`);
   process.exit(9);

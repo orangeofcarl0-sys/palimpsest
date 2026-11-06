@@ -9,10 +9,12 @@
  * Usage: node scripts/pnwf/prepare_direct_governed.mjs --run=<dir> --repo=<repo>
  */
 import { execFileSync } from "node:child_process";
+import { generateKeyPairSync } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { installProduct, trustedDefaultPolicy } from "../../dist/src/product.js";
+import { signOperatorToken } from "../../dist/src/project_review/index.js";
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {
@@ -212,5 +214,42 @@ writeFileSync(join(RUN, "mock-scripts.json"), `${JSON.stringify(script, null, 2)
 writeFileSync(
   join(RUN, "core.json"),
   `${JSON.stringify({ schema: "pnwf-direct-governed-prep/v1", projectId: PROJECT, head, world: WORLD, state: STATE }, null, 2)}\n`,
+);
+
+// The operator surface is separate from the principal. A signed Ed25519 credential authorizes
+// exactly this purpose; the CLI verifies it before the direct basis admission.
+const operatorDir = join(RUN, "operator");
+mkdirSync(operatorDir, { recursive: true });
+const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+const publicKeyPath = join(operatorDir, "operator-public.pem");
+writeFileSync(publicKeyPath, publicKey.export({ format: "pem", type: "spki" }).toString());
+const now = Date.now();
+const token = signOperatorToken({
+  claims: {
+    operatorId: "alice",
+    purpose: "basis",
+    issuedAt: new Date(now - 60_000).toISOString(),
+    expiresAt: new Date(now + 3_600_000).toISOString(),
+    nonce: `pnwf-basis-${now}`,
+  },
+  privateKeyPem: privateKey.export({ format: "pem", type: "pkcs8" }).toString(),
+});
+writeFileSync(join(operatorDir, "operator.token"), `${token}\n`);
+writeFileSync(
+  join(operatorDir, "profile.json"),
+  `${JSON.stringify(
+    {
+      schemaVersion: 1,
+      projectId: PROJECT,
+      repository: WORLD,
+      stateDir: STATE,
+      toolProfile: "normal",
+      operatorId: "alice",
+      operatorPurpose: "basis",
+      operatorPublicKeyPath: publicKeyPath,
+    },
+    null,
+    2,
+  )}\n`,
 );
 process.stdout.write(`${JSON.stringify({ run: RUN, world: WORLD, head, projectId: PROJECT })}\n`);

@@ -50,7 +50,15 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
-import { findOpenWorkerInvocations, makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
+import {
+  appendDirectBasisApproval,
+  assertDirectBasisHeadOnly,
+  invalidationAffectedForPlan,
+  makeWorkReadModel,
+  observeStatusFacts,
+  planReceipt,
+  validatedHeadAdvance,
+} from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
@@ -98,7 +106,6 @@ import {
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
 import {
   compileEvidenceInvalidation,
-  computeInvalidationSet,
   type ActiveWorkEvidence,
   type ChangeClass,
   type EvidenceInvalidationPlan,
@@ -118,7 +125,6 @@ import { adjustAllocation } from "../allocate/telemetry_adapter.js";
 import { ModelPerformanceTable } from "../telemetry/performance_table.js";
 import { TelemetryStateSync } from "../telemetry/state_persistence.js";
 import { ClaimGraph } from "../evidence/graph.js";
-import type { DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
 import { Scheduler } from "../scheduler/index.js";
@@ -210,10 +216,15 @@ export interface PlanInput {
 export interface TrustedPlanOptions {
   readonly headAdvance?:
     | {
+        /** PNWF-CQ-H: a promotion-effect advance (default) or an operator-mediated direct basis. */
+        readonly source?: "PROMOTION" | "DIRECT_BASIS" | undefined;
         /** The backing PROMOTION_COMMITTED event ref (the canonical chain tip). */
-        readonly fromPromotionEventId: string;
-        /** The canonically proven effect head. */
+        readonly fromPromotionEventId?: string | undefined;
+        /** The commit to advance to. */
         readonly toHead: string;
+        /** Required when source=DIRECT_BASIS: the verified operator and the admission reason. */
+        readonly operator?: string | undefined;
+        readonly reason?: string | undefined;
       }
     | undefined;
   /** E2-I §15: the accepted intent reconciliation receipt, produced only by the governed E2-I service after an independent authority admitted the exact proposal digest. */
@@ -1386,7 +1397,13 @@ export class ProjectController {
     // READY/BLOCKED tasks are reauthorized onto that base inside the SAME
     // atomic batch. The advance is validated against the canonical derivation,
     // so a caller cannot mint a head of its own choosing.
-    const nextHeadCommit = this.#validatedHeadAdvance(current, trusted.headAdvance);
+    const nextHeadCommit = validatedHeadAdvance({
+      current,
+      advance: trusted.headAdvance,
+      repository: this.effects.git.repository,
+      promotionState: this.promotions.projectHeadStatusSync().state,
+      validatePromotion: (input) => this.head.validateHeadAdvance(input),
+    });
     const data = {
       project_id: this.projectId,
       revision,
@@ -1485,9 +1502,22 @@ export class ProjectController {
     if (firstBlocker !== undefined) {
       throw new PlanReconciliationError(firstBlocker);
     }
+    if (trusted.headAdvance?.source === "DIRECT_BASIS") {
+      assertDirectBasisHeadOnly(reconciliation.diffs);
+    }
 
     const requests: NewEvent[] = [];
     const staled = new Set<string>();
+    if (trusted.headAdvance?.source === "DIRECT_BASIS") {
+      appendDirectBasisApproval(requests, {
+        projectId: this.projectId,
+        expectedProjectRevision: current.revision,
+        revision,
+        commit: trusted.headAdvance.toHead,
+        operator: trusted.headAdvance.operator ?? "",
+        reason: trusted.headAdvance.reason ?? "",
+      });
+    }
 
     for (const taskId of reconciliation.removedStaled) {
       requests.push(
@@ -1561,10 +1591,8 @@ export class ProjectController {
       );
     }
 
-    const promotionId = stableEntityId(
-      "plan",
-      actionKey("plan-revision-v1", { project_id: this.projectId, revision }),
-    );
+    const directBasis = trusted.headAdvance?.source === "DIRECT_BASIS" ? trusted.headAdvance : undefined;
+    const receipt = planReceipt({ projectId: this.projectId, revision, directBasis });
     requests.push(
       parseNewEvent({
         schema_version: 1,
@@ -1573,13 +1601,10 @@ export class ProjectController {
         payload_version: 1,
         entity_type: "project",
         entity_id: this.projectId,
-        payload: { project_ir: project, promotion_id: promotionId, ...(trusted.acceptedIntentReconciliation === undefined ? {} : { intent_reconciliation: trusted.acceptedIntentReconciliation }) },
+        payload: { project_ir: project, promotion_id: receipt.promotionId, ...(trusted.acceptedIntentReconciliation === undefined ? {} : { intent_reconciliation: trusted.acceptedIntentReconciliation }) },
         causation_id: null,
-        correlation_id: `plan:${revision}`,
-        idempotency_key: actionKey("plan-revision-v1", {
-          project_id: this.projectId,
-          revision,
-        }),
+        correlation_id: receipt.correlationId,
+        idempotency_key: receipt.idempotencyKey,
         expected_project_revision: current.revision,
       }),
     );
@@ -1652,28 +1677,6 @@ export class ProjectController {
         removedStaled: Object.freeze([...reconciliation.removedStaled]),
         blocked: Object.freeze([]) as readonly string[],
       }),
-    });
-  }
-
-  /**
-   * G10-X TRUSTED-ONLY head advance validation. Returns the next ProjectIR head
-   * commit: unchanged when no advance was requested, else the canonically
-   * proven effect head - but only after proving (against the promotion
-   * manager's own derivation and the backing PROMOTION_COMMITTED event) that
-   * the caller is not choosing a head. Anything else fails closed with
-   * `caller_head_not_canonical` and zero writes.
-   */
-  #validatedHeadAdvance(
-    current: ProjectIr,
-    advance: TrustedPlanOptions["headAdvance"],
-  ): string {
-    if (advance === undefined) return current.head_commit;
-    // SR-2 §十: the head owner makes the judgement — it is the one place that may decide whether
-    // the head actually backs the requested advance.
-    return this.head.validateHeadAdvance({
-      current,
-      toHead: advance.toHead,
-      fromPromotionEventId: advance.fromPromotionEventId,
     });
   }
 
@@ -1798,29 +1801,21 @@ export class ProjectController {
     to: number;
     project: ProjectIr;
   }): string[] {
-    const edges: DependencyEdge[] = arg.project.tasks.flatMap((task) =>
-      task.depends_on.map((dependency) => ({ from: dependency, to: task.task_id, sensitive_to: ["behavior_change", "contract_breaking"] as const })),
-    );
-    const affected = computeInvalidationSet(
-      { from: arg.from, to: arg.to, change_class: arg.changeClass, changed_ids: arg.changedIds },
-      edges,
-    );
-    // PNWF-CQ-D: the owner rechecks the invocation ledger after the adapter's job snapshot.
-    const openWorkerInvocations = findOpenWorkerInvocations({
-      connection: this.store.connection,
-      projectId: this.projectId,
-      taskIds: [...affected],
-      invocations: (attemptId) => this.executionInvocations.list(attemptId),
-    });
-    if (openWorkerInvocations.length > 0) {
-      const first = openWorkerInvocations[0]!;
-      throw new PlanReconciliationError({
-        kind: "quiescence_required",
-        detail: `a worker invocation is still OPEN for task ${first.taskId} (attempt ${first.attemptId}); a structural revision must not stale a position whose execution window this host can still observe`,
-        refs: [first.taskId, first.attemptId, first.invocationId],
-      });
-    }
-    return [...affected].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
+    return [
+      ...invalidationAffectedForPlan({
+        ...arg,
+        projectId: this.projectId,
+        connection: this.store.connection,
+        invocations: (attemptId) => this.executionInvocations.list(attemptId),
+        onOpenWorker: (first) => {
+          throw new PlanReconciliationError({
+            kind: "quiescence_required",
+            detail: `a worker invocation is still OPEN for task ${first.taskId} (attempt ${first.attemptId}); a structural revision must not stale a position whose execution window this host can still observe`,
+            refs: [first.taskId, first.attemptId, first.invocationId],
+          });
+        },
+      }),
+    ];
   }
 
   /**

@@ -1,0 +1,16 @@
+{
+  "schema": "pnwf-spend-authorization/v1",
+  "cohortId": "pnwf-cq-continuation-2026-11-07",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "stages": ["software", "energy"],
+  "conditions": ["PNWF_FULL"],
+  "sessions": 2,
+  "sessionCeiling": 1750000,
+  "reserveTokens": 87500,
+  "aggregateCeiling": 3504193,
+  "issuedBy": "owner (session authorization '均授权', 2026-11-07; remaining after the 1,495,807-token adapter smoke)",
+  "issuedAt": "2026-11-07T00:00:00.000Z",
+  "expiresAt": "2026-11-08T23:59:59.000Z",
+  "note": "This authorization covers only the two CQ container sessions. It does not authorize any further sample or a new cohort."
+}

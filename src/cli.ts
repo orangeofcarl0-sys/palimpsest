@@ -164,7 +164,7 @@ function policy() {
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
-  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status|manage|init|continue|doctor|review|recover|outcomes|context-capsule> …");
+  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status|manage|init|continue|doctor|review|recover|outcomes|context-capsule|basis> …");
 
   // PC1 S09: the ordinary product commands run before the legacy Work-only setup. They install
   // their own product composition and never fall through to the legacy controller.

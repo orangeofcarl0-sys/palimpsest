@@ -176,7 +176,7 @@ function tasksFromOption(value: string | undefined, goal: string): Array<Record<
 }
 
 export async function runProductCommand(command: string, options: Options, positional: readonly string[]): Promise<boolean> {
-  if (!["init", "continue", "doctor", "review", "recover", "outcomes", "context-capsule"].includes(command)) return false;
+  if (!["init", "continue", "doctor", "review", "recover", "outcomes", "context-capsule", "basis"].includes(command)) return false;
 
   if (command === "doctor") {
     const report = runDoctor({
@@ -336,6 +336,50 @@ export async function runProductCommand(command: string, options: Options, posit
     } finally {
       await installed.dispose();
     }
+  }
+
+  if (command === "basis") {
+    const subcommand = positional[1];
+    if (subcommand !== "admit") {
+      throw new Error("usage: palimpsest basis admit --commit=<40-hex> --reason=<...> --operator-token=<file>");
+    }
+    const operatorTokenPath = option(options, "operator-token") ?? process.env.PALIMPSEST_OPERATOR_TOKEN_FILE;
+    const { installed, operator } = openProduct(profile, {
+      ...(operatorTokenPath === undefined ? {} : { operatorTokenPath }),
+      requireOperator: true,
+    });
+    try {
+      const commit = requiredOption(options, "commit");
+      const reason = requiredOption(options, "reason");
+      if (operator === undefined) throw new Error("a verified operator credential is required");
+      const fromHead = (installed.controller.status() as { headCommit: string }).headCommit;
+      const current = installed.controller.work.project();
+      const outcome = installed.controller.planReconciled(
+        { tasks: current.tasks.map((task) => ({ ...task })), reason },
+        { headAdvance: { source: "DIRECT_BASIS", toHead: commit, operator: operator.actor, reason } },
+      );
+      const project = installed.controller.work.project();
+      console.log(
+        JSON.stringify(
+          {
+            state: "ADMITTED",
+            fromHead,
+            toHead: project.head_commit,
+            commit,
+            operator: operator.actor,
+            revision: outcome.result.revision,
+            basisId: (outcome.event.payload as { promotion_id?: string }).promotion_id ?? null,
+            note:
+              "The direct commit is admitted as a BASIS. No ATTEMPT_COMPLETED or PROMOTION_COMMITTED was written, and the commit was not relabelled as a governed result.",
+          },
+          null,
+          2,
+        ),
+      );
+    } finally {
+      await installed.dispose();
+    }
+    return true;
   }
 
   if (command === "recover") {
