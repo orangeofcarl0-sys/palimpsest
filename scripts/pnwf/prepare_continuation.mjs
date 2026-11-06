@@ -9,7 +9,7 @@
  * Usage: node scripts/pnwf/prepare_continuation.mjs --run=<dir> --repo=<repo>
  */
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const args = new Map(
@@ -53,6 +53,21 @@ for (const [stage, input] of Object.entries(BASES)) {
   mkdirSync(root, { recursive: true });
   cpSync(join(input.source, "worlds", "A"), world, { recursive: true });
   cpSync(join(input.source, "state-A"), state, { recursive: true });
+  /**
+   * PNWF-CQ-F: an attempt world borrows the canonical object store through an ABSOLUTE alternates
+   * path (`C:/.../worlds/A/.git/objects`). A copied world mounted in a Linux container would point at
+   * a host path that does not exist, so Git operations on the attempt world fail and a model can
+   * mistake that for work. Rewrite every attempt world's alternates to the COPIED canonical objects.
+   */
+  const copiedObjects = "../../../../../.git/objects";
+  const worldsDir = join(world, ".palimpsest", "worlds");
+  if (existsSync(worldsDir)) {
+    for (const entry of readdirSync(worldsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const alternates = join(worldsDir, entry.name, ".git", "objects", "info", "alternates");
+      if (existsSync(alternates)) writeFileSync(alternates, `${copiedObjects}\n`);
+    }
+  }
   const head = git(world, ["rev-parse", "HEAD"]);
   if (head !== input.artifact) throw new Error(`${stage}: copied world HEAD ${head} is not the recorded artifact ${input.artifact}`);
   if (!existsSync(join(world, ".palimpsest", "worlds"))) throw new Error(`${stage}: the copied world has no attempt worlds`);

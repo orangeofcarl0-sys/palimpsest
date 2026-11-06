@@ -34,7 +34,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
   return tool({
     name: "palimpsest_work",
     description:
-      "The NORMAL project work path. DIRECT WORK IS A FIRST-CLASS PATH: a formal Task is not required for every edit, and a project may hold a direct Git outcome without inventing Work. If the work was already committed outside a governed attempt, do NOT create a task to reproduce it — record an episode conclusion (`conclude`); a zero-delta attempt cannot be `complete`d, and a redundant formal task is retired by a typed plan revision (`plan` with changeClass/changedIds), not by faking settlement. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), start a REAL worker in its own execution world (`delegate`), observe who is actually running (`workers`), request a stop without pretending it happened (`stop`), inspect a delivered result and choose a safe continuation route (`results`, `continue`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), record the EPISODE-LEVEL conclusion when the current work episode should stop (`conclude`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `delegate` executes an EXISTING canonical task; it does not invent work, and the worker may only report; the product observes the world and settles. `workers` distinguishes canonical attempt state from host-local job observation: a RUNNING attempt with no job in this host is NOT proven alive. `stop` is a REQUEST. `results` reports the packaged continuation assessment for the latest COMPLETED result, including path-level reuse facts (unaffected / conflicted / already-present) that a NEW governed task may use without accepting the old result, and `continue` carries the inspection digest into rematerialization or governed rework; neither accepts or promotes anything. `relay` continues an attempt whose worker is no longer running: `takeover` keeps the SAME attempt and world after an observed worker exit (or your explicit `declareExecutorAbandoned` declaration) and records PRINCIPAL_RECOVERY; `successor` closes an attempt this host cannot prove quiescent, keeps its world, and returns path-level reuse facts so a NEW attempt continues the still-valid work in a new world at the same basis. Every settlement reports the execution window the product OBSERVED (`ORIGINAL_WORKER_OBSERVED` / `SUBSEQUENT_WORKER_OBSERVED` / `PRINCIPAL_RECOVERY` / `MULTI_EXECUTOR` / `UNATTRIBUTED`); your own writing is never reported as worker production, and a principal takeover is not independent verification. `conclude` records YOUR judgement about the episode (DELIVER / WAIT_FOR_OPERATOR / WAIT_FOR_EXTERNAL_EVENT / REPLAN / CONTINUE / CHECKPOINT) and the product checks it against real facts: open tasks, live attempts, pending operator acceptance, blocked effects, artifact existence and artifact Git provenance. A refused conclusion names the contradiction; a recorded one is still NOT acceptance or promotion. Provenance warnings (an artifact untracked or uncommitted) are reported in the result and in the pulse; they do not by themselves refuse DELIVER. `readiness` reports the CURRENT outcome facts from the owners (attempt/world/commit/uncommitted/current inputs/completion) and classifies the next step as CONTINUE_WORK, SEMANTIC_JUDGEMENT or MECHANICAL_FINALIZATION; it is a read, not a permission. When it returns MECHANICAL_FINALIZATION, `finalize` with its `observationDigest` performs the bounded mechanical chain (fresh observation, existing completion evaluation, canonical settlement, existing scheduler progress) and stops before operator acceptance; a stale digest is refused, and a candidate that still needs a semantic judgement is refused rather than settled. After a recorded conclusion with `session.mayEnd=true`, reply to the user and stop calling tools unless something contradicts it. `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately, while worktree edits are an isolated candidate until an authorized Promotion. A proposal is NON-AUTHORITATIVE.",
+      "The NORMAL project work path. DIRECT WORK IS A FIRST-CLASS PATH: a formal Task is not required for every edit, and a project may hold a direct Git outcome without inventing Work. If the work was already committed outside a governed attempt, do NOT create a task to reproduce it — record an episode conclusion (`conclude`); a zero-delta attempt cannot be `complete`d, and a redundant formal task is retired by removing it from the plan (`plan` with tasks:[]) once the project is quiescent, not by faking settlement or by mislabelling it as a typed invalidation. Use it for ordinary work on this project: read the state (`status`), revise the plan (`plan`), advance what the product can do mechanically (`next`, `run`), start a REAL worker in its own execution world (`delegate`), observe who is actually running (`workers`), request a stop without pretending it happened (`stop`), inspect a delivered result and choose a safe continuation route (`results`, `continue`), take the next claimable work position (`start`), open a new single governed position (`begin`), close it when done (`complete`), record the EPISODE-LEVEL conclusion when the current work episode should stop (`conclude`), save a follow-up proposal without forcing the current plan (`propose`), or record an exploratory finding (`explore` / `explorations`). `delegate` executes an EXISTING canonical task; it does not invent work, and the worker may only report; the product observes the world and settles. `workers` distinguishes canonical attempt state from host-local job observation: a RUNNING attempt with no job in this host is NOT proven alive. `stop` is a REQUEST. `results` reports the packaged continuation assessment for the latest COMPLETED result, including path-level reuse facts (unaffected / conflicted / already-present) that a NEW governed task may use without accepting the old result, and `continue` carries the inspection digest into rematerialization or governed rework; neither accepts or promotes anything. `relay` continues an attempt whose worker is no longer running: `takeover` keeps the SAME attempt and world after an observed worker exit (or your explicit `declareExecutorAbandoned` declaration) and records PRINCIPAL_RECOVERY; `successor` closes an attempt this host cannot prove quiescent, keeps its world, and returns path-level reuse facts so a NEW attempt continues the still-valid work in a new world at the same basis. Every settlement reports the execution window the product OBSERVED (`ORIGINAL_WORKER_OBSERVED` / `SUBSEQUENT_WORKER_OBSERVED` / `PRINCIPAL_RECOVERY` / `MULTI_EXECUTOR` / `UNATTRIBUTED`); your own writing is never reported as worker production, and a principal takeover is not independent verification. `conclude` records YOUR judgement about the episode (DELIVER / WAIT_FOR_OPERATOR / WAIT_FOR_EXTERNAL_EVENT / REPLAN / CONTINUE / CHECKPOINT) and the product checks it against real facts: open tasks, live attempts, pending operator acceptance, blocked effects, artifact existence and artifact Git provenance. A refused conclusion names the contradiction; a recorded one is still NOT acceptance or promotion. Provenance warnings (an artifact untracked or uncommitted) are reported in the result and in the pulse; they do not by themselves refuse DELIVER. `readiness` reports the CURRENT outcome facts from the owners (attempt/world/commit/uncommitted/current inputs/completion) and classifies the next step as CONTINUE_WORK, SEMANTIC_JUDGEMENT or MECHANICAL_FINALIZATION; it is a read, not a permission. When it returns MECHANICAL_FINALIZATION, `finalize` with its `observationDigest` performs the bounded mechanical chain (fresh observation, existing completion evaluation, canonical settlement, existing scheduler progress) and stops before operator acceptance; a stale digest is refused, and a candidate that still needs a semantic judgement is refused rather than settled. After a recorded conclusion with `session.mayEnd=true`, reply to the user and stop calling tools unless something contradicts it. `explore` is the EXPLORATORY path: research, comparison, source inspection and tentative analysis are recorded as findings with sources and uncertainty, and create NO Task, Attempt, Evidence, Promotion or ProjectIR change. Use `plan` only for a governed commitment; independent research should not be represented as several formal Work tasks whose first result blocks the others. It never accepts an attempt id, an exit code, an evidence predicate or an approval. Every status/begin/complete reply carries the ACTUAL execution boundary: in-place edits change the live repository immediately, while worktree edits are an isolated candidate until an authorized Promotion. A proposal is NON-AUTHORITATIVE.",
     mode: "mutating",
     actions: [
       "status",
@@ -91,13 +91,13 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         type: "string",
         enum: ["metadata_only", "backward_compatible", "behavior_change", "contract_breaking"],
         description:
-          "for plan: the typed invalidation class. Together with changedIds it settles EXACTLY those tasks inside the same revision batch (a structural retirement), so an already-redundant formal task can be retired without pretending its attempt completed. Without it a structural revision requires quiescence",
+          "for plan: the change class. metadata_only and backward_compatible are NON-INVALIDATING: changedIds does NOT stale or retire anything. behavior_change and contract_breaking are the TYPED INVALIDATION classes: with changedIds they stale exactly the named tasks inside the same revision batch and propagate along declared dependencies. To retire a redundant task without a meaning change, submit the new graph with tasks:[] while the project is quiescent (relay a possibly-written world to a successor first); retirement is a graph removal, not a typed invalidation",
       },
       changedIds: {
         type: "array",
         items: { type: "string" },
         description:
-          "for plan: the logical task ids this revision invalidates or retires. Requires changeClass; only the named tasks stop blocking quiescence, and any other in-flight work still refuses. A task with an observed active worker must be stopped and observed exited first",
+          "for plan: the logical task ids a TYPED INVALIDATION retires. Only meaningful with changeClass=behavior_change or contract_breaking; with metadata_only/backward_compatible it is refused because it would not invalidate anything. Only the named tasks stop blocking quiescence; any other in-flight work still refuses. A task with an observed active worker must be stopped and observed exited first",
       },
       reason: { type: "string", description: "for plan: why this revision is proposed" },
       maxSteps: { type: "number", description: "for run: a bounded number of mechanical steps" },
@@ -143,11 +143,28 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
           throw new ToolArgsError('argument "changedIds" requires "changeClass"');
         }
         /**
+         * PNWF-CQ-D: `metadata_only` and `backward_compatible` do not produce a typed invalidation
+         * set. Accepting changedIds with them silently did nothing while the caller believed the
+         * named tasks were invalidated. Refuse the false claim and name the two real routes.
+         */
+        if (
+          changedIds !== undefined &&
+          changeClass !== undefined &&
+          changeClass !== "behavior_change" &&
+          changeClass !== "contract_breaking"
+        ) {
+          throw new ToolArgsError(
+            `changedIds has NO invalidation effect with changeClass=${String(changeClass)}: metadata_only and backward_compatible do not stale or retire tasks. ` +
+              "To retire a redundant task, submit the new graph with tasks:[] once the project is quiescent (a possibly-written world must first be relayed to a successor). " +
+              "Use changeClass=behavior_change or contract_breaking only when the task's meaning or contract genuinely changed",
+          );
+        }
+        /**
          * PNWF-D: typed invalidation settles exactly the named tasks by staling them in the revision
          * batch. That bypass must not retire a live worker's position: the host's own job observation
          * is checked first, and an active job refuses the revision.
          */
-        if (changeClass !== undefined) {
+        if (changeClass === "behavior_change" || changeClass === "contract_breaking") {
           const affected = new Set(changedIds ?? tasks.map((task) => String(task.task_id)));
           const workers = (await work.workers()) as {
             readonly jobs?: readonly { readonly taskId?: unknown; readonly phase?: unknown }[];
@@ -280,10 +297,17 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
             return {
               ...result,
               boundary: work.boundary(),
-              nextActions:
-                result.state === "SETTLED"
+              nextActions: [
+                ...(result.state === "SETTLED"
                   ? ["palimpsest_work action=results", "an operator must review and accept the delivered result"]
-                  : result.state === "WORKER_ACTIVE"
+                  : []),
+                ...(result.state === "SETTLED" && result.attribution?.attribution === "UNATTRIBUTED"
+                  ? [
+                      "attribution: UNATTRIBUTED — this host observed no worker invocation; the settlement is a principal act, not proof that an earlier writer stopped",
+                    ]
+                  : []),
+                ...(result.state !== "SETTLED"
+                  ? result.state === "WORKER_ACTIVE"
                     ? [
                         "palimpsest_work action=workers",
                         "palimpsest_work action=stop (a request; wait for the observed exit)",
@@ -292,7 +316,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
                     : result.state === "NO_RUNNING_ATTEMPT"
                       ? [
                           "if the work is already committed at the basis: palimpsest_work action=conclude intent=CHECKPOINT",
-                          "if the formal task is redundant: palimpsest_work action=plan changeClass=behavior_change changedIds=[taskId]",
+                          "if the formal task is redundant: palimpsest_work action=plan tasks=[] (after a successor closes a possibly-written world)",
                           "otherwise: palimpsest_work action=delegate to run the existing position",
                           "palimpsest_work action=status",
                         ]
@@ -300,9 +324,11 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
                         ? [
                             "do not retry complete: the attempt's world has no delta",
                             "palimpsest_work action=conclude intent=CHECKPOINT",
-                            "palimpsest_work action=plan changeClass=behavior_change changedIds=[taskId] (retire a formal task with no independent goal)",
+                            "palimpsest_work action=plan tasks=[] (retire a redundant task after the project is quiescent)",
                           ]
-                        : ["palimpsest_work action=workers", "palimpsest_work action=status"],
+                        : ["palimpsest_work action=workers", "palimpsest_work action=status"]
+                  : []),
+              ],
             };
           }
           let result: Awaited<ReturnType<typeof work.completePlaced>>;
@@ -324,7 +350,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
               nextActions: [
                 "do not retry complete: the product has not observed a settleable delta",
                 "palimpsest_work action=conclude intent=CHECKPOINT",
-                "palimpsest_work action=plan changeClass=behavior_change changedIds=[taskId] (retire a formal task with no independent goal)",
+                "palimpsest_work action=plan tasks=[] (retire a redundant task after the project is quiescent)",
                 "palimpsest_work action=workers",
               ],
             };

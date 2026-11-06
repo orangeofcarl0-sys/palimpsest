@@ -175,6 +175,18 @@ export interface OutcomeReadiness {
     readonly active: boolean;
     readonly stopRequested: boolean;
     readonly processExit: "OBSERVED" | "UNCONFIRMED" | "UNKNOWN";
+    /** PNWF-CQ-B: host-local invocation observation; UNOBSERVED is not "never started". */
+    readonly liveness: "ACTIVE" | "EXITED" | "UNKNOWN" | "UNOBSERVED";
+  } | null;
+  /**
+   * PNWF-CQ-A/B: the physical repository outcome relative to the canonical head. This is a fact,
+   * not an acceptance and not a judgement that the user's business outcome is complete.
+   */
+  readonly directOutcome: {
+    readonly repositoryHead: string | null;
+    readonly projectHead: string;
+    readonly relation: "IN_SYNC" | "DIRECT_AHEAD" | "DIVERGED" | "UNOBSERVABLE";
+    readonly uncommittedPaths: readonly string[];
   } | null;
   readonly artifacts: readonly OutcomeReadinessArtifact[];
   readonly inputs: {

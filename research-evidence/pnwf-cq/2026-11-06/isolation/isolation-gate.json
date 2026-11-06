@@ -1,0 +1,127 @@
+{
+  "schema": "pnwf-evaluation-isolation/v1",
+  "checkedAt": "2026-11-06T14:20:03.999Z",
+  "image": "palimpsest-pnwf-isolation:local",
+  "principalRuntime": "container",
+  "principal": {
+    "uid": 1001,
+    "user": "principal",
+    "network": "none",
+    "capabilities": "dropped"
+  },
+  "mounts": {
+    "workspace": "pnwf-isolation-task:/workspace",
+    "harness": "pnwf-isolation-harness:/harness:ro (root 0700)"
+  },
+  "harnessPresent": true,
+  "externalScorerRead": true,
+  "checks": [
+    {
+      "name": "read_task_public",
+      "status": "ALLOW",
+      "detail": "PUBLIC_OK"
+    },
+    {
+      "name": "shell_task_public",
+      "status": "ALLOW",
+      "detail": "PUBLIC_OK"
+    },
+    {
+      "name": "write_task_workspace",
+      "status": "ALLOW",
+      "detail": "ok"
+    },
+    {
+      "name": "git_task_workspace",
+      "status": "ALLOW",
+      "detail": "?? write.txt"
+    },
+    {
+      "name": "build_task_workspace",
+      "status": "ALLOW",
+      "detail": "TASK_CHECK_OK"
+    },
+    {
+      "name": "dsh_native_available",
+      "status": "ALLOW",
+      "detail": "0.2.1-rc.5"
+    },
+    {
+      "name": "native_read_private",
+      "status": "DENIED",
+      "detail": "node:fs:483     return binding.readFileUtf8(path, stringToFlags(options.flag));                    ^  Error: EACCES: per"
+    },
+    {
+      "name": "native_shell_private",
+      "status": "DENIED",
+      "detail": "cat: /harness/private-canary: Permission denied"
+    },
+    {
+      "name": "indirect_proc_private",
+      "status": "DENIED",
+      "detail": "cat: /proc/1/root/harness/private-canary: Permission denied"
+    },
+    {
+      "name": "indirect_parent_path",
+      "status": "DENIED",
+      "detail": "cat: /workspace/../harness/private-canary: Permission denied"
+    },
+    {
+      "name": "read_score",
+      "status": "DENIED",
+      "detail": "node:fs:483     return binding.readFileUtf8(path, stringToFlags(options.flag));                    ^  Error: EACCES: per"
+    },
+    {
+      "name": "read_rubric",
+      "status": "DENIED",
+      "detail": "node:fs:483     return binding.readFileUtf8(path, stringToFlags(options.flag));                    ^  Error: EACCES: per"
+    },
+    {
+      "name": "read_reference",
+      "status": "DENIED",
+      "detail": "node:fs:483     return binding.readFileUtf8(path, stringToFlags(options.flag));                    ^  Error: EACCES: per"
+    },
+    {
+      "name": "read_other_condition",
+      "status": "DENIED",
+      "detail": "node:fs:483     return binding.readFileUtf8(path, stringToFlags(options.flag));                    ^  Error: EACCES: per"
+    },
+    {
+      "name": "read_historical_score",
+      "status": "DENIED",
+      "detail": "node:fs:483     return binding.readFileUtf8(path, stringToFlags(options.flag));                    ^  Error: EACCES: per"
+    },
+    {
+      "name": "read_private_config",
+      "status": "DENIED",
+      "detail": "node:fs:483     return binding.readFileUtf8(path, stringToFlags(options.flag));                    ^  Error: EACCES: per"
+    }
+  ],
+  "required": {
+    "allowed": [
+      "read_task_public",
+      "shell_task_public",
+      "write_task_workspace",
+      "git_task_workspace",
+      "build_task_workspace",
+      "dsh_native_available"
+    ],
+    "denied": [
+      "native_read_private",
+      "native_shell_private",
+      "indirect_proc_private",
+      "indirect_parent_path",
+      "read_score",
+      "read_rubric",
+      "read_reference",
+      "read_other_condition",
+      "read_historical_score",
+      "read_private_config"
+    ]
+  },
+  "missing": [],
+  "wrongAllowed": [],
+  "wrongDenied": [],
+  "status": "EVALUATION_ISOLATION_QUALIFIED",
+  "note": "The canary runs as the principal uid inside the same container/mount namespace a future session must use. The external scorer reads the harness as root outside that namespace. A private path readable by the principal fails the gate."
+}

@@ -64,6 +64,26 @@ function journalOpen(entry: ProjectJournalViewEntry): boolean {
   return resolution === undefined || (resolution.status !== "RESOLVED" && resolution.status !== "DISMISSED");
 }
 
+/**
+ * PNWF-CQ-E: a REFERENCE_NOTE is not automatically an open question.
+ *
+ * The product writes several structured records as REFERENCE_NOTEs (episode conclusions, execution
+ * relay attributions), and a principal's verification note carries a concrete commit reference. Those
+ * are observations at a recorded basis, not to-dos. Treating them as unresolved questions made the
+ * next session see work that did not exist.
+ *
+ * The distinction uses structured source identity, never the title: a note is a RECORD when it is a
+ * product-owned record by provenance, or when it names a commit it was written against. A note with
+ * no such identity stays conservative and remains an open question; a genuine question should be
+ * recorded as OPEN_QUESTION and is never filtered here.
+ */
+function recordedReference(entry: ProjectJournalViewEntry): boolean {
+  if (entry.entry.kind !== "REFERENCE_NOTE") return false;
+  const provenance = entry.entry.provenance;
+  if (provenance.startsWith("episode:") || provenance.startsWith("relay:")) return true;
+  return entry.entry.relatedRefs.some((ref) => ref.kind === "commit");
+}
+
 function stableBasis(ir: ProjectIr, status: ReturnType<ContinuityInput["work"]["status"]>, now: string): ContinuityBasis {
   return Object.freeze({
     projectRevision: ir.revision,
@@ -202,7 +222,14 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
       );
 
     const openQuestions = entries
-      .filter((entry) => journalOpen(entry) && (entry.entry.kind === "OPEN_QUESTION" || entry.entry.kind === "OPPORTUNITY" || entry.entry.kind === "IDEA" || entry.entry.kind === "REFERENCE_NOTE"))
+      .filter(
+        (entry) =>
+          journalOpen(entry) &&
+          (entry.entry.kind === "OPEN_QUESTION" ||
+            entry.entry.kind === "OPPORTUNITY" ||
+            entry.entry.kind === "IDEA" ||
+            (entry.entry.kind === "REFERENCE_NOTE" && !recordedReference(entry))),
+      )
       .map((entry) =>
         item({
           id: `journal:${entry.entry.entryId}`,

@@ -26,6 +26,7 @@ const COHORT_PATH = resolve(String(args.get("cohort") ?? ""));
 const OUT = resolve(String(args.get("out") ?? (COHORT_PATH === "" ? "." : dirname(COHORT_PATH))));
 const AUTH_PATH = resolve(String(args.get("authorization") ?? join(dirname(COHORT_PATH), "authorization-pnwf-continuation.json")));
 const ADAPTER = args.get("adapter") === undefined ? null : resolve(String(args.get("adapter")));
+const ISOLATION_PATH = args.get("isolation") === undefined ? null : resolve(String(args.get("isolation")));
 const EXECUTE = args.has("execute");
 const SESSION_ID = args.get("session") === undefined ? null : String(args.get("session"));
 
@@ -134,6 +135,34 @@ const expiresAt = Date.parse(String(authorization.expiresAt ?? ""));
 if (!Number.isFinite(expiresAt)) authProblems.push("the authorization has no valid expiresAt");
 else if (expiresAt <= Date.now()) authProblems.push("the authorization has expired");
 if (authProblems.length > 0) fail(2, authProblems, { authorization: AUTH_PATH, plan: planPath });
+
+/**
+ * PNWF-CQ-F §8.4: a paid cohort is refused unless the principal runs inside the qualified container
+ * boundary. A gate record from a host process is not enough: `principalRuntime` must say `container`,
+ * so a Windows host session cannot borrow the container canary's result.
+ */
+if (ISOLATION_PATH === null || !existsSync(ISOLATION_PATH)) {
+  fail(4, ["EVALUATION_ISOLATION_NOT_QUALIFIED: no isolation gate record was supplied"], {
+    authorization: AUTH_PATH,
+    plan: planPath,
+    isolation: ISOLATION_PATH,
+  });
+}
+const isolation = readJson(ISOLATION_PATH);
+const isolationProblems = [];
+if (isolation === null) isolationProblems.push("the isolation gate record is not valid JSON");
+if (isolation?.schema !== "pnwf-evaluation-isolation/v1") isolationProblems.push("the isolation gate record has the wrong schema");
+if (isolation?.status !== "EVALUATION_ISOLATION_QUALIFIED") isolationProblems.push(`the isolation status is ${String(isolation?.status)}`);
+if (isolation?.principalRuntime !== "container") isolationProblems.push("the principal did not run in the qualified container runtime");
+if (isolation?.harnessPresent !== true) isolationProblems.push("the canary did not prove the harness exists behind the boundary");
+if (isolation?.externalScorerRead !== true) isolationProblems.push("the external scorer could not read the harness");
+const wrongChecks = Array.isArray(isolation?.checks)
+  ? isolation.checks.filter((check) => check.status !== "ALLOW" && check.status !== "DENIED")
+  : [];
+if (wrongChecks.length > 0) isolationProblems.push(`${String(wrongChecks.length)} isolation canary checks were unexpected`);
+if (isolationProblems.length > 0) {
+  fail(4, isolationProblems, { authorization: AUTH_PATH, plan: planPath, isolation: ISOLATION_PATH });
+}
 
 if (ADAPTER === null || !existsSync(ADAPTER)) {
   fail(3, ["ADAPTER_NOT_CONFIGURED: no execution adapter was supplied"], { authorization: AUTH_PATH, plan: planPath });

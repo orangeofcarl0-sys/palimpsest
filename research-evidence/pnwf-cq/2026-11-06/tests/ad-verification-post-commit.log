@@ -1,0 +1,36 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mF:/Codex_Work_Space/Palimpsest/palimpsest-sr1[39m
+
+(node:18040) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m test/ad_verification_integration.test.ts [2m([22m[2m32 tests[22m[2m)[22m[33m 18031[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N17 a descriptive verificationCapabilityRef alone creates NO runtime and NO VERIFY availability [33m 3514[2mms[22m[39m
+     [33m[2m✓[22m[39m §15 a real independent runtime + a VERIFY preference makes the row AVAILABLE [33m 633[2mms[22m[39m
+     [33m[2m✓[22m[39m §15 a VERIFY preference with NO runtime stays a valid preference, shown honestly [33m 790[2mms[22m[39m
+     [33m[2m✓[22m[39m §15 a bare Work-only install reports VERIFY UNAVAILABLE and exposes no verification surface [33m 435[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N24/N25 FOCUS+VERIFY reuses the principal and verifies the CURRENT head through the real runtime [33m 890[2mms[22m[39m
+     [33m[2m✓[22m[39m §18 a plan with no VERIFY modifier is UNCCHANGED (no verification metadata at all) [33m 704[2mms[22m[39m
+     [33m[2m✓[22m[39m §18 with NO verification runtime a VERIFY plan returns unresolved, never a fake success [33m 476[2mms[22m[39m
+     [33m[2m✓[22m[39m §18 a blocked run leaves the base outcome visible and UNRESOLVED, never a verdict [33m 416[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N26 the ReasoningCell keeps its own verification/admission and the run is about the PROJECT HEAD [33m 863[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N27 coordination surfaces only existing peers, verification checks the head [33m 649[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N18 no VERIFY preference creates NO automatic verification candidate [33m 683[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N21/AD-N19 a verification-due head produces a candidate, and a fresh run suppresses the repeat [33m 752[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N20 a NEW project head makes verification due again (a NEW candidate) [33m 673[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N22 at DIRECT an UNCONFIRMED step never runs verification (explicit stays explicit) [33m 844[2mms[22m[39m
+     [33m[2m✓[22m[39m AD-N23 MANAGE/DELEGATE execute the run and the activity reference it durably (resolvable) [33m 922[2mms[22m[39m
+     [33m[2m✓[22m[39m §22 status/history/verifyCurrentHead are real, and the subject is DERIVED [33m 558[2mms[22m[39m
+     [33m[2m✓[22m[39m §22 the surface exposes NO way to register/alter a verifier or to claim independence [33m 650[2mms[22m[39m
+     [33m[2m✓[22m[39m §23 the HTTP routes are status/history/run only, and refuse arbitrary targets [33m 710[2mms[22m[39m
+     [33m[2m✓[22m[39m §23 the discovery routes report the verification surface, and the tool exists [33m 319[2mms[22m[39m
+     [33m[2m✓[22m[39m §26 a REAL install-level mechanical verification passes and writes no other plane [33m 573[2mms[22m[39m
+     [33m[2m✓[22m[39m §26 a restart restores the verification status/history from the SAME store without a rerun [33m 1201[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m32 passed[39m[22m[90m (32)[39m
+[2m   Start at [22m 23:08:07
+[2m   Duration [22m 29.69s[2m (transform 7.04s, setup 0ms, import 8.92s, tests 18.03s, environment 0ms)[22m
+
+
+[test temp hygiene] removed 24 leaked temp dir(s)
+; 4 refused (link safety): C:\Users\66494\AppData\Local\Temp\palimpsest-r3l0ciarlcf-controls-18404, C:\Users\66494\AppData\Local\Temp\palimpsest-r3l0ciarlcf-controls-47984, C:\Users\66494\AppData\Local\Temp\palimpsest-r3l0ciarlcf-controls-48704
