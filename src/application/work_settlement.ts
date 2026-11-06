@@ -210,7 +210,7 @@ export function makeWorkSettlementSurface(
           return {
             state: "SETTLED" as const,
             taskId: input.taskId,
-            detail: `${settled.detail} — this host observed the world; it does not claim the previous worker process is still alive`,
+            detail: `${settled.detail} — this host observed the world; attribution ${settled.attribution.attribution} (${settled.attribution.detail}). This is a principal settlement, not proof that an earlier writer stopped`,
             resultCommit: settled.resultCommit,
             changedFiles: settled.changedFiles,
             attribution: settled.attribution,

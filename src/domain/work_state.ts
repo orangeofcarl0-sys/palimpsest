@@ -137,7 +137,7 @@ export type WorkNextActionKind =
  * `NO_WORK`. The facts are supplied by the controller (the owner of the world/attempt read); the
  * domain stays pure.
  */
-export type WorkAttemptLiveness = "ACTIVE" | "EXITED" | "UNKNOWN" | "NEVER_STARTED";
+export type WorkAttemptLiveness = "ACTIVE" | "EXITED" | "UNKNOWN" | "UNOBSERVED";
 
 export interface WorkAttemptExecution {
   readonly attemptId: string;
@@ -176,6 +176,22 @@ export interface WorkNextAction {
    * This is NOT acceptance, completion or promotion; it is the honest stopping state.
    */
   readonly session?: WorkSessionOption;
+  /**
+   * PNWF-CQ-C: the mechanical transition and the business decision are different questions. When a
+   * direct outcome already exists, the Scheduler may legally start a READY task while the task's
+   * independent objective may already be satisfied. This is a derived advisory, not a new planner:
+   * it names the facts and the possible routes; the principal still decides.
+   */
+  readonly semantic?: WorkSemanticDecision;
+}
+
+export interface WorkSemanticDecision {
+  /** The business question the mechanical next action does not answer. */
+  readonly question: string;
+  /** The observed facts the question rests on. */
+  readonly facts: readonly string[];
+  /** Legal routes; none of them is claimed to be the right one. */
+  readonly options: readonly string[];
 }
 
 export interface WorkNextActionInput {
@@ -222,10 +238,42 @@ function checkpointSession(detail: string): WorkSessionOption {
 }
 
 /**
+ * PNWF-CQ-C: a mechanically legal scheduler step is not a business recommendation. When a direct
+ * outcome already exists at or ahead of the canonical basis, the principal must decide whether the
+ * formal task still carries an independent objective. This helper only adds that question to the
+ * existing mechanical explanation; it never retires, starts or accepts anything itself.
+ */
+function withSemantic(next: WorkNextAction, directOutcome: WorkDirectOutcome | undefined): WorkNextAction {
+  if (directOutcome === undefined || next.kind !== "EXECUTE_SCHEDULER_STEP") return next;
+  if (directOutcome.relation !== "IN_SYNC" && directOutcome.relation !== "DIRECT_AHEAD") return next;
+  const repository = directOutcome.repositoryHead?.slice(0, 12) ?? "unknown";
+  return Object.freeze({
+    ...next,
+    semantic: Object.freeze({
+      question: "Does this formal task still carry an independent objective now that a direct outcome exists in the repository?",
+      facts: Object.freeze([
+        `repository HEAD ${repository}; canonical ProjectIR head ${directOutcome.projectHead.slice(0, 12)} (${directOutcome.relation})`,
+        "the Scheduler step is mechanically legal; it is not an assessment that the work is still needed",
+        "a direct commit is not a governed result, an operator acceptance or a Promotion",
+      ]),
+      options: Object.freeze([
+        "continue genuine work the direct outcome does not cover",
+        "retire a redundant formal task through a plan revision when the existing rules permit it",
+        "record a CHECKPOINT if the formal work remains open and the session must end",
+      ]),
+    }),
+  });
+}
+
+/**
  * PNWF-A: what a RUNNING attempt can actually do now. The lifecycle says "complete is available";
  * the world says whether a settlement has anything to settle.
  */
-function runningAttemptAction(attempt: WorkNextActionInput["attempts"][number], multiples: number): WorkNextAction {
+function runningAttemptAction(
+  attempt: WorkNextActionInput["attempts"][number],
+  multiples: number,
+  directOutcome: WorkDirectOutcome | undefined,
+): WorkNextAction {
   if (multiples > 1) {
     return action(
       "WAIT_ACTIVE_WORK",
@@ -271,6 +319,10 @@ function runningAttemptAction(attempt: WorkNextActionInput["attempts"][number], 
       ),
     );
   }
+  const unobserved = facts.liveness === "UNOBSERVED";
+  const unobservedDetail = unobserved
+    ? " This host has no invocation record for the attempt: that is not proof a worker never started, and it is not proof a previous writer stopped. The bytes can still be settled by the principal, but the attribution is UNATTRIBUTED; if you did not author this world, use `relay` successor instead of treating the world as quiescent."
+    : "";
   if (facts.worldHead === null) {
     return action(
       "WAIT_ACTIVE_WORK",
@@ -286,19 +338,25 @@ function runningAttemptAction(attempt: WorkNextActionInput["attempts"][number], 
       "WAIT_ACTIVE_WORK",
       false,
       null,
-      `the attempt's world still has uncommitted changes (${facts.uncommittedChanges.join(", ")}); a settlement requires a committed result. Commit or discard them in the world first, then re-read status`,
+      `the attempt's world still has uncommitted changes (${facts.uncommittedChanges.join(", ")}); a settlement requires a committed result. Commit or discard them in the world first, then re-read status. The world HEAD being at the basis does not mean there is no work`,
       attempt.taskId,
       [`attempt:${facts.attemptId}:UNCOMMITTED_WORK`],
     );
   }
   if (facts.worldHead === facts.baseCommit) {
+    const direct =
+      directOutcome?.relation === "DIRECT_AHEAD"
+        ? ` The repository is ahead of the canonical basis (${directOutcome.repositoryHead?.slice(0, 12) ?? "unknown"}); that direct commit is a repository outcome, not a governed result and not accepted here.`
+        : directOutcome?.relation === "IN_SYNC"
+          ? " The repository and the canonical head agree; any outcome already in the basis is a direct outcome, not a new delta of this attempt."
+          : "";
     return action(
       "NO_SETTLEABLE_DELTA",
       false,
       null,
-      "the attempt's world has no commit beyond its basis (world HEAD = base), so `complete` will refuse NO_WORK — the work may already exist as a direct commit at the basis. Do not retry the same complete. Inspect the repository outcome; if this formal task has no independent goal, retire it with a typed plan revision; if the session must end, record a CHECKPOINT",
+      `the attempt's world has no commit beyond its basis (world HEAD = base), so there is no settleable candidate delta and \`complete\` will refuse NO_WORK. This does NOT establish that the user's actual outcome is incomplete; assess that from the repository and the task's objective.${direct}${unobservedDetail} Do not retry the same complete. If this formal task has no independent goal, retire it through a plan revision; if the session must end, record a CHECKPOINT`,
       attempt.taskId,
-      [`attempt:${facts.attemptId}:NO_DELTA`],
+      [`attempt:${facts.attemptId}:NO_DELTA`, ...(unobserved ? [`attempt:${facts.attemptId}:LIVENESS_UNOBSERVED`] : [])],
       checkpointSession(
         "the session can end with the open attempt recorded as an unresolved fact. A CHECKPOINT does not settle the attempt, accept an artifact or mark the project complete",
       ),
@@ -308,8 +366,9 @@ function runningAttemptAction(attempt: WorkNextActionInput["attempts"][number], 
     "WAIT_ACTIVE_WORK",
     true,
     "palimpsest_work action=complete",
-    `the attempt's world holds a committed delta (${facts.baseCommit.slice(0, 12)} → ${facts.worldHead.slice(0, 12)}); completion is the next formal transition`,
+    `the attempt's world holds a committed delta (${facts.baseCommit.slice(0, 12)} → ${facts.worldHead.slice(0, 12)}); completion is the next formal transition.${unobservedDetail}`,
     attempt.taskId,
+    unobserved ? [`attempt:${facts.attemptId}:LIVENESS_UNOBSERVED`] : [],
   );
 }
 
@@ -355,7 +414,7 @@ export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
    */
   const running = input.attempts.filter((attempt) => attempt.state === "RUNNING");
   if (running.length > 0) {
-    return runningAttemptAction(running[0]!, running.length);
+    return runningAttemptAction(running[0]!, running.length, input.directOutcome);
   }
 
   const verifying = input.tasks.filter((task) => task.state === "VERIFYING");
@@ -390,12 +449,15 @@ export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
   }
 
   if (input.schedulerDecision !== null) {
-    return action(
-      "EXECUTE_SCHEDULER_STEP",
-      true,
-      "palimpsest_work action=next",
-      `the Scheduler's next decision is ${input.schedulerDecision.eventType}; calling next commits exactly that transition`,
-      input.schedulerDecision.entityId,
+    return withSemantic(
+      action(
+        "EXECUTE_SCHEDULER_STEP",
+        true,
+        "palimpsest_work action=next",
+        `the Scheduler's next decision is ${input.schedulerDecision.eventType}; calling next commits exactly that transition`,
+        input.schedulerDecision.entityId,
+      ),
+      input.directOutcome,
     );
   }
 

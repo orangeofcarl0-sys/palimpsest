@@ -68,9 +68,27 @@ async function snapshot(
     revision?: number;
     headCommit?: string;
     tasks?: Array<{ task_id: string; state: string; objective?: string }>;
-    attempts?: Array<{ attempt_id: string; task_id: string | null; state: string; task_state?: string }>;
+    attempts?: Array<{
+      attempt_id: string;
+      task_id: string | null;
+      state: string;
+      task_state?: string;
+      execution?: {
+        baseCommit: string;
+        worldHead: string | null;
+        uncommittedChanges: readonly string[];
+        liveness: "ACTIVE" | "EXITED" | "UNKNOWN" | "UNOBSERVED";
+      };
+    }>;
+    directOutcome?: {
+      repositoryHead: string | null;
+      projectHead: string;
+      relation: "IN_SYNC" | "DIRECT_AHEAD" | "DIVERGED" | "UNOBSERVABLE";
+      uncommittedPaths: readonly string[];
+    };
   };
   const attempts = status.attempts ?? [];
+  const directOutcome = status.directOutcome ?? null;
   const running = attempts.filter((attempt) => {
     const record = deps.controller.attemptWorkRecord(attempt.attempt_id) as { state?: string } | null;
     return record?.state === "RUNNING";
@@ -103,6 +121,11 @@ async function snapshot(
     envelope?: { base_commit?: string; required_artifacts?: readonly string[] };
   } | null);
   const attemptId = chosen?.attempt_id ?? null;
+  const selectedExecution =
+    chosen === null
+      ? null
+      : ((status.attempts ?? []).find((attempt) => attempt.attempt_id === chosen.attempt_id)?.execution ?? null);
+  const attemptLiveness = selectedExecution?.liveness ?? "UNKNOWN";
   const baseCommit = record?.envelope?.base_commit ?? "";
   const requiredArtifacts = record?.envelope?.required_artifacts ?? [];
 
@@ -204,12 +227,43 @@ async function snapshot(
   } else if (world === null || worldHead === null) {
     action = "CONTINUE_WORK";
     reasons.push("the attempt's world cannot be observed; the result cannot be inspected yet");
-  } else if (worldHead === baseCommit) {
-    action = "CONTINUE_WORK";
-    reasons.push("the world has no commit beyond the attempt's basis; the actual work is still outstanding");
   } else if (uncommittedChanges.length > 0) {
+    /**
+     * PNWF-CQ-A §3.3: this check must come BEFORE the zero-delta check. A world at its base with
+     * uncommitted edits is not "no work": there is real, unsettled work in front of the principal.
+     * The old order described that world as having nothing beyond the basis, which is false.
+     */
     action = "CONTINUE_WORK";
-    reasons.push(`the world still has uncommitted changes (${uncommittedChanges.join(", ")}); commit them or discard them before finalizing`);
+    reasons.push(
+      `the world still has uncommitted changes (${uncommittedChanges.join(", ")}); commit them or discard them before finalizing. The world HEAD being at the basis does not mean there is no work`,
+    );
+  } else if (worldHead === baseCommit) {
+    /**
+     * PNWF-CQ-A §3.2: report the formal fact, not a judgement about the user's business goal.
+     * No settleable candidate delta means FORMAL COMPLETION is not ready. Whether the actual
+     * outcome is complete is a separate assessment the principal makes from the repository.
+     */
+    action = directOutcome?.relation === "DIRECT_AHEAD" ? "SEMANTIC_JUDGEMENT" : "CONTINUE_WORK";
+    reasons.push(
+      "the world has no commit beyond the attempt's basis, so there is no settleable candidate delta and formal completion is not ready",
+    );
+    reasons.push(
+      "this does not establish that the user's actual outcome is incomplete; assess the repository outcome and the task's objective separately",
+    );
+    if (directOutcome?.relation === "DIRECT_AHEAD") {
+      reasons.push(
+        `a direct commit exists at ${directOutcome.repositoryHead?.slice(0, 12) ?? "unknown"} (repository ahead of the canonical head ${directOutcome.projectHead.slice(0, 12)}); it is not a governed result and this readiness does not accept it`,
+      );
+    } else if (directOutcome?.relation === "IN_SYNC") {
+      reasons.push(
+        "the repository and the canonical head agree; any outcome already in the basis is a direct outcome, not a new delta of this attempt",
+      );
+    }
+    if (attemptLiveness === "UNOBSERVED") {
+      reasons.push(
+        "this host observed no worker invocation for the attempt; that is not proof a worker never started, and it is not an observed exit",
+      );
+    }
   } else if (missing.length > 0) {
     action = "CONTINUE_WORK";
     reasons.push(`required artifacts are missing from the candidate (${missing.map((entry) => entry.path).join(", ")})`);
@@ -242,6 +296,11 @@ async function snapshot(
     reasons.push(
       "the candidate commit exists, the required artifacts are in it, no writer is observed, and the remaining step is the ordinary settlement",
     );
+    if (attemptLiveness === "UNOBSERVED") {
+      reasons.push(
+        "this host has no invocation record for the attempt. The settlement is a principal act, will be attributed UNATTRIBUTED, and is not proof that an earlier writer stopped; if you did not author this world, use `relay` successor instead",
+      );
+    }
     if (acknowledged) reasons.push("the principal acknowledged the inputs that arrived after the basis");
   }
 
@@ -261,6 +320,15 @@ async function snapshot(
     revision: status.revision ?? null,
     headCommit: status.headCommit ?? null,
     verificationRequired,
+    attemptLiveness,
+    directOutcome:
+      directOutcome === null
+        ? null
+        : {
+            repositoryHead: directOutcome.repositoryHead,
+            projectHead: directOutcome.projectHead,
+            relation: directOutcome.relation,
+          },
   });
 
   return Object.freeze({
@@ -294,6 +362,16 @@ async function snapshot(
               active,
               stopRequested: job?.stopRequested ?? false,
               processExit,
+              liveness: attemptLiveness,
+            }),
+      directOutcome:
+        directOutcome === null
+          ? null
+          : Object.freeze({
+              repositoryHead: directOutcome.repositoryHead,
+              projectHead: directOutcome.projectHead,
+              relation: directOutcome.relation,
+              uncommittedPaths: Object.freeze([...directOutcome.uncommittedPaths]),
             }),
       artifacts: Object.freeze(artifacts),
       inputs: Object.freeze({

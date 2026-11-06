@@ -1,0 +1,58 @@
+{
+  "schema": "pnwf-continuation-cohort/v1",
+  "cohortId": "pnwf-cq-continuation-2026-11-07",
+  "status": "AUTHORIZED_BY_OWNER",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "providerUpstream": "https://api.deepseek.com/anthropic",
+  "purpose": "Does the CQ product, running inside the qualified container boundary, resolve the recorded PSVR-C zero-delta state coherently and at a lower coordination cost?",
+  "conditions": ["PNWF_FULL"],
+  "stages": [
+    {
+      "id": "software",
+      "label": "PSVR-C software A-2 post-kill copy",
+      "sourceWorld": "C:/Users/66494/AppData/Local/Temp/psvr-c-real/run-2026-11-05/worlds/A",
+      "sourceState": "C:/Users/66494/AppData/Local/Temp/psvr-c-real/run-2026-11-05/state-A",
+      "artifactCommit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+      "historical": {
+        "session": "PSVR-C A-2",
+        "closureTokens": 1331902,
+        "completeCalls": 1,
+        "concludeCalls": 0,
+        "finalTaskState": "ACTIVE",
+        "finalAttemptState": "RUNNING",
+        "exit": "budget_stop"
+      }
+    },
+    {
+      "id": "energy",
+      "label": "PSVR-C energy A-2 post-kill copy",
+      "sourceWorld": "C:/Users/66494/AppData/Local/Temp/psvr-e-real/run-2026-11-05/worlds/A",
+      "sourceState": "C:/Users/66494/AppData/Local/Temp/psvr-e-real/run-2026-11-05/state-A",
+      "artifactCommit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+      "historical": {
+        "session": "PSVR-C energy A-2",
+        "closureTokens": 1901695,
+        "completeCalls": 2,
+        "concludeCalls": 0,
+        "finalTaskState": "ACTIVE",
+        "finalAttemptState": "RUNNING",
+        "exit": "budget_stop"
+      }
+    }
+  ],
+  "sessionsPerStage": 1,
+  "modelCalls": 2,
+  "sessionCeiling": 1750000,
+  "reserveTokens": 87500,
+  "aggregateCeiling": 3504193,
+  "prompt": "The exact PSVR-C A2 continuation prompt; no CHECKPOINT, conclude, plan or expected exit is named.",
+  "primaryEndpoint": "Each session records a legal episode conclusion (DELIVER / CHECKPOINT / WAIT_FOR_OPERATOR) or a typed retirement, makes no repeated failed complete, leaves the canonical artifact commit unchanged, and fabricates no promotion.",
+  "secondaryEndpoints": [
+    "session exit is natural, not a budget stop",
+    "tokens are below the historical A-2 closure for the same stage",
+    "domain refusals and repeated no-progress calls are counted separately",
+    "the principal cannot read the harness (container canary required)"
+  ],
+  "note": "The owner authorized this cohort on 2026-11-07. The 1,495,807-token non-cohort adapter smoke is counted against the original 5,000,000 aggregate; this cohort uses the remaining 3,504,193."
+}
