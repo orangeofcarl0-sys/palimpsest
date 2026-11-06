@@ -38,6 +38,8 @@ export interface ControllerStatusView {
     /** Derived: the attempt's task is retired, so this is not a live work position. */
     orphaned?: boolean;
     task_state?: string;
+    /** PNWF-A: the world/liveness facts that decide whether `complete` can actually succeed. */
+    execution?: WorkAttemptExecution;
   }>;
   evidence: Array<{ evidence_id: string; status: string }>;
   promotions: Array<{ promotion_id: string; state: string }>;
@@ -81,6 +83,11 @@ export interface ControllerStatusView {
     preparedPromotions: string[];
   };
   /**
+   * PNWF-B/C: the physical repository head and how it relates to the canonical ProjectIR head.
+   * Derived from one read-only Git observation; it never advances the canonical head.
+   */
+  directOutcome?: WorkDirectOutcome;
+  /**
    * G10-X additive: the canonical head picture. Derived from the ProjectIR
    * head plus the committed promotion facts only - never from `git.head()`.
    */
@@ -116,7 +123,44 @@ export type WorkNextActionKind =
   | "WAIT_DEPENDENCIES"
   | "SCHEDULER_PAUSED"
   | "NEEDS_COMPLETION_STANDARD"
+  | "NO_SETTLEABLE_DELTA"
+  | "NO_FORMAL_WORK"
+  | "DIRECT_HEAD_AHEAD"
   | "NO_ACTION";
+
+/**
+ * PNWF-A: the execution facts that turn a lifecycle state into a truth about what can succeed now.
+ *
+ * `explainWorkState` used to see only task/attempt states, so any RUNNING attempt looked like a
+ * settleable position. A real zero-delta attempt (the work committed before the project existed)
+ * then received `complete` as an EXECUTABLE next action, which the settlement owner must refuse with
+ * `NO_WORK`. The facts are supplied by the controller (the owner of the world/attempt read); the
+ * domain stays pure.
+ */
+export type WorkAttemptLiveness = "ACTIVE" | "EXITED" | "UNKNOWN" | "NEVER_STARTED";
+
+export interface WorkAttemptExecution {
+  readonly attemptId: string;
+  readonly baseCommit: string;
+  readonly worldHead: string | null;
+  readonly uncommittedChanges: readonly string[];
+  readonly liveness: WorkAttemptLiveness;
+}
+
+/** PNWF-B/C: what the physical repository holds relative to the canonical project head. */
+export interface WorkDirectOutcome {
+  readonly repositoryHead: string | null;
+  readonly projectHead: string;
+  readonly relation: "IN_SYNC" | "DIRECT_AHEAD" | "DIVERGED" | "UNOBSERVABLE";
+  readonly uncommittedPaths: readonly string[];
+}
+
+/** PNWF-A: the session-level exit, deliberately separate from the formal-work transition. */
+export interface WorkSessionOption {
+  readonly mayEnd: boolean;
+  readonly action: string | null;
+  readonly detail: string;
+}
 
 export interface WorkNextAction {
   readonly kind: WorkNextActionKind;
@@ -127,6 +171,11 @@ export interface WorkNextAction {
   readonly detail: string;
   readonly taskId: string | null;
   readonly blockers: readonly string[];
+  /**
+   * PNWF-A: a session can end on an episode conclusion even when no formal transition is available.
+   * This is NOT acceptance, completion or promotion; it is the honest stopping state.
+   */
+  readonly session?: WorkSessionOption;
 }
 
 export interface WorkNextActionInput {
@@ -135,10 +184,15 @@ export interface WorkNextActionInput {
   readonly schedulerDecision: { readonly eventType: string; readonly entityId: string } | null;
   readonly schedulerError: string | null;
   readonly tasks: readonly { readonly taskId: string; readonly state: string }[];
-  readonly attempts: readonly { readonly taskId: string | null; readonly state: string }[];
+  readonly attempts: readonly {
+    readonly taskId: string | null;
+    readonly state: string;
+    readonly execution?: WorkAttemptExecution | undefined;
+  }[];
   readonly holds: readonly string[];
   readonly promotionFence: readonly { readonly taskId: string; readonly state: string }[];
   readonly headState: string;
+  readonly directOutcome?: WorkDirectOutcome | undefined;
 }
 
 function action(
@@ -148,8 +202,115 @@ function action(
   detail: string,
   taskId: string | null = null,
   blockers: readonly string[] = [],
+  session?: WorkSessionOption | undefined,
 ): WorkNextAction {
-  return Object.freeze({ kind, executable, action: actionText, detail, taskId, blockers: Object.freeze([...blockers]) });
+  return Object.freeze({
+    kind,
+    executable,
+    action: actionText,
+    detail,
+    taskId,
+    blockers: Object.freeze([...blockers]),
+    ...(session === undefined ? {} : { session: Object.freeze(session) }),
+  });
+}
+
+const CHECKPOINT = "palimpsest_work action=conclude intent=CHECKPOINT";
+
+function checkpointSession(detail: string): WorkSessionOption {
+  return Object.freeze({ mayEnd: true, action: CHECKPOINT, detail });
+}
+
+/**
+ * PNWF-A: what a RUNNING attempt can actually do now. The lifecycle says "complete is available";
+ * the world says whether a settlement has anything to settle.
+ */
+function runningAttemptAction(attempt: WorkNextActionInput["attempts"][number], multiples: number): WorkNextAction {
+  if (multiples > 1) {
+    return action(
+      "WAIT_ACTIVE_WORK",
+      false,
+      null,
+      `${String(multiples)} attempts are RUNNING; pass the taskId the decision is about rather than guessing which one a settlement targets`,
+      attempt.taskId,
+    );
+  }
+  const facts = attempt.execution;
+  if (facts === undefined) {
+    return action(
+      "WAIT_ACTIVE_WORK",
+      true,
+      "palimpsest_work action=complete",
+      "an attempt is RUNNING; completion is the only formal transition available until it settles",
+      attempt.taskId,
+    );
+  }
+  if (facts.liveness === "ACTIVE") {
+    return action(
+      "WAIT_ACTIVE_WORK",
+      false,
+      null,
+      "a worker is still observed writing this attempt's world; `complete` will refuse WORKER_ACTIVE. Observe it with `workers`, or request `stop` and wait for the host to observe the exit — do not call complete in a loop",
+      attempt.taskId,
+      [`attempt:${facts.attemptId}:WORKER_ACTIVE`],
+      checkpointSession(
+        "a worker is still observed active. A CHECKPOINT records that fact and does not claim the worker stopped, the task settled or the project completed",
+      ),
+    );
+  }
+  if (facts.liveness === "UNKNOWN") {
+    return action(
+      "WAIT_ACTIVE_WORK",
+      false,
+      null,
+      "the worker's liveness is UNKNOWN: this host did not observe a confirmed exit, so an unobserved writer may still exist. `complete` must not race it. Inspect `workers`, or close the position with `relay` successor before any new attempt; a stop request is not an observed exit",
+      attempt.taskId,
+      [`attempt:${facts.attemptId}:LIVENESS_UNKNOWN`],
+      checkpointSession(
+        "the session can end with liveness UNKNOWN recorded. A CHECKPOINT does not claim the worker stopped, the task settled or the project completed",
+      ),
+    );
+  }
+  if (facts.worldHead === null) {
+    return action(
+      "WAIT_ACTIVE_WORK",
+      false,
+      null,
+      "the attempt's execution world cannot be observed, so neither a settlement nor a no-work refusal can be proven; inspect `workers` and the world path instead of calling complete",
+      attempt.taskId,
+      [`attempt:${facts.attemptId}:WORLD_UNOBSERVABLE`],
+    );
+  }
+  if (facts.uncommittedChanges.length > 0) {
+    return action(
+      "WAIT_ACTIVE_WORK",
+      false,
+      null,
+      `the attempt's world still has uncommitted changes (${facts.uncommittedChanges.join(", ")}); a settlement requires a committed result. Commit or discard them in the world first, then re-read status`,
+      attempt.taskId,
+      [`attempt:${facts.attemptId}:UNCOMMITTED_WORK`],
+    );
+  }
+  if (facts.worldHead === facts.baseCommit) {
+    return action(
+      "NO_SETTLEABLE_DELTA",
+      false,
+      null,
+      "the attempt's world has no commit beyond its basis (world HEAD = base), so `complete` will refuse NO_WORK — the work may already exist as a direct commit at the basis. Do not retry the same complete. Inspect the repository outcome; if this formal task has no independent goal, retire it with a typed plan revision; if the session must end, record a CHECKPOINT",
+      attempt.taskId,
+      [`attempt:${facts.attemptId}:NO_DELTA`],
+      checkpointSession(
+        "the session can end with the open attempt recorded as an unresolved fact. A CHECKPOINT does not settle the attempt, accept an artifact or mark the project complete",
+      ),
+    );
+  }
+  return action(
+    "WAIT_ACTIVE_WORK",
+    true,
+    "palimpsest_work action=complete",
+    `the attempt's world holds a committed delta (${facts.baseCommit.slice(0, 12)} → ${facts.worldHead.slice(0, 12)}); completion is the next formal transition`,
+    attempt.taskId,
+  );
 }
 
 export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
@@ -186,6 +347,36 @@ export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
   if (input.schedulerError !== null) {
     return action("WAIT_OPERATOR_RECOVERY", false, null, `the Scheduler cannot produce a decision: ${input.schedulerError}`);
   }
+
+  /**
+   * PNWF-A: a RUNNING attempt is a fact about the world, not just a lifecycle row. Its execution
+   * facts decide whether `complete` is executable; they are checked before the scheduler's generic
+   * decision because the generic decision is exactly what used to mislabel a zero-delta attempt.
+   */
+  const running = input.attempts.filter((attempt) => attempt.state === "RUNNING");
+  if (running.length > 0) {
+    return runningAttemptAction(running[0]!, running.length);
+  }
+
+  /**
+   * PNWF-C: a direct commit ahead of the canonical ProjectIR head. The physical Git HEAD and the
+   * governed basis are different facts; the product never promotes one into the other. Governed work
+   * starts from the canonical head, so starting it here would silently ignore the direct commit.
+   */
+  if (input.directOutcome?.relation === "DIRECT_AHEAD") {
+    return action(
+      "DIRECT_HEAD_AHEAD",
+      false,
+      null,
+      `the repository is at ${input.directOutcome.repositoryHead?.slice(0, 12) ?? "unknown"} but the canonical ProjectIR head is ${input.directOutcome.projectHead.slice(0, 12)}. The direct commit is NOT a governed result and the canonical head is not advanced by ordinary Git. Governed work must not start at the stale canonical basis; the operator must decide (accept the direct outcome outside the project, or establish a new basis through the existing authority path). A direct DELIVER conclusion may cite the committed artifact as an advisory judgement`,
+      null,
+      [`direct:${input.directOutcome.projectHead.slice(0, 12)}:${input.directOutcome.repositoryHead?.slice(0, 12) ?? "unknown"}`],
+      checkpointSession(
+        "the session can end with the direct head recorded as ahead of the canonical basis. A CHECKPOINT is not acceptance, promotion or a head advance",
+      ),
+    );
+  }
+
   if (input.schedulerDecision !== null) {
     return action(
       "EXECUTE_SCHEDULER_STEP",
@@ -205,17 +396,6 @@ export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
       `the Scheduler's VERIFYING latch is held by ${verifying.map((task) => task.taskId).join(", ")}; action=next will make no progress until an operator accepts or reworks that result. Investigation and proposals may still proceed outside the formal plan`,
       verifying[0]!.taskId,
       verifying.map((task) => `task:${task.taskId}:VERIFYING`),
-    );
-  }
-
-  const running = input.attempts.filter((attempt) => attempt.state === "RUNNING");
-  if (running.length > 0) {
-    return action(
-      "WAIT_ACTIVE_WORK",
-      true,
-      "palimpsest_work action=complete",
-      "an attempt is RUNNING; completion is the only formal transition available until it settles",
-      running[0]!.taskId,
     );
   }
 
@@ -264,6 +444,30 @@ export function explainWorkState(input: WorkNextActionInput): WorkNextAction {
     );
   }
 
+  /**
+   * PNWF-B/E: a project with no formal task (or only terminal history) is a legitimate shape. The
+   * outcome may already be a direct commit. The product must not invent a task to produce a Work
+   * record, and it must not say "no action" when the honest action is an episode conclusion.
+   */
+  const live = input.tasks.filter((task) => !["SATISFIED", "FAILED", "STALE"].includes(task.state));
+  if (live.length === 0) {
+    const direct =
+      input.directOutcome?.relation === "IN_SYNC"
+        ? " The repository and the canonical head agree."
+        : "";
+    return action(
+      "NO_FORMAL_WORK",
+      false,
+      null,
+      `this project has no live formal task. Direct work is allowed and a formal task is not mandatory for every edit.${direct} If the repository outcome is the deliverable, record an episode conclusion (DELIVER); if more work remains, plan a governed task only when its boundaries matter; if the session must end now, record CHECKPOINT`,
+      null,
+      [],
+      checkpointSession(
+        "no formal Work transition is available. DELIVER if the direct outcome is the deliverable; CHECKPOINT if it is not. Neither accepts an artifact or promotes a result",
+      ),
+    );
+  }
+
   return action("NO_ACTION", false, null, "every declared task is terminal; there is no legal formal transition left");
 }
 
@@ -277,10 +481,15 @@ export function explainStatusWorkState(input: {
   readonly schedulerDecision: { readonly eventType: string; readonly entityId: string } | null;
   readonly schedulerError: string | null;
   readonly tasks: readonly { readonly task_id: string; readonly state: string }[];
-  readonly attempts: readonly { readonly task_id: string | null; readonly state: string }[];
+  readonly attempts: readonly {
+    readonly task_id: string | null;
+    readonly state: string;
+    readonly execution?: WorkAttemptExecution | undefined;
+  }[];
   readonly holds: readonly string[];
   readonly promotionFence: readonly { readonly task_id: string; readonly state: string }[];
   readonly headState: string;
+  readonly directOutcome?: WorkDirectOutcome | undefined;
 }): WorkNextAction {
   const terminalTaskIds = new Set(
     input.tasks
@@ -296,9 +505,14 @@ export function explainStatusWorkState(input: {
     schedulerDecision: input.schedulerDecision,
     schedulerError: input.schedulerError,
     tasks: input.tasks.map((task) => ({ taskId: task.task_id, state: task.state })),
-    attempts: liveAttempts.map((attempt) => ({ taskId: attempt.task_id, state: attempt.state })),
+    attempts: liveAttempts.map((attempt) => ({
+      taskId: attempt.task_id,
+      state: attempt.state,
+      ...(attempt.execution === undefined ? {} : { execution: attempt.execution }),
+    })),
     holds: input.holds,
     promotionFence: input.promotionFence.map((entry) => ({ taskId: entry.task_id, state: entry.state })),
     headState: input.headState,
+    ...(input.directOutcome === undefined ? {} : { directOutcome: input.directOutcome }),
   });
 }

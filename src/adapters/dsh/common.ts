@@ -102,9 +102,19 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
     headCommit?: unknown;
     schedulerState?: unknown;
     tasks?: Array<{ task_id?: unknown; state?: unknown }>;
-    attempts?: Array<{ state?: unknown }>;
+    attempts?: Array<{
+      attempt_id?: unknown;
+      task_id?: unknown;
+      state?: unknown;
+      execution?: {
+        baseCommit?: unknown;
+        worldHead?: unknown;
+        uncommittedChanges?: unknown;
+        liveness?: unknown;
+      };
+    }>;
     evidence?: Array<{ status?: unknown }>;
-    promotions?: Array<{ state?: unknown }>;
+    promotions?: Array<{ promotion_id?: unknown; state?: unknown }>;
     promotionFence?: Array<{ state?: unknown }>;
     holds?: unknown[];
     nextAction?: {
@@ -113,10 +123,43 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
       action?: unknown;
       detail?: unknown;
       taskId?: unknown;
+      blockers?: unknown;
+      session?: {
+        mayEnd?: unknown;
+        action?: unknown;
+        detail?: unknown;
+      };
+    };
+    directOutcome?: {
+      repositoryHead?: unknown;
+      projectHead?: unknown;
+      relation?: unknown;
+      uncommittedPaths?: unknown;
     };
   };
   const tasks = (view.tasks ?? []).map((task) => ({ task_id: String(task.task_id), state: String(task.state) }));
-  const attemptStates = (view.attempts ?? []).map((attempt) => String(attempt.state));
+  const attempts = (view.attempts ?? []).map((attempt) => ({
+    attempt_id: String(attempt.attempt_id ?? ""),
+    task_id: typeof attempt.task_id === "string" ? attempt.task_id : null,
+    state: String(attempt.state),
+    ...(attempt.execution === undefined
+      ? {}
+      : {
+          execution: {
+            baseCommit: String(attempt.execution.baseCommit ?? ""),
+            worldHead: typeof attempt.execution.worldHead === "string" ? attempt.execution.worldHead : null,
+            uncommittedChanges: Array.isArray(attempt.execution.uncommittedChanges)
+              ? attempt.execution.uncommittedChanges.map((entry) => String(entry))
+              : [],
+            liveness: String(attempt.execution.liveness ?? "UNKNOWN"),
+          },
+        }),
+  }));
+  const attemptStates = attempts.map((attempt) => attempt.state);
+  const promotions = (view.promotions ?? []).map((promotion) => ({
+    promotion_id: String(promotion.promotion_id ?? ""),
+    state: String(promotion.state),
+  }));
   const evidence = view.evidence ?? [];
   const nextAction =
     view.nextAction === undefined
@@ -127,6 +170,19 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
           action: typeof view.nextAction.action === "string" ? view.nextAction.action : null,
           detail: String(view.nextAction.detail ?? ""),
           taskId: typeof view.nextAction.taskId === "string" ? view.nextAction.taskId : null,
+          blockers: Array.isArray(view.nextAction.blockers)
+            ? view.nextAction.blockers.map((entry) => String(entry))
+            : [],
+          ...(view.nextAction.session === undefined
+            ? {}
+            : {
+                session: {
+                  mayEnd: view.nextAction.session.mayEnd === true,
+                  action:
+                    typeof view.nextAction.session.action === "string" ? view.nextAction.session.action : null,
+                  detail: String(view.nextAction.session.detail ?? ""),
+                },
+              }),
         };
   const nextActions =
     nextAction === undefined
@@ -137,15 +193,35 @@ export function safeStatus(status: unknown, boundary?: ExecutionBoundary): Recor
         ]
       : nextAction.executable && nextAction.action !== null
         ? [nextAction.action]
-        : [`${nextAction.kind.startsWith("WAIT_OPERATOR") ? "operator" : "agent"}: ${nextAction.detail}`];
+        : [
+            `${nextAction.kind.startsWith("WAIT_OPERATOR") ? "operator" : "agent"}: ${nextAction.detail}`,
+            ...(nextAction.session?.mayEnd === true && nextAction.session.action !== null
+              ? [`session: ${nextAction.session.action}`]
+              : []),
+          ];
+  const directOutcome =
+    view.directOutcome === undefined
+      ? undefined
+      : {
+          repositoryHead:
+            typeof view.directOutcome.repositoryHead === "string" ? view.directOutcome.repositoryHead : null,
+          projectHead: String(view.directOutcome.projectHead ?? ""),
+          relation: String(view.directOutcome.relation ?? "UNOBSERVABLE"),
+          uncommittedPaths: Array.isArray(view.directOutcome.uncommittedPaths)
+            ? view.directOutcome.uncommittedPaths.map((entry) => String(entry))
+            : [],
+        };
   return {
     revision: view.revision,
     headCommit: view.headCommit,
+    ...(directOutcome === undefined ? {} : { directOutcome }),
     schedulerState: view.schedulerState,
     ...(boundary === undefined ? {} : { boundary }),
     holds: (view.holds ?? []).map((taskId) => String(taskId)),
     nextAction,
     tasks,
+    attempts,
+    promotions,
     summary: {
       tasksTotal: tasks.length,
       tasksSatisfied: tasks.filter((task) => task.state === "SATISFIED").length,

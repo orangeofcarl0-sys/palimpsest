@@ -141,12 +141,34 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
         headCommit: { type: "string" },
       },
       required: ["projectId", "goal", "tasks"],
-      execute: (args) => {
+      execute: async (args) => {
+        const headCommit = optionalString(args, "headCommit");
+        /**
+         * PNWF-B: the project's declared basis must be the repository's ACTUAL head at creation.
+         * A model-supplied commit is not a fact; accepting an arbitrary value would let a direct
+         * outcome be attributed to a history the repository never had. Callers that omit the value
+         * keep the historical default; callers that name one are checked.
+         */
+        if (headCommit !== undefined) {
+          let observed: string;
+          try {
+            observed = await controller.effects.git.head();
+          } catch (error) {
+            throw new Error(
+              `HEAD_UNOBSERVABLE: the repository head could not be read, so the declared basis ${headCommit.slice(0, 12)} cannot be verified (${error instanceof Error ? error.message : String(error)})`,
+            );
+          }
+          if (headCommit !== observed) {
+            throw new Error(
+              `HEAD_CONFLICT: the declared basis ${headCommit.slice(0, 12)} is not the repository head ${observed.slice(0, 12)}; a project starts at the commit the repository actually holds`,
+            );
+          }
+        }
         const event = controller.start({
           projectId: stringField(args, "projectId"),
           goal: stringField(args, "goal"),
           tasks: parseTaskSpecs(args),
-          headCommit: optionalString(args, "headCommit"),
+          ...(headCommit === undefined ? {} : { headCommit }),
         });
         const ir = event.payload.project_ir as { revision: number; digest: string };
         return { projectId: event.project_id, revision: ir.revision, digest: ir.digest };

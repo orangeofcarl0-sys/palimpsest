@@ -201,6 +201,24 @@ function makeArtifactObserver(input: {
     commit: null,
     detail,
   });
+  /**
+   * PNWF-B: a committed worktree artifact HAS a Git identity. Recording `commit: null` made a direct
+   * commit look like an anonymous worktree file to the next session. The read is memoized: one
+   * `rev-parse` per observation, never a mutation.
+   */
+  let headRead = false;
+  let observedHead: string | null = null;
+  const headCommit = (): string | null => {
+    if (headRead) return observedHead;
+    headRead = true;
+    if (input.repository === undefined) return (observedHead = null);
+    try {
+      observedHead = execFileSync("git", ["-C", input.repository, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+    } catch {
+      observedHead = null;
+    }
+    return observedHead;
+  };
   return (path: string): EpisodeArtifactState => {
     if (input.repository === undefined) return absent(path, "repository not observable");
     const repository = input.repository;
@@ -253,7 +271,7 @@ function makeArtifactObserver(input: {
         committed,
         digest: blobDigest ?? digestOf(readFileSync(absolute)),
         source: "WORKTREE" as const,
-        commit: null,
+        commit: committed ? headCommit() : null,
         detail: !tracked
           ? "not tracked by Git"
           : !inHead

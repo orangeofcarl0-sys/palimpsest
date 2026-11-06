@@ -701,4 +701,3 @@ export * from "./execution_relay.js";
 
 /** ODPE-A: the project-input observer, re-exported so the host façade keeps one edge to this owner. */
 export { assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput, unseenInputs } from "./unseen_inputs.js";
-export type { ProjectInput, ProjectInputBody, ProjectInputObservation, ProjectInputIdentity } from "./unseen_inputs.js";
