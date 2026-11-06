@@ -3,7 +3,7 @@
  */
 import { generateKeyPairSync } from "node:crypto";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   makeSignedOperatorAuthority,
@@ -31,6 +31,14 @@ function claims(overrides: Partial<{ operatorId: string; purpose: string; issued
 }
 
 describe("PC1-V1 operator identity", () => {
+  it("does not keep authorizing a credential after it expires in this process", () => {
+    const value = claims();
+    const authority = makeSignedOperatorAuthority({ claims: value, actor: "operator:alice" });
+    expect(authority.authorize("operator:alice").authorized).toBe(true);
+    const clock = vi.spyOn(Date, "now").mockReturnValue(Date.parse(value.expiresAt) + 1);
+    try { expect(authority.authorize("operator:alice")).toMatchObject({ authorized: false, role: "unknown" }); }
+    finally { clock.mockRestore(); }
+  });
   it("accepts only a correctly signed, current credential for the exact subject and purpose", () => {
     const keys = keyPair();
     const token = signOperatorToken({ claims: claims(), privateKeyPem: keys.privateKeyPem });

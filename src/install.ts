@@ -54,6 +54,7 @@ export function installPalimpsest(
   // §12: the core substrate is composed by an explicit typed function; the rest of this
   // file only decides which capabilities to compose and how to assemble the result.
   const core = composeCore({
+    operatorAuthority: options.operatorAuthority,
     projectId: options.projectId,
     repository: options.repository,
     git: options.git,

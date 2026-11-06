@@ -1,0 +1,90 @@
+{
+  "schema": "pnwf-cq-r1-verification/v1",
+  "recordedAt": "2026-11-06T22:47:32.065165+00:00",
+  "baseline": "6b021dda77ee8c3f8010db5071b0896aee7ab232",
+  "paidModelCalls": 0,
+  "budgetTests": {
+    "passed": 20,
+    "failed": 0,
+    "evidence": "budget-tests.log"
+  },
+  "containerScenarios": {
+    "passed": 6,
+    "failed": 0,
+    "qualifiedContainers": 6,
+    "checksPerQualifiedContainer": 16,
+    "evidence": "container-final/summary.json",
+    "currentAdapterHashesMatch": true
+  },
+  "productTests": {
+    "initial": {
+      "passed": 97,
+      "failed": 1,
+      "files": 11
+    },
+    "affectedFollowup": {
+      "passed": 20,
+      "failed": 0,
+      "files": 2
+    },
+    "latestUniqueCoverage": {
+      "passed": 98,
+      "failed": 0,
+      "files": 11
+    },
+    "note": "Coverage combines the two named batches; not a single 98/98 run."
+  },
+  "vertical": {
+    "passed": true,
+    "evidence": "basis-vertical-final.json",
+    "worker": "deterministic real Node child"
+  },
+  "engineering": {
+    "build": "PASS",
+    "architecture": "PASS",
+    "publicApi": "PASS",
+    "evidence": "engineering-checks.log"
+  },
+  "remoteCI": "NOT_RUN; branch not pushed",
+  "sourceSha256": {
+    ".github/workflows/ci.yml": "c7442bd058f3ac93f8a69fb2b11e8b50182ca37d4ea562eb1aa37c8a9a3f0081",
+    "scripts/lhape/provider_proxy_tcp.mjs": "8536aa5127e8f6f15756e0ca6cb3dc1299ef4b2466e4ba5ee3a289528ee45e9d",
+    "scripts/pnwf/bounded_provider.mjs": "ad3cf73b623e42908ad92a807d17d871d47ac1fa10b6fcbd56338908acf1b3d8",
+    "scripts/pnwf/container_adapter.mjs": "594b80cae1b20929df81684ac679afed6f8a386db32112bcc624cd551fa57dd8",
+    "scripts/pnwf/container_bridge.mjs": "7167a8a9894e1130145c456918cfa82d99a10f583be2b5a5943aa4c822b299a8",
+    "scripts/pnwf/container_runtime.mjs": "6c7fef968c302b6bd1fe2299e145a1b8732b48a762a20a077e5ac7c72d310029",
+    "scripts/pnwf/execution_budget.mjs": "5db427bd80cc3041a9fabf32c02958bb4edf48a967862434f1060acc3147051d",
+    "scripts/pnwf/mock_provider.mjs": "f4a14328932628d01daf80896d0111aa4f2fc7b5400741140de41cd680144464",
+    "scripts/pnwf/prepare_continuation.mjs": "8e89103f73fd317c357eef7f270790c7c098f35bebdaf099c250933e3bf6b128",
+    "scripts/pnwf/qualification.test.mjs": "6415e58f11f5869721ab7e03b846351d4176dc29dcb52518586ec9f27716ce4c",
+    "scripts/pnwf/qualify_execution.mjs": "689104b8661a5ab6d66de6b72e5b8689f1804d0fca3e6623e4f43411c56c1c33",
+    "scripts/pnwf/run_pnwf_live.mjs": "d6d17f61737dbdde9bd172ef3ac625a6d3388f70a037f07966cdd343896f3ccc",
+    "scripts/pnwf/run_pnwf_live.sh": "96ec6abb280dd916e2c65bc0f29a1095a59d55c7917682073491c061902e2d35",
+    "scripts/pnwf/world_preflight.mjs": "55bf6a8781a0b4ae4fc4d7ce6b950fcaeecff751c2383fe6fc8343c6b32c82d7",
+    "src/composition/core.ts": "1c69a3f27695b52495a6cfbdb9d8c0d603a2f08c320a768be28706d19f7526e9",
+    "src/composition/install_contract.ts": "af7e8273158e9fd38aa890061504803326bcdc1abae44fb5dafb256af573cd4f",
+    "src/domain/operator_authority.ts": "b272718502d3e17a0a203ea7447823465f1cb095a61c9aa826f02b596eb51421",
+    "src/domain/work_state.ts": "3bfb652f8acd63a00dd32c423d1c9a4dab95dccc658da09258a24e0b960dbe85",
+    "src/install.ts": "f94cc13a2c735fe2eb09b6d66ebccbba5234fc73c7eacccc016208c0c3609a7d",
+    "src/product.ts": "71db4ca677ef0e15165545fbb24b55b961f6cbe25e865b13bf9257f192c02d80",
+    "src/project_review/operator_identity.ts": "684e523984ba5ebb60785a89b4b210b16443bdfb511a8df91e5fc46f46995a98",
+    "src/project_review/types.ts": "1363daed672151dab55354b44123c4476e7d15ad289739d8e742dda1c5e2dc27",
+    "src/state/event_store.ts": "a6b8ca2cad0e7d38623b44748726ebcccc0e2efeb4a2e5e729f209cd8acb44c1",
+    "src/tools/controller.ts": "9f561c6088459d1bce37c9113ebb20dc44bc8d8ba11181912b5224e856dae49a",
+    "src/work/attempt_execution.ts": "6a15d664344e981f3887ba99df3957f65401e36248f63f3019b8b60ac6738a96",
+    "src/work/head.ts": "217c826b089a73eb9a954be3a822ad093d1f800a4d15f5119efbb76f34209be9",
+    "src/work/plan_revision.ts": "d8e8c0cb54bae005a0b17ac850297626a4a3740aeab82cae885f2ac324e1360b",
+    "src/work/read_model.ts": "7d88e6a8961b0558233dd8f84a77838bf0c5f0fae1590c1c1f4a792ad945fd17",
+    "src/work/unseen_inputs.ts": "61f42ade8c1c18d303692e8a725a5ac2a607dcc297e1a5610de444f564ece712",
+    "test/pc1v1_operator_identity.test.ts": "c15e5a67d8b7d73ab1114f12c042f0de8a833e2277aa60971e4e7222ca9244ca",
+    "test/pnwf_cq_action_coherence.test.ts": "f70ea68d2a7fedb6f1c68a7d21b87dbaf6c26aa98f6a87188b6405dac5f94544",
+    "test/pnwf_cq_basis_admission.test.ts": "d4d03f9a4a321de49f0cd9d1307fa9327d37c0998235f6ff221f8158f2424d9a"
+  },
+  "limits": [
+    "paid provider bound unqualified",
+    "historical paid cohort remains INVALID / OVER BUDGET",
+    "no autonomous model benefit claim",
+    "cross-host writer quiescence unresolved",
+    "Git/SQLite not cross-system atomic"
+  ]
+}

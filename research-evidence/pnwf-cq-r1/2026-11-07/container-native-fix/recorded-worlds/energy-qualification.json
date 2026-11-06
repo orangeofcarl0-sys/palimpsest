@@ -1,0 +1,242 @@
+{
+  "schema": "pnwf-actual-isolation/v2",
+  "status": "EVALUATION_ISOLATION_QUALIFIED",
+  "containerId": "f9fc1d5314ebaddec070d7ced62e3816cdc6cc3579c66c0c16c24be63cbea919",
+  "descriptor": {
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "readonlyRootfs": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "mounts": [
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\pnwf\\world_preflight.mjs",
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\node_modules",
+        "destination": "/mnt/host/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+        "writable": false
+      },
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-qualified-95d25694-9117-480a-af1f-527ec2c39447-harness/_data",
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/dist",
+        "destination": "/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/dist",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/host",
+        "destination": "/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/host",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+        "destination": "/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/node_modules",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/pnwf-r1-recorded-worlds-ehlpNZ/stages/energy",
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/pnwf-r1-recorded-worlds-ehlpNZ/runtime-energy",
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      }
+    ]
+  },
+  "descriptorDigest": "a405aaa79a51af5174a2a4ca8fe4ad219d12ed02238a317f75474408aca66fb7",
+  "harnessPresent": true,
+  "externalScorerRead": true,
+  "checks": [
+    {
+      "name": "principal_uid",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_shell_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "write_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "git_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "node_build",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_version",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_native_addon",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "native_shell_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_proc_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_parent_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "rootfs_readonly",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "no_owner_credential",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_routes",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    }
+  ],
+  "worlds": {
+    "schema": "pnwf-world-preflight/v1",
+    "status": "QUALIFIED",
+    "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+    "worlds": [
+      {
+        "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+        "basis": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+        "result": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+        "alternates": "../../../../../.git/objects",
+        "diff": "",
+        "status": "M .gitignore\n M README.md\n M TASK.md\n M check.mjs\n M deliverables/cost-model.json\n M deliverables/recommendation.md\n M deliverables/risk-review.md\n M deliverables/schedule.md\n M deliverables/technical-capacity.md\n M deliverables/vendor-compliance.md\n M package.json\n M sources/capacity.csv\n M sources/leads.csv\n M sources/quotes.csv\n M sources/sites.md\n M sources/vendors.md\n M updates/2026-11-04/corridor-survey.md",
+        "observation": {
+          "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+          "placement": "worktree",
+          "workDir": "/run/stage/world/.palimpsest/worlds/attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+          "baseCommit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "observedHead": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "committedChanges": [],
+          "uncommittedChanges": [
+            ".gitignore",
+            "README.md",
+            "TASK.md",
+            "check.mjs",
+            "deliverables/cost-model.json",
+            "deliverables/recommendation.md",
+            "deliverables/risk-review.md",
+            "deliverables/schedule.md",
+            "deliverables/technical-capacity.md",
+            "deliverables/vendor-compliance.md",
+            "package.json",
+            "sources/capacity.csv",
+            "sources/leads.csv",
+            "sources/quotes.csv",
+            "sources/sites.md",
+            "sources/vendors.md",
+            "updates/2026-11-04/corridor-survey.md"
+          ],
+          "changedFiles": [
+            ".gitignore",
+            "README.md",
+            "TASK.md",
+            "check.mjs",
+            "deliverables/cost-model.json",
+            "deliverables/recommendation.md",
+            "deliverables/risk-review.md",
+            "deliverables/schedule.md",
+            "deliverables/technical-capacity.md",
+            "deliverables/vendor-compliance.md",
+            "package.json",
+            "sources/capacity.csv",
+            "sources/leads.csv",
+            "sources/quotes.csv",
+            "sources/sites.md",
+            "sources/vendors.md",
+            "updates/2026-11-04/corridor-survey.md"
+          ],
+          "requiredArtifacts": [
+            {
+              "path": "deliverables/technical-capacity.md",
+              "present": true
+            },
+            {
+              "path": "deliverables/vendor-compliance.md",
+              "present": true
+            },
+            {
+              "path": "deliverables/cost-model.json",
+              "present": true
+            },
+            {
+              "path": "deliverables/schedule.md",
+              "present": true
+            },
+            {
+              "path": "deliverables/risk-review.md",
+              "present": true
+            },
+            {
+              "path": "deliverables/recommendation.md",
+              "present": true
+            }
+          ]
+        }
+      }
+    ],
+    "product": {
+      "repositoryHead": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+      "projectHead": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+      "relation": "IN_SYNC",
+      "uncommittedPaths": [],
+      "admittedDirectCommit": null
+    }
+  },
+  "checkedAt": "2026-11-06T22:20:32.359Z"
+}
