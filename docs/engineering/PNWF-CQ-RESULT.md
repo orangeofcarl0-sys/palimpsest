@@ -1,6 +1,9 @@
 # PNWF-CQ — Action Coherence & Evaluation Qualification
 
-**Status:** implementation complete; no paid model session was started.
+**Status:** product implementation and deterministic qualification complete. A later owner-authorized
+container cohort was executed on 2026-11-07; it is **INVALID and OVER BUDGET** (5,190,778 actual
+tokens vs 5,000,000 authorized, +190,778). It is reported in §4.3 and must not be read as a clean CQ
+effect. No further paid session was started.
 **Baseline:** `464ae5fc086af5e372295d047c98144dc22a5c77` (PR #226 merge, `origin/main`).
 **Branch:** `palimpsest-pnwf-action-coherence`.
 **Scope:** bounded product integration, execution-boundary qualification and experiment-infrastructure repair.
@@ -17,7 +20,7 @@ No new runtime, second head owner, promotion ledger, scheduler, planner or liven
 | CQ-E Journal projection | An unresolved `REFERENCE_NOTE` with a structured commit ref, or a product record provenance (`episode:`, `relay:`), is a recorded observation, not an open question. A note with no such identity stays conservative. | `src/project_continuity/service.ts`; CQ-E test |
 | CQ-F Evaluation isolation | A Docker boundary runs the principal as uid 1001 in its own mount namespace; `/workspace` is writable and `/harness` is a root-owned 0700 read-only volume. The external scorer reads the harness as root outside that namespace. The paid gate rejects a run without a `container` isolation record. | `scripts/pnwf/isolation_gate.mjs`, `isolation-gate.json` |
 | CQ-G Scoring/accounting | Natural exit, episode conclusion, task retirement and budget stop are separate facts. Token accounting reports stream total, ledger snapshot, delta, cache read, fresh input and output; an unreadable stream is not a trustworthy zero. Domain refusals are counted separately from protocol errors. | `score_continuation.mjs`, `session_attribution.mjs`; `live/rescore.json` |
-| CQ-H Direct→Governed | The boundary is proved, not papered over: a direct commit C is shown as `DIRECT_HEAD_AHEAD`; a worker is refused with `HEAD_BASIS_MISMATCH`; the head owner will not advance to an unproven commit; no promotion is fabricated. | deterministic test + real DSH host `direct-governed/` |
+| CQ-H Direct→Governed | The boundary is proved first (a direct commit C is `DIRECT_HEAD_AHEAD`; a worker is refused `HEAD_BASIS_MISMATCH`; no promotion is fabricated). Then a signed-operator CLI action admits the checked-out commit as the canonical basis through the SAME `planReconciled` batch: clean tree, descendant commit, no promotion effect ahead, an audit `MANUAL_APPROVAL_RECORDED`, retained tasks reauthorized at C. The task becomes READY and the Scheduler can start it; no `ATTEMPT_COMPLETED`/`PROMOTION_COMMITTED` is written. | deterministic test + real DSH host `direct-governed/` |
 | Execution-world export | A caller-supplied Git port’s own world path now wins over the deployment’s default `worldsRoot`, so a world created under `.palimpsest/worktrees/<id>` can be exported instead of returning `WORLD_MISSING`. | `src/deployment/execution_world.ts`, `src/composition/core.ts`; `lean_work_execution_world.test.ts` 7/7 |
 
 ## 2. Causal chains
@@ -143,14 +146,28 @@ Direct commit C exists in Git; canonical ProjectIR head remains B.
   ↓
 status: DIRECT_HEAD_AHEAD (not a governed result)
 prepareMutatingWork: HEAD_BASIS_MISMATCH
-reconcileProjectHead: does not advance (no proven promotion effect)
   ↓
-no ATTEMPT_STARTED, ATTEMPT_COMPLETED or PROMOTION_COMMITTED is written.
-The only current honest conclusion is CHECKPOINT with the basis question open.
+the principal records CHECKPOINT; no ATTEMPT_STARTED, ATTEMPT_COMPLETED or PROMOTION_COMMITTED
+  ↓
+an independent operator verifies a signed Ed25519 credential and runs `palimpsest basis admit`
+  ↓
+the SAME planReconciled batch validates:
+  · C is the checked-out HEAD
+  · the worktree is clean
+  · B is an ancestor of C
+  · no promotion effect is awaiting reconciliation
+  · the task graph is unchanged (head-only admission)
+  ↓
+events: MANUAL_APPROVAL_RECORDED + PROJECT_REVISED (head C)
+task: READY, reauthorized at C
+status: IN_SYNC, Scheduler decision TASK_STARTED
+no promotion, no worker result, no accepted asset
 ```
 
-This is a **capability gap**, not a successful transition. The current product has no
-operator-mediated way to admit C as a new governed basis without inventing a promotion.
+This is the **operator-mediated basis admission** the previous boundary report named as the missing
+capability. It is not an automatic promotion: the model cannot call it, and the operator credential is
+verified before the controller is invoked. The original direct provenance remains in Git and in the
+manual-approval record.
 
 ## 3. Test results
 
@@ -163,13 +180,14 @@ All commands were run on the PNWF-CQ working tree.
 | `pnpm architecture:check-public-api` | PASS, 0 missing, 0 changed kind, 0 added |
 | `npx vitest run test/pnwf_cq_action_coherence.test.ts` | 9/9 PASS |
 | `npx vitest run test/pnwf_cq_direct_governed.test.ts` | 1/1 PASS |
+| `npx vitest run test/pnwf_cq_basis_admission.test.ts` | 3/3 PASS (success, dirty/non-ancestor/graph-change negatives, signed-operator CLI) |
 | `npx vitest run` (20 related files: PNWF, PSVR, ODPE, PWRS, ALHS, ProjectPulse/Continuity, PC1, promotion/head) | 133/133 PASS |
 | second related batch (15 files: PC1-V1, lean, workspace, continuity, result integrity) | 115/116; the one failure was the custom-Git-port world root, fixed in `execution_world.ts`; `lean_work_execution_world.test.ts` then 7/7 PASS |
 | `bash scripts/pnwf/run_direct_governed_host.sh` | PASS (P0/P1/P2 exit 0) |
 | `node scripts/pnwf/isolation_gate.mjs` | `EVALUATION_ISOLATION_QUALIFIED` (16/16) |
 | `node scripts/pnwf/score_continuation.mjs --run=<live run>` | 2/2 primary; stream totals 1,579,080 / 1,076,629 |
 | full `npx vitest run` (started before the final TOCTOU build) | 46 files failed / 412 passed; 109 tests failed / 5,625 passed (5,734) — timeouts under parallel load, dirty-tree historical guards, missing `python`, DSH drift, and the one CQ TOCTOU test that loaded the pre-build dist. Sequential acceptance re-run after the final build: 47/47 PASS. |
-| final sequential acceptance (`--fileParallelism=false`) | 6 files / 47 tests PASS (CQ action coherence 9, CQ direct-governed 1, PNWF product 11, PC1 next-action 6, PWRS relay 14, lean execution world 7) |
+| final sequential acceptance (`--fileParallelism=false`) | 7 files / 50 tests PASS (CQ action coherence 9, CQ direct-governed 1, CQ basis admission 3, PNWF product 11, PC1 next-action 6, PWRS relay 14, lean execution world 6) |
 
 The existing PNWF product suite was updated in one place: the zero-delta status now reports
 `UNOBSERVED` instead of `NEVER_STARTED`. No assertion was weakened.
@@ -189,18 +207,21 @@ Facts (`direct-governed/result.json`):
 
 | fact | value |
 |---|---|
-| base head | `4c4bb2c74e54b6353ff5140119d8fe9816d08ea4` |
-| world head (direct C) | `333b3e487dec4485dc2f96858d08b6a2ac412506` |
-| final task | `governed-next: READY` (not staled, not satisfied) |
+| base head | `f7de6c52152caaf9c0a17d0262f814aa01d9752f` |
+| direct/admitted head | `489472b8a00333bbca136794ff60bcaa7973cff5` |
+| final task | `governed-next: READY` on the admitted basis |
 | attempts | 0 |
 | promotions | 0 |
 | `ATTEMPT_STARTED` / `PROMOTION_COMMITTED` | false / false |
-| refusal observed | `HEAD_BASIS_MISMATCH` (repository C, project head B, proven effect head B, task base B) |
-| conclusion | `CHECKPOINT` recorded |
+| pre-admission refusal | `HEAD_BASIS_MISMATCH` (repository C, project head B, proven effect head B, task base B) |
+| conclusion before the operator decision | `CHECKPOINT` recorded |
+| operator admission | `ADMITTED`, operator `operator:alice`, revision 1, basis id `basis-d14f3b06…` |
+| final status | `headCommit=C`, `directOutcome IN_SYNC`, `nextAction EXECUTE_SCHEDULER_STEP` (`TASK_STARTED`) |
 | session exits | P0/P1/P2 = 0 |
 
-This is the **fail-closed** result the current authority model requires. It is not a Direct→Governed
-success; see §7 for the design options.
+The P2 status is the post-admission view: `IN_SYNC`, task READY, scheduler decision `TASK_STARTED`,
+and the semantic decision attached (does the task still have an independent objective now that the
+direct outcome exists). No worker result or promotion was fabricated.
 
 ### 4.2 Isolation canary
 
@@ -235,6 +256,54 @@ use. The scorer reads the harness as root outside that namespace.
 this container. `run_pnwf_live.mjs` now refuses an execute run without a `container` isolation
 record, but the record is not yet bound to a containerized adapter. The isolation infrastructure is
 qualified; the live adapter integration is **NOT_EXERCISED**. No paid cohort was run.
+
+## 4.3 Container cohort (2026-11-07) — INVALID / OVER BUDGET
+
+After the owner authorized the three follow-ups, the container adapter ran two real
+`deepseek-flash` sessions on fresh copies of the recorded states. The result is **not valid**:
+
+| | software | energy |
+|---|---:|---:|
+| stream total | 1,720,995 | 1,973,976 |
+| ceiling / soft ceiling | 1,750,000 / 1,662,500 | 1,750,000 / 1,662,500 |
+| exit | budget killed (137) | budget killed (137) |
+| conclusion | none | none |
+| `complete` | 0 | 0 |
+| typed plan | 0 | 0 |
+| relay | 5 | 2 |
+| final task / attempt | ACTIVE / RUNNING | ACTIVE / RUNNING |
+| promotions / head | 0 / unchanged | 0 / unchanged |
+
+Primary endpoint: **0/2**. H1 is only directionally supported (no `complete`); H3 is not supported
+(no legal conclusion); H5 is negative (software +29.2%, energy +3.8%, cohort +14.3% vs the historical
+closures).
+
+Spend:
+
+| item | tokens |
+|---|---:|
+| non-cohort adapter smoke (`CONTAINER_SMOKE`) | 1,495,807 |
+| software | 1,720,995 |
+| energy | 1,973,976 |
+| **actual total** | **5,190,778** |
+| authorized | 5,000,000 |
+| **overrun** | **+190,778** |
+
+Causes and required fixes:
+
+- The copied attempt world's Git **alternates** pointed at an absolute host path
+  (`C:/.../worlds/A/.git/objects`), which does not exist in the container. Both models spent calls
+  discovering and repairing it. `prepare_continuation.mjs` now rewrites every attempt world's
+  alternates to the copied canonical objects.
+- The adapter's budget watchdog polled the zstd stream, but in-flight usage was not visible until the
+  stream flushed/exited. The container overshot its ceiling by 58,495 (software) and 223,976 (energy).
+  The provider proxy has no pre-call token cap. Before any future paid run, the proxy must enforce a
+  provider-side per-session cap (parse `message_delta.usage`, refuse/429 at the soft ceiling), and
+  the session must not be started without it.
+- The smoke reached the live proxy because the mock server's port was already occupied. It is
+  preserved and counted; it is not a cohort session.
+
+Evidence: [`research-evidence/pnwf-cq/live/2026-11-07/`](../../research-evidence/pnwf-cq/live/2026-11-07/README.md).
 
 ## 5. Scoring and cost accounting
 
@@ -280,36 +349,50 @@ this is descriptive, not a universal cost claim.
 | Scoring | **qualified for mechanical facts/accounting**; a new cohort has not been scored |
 | Paid Cohort | **NOT_EXECUTED** |
 
-## 7. Direct→Governed capability gap and options
+## 7. Direct→Governed: implemented operator admission
 
-Current facts:
+The previous boundary report named an operator-mediated basis admission as the missing capability.
+It is implemented now, with these invariants:
 
-- `ProjectHead` advances only to the **canonical proven promotion effect head**; it refuses an
-  unproven advance (`the head drift has no backing promotion fact`).
-- A direct commit has no `ATTEMPT_COMPLETED` or `PROMOTION_COMMITTED`; the product cannot invent one.
-- A worker must start at the canonical head; `prepareMutatingWork` refuses `HEAD_BASIS_MISMATCH`.
-- The only current legal outcome is CHECKPOINT with the basis question open.
+- **One head owner.** The admission still commits through `ProjectController.planReconciled`; there is
+  no second head writer and no second promotion ledger.
+- **One operator surface.** `palimpsest basis admit` verifies a signed Ed25519 operator credential
+  (existing `OperatorAuthorityPort`) before it calls the controller. The model-facing work tool cannot
+  name a head or invoke this action.
+- **The commit is checked out.** The target must be the repository HEAD; the canonical worktree must be
+  clean; the current ProjectIR head must be an ancestor; the target must add history.
+- **No promotion effect may be ahead.** `SYNC_REQUIRED` refuses the admission; the existing
+  promotion reconciliation must happen first.
+- **Head-only.** The task graph must be unchanged. A task-graph change is a separate revision.
+- **Audited, not relabelled.** The batch writes `MANUAL_APPROVAL_RECORDED` (approver, commit,
+  SHA-256 subject digest, reason) and `PROJECT_REVISED`. It does **not** write
+  `ATTEMPT_COMPLETED` or `PROMOTION_COMMITTED`; the direct commit is a basis, not a worker result.
+- **Retained tasks are reauthorized** at the admitted commit by the existing revision path, so the
+  Scheduler can start them at C.
 
-This is a real product gap for long-lived projects that begin with direct work and later need a
-governed worker. The boundary is fail-closed, so no false provenance is produced.
+Negative controls in `test/pnwf_cq_basis_admission.test.ts`:
 
-Options for the next stage:
+| case | result |
+|---|---|
+| dirty canonical worktree | `DIRECT_BASIS_WORKTREE_DIRTY`; zero writes |
+| target is an orphan/non-descendant commit | `DIRECT_BASIS_NOT_DESCENDANT`; zero writes |
+| task graph changed in the same admission | `DIRECT_BASIS_GRAPH_CHANGED`; zero writes |
+| no signed operator credential | CLI refuses before the controller |
+| valid admission | `ADMITTED`, revision 1, task READY at C, no promotion |
 
-1. **Operator-mediated basis admission (recommended).**
-   Keep `ProjectHead` as the sole owner. Add a narrow operator-only action that admits a named Git
-   commit as the new canonical basis, records `source=DIRECT` and the operator identity/reason, and
-   does **not** emit `ATTEMPT_COMPLETED` or `PROMOTION_COMMITTED`. The next governed worker starts
-   at that admitted basis; the original direct provenance stays visible and the result is not
-   labelled as a worker result. Requirements: one owner, signed/audited decision, no automatic
-   acceptance, fail-closed on an unobserved or non-ancestor commit.
-2. **New project at the direct head.**
-   Honest but loses the ProjectIR/task/journal history. It is a migration, not a basis transition.
-3. **Worker merges the direct commit.**
-   The worker starts at B, merges C, and produces a new result. This changes C's provenance and
-   still requires a worker; it does not make C a governed basis. Not recommended.
+The real host scenario in `direct-governed/` runs the same path: P1 sees the boundary and records
+CHECKPOINT; the operator CLI admits C; P2 sees `IN_SYNC` and `TASK_STARTED`.
 
-No option was implemented in this stage because the operator authority model for a basis admission
-is not yet defined; implementing one silently would be a second head owner.
+Remaining boundaries:
+
+- The operator credential is a **local signed bearer credential**, not an IdP/SSO integration. A
+  deployment that needs remote operator identity supplies its own `OperatorAuthorityPort`.
+- The admission is deliberately **not automatic**: an agent cannot turn a direct commit into a
+  governed basis. That remains an operator decision.
+- The admitted basis is a canonical **project** head, not an acceptance or promotion. No artifact is
+  accepted and no Worker Result is fabricated.
+- A future stage may add a richer provenance field (e.g. `source=DIRECT`) to the revision receipt;
+  today the `MANUAL_APPROVAL_RECORDED` subject `commit` + the Git history carry that provenance.
 
 ## 8. Architecture evaluation
 
@@ -340,35 +423,42 @@ used.
 advertised as the default path for a direct outcome.
 
 **Is Direct Outcome naturally continuable into governed work?**
-Not yet. The product can deliver a direct outcome and retire a redundant task, but it cannot admit
-the direct commit as a new basis. §7 names the minimal next step.
+Now yes, through one explicit operator decision. The product refuses to treat a direct commit as a
+governed basis by itself; the operator can admit the checked-out commit with a signed credential, and
+the existing revision path reauthorizes the task at that basis. The model cannot perform this, and no
+worker result or promotion is fabricated.
 
 **Does Project Head Authority have a real applicability gap?**
-Yes: it can only absorb proven promotion effects. A direct commit is a legitimate repository fact
-that the current authority model cannot promote without fabrication. The gap is fail-closed and
-now documented with a concrete option.
+It had one: it could only absorb proven promotion effects, so a direct commit could never become a
+governed basis. §7 closes that gap with a bounded operator-mediated admission that keeps the same
+head owner and the same revision batch. The remaining gap is identity federation (a local signed
+credential, not an IdP), not the basis transition itself.
 
 **Did this stage make Palimpsest easier to complete user tasks, or only easier to maintain its own
 state?**
 The CQ-A/B/E fixes remove misleading statements and false to-dos; CQ-C/D make the legal routes
-visible without forcing a failure. CQ-H shows the remaining place where the product still cannot
-continue a real user project without an operator decision. The stage improved both, but did not
-close the basis-admission gap.
+visible without forcing a failure; CQ-H lets a real direct outcome continue into governed work after
+one explicit operator decision. The stage improved the user-task path and kept the authority boundary
+explicit.
 
 ## 9. Limits and validity
 
-- No paid model session was started. The live trajectory evidence is the already-authorized PNWF
-  cohort; the rescore is mechanical.
+- The 2026-11-07 container cohort **was executed and is invalid** (0/2 primary, both budget-stopped,
+  5,190,778 actual tokens vs 5,000,000 authorized). It is not a clean causal proof and must not be
+  quoted as one.
+- The earlier PNWF live trajectory evidence remains the already-authorized cohort; its rescore is
+  mechanical.
 - The software live session is contaminated by reading the original harness. The energy session is
   the cleaner signal. This stage does not turn either into a clean causal proof.
 - n = 1 per stage; the historical A-2 sessions are a descriptive comparison, not a randomized
   control.
-- The isolation canary proves the container boundary, not the current Windows host live runner.
-  The live adapter must be containerized before a future paid cohort; the gate now fails closed.
+- The isolation canary qualified the container boundary. The 2026-11-07 adapter ran in that
+  container, but the copied attempt-world alternates and the missing provider-side token cap made the
+  cohort invalid. Both fixes are required before another paid run.
 - The cross-host settlement boundary is reproduced and honestly attributed, but not mechanically
-  refused. The residual risk is named in §2.2/§7.
-- The Direct→Governed gap is a capability boundary, not a regression; no head advance, promotion or
-  worker attribution was fabricated.
+  refused. The residual risk is named in §2.2.
+- The direct basis admission is operator-only and head-only. It is not an artifact acceptance, not a
+  promotion, and not automatic. The local signed credential is not an IdP/SSO integration.
 
 ## 10. Git and delivery
 
@@ -377,12 +467,13 @@ close the basis-admission gap.
 | Baseline commit | `464ae5fc086af5e372295d047c98144dc22a5c77` |
 | Branch | `palimpsest-pnwf-action-coherence` |
 | Implementation HEAD | `77ffa10726a305a2a568e3cd273c5e99557ccd20` |
-| Changed production files | `src/domain/work_state.ts`, `src/work/read_model.ts`, `src/application/work_outcome.ts`, `src/application/work_contract.ts`, `src/application/work_settlement.ts`, `src/adapters/dsh/common.ts`, `src/adapters/dsh/normal.ts`, `src/project_continuity/service.ts`, `src/deployment/execution_world.ts`, `src/composition/core.ts`, `src/tools/controller.ts` |
-| New tests | `test/pnwf_cq_action_coherence.test.ts`, `test/pnwf_cq_direct_governed.test.ts` |
+| Changed production files | `src/domain/work_state.ts`, `src/work/read_model.ts`, `src/application/work_outcome.ts`, `src/application/work_contract.ts`, `src/application/work_settlement.ts`, `src/adapters/dsh/common.ts`, `src/adapters/dsh/normal.ts`, `src/project_continuity/service.ts`, `src/deployment/execution_world.ts`, `src/composition/core.ts`, `src/tools/controller.ts`, `src/cli_product.ts`, `src/cli.ts` |
+| New tests | `test/pnwf_cq_action_coherence.test.ts`, `test/pnwf_cq_direct_governed.test.ts`, `test/pnwf_cq_basis_admission.test.ts` |
 | New scripts | `scripts/pnwf/isolation_gate.mjs`, `scripts/pnwf/prepare_direct_governed.mjs`, `scripts/pnwf/run_direct_governed_host.sh` |
 | Evidence | `research-evidence/pnwf-cq/2026-11-06/` |
-| Paid model calls | 0 |
-| Paid tokens | 0 |
+| Paid model calls | 2 cohort sessions + 1 non-cohort adapter smoke; no further calls |
+| Paid tokens | 5,190,778 actual (1,495,807 smoke + 1,720,995 software + 1,973,976 energy) |
+| Budget | 5,000,000 authorized; **+190,778 over**; no further paid call |
 | Push / PR / merge | not performed by this stage |
 
 The PNWF live cohort (2,655,709 tokens) and the historical PSVR-C evidence are **not** new work of
