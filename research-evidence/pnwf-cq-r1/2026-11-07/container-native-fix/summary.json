@@ -1,0 +1,121 @@
+{
+  "schema": "pnwf-container-qualification-summary/v1",
+  "paidModelCalls": 0,
+  "results": [
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "recorded-worlds",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-recorded-worlds-ehlpNZ",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 0
+        },
+        {
+          "sessionId": "energy",
+          "exitCode": 0
+        }
+      ],
+      "mockRequests": 2,
+      "mockTokenTotal": 207743,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-recorded-worlds",
+        "configDigest": "2db7434a5f2d03df51196cacd5432355a56e9949efb241b573dce708b520a6d8",
+        "state": "OPEN",
+        "reason": null,
+        "confirmed": 207743,
+        "reserved": 0,
+        "aggregateCeiling": 2000000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "ENDED",
+            "ceiling": 1000000,
+            "softCeiling": 950000,
+            "confirmed": 103795,
+            "reserved": 0
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "ENDED",
+            "ceiling": 1000000,
+            "softCeiling": 950000,
+            "confirmed": 103948,
+            "reserved": 0
+          }
+        ],
+        "requests": [
+          {
+            "id": "25b91beb-d955-4b3e-b3d2-2208ab51054b",
+            "session": "software",
+            "digest": "b7c02f0b0a79ccd001b4d07132117844d6adc95141f277b157e83a534f68d9e8",
+            "reserved": 359731,
+            "actual": 103795,
+            "state": "SETTLED",
+            "reason": null
+          },
+          {
+            "id": "5254b4ed-d046-4eab-8721-dab88eae5c65",
+            "session": "energy",
+            "digest": "ead1fec32cfe4baeeaeca761123744c93b40b17ced199bcd71593d984822a06c",
+            "reserved": 359884,
+            "actual": 103948,
+            "state": "SETTLED",
+            "reason": null
+          }
+        ]
+      }
+    },
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "broken-alternates",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-broken-alternates-1aXqEL",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 5
+        }
+      ],
+      "mockRequests": 0,
+      "mockTokenTotal": 0,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-broken-alternates",
+        "configDigest": "6bd8bce1af4d38e8f005d01b225e4cb63fa8950a2b404203f0b65cd8ef0bfa2b",
+        "state": "STOPPED",
+        "reason": "Command failed: docker exec --user 1001:1001 -e PNWF_EXPECTED_HEAD=453aa7f005edb7612cf4edc1d8ec3b68efed5b4d 7418136e35b0439d7434b40e51e2a600ae15793009b3116beba6248cda2535cb node /qualification/world_preflight.mjs\nfile:///qualification/world_preflight.mjs:29\n    if (alternates !== null && resolve(dir, \".git/objects\", alternates) !== join(repository, \".git/objects\")) throw new Error(`ALTERNATES_NOT_PORTABLE: ${attemptId}`);\n                                                                                                                    ^\n\nError: ALTERNATES_NOT_PORTABLE: attempt-94bcc7ae85e75141e064397cfa1186e6\n    at file:///qualification/world_preflight.mjs:29:117\n    at Array.map (<anonymous>)\n    at file:///qualification/world_preflight.mjs:23:22\n\nNode.js v24.21.0\n",
+        "confirmed": 0,
+        "reserved": 0,
+        "aggregateCeiling": 2000000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "STOPPED",
+            "ceiling": 1000000,
+            "softCeiling": 950000,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "NOT_STARTED",
+            "ceiling": 1000000,
+            "softCeiling": 950000,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "requests": []
+      }
+    }
+  ]
+}

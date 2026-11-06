@@ -1,0 +1,32 @@
+{
+  "schema": "alhs-core-session-run/v1",
+  "cohortId": "pnwf-r1-late-usage-next-request",
+  "sessionId": "energy",
+  "condition": "PNWF_FULL",
+  "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-late-usage-next-request-u6eq6L\\stages\\energy\\world",
+  "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-late-usage-next-request-u6eq6L\\runtime-energy",
+  "principalRuntime": "container",
+  "containerId": "4b770e2922f37dd11d15478bb6ad2515e134e45c0649dcb4ef6ad31ad0be326d",
+  "qualification": "53d577505e4a8b809a9eb61626b26b53f5fbf28ff3bf0da53128b50fa158a5e6",
+  "startedAt": "2026-11-06T22:30:15.506Z",
+  "endedAt": "2026-11-06T22:30:55.571Z",
+  "exitCode": 0,
+  "error": null,
+  "killedBy": null,
+  "stopped": false,
+  "natural": true,
+  "usage": {
+    "schema": "aps-budget-ledger/v1",
+    "cohortId": "pnwf-r1-late-usage-next-request",
+    "sessionId": "energy",
+    "observedAt": "2026-11-06T22:30:55.571Z",
+    "maxTokens": 430000,
+    "softCeiling": 429000,
+    "totalTokens": 167855,
+    "confirmedTokens": 167855,
+    "reservedTokens": 0,
+    "source": "REQUEST_ADMISSION_LEDGER",
+    "state": "ENDED"
+  },
+  "paidModelCalls": 0
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "pnwf-r1-interrupted-stream",
+  "configDigest": "63a0e1693c8df4f89c1251e379296cc091ad094229b71a6a7cdd5a1a51cc06d8",
+  "state": "STOPPED",
+  "reason": "INTERRUPTED_RESPONSE",
+  "confirmed": 0,
+  "reserved": 359731,
+  "aggregateCeiling": 2000000,
+  "sessions": [
+    {
+      "id": "software",
+      "ordinal": 0,
+      "state": "STOPPED",
+      "ceiling": 1000000,
+      "softCeiling": 999000,
+      "confirmed": 0,
+      "reserved": 359731
+    },
+    {
+      "id": "energy",
+      "ordinal": 1,
+      "state": "NOT_STARTED",
+      "ceiling": 1000000,
+      "softCeiling": 999000,
+      "confirmed": 0,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "b34ff2bc-3c52-4bea-9fa0-99a0d7ea3b73",
+      "session": "software",
+      "digest": "a07d7ace633231119fd1e7345b10d01241f97d1d8a18791ee5f76ef79b884c61",
+      "reserved": 359731,
+      "actual": null,
+      "state": "UNKNOWN",
+      "reason": "INTERRUPTED_RESPONSE"
+    }
+  ],
+  "refusals": []
+}

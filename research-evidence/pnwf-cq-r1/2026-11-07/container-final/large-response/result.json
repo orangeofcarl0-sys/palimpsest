@@ -1,0 +1,68 @@
+{
+  "schema": "pnwf-container-qualification/v1",
+  "name": "large-response",
+  "passed": true,
+  "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-large-response-JRm69r",
+  "outcomes": [
+    {
+      "sessionId": "software",
+      "exitCode": 5
+    }
+  ],
+  "mockRequests": 0,
+  "attemptedRequests": [
+    {
+      "ordinal": 0,
+      "bound": 359731,
+      "output": 300027,
+      "accepted": false
+    }
+  ],
+  "calls": [],
+  "observedStatuses": 0,
+  "mockTokenTotal": 0,
+  "invariant": true,
+  "paidModelCalls": 0,
+  "accounting": {
+    "schema": "pnwf-spend-snapshot/v1",
+    "cohortId": "pnwf-r1-large-response",
+    "configDigest": "95412cf7ec6404614ec17e37393044e8d283b3a06550df5376262871af89d27c",
+    "state": "STOPPED",
+    "reason": "PROVIDER_ERROR",
+    "confirmed": 0,
+    "reserved": 359731,
+    "aggregateCeiling": 2000000,
+    "sessions": [
+      {
+        "id": "software",
+        "ordinal": 0,
+        "state": "STOPPED",
+        "ceiling": 1000000,
+        "softCeiling": 999000,
+        "confirmed": 0,
+        "reserved": 359731
+      },
+      {
+        "id": "energy",
+        "ordinal": 1,
+        "state": "NOT_STARTED",
+        "ceiling": 1000000,
+        "softCeiling": 999000,
+        "confirmed": 0,
+        "reserved": 0
+      }
+    ],
+    "requests": [
+      {
+        "id": "f9ff1498-af18-4dc2-a7f6-b5fc62ef9e57",
+        "session": "software",
+        "digest": "98e590d36abfae2070d2d80e35f7224ad7c17d4c2180a9d2facc211913545cc5",
+        "reserved": 359731,
+        "actual": null,
+        "state": "UNKNOWN",
+        "reason": "PROVIDER_ERROR"
+      }
+    ],
+    "refusals": []
+  }
+}

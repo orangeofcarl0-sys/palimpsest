@@ -128,10 +128,7 @@ export interface ProposalDraft {
   readonly payload: ProposalPayload;
 }
 
-export interface OperatorAuthorityPort {
-  readonly policyRef: { readonly policyId: string; readonly version: string };
-  authorize(actor: string): { readonly authorized: boolean; readonly role: "operator" | "agent" | "unknown"; readonly reason?: string | undefined };
-}
+export type { OperatorAuthorityPort } from "../domain/operator_authority.js";
 
 export interface ReviewPreview {
   readonly schema: "pc1-review-preview/v1";

@@ -26,7 +26,6 @@
  * Layer: L2 (`src/work/`). Consumed by the controller, the composition, and anything else that
  * needs a Work fact.
  */
-import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import type { DatabaseSync } from "node:sqlite";
 
@@ -34,9 +33,7 @@ import type { WorkAttemptExecution, WorkDirectOutcome } from "../domain/work_sta
 import { canonicalWorktreeChanges } from "./unseen_inputs.js";
 
 import { DomainValidationError } from "../domain/errors.js";
-import { actionKey, stableEntityId } from "../domain/idempotency.js";
-import { computeInvalidationSet, type ChangeClass, type DependencyEdge } from "../evidence/invalidation.js";
-import { parseNewEvent, parseProjectIr, parseTaskEnvelope, type NewEvent, type ProjectIr, type TaskEnvelope } from "../schema/index.js";
+import { parseProjectIr, parseTaskEnvelope, type ProjectIr, type TaskEnvelope } from "../schema/index.js";
 import {
   authorizationEventsFrom,
   resolveAttemptAuthorization,
@@ -297,6 +294,8 @@ export function makeWorkReadModel(input: {
  * hotspot does not grow.
  */
 export interface StatusFactPort {
+  readonly store?: { readonly connection: DatabaseSync };
+  readonly projectId?: string;
   readonly attemptWorkRecord: (attemptId: string) => { readonly envelope?: { readonly base_commit?: string } | null } | null;
   readonly observeAttemptResult: (attemptId: string) => {
     readonly observedHead?: string | null;
@@ -397,8 +396,20 @@ export function observeStatusFacts<T extends { readonly attempt_id: string; read
       projectHead,
       relation,
       uncommittedPaths: Object.freeze(uncommittedPaths),
+      admittedDirectCommit: admittedDirectBasis(controller, projectHead),
     }),
   });
+}
+/** Read both canonical records, not a bare equality of heads or an unpaired approval note. */
+function admittedDirectBasis(controller: StatusFactPort, head: string): string | null {
+  if (!controller.store || !controller.projectId) return null;
+  const records = controller.store.connection.prepare(
+    "SELECT event_type, payload_json FROM events WHERE project_id=? AND correlation_id=? AND event_type IN ('PROJECT_REVISED','MANUAL_APPROVAL_RECORDED')",
+  ).all(controller.projectId, `basis:${head}`) as Array<{ event_type: string; payload_json: unknown }>;
+  const approved = records.some(r => r.event_type === "MANUAL_APPROVAL_RECORDED" && decodeJsonBlob(r.payload_json).subject_id === head);
+  const revised = records.some(r => r.event_type === "PROJECT_REVISED" &&
+    (decodeJsonBlob(r.payload_json).project_ir as { head_commit?: string } | undefined)?.head_commit === head);
+  return approved && revised ? head : null;
 }
 export type { ProjectInput, ProjectInputBody, ProjectInputObservation, ProjectInputIdentity } from "./unseen_inputs.js";
 
@@ -433,265 +444,4 @@ export function findOpenWorkerInvocations(input: {
     }
   }
   return Object.freeze(found);
-}
-
-/* ------------------------------------------------------------------ *
- * PNWF-CQ-H — operator-mediated direct basis admission
- *
- * A direct commit is real repository work, but it is not a governed result. This path admits the
- * CHECKED-OUT commit as the canonical basis through the controller's ONE revision batch. It records
- * a manual approval and never writes ATTEMPT_COMPLETED or PROMOTION_COMMITTED.
- * ------------------------------------------------------------------ */
-
-export interface DirectBasisAdmission {
-  readonly commit: string;
-  readonly operator: string;
-  readonly reason: string;
-}
-
-export function directBasisTarget(input: {
-  readonly repository: string | undefined;
-  readonly currentHead: string;
-  readonly commit: string;
-  readonly operator: string;
-  readonly reason: string;
-  readonly promotionState: string;
-}): string {
-  const fail = (code: string, detail: string): never => {
-    throw new DomainValidationError(`${code}: ${detail}`);
-  };
-  const repository = input.repository;
-  if (repository === undefined || repository === "") {
-    return fail("DIRECT_BASIS_NO_REPOSITORY", "this deployment has no canonical repository to admit a direct basis from");
-  }
-  if (input.operator.trim() === "") fail("DIRECT_BASIS_NO_OPERATOR", "a direct basis admission must name the verified operator");
-  if (input.reason.trim() === "") fail("DIRECT_BASIS_NO_REASON", "a direct basis admission must state why the commit is an admissible basis");
-  if (!/^[0-9a-f]{40}$/u.test(input.commit)) fail("DIRECT_BASIS_NOT_A_COMMIT", `"${input.commit}" is not a full 40-hex commit`);
-  if (input.currentHead === input.commit) fail("DIRECT_BASIS_ALREADY_CURRENT", "the canonical ProjectIR head is already at this commit");
-  const physicalHead = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repository, encoding: "utf8" }).trim();
-  if (physicalHead !== input.commit) {
-    fail(
-      "DIRECT_BASIS_NOT_CHECKED_OUT",
-      `the repository HEAD is ${physicalHead.slice(0, 12)}, not ${input.commit.slice(0, 12)}; a basis must be the commit the canonical tree actually holds`,
-    );
-  }
-  const dirtyPaths = canonicalWorktreeChanges(repository);
-  if (dirtyPaths === null) {
-    return fail("DIRECT_BASIS_WORKTREE_UNOBSERVABLE", "the canonical worktree could not be observed; an unobserved tree is not a clean one");
-  }
-  if (dirtyPaths.length > 0) {
-    fail(
-      "DIRECT_BASIS_WORKTREE_DIRTY",
-      `the canonical worktree still has uncommitted changes (${dirtyPaths.join(", ")}); admit a committed basis, not a working state`,
-    );
-  }
-  if (input.promotionState === "SYNC_REQUIRED") {
-    fail(
-      "DIRECT_BASIS_PROMOTION_HEAD_AHEAD",
-      "a proven promotion effect is ahead of the canonical ProjectIR head; reconcile that effect before admitting a direct basis",
-    );
-  }
-  try {
-    execFileSync("git", ["cat-file", "-e", `${input.commit}^{commit}`], { cwd: repository, stdio: "ignore" });
-    execFileSync("git", ["merge-base", "--is-ancestor", input.currentHead, input.commit], { cwd: repository, stdio: "ignore" });
-  } catch {
-    fail(
-      "DIRECT_BASIS_NOT_DESCENDANT",
-      `the canonical head ${input.currentHead.slice(0, 12)} is not an ancestor of ${input.commit.slice(0, 12)}, or the commit is unknown; a basis advance must not discard the project's history`,
-    );
-  }
-  const distance = Number(
-    execFileSync("git", ["rev-list", "--count", `${input.currentHead}..${input.commit}`], { cwd: repository, encoding: "utf8" }).trim(),
-  );
-  if (!Number.isSafeInteger(distance) || distance < 1) fail("DIRECT_BASIS_NOT_AHEAD", "the target commit adds no history beyond the canonical head");
-  return input.commit;
-}
-
-export function directBasisApprovalEvent(input: {
-  readonly projectId: string;
-  readonly expectedProjectRevision: number;
-  readonly revision: number;
-  readonly admission: DirectBasisAdmission;
-}): NewEvent {
-  return parseNewEvent({
-    schema_version: 1,
-    project_id: input.projectId,
-    event_type: "MANUAL_APPROVAL_RECORDED",
-    payload_version: 1,
-    entity_type: "project",
-    entity_id: input.projectId,
-    payload: {
-      approver: input.admission.operator,
-      subject_type: "commit",
-      subject_id: input.admission.commit,
-      subject_digest: createHash("sha256").update(input.admission.commit).digest("hex"),
-      risk_summary: input.admission.reason,
-    },
-    causation_id: null,
-    correlation_id: `basis:${input.admission.commit}`,
-    idempotency_key: actionKey("direct-basis-approval-v1", {
-      project_id: input.projectId,
-      revision: input.revision,
-      commit: input.admission.commit,
-      operator: input.admission.operator,
-    }),
-    expected_project_revision: input.expectedProjectRevision,
-  });
-}
-
-export function directBasisEntityId(input: {
-  readonly projectId: string;
-  readonly revision: number;
-  readonly commit: string;
-}): string {
-  return stableEntityId("basis", actionKey("direct-basis-admission-v1", input));
-}
-
-/**
- * PNWF-CQ-H — validate a trusted head advance. A promotion advance is delegated to the head owner;
- * a direct basis is validated against the checked-out commit, the clean tree, ancestry and the
- * promotion fence. The controller still commits the actual revision through ONE batch.
- */
-export function validatedHeadAdvance(input: {
-  readonly current: ProjectIr;
-  readonly advance:
-    | {
-        readonly source?: "PROMOTION" | "DIRECT_BASIS" | undefined;
-        readonly fromPromotionEventId?: string | undefined;
-        readonly toHead: string;
-        readonly operator?: string | undefined;
-        readonly reason?: string | undefined;
-      }
-    | undefined;
-  readonly repository: string | undefined;
-  readonly promotionState: string;
-  readonly validatePromotion: (input: {
-    readonly current: ProjectIr;
-    readonly toHead: string;
-    readonly fromPromotionEventId: string;
-  }) => string;
-}): string {
-  if (input.advance === undefined) return input.current.head_commit;
-  if (input.advance.source === "DIRECT_BASIS") {
-    return directBasisTarget({
-      repository: input.repository,
-      currentHead: input.current.head_commit,
-      commit: input.advance.toHead,
-      operator: input.advance.operator ?? "",
-      reason: input.advance.reason ?? "",
-      promotionState: input.promotionState,
-    });
-  }
-  if (input.advance.fromPromotionEventId === undefined) {
-    throw new DomainValidationError("HEAD_ADVANCE_UNPROVEN: a head advance must name either a promotion effect or a direct basis admission");
-  }
-  return input.validatePromotion({
-    current: input.current,
-    toHead: input.advance.toHead,
-    fromPromotionEventId: input.advance.fromPromotionEventId,
-  });
-}
-
-/**
- * PNWF-CQ-D — the invalidation set and the owner-local OPEN-invocation read, in one place.
- */
-export function invalidationAffectedForPlan(input: {
-  readonly project: ProjectIr;
-  readonly from: number;
-  readonly to: number;
-  readonly changeClass: ChangeClass;
-  readonly changedIds: readonly string[];
-  readonly projectId: string;
-  readonly connection: DatabaseSync;
-  readonly invocations: (attemptId: string) => readonly { readonly invocationId: string; readonly outcome: string }[];
-  readonly onOpenWorker: (open: OpenWorkerInvocation) => never;
-}): readonly string[] {
-  const edges: DependencyEdge[] = input.project.tasks.flatMap((task) =>
-    task.depends_on.map((dependency) => ({
-      from: dependency,
-      to: task.task_id,
-      sensitive_to: ["behavior_change", "contract_breaking"] as const,
-    })),
-  );
-  const affected = [
-    ...computeInvalidationSet(
-      { from: input.from, to: input.to, change_class: input.changeClass, changed_ids: input.changedIds },
-      edges,
-    ),
-  ].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
-  const openWorkerInvocations = findOpenWorkerInvocations({
-    connection: input.connection,
-    projectId: input.projectId,
-    taskIds: affected,
-    invocations: input.invocations,
-  });
-  if (openWorkerInvocations.length > 0) input.onOpenWorker(openWorkerInvocations[0]!);
-  return Object.freeze(affected);
-}
-
-/** The revision receipt identity: a promotion-backed plan or an operator-mediated direct basis. */
-export function directBasisReceipt(input: {
-  readonly projectId: string;
-  readonly revision: number;
-  readonly commit: string;
-  readonly operator: string;
-}): { readonly promotionId: string; readonly correlationId: string; readonly idempotencyKey: string } {
-  return {
-    promotionId: directBasisEntityId(input),
-    correlationId: `basis:${input.commit}`,
-    idempotencyKey: actionKey("direct-basis-admission-v1", input),
-  };
-}
-
-/** A direct basis admission is head-only; a task graph change belongs to a separate revision. */
-export function assertDirectBasisHeadOnly(diffs: readonly { readonly class: string }[]): void {
-  const graphChanged = diffs.some((diff) => diff.class !== "RETAIN_UNCHANGED" && diff.class !== "TERMINAL_HISTORICAL");
-  if (graphChanged) {
-    throw new DomainValidationError(
-      "DIRECT_BASIS_GRAPH_CHANGED: a direct basis admission is head-only; admit the basis first, then revise the task graph separately",
-    );
-  }
-}
-
-/** Append the manual approval that names the exact admitted commit and reason. */
-export function appendDirectBasisApproval(
-  requests: NewEvent[],
-  input: {
-    readonly projectId: string;
-    readonly expectedProjectRevision: number;
-    readonly revision: number;
-    readonly commit: string;
-    readonly operator: string;
-    readonly reason: string;
-  },
-): void {
-  requests.push(
-    directBasisApprovalEvent({
-      projectId: input.projectId,
-      expectedProjectRevision: input.expectedProjectRevision,
-      revision: input.revision,
-      admission: { commit: input.commit, operator: input.operator, reason: input.reason },
-    }),
-  );
-}
-
-/** The revision receipt: promotion-backed plan identity, or the direct-basis identity. */
-export function planReceipt(input: {
-  readonly projectId: string;
-  readonly revision: number;
-  readonly directBasis?: { readonly toHead: string; readonly operator?: string | undefined } | undefined;
-}): { readonly promotionId: string; readonly correlationId: string; readonly idempotencyKey: string } {
-  if (input.directBasis !== undefined) {
-    return directBasisReceipt({
-      projectId: input.projectId,
-      revision: input.revision,
-      commit: input.directBasis.toHead,
-      operator: input.directBasis.operator ?? "",
-    });
-  }
-  return {
-    promotionId: stableEntityId("plan", actionKey("plan-revision-v1", { project_id: input.projectId, revision: input.revision })),
-    correlationId: `plan:${input.revision}`,
-    idempotencyKey: actionKey("plan-revision-v1", { project_id: input.projectId, revision: input.revision }),
-  };
 }

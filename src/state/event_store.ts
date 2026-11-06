@@ -346,10 +346,12 @@ export class EventStore {
    *     `IdempotencyConflict`;
    *   - ANY error rolls the whole batch back and rethrows the original typed
    *     error (single-event semantics are never weakened).
+   *   - beforeCommit rechecks an owner's external facts inside this transaction; it does not make
+   *     an external system atomic with SQLite or hold a lock on an uncooperative external writer.
    */
   appendAtomic(
     requests: readonly NewEvent[],
-    options: { faultHook?: AtomicFaultHook; committedAt?: string } = {},
+    options: { faultHook?: AtomicFaultHook; committedAt?: string; beforeCommit?: () => void } = {},
   ): readonly SchedulerEvent[] {
     const parsed = requests.map((request) => parseNewEvent(request));
     if (parsed.length === 0) {
@@ -381,6 +383,7 @@ export class EventStore {
         );
       }
       options.faultHook?.("before_commit");
+      options.beforeCommit?.();
       return events;
     });
   }

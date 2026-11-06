@@ -1,0 +1,538 @@
+{
+  "schema": "pnwf-container-qualification-summary/v1",
+  "paidModelCalls": 0,
+  "results": [
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "recorded-worlds",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-recorded-worlds-Xq4LBI",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 0
+        },
+        {
+          "sessionId": "energy",
+          "exitCode": 0
+        }
+      ],
+      "mockRequests": 4,
+      "attemptedRequests": [
+        {
+          "ordinal": 0,
+          "bound": 359731,
+          "output": 104,
+          "accepted": true
+        },
+        {
+          "ordinal": 1,
+          "bound": 319523,
+          "output": 69,
+          "accepted": true
+        },
+        {
+          "ordinal": 2,
+          "bound": 359884,
+          "output": 104,
+          "accepted": true
+        },
+        {
+          "ordinal": 3,
+          "bound": 319798,
+          "output": 69,
+          "accepted": true
+        }
+      ],
+      "calls": [
+        {
+          "ordinal": 0,
+          "bound": 359731,
+          "usage": {
+            "input_tokens": 103731,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 104
+          },
+          "total": 103835,
+          "toolResults": []
+        },
+        {
+          "ordinal": 1,
+          "bound": 319523,
+          "usage": {
+            "input_tokens": 63523,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 69
+          },
+          "total": 63592,
+          "toolResults": [
+            {
+              "toolUseId": "qualification_status_0",
+              "isError": false,
+              "statusObserved": true
+            }
+          ]
+        },
+        {
+          "ordinal": 2,
+          "bound": 359884,
+          "usage": {
+            "input_tokens": 103884,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 104
+          },
+          "total": 103988,
+          "toolResults": []
+        },
+        {
+          "ordinal": 3,
+          "bound": 319798,
+          "usage": {
+            "input_tokens": 63798,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 69
+          },
+          "total": 63867,
+          "toolResults": [
+            {
+              "toolUseId": "qualification_status_2",
+              "isError": false,
+              "statusObserved": true
+            }
+          ]
+        }
+      ],
+      "observedStatuses": 2,
+      "mockTokenTotal": 335282,
+      "invariant": true,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-recorded-worlds",
+        "configDigest": "593883cdeb287cdeda53c1a3372d725749ca6c695ae05278fcaba414a2f9c261",
+        "state": "OPEN",
+        "reason": null,
+        "confirmed": 335282,
+        "reserved": 0,
+        "aggregateCeiling": 2000000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "ENDED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 167427,
+            "reserved": 0
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "ENDED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 167855,
+            "reserved": 0
+          }
+        ],
+        "requests": [
+          {
+            "id": "840921f2-69f1-449a-8de9-44f2cb4d0307",
+            "session": "software",
+            "digest": "97f990bd42f01ffbf7294a58dadb633afd6d329f21983d0bb67ff52526109992",
+            "reserved": 359731,
+            "actual": 103835,
+            "state": "SETTLED",
+            "reason": null
+          },
+          {
+            "id": "a62fc048-dad9-4084-bf33-1e96a319841d",
+            "session": "software",
+            "digest": "5e5b9fac633a90e80ce5dde04be8258d913b579ccddb1fe660d42f61bad66abc",
+            "reserved": 319523,
+            "actual": 63592,
+            "state": "SETTLED",
+            "reason": null
+          },
+          {
+            "id": "17ff84f3-a46c-4c68-aa54-45aaa86de46e",
+            "session": "energy",
+            "digest": "76d48306cc705d1cacfa2443a1731b1eec413413b3272b2905187f6212b9238b",
+            "reserved": 359884,
+            "actual": 103988,
+            "state": "SETTLED",
+            "reason": null
+          },
+          {
+            "id": "5255b6d0-abc6-4c4e-a566-4c20c9aef57e",
+            "session": "energy",
+            "digest": "64de46d055f30f3af06635ced0616cb831562c4d00929a93b308ff90d549cca8",
+            "reserved": 319798,
+            "actual": 63867,
+            "state": "SETTLED",
+            "reason": null
+          }
+        ],
+        "refusals": []
+      }
+    },
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "broken-alternates",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-broken-alternates-zQsklZ",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 5
+        }
+      ],
+      "mockRequests": 0,
+      "attemptedRequests": [],
+      "calls": [],
+      "observedStatuses": 0,
+      "mockTokenTotal": 0,
+      "invariant": true,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-broken-alternates",
+        "configDigest": "942542fb65f24ed4986da3d5710797364ffe25c3d0f9dd74a3a402e1d6e41849",
+        "state": "STOPPED",
+        "reason": "Command failed: docker exec --user 1001:1001 -e PNWF_EXPECTED_HEAD=453aa7f005edb7612cf4edc1d8ec3b68efed5b4d f98fcae985e490362e99146215ce09922b6e11c4ce9ff7874eae07e29c733da2 node /qualification/world_preflight.mjs\nfile:///qualification/world_preflight.mjs:29\n    if (alternates !== null && resolve(dir, \".git/objects\", alternates) !== join(repository, \".git/objects\")) throw new Error(`ALTERNATES_NOT_PORTABLE: ${attemptId}`);\n                                                                                                                    ^\n\nError: ALTERNATES_NOT_PORTABLE: attempt-94bcc7ae85e75141e064397cfa1186e6\n    at file:///qualification/world_preflight.mjs:29:117\n    at Array.map (<anonymous>)\n    at file:///qualification/world_preflight.mjs:23:22\n\nNode.js v24.21.0\n",
+        "confirmed": 0,
+        "reserved": 0,
+        "aggregateCeiling": 2000000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "STOPPED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "NOT_STARTED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "requests": [],
+        "refusals": []
+      }
+    },
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "large-request",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-large-request-6kpoaS",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 5
+        }
+      ],
+      "mockRequests": 0,
+      "attemptedRequests": [],
+      "calls": [],
+      "observedStatuses": 0,
+      "mockTokenTotal": 0,
+      "invariant": true,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-large-request",
+        "configDigest": "023265943c110fed1e8d9efa1e213f169d85ba70c4b727b5f5771a19b6313fba",
+        "state": "STOPPED",
+        "reason": "BUDGET_EXHAUSTED",
+        "confirmed": 0,
+        "reserved": 0,
+        "aggregateCeiling": 400000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "STOPPED",
+            "ceiling": 200000,
+            "softCeiling": 199000,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "NOT_STARTED",
+            "ceiling": 200000,
+            "softCeiling": 199000,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "requests": [],
+        "refusals": [
+          {
+            "sessionId": "software",
+            "bound": 359731,
+            "cohortConfirmed": 0,
+            "cohortReserved": 0,
+            "aggregateCeiling": 400000,
+            "sessionConfirmed": 0,
+            "sessionReserved": 0,
+            "softCeiling": 199000
+          }
+        ]
+      }
+    },
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "late-usage-next-request",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-late-usage-next-request-4Mtg2v",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 5
+        }
+      ],
+      "mockRequests": 1,
+      "attemptedRequests": [
+        {
+          "ordinal": 0,
+          "bound": 359731,
+          "output": 104,
+          "accepted": true
+        }
+      ],
+      "calls": [
+        {
+          "ordinal": 0,
+          "bound": 359731,
+          "usage": {
+            "input_tokens": 103731,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 104
+          },
+          "total": 103835,
+          "toolResults": []
+        }
+      ],
+      "observedStatuses": 0,
+      "mockTokenTotal": 103835,
+      "invariant": true,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-late-usage-next-request",
+        "configDigest": "7f79eb73157976b09738cd027f4a1153b4a8e9ec2a3d2cf6fb6b14774fef3dd1",
+        "state": "STOPPED",
+        "reason": "BUDGET_EXHAUSTED",
+        "confirmed": 103835,
+        "reserved": 0,
+        "aggregateCeiling": 800000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "STOPPED",
+            "ceiling": 400000,
+            "softCeiling": 399000,
+            "confirmed": 103835,
+            "reserved": 0
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "NOT_STARTED",
+            "ceiling": 400000,
+            "softCeiling": 399000,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "requests": [
+          {
+            "id": "3ac0add7-0376-4d32-bc04-cd5a75144c6c",
+            "session": "software",
+            "digest": "ff01e201301c474f02bb9e98802079ddd43e6b06f487a61d0b750794282dafd0",
+            "reserved": 359731,
+            "actual": 103835,
+            "state": "SETTLED",
+            "reason": null
+          }
+        ],
+        "refusals": [
+          {
+            "sessionId": "software",
+            "bound": 319523,
+            "cohortConfirmed": 103835,
+            "cohortReserved": 0,
+            "aggregateCeiling": 800000,
+            "sessionConfirmed": 103835,
+            "sessionReserved": 0,
+            "softCeiling": 399000
+          }
+        ]
+      }
+    },
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "interrupted-stream",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-interrupted-stream-FQsuUF",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 5
+        }
+      ],
+      "mockRequests": 1,
+      "attemptedRequests": [
+        {
+          "ordinal": 0,
+          "bound": 359731,
+          "output": 104,
+          "accepted": true
+        }
+      ],
+      "calls": [
+        {
+          "ordinal": 0,
+          "bound": 359731,
+          "usage": {
+            "input_tokens": 103731,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 104
+          },
+          "total": 103835,
+          "toolResults": []
+        }
+      ],
+      "observedStatuses": 0,
+      "mockTokenTotal": 103835,
+      "invariant": true,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-interrupted-stream",
+        "configDigest": "63a0e1693c8df4f89c1251e379296cc091ad094229b71a6a7cdd5a1a51cc06d8",
+        "state": "STOPPED",
+        "reason": "INTERRUPTED_RESPONSE",
+        "confirmed": 0,
+        "reserved": 359731,
+        "aggregateCeiling": 2000000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "STOPPED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 0,
+            "reserved": 359731
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "NOT_STARTED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "requests": [
+          {
+            "id": "b34ff2bc-3c52-4bea-9fa0-99a0d7ea3b73",
+            "session": "software",
+            "digest": "a07d7ace633231119fd1e7345b10d01241f97d1d8a18791ee5f76ef79b884c61",
+            "reserved": 359731,
+            "actual": null,
+            "state": "UNKNOWN",
+            "reason": "INTERRUPTED_RESPONSE"
+          }
+        ],
+        "refusals": []
+      }
+    },
+    {
+      "schema": "pnwf-container-qualification/v1",
+      "name": "large-response",
+      "passed": true,
+      "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-large-response-JRm69r",
+      "outcomes": [
+        {
+          "sessionId": "software",
+          "exitCode": 5
+        }
+      ],
+      "mockRequests": 0,
+      "attemptedRequests": [
+        {
+          "ordinal": 0,
+          "bound": 359731,
+          "output": 300027,
+          "accepted": false
+        }
+      ],
+      "calls": [],
+      "observedStatuses": 0,
+      "mockTokenTotal": 0,
+      "invariant": true,
+      "paidModelCalls": 0,
+      "accounting": {
+        "schema": "pnwf-spend-snapshot/v1",
+        "cohortId": "pnwf-r1-large-response",
+        "configDigest": "95412cf7ec6404614ec17e37393044e8d283b3a06550df5376262871af89d27c",
+        "state": "STOPPED",
+        "reason": "PROVIDER_ERROR",
+        "confirmed": 0,
+        "reserved": 359731,
+        "aggregateCeiling": 2000000,
+        "sessions": [
+          {
+            "id": "software",
+            "ordinal": 0,
+            "state": "STOPPED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 0,
+            "reserved": 359731
+          },
+          {
+            "id": "energy",
+            "ordinal": 1,
+            "state": "NOT_STARTED",
+            "ceiling": 1000000,
+            "softCeiling": 999000,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "requests": [
+          {
+            "id": "f9ff1498-af18-4dc2-a7f6-b5fc62ef9e57",
+            "session": "software",
+            "digest": "98e590d36abfae2070d2d80e35f7224ad7c17d4c2180a9d2facc211913545cc5",
+            "reserved": 359731,
+            "actual": null,
+            "state": "UNKNOWN",
+            "reason": "PROVIDER_ERROR"
+          }
+        ],
+        "refusals": []
+      }
+    }
+  ]
+}

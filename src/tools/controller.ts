@@ -20,6 +20,7 @@ import { join } from "node:path";
 
 import {
   actionKey,
+  DomainValidationError,
   stableEntityId,
   DEFAULT_STAGE_GRAPH,
   parseStageGraphDefinition,
@@ -49,18 +50,10 @@ import {
   type TaskEnvelope,
   type TaskSpec,
 } from "../schema/index.js";
-import { DomainValidationError } from "../domain/errors.js";
-import {
-  appendDirectBasisApproval,
-  assertDirectBasisHeadOnly,
-  invalidationAffectedForPlan,
-  makeWorkReadModel,
-  observeStatusFacts,
-  planReceipt,
-  validatedHeadAdvance,
-} from "../work/read_model.js";
-import { makeProjectHeadService } from "../work/head.js";
-import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput } from "../work/attempt_execution.js";
+import { makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
+import { assertDirectBasisHeadOnly, invalidationAffectedForPlan, planReceipt } from "../work/plan_revision.js";
+import { makeProjectHeadService, appendDirectBasisApproval, validatedHeadAdvance, directBasisCommitFence } from "../work/head.js";
+import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
 import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
@@ -553,6 +546,7 @@ interface AttemptResultObservation {
 }
 
 export interface ProjectControllerOptions {
+  operatorAuthority?: import("../work/head.js").BasisOperatorAuthority | undefined;
   store: EventStore;
   effects: PalimpsestEffectsRuntime;
   projectId: string;
@@ -744,8 +738,10 @@ export class ProjectController {
   /** SR-2 §十二: the context owner (`src/context/service.ts`). */
   readonly context: import("../context/service.js").ContextService;
   readonly #clock: () => string;
+  readonly #operatorAuthority: import("../work/head.js").BasisOperatorAuthority | undefined;
 
   constructor(options: ProjectControllerOptions) {
+    this.#operatorAuthority = options.operatorAuthority;
     this.store = options.store;
     this.effects = options.effects;
     this.projectId = options.projectId;
@@ -1400,8 +1396,9 @@ export class ProjectController {
     const nextHeadCommit = validatedHeadAdvance({
       current,
       advance: trusted.headAdvance,
-      repository: this.effects.git.repository,
+      observeBasis: () => observeCanonicalBasis(this.effects.git.repository, current.head_commit, trusted.headAdvance?.toHead),
       promotionState: this.promotions.projectHeadStatusSync().state,
+      operatorAuthority: this.#operatorAuthority,
       validatePromotion: (input) => this.head.validateHeadAdvance(input),
     });
     const data = {
@@ -1661,6 +1658,7 @@ export class ProjectController {
 
     const events = this.store.appendAtomic(requests, {
       ...(input.committedAt === undefined ? {} : { committedAt: input.committedAt }),
+      ...(directBasis === undefined ? {} : { beforeCommit: () => directBasisCommitFence({ observeBasis: () => observeCanonicalBasis(this.effects.git.repository), commit: directBasis.toHead, operator: directBasis.operator ?? "", authority: this.#operatorAuthority, headState: this.promotions.projectHeadStatusSync().state }) }),
     });
     const revised = events.find((event) => event.event_type === "PROJECT_REVISED");
     if (revised === undefined) {

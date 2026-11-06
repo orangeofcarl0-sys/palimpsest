@@ -1,0 +1,14 @@
+[WARN] Unsupported engine: wanted: {"node":">=24.15.0"} (current: {"node":"v24.14.1","pnpm":"11.21.0"})
+$ tsc -b
+architecture:check PASS
+  violations: 0
+  accepted baseline exceptions observed: 9
+public-api:check PASS
+  missing: 0
+  changed kind: 0
+  added: 0
+warning: in the working copy of 'src/tools/controller.ts', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'src/work/head.ts', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'src/work/read_model.ts', CRLF will be replaced by LF the next time Git touches it
+engineering checks PASS; process-local PATH only
+staged diff --check PASS; raw initial terminal output preserved separately as product-tests.raw.log.gz

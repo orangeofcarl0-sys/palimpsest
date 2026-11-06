@@ -153,6 +153,8 @@ export interface WorkDirectOutcome {
   readonly projectHead: string;
   readonly relation: "IN_SYNC" | "DIRECT_AHEAD" | "DIVERGED" | "UNOBSERVABLE";
   readonly uncommittedPaths: readonly string[];
+  /** The current head has a committed operator basis-admission receipt; equality alone proves none. */
+  readonly admittedDirectCommit?: string | null;
 }
 
 /** PNWF-A: the session-level exit, deliberately separate from the formal-work transition. */
@@ -245,7 +247,7 @@ function checkpointSession(detail: string): WorkSessionOption {
  */
 function withSemantic(next: WorkNextAction, directOutcome: WorkDirectOutcome | undefined): WorkNextAction {
   if (directOutcome === undefined || next.kind !== "EXECUTE_SCHEDULER_STEP") return next;
-  if (directOutcome.relation !== "IN_SYNC" && directOutcome.relation !== "DIRECT_AHEAD") return next;
+  if (directOutcome.relation !== "DIRECT_AHEAD" && !(directOutcome.relation === "IN_SYNC" && directOutcome.admittedDirectCommit === directOutcome.projectHead)) return next;
   const repository = directOutcome.repositoryHead?.slice(0, 12) ?? "unknown";
   return Object.freeze({
     ...next,

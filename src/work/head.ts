@@ -36,7 +36,12 @@ import {
   type ProjectHeadStatus,
   type PromotionFact,
 } from "../domain/project_head.js";
-import type { ProjectIr } from "../schema/index.js";
+import { createHash } from "node:crypto";
+import { parseNewEvent, type NewEvent, type ProjectIr } from "../schema/index.js";
+import { DomainValidationError } from "../domain/errors.js";
+import { actionKey } from "../domain/idempotency.js";
+import type { OperatorAuthorityPort } from "../domain/operator_authority.js";
+import type { CanonicalBasisFacts } from "./unseen_inputs.js";
 
 /** The outcome of one mechanical head reconciliation (the shape the controller's façade returned). */
 export interface HeadReconciliationResult {
@@ -261,4 +266,189 @@ function deriveStatus(project: ProjectIr, promotions: readonly PromotionFact[]):
     project: { revision: project.revision, headCommit: project.head_commit },
     promotions,
   });
+}
+
+// Direct basis admission belongs to the existing Head owner; event writes remain in Work.
+export type BasisOperatorAuthority = OperatorAuthorityPort;
+
+export interface DirectBasisAdmission {
+  readonly commit: string;
+  readonly operator: string;
+  readonly reason: string;
+}
+
+export function directBasisTarget(input: {
+  readonly observeBasis: () => CanonicalBasisFacts | null;
+  readonly currentHead: string;
+  readonly commit: string;
+  readonly operator: string;
+  readonly reason: string;
+  readonly promotionState: string;
+  readonly operatorAuthority: OperatorAuthorityPort | undefined;
+}): string {
+  const fail = (code: string, detail: string): never => {
+    throw new DomainValidationError(`${code}: ${detail}`);
+  };
+  requireBasisOperator(input.operatorAuthority, input.operator);
+  if (input.operator.trim() === "") fail("DIRECT_BASIS_NO_OPERATOR", "a direct basis admission must name the verified operator");
+  if (input.reason.trim() === "") fail("DIRECT_BASIS_NO_REASON", "a direct basis admission must state why the commit is an admissible basis");
+  if (!/^[0-9a-f]{40}$/u.test(input.commit)) fail("DIRECT_BASIS_NOT_A_COMMIT", `"${input.commit}" is not a full 40-hex commit`);
+  if (input.currentHead === input.commit) fail("DIRECT_BASIS_ALREADY_CURRENT", "the canonical ProjectIR head is already at this commit");
+  const facts = input.observeBasis();
+  if (facts === null) return fail("DIRECT_BASIS_NO_REPOSITORY", "this deployment has no canonical repository to admit a direct basis from");
+  const physicalHead = facts.head;
+  if (physicalHead === null) return fail("DIRECT_BASIS_WORKTREE_UNOBSERVABLE", "the canonical repository HEAD could not be observed");
+  if (physicalHead !== input.commit) {
+    fail(
+      "DIRECT_BASIS_NOT_CHECKED_OUT",
+      `the repository HEAD is ${physicalHead.slice(0, 12)}, not ${input.commit.slice(0, 12)}; a basis must be the commit the canonical tree actually holds`,
+    );
+  }
+  const dirtyPaths = facts.uncommittedPaths;
+  if (dirtyPaths === null) {
+    return fail("DIRECT_BASIS_WORKTREE_UNOBSERVABLE", "the canonical worktree could not be observed; an unobserved tree is not a clean one");
+  }
+  if (dirtyPaths.length > 0) {
+    fail(
+      "DIRECT_BASIS_WORKTREE_DIRTY",
+      `the canonical worktree still has uncommitted changes (${dirtyPaths.join(", ")}); admit a committed basis, not a working state`,
+    );
+  }
+  if (input.promotionState === "SYNC_REQUIRED") {
+    fail(
+      "DIRECT_BASIS_PROMOTION_HEAD_AHEAD",
+      "a proven promotion effect is ahead of the canonical ProjectIR head; reconcile that effect before admitting a direct basis",
+    );
+  }
+  if (input.promotionState !== "IN_SYNC") fail("DIRECT_BASIS_HEAD_CONFLICT", "the promotion history is conflicted or unobservable; a direct basis cannot erase it");
+  if (facts.descendant !== true) {
+    fail(
+      "DIRECT_BASIS_NOT_DESCENDANT",
+      `the canonical head ${input.currentHead.slice(0, 12)} is not an ancestor of ${input.commit.slice(0, 12)}, or the commit is unknown; a basis advance must not discard the project's history`,
+    );
+  }
+  if (facts.distance === null || !Number.isSafeInteger(facts.distance) || facts.distance < 1) fail("DIRECT_BASIS_NOT_AHEAD", "the target commit adds no history beyond the canonical head");
+  return input.commit;
+}
+
+export function directBasisApprovalEvent(input: {
+  readonly projectId: string;
+  readonly expectedProjectRevision: number;
+  readonly revision: number;
+  readonly admission: DirectBasisAdmission;
+}): NewEvent {
+  return parseNewEvent({
+    schema_version: 1,
+    project_id: input.projectId,
+    event_type: "MANUAL_APPROVAL_RECORDED",
+    payload_version: 1,
+    entity_type: "project",
+    entity_id: input.projectId,
+    payload: {
+      approver: input.admission.operator,
+      subject_type: "commit",
+      subject_id: input.admission.commit,
+      subject_digest: createHash("sha256").update(input.admission.commit).digest("hex"),
+      risk_summary: input.admission.reason,
+    },
+    causation_id: null,
+    correlation_id: `basis:${input.admission.commit}`,
+    idempotency_key: actionKey("direct-basis-approval-v1", {
+      project_id: input.projectId,
+      revision: input.revision,
+      commit: input.admission.commit,
+      operator: input.admission.operator,
+    }),
+    expected_project_revision: input.expectedProjectRevision,
+  });
+}
+
+export function validatedHeadAdvance(input: {
+  readonly current: ProjectIr;
+  readonly advance:
+    | {
+        readonly source?: "PROMOTION" | "DIRECT_BASIS" | undefined;
+        readonly fromPromotionEventId?: string | undefined;
+        readonly toHead: string;
+        readonly operator?: string | undefined;
+        readonly reason?: string | undefined;
+      }
+    | undefined;
+  readonly observeBasis: () => CanonicalBasisFacts | null;
+  readonly promotionState: string;
+  readonly operatorAuthority: OperatorAuthorityPort | undefined;
+  readonly validatePromotion: (input: {
+    readonly current: ProjectIr;
+    readonly toHead: string;
+    readonly fromPromotionEventId: string;
+  }) => string;
+}): string {
+  if (input.advance === undefined) return input.current.head_commit;
+  if (input.advance.source === "DIRECT_BASIS") {
+    return directBasisTarget({
+      observeBasis: input.observeBasis,
+      currentHead: input.current.head_commit,
+      commit: input.advance.toHead,
+      operator: input.advance.operator ?? "",
+      reason: input.advance.reason ?? "",
+      promotionState: input.promotionState,
+      operatorAuthority: input.operatorAuthority,
+    });
+  }
+  if (input.advance.fromPromotionEventId === undefined) {
+    throw new DomainValidationError("HEAD_ADVANCE_UNPROVEN: a head advance must name either a promotion effect or a direct basis admission");
+  }
+  return input.validatePromotion({
+    current: input.current,
+    toHead: input.advance.toHead,
+    fromPromotionEventId: input.advance.fromPromotionEventId,
+  });
+}
+
+/** Append the manual approval that names the exact admitted commit and reason. */
+export function appendDirectBasisApproval(
+  requests: NewEvent[],
+  input: {
+    readonly projectId: string;
+    readonly expectedProjectRevision: number;
+    readonly revision: number;
+    readonly commit: string;
+    readonly operator: string;
+    readonly reason: string;
+  },
+): void {
+  requests.push(
+    directBasisApprovalEvent({
+      projectId: input.projectId,
+      expectedProjectRevision: input.expectedProjectRevision,
+      revision: input.revision,
+      admission: { commit: input.commit, operator: input.operator, reason: input.reason },
+    }),
+  );
+}
+
+function requireBasisOperator(authority: OperatorAuthorityPort | undefined, actor: string): void {
+  const decision = authority?.authorize(actor);
+  if (decision?.authorized !== true || decision.role !== "operator") {
+    throw new DomainValidationError("DIRECT_BASIS_OPERATOR_REQUIRED: the deployment authority did not authorize this operator");
+  }
+}
+
+/** Re-read external Git and operator currentness inside the existing event transaction, just before
+ * commit. This narrows the race; it cannot lock an uncooperative native writer after the last read.
+ * Such later drift is still refused by the normal execution HEAD_BASIS_MISMATCH fence.
+ */
+export function directBasisCommitFence(input: {
+  readonly observeBasis: () => CanonicalBasisFacts | null;
+  readonly commit: string;
+  readonly operator: string;
+  readonly authority: OperatorAuthorityPort | undefined;
+  readonly headState: string;
+}): void {
+  requireBasisOperator(input.authority, input.operator);
+  if (input.headState !== "IN_SYNC") throw new DomainValidationError("DIRECT_BASIS_HEAD_CONFLICT");
+  const facts = input.observeBasis();
+  if (facts?.head !== input.commit || facts.uncommittedPaths === null || facts.uncommittedPaths.length !== 0) {
+    throw new DomainValidationError("DIRECT_BASIS_STALE: the checked-out basis changed before revision commit");
+  }
 }

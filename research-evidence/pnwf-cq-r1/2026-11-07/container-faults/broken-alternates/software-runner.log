@@ -1,0 +1,16 @@
+{"schema":"alhs-core-session-run/v1","cohortId":"pnwf-r1-broken-alternates","sessionId":"software","condition":"PNWF_FULL","world":"C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-broken-alternates-MfTgJp\\stages\\software\\world","home":"C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-broken-alternates-MfTgJp\\runtime-software","principalRuntime":"container","containerId":null,"qualification":null,"startedAt":"2026-11-06T22:28:40.490Z","endedAt":"2026-11-06T22:28:55.816Z","exitCode":1,"error":"Command failed: docker exec --user 1001:1001 -e PNWF_EXPECTED_HEAD=453aa7f005edb7612cf4edc1d8ec3b68efed5b4d ed98fa9604d74bfd584a378c8a082d7d93928849af0090d74dd3bc27a81a7846 node /qualification/world_preflight.mjs\nfile:///qualification/world_preflight.mjs:29\n    if (alternates !== null && resolve(dir, \".git/objects\", alternates) !== join(repository, \".git/objects\")) throw new Error(`ALTERNATES_NOT_PORTABLE: ${attemptId}`);\n                                                                                                                    ^\n\nError: ALTERNATES_NOT_PORTABLE: attempt-94bcc7ae85e75141e064397cfa1186e6\n    at file:///qualification/world_preflight.mjs:29:117\n    at Array.map (<anonymous>)\n    at file:///qualification/world_preflight.mjs:23:22\n\nNode.js v24.21.0\n","killedBy":null,"stopped":true,"natural":false,"usage":{"schema":"aps-budget-ledger/v1","cohortId":"pnwf-r1-broken-alternates","sessionId":"software","observedAt":"2026-11-06T22:28:55.816Z","maxTokens":1000000,"softCeiling":999000,"totalTokens":0,"confirmedTokens":0,"reservedTokens":0,"source":"REQUEST_ADMISSION_LEDGER","state":"STOPPED"},"paidModelCalls":0}
+(node:25384) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25728) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+file:///qualification/world_preflight.mjs:29
+    if (alternates !== null && resolve(dir, ".git/objects", alternates) !== join(repository, ".git/objects")) throw new Error(`ALTERNATES_NOT_PORTABLE: ${attemptId}`);
+                                                                                                                    ^
+
+Error: ALTERNATES_NOT_PORTABLE: attempt-94bcc7ae85e75141e064397cfa1186e6
+    at file:///qualification/world_preflight.mjs:29:117
+    at Array.map (<anonymous>)
+    at file:///qualification/world_preflight.mjs:23:22
+
+Node.js v24.21.0
+run_pnwf_live: SESSION_FAILED: all later sessions are blocked
