@@ -1,9 +1,9 @@
 # PSVR evidence — 2026-11-05
 
 Two real-host project runs, the offline attribution of the ODPE-R sessions, and the PSVR-C
-pre-registration. All model content is a labelled deterministic Messages stand-in; the host, workers,
-Git, worlds, context delivery, Work, Scheduler, Promotion, verification and the scenario checkers
-are real.
+pre-registration. In `a/` and `b/` all model content is a labelled deterministic Messages stand-in;
+in `c/` and `c-energy/` it is the real `deepseek-flash` model. The host, workers, Git, worlds,
+context delivery, Work, Scheduler, Promotion, verification and the scenario checkers are real.
 
 ## Layout
 
@@ -13,6 +13,10 @@ are real.
   head/log/tests, world map, session streams, worker logs, timestamps.
 - `b/` — the deployment-package run: the same set, plus the field-survey hash and the final checker
   log.
+- `c/attribution/`, `c-energy/attribution/` — the decoded A-1/A-2/worker tool-level timelines of the
+  two real-model stages; `c/trajectory.json`, `c-energy/trajectory.json` — per-session phase
+  statistics and the offline `conclude`/`readiness`/`finalize` replay on copies of the recorded
+  `state-A` directories.
 - `/live/cohort-psvr-c.json` — the PSVR-C pre-registration (BLOCKED, no authorization).
 
 ## The two accepted heads
@@ -72,3 +76,30 @@ A's session 2 called `palimpsest_start` twice, `plan`, `delegate`, `relay`, `res
 
 Aggregate **3,745,812 / 12,000,000**; four sessions. A used `readiness` once and `complete` twice, but
 its worker's world was empty and the package it committed was written outside the governed attempt.
+
+## Why the A runs did not close
+
+Both A-2 sessions did the work **before** creating the project: they committed the migration
+(`453aa7f`) and the package (`e631160`) natively, then called `palimpsest_start` at that same head.
+Every task's `required_artifacts` therefore already existed in the basis, and the attempt world was
+seeded from a head that already contained the work. The settlement path then refused in order:
+
+- `complete` → `NO_RUNNING_ATTEMPT` (software) / `WORKER_ACTIVE` then `NOT_READY NO_WORK` (energy);
+- `readiness` → `CONTINUE_WORK` "the world has no commit beyond the attempt's basis";
+- `finalize` → `NOT_READY` with the same reason;
+- `relay takeover` → `REFUSED`; `plan` → `quiescence_required`;
+- `delegate` → a worker that correctly found nothing to change.
+
+The closure phase consumed **1,331,902** tokens in software (56% of A-2) and **1,901,695** in energy
+(80% of A-2), including the worker, and ended with the attempt still RUNNING. Across all eight
+principal sessions there were **0 `conclude`** and **0 `finalize`** calls; `readiness` was called
+once, before the task existed.
+
+A deterministic replay on **copies** of the two recorded `state-A` directories shows the legal
+ending existed: `palimpsest_work conclude {intent: CHECKPOINT, statement, nextStep}` →
+`RECORDED`, `session.mayEnd: true`, `blockers: []`, with the open task and the
+`RUNNING:unobserved` attempt recorded in the conclusion's own check. The product could end honestly
+without settling the attempt; the model never took that path, and the product's `nextAction`
+projection kept naming `complete` instead.
+
+Full analysis: [`docs/engineering/PSVR-C-TRAJECTORY.md`](../../../docs/engineering/PSVR-C-TRAJECTORY.md).

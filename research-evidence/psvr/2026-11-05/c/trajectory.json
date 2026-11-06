@@ -1,0 +1,254 @@
+{
+  "schema": "psvr-c-trajectory/v1",
+  "stage": "c",
+  "method": "decoded streams + per-step usage; replay on copied state-A",
+  "sessions": {
+    "F-1": {
+      "condition": "F",
+      "index": 1,
+      "killedBy": "token_milestone",
+      "natural": false,
+      "stopped": false,
+      "budgetTokens": 497542,
+      "sessionId": "session-333cb163-e7a8-4a2d-b9c4-d08c3bf28941",
+      "startedAt": "2026-11-05T13:19:59.860Z",
+      "endedAt": "2026-11-05T13:23:07.627Z",
+      "durationMs": 187767,
+      "calls": 47,
+      "errors": 0,
+      "errorTexts": [],
+      "commitOffsetMs": null,
+      "work": null,
+      "closure": null,
+      "productCalls": [],
+      "productCallsAfterCommit": [],
+      "stream": "session-333cb163-e7a8-4a2d-b9c4-d08c3bf28941.zstd"
+    },
+    "F-2": {
+      "condition": "F",
+      "index": 2,
+      "killedBy": null,
+      "natural": true,
+      "stopped": false,
+      "budgetTokens": 1548663,
+      "sessionId": "session-bad71b6c-9110-4be9-9dd3-cf77f0008744",
+      "startedAt": "2026-11-05T13:23:20.792Z",
+      "endedAt": "2026-11-05T13:28:00.071Z",
+      "durationMs": 279279,
+      "calls": 45,
+      "errors": 0,
+      "errorTexts": [],
+      "commitOffsetMs": 270792,
+      "work": {
+        "input": 18925,
+        "output": 40428,
+        "cacheRead": 1364736,
+        "total": 1424089,
+        "steps": 37
+      },
+      "closure": {
+        "input": 994,
+        "output": 700,
+        "cacheRead": 122880,
+        "total": 124574,
+        "steps": 2
+      },
+      "productCalls": [],
+      "productCallsAfterCommit": [],
+      "stream": "session-bad71b6c-9110-4be9-9dd3-cf77f0008744.zstd"
+    },
+    "A-1": {
+      "condition": "A",
+      "index": 1,
+      "killedBy": "token_milestone",
+      "natural": false,
+      "stopped": false,
+      "budgetTokens": 421118,
+      "sessionId": "session-c69bf32e-5d66-4205-bee1-a233bd452ec7",
+      "startedAt": "2026-11-05T13:28:12.937Z",
+      "endedAt": "2026-11-05T13:30:55.680Z",
+      "durationMs": 162743,
+      "calls": 21,
+      "errors": 1,
+      "errorTexts": [
+        "Error: project does not exist"
+      ],
+      "commitOffsetMs": null,
+      "work": null,
+      "closure": null,
+      "productCalls": [
+        "continuity"
+      ],
+      "productCallsAfterCommit": [
+        "continuity"
+      ],
+      "stream": "session-c69bf32e-5d66-4205-bee1-a233bd452ec7.zstd"
+    },
+    "A-2": {
+      "condition": "A",
+      "index": 2,
+      "killedBy": null,
+      "natural": false,
+      "stopped": true,
+      "budgetTokens": 2384653,
+      "sessionId": "session-4ac8e68f-62d4-4c31-b8c2-30343a96a0a7",
+      "startedAt": "2026-11-05T13:31:06.692Z",
+      "endedAt": "2026-11-05T13:35:05.463Z",
+      "durationMs": 238771,
+      "calls": 66,
+      "errors": 4,
+      "errorTexts": [
+        "Error: project does not exist",
+        "Error: project \"psvr-c\" has no ProjectIR",
+        "Error: head_commit: must be a full lowercase Git object id",
+        "Error: plan revision blocked (quiescence_required): the project is not quiescent: every ACTIVE/VERIFYING task and every open (CREATED/LEASED/RUNNING) attempt must settle before a s"
+      ],
+      "commitOffsetMs": 151811,
+      "work": {
+        "input": 27072,
+        "output": 20239,
+        "cacheRead": 1005440,
+        "total": 1052751,
+        "steps": 27
+      },
+      "closure": {
+        "input": 7063,
+        "output": 10161,
+        "cacheRead": 1194752,
+        "total": 1211976,
+        "steps": 19
+      },
+      "productCalls": [
+        "continuity",
+        "project",
+        "start",
+        "start",
+        "work:status",
+        "work:next",
+        "work:next",
+        "work:complete",
+        "work:workers",
+        "work:results",
+        "work:relay",
+        "work:plan",
+        "work:delegate",
+        "work:workers",
+        "work:workers",
+        "work:status"
+      ],
+      "productCallsAfterCommit": [
+        "start",
+        "start",
+        "work:status",
+        "work:next",
+        "work:next",
+        "work:complete",
+        "work:workers",
+        "work:results",
+        "work:relay",
+        "work:plan",
+        "work:delegate",
+        "work:workers",
+        "work:workers",
+        "work:status"
+      ],
+      "stream": "session-4ac8e68f-62d4-4c31-b8c2-30343a96a0a7.zstd"
+    }
+  },
+  "worker": {
+    "stream": "worker-c7fca87f-9063-4e08-b491-d009a2d16935.zstd",
+    "sessionId": "worker-c7fca87f-9063-4e08-b491-d009a2d16935",
+    "startedAt": "2026-11-05T13:34:43.957Z",
+    "endedAt": "2026-11-05T13:35:05.237Z",
+    "durationMs": 21280,
+    "calls": 7,
+    "errors": 1,
+    "errorTexts": [
+      "Error: code run failed (worker-exit): control channel ended before the program settled\nCaptured output:\n\r\n<--- Last few GCs --->\r\n\r\n\nFATAL ERROR: Zone Allocation failed - process o"
+    ],
+    "commitOffsetMs": null,
+    "work": null,
+    "closure": null,
+    "productCalls": [],
+    "productCallsAfterCommit": []
+  },
+  "replay": {
+    "stateSource": "C:/Users/66494/AppData/Local/Temp/psvr-c-real/run-2026-11-05/state-A",
+    "status": {
+      "tasks": [
+        {
+          "task_id": "grpc-contract",
+          "state": "ACTIVE"
+        },
+        {
+          "task_id": "grpc-service",
+          "state": "BLOCKED"
+        },
+        {
+          "task_id": "verify-migration",
+          "state": "BLOCKED"
+        }
+      ],
+      "summary": {
+        "tasksTotal": 3,
+        "tasksSatisfied": 0,
+        "tasksVerifying": 0,
+        "attemptsRunning": 1,
+        "attemptsCompleted": 0,
+        "evidenceActive": 0,
+        "evidenceStale": 0,
+        "promotionsPrepared": 0,
+        "promotionFencePending": 0
+      },
+      "nextAction": {
+        "kind": "WAIT_ACTIVE_WORK",
+        "executable": true,
+        "action": "palimpsest_work action=complete",
+        "detail": "an attempt is RUNNING; completion is the only formal transition available until it settles",
+        "taskId": "grpc-contract"
+      }
+    },
+    "readiness": {
+      "action": "CONTINUE_WORK",
+      "reasons": [
+        "the world has no commit beyond the attempt's basis; the actual work is still outstanding"
+      ],
+      "attempt": {
+        "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+        "state": "RUNNING",
+        "baseCommit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+        "worldPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-c-real\\run-2026-11-05\\worlds\\A\\.palimpsest\\worlds/attempt-94bcc7ae85e75141e064397cfa1186e6",
+        "worldHead": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+        "uncommittedChanges": [],
+        "resultCommit": null,
+        "resultCommitted": false
+      }
+    },
+    "conclude": {
+      "state": "RECORDED",
+      "intent": "CHECKPOINT",
+      "mayEnd": true,
+      "blockers": [],
+      "check": {
+        "deliveryBlockers": [
+          "task grpc-contract is ACTIVE",
+          "attempt for grpc-contract is RUNNING but no host job is observed — inspect the world rather than assuming it is alive"
+        ],
+        "awaitingOperator": [],
+        "openTasks": [
+          "grpc-contract:ACTIVE"
+        ],
+        "openAttempts": [
+          "grpc-contract:RUNNING:unobserved"
+        ],
+        "unresolvedQuestions": [],
+        "blockedEffects": [],
+        "artifacts": []
+      }
+    },
+    "finalize": {
+      "state": "NOT_READY",
+      "detail": "the world has no commit beyond the attempt's basis; the actual work is still outstanding"
+    }
+  }
+}

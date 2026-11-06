@@ -1,0 +1,263 @@
+{
+  "schema": "psvr-c-trajectory/v1",
+  "stage": "c-energy",
+  "method": "decoded streams + per-step usage; replay on copied state-A",
+  "sessions": {
+    "F-1": {
+      "condition": "F",
+      "index": 1,
+      "killedBy": "token_milestone",
+      "natural": false,
+      "stopped": false,
+      "budgetTokens": 432619,
+      "sessionId": "session-35b47fd7-8a6b-480c-9eb1-ca631d970714",
+      "startedAt": "2026-11-05T18:18:52.941Z",
+      "endedAt": "2026-11-05T18:22:24.728Z",
+      "durationMs": 211787,
+      "calls": 33,
+      "errors": 0,
+      "errorTexts": [],
+      "commitOffsetMs": null,
+      "work": null,
+      "closure": null,
+      "productCalls": [],
+      "productCallsAfterCommit": [],
+      "stream": "session-35b47fd7-8a6b-480c-9eb1-ca631d970714.zstd"
+    },
+    "F-2": {
+      "condition": "F",
+      "index": 2,
+      "killedBy": null,
+      "natural": true,
+      "stopped": false,
+      "budgetTokens": 454712,
+      "sessionId": "session-dd3c7a46-6321-4227-831a-5bf685f0a0fe",
+      "startedAt": "2026-11-05T18:22:34.707Z",
+      "endedAt": "2026-11-05T18:24:38.871Z",
+      "durationMs": 124164,
+      "calls": 32,
+      "errors": 0,
+      "errorTexts": [],
+      "commitOffsetMs": 115802,
+      "work": {
+        "input": 10875,
+        "output": 18978,
+        "cacheRead": 391296,
+        "total": 421149,
+        "steps": 18
+      },
+      "closure": {
+        "input": 403,
+        "output": 917,
+        "cacheRead": 66688,
+        "total": 68008,
+        "steps": 2
+      },
+      "productCalls": [],
+      "productCallsAfterCommit": [],
+      "stream": "session-dd3c7a46-6321-4227-831a-5bf685f0a0fe.zstd"
+    },
+    "A-1": {
+      "condition": "A",
+      "index": 1,
+      "killedBy": "token_milestone",
+      "natural": false,
+      "stopped": false,
+      "budgetTokens": 480706,
+      "sessionId": "session-e9378614-9415-4aad-be47-a6ec69be62ff",
+      "startedAt": "2026-11-05T18:24:50.099Z",
+      "endedAt": "2026-11-05T18:27:06.681Z",
+      "durationMs": 136582,
+      "calls": 30,
+      "errors": 2,
+      "errorTexts": [
+        "Error: project does not exist",
+        "Error: project does not exist"
+      ],
+      "commitOffsetMs": null,
+      "work": null,
+      "closure": null,
+      "productCalls": [
+        "continuity",
+        "work:status"
+      ],
+      "productCallsAfterCommit": [
+        "continuity",
+        "work:status"
+      ],
+      "stream": "session-e9378614-9415-4aad-be47-a6ec69be62ff.zstd"
+    },
+    "A-2": {
+      "condition": "A",
+      "index": 2,
+      "killedBy": null,
+      "natural": false,
+      "stopped": true,
+      "budgetTokens": 2377775,
+      "sessionId": "session-f46f3a54-99d0-465a-a43e-ba8a09c86dd9",
+      "startedAt": "2026-11-05T18:27:17.178Z",
+      "endedAt": "2026-11-05T18:30:09.545Z",
+      "durationMs": 172367,
+      "calls": 73,
+      "errors": 6,
+      "errorTexts": [
+        "Error: project does not exist",
+        "Error: project does not exist",
+        "Error: project id does not match the controller",
+        "Error: project \"psvr-c-energy\" has no ProjectIR",
+        "Error: head_commit: must be a full lowercase Git object id",
+        "Error: spawn C:\\Program Files\\nodejs\\node.exe ENOENT"
+      ],
+      "commitOffsetMs": 63882,
+      "work": {
+        "input": 21278,
+        "output": 8082,
+        "cacheRead": 446720,
+        "total": 476080,
+        "steps": 18
+      },
+      "closure": {
+        "input": 14543,
+        "output": 12549,
+        "cacheRead": 1763328,
+        "total": 1790420,
+        "steps": 35
+      },
+      "productCalls": [
+        "continuity",
+        "work:status",
+        "start",
+        "project",
+        "start",
+        "start",
+        "work:status",
+        "work:readiness",
+        "work:next",
+        "work:next",
+        "work:start",
+        "work:workers",
+        "work:delegate",
+        "work:status",
+        "work:workers",
+        "work:results",
+        "work:workers",
+        "work:status",
+        "work:workers",
+        "work:complete",
+        "work:stop",
+        "work:workers",
+        "work:complete"
+      ],
+      "productCallsAfterCommit": [
+        "start",
+        "project",
+        "start",
+        "start",
+        "work:status",
+        "work:readiness",
+        "work:next",
+        "work:next",
+        "work:start",
+        "work:workers",
+        "work:delegate",
+        "work:status",
+        "work:workers",
+        "work:results",
+        "work:workers",
+        "work:status",
+        "work:workers",
+        "work:complete",
+        "work:stop",
+        "work:workers",
+        "work:complete"
+      ],
+      "stream": "session-f46f3a54-99d0-465a-a43e-ba8a09c86dd9.zstd"
+    }
+  },
+  "worker": {
+    "stream": "worker-df5750d1-97bb-496f-a9f0-bb85cd20acdb.zstd",
+    "sessionId": "worker-df5750d1-97bb-496f-a9f0-bb85cd20acdb",
+    "startedAt": "2026-11-05T18:29:01.150Z",
+    "endedAt": "2026-11-05T18:29:29.753Z",
+    "durationMs": 28603,
+    "calls": 20,
+    "errors": 0,
+    "errorTexts": [],
+    "commitOffsetMs": null,
+    "work": null,
+    "closure": null,
+    "productCalls": [],
+    "productCallsAfterCommit": []
+  },
+  "replay": {
+    "stateSource": "C:/Users/66494/AppData/Local/Temp/psvr-e-real/run-2026-11-05/state-A",
+    "status": {
+      "tasks": [
+        {
+          "task_id": "decision-package",
+          "state": "ACTIVE"
+        }
+      ],
+      "summary": {
+        "tasksTotal": 1,
+        "tasksSatisfied": 0,
+        "tasksVerifying": 0,
+        "attemptsRunning": 1,
+        "attemptsCompleted": 0,
+        "evidenceActive": 0,
+        "evidenceStale": 0,
+        "promotionsPrepared": 0,
+        "promotionFencePending": 0
+      },
+      "nextAction": {
+        "kind": "WAIT_ACTIVE_WORK",
+        "executable": true,
+        "action": "palimpsest_work action=complete",
+        "detail": "an attempt is RUNNING; completion is the only formal transition available until it settles",
+        "taskId": "decision-package"
+      }
+    },
+    "readiness": {
+      "action": "CONTINUE_WORK",
+      "reasons": [
+        "the world has no commit beyond the attempt's basis; the actual work is still outstanding"
+      ],
+      "attempt": {
+        "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+        "state": "RUNNING",
+        "baseCommit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+        "worldPath": "C:\\Users\\66494\\AppData\\Local\\Temp\\psvr-e-real\\run-2026-11-05\\worlds\\A\\.palimpsest\\worlds/attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+        "worldHead": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+        "uncommittedChanges": [],
+        "resultCommit": null,
+        "resultCommitted": false
+      }
+    },
+    "conclude": {
+      "state": "RECORDED",
+      "intent": "CHECKPOINT",
+      "mayEnd": true,
+      "blockers": [],
+      "check": {
+        "deliveryBlockers": [
+          "task decision-package is ACTIVE",
+          "attempt for decision-package is RUNNING but no host job is observed — inspect the world rather than assuming it is alive"
+        ],
+        "awaitingOperator": [],
+        "openTasks": [
+          "decision-package:ACTIVE"
+        ],
+        "openAttempts": [
+          "decision-package:RUNNING:unobserved"
+        ],
+        "unresolvedQuestions": [],
+        "blockedEffects": [],
+        "artifacts": []
+      }
+    },
+    "finalize": {
+      "state": "NOT_READY",
+      "detail": "the world has no commit beyond the attempt's basis; the actual work is still outstanding"
+    }
+  }
+}
