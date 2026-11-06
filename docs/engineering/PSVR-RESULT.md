@@ -277,6 +277,16 @@ was empty, so the settlement was refused (`NO_WORK: the world holds no observabl
 base`), and the package it actually committed was written outside the governed attempt. The one
 readiness call and the two completion attempts did not produce a settlement.
 
+The offline trajectory analysis
+([`PSVR-C-TRAJECTORY.md`](PSVR-C-TRAJECTORY.md)) reconstructs both A-2 paths call by call: the work
+was committed first, the project was created at that same head, and every task's required artifacts
+already existed in the basis, so no attempt could ever produce a delta. It also replays
+`palimpsest_work conclude {intent: CHECKPOINT}` on **copies** of both recorded `state-A` directories:
+the conclusion is `RECORDED` with `session.mayEnd: true` and `blockers: []`, while `finalize`
+refuses `NOT_READY` for the same states. The legal ending existed; across all eight principal
+sessions the model made **0 `conclude`** and **0 `finalize`** calls, and the product's `nextAction`
+kept naming `complete` instead.
+
 ### 8.6 The fail-closed gate
 
 `scripts/psvr/run_psvr_c.mjs` was exercised in all four states: plan-only (`modelCalls: 0`, exit 0);
