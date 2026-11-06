@@ -13,6 +13,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { zstdDecompressSync } from "node:zlib";
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {
@@ -66,6 +67,34 @@ function attribute(stream, prefix) {
     return readJson(`${prefix}.timeline.json`);
   } catch {
     return null;
+  }
+}
+
+/**
+ * The budget ledger is a SAMPLE; the stream is the provider's per-step usage. The PSVR-C F-2
+ * reconciliation showed the last step can arrive after the ledger's observedAt. Prefer the stream sum
+ * and fall back to the ledger only when the stream is unreadable.
+ */
+function streamUsage(file) {
+  const MAGIC = Buffer.from([0x28, 0xb5, 0x2f, 0xfd]);
+  try {
+    const bytes = readFileSync(file);
+    const starts = [];
+    for (let i = 0; i + 3 < bytes.length; i += 1) {
+      if (bytes[i] === MAGIC[0] && bytes[i + 1] === MAGIC[1] && bytes[i + 2] === MAGIC[2] && bytes[i + 3] === MAGIC[3]) starts.push(i);
+    }
+    let total = 0;
+    for (let k = 0; k < starts.length; k += 1) {
+      const end = k + 1 < starts.length ? starts[k + 1] : bytes.length;
+      for (const line of zstdDecompressSync(bytes.subarray(starts[k], end)).toString("utf8").split("\n")) {
+        if (line === "") continue;
+        const event = JSON.parse(line);
+        if (event.type === "assistant/message" && event.data?.usage) total += Number(event.data.usage.totalTokens ?? 0);
+      }
+    }
+    return total;
+  } catch {
+    return 0;
   }
 }
 
@@ -141,7 +170,7 @@ for (const stage of cohort.stages) {
   const journal = journalIntent(stateDir);
   const head = git(world, ["rev-parse", "HEAD"]);
   const status = git(world, ["status", "--porcelain"]);
-  const totalTokens = Number(run.usage?.totalTokens ?? budget.totalTokens ?? 0);
+  const totalTokens = Number(streamUsage(principal?.file ?? "") || run.usage?.totalTokens || budget.totalTokens || 0);
   const natural = run.natural === true;
   const stopped = run.stopped === true;
   const historical = stage.historical;

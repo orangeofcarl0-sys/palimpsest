@@ -180,14 +180,14 @@ function main() {
       case "tool/result": {
         const call = calls.get(data.toolCallId);
         const text = resultText(event);
-        const failed = resultError(text);
+        const failed = event?.data?.message?.isError === true || resultError(text);
         const facts = factsOf(text);
         const factText = Object.entries(facts)
           .map(([key, value]) => `${key}=${String(value)}`)
           .join(" ");
         add(event, "RESULT", `${failed ? "ERROR" : "ok"}${factText ? ` ${factText}` : ""} ${clip(text.replace(/\s+/gu, " ").trim(), 220)}`, {
           callId: data.toolCallId,
-          kind: call?.kind,
+          callKind: call?.kind,
           ok: !failed,
           facts,
         });
