@@ -3,7 +3,7 @@
 This evidence was produced by the deterministic PNWF stage. The `direct/` and `host-governed/`
 directories used **0 paid model sessions**: every model message there is a labelled deterministic
 Messages stand-in (`MOCK_MODEL`). The separately authorized real-model continuation cohort is under
-[`../live/2026-11-06/`](../live/2026-11-06/README.md): 2 sessions, 2,587,924 / 5,000,000 tokens.
+[`../live/2026-11-06/`](../live/2026-11-06/README.md): 2 sessions, 2,655,709 / 5,000,000 tokens.
 
 ## `live/2026-11-06/`
 
@@ -11,7 +11,7 @@ The real `deepseek-flash` continuation on copies of the recorded PSVR-C A-2 stat
 
 | | software | energy |
 |---|---:|---:|
-| tokens | 1,579,080 | 1,008,844 |
+| tokens (stream sum) | 1,579,080 | 1,076,629 |
 | exit | natural 0 | natural 0 |
 | `complete` calls | 0 | 0 |
 | `conclude` calls | 1 (DELIVER) | 1 (DELIVER) |
@@ -21,7 +21,7 @@ The real `deepseek-flash` continuation on copies of the recorded PSVR-C A-2 stat
 | canonical head | unchanged | unchanged |
 
 H1 supported (0 complete vs 3 historical), H3 supported (legal DELIVER after successor + typed
-retirement), H5 mixed (aggregate 2.59M vs 3.23M; energy −46.9%, software +18.6%). The evidence
+retirement), H5 mixed (aggregate 2.66M vs 3.23M; energy −43.4%, software +18.6%; the software session read the original harness and is confounded). Detailed behaviour: [`docs/engineering/PNWF-LIVE-TRAJECTORY.md`](../../../docs/engineering/PNWF-LIVE-TRAJECTORY.md). The evidence
 includes the raw streams, run/budget/snapshot, score, gate records and post-session state DBs.
 
 ## `direct/`

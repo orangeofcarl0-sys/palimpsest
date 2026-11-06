@@ -3,30 +3,88 @@
   "cohortId": "pnwf-continuation-2026-11",
   "status": "COMPLETED",
   "sessions": 2,
-  "tokens": { "software": 1579080, "energy": 1008844, "aggregate": 2587924, "authorizedAggregate": 5000000 },
-  "historicalClosureTokens": { "software": 1331902, "energy": 1901695, "aggregate": 3233597 },
-  "tokenDelta": { "software": 247178, "energy": -892851, "aggregate": -645673, "aggregatePercent": -19.97 },
-  "exit": { "software": "natural", "energy": "natural", "historical": "budget_stop" },
+  "tokens": {
+    "software": 1579080,
+    "energy": 1076629,
+    "aggregate": 2655709,
+    "authorizedAggregate": 5000000
+  },
+  "historicalClosureTokens": {
+    "software": 1331902,
+    "energy": 1901695,
+    "aggregate": 3233597
+  },
+  "tokenDelta": {
+    "software": 247178,
+    "energy": -825066,
+    "aggregate": -577888,
+    "aggregatePercent": -17.87
+  },
+  "exit": {
+    "software": "natural",
+    "energy": "natural",
+    "historical": "budget_stop"
+  },
   "calls": {
-    "software": { "complete": 0, "conclude": 1, "typedPlan": 2, "relay": 2, "readiness": 2, "toolErrors": 0 },
-    "energy": { "complete": 0, "conclude": 1, "typedPlan": 2, "relay": 2, "readiness": 1, "toolErrors": 0 },
+    "software": {
+      "complete": 0,
+      "conclude": 1,
+      "typedPlan": 2,
+      "relay": 2,
+      "readiness": 2,
+      "toolErrors": 0
+    },
+    "energy": {
+      "complete": 0,
+      "conclude": 1,
+      "typedPlan": 2,
+      "relay": 2,
+      "readiness": 1,
+      "toolErrors": 0
+    },
     "historicalComplete": 3,
     "historicalConclude": 0
   },
   "finalState": {
-    "software": { "tasks": "grpc-contract/grpc-service/verify-migration all STALE", "attempt": "CANCELLED", "episodeIntent": "DELIVER", "promotions": 0, "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d" },
-    "energy": { "tasks": "decision-package STALE", "attempt": "CANCELLED", "episodeIntent": "DELIVER", "promotions": 0, "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81" }
+    "software": {
+      "tasks": "grpc-contract/grpc-service/verify-migration all STALE",
+      "attempt": "CANCELLED",
+      "episodeIntent": "DELIVER",
+      "promotions": 0,
+      "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d"
+    },
+    "energy": {
+      "tasks": "decision-package STALE",
+      "attempt": "CANCELLED",
+      "episodeIntent": "DELIVER",
+      "promotions": 0,
+      "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81"
+    }
   },
   "hypotheses": {
-    "H1": { "outcome": "SUPPORTED", "evidence": "0 complete calls in both sessions (historical 1 and 2); no repeated failing complete." },
-    "H3": { "outcome": "SUPPORTED", "evidence": "Both sessions recorded DELIVER after closing the attempt as a successor and retiring the redundant task by typed plan; neither claimed acceptance or promotion." },
-    "H5": { "outcome": "MIXED", "evidence": "Energy 1,008,844 < 1,901,695 and aggregate 2,587,924 < 3,233,597; software 1,579,080 > 1,331,902. Both sessions ended naturally; the historical sessions both stopped at the budget." }
+    "H1": {
+      "outcome": "SUPPORTED",
+      "evidence": "0 complete calls in both sessions (historical 1 and 2); no repeated failing complete."
+    },
+    "H3": {
+      "outcome": "SUPPORTED",
+      "evidence": "Both sessions recorded DELIVER after closing the attempt as a successor and retiring the redundant task by typed plan; neither claimed acceptance or promotion."
+    },
+    "H5": {
+      "outcome": "MIXED",
+      "evidence": "Energy 1,076,629 < 1,901,695 and aggregate 2,655,709 < 3,233,597; software 1,579,080 > 1,331,902. Both sessions ended naturally; the historical sessions both stopped at the budget."
+    }
   },
-  "notTested": { "H2": "fresh-start direct outcome", "H4": "governed promotion; covered by deterministic tests and PSVR-A/B" },
+  "notTested": {
+    "H2": "fresh-start direct outcome",
+    "H4": "governed promotion; covered by deterministic tests and PSVR-A/B"
+  },
   "notes": [
     "The sessions resumed copies of the recorded PSVR-C A-2 states; the originals were not modified.",
     "Both sessions independently re-read and verified the committed artifacts (software: node --test 26/26; energy: the package checker) before concluding DELIVER.",
     "No artifact was accepted, no promotion was committed and the canonical heads did not move.",
     "n=1 per stage; the comparison is descriptive, not a randomized controlled trial."
-  ]
+  ],
+  "tokenAccounting": "The energy ledger was sampled at 1,008,844 before the final step; the stream sum (1,076,629) includes the final 67,785-token step. The software ledger and stream agree at 1,579,080. The report uses the stream sum, consistent with the PSVR-C F-2 reconciliation.",
+  "validity": "The software session read the original PSVR-C harness under %TEMP% (constraint.md, core.json, prompts/A2.txt, out/score.json, out/A-2/STOPPED.json, out/A-2/snapshot.json) before closing. The energy session stayed in-world. The software result is exploratory/contaminated; the energy result is the cleaner signal."
 }
