@@ -298,8 +298,8 @@ Causes and required fixes:
   discovering and repairing it. `prepare_continuation.mjs` now rewrites every attempt world's
   alternates to the copied canonical objects.
 - The adapter's budget watchdog polled the zstd stream, but in-flight usage was not visible until the
-  stream flushed/exited. The container overshot its ceiling by 58,495 (software) and 223,976 (energy).
-  The provider proxy has no pre-call token cap. Before any future paid run, the proxy must enforce a
+  stream flushed/exited. Software overshot the 1,662,500 soft ceiling by 58,495; energy overshot the
+  1,750,000 ceiling by 223,976. The provider proxy has no pre-call token cap. Before any future paid run, the proxy must enforce a
   provider-side per-session cap (parse `message_delta.usage`, refuse/429 at the soft ceiling), and
   the session must not be started without it.
 - The smoke reached the live proxy because the mock server's port was already occupied. It is
