@@ -56,8 +56,9 @@ Promotions and canonical heads are unchanged, so no false acceptance was produce
    attempt world's alternates to the copied canonical objects; the copies used here predate that fix.
 2. **The budget guard did not enforce the ceiling.** The adapter polled the zstd session stream every
    10 s, but DSH did not expose in-flight usage before the stream flush/exit. The watchdog killed the
-   container only after the final step: software overshot its 1.75M ceiling by 58,495 tokens, energy
-   by 223,976. The provider proxy has no pre-call token cap. A future paid run must add a
+   container only after the final step: software overshot the 1,662,500 soft ceiling by 58,495
+   tokens; energy overshot the 1,750,000 ceiling by 223,976. The provider proxy has no pre-call token
+   cap. A future paid run must add a
    provider-side per-session cap (parse `message_delta.usage` and refuse/429 at the soft ceiling)
    before another model call is authorized.
 3. **The prompt/session was not a clean closure test.** The model did real work (bash, edits, relay
