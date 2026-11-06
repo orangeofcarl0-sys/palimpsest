@@ -286,6 +286,11 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
           `${status.nextAction.kind.startsWith("WAIT_OPERATOR") ? "operator" : "agent"}: ${status.nextAction.detail}`,
         );
       }
+      if (status.nextAction.session?.mayEnd === true) {
+        nextActions.push(
+          `session: ${status.nextAction.session.action ?? "record an episode conclusion"} — ${status.nextAction.session.detail}`,
+        );
+      }
     } else {
       if (blocked.length > 0) nextActions.push("operator: recover the pending canonical effect before starting dependent work");
       if (verifying.length > 0) nextActions.push("operator: review the delivered result and accept or reject it");
@@ -293,7 +298,9 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
       if (active.length > 0 && running.length > 0) nextActions.push("agent: palimpsest_work action=complete when the work is done");
     }
     if (openQuestions.length > 0) nextActions.push("agent: address an open question by investigation or a proposal; do not treat it as accepted");
-    if (pendingWork.length === 0 && verifying.length === 0) nextActions.push("agent: propose the next bounded step in the project journal");
+    if (pendingWork.length === 0 && verifying.length === 0 && status.nextAction?.kind !== "NO_FORMAL_WORK") {
+      nextActions.push("agent: propose the next bounded step in the project journal");
+    }
     if (nextActions.length === 0) nextActions.push("status is quiescent; read the recent journal before proposing a change");
 
     const base = {

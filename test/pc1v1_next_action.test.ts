@@ -102,9 +102,11 @@ describe("PC1-V1 R2: the pure state explanation", () => {
     expect(
       explainWorkState({ ...baseInput, tasks: [{ taskId: "a", state: "BLOCKED" }] }).kind,
     ).toBe("WAIT_DEPENDENCIES");
-    expect(
-      explainWorkState({ ...baseInput, tasks: [], attempts: [] }).kind,
-    ).toBe("NO_ACTION");
+    const noFormalWork = explainWorkState({ ...baseInput, tasks: [], attempts: [] });
+    expect(noFormalWork.kind).toBe("NO_FORMAL_WORK");
+    expect(noFormalWork.executable).toBe(false);
+    expect(noFormalWork.session?.mayEnd).toBe(true);
+    expect(noFormalWork.detail).toMatch(/no live formal task/iu);
   });
 });
 

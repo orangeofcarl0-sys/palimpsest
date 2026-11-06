@@ -1,0 +1,25 @@
+{
+  "schema": "pnwf-cost-reconciliation/v1",
+  "stage": "psvr-c-energy",
+  "session": "F-2",
+  "streamSumTokens": 489157,
+  "ledgerTotalTokens": 454712,
+  "differenceTokens": 34445,
+  "lastStep": {
+    "step": 20,
+    "at": "2026-11-05T18:24:38.870Z",
+    "inputTokens": 226,
+    "outputTokens": 811,
+    "cacheReadTokens": 33408,
+    "totalTokens": 34445
+  },
+  "ledgerObservedAt": "2026-11-05T18:24:33.001Z",
+  "runEndedAt": "2026-11-05T18:24:39.314Z",
+  "identity": "489157 - 34445 = 454712",
+  "conclusion": "The ledger is a sample taken before the session's final request. The 34,445 difference is exactly step 20's usage, which arrived after observedAt; no token is double-counted and no worker usage is included in this session.",
+  "grades": {
+    "observed": ["stream per-step usage", "ledger observedAt", "run endedAt", "last step timestamp"],
+    "derived": ["streamSumTokens", "differenceTokens", "identity"],
+    "inferred": ["the ledger would have recorded 489,157 if sampled after the final response"]
+  }
+}

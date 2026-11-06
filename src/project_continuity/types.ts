@@ -133,6 +133,20 @@ export interface ContinuityInput {
         readonly action: string | null;
         readonly detail: string;
         readonly taskId: string | null;
+        readonly blockers?: readonly string[];
+        /** PNWF-A: the session-level exit, separate from the formal-work transition. */
+        readonly session?: {
+          readonly mayEnd: boolean;
+          readonly action: string | null;
+          readonly detail: string;
+        };
+      };
+      /** PNWF-B/C: physical repository head against the canonical ProjectIR head. */
+      directOutcome?: {
+        readonly repositoryHead: string | null;
+        readonly projectHead: string;
+        readonly relation: string;
+        readonly uncommittedPaths: readonly string[];
       };
     };
     promotionFacts(): readonly {
