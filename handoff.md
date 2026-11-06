@@ -8,15 +8,16 @@
 ## 0. 30 秒版本
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
-- 最近同步的正式主线：`origin/main` = **`6b021dda77ee8c3f8010db5071b0896aee7ab232`**（#229 后主线，本轮开发基线）。
+- 最近同步的正式主线：`origin/main` = **`b7460f3785406ba8ad3c1a4a5f19f275a38813ad`**（PR #230 合并，本次 handoff 同步的起点）。
   接手时先运行 `git rev-parse origin/main`，以实际值为准；不要把本行当成永久基线。
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
-- 本轮未合并的修复在 `codex/project-takeover-20261107`，继续本轮工作可复用该分支。独立新工作才从确认的主线开分支：
+- 本轮修复已通过 [PR #230](https://github.com/orangeofcarl0-sys/palimpsest/pull/230) 合并；原分支 `codex/project-takeover-20261107` 已完成。本次交接同步分支为 `codex/pnwf-r1-release-handoff`。新工作从确认的主线开分支：
   ```bash
   git fetch origin
   git switch -c codex/<your-branch> origin/main
   ```
 - 最近完成：PNWF-CQ-R1 请求前预算预留、实际容器/World 资格、Mock 身份隔离、Operator/Head 最终复核、Direct→真实子进程 Worker→Settlement→Promotion→依赖续作。
+- PR #230 的 14 个 CI job 首次运行全部成功：Linux 4,981 PASS / 33 SKIP、E2E 38/38、预算故障 20/20、Windows Host Boundary 通过。四个依赖外部 Host 的 gate 按既有环境条件跳过执行，不属于实测通过；详见 §5。
 - **旧付费预算已耗尽且超支；owner 于 2026-11-07 已新授权启动付费模型调用。** 授权保留，但真实 Provider 上界尚未获技术资格，当前 runner 仍拒绝 paid execution。详见 §6。
 - 当前 **所有 paid Provider 均未取得可执行单次计费上界资格，runner 明确拒绝付费执行**。20 项预算故障测试与 6 组真实 DSH 容器实验通过，只证明 Mock 合同；不能据此开启 paid cohort。
 
@@ -46,9 +47,10 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 以 `git rev-parse origin/main` 为准；最近同步 `6b021dda77ee8c3f8010db5071b0896aee7ab232` |
+| `origin/main` | 以 `git rev-parse origin/main` 为准；最近同步 `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`（PR #230 merge） |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
-| 当前本地分支 | `codex/project-takeover-20261107`；本轮修复/证据/文档在同一提交，尚未推送或合并 |
+| PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
+| 交付分支 | 产品分支 `codex/project-takeover-20261107` 已合并；`codex/pnwf-r1-release-handoff` 从该合并点同步交接与 CI 证据 |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -155,6 +157,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 - `docs/engineering/PNWF-CQ-RESULT.md` — 本阶段完整报告（含无效 cohort 与超支）
 - `docs/engineering/PNWF-CQ-R1-QUALIFICATION.md` — 本轮零付费资格、边界和复现；§5 区分初轮失败与修复后回归
 - `research-evidence/pnwf-cq-r1/2026-11-07/` — 新预算测试、六组实际容器、产品回归、纵向事件与诊断失败留档
+- `research-evidence/pnwf-cq-r1/2026-11-07/release-ci.json` — PR #230 的被检验 head、合并 SHA、远程检查与明确跳过项；独立于发布前的 `verification.json` 快照
 - `docs/engineering/PNWF-LIVE-TRAJECTORY.md` — 上一阶段 live trajectory 分析
 - `research-evidence/pnwf-cq/2026-11-06/` — 确定性 evidence + 真实 host direct-governed
 - `research-evidence/pnwf-cq/live/2026-11-07/` — **INVALID / OVER BUDGET** 容器 cohort
@@ -211,7 +214,17 @@ node node_modules/vitest/vitest.mjs run test/pc1v1_operator_identity.test.ts tes
 
 结果：20/20 请求故障测试；6/6 实际容器场景；16/16 实例 canary。容器复现需要现存 PSVR recorded sources 和本地 image；不自动下载或伪造源数据。可用镜像 digest：`sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0`。
 
-轻量请求故障测试已接入 CI unit job。当前分支尚未推送，不能把本机验证称为远程 CI 成功。
+轻量请求故障测试已接入 CI unit job。PR #230 在 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051` 上的三套工作流、14 个 job 首次运行全部成功，无需重跑或放宽断言。2026-11-07 全绿后合并为 `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`。
+
+| 远程验证 | 实际结果 | 运行 |
+|---|---|---|
+| Linux CI | 预算故障 20/20；Vitest 423 PASS / 2 SKIP 文件，4,981 PASS / 33 SKIP 测试；E2E 38/38；构建、architecture、public API 通过 | [42309132630](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132630) |
+| R0 | 六个 E gate 与 package-smoke 实际通过；D2/D4/D5 与 D5 reliability 因未配置外部 DSH 环境而跳过执行，绿色 job 不等于这些 gate 实测通过 | [42309132640](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132640) |
+| Windows Host Boundary | R1-H 17 PASS；R1-HR 45 PASS / 2 LIMIT；R1-HC 26 PASS / 1 LIMIT；clean-env 10 PASS；architecture / public API 通过，均 0 FAIL | [42309132623](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42309132623) |
+
+Windows 既有残余边界仍明确保留：HR-39b 不保证多个 ACTIVE world 的原生代码互读隔离；HR-33 不保证兄弟 world 名称的元数据保密；HC-27 当前 confidential profile 串行化 ACTIVE worker，不支持并行 ACTIVE confidential worker。此次 CI 没有把 LIMIT 改成 PASS，也没有运行付费模型。
+
+机器发布记录为 [release-ci.json](research-evidence/pnwf-cq-r1/2026-11-07/release-ci.json)。它只记录上述 PR head 的检查和产品合并；后续交接提交的 CI 以对应 PR 为准，不能复用旧 head 的绿灯。
 
 本机 PATH 过长，cmd/pnpm 子进程可能报找不到 node/tsc。仅在当前进程临时缩短 PATH，或用 `node node_modules/typescript/lib/tsc.js -b`、`node node_modules/vitest/vitest.mjs`；不要修改全局环境或为此升级依赖。
 
@@ -221,9 +234,9 @@ node node_modules/vitest/vitest.mjs run test/pc1v1_operator_identity.test.ts tes
 - `architecture:check` 的 hotspot 也约束 fanOut（controller 上限 39）。
 - 不要把新逻辑塞进 Controller 来“省文件”。
 
-### 全量 suite 的已知失败
+### 本地 Windows 全量 suite 的历史失败
 
-全量 `npx vitest run` 在本地会有约 100+ failures，归因于：
+此前全量 `npx vitest run` 在本地出现约 100+ failures，历史归因包括：
 
 - 30s timeouts under parallel load（PNWF/PWRS/PC1/LHAPE/CI3 等；顺序跑会过）
 - dirty-tree historical guards（`ad_verification_integration` 要求 protected paths 无 `git diff HEAD`；提交后会过）
@@ -232,6 +245,8 @@ node node_modules/vitest/vitest.mjs run test/pc1v1_operator_identity.test.ts tes
 - Windows cleanup / junction EACCES（R3 historical evidence guards）
 
 **不要**用放宽断言来让全量变绿。先用顺序验收集确认产品路径。
+
+本轮远程 Linux 全量结果已单独列于上表；它不代表这些本地 Windows 历史问题已经逐项消除。远程 Windows 工作流验证 Host Boundary，并不执行完整 Vitest suite。
 
 ### 真实 Host
 
@@ -372,6 +387,7 @@ Owner 在本轮发布指令中明确表示“授权启动付费模型调用”�
 | 2026-11-07 | 同步 origin/main 到 handoff merge；说明 SHA 需现场核实 | `docs/handoff-sync` | 防止把快照当永久基线 |
 | 2026-11-07 | PNWF-CQ-R1：请求前预算预留、Mock/实际容器/World 资格；Operator/HEAD 复核与职责归位；真实子进程纵向治理链 | `docs/engineering/PNWF-CQ-R1-QUALIFICATION.md`；`research-evidence/pnwf-cq-r1/2026-11-07/` | 新增 paid calls 0；20 项预算测试、6 组容器场景；真实 Provider 仍 BLOCKED |
 | 2026-11-07 | Owner 授权推送、创建 PR、跟进并修复 CI、全绿后合并及更新 handoff；另明确授权启动付费模型调用 | 本轮用户指令 | 新付费授权有效；尚无新量化 ledger，Provider 技术资格仍 BLOCKED，发布/CI paid calls 0 |
+| 2026-11-07 | PR #230 在 14/14 CI job 成功后合并；同步真实 merge SHA、Linux 全量/E2E/Windows 结果和跳过项 | [PR #230](https://github.com/orangeofcarl0-sys/palimpsest/pull/230)；`b7460f3`；`release-ci.json` | 首次 CI 无失败、无重跑；四个 Host-dependent gate 未执行；新增 paid calls 0 |
 
 ---
 
@@ -379,8 +395,8 @@ Owner 在本轮发布指令中明确表示“授权启动付费模型调用”�
 
 1. 读本文件 §0–§3。
 2. 读 `PNWF-CQ-R1-QUALIFICATION.md`，并读历史 `PNWF-CQ-RESULT.md` 的 §6/§9。
-3. 检查当前分支和工作树；继续本轮时保留尚未合并的修复。独立新工作再 fetch 并开 `codex/` 分支。
+3. 检查当前分支和工作树；本轮产品修复已通过 #230 合并。新工作先 fetch，再从当前主线开 `codex/` 分支。
 4. `pnpm build && pnpm architecture:check && pnpm architecture:check-public-api`。
 5. 跑 §5 的顺序验收集。
-6. 如果任务涉及付费模型：先读 §6，**默认拒绝执行**，直到真实 Provider 可执行上界资格、实际隔离和新授权全部就绪。
+6. 如果任务涉及付费模型：先读 §6；owner 新授权已经收到，实际执行仍需真实 Provider 上界资格、实际隔离与新量化 ledger 全部就绪。
 7. 改完代码/证据后更新本文件并提交。
