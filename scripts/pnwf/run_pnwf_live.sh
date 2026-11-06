@@ -5,6 +5,10 @@
 # (direct commit + ACTIVE task + RUNNING attempt) under the PNWF build, with the exact PSVR-C A2
 # continuation prompt. The fail-closed gate requires research-evidence/pnwf/live/authorization-
 # pnwf-continuation.json before any provider call.
+#
+# PNWF-CQ-F: a paid run now also requires an EVALUATION_ISOLATION_QUALIFIED record whose
+# principalRuntime is "container". Set PNWF_ISOLATION_RECORD to that record. The current host launch
+# below is NOT containerized, so without a containerized adapter this script fails closed at the gate.
 set -euo pipefail
 
 REPO="$(pwd)"
@@ -120,11 +124,14 @@ if ! kill -0 "$PROXY_PID" 2>/dev/null; then
 fi
 
 for stage in software energy; do
+  ISOLATION_ARGS=()
+  if [ -n "${PNWF_ISOLATION_RECORD:-}" ]; then ISOLATION_ARGS=(--isolation="$PNWF_ISOLATION_RECORD"); fi
   node "$REPO/scripts/pnwf/run_pnwf_live.mjs" \
     --cohort="$COHORT_FILE" \
     --authorization="$AUTH" \
     --out="$RUN/out/gate" \
     --adapter="$REPO/scripts/psvr/adapter.mjs" \
+    ${ISOLATION_ARGS[@]+"${ISOLATION_ARGS[@]}"} \
     --execute \
     --session="$stage" \
     >> "$RUN/out/cohort-run.json" 2>> "$RUN/out/cohort-run.err" || true

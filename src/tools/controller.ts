@@ -50,7 +50,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
-import { makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
+import { findOpenWorkerInvocations, makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeProjectInputs, readProjectInput } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
@@ -1790,11 +1790,7 @@ export class ProjectController {
     );
   }
 
-  /**
-   * The forward propagation set for a typed revision delta (sorted, stable).
-   * This is the EXACT set the revision batch stales, and therefore the exact set
-   * that is removed from the quiescence requirement.
-   */
+  /** The forward propagation set for a typed revision delta (sorted, stable). */
   #invalidationAffected(arg: {
     changeClass: ChangeClass;
     changedIds: readonly string[];
@@ -1802,25 +1798,28 @@ export class ProjectController {
     to: number;
     project: ProjectIr;
   }): string[] {
-    const edges: DependencyEdge[] = [];
-    for (const task of arg.project.tasks) {
-      for (const dependency of task.depends_on) {
-        edges.push({
-          from: dependency,
-          to: task.task_id,
-          sensitive_to: ["behavior_change", "contract_breaking"],
-        });
-      }
-    }
+    const edges: DependencyEdge[] = arg.project.tasks.flatMap((task) =>
+      task.depends_on.map((dependency) => ({ from: dependency, to: task.task_id, sensitive_to: ["behavior_change", "contract_breaking"] as const })),
+    );
     const affected = computeInvalidationSet(
-      {
-        from: arg.from,
-        to: arg.to,
-        change_class: arg.changeClass,
-        changed_ids: arg.changedIds,
-      },
+      { from: arg.from, to: arg.to, change_class: arg.changeClass, changed_ids: arg.changedIds },
       edges,
     );
+    // PNWF-CQ-D: the owner rechecks the invocation ledger after the adapter's job snapshot.
+    const openWorkerInvocations = findOpenWorkerInvocations({
+      connection: this.store.connection,
+      projectId: this.projectId,
+      taskIds: [...affected],
+      invocations: (attemptId) => this.executionInvocations.list(attemptId),
+    });
+    if (openWorkerInvocations.length > 0) {
+      const first = openWorkerInvocations[0]!;
+      throw new PlanReconciliationError({
+        kind: "quiescence_required",
+        detail: `a worker invocation is still OPEN for task ${first.taskId} (attempt ${first.attemptId}); a structural revision must not stale a position whose execution window this host can still observe`,
+        refs: [first.taskId, first.attemptId, first.invocationId],
+      });
+    }
     return [...affected].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
   }
 
