@@ -1,0 +1,81 @@
+{
+  "schema": "pnwf-container-qualification/v1",
+  "name": "interrupted-stream",
+  "passed": true,
+  "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-interrupted-stream-FQsuUF",
+  "outcomes": [
+    {
+      "sessionId": "software",
+      "exitCode": 5
+    }
+  ],
+  "mockRequests": 1,
+  "attemptedRequests": [
+    {
+      "ordinal": 0,
+      "bound": 359731,
+      "output": 104,
+      "accepted": true
+    }
+  ],
+  "calls": [
+    {
+      "ordinal": 0,
+      "bound": 359731,
+      "usage": {
+        "input_tokens": 103731,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 104
+      },
+      "total": 103835,
+      "toolResults": []
+    }
+  ],
+  "observedStatuses": 0,
+  "mockTokenTotal": 103835,
+  "invariant": true,
+  "paidModelCalls": 0,
+  "accounting": {
+    "schema": "pnwf-spend-snapshot/v1",
+    "cohortId": "pnwf-r1-interrupted-stream",
+    "configDigest": "63a0e1693c8df4f89c1251e379296cc091ad094229b71a6a7cdd5a1a51cc06d8",
+    "state": "STOPPED",
+    "reason": "INTERRUPTED_RESPONSE",
+    "confirmed": 0,
+    "reserved": 359731,
+    "aggregateCeiling": 2000000,
+    "sessions": [
+      {
+        "id": "software",
+        "ordinal": 0,
+        "state": "STOPPED",
+        "ceiling": 1000000,
+        "softCeiling": 999000,
+        "confirmed": 0,
+        "reserved": 359731
+      },
+      {
+        "id": "energy",
+        "ordinal": 1,
+        "state": "NOT_STARTED",
+        "ceiling": 1000000,
+        "softCeiling": 999000,
+        "confirmed": 0,
+        "reserved": 0
+      }
+    ],
+    "requests": [
+      {
+        "id": "b34ff2bc-3c52-4bea-9fa0-99a0d7ea3b73",
+        "session": "software",
+        "digest": "a07d7ace633231119fd1e7345b10d01241f97d1d8a18791ee5f76ef79b884c61",
+        "reserved": 359731,
+        "actual": null,
+        "state": "UNKNOWN",
+        "reason": "INTERRUPTED_RESPONSE"
+      }
+    ],
+    "refusals": []
+  }
+}

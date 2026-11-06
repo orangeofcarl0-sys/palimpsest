@@ -44,8 +44,8 @@ export interface InstallProductOptions {
   readonly toolProfile?: "normal" | "expert" | undefined;
   readonly git?: GitPort | undefined;
   /**
-   * PC1 S04: the host-verified operator identity used to DECIDE/APPLY a proposal. Absent means
-   * decisions refuse; a proposal can still be created and previewed.
+   * Host-verified operator identity for proposal decisions and Direct basis admission. Absent means
+   * those mutations refuse; a proposal can still be created and previewed.
    */
   readonly operatorAuthority?: OperatorAuthorityPort | undefined;
   /** Existing ProjectIntent admission authority; passed to the intent service unchanged. */
@@ -85,6 +85,7 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
   };
   const installed = installPalimpsest(context, {
     ...(options.advanced ?? {}),
+    operatorAuthority: options.operatorAuthority,
     projectId: options.projectId,
     repository: options.repository,
     databasePath: join(stateDir, "palimpsest.sqlite"),

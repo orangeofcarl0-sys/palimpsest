@@ -1,0 +1,30 @@
+(node:19248) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ missing, damaged and incomplete usage never become zero (40.6073ms)
+✔ independent ledger connections reserve against the same aggregate (31.6895ms)
+✔ prior unfinished or failed session blocks the next session (24.3381ms)
+✔ large request is refused BEFORE the mock sees it (178.4471ms)
+✔ late usage holds reservations; concurrent request cannot spend them (213.5865ms)
+✔ fragmented final usage is counted once, including cache tokens (1.295ms)
+✔ stream interruption conserves reservation and forbids later requests (95.0935ms)
+✔ absent final usage cannot be interpreted as a free call (43.1859ms)
+✔ unqualified real provider and wrong mock instance are rejected (6.5702ms)
+✔ an occupied mock port fails closed; any HTTP listener is not identity (5.636ms)
+✔ successful sessions conserve exact accounting and permit the next stage (47.9732ms)
+✔ separate OS processes cannot reserve the same remaining budget (165.8111ms)
+✔ aggregate ceiling persists across completed sessions (24.7827ms)
+✔ session ceiling still binds when the cohort has spare capacity (39.4786ms)
+✔ mutated configuration and corrupted session rows fail closed (25.1193ms)
+✔ null, negative or incomplete counters are not zero usage (0.4201ms)
+✔ timeout retains the admitted bound and forbids a retry (73.8304ms)
+✔ the mock enforces output bounds; rejection never releases uncertain usage (40.1775ms)
+✔ old isolation JSON cannot qualify an arbitrary host adapter or a paid run (337.0664ms)
+✔ runner refuses missing prior ledger and cannot restart an unresolved cohort (405.5842ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2038.0119

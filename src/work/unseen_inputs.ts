@@ -383,6 +383,31 @@ export function canonicalWorktreeChanges(repository: string): readonly string[] 
   }
 }
 
+/** Physical basis facts only. Admission/authority decisions belong to the Head owner. */
+export interface CanonicalBasisFacts {
+  readonly head: string | null;
+  readonly uncommittedPaths: readonly string[] | null;
+  readonly descendant: boolean | null;
+  readonly distance: number | null;
+}
+
+export function observeCanonicalBasis(repository: string | undefined, fromHead?: string, target?: string): CanonicalBasisFacts | null {
+  if (!repository) return null;
+  let head: string | null = null, descendant: boolean | null = null, distance: number | null = null;
+  const read = (args: string[]): string => execFileSync("git", args, { cwd: repository, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  try { head = read(["rev-parse", "HEAD"]); } catch { /* unobservable, never an invented head */ }
+  const uncommittedPaths = canonicalWorktreeChanges(repository);
+  if (fromHead !== undefined && target !== undefined) {
+    try {
+      read(["cat-file", "-e", `${target}^{commit}`]);
+      read(["merge-base", "--is-ancestor", fromHead, target]);
+      descendant = true;
+      distance = Number(read(["rev-list", "--count", `${fromHead}..${target}`]));
+    } catch { descendant = false; }
+  }
+  return Object.freeze({ head, uncommittedPaths, descendant, distance });
+}
+
 /**
  * ODPE-A: is every dirty canonical path a CURRENT INPUT the new attempt can be given, or is some of
  * it unowned work the product cannot attribute?

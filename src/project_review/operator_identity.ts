@@ -114,6 +114,10 @@ export function makeSignedOperatorAuthority(input: {
   return {
     policyRef: { policyId: "pc1v1-signed-operator", version: "1" },
     authorize(actor) {
+      const now = Date.now(), issuedAt = Date.parse(input.claims.issuedAt), expiresAt = Date.parse(input.claims.expiresAt);
+      if (!Number.isFinite(issuedAt) || !Number.isFinite(expiresAt) || expiresAt <= issuedAt || now > expiresAt || now < issuedAt) {
+        return { authorized: false, role: "unknown", reason: "the verified credential is outside its validity window" };
+      }
       return actor === input.actor
         ? { authorized: true, role: "operator" }
         : {

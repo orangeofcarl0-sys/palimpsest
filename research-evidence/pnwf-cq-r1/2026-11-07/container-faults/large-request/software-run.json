@@ -1,0 +1,32 @@
+{
+  "schema": "alhs-core-session-run/v1",
+  "cohortId": "pnwf-r1-large-request",
+  "sessionId": "software",
+  "condition": "PNWF_FULL",
+  "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-large-request-BQq13P\\stages\\software\\world",
+  "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-large-request-BQq13P\\runtime-software",
+  "principalRuntime": "container",
+  "containerId": "2126666bf06181450410738680a220aff08d7ff2053214b44bd1f25aee3a1d11",
+  "qualification": "f0063ad96b4c1b024fda156f11ce06b4348093bbd87e394aba5ff14a91abce4f",
+  "startedAt": "2026-11-06T22:28:56.963Z",
+  "endedAt": "2026-11-06T22:29:35.082Z",
+  "exitCode": 137,
+  "error": null,
+  "killedBy": "budget",
+  "stopped": true,
+  "natural": false,
+  "usage": {
+    "schema": "aps-budget-ledger/v1",
+    "cohortId": "pnwf-r1-large-request",
+    "sessionId": "software",
+    "observedAt": "2026-11-06T22:29:35.082Z",
+    "maxTokens": 200000,
+    "softCeiling": 199000,
+    "totalTokens": 0,
+    "confirmedTokens": 0,
+    "reservedTokens": 0,
+    "source": "REQUEST_ADMISSION_LEDGER",
+    "state": "STOPPED"
+  },
+  "paidModelCalls": 0
+}

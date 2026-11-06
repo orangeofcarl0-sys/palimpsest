@@ -342,14 +342,20 @@ this is descriptive, not a universal cost claim.
 
 ## 6. Experiment qualification report
 
+This section records the timeline, not an unexecuted-cohort verdict. The initial engineering
+qualification preceded paid execution. The later container smoke and two cohort sessions DID run;
+their combined 5,190,778 tokens exceeded the 5,000,000 authorization by 190,778. The cohort remains
+**INVALID / OVER BUDGET**, with 0/2 primary endpoints (§4.3, §9). The zero-paid execution-control
+follow-up is reported separately in [PNWF-CQ-R1-QUALIFICATION.md](PNWF-CQ-R1-QUALIFICATION.md).
+
 | item | status |
 |---|---|
-| Harness Isolation | **QUALIFIED** (container canary; live adapter integration NOT_EXERCISED) |
+| Harness Isolation | Initial standalone canary **QUALIFIED**; later adapter execution exposed portability/control failures, so this was not sufficient live qualification |
 | Principal Native Read | **qualified** (task read allowed; harness EACCES) |
 | Principal Native Shell | **qualified** (task shell/Git/build allowed; harness denied through direct, shell and indirect paths) |
 | Other Condition Access | **blocked** (`/harness/other-condition` EACCES) |
-| Scoring | **qualified for mechanical facts/accounting**; a new cohort has not been scored |
-| Paid Cohort | **NOT_EXECUTED** |
+| Scoring | Mechanical facts/accounting were recorded; they do not repair experiment invalidity |
+| Paid Cohort | Initial qualification: NOT_EXECUTED; subsequent execution: **EXECUTED / INVALID / OVER BUDGET** |
 
 ## 7. Direct→Governed: implemented operator admission
 

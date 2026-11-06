@@ -1,0 +1,50 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "pnwf-r1-late-usage-next-request",
+  "configDigest": "942aff69e526a8a9d47459561f3eda316949839ba3d74bf787d6b6f26153f3d4",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 167427,
+  "reserved": 0,
+  "aggregateCeiling": 860000,
+  "sessions": [
+    {
+      "id": "software",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": 430000,
+      "softCeiling": 429000,
+      "confirmed": 167427,
+      "reserved": 0
+    },
+    {
+      "id": "energy",
+      "ordinal": 1,
+      "state": "NOT_STARTED",
+      "ceiling": 430000,
+      "softCeiling": 429000,
+      "confirmed": 0,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "e7888eae-c80b-40b2-ba9d-60292e7b9508",
+      "session": "software",
+      "digest": "c2d6204b1926360b98d6ddfc94c19a1983db65476a49dacef0cf901abf7979dd",
+      "reserved": 359731,
+      "actual": 103835,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "d70f82e2-8c01-408f-84f1-7dbdd3d34325",
+      "session": "software",
+      "digest": "8744715fda79f569aada735d0b1cee50496abda9b672d8a03a3f5c4293152c75",
+      "reserved": 319523,
+      "actual": 63592,
+      "state": "SETTLED",
+      "reason": null
+    }
+  ]
+}

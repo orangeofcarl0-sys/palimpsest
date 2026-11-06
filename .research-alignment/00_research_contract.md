@@ -1,0 +1,19 @@
+# PNWF-CQ-R1：执行资格与产品边界合同
+
+问题：在不调用付费模型的条件下，能否证明每个请求先取得可执行预算、实际容器具备隔离与可读 Git World，且产品不会以不充分事实批准 Head 或误导任务退休？
+
+对象：PNWF Runner、Provider Proxy、Container Adapter、复制的 Git/SQLite 状态，以及既有 Work/Head owner。单位为总 tokens（fresh input + cache input + output），不是费用或模型收益。
+
+本轮 Mock 的计量单位明确规定为 UTF-8 字节构成的合成 token 计数，不等同真实 tokenizer 或账单；只有这个可执行上界合同获得资格。
+
+基线：主线 `6b021dda77ee8c3f8010db5071b0896aee7ab232`；PNWF-CQ 的 2026-11-07 Cohort 保持 INVALID / OVER BUDGET。历史原始证据不修改。
+
+干预：请求前持久预留，终态 usage 精确结算；不确定请求保留预留并停止 cohort；只允许具有可执行上界的已资格化 Provider。真实 DeepSeek 路径在上界未被证明时拒绝运行。Mock 身份必须匹配本次实例，不能继承真实凭证。
+
+不变量：`confirmed + outstanding reservations <= authorized ceiling`，同时约束 session 和 cohort。UNKNOWN 不等于 ZERO；非自然成功不能启动后续 session。资格必须来自本次实际 principal 容器，不能借用旧 JSON。
+
+验收：大请求/晚 usage/并发/中断/坏账本/端口冲突的故障注入；实际 Container Adapter 的零付费纵向运行；每个 attempt 的 basis/result/diff/status 与产品观察；CONFLICT/错误权限/HEAD 竞态/无 Direct 历史负例；现有验收回归。
+
+范围：执行控制、窄产品修复、职责归位、文档一致性。排除付费模型实验、新身份/活性 runtime、大规模架构重构、模型效果或成本收益声明。
+
+交付：实现、可复现命令、新的确定性证据、中文资格报告、同步 handoff，同一次提交。结论限定为被测控制合同；任何未资格化能力明确保持 BLOCKED。

@@ -1,0 +1,92 @@
+{
+  "schema": "pnwf-container-qualification/v1",
+  "name": "late-usage-next-request",
+  "passed": true,
+  "run": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r1-late-usage-next-request-4Mtg2v",
+  "outcomes": [
+    {
+      "sessionId": "software",
+      "exitCode": 5
+    }
+  ],
+  "mockRequests": 1,
+  "attemptedRequests": [
+    {
+      "ordinal": 0,
+      "bound": 359731,
+      "output": 104,
+      "accepted": true
+    }
+  ],
+  "calls": [
+    {
+      "ordinal": 0,
+      "bound": 359731,
+      "usage": {
+        "input_tokens": 103731,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 104
+      },
+      "total": 103835,
+      "toolResults": []
+    }
+  ],
+  "observedStatuses": 0,
+  "mockTokenTotal": 103835,
+  "invariant": true,
+  "paidModelCalls": 0,
+  "accounting": {
+    "schema": "pnwf-spend-snapshot/v1",
+    "cohortId": "pnwf-r1-late-usage-next-request",
+    "configDigest": "7f79eb73157976b09738cd027f4a1153b4a8e9ec2a3d2cf6fb6b14774fef3dd1",
+    "state": "STOPPED",
+    "reason": "BUDGET_EXHAUSTED",
+    "confirmed": 103835,
+    "reserved": 0,
+    "aggregateCeiling": 800000,
+    "sessions": [
+      {
+        "id": "software",
+        "ordinal": 0,
+        "state": "STOPPED",
+        "ceiling": 400000,
+        "softCeiling": 399000,
+        "confirmed": 103835,
+        "reserved": 0
+      },
+      {
+        "id": "energy",
+        "ordinal": 1,
+        "state": "NOT_STARTED",
+        "ceiling": 400000,
+        "softCeiling": 399000,
+        "confirmed": 0,
+        "reserved": 0
+      }
+    ],
+    "requests": [
+      {
+        "id": "3ac0add7-0376-4d32-bc04-cd5a75144c6c",
+        "session": "software",
+        "digest": "ff01e201301c474f02bb9e98802079ddd43e6b06f487a61d0b750794282dafd0",
+        "reserved": 359731,
+        "actual": 103835,
+        "state": "SETTLED",
+        "reason": null
+      }
+    ],
+    "refusals": [
+      {
+        "sessionId": "software",
+        "bound": 319523,
+        "cohortConfirmed": 103835,
+        "cohortReserved": 0,
+        "aggregateCeiling": 800000,
+        "sessionConfirmed": 103835,
+        "sessionReserved": 0,
+        "softCeiling": 399000
+      }
+    ]
+  }
+}

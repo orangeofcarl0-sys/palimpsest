@@ -15,7 +15,7 @@
 import type { RuntimeHooks } from "@ordarium/core";
 import { GitCliPort, type GitPort } from "../effects/index.js";
 import { TaskPolicy } from "../domain/index.js";
-import { ProjectController, type DshPluginContext, type DshToolDefinition } from "../tools/index.js";
+import { ProjectController, type ProjectControllerOptions, type DshPluginContext, type DshToolDefinition } from "../tools/index.js";
 
 /** §D4-a: work location. Structural (the tools barrel already reaches the controller) so it costs no fan-out edge. */
 export type ExecutionMode = "worktree" | "in-place";
@@ -64,8 +64,8 @@ import { SqliteManagementPreferenceStore } from "../project_management/index.js"
  * composition root re-exports it so host wiring has a single import site for its ports.
  */
 export type { HostDeploymentFactsPort };
-
 export interface InstallPalimpsestOptions extends DelegationInstallOptions, ContinuationInstallOptions, ProjectIntentInstallOptions, ProjectCollaborationInstallOptions, ProcedureInstallOptions {
+  readonly operatorAuthority?: ProjectControllerOptions["operatorAuthority"];
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
   databasePath?: string | undefined;
   /** Shared Ordarium ledger; defaults to $DSH_HOME/ordarium/operations.sqlite. */
