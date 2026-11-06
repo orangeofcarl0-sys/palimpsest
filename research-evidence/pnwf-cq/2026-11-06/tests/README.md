@@ -27,7 +27,11 @@ attributed to:
   the same files pass sequentially (`acceptance.log`, 47/47).
 - dirty-tree historical guards (`ad_verification_integration` asserts `git diff HEAD` is empty under
   protected paths; R3 evidence guards assert protected evidence digests). They are expected to fail on
-  an uncommitted stage tree; they are not weakened here.
+  an uncommitted stage tree; they are not weakened here. After the implementation commit,
+  `ad_verification_integration` passes 32/32. The R3 evidence guard still fails with EACCES on the
+  pre-existing protected junction
+  `research-evidence/pc1v1/live/.../home/profiles/node_modules/@deepseek-ai` — an environment/link
+  boundary, not a PNWF-CQ source change.
 - a missing `python` executable in the local environment (`inplace_execution`).
 - DSH-version drift and the known Windows cleanup/link boundary.
 - one CQ-D TOCTOU test that loaded the pre-build dist because the full suite started before the final

@@ -376,7 +376,7 @@ close the basis-admission gap.
 |---|---|
 | Baseline commit | `464ae5fc086af5e372295d047c98144dc22a5c77` |
 | Branch | `palimpsest-pnwf-action-coherence` |
-| Implementation HEAD | `TO_FILL` |
+| Implementation HEAD | `77ffa10726a305a2a568e3cd273c5e99557ccd20` |
 | Changed production files | `src/domain/work_state.ts`, `src/work/read_model.ts`, `src/application/work_outcome.ts`, `src/application/work_contract.ts`, `src/application/work_settlement.ts`, `src/adapters/dsh/common.ts`, `src/adapters/dsh/normal.ts`, `src/project_continuity/service.ts`, `src/deployment/execution_world.ts`, `src/composition/core.ts`, `src/tools/controller.ts` |
 | New tests | `test/pnwf_cq_action_coherence.test.ts`, `test/pnwf_cq_direct_governed.test.ts` |
 | New scripts | `scripts/pnwf/isolation_gate.mjs`, `scripts/pnwf/prepare_direct_governed.mjs`, `scripts/pnwf/run_direct_governed_host.sh` |
