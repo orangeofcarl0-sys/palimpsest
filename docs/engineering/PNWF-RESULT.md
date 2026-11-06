@@ -1,7 +1,7 @@
 # PNWF — Project-Native Work Flow
 
 Status: deterministic engineering stage plus an authorized two-session real-model continuation cohort.
-The engineering stage used **0 paid model sessions**; the continuation cohort used **2,587,924 of its
+The engineering stage used **0 paid model sessions**; the continuation cohort used **2,655,709 of its
 own 5,000,000-token authorization** (no PSVR-C/ODPE-R balance was used or transferred). The
 deterministic host evidence is a labelled Messages stand-in; the continuation streams are real
 `deepseek-flash`.
@@ -403,7 +403,7 @@ exit 3, aggregate guard before each session).
 
 | | software | energy | historical software A-2 | historical energy A-2 |
 |---|---:|---:|---:|---:|
-| tokens | 1,579,080 | 1,008,844 | 1,331,902 | 1,901,695 |
+| tokens (stream sum) | 1,579,080 | 1,076,629 | 1,331,902 | 1,901,695 |
 | exit | natural 0 | natural 0 | budget stop | budget stop |
 | `complete` calls | **0** | **0** | 1 | 2 |
 | `conclude` calls | **1** (DELIVER) | **1** (DELIVER) | 0 | 0 |
@@ -414,7 +414,7 @@ exit 3, aggregate guard before each session).
 | promotions | 0 | 0 | 0 | 0 |
 | canonical head | unchanged `453aa7f` | unchanged `e631160` | unchanged | unchanged |
 
-Aggregate **2,587,924 / 5,000,000**; historical closures **3,233,597**; delta **−645,673 (−19.97%)**.
+Aggregate **2,655,709 / 5,000,000**; historical closures **3,233,597**; delta **−577,888 (−17.87%)**. The energy ledger sampled 1,008,844 before the final step; the stream sum includes the final 67,785-token step (the same correction as PSVR-C F-2).
 
 Both sessions independently re-read the committed artifacts and verified them (software:
 `node --test --test-isolation=none` → 26/26; energy: re-derived the package and recorded a
@@ -428,11 +428,21 @@ No repeated failing complete.
 **H3 — supported.** Both sessions used the legal path (relay successor → typed plan retirement →
 DELIVER). The conclusion states it is not acceptance; the tasks are STALE and the attempt CANCELLED.
 
-**H5 — mixed.** Energy is below its historical closure (1.01M vs 1.90M) and the aggregate is 20%
+**H5 — mixed.** Energy is below its historical closure (1.08M vs 1.90M) and the aggregate is 17.9%
 lower, but software is above its historical closure (1.58M vs 1.33M). The software session also
 performed a full re-verification and wrote a journal record, which the historical loop did not; the
 comparison is descriptive. **H2/H4 were not tested here** (H2 is covered deterministically; H4 by the
 deterministic tests and PSVR-A/B).
+
+**Validity.** The software session discovered and read the original PSVR-C harness under `%TEMP%`
+(`constraint.md`, `core.json`, `prompts/A2.txt`, `out/score.json`, `out/A-2/STOPPED.json`,
+`out/A-2/snapshot.json`) before closing. It explicitly debated the ethics, did not open the
+reference-solution world, but the score and the historical budget-stop facts may have influenced its
+closure. The energy session stayed in-world. **The software result is exploratory/contaminated; the
+energy result is the cleaner signal.** Future sessions must isolate the harness root from the
+principal's readable tree.
+
+Detailed trajectory and behaviour: [`PNWF-LIVE-TRAJECTORY.md`](PNWF-LIVE-TRAJECTORY.md).
 
 Limits: n=1 per stage; recorded-state continuation rather than a fresh start; the historical sessions
 are the comparison, not a randomized control; no second sample was authorized.
@@ -533,14 +543,15 @@ P5  operator accepts; canonical suite 14/14
 ## 11. Cost
 
 The deterministic engineering stage ran **0 paid model sessions and 0 tokens**. The separately
-authorized continuation cohort ran **2 sessions / 2,587,924 tokens of its own 5,000,000-token
-authorization** (software 1,579,080; energy 1,008,844). No PSVR-C or ODPE-R balance was used,
+authorized continuation cohort ran **2 sessions / 2,655,709 tokens of its own 5,000,000-token
+authorization** (software 1,579,080; energy 1,076,629). No PSVR-C or ODPE-R balance was used,
 transferred or extended. The historical comparison is the PSVR-C A-2 closures at **3,233,597**
-tokens, both ending in a budget stop; the continuation ended naturally in both stages.
+tokens, both ending in a budget stop; the continuation ended naturally in both stages. The energy
+ledger sampled 1,008,844 before the final step; the stream sum is 1,076,629.
 
 The cohort supports **H1** (0 `complete` calls vs 3 historical, no repeats), **H3** (2 legal
 `DELIVER` conclusions after successor + typed retirement), and **H5 only in aggregate and energy**
-(2.59M vs 3.23M overall; energy 1.01M vs 1.90M; software 1.58M vs 1.33M, not below). It is n=1 per
+(2.66M vs 3.23M overall; energy 1.08M vs 1.90M; software 1.58M vs 1.33M, not below). It is n=1 per
 stage and resumes recorded states, so the result is descriptive, not a randomized control.
 
 Separate the two claims:
@@ -591,7 +602,7 @@ Separate the two claims:
 - **`complete` without a taskId** catches the known NOT_READY/NO_WORK/WORKER_ACTIVE errors and turns
   them into guidance; other errors still propagate.
 - **No new PSVR-C/ODPE-R cohort or balance transfer.** The continuation cohort has its own
-  5,000,000-token authorization and used 2,587,924; the PSVR-C/ODPE-R balances are untouched.
+  5,000,000-token authorization and used 2,655,709; the PSVR-C/ODPE-R balances are untouched.
 - **The recorded PSVR-C states were not modified.** The replay, the live continuation and all new
   tests operate on disposable copies/temp trees.
 
@@ -629,8 +640,9 @@ adopted. The default complexity follows the actual work, not the formal lifecycl
   `src/adapters/dsh/common.ts`, `src/adapters/dsh/normal.ts`,
   `src/composition/continuity.ts`, `src/project_continuity/service.ts`,
   `src/project_continuity/types.ts`; test `test/pnwf_product.test.ts`; host scripts
-  `scripts/pnwf/*` (direct host + live continuation); runner env overrides in
-  `scripts/psvr/run_psvr_a.sh` / `run_psvr_b.sh`.
+  `scripts/pnwf/*` (direct host + live continuation); `scripts/psvr/session_attribution.mjs`
+  (result `isError`/row-kind correction); runner env overrides in
+  `scripts/psvr/run_psvr_a.sh` / `run_psvr_b.sh`; analysis `docs/engineering/PNWF-LIVE-TRAJECTORY.md`.
 - Evidence: `research-evidence/pnwf/2026-11-06/` and `research-evidence/pnwf/live/2026-11-06/`; the
   local trajectory evidence remains at `research-evidence/psvr/2026-11-05/`.
 - Working tree: clean after the delivery commit. PR #224 is merged; the cohort follow-up is a
@@ -672,8 +684,8 @@ project, re-verified the outcome, retired the redundant work and ended, instead 
 attempt loop.
 
 **Q9.** In the real continuation the repeated failed `complete` disappeared (0 vs 3 historical calls)
-and both sessions ended naturally (vs two budget stops); aggregate tokens fell 20% (2.59M vs 3.23M),
-but software rose 18.6% while energy fell 46.9%. The coordination-protocol savings are real but not
+and both sessions ended naturally (vs two budget stops); aggregate tokens fell 17.9% (2.66M vs 3.23M),
+but software rose 18.6% while energy fell 43.4%. The software evidence is confounded by harness reads. The coordination-protocol savings are real but not
 uniform; no new protocol or runtime was added.
 
 **Q10.** Yes. CHECKPOINT is an episode record; direct DELIVER is advisory; formal Work completion is
