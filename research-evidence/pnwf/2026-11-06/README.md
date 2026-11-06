@@ -1,8 +1,28 @@
 # PNWF evidence — 2026-11-06
 
-This evidence was produced by the PNWF stage. No paid model session was run: every model message
-below is a labelled deterministic Messages stand-in (`MOCK_MODEL`), and the host, tools, Git,
-SQLite, ProjectIR, ProjectWorkspace, Work, Scheduler, Episode, Continuity and Promotion are real.
+This evidence was produced by the deterministic PNWF stage. The `direct/` and `host-governed/`
+directories used **0 paid model sessions**: every model message there is a labelled deterministic
+Messages stand-in (`MOCK_MODEL`). The separately authorized real-model continuation cohort is under
+[`../live/2026-11-06/`](../live/2026-11-06/README.md): 2 sessions, 2,587,924 / 5,000,000 tokens.
+
+## `live/2026-11-06/`
+
+The real `deepseek-flash` continuation on copies of the recorded PSVR-C A-2 states:
+
+| | software | energy |
+|---|---:|---:|
+| tokens | 1,579,080 | 1,008,844 |
+| exit | natural 0 | natural 0 |
+| `complete` calls | 0 | 0 |
+| `conclude` calls | 1 (DELIVER) | 1 (DELIVER) |
+| typed `plan` / relay | 2 / 2 | 2 / 2 |
+| final task / attempt | all STALE / CANCELLED | STALE / CANCELLED |
+| promotions | 0 | 0 |
+| canonical head | unchanged | unchanged |
+
+H1 supported (0 complete vs 3 historical), H3 supported (legal DELIVER after successor + typed
+retirement), H5 mixed (aggregate 2.59M vs 3.23M; energy −46.9%, software +18.6%). The evidence
+includes the raw streams, run/budget/snapshot, score, gate records and post-session state DBs.
 
 ## `direct/`
 

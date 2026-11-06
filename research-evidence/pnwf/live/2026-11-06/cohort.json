@@ -1,0 +1,78 @@
+{
+  "schema": "pnwf-continuation-cohort/v1",
+  "cohortId": "pnwf-continuation-2026-11",
+  "status": "AUTHORIZED_BY_OWNER",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "providerUpstream": "https://api.deepseek.com/anthropic",
+  "purpose": "Does the PNWF product end the recorded PSVR-C post-artifact closure attractor, using the same recorded project state and the same continuation prompt?",
+  "conditions": ["PNWF_FULL"],
+  "stages": [
+    {
+      "id": "software",
+      "label": "PSVR-C software A-2 post-kill copy",
+      "sourceWorld": "C:/Users/66494/AppData/Local/Temp/psvr-c-real/run-2026-11-05/worlds/A",
+      "sourceState": "C:/Users/66494/AppData/Local/Temp/psvr-c-real/run-2026-11-05/state-A",
+      "artifactCommit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+      "historical": {
+        "session": "PSVR-C A-2",
+        "closureTokens": 1331902,
+        "completeCalls": 1,
+        "concludeCalls": 0,
+        "finalTaskState": "ACTIVE",
+        "finalAttemptState": "RUNNING",
+        "exit": "budget_stop"
+      }
+    },
+    {
+      "id": "energy",
+      "label": "PSVR-C energy A-2 post-kill copy",
+      "sourceWorld": "C:/Users/66494/AppData/Local/Temp/psvr-e-real/run-2026-11-05/worlds/A",
+      "sourceState": "C:/Users/66494/AppData/Local/Temp/psvr-e-real/run-2026-11-05/state-A",
+      "artifactCommit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+      "historical": {
+        "session": "PSVR-C energy A-2",
+        "closureTokens": 1901695,
+        "completeCalls": 2,
+        "concludeCalls": 0,
+        "finalTaskState": "ACTIVE",
+        "finalAttemptState": "RUNNING",
+        "exit": "budget_stop"
+      }
+    }
+  ],
+  "sessionsPerStage": 1,
+  "modelCalls": 2,
+  "sessionCeiling": 2500000,
+  "reserveTokens": 125000,
+  "aggregateCeiling": 5000000,
+  "prompt": "The exact PSVR-C A2 continuation prompt (same text as the historical session), with no mention of CHECKPOINT, conclude, plan, or the recorded state's expected exit.",
+  "primaryEndpoint": "Each session records a legal episode conclusion (CHECKPOINT / DELIVER / WAIT_FOR_OPERATOR) or a typed retirement, and does not repeat a failed complete. The canonical artifact commit is unchanged and no promotion is fabricated.",
+  "secondaryEndpoints": [
+    "post-artifact tokens are below the historical A-2 closure for the same stage",
+    "session exit is natural or a deliberate conclusion, not a budget stop",
+    "complete calls do not exceed the historical count",
+    "the recorded task/attempt facts remain honest (CHECKPOINT may leave them open; a typed retirement makes the task STALE)"
+  ],
+  "hypotheses": {
+    "H1": {
+      "claim": "The corrected status stops the model from repeatedly calling a failing complete.",
+      "test": "complete calls <= 1 per session and no repeated complete after a refusal."
+    },
+    "H3": {
+      "claim": "The model uses a legal CHECKPOINT (or typed retirement) without claiming the project is complete.",
+      "test": "a recorded episode conclusion or a PROJECT_REVISED retirement; the conclusion is not reported as asset acceptance or promotion."
+    },
+    "H5": {
+      "claim": "Post-artifact coordination tokens fall below the historical closure.",
+      "test": "ledger tokens < 1,331,902 (software) / 1,901,695 (energy), or the session ends naturally before the soft ceiling."
+    }
+  },
+  "notTested": {
+    "H2": "A fresh-start Direct Outcome run is not part of this minimal continuation; H2 is covered deterministically in test/pnwf_product.test.ts.",
+    "H4": "The governed Settlement/Promotion path is covered by the deterministic tests and the PSVR-A/B real-host runs; this cohort resumes a post-artifact state."
+  },
+  "stopping": "Run exactly two sessions, one per stage. Stop the cohort after the aggregate ceiling, a provider failure, or the two sessions complete. Do not increase the sample size without a new authorization.",
+  "budgetNote": "This cohort has its own 5,000,000-token authorization. It does not use, transfer or extend the PSVR-C or ODPE-R balances.",
+  "evidence": "research-evidence/pnwf/live/2026-11-06/"
+}
