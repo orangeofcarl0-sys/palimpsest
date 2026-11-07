@@ -7,19 +7,21 @@ import { spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
-import { ExecutionBudget } from "./execution_budget.mjs";
-import { startBoundedProxy, verifyMock, UsageReader, finalUsage } from "./bounded_provider.mjs";
+import { ExecutionBudget, USAGE_ONLY_SCHEMA } from "./execution_budget.mjs";
+import { startBoundedProxy, verifyMock, UsageReader, finalUsage, startMessagesProxy, paidRequestAdmission, PAID_COHORT_SCHEMA, PAID_MODE } from "./bounded_provider.mjs";
 import { startMockProvider } from "./mock_provider.mjs";
 
-function ledger(t, ceiling = 10000) {
+function fixtureLedger(t, config) {
   const root = mkdtempSync(join(tmpdir(), "pnwf-budget-"));
   const path = join(root, "budget.sqlite");
-  const config = { schema: "pnwf-request-budget/v1", cohortId: "qualification", aggregateCeiling: ceiling,
-    sessions: [{ id: "a", ceiling, softCeiling: ceiling }, { id: "b", ceiling, softCeiling: ceiling }] };
   const budget = ExecutionBudget.initialize(path, config);
   t.after(() => { budget.close(); rmSync(root, { recursive: true, force: true }); });
   budget.startSession("a");
   return { budget, path, root };
+}
+function ledger(t, ceiling = 10000) {
+  return fixtureLedger(t, { schema: "pnwf-request-budget/v1", cohortId: "qualification", aggregateCeiling: ceiling,
+    sessions: [{ id: "a", ceiling, softCeiling: ceiling }, { id: "b", ceiling, softCeiling: ceiling }] });
 }
 async function rig(t, options = {}) {
   const { budget } = ledger(t, options.ceiling ?? 10000);
@@ -240,4 +242,86 @@ test("runner refuses missing prior ledger and cannot restart an unresolved cohor
   }
   assert.equal(budget.snapshot().sessions[1].state, "NOT_STARTED");
   assert.equal(mock.requests.length, 0);
+});
+
+async function meteredRig(t, { complete = true, maxRequests = 1 } = {}) {
+  const { budget, path } = fixtureLedger(t, { schema: USAGE_ONLY_SCHEMA, cohortId: "paid-transport-fixture", aggregateCeiling: null,
+    sessions: ["a", "b"].map(id => ({ id, ceiling: null, softCeiling: null, maxRequests })) });
+  const observations = [];
+  const terminal = { input_tokens: 3_000_000, cache_read_input_tokens: 2_000_000, cache_creation_input_tokens: 0, output_tokens: 700 };
+  const upstream = createServer((req, res) => {
+    observations.push({ route: req.url, key: req.headers["x-api-key"], request: budget.snapshot().requests.at(-1) });
+    req.resume();
+    res.writeHead(200, { "content-type": "text/event-stream" });
+    res.write(`data: ${JSON.stringify({ type: "message_start", message: { usage: { input_tokens: 1, output_tokens: 0 } } })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: "message_delta", usage: terminal })}\n\n`);
+    res.end(complete ? 'data: {"type":"message_stop"}\n\n' : '');
+  });
+  await new Promise(resolve => upstream.listen(0, "127.0.0.1", resolve));
+  const key = randomBytes(32).toString("hex");
+  const proxy = await startMessagesProxy({ budget, sessionId: "a", sessionKey: key, requestAdmission: paidRequestAdmission,
+    target: new URL(`http://127.0.0.1:${upstream.address().port}/anthropic/v1/messages`), headers: { "x-api-key": "fixture-upstream" } });
+  t.after(async () => { await proxy.close(); await new Promise(resolve => upstream.close(resolve)); });
+  const send = (overrides = {}) => fetch(proxy.url + "/v1/messages", { method: "POST", headers: { "x-api-key": key },
+    body: JSON.stringify({ model: "deepseek-flash", stream: true, max_tokens: 400, messages: [{ role: "user", content: "fixture" }], ...overrides }) });
+  return { budget, path, observations, terminal, send };
+}
+
+test("usage-only requests settle beyond former token ceilings and stop at the request count", async t => {
+  const { budget, observations, terminal, send } = await meteredRig(t);
+  await (await send()).text();
+  assert.equal(observations.length, 1);
+  assert.equal(observations[0].request.state, "PENDING");
+  assert.equal(observations[0].request.reserved, null);
+  assert.equal(observations[0].route, "/anthropic/v1/messages");
+  assert.equal(observations[0].key, "fixture-upstream");
+  assert.deepEqual(budget.snapshot().requests[0].usage, terminal);
+  assert.equal(budget.snapshot().confirmed, 5_000_700);
+  assert.equal(budget.snapshot().unresolvedRequests, 0);
+  const refused = await send();
+  assert.equal(refused.status, 429);
+  assert.equal((await refused.json()).error.type, "REQUEST_LIMIT");
+  assert.equal(observations.length, 1);
+});
+
+test("usage-only interrupted terminal stream persists unknown and does not send another request", async t => {
+  const { budget, path, observations, send } = await meteredRig(t, { complete: false, maxRequests: 3 });
+  await (await send()).text();
+  const reopened = new ExecutionBudget(path);
+  try {
+    assert.equal(reopened.snapshot().requests[0].state, "UNKNOWN");
+    assert.equal(reopened.snapshot().requests[0].actual, null);
+    assert.equal(reopened.snapshot().unresolvedRequests, 1);
+    assert.throws(() => reopened.startSession("b"), e => e.code === "COHORT_STOPPED");
+  } finally { reopened.close(); }
+  assert.equal((await send()).status, 403);
+  assert.equal(observations.length, 1);
+  assert.equal(budget.snapshot().state, "STOPPED");
+});
+
+test("usage-only gateway denies model switching and provider-side tools before sending", async t => {
+  const { budget, observations, send } = await meteredRig(t);
+  for (const [body, code] of [[{ model: "deepseek-v4-pro" }, "PAID_MODEL_OR_MESSAGES_DENIED"],
+    [{ tools: [{ type: "web_search_20250305", name: "web_search" }] }, "PROVIDER_SIDE_TOOL_DENIED"]]) {
+    const refused = await send(body);
+    assert.equal(refused.status, 403);
+    assert.equal((await refused.json()).error.type, code);
+  }
+  assert.equal(observations.length, 0);
+  assert.equal(budget.snapshot().requests.length, 0);
+});
+
+test("an explicit usage-only manifest still cannot admit an arbitrary adapter or old spend ledger", async t => {
+  const { root, path } = ledger(t);
+  const cohort = join(root, "metered.json"), adapter = join(root, "adapter.mjs");
+  writeFileSync(cohort, JSON.stringify({ schema: PAID_COHORT_SCHEMA, cohortId: "qualification", billingCeiling: null, maxRequests: 1,
+    wallClockMs: 60000, stages: [{ id: "a" }] }));
+  writeFileSync(adapter, 'throw new Error("UNSAFE_ADAPTER_EXECUTED");');
+  writeFileSync(join(root, "core.json"), JSON.stringify({ cohortId: "qualification", budget: null, sessions: [{ id: "a", killAfterMs: 60000 }] }));
+  for (const [candidate, refusal] of [[adapter, /ADAPTER_NOT_QUALIFIED/], [resolve("scripts/pnwf/container_adapter.mjs"), /BUDGET_COHORT_MISMATCH/]]) {
+    const result = await childNode(["scripts/pnwf/run_pnwf_live.mjs", "--mode=" + PAID_MODE, "--cohort=" + cohort,
+      "--adapter=" + candidate, "--session=a", "--execute", "--out=" + root], { ALHS_CORE_RUN: root, PNWF_BUDGET_DB: path });
+    assert.equal(result.code, 5);
+    assert.match(result.output, refusal);
+  }
 });
