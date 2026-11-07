@@ -2,6 +2,8 @@
 
 日期：2026-11-07。开发基线：`6b021dda77ee8c3f8010db5071b0896aee7ab232`（#229 后主线）；工作分支：`codex/project-takeover-20261107`。
 
+2026-11-08 的 owner 决定与后续按量记账实验见 [PNWF-CQ 按量记账续作](PNWF-CQ-PAID-USAGE-ONLY.md)。本报告记录 R1 发布时的硬预算合同与验证。
+
 本轮回答两个问题：请求是否在发送前取得足够额度，实际运行容器是否具备隔离和可读的 Git World；Direct Basis Admission 是否只能在足够权限和当前性事实下发生。没有调用付费模型，也没有据 Mock 行为推断模型产品收益。
 
 历史 2026-11-07 cohort 的 **5,190,778 tokens、超额 190,778、INVALID / OVER BUDGET、0/2 primary** 保持原判。其原始证据未修改。新资格通过也不能追认该历史运行。
@@ -121,7 +123,7 @@ node node_modules/vitest/vitest.mjs run --maxWorkers=1 --fileParallelism=false <
 
 本轮可建立的结论限定为：被测 Mock 合同下的请求准入、实际隔离容器与 copied Worlds、窄产品权限/当前性规则和确定性治理链。没有建立真实 Provider 的可执行计费上界、付费实验有效性、模型自主行为收益、跨 Host 强静止性或 Git/SQLite 跨系统原子性。
 
-Owner 已于 2026-11-07 明确授权启动付费模型调用，该授权记录于 `handoff.md` §6，不应再次请求同一权限。下一次付费运行仍需**全部**满足：具体 Provider/模型/兼容路径的输入与输出上界获得可执行资格；将新的具体 session/cohort ceiling 写入独立 ledger；同一 actual adapter/container 的零付费故障链通过。旧 5M 不可复用，当前尚无新量化 ledger。当前代码对所有 paid execution 保持关闭，新授权本身也不能覆盖技术资格缺失。
+Owner 于 2026-11-07 明确授权启动付费模型调用。R1 发布时要求硬预算的付费路径仍缺少可执行的输入与输出上界。采用硬预算的后续实验需证明该上界，将新 session/cohort ceiling 写入独立账本，并通过实际 adapter/container 的零付费故障验证。
 
 ## 8. 远程发布验证（2026-11-07）
 

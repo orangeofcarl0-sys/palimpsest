@@ -1,6 +1,6 @@
 /**
  * PNWF-CQ-R1: the actual container is qualified before its first provider call.
- * network=none; fixed-route stdio egress; fresh credential-free profile; shared request reservations.
+ * network=none; fixed-route stdio egress; fresh credential-free profile; durable request accounting.
  * Old isolation JSON is not an execution permit. Only this adapter may be invoked by the PNWF gate.
  */
 import { execFileSync, spawn } from "node:child_process";
@@ -9,7 +9,7 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import { ExecutionBudget } from "./execution_budget.mjs";
-import { startBoundedProxy, verifyMock } from "./bounded_provider.mjs";
+import { PAID_MODE, startBoundedProxy, startPaidProxy, verifyMock } from "./bounded_provider.mjs";
 import { createPrincipal, qualifyPrincipal, containerRepositoryPath } from "./container_runtime.mjs";
 import { startContainerBridge } from "./container_bridge.mjs";
 
@@ -21,11 +21,14 @@ function within(root, path) {
   if (!value.startsWith(base.replaceAll("\\", "/"))) throw new Error("PREPARED_PATH_OUTSIDE_RUN");
   return resolve(path);
 }
-export async function runContainerSession({ run, sessionId, budgetPath, provider, repository = process.cwd(), image = "palimpsest-pnwf-isolation:local" }) {
+export async function runContainerSession({ run, sessionId, budgetPath, provider, mode = "mock", repository = process.cwd(), image = "palimpsest-pnwf-isolation:local" }) {
   // Capability/identity failures precede profile preparation, container creation and provider traffic.
-  await verifyMock(provider);
+  const paid = mode === PAID_MODE;
+  if (!paid && mode !== "mock") throw new Error("UNKNOWN_EXECUTION_MODE");
+  if (!paid) await verifyMock(provider);
   const budget = new ExecutionBudget(budgetPath);
   try {
+  if (budget.usageOnly !== paid) throw new Error("ACCOUNTING_MODE_MISMATCH");
   let runtime, proxy, bridge, child, timeout, monitor;
   let outFd, errFd, killedBy = null, exitCode = 1, failure = null, isolation = null;
   const startedAt = new Date().toISOString();
@@ -33,6 +36,9 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
   const prepared = core.sessions.find(s => s.id === sessionId);
   if (!prepared || core.cohortId !== budget.config.cohortId || budget.snapshot().sessions.find(s => s.id === sessionId)?.state !== "RUNNING") {
     throw new Error("SESSION_NOT_ADMITTED");
+  }
+  if (paid && (core.budget !== null || !Number.isSafeInteger(prepared.killAfterMs) || prepared.killAfterMs <= 0 || prepared.killAfterMs > 3600000)) {
+    throw new Error("INVALID_PAID_SESSION_WINDOW");
   }
   const stage = within(run, join(run, "stages", sessionId));
   const world = within(stage, prepared.world);
@@ -82,7 +88,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
 
     // No provider request can happen before the actual container and ALL copied worlds pass.
     const sessionKey = randomBytes(32).toString("hex");
-    proxy = await startBoundedProxy({ provider, budget, sessionId, sessionKey });
+    proxy = paid ? await startPaidProxy({ budget, sessionId, sessionKey }) : await startBoundedProxy({ provider, budget, sessionId, sessionKey });
     bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey);
     const prompt = readFileSync(prepared.promptPath, "utf8");
     outFd = openSync(join(out, "run.log"), "w"); errFd = openSync(join(out, "run.err"), "w");
@@ -93,13 +99,15 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
       if (killedBy !== null) return;
       killedBy = reason;
       try { budget.stop(reason); } catch { failure = "UNOBSERVABLE_USAGE"; }
-      try { execFileSync("docker", ["kill", runtime.id], { stdio: "ignore" }); } catch { /* already stopped */ }
+      try { execFileSync("docker", ["kill", runtime.id], { stdio: "ignore", timeout: 10000 }); } catch { /* cleanup also removes the container */ }
     };
     timeout = setTimeout(() => kill("wall_clock"), Math.min(Number(prepared.killAfterMs ?? 60000), 3600000));
     monitor = setInterval(() => {
       try {
         const snapshot = budget.snapshot();
-        if (snapshot.state !== "OPEN") kill(snapshot.reason === "BUDGET_EXHAUSTED" ? "budget" : "usage_unobservable");
+        if (proxy.fatalReason || snapshot.state !== "OPEN") {
+          kill(snapshot.reason === "BUDGET_EXHAUSTED" ? "budget" : snapshot.reason === "REQUEST_LIMIT" ? "request_limit" : "usage_unobservable");
+        }
       } catch { kill("usage_unobservable"); }
     }, 250);
     exitCode = await new Promise((resolveExit, reject) => {
@@ -118,17 +126,20 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
   }
   const snapshot = budget.snapshot();
   const session = snapshot.sessions.find(s => s.id === sessionId);
-  const natural = exitCode === 0 && failure === null && killedBy === null && snapshot.state === "OPEN" && session.reserved === 0;
+  const natural = exitCode === 0 && failure === null && killedBy === null && snapshot.state === "OPEN" &&
+    session.unresolvedRequests === 0 && (!paid || session.requestCount > 0);
   budget.endSession(sessionId, natural);
   const endedAt = new Date().toISOString();
   const usage = { schema: "aps-budget-ledger/v1", cohortId: core.cohortId, sessionId,
     observedAt: endedAt, maxTokens: session.ceiling, softCeiling: session.softCeiling,
-    totalTokens: session.reserved === 0 ? session.confirmed : null, confirmedTokens: session.confirmed,
-    reservedTokens: session.reserved, source: "REQUEST_ADMISSION_LEDGER", state: natural ? "ENDED" : "STOPPED" };
+    totalTokens: session.unresolvedRequests === 0 ? session.confirmed : null, confirmedTokens: session.confirmed,
+    reservedTokens: session.reserved, unresolvedRequests: session.unresolvedRequests,
+    source: paid ? "PROVIDER_TERMINAL_USAGE_LEDGER" : "REQUEST_ADMISSION_LEDGER", state: natural ? "ENDED" : "STOPPED" };
   const record = { schema: "alhs-core-session-run/v1", cohortId: core.cohortId, sessionId, condition: prepared.condition,
     world, home, principalRuntime: "container", containerId: isolation?.containerId ?? null,
     qualification: isolation?.descriptorDigest ?? null, startedAt, endedAt, exitCode, error: failure,
-    killedBy, stopped: !natural, natural, usage, paidModelCalls: 0 };
+    killedBy, stopped: !natural, natural, usage, mode, paidRequestsAdmitted: paid ? session.requestCount : 0,
+    paidModelCalls: paid ? (session.unresolvedRequests === 0 ? session.requestCount : null) : 0 };
   write(join(out, "run.json"), record);
   write(join(out, "budget.json"), usage);
   write(join(out, "request-accounting.json"), budget.snapshot());
@@ -138,10 +149,11 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = new Map(process.argv.slice(2).map(arg => { const [key, ...value] = arg.replace(/^--/u, "").split("="); return [key, value.join("=")]; }));
   try {
-    if (!process.env.ALHS_CORE_RUN || !process.env.PNWF_BUDGET_DB || !process.env.PNWF_PROVIDER_CONFIG) throw new Error("QUALIFIED_GATE_REQUIRED");
+    const mode = args.get("mode") ?? "mock";
+    if (!process.env.ALHS_CORE_RUN || !process.env.PNWF_BUDGET_DB || (mode !== PAID_MODE && !process.env.PNWF_PROVIDER_CONFIG)) throw new Error("QUALIFIED_GATE_REQUIRED");
     const result = await runContainerSession({
       run: resolve(process.env.ALHS_CORE_RUN), sessionId: args.get("session"), budgetPath: resolve(process.env.PNWF_BUDGET_DB),
-      provider: JSON.parse(readFileSync(process.env.PNWF_PROVIDER_CONFIG, "utf8")),
+      mode, provider: mode === PAID_MODE ? undefined : JSON.parse(readFileSync(process.env.PNWF_PROVIDER_CONFIG, "utf8")),
     });
     process.stdout.write(JSON.stringify(result) + "\n"); process.exitCode = result.natural ? 0 : 5;
   } catch (error) { process.stderr.write(error.message + "\n"); process.exitCode = 5; }
