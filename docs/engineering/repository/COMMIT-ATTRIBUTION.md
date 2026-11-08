@@ -34,11 +34,21 @@ carries the checked commit messages forward without an editable merge or squash
 message. GitHub assigns fresh SHAs on rebase. Record the resulting main SHA for new
 release evidence. [Main protection](https://github.com/orangeofcarl0-sys/palimpsest/rules/23655367)
 
-The separate `main-publisher` ruleset limits main updates to the repository owner
-through a PR. The owner still satisfies all rules in `main-protection`. After
-checking the exact head and its CI, publish with
-`gh pr merge <number> --rebase --match-head-commit <sha> --delete-branch`.
-[Publisher rule](https://github.com/orangeofcarl0-sys/palimpsest/rules/26806204)
+The separate `main-publisher` ruleset limits main updates to the repository owner.
+The owner still satisfies the PR and check requirements in `main-protection`.
+The GitHub CLI merge preflight can report `BLOCKED` under the update restriction.
+After all CI jobs and required checks pass for the exact PR head, use the merge
+endpoint with that SHA. The endpoint evaluates the caller's permissions and
+rejects a changed head.
+
+```sh
+repo=orangeofcarl0-sys/palimpsest
+gh pr checks "$pr" --repo "$repo" &&
+  gh api --method PUT "repos/$repo/pulls/$pr/merge" -f merge_method=rebase -f sha="$head"
+```
+
+Set `pr` to the PR number and `head` to the verified head SHA before running the commands.
+[Publisher rule](https://github.com/orangeofcarl0-sys/palimpsest/rules/26806204) · [Merge API](https://docs.github.com/en/rest/pulls/pulls#merge-a-pull-request)
 
 Agent credentials need a separate permission boundary. Give agents access to topic
 branches or forks and keep the maintainer's administration, status publishing and
