@@ -19,11 +19,11 @@
  * facts the readiness was derived from, so a decision made on a moved world is refused, not applied.
  */
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { gitTextRunner } from "../work/path_reuse.js";
-import { observeProjectInputs } from "../work/unseen_inputs.js";
+import { observeCanonicalBasis, observeProjectInputs } from "../work/unseen_inputs.js";
 import type {
   FinalizeOutcome,
   OutcomeAction,
@@ -49,6 +49,62 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s
   return tasks.find((task) => task.task_id === taskId) ?? null;
 }
 
+/** A clean HEAD alone is ordinary project state. Use the retired plan's declared artifacts. */
+async function retiredDelivery(
+  deps: WorkRuntimeDeps,
+  status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
+  requested: string | null,
+): Promise<{ reasons: string[]; next: string[] } | null> {
+  const { controller, deliveryPulse } = deps;
+  const direct = status.directOutcome;
+  const head = direct?.repositoryHead;
+  const repository = controller.effects.git.repository;
+  if (
+    deliveryPulse === undefined || repository === undefined || !head ||
+    (direct.relation !== "IN_SYNC" && direct.relation !== "DIRECT_AHEAD") ||
+    status.attempts.some((attempt) => attempt.orphaned === true)
+  ) return null;
+
+  const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));
+  const retired = status.tasks.filter((task) => task.state === "STALE" && !plannedIds.has(task.task_id));
+  if (retired.length === 0 || (requested !== null && !retired.some((task) => task.task_id === requested))) return null;
+  const artifacts = new Set<string>();
+  for (const task of retired) {
+    const envelope = controller.taskEnvelopeOrNull(task.task_id);
+    if (envelope === null) return null;
+    for (const path of envelope.required_artifacts) artifacts.add(path);
+  }
+  if (artifacts.size === 0) return null;
+
+  const pulse = await deliveryPulse.pulse().catch(() => null);
+  if (
+    pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||
+    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||
+    pulse.execution.jobs.some((job) => job.phase === "QUEUED" || job.phase === "RUNNING")
+  ) return null;
+
+  // Re-observe Git after the asynchronous episode read. An unobservable worktree cannot prove a clean basis.
+  const basis = observeCanonicalBasis(repository);
+  if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;
+  const git = gitTextRunner(repository);
+  const paths = [...artifacts];
+  try {
+    if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
+      git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
+  } catch {
+    return null;
+  }
+
+  const reason = `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
+  if (pulse.episode.current && pulse.episode.state === "DELIVERED") {
+    return { reasons: [reason, "this episode has a current recorded DELIVER conclusion"], next: ["reply using the recorded conclusion"] };
+  }
+  return {
+    reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"],
+    next: ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
+  };
+}
+
 /**
  * Derive the current outcome facts. `acknowledgeInputs` is the principal's semantic declaration; it
  * changes only the classification (a fact it has confronted), never the underlying observation.
@@ -64,29 +120,7 @@ async function snapshot(
   deps: WorkRuntimeDeps,
   input: { readonly taskId?: string | undefined; readonly acknowledgeInputs?: boolean | undefined },
 ): Promise<Snapshot> {
-  const status = deps.controller.status() as {
-    revision?: number;
-    headCommit?: string;
-    tasks?: Array<{ task_id: string; state: string; objective?: string }>;
-    attempts?: Array<{
-      attempt_id: string;
-      task_id: string | null;
-      state: string;
-      task_state?: string;
-      execution?: {
-        baseCommit: string;
-        worldHead: string | null;
-        uncommittedChanges: readonly string[];
-        liveness: "ACTIVE" | "EXITED" | "UNKNOWN" | "UNOBSERVED";
-      };
-    }>;
-    directOutcome?: {
-      repositoryHead: string | null;
-      projectHead: string;
-      relation: "IN_SYNC" | "DIRECT_AHEAD" | "DIVERGED" | "UNOBSERVABLE";
-      uncommittedPaths: readonly string[];
-    };
-  };
+  const status = deps.controller.status();
   const attempts = status.attempts ?? [];
   const directOutcome = status.directOutcome ?? null;
   const running = attempts.filter((attempt) => {
@@ -198,8 +232,14 @@ async function snapshot(
   const reasons: string[] = [];
   const acknowledged =
     input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
+  const delivery = (task === null && requested === null) || task?.state === "STALE"
+    ? await retiredDelivery(deps, status, requested)
+    : null;
   let action: OutcomeAction;
-  if (task === null) {
+  if (delivery !== null) {
+    action = "SEMANTIC_JUDGEMENT";
+    reasons.push(...delivery.reasons);
+  } else if (task === null) {
     action = "CONTINUE_WORK";
     reasons.push("no task is currently addressable; plan or begin work before a finalization can be considered");
   } else if (runningForThisTask.length > 1) {
@@ -393,11 +433,11 @@ async function snapshot(
         verificationSatisfiable,
       }),
       next: Object.freeze(
-        action === "MECHANICAL_FINALIZATION"
+        delivery?.next ?? (action === "MECHANICAL_FINALIZATION"
           ? ["call further action=finalize with this observationDigest"]
           : action === "SEMANTIC_JUDGEMENT"
             ? ["inspect the named facts", "decide, then either finalize with the digest or conclude the episode"]
-            : ["continue the actual work", "re-read readiness after the world moves"],
+            : ["continue the actual work", "re-read readiness after the world moves"]),
       ),
     }),
   });

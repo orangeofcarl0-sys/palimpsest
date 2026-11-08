@@ -12,6 +12,7 @@ import type { ProjectController } from "../tools/controller.js";
 export type WorkController = ProjectController;
 import type { HostDeploymentFactsPort } from "./common.js";
 import type { ProjectStandard } from "../domain/standard.js";
+import type { ProjectPulse } from "../project_pulse/types.js";
 
 /**
  * PLMP-LEAN-1 §B.15: the narrow verification face the finish composition needs. Structural on
@@ -122,6 +123,8 @@ export interface WorkRuntimeDeps {
    * and appears in the pulse, but it is not written to the project journal.
    */
   readonly executionRelay?: import("../work/execution_relay.js").ExecutionRelayRecorderPort | undefined;
+  /** The same episode observation `conclude` uses, available when the conclusion path is composed. */
+  readonly deliveryPulse?: { pulse(): Promise<Pick<ProjectPulse, "basis" | "episode" | "execution">> } | undefined;
 }
 
 /**
@@ -129,7 +132,8 @@ export interface WorkRuntimeDeps {
  *
  * CONTINUE_WORK: the candidate is not there yet (or a writer is still observed). Keep working.
  * SEMANTIC_JUDGEMENT: a fact or a contract gap means only the agent can decide (new inputs, a
- *   contract that cannot be evaluated mechanically, a candidate awaiting operator acceptance).
+ *   contract that cannot be evaluated mechanically, a candidate awaiting operator acceptance,
+ *   or committed artifacts whose sufficiency for episode delivery is a judgement).
  * MECHANICAL_FINALIZATION: the candidate exists, is committed, the required artifacts are in it,
  *   no writer is observed, and the remaining step is the ordinary settlement path.
  */
