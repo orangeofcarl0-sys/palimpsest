@@ -134,6 +134,156 @@ type Pulse = {
   episode: { state: string; current: boolean; changedSince: string[]; conclusion: { intent: string } | null };
 };
 
+const paidContinuationPlans = [
+  {
+    stage: "software",
+    tasks: [
+      { id: "grpc-contract", dependsOn: [], artifacts: ["proto/energy.proto", "service/wire.js"] },
+      { id: "grpc-service", dependsOn: ["grpc-contract"], artifacts: ["service/grpc_server.js", "service/grpc_client.js"] },
+      { id: "verify-migration", dependsOn: ["grpc-service"], artifacts: ["test/server.test.js", "test/integration.test.js", "README.md"] },
+    ],
+  },
+  {
+    stage: "energy",
+    tasks: [
+      {
+        id: "decision-package",
+        dependsOn: [],
+        artifacts: [
+          "deliverables/technical-capacity.md",
+          "deliverables/vendor-compliance.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md",
+        ],
+      },
+    ],
+  },
+];
+
+describe("PNWF-CQ — readiness after retiring paid continuation plans", () => {
+  it.each(paidContinuationPlans)("$stage points to DELIVER for the committed artifacts of the retired plan", async ({ stage, tasks }) => {
+    const artifacts = tasks.flatMap((task) => task.artifacts);
+    const files = Object.fromEntries(artifacts.map((path) => [path, `Committed ${stage} fixture: ${path}\n`]));
+    const { repo, stateDir, head } = workspace(`readiness-${stage}`, files);
+    const installed = install(repo, stateDir, "worktree");
+    await start(installed, head, tasks.map((task) => ({
+      task_id: task.id,
+      objective: `Produce and verify the artifacts for ${task.id}`,
+      depends_on: task.dependsOn,
+      write_paths: task.artifacts,
+      required_artifacts: task.artifacts,
+    })));
+    const firstTaskId = tasks[0]!.id;
+    await installed.controller.prepareMutatingWork({ expectedTaskId: firstTaskId });
+    const live = await call(installed, "palimpsest_work", { action: "readiness" });
+    expect(live.action).toBe("CONTINUE_WORK");
+    expect((live.next as string[]).join(" ")).not.toContain("intent=DELIVER");
+
+    const relay = await call(installed, "palimpsest_work", {
+      action: "relay",
+      taskId: firstTaskId,
+      relayRoute: "successor",
+      declareExecutorAbandoned: true,
+    });
+    expect(relay.state).toBe("SUCCESSOR_READY");
+    await call(installed, "palimpsest_work", {
+      action: "plan",
+      tasks: [],
+      reason: "The committed artifacts are present. Retire the redundant formal plan.",
+      changeClass: "metadata_only",
+    });
+
+    const retired = installed.controller.status();
+    expect(retired.tasks.map((task) => task.state)).toEqual(tasks.map(() => "STALE"));
+    expect(retired.attempts.map((attempt) => attempt.state)).toEqual(["CANCELLED"]);
+    expect(retired.directOutcome).toMatchObject({ repositoryHead: head, projectHead: head, relation: "IN_SYNC" });
+    const readiness = await call(installed, "palimpsest_work", { action: "readiness" });
+    expect(readiness.action).toBe("SEMANTIC_JUDGEMENT");
+    expect(readiness.next).toEqual(expect.arrayContaining([expect.stringContaining("palimpsest_work action=conclude intent=DELIVER")]));
+    const reasons = (readiness.reasons as string[]).join(" ");
+    expect(reasons).toContain(head);
+    for (const path of artifacts) expect(reasons).toContain(path);
+    expect((await installed.application.projectWorkspace!.pulse()).episode.state).toBe("OPEN");
+
+    const conclusion = (await call(installed, "palimpsest_work", {
+      action: "conclude",
+      intent: "DELIVER",
+      statement: `The committed ${stage} artifacts meet the goal for this episode.`,
+      artifacts,
+    })) as unknown as Conclude;
+    expect(conclusion.state).toBe("RECORDED");
+    expect(conclusion.session?.mayEnd).toBe(true);
+    expect(conclusion.conclusion?.check?.artifacts).toEqual(artifacts.map((path) => expect.objectContaining({ path, committed: true, commit: head })));
+    expect(installed.controller.status()).toMatchObject({ headCommit: head, promotions: [] });
+
+    const recorded = await call(installed, "palimpsest_work", { action: "readiness" });
+    expect(recorded.action).toBe("SEMANTIC_JUDGEMENT");
+    expect(recorded.next).toEqual(["reply using the recorded conclusion"]);
+  });
+
+  it("requires committed artifacts from the retired plan before suggesting DELIVER", async () => {
+    const { repo, stateDir, head } = workspace("readiness-missing-artifact");
+    const installed = install(repo, stateDir, "worktree");
+    const artifact = "docs/missing.md";
+    await start(installed, head, [{
+      task_id: "draft",
+      objective: "write the missing artifact",
+      write_paths: [artifact],
+      required_artifacts: [artifact],
+    }]);
+    await call(installed, "palimpsest_work", {
+      action: "plan",
+      tasks: [],
+      reason: "Retire the draft task while the project is quiescent.",
+      changeClass: "metadata_only",
+    });
+
+    const missing = await call(installed, "palimpsest_work", { action: "readiness" });
+    expect(missing.action).toBe("CONTINUE_WORK");
+    writeFileSync(join(repo, artifact), "Working tree only\n");
+    const uncommitted = await call(installed, "palimpsest_work", { action: "readiness" });
+    expect(uncommitted.action).toBe("CONTINUE_WORK");
+
+    const direct = commit(repo, "commit the deliverable outside Work");
+    const committed = await call(installed, "palimpsest_work", { action: "readiness", taskId: "draft" });
+    expect(committed.action).toBe("SEMANTIC_JUDGEMENT");
+    expect((committed.next as string[]).join(" ")).toContain("intent=DELIVER");
+    expect(committed.directOutcome).toMatchObject({ repositoryHead: direct, projectHead: head, relation: "DIRECT_AHEAD" });
+  });
+
+  it("does not suggest DELIVER while an open task remains after retirement", async () => {
+    const { repo, stateDir, head } = workspace("readiness-open-task");
+    const installed = install(repo, stateDir, "worktree");
+    const oldTask = {
+      task_id: "old",
+      objective: "prepare the already committed result",
+      write_paths: ["docs/result.md"],
+      required_artifacts: ["docs/result.md"],
+    };
+    const remaining = {
+      task_id: "remaining",
+      objective: "produce a separate required deliverable",
+      write_paths: ["docs/remaining.md"],
+      required_artifacts: ["docs/remaining.md"],
+    };
+    await start(installed, head, [oldTask, remaining]);
+    await call(installed, "palimpsest_work", {
+      action: "plan",
+      tasks: [remaining],
+      reason: "Retire the redundant task and keep the separate deliverable in the plan.",
+      changeClass: "metadata_only",
+    });
+
+    expect((await installed.application.projectWorkspace!.pulse()).episode.readiness.openTasks).toEqual([
+      expect.objectContaining({ taskId: "remaining" }),
+    ]);
+    const readiness = await call(installed, "palimpsest_work", { action: "readiness" });
+    expect(readiness.action).toBe("CONTINUE_WORK");
+  });
+});
+
 describe("PNWF — direct outcome continuity", () => {
   it("Case 1: a no-task project delivers a direct commit without inventing Work", async () => {
     const { repo, stateDir, head } = workspace("no-task");

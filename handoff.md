@@ -21,6 +21,7 @@
 - 2026-11-08 software 续作自然退出，27 个真实请求全部结算，共 982,857 tokens。记录 DELIVER，三项旧任务退役，HEAD 保持起始提交，promotion 为 0。主判据 1/1。
 - 软件轨迹重算配对 31/31 个结果，两次 `NOT_READY` 原因分别为 `UNCOMMITTED_WORK` 和 `NO_SETTLEABLE_DELTA`。失败探针作业 1 次，同因重复拒绝 0 次，无进展调用 3 次。[重算证据](research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json)
 - 2026-11-08 energy 沿用记账和终止条件，29 个请求全部结算，共 987,987 tokens。归因配对 43/43，`takeover` 被 `NO_SETTLEABLE_DELTA` 拒绝，过早 `plan` 触发 `quiescence_required`，转 `successor` 后修订并记录 DELIVER。自然退出，主判据 1/1。[对比报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md) · [Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
+- 修复两条轨迹在退役后收到的 `readiness CONTINUE_WORK`。退役计划的声明产物已提交且 episode 无交付阻塞时，`readiness` 返回 `SEMANTIC_JUDGEMENT`，提示模型确认成果后调用 `conclude DELIVER`。[修复与回归](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导)
 
 ---
 
@@ -48,13 +49,14 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 最近核验的交付合并点 `dbaaa0e6f2b03a1c4a7c6b322a8ae9404c28c44e`，当前值以 `git rev-parse origin/main` 为准 |
+| `origin/main` | Readiness 修复从 `c827ef055a381988737c4e44c690f206447218dc` 开始，当前值以 `git rev-parse origin/main` 为准 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
 | PR #232 | MERGED at `fd341c1b9cd4c7c245e0f2ee79d3269b83118f24`，已验证 head `8ceb48f2f0a8f1cba957d3b55198b1772b52ff04`，14/14 check jobs SUCCESS |
 | PR #233 | MERGED at `fdd5308bf45e699058ecae86fcfb573e250e4e69`，同步 #232 的发布 handoff，14/14 check jobs SUCCESS |
 | PR #234 | MERGED at `dbaaa0e6f2b03a1c4a7c6b322a8ae9404c28c44e`，已验证 head `98806d74310882d0bd237fce35a4fcefe25780b5`，14/14 check jobs SUCCESS |
+| PR #235 | MERGED at `c827ef055a381988737c4e44c690f206447218dc`，同步 energy 交付记录，PR 和合并后主线均为 14/14 check jobs SUCCESS |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -85,6 +87,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 - 不要把 Scheduler 的合法 `next` 改成“应该退休”；只显示两类事实。
 - 零差分 + Direct Commit Ahead：`NO_SETTLEABLE_DELTA` / `SEMANTIC_JUDGEMENT`，不得推荐重复 `complete`。
 - 普通初始 `IN_SYNC` 不证明 Direct 成果。相等 Head 只有在 canonical approval 与 Direct basis revision 成对存在时才显示该语义提示。
+- 退役后通过 `readiness` 核对被移除任务的声明产物、当前提交和 `conclude` 共用的 episode 阻塞事实。产物已提交且无阻塞时给出 `SEMANTIC_JUDGEMENT` 与 `conclude DELIVER` 路径，当前 `DELIVER` 已记录时引导回复。
 
 ### 3.3 Plan / Invalidation
 
@@ -226,6 +229,8 @@ node node_modules/vitest/vitest.mjs run test/pc1v1_operator_identity.test.ts tes
 
 Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。六个零付费容器场景沿用同镜像及八个 adapter 文件摘要的既有资格，实际 energy 容器独立通过 16 项检查和复制 World 预检。两条轨迹的终态用量与账本逐请求一致。[Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
 
+`test/pnwf_product.test.ts` 增加 software 和 energy 退役状态的正常工具回归，并覆盖产物缺失、未提交及仍有开放任务的边界。两份计划在旧版复现 `CONTINUE_WORK`，修复后提示 `conclude DELIVER`。六个相关测试文件共 59 项通过，构建、架构和公共 API 检查通过。另用原始 Work SQLite、Git 与 journal 前缀的独立副本离线复核，两条轨迹均能记录 `DELIVER`，8 项和 6 项产物证明与原记录一致。新增付费请求 0。[回归用例](test/pnwf_product.test.ts) · [离线复核](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导)
+
 PR #234 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,981 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 通过，R1-H 17 PASS，R1-HR 45 PASS / 2 LIMIT，R1-HC 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214180) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214270) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214078)
 
 PR #232 在 14/14 个 job 成功后合并。Linux CI 通过 28 项脚本测试、4,981 项 Vitest 测试（33 项跳过）与 38 项 E2E 测试，架构和公共 API 检查通过。R0 六个 E gate 与 package-smoke 实际通过。D2、D4、D5 与 D5 reliability 的 gate 步骤按现有外部 Host 条件跳过。Windows Host Boundary 通过。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438699006) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438698982) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438698980)
@@ -343,7 +348,7 @@ Energy 续作实际执行 157.052 秒，29 个请求全部结算，共 987,987 t
    - 远程部署应提供自己的 `OperatorAuthorityPort`。
 
 4. **真实模型产品闭环**（P1）
-   - 2026-11-08 的 software 与 energy 各一条真实续作都观察到旧任务退役、`DELIVER` 和自然退出。两次在修订后都收到无可处理任务的 `readiness CONTINUE_WORK`，再以已提交证据完成 episode 交付。
+   - 2026-11-08 的 software 与 energy 各一条真实续作都观察到旧任务退役、`DELIVER` 和自然退出。修订后收到的 `readiness CONTINUE_WORK` 已通过两份退役状态的确定性回归修复。付费轨迹是修复前的行为记录。
    - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
    - Direct→治理的 Worker、Settlement、Promotion 纵向验收来自确定性子进程。自主 Worker 结算及 promotion 仍需对应的真实模型证据。
 
@@ -413,6 +418,7 @@ Energy 续作实际执行 157.052 秒，29 个请求全部结算，共 987,987 t
 | 2026-11-08 | 合并按量记账续作与轨迹归因修复，记录发布检查 | [PR #232](https://github.com/orangeofcarl0-sys/palimpsest/pull/232)，`fd341c1` | 14/14 CI job 成功，四个 Host-dependent gate 步骤跳过 |
 | 2026-11-08 | 执行 energy 续作并用修复后的归因脚本对比两条轨迹 | [对比报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)，[Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json) | 29 个已结算请求，987,987 tokens，主判据 1/1，43/43 结果配对 |
 | 2026-11-08 | 合并 energy 证据、对比报告和 handoff，补录合并提交及检查 | [PR #234](https://github.com/orangeofcarl0-sys/palimpsest/pull/234)，`dbaaa0e` | 14/14 CI job 首次成功，四个外部 DSH gate 步骤跳过 |
+| 2026-11-08 | 修复退役计划的 readiness，引导模型核对已提交产物并记录 DELIVER | [回归用例](test/pnwf_product.test.ts)，[报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导) | software 与 energy 状态回归，新增付费请求 0 |
 
 ---
 

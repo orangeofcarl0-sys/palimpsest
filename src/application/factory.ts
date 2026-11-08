@@ -227,7 +227,10 @@ export interface ApplicationSurfaceDeps {
 
 
 export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): PalimpsestApplicationSurface {
-  const workCluster = makeWorkSurfaces(deps);
+  const workCluster = makeWorkSurfaces({
+    ...deps,
+    deliveryPulse: deps.projectWorkspace !== undefined && deps.episode !== undefined ? deps.projectPulse : undefined,
+  });
   const productCluster = makeProductSurfaces(deps);
   const federationCluster = makeFederationSurfaces(deps);
   const cognitionCluster = makeCognitionSurfaces(deps);
