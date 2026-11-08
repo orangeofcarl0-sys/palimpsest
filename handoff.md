@@ -8,7 +8,7 @@
 ## 0. 30 秒版本
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
-- Energy 证据和对比报告已合入主线，交付合并点为 **`dbaaa0e6f2b03a1c4a7c6b322a8ae9404c28c44e`**，合并前 14/14 个 CI job 通过。接手时用 `git rev-parse origin/main` 核验当前主线。[PR #234](https://github.com/orangeofcarl0-sys/palimpsest/pull/234)
+- Software 和 energy 复跑证据及修复前后报告已合入主线，交付合并点为 **`987bab01f8aaaf04954eaedb434409b7a15c2631`**，合并前 14/14 个 CI job 通过。接手时用 `git rev-parse origin/main` 核验当前主线。[PR #237](https://github.com/orangeofcarl0-sys/palimpsest/pull/237)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
 - 按量记账续作和轨迹归因修复已通过 [PR #232](https://github.com/orangeofcarl0-sys/palimpsest/pull/232) 合并。新工作从确认的主线开分支。
   ```bash
@@ -50,7 +50,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 真实模型复跑基于 `e5312cc5d81b5ada6f4a1015f8d00f9c557beb85`，当前值以 `git rev-parse origin/main` 为准 |
+| `origin/main` | 最近核验的复跑交付合并点 `987bab01f8aaaf04954eaedb434409b7a15c2631`，当前值以 `git rev-parse origin/main` 为准 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
@@ -59,7 +59,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | PR #234 | MERGED at `dbaaa0e6f2b03a1c4a7c6b322a8ae9404c28c44e`，已验证 head `98806d74310882d0bd237fce35a4fcefe25780b5`，14/14 check jobs SUCCESS |
 | PR #235 | MERGED at `c827ef055a381988737c4e44c690f206447218dc`，同步 energy 交付记录，PR 和合并后主线均为 14/14 check jobs SUCCESS |
 | PR #236 | MERGED at `e5312cc5d81b5ada6f4a1015f8d00f9c557beb85`，修复退役后的 readiness 引导，PR 和合并后主线均为 14/14 check jobs SUCCESS |
-| 复跑证据分支 | `codex/pnwf-readiness-live-rerun`，从 #236 合并点开始 |
+| PR #237 | MERGED at `987bab01f8aaaf04954eaedb434409b7a15c2631`，已验证 head `7402e5f37c4464d81baa6f111218043a913d48c8`，14/14 check jobs SUCCESS |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -236,6 +236,8 @@ Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。�
 `test/pnwf_product.test.ts` 增加 software 和 energy 退役状态的正常工具回归，并覆盖产物缺失、未提交及仍有开放任务的边界。两份计划在旧版复现 `CONTINUE_WORK`，修复后提示 `conclude DELIVER`。六个相关测试文件共 59 项通过，构建、架构和公共 API 检查通过。另用原始 Work SQLite、Git 与 journal 前缀的独立副本离线复核，两条轨迹均能记录 `DELIVER`，8 项和 6 项产物证明与原记录一致。新增付费请求 0。[回归用例](test/pnwf_product.test.ts) · [离线复核](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导)
 
 真实复跑在 `e5312cc` 重新通过 28 项脚本测试、构建、六个零付费容器场景，以及两次各 16 项实际隔离检查。首轮 `F:` 绑定失败发生于 Mock 请求前，随后改用 `C:` 的同提交执行副本，关键构建文件、镜像和 adapter 摘要相符。[复跑证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+PR #237 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,985 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 和 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 的 R1-H 为 17 PASS，R1-HR 为 45 PASS / 2 LIMIT，R1-HC 为 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082427) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082437) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082407)
 
 PR #234 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,981 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 通过，R1-H 17 PASS，R1-HR 45 PASS / 2 LIMIT，R1-HC 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214180) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214270) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214078)
 
@@ -432,6 +434,7 @@ Owner 授权从两个原始状态各重跑一条，沿用金额与 token 总量�
 | 2026-11-08 | 合并 energy 证据、对比报告和 handoff，补录合并提交及检查 | [PR #234](https://github.com/orangeofcarl0-sys/palimpsest/pull/234)，`dbaaa0e` | 14/14 CI job 首次成功，四个外部 DSH gate 步骤跳过 |
 | 2026-11-08 | 修复退役计划的 readiness，引导模型核对已提交产物并记录 DELIVER | [回归用例](test/pnwf_product.test.ts)，[报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导) | software 与 energy 状态回归，新增付费请求 0 |
 | 2026-11-08 | 在 #236 主线从原始状态各复跑一条 software、energy，归因比较修复前后 | [复跑证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json) | 55 个请求，2,462,728 tokens，主判据 2/2，退役后查询 readiness 0/2 |
+| 2026-11-08 | 合并复跑证据、修复前后对比报告和 handoff，同步实际合并提交与检查 | [PR #237](https://github.com/orangeofcarl0-sys/palimpsest/pull/237)，`987bab0` | 14/14 CI job 首次通过，四个外部 DSH gate 步骤跳过 |
 
 ---
 
