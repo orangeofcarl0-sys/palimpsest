@@ -6,21 +6,36 @@ with an owner, a purpose and a next action. **A branch may not be retained merel
 ## Current state
 
 ```text
-active branches: none
+permanent branch: main
+retained working branches: none
 ```
 
-As of the RS-1 audit (see [`BRANCH-INVENTORY-AFTER.md`](BRANCH-INVENTORY-AFTER.md)), the remote has
-**no active non-`main` branch**. All 101 non-`main` branches were classified deletable:
+The November consolidation uses one transient branch for the integration and this audit.
+GitHub deletes that head after the PR merges.
 
-| classification | count | meaning |
-| --- | --- | --- |
-| A — merged ancestor | 83 | the tip is reachable from `main`; the work shipped |
-| C — superseded history | 11 | merged via a PR, with one post-merge documentation record; that record was folded into `main` before deletion |
-| F — abandoned unmerged | 7 | the `experiment/pal-fed-0*` prototype family: never merged, superseded by independently developed and live-qualified work, draft PRs closed so the commits stay reachable at `refs/pull/<n>/head` |
-| E — active | 0 | — |
-| G — review-required | 0 | — |
+## 2026-11-08 consolidation
 
-`main` itself is protected (§2 of the RS-1 spec): never force-pushed, rewritten, rebased or deleted.
+The census at `1560db0bdc5c56b730ef83bd22cf7d5e1c167173` found 86 remote heads and 288 local branches,
+including `main` in each count. GitHub reported zero open PRs and `main` as the protected branch.
+
+| Scope | Disposition |
+| --- | --- |
+| 83 remote heads | Retire after checking that each exact tip is reachable from the audited `main`. |
+| `r3-a2-sentinel-portfolio` at `10a59785b02b06670ed8ae5fe4a5df10a6fdb014` | Integrate the three original commits for the completed sentinel qualification, then retire the head. The merge adds 53 research, fixture and verification files. The frozen result remains four `UNQUALIFIED` pairs. [R3-A2 result](../R3-A2-SENTINEL-PORTFOLIO-RESULT.md) |
+| `lean-d5d-result-continuation-service` at `a57f0e04823eaeab93f360c8d701244c49f9b0c9` | Archive the four divergent commits (`1a40c76`, `c068d7b`, `15db373`, `a57f0e0`) and retire the head. The merge preview conflicts on 11 paths, including continuation and Host code. PR #199 landed the continuation service and the closed PR #200 preserves this exact alternative tip. [Landed service](https://github.com/orangeofcarl0-sys/palimpsest/pull/199) · [Historical head](https://github.com/orangeofcarl0-sys/palimpsest/pull/200) |
+| 287 local non-`main` branches | Retire 244 reachable branches. Of the 43 divergent tips, 23 have a tree in `main` history, nine preview with an unchanged `main` tree, ten conflict and one is the R3-A2 integration above. The conflicting local work includes alternate G10 closure records and the older Pal-Fed prototype line. |
+
+The complete local Git bundle and verified recovery mirror are in
+`branch-archives/2026-11-08-1560db0/` beside this checkout. Restoring the bundle verified all 411 named refs
+and Git object connectivity. `refs-before.json` records names, exact tips and unique commits, and
+`merge-review.json` records the preview results.
+
+```text
+git bundle list-heads <bundle>
+git fetch <bundle> refs/heads/<archived-name>:refs/heads/<recovery-name>
+```
+
+The earlier RS-1 census remains in [the historical inventory](BRANCH-INVENTORY-AFTER.md).
 
 ## When this file changes
 
@@ -31,6 +46,4 @@ abandoned. The format:
 | --- | --- | --- | --- | --- | --- |
 | _(none)_ | | | | | |
 
-A row with an empty "next action" is a branch that should not exist. The RS-1 working branch
-`chore/repository-stabilization` is **not** listed here: it is deleted immediately after its merge
-(§27 of the RS-1 spec, and rule §2.5 of the policy), so it is never a surviving branch.
+Fill in the next action when adding a row. Retire the branch after its PR merges or its audit is complete.
