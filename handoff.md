@@ -9,8 +9,9 @@
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
 - `main` 是唯一常驻分支。日常保留一条工作分支，并行工作上限为三条。分支归并、R3-A2 导入与历史引用恢复入口见 [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)。
-- Bench 树与 README 导航已合入主线 `ca3e67661730f157acafe2c999afbac5b83459b2`，合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
-- Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，证据合并点为 **`00c5f46d69683ee75f3b74d44f184c0b7a19ac23`**，合并前 14/14 个 CI job 通过。接手时用 `git rev-parse origin/main` 核验当前主线。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
+- 主线归因改写、切换后 CI 和旧 SHA 查找见 [§2](#主线归因与-sha-映射)。
+- Bench 树与 README 导航已合入主线，改写后对应提交为 `234be03cd82de55455a8a316fec66b8886d26cf9`。合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
+- Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，改写后对应提交为 **`666b4446c0649b7a3f425f1291fff99b6f97a2bf`**。合并前 14/14 个 CI job 通过。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
 - 按量记账续作和轨迹归因修复已通过 [PR #232](https://github.com/orangeofcarl0-sys/palimpsest/pull/232) 合并。新工作从确认的主线开分支。
   ```bash
@@ -54,7 +55,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 分支归并的盘点基线为 `1560db0bdc5c56b730ef83bd22cf7d5e1c167173`，当前值以 `git rev-parse origin/main` 为准 |
+| `origin/main` | 归因改写基线为 `0d7516488013e8f36883fd7ee27ef7deb8104bd2`。当前值以 `git rev-parse origin/main` 为准 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
@@ -75,6 +76,18 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 平台 | Windows，PowerShell；Docker 中 Linux / DSH 0.2.1-rc.5 |
 
 注意：`package.json` 声明 Node `>=24.15.0`，本机是 `24.14.1`，pnpm 会打 engine warning；当前构建/测试可用，但不要据此升级依赖或忽略其他 engine 错误。
+
+### 主线归因与 SHA 映射
+
+2026-11-08 从 `87e14286ff5ab50f2a6678340f8f4c2f734e75c1` 切换到上表的归因改写基线。21 个测试署名提交的作者与提交者沿用 `orangeofcarl0-sys` 的 Git 姓名和邮箱，10 个 G10 提交移除了 Claude 共同作者尾注。逐一核验了 1,139 个提交的文件树和父链。854 个提交获得新 SHA，285 个保留原 SHA。171 个旧签名随提交改写失效。9 个历史标签保留原对象与指向，其中 6 个仍可追溯到带 Claude 尾注的原提交。
+
+切换后恢复了 `main-protection` 的原始规则和空放行列表。改写基线的三套工作流共 14/14 个 job 成功，R0 中 4 个依赖外部 DSH 的实测步骤按原环境条件跳过。[主线保护](https://github.com/orangeofcarl0-sys/palimpsest/rules/23655367) · [Linux unit / e2e](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42490882339) · [R0 Gates](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42490882338) · [Windows Host Boundary](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42490882351)
+
+CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeofcarl0-sys`。逐一核对了 GitHub 对上述 31 个提交的署名。[Contributors](https://github.com/orangeofcarl0-sys/palimpsest/graphs/contributors)
+
+查找旧 SHA 时，用完整原 SHA 查询 TSV 的第一列，第二列是新主线上文件树相同的提交。表中只列出 854 个改写提交。上表的历史 PR、CI 记录和归档实验保留当时的实际 SHA。新导航和源码链接使用改写后的 SHA。[提交映射](repository-audit/main-rewrite-2026-11-08.tsv)
+
+本机回溯原提交对象使用已验证的完整 bundle `../branch-archives/2026-11-08-before-attribution-rewrite-87e1428/original-main.bundle`，其中 `refs/audit/original` 指向切换前的主线。
 
 ---
 
@@ -470,6 +483,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-08 | 持续 504 时通过 GitHub 官方资产 API 恢复 `package-smoke` | [PR #241](https://github.com/orangeofcarl0-sys/palimpsest/pull/241)，`0f7dc13` | PR 与主线 CI 均为 14/14，主线核验四个原包的 SHA-512 后完成真实下游安装 |
 | 2026-11-08 | 合并 Bench 树及 README 导航，登记实际合并点与 CI 范围 | [PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)，`ca3e676` | 14/14 CI job 首次通过，核对 59 个链接与 87 个证据阶段，四个外部 DSH 步骤跳过 |
 | 2026-11-08 | 归并工作分支，导入 R3-A2 冻结证据并归档其余独有历史 | [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)，R3-A2 tip `10a5978` | 恢复验证 411 个引用，R3-A2 定向测试 116 项通过 |
+| 2026-11-08 | 改写主线提交归因，核验 Contributors 并更新导航 | [归因与 SHA 映射](#主线归因与-sha-映射) | 归档原始主线和标签 |
 
 ---
 

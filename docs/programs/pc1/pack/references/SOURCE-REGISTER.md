@@ -22,11 +22,12 @@
 
 冻结基线：`044b08056a0e98b7d7cee207cb36fb7e453907fe`。
 
-源码链接（供本地 exact-ref 读取）：
-- https://github.com/orangeofcarl0-sys/palimpsest/blob/044b08056a0e98b7d7cee207cb36fb7e453907fe/src/tools/controller.ts
-- https://github.com/orangeofcarl0-sys/palimpsest/blob/044b08056a0e98b7d7cee207cb36fb7e453907fe/src/tools/work_evidence.ts
-- https://github.com/orangeofcarl0-sys/palimpsest/blob/044b08056a0e98b7d7cee207cb36fb7e453907fe/src/deployment/execution_world.ts
-- https://github.com/orangeofcarl0-sys/palimpsest/blob/044b08056a0e98b7d7cee207cb36fb7e453907fe/package.json
+以下源码链接指向归因改写后与冻结基线文件树一致的提交。
+
+- https://github.com/orangeofcarl0-sys/palimpsest/blob/a9d8b19540573bdb56fc85439866257535c2d46d/src/tools/controller.ts
+- https://github.com/orangeofcarl0-sys/palimpsest/blob/a9d8b19540573bdb56fc85439866257535c2d46d/src/tools/work_evidence.ts
+- https://github.com/orangeofcarl0-sys/palimpsest/blob/a9d8b19540573bdb56fc85439866257535c2d46d/src/deployment/execution_world.ts
+- https://github.com/orangeofcarl0-sys/palimpsest/blob/a9d8b19540573bdb56fc85439866257535c2d46d/package.json
 
 ## 这次没有重新做的事情
 

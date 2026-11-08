@@ -4,7 +4,7 @@
 
 ## Bench 树
 
-按主线 `0f7dc13` 的 Git 追踪内容盘点。`research-evidence/` 下有 87 个一级阶段目录，`scripts/` 下有 93 个一级目录，包含运行器、复现脚本和维护工具。先按要回答的问题选分支，再沿同一阶段找输入、执行和判定。
+按主线提交 `63bf522` 的 Git 追踪内容盘点。`research-evidence/` 下有 87 个一级阶段目录，`scripts/` 下有 93 个一级目录，包含运行器、复现脚本和维护工具。先按要回答的问题选分支，再沿同一阶段找输入、执行和判定。[盘点文件树](https://github.com/orangeofcarl0-sys/palimpsest/tree/63bf5229f7526915b9c620924135c5b23b9ed8ec)
 
 ```text
 Palimpsest
