@@ -217,3 +217,41 @@ Docker 首轮 Mock 在绑定 `F:` 时停止，实际请求数为 0。随后在 `
 两次复跑共 55 个已结算请求、2,462,728 tokens，未结算请求为 0，账本和 DSH 的四类终态用量逐请求相符。两条轨迹的总用量都增加，增量主要来自退役前的缓存读取。该阶段的 cache read 在 software 为 726,912 → 1,133,824，在 energy 为 581,632 → 857,856。Energy 的平均每请求用量从 34,069 增至 41,074 tokens，因此请求少了三次，总用量仍增加。退役后的用量按成功空计划结果之后的模型步骤归集，包含结论回执后的最终回复。这组对比每种状态只有一次复跑，且两条都绕过了退役后的 `readiness`，因此观察到的耗时和用量差属于整条轨迹。新提示的可达性仍由上一节的确定性回归和离线复核支持，真实模型采用仍待观测。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
 
 复跑的压缩原始轨迹、归因时间线、账本、结算快照和 Work/journal 数据库已按文件摘要归档至本地 `.aps-tmp/pnwf-paid-2026-11-08-readiness-software` 与 `.aps-tmp/pnwf-paid-2026-11-08-readiness-energy`。分析使用已有归因脚本，复跑以外新增付费请求为 0。
+
+## 退役状态下的 Readiness 定向观察
+
+2026-11-08 在 `5588cf9da6189dbe2b7cb121a188677b13113713` 上，从上一节两次复跑的退役状态各复制一个新 World 和 Work 数据库。Software 保留三项 STALE 任务，energy 保留一项 STALE 任务，原 Attempt 均为 CANCELLED，修订均为 1。新 journal 按原链摘要重放 seq 1–2，交付从空状态开始。两条用各自的新账本、运行目录和 DSH 会话，沿用 `paid-usage-only`、`deepseek-flash`、DSH `0.2.1-rc.5`、64 次请求、30 分钟会话和 240 秒单请求等待。金额与 token 总量上限均为 `null`。[定向观察证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
+
+传入的人工 prompt 为 `First, call palimpsest_work with action=readiness.`。原始流 seq 8 还包含正常 Host 自动添加的 `pulse` 引导，另有 DSH 的运行时上下文。两份零付费容器检查均在下一模型请求中观察到 `SEMANTIC_JUDGEMENT` 和 `conclude DELIVER` 提示。28 项脚本测试通过，两条真实会话各自通过 16 项隔离检查和复制 World 预检。执行复用 `C:` 上的构建副本，镜像、关键构建文件及 adapter 摘要与修复后复跑一致。[Host 引导](../../host/dsh/lib/project_hint.js) · [定向观察证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
+
+### 调用顺序与退出
+
+两条真实轨迹的首个工具调用均为 `readiness`（seq 15 → 16）。结果在步骤 1 给出 `SEMANTIC_JUDGEMENT`，列出原 HEAD 及已提交的声明产物，并提示确认目标后调用 `conclude DELIVER`。Software 在步骤 2 查询 `pulse`。Energy 在步骤 1 的同一模型响应中也发出了 `pulse`，它属于看到 readiness 结果前的同批动作。两条各自检查产物后，在后续模型步骤调用 `conclude DELIVER`，写入 journal seq 3。两个回执都为 `RECORDED`、`mayEnd=true`，各有一条最终答复，随后自然退出。回执之后的工具调用均为 0。[定向观察证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
+
+| 观测 | Software | Energy |
+|---|---:|---:|
+| `readiness` 结果，DSH 起点后 | seq 16，5.407 秒 | seq 16，5.140 秒 |
+| 从提示到 `conclude` 之间的后续步骤工具调用 | 27 | 13 |
+| `conclude DELIVER` 调用 → 回执 | 165 → 166，步骤 19 | 95 → 96，步骤 9 |
+| 提示到 `conclude` 调用 / 回执 | 74.588 / 86.488 秒 | 32.490 / 43.164 秒 |
+| 产物证明 | 7 | 6 |
+| DSH 轮次 / 外层运行 | 95.292 / 125.309 秒 | 51.583 / 82.136 秒 |
+| 结论回执到 DSH 轮次结束 | 3.397 秒 | 3.279 秒 |
+
+Software 验证 gRPC 提交、26 项 `node --test`、迁移与 REST 兼容性相关源码。Python 依赖探测因 `ModuleNotFoundError` 退出（调用 101、作业 103、结果 104），归因计为 1 次失败作业。它改用本地 Node 服务和 HTTP/2 探针，取得探针结果后终止后台服务，再交付 7 项声明产物。Energy 核对两站原始资料和现场测量，默认与最终检查分别通过 40、46 项断言，另用脚本复算成本和工期，再交付 6 项声明产物。两份交付产物的提交和文件摘要都与上一节相应记录一致。两条的领域拒绝和结果层错误均为 0。[定向观察证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
+
+### 用量与证据范围
+
+| 指标 | Software | Energy | 合计 |
+|---|---:|---:|---:|
+| 结算请求 | 20 | 10 | 30 |
+| 归因调用配对 | 29/29 | 16/16 | 45/45 |
+| Fresh input | 27,262 | 21,233 | 48,495 |
+| Cache read | 505,984 | 188,544 | 694,528 |
+| Cache creation | 0 | 0 | 0 |
+| Output | 8,777 | 4,692 | 13,469 |
+| **Tokens 合计** | **542,023** | **214,469** | **756,492** |
+
+30 组请求的四类终态计量与 DSH 轨迹逐请求相符，未结算请求为 0。提示之后的模型步骤分别用掉 530,354 和 202,767 tokens，包含结论回执后的最终答复。两条均保留原 canonical HEAD 和退役状态，Work 事件列表及负载摘要一致，`plan`、`relay`、`complete`、`finalize` 与 promotion 均为 0。[定向观察证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
+
+这组结果覆盖**指定先查 readiness 后的提示采用**，两种状态各观察一次。上一节从旧任务仍在的原始状态复跑，两次都直接交付，退役后的 `readiness` 调用为 0。这两组分别记录指定触发后的行为与原始续作中的工具选择。真实流、归因时间线、请求账本和数据库已归档至本地 `.aps-tmp/pnwf-paid-2026-11-08-readiness-hint-software` 与 `.aps-tmp/pnwf-paid-2026-11-08-readiness-hint-energy`。[定向观察证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)

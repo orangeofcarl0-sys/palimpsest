@@ -1,0 +1,2040 @@
+{
+  "schema": "pnwf-readiness-hint-live/v1",
+  "localDate": "2026-11-08",
+  "sourceMain": "5588cf9da6189dbe2b7cb121a188677b13113713",
+  "readinessFixPR": 236,
+  "prompt": {
+    "operatorText": "First, call palimpsest_work with action=readiness.",
+    "hostPrefix": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction.",
+    "hostPrefixSource": "host/dsh/lib/project_hint.js",
+    "hostPrefixSourceSha256": "902bb8b29054b657bb44b33883412a7d2317bd4b6131c3d8a425dd6bf7e3c2f8"
+  },
+  "purpose": "Observe delivery in a later model step after asking it to query readiness first, from an already-retired checkpoint.",
+  "authorization": {
+    "paidRunsPerStage": 1,
+    "billingCeiling": null,
+    "tokenTotalCeiling": null
+  },
+  "contract": {
+    "mode": "paid-usage-only",
+    "model": "deepseek-flash",
+    "providerUpstream": "https://api.deepseek.com/anthropic/v1/messages",
+    "maxRequestsPerSession": 64,
+    "wallClockMs": 1800000,
+    "providerRequestTimeoutMs": 240000,
+    "dshVersion": "0.2.1-rc.5"
+  },
+  "verification": {
+    "requestAndAttributionTestsPassed": 28,
+    "deterministicHintChecks": 2,
+    "paidMockRequests": 0,
+    "builtProduct": {
+      "dist/src/application/work_outcome.js": "76061c92dd761e67d84c0478e3f5874b698d0b2e70ff57609dcf23e34cad9e81",
+      "dist/src/application/factory.js": "a7b56e6df10795e2cd49a012ae3c352f81079ce5588c958ea1aa639741c59e4f",
+      "dist/src/advanced.js": "984a0782ba3fff7c72cbb928c4f3efb020fe18ced613ffc24f276afa3fc93332"
+    },
+    "scriptHashes": {
+      "scripts/psvr/session_attribution.mjs": "f1443b2d4e0cb8a8ca6e489df8e9fc15eded6b91fc76df213a7930557801e435",
+      "scripts/pnwf/score_continuation.mjs": "70e680c3d882386a65a296a43ae0cb3535998e4a4123e4a6d895e1fd72090cd1"
+    }
+  },
+  "observations": {
+    "runs": 2,
+    "firstToolReadiness": 2,
+    "explicitDeliverHint": 2,
+    "deliverInLaterModelStep": 2,
+    "naturalExit": 2
+  },
+  "total": {
+    "requests": 30,
+    "settledRequests": 30,
+    "unresolvedRequests": 0,
+    "tokens": 756492,
+    "breakdown": {
+      "input_tokens": 48495,
+      "cache_read_input_tokens": 694528,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 13469
+    }
+  },
+  "cases": {
+    "software": {
+      "setup": {
+        "stage": "software",
+        "id": "pnwf-paid-2026-11-08-readiness-hint-software",
+        "sourceMain": "5588cf9da6189dbe2b7cb121a188677b13113713",
+        "sourceCohort": "pnwf-paid-2026-11-08-readiness-software",
+        "canonicalHead": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+        "tasks": [
+          {
+            "taskId": "grpc-contract",
+            "state": "STALE"
+          },
+          {
+            "taskId": "grpc-service",
+            "state": "STALE"
+          },
+          {
+            "taskId": "verify-migration",
+            "state": "STALE"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+            "taskId": "grpc-contract",
+            "state": "CANCELLED"
+          }
+        ],
+        "sourceWorkSha256": "ded681f5838d4cd220cd916c5b707ebc1ace183d074eca679ed5303b48889f24",
+        "sourceJournalSha256": "aecf9055111af9f8df26fea1678f6c7cd5a3e9795e2b5ed83d132152380e51e4",
+        "journalPrefix": [
+          {
+            "seq": 1,
+            "type": "JOURNAL_OPENED",
+            "chainDigest": "55412dfbe2e5ec5574a53edfb94a2f3aa25932165e6225b697cefe6146c03ad3"
+          },
+          {
+            "seq": 2,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "chainDigest": "991184d7e5b9a8566a0607cff18a2cad54d518cc6e1a6b78171fcac96ce12045"
+          }
+        ],
+        "sourceExcludedJournalSeq": 3,
+        "episodeConclusion": null,
+        "prompt": "First, call palimpsest_work with action=readiness.",
+        "promptSha256": "817b7cd7acf56dcc825fa1ce344f321b8db23c7478fb6baa5b3e8768ee7910c8",
+        "priorRuntimeCopied": false
+      },
+      "qualificationMock": {
+        "stage": "software",
+        "mode": "mock",
+        "mockRequests": 2,
+        "sawHint": true,
+        "paidRequests": 0,
+        "containerId": "90bc92ff48c419a7d6fa7c21732aabbecbd767e5d884e10e31a2f43f6bd4b6e2",
+        "descriptorDigest": "7844bb9a22e10978732ff01b8f1214e38bea818cedee158a21a2c34429a56f9b",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "checks": 16,
+        "network": "none"
+      },
+      "observation": {
+        "cohortId": "pnwf-paid-2026-11-08-readiness-hint-software",
+        "sourcePromptHash": "817b7cd7acf56dcc825fa1ce344f321b8db23c7478fb6baa5b3e8768ee7910c8",
+        "baseline": {
+          "tasks": [
+            {
+              "taskId": "grpc-contract",
+              "state": "STALE"
+            },
+            {
+              "taskId": "grpc-service",
+              "state": "STALE"
+            },
+            {
+              "taskId": "verify-migration",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+              "taskId": "grpc-contract",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": null,
+          "conclusion": null,
+          "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "status": ""
+        },
+        "qualification": {
+          "containerId": "e471003c4b3b505ec03aac72a0a819544f0447f4d60f910fa8ce1e0eec1abb77",
+          "descriptorDigest": "ffd118eb2db5cd52bcb6960ffefdc4e15987c35acc2fa2f5f5e1bca5805d289e",
+          "checkedAt": "2026-11-08T08:19:16.091Z",
+          "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+          "network": "none",
+          "user": "1001:1001",
+          "checks": 16,
+          "allChecksMatched": true,
+          "worlds": 1,
+          "attemptWorld": 0
+        },
+        "counts": {
+          "steps": 20,
+          "turns": 1,
+          "toolCalls": 29,
+          "pairedToolResults": 29,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 2,
+          "commits": 0,
+          "jobs": 11
+        },
+        "byKind": {
+          "work:readiness": 1,
+          "continuity:pulse": 1,
+          "bash": 11,
+          "read": 13,
+          "job_output": 1,
+          "job_kill": 1,
+          "work:conclude": 1
+        },
+        "pairedResults": [
+          {
+            "callSeq": 15,
+            "resultSeq": 16,
+            "callKind": "work:readiness"
+          },
+          {
+            "callSeq": 21,
+            "resultSeq": 22,
+            "callKind": "continuity:pulse"
+          },
+          {
+            "callSeq": 27,
+            "resultSeq": 30,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 31,
+            "resultSeq": 34,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 39,
+            "resultSeq": 41,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 40,
+            "resultSeq": 42,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 47,
+            "resultSeq": 50,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 55,
+            "resultSeq": 58,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 63,
+            "resultSeq": 65,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 64,
+            "resultSeq": 66,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 71,
+            "resultSeq": 73,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 72,
+            "resultSeq": 74,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 79,
+            "resultSeq": 82,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 80,
+            "resultSeq": 83,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 81,
+            "resultSeq": 84,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 89,
+            "resultSeq": 91,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 90,
+            "resultSeq": 92,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 97,
+            "resultSeq": 100,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 101,
+            "resultSeq": 104,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 109,
+            "resultSeq": 112,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 117,
+            "resultSeq": 120,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 125,
+            "resultSeq": 127,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 132,
+            "resultSeq": 133,
+            "callKind": "job_output"
+          },
+          {
+            "callSeq": 138,
+            "resultSeq": 141,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 146,
+            "resultSeq": 148,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 147,
+            "resultSeq": 149,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 154,
+            "resultSeq": 157,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 158,
+            "resultSeq": 159,
+            "callKind": "job_kill"
+          },
+          {
+            "callSeq": 165,
+            "resultSeq": 166,
+            "callKind": "work:conclude"
+          }
+        ],
+        "failedJobs": [
+          {
+            "jobId": "bash-aed98861af33441d",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_01_tShXTxTfSzCrRcsz2IGE6065",
+            "callSeq": 101,
+            "callKind": "bash",
+            "resultSeq": 104,
+            "settledSeq": 103,
+            "durationMs": 71
+          }
+        ],
+        "toolErrors": [],
+        "refusals": [],
+        "usage": {
+          "admittedRequests": 20,
+          "settledRequests": 20,
+          "unresolvedRequests": 0,
+          "confirmedTokens": 542023,
+          "breakdown": {
+            "input_tokens": 27262,
+            "cache_read_input_tokens": 505984,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 8777
+          },
+          "ledgerAndStreamMatchedPerRequest": 20,
+          "requests": [
+            {
+              "ordinal": 1,
+              "assistantMessageSeq": 14,
+              "step": 1,
+              "id": "d2377ab5-9c81-4291-a8c4-582855ddc431",
+              "requestDigest": "fed58508842c2085d913f9417b10b3a11804fd04126b6cc30307d990bc5a4adc",
+              "tokens": 11669,
+              "usage": {
+                "input_tokens": 353,
+                "cache_read_input_tokens": 11264,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 52
+              }
+            },
+            {
+              "ordinal": 2,
+              "assistantMessageSeq": 20,
+              "step": 2,
+              "id": "276058d4-b6b3-4bae-8d13-441e17fe4b1a",
+              "requestDigest": "f3e8838cb24030c5ede6a6b0c5f408762571b42d7437cc3bf5148f4aea7399f8",
+              "tokens": 12179,
+              "usage": {
+                "input_tokens": 480,
+                "cache_read_input_tokens": 11648,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 51
+              }
+            },
+            {
+              "ordinal": 3,
+              "assistantMessageSeq": 26,
+              "step": 3,
+              "id": "a65124e9-24f7-454f-8a9a-40ecf95d31c0",
+              "requestDigest": "c2a5c69d2f6fbe6f287865d2fdcec9fbdff16a1476189ff7a1c2a3fd5d2336f8",
+              "tokens": 13699,
+              "usage": {
+                "input_tokens": 1321,
+                "cache_read_input_tokens": 12160,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 218
+              }
+            },
+            {
+              "ordinal": 4,
+              "assistantMessageSeq": 38,
+              "step": 4,
+              "id": "458f822c-5157-41ab-8525-1b3abc3155f0",
+              "requestDigest": "5f386c9be0dfbc9c03c419f18e5b058e9300af76cf76ada56134421460bf74ce",
+              "tokens": 14420,
+              "usage": {
+                "input_tokens": 615,
+                "cache_read_input_tokens": 13696,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 109
+              }
+            },
+            {
+              "ordinal": 5,
+              "assistantMessageSeq": 46,
+              "step": 5,
+              "id": "39c1662c-ffaa-4db4-a235-cb6cf7880845",
+              "requestDigest": "f9b99948c5ac68a39dec05c2ef1eff03375485828eabe724c47a35bd60f18fac",
+              "tokens": 15147,
+              "usage": {
+                "input_tokens": 692,
+                "cache_read_input_tokens": 14336,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 119
+              }
+            },
+            {
+              "ordinal": 6,
+              "assistantMessageSeq": 54,
+              "step": 6,
+              "id": "d8db68df-e616-473b-aaec-0080439b1795",
+              "requestDigest": "2dd29e1020715885def39d0e5d93919d4ee49d56df877a0f788504d217508c5d",
+              "tokens": 15818,
+              "usage": {
+                "input_tokens": 602,
+                "cache_read_input_tokens": 15104,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 112
+              }
+            },
+            {
+              "ordinal": 7,
+              "assistantMessageSeq": 62,
+              "step": 7,
+              "id": "875e37e8-9928-47ab-90fe-0a8398025a8b",
+              "requestDigest": "98cea70576cf9338879f2423e573eb5e789e60412bbc42428cb68caa5270af71",
+              "tokens": 16751,
+              "usage": {
+                "input_tokens": 632,
+                "cache_read_input_tokens": 15744,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 375
+              }
+            },
+            {
+              "ordinal": 8,
+              "assistantMessageSeq": 70,
+              "step": 8,
+              "id": "99a8e008-d6b6-4abb-bf0b-1c1a8b62bf3d",
+              "requestDigest": "2bb3f0e33a554331570e19de6f6a41fd836af7bd87fd01bb0486961adac20bc3",
+              "tokens": 21119,
+              "usage": {
+                "input_tokens": 4288,
+                "cache_read_input_tokens": 16640,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 191
+              }
+            },
+            {
+              "ordinal": 9,
+              "assistantMessageSeq": 78,
+              "step": 9,
+              "id": "c3261528-437c-4d15-82a6-879eeabb3f70",
+              "requestDigest": "1b2f6d122e51b8879de43c1d5e6bb2c96079a36f3d4ff285ef524f66387f81c7",
+              "tokens": 25451,
+              "usage": {
+                "input_tokens": 4040,
+                "cache_read_input_tokens": 20992,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 419
+              }
+            },
+            {
+              "ordinal": 10,
+              "assistantMessageSeq": 88,
+              "step": 10,
+              "id": "0865ed5a-781f-4e6f-9959-f0061fb13048",
+              "requestDigest": "5228b2ada4cd41536efb3bc105f65309cbd416d6f8009c1300328f9f023a6084",
+              "tokens": 27217,
+              "usage": {
+                "input_tokens": 1754,
+                "cache_read_input_tokens": 25344,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 119
+              }
+            },
+            {
+              "ordinal": 11,
+              "assistantMessageSeq": 96,
+              "step": 11,
+              "id": "2c0707a3-b739-4cea-98af-ad5a8a51f19c",
+              "requestDigest": "9452de0fbedb225ee90273382f066398b9b23838aab7b4e1af450b9a6c3ab667",
+              "tokens": 32355,
+              "usage": {
+                "input_tokens": 4560,
+                "cache_read_input_tokens": 27136,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 659
+              }
+            },
+            {
+              "ordinal": 12,
+              "assistantMessageSeq": 108,
+              "step": 12,
+              "id": "8a8aa0e8-8805-4b32-a29a-fdc2428be6df",
+              "requestDigest": "d594b1459efbfd091d23e5dcdb79a40744c7cd11f78ea2ac62dbf284053f37b2",
+              "tokens": 32999,
+              "usage": {
+                "input_tokens": 581,
+                "cache_read_input_tokens": 32256,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 162
+              }
+            },
+            {
+              "ordinal": 13,
+              "assistantMessageSeq": 116,
+              "step": 13,
+              "id": "c26bb66f-41c2-4bd6-baa2-c826ffdeea83",
+              "requestDigest": "8a2fdbb231c564e0dea0d69d22398afc1fffa0594b03917c7f920a128c2e8c9d",
+              "tokens": 33278,
+              "usage": {
+                "input_tokens": 140,
+                "cache_read_input_tokens": 32896,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 242
+              }
+            },
+            {
+              "ordinal": 14,
+              "assistantMessageSeq": 124,
+              "step": 14,
+              "id": "dacf4090-8918-4129-8387-93675610e5d1",
+              "requestDigest": "5e37acbf20dc08317d35259107f1d7d963304f5cd2b2f086fdd3d63d9e09ca11",
+              "tokens": 34605,
+              "usage": {
+                "input_tokens": 662,
+                "cache_read_input_tokens": 33152,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 791
+              }
+            },
+            {
+              "ordinal": 15,
+              "assistantMessageSeq": 131,
+              "step": 15,
+              "id": "5362af90-ef8f-4dd3-9dcf-120026bafa23",
+              "requestDigest": "412d96ed395253aea2064f378474a030151eb449c667fb72cf61eedb58dc5697",
+              "tokens": 34716,
+              "usage": {
+                "input_tokens": 200,
+                "cache_read_input_tokens": 34432,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 84
+              }
+            },
+            {
+              "ordinal": 16,
+              "assistantMessageSeq": 137,
+              "step": 16,
+              "id": "17f69c3a-edea-4ffb-ac8f-06b49af3b1cd",
+              "requestDigest": "273bfaf9ed403da1707fef2bcfa601b283f5a50a0fa79800b6d7704171eeb4e1",
+              "tokens": 36028,
+              "usage": {
+                "input_tokens": 179,
+                "cache_read_input_tokens": 34560,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1289
+              }
+            },
+            {
+              "ordinal": 17,
+              "assistantMessageSeq": 145,
+              "step": 17,
+              "id": "e4bfc09e-0578-45ff-8ddf-5a7147ff0900",
+              "requestDigest": "ee5874c341559af1463dc0e606e7f33ee925f2441da6b5ffa0f67bb784219215",
+              "tokens": 36909,
+              "usage": {
+                "input_tokens": 399,
+                "cache_read_input_tokens": 35968,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 542
+              }
+            },
+            {
+              "ordinal": 18,
+              "assistantMessageSeq": 153,
+              "step": 18,
+              "id": "4d6f5f69-930e-4f05-ac22-5d1ba1b73d94",
+              "requestDigest": "3063102a13a5816ebee9670e5979c42e27c2f8d15d0c5a8d3307a19ae04d3336",
+              "tokens": 40705,
+              "usage": {
+                "input_tokens": 1586,
+                "cache_read_input_tokens": 36864,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 2255
+              }
+            },
+            {
+              "ordinal": 19,
+              "assistantMessageSeq": 164,
+              "step": 19,
+              "id": "aec9cbf1-a609-4932-bda9-f2904e19a72f",
+              "requestDigest": "e52b2ecdfe2c6d91c4547145f58868422d2d1940f7e0243d9a73c6f4ead0df83",
+              "tokens": 41341,
+              "usage": {
+                "input_tokens": 260,
+                "cache_read_input_tokens": 40576,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 505
+              }
+            },
+            {
+              "ordinal": 20,
+              "assistantMessageSeq": 170,
+              "step": 20,
+              "id": "90dbb7ec-f83f-4b80-baf3-0eb98747167a",
+              "requestDigest": "031375374070a7370dee868a2bded3c6fde54a3f405eb4011cdb6f0dc737fb18",
+              "tokens": 45617,
+              "usage": {
+                "input_tokens": 3918,
+                "cache_read_input_tokens": 41216,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 483
+              }
+            }
+          ]
+        },
+        "execution": {
+          "startedAt": "2026-11-08T08:19:00.989Z",
+          "endedAt": "2026-11-08T08:21:06.298Z",
+          "durationMs": 125309,
+          "exit": {
+            "natural": true,
+            "stopped": false,
+            "kind": "NATURAL_EXIT",
+            "killedBy": null,
+            "exitCode": 0,
+            "signal": null,
+            "error": null
+          },
+          "model": "deepseek-flash",
+          "billingCeiling": null,
+          "maxRequests": 64,
+          "wallClockMs": 1800000
+        },
+        "session": {
+          "id": "session-312dfb69-6160-4154-aa7e-f98776d5d7a2",
+          "cwd": "/run/stage/world",
+          "startedAt": "2026-11-08T08:19:30.008Z",
+          "endedAt": "2026-11-08T08:21:05.300Z",
+          "durationMs": 95292
+        },
+        "end": {
+          "seq": 172,
+          "step": null,
+          "offsetMs": 95292,
+          "reason": "completed"
+        },
+        "firstModelCall": {
+          "seq": 15,
+          "kind": "work:readiness",
+          "resultSeq": 16,
+          "action": "readiness"
+        },
+        "offeredToolCount": 29,
+        "relay": [],
+        "plan": [],
+        "readiness": [
+          {
+            "call": {
+              "seq": 15,
+              "step": 1,
+              "offsetMs": 2851
+            },
+            "result": {
+              "seq": 16,
+              "step": 1,
+              "offsetMs": 5407
+            },
+            "action": "SEMANTIC_JUDGEMENT",
+            "explicitDeliverHint": true,
+            "next": [
+              "if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"
+            ],
+            "reasons": [
+              "the retired plan's declared artifacts (proto/energy.proto, service/wire.js, service/grpc_server.js, service/grpc_client.js, test/server.test.js, test/integration.test.js, README.md) are committed at repository HEAD 453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+              "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"
+            ]
+          }
+        ],
+        "retiredReadiness": [
+          {
+            "call": {
+              "seq": 15,
+              "step": 1,
+              "offsetMs": 2851
+            },
+            "result": {
+              "seq": 16,
+              "step": 1,
+              "offsetMs": 5407
+            },
+            "action": "SEMANTIC_JUDGEMENT",
+            "explicitDeliverHint": true,
+            "next": [
+              "if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"
+            ],
+            "reasons": [
+              "the retired plan's declared artifacts (proto/energy.proto, service/wire.js, service/grpc_server.js, service/grpc_client.js, test/server.test.js, test/integration.test.js, README.md) are committed at repository HEAD 453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+              "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"
+            ]
+          }
+        ],
+        "conclusion": [
+          {
+            "call": {
+              "seq": 165,
+              "step": 19,
+              "offsetMs": 79995
+            },
+            "result": {
+              "seq": 166,
+              "step": 19,
+              "offsetMs": 91895
+            },
+            "intent": "DELIVER",
+            "state": "RECORDED",
+            "mayEnd": true,
+            "artifacts": [
+              {
+                "path": "proto/energy.proto",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "bafdb07e5a16f95f505b13174f663a0d39422fd0c922ead83ebc21fc445586f0"
+              },
+              {
+                "path": "service/wire.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e981e3250f13530130a7df4724d7ac2f6c982103ee1635921744a6ad2263559e"
+              },
+              {
+                "path": "service/grpc_server.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "78f807ff081ede62045969d3a4624fcb37f80c685599d35bf31198e752ec01b9"
+              },
+              {
+                "path": "service/grpc_client.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "0b53c303885de872caec7467420bd104eb613008e4402cd61c47346d3ab82c9b"
+              },
+              {
+                "path": "test/server.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "9189e13670fc57d7501dd07270cf7169d45ac2ad6225220e921af0857e2fbaae"
+              },
+              {
+                "path": "test/integration.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e5a995d6aa37b215d17da4a50212442772f29562bd73a4e09708dd931f8b8eab"
+              },
+              {
+                "path": "README.md",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e2a8461fc7e3bad54f35f13347210cd742448abd4c937cceffd16ed55216f540"
+              }
+            ]
+          }
+        ],
+        "afterReadiness": {
+          "calls": [
+            {
+              "seq": 21,
+              "kind": "continuity:pulse",
+              "resultSeq": 22,
+              "action": "pulse"
+            },
+            {
+              "seq": 27,
+              "kind": "bash",
+              "resultSeq": 30
+            },
+            {
+              "seq": 31,
+              "kind": "bash",
+              "resultSeq": 34
+            },
+            {
+              "seq": 39,
+              "kind": "read",
+              "resultSeq": 41
+            },
+            {
+              "seq": 40,
+              "kind": "read",
+              "resultSeq": 42
+            },
+            {
+              "seq": 47,
+              "kind": "bash",
+              "resultSeq": 50
+            },
+            {
+              "seq": 55,
+              "kind": "bash",
+              "resultSeq": 58
+            },
+            {
+              "seq": 63,
+              "kind": "read",
+              "resultSeq": 65
+            },
+            {
+              "seq": 64,
+              "kind": "read",
+              "resultSeq": 66
+            },
+            {
+              "seq": 71,
+              "kind": "read",
+              "resultSeq": 73
+            },
+            {
+              "seq": 72,
+              "kind": "read",
+              "resultSeq": 74
+            },
+            {
+              "seq": 79,
+              "kind": "read",
+              "resultSeq": 82
+            },
+            {
+              "seq": 80,
+              "kind": "read",
+              "resultSeq": 83
+            },
+            {
+              "seq": 81,
+              "kind": "read",
+              "resultSeq": 84
+            },
+            {
+              "seq": 89,
+              "kind": "read",
+              "resultSeq": 91
+            },
+            {
+              "seq": 90,
+              "kind": "read",
+              "resultSeq": 92
+            },
+            {
+              "seq": 97,
+              "kind": "bash",
+              "resultSeq": 100
+            },
+            {
+              "seq": 101,
+              "kind": "bash",
+              "resultSeq": 104
+            },
+            {
+              "seq": 109,
+              "kind": "bash",
+              "resultSeq": 112
+            },
+            {
+              "seq": 117,
+              "kind": "bash",
+              "resultSeq": 120
+            },
+            {
+              "seq": 125,
+              "kind": "bash",
+              "resultSeq": 127
+            },
+            {
+              "seq": 132,
+              "kind": "job_output",
+              "resultSeq": 133
+            },
+            {
+              "seq": 138,
+              "kind": "bash",
+              "resultSeq": 141
+            },
+            {
+              "seq": 146,
+              "kind": "read",
+              "resultSeq": 148
+            },
+            {
+              "seq": 147,
+              "kind": "read",
+              "resultSeq": 149
+            },
+            {
+              "seq": 154,
+              "kind": "bash",
+              "resultSeq": 157
+            },
+            {
+              "seq": 158,
+              "kind": "job_kill",
+              "resultSeq": 159
+            },
+            {
+              "seq": 165,
+              "kind": "work:conclude",
+              "resultSeq": 166,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 19,
+            "tokens": 530354
+          },
+          "interveningCalls": [
+            {
+              "seq": 21,
+              "kind": "continuity:pulse",
+              "resultSeq": 22,
+              "action": "pulse"
+            },
+            {
+              "seq": 27,
+              "kind": "bash",
+              "resultSeq": 30
+            },
+            {
+              "seq": 31,
+              "kind": "bash",
+              "resultSeq": 34
+            },
+            {
+              "seq": 39,
+              "kind": "read",
+              "resultSeq": 41
+            },
+            {
+              "seq": 40,
+              "kind": "read",
+              "resultSeq": 42
+            },
+            {
+              "seq": 47,
+              "kind": "bash",
+              "resultSeq": 50
+            },
+            {
+              "seq": 55,
+              "kind": "bash",
+              "resultSeq": 58
+            },
+            {
+              "seq": 63,
+              "kind": "read",
+              "resultSeq": 65
+            },
+            {
+              "seq": 64,
+              "kind": "read",
+              "resultSeq": 66
+            },
+            {
+              "seq": 71,
+              "kind": "read",
+              "resultSeq": 73
+            },
+            {
+              "seq": 72,
+              "kind": "read",
+              "resultSeq": 74
+            },
+            {
+              "seq": 79,
+              "kind": "read",
+              "resultSeq": 82
+            },
+            {
+              "seq": 80,
+              "kind": "read",
+              "resultSeq": 83
+            },
+            {
+              "seq": 81,
+              "kind": "read",
+              "resultSeq": 84
+            },
+            {
+              "seq": 89,
+              "kind": "read",
+              "resultSeq": 91
+            },
+            {
+              "seq": 90,
+              "kind": "read",
+              "resultSeq": 92
+            },
+            {
+              "seq": 97,
+              "kind": "bash",
+              "resultSeq": 100
+            },
+            {
+              "seq": 101,
+              "kind": "bash",
+              "resultSeq": 104
+            },
+            {
+              "seq": 109,
+              "kind": "bash",
+              "resultSeq": 112
+            },
+            {
+              "seq": 117,
+              "kind": "bash",
+              "resultSeq": 120
+            },
+            {
+              "seq": 125,
+              "kind": "bash",
+              "resultSeq": 127
+            },
+            {
+              "seq": 132,
+              "kind": "job_output",
+              "resultSeq": 133
+            },
+            {
+              "seq": 138,
+              "kind": "bash",
+              "resultSeq": 141
+            },
+            {
+              "seq": 146,
+              "kind": "read",
+              "resultSeq": 148
+            },
+            {
+              "seq": 147,
+              "kind": "read",
+              "resultSeq": 149
+            },
+            {
+              "seq": 154,
+              "kind": "bash",
+              "resultSeq": 157
+            },
+            {
+              "seq": 158,
+              "kind": "job_kill",
+              "resultSeq": 159
+            }
+          ],
+          "toDeliverCallMs": 74588,
+          "toDeliverReceiptMs": 86488,
+          "toTurnEndMs": 89885,
+          "deliverInLaterModelStep": true
+        },
+        "afterDelivery": {
+          "calls": [],
+          "usage": {
+            "requests": 1,
+            "tokens": 45617
+          },
+          "toTurnEndMs": 3397
+        },
+        "final": {
+          "tasks": [
+            {
+              "taskId": "grpc-contract",
+              "state": "STALE"
+            },
+            {
+              "taskId": "grpc-service",
+              "state": "STALE"
+            },
+            {
+              "taskId": "verify-migration",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+              "taskId": "grpc-contract",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": "DELIVER",
+          "conclusion": {
+            "seq": 3,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "intent": "DELIVER"
+          },
+          "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "status": ""
+        },
+        "facts": {
+          "completeAtMostOnce": true,
+          "episodeConclusionRecorded": true,
+          "taskRetired": true,
+          "noPromotion": true,
+          "headUnchanged": true,
+          "tokensBelowHistoricalClosure": true,
+          "sessionNaturalExit": true,
+          "tokenEvidenceQualified": true
+        },
+        "primary": true
+      },
+      "promptEvidence": {
+        "userMessageSeq": 8,
+        "runtimeContextSeqs": [
+          9
+        ],
+        "actualUserTextSha256": "fa98821bf5dd3dd1eda931514f1d1d838bd678e085859338995588bf3b7546e6"
+      },
+      "result": {
+        "firstToolReadiness": true,
+        "explicitDeliverHint": true,
+        "observedDeliverInLaterModelStep": true,
+        "mayEnd": true,
+        "naturalExit": true,
+        "nextAssistantMessageSeq": 20,
+        "nextAssistantStep": 2,
+        "afterHintDeliveryLog": {
+          "seq": 19,
+          "throughSeq": 18
+        },
+        "interveningCalls": 27,
+        "interveningSameStepCalls": [],
+        "interveningLaterStepCalls": 27,
+        "artifactProofs": 7,
+        "toolCallsAfterDelivery": 0
+      },
+      "significant": {
+        "nodeTest": {
+          "callSeq": 55,
+          "resultSeq": 58,
+          "passing": 26
+        },
+        "dependencyProbe": {
+          "callSeq": 101,
+          "resultSeq": 104,
+          "jobSettledSeq": 103,
+          "reason": "ModuleNotFoundError: No module named google",
+          "exitCode": 1
+        },
+        "http2Probe": {
+          "callSeq": 138,
+          "resultSeq": 141,
+          "serverCallSeq": 125,
+          "cleanedUpByCallSeq": 158
+        }
+      },
+      "canonicalEventCount": 17,
+      "journal": {
+        "preservedPrefix": [
+          {
+            "seq": 1,
+            "type": "JOURNAL_OPENED",
+            "chainDigest": "55412dfbe2e5ec5574a53edfb94a2f3aa25932165e6225b697cefe6146c03ad3"
+          },
+          {
+            "seq": 2,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "chainDigest": "991184d7e5b9a8566a0607cff18a2cad54d518cc6e1a6b78171fcac96ce12045"
+          }
+        ],
+        "newConclusionSeq": 3,
+        "newConclusionDigest": "8dc409e8afa3fd96fda52123ebf0c9b48f1462cd18665731ec6345a31a18e966"
+      },
+      "rawLocalTrial": ".aps-tmp/pnwf-paid-2026-11-08-readiness-hint-software",
+      "rawHashes": {
+        "cohort.json": "3212e7ff09349d0fba852edf883c300aadf277577c92ef32bc64b3748712cfef",
+        "prompts/software.txt": "817b7cd7acf56dcc825fa1ce344f321b8db23c7478fb6baa5b3e8768ee7910c8",
+        "out/baseline.json": "a073c3d792d7eb6030f4eef1977308019e96fa4631b58d9f3ed196ad2d824d55",
+        "out/score.json": "62d61bbae58568f15c3d59535155c8a55237e5566caa74e136ed2282083f5659",
+        "out/attribution/software-0.timeline.json": "22a610bc548d1faab7a67ebbdaec6a91a8afbe19ee0e222016a12055b447f81d",
+        "out/software/qualification.json": "439e3b5e72b071b4cefba48713aa90557f377e73af9bdd120cd2c4a736cd9d83",
+        "out/software/run.json": "c0cb528920c314c5d4d82e11e0d913dcb01800cde75e7883e339beebeb5c4c5d",
+        "out/software/request-accounting.json": "a1053e6cc64b4ba626cdd5c36dda14e1334b0c8aec718d406abc97d230288eab",
+        "runtime-software/sessions/--run-stage-world--/session-312dfb69-6160-4154-aa7e-f98776d5d7a2/session.v4.jsonl.zstd": "732d98b6bdc934681a99a12cabb7fcad6b23907736a6a84e5edf91d55282ea13",
+        "core.json": "39bb9d3d66e10036526567bdd55525abd3dbb06d671731636808b6aa009462a8",
+        "out/setup.json": "7a782b5e63928b931284abe7af9c38cbba5de33ebb4b2fcb4562eddd1b38aae1",
+        "out/attribution/software-0.timeline.md": "d8f1763d96afd01296579161ab281216adb16593528adf129843e5cff75cc223",
+        "out/software/run.log": "eb76a9a32ace8323ca3db0187e44a1c5fd06e80514d384c2b69e2c4261449058",
+        "out/software/run.err": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "out/software/budget.json": "bff3d001d240d8bea5246334f66f4a8857c8eba2f8f3ba51b1dc61ec4b12f9f6",
+        "out/gate/start-software.json": "ae30c65be389d60e33dcb7ba171dbf33a94a318cf53d6d2a5e3ae6febfe3034c",
+        "out/gate/end-software.json": "04b6d81d9f88cc5aeabfadfba17413a38a9d459c3b70b0cfb467cf0555c30e63",
+        "request-usage.sqlite": "741f77a596e2539b758dc5fa9c7873de8936accc385b70dcc59e4f4a6cd2eefc",
+        "stages/software/state/palimpsest.sqlite": "91dd47c415ffb2caabedc926f1645487904df9403024fd919c054c9cd446b39f",
+        "stages/software/state/journal.sqlite": "6a1d540d249fd43e2344860950ec7813e900f8d0fa1be3e6b649a26cfc927462",
+        "out/dry-check.json": "6df4229ccfc5b1b09337872d976a8c04da56dd66c2c9bed96b64a7d377f69dc5"
+      }
+    },
+    "energy": {
+      "setup": {
+        "stage": "energy",
+        "id": "pnwf-paid-2026-11-08-readiness-hint-energy",
+        "sourceMain": "5588cf9da6189dbe2b7cb121a188677b13113713",
+        "sourceCohort": "pnwf-paid-2026-11-08-readiness-energy",
+        "canonicalHead": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+        "tasks": [
+          {
+            "taskId": "decision-package",
+            "state": "STALE"
+          }
+        ],
+        "attempts": [
+          {
+            "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+            "taskId": "decision-package",
+            "state": "CANCELLED"
+          }
+        ],
+        "sourceWorkSha256": "1e235600ebc5cf3627af0010f1913218541b36cab72b47e938d185867e5a0f57",
+        "sourceJournalSha256": "72071bd9aaa4dd48f951f962abcc23788434216270b9a835fb17e623359f47d4",
+        "journalPrefix": [
+          {
+            "seq": 1,
+            "type": "JOURNAL_OPENED",
+            "chainDigest": "8d4f61e6c5396ec12587200c4959fb8e2178eff9195fda424f854250973af519"
+          },
+          {
+            "seq": 2,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "chainDigest": "8af17a818200977686df896053a006c31c3f0cc8d0c8cb81f6b1360f5d61a498"
+          }
+        ],
+        "sourceExcludedJournalSeq": 3,
+        "episodeConclusion": null,
+        "prompt": "First, call palimpsest_work with action=readiness.",
+        "promptSha256": "817b7cd7acf56dcc825fa1ce344f321b8db23c7478fb6baa5b3e8768ee7910c8",
+        "priorRuntimeCopied": false
+      },
+      "qualificationMock": {
+        "stage": "energy",
+        "mode": "mock",
+        "mockRequests": 2,
+        "sawHint": true,
+        "paidRequests": 0,
+        "containerId": "2edc7393c9445b019f88fac35f2e884c1aec3e42ca9dcd8a7e7203446fca1932",
+        "descriptorDigest": "a8accbc668b4bb52de199c32febeba3f024f436c56c02b5c57e883519f7f344d",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "checks": 16,
+        "network": "none"
+      },
+      "observation": {
+        "cohortId": "pnwf-paid-2026-11-08-readiness-hint-energy",
+        "sourcePromptHash": "817b7cd7acf56dcc825fa1ce344f321b8db23c7478fb6baa5b3e8768ee7910c8",
+        "baseline": {
+          "tasks": [
+            {
+              "taskId": "decision-package",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+              "taskId": "decision-package",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": null,
+          "conclusion": null,
+          "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "status": ""
+        },
+        "qualification": {
+          "containerId": "ce40c27b94c43ddab079e19ef72f0363450f16b14dbeabed5bdb1699676e1749",
+          "descriptorDigest": "b320b515a8da6c9901ae8a38ec23cef057b6b1220b583c92fd879f228bea4f3d",
+          "checkedAt": "2026-11-08T08:21:22.066Z",
+          "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+          "network": "none",
+          "user": "1001:1001",
+          "checks": 16,
+          "allChecksMatched": true,
+          "worlds": 1,
+          "attemptWorld": 7
+        },
+        "counts": {
+          "steps": 10,
+          "turns": 1,
+          "toolCalls": 16,
+          "pairedToolResults": 16,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 2,
+          "commits": 0,
+          "jobs": 9
+        },
+        "byKind": {
+          "work:readiness": 1,
+          "continuity:pulse": 1,
+          "bash": 9,
+          "read": 4,
+          "work:conclude": 1
+        },
+        "pairedResults": [
+          {
+            "callSeq": 15,
+            "resultSeq": 16,
+            "callKind": "work:readiness"
+          },
+          {
+            "callSeq": 17,
+            "resultSeq": 18,
+            "callKind": "continuity:pulse"
+          },
+          {
+            "callSeq": 23,
+            "resultSeq": 26,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 31,
+            "resultSeq": 33,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 32,
+            "resultSeq": 34,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 35,
+            "resultSeq": 38,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 43,
+            "resultSeq": 46,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 51,
+            "resultSeq": 53,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 52,
+            "resultSeq": 54,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 59,
+            "resultSeq": 62,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 63,
+            "resultSeq": 66,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 71,
+            "resultSeq": 74,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 75,
+            "resultSeq": 78,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 83,
+            "resultSeq": 86,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 87,
+            "resultSeq": 90,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 95,
+            "resultSeq": 96,
+            "callKind": "work:conclude"
+          }
+        ],
+        "failedJobs": [],
+        "toolErrors": [],
+        "refusals": [],
+        "usage": {
+          "admittedRequests": 10,
+          "settledRequests": 10,
+          "unresolvedRequests": 0,
+          "confirmedTokens": 214469,
+          "breakdown": {
+            "input_tokens": 21233,
+            "cache_read_input_tokens": 188544,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 4692
+          },
+          "ledgerAndStreamMatchedPerRequest": 10,
+          "requests": [
+            {
+              "ordinal": 1,
+              "assistantMessageSeq": 14,
+              "step": 1,
+              "id": "6fa4186d-884e-40be-a8b4-c0408ca496af",
+              "requestDigest": "a46f680be824b2f7a360ceeb00f8c9b1d8e2bf6dbe6a23e982b2952682ef9126",
+              "tokens": 11702,
+              "usage": {
+                "input_tokens": 225,
+                "cache_read_input_tokens": 11392,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 85
+              }
+            },
+            {
+              "ordinal": 2,
+              "assistantMessageSeq": 22,
+              "step": 2,
+              "id": "a16e35fb-b4ed-4c8c-b9ad-63875e570183",
+              "requestDigest": "7a8aa2ab5c15f39f9b6a3af9779840acf759fa38dde41201372ec92410c6ef46",
+              "tokens": 13685,
+              "usage": {
+                "input_tokens": 1807,
+                "cache_read_input_tokens": 11648,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 230
+              }
+            },
+            {
+              "ordinal": 3,
+              "assistantMessageSeq": 30,
+              "step": 3,
+              "id": "afa2ea7e-7c37-47c5-a0d8-4596bc89722d",
+              "requestDigest": "326f46dc6f7b84b1315ad423f0107d63713c2fe7eab9cea5ccfc18c66cce6dbe",
+              "tokens": 14208,
+              "usage": {
+                "input_tokens": 469,
+                "cache_read_input_tokens": 13568,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 171
+              }
+            },
+            {
+              "ordinal": 4,
+              "assistantMessageSeq": 42,
+              "step": 4,
+              "id": "95afa9c2-c986-4f2d-bf94-4dfa6d2e1293",
+              "requestDigest": "aab892fb02999048272d6211e09a05a9c735d2f298ce2d8ce71b4df92a2c6658",
+              "tokens": 15412,
+              "usage": {
+                "input_tokens": 998,
+                "cache_read_input_tokens": 14208,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 206
+              }
+            },
+            {
+              "ordinal": 5,
+              "assistantMessageSeq": 50,
+              "step": 5,
+              "id": "4ef5f4f3-e899-414f-b6f8-5ce3b9314302",
+              "requestDigest": "e979ca2bd6c2bb6a820911352a2e111c0140099c3e4192f10fbea5e7e1cd54d5",
+              "tokens": 16147,
+              "usage": {
+                "input_tokens": 686,
+                "cache_read_input_tokens": 15360,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 101
+              }
+            },
+            {
+              "ordinal": 6,
+              "assistantMessageSeq": 58,
+              "step": 6,
+              "id": "98844447-764f-4433-9e12-eab42c1be058",
+              "requestDigest": "12049136c087903f1a088891cc1e612f0badfa4407e382d84864eac15065cef0",
+              "tokens": 20155,
+              "usage": {
+                "input_tokens": 3809,
+                "cache_read_input_tokens": 16128,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 218
+              }
+            },
+            {
+              "ordinal": 7,
+              "assistantMessageSeq": 70,
+              "step": 7,
+              "id": "155cb804-1606-4db8-8cbe-a48f008b0e68",
+              "requestDigest": "b8b975c9fdef9d856ffe8b81efc888330185b4fa0988399f12835a09e023c65e",
+              "tokens": 23049,
+              "usage": {
+                "input_tokens": 2707,
+                "cache_read_input_tokens": 20096,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 246
+              }
+            },
+            {
+              "ordinal": 8,
+              "assistantMessageSeq": 82,
+              "step": 8,
+              "id": "dbbe94ff-7f00-4938-85a8-f5175fe6c49a",
+              "requestDigest": "26a6d26fe5fa7f048e279c9df6c1453f1ef34f570909d7300327097ab421150f",
+              "tokens": 30110,
+              "usage": {
+                "input_tokens": 5631,
+                "cache_read_input_tokens": 23040,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1439
+              }
+            },
+            {
+              "ordinal": 9,
+              "assistantMessageSeq": 94,
+              "step": 9,
+              "id": "8771608e-fe69-4ad3-9dbb-c1f276b521fe",
+              "requestDigest": "dfd44462891fd4ea4c07e4b40d8e20d03958c5a33c8bcbed12dea50855250e04",
+              "tokens": 33058,
+              "usage": {
+                "input_tokens": 1364,
+                "cache_read_input_tokens": 30080,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1614
+              }
+            },
+            {
+              "ordinal": 10,
+              "assistantMessageSeq": 100,
+              "step": 10,
+              "id": "bad61b32-f147-4df8-ad82-d71dfd9bcbaa",
+              "requestDigest": "b98e43b65b31ae477bf1b8780553b6e3d6474d3e6ff434ed47e3fa80920a3863",
+              "tokens": 36943,
+              "usage": {
+                "input_tokens": 3537,
+                "cache_read_input_tokens": 33024,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 382
+              }
+            }
+          ]
+        },
+        "execution": {
+          "startedAt": "2026-11-08T08:21:06.715Z",
+          "endedAt": "2026-11-08T08:22:28.851Z",
+          "durationMs": 82136,
+          "exit": {
+            "natural": true,
+            "stopped": false,
+            "kind": "NATURAL_EXIT",
+            "killedBy": null,
+            "exitCode": 0,
+            "signal": null,
+            "error": null
+          },
+          "model": "deepseek-flash",
+          "billingCeiling": null,
+          "maxRequests": 64,
+          "wallClockMs": 1800000
+        },
+        "session": {
+          "id": "session-2254a095-08f2-4bc5-9d8f-9e4713e53fe8",
+          "cwd": "/run/stage/world",
+          "startedAt": "2026-11-08T08:21:36.179Z",
+          "endedAt": "2026-11-08T08:22:27.762Z",
+          "durationMs": 51583
+        },
+        "end": {
+          "seq": 102,
+          "step": null,
+          "offsetMs": 51583,
+          "reason": "completed"
+        },
+        "firstModelCall": {
+          "seq": 15,
+          "kind": "work:readiness",
+          "resultSeq": 16,
+          "action": "readiness"
+        },
+        "offeredToolCount": 29,
+        "relay": [],
+        "plan": [],
+        "readiness": [
+          {
+            "call": {
+              "seq": 15,
+              "step": 1,
+              "offsetMs": 2689
+            },
+            "result": {
+              "seq": 16,
+              "step": 1,
+              "offsetMs": 5140
+            },
+            "action": "SEMANTIC_JUDGEMENT",
+            "explicitDeliverHint": true,
+            "next": [
+              "if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"
+            ],
+            "reasons": [
+              "the retired plan's declared artifacts (deliverables/technical-capacity.md, deliverables/vendor-compliance.md, deliverables/cost-model.json, deliverables/schedule.md, deliverables/risk-review.md, deliverables/recommendation.md) are committed at repository HEAD e631160f03d40709a9f9b67746ecd8e7708c2f81",
+              "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"
+            ]
+          }
+        ],
+        "retiredReadiness": [
+          {
+            "call": {
+              "seq": 15,
+              "step": 1,
+              "offsetMs": 2689
+            },
+            "result": {
+              "seq": 16,
+              "step": 1,
+              "offsetMs": 5140
+            },
+            "action": "SEMANTIC_JUDGEMENT",
+            "explicitDeliverHint": true,
+            "next": [
+              "if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"
+            ],
+            "reasons": [
+              "the retired plan's declared artifacts (deliverables/technical-capacity.md, deliverables/vendor-compliance.md, deliverables/cost-model.json, deliverables/schedule.md, deliverables/risk-review.md, deliverables/recommendation.md) are committed at repository HEAD e631160f03d40709a9f9b67746ecd8e7708c2f81",
+              "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"
+            ]
+          }
+        ],
+        "conclusion": [
+          {
+            "call": {
+              "seq": 95,
+              "step": 9,
+              "offsetMs": 37630
+            },
+            "result": {
+              "seq": 96,
+              "step": 9,
+              "offsetMs": 48304
+            },
+            "intent": "DELIVER",
+            "state": "RECORDED",
+            "mayEnd": true,
+            "artifacts": [
+              {
+                "path": "deliverables/technical-capacity.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "20b1dc7c7115527e05c411cedc38b6fadb1a78036bde4f0e639daa490b4b2771"
+              },
+              {
+                "path": "deliverables/vendor-compliance.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "be6ebbcbb78a30c7016fe721662093deee1a8fa1a1b9154efbb1db5aea4c8315"
+              },
+              {
+                "path": "deliverables/cost-model.json",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "7750d20afd32ce7ae7f94b5f2067c9195e7a0776ce2a3c6ea89a683c2ea2875a"
+              },
+              {
+                "path": "deliverables/schedule.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "12abefd0b6cda4c8df3ca9dca672c0e8e6b6c347e1f28a6330bca42bcad58c1a"
+              },
+              {
+                "path": "deliverables/risk-review.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "14a534863f6ff4a02823f613889aac749bec15cd6f338e69d9c4ca4858857b38"
+              },
+              {
+                "path": "deliverables/recommendation.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "fe1d8c5ba79b6b9e0d3d4f58427fe5a45d0c97de3022fde7df35c058f203de90"
+              }
+            ]
+          }
+        ],
+        "afterReadiness": {
+          "calls": [
+            {
+              "seq": 17,
+              "kind": "continuity:pulse",
+              "resultSeq": 18,
+              "action": "pulse"
+            },
+            {
+              "seq": 23,
+              "kind": "bash",
+              "resultSeq": 26
+            },
+            {
+              "seq": 31,
+              "kind": "read",
+              "resultSeq": 33
+            },
+            {
+              "seq": 32,
+              "kind": "read",
+              "resultSeq": 34
+            },
+            {
+              "seq": 35,
+              "kind": "bash",
+              "resultSeq": 38
+            },
+            {
+              "seq": 43,
+              "kind": "bash",
+              "resultSeq": 46
+            },
+            {
+              "seq": 51,
+              "kind": "read",
+              "resultSeq": 53
+            },
+            {
+              "seq": 52,
+              "kind": "read",
+              "resultSeq": 54
+            },
+            {
+              "seq": 59,
+              "kind": "bash",
+              "resultSeq": 62
+            },
+            {
+              "seq": 63,
+              "kind": "bash",
+              "resultSeq": 66
+            },
+            {
+              "seq": 71,
+              "kind": "bash",
+              "resultSeq": 74
+            },
+            {
+              "seq": 75,
+              "kind": "bash",
+              "resultSeq": 78
+            },
+            {
+              "seq": 83,
+              "kind": "bash",
+              "resultSeq": 86
+            },
+            {
+              "seq": 87,
+              "kind": "bash",
+              "resultSeq": 90
+            },
+            {
+              "seq": 95,
+              "kind": "work:conclude",
+              "resultSeq": 96,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 9,
+            "tokens": 202767
+          },
+          "interveningCalls": [
+            {
+              "seq": 17,
+              "kind": "continuity:pulse",
+              "resultSeq": 18,
+              "action": "pulse"
+            },
+            {
+              "seq": 23,
+              "kind": "bash",
+              "resultSeq": 26
+            },
+            {
+              "seq": 31,
+              "kind": "read",
+              "resultSeq": 33
+            },
+            {
+              "seq": 32,
+              "kind": "read",
+              "resultSeq": 34
+            },
+            {
+              "seq": 35,
+              "kind": "bash",
+              "resultSeq": 38
+            },
+            {
+              "seq": 43,
+              "kind": "bash",
+              "resultSeq": 46
+            },
+            {
+              "seq": 51,
+              "kind": "read",
+              "resultSeq": 53
+            },
+            {
+              "seq": 52,
+              "kind": "read",
+              "resultSeq": 54
+            },
+            {
+              "seq": 59,
+              "kind": "bash",
+              "resultSeq": 62
+            },
+            {
+              "seq": 63,
+              "kind": "bash",
+              "resultSeq": 66
+            },
+            {
+              "seq": 71,
+              "kind": "bash",
+              "resultSeq": 74
+            },
+            {
+              "seq": 75,
+              "kind": "bash",
+              "resultSeq": 78
+            },
+            {
+              "seq": 83,
+              "kind": "bash",
+              "resultSeq": 86
+            },
+            {
+              "seq": 87,
+              "kind": "bash",
+              "resultSeq": 90
+            }
+          ],
+          "toDeliverCallMs": 32490,
+          "toDeliverReceiptMs": 43164,
+          "toTurnEndMs": 46443,
+          "deliverInLaterModelStep": true
+        },
+        "afterDelivery": {
+          "calls": [],
+          "usage": {
+            "requests": 1,
+            "tokens": 36943
+          },
+          "toTurnEndMs": 3279
+        },
+        "final": {
+          "tasks": [
+            {
+              "taskId": "decision-package",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+              "taskId": "decision-package",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": "DELIVER",
+          "conclusion": {
+            "seq": 3,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "intent": "DELIVER"
+          },
+          "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "status": ""
+        },
+        "facts": {
+          "completeAtMostOnce": true,
+          "episodeConclusionRecorded": true,
+          "taskRetired": true,
+          "noPromotion": true,
+          "headUnchanged": true,
+          "tokensBelowHistoricalClosure": true,
+          "sessionNaturalExit": true,
+          "tokenEvidenceQualified": true
+        },
+        "primary": true
+      },
+      "promptEvidence": {
+        "userMessageSeq": 8,
+        "runtimeContextSeqs": [
+          9
+        ],
+        "actualUserTextSha256": "fa98821bf5dd3dd1eda931514f1d1d838bd678e085859338995588bf3b7546e6"
+      },
+      "result": {
+        "firstToolReadiness": true,
+        "explicitDeliverHint": true,
+        "observedDeliverInLaterModelStep": true,
+        "mayEnd": true,
+        "naturalExit": true,
+        "nextAssistantMessageSeq": 22,
+        "nextAssistantStep": 2,
+        "afterHintDeliveryLog": {
+          "seq": 21,
+          "throughSeq": 20
+        },
+        "interveningCalls": 14,
+        "interveningSameStepCalls": [
+          {
+            "seq": 17,
+            "kind": "continuity:pulse",
+            "resultSeq": 18,
+            "action": "pulse"
+          }
+        ],
+        "interveningLaterStepCalls": 13,
+        "artifactProofs": 6,
+        "toolCallsAfterDelivery": 0
+      },
+      "significant": {
+        "checks": {
+          "callSeq": 59,
+          "resultSeq": 62,
+          "defaultAssertions": 40,
+          "finalAssertions": 46
+        },
+        "independentScheduleAndCost": {
+          "callSeq": 87,
+          "resultSeq": 90
+        }
+      },
+      "canonicalEventCount": 13,
+      "journal": {
+        "preservedPrefix": [
+          {
+            "seq": 1,
+            "type": "JOURNAL_OPENED",
+            "chainDigest": "8d4f61e6c5396ec12587200c4959fb8e2178eff9195fda424f854250973af519"
+          },
+          {
+            "seq": 2,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "chainDigest": "8af17a818200977686df896053a006c31c3f0cc8d0c8cb81f6b1360f5d61a498"
+          }
+        ],
+        "newConclusionSeq": 3,
+        "newConclusionDigest": "f2ff428eebdaff35bfc6b71a778918587e70d60ce5ab198db6156bc5f445d4d0"
+      },
+      "rawLocalTrial": ".aps-tmp/pnwf-paid-2026-11-08-readiness-hint-energy",
+      "rawHashes": {
+        "cohort.json": "c9b7ef257dddeac51f602b93e7f2e351ef0c502465c479f8e79406ec369246ad",
+        "prompts/energy.txt": "817b7cd7acf56dcc825fa1ce344f321b8db23c7478fb6baa5b3e8768ee7910c8",
+        "out/baseline.json": "466275ccbb67ff068fcc198b399297d0cf4c2b2d3f65d175e50105e9935be487",
+        "out/score.json": "e4e2bdf549fdd0f840e9fba23e40f632db29412945fcd6996af7672634f64a1f",
+        "out/attribution/energy-0.timeline.json": "0b4d93ec7fe81d2ea4ce16e258eb99027365a9af317b92cb2674c0f4f4dac1a9",
+        "out/energy/qualification.json": "928fda2349b4b25d2747b9cda955e15636f8ef27904d0afc03735b4d7b78b230",
+        "out/energy/run.json": "4499bfd86b70c89939b3fd43af719e1b709f14fdaec3ac744537ff8ca14bee1c",
+        "out/energy/request-accounting.json": "b376060cad046d9ae9ba5b1c2f1109e53d75cdeca29d184c6f2e485727118203",
+        "runtime-energy/sessions/--run-stage-world--/session-2254a095-08f2-4bc5-9d8f-9e4713e53fe8/session.v4.jsonl.zstd": "ac6794bf2901df0bdc7d672ebcfd9f6c6c04775278d80ecb9f1b5da938c81e58",
+        "core.json": "2ef6637fa457673ffb318c9b41bf0c5576849071877d1082dd452fc4594214fe",
+        "out/setup.json": "7b7941f3f9767c03725e888109d5cee9cfd1ed3cb10115f5d46c1d9f8d054f1f",
+        "out/attribution/energy-0.timeline.md": "7f1e921db39472d33dc94f62622ce70b7580aada57d9736d7d1a4fb26a5e3e4a",
+        "out/energy/run.log": "86147a2c52f617adb5e42a390d7275f8a6db55c5cf542a55f8bec9dc8d1a954c",
+        "out/energy/run.err": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "out/energy/budget.json": "bb68503e3e9946e50c88152a7df99888e9bfb11c3299089f8dc3f9208c84fe61",
+        "out/gate/start-energy.json": "5af005c26ae1704ea3aa192f9cbe384f8e7db9702f3bf9694184feb502cf80ab",
+        "out/gate/end-energy.json": "8349f7a64549720219010b93eb00c3ed144f646622d4564d979248bfb6fa9d60",
+        "request-usage.sqlite": "ad4ab1e231fc3309cfba7fb930e806ef23d08b9a2126460163f662aa95dc47da",
+        "stages/energy/state/palimpsest.sqlite": "edc586fc330788d23c0cfda3a0fd222c287b245dee29463d089932cc933e235b",
+        "stages/energy/state/journal.sqlite": "cf1a2d05add7ebedc32ffc10c5b23e8158a0726f9572df400888b2b93340a9c7",
+        "out/dry-check.json": "b10e4c07dda2b0f5257e8182427c24dac119ec69c0c6e6f9a64dc6c50be6ddc6"
+      }
+    }
+  }
+}
