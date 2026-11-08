@@ -23,6 +23,7 @@
 - 2026-11-08 energy 沿用记账和终止条件，29 个请求全部结算，共 987,987 tokens。归因配对 43/43，`takeover` 被 `NO_SETTLEABLE_DELTA` 拒绝，过早 `plan` 触发 `quiescence_required`，转 `successor` 后修订并记录 DELIVER。自然退出，主判据 1/1。[对比报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md) · [Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
 - 修复两条轨迹在退役后收到的 `readiness CONTINUE_WORK`。退役计划的声明产物已提交且 episode 无交付阻塞时，`readiness` 返回 `SEMANTIC_JUDGEMENT`，提示模型确认成果后调用 `conclude DELIVER`。[修复与回归](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导)
 - 从修复后的主线各复跑一条 software 和 energy。两条均在退役后验证并直接 `conclude DELIVER`，随后自然退出。两条退役后 `readiness` 调用均为 0，新提示采用情况为 `NOT_EXERCISED`。本轮 55 个请求全部结算，共 2,462,728 tokens。[复跑对比](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#readiness-修复后的真实模型复跑) · [机器证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+- 从已退役、尚无交付的两份状态做定向观察。两条都先查 `readiness`、收到新提示，在后续模型步骤记录 `DELIVER` 并自然退出。人工 prompt 只要求先查，Host 自动附加常规 `pulse` 引导。30 个请求全部结算，共 756,492 tokens。[定向报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察) · [机器证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
 
 ---
 
@@ -50,7 +51,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 最近核验的复跑交付合并点 `987bab01f8aaaf04954eaedb434409b7a15c2631`，当前值以 `git rev-parse origin/main` 为准 |
+| `origin/main` | 定向观察基于 `5588cf9da6189dbe2b7cb121a188677b13113713`，当前值以 `git rev-parse origin/main` 为准 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
@@ -60,6 +61,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | PR #235 | MERGED at `c827ef055a381988737c4e44c690f206447218dc`，同步 energy 交付记录，PR 和合并后主线均为 14/14 check jobs SUCCESS |
 | PR #236 | MERGED at `e5312cc5d81b5ada6f4a1015f8d00f9c557beb85`，修复退役后的 readiness 引导，PR 和合并后主线均为 14/14 check jobs SUCCESS |
 | PR #237 | MERGED at `987bab01f8aaaf04954eaedb434409b7a15c2631`，已验证 head `7402e5f37c4464d81baa6f111218043a913d48c8`，14/14 check jobs SUCCESS |
+| PR #238 | MERGED at `5588cf9da6189dbe2b7cb121a188677b13113713`，同步复跑发布 handoff，PR 和合并后主线均为 14/14 check jobs SUCCESS |
+| 定向观察证据分支 | `codex/pnwf-readiness-hint-live`，从 #238 合并点开始 |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -167,8 +170,9 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 - `docs/engineering/PNWF-CQ-RESULT.md` — 本阶段完整报告（含无效 cohort 与超支）
 - `docs/engineering/PNWF-CQ-R1-QUALIFICATION.md` — 本轮零付费资格、边界和复现；§5 区分初轮失败与修复后回归
 - `docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md` — 按量记账合同、software 与 energy 的模型行为、拒绝、恢复和用量对比
-- `research-evidence/pnwf-cq-paid/2026-11-08/` — 修复前后四条按量记账轨迹的逐请求用量、归因与原始文件摘要
+- `research-evidence/pnwf-cq-paid/2026-11-08/` — 修复前后与定向观察共六条按量记账轨迹的逐请求用量、归因与原始文件摘要
 - `research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json` — 修复后两条真实复跑、逐请求对账、退役窗口与前后对比
+- `research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json` — 已退役且交付未记录状态的定向观察，含提示、调用顺序和逐请求对账
 - `research-evidence/pnwf-cq-r1/2026-11-07/` — 新预算测试、六组实际容器、产品回归、纵向事件与诊断失败留档
 - `research-evidence/pnwf-cq-r1/2026-11-07/release-ci.json` — PR #230 的被检验 head、合并 SHA、远程检查与明确跳过项；独立于发布前的 `verification.json` 快照
 - `docs/engineering/PNWF-LIVE-TRAJECTORY.md` — 上一阶段 live trajectory 分析
@@ -236,6 +240,8 @@ Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。�
 `test/pnwf_product.test.ts` 增加 software 和 energy 退役状态的正常工具回归，并覆盖产物缺失、未提交及仍有开放任务的边界。两份计划在旧版复现 `CONTINUE_WORK`，修复后提示 `conclude DELIVER`。六个相关测试文件共 59 项通过，构建、架构和公共 API 检查通过。另用原始 Work SQLite、Git 与 journal 前缀的独立副本离线复核，两条轨迹均能记录 `DELIVER`，8 项和 6 项产物证明与原记录一致。新增付费请求 0。[回归用例](test/pnwf_product.test.ts) · [离线复核](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导)
 
 真实复跑在 `e5312cc` 重新通过 28 项脚本测试、构建、六个零付费容器场景，以及两次各 16 项实际隔离检查。首轮 `F:` 绑定失败发生于 Mock 请求前，随后改用 `C:` 的同提交执行副本，关键构建文件、镜像和 adapter 摘要相符。[复跑证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+定向观察在 `5588cf9` 构建并通过 28 项脚本测试。两个 Mock 用独立副本验证下一模型请求带有 `readiness` 新提示，付费请求 0。两条真实会话分别通过 16 项隔离检查和一项复制 World 预检，原始 Work 与 journal 摘要在复制和运行前后相符。[定向观察证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
 
 PR #237 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,985 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 和 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 的 R1-H 为 17 PASS，R1-HR 为 45 PASS / 2 LIMIT，R1-HC 为 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082427) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082437) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082407)
 
@@ -316,6 +322,12 @@ Owner 授权从两个原始状态各重跑一条，沿用金额与 token 总量�
 
 两次复跑均退役旧图并记录 `DELIVER`，自然退出，主判据 2/2。修复前后的 DSH 时间为 software 260.505 → 162.069 秒，energy 126.927 → 150.026 秒。两条从退役到退出的时间缩短，且两条都跳过了退役后的 `readiness` 查询。归因结果把整条轨迹变化与新提示采用分开记录。[复跑对比](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#readiness-修复后的真实模型复跑)
 
+### 退役状态下的 Readiness 定向观察
+
+Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实续作。新 journal 保留源 seq 1–2，人工 prompt 只要求先查 `readiness`，常规 `pulse` 引导来自 Host。两条都在步骤 1 收到新提示，在步骤 19（software）和步骤 9（energy）记录 `DELIVER`，随后自然退出。两条从起点保留原 HEAD、退役任务和 Work 事件。[定向观察证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
+
+两次沿用 `paid-usage-only` 和原终止条件。Software 20 个请求、542,023 tokens，energy 10 个请求、214,469 tokens。30 个请求全部结算，共 756,492 tokens，逐请求用量与 DSH 相符。六条按量记账轨迹累计 141 个结算请求、5,190,064 tokens。[定向报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察)
+
 ### 2026-11-07 历史 cohort
 
 | 项 | tokens |
@@ -362,7 +374,7 @@ Owner 授权从两个原始状态各重跑一条，沿用金额与 token 总量�
    - 远程部署应提供自己的 `OperatorAuthorityPort`。
 
 4. **真实模型产品闭环**（P1）
-   - Software 与 energy 在修复前后均观察到旧任务退役、`DELIVER` 和自然退出。`readiness` 新提示已在两份退役状态的确定性回归与离线复核中出现；两条修复后真实复跑都在退役后直接验证并交付，新提示的真实模型采用仍待观测。
+   - 两种状态各一次定向观察证实，指定先查 `readiness` 后，模型收到新提示，并在后续步骤记录 `DELIVER` 和自然退出。原始状态的两条修复后复跑都在退役后直接验证并交付，退役后查询 `readiness` 为 0。两组保留各自的起点和触发条件。
    - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
    - Direct→治理的 Worker、Settlement、Promotion 纵向验收来自确定性子进程。自主 Worker 结算及 promotion 仍需对应的真实模型证据。
 
@@ -435,6 +447,7 @@ Owner 授权从两个原始状态各重跑一条，沿用金额与 token 总量�
 | 2026-11-08 | 修复退役计划的 readiness，引导模型核对已提交产物并记录 DELIVER | [回归用例](test/pnwf_product.test.ts)，[报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役计划后的-readiness-引导) | software 与 energy 状态回归，新增付费请求 0 |
 | 2026-11-08 | 在 #236 主线从原始状态各复跑一条 software、energy，归因比较修复前后 | [复跑证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json) | 55 个请求，2,462,728 tokens，主判据 2/2，退役后查询 readiness 0/2 |
 | 2026-11-08 | 合并复跑证据、修复前后对比报告和 handoff，同步实际合并提交与检查 | [PR #237](https://github.com/orangeofcarl0-sys/palimpsest/pull/237)，`987bab0` | 14/14 CI job 首次通过，四个外部 DSH gate 步骤跳过 |
+| 2026-11-08 | 从已退役、尚无交付的状态定向观察新提示采用 | [定向观察证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json) | 2/2 首查、2/2 后续 DELIVER 与自然退出，30 个请求、756,492 tokens |
 
 ---
 
