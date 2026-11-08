@@ -32,6 +32,7 @@
  * ran a real governed session.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -175,17 +176,65 @@ process.stdout.write("\n=== 3. install into an external project ===\n");
 // The dependency specifiers are pinned GitHub release tarballs, so this needs a real network fetch
 // and pnpm's override settings. `pnpm-workspace.yaml` is copied because it carries that resolution
 // policy — it is a CONSUMER-side file the embedder would also need, not a repository-relative import.
-// `--prod` keeps the install to the package's own `dependencies`: the devDependencies (Playwright,
-// the web toolchain, `@ordarium/testing`) are not part of what an embedder receives.
-cpSync(join(REPO, "pnpm-workspace.yaml"), join(PROJECT, "pnpm-workspace.yaml"));
+// `--prod` installs the package's production dependency graph. Ordarium transitive dependencies and
+// peers also resolve through these consumer overrides.
+const projectWorkspace = join(PROJECT, "pnpm-workspace.yaml");
+cpSync(join(REPO, "pnpm-workspace.yaml"), projectWorkspace);
 writeFileSync(
   join(PROJECT, "package.json"),
   `${JSON.stringify({ name: "palimpsest-embedder-smoke", version: "1.0.0", private: true, type: "module" }, null, 2)}\n`,
 );
+
+const ordariumDownloadPrefix = "https://github.com/orangeofcarl0-sys/ordarium/releases/download/";
+
+async function useVerifiedOrdariumAssets() {
+  const pins = Object.entries({ ...packageManifest.devDependencies, ...packageManifest.dependencies })
+    .filter(([name]) => name.startsWith("@ordarium/"));
+  const [tag] = (pins[0]?.[1] ?? "").slice(ordariumDownloadPrefix.length).split("/");
+  const releasePrefix = `${ordariumDownloadPrefix}${tag}/`;
+  if (!tag || pins.some(([, url]) => !url.startsWith(releasePrefix))) {
+    throw new Error("the Ordarium pins must identify a single GitHub release");
+  }
+
+  const releasesApi = "https://api.github.com/repos/orangeofcarl0-sys/ordarium/releases";
+  const releaseResponse = await fetch(`${releasesApi}/tags/${encodeURIComponent(tag)}`, { signal: AbortSignal.timeout(25_000) });
+  if (!releaseResponse.ok) throw new Error(`Ordarium release metadata returned HTTP ${releaseResponse.status}`);
+  const release = await releaseResponse.json();
+  const lockLines = readFileSync(join(REPO, "pnpm-lock.yaml"), "utf8").split(/\r?\n/u);
+  let workspace = readFileSync(projectWorkspace, "utf8");
+  const assetDirectory = join(SCRATCH, "ordarium-release-assets");
+  mkdirSync(assetDirectory);
+
+  const verified = await Promise.all(pins.map(async ([name, url]) => {
+    const filename = url.slice(releasePrefix.length);
+    const asset = release.assets.find((entry) => entry.browser_download_url === url && entry.name === filename);
+    if (!/^[\w.-]+\.tgz$/u.test(filename) || !Number.isSafeInteger(asset?.id)) throw new Error(`missing release asset for ${name}`);
+    const pinLine = lockLines.find((line) => line.endsWith(`, tarball: ${url}}`));
+    const expectedIntegrity = pinLine?.match(/^\s*resolution: \{integrity: (sha512-[A-Za-z0-9+/=]+), tarball:/u)?.[1];
+    if (!expectedIntegrity || !workspace.includes(url)) throw new Error(`missing consumer or lockfile pin for ${name}`);
+    const response = await fetch(`${releasesApi}/assets/${asset.id}`, {
+      headers: { accept: "application/octet-stream" },
+      signal: AbortSignal.timeout(25_000),
+    });
+    if (!response.ok) throw new Error(`Ordarium asset ${name} returned HTTP ${response.status}`);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    const integrity = `sha512-${createHash("sha512").update(bytes).digest("base64")}`;
+    if (integrity !== expectedIntegrity) throw new Error(`lockfile integrity mismatch for ${name}`);
+    writeFileSync(join(assetDirectory, filename), bytes);
+    return { url, filename };
+  }));
+
+  // Switch the consumer overrides after every archive passes the lockfile check.
+  for (const { url, filename } of verified) workspace = workspace.replaceAll(url, `file:../ordarium-release-assets/${filename}`);
+  writeFileSync(projectWorkspace, workspace);
+  record("Ordarium recovery", `${verified.length} GitHub release assets verified against pnpm-lock.yaml`);
+}
+
 // Retry transient network errors when fetching the pinned @ordarium/* release tarballs, including
 // pnpm's terminal HTTP 504. Resolution errors such as a 404 still fail.
 let installError;
-for (let attempt = 1; attempt <= 3; attempt += 1) {
+const maxInstallAttempts = 3;
+for (let attempt = 1; attempt <= maxInstallAttempts; attempt += 1) {
   try {
     pnpm(["add", "--prod", join(SCRATCH, tarball)], { cwd: PROJECT, stdio: ["ignore", "pipe", "pipe"] });
     installError = undefined;
@@ -196,6 +245,9 @@ for (let attempt = 1; attempt <= 3; attempt += 1) {
     const transient = /ETIMEDOUT|ECONNRESET|error \(23\)|fetch failed|EAI_AGAIN|\[ERR_PNPM_FETCH_504\]/u.test(text);
     process.stdout.write(`  · install attempt ${attempt} failed${transient ? " (transient network)" : ""}\n`);
     if (!transient) break;
+    if (attempt === maxInstallAttempts - 1 && text.includes(`[ERR_PNPM_FETCH_504] GET ${ordariumDownloadPrefix}`)) {
+      await useVerifiedOrdariumAssets();
+    }
   }
 }
 if (installError !== undefined) {
