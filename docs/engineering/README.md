@@ -2,6 +2,76 @@
 
 这里的文档是**内部工程过程记录**，不是产品文档。它们记录了本仓库如何走到今天：从冻结的 Python 基线移植（heritage）、产品基线定义、入口产品线（E1–E4）的规划与逐阶段审计、到系统设计规格（PLMP-SDS）的历次修订。
 
+## Bench 树
+
+按主线 `0f7dc13` 的 Git 追踪内容盘点。`research-evidence/` 下有 87 个一级阶段目录，`scripts/` 下有 93 个一级目录，包含运行器、复现脚本和维护工具。先按要回答的问题选分支，再沿同一阶段找输入、执行和判定。
+
+```text
+Palimpsest
+├─ 发布验收（验证代码和安装包）
+│  ├─ Linux unit / e2e              .github/workflows/ci.yml
+│  ├─ R0 产品链、Host 门禁、包安装   .github/workflows/r0-gates.yml
+│  └─ Windows Host Boundary        .github/workflows/r1-hr-windows-host-boundary.yml
+├─ 研究实验（测量指定条件下的行为）
+│  ├─ Work 续作与 readiness         PNWF / PNWF-CQ / PNWF-CQ-R1 / paid
+│  ├─ 项目合成、恢复与交付           APS / LHAPE / ALHS / PWRS / ODPE / PSVR
+│  ├─ 因果、授权与认知协作           CI1–3 / COG1–6 / C6R
+│  ├─ 项目资本复用与效用             R1 / R2 / R3
+│  ├─ 轨迹、交接与测量资格           Trajectory
+│  ├─ Host 机制与资格               R1-H/L/S / Host-S1 系列
+│  └─ 产品收敛场景                  PC1 / PC1-V1
+└─ 材料与产物
+   ├─ 用例与 oracle                 fixtures/ · scripts/<阶段>/fixtures/ · PC1 场景包
+   ├─ 阶段协议、运行记录与判定        research-evidence/<阶段>/
+   ├─ 历史发布日志                  release-evidence/
+   └─ 本地运行目录                  .aps-tmp/ · .pc1*-rig/ · test-results/
+```
+
+### 发布验收
+
+| 入口 | 实际覆盖 |
+|---|---|
+| [Linux CI](../../.github/workflows/ci.yml) | `unit` 单独运行 [PNWF 请求资格](../../scripts/pnwf/qualification.test.mjs) 和 [PSVR 归因](../../scripts/psvr/session_attribution.test.mjs) 的 Node 测试，再跑 `pnpm test`、架构和公共 API 检查。`e2e` 构建 Web 并运行 Playwright。`test/` 的平台选择见 [Vitest 配置](../../vitest.config.ts)。 |
+| [R0 gates](../../.github/workflows/r0-gates.yml) | E1-K、E2-I、E3-C、E4-L、E5-P、E 六组产品门禁使用 packaged install 与自带 fixture。D2、D4、D5 和 D5 reliability 需要外部 DSH 环境，缺少配置时会跳过对应步骤。`pnpm release:consumer-smoke` 验证打包、独立消费者安装和公开入口。 |
+| [Windows Host Boundary](../../.github/workflows/r1-hr-windows-host-boundary.yml) | 在已安装 DSH 的 Windows 上运行 R1-H、R1-HR、R1-HC conformance 及 clean-env。它们验证真实边界的确定性行为，使用零模型调用的验收路径。 |
+
+`live` 在 E gate 中指运行真实安装包和产品链，在 D gate 中还涉及真实 DSH Host。研究记录另行标注模型内容是确定性替身还是真实 Provider。发布日志和旧的手动 dogfood 入口可从 [R0 验收报告](R0-PRODUCTION-INTEGRATION-AND-REPRODUCIBILITY.md) 与 [release-evidence/](../../release-evidence/) 查找。
+
+### 研究线索引
+
+下表路径以 `research-evidence/` 为根，共覆盖上面的 87 个阶段目录。阶段文档中的状态描述对应各自的基线、环境和 cohort。
+
+| 研究线 | 证据路径 | 入口与测量对象 |
+|---|---|---|
+| Work 续作与 readiness | `pnwf/`、`pnwf-cq/`、`pnwf-cq-r1/`、`pnwf-cq-paid/` | [PNWF](PNWF-RESULT.md) 承接 PSVR-C 的续作问题。[CQ](PNWF-CQ-RESULT.md) 记录行动一致性及 11-07 超额失效 cohort。[CQ-R1](PNWF-CQ-R1-QUALIFICATION.md) 是零付费执行资格。[按量记账报告](PNWF-CQ-PAID-USAGE-ONLY.md) 收录 11-08 的真实续作、复跑与定向观察。 |
+| 项目合成、恢复与交付 | `aps/`、`lhape/`、`alhs/`、`pwrs/`、`odpe/`、`psvr/` | [APS](APS-FINAL-REPORT.md)、[LHAPE](LHAPE-FINAL-REPORT.md)、[ALHS](ALHS-FINAL-REPORT.md) 覆盖项目合成和长时执行。[PWRS-R4](PWRS-R4-RESULT.md) 与 [ODPE-R](ODPE-R-RESULT.md) 比较中断后恢复。[PSVR](PSVR-RESULT.md) 的 A/B 使用真实 Host 和模型替身，C 使用真实模型并留下两个任务域的续作起点。 |
+| 因果、授权与认知协作 | `ci1/` 至 `ci3/`、`cog1/` 至 `cog6/`、`c6r/` | [CI1](ci1-two-owner-causal-integration.md) 至 [CI3](ci3-evidence-applicability-authority.md) 属研究阶段编号，验证因果归因与证据权限。[COG1](COG1-REAL-TASK-COMPOUNDING.md) 到 [C6R](C6R-FINAL-REPORT-A4.md) 关注真实任务中的继承、行动与授权，匹配比较的状态见各次报告。 |
+| R1/R2 项目资本 | `r1/`、`r1-r/`、`r2-*` | 从 [R1-R 随机复现](R1-R-STOCHASTIC-REPLICATION-RESULTS.md) 查继承后的行为，[R2-U](R2-U-CAPITAL-UPTAKE.md) 查是否采用，[R2-E](R2-E-CONTROLLED-CAPITAL-EFFICACY.md) 查实际消费后的效用。[R2-M](R2-M-DECISION-RELEVANT-INDEX.md) 关注决策索引。 |
+| R3 资格与长时复用 | `r3-*` | [资格合同](BENCHMARK-QUALIFICATION-CONTRACT.md) 以 fixture × model 为单位。[R3-A](R3-A-BASELINE-QUALIFICATION-RESULT.md) 记录资格结果，[R3-S0](R3-S0-SYSTEMIC-BEHAVIOR-CLOSURE.md) 是确定性机制闭环，[R3-L0](R3-L0-LONG-HORIZON-CAPITAL-REUSE-RESULT.md) 记录长时复用实测。L0C 和 WR 各子阶段保留独立证据。 |
+| Trajectory | `trajectory-*` | [T0](trajectory-t0.md) 是历史投影起点。[P2-E0](trajectory-p2e0.md) 处理用例和 treatment 资格，[P2-E1RG](trajectory-p2e1rg.md) 收口 Host 准入与内核边界。[P2-E2](trajectory-p2e2-control-protocol-draft.md) 仍是未执行的 CONTROL 校准草案。 |
+| Host 机制与资格 | `r1-h/`、`r1-hr/`、`r1-hc/`、`r1-l/`、`r1-s/`、`host-s1*` | [R1-HR](R1-HR-CONFIDENTIAL-HOST-HARDENING.md) 对应当前 Windows 门禁的基础，`r1-l` 和 `r1-s` 分别记录 Worker 上下文拉取与保密。[Host-S1](host-s1-confidential-boundary-closure.md) 到 [S1RA-E4](host-s1rae4-test-isolation-real-host.md) 记录后续隔离、兼容与实机资格。 |
+| PC1 产品收敛 | `pc1/`、`pc1v1/` | [场景包](../programs/pc1/pack/scenarios/README.md) 定义 Sablewick、Field Study 和判据。[PC1 acceptance](../../scripts/pc1/acceptance.mjs) 与 [PC1-V1 live runner](../../scripts/pc1v1/README.md) 分别是确定性验收和匹配实跑入口。[PC1-V1 报告](PC1V1-FINAL-ENGINEERING-REPORT.md) 分列产品验证和比较结果。 |
+
+G10-R 有自己的 [campaign runner](../../scripts/experiments/run-campaign.mjs) 和 [经验结果](audits/G10-R-EMPIRICAL-EVIDENCE.md)。`src/experiment/` 提供该阶段的运行与判定模型。其他阶段按各自报告定位脚本，例如证据 `r1-hr/` 对应脚本 `scripts/r1hr/`，证据 `trajectory-p2e0/` 对应 `scripts/trajectory_p2e0/`。
+
+### 本轮 software 和 energy 从哪里查
+
+| 要找的内容 | 固定入口 |
+|---|---|
+| `readiness` 产品回归 | [pnwf_product.test.ts](../../test/pnwf_product.test.ts) 用 software 与 energy 的退役状态验证 `readiness` 提示，以及仍有开放任务或产物条件不符时的边界。 |
+| 原任务材料与判据 | Software 使用 [grpc-migration](../../fixtures/psvr/grpc-migration/README.md)，energy 使用 [energy-deployment](../../fixtures/psvr/energy-deployment/README.md)。续作输入另取 PSVR-C A-2 的既有 Git World、SQLite 状态和 prompt。 |
+| 修复前的续作轨迹 | [software 原记录](../../research-evidence/pnwf-cq-paid/2026-11-08/software.json) 与 [归因重算](../../research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json) 一起读，[energy](../../research-evidence/pnwf-cq-paid/2026-11-08/energy.json) 已含当次归因。 |
+| 修复后从原状态复跑 | [readiness-rerun.json](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json) 记录两条轨迹均交付并自然退出。退役后查询 `readiness` 均为 0，提示采用标为 `NOT_EXERCISED`。 |
+| 从已退役且未记录交付的状态定向观察 | [readiness-hint-live.json](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json) 记录两条先查 `readiness`，在收到新提示后调用 `conclude DELIVER` 并自然退出。 |
+
+从 PSVR-C A-2 原状态复跑，依次使用 [Mock 容器资格](../../scripts/pnwf/qualify_execution.mjs)、[准备状态](../../scripts/pnwf/prepare_continuation.mjs)、[运行](../../scripts/pnwf/run_pnwf_live.mjs) 和 [机械判定](../../scripts/pnwf/score_continuation.mjs)。定向观察另从修复后复跑的退役状态复制 Git World 和 Work 数据库，并重放 journal 的 seq 1–2。[定向观察设计](PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察)
+
+用 [归因脚本](../../scripts/psvr/session_attribution.mjs) 读取已有 DSH 流，可单独核对调用配对和用量。`paid-usage-only` 的 `--execute` 会进入真实 Provider 路径，复现所需授权、隔离与新账本条件见 [执行合同](PNWF-CQ-PAID-USAGE-ONLY.md#执行合同)。
+
+复现起点的关键依赖在准备脚本的 `BASES`。它直接从本机临时目录读取原 PSVR-C Git World、SQLite 和部署配置。入库 JSON 记录观测、账本汇总和原始工件摘要，原始执行文件位于报告列出的 `.aps-tmp/` 本地归档。要精确续作须保有对应原状态；只核对已发布结论可从 JSON 与报告开始。
+
+## 工程档案索引
+
 | 档案 | 内容 |
 |---|---|
 | `00-heritage.md` | 传承声明：权威来源（冻结 Python 基线、Ordarium 文档）与移植取舍 |
