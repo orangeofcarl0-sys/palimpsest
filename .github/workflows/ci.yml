@@ -40,6 +40,7 @@ jobs:
       # PNWF-CQ-R1: request admission faults use only a local Mock and no credentials or Docker.
       - run: node --test scripts/pnwf/qualification.test.mjs
       - run: node --test scripts/psvr/session_attribution.test.mjs
+      - run: node --test scripts/repository/commit-attribution.test.mjs
       - run: pnpm test
       # SR-1 §10: the architecture rules are enforced in CI as well as in the suite.
       - run: pnpm architecture:check
