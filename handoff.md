@@ -8,8 +8,7 @@
 ## 0. 30 秒版本
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
-- 最近核验的代码合并点为 **`fd341c1b9cd4c7c245e0f2ee79d3269b83118f24`**（PR #232）。
-  接手时先运行 `git rev-parse origin/main`，以实际值为准；不要把本行当成永久基线。
+- Energy 证据和对比报告已合入主线，交付合并点为 **`dbaaa0e6f2b03a1c4a7c6b322a8ae9404c28c44e`**，合并前 14/14 个 CI job 通过。接手时用 `git rev-parse origin/main` 核验当前主线。[PR #234](https://github.com/orangeofcarl0-sys/palimpsest/pull/234)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
 - 按量记账续作和轨迹归因修复已通过 [PR #232](https://github.com/orangeofcarl0-sys/palimpsest/pull/232) 合并。新工作从确认的主线开分支。
   ```bash
@@ -49,13 +48,13 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 以 `git rev-parse origin/main` 为准，energy 执行基线 `fdd5308bf45e699058ecae86fcfb573e250e4e69` |
+| `origin/main` | 最近核验的交付合并点 `dbaaa0e6f2b03a1c4a7c6b322a8ae9404c28c44e`，当前值以 `git rev-parse origin/main` 为准 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
 | PR #232 | MERGED at `fd341c1b9cd4c7c245e0f2ee79d3269b83118f24`，已验证 head `8ceb48f2f0a8f1cba957d3b55198b1772b52ff04`，14/14 check jobs SUCCESS |
 | PR #233 | MERGED at `fdd5308bf45e699058ecae86fcfb573e250e4e69`，同步 #232 的发布 handoff，14/14 check jobs SUCCESS |
-| Energy 证据分支 | `codex/pnwf-energy-trajectory`，从 #233 合并点开始，交付证据、报告及 handoff |
+| PR #234 | MERGED at `dbaaa0e6f2b03a1c4a7c6b322a8ae9404c28c44e`，已验证 head `98806d74310882d0bd237fce35a4fcefe25780b5`，14/14 check jobs SUCCESS |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -226,6 +225,8 @@ node node_modules/vitest/vitest.mjs run test/pc1v1_operator_identity.test.ts tes
 轨迹归因修复后，4/4 归因测试及 24/24 请求测试通过。CI unit job 运行 `node --test scripts/psvr/session_attribution.test.mjs`。真实轨迹离线重算通过 8 个原始文件的摘要验证，原始计量和产品事实与重算一致。评分器的 `--out` 与 `--attribution-dir` 可为重算指定独立目录。[重算证据](research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json)
 
 Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。六个零付费容器场景沿用同镜像及八个 adapter 文件摘要的既有资格，实际 energy 容器独立通过 16 项检查和复制 World 预检。两条轨迹的终态用量与账本逐请求一致。[Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
+
+PR #234 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,981 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 通过，R1-H 17 PASS，R1-HR 45 PASS / 2 LIMIT，R1-HC 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214180) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214270) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214078)
 
 PR #232 在 14/14 个 job 成功后合并。Linux CI 通过 28 项脚本测试、4,981 项 Vitest 测试（33 项跳过）与 38 项 E2E 测试，架构和公共 API 检查通过。R0 六个 E gate 与 package-smoke 实际通过。D2、D4、D5 与 D5 reliability 的 gate 步骤按现有外部 Host 条件跳过。Windows Host Boundary 通过。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438699006) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438698982) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438698980)
 
@@ -411,6 +412,7 @@ Energy 续作实际执行 157.052 秒，29 个请求全部结算，共 987,987 t
 | 2026-11-08 | 修复 DSH 调用归因并离线重算 software 轨迹 | `software-attribution-recount.json`，`PNWF-CQ-PAID-USAGE-ONLY.md` | 31/31 配对，2 次不同原因拒绝，1 次失败作业，无进展调用 3 次，新增付费调用 0 |
 | 2026-11-08 | 合并按量记账续作与轨迹归因修复，记录发布检查 | [PR #232](https://github.com/orangeofcarl0-sys/palimpsest/pull/232)，`fd341c1` | 14/14 CI job 成功，四个 Host-dependent gate 步骤跳过 |
 | 2026-11-08 | 执行 energy 续作并用修复后的归因脚本对比两条轨迹 | [对比报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)，[Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json) | 29 个已结算请求，987,987 tokens，主判据 1/1，43/43 结果配对 |
+| 2026-11-08 | 合并 energy 证据、对比报告和 handoff，补录合并提交及检查 | [PR #234](https://github.com/orangeofcarl0-sys/palimpsest/pull/234)，`dbaaa0e` | 14/14 CI job 首次成功，四个外部 DSH gate 步骤跳过 |
 
 ---
 
