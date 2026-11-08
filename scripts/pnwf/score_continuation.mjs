@@ -8,12 +8,14 @@
  *   · the ledger tokens and the session exit, against the historical A-2 closure.
  *
  * Usage: node scripts/pnwf/score_continuation.mjs --run=<dir> --cohort=<cohort.json>
+ * Use --out=<score.json> and --attribution-dir=<dir> to keep a recount separate from an earlier run.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { zstdDecompressSync } from "node:zlib";
+import { PAID_COHORT_SCHEMA } from "./bounded_provider.mjs";
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {
@@ -24,11 +26,13 @@ const args = new Map(
 const RUN = resolve(String(args.get("run") ?? ""));
 const COHORT_PATH = resolve(String(args.get("cohort") ?? ""));
 const OUT_PATH = resolve(String(args.get("out") ?? join(RUN, "out", "score.json")));
+const ATTRIBUTION_DIR = resolve(String(args.get("attribution-dir") ?? join(RUN, "out", "attribution")));
 if (RUN === "" || COHORT_PATH === "") {
   process.stderr.write("--run and --cohort are required\n");
   process.exit(2);
 }
 const cohort = JSON.parse(readFileSync(COHORT_PATH, "utf8"));
+const metered = cohort.schema === PAID_COHORT_SCHEMA;
 const REPO = process.cwd();
 const ATTR = join(REPO, "scripts", "psvr", "session_attribution.mjs");
 
@@ -119,8 +123,10 @@ function streamUsage(file) {
 function journalIntent(stateDir) {
   const path = join(stateDir, "journal.sqlite");
   if (!existsSync(path)) return { intent: null, typedRetire: false, conclusion: null };
-  const db = new DatabaseSync(path);
-  const rows = db.prepare("SELECT seq, type, payload_json FROM project_journal_events ORDER BY seq").all();
+  const db = new DatabaseSync(path, { readOnly: true });
+  let rows;
+  try { rows = db.prepare("SELECT seq, type, payload_json FROM project_journal_events ORDER BY seq").all(); }
+  finally { db.close(); }
   let intent = null;
   let conclusion = null;
   for (const row of rows) {
@@ -145,25 +151,25 @@ function journalIntent(stateDir) {
 
 const stages = [];
 for (const stage of cohort.stages) {
-  const home = join(RUN, `home-${stage.id}`);
   const world = join(RUN, "stages", stage.id, "world");
   const stateDir = join(RUN, "stages", stage.id, "state");
   const outDir = join(RUN, "out", stage.id);
   const run = readJson(join(outDir, "run.json")) ?? {};
+  const home = run.home ?? join(RUN, `home-${stage.id}`);
   const budget = readJson(join(outDir, "budget.json")) ?? {};
   const snapshot = readJson(join(outDir, "snapshot.json")) ?? {};
   const streamFiles = streams(home);
-  const prefixDir = join(RUN, "out", "attribution");
-  mkdirSync(prefixDir, { recursive: true });
-  const attributions = streamFiles.map((file, index) => ({ file, timeline: attribute(file, join(prefixDir, `${stage.id}-${index}`)) }));
+  mkdirSync(ATTRIBUTION_DIR, { recursive: true });
+  const attributions = streamFiles.map((file, index) => ({ file, timeline: attribute(file, join(ATTRIBUTION_DIR, `${stage.id}-${index}`)) }));
   const principal =
     attributions.find((entry) => {
       const cwd = String(entry.timeline?.summary?.session?.cwd ?? "").replaceAll("\\", "/").toLowerCase();
-      return cwd === world.replaceAll("\\", "/").toLowerCase();
+      return cwd === world.replaceAll("\\", "/").toLowerCase() || (run.principalRuntime === "container" && cwd === "/run/stage/world");
     }) ?? attributions.sort((a, b) => (b.timeline?.rows?.length ?? 0) - (a.timeline?.rows?.length ?? 0))[0] ?? null;
 
   const byKind = principal?.timeline?.summary?.byKind ?? {};
   const calls = principal?.timeline?.summary?.calls ?? [];
+  const counts = principal?.timeline?.summary?.counts ?? {};
   const completeCalls = Number(byKind["work:complete"] ?? 0);
   const concludeCalls = Number(byKind["work:conclude"] ?? 0);
   const readinessCalls = Number(byKind["work:readiness"] ?? 0);
@@ -172,29 +178,32 @@ for (const stage of cohort.stages) {
   const stopCalls = Number(byKind["work:stop"] ?? 0);
   const planCalls = Number(byKind["work:plan"] ?? 0);
   const typedPlanCalls = calls.filter((call) => call.kind === "work:plan" && call.args?.changeClass !== undefined).length;
-  const errors = Number(principal?.timeline?.summary?.counts?.toolErrors ?? 0);
-  const domainRefusals = Number(principal?.timeline?.summary?.counts?.domainRefusals ?? 0);
-  const repeatedRefusals = Number(principal?.timeline?.summary?.counts?.repeatedRefusals ?? 0);
-  const noProgressToolCalls = Number(principal?.timeline?.summary?.counts?.noProgressToolCalls ?? errors + domainRefusals);
+  const errors = Number(counts.toolErrors ?? 0);
+  const domainRefusals = Number(counts.domainRefusals ?? 0);
+  const repeatedRefusals = Number(counts.repeatedRefusals ?? 0);
+  const noProgressToolCalls = Number(counts.noProgressToolCalls ?? errors + domainRefusals);
 
   const state = { tasks: [], attempts: [], promotions: 0, projectRevised: 0, promotionCommitted: 0 };
+  let stateDb;
   try {
-    const db = new DatabaseSync(join(stateDir, "palimpsest.sqlite"));
-    state.tasks = db.prepare("SELECT task_id, state FROM tasks ORDER BY task_id").all().map((row) => ({ taskId: String(row.task_id), state: String(row.state) }));
-    state.attempts = db.prepare("SELECT attempt_id, task_id, state FROM attempts ORDER BY last_event_id").all().map((row) => ({ attemptId: String(row.attempt_id), taskId: row.task_id === null ? null : String(row.task_id), state: String(row.state) }));
-    state.promotions = Number(db.prepare("SELECT COUNT(*) AS n FROM promotions").get().n);
-    state.projectRevised = Number(db.prepare("SELECT COUNT(*) AS n FROM events WHERE event_type='PROJECT_REVISED'").get().n);
-    state.promotionCommitted = Number(db.prepare("SELECT COUNT(*) AS n FROM events WHERE event_type='PROMOTION_COMMITTED'").get().n);
+    stateDb = new DatabaseSync(join(stateDir, "palimpsest.sqlite"), { readOnly: true });
+    state.tasks = stateDb.prepare("SELECT task_id, state FROM tasks ORDER BY task_id").all().map((row) => ({ taskId: String(row.task_id), state: String(row.state) }));
+    state.attempts = stateDb.prepare("SELECT attempt_id, task_id, state FROM attempts ORDER BY last_event_id").all().map((row) => ({ attemptId: String(row.attempt_id), taskId: row.task_id === null ? null : String(row.task_id), state: String(row.state) }));
+    state.promotions = Number(stateDb.prepare("SELECT COUNT(*) AS n FROM promotions").get().n);
+    state.projectRevised = Number(stateDb.prepare("SELECT COUNT(*) AS n FROM events WHERE event_type='PROJECT_REVISED'").get().n);
+    state.promotionCommitted = Number(stateDb.prepare("SELECT COUNT(*) AS n FROM events WHERE event_type='PROMOTION_COMMITTED'").get().n);
   } catch {
     /* absent state */
-  }
+  } finally { stateDb?.close(); }
   const journal = journalIntent(stateDir);
   const head = git(world, ["rev-parse", "HEAD"]);
   const status = git(world, ["status", "--porcelain"]);
   const usage = streamUsage(principal?.file ?? "");
-  const ledgerTokens = Number(run.usage?.totalTokens || budget.totalTokens || 0);
-  const totalTokens = usage.status === "READ" ? usage.total : ledgerTokens;
-  const tokenEvidenceQualified = usage.status === "READ" && usage.total > 0;
+  const ledgerTokens = metered ? (run.usage?.totalTokens ?? null) : Number(run.usage?.totalTokens || budget.totalTokens || 0);
+  const totalTokens = metered ? ledgerTokens : usage.status === "READ" ? usage.total : ledgerTokens;
+  const tokenEvidenceQualified = metered
+    ? run.usage?.source === "PROVIDER_TERMINAL_USAGE_LEDGER" && run.usage?.unresolvedRequests === 0 && Number.isSafeInteger(ledgerTokens) && ledgerTokens > 0
+    : usage.status === "READ" && usage.total > 0;
   const natural = run.natural === true;
   const stopped = run.stopped === true;
   const exitKind =
@@ -205,7 +214,7 @@ for (const stage of cohort.stages) {
         : run.signal !== null && run.signal !== undefined
           ? "KILLED"
           : stopped
-            ? "BUDGET_STOPPED"
+            ? ({ wall_clock: "WALL_CLOCK_STOPPED", request_limit: "REQUEST_LIMIT_STOPPED", usage_unobservable: "USAGE_UNOBSERVABLE" })[run.killedBy] ?? (metered ? "STOPPED" : "BUDGET_STOPPED")
             : run.exitCode !== 0 && run.exitCode !== null && run.exitCode !== undefined
               ? "ABNORMAL_EXIT"
               : "UNKNOWN";
@@ -240,7 +249,7 @@ for (const stage of cohort.stages) {
     facts.headUnchanged &&
     totalTokens > 0 &&
     facts.sessionNaturalExit &&
-    facts.tokenEvidenceQualified;
+    facts.tokenEvidenceQualified && (!metered || Boolean(principal?.timeline));
   stages.push({
     stage: stage.id,
     sessionId: stage.id,
@@ -252,7 +261,7 @@ for (const stage of cohort.stages) {
       softStopAt: budget.softCeiling ?? null,
       stream: usage,
       ledgerSnapshot: ledgerTokens,
-      delta: usage.status === "READ" ? usage.total - ledgerTokens : null,
+      delta: usage.status === "READ" && ledgerTokens !== null ? usage.total - ledgerTokens : null,
       evidenceQualified: tokenEvidenceQualified,
     },
     exit: { natural, stopped, kind: exitKind, killedBy: run.killedBy ?? null, exitCode: run.exitCode ?? null, signal: run.signal ?? null, error: run.error ?? null },
@@ -266,10 +275,13 @@ for (const stage of cohort.stages) {
       plan: planCalls,
       typedPlan: typedPlanCalls,
       toolErrors: errors,
+      jobFailures: Number(counts.jobFailures ?? 0),
+      pairedToolResults: Number(counts.pairedToolResults ?? 0),
+      unpairedToolResults: Number(counts.unpairedToolResults ?? 0),
       domainRefusals,
       repeatedRefusals,
       noProgressToolCalls,
-      total: principal?.timeline?.summary?.counts?.toolCalls ?? 0,
+      total: counts.toolCalls ?? 0,
     },
     state: {
       tasks: state.tasks,

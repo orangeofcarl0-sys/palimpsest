@@ -11,6 +11,8 @@
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { ExecutionBudget, USAGE_ONLY_SCHEMA, tokens } from "./execution_budget.mjs";
+import { DEEPSEEK_MESSAGES, DEEPSEEK_MODEL, PAID_COHORT_SCHEMA, PAID_MODE } from "./bounded_provider.mjs";
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {
@@ -20,7 +22,8 @@ const args = new Map(
 );
 const RUN = resolve(String(args.get("run") ?? join(process.env.USERPROFILE ?? ".", "pnwf-continuation")));
 const REPO = resolve(String(args.get("repo") ?? process.cwd()));
-const COHORT = "pnwf-continuation-2026-11";
+const PAID = args.get("mode") === PAID_MODE;
+const COHORT = PAID ? args.get("cohort-id") : "pnwf-continuation-2026-11";
 const BASES = {
   software: {
     source: "C:/Users/66494/AppData/Local/Temp/psvr-c-real/run-2026-11-05",
@@ -41,11 +44,19 @@ const windows = process.platform === "win32";
 const pathOf = (path) => (windows ? path.replace(/\\/gu, "/") : path);
 const git = (cwd, argv) => execFileSync("git", ["-C", cwd, ...argv], { encoding: "utf8" }).trim();
 
-mkdirSync(RUN, { recursive: true });
+const selection = args.get("session");
+let maxRequests, wallClockMs;
+if (PAID) {
+  if (!args.get("run") || !/^[\w.-]+$/u.test(COHORT ?? "") || !Object.hasOwn(BASES, selection)) throw new Error("PAID_PREPARATION_REQUIRES_NEW_RUN_COHORT_AND_SESSION");
+  maxRequests = tokens(Number(args.get("max-requests") ?? 64), "max requests", false);
+  wallClockMs = tokens(Number(args.get("wall-clock-ms") ?? 1800000), "wall clock ms", false);
+  if (wallClockMs > 3600000) throw new Error("INVALID_PAID_SESSION_WINDOW");
+  mkdirSync(RUN); // No reinitialization of a partially observed or previously run trial.
+} else mkdirSync(RUN, { recursive: true });
 mkdirSync(join(RUN, "prompts"), { recursive: true });
 mkdirSync(join(RUN, "out"), { recursive: true });
 const sessions = [];
-for (const [stage, input] of Object.entries(BASES)) {
+for (const [stage, input] of PAID ? [[selection, BASES[selection]]] : Object.entries(BASES)) {
   const root = join(RUN, "stages", stage);
   const world = join(root, "world");
   const state = join(root, "state");
@@ -110,10 +121,10 @@ for (const [stage, input] of Object.entries(BASES)) {
     home: join(RUN, `home-${stage}`),
     promptPath,
     out: join(RUN, "out", stage),
-    maxTokens: 2_500_000,
-    reserveTokens: 125_000,
+    maxTokens: PAID ? null : 2_500_000,
+    reserveTokens: PAID ? null : 125_000,
     injectAtMs: null,
-    killAfterMs: 3_600_000,
+    killAfterMs: PAID ? wallClockMs : 3_600_000,
     injectionRel: null,
     deployment: join(root, "deployment.json"),
   });
@@ -127,13 +138,22 @@ writeFileSync(
       schema: "pnwf-continuation-prep/v1",
       cohortId: COHORT,
       stage: "pnwf-continuation",
-      mode: "PNWF_REAL_MODEL",
+      mode: PAID ? "PNWF_PAID_USAGE_ONLY" : "PNWF_REAL_MODEL",
       sessions,
-      budget: { perSession: 2_500_000, reserve: 125_000, aggregate: 5_000_000, sessions: 2 },
-      note: "Two recorded-state continuations; the prompt is the exact PSVR-C A2 text; no injection and no evaluator material.",
+      budget: PAID ? null : { perSession: 2_500_000, reserve: 125_000, aggregate: 5_000_000, sessions: 2 },
+      note: "Recorded-state continuation; the prompt is the exact PSVR-C A2 text; no injection and no evaluator material.",
     },
     null,
     2,
   )}\n`,
 );
+if (PAID) {
+  const reference = JSON.parse(readFileSync(join(REPO, "research-evidence/pnwf-cq/live/2026-11-07/cohort.json"), "utf8"));
+  const stage = reference.stages.find(s => s.id === selection);
+  writeFileSync(join(RUN, "cohort.json"), JSON.stringify({ schema: PAID_COHORT_SCHEMA, cohortId: COHORT,
+    billingCeiling: null, maxRequests, wallClockMs, model: DEEPSEEK_MODEL, providerUpstream: DEEPSEEK_MESSAGES,
+    stages: [{ id: selection, artifactCommit: stage.artifactCommit, historical: stage.historical }] }, null, 2) + "\n");
+  ExecutionBudget.initialize(join(RUN, "request-usage.sqlite"), { schema: USAGE_ONLY_SCHEMA, cohortId: COHORT, aggregateCeiling: null,
+    sessions: [{ id: selection, ceiling: null, softCeiling: null, maxRequests }] }).close();
+}
 process.stdout.write(`${JSON.stringify({ run: RUN, sessions: sessions.map((session) => session.id) })}\n`);

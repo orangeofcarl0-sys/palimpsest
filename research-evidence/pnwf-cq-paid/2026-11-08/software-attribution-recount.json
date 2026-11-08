@@ -1,0 +1,259 @@
+{
+  "schema": "pnwf-attribution-recount/v1",
+  "recountedAt": "2026-11-08T02:25:44.546Z",
+  "cohortId": "pnwf-paid-2026-11-08-software",
+  "sessionId": "session-ba31fb32-0713-4f6f-923b-c6659c2ccd95",
+  "sourceReceipt": "software.json",
+  "sourceStreamSha256": "edfb0cb881696e6e3f2d17e295591833a19edb024d0d6e334b9667c134c9e02f",
+  "originalFileHashesVerified": 8,
+  "scriptHashes": {
+    "scripts/psvr/session_attribution.mjs": "f1443b2d4e0cb8a8ca6e489df8e9fc15eded6b91fc76df213a7930557801e435",
+    "scripts/pnwf/score_continuation.mjs": "70e680c3d882386a65a296a43ae0cb3535998e4a4123e4a6d895e1fd72090cd1"
+  },
+  "paidCallsAdded": 0,
+  "before": {
+    "toolCalls": 31,
+    "pairedToolResults": 0,
+    "toolErrors": 0,
+    "jobFailures": null,
+    "domainRefusals": 2,
+    "repeatedRefusals": 1,
+    "noProgressToolCalls": 2
+  },
+  "after": {
+    "toolCalls": 31,
+    "pairedToolResults": 31,
+    "toolErrors": 0,
+    "jobFailures": 1,
+    "domainRefusals": 2,
+    "repeatedRefusals": 0,
+    "noProgressToolCalls": 3
+  },
+  "unpairedToolResults": 0,
+  "pairs": [
+    {
+      "callId": "call_00_pQkXxh68CHB2ehSguavs0693",
+      "callSeq": 15,
+      "resultSeq": 16,
+      "callKind": "continuity:pulse"
+    },
+    {
+      "callId": "call_00_fVzCdXoCjeQn4spzxaqo7398",
+      "callSeq": 21,
+      "resultSeq": 22,
+      "callKind": "work:status"
+    },
+    {
+      "callId": "call_01_fUmBABiCwQY8pZPFkB4N5610",
+      "callSeq": 23,
+      "resultSeq": 26,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_nn5SA4PZo0yMdgQ449BV8791",
+      "callSeq": 31,
+      "resultSeq": 34,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_HojzI0p9bziFBBmIYkq17343",
+      "callSeq": 39,
+      "resultSeq": 42,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_hdCE75abh8rpawFAKbP24472",
+      "callSeq": 47,
+      "resultSeq": 50,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_PfxLZMFPIFE1TsFRBCHV4390",
+      "callSeq": 55,
+      "resultSeq": 58,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_uY94KEEjOpn37g8plmlK4403",
+      "callSeq": 63,
+      "resultSeq": 66,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_V3GIfYNA0TxPTc0fFlNh2487",
+      "callSeq": 71,
+      "resultSeq": 74,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_DqRAUgP704e9Bhp9rBJY6535",
+      "callSeq": 79,
+      "resultSeq": 82,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_01_YUl3jcaJjKK00oA4PbZ33718",
+      "callSeq": 83,
+      "resultSeq": 86,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_mRrTmEpTm7KPGGTwoM5U5440",
+      "callSeq": 91,
+      "resultSeq": 94,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_CepAJriEWMe6LK2d6fnV1801",
+      "callSeq": 99,
+      "resultSeq": 102,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_MNgrRpbl0id9iLrWTCmX7342",
+      "callSeq": 107,
+      "resultSeq": 108,
+      "callKind": "work:workers"
+    },
+    {
+      "callId": "call_01_AtFBHbnvzLm7tgl1VxXY7384",
+      "callSeq": 109,
+      "resultSeq": 110,
+      "callKind": "work:results"
+    },
+    {
+      "callId": "call_02_Jz6RiDHWX26zLvkWQgWX2405",
+      "callSeq": 111,
+      "resultSeq": 112,
+      "callKind": "work:next"
+    },
+    {
+      "callId": "call_00_LIUhyQFPh4PzvmrwhN2x7065",
+      "callSeq": 117,
+      "resultSeq": 119,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_xIIP14NRd4fGx8RjQukA8959",
+      "callSeq": 124,
+      "resultSeq": 125,
+      "callKind": "job_kill"
+    },
+    {
+      "callId": "call_00_bylX8ittuk7sjH5roQ2A2247",
+      "callSeq": 131,
+      "resultSeq": 134,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_uxoVjqK7LAUX6os0kcnu3069",
+      "callSeq": 139,
+      "resultSeq": 142,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_dcy9NNXVEmivFFTFZfuX2499",
+      "callSeq": 147,
+      "resultSeq": 148,
+      "callKind": "work:relay"
+    },
+    {
+      "callId": "call_00_LtsDAEhNjmbEUZrONFSP3231",
+      "callSeq": 153,
+      "resultSeq": 156,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_fnbiZIXcHue2uUJnPi5N9089",
+      "callSeq": 161,
+      "resultSeq": 164,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_00_olj1U2gi7IvRocEMG0cZ3845",
+      "callSeq": 169,
+      "resultSeq": 170,
+      "callKind": "work:relay"
+    },
+    {
+      "callId": "call_00_TIgOzHPqKXbCHbP8MXmn0899",
+      "callSeq": 175,
+      "resultSeq": 176,
+      "callKind": "work:relay"
+    },
+    {
+      "callId": "call_00_MNqD5D0G8PFioekoZkow4033",
+      "callSeq": 181,
+      "resultSeq": 182,
+      "callKind": "work:status"
+    },
+    {
+      "callId": "call_00_vLqJSoECVbg0JCZKc0Tf0116",
+      "callSeq": 187,
+      "resultSeq": 188,
+      "callKind": "work:plan"
+    },
+    {
+      "callId": "call_00_ryoP45uhkmcx2WxCjALT7456",
+      "callSeq": 193,
+      "resultSeq": 196,
+      "callKind": "bash"
+    },
+    {
+      "callId": "call_01_gOHiqfB5nk7Hb1ZJVvEZ7896",
+      "callSeq": 197,
+      "resultSeq": 198,
+      "callKind": "project:journal"
+    },
+    {
+      "callId": "call_00_lFBLqzpb4qUxNkrvaYRu6409",
+      "callSeq": 203,
+      "resultSeq": 204,
+      "callKind": "work:readiness"
+    },
+    {
+      "callId": "call_00_LMz9bcB2lihdBFT58QCp7320",
+      "callSeq": 209,
+      "resultSeq": 210,
+      "callKind": "work:conclude"
+    }
+  ],
+  "refusals": [
+    {
+      "callSeq": 147,
+      "resultSeq": 148,
+      "state": "NOT_READY",
+      "reason": "UNCOMMITTED_WORK",
+      "detail": "NOT_READY: the world still holds work that is not committed: .gitignore, README.md, TASK.md, package.json, proto/energy.proto, service/data.js, service/grpc_client.js, service/grpc_server.js, service/rest_client.js, service/rest_server.js, service/wire.js, test/integration.test.js, test/rest.test.js, test/server.test.js, updates/2026-11-03/compat-streaming.md — a settled result commit must contain the work, so the worker has to commit (or revert) it and report again"
+    },
+    {
+      "callSeq": 169,
+      "resultSeq": 170,
+      "state": "NOT_READY",
+      "reason": "NO_SETTLEABLE_DELTA",
+      "detail": "NOT_READY: the world holds no observable change against its base, so there is nothing to settle"
+    }
+  ],
+  "failedJobs": [
+    {
+      "jobId": "bash-2a3a3188ebaa46f3",
+      "status": "killed",
+      "reason": "ERR_STREAM_WRITE_AFTER_END",
+      "callId": "call_00_LIUhyQFPh4PzvmrwhN2x7065",
+      "callSeq": 117,
+      "callKind": "bash",
+      "resultSeq": 119,
+      "settledSeq": 127,
+      "durationMs": 121500
+    }
+  ],
+  "endpoint": {
+    "primary": true,
+    "exit": "NATURAL_EXIT",
+    "confirmedTokens": 982857,
+    "canonicalHead": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+    "episodeIntent": "DELIVER",
+    "promotions": 0
+  },
+  "localOutputs": ".aps-tmp/pnwf-paid-2026-11-08-software/out/attribution-recount"
+}
