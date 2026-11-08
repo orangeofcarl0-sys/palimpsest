@@ -153,3 +153,13 @@ Energy 总量高 0.52%，主要来自多读的 9,600 个 cache tokens。两次�
 | 接受 `plan` 后 | 4 / 215,673 | 8 / 375,940 |
 
 Energy 在首次 `relay` 前已清理复制 World，接受 `plan` 后又读取 overview、journal、状态并复查源材料。Software 的失败探针也位于首次 `relay` 前，从调用到首个 Bash 结果等了 120.016 秒，作业到终止共 121.500 秒。两条 DSH 轮次相差 133.578 秒，前述等待占差值约 90%，扣除这段等待仍相差 13.562 秒。两次起始工作图、证据材料和缓存上下文各异，比较范围为这两个实测样本。[Software 重算](../../research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json) · [Energy 机器证据](../../research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
+
+## 退役计划后的 readiness 引导
+
+Software 的 seq 204 与 energy 的 seq 194 都处在修订后的状态。旧任务已从计划移除并转为 STALE，原 Attempt 为 CANCELLED，已提交产物位于干净的仓库 HEAD。原 `readiness` 从无可处理任务推导出 `CONTINUE_WORK`，引导模型重新规划或开始任务。紧随其后的 `conclude DELIVER` 分别在 seq 210 和 seq 240 通过了 episode 校验。[Software 重算](../../research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json) · [Energy 机器证据](../../research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
+
+修复后的 `readiness` 在这个状态返回 `SEMANTIC_JUDGEMENT`，列出退役任务声明的产物与所处提交。如果模型确认产物满足当前目标，`next` 提示 `palimpsest_work action=conclude intent=DELIVER`，并携带自己的判断陈述及产物路径。产物需要存在于干净工作树和当前提交，episode 的阻塞事实取自 `conclude` 使用的 pulse。已有当前 `DELIVER` 记录时，提示用现有结论回复。真正的交付仍由 `conclude` 重新读取事实、校验并写入 journal。Operator 仍负责验收和 promotion。[实现](../../src/application/work_outcome.ts)
+
+回归用实际 Git 和 SQLite 分别重建 software 的三项依赖任务、七个声明产物，以及 energy 的单项任务、六个声明产物。两条用例经过 `successor` 和空计划修订，在旧代码上复现 `CONTINUE_WORK`，在新代码上收到 `DELIVER` 提示并成功记录结论。另覆盖缺失产物、只有未提交产物、随后提交的 direct outcome，以及退役后仍有开放任务。这些是确定性产品回归，新增付费请求为 0。[回归用例](../../test/pnwf_product.test.ts)
+
+离线复核还使用两份原始 Work SQLite 的备份、原 HEAD 的 Git 克隆和各自 `readiness` 前的 journal 前缀（software 至 seq 3，energy 至 seq 2）。前缀链摘要与原记录逐条相符。正常工具在两份副本上均返回 `SEMANTIC_JUDGEMENT` 和 `conclude DELIVER` 提示。随后调用 `conclude`，均返回 `RECORDED` 和 `mayEnd=true`，software 的八项与 energy 的六项 Git 产物证明均与原交付记录的提交及文件摘要一致。原始数据库的 SHA-256 在离线复核前后相符。

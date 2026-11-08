@@ -37,6 +37,7 @@ export interface WorkSurfaceDeps {
    * and appears in the pulse, but it is not written to the project journal.
    */
   readonly executionRelay?: import("../../work/execution_relay.js").ExecutionRelayRecorderPort | undefined;
+  readonly deliveryPulse?: WorkRuntimeDeps["deliveryPulse"];
 }
 
 export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkApplicationSurface } {
