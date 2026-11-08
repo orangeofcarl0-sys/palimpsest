@@ -51,7 +51,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-08，最近同步）
+## 2. 当前 Git / 分支状态（2026-11-09，最近同步）
 
 | 项 | 值 |
 |---|---|
@@ -89,6 +89,14 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 查找旧 SHA 时，用完整原 SHA 查询 TSV 的第一列，第二列是新主线上文件树相同的提交。表中只列出 854 个改写提交。上表的历史 PR、CI 记录和归档实验保留当时的实际 SHA。新导航和源码链接使用改写后的 SHA。[提交映射](repository-audit/main-rewrite-2026-11-08.tsv)
 
 本机回溯原提交对象使用已验证的完整 bundle `../branch-archives/2026-11-08-before-attribution-rewrite-87e1428/original-main.bundle`，其中 `refs/audit/original` 指向切换前的主线。
+
+### 提交归因门禁
+
+共享校验器和本地 hook 已通过 PR #246 合入 `1d76b2798e84691dff207ebbf08d4f61e9c1e119`。本检出已配置 `core.hooksPath=.githooks`。新克隆按归因门禁文档启用 hook。[PR #246](https://github.com/orangeofcarl0-sys/palimpsest/pull/246) · [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
+
+`main-protection` 强制 GitHub Actions 发布的 `commit-attribution`，并保留 `unit` 和 `e2e`。PR 必须基于最新主线，通过 rebase 合并。线性历史规则拦截手工合并提交，`main-publisher` 仅允许仓库所有者通过 PR 发布。记录新验收结果时取 rebase 后的主线 SHA。[主线保护](https://github.com/orangeofcarl0-sys/palimpsest/rules/23655367) · [发布权限](https://github.com/orangeofcarl0-sys/palimpsest/rules/26806204)
+
+远端负向验证用 `--no-verify` 把混合大小写共同作者尾注和未授权邮箱写入中间提交，PR 的最后一个提交干净。主线版校验器在该 head 上报告失败并指出两项违规。发布候选从主线重新接入，只包含 handoff 更新。[远端拒绝记录](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42507662604)
 
 ---
 
@@ -485,6 +493,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-08 | 合并 Bench 树及 README 导航，登记实际合并点与 CI 范围 | [PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)，`ca3e676` | 14/14 CI job 首次通过，核对 59 个链接与 87 个证据阶段，四个外部 DSH 步骤跳过 |
 | 2026-11-08 | 归并工作分支，导入 R3-A2 冻结证据并归档其余独有历史 | [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)，R3-A2 tip `10a5978` | 恢复验证 411 个引用，R3-A2 定向测试 116 项通过 |
 | 2026-11-08 | 改写主线提交归因，核验 Contributors 并更新导航 | [归因与 SHA 映射](#主线归因与-sha-映射) | 归档原始主线和标签 |
+| 2026-11-09 | 安装提交归因门禁并启用主线必需检查 | [归因门禁](#提交归因门禁) | 本地 hook、精确 PR head 检查、rebase-only 发布 |
 
 ---
 
