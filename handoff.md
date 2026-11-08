@@ -96,7 +96,7 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 `main-protection` 强制 GitHub Actions 发布的 `commit-attribution`，并保留 `unit` 和 `e2e`。PR 必须基于最新主线，通过 rebase 合并。线性历史规则拦截手工合并提交，`main-publisher` 仅允许仓库所有者通过 PR 发布。记录新验收结果时取 rebase 后的主线 SHA。[主线保护](https://github.com/orangeofcarl0-sys/palimpsest/rules/23655367) · [发布权限](https://github.com/orangeofcarl0-sys/palimpsest/rules/26806204)
 
-远端负向验证用 `--no-verify` 把混合大小写共同作者尾注和未授权邮箱写入中间提交，PR 的最后一个提交干净。主线版校验器在该 head 上报告失败并指出两项违规。发布候选从主线重新接入，只包含 handoff 更新。[远端拒绝记录](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42507662604)
+远端负向验证用 `--no-verify` 把混合大小写共同作者尾注和未授权邮箱写入中间提交，PR 的最后一个提交干净。主线版校验器在该 head 上报告失败并指出两项违规。修复后的 PR #247 全绿，通过合并 API 以精确 head 执行 rebase，落地为 `8418571d1e42e9cf7a391c1c1c39ce425aab1410`。实际提交消息与通过检查的候选一致。发布者规则可能让 `gh pr merge` 的预检显示 `BLOCKED`，按文档使用已实测的合并 API。[远端拒绝记录](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42507662604) · [PR #247](https://github.com/orangeofcarl0-sys/palimpsest/pull/247)
 
 ---
 
