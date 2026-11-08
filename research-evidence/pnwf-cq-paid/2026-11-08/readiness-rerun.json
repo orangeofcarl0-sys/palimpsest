@@ -1,0 +1,3296 @@
+{
+  "schema": "pnwf-readiness-rerun-evidence/v1",
+  "localDate": "2026-11-08",
+  "sourceMain": "e5312cc5d81b5ada6f4a1015f8d00f9c557beb85",
+  "readinessFixPR": 236,
+  "builtProduct": {
+    "dist/src/application/work_outcome.js": "76061c92dd761e67d84c0478e3f5874b698d0b2e70ff57609dcf23e34cad9e81",
+    "dist/src/application/factory.js": "a7b56e6df10795e2cd49a012ae3c352f81079ce5588c958ea1aa639741c59e4f",
+    "dist/src/advanced.js": "984a0782ba3fff7c72cbb928c4f3efb020fe18ced613ffc24f276afa3fc93332"
+  },
+  "scriptHashes": {
+    "scripts/psvr/session_attribution.mjs": "f1443b2d4e0cb8a8ca6e489df8e9fc15eded6b91fc76df213a7930557801e435",
+    "scripts/pnwf/score_continuation.mjs": "70e680c3d882386a65a296a43ae0cb3535998e4a4123e4a6d895e1fd72090cd1"
+  },
+  "authorization": {
+    "paidRerunsPerStage": 1,
+    "billingCeiling": null,
+    "tokenTotalCeiling": null
+  },
+  "executionContract": {
+    "mode": "paid-usage-only",
+    "model": "deepseek-flash",
+    "providerUpstream": "https://api.deepseek.com/anthropic/v1/messages",
+    "maxRequestsPerSession": 64,
+    "wallClockMs": 1800000,
+    "providerRequestTimeoutMs": 240000,
+    "dshVersion": "0.2.1-rc.5"
+  },
+  "qualification": {
+    "requestAndAttributionTestsPassed": 28,
+    "initialBindFailure": {
+      "drive": "F:",
+      "paidRequests": 0,
+      "evidence": ".aps-tmp/pnwf-paid-2026-11-08-readiness-qualification/recorded-worlds/result.json",
+      "sha256": "96d2489366b571dbd35377eb2c4f8d984c1d210733d68871da24fc9cb808e911"
+    },
+    "executionDrive": "C:",
+    "mockScenarios": [
+      {
+        "name": "recorded-worlds",
+        "passed": true
+      },
+      {
+        "name": "broken-alternates",
+        "passed": true
+      },
+      {
+        "name": "large-request",
+        "passed": true
+      },
+      {
+        "name": "late-usage-next-request",
+        "passed": true
+      },
+      {
+        "name": "interrupted-stream",
+        "passed": true
+      },
+      {
+        "name": "large-response",
+        "passed": true
+      }
+    ],
+    "paidMockRequests": 0,
+    "localSummary": ".aps-tmp/pnwf-paid-2026-11-08-readiness-qualification-c/summary.json",
+    "summarySha256": "8a4266436f6eab8dd314c87989121f67d76d371e46f264824bd4c7b38bd73676"
+  },
+  "totals": {
+    "before": {
+      "requests": 56,
+      "settledRequests": 56,
+      "unresolvedRequests": 0,
+      "tokens": 1970844
+    },
+    "after": {
+      "requests": 55,
+      "settledRequests": 55,
+      "unresolvedRequests": 0,
+      "tokens": 2462728
+    }
+  },
+  "cases": {
+    "software": {
+      "comparisonSource": {
+        "receipt": "software.json",
+        "attribution": "software-attribution-recount.json",
+        "originalRawHashesVerified": 8
+      },
+      "controls": {
+        "originalDatabaseHashesBeforeAndAfter": {
+          "palimpsest.sqlite": "11bb28d0fbc3e9fb2488ca3dbc39b2ee39aa1c75c3f7e74ecbb9cf1444f4c1a1",
+          "journal.sqlite": "7b34ef8a1e9bf47fa310337ea268959d325fd020b163b1475dadf69f9cb79975"
+        },
+        "promptSha256": "b03ef00da31e15a3fc51ccaf2c592e562bc591256868ce1711eca39227d3fc91",
+        "initialStateMatched": true,
+        "attemptWorldPreflightMatched": true,
+        "toolCatalogueMatched": true,
+        "adapterFilesMatched": true,
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0"
+      },
+      "before": {
+        "cohortId": "pnwf-paid-2026-11-08-software",
+        "sourcePromptHash": "b03ef00da31e15a3fc51ccaf2c592e562bc591256868ce1711eca39227d3fc91",
+        "baseline": {
+          "tasks": [
+            {
+              "taskId": "grpc-contract",
+              "state": "ACTIVE"
+            },
+            {
+              "taskId": "grpc-service",
+              "state": "BLOCKED"
+            },
+            {
+              "taskId": "verify-migration",
+              "state": "BLOCKED"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+              "taskId": "grpc-contract",
+              "state": "RUNNING"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 0,
+          "episodeIntent": null,
+          "conclusion": null,
+          "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "status": ""
+        },
+        "qualification": {
+          "containerId": "a5d54c1da5d6f02c8d4f5d623198a2b8cc4ae3803edda93d18d9f0b73ece69d2",
+          "descriptorDigest": "7512127fbde4383f53ec5bf9b66151f825d3e9375e85e113daf118b860070e1f",
+          "checkedAt": "2026-11-07T16:48:06.762Z",
+          "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+          "network": "none",
+          "user": "1001:1001",
+          "checks": 16,
+          "allChecksMatched": true,
+          "worlds": 1,
+          "attemptWorld": 15
+        },
+        "counts": {
+          "steps": 27,
+          "turns": 1,
+          "toolCalls": 31,
+          "pairedToolResults": 31,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 2,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 3,
+          "stateQueries": 6,
+          "commits": 0,
+          "jobs": 17
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "work:status": 2,
+          "bash": 17,
+          "work:workers": 1,
+          "work:results": 1,
+          "work:next": 1,
+          "job_kill": 1,
+          "work:relay": 3,
+          "work:plan": 1,
+          "project:journal": 1,
+          "work:readiness": 1,
+          "work:conclude": 1
+        },
+        "failedJobs": [
+          {
+            "jobId": "bash-2a3a3188ebaa46f3",
+            "status": "killed",
+            "reason": "ERR_STREAM_WRITE_AFTER_END",
+            "callId": "call_00_LIUhyQFPh4PzvmrwhN2x7065",
+            "callSeq": 117,
+            "callKind": "bash",
+            "resultSeq": 119,
+            "settledSeq": 127,
+            "durationMs": 121500
+          }
+        ],
+        "toolErrors": [],
+        "refusals": [
+          {
+            "callSeq": 147,
+            "resultSeq": 148,
+            "callKind": "work:relay",
+            "state": "NOT_READY",
+            "reason": "UNCOMMITTED_WORK"
+          },
+          {
+            "callSeq": 169,
+            "resultSeq": 170,
+            "callKind": "work:relay",
+            "state": "NOT_READY",
+            "reason": "NO_SETTLEABLE_DELTA"
+          }
+        ],
+        "usage": {
+          "admittedRequests": 27,
+          "settledRequests": 27,
+          "unresolvedRequests": 0,
+          "confirmedTokens": 982857,
+          "breakdown": {
+            "input_tokens": 33921,
+            "cache_read_input_tokens": 934912,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 14024
+          },
+          "ledgerAndStreamMatchedPerRequest": 27
+        },
+        "execution": {
+          "startedAt": "2026-11-07T16:47:50.906Z",
+          "endedAt": "2026-11-07T16:52:41.912Z",
+          "durationMs": 291006,
+          "exit": {
+            "natural": true,
+            "stopped": false,
+            "kind": "NATURAL_EXIT",
+            "killedBy": null,
+            "exitCode": 0,
+            "signal": null,
+            "error": null
+          },
+          "model": "deepseek-flash",
+          "billingCeiling": null,
+          "maxRequests": 64,
+          "wallClockMs": 1800000
+        },
+        "session": {
+          "id": "session-ba31fb32-0713-4f6f-923b-c6659c2ccd95",
+          "cwd": "/run/stage/world",
+          "startedAt": "2026-11-07T16:48:20.347Z",
+          "endedAt": "2026-11-07T16:52:40.852Z",
+          "durationMs": 260505
+        },
+        "end": {
+          "seq": 216,
+          "step": null,
+          "offsetMs": 260505,
+          "reason": "completed"
+        },
+        "offeredToolCount": 29,
+        "relay": [
+          {
+            "call": {
+              "seq": 147,
+              "step": 17,
+              "offsetMs": 210080
+            },
+            "result": {
+              "seq": 148,
+              "step": 17,
+              "offsetMs": 211679
+            },
+            "route": "takeover",
+            "declaredAbandonment": true,
+            "state": "NOT_READY",
+            "reason": "UNCOMMITTED_WORK",
+            "taskState": null,
+            "resultCommit": null
+          },
+          {
+            "call": {
+              "seq": 169,
+              "step": 20,
+              "offsetMs": 221058
+            },
+            "result": {
+              "seq": 170,
+              "step": 20,
+              "offsetMs": 222557
+            },
+            "route": "takeover",
+            "declaredAbandonment": true,
+            "state": "NOT_READY",
+            "reason": "NO_SETTLEABLE_DELTA",
+            "taskState": null,
+            "resultCommit": null
+          },
+          {
+            "call": {
+              "seq": 175,
+              "step": 21,
+              "offsetMs": 224287
+            },
+            "result": {
+              "seq": 176,
+              "step": 21,
+              "offsetMs": 227920
+            },
+            "route": "successor",
+            "declaredAbandonment": false,
+            "state": "SUCCESSOR_READY",
+            "reason": null,
+            "taskState": "READY",
+            "resultCommit": null
+          }
+        ],
+        "plan": [
+          {
+            "call": {
+              "seq": 187,
+              "step": 23,
+              "offsetMs": 231976
+            },
+            "result": {
+              "seq": 188,
+              "step": 23,
+              "offsetMs": 232055
+            },
+            "taskCount": 0,
+            "changeClass": "metadata_only",
+            "event": "PROJECT_REVISED",
+            "projectEventId": 17,
+            "error": null
+          }
+        ],
+        "retirement": {
+          "call": {
+            "seq": 187,
+            "step": 23,
+            "offsetMs": 231976
+          },
+          "result": {
+            "seq": 188,
+            "step": 23,
+            "offsetMs": 232055
+          },
+          "taskCount": 0,
+          "changeClass": "metadata_only",
+          "event": "PROJECT_REVISED",
+          "projectEventId": 17,
+          "error": null
+        },
+        "readiness": [
+          {
+            "call": {
+              "seq": 203,
+              "step": 25,
+              "offsetMs": 239625
+            },
+            "result": {
+              "seq": 204,
+              "step": 25,
+              "offsetMs": 239937
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "no task is currently addressable; plan or begin work before a finalization can be considered"
+            ]
+          }
+        ],
+        "retiredReadiness": [
+          {
+            "call": {
+              "seq": 203,
+              "step": 25,
+              "offsetMs": 239625
+            },
+            "result": {
+              "seq": 204,
+              "step": 25,
+              "offsetMs": 239937
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "no task is currently addressable; plan or begin work before a finalization can be considered"
+            ]
+          }
+        ],
+        "conclusion": [
+          {
+            "call": {
+              "seq": 209,
+              "step": 26,
+              "offsetMs": 242568
+            },
+            "result": {
+              "seq": 210,
+              "step": 26,
+              "offsetMs": 256147
+            },
+            "intent": "DELIVER",
+            "state": "RECORDED",
+            "mayEnd": true,
+            "artifacts": [
+              {
+                "path": "proto/energy.proto",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "bafdb07e5a16f95f505b13174f663a0d39422fd0c922ead83ebc21fc445586f0"
+              },
+              {
+                "path": "service/wire.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e981e3250f13530130a7df4724d7ac2f6c982103ee1635921744a6ad2263559e"
+              },
+              {
+                "path": "service/grpc_server.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "78f807ff081ede62045969d3a4624fcb37f80c685599d35bf31198e752ec01b9"
+              },
+              {
+                "path": "service/grpc_client.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "0b53c303885de872caec7467420bd104eb613008e4402cd61c47346d3ab82c9b"
+              },
+              {
+                "path": "test/server.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "9189e13670fc57d7501dd07270cf7169d45ac2ad6225220e921af0857e2fbaae"
+              },
+              {
+                "path": "test/integration.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e5a995d6aa37b215d17da4a50212442772f29562bd73a4e09708dd931f8b8eab"
+              },
+              {
+                "path": "test/rest.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "5c77bfdb552f92bb818598dfaf71d3df905721f2bdcba6c57337154daca57dcd"
+              },
+              {
+                "path": "README.md",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e2a8461fc7e3bad54f35f13347210cd742448abd4c937cceffd16ed55216f540"
+              }
+            ]
+          }
+        ],
+        "afterRetirement": {
+          "calls": [
+            {
+              "seq": 193,
+              "kind": "bash",
+              "resultSeq": 196
+            },
+            {
+              "seq": 197,
+              "kind": "project:journal",
+              "resultSeq": 198,
+              "action": "journal"
+            },
+            {
+              "seq": 203,
+              "kind": "work:readiness",
+              "resultSeq": 204,
+              "action": "readiness"
+            },
+            {
+              "seq": 209,
+              "kind": "work:conclude",
+              "resultSeq": 210,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 4,
+            "tokens": 215673
+          },
+          "toDeliverReceiptMs": 24092,
+          "toTurnEndMs": 28450
+        },
+        "afterReadiness": {
+          "calls": [
+            {
+              "seq": 209,
+              "kind": "work:conclude",
+              "resultSeq": 210,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 2,
+            "tokens": 111151
+          },
+          "interveningCalls": [],
+          "toDeliverCallMs": 2631,
+          "toDeliverReceiptMs": 16210,
+          "toTurnEndMs": 20568,
+          "deliverInLaterModelStep": true
+        },
+        "afterDelivery": {
+          "calls": [],
+          "usage": {
+            "requests": 1,
+            "tokens": 57762
+          },
+          "toTurnEndMs": 4358
+        },
+        "final": {
+          "tasks": [
+            {
+              "taskId": "grpc-contract",
+              "state": "STALE"
+            },
+            {
+              "taskId": "grpc-service",
+              "state": "STALE"
+            },
+            {
+              "taskId": "verify-migration",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+              "taskId": "grpc-contract",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": "DELIVER",
+          "conclusion": {
+            "seq": 4,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "intent": "DELIVER"
+          },
+          "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "status": ""
+        },
+        "facts": {
+          "completeAtMostOnce": true,
+          "episodeConclusionRecorded": true,
+          "taskRetired": true,
+          "noPromotion": true,
+          "headUnchanged": true,
+          "tokensBelowHistoricalClosure": true,
+          "sessionNaturalExit": true,
+          "tokenEvidenceQualified": true
+        },
+        "primary": true
+      },
+      "after": {
+        "cohortId": "pnwf-paid-2026-11-08-readiness-software",
+        "sourcePromptHash": "b03ef00da31e15a3fc51ccaf2c592e562bc591256868ce1711eca39227d3fc91",
+        "baseline": {
+          "tasks": [
+            {
+              "taskId": "grpc-contract",
+              "state": "ACTIVE"
+            },
+            {
+              "taskId": "grpc-service",
+              "state": "BLOCKED"
+            },
+            {
+              "taskId": "verify-migration",
+              "state": "BLOCKED"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+              "taskId": "grpc-contract",
+              "state": "RUNNING"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 0,
+          "episodeIntent": null,
+          "conclusion": null,
+          "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "status": ""
+        },
+        "qualification": {
+          "containerId": "7d1bd0a602fce4a5b0407cee42b14086ac192504b3fe58179f0be5935ace2b92",
+          "descriptorDigest": "222873ba0c8e79419c54ef6e3e232be6b570f62e745a07c790873f4d4c137997",
+          "checkedAt": "2026-11-08T05:58:38.497Z",
+          "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+          "network": "none",
+          "user": "1001:1001",
+          "checks": 16,
+          "allChecksMatched": true,
+          "worlds": 1,
+          "attemptWorld": 15
+        },
+        "counts": {
+          "steps": 29,
+          "turns": 1,
+          "toolCalls": 41,
+          "pairedToolResults": 41,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 1,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 2,
+          "stateQueries": 6,
+          "commits": 0,
+          "jobs": 21
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 21,
+          "work:status": 2,
+          "read": 9,
+          "work:workers": 1,
+          "work:readiness": 2,
+          "work:relay": 3,
+          "work:plan": 1,
+          "work:conclude": 1
+        },
+        "pairedResults": [
+          {
+            "callSeq": 15,
+            "resultSeq": 16,
+            "callKind": "continuity:pulse"
+          },
+          {
+            "callSeq": 21,
+            "resultSeq": 24,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 25,
+            "resultSeq": 26,
+            "callKind": "work:status"
+          },
+          {
+            "callSeq": 31,
+            "resultSeq": 34,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 39,
+            "resultSeq": 42,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 43,
+            "resultSeq": 46,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 51,
+            "resultSeq": 53,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 52,
+            "resultSeq": 54,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 55,
+            "resultSeq": 58,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 63,
+            "resultSeq": 66,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 71,
+            "resultSeq": 74,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 79,
+            "resultSeq": 82,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 83,
+            "resultSeq": 87,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 84,
+            "resultSeq": 88,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 85,
+            "resultSeq": 89,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 86,
+            "resultSeq": 90,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 95,
+            "resultSeq": 98,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 99,
+            "resultSeq": 101,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 100,
+            "resultSeq": 102,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 107,
+            "resultSeq": 108,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 113,
+            "resultSeq": 116,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 121,
+            "resultSeq": 124,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 129,
+            "resultSeq": 132,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 137,
+            "resultSeq": 140,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 145,
+            "resultSeq": 148,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 153,
+            "resultSeq": 156,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 157,
+            "resultSeq": 160,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 165,
+            "resultSeq": 168,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 173,
+            "resultSeq": 176,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 181,
+            "resultSeq": 182,
+            "callKind": "work:workers"
+          },
+          {
+            "callSeq": 183,
+            "resultSeq": 184,
+            "callKind": "work:readiness"
+          },
+          {
+            "callSeq": 189,
+            "resultSeq": 192,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 197,
+            "resultSeq": 200,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 205,
+            "resultSeq": 206,
+            "callKind": "work:relay"
+          },
+          {
+            "callSeq": 211,
+            "resultSeq": 212,
+            "callKind": "work:relay"
+          },
+          {
+            "callSeq": 217,
+            "resultSeq": 218,
+            "callKind": "work:relay"
+          },
+          {
+            "callSeq": 223,
+            "resultSeq": 224,
+            "callKind": "work:status"
+          },
+          {
+            "callSeq": 225,
+            "resultSeq": 226,
+            "callKind": "work:readiness"
+          },
+          {
+            "callSeq": 231,
+            "resultSeq": 232,
+            "callKind": "work:plan"
+          },
+          {
+            "callSeq": 237,
+            "resultSeq": 240,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 245,
+            "resultSeq": 246,
+            "callKind": "work:conclude"
+          }
+        ],
+        "failedJobs": [],
+        "toolErrors": [
+          {
+            "callSeq": 205,
+            "resultSeq": 206,
+            "kind": "work:relay",
+            "text": "Error: argument \"relayRoute\" is required"
+          }
+        ],
+        "refusals": [
+          {
+            "callSeq": 211,
+            "resultSeq": 212,
+            "callKind": "work:relay",
+            "state": "NOT_READY",
+            "reason": "NO_SETTLEABLE_DELTA",
+            "detail": "NOT_READY: the world holds no observable change against its base, so there is nothing to settle"
+          }
+        ],
+        "usage": {
+          "admittedRequests": 29,
+          "settledRequests": 29,
+          "unresolvedRequests": 0,
+          "confirmedTokens": 1394801,
+          "breakdown": {
+            "input_tokens": 45587,
+            "cache_read_input_tokens": 1332992,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 16222
+          },
+          "ledgerAndStreamMatchedPerRequest": 29,
+          "requests": [
+            {
+              "ordinal": 1,
+              "assistantMessageSeq": 14,
+              "step": 1,
+              "id": "cb7b3862-0851-4989-acd7-12199640ae6a",
+              "requestDigest": "4b203c7233ff2f484d70a6a4d76d94ded14c8234d2798eca7e358d4826131d02",
+              "tokens": 11773,
+              "usage": {
+                "input_tokens": 196,
+                "cache_read_input_tokens": 11520,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 57
+              }
+            },
+            {
+              "ordinal": 2,
+              "assistantMessageSeq": 20,
+              "step": 2,
+              "id": "883560d9-9d57-4351-aebc-f989a0bfd110",
+              "requestDigest": "65ed61a6aa51c2975e4562d269ca9c7781ec7a753ad7a6545b8fae7466845251",
+              "tokens": 13572,
+              "usage": {
+                "input_tokens": 1765,
+                "cache_read_input_tokens": 11648,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 159
+              }
+            },
+            {
+              "ordinal": 3,
+              "assistantMessageSeq": 30,
+              "step": 3,
+              "id": "c684b3c3-04d3-4c60-8342-47f3be0b8b5a",
+              "requestDigest": "a6cb1db268fe9c2426acf5283b9068799e4e0334acaa153aaf22958c11cdebe3",
+              "tokens": 15168,
+              "usage": {
+                "input_tokens": 1393,
+                "cache_read_input_tokens": 13568,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 207
+              }
+            },
+            {
+              "ordinal": 4,
+              "assistantMessageSeq": 38,
+              "step": 4,
+              "id": "63654f79-7e43-4bdf-8b20-7129c3870267",
+              "requestDigest": "bc27efda71f61032bc87b34ce3c8b07138a141c351eeb643906343d6b58b470d",
+              "tokens": 15779,
+              "usage": {
+                "input_tokens": 389,
+                "cache_read_input_tokens": 15104,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 286
+              }
+            },
+            {
+              "ordinal": 5,
+              "assistantMessageSeq": 50,
+              "step": 5,
+              "id": "9a2a858d-4746-4db0-91e2-b48599693d35",
+              "requestDigest": "fe3142cb6aa76b4ece5a80dd648629ca4f4565f194d34b0540f61a13306d1221",
+              "tokens": 16740,
+              "usage": {
+                "input_tokens": 582,
+                "cache_read_input_tokens": 15744,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 414
+              }
+            },
+            {
+              "ordinal": 6,
+              "assistantMessageSeq": 62,
+              "step": 6,
+              "id": "056f4a49-03a8-4f6c-8f9d-ac06ce385336",
+              "requestDigest": "c62270162f58e6074a3e98a945e202bca056daee8128d4538c7f430f38376f6d",
+              "tokens": 19173,
+              "usage": {
+                "input_tokens": 2310,
+                "cache_read_input_tokens": 16640,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 223
+              }
+            },
+            {
+              "ordinal": 7,
+              "assistantMessageSeq": 70,
+              "step": 7,
+              "id": "f8341603-de55-4884-bb87-cf01862e7f61",
+              "requestDigest": "999da9c3d429a8d689374d1e20f530149d4ed2fc6ff4feffff6e967b81ba1077",
+              "tokens": 35116,
+              "usage": {
+                "input_tokens": 15611,
+                "cache_read_input_tokens": 19072,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 433
+              }
+            },
+            {
+              "ordinal": 8,
+              "assistantMessageSeq": 78,
+              "step": 8,
+              "id": "399b8527-560f-48dd-9ac1-443623cc48e9",
+              "requestDigest": "903980b1df96bf1d6989203f16efba617c71d965b1b26fe30d9c7736b98cf499",
+              "tokens": 35688,
+              "usage": {
+                "input_tokens": 216,
+                "cache_read_input_tokens": 35072,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 400
+              }
+            },
+            {
+              "ordinal": 9,
+              "assistantMessageSeq": 94,
+              "step": 9,
+              "id": "9f20b6be-a601-4150-b451-3a8c1d4c93be",
+              "requestDigest": "dbb59ab4660964ada8edcfbd05c20f364c43b5f401ec4a3930db40b6ae8b5fbf",
+              "tokens": 40997,
+              "usage": {
+                "input_tokens": 4974,
+                "cache_read_input_tokens": 35584,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 439
+              }
+            },
+            {
+              "ordinal": 10,
+              "assistantMessageSeq": 106,
+              "step": 10,
+              "id": "502419e7-8a23-4533-8b0d-b33ed88b8534",
+              "requestDigest": "501e121147d82c8d92b59aa568363042ca021256e09f182254899c89e5dc016a",
+              "tokens": 43803,
+              "usage": {
+                "input_tokens": 2453,
+                "cache_read_input_tokens": 40960,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 390
+              }
+            },
+            {
+              "ordinal": 11,
+              "assistantMessageSeq": 112,
+              "step": 11,
+              "id": "0b813369-1334-4d66-8b4f-af33948156bf",
+              "requestDigest": "4a93ddc6123e888e3b5a61ac7dc3c5ba85842e65fb38785746b53711b12bc43f",
+              "tokens": 48906,
+              "usage": {
+                "input_tokens": 3848,
+                "cache_read_input_tokens": 43776,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1282
+              }
+            },
+            {
+              "ordinal": 12,
+              "assistantMessageSeq": 120,
+              "step": 12,
+              "id": "55f32df8-cd11-4aa0-814b-dd7c59f1b6a3",
+              "requestDigest": "4d7ab75815e03a46ba74ea2651d74b9ca1bc81f0f5672f7dbca2c22a40a85d99",
+              "tokens": 51775,
+              "usage": {
+                "input_tokens": 213,
+                "cache_read_input_tokens": 48896,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 2666
+              }
+            },
+            {
+              "ordinal": 13,
+              "assistantMessageSeq": 128,
+              "step": 13,
+              "id": "9d21aeb1-cf06-4264-b11d-dc12c919c100",
+              "requestDigest": "42d47d578e35ab97877ed53d04029110bb8736834c4a509c635970f8b0dd6bb9",
+              "tokens": 52681,
+              "usage": {
+                "input_tokens": 441,
+                "cache_read_input_tokens": 51712,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 528
+              }
+            },
+            {
+              "ordinal": 14,
+              "assistantMessageSeq": 136,
+              "step": 14,
+              "id": "e7045e1d-67e0-461a-a0d7-c51741ad82b9",
+              "requestDigest": "9923f96cd4b526e31e660afa2b70f884dc2345ea195e91315fa6d58516b3bce7",
+              "tokens": 54014,
+              "usage": {
+                "input_tokens": 1161,
+                "cache_read_input_tokens": 52608,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 245
+              }
+            },
+            {
+              "ordinal": 15,
+              "assistantMessageSeq": 144,
+              "step": 15,
+              "id": "4f7b5c2f-4f9b-40af-ac26-2986b8bcbeed",
+              "requestDigest": "4eac22460e2aed4a1e9d7e402e0dca147b527d09e0f4488c0b85a147d7c6bda8",
+              "tokens": 54150,
+              "usage": {
+                "input_tokens": 161,
+                "cache_read_input_tokens": 53888,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 101
+              }
+            },
+            {
+              "ordinal": 16,
+              "assistantMessageSeq": 152,
+              "step": 16,
+              "id": "b5d52901-41ce-415f-9198-3cce9cb0fd86",
+              "requestDigest": "3dfa9156d36e3ca53587b1ac2d8f59fa64228b2a8ac5999f452500bde6a990ff",
+              "tokens": 57630,
+              "usage": {
+                "input_tokens": 458,
+                "cache_read_input_tokens": 54144,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 3028
+              }
+            },
+            {
+              "ordinal": 17,
+              "assistantMessageSeq": 164,
+              "step": 17,
+              "id": "641fb814-3849-4517-81c6-68cc03cb6227",
+              "requestDigest": "efffaef99cc4f0387555ed9b67455c0041f73d5b7282cace86736724863123c7",
+              "tokens": 57956,
+              "usage": {
+                "input_tokens": 202,
+                "cache_read_input_tokens": 57600,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 154
+              }
+            },
+            {
+              "ordinal": 18,
+              "assistantMessageSeq": 172,
+              "step": 18,
+              "id": "c9685b0b-3847-40c2-8225-f1b155429085",
+              "requestDigest": "75451ea3a8d9c6fc5ddb010fbe3912f91d0f136bb1d015256ca7bd1434e830cf",
+              "tokens": 59093,
+              "usage": {
+                "input_tokens": 216,
+                "cache_read_input_tokens": 57856,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1021
+              }
+            },
+            {
+              "ordinal": 19,
+              "assistantMessageSeq": 180,
+              "step": 19,
+              "id": "821b238f-4062-48dd-a954-0bca79e96b9c",
+              "requestDigest": "490e8f612559351a028770157968d6c2cfaefff4cbdfe2ddaca6f3c06a728dc4",
+              "tokens": 60243,
+              "usage": {
+                "input_tokens": 319,
+                "cache_read_input_tokens": 59008,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 916
+              }
+            },
+            {
+              "ordinal": 20,
+              "assistantMessageSeq": 188,
+              "step": 20,
+              "id": "d147d269-fcc7-4d75-8003-4c5d044a8c0f",
+              "requestDigest": "1a21f2697f093d37a0d8dc9584f021b7bdd46ea77d4d9681e6fb6c1a5bee78c9",
+              "tokens": 62017,
+              "usage": {
+                "input_tokens": 1226,
+                "cache_read_input_tokens": 60160,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 631
+              }
+            },
+            {
+              "ordinal": 21,
+              "assistantMessageSeq": 196,
+              "step": 21,
+              "id": "378e54c9-3bc3-4d67-8d88-88c15a6d4c84",
+              "requestDigest": "de77cf424d0094492a0f09f51df798df53c04243681bc18e592341a075b030c7",
+              "tokens": 63114,
+              "usage": {
+                "input_tokens": 394,
+                "cache_read_input_tokens": 61952,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 768
+              }
+            },
+            {
+              "ordinal": 22,
+              "assistantMessageSeq": 204,
+              "step": 22,
+              "id": "8cfdbf4c-a077-4add-84a5-1992bba095bd",
+              "requestDigest": "52f876f7309801c22105b032726ef25247692d8bea787bcc5006cdae84741d2b",
+              "tokens": 63254,
+              "usage": {
+                "input_tokens": 156,
+                "cache_read_input_tokens": 62976,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 122
+              }
+            },
+            {
+              "ordinal": 23,
+              "assistantMessageSeq": 210,
+              "step": 23,
+              "id": "5cc766ed-4aca-4167-98f4-ce47f7177d9d",
+              "requestDigest": "fb74a8400c755502fa799ebb2ae9df5351e0a8db431ee554ed35355b5d477f97",
+              "tokens": 63386,
+              "usage": {
+                "input_tokens": 172,
+                "cache_read_input_tokens": 63104,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 110
+              }
+            },
+            {
+              "ordinal": 24,
+              "assistantMessageSeq": 216,
+              "step": 24,
+              "id": "59b4727e-713b-46f2-a575-1dd2436c9caf",
+              "requestDigest": "8ad7e47b78b03fe184bfc43bac12f5b019511f0f357113a3439a33bea550f89a",
+              "tokens": 63707,
+              "usage": {
+                "input_tokens": 201,
+                "cache_read_input_tokens": 63360,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 146
+              }
+            },
+            {
+              "ordinal": 25,
+              "assistantMessageSeq": 222,
+              "step": 25,
+              "id": "bd3fb7d8-9aef-4db2-9769-e42be20f6826",
+              "requestDigest": "0a51c8e70195473be81508434401e4fb4cec737dae464dcd49d19a0c049d969b",
+              "tokens": 64299,
+              "usage": {
+                "input_tokens": 574,
+                "cache_read_input_tokens": 63616,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 109
+              }
+            },
+            {
+              "ordinal": 26,
+              "assistantMessageSeq": 230,
+              "step": 26,
+              "id": "af151f48-a440-4a2e-88c1-79fb1bb3cecc",
+              "requestDigest": "b60b46d4f357f78464de3951b8d557a882212fb3346d5f295d209a4be7153619",
+              "tokens": 65507,
+              "usage": {
+                "input_tokens": 996,
+                "cache_read_input_tokens": 64256,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 255
+              }
+            },
+            {
+              "ordinal": 27,
+              "assistantMessageSeq": 236,
+              "step": 27,
+              "id": "08bfc8c4-2072-4f52-98f2-7434815db055",
+              "requestDigest": "0c618ee7e68cbbe243648f0ea6671c5a3d9f48229fb6f6711bac3f438c4fd4ed",
+              "tokens": 66435,
+              "usage": {
+                "input_tokens": 719,
+                "cache_read_input_tokens": 65408,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 308
+              }
+            },
+            {
+              "ordinal": 28,
+              "assistantMessageSeq": 244,
+              "step": 28,
+              "id": "14a6f109-2c2f-4891-8343-0960b84c8361",
+              "requestDigest": "f932e55edea9a7d1919e90c2e729c4ccbedba48d2a49cc073ab9a08c3bfd4290",
+              "tokens": 67356,
+              "usage": {
+                "input_tokens": 554,
+                "cache_read_input_tokens": 66432,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 370
+              }
+            },
+            {
+              "ordinal": 29,
+              "assistantMessageSeq": 250,
+              "step": 29,
+              "id": "247b33f6-207e-4baa-a3e9-f176d5d9b087",
+              "requestDigest": "d8cceaa68f110ffc97268835deac53417d3dd74cf1c159bd2a10bd96c7ee3cf0",
+              "tokens": 71469,
+              "usage": {
+                "input_tokens": 3687,
+                "cache_read_input_tokens": 67328,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 454
+              }
+            }
+          ]
+        },
+        "execution": {
+          "startedAt": "2026-11-08T05:58:22.069Z",
+          "endedAt": "2026-11-08T06:01:35.787Z",
+          "durationMs": 193718,
+          "exit": {
+            "natural": true,
+            "stopped": false,
+            "kind": "NATURAL_EXIT",
+            "killedBy": null,
+            "exitCode": 0,
+            "signal": null,
+            "error": null
+          },
+          "model": "deepseek-flash",
+          "billingCeiling": null,
+          "maxRequests": 64,
+          "wallClockMs": 1800000
+        },
+        "session": {
+          "id": "session-7e6fe665-d504-459a-a773-f05f2a4ee3b5",
+          "cwd": "/run/stage/world",
+          "startedAt": "2026-11-08T05:58:52.646Z",
+          "endedAt": "2026-11-08T06:01:34.715Z",
+          "durationMs": 162069
+        },
+        "end": {
+          "seq": 252,
+          "step": null,
+          "offsetMs": 162069,
+          "reason": "completed"
+        },
+        "offeredToolCount": 29,
+        "relay": [
+          {
+            "call": {
+              "seq": 205,
+              "step": 22,
+              "offsetMs": 126521
+            },
+            "result": {
+              "seq": 206,
+              "step": 22,
+              "offsetMs": 126531
+            },
+            "route": null,
+            "declaredAbandonment": true,
+            "state": null,
+            "reason": null,
+            "taskState": null,
+            "resultCommit": null
+          },
+          {
+            "call": {
+              "seq": 211,
+              "step": 23,
+              "offsetMs": 127619
+            },
+            "result": {
+              "seq": 212,
+              "step": 23,
+              "offsetMs": 129128
+            },
+            "route": "takeover",
+            "declaredAbandonment": true,
+            "state": "NOT_READY",
+            "reason": "NO_SETTLEABLE_DELTA",
+            "taskState": null,
+            "resultCommit": null
+          },
+          {
+            "call": {
+              "seq": 217,
+              "step": 24,
+              "offsetMs": 130726
+            },
+            "result": {
+              "seq": 218,
+              "step": 24,
+              "offsetMs": 134436
+            },
+            "route": "successor",
+            "declaredAbandonment": true,
+            "state": "SUCCESSOR_READY",
+            "reason": null,
+            "taskState": "READY",
+            "resultCommit": null
+          }
+        ],
+        "plan": [
+          {
+            "call": {
+              "seq": 231,
+              "step": 26,
+              "offsetMs": 139195
+            },
+            "result": {
+              "seq": 232,
+              "step": 26,
+              "offsetMs": 139271
+            },
+            "taskCount": 0,
+            "event": "PROJECT_REVISED",
+            "projectEventId": 17,
+            "error": null
+          }
+        ],
+        "retirement": {
+          "call": {
+            "seq": 231,
+            "step": 26,
+            "offsetMs": 139195
+          },
+          "result": {
+            "seq": 232,
+            "step": 26,
+            "offsetMs": 139271
+          },
+          "taskCount": 0,
+          "event": "PROJECT_REVISED",
+          "projectEventId": 17,
+          "error": null
+        },
+        "readiness": [
+          {
+            "call": {
+              "seq": 183,
+              "step": 19,
+              "offsetMs": 109696
+            },
+            "result": {
+              "seq": 184,
+              "step": 19,
+              "offsetMs": 111660
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "the world still has uncommitted changes (.gitignore, README.md, TASK.md, package.json, proto/energy.proto, service/data.js, service/grpc_client.js, service/grpc_server.js, service/rest_client.js, service/rest_server.js, service/wire.js, test/integration.test.js, test/rest.test.js, test/server.test.js, updates/2026-11-03/compat-streaming.md); commit them or discard them before finalizing. The world HEAD being at the basis does not mean there is no work"
+            ]
+          },
+          {
+            "call": {
+              "seq": 225,
+              "step": 25,
+              "offsetMs": 136024
+            },
+            "result": {
+              "seq": 226,
+              "step": 25,
+              "offsetMs": 136350
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "no task is currently addressable; plan or begin work before a finalization can be considered"
+            ]
+          }
+        ],
+        "retiredReadiness": [],
+        "conclusion": [
+          {
+            "call": {
+              "seq": 245,
+              "step": 28,
+              "offsetMs": 144937
+            },
+            "result": {
+              "seq": 246,
+              "step": 28,
+              "offsetMs": 158421
+            },
+            "intent": "DELIVER",
+            "state": "RECORDED",
+            "mayEnd": true,
+            "artifacts": [
+              {
+                "path": "README.md",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e2a8461fc7e3bad54f35f13347210cd742448abd4c937cceffd16ed55216f540"
+              },
+              {
+                "path": "proto/energy.proto",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "bafdb07e5a16f95f505b13174f663a0d39422fd0c922ead83ebc21fc445586f0"
+              },
+              {
+                "path": "service/wire.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e981e3250f13530130a7df4724d7ac2f6c982103ee1635921744a6ad2263559e"
+              },
+              {
+                "path": "service/grpc_server.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "78f807ff081ede62045969d3a4624fcb37f80c685599d35bf31198e752ec01b9"
+              },
+              {
+                "path": "service/grpc_client.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "0b53c303885de872caec7467420bd104eb613008e4402cd61c47346d3ab82c9b"
+              },
+              {
+                "path": "test/server.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "9189e13670fc57d7501dd07270cf7169d45ac2ad6225220e921af0857e2fbaae"
+              },
+              {
+                "path": "test/integration.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "e5a995d6aa37b215d17da4a50212442772f29562bd73a4e09708dd931f8b8eab"
+              },
+              {
+                "path": "test/rest.test.js",
+                "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "5c77bfdb552f92bb818598dfaf71d3df905721f2bdcba6c57337154daca57dcd"
+              }
+            ]
+          }
+        ],
+        "afterRetirement": {
+          "calls": [
+            {
+              "seq": 237,
+              "kind": "bash",
+              "resultSeq": 240
+            },
+            {
+              "seq": 245,
+              "kind": "work:conclude",
+              "resultSeq": 246,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 3,
+            "tokens": 205260
+          },
+          "toDeliverReceiptMs": 19150,
+          "toTurnEndMs": 22798
+        },
+        "afterReadiness": null,
+        "afterDelivery": {
+          "calls": [],
+          "usage": {
+            "requests": 1,
+            "tokens": 71469
+          },
+          "toTurnEndMs": 3648
+        },
+        "final": {
+          "tasks": [
+            {
+              "taskId": "grpc-contract",
+              "state": "STALE"
+            },
+            {
+              "taskId": "grpc-service",
+              "state": "STALE"
+            },
+            {
+              "taskId": "verify-migration",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-94bcc7ae85e75141e064397cfa1186e6",
+              "taskId": "grpc-contract",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": "DELIVER",
+          "conclusion": {
+            "seq": 3,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "intent": "DELIVER"
+          },
+          "head": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+          "status": ""
+        },
+        "facts": {
+          "completeAtMostOnce": true,
+          "episodeConclusionRecorded": true,
+          "taskRetired": true,
+          "noPromotion": true,
+          "headUnchanged": true,
+          "tokensBelowHistoricalClosure": false,
+          "sessionNaturalExit": true,
+          "tokenEvidenceQualified": true
+        },
+        "primary": true
+      },
+      "deliveryAdoption": {
+        "status": "NOT_EXERCISED",
+        "postRetirementReadinessCalls": 0,
+        "recordedDeliver": true,
+        "exit": "NATURAL_EXIT"
+      },
+      "additionalDeliveredPaths": [],
+      "delta": {
+        "admittedRequests": 2,
+        "totalTokens": 411944,
+        "totalTokensPercent": 41.91291306873736,
+        "breakdown": {
+          "input_tokens": 11666,
+          "cache_read_input_tokens": 398080,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2198
+        },
+        "toolCalls": 10,
+        "wallMs": -97288,
+        "dshTurnMs": -98436,
+        "beforeRetirementMs": -92784,
+        "afterRetirementMs": -5652,
+        "postRetirementCalls": -2,
+        "postRetirementRequests": -1,
+        "postRetirementTokens": -10413
+      },
+      "rawLocalTrial": ".aps-tmp/pnwf-paid-2026-11-08-readiness-software",
+      "rawHashes": {
+        "cohort.json": "7d53bf3ddea3aa6c9362299009f77797f6500de32867662c43a939e58146c55d",
+        "prompts/software.txt": "b03ef00da31e15a3fc51ccaf2c592e562bc591256868ce1711eca39227d3fc91",
+        "out/baseline.json": "c201f79b8da5ff9181f0c0e72a42a3512f8946b44b151d2d187f296d6fac6c85",
+        "out/score.json": "6c042c6592c737138d6e87757899d0bc877683ca6ab9e223bd86e68fe34d3cb5",
+        "out/attribution/software-0.timeline.json": "d965898f43475d113e59f31ec3f8a82b93a73cd724daa202e4ff5c407a059f04",
+        "out/software/qualification.json": "f96de8b99993eeb69a83725cecd8de28666673f37f0caf1195ea8ee717c85f2c",
+        "out/software/run.json": "f846525696854e3e3b8384fcd1b0de4d3c05092bca8353d412e5d59964cd9164",
+        "out/software/request-accounting.json": "faab900b2dcb687df360950a7a3546291868d43eb5b50ae366724593abea5e9e",
+        "runtime-software/sessions/--run-stage-world--/session-7e6fe665-d504-459a-a773-f05f2a4ee3b5/session.v4.jsonl.zstd": "a6e4e8d84824b321b1ce41df82f0c1458ca9d97bbe27091b3cfa79f2901337ec",
+        "core.json": "adf49af58c628bc88f980648998c825bd36fb1cfe400a4da5650301d12482933",
+        "out/attribution/software-0.timeline.md": "6590979824befe512cbb3f57944bb3e4d53fa04b8c0f4b7494f6f9d62675160e",
+        "out/software/budget.json": "8368b5b97c6cb74a42b171cbffdb33897a18aa88d15cce4b40d69f6c2829cd52",
+        "out/software/run.log": "ef0900586fea3558c291cf76fb5af03bb12fb375b15a74e95e644057957c51f1",
+        "out/software/run.err": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "out/gate/start-software.json": "d1ae01c03ee639af765aef81eea5b489e122368747e1819bb65b151012b8bd0d",
+        "out/gate/end-software.json": "dd584255b8bc57502f67b1237fa35a183c3db08e56c6846ec42b7700f12ced8f",
+        "request-usage.sqlite": "c57e4bd74283ef45e026146d5954809444e713efb25d324bbfa7970bfcf26b77",
+        "stages/software/state/palimpsest.sqlite": "ded681f5838d4cd220cd916c5b707ebc1ace183d074eca679ed5303b48889f24",
+        "stages/software/state/journal.sqlite": "aecf9055111af9f8df26fea1678f6c7cd5a3e9795e2b5ed83d132152380e51e4"
+      }
+    },
+    "energy": {
+      "comparisonSource": {
+        "receipt": "energy.json",
+        "attribution": "energy.json",
+        "originalRawHashesVerified": 11
+      },
+      "controls": {
+        "originalDatabaseHashesBeforeAndAfter": {
+          "palimpsest.sqlite": "a124c46c520f3f9919f0eb8325bef5d3de3ba4c73d9ce905632316a7741728c5",
+          "journal.sqlite": "7b34ef8a1e9bf47fa310337ea268959d325fd020b163b1475dadf69f9cb79975"
+        },
+        "promptSha256": "8ddf0cf65d5ea460ab5921adb3ff1a9c57a062aa28c804c43687a8afed5194f4",
+        "initialStateMatched": true,
+        "attemptWorldPreflightMatched": true,
+        "toolCatalogueMatched": true,
+        "adapterFilesMatched": true,
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0"
+      },
+      "before": {
+        "cohortId": "pnwf-paid-2026-11-08-energy",
+        "sourcePromptHash": "8ddf0cf65d5ea460ab5921adb3ff1a9c57a062aa28c804c43687a8afed5194f4",
+        "baseline": {
+          "tasks": [
+            {
+              "taskId": "decision-package",
+              "state": "ACTIVE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+              "taskId": "decision-package",
+              "state": "RUNNING"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 0,
+          "episodeIntent": null,
+          "conclusion": null,
+          "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "status": ""
+        },
+        "qualification": {
+          "containerId": "2fa076a322d67bc2a13f702dc674ad7709b69f3c9868e615222d3770565661fe",
+          "descriptorDigest": "3504e00b091f5a30e99c62c9a27c9ca93c35fa43455212af47196a4ab9cafb2c",
+          "checkedAt": "2026-11-08T03:17:13.764Z",
+          "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+          "network": "none",
+          "user": "1001:1001",
+          "checks": 16,
+          "allChecksMatched": true,
+          "worlds": 1,
+          "attemptWorld": 17
+        },
+        "counts": {
+          "steps": 29,
+          "turns": 1,
+          "toolCalls": 43,
+          "pairedToolResults": 43,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 1,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 2,
+          "stateQueries": 8,
+          "commits": 0,
+          "jobs": 16
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 16,
+          "read": 13,
+          "work:status": 3,
+          "work:workers": 1,
+          "work:relay": 2,
+          "work:plan": 2,
+          "work:readiness": 1,
+          "project:overview": 1,
+          "project:journal_entries": 1,
+          "project:journal": 1,
+          "work:conclude": 1
+        },
+        "failedJobs": [],
+        "toolErrors": [
+          {
+            "callSeq": 175,
+            "resultSeq": 176,
+            "kind": "work:plan"
+          }
+        ],
+        "refusals": [
+          {
+            "callSeq": 163,
+            "resultSeq": 164,
+            "callKind": "work:relay",
+            "state": "NOT_READY",
+            "reason": "NO_SETTLEABLE_DELTA"
+          }
+        ],
+        "usage": {
+          "admittedRequests": 29,
+          "settledRequests": 29,
+          "unresolvedRequests": 0,
+          "confirmedTokens": 987987,
+          "breakdown": {
+            "input_tokens": 31412,
+            "cache_read_input_tokens": 944512,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 12063
+          },
+          "ledgerAndStreamMatchedPerRequest": 29
+        },
+        "execution": {
+          "startedAt": "2026-11-08T03:16:54.486Z",
+          "endedAt": "2026-11-08T03:19:31.538Z",
+          "durationMs": 157052,
+          "exit": {
+            "natural": true,
+            "stopped": false,
+            "kind": "NATURAL_EXIT",
+            "killedBy": null,
+            "exitCode": 0,
+            "signal": null,
+            "error": null
+          },
+          "model": "deepseek-flash",
+          "billingCeiling": null,
+          "maxRequests": 64,
+          "wallClockMs": 1800000
+        },
+        "session": {
+          "id": "session-6279ff3a-6d66-44cc-aa11-8778bbc5f7c9",
+          "cwd": "/run/stage/world",
+          "startedAt": "2026-11-08T03:17:23.782Z",
+          "endedAt": "2026-11-08T03:19:30.709Z",
+          "durationMs": 126927
+        },
+        "end": {
+          "seq": 246,
+          "step": null,
+          "offsetMs": 126927,
+          "reason": "completed"
+        },
+        "offeredToolCount": 29,
+        "relay": [
+          {
+            "call": {
+              "seq": 163,
+              "step": 17,
+              "offsetMs": 50471
+            },
+            "result": {
+              "seq": 164,
+              "step": 17,
+              "offsetMs": 51316
+            },
+            "route": "takeover",
+            "declaredAbandonment": true,
+            "state": "NOT_READY",
+            "reason": "NO_SETTLEABLE_DELTA",
+            "taskState": null,
+            "resultCommit": null
+          },
+          {
+            "call": {
+              "seq": 181,
+              "step": 20,
+              "offsetMs": 76956
+            },
+            "result": {
+              "seq": 182,
+              "step": 20,
+              "offsetMs": 78992
+            },
+            "route": "successor",
+            "declaredAbandonment": true,
+            "state": "SUCCESSOR_READY",
+            "reason": null,
+            "taskState": "READY",
+            "resultCommit": null
+          }
+        ],
+        "plan": [
+          {
+            "call": {
+              "seq": 175,
+              "step": 19,
+              "offsetMs": 75654
+            },
+            "result": {
+              "seq": 176,
+              "step": 19,
+              "offsetMs": 75675
+            },
+            "taskCount": 0,
+            "changeClass": "metadata_only",
+            "event": null,
+            "projectEventId": null,
+            "error": "quiescence_required"
+          },
+          {
+            "call": {
+              "seq": 187,
+              "step": 21,
+              "offsetMs": 80297
+            },
+            "result": {
+              "seq": 188,
+              "step": 21,
+              "offsetMs": 80339
+            },
+            "taskCount": 0,
+            "changeClass": "metadata_only",
+            "event": "PROJECT_REVISED",
+            "projectEventId": 13,
+            "error": null
+          }
+        ],
+        "retirement": {
+          "call": {
+            "seq": 187,
+            "step": 21,
+            "offsetMs": 80297
+          },
+          "result": {
+            "seq": 188,
+            "step": 21,
+            "offsetMs": 80339
+          },
+          "taskCount": 0,
+          "changeClass": "metadata_only",
+          "event": "PROJECT_REVISED",
+          "projectEventId": 13,
+          "error": null
+        },
+        "readiness": [
+          {
+            "call": {
+              "seq": 193,
+              "step": 22,
+              "offsetMs": 93261
+            },
+            "result": {
+              "seq": 194,
+              "step": 22,
+              "offsetMs": 93443
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "no task is currently addressable; plan or begin work before a finalization can be considered"
+            ]
+          }
+        ],
+        "retiredReadiness": [
+          {
+            "call": {
+              "seq": 193,
+              "step": 22,
+              "offsetMs": 93261
+            },
+            "result": {
+              "seq": 194,
+              "step": 22,
+              "offsetMs": 93443
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "no task is currently addressable; plan or begin work before a finalization can be considered"
+            ]
+          }
+        ],
+        "conclusion": [
+          {
+            "call": {
+              "seq": 239,
+              "step": 28,
+              "offsetMs": 114894
+            },
+            "result": {
+              "seq": 240,
+              "step": 28,
+              "offsetMs": 120610
+            },
+            "intent": "DELIVER",
+            "state": "RECORDED",
+            "mayEnd": true,
+            "artifacts": [
+              {
+                "path": "deliverables/technical-capacity.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "20b1dc7c7115527e05c411cedc38b6fadb1a78036bde4f0e639daa490b4b2771"
+              },
+              {
+                "path": "deliverables/vendor-compliance.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "be6ebbcbb78a30c7016fe721662093deee1a8fa1a1b9154efbb1db5aea4c8315"
+              },
+              {
+                "path": "deliverables/cost-model.json",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "7750d20afd32ce7ae7f94b5f2067c9195e7a0776ce2a3c6ea89a683c2ea2875a"
+              },
+              {
+                "path": "deliverables/schedule.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "12abefd0b6cda4c8df3ca9dca672c0e8e6b6c347e1f28a6330bca42bcad58c1a"
+              },
+              {
+                "path": "deliverables/risk-review.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "14a534863f6ff4a02823f613889aac749bec15cd6f338e69d9c4ca4858857b38"
+              },
+              {
+                "path": "deliverables/recommendation.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "fe1d8c5ba79b6b9e0d3d4f58427fe5a45d0c97de3022fde7df35c058f203de90"
+              }
+            ]
+          }
+        ],
+        "afterRetirement": {
+          "calls": [
+            {
+              "seq": 193,
+              "kind": "work:readiness",
+              "resultSeq": 194,
+              "action": "readiness"
+            },
+            {
+              "seq": 199,
+              "kind": "project:overview",
+              "resultSeq": 200,
+              "action": "overview"
+            },
+            {
+              "seq": 201,
+              "kind": "project:journal_entries",
+              "resultSeq": 202,
+              "action": "journal_entries"
+            },
+            {
+              "seq": 207,
+              "kind": "work:status",
+              "resultSeq": 208,
+              "action": "status"
+            },
+            {
+              "seq": 213,
+              "kind": "bash",
+              "resultSeq": 216
+            },
+            {
+              "seq": 217,
+              "kind": "bash",
+              "resultSeq": 220
+            },
+            {
+              "seq": 225,
+              "kind": "bash",
+              "resultSeq": 228
+            },
+            {
+              "seq": 233,
+              "kind": "project:journal",
+              "resultSeq": 234,
+              "action": "journal"
+            },
+            {
+              "seq": 239,
+              "kind": "work:conclude",
+              "resultSeq": 240,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 8,
+            "tokens": 375940
+          },
+          "toDeliverReceiptMs": 40271,
+          "toTurnEndMs": 46588
+        },
+        "afterReadiness": {
+          "calls": [
+            {
+              "seq": 199,
+              "kind": "project:overview",
+              "resultSeq": 200,
+              "action": "overview"
+            },
+            {
+              "seq": 201,
+              "kind": "project:journal_entries",
+              "resultSeq": 202,
+              "action": "journal_entries"
+            },
+            {
+              "seq": 207,
+              "kind": "work:status",
+              "resultSeq": 208,
+              "action": "status"
+            },
+            {
+              "seq": 213,
+              "kind": "bash",
+              "resultSeq": 216
+            },
+            {
+              "seq": 217,
+              "kind": "bash",
+              "resultSeq": 220
+            },
+            {
+              "seq": 225,
+              "kind": "bash",
+              "resultSeq": 228
+            },
+            {
+              "seq": 233,
+              "kind": "project:journal",
+              "resultSeq": 234,
+              "action": "journal"
+            },
+            {
+              "seq": 239,
+              "kind": "work:conclude",
+              "resultSeq": 240,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 7,
+            "tokens": 333155
+          },
+          "interveningCalls": [
+            {
+              "seq": 199,
+              "kind": "project:overview",
+              "resultSeq": 200,
+              "action": "overview"
+            },
+            {
+              "seq": 201,
+              "kind": "project:journal_entries",
+              "resultSeq": 202,
+              "action": "journal_entries"
+            },
+            {
+              "seq": 207,
+              "kind": "work:status",
+              "resultSeq": 208,
+              "action": "status"
+            },
+            {
+              "seq": 213,
+              "kind": "bash",
+              "resultSeq": 216
+            },
+            {
+              "seq": 217,
+              "kind": "bash",
+              "resultSeq": 220
+            },
+            {
+              "seq": 225,
+              "kind": "bash",
+              "resultSeq": 228
+            },
+            {
+              "seq": 233,
+              "kind": "project:journal",
+              "resultSeq": 234,
+              "action": "journal"
+            }
+          ],
+          "toDeliverCallMs": 21451,
+          "toDeliverReceiptMs": 27167,
+          "toTurnEndMs": 33484,
+          "deliverInLaterModelStep": true
+        },
+        "afterDelivery": {
+          "calls": [],
+          "usage": {
+            "requests": 1,
+            "tokens": 53321
+          },
+          "toTurnEndMs": 6317
+        },
+        "final": {
+          "tasks": [
+            {
+              "taskId": "decision-package",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+              "taskId": "decision-package",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": "DELIVER",
+          "conclusion": {
+            "seq": 4,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "intent": "DELIVER"
+          },
+          "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "status": ""
+        },
+        "facts": {
+          "completeAtMostOnce": true,
+          "episodeConclusionRecorded": true,
+          "taskRetired": true,
+          "noPromotion": true,
+          "headUnchanged": true,
+          "tokensBelowHistoricalClosure": true,
+          "sessionNaturalExit": true,
+          "tokenEvidenceQualified": true
+        },
+        "primary": true
+      },
+      "after": {
+        "cohortId": "pnwf-paid-2026-11-08-readiness-energy",
+        "sourcePromptHash": "8ddf0cf65d5ea460ab5921adb3ff1a9c57a062aa28c804c43687a8afed5194f4",
+        "baseline": {
+          "tasks": [
+            {
+              "taskId": "decision-package",
+              "state": "ACTIVE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+              "taskId": "decision-package",
+              "state": "RUNNING"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 0,
+          "episodeIntent": null,
+          "conclusion": null,
+          "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "status": ""
+        },
+        "qualification": {
+          "containerId": "31f8749606228b237080739701f2e5116a3a268bf2a3759b6b3728fef0b9ebdb",
+          "descriptorDigest": "ae13aae84f3a9952d91b83b83867f3b832f7da8718b680418e9e919fed16cc4b",
+          "checkedAt": "2026-11-08T06:01:52.198Z",
+          "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+          "network": "none",
+          "user": "1001:1001",
+          "checks": 16,
+          "allChecksMatched": true,
+          "worlds": 1,
+          "attemptWorld": 17
+        },
+        "counts": {
+          "steps": 26,
+          "turns": 1,
+          "toolCalls": 46,
+          "pairedToolResults": 46,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 2,
+          "repeatedRefusals": 1,
+          "noProgressToolCalls": 3,
+          "stateQueries": 7,
+          "commits": 0,
+          "jobs": 25
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 25,
+          "read": 9,
+          "work:status": 2,
+          "work:workers": 2,
+          "work:readiness": 2,
+          "work:relay": 3,
+          "work:plan": 1,
+          "work:conclude": 1
+        },
+        "pairedResults": [
+          {
+            "callSeq": 15,
+            "resultSeq": 16,
+            "callKind": "continuity:pulse"
+          },
+          {
+            "callSeq": 17,
+            "resultSeq": 20,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 25,
+            "resultSeq": 27,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 26,
+            "resultSeq": 28,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 29,
+            "resultSeq": 32,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 33,
+            "resultSeq": 36,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 41,
+            "resultSeq": 47,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 42,
+            "resultSeq": 48,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 43,
+            "resultSeq": 49,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 44,
+            "resultSeq": 50,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 45,
+            "resultSeq": 51,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 46,
+            "resultSeq": 52,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 57,
+            "resultSeq": 58,
+            "callKind": "read"
+          },
+          {
+            "callSeq": 59,
+            "resultSeq": 62,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 63,
+            "resultSeq": 66,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 71,
+            "resultSeq": 74,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 75,
+            "resultSeq": 78,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 79,
+            "resultSeq": 82,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 87,
+            "resultSeq": 90,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 91,
+            "resultSeq": 94,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 95,
+            "resultSeq": 98,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 103,
+            "resultSeq": 104,
+            "callKind": "work:status"
+          },
+          {
+            "callSeq": 105,
+            "resultSeq": 106,
+            "callKind": "work:workers"
+          },
+          {
+            "callSeq": 107,
+            "resultSeq": 108,
+            "callKind": "work:readiness"
+          },
+          {
+            "callSeq": 113,
+            "resultSeq": 114,
+            "callKind": "work:relay"
+          },
+          {
+            "callSeq": 119,
+            "resultSeq": 122,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 127,
+            "resultSeq": 130,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 135,
+            "resultSeq": 138,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 143,
+            "resultSeq": 146,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 151,
+            "resultSeq": 152,
+            "callKind": "work:relay"
+          },
+          {
+            "callSeq": 157,
+            "resultSeq": 160,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 161,
+            "resultSeq": 164,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 169,
+            "resultSeq": 172,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 173,
+            "resultSeq": 176,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 181,
+            "resultSeq": 184,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 189,
+            "resultSeq": 192,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 197,
+            "resultSeq": 200,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 205,
+            "resultSeq": 208,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 213,
+            "resultSeq": 216,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 221,
+            "resultSeq": 222,
+            "callKind": "work:relay"
+          },
+          {
+            "callSeq": 227,
+            "resultSeq": 228,
+            "callKind": "work:status"
+          },
+          {
+            "callSeq": 229,
+            "resultSeq": 230,
+            "callKind": "work:workers"
+          },
+          {
+            "callSeq": 231,
+            "resultSeq": 232,
+            "callKind": "work:readiness"
+          },
+          {
+            "callSeq": 237,
+            "resultSeq": 238,
+            "callKind": "work:plan"
+          },
+          {
+            "callSeq": 243,
+            "resultSeq": 246,
+            "callKind": "bash"
+          },
+          {
+            "callSeq": 251,
+            "resultSeq": 252,
+            "callKind": "work:conclude"
+          }
+        ],
+        "failedJobs": [
+          {
+            "jobId": "bash-7f09365872704eab",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_00_Fdi5GB7Xz3jnwXtAJuxK5358",
+            "callSeq": 197,
+            "callKind": "bash",
+            "resultSeq": null,
+            "settledSeq": 199,
+            "durationMs": 516,
+            "pairedResultSeq": 200
+          }
+        ],
+        "toolErrors": [],
+        "refusals": [
+          {
+            "callSeq": 113,
+            "resultSeq": 114,
+            "callKind": "work:relay",
+            "state": "REFUSED",
+            "reason": null,
+            "detail": "worktree attempt attempt-60deb0da1450b6f4e8028f3d4adaf0c5 changed paths outside the task envelope's write_paths [deliverables, updates]: .gitignore, README.md, TASK.md, check.mjs, package.json, sources/capacity.csv, sources/leads.csv, sources/quotes.csv, sources/sites.md, sources/vendors.md — revert them or revise the plan with palimpsest_plan"
+          },
+          {
+            "callSeq": 151,
+            "resultSeq": 152,
+            "callKind": "work:relay",
+            "state": "REFUSED",
+            "reason": null,
+            "detail": "worktree attempt attempt-60deb0da1450b6f4e8028f3d4adaf0c5 changed paths outside the task envelope's write_paths [deliverables, updates]: .gitignore, README.md, TASK.md, check.mjs, package.json, sources/capacity.csv, sources/leads.csv, sources/quotes.csv, sources/sites.md, sources/vendors.md — revert them or revise the plan with palimpsest_plan"
+          }
+        ],
+        "usage": {
+          "admittedRequests": 26,
+          "settledRequests": 26,
+          "unresolvedRequests": 0,
+          "confirmedTokens": 1067927,
+          "breakdown": {
+            "input_tokens": 34172,
+            "cache_read_input_tokens": 1018880,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 14875
+          },
+          "ledgerAndStreamMatchedPerRequest": 26,
+          "requests": [
+            {
+              "ordinal": 1,
+              "assistantMessageSeq": 14,
+              "step": 1,
+              "id": "928b4143-058b-4ae2-be00-591698a564e3",
+              "requestDigest": "15b9bf03d685b20cdb05d55586e9b0655f536d255c37b3af5b4a816f32bf6f66",
+              "tokens": 11829,
+              "usage": {
+                "input_tokens": 202,
+                "cache_read_input_tokens": 11520,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 107
+              }
+            },
+            {
+              "ordinal": 2,
+              "assistantMessageSeq": 24,
+              "step": 2,
+              "id": "994b0569-0b8e-46fe-afc7-644b4168e72f",
+              "requestDigest": "7879c04dd0b996adc10eec134322ff3b507b97fbb6275fec9825fc41bebec554",
+              "tokens": 13895,
+              "usage": {
+                "input_tokens": 1844,
+                "cache_read_input_tokens": 11776,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 275
+              }
+            },
+            {
+              "ordinal": 3,
+              "assistantMessageSeq": 40,
+              "step": 3,
+              "id": "ee1bb059-7a2f-4e93-b31b-6ae9b63a1f19",
+              "requestDigest": "19cd74e350c140d805195a220a6c4ccec0c032b2d5da8894ca6c95fd1d68aab0",
+              "tokens": 17033,
+              "usage": {
+                "input_tokens": 2796,
+                "cache_read_input_tokens": 13824,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 413
+              }
+            },
+            {
+              "ordinal": 4,
+              "assistantMessageSeq": 56,
+              "step": 4,
+              "id": "daeae035-37f6-4ce5-9d4c-84c07453f32d",
+              "requestDigest": "2099281de4395d41841138e8d6cd85808863175a36f1bbce858df8dfa942e447",
+              "tokens": 18327,
+              "usage": {
+                "input_tokens": 1028,
+                "cache_read_input_tokens": 17024,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 275
+              }
+            },
+            {
+              "ordinal": 5,
+              "assistantMessageSeq": 70,
+              "step": 5,
+              "id": "238412df-7b2a-45c9-9c02-b63b7ac90dd5",
+              "requestDigest": "8e9b5de9528e94e2695fa45b8d58fa266def1208875814c77c4a483123a79fbe",
+              "tokens": 30378,
+              "usage": {
+                "input_tokens": 11687,
+                "cache_read_input_tokens": 18304,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 387
+              }
+            },
+            {
+              "ordinal": 6,
+              "assistantMessageSeq": 86,
+              "step": 6,
+              "id": "efad943b-b888-4ceb-a5cc-77122962e0c5",
+              "requestDigest": "73b04f8b77cb95f7bac3b33fab3ea9acf9eef9bb912a3e0b746b38b8dfd3dcec",
+              "tokens": 32404,
+              "usage": {
+                "input_tokens": 777,
+                "cache_read_input_tokens": 30336,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 1291
+              }
+            },
+            {
+              "ordinal": 7,
+              "assistantMessageSeq": 102,
+              "step": 7,
+              "id": "9472e88c-1f5e-4b98-a61a-3f968b8a5a79",
+              "requestDigest": "0cdfec2ade33513f0b57fdad4688a4b620addf8a63ca968ffbd1e93658d52eab",
+              "tokens": 35715,
+              "usage": {
+                "input_tokens": 968,
+                "cache_read_input_tokens": 32384,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 2363
+              }
+            },
+            {
+              "ordinal": 8,
+              "assistantMessageSeq": 112,
+              "step": 8,
+              "id": "672368a8-9df5-4872-ab3d-3ab75ecc82b5",
+              "requestDigest": "69fea9422330e7fb57fed8f5b23ffc46e25bcd521e90419ad35ac50eb87d8b88",
+              "tokens": 41292,
+              "usage": {
+                "input_tokens": 2391,
+                "cache_read_input_tokens": 35712,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 3189
+              }
+            },
+            {
+              "ordinal": 9,
+              "assistantMessageSeq": 118,
+              "step": 9,
+              "id": "e18279dc-d1ea-418a-afb8-761ce2230d94",
+              "requestDigest": "0e5eddafa7ab1c44af0bc65f17e5399d69a010129e8928cf2f283474ca0d7668",
+              "tokens": 42011,
+              "usage": {
+                "input_tokens": 334,
+                "cache_read_input_tokens": 41216,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 461
+              }
+            },
+            {
+              "ordinal": 10,
+              "assistantMessageSeq": 126,
+              "step": 10,
+              "id": "fd6bb1aa-41b1-466e-844e-c894fe02271d",
+              "requestDigest": "b40d618c7c6553e40ebb656d69eae5c99b2f71344360b98c7b1330fd598ffe51",
+              "tokens": 42483,
+              "usage": {
+                "input_tokens": 192,
+                "cache_read_input_tokens": 41984,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 307
+              }
+            },
+            {
+              "ordinal": 11,
+              "assistantMessageSeq": 134,
+              "step": 11,
+              "id": "dd05acf9-457f-4105-8502-2045b2613446",
+              "requestDigest": "0c0d88ebf90586833463b7efb9be9d915f20ab3f96146e5fb0187c27750b6881",
+              "tokens": 42687,
+              "usage": {
+                "input_tokens": 158,
+                "cache_read_input_tokens": 42368,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 161
+              }
+            },
+            {
+              "ordinal": 12,
+              "assistantMessageSeq": 142,
+              "step": 12,
+              "id": "bbd45a45-9350-4628-873e-ba33343f6f10",
+              "requestDigest": "7507a4861caa53b6ce7d03bd5599935104568656dc83263652d48dce01866509",
+              "tokens": 43196,
+              "usage": {
+                "input_tokens": 380,
+                "cache_read_input_tokens": 42624,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 192
+              }
+            },
+            {
+              "ordinal": 13,
+              "assistantMessageSeq": 150,
+              "step": 13,
+              "id": "a46ff0f6-65c6-49b0-bbb2-4ed6d7e77633",
+              "requestDigest": "31a99746a252faea4bf376266f69c3dd23cd88d1cab16f4f99bdec1fead4dff6",
+              "tokens": 43340,
+              "usage": {
+                "input_tokens": 248,
+                "cache_read_input_tokens": 43008,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 84
+              }
+            },
+            {
+              "ordinal": 14,
+              "assistantMessageSeq": 156,
+              "step": 14,
+              "id": "df39a53a-d32c-466d-a1ad-3ae87a4d8bbe",
+              "requestDigest": "105b260a840f9914c3f3706b836583e513da7c7b7af712d73f8c1180c93b008c",
+              "tokens": 43943,
+              "usage": {
+                "input_tokens": 334,
+                "cache_read_input_tokens": 43264,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 345
+              }
+            },
+            {
+              "ordinal": 15,
+              "assistantMessageSeq": 168,
+              "step": 15,
+              "id": "99b08bd0-bf9c-4f60-adfd-203b71f11f6a",
+              "requestDigest": "9220635a59415242265b7700c35e61f2b112837e3b1042825f1cc1d0faf82c71",
+              "tokens": 45266,
+              "usage": {
+                "input_tokens": 814,
+                "cache_read_input_tokens": 43904,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 548
+              }
+            },
+            {
+              "ordinal": 16,
+              "assistantMessageSeq": 180,
+              "step": 16,
+              "id": "2cba9b4a-f4b6-4b0f-b9f8-0bd4c3c074ce",
+              "requestDigest": "0dae720d960a0d70d8863620835a40d03b9f51b829bc96fb589fb2f875ca9784",
+              "tokens": 45758,
+              "usage": {
+                "input_tokens": 305,
+                "cache_read_input_tokens": 45184,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 269
+              }
+            },
+            {
+              "ordinal": 17,
+              "assistantMessageSeq": 188,
+              "step": 17,
+              "id": "2dd0e751-6b5b-47a5-81b9-87c86907708b",
+              "requestDigest": "b3036d40119365c4309b9f5fa0852dc8c0a6e53716d13e0c106fa6a1ccbc4f2d",
+              "tokens": 47625,
+              "usage": {
+                "input_tokens": 1385,
+                "cache_read_input_tokens": 45696,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 544
+              }
+            },
+            {
+              "ordinal": 18,
+              "assistantMessageSeq": 196,
+              "step": 18,
+              "id": "24f02a88-7ea6-46fe-b390-584cc71fee01",
+              "requestDigest": "f79dd6330e54720062514afa8682890ff97dcef1a3598d20f387cc452a8fd4de",
+              "tokens": 49000,
+              "usage": {
+                "input_tokens": 988,
+                "cache_read_input_tokens": 47616,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 396
+              }
+            },
+            {
+              "ordinal": 19,
+              "assistantMessageSeq": 204,
+              "step": 19,
+              "id": "1283e52c-2e64-4ce0-b320-157f7c1567c7",
+              "requestDigest": "3689d8a0a56c565f9468ff6c6369ad615603c598dee50920593b93d7a3292184",
+              "tokens": 49443,
+              "usage": {
+                "input_tokens": 324,
+                "cache_read_input_tokens": 48896,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 223
+              }
+            },
+            {
+              "ordinal": 20,
+              "assistantMessageSeq": 212,
+              "step": 20,
+              "id": "2539bd27-fa81-4f40-9acb-6cdba68cd9ca",
+              "requestDigest": "cf3106a233e2cd076b559df23c80dbdc5790d8ddf43d97894e8765a9361581e7",
+              "tokens": 50282,
+              "usage": {
+                "input_tokens": 257,
+                "cache_read_input_tokens": 49280,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 745
+              }
+            },
+            {
+              "ordinal": 21,
+              "assistantMessageSeq": 220,
+              "step": 21,
+              "id": "036a218c-7bcf-4bc3-ad26-cdd1029e2137",
+              "requestDigest": "4420737926b02793fe279af649d3380c22822e13b04f2720254af058ab317382",
+              "tokens": 50572,
+              "usage": {
+                "input_tokens": 303,
+                "cache_read_input_tokens": 50176,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 93
+              }
+            },
+            {
+              "ordinal": 22,
+              "assistantMessageSeq": 226,
+              "step": 22,
+              "id": "082bfa03-279e-4df3-b66d-4212dc1530cf",
+              "requestDigest": "efc6a21fa19bc67aa4f8989026f7307c396c731cc493b0ef671c02717b2ffcb1",
+              "tokens": 51234,
+              "usage": {
+                "input_tokens": 500,
+                "cache_read_input_tokens": 50560,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 174
+              }
+            },
+            {
+              "ordinal": 23,
+              "assistantMessageSeq": 236,
+              "step": 23,
+              "id": "e22be1ae-f125-46b7-ae98-7d9bcee9dd4e",
+              "requestDigest": "4949fd9dfdb823c3fd667c1c931b894c747f80d534d93aae7c1cf9546b2cc484",
+              "tokens": 52792,
+              "usage": {
+                "input_tokens": 1220,
+                "cache_read_input_tokens": 51200,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 372
+              }
+            },
+            {
+              "ordinal": 24,
+              "assistantMessageSeq": 242,
+              "step": 24,
+              "id": "a64eb0d4-6a3a-43e0-a97f-5e0b4fa732e0",
+              "requestDigest": "5ad5d5123366e1b9e9155de8a628ea42301b89fb73d119bcebc62c84a2faa296",
+              "tokens": 53826,
+              "usage": {
+                "input_tokens": 685,
+                "cache_read_input_tokens": 52736,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 405
+              }
+            },
+            {
+              "ordinal": 25,
+              "assistantMessageSeq": 250,
+              "step": 25,
+              "id": "bb22daab-370a-43fa-b215-151058b771c0",
+              "requestDigest": "5c28c686b383fbd980d557713e529b86f53cda26de9cf7ef4e8e9e35ae79b935",
+              "tokens": 54578,
+              "usage": {
+                "input_tokens": 421,
+                "cache_read_input_tokens": 53760,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 397
+              }
+            },
+            {
+              "ordinal": 26,
+              "assistantMessageSeq": 256,
+              "step": 26,
+              "id": "67223f34-2cba-4bf3-8d93-5c40af443dd5",
+              "requestDigest": "aeaf45169b2c4ecc4b27c74932a653dfcca144f22bd2770d2cc1e7dd02dc5ed2",
+              "tokens": 59018,
+              "usage": {
+                "input_tokens": 3631,
+                "cache_read_input_tokens": 54528,
+                "cache_creation_input_tokens": 0,
+                "output_tokens": 859
+              }
+            }
+          ]
+        },
+        "execution": {
+          "startedAt": "2026-11-08T06:01:36.186Z",
+          "endedAt": "2026-11-08T06:04:37.198Z",
+          "durationMs": 181012,
+          "exit": {
+            "natural": true,
+            "stopped": false,
+            "kind": "NATURAL_EXIT",
+            "killedBy": null,
+            "exitCode": 0,
+            "signal": null,
+            "error": null
+          },
+          "model": "deepseek-flash",
+          "billingCeiling": null,
+          "maxRequests": 64,
+          "wallClockMs": 1800000
+        },
+        "session": {
+          "id": "session-ed6bc091-bb19-4a41-8ff2-25842c54d30d",
+          "cwd": "/run/stage/world",
+          "startedAt": "2026-11-08T06:02:06.134Z",
+          "endedAt": "2026-11-08T06:04:36.160Z",
+          "durationMs": 150026
+        },
+        "end": {
+          "seq": 258,
+          "step": null,
+          "offsetMs": 150026,
+          "reason": "completed"
+        },
+        "offeredToolCount": 29,
+        "relay": [
+          {
+            "call": {
+              "seq": 113,
+              "step": 8,
+              "offsetMs": 67238
+            },
+            "result": {
+              "seq": 114,
+              "step": 8,
+              "offsetMs": 70840
+            },
+            "route": "successor",
+            "declaredAbandonment": false,
+            "state": "REFUSED",
+            "reason": null,
+            "taskState": null,
+            "resultCommit": null
+          },
+          {
+            "call": {
+              "seq": 151,
+              "step": 13,
+              "offsetMs": 84176
+            },
+            "result": {
+              "seq": 152,
+              "step": 13,
+              "offsetMs": 87711
+            },
+            "route": "successor",
+            "declaredAbandonment": false,
+            "state": "REFUSED",
+            "reason": null,
+            "taskState": null,
+            "resultCommit": null
+          },
+          {
+            "call": {
+              "seq": 221,
+              "step": 21,
+              "offsetMs": 115639
+            },
+            "result": {
+              "seq": 222,
+              "step": 21,
+              "offsetMs": 119441
+            },
+            "route": "successor",
+            "declaredAbandonment": false,
+            "state": "SUCCESSOR_READY",
+            "reason": null,
+            "taskState": "READY",
+            "resultCommit": null
+          }
+        ],
+        "plan": [
+          {
+            "call": {
+              "seq": 237,
+              "step": 23,
+              "offsetMs": 125690
+            },
+            "result": {
+              "seq": 238,
+              "step": 23,
+              "offsetMs": 125745
+            },
+            "taskCount": 0,
+            "changeClass": "metadata_only",
+            "event": "PROJECT_REVISED",
+            "projectEventId": 13,
+            "error": null
+          }
+        ],
+        "retirement": {
+          "call": {
+            "seq": 237,
+            "step": 23,
+            "offsetMs": 125690
+          },
+          "result": {
+            "seq": 238,
+            "step": 23,
+            "offsetMs": 125745
+          },
+          "taskCount": 0,
+          "changeClass": "metadata_only",
+          "event": "PROJECT_REVISED",
+          "projectEventId": 13,
+          "error": null
+        },
+        "readiness": [
+          {
+            "call": {
+              "seq": 107,
+              "step": 7,
+              "offsetMs": 45732
+            },
+            "result": {
+              "seq": 108,
+              "step": 7,
+              "offsetMs": 47738
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "the world still has uncommitted changes (.gitignore, README.md, TASK.md, check.mjs, deliverables/cost-model.json, deliverables/recommendation.md, deliverables/risk-review.md, deliverables/schedule.md, deliverables/technical-capacity.md, deliverables/vendor-compliance.md, package.json, sources/capacity.csv, sources/leads.csv, sources/quotes.csv, sources/sites.md, sources/vendors.md, updates/2026-11-04/corridor-survey.md); commit them or discard them before finalizing. The world HEAD being at the basis does not mean there is no work"
+            ]
+          },
+          {
+            "call": {
+              "seq": 231,
+              "step": 22,
+              "offsetMs": 122562
+            },
+            "result": {
+              "seq": 232,
+              "step": 22,
+              "offsetMs": 122872
+            },
+            "action": "CONTINUE_WORK",
+            "explicitDeliverHint": false,
+            "next": [
+              "continue the actual work",
+              "re-read readiness after the world moves"
+            ],
+            "reasons": [
+              "no task is currently addressable; plan or begin work before a finalization can be considered"
+            ]
+          }
+        ],
+        "retiredReadiness": [],
+        "conclusion": [
+          {
+            "call": {
+              "seq": 251,
+              "step": 25,
+              "offsetMs": 131892
+            },
+            "result": {
+              "seq": 252,
+              "step": 25,
+              "offsetMs": 143759
+            },
+            "intent": "DELIVER",
+            "state": "RECORDED",
+            "mayEnd": true,
+            "artifacts": [
+              {
+                "path": "deliverables/technical-capacity.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "20b1dc7c7115527e05c411cedc38b6fadb1a78036bde4f0e639daa490b4b2771"
+              },
+              {
+                "path": "deliverables/vendor-compliance.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "be6ebbcbb78a30c7016fe721662093deee1a8fa1a1b9154efbb1db5aea4c8315"
+              },
+              {
+                "path": "deliverables/cost-model.json",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "7750d20afd32ce7ae7f94b5f2067c9195e7a0776ce2a3c6ea89a683c2ea2875a"
+              },
+              {
+                "path": "deliverables/schedule.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "12abefd0b6cda4c8df3ca9dca672c0e8e6b6c347e1f28a6330bca42bcad58c1a"
+              },
+              {
+                "path": "deliverables/risk-review.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "14a534863f6ff4a02823f613889aac749bec15cd6f338e69d9c4ca4858857b38"
+              },
+              {
+                "path": "deliverables/recommendation.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "fe1d8c5ba79b6b9e0d3d4f58427fe5a45d0c97de3022fde7df35c058f203de90"
+              },
+              {
+                "path": "updates/2026-11-04/corridor-survey.md",
+                "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+                "committed": true,
+                "tracked": true,
+                "present": true,
+                "digest": "80ba9aceb77436022c77de6a26532521c26f9e837a8d85804bbca2ce82c75b86"
+              }
+            ]
+          }
+        ],
+        "afterRetirement": {
+          "calls": [
+            {
+              "seq": 243,
+              "kind": "bash",
+              "resultSeq": 246
+            },
+            {
+              "seq": 251,
+              "kind": "work:conclude",
+              "resultSeq": 252,
+              "action": "conclude"
+            }
+          ],
+          "usage": {
+            "requests": 3,
+            "tokens": 167422
+          },
+          "toDeliverReceiptMs": 18014,
+          "toTurnEndMs": 24281
+        },
+        "afterReadiness": null,
+        "afterDelivery": {
+          "calls": [],
+          "usage": {
+            "requests": 1,
+            "tokens": 59018
+          },
+          "toTurnEndMs": 6267
+        },
+        "final": {
+          "tasks": [
+            {
+              "taskId": "decision-package",
+              "state": "STALE"
+            }
+          ],
+          "attempts": [
+            {
+              "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+              "taskId": "decision-package",
+              "state": "CANCELLED"
+            }
+          ],
+          "promotions": 0,
+          "promotionCommitted": 0,
+          "projectRevised": 1,
+          "episodeIntent": "DELIVER",
+          "conclusion": {
+            "seq": 3,
+            "type": "JOURNAL_ENTRY_RECORDED",
+            "intent": "DELIVER"
+          },
+          "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+          "status": ""
+        },
+        "facts": {
+          "completeAtMostOnce": true,
+          "episodeConclusionRecorded": true,
+          "taskRetired": true,
+          "noPromotion": true,
+          "headUnchanged": true,
+          "tokensBelowHistoricalClosure": true,
+          "sessionNaturalExit": true,
+          "tokenEvidenceQualified": true
+        },
+        "primary": true
+      },
+      "deliveryAdoption": {
+        "status": "NOT_EXERCISED",
+        "postRetirementReadinessCalls": 0,
+        "recordedDeliver": true,
+        "exit": "NATURAL_EXIT"
+      },
+      "additionalDeliveredPaths": [
+        "updates/2026-11-04/corridor-survey.md"
+      ],
+      "delta": {
+        "admittedRequests": -3,
+        "totalTokens": 79940,
+        "totalTokensPercent": 8.091199580561282,
+        "breakdown": {
+          "input_tokens": 2760,
+          "cache_read_input_tokens": 74368,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2812
+        },
+        "toolCalls": 3,
+        "wallMs": 23960,
+        "dshTurnMs": 23099,
+        "beforeRetirementMs": 45406,
+        "afterRetirementMs": -22307,
+        "postRetirementCalls": -7,
+        "postRetirementRequests": -5,
+        "postRetirementTokens": -208518
+      },
+      "rawLocalTrial": ".aps-tmp/pnwf-paid-2026-11-08-readiness-energy",
+      "rawHashes": {
+        "cohort.json": "4efc7a6a66b45ba4b245d2608f7b37068e896a4c31b7dbad63e0ecdf76279b77",
+        "prompts/energy.txt": "8ddf0cf65d5ea460ab5921adb3ff1a9c57a062aa28c804c43687a8afed5194f4",
+        "out/baseline.json": "f1e198535cd6bbf5c86aea7f3ae13faf6da6e55d606da880099a2b2a9f1f94be",
+        "out/score.json": "0e1f975a4897f210552935dab4fa42a8d1434fd6557955453acedff0c86b2918",
+        "out/attribution/energy-0.timeline.json": "ab3fd64bd85f45f9396b128de80290a027b99ad73c0f61d9517f737a65e6517e",
+        "out/energy/qualification.json": "ce83797d8f41ec31ce9cd2a5821fb09eaeab0f02260f2be23f90973e9ace7417",
+        "out/energy/run.json": "c9b7cf4a4190b61e3a2d13d05c7418b344b134cee51b689fbf2fef1e8873dba9",
+        "out/energy/request-accounting.json": "25fa07cd1e20fab5912c55cbe931139eb13c00e989b299d4cca30f939284bef4",
+        "runtime-energy/sessions/--run-stage-world--/session-ed6bc091-bb19-4a41-8ff2-25842c54d30d/session.v4.jsonl.zstd": "37c506d21af16f3ad9eed54569de27c11be9d58b6f7d23b81977020f72e0cf43",
+        "core.json": "d68cb92e67a2b5b96079b3707ba9fe082e24a70fa92e1d24d9588a0735529a07",
+        "out/attribution/energy-0.timeline.md": "fc1388cc4b634ef174bc7d2ff15e91f034048a96878f7df6a7d6dddaba1ad101",
+        "out/energy/budget.json": "a835226b74843d8493ad036f49a99bb69380ca28739b8e39eed39f5fcc995084",
+        "out/energy/run.log": "61e22a63e0cea9f53c08af5a3b179fb9a528f0c6f993fc514bd25d2ece2ba59b",
+        "out/energy/run.err": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "out/gate/start-energy.json": "2630237a541cc849119f33f365062844eb841af9fbf784def05c0b6eb6bdef3e",
+        "out/gate/end-energy.json": "3344c1c98c3e389a7a6687cd71d5603691201eea5f581573c9936de5fc54c253",
+        "request-usage.sqlite": "d56eee3e3ba94bc70a9405e721a934055f17c9746e76daa80a2ebaaf52b508b7",
+        "stages/energy/state/palimpsest.sqlite": "1e235600ebc5cf3627af0010f1913218541b36cab72b47e938d185867e5a0f57",
+        "stages/energy/state/journal.sqlite": "72071bd9aaa4dd48f951f962abcc23788434216270b9a835fb17e623359f47d4"
+      }
+    }
+  }
+}
