@@ -10,8 +10,8 @@ permanent branch: main
 retained working branches: none
 ```
 
-The November consolidation uses one transient branch for the integration and this audit.
-GitHub deletes that head after the PR merges.
+The November consolidation used one transient branch for the integration and this audit.
+GitHub deleted that head after the PR merged.
 
 ## 2026-11-08 consolidation
 
@@ -36,6 +36,10 @@ git fetch <bundle> refs/heads/<archived-name>:refs/heads/<recovery-name>
 ```
 
 The earlier RS-1 census remains in [the historical inventory](BRANCH-INVENTORY-AFTER.md).
+
+The November 8 attribution rewrite followed this census. The inventory and recovery bundle
+record the original refs. Look up a full original commit SHA to find the same file tree on
+current `main`. [Commit map](../../../repository-audit/main-rewrite-2026-11-08.tsv)
 
 ## When this file changes
 
