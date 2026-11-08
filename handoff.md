@@ -245,6 +245,8 @@ Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。�
 
 PR #239 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,985 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与 package-smoke 通过。D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 的 R1-H 为 17 PASS，R1-HR 为 45 PASS / 2 LIMIT，R1-HC 为 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42463960362) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42463960372) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42463960477)
 
+`00c5f46` 的主线 CI 与 handoff PR #240 的首个提交均在 `package-smoke` 下游安装时遇到 Ordarium 发布包下载 HTTP 504。现有三次安装尝试已把 pnpm 的 `ERR_PNPM_FETCH_504` 纳入可重试错误，验收仍要求真实安装成功并验证公共入口。404 等确定性解析错误继续直接报错。[主线失败日志](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42464959904) · [PR 首次失败日志](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42465099471)
+
 PR #237 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,985 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 和 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 的 R1-H 为 17 PASS，R1-HR 为 45 PASS / 2 LIMIT，R1-HC 为 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082427) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082437) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082407)
 
 PR #234 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,981 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 通过，R1-H 17 PASS，R1-HR 45 PASS / 2 LIMIT，R1-HC 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214180) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214270) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214078)
@@ -451,6 +453,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-08 | 合并复跑证据、修复前后对比报告和 handoff，同步实际合并提交与检查 | [PR #237](https://github.com/orangeofcarl0-sys/palimpsest/pull/237)，`987bab0` | 14/14 CI job 首次通过，四个外部 DSH gate 步骤跳过 |
 | 2026-11-08 | 从已退役、尚无交付的状态定向观察新提示采用 | [定向观察证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json) | 2/2 首查、2/2 后续 DELIVER 与自然退出，30 个请求、756,492 tokens |
 | 2026-11-08 | 合并 readiness 定向观察证据、报告和 handoff，补录实际合并提交与 CI | [PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)，`00c5f46` | 14/14 CI job 首次通过，四个外部 DSH gate 步骤跳过 |
+| 2026-11-08 | 同步发布 handoff 并补齐 `package-smoke` 的 HTTP 504 重试 | [PR #240](https://github.com/orangeofcarl0-sys/palimpsest/pull/240)，`scripts/release/consumer-smoke.mjs` | Ordarium 发布包下载 504 使用原三次尝试上限，真实下游安装为通过条件 |
 
 ---
 
