@@ -8,18 +8,19 @@
 ## 0. 30 秒版本
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
-- 最近同步的正式主线：`origin/main` = **`b7460f3785406ba8ad3c1a4a5f19f275a38813ad`**（PR #230 合并，本次 handoff 同步的起点）。
+- 最近同步的正式主线 `origin/main` 为 **`4d5d9704e902d33b1380bf5a1df85dc39541935b`**（PR #231 合并，本轮开发起点）。
   接手时先运行 `git rev-parse origin/main`，以实际值为准；不要把本行当成永久基线。
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
-- 本轮修复已通过 [PR #230](https://github.com/orangeofcarl0-sys/palimpsest/pull/230) 合并；原分支 `codex/project-takeover-20261107` 已完成。本次交接同步分支为 `codex/pnwf-r1-release-handoff`。新工作从确认的主线开分支：
+- R1 修复和交接已通过 #230、#231 合并。当前工作分支 `codex/pnwf-paid-usage-only` 从该主线开始。新工作从确认的主线开分支。
   ```bash
   git fetch origin
   git switch -c codex/<your-branch> origin/main
   ```
 - 最近完成：PNWF-CQ-R1 请求前预算预留、实际容器/World 资格、Mock 身份隔离、Operator/Head 最终复核、Direct→真实子进程 Worker→Settlement→Promotion→依赖续作。
 - PR #230 的 14 个 CI job 首次运行全部成功：Linux 4,981 PASS / 33 SKIP、E2E 38/38、预算故障 20/20、Windows Host Boundary 通过。四个依赖外部 Host 的 gate 按既有环境条件跳过执行，不属于实测通过；详见 §5。
-- **旧付费预算已耗尽且超支；owner 于 2026-11-07 已新授权启动付费模型调用。** 授权保留，但真实 Provider 上界尚未获技术资格，当前 runner 仍拒绝 paid execution。详见 §6。
-- 当前 **所有 paid Provider 均未取得可执行单次计费上界资格，runner 明确拒绝付费执行**。20 项预算故障测试与 6 组真实 DSH 容器实验通过，只证明 Mock 合同；不能据此开启 paid cohort。
+- Owner 于 2026-11-07 授权付费调用，2026-11-08 允许不设计费上限。本轮使用显式 `paid-usage-only` 模式，按终态 usage 记账并保留实际容器资格要求。历史 5M cohort 的结果和本轮实验范围见 §6。
+- 2026-11-08 software 续作自然退出，27 个真实请求全部结算，共 982,857 tokens。记录 DELIVER，三项旧任务退役，HEAD 保持起始提交，promotion 为 0。主判据 1/1。
+- 软件轨迹重算配对 31/31 个结果，两次 `NOT_READY` 原因分别为 `UNCOMMITTED_WORK` 和 `NO_SETTLEABLE_DELTA`。失败探针作业 1 次，同因重复拒绝 0 次，无进展调用 3 次。[重算证据](research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json)
 
 ---
 
@@ -42,15 +43,16 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-07，最近同步）
+## 2. 当前 Git / 分支状态（2026-11-08，最近同步）
 
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 以 `git rev-parse origin/main` 为准；最近同步 `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`（PR #230 merge） |
+| `origin/main` | 以 `git rev-parse origin/main` 为准，最近同步 `4d5d9704e902d33b1380bf5a1df85dc39541935b` |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
-| 交付分支 | 产品分支 `codex/project-takeover-20261107` 已合并；`codex/pnwf-r1-release-handoff` 从该合并点同步交接与 CI 证据 |
+| PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
+| 交付分支 | `codex/pnwf-paid-usage-only`，按量记账续作与轨迹归因修复 |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -171,7 +173,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 - `scripts/pnwf/prepare_continuation.mjs` — 复制 recorded state + 相对 alternates
 - `scripts/pnwf/score_continuation.mjs` — 机械评分（stream/ledger/exit/domain refusals）
 - `scripts/psvr/session_attribution.mjs` — 逐调用归因
-- `scripts/pnwf/execution_budget.mjs` / `bounded_provider.mjs` — 请求前 session/cohort 预留、终态结算、未知保留；当前只接受明确 Mock 合同
+- `scripts/pnwf/execution_budget.mjs` / `bounded_provider.mjs` — 硬预算 Mock 预留与显式付费按量记账。请求先登记，终态结算，未知保留并停止准入
 - `scripts/pnwf/container_runtime.mjs` / `container_bridge.mjs` / `world_preflight.mjs` — 本次实际容器资格、network=none 的固定 stdio 出口、World 验证
 - `scripts/pnwf/qualify_execution.mjs` / `qualification.test.mjs` — 真实容器六场景与 20 项轻量故障测试
 - `scripts/lhape/provider_proxy_tcp.mjs` — 兼容文件名，旧凭证环境启动方式现已拒绝；不能继续无预算转发
@@ -213,6 +215,10 @@ node node_modules/vitest/vitest.mjs run test/pc1v1_operator_identity.test.ts tes
 ```
 
 结果：20/20 请求故障测试；6/6 实际容器场景；16/16 实例 canary。容器复现需要现存 PSVR recorded sources 和本地 image；不自动下载或伪造源数据。可用镜像 digest：`sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0`。
+
+2026-11-08 的本地按量记账验证通过 24/24 请求测试（原 20 项和新增 4 项）、6/6 零付费容器场景、build、architecture 与 public API 检查。Mock 与付费容器使用相同镜像及 adapter 文件摘要。实际付费容器通过 16/16 canary 和复制 World 预检。[机器证据](research-evidence/pnwf-cq-paid/2026-11-08/software.json)
+
+轨迹归因修复后，4/4 归因测试及 24/24 请求测试通过。CI unit job 运行 `node --test scripts/psvr/session_attribution.test.mjs`。真实轨迹离线重算通过 8 个原始文件的摘要验证，原始计量和产品事实与重算一致。评分器的 `--out` 与 `--attribution-dir` 可为重算指定独立目录。[重算证据](research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json)
 
 轻量请求故障测试已接入 CI unit job。PR #230 在 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051` 上的三套工作流、14 个 job 首次运行全部成功，无需重跑或放宽断言。2026-11-07 全绿后合并为 `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`。
 
@@ -273,9 +279,13 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
-### 当前状态：旧预算超支；新授权已收到，技术资格仍未满足
+### 本轮按量记账
 
-Owner 在本轮发布指令中明确表示“授权启动付费模型调用”（2026-11-07）。这是一项新的有效授权，不应再次请求同一权限；没有据此将旧 5M 额度恢复或把历史 cohort 改判有效。当前指令未指定新 cohort 的量化 ceiling，尚未初始化任何 paid ledger。发布/CI 工作不需要模型调用，本轮新增 paid calls 仍为 0。实际启动前仍需落实具体可执行预算和 Provider 技术资格。
+Owner 于 2026-11-07 表示“授权启动付费模型调用”，于 2026-11-08 补充“不设计费上限，或仅设置宽松”。本轮采用 `--mode=paid-usage-only`，金额与 token 总量上限为 `null`。实验范围为一条 software 续作，最多 64 次请求和 30 分钟，由新账本记录 DeepSeek 终态用量。具体执行与复现见 [本轮报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)。
+
+Software 续作实际执行 4 分 51 秒，27 个请求全部结算，共 982,857 tokens（fresh input 33,921，cache read 934,912，cache creation 0，output 14,024），逐请求与 DSH 轨迹一致。记录 DELIVER、任务退役及原 Attempt 取消，HEAD 保持起始提交，promotion 为 0，主判据 1/1。
+
+### 2026-11-07 历史 cohort
 
 | 项 | tokens |
 |---|---:|
@@ -294,15 +304,12 @@ Owner 在本轮发布指令中明确表示“授权启动付费模型调用”�
 - 证据：`research-evidence/pnwf-cq/live/2026-11-07/`。
 - PNWF-CQ-R1 新增付费调用 **0**；历史金额、INVALID 裁定和原始证据不变。
 
-### 下次付费实验的前置条件（全部满足才可）
+### 执行条件
 
-1. 具体真实 Provider/模型/兼容路径取得**可执行的单次输入与输出计费上界**。当前没有，所有 paid 执行被代码拒绝。末尾 usage 后再 429 不构成硬上界；定时 watchdog 也不是。
-2. 每个请求先持久预留 session/cohort 额度，pending 全计入；未知 usage 保留预留并停止后续 session。当前实现只在确定性 Mock 合同下完成资格。
-3. 新的 owner 付费授权已经在 2026-11-07 收到。实际运行需把具体 session/cohort ceiling 写入新 ledger；旧 5M 不能复用，新授权不改变 Provider 技术资格未满足的事实。
-4. 本次实际 adapter/container 的 uid/network/mounts/canary/World 校验通过；不能借旧隔离 JSON。Principal 不得有可绕过代理的付费出口。
-5. 同一运行链路先通过 **0 付费** 的身份/端口冲突、晚 usage、并发、中断、大请求/响应和精确计数测试。
-
-此前“均授权”仅覆盖历史三项；本轮明确的新授权单独记录于上文，不得与旧额度混算。
+1. 按量记账使用全新单会话 cohort 和 SQLite ledger。Runner 核对会话、请求次数和时长配置，容器 adapter 检查本次实际 uid、网络、挂载、canary 和 Git World。
+2. 转发前持久登记 `PENDING`。完整终态响应结算 fresh input、cache read、cache creation 和 output。断流或用量缺失记 `UNKNOWN`，停止 cohort 并保留记录。
+3. 付费路由由宿主固定为 DeepSeek Messages 与 `deepseek-flash`，凭证由宿主读取。容器经固定 stdio 出口发请求，服务端工具由代理拒绝。
+4. 同一版本先通过零付费故障测试和实际容器验证。要求硬预算时，继续使用有界合同，并为真实 Provider 单独证明上界。当前真实 Provider 的硬预算资格仍为 `PROVIDER_BOUND_UNQUALIFIED`。
 
 ---
 
@@ -310,10 +317,10 @@ Owner 在本轮发布指令中明确表示“授权启动付费模型调用”�
 
 按优先级：
 
-1. **真实 Provider 上界资格**（P0，付费实验前置）
+1. **真实 Provider 的硬预算资格**
    - 请求前预留、Mock 身份和实际容器故障链已实现并验证。
    - DeepSeek 兼容路径的 `max_tokens` 不能直接视为已证明上界；真实输入 token 上界也需明确证明。
-   - 当前 `PROVIDER_BOUND_UNQUALIFIED` 是明确拒绝，不能通过配置或新授权绕过。
+   - `PROVIDER_BOUND_UNQUALIFIED` 约束硬预算模式。Owner 允许的按量记账实验使用 §6 的独立合同。
 
 2. **跨 Host settlement 残余风险**（P1）
    - 无 Invocation 记录时，principal 仍可结算；产品只保证 `UNATTRIBUTED` 与不声称退出。
@@ -323,9 +330,9 @@ Owner 在本轮发布指令中明确表示“授权启动付费模型调用”�
    - 当前是本地 Ed25519 bearer credential；不是 IdP/SSO。
    - 远程部署应提供自己的 `OperatorAuthorityPort`。
 
-4. **真实模型产品闭环**（P1，需先满足 §6 全部条件）
-   - 本轮 Direct→治理纵向链使用确定性真实子进程，不能外推自主模型行为。
-   - 历史 INVALID cohort 不能作为 CQ 效果证明；未来合格运行再讨论产品收益。
+4. **真实模型产品闭环**（P1）
+   - 2026-11-08 的真实 software 续作观察到 DELIVER 和旧任务退役，范围为同一份复制状态的一条轨迹。
+   - Direct→治理的 Worker、Settlement、Promotion 纵向验收来自确定性子进程。自主 Worker 结算及 promotion 仍需对应的真实模型证据。
 
 5. **外部原生 HEAD 并发**
    - 提交前读取以前的变化可阻止并回滚；最后一次 Git 读取后的外部变化不能与 SQLite 原子封锁，后续执行 fence 会拒绝漂移。
@@ -388,6 +395,8 @@ Owner 在本轮发布指令中明确表示“授权启动付费模型调用”�
 | 2026-11-07 | PNWF-CQ-R1：请求前预算预留、Mock/实际容器/World 资格；Operator/HEAD 复核与职责归位；真实子进程纵向治理链 | `docs/engineering/PNWF-CQ-R1-QUALIFICATION.md`；`research-evidence/pnwf-cq-r1/2026-11-07/` | 新增 paid calls 0；20 项预算测试、6 组容器场景；真实 Provider 仍 BLOCKED |
 | 2026-11-07 | Owner 授权推送、创建 PR、跟进并修复 CI、全绿后合并及更新 handoff；另明确授权启动付费模型调用 | 本轮用户指令 | 新付费授权有效；尚无新量化 ledger，Provider 技术资格仍 BLOCKED，发布/CI paid calls 0 |
 | 2026-11-07 | PR #230 在 14/14 CI job 成功后合并；同步真实 merge SHA、Linux 全量/E2E/Windows 结果和跳过项 | [PR #230](https://github.com/orangeofcarl0-sys/palimpsest/pull/230)；`b7460f3`；`release-ci.json` | 首次 CI 无失败、无重跑；四个 Host-dependent gate 未执行；新增 paid calls 0 |
+| 2026-11-08 | Owner 允许不设计费上限，新增显式按量记账，执行一条 software 续作 | `PNWF-CQ-PAID-USAGE-ONLY.md`，`research-evidence/pnwf-cq-paid/2026-11-08/software.json` | 24 项请求测试、6 个零付费容器场景通过。27 个付费请求，982,857 tokens，自然退出，主判据 1/1 |
+| 2026-11-08 | 修复 DSH 调用归因并离线重算 software 轨迹 | `software-attribution-recount.json`，`PNWF-CQ-PAID-USAGE-ONLY.md` | 31/31 配对，2 次不同原因拒绝，1 次失败作业，无进展调用 3 次，新增付费调用 0 |
 
 ---
 
@@ -398,5 +407,5 @@ Owner 在本轮发布指令中明确表示“授权启动付费模型调用”�
 3. 检查当前分支和工作树；本轮产品修复已通过 #230 合并。新工作先 fetch，再从当前主线开 `codex/` 分支。
 4. `pnpm build && pnpm architecture:check && pnpm architecture:check-public-api`。
 5. 跑 §5 的顺序验收集。
-6. 如果任务涉及付费模型：先读 §6；owner 新授权已经收到，实际执行仍需真实 Provider 上界资格、实际隔离与新量化 ledger 全部就绪。
+6. 付费实验按 §6 选择执行合同。按量记账使用新的准备目录和账本，并实测本次容器资格。
 7. 改完代码/证据后更新本文件并提交。

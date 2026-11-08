@@ -33,6 +33,7 @@ function decodeFrames(bytes) {
 const clip = (text, limit) => (text.length <= limit ? text : `${text.slice(0, limit)}…`);
 
 function messageText(message) {
+  if (typeof message?.content === "string") return message.content;
   const parts = [];
   for (const block of message?.content ?? []) {
     if (block?.type === "text" && typeof block.text === "string") parts.push(block.text);
@@ -42,6 +43,14 @@ function messageText(message) {
 
 function resultText(event) {
   return messageText(event?.data?.message);
+}
+
+function resultCallId(data) {
+  const legacy = data.toolCallId;
+  const nested = data.message?.toolCallId;
+  // A disagreement is unresolved. Arrival order cannot identify parallel calls.
+  if (legacy != null && nested != null && legacy !== nested) return null;
+  return nested ?? legacy ?? null;
 }
 
 /** A result is an error when the product returned an error payload or the tool itself failed. */
@@ -117,6 +126,17 @@ const DOMAIN_REFUSAL_STATES = new Set([
   "EXECUTOR_LIVENESS_UNCONFIRMED",
   "SUCCESSOR_REQUIRED",
 ]);
+function refusalReason(state, detail, candidate) {
+  const code = candidate.reasonCode ?? candidate.reason ?? candidate.code;
+  if (state === "NOT_READY") {
+    if (/\bthe world still holds work that is not committed\b/iu.test(detail ?? "")) return "UNCOMMITTED_WORK";
+    if (code === "NO_WORK" || /\bthe world holds no observable change against its base\b/iu.test(detail ?? "")) {
+      return "NO_SETTLEABLE_DELTA";
+    }
+  }
+  return typeof code === "string" && /^[A-Z][A-Z0-9_]*$/u.test(code) ? code : null;
+}
+
 function domainRefusalOf(text) {
   const trimmed = text.trim();
   if (!trimmed.startsWith("{")) return null;
@@ -128,13 +148,31 @@ function domainRefusalOf(text) {
   }
   const candidates = [parsed, parsed?.result, parsed?.outcome, parsed?.settlement, parsed?.data];
   for (const candidate of candidates) {
-    if (candidate && typeof candidate === "object") {
-      const state = typeof candidate.state === "string" ? candidate.state : null;
-      if (state !== null && DOMAIN_REFUSAL_STATES.has(state)) return state;
-      if (state !== null && Array.isArray(candidate.blockers) && candidate.blockers.length > 0) {
-        return `${state}:BLOCKED`;
-      }
-    }
+    if (typeof candidate?.state !== "string") continue;
+    const state = candidate.state;
+    const domain = DOMAIN_REFUSAL_STATES.has(state);
+    const blocked = Array.isArray(candidate.blockers) && candidate.blockers.length > 0;
+    if (!domain && !blocked) continue;
+    const detail = typeof candidate.detail === "string" ? candidate.detail : null;
+    return { state: domain ? state : `${state}:BLOCKED`, reason: refusalReason(state, detail, candidate), detail };
+  }
+  return null;
+}
+
+function stderrException(text) {
+  const stderr = text.split(/^\[stderr\]\r?\n/mu)[1]?.split(/^\[/mu, 1)[0];
+  const match = /^\s*(?:[A-Za-z]+)?Error(?: \[([A-Z][A-Z0-9_]+)\])?:/mu.exec(stderr ?? "");
+  return match ? match[1] ?? "STDERR_EXCEPTION" : null;
+}
+
+function jobFailureReason(job, resultBeforeSettlement) {
+  const exitCode = Number(job.exitCode ?? /^exit code:\s*(-?\d+)\b/iu.exec(job.detail ?? "")?.[1]);
+  if (Number.isInteger(exitCode) && exitCode !== 0) return "NONZERO_EXIT";
+  if (job.status === "failed") return "JOB_FAILED";
+  if (job.status === "killed" && resultBeforeSettlement) {
+    // Stopping a healthy job is normal. For a killed job, look for an earlier error
+    // from its originating call, rather than the outcome of the later job_kill.
+    return resultBeforeSettlement.stderrException ?? (resultBeforeSettlement.ok === false ? "TOOL_RESULT_ERROR" : null);
   }
   return null;
 }
@@ -183,9 +221,13 @@ function main() {
   const rows = [];
   const calls = new Map();
   const jobs = new Map();
+  const settledJobs = new Map();
 
-  const add = (event, kind, detail, extra = {}) =>
-    rows.push({ seq: event.seq, at: event.time, offsetMs: event.time - start, kind, detail, ...extra });
+  const add = (event, kind, detail, extra = {}) => {
+    const row = { seq: event.seq, at: event.time, offsetMs: event.time - start, kind, detail, ...extra };
+    rows.push(row);
+    return row;
+  };
 
   for (const event of events) {
     const data = event.data ?? {};
@@ -206,7 +248,7 @@ function main() {
           args = { raw: data.arguments };
         }
         const call = { seq: event.seq, at: event.time, name: data.name, args, kind: classifyCall(data.name, args) };
-        calls.set(data.callId, call);
+        if (typeof data.callId === "string" && data.callId) calls.set(data.callId, call);
         const target =
           args.file_path ??
           args.path ??
@@ -216,19 +258,26 @@ function main() {
         break;
       }
       case "tool/result": {
-        const call = calls.get(data.toolCallId);
+        const callId = resultCallId(data);
+        const call = calls.get(callId);
         const text = resultText(event);
         const failed = event?.data?.message?.isError === true || resultError(text);
         const facts = factsOf(text);
+        const refusal = failed ? null : domainRefusalOf(text);
+        const outcome = failed ? "ERROR" : refusal ? `REFUSED (${refusal.reason ?? refusal.state})` : "ok";
         const factText = Object.entries(facts)
           .map(([key, value]) => `${key}=${String(value)}`)
           .join(" ");
-        add(event, "RESULT", `${failed ? "ERROR" : "ok"}${factText ? ` ${factText}` : ""} ${clip(text.replace(/\s+/gu, " ").trim(), 220)}`, {
-          callId: data.toolCallId,
-          callKind: call?.kind,
+        add(event, "RESULT", `${outcome}${factText ? ` ${factText}` : ""} ${clip(text.replace(/\s+/gu, " ").trim(), 220)}`, {
+          callId,
+          callSeq: call?.seq ?? null,
+          callKind: call?.kind ?? null,
           ok: !failed,
           facts,
-          refusal: failed ? null : domainRefusalOf(text),
+          refusal: refusal?.state ?? null,
+          refusalReason: refusal?.reason ?? null,
+          refusalDetail: refusal?.detail ?? null,
+          stderrException: stderrException(text),
         });
         break;
       }
@@ -238,7 +287,9 @@ function main() {
         break;
       case "job/settled": {
         const job = jobs.get(data.jobId) ?? data;
-        add(event, "JOB", `end ${data.kind} ${data.status}${data.detail ? ` (${data.detail})` : ""} ${clip(job.label ?? "", 100)}`);
+        const callId = data.toolCall?.callId ?? job.toolCall?.callId ?? null;
+        const row = add(event, "JOB", `end ${data.kind} ${data.status}${data.detail ? ` (${data.detail})` : ""} ${clip(job.label ?? "", 100)}`);
+        settledJobs.set(data.jobId, { job: data, callId, row });
         break;
       }
       case "turn/end":
@@ -255,16 +306,40 @@ function main() {
   for (const row of toolCalls) byKind[row.detail.split(" ")[0]] = (byKind[row.detail.split(" ")[0]] ?? 0) + 1;
   const errors = results.filter((row) => row.ok === false);
   const refusals = results.filter((row) => typeof row.refusal === "string");
-  const repeatedRefusals = (() => {
-    const seen = new Map();
-    let repeated = 0;
-    for (const row of refusals) {
-      const key = `${String(row.callKind ?? "?")}:${String(row.refusal)}`;
-      if (seen.has(key)) repeated += 1;
-      seen.set(key, true);
+  const seenRefusals = new Set();
+  let repeatedRefusals = 0;
+  for (const row of refusals) {
+    const call = calls.get(row.callId);
+    if (!call) continue;
+    const key = JSON.stringify([call.kind, call.args.taskId, call.args.attemptId, call.args.relayRoute,
+      row.refusal, row.refusalReason ?? row.refusalDetail]);
+    if (seenRefusals.has(key)) repeatedRefusals += 1;
+    seenRefusals.add(key);
+  }
+  const failedResultsByCall = new Map();
+  for (const row of results) {
+    if (row.callSeq !== null && (!row.ok || row.stderrException) && !failedResultsByCall.has(row.callId)) {
+      failedResultsByCall.set(row.callId, row);
     }
-    return repeated;
-  })();
+  }
+  const failedJobs = [];
+  for (const [jobId, { job, callId, row }] of settledJobs) {
+    const result = failedResultsByCall.get(callId);
+    const reason = jobFailureReason(job, result?.seq < row.seq ? result : null);
+    if (reason === null) continue;
+    const call = calls.get(callId);
+    const durationMs = job.finishedAt - job.startedAt;
+    row.detail += ` [JOB_FAILED: ${reason}]`;
+    failedJobs.push({
+      jobId, status: job.status, reason, callId, callSeq: call?.seq ?? null, callKind: call?.kind ?? null,
+      resultSeq: result?.seq ?? null, settledSeq: row.seq, durationMs: Number.isFinite(durationMs) ? durationMs : null,
+    });
+  }
+  const noProgress = new Set([...errors, ...refusals].map(row => row.callSeq === null ? `result:${row.seq}` : `call:${row.callSeq}`));
+  for (const job of failedJobs) {
+    if (job.callSeq !== null) noProgress.add(`call:${job.callSeq}`);
+  }
+  const pairedToolResults = results.filter(row => row.callSeq !== null).length;
   const stateQueries = toolCalls.filter((row) => STATE_ACTIONS.has(row.detail.split(" ")[0]));
   const commitCalls = toolCalls.filter((row) => row.detail.startsWith("shell:git-commit"));
 
@@ -280,25 +355,34 @@ function main() {
       steps: events.filter((event) => event.type === "step/start").length,
       turns: events.filter((event) => event.type === "turn/start").length,
       toolCalls: toolCalls.length,
+      pairedToolResults,
+      unpairedToolResults: results.length - pairedToolResults,
       toolErrors: errors.length,
+      jobFailures: failedJobs.length,
       domainRefusals: refusals.length,
       repeatedRefusals,
-      noProgressToolCalls: errors.length + refusals.length,
+      noProgressToolCalls: noProgress.size,
       stateQueries: stateQueries.length,
       commits: commitCalls.length,
       jobs: jobs.size,
     },
     byKind,
     stateQueries: stateQueries.map((row) => `${row.offsetMs}ms ${row.detail}`),
-    calls: toolCalls.map((row) => ({ offsetMs: row.offsetMs, kind: row.detail, args: row.args })),
+    calls: toolCalls.map((row) => ({ seq: row.seq, callId: row.callId, offsetMs: row.offsetMs, kind: row.detail, args: row.args })),
     results: results.map((row) => ({
+      seq: row.seq,
+      callId: row.callId,
+      callSeq: row.callSeq,
       offsetMs: row.offsetMs,
       callKind: row.callKind ?? null,
       ok: row.ok,
       state: row.facts?.state ?? null,
       refusal: row.refusal ?? null,
+      refusalReason: row.refusalReason,
+      refusalDetail: row.refusalDetail,
       facts: row.facts ?? {},
     })),
+    failedJobs,
   };
 
   const md = [
