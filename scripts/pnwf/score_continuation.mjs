@@ -8,6 +8,7 @@
  *   · the ledger tokens and the session exit, against the historical A-2 closure.
  *
  * Usage: node scripts/pnwf/score_continuation.mjs --run=<dir> --cohort=<cohort.json>
+ * Use --out=<score.json> and --attribution-dir=<dir> to keep a recount separate from an earlier run.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -25,6 +26,7 @@ const args = new Map(
 const RUN = resolve(String(args.get("run") ?? ""));
 const COHORT_PATH = resolve(String(args.get("cohort") ?? ""));
 const OUT_PATH = resolve(String(args.get("out") ?? join(RUN, "out", "score.json")));
+const ATTRIBUTION_DIR = resolve(String(args.get("attribution-dir") ?? join(RUN, "out", "attribution")));
 if (RUN === "" || COHORT_PATH === "") {
   process.stderr.write("--run and --cohort are required\n");
   process.exit(2);
@@ -157,9 +159,8 @@ for (const stage of cohort.stages) {
   const budget = readJson(join(outDir, "budget.json")) ?? {};
   const snapshot = readJson(join(outDir, "snapshot.json")) ?? {};
   const streamFiles = streams(home);
-  const prefixDir = join(RUN, "out", "attribution");
-  mkdirSync(prefixDir, { recursive: true });
-  const attributions = streamFiles.map((file, index) => ({ file, timeline: attribute(file, join(prefixDir, `${stage.id}-${index}`)) }));
+  mkdirSync(ATTRIBUTION_DIR, { recursive: true });
+  const attributions = streamFiles.map((file, index) => ({ file, timeline: attribute(file, join(ATTRIBUTION_DIR, `${stage.id}-${index}`)) }));
   const principal =
     attributions.find((entry) => {
       const cwd = String(entry.timeline?.summary?.session?.cwd ?? "").replaceAll("\\", "/").toLowerCase();
@@ -168,6 +169,7 @@ for (const stage of cohort.stages) {
 
   const byKind = principal?.timeline?.summary?.byKind ?? {};
   const calls = principal?.timeline?.summary?.calls ?? [];
+  const counts = principal?.timeline?.summary?.counts ?? {};
   const completeCalls = Number(byKind["work:complete"] ?? 0);
   const concludeCalls = Number(byKind["work:conclude"] ?? 0);
   const readinessCalls = Number(byKind["work:readiness"] ?? 0);
@@ -176,10 +178,10 @@ for (const stage of cohort.stages) {
   const stopCalls = Number(byKind["work:stop"] ?? 0);
   const planCalls = Number(byKind["work:plan"] ?? 0);
   const typedPlanCalls = calls.filter((call) => call.kind === "work:plan" && call.args?.changeClass !== undefined).length;
-  const errors = Number(principal?.timeline?.summary?.counts?.toolErrors ?? 0);
-  const domainRefusals = Number(principal?.timeline?.summary?.counts?.domainRefusals ?? 0);
-  const repeatedRefusals = Number(principal?.timeline?.summary?.counts?.repeatedRefusals ?? 0);
-  const noProgressToolCalls = Number(principal?.timeline?.summary?.counts?.noProgressToolCalls ?? errors + domainRefusals);
+  const errors = Number(counts.toolErrors ?? 0);
+  const domainRefusals = Number(counts.domainRefusals ?? 0);
+  const repeatedRefusals = Number(counts.repeatedRefusals ?? 0);
+  const noProgressToolCalls = Number(counts.noProgressToolCalls ?? errors + domainRefusals);
 
   const state = { tasks: [], attempts: [], promotions: 0, projectRevised: 0, promotionCommitted: 0 };
   let stateDb;
@@ -273,10 +275,13 @@ for (const stage of cohort.stages) {
       plan: planCalls,
       typedPlan: typedPlanCalls,
       toolErrors: errors,
+      jobFailures: Number(counts.jobFailures ?? 0),
+      pairedToolResults: Number(counts.pairedToolResults ?? 0),
+      unpairedToolResults: Number(counts.unpairedToolResults ?? 0),
       domainRefusals,
       repeatedRefusals,
       noProgressToolCalls,
-      total: principal?.timeline?.summary?.counts?.toolCalls ?? 0,
+      total: counts.toolCalls ?? 0,
     },
     state: {
       tasks: state.tasks,
