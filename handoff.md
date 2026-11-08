@@ -8,7 +8,7 @@
 ## 0. 30 秒版本
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
-- Software 和 energy 复跑证据及修复前后报告已合入主线，交付合并点为 **`987bab01f8aaaf04954eaedb434409b7a15c2631`**，合并前 14/14 个 CI job 通过。接手时用 `git rev-parse origin/main` 核验当前主线。[PR #237](https://github.com/orangeofcarl0-sys/palimpsest/pull/237)
+- Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，证据合并点为 **`00c5f46d69683ee75f3b74d44f184c0b7a19ac23`**，合并前 14/14 个 CI job 通过。接手时用 `git rev-parse origin/main` 核验当前主线。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
 - 按量记账续作和轨迹归因修复已通过 [PR #232](https://github.com/orangeofcarl0-sys/palimpsest/pull/232) 合并。新工作从确认的主线开分支。
   ```bash
@@ -51,7 +51,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 定向观察基于 `5588cf9da6189dbe2b7cb121a188677b13113713`，当前值以 `git rev-parse origin/main` 为准 |
+| `origin/main` | 定向观察证据合并点 `00c5f46d69683ee75f3b74d44f184c0b7a19ac23`，当前值以 `git rev-parse origin/main` 为准 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
@@ -62,7 +62,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | PR #236 | MERGED at `e5312cc5d81b5ada6f4a1015f8d00f9c557beb85`，修复退役后的 readiness 引导，PR 和合并后主线均为 14/14 check jobs SUCCESS |
 | PR #237 | MERGED at `987bab01f8aaaf04954eaedb434409b7a15c2631`，已验证 head `7402e5f37c4464d81baa6f111218043a913d48c8`，14/14 check jobs SUCCESS |
 | PR #238 | MERGED at `5588cf9da6189dbe2b7cb121a188677b13113713`，同步复跑发布 handoff，PR 和合并后主线均为 14/14 check jobs SUCCESS |
-| 定向观察证据分支 | `codex/pnwf-readiness-hint-live`，从 #238 合并点开始 |
+| [PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239) | MERGED at `00c5f46d69683ee75f3b74d44f184c0b7a19ac23`，已验证 head `ba2a245d7114df55d510da27f9ee9c1e02b22e04`，14/14 check jobs SUCCESS |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -243,6 +243,10 @@ Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。�
 
 定向观察在 `5588cf9` 构建并通过 28 项脚本测试。两个 Mock 用独立副本验证下一模型请求带有 `readiness` 新提示，付费请求 0。两条真实会话分别通过 16 项隔离检查和一项复制 World 预检，原始 Work 与 journal 摘要在复制和运行前后相符。[定向观察证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
 
+PR #239 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,985 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与 package-smoke 通过。D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 的 R1-H 为 17 PASS，R1-HR 为 45 PASS / 2 LIMIT，R1-HC 为 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42463960362) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42463960372) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42463960477)
+
+`00c5f46` 的主线 CI 与 handoff PR #240 的首个提交均在 `package-smoke` 下游安装时遇到 Ordarium 发布包下载 HTTP 504。现有三次安装尝试已把 pnpm 的 `ERR_PNPM_FETCH_504` 纳入可重试错误，验收仍要求真实安装成功并验证公共入口。404 等确定性解析错误继续直接报错。[主线失败日志](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42464959904) · [PR 首次失败日志](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42465099471)
+
 PR #237 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,985 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 和 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 的 R1-H 为 17 PASS，R1-HR 为 45 PASS / 2 LIMIT，R1-HC 为 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082427) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082437) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42454082407)
 
 PR #234 的 14 个 job 首次运行全部通过。Linux CI 通过 24 项请求测试、4 项归因测试、4,981 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与 package-smoke 通过，D2、D4、D5 与 D5 reliability 的 gate 步骤因缺少外部 DSH 环境而跳过。Windows Host Boundary 通过，R1-H 17 PASS，R1-HR 45 PASS / 2 LIMIT，R1-HC 26 PASS / 1 LIMIT，clean-env 通过，各组 0 FAIL。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214180) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214270) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42444214078)
@@ -374,7 +378,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
    - 远程部署应提供自己的 `OperatorAuthorityPort`。
 
 4. **真实模型产品闭环**（P1）
-   - 两种状态各一次定向观察证实，指定先查 `readiness` 后，模型收到新提示，并在后续步骤记录 `DELIVER` 和自然退出。原始状态的两条修复后复跑都在退役后直接验证并交付，退役后查询 `readiness` 为 0。两组保留各自的起点和触发条件。
+   - 两种状态各一次定向观察证实，指定先查 `readiness` 后，模型收到新提示，并在后续步骤记录 `DELIVER` 和自然退出。原始状态的两条修复后复跑都在退役后直接验证并交付，退役后查询 `readiness` 为 0。两组保留各自的起点和触发条件。[定向观察与原始状态复跑](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察)
    - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
    - Direct→治理的 Worker、Settlement、Promotion 纵向验收来自确定性子进程。自主 Worker 结算及 promotion 仍需对应的真实模型证据。
 
@@ -448,6 +452,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-08 | 在 #236 主线从原始状态各复跑一条 software、energy，归因比较修复前后 | [复跑证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json) | 55 个请求，2,462,728 tokens，主判据 2/2，退役后查询 readiness 0/2 |
 | 2026-11-08 | 合并复跑证据、修复前后对比报告和 handoff，同步实际合并提交与检查 | [PR #237](https://github.com/orangeofcarl0-sys/palimpsest/pull/237)，`987bab0` | 14/14 CI job 首次通过，四个外部 DSH gate 步骤跳过 |
 | 2026-11-08 | 从已退役、尚无交付的状态定向观察新提示采用 | [定向观察证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json) | 2/2 首查、2/2 后续 DELIVER 与自然退出，30 个请求、756,492 tokens |
+| 2026-11-08 | 合并 readiness 定向观察证据、报告和 handoff，补录实际合并提交与 CI | [PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)，`00c5f46` | 14/14 CI job 首次通过，四个外部 DSH gate 步骤跳过 |
+| 2026-11-08 | 同步发布 handoff 并补齐 `package-smoke` 的 HTTP 504 重试 | [PR #240](https://github.com/orangeofcarl0-sys/palimpsest/pull/240)，`scripts/release/consumer-smoke.mjs` | Ordarium 发布包下载 504 使用原三次尝试上限，真实下游安装为通过条件 |
 
 ---
 
