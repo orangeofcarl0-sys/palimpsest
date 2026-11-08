@@ -53,8 +53,34 @@ node scripts/pnwf/score_continuation.mjs "--run=$trial" "--cohort=$cohort"
 | Output | 14,024 |
 | **合计** | **982,857** |
 
-产品记录了 `DELIVER` 结论（journal seq 4）及一次计划修订。三个原任务转为 STALE，原 Attempt 转为 CANCELLED。`complete` 调用为 0，`conclude` 调用为 1，promotion 为 0，canonical HEAD 保持 `453aa7f005edb7612cf4edc1d8ec3b68efed5b4d`。软件样本满足原机械主判据（1/1）。轨迹共有 31 个工具调用，其中 2 次领域拒绝，含 1 次重复拒绝。历史同状态记录为 1,331,902 tokens，本次为 982,857 tokens。这里比较的是各一条轨迹的实测用量。
+产品记录了 `DELIVER` 结论（journal seq 4）及一次计划修订。三个原任务转为 STALE，原 Attempt 转为 CANCELLED。`complete` 调用为 0，`conclude` 调用为 1，promotion 为 0，canonical HEAD 保持 `453aa7f005edb7612cf4edc1d8ec3b68efed5b4d`。软件样本满足原机械主判据（1/1）。历史 A-2 收尾记录为 1,331,902 tokens，本次为 982,857 tokens。这里比较的是各一条轨迹的实测用量。
 
 本地 build、架构和公共 API 检查通过，24 项请求故障测试通过，六个零付费容器场景通过。六个获资格的 Mock 容器和实际付费容器的镜像及 adapter 文件摘要一致，实际付费容器通过 16 项隔离检查，读取了 1 个复制后的 Attempt World。[机器证据](../../research-evidence/pnwf-cq-paid/2026-11-08/software.json)
 
 运行前 Docker Desktop 因陈旧的 Unix socket 启动失败。排查依据为本机 backend 日志，退出失败的启动实例后备份了只包含零字节 socket 的运行时目录，随后使用原有资格镜像完成验证。原始运行数据留在 `.aps-tmp/pnwf-paid-2026-11-08-software`，机器证据保存请求计量、产品事实与原始文件摘要。
+
+## 轨迹归因重算
+
+DSH v4 把结果的调用 ID 存在 `message.toolCallId` 中。重算按 ID 配对了 31/31 个结果，同时支持旧格式的外层 `toolCallId`。两处 ID 冲突时保留未配对状态。原始机器证据中的 8 个文件摘要已核实，重算使用独立输出目录。[重算证据](../../research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json)
+
+| 指标 | 原统计 | 重算 |
+|---|---:|---:|
+| 已配对结果 | 0/31 | 31/31 |
+| 结果层错误 `toolErrors` | 0 | 0 |
+| 领域拒绝 | 2 | 2 |
+| 同因重复拒绝 | 1 | 0 |
+| 失败作业 `jobFailures` | 未计 | 1 |
+| 无进展调用 | 2 | 3 |
+
+首次 `takeover`（调用 seq 147、结果 148）为 `UNCOMMITTED_WORK`。第二次（调用 seq 169、结果 170）发生在清理 CRLF 差异后，为 `NO_SETTLEABLE_DELTA`。两次都返回 `NOT_READY`，原因不同。重复计数比较工具动作、目标、路由和拒绝原因。
+
+探针由 Bash 调用 seq 117 发起，结果 seq 119 记录 `ERR_STREAM_WRITE_AFTER_END` 和转入后台的通知。随后同一作业在 seq 127 被终止。失败归到原 Bash 调用，后续 `job_kill` 仍是成功的清理动作。无进展计数按调用去重。作业失败与结果层错误各有计数。
+
+原始流离线重算仍为自然退出、982,857 tokens、`DELIVER`、promotion 0 和主判据 1/1。4 项归因回归覆盖了新旧格式配对、原因区分、异常后终止和重复计数，原有 24 项请求测试也通过。可对已存在的试验目录执行以下命令。
+
+```powershell
+$trial = Join-Path (Get-Location) '.aps-tmp/pnwf-paid-2026-11-08-software'
+$recount = Join-Path $trial 'out/attribution-recount'
+node scripts/pnwf/score_continuation.mjs "--run=$trial" "--cohort=$(Join-Path $trial 'cohort.json')" `
+  "--out=$(Join-Path $recount 'score.json')" "--attribution-dir=$(Join-Path $recount 'timeline')"
+```
