@@ -182,9 +182,8 @@ writeFileSync(
   join(PROJECT, "package.json"),
   `${JSON.stringify({ name: "palimpsest-embedder-smoke", version: "1.0.0", private: true, type: "module" }, null, 2)}\n`,
 );
-// The pinned @ordarium/* specifiers are GitHub release tarballs, and the network is not part of what
-// this smoke is testing. A transient ETIMEDOUT is retried so a flaky connection does not read as a
-// packaging failure; a genuine resolution problem (a 404, a bad specifier) still fails.
+// Retry transient network errors when fetching the pinned @ordarium/* release tarballs, including
+// pnpm's terminal HTTP 504. Resolution errors such as a 404 still fail.
 let installError;
 for (let attempt = 1; attempt <= 3; attempt += 1) {
   try {
@@ -194,7 +193,7 @@ for (let attempt = 1; attempt <= 3; attempt += 1) {
   } catch (error) {
     installError = error;
     const text = `${error.stdout ?? ""}${error.stderr ?? ""}`;
-    const transient = /ETIMEDOUT|ECONNRESET|error \(23\)|fetch failed|EAI_AGAIN/u.test(text);
+    const transient = /ETIMEDOUT|ECONNRESET|error \(23\)|fetch failed|EAI_AGAIN|\[ERR_PNPM_FETCH_504\]/u.test(text);
     process.stdout.write(`  · install attempt ${attempt} failed${transient ? " (transient network)" : ""}\n`);
     if (!transient) break;
   }
