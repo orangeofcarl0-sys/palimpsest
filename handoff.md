@@ -21,6 +21,7 @@
 - Owner 于 2026-11-07 授权付费调用，2026-11-08 允许不设计费上限。本轮使用显式 `paid-usage-only` 模式，按终态 usage 记账并保留实际容器资格要求。历史 5M cohort 的结果和本轮实验范围见 §6。
 - 2026-11-08 software 续作自然退出，27 个真实请求全部结算，共 982,857 tokens。记录 DELIVER，三项旧任务退役，HEAD 保持起始提交，promotion 为 0。主判据 1/1。
 - 软件轨迹重算配对 31/31 个结果，两次 `NOT_READY` 原因分别为 `UNCOMMITTED_WORK` 和 `NO_SETTLEABLE_DELTA`。失败探针作业 1 次，同因重复拒绝 0 次，无进展调用 3 次。[重算证据](research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json)
+- 2026-11-08 energy 沿用记账和终止条件，29 个请求全部结算，共 987,987 tokens。归因配对 43/43，`takeover` 被 `NO_SETTLEABLE_DELTA` 拒绝，过早 `plan` 触发 `quiescence_required`，转 `successor` 后修订并记录 DELIVER。自然退出，主判据 1/1。[对比报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md) · [Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
 
 ---
 
@@ -48,11 +49,13 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 以 `git rev-parse origin/main` 为准，代码合并点 `fd341c1b9cd4c7c245e0f2ee79d3269b83118f24` |
+| `origin/main` | 以 `git rev-parse origin/main` 为准，energy 执行基线 `fdd5308bf45e699058ecae86fcfb573e250e4e69` |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
 | PR #232 | MERGED at `fd341c1b9cd4c7c245e0f2ee79d3269b83118f24`，已验证 head `8ceb48f2f0a8f1cba957d3b55198b1772b52ff04`，14/14 check jobs SUCCESS |
+| PR #233 | MERGED at `fdd5308bf45e699058ecae86fcfb573e250e4e69`，同步 #232 的发布 handoff，14/14 check jobs SUCCESS |
+| Energy 证据分支 | `codex/pnwf-energy-trajectory`，从 #233 合并点开始，交付证据、报告及 handoff |
 | 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
@@ -158,6 +161,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 - `docs/engineering/PNWF-CQ-RESULT.md` — 本阶段完整报告（含无效 cohort 与超支）
 - `docs/engineering/PNWF-CQ-R1-QUALIFICATION.md` — 本轮零付费资格、边界和复现；§5 区分初轮失败与修复后回归
+- `docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md` — 按量记账合同、software 与 energy 的模型行为、拒绝、恢复和用量对比
+- `research-evidence/pnwf-cq-paid/2026-11-08/` — 两次按量记账的逐请求用量、软件重算、energy 事件与原始文件摘要
 - `research-evidence/pnwf-cq-r1/2026-11-07/` — 新预算测试、六组实际容器、产品回归、纵向事件与诊断失败留档
 - `research-evidence/pnwf-cq-r1/2026-11-07/release-ci.json` — PR #230 的被检验 head、合并 SHA、远程检查与明确跳过项；独立于发布前的 `verification.json` 快照
 - `docs/engineering/PNWF-LIVE-TRAJECTORY.md` — 上一阶段 live trajectory 分析
@@ -219,6 +224,8 @@ node node_modules/vitest/vitest.mjs run test/pc1v1_operator_identity.test.ts tes
 2026-11-08 的本地按量记账验证通过 24/24 请求测试（原 20 项和新增 4 项）、6/6 零付费容器场景、build、architecture 与 public API 检查。Mock 与付费容器使用相同镜像及 adapter 文件摘要。实际付费容器通过 16/16 canary 和复制 World 预检。[机器证据](research-evidence/pnwf-cq-paid/2026-11-08/software.json)
 
 轨迹归因修复后，4/4 归因测试及 24/24 请求测试通过。CI unit job 运行 `node --test scripts/psvr/session_attribution.test.mjs`。真实轨迹离线重算通过 8 个原始文件的摘要验证，原始计量和产品事实与重算一致。评分器的 `--out` 与 `--attribution-dir` 可为重算指定独立目录。[重算证据](research-evidence/pnwf-cq-paid/2026-11-08/software-attribution-recount.json)
+
+Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。六个零付费容器场景沿用同镜像及八个 adapter 文件摘要的既有资格，实际 energy 容器独立通过 16 项检查和复制 World 预检。两条轨迹的终态用量与账本逐请求一致。[Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
 
 PR #232 在 14/14 个 job 成功后合并。Linux CI 通过 28 项脚本测试、4,981 项 Vitest 测试（33 项跳过）与 38 项 E2E 测试，架构和公共 API 检查通过。R0 六个 E gate 与 package-smoke 实际通过。D2、D4、D5 与 D5 reliability 的 gate 步骤按现有外部 Host 条件跳过。Windows Host Boundary 通过。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438699006) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438698982) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42438698980)
 
@@ -283,9 +290,11 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ### 本轮按量记账
 
-Owner 于 2026-11-07 表示“授权启动付费模型调用”，于 2026-11-08 补充“不设计费上限，或仅设置宽松”。本轮采用 `--mode=paid-usage-only`，金额与 token 总量上限为 `null`。实验范围为一条 software 续作，最多 64 次请求和 30 分钟，由新账本记录 DeepSeek 终态用量。具体执行与复现见 [本轮报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)。
+Owner 于 2026-11-07 授权启动付费模型调用，2026-11-08 允许不设计费上限，随后明确授权一条同条件的 energy 续作。software 和 energy 分别使用全新单会话 cohort、独立账本及 `--mode=paid-usage-only`。金额与 token 总量上限为 `null`，每轮最多 64 次请求、30 分钟，单请求等待终态最多 240 秒。[执行与复现](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)
 
 Software 续作实际执行 4 分 51 秒，27 个请求全部结算，共 982,857 tokens（fresh input 33,921，cache read 934,912，cache creation 0，output 14,024），逐请求与 DSH 轨迹一致。记录 DELIVER、任务退役及原 Attempt 取消，HEAD 保持起始提交，promotion 为 0，主判据 1/1。
+
+Energy 续作实际执行 157.052 秒，29 个请求全部结算，共 987,987 tokens（fresh input 31,412，cache read 944,512，cache creation 0，output 12,063），逐请求与 DSH 轨迹一致。记录 DELIVER、`decision-package` 转 STALE、原 Attempt 转 CANCELLED，HEAD 保持 `e631160`，promotion 为 0，主判据 1/1。两次按量记账运行合计 56 个已结算请求、1,970,844 tokens，未结算请求为 0。[Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json)
 
 ### 2026-11-07 历史 cohort
 
@@ -333,7 +342,8 @@ Software 续作实际执行 4 分 51 秒，27 个请求全部结算，共 982,85
    - 远程部署应提供自己的 `OperatorAuthorityPort`。
 
 4. **真实模型产品闭环**（P1）
-   - 2026-11-08 的真实 software 续作观察到 DELIVER 和旧任务退役，范围为同一份复制状态的一条轨迹。
+   - 2026-11-08 的 software 与 energy 各一条真实续作都观察到旧任务退役、`DELIVER` 和自然退出。两次在修订后都收到无可处理任务的 `readiness CONTINUE_WORK`，再以已提交证据完成 episode 交付。
+   - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
    - Direct→治理的 Worker、Settlement、Promotion 纵向验收来自确定性子进程。自主 Worker 结算及 promotion 仍需对应的真实模型证据。
 
 5. **外部原生 HEAD 并发**
@@ -400,6 +410,7 @@ Software 续作实际执行 4 分 51 秒，27 个请求全部结算，共 982,85
 | 2026-11-08 | Owner 允许不设计费上限，新增显式按量记账，执行一条 software 续作 | `PNWF-CQ-PAID-USAGE-ONLY.md`，`research-evidence/pnwf-cq-paid/2026-11-08/software.json` | 24 项请求测试、6 个零付费容器场景通过。27 个付费请求，982,857 tokens，自然退出，主判据 1/1 |
 | 2026-11-08 | 修复 DSH 调用归因并离线重算 software 轨迹 | `software-attribution-recount.json`，`PNWF-CQ-PAID-USAGE-ONLY.md` | 31/31 配对，2 次不同原因拒绝，1 次失败作业，无进展调用 3 次，新增付费调用 0 |
 | 2026-11-08 | 合并按量记账续作与轨迹归因修复，记录发布检查 | [PR #232](https://github.com/orangeofcarl0-sys/palimpsest/pull/232)，`fd341c1` | 14/14 CI job 成功，四个 Host-dependent gate 步骤跳过 |
+| 2026-11-08 | 执行 energy 续作并用修复后的归因脚本对比两条轨迹 | [对比报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)，[Energy 证据](research-evidence/pnwf-cq-paid/2026-11-08/energy.json) | 29 个已结算请求，987,987 tokens，主判据 1/1，43/43 结果配对 |
 
 ---
 
