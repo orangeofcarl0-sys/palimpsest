@@ -1,0 +1,1077 @@
+{
+  "schema": "pnwf-paid-continuation-evidence/v1",
+  "localDate": "2026-11-08",
+  "cohortId": "pnwf-paid-2026-11-08-energy",
+  "sourceMain": "fdd5308bf45e699058ecae86fcfb573e250e4e69",
+  "authorization": {
+    "paidCalls": "2026-11-07",
+    "noBillingCeilingPermitted": "2026-11-08",
+    "energyContinuation": "2026-11-08"
+  },
+  "execution": {
+    "mode": "paid-usage-only",
+    "sessionId": "energy",
+    "model": "deepseek-flash",
+    "providerUpstream": "https://api.deepseek.com/anthropic/v1/messages",
+    "billingCeiling": null,
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "startedAt": "2026-11-08T03:16:54.486Z",
+    "endedAt": "2026-11-08T03:19:31.538Z",
+    "durationMs": 157052,
+    "exit": {
+      "natural": true,
+      "stopped": false,
+      "kind": "NATURAL_EXIT",
+      "killedBy": null,
+      "exitCode": 0,
+      "signal": null,
+      "error": null
+    },
+    "providerRequestTimeoutMs": 240000
+  },
+  "qualification": {
+    "containerId": "2fa076a322d67bc2a13f702dc674ad7709b69f3c9868e615222d3770565661fe",
+    "descriptorDigest": "3504e00b091f5a30e99c62c9a27c9ca93c35fa43455212af47196a4ab9cafb2c",
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "network": "none",
+    "user": "1001:1001",
+    "checksPassed": 16,
+    "worldCount": 1,
+    "worldHead": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+    "adapterFiles": {
+      "container_adapter.mjs": "f29fb3e0d5f1fdcb629efab7c985c633a3b0dc8e93ceedccc307a4b427ad9368",
+      "container_runtime.mjs": "6c7fef968c302b6bd1fe2299e145a1b8732b48a762a20a077e5ac7c72d310029",
+      "container_bridge.mjs": "7167a8a9894e1130145c456918cfa82d99a10f583be2b5a5943aa4c822b299a8",
+      "world_preflight.mjs": "55bf6a8781a0b4ae4fc4d7ce6b950fcaeecff751c2383fe6fc8343c6b32c82d7",
+      "bounded_provider.mjs": "93a152200d88d01a20572e58728bff599ce99653e62389fabeb72c7d904f0099",
+      "execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "mock_provider.mjs": "f4a14328932628d01daf80896d0111aa4f2fc7b5400741140de41cd680144464",
+      "run_pnwf_live.mjs": "5fd13204e8e150582bcd1971ff3f91fd238cd396b9debca91f78417d522ce88e"
+    },
+    "priorMockScenariosOnMatchingImageAndAdapter": 6,
+    "mockScenariosRerunForEnergy": 0
+  },
+  "validation": {
+    "requestTestsPassed": 24,
+    "attributionTestsPassed": 4,
+    "build": "PASS",
+    "originalSoftwareFileHashesVerified": 8
+  },
+  "usage": {
+    "admittedRequests": 29,
+    "settledRequests": 29,
+    "unresolvedRequests": 0,
+    "confirmedTokens": 987987,
+    "breakdown": {
+      "input_tokens": 31412,
+      "cache_read_input_tokens": 944512,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 12063
+    },
+    "ledgerAndStreamMatchedPerRequest": 29,
+    "streamTotal": 987987,
+    "delta": 0,
+    "requests": [
+      {
+        "id": "6682d97b-d9aa-4819-a464-a62c9bb8c572",
+        "requestDigest": "5697976e02a4139b6a49c18254ae952ec3234baaa95e0d63f229f959ee95b831",
+        "tokens": 11790,
+        "usage": {
+          "input_tokens": 202,
+          "cache_read_input_tokens": 11520,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 68
+        }
+      },
+      {
+        "id": "3597bcb8-e06b-4aec-b276-e22e27108122",
+        "requestDigest": "1c181060b463241a5915376097a32b20678ff79072dcd6f79ac092794541848d",
+        "tokens": 13468,
+        "usage": {
+          "input_tokens": 1520,
+          "cache_read_input_tokens": 11776,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 172
+        }
+      },
+      {
+        "id": "cfc9cf3d-2578-4ee7-889b-af64f6862979",
+        "requestDigest": "b9bc772226d4c2dd633d6c6faa00e6db7a16a84a4c315d4b156f69a9738a3316",
+        "tokens": 14398,
+        "usage": {
+          "input_tokens": 703,
+          "cache_read_input_tokens": 13440,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 255
+        }
+      },
+      {
+        "id": "525fe055-866d-469e-82e0-b9d34f257649",
+        "requestDigest": "dcdff9b3cc6b7c790310059c0b1482426e9ebad9cc9070ddc72739fe35172ca1",
+        "tokens": 15503,
+        "usage": {
+          "input_tokens": 822,
+          "cache_read_input_tokens": 14336,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 345
+        }
+      },
+      {
+        "id": "bc7a0e7f-c503-49b0-b498-824c56a8f9e7",
+        "requestDigest": "6ba6c77c3c66ad5c24535332ed92b882b49afc4480bb9de4f17a368cf4fca855",
+        "tokens": 16704,
+        "usage": {
+          "input_tokens": 1034,
+          "cache_read_input_tokens": 15488,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 182
+        }
+      },
+      {
+        "id": "ea14ea9a-33af-47eb-bb9c-bf42140f9383",
+        "requestDigest": "95cc4325038d564a78adf2bee9d492c4e751a85524a99bfa56ea4b753aa73a19",
+        "tokens": 21135,
+        "usage": {
+          "input_tokens": 4280,
+          "cache_read_input_tokens": 16640,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 215
+        }
+      },
+      {
+        "id": "a477657a-5934-4f5a-b0e0-8a62b94a60e7",
+        "requestDigest": "e550201073f60478471e6c6f21decd5841e612857205998133efdf488c516170",
+        "tokens": 26105,
+        "usage": {
+          "input_tokens": 4877,
+          "cache_read_input_tokens": 21120,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 108
+        }
+      },
+      {
+        "id": "c31d0d55-0f56-4530-9312-0cb85ea3eaae",
+        "requestDigest": "6b9ae42df2ec60de102d1720bac2f4572c19ef03187a5de61098cf675da31ec0",
+        "tokens": 30081,
+        "usage": {
+          "input_tokens": 3743,
+          "cache_read_input_tokens": 25984,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 354
+        }
+      },
+      {
+        "id": "af58f819-c411-47ee-92a9-6c666e6040e4",
+        "requestDigest": "2e85cfac4f3950e0343cbf8c4b4206b5e1c76a49a5d6f85fe04c14c4d2fe806b",
+        "tokens": 30691,
+        "usage": {
+          "input_tokens": 285,
+          "cache_read_input_tokens": 30080,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 326
+        }
+      },
+      {
+        "id": "f9847d9b-25c6-476a-8665-ca66d5dae1c2",
+        "requestDigest": "4b3bc4442c6f300211507ffa8f9e7b6a63759b3fcaf9e7f5aee9576747a3863b",
+        "tokens": 31383,
+        "usage": {
+          "input_tokens": 150,
+          "cache_read_input_tokens": 30592,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 641
+        }
+      },
+      {
+        "id": "b070de24-9176-460e-a75c-f34c05275f6d",
+        "requestDigest": "439902ffb40d929a65604b0829d0b6481c18b54b310ecc0a5206f92ce1e5ba71",
+        "tokens": 32706,
+        "usage": {
+          "input_tokens": 1095,
+          "cache_read_input_tokens": 31360,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 251
+        }
+      },
+      {
+        "id": "0b5dc807-10f5-4dc3-94f7-fee11e1e9c21",
+        "requestDigest": "066496806d743ba9750d8e73345c0f0f8fc03775b48e9dc388b2502fd1117be3",
+        "tokens": 33404,
+        "usage": {
+          "input_tokens": 511,
+          "cache_read_input_tokens": 32640,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 253
+        }
+      },
+      {
+        "id": "a1a65056-a7cd-4a82-8522-b0b2150dc75e",
+        "requestDigest": "be47fc26ed0acbb1ad78ae8194eaa2ab137e27d3d4d752f62d187a39fdbfcc0f",
+        "tokens": 34049,
+        "usage": {
+          "input_tokens": 549,
+          "cache_read_input_tokens": 33280,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 220
+        }
+      },
+      {
+        "id": "8e0ef436-00c0-412d-a3e9-533e520e07c2",
+        "requestDigest": "0d942cf66ea352d5a75604c901a0d3495a8344c3baea034e14832215ed874209",
+        "tokens": 34867,
+        "usage": {
+          "input_tokens": 157,
+          "cache_read_input_tokens": 34048,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 662
+        }
+      },
+      {
+        "id": "3149efa3-e018-4bd8-b581-8763954c4784",
+        "requestDigest": "78436cf64868fd7133a1e26df695dc90722b493fd5d2ff109e1466172ff85017",
+        "tokens": 35459,
+        "usage": {
+          "input_tokens": 314,
+          "cache_read_input_tokens": 34816,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 329
+        }
+      },
+      {
+        "id": "5a0edb94-d4d7-41ce-b198-394858ccf3f8",
+        "requestDigest": "b6bcaf6efc29390b038270dca52ebf729313596ded89de4b4a69aa2fca149803",
+        "tokens": 35595,
+        "usage": {
+          "input_tokens": 151,
+          "cache_read_input_tokens": 35328,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 116
+        }
+      },
+      {
+        "id": "dee248f9-984d-4684-bd09-42f7a36ab5ef",
+        "requestDigest": "38f132870e6f4bd53635a8603a7242a9eb0000e5c58a196f9845a898fee1b75d",
+        "tokens": 35717,
+        "usage": {
+          "input_tokens": 157,
+          "cache_read_input_tokens": 35456,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 104
+        }
+      },
+      {
+        "id": "54633117-2ee0-4f67-87b4-44c7d46e85bb",
+        "requestDigest": "b76c2d3208200478a954952722da149bd62483d74aace69e75a952d881a78d55",
+        "tokens": 38428,
+        "usage": {
+          "input_tokens": 183,
+          "cache_read_input_tokens": 35712,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2533
+        }
+      },
+      {
+        "id": "080bbbe2-ba26-4a0c-92c3-c30cf8bc5122",
+        "requestDigest": "9e9d9d39f586d0b922b0fb7a72b8d2bc0c06adafa5d512d7803a4d66b08ebf00",
+        "tokens": 39836,
+        "usage": {
+          "input_tokens": 1178,
+          "cache_read_input_tokens": 38400,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 258
+        }
+      },
+      {
+        "id": "984f5f0f-1dbf-455e-a00d-a721dd986a7f",
+        "requestDigest": "1a2a19527899baf86487dfb064e7979b3aa25da4ad1124f93ab95be73e91dd62",
+        "tokens": 40045,
+        "usage": {
+          "input_tokens": 252,
+          "cache_read_input_tokens": 39680,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 113
+        }
+      },
+      {
+        "id": "1dda8261-6bdd-4cc2-899c-2d403e880536",
+        "requestDigest": "34fbdc99c45c36a5a29609769e1a35fb4f4385ff16091d4666aa0a41ad5b1db7",
+        "tokens": 40683,
+        "usage": {
+          "input_tokens": 597,
+          "cache_read_input_tokens": 39936,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 150
+        }
+      },
+      {
+        "id": "04f0c603-6ff4-4046-bc6c-d4ddf2177eb5",
+        "requestDigest": "3592883d156133e4738dfeb971ed67798c02975b95c590f4c56ce5a8b4107cb3",
+        "tokens": 42785,
+        "usage": {
+          "input_tokens": 738,
+          "cache_read_input_tokens": 40576,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1471
+        }
+      },
+      {
+        "id": "aeeaa40d-2bc8-4ecb-82c7-07bb60504039",
+        "requestDigest": "abfeb1a9aac90a80177ef3113e0bb9426937862d2adf8d26317ce0cbd040f012",
+        "tokens": 43319,
+        "usage": {
+          "input_tokens": 387,
+          "cache_read_input_tokens": 42752,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 180
+        }
+      },
+      {
+        "id": "feb548c6-f2d6-4800-b13f-b9c6e5b30807",
+        "requestDigest": "62c280295e60d9a9e40989b72355e46d66ad6b430aacd4de5f3311dd56022827",
+        "tokens": 44963,
+        "usage": {
+          "input_tokens": 1586,
+          "cache_read_input_tokens": 43264,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 113
+        }
+      },
+      {
+        "id": "552671ba-259f-4b22-9475-a1037325b922",
+        "requestDigest": "78578b93188e4e3f283622bb11a7fcece5cce73f9ae6017b308d5f5e1d1c167d",
+        "tokens": 46109,
+        "usage": {
+          "input_tokens": 781,
+          "cache_read_input_tokens": 44928,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 400
+        }
+      },
+      {
+        "id": "2f2e608f-65ee-4dae-a250-55f447c31ad0",
+        "requestDigest": "0320018b2ea5335a27968071b23c8c6ee6e2ca50c7d8d149f9cb9223323dd0a9",
+        "tokens": 47529,
+        "usage": {
+          "input_tokens": 1233,
+          "cache_read_input_tokens": 46080,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 216
+        }
+      },
+      {
+        "id": "c1812112-3964-4db0-903a-64cc8e3d314f",
+        "requestDigest": "0b1cab2ce7c9761fb5807ed36e0594c1a72e6db8f4cc298f13ac225e0bef1404",
+        "tokens": 48526,
+        "usage": {
+          "input_tokens": 146,
+          "cache_read_input_tokens": 47488,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 892
+        }
+      },
+      {
+        "id": "81687ab9-c4f2-4550-aa67-8915653aaafd",
+        "requestDigest": "ef45fd33dd81c7fb751357c9ec869afcf94705c4d16e4269788e8d8d5468cf51",
+        "tokens": 49388,
+        "usage": {
+          "input_tokens": 400,
+          "cache_read_input_tokens": 48512,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 476
+        }
+      },
+      {
+        "id": "ce3278b5-3130-4ef4-b601-8c76db7f48ef",
+        "requestDigest": "217f3bc686c490e4e3339f42a27146d4d8afb67e55d3a61644e5460a47a50555",
+        "tokens": 53321,
+        "usage": {
+          "input_tokens": 3381,
+          "cache_read_input_tokens": 49280,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 660
+        }
+      }
+    ]
+  },
+  "behavior": {
+    "baseline": {
+      "tasks": [
+        {
+          "taskId": "decision-package",
+          "state": "ACTIVE"
+        }
+      ],
+      "attempts": [
+        {
+          "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+          "taskId": "decision-package",
+          "state": "RUNNING"
+        }
+      ],
+      "promotions": 0,
+      "promotionCommitted": 0,
+      "projectRevised": 0,
+      "episodeIntent": null,
+      "conclusion": null,
+      "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+      "status": ""
+    },
+    "final": {
+      "tasks": [
+        {
+          "taskId": "decision-package",
+          "state": "STALE"
+        }
+      ],
+      "attempts": [
+        {
+          "attemptId": "attempt-60deb0da1450b6f4e8028f3d4adaf0c5",
+          "taskId": "decision-package",
+          "state": "CANCELLED"
+        }
+      ],
+      "promotions": 0,
+      "promotionCommitted": 0,
+      "projectRevised": 1,
+      "episodeIntent": "DELIVER",
+      "conclusion": {
+        "seq": 4,
+        "type": "JOURNAL_ENTRY_RECORDED",
+        "intent": "DELIVER"
+      },
+      "head": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+      "status": ""
+    },
+    "calls": {
+      "complete": 0,
+      "conclude": 1,
+      "readiness": 1,
+      "finalize": 0,
+      "relay": 2,
+      "stop": 0,
+      "plan": 2,
+      "typedPlan": 2,
+      "toolErrors": 1,
+      "jobFailures": 0,
+      "pairedToolResults": 43,
+      "unpairedToolResults": 0,
+      "domainRefusals": 1,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 2,
+      "total": 43
+    },
+    "facts": {
+      "completeAtMostOnce": true,
+      "episodeConclusionRecorded": true,
+      "taskRetired": true,
+      "noPromotion": true,
+      "headUnchanged": true,
+      "tokensBelowHistoricalClosure": true,
+      "sessionNaturalExit": true,
+      "tokenEvidenceQualified": true
+    },
+    "primary": true,
+    "historicalClosureTokens": 1901695,
+    "stateEvents": [
+      {
+        "event_id": 10,
+        "event_type": "ATTEMPT_CANCELLED"
+      },
+      {
+        "event_id": 11,
+        "event_type": "TASK_READY"
+      },
+      {
+        "event_id": 12,
+        "event_type": "TASK_STALE"
+      },
+      {
+        "event_id": 13,
+        "event_type": "PROJECT_REVISED"
+      }
+    ],
+    "crlfOnly": {
+      "paths": [
+        ".gitignore",
+        "README.md",
+        "TASK.md",
+        "check.mjs",
+        "deliverables/cost-model.json",
+        "deliverables/recommendation.md",
+        "deliverables/risk-review.md",
+        "deliverables/schedule.md",
+        "deliverables/technical-capacity.md",
+        "deliverables/vendor-compliance.md",
+        "package.json",
+        "sources/capacity.csv",
+        "sources/leads.csv",
+        "sources/quotes.csv",
+        "sources/sites.md",
+        "sources/vendors.md",
+        "updates/2026-11-04/corridor-survey.md"
+      ],
+      "sourceBytesComparedToBasis": true,
+      "semanticDiffResultSeq": 150,
+      "restoreResultSeq": 158
+    }
+  },
+  "attribution": {
+    "scoredAt": "2026-11-08T03:20:35.327Z",
+    "scriptHashes": {
+      "scripts/psvr/session_attribution.mjs": "f1443b2d4e0cb8a8ca6e489df8e9fc15eded6b91fc76df213a7930557801e435",
+      "scripts/pnwf/score_continuation.mjs": "70e680c3d882386a65a296a43ae0cb3535998e4a4123e4a6d895e1fd72090cd1"
+    },
+    "session": {
+      "id": "session-6279ff3a-6d66-44cc-aa11-8778bbc5f7c9",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-08T03:17:23.782Z",
+      "endedAt": "2026-11-08T03:19:30.709Z",
+      "durationMs": 126927
+    },
+    "counts": {
+      "steps": 29,
+      "turns": 1,
+      "toolCalls": 43,
+      "pairedToolResults": 43,
+      "unpairedToolResults": 0,
+      "toolErrors": 1,
+      "jobFailures": 0,
+      "domainRefusals": 1,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 2,
+      "stateQueries": 8,
+      "commits": 0,
+      "jobs": 16
+    },
+    "byKind": {
+      "continuity:pulse": 1,
+      "bash": 16,
+      "read": 13,
+      "work:status": 3,
+      "work:workers": 1,
+      "work:relay": 2,
+      "work:plan": 2,
+      "work:readiness": 1,
+      "project:overview": 1,
+      "project:journal_entries": 1,
+      "project:journal": 1,
+      "work:conclude": 1
+    },
+    "pairs": [
+      {
+        "callId": "call_00_ftEDha6BlurSif9qILqw0025",
+        "callSeq": 15,
+        "resultSeq": 16,
+        "callKind": "continuity:pulse"
+      },
+      {
+        "callId": "call_00_qZtbZQSab1UJqoWSQgcy5474",
+        "callSeq": 21,
+        "resultSeq": 24,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_01_cHtKisCJd3BvtSwx7tf38889",
+        "callSeq": 25,
+        "resultSeq": 28,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_dEQONiyUKAGSWv8Wkgx78587",
+        "callSeq": 33,
+        "resultSeq": 36,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_01_cscYrmF48ZJoVtf171dO9506",
+        "callSeq": 37,
+        "resultSeq": 40,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_3VuI8QNMPC405RwivbtY7559",
+        "callSeq": 45,
+        "resultSeq": 51,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_01_IdeyizbtGLeGXcrdyrwq0555",
+        "callSeq": 46,
+        "resultSeq": 52,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_02_ttpZrkq490zl4k8h5QMM7857",
+        "callSeq": 47,
+        "resultSeq": 53,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_03_6FClm68sJw22SMnZaB6o9169",
+        "callSeq": 48,
+        "resultSeq": 54,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_04_pcQpGeaT0KknvBsTZNj76749",
+        "callSeq": 49,
+        "resultSeq": 55,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_05_jG9LOH5NrPFxdx6q8ifA0187",
+        "callSeq": 50,
+        "resultSeq": 56,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_00_sA0OIfouy9AAkGVYPs1G6138",
+        "callSeq": 61,
+        "resultSeq": 65,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_01_6zEJWIfqhqyM3bHhRicD5287",
+        "callSeq": 62,
+        "resultSeq": 66,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_02_tConCSmsDIoqsFG41nfc7261",
+        "callSeq": 63,
+        "resultSeq": 67,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_03_s9vz1D6VO9bmU6VFwOQo5355",
+        "callSeq": 64,
+        "resultSeq": 68,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_00_fuLUZGxEt3KfXBX0JsD02904",
+        "callSeq": 73,
+        "resultSeq": 75,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_01_3zvO1kYfkzVTTsgZIJZm8405",
+        "callSeq": 74,
+        "resultSeq": 76,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_00_spJE8ujk2l3sSMwamFHL7875",
+        "callSeq": 81,
+        "resultSeq": 82,
+        "callKind": "read"
+      },
+      {
+        "callId": "call_00_DeC4sTtnenE4eQaHeCcl6636",
+        "callSeq": 87,
+        "resultSeq": 90,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_01_xa554zYzA12pjhBjmUQP6547",
+        "callSeq": 91,
+        "resultSeq": 94,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_hIWMWf3SQi1V8Tu0sJrD7317",
+        "callSeq": 99,
+        "resultSeq": 102,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_ZLdSUWQLJwRRBVALCyUF5835",
+        "callSeq": 107,
+        "resultSeq": 108,
+        "callKind": "work:status"
+      },
+      {
+        "callId": "call_00_zPeJDkTKPaXN9VRoBE4h4538",
+        "callSeq": 113,
+        "resultSeq": 116,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_XKofW8DtUVUzSyF9pyQN7304",
+        "callSeq": 121,
+        "resultSeq": 124,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_01_8t8Vj8jpbMwWP1dUctiR8135",
+        "callSeq": 125,
+        "resultSeq": 128,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_l7YZgYrUlTsCYxcdOicO6185",
+        "callSeq": 133,
+        "resultSeq": 136,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_FOCpGfJ1JmH2Eb8ZnvbA3897",
+        "callSeq": 141,
+        "resultSeq": 142,
+        "callKind": "work:workers"
+      },
+      {
+        "callId": "call_00_AAHVeUiZyuliToLfEMGQ7901",
+        "callSeq": 147,
+        "resultSeq": 150,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_c75SK89LvcWPtof1QCFj6352",
+        "callSeq": 155,
+        "resultSeq": 158,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_Ct6o7hqe6csWNPqxFPmL3769",
+        "callSeq": 163,
+        "resultSeq": 164,
+        "callKind": "work:relay"
+      },
+      {
+        "callId": "call_00_SMIzuD6xiBDW9Q2M7N5n0315",
+        "callSeq": 169,
+        "resultSeq": 170,
+        "callKind": "work:status"
+      },
+      {
+        "callId": "call_00_9hj2IyVtJKJXaBZxaZLW7098",
+        "callSeq": 175,
+        "resultSeq": 176,
+        "callKind": "work:plan"
+      },
+      {
+        "callId": "call_00_M3ZGrqg4GuLBu7wixyIA0451",
+        "callSeq": 181,
+        "resultSeq": 182,
+        "callKind": "work:relay"
+      },
+      {
+        "callId": "call_00_Ij8Bah4FWlk9xkfIy78V9654",
+        "callSeq": 187,
+        "resultSeq": 188,
+        "callKind": "work:plan"
+      },
+      {
+        "callId": "call_00_97HPEnuRq20D6NFV00Hv5007",
+        "callSeq": 193,
+        "resultSeq": 194,
+        "callKind": "work:readiness"
+      },
+      {
+        "callId": "call_00_LKU0C1ejMtd2nQwnNh0m3184",
+        "callSeq": 199,
+        "resultSeq": 200,
+        "callKind": "project:overview"
+      },
+      {
+        "callId": "call_01_uIEyXWimCE5kuTrWkL9y7772",
+        "callSeq": 201,
+        "resultSeq": 202,
+        "callKind": "project:journal_entries"
+      },
+      {
+        "callId": "call_00_aOs91PktsysSN9vB3ySD2972",
+        "callSeq": 207,
+        "resultSeq": 208,
+        "callKind": "work:status"
+      },
+      {
+        "callId": "call_00_7WUOyfoyT4JFw5QdDtp20156",
+        "callSeq": 213,
+        "resultSeq": 216,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_01_UjA0DXLgDxcVGIqwrY422255",
+        "callSeq": 217,
+        "resultSeq": 220,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_i7yvl7D8d1ahbx4RwtEd3750",
+        "callSeq": 225,
+        "resultSeq": 228,
+        "callKind": "bash"
+      },
+      {
+        "callId": "call_00_CAVY2sAMxpInyxczokX07936",
+        "callSeq": 233,
+        "resultSeq": 234,
+        "callKind": "project:journal"
+      },
+      {
+        "callId": "call_00_xpuvLDEIQirAlSpvZ6fu5736",
+        "callSeq": 239,
+        "resultSeq": 240,
+        "callKind": "work:conclude"
+      }
+    ],
+    "relays": [
+      {
+        "callSeq": 163,
+        "resultSeq": 164,
+        "offsetMs": 51316,
+        "callKind": "work:relay",
+        "state": "NOT_READY",
+        "reason": "NO_SETTLEABLE_DELTA",
+        "route": "takeover",
+        "resultCommit": null,
+        "taskState": null
+      },
+      {
+        "callSeq": 181,
+        "resultSeq": 182,
+        "offsetMs": 78992,
+        "callKind": "work:relay",
+        "state": "SUCCESSOR_READY",
+        "reason": null,
+        "route": "successor",
+        "resultCommit": null,
+        "taskState": "READY"
+      }
+    ],
+    "resultErrors": [
+      {
+        "callSeq": 175,
+        "resultSeq": 176,
+        "offsetMs": 75675,
+        "callKind": "work:plan",
+        "state": null,
+        "reason": "quiescence_required",
+        "changeClass": "metadata_only"
+      }
+    ],
+    "failedJobs": [],
+    "endpoint": {
+      "planCallSeq": 187,
+      "planResultSeq": 188,
+      "revision": 1,
+      "readiness": {
+        "callSeq": 193,
+        "resultSeq": 194,
+        "action": "CONTINUE_WORK",
+        "reasons": [
+          "no task is currently addressable; plan or begin work before a finalization can be considered"
+        ]
+      },
+      "delivery": {
+        "callSeq": 239,
+        "resultSeq": 240,
+        "offsetMs": 120610,
+        "state": "RECORDED",
+        "intent": "DELIVER",
+        "artifacts": [
+          {
+            "path": "deliverables/technical-capacity.md",
+            "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+            "digest": "20b1dc7c7115527e05c411cedc38b6fadb1a78036bde4f0e639daa490b4b2771"
+          },
+          {
+            "path": "deliverables/vendor-compliance.md",
+            "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+            "digest": "be6ebbcbb78a30c7016fe721662093deee1a8fa1a1b9154efbb1db5aea4c8315"
+          },
+          {
+            "path": "deliverables/cost-model.json",
+            "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+            "digest": "7750d20afd32ce7ae7f94b5f2067c9195e7a0776ce2a3c6ea89a683c2ea2875a"
+          },
+          {
+            "path": "deliverables/schedule.md",
+            "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+            "digest": "12abefd0b6cda4c8df3ca9dca672c0e8e6b6c347e1f28a6330bca42bcad58c1a"
+          },
+          {
+            "path": "deliverables/risk-review.md",
+            "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+            "digest": "14a534863f6ff4a02823f613889aac749bec15cd6f338e69d9c4ca4858857b38"
+          },
+          {
+            "path": "deliverables/recommendation.md",
+            "commit": "e631160f03d40709a9f9b67746ecd8e7708c2f81",
+            "digest": "fe1d8c5ba79b6b9e0d3d4f58427fe5a45d0c97de3022fde7df35c058f203de90"
+          }
+        ],
+        "mayEnd": true
+      }
+    },
+    "phases": {
+      "firstRelayStep": 17,
+      "acceptedPlanStep": 21,
+      "beforeFirstRelay": {
+        "requests": 16,
+        "tokens": 417338
+      },
+      "firstRelayThroughAcceptedPlan": {
+        "requests": 5,
+        "tokens": 194709
+      },
+      "afterAcceptedPlan": {
+        "requests": 8,
+        "tokens": 375940
+      },
+      "firstRequestTokens": 11790,
+      "lastRequestTokens": 53321
+    },
+    "checks": {
+      "canonicalDefaultResultSeq": 40,
+      "canonicalFinalResultSeq": 90,
+      "attemptFinalResultSeq": 128,
+      "leadTimeResultSeq": 102,
+      "immutableInputsResultSeq": 228,
+      "verificationJournalResultSeq": 234
+    }
+  },
+  "comparison": {
+    "softwareReceipt": "software.json",
+    "softwareAttribution": "software-attribution-recount.json",
+    "softwareSourceStreamSha256": "edfb0cb881696e6e3f2d17e295591833a19edb024d0d6e334b9667c134c9e02f",
+    "softwareCounts": {
+      "steps": 27,
+      "turns": 1,
+      "toolCalls": 31,
+      "pairedToolResults": 31,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 1,
+      "domainRefusals": 2,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 3,
+      "stateQueries": 6,
+      "commits": 0,
+      "jobs": 17
+    },
+    "softwareSession": {
+      "id": "session-ba31fb32-0713-4f6f-923b-c6659c2ccd95",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-07T16:48:20.347Z",
+      "endedAt": "2026-11-07T16:52:40.852Z",
+      "durationMs": 260505
+    },
+    "softwareEndpoint": {
+      "planCallSeq": 187,
+      "planResultSeq": 188,
+      "revision": 1,
+      "readiness": {
+        "callSeq": 203,
+        "resultSeq": 204,
+        "action": "CONTINUE_WORK",
+        "reasons": [
+          "no task is currently addressable; plan or begin work before a finalization can be considered"
+        ]
+      },
+      "delivery": {
+        "callSeq": 209,
+        "resultSeq": 210,
+        "offsetMs": 256147,
+        "state": "RECORDED",
+        "intent": "DELIVER",
+        "artifacts": [
+          {
+            "path": "proto/energy.proto",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "bafdb07e5a16f95f505b13174f663a0d39422fd0c922ead83ebc21fc445586f0"
+          },
+          {
+            "path": "service/wire.js",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "e981e3250f13530130a7df4724d7ac2f6c982103ee1635921744a6ad2263559e"
+          },
+          {
+            "path": "service/grpc_server.js",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "78f807ff081ede62045969d3a4624fcb37f80c685599d35bf31198e752ec01b9"
+          },
+          {
+            "path": "service/grpc_client.js",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "0b53c303885de872caec7467420bd104eb613008e4402cd61c47346d3ab82c9b"
+          },
+          {
+            "path": "test/server.test.js",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "9189e13670fc57d7501dd07270cf7169d45ac2ad6225220e921af0857e2fbaae"
+          },
+          {
+            "path": "test/integration.test.js",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "e5a995d6aa37b215d17da4a50212442772f29562bd73a4e09708dd931f8b8eab"
+          },
+          {
+            "path": "test/rest.test.js",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "5c77bfdb552f92bb818598dfaf71d3df905721f2bdcba6c57337154daca57dcd"
+          },
+          {
+            "path": "README.md",
+            "commit": "453aa7f005edb7612cf4edc1d8ec3b68efed5b4d",
+            "digest": "e2a8461fc7e3bad54f35f13347210cd742448abd4c937cceffd16ed55216f540"
+          }
+        ],
+        "mayEnd": true
+      }
+    },
+    "softwarePhases": {
+      "firstRelayStep": 17,
+      "acceptedPlanStep": 23,
+      "beforeFirstRelay": {
+        "requests": 16,
+        "tokens": 425798
+      },
+      "firstRelayThroughAcceptedPlan": {
+        "requests": 7,
+        "tokens": 341386
+      },
+      "afterAcceptedPlan": {
+        "requests": 4,
+        "tokens": 215673
+      },
+      "firstRequestTokens": 11770,
+      "lastRequestTokens": 57762
+    },
+    "softwareProbeWaitMs": 120016,
+    "softwareProbeJobDurationMs": 121500,
+    "energyMinusSoftware": {
+      "requests": 2,
+      "tokens": 5130,
+      "breakdown": {
+        "input_tokens": -2509,
+        "cache_read_input_tokens": 9600,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": -1961
+      },
+      "turnDurationMs": -133578,
+      "runDurationMs": -133954
+    },
+    "combined": {
+      "requests": 56,
+      "tokens": 1970844
+    }
+  },
+  "rawLocalTrial": ".aps-tmp/pnwf-paid-2026-11-08-energy",
+  "rawHashes": {
+    "cohort.json": "0ac95a4e7df51dffb549e0fcaf9f5374ac4052b437518a1d7fc717a3f1a54af0",
+    "prompts/energy.txt": "8ddf0cf65d5ea460ab5921adb3ff1a9c57a062aa28c804c43687a8afed5194f4",
+    "out/baseline.json": "dd6c32806535c0bd145d99c05f6b6e54fcfea0dc98d56d4d1b0e6480e47e994a",
+    "out/score.json": "00c3df05b24b8606aa243a69e719c08aa168280c48973cd20e3fba3506ce01b3",
+    "out/energy/qualification.json": "dcf439aab13a10b25a0959e227cfd0161b28ae613f6b9fe1dfccb9f429fec1c1",
+    "out/energy/request-accounting.json": "dcc5295a6a19524facdf315017b9c8ba7b6f2d3cb2fbcf47ff25ea139056becc",
+    "out/energy/run.json": "5f09c52f0359d5329cccec42ee28e7eaf109afc8762b985e6b8fb8c2de018e99",
+    "out/energy/budget.json": "562d14c4b59ad3bc264437976d8998a23bc4cce239902ec98ade562a886b2479",
+    "out/attribution/energy-0.timeline.json": "21fa002a4aa91540bf23bf93ed462ceeeebf06ee357c46c56dced8c312b63309",
+    "out/attribution/energy-0.timeline.md": "75996fa22adc67332a81d50710f198c43312fa52727c2e4ec80382e9bd780e74",
+    "runtime-energy/sessions/--run-stage-world--/session-6279ff3a-6d66-44cc-aa11-8778bbc5f7c9/session.v4.jsonl.zstd": "588222a1ed78dd966ea437c608c35eb80e8a4aba3879b0ce2c210a5acffc239a"
+  }
+}
