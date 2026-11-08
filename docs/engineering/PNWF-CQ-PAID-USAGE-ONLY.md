@@ -163,3 +163,57 @@ Software 的 seq 204 与 energy 的 seq 194 都处在修订后的状态。旧任
 回归用实际 Git 和 SQLite 分别重建 software 的三项依赖任务、七个声明产物，以及 energy 的单项任务、六个声明产物。两条用例经过 `successor` 和空计划修订，在旧代码上复现 `CONTINUE_WORK`，在新代码上收到 `DELIVER` 提示并成功记录结论。另覆盖缺失产物、只有未提交产物、随后提交的 direct outcome，以及退役后仍有开放任务。这些是确定性产品回归，新增付费请求为 0。[回归用例](../../test/pnwf_product.test.ts)
 
 离线复核还使用两份原始 Work SQLite 的备份、原 HEAD 的 Git 克隆和各自 `readiness` 前的 journal 前缀（software 至 seq 3，energy 至 seq 2）。前缀链摘要与原记录逐条相符。正常工具在两份副本上均返回 `SEMANTIC_JUDGEMENT` 和 `conclude DELIVER` 提示。随后调用 `conclude`，均返回 `RECORDED` 和 `mayEnd=true`，software 的八项与 energy 的六项 Git 产物证明均与原交付记录的提交及文件摘要一致。原始数据库的 SHA-256 在离线复核前后相符。
+
+## Readiness 修复后的真实模型复跑
+
+2026-11-08 从合入 PR #236 的主线 `e5312cc5d81b5ada6f4a1015f8d00f9c557beb85` 重新复制两份 PSVR-C A-2 原始状态。Software 于 13:58:22–14:01:35 运行，energy 于 14:01:36–14:04:37 运行（北京时间）。每条使用独立的 `paid-usage-only` cohort 和账本，固定 `deepseek-flash` 与 DSH `0.2.1-rc.5`，上限为 64 次请求、30 分钟会话和 240 秒单请求等待，金额与 token 总量上限均为 `null`。逐案例核对了原始 prompt 摘要、初始 Work 状态、World 的 basis/HEAD/脏路径及 29 项工具目录。原始 Work 和 journal 数据库的摘要在复跑前后相符。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+Docker 首轮 Mock 在绑定 `F:` 时停止，实际请求数为 0。随后在 `C:` 的同提交副本中按锁文件安装并构建，readiness、应用工厂和入口的构建摘要与工作区相符。镜像与八个 adapter 文件摘要和修复前相同。28 项请求和归因测试、六个零付费容器场景均通过，两条实际容器各在首个模型请求前通过 16 项检查与一项复制 World 预检。宿主绑定路径是本轮执行条件的一处差异。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+### 退役、readiness 与退出
+
+采用新提示的观察判据是，模型在成功退役后查询 `readiness`，收到显式 `conclude DELIVER` 提示，随后在新的模型步骤中发出该调用。两条复跑的退役后查询均为 **0**，因此提示采用情况为 `NOT_EXERCISED`。两条各自在旧 Attempt 尚未关闭、以及走 `successor` 后任务已 READY 但尚未退役时查询 `readiness`，两次都得到 `CONTINUE_WORK`。退役后的可见路径一致，都是一次 Bash 验证、一次 `conclude DELIVER`、一条最终答复。两个 `conclude` 均返回 `RECORDED`、`mayEnd=true`，随后自然退出，交付回执后工具调用均为 0。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+| 轨迹 | 退役结果 | 退役后的 `readiness` | 后续可见行动 | 退出 |
+|---|---:|---|---|---|
+| Software 修复前 | seq 188 | seq 204 `CONTINUE_WORK` | 测试和 journal 在查询前完成，查询后直接 `conclude`（209 → 210） | seq 216 自然 |
+| Software 复跑 | seq 232 | 0 次，最后一次结果在 seq 226 | `node --test` 26 项通过（237 → 240），`conclude`（245 → 246） | seq 252 自然 |
+| Energy 修复前 | seq 188 | seq 194 `CONTINUE_WORK` | 查询后七次状态、证据和 journal 调用，再 `conclude`（239 → 240） | seq 246 自然 |
+| Energy 复跑 | seq 238 | 0 次，最后一次结果在 seq 232 | 最终检查 46 项断言通过并核对摘要（243 → 246），`conclude`（251 → 252） | seq 258 自然 |
+
+两个复跑都保留原 canonical HEAD，原 Attempt 转为 CANCELLED，三项 software 任务及一项 energy 任务转为 STALE，`complete`、`finalize` 与 promotion 均为 0，机械主判据为 2/2。Software 的八项产物证明与修复前相符。Energy 六项原交付证明的提交和文件摘要也相符，另把既有现场测量记录加入本次交付清单。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+### 行为与用量变化
+
+| 指标 | Software 修复前 → 复跑 | Energy 修复前 → 复跑 |
+|---|---:|---:|
+| 结算请求 | 27 → 29 | 29 → 26 |
+| 调用结果配对 | 31/31 → 41/41 | 43/43 → 46/46 |
+| 产品调用 | 13 → 11 | 14 → 12 |
+| Bash / 原生 `read` / `job_kill` | 17 / 0 / 1 → 21 / 9 / 0 | 16 / 13 / 0 → 25 / 9 / 0 |
+| 领域拒绝 / 同因重复 | 2 / 0 → 1 / 0 | 1 / 0 → 2 / 1 |
+| 结果层错误 / 失败作业 | 0 / 1 → 1 / 0 | 1 / 0 → 0 / 1 |
+| 无进展调用 | 3 → 2 | 2 → 3 |
+| DSH 轮次（秒） | 260.505 → 162.069（−98.436） | 126.927 → 150.026（+23.099） |
+| 外层运行（秒） | 291.006 → 193.718（−97.288） | 157.052 → 181.012（+23.960） |
+| 退役后调用 / 请求 | 4 / 4 → 2 / 3 | 9 / 8 → 2 / 3 |
+| 退役到发出 `conclude`（秒） | 10.513 → 5.666 | 34.555 → 6.147 |
+| 退役到 `DELIVER` 回执（秒） | 24.092 → 19.150 | 40.271 → 18.014 |
+| 退役到退出（秒） | 28.450 → 22.798 | 46.588 → 24.281 |
+| 退役后 tokens | 215,673 → 205,260 | 375,940 → 167,422 |
+
+**Software。** 复跑继续以 26 项测试及自制 HTTP/2 探针验证迁移，探针一次完成。它增加了源代码、文件清单和部署状态读取，并探查容器中的 `sqlite3`。在核对并清理复制 World 的 CRLF 差异后，第一次 `relay` 因漏传 `relayRoute` 返回结果层错误（205 → 206），接着 `takeover` 返回 `NO_SETTLEABLE_DELTA`（211 → 212），`successor` 成功（217 → 218）。修复前的失败探针等待 120.016 秒。把这段等待从旧轮次扣除，旧轮次为 140.489 秒，复跑仍多 21.580 秒。复跑节约的总时长主要反映避开该等待，两条轨迹采用了不同的核验和清理顺序。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+**Energy。** 复跑在 canonical 和 Attempt World 分别通过最终检查后尝试 `successor`。前两次（113 → 114、151 → 152）都被同一组写域外修改阻止。模型核对 `--ignore-space-at-eol` 和字节摘要，中途用 `HEAD:sites.md` 漏掉 `sources/` 目录，Bash 以 128 退出（调用 197、作业 199、结果 200）。用正确路径重查后，它通过 `git add` 刷新了复制 World 中内容一致的写域外路径，暂存区无差异，剩余七个修改路径在任务写域内。第三次 `successor` 成功（221 → 222）。相比修复前，退役前增加 45.406 秒，退役后缩短 22.307 秒。`conclude` 本身的响应耗时由 5.716 秒增至 11.867 秒，模型发出交付调用的时间仍明显提前。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+| 终态用量 | Software 修复前 → 复跑 | Energy 修复前 → 复跑 |
+|---|---:|---:|
+| Fresh input | 33,921 → 45,587（+11,666） | 31,412 → 34,172（+2,760） |
+| Cache read | 934,912 → 1,332,992（+398,080） | 944,512 → 1,018,880（+74,368） |
+| Cache creation | 0 → 0 | 0 → 0 |
+| Output | 14,024 → 16,222（+2,198） | 12,063 → 14,875（+2,812） |
+| **Tokens 合计** | **982,857 → 1,394,801（+41.91%）** | **987,987 → 1,067,927（+8.09%）** |
+
+两次复跑共 55 个已结算请求、2,462,728 tokens，未结算请求为 0，账本和 DSH 的四类终态用量逐请求相符。两条轨迹的总用量都增加，增量主要来自退役前的缓存读取。该阶段的 cache read 在 software 为 726,912 → 1,133,824，在 energy 为 581,632 → 857,856。Energy 的平均每请求用量从 34,069 增至 41,074 tokens，因此请求少了三次，总用量仍增加。退役后的用量按成功空计划结果之后的模型步骤归集，包含结论回执后的最终回复。这组对比每种状态只有一次复跑，且两条都绕过了退役后的 `readiness`，因此观察到的耗时和用量差属于整条轨迹。新提示的可达性仍由上一节的确定性回归和离线复核支持，真实模型采用仍待观测。[复跑证据](../../research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
+
+复跑的压缩原始轨迹、归因时间线、账本、结算快照和 Work/journal 数据库已按文件摘要归档至本地 `.aps-tmp/pnwf-paid-2026-11-08-readiness-software` 与 `.aps-tmp/pnwf-paid-2026-11-08-readiness-energy`。分析使用已有归因脚本，复跑以外新增付费请求为 0。
