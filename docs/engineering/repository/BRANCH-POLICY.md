@@ -35,6 +35,8 @@ is reachable there forever, and every pull request keeps its commits reachable a
 8. **No branch exists without an active purpose.** "Just in case" is not a purpose.
 9. **No permanent branch other than `main`** unless explicitly justified in
    [`ACTIVE-BRANCHES.md`](ACTIVE-BRANCHES.md) with an owner, a purpose and a next action.
+10. **Prefer one active working branch and cap concurrent work at three non-`main` branches.**
+    Use `main` alone between campaigns. Keep recovery snapshots in the audit archive.
 
 ## 3. Lifecycle (§19)
 

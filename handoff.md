@@ -8,6 +8,7 @@
 ## 0. 30 秒版本
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
+- `main` 是唯一常驻分支。日常保留一条工作分支，并行工作上限为三条。分支归并、R3-A2 导入与历史引用恢复入口见 [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)。
 - Bench 树与 README 导航已合入主线 `ca3e67661730f157acafe2c999afbac5b83459b2`，合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
 - Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，证据合并点为 **`00c5f46d69683ee75f3b74d44f184c0b7a19ac23`**，合并前 14/14 个 CI job 通过。接手时用 `git rev-parse origin/main` 核验当前主线。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
@@ -53,7 +54,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | Bench 导航合并点 `ca3e67661730f157acafe2c999afbac5b83459b2`，当前值以 `git rev-parse origin/main` 为准 |
+| `origin/main` | 分支归并的盘点基线为 `1560db0bdc5c56b730ef83bd22cf7d5e1c167173`，当前值以 `git rev-parse origin/main` 为准 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
@@ -68,7 +69,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | [PR #240](https://github.com/orangeofcarl0-sys/palimpsest/pull/240) | MERGED at `86483ad40ef2659935a4085fd11025de768f4fc1`，同步 handoff 和 504 重试，合并前 14/14 check jobs SUCCESS |
 | [PR #241](https://github.com/orangeofcarl0-sys/palimpsest/pull/241) | MERGED at `0f7dc1308060d6880eb8dbdc65581fe8e5ebf2b4`，发布包 504 恢复路径通过 PR 与主线 14/14 个 CI job |
 | [PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242) | MERGED at `ca3e67661730f157acafe2c999afbac5b83459b2`，已验证 head `1f75c1cf2599a82bac680f6dbf4ae2bff6df33d8`，14/14 check jobs SUCCESS |
-| 本地 `palimpsest-pnwf-action-coherence` | 已合并；tip `1c85407`，不要继续在该分支开发 |
+| 分支恢复 | 项目目录下 `branch-archives/2026-11-08-1560db0/` 保存清理前的 Git bundle、已验证镜像及原引用清单 |
 | 工作树 | 本次交付提交后应 clean；以 `git status --short` 为准 |
 | Node / pnpm | Node `24.14.1` / pnpm `11.21.0` |
 | 平台 | Windows，PowerShell；Docker 中 Linux / DSH 0.2.1-rc.5 |
@@ -248,6 +249,8 @@ Energy 执行前重新通过 24 项请求测试、4 项归因测试和 build。�
 真实复跑在 `e5312cc` 重新通过 28 项脚本测试、构建、六个零付费容器场景，以及两次各 16 项实际隔离检查。首轮 `F:` 绑定失败发生于 Mock 请求前，随后改用 `C:` 的同提交执行副本，关键构建文件、镜像和 adapter 摘要相符。[复跑证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json)
 
 定向观察在 `5588cf9` 构建并通过 28 项脚本测试。两个 Mock 用独立副本验证下一模型请求带有 `readiness` 新提示，付费请求 0。两条真实会话分别通过 16 项隔离检查和一项复制 World 预检，原始 Work 与 journal 摘要在复制和运行前后相符。[定向观察证据](research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json)
+
+R3-A2 导入保留三项原始提交及冻结的用例、资格计划和运行证据。本地 TypeScript 构建与两个定向测试文件共 116 项通过。历史资格结论为四组 `UNQUALIFIED`。[资格结果](docs/engineering/R3-A2-SENTINEL-PORTFOLIO-RESULT.md)
 
 PR #242 的 14 个 job 首次运行全部通过。Linux CI 通过 28 项脚本测试、4,985 项 Vitest 测试（33 项跳过）、38 项 E2E，以及架构和公共 API 检查。R0 六个 E gate 与真实下游安装通过，D2、D4、D5 与 D5 reliability 步骤因外部 DSH 环境未配置而跳过。Windows Host Boundary 和 clean-env 通过。[Linux CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42481204750) · [R0](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42481204837) · [Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42481204867)
 
@@ -466,6 +469,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-08 | 同步发布 handoff 并补齐 `package-smoke` 的 HTTP 504 重试 | [PR #240](https://github.com/orangeofcarl0-sys/palimpsest/pull/240)，`scripts/release/consumer-smoke.mjs` | Ordarium 发布包下载 504 使用原三次尝试上限，真实下游安装为通过条件 |
 | 2026-11-08 | 持续 504 时通过 GitHub 官方资产 API 恢复 `package-smoke` | [PR #241](https://github.com/orangeofcarl0-sys/palimpsest/pull/241)，`0f7dc13` | PR 与主线 CI 均为 14/14，主线核验四个原包的 SHA-512 后完成真实下游安装 |
 | 2026-11-08 | 合并 Bench 树及 README 导航，登记实际合并点与 CI 范围 | [PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)，`ca3e676` | 14/14 CI job 首次通过，核对 59 个链接与 87 个证据阶段，四个外部 DSH 步骤跳过 |
+| 2026-11-08 | 归并工作分支，导入 R3-A2 冻结证据并归档其余独有历史 | [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)，R3-A2 tip `10a5978` | 恢复验证 411 个引用，R3-A2 定向测试 116 项通过 |
 
 ---
 
