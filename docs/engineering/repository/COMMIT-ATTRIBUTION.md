@@ -27,11 +27,18 @@ Git objects without checking out or executing their code, then posts the
 identity headers for every incoming commit, including merge commits created on a
 topic branch. The `main` push audit checks the resulting commits.
 
-Require `commit-attribution` from GitHub Actions alongside the existing CI checks.
-Use rebase-only PR merges and require linear history on `main`. The rebase path
+The `main-protection` ruleset requires GitHub Actions to report `commit-attribution`
+alongside `unit` and `e2e` on a head up to date with `main`. It allows rebase-only PR
+merges and requires linear history. The rebase path
 carries the checked commit messages forward without an editable merge or squash
 message. GitHub assigns fresh SHAs on rebase. Record the resulting main SHA for new
-release evidence.
+release evidence. [Main protection](https://github.com/orangeofcarl0-sys/palimpsest/rules/23655367)
+
+The separate `main-publisher` ruleset limits main updates to the repository owner
+through a PR. The owner still satisfies all rules in `main-protection`. After
+checking the exact head and its CI, publish with
+`gh pr merge <number> --rebase --match-head-commit <sha> --delete-branch`.
+[Publisher rule](https://github.com/orangeofcarl0-sys/palimpsest/rules/26806204)
 
 Agent credentials need a separate permission boundary. Give agents access to topic
 branches or forks and keep the maintainer's administration, status publishing and
