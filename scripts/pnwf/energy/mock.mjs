@@ -1,0 +1,104 @@
+/** Deterministic model responses for qualification. All tool calls still run through real DSH. */
+import { assert, BULLETIN, DELIVERABLES, REVISION_PATHS, START, SUMMARY } from "./contract.mjs";
+import { setTimeout as delay } from "node:timers/promises";
+
+const markdown = (title, prose, data) => `# ${title}\n\n${prose}\n\n<!-- data:start -->\n\`\`\`json\n${JSON.stringify(data)}\n\`\`\`\n<!-- data:end -->\n`;
+const childPrompt = "PNWF mock revision executor. Update the two-site package from the new material in this Git worktree.";
+const shell = command => ({ name: "bash", input: { command, description: "Check and record qualification artifacts" } });
+const work = (action, args = {}) => ({ name: "palimpsest_work", input: { action, ...args } });
+const finish = [{ type: "text", text: "The requested qualification step is complete." }];
+const quoted = value => "'" + value.replaceAll("'", "'\\''") + "'";
+
+function writeFiles(files) {
+  const script = `const fs=require('node:fs');fs.mkdirSync('deliverables',{recursive:true});for(const [p,v] of Object.entries(${JSON.stringify(files)}))fs.writeFileSync(p,v);`;
+  return `node -e ${quoted(script)} && node check.mjs --final && git add deliverables && git commit -m 'Record deployment decision package'`;
+}
+
+function packageFiles(revised) {
+  const harbor = revised ? "K-900" : "S-1080";
+  const total = revised ? 536000 : 485000;
+  const install = revised ? "2027-02-11" : "2027-01-07";
+  const commission = revised ? "2027-02-18" : "2027-01-14";
+  const source = revised ? BULLETIN : "sources/capacity.csv";
+  const sites = [{ site: "NR", model: "K-900" }, { site: "HF", model: harbor }];
+  const line = ({ site, model }) => ({ site, model, unitPrice: model === "K-900" ? 250000 : 205000,
+    freight: model === "K-900" ? 18000 : 12000, lineTotal: model === "K-900" ? 268000 : 217000 });
+  const files = {
+    [DELIVERABLES[0]]: markdown("Technical capacity", `North Ridge requires 850 kW at −18 °C and uses K-900. Harbor Flats requires 620 kW and uses ${harbor}. See ${source}.`, { sites }),
+    [DELIVERABLES[2]]: JSON.stringify({ lines: sites.map(line), total }) + "\n",
+    [DELIVERABLES[3]]: markdown("Schedule", `North Ridge installs on 2027-02-11. Harbor Flats installs on ${install}.`, { start: START, installs: [
+      { ...sites[0], leadWeeks: 14, installStart: "2027-02-11", commission: "2027-02-18" },
+      { ...sites[1], leadWeeks: revised ? 14 : 9, installStart: install, commission },
+    ] }),
+    [DELIVERABLES[4]]: markdown("Risks", `Halcyon's certificate is pending. Confirm logistics before committing funds. See ${source}.`, { risks: [
+      { statement: "Halcyon does not have a current certificate", source: "sources/vendors.md" },
+      { statement: revised ? "S-1080 is derated below the Harbor Flats requirement" : "Confirm site conditions before ordering", source },
+    ] }),
+    [DELIVERABLES[5]]: markdown("Recommendation", `Use K-900 at North Ridge and ${harbor} at Harbor Flats for USD ${total}. Check ${source}.`, {
+      north: "K-900", harbor, totalUsd: total, corridorMm: 1250,
+    }),
+  };
+  if (!revised) files[DELIVERABLES[1]] = markdown("Vendor certificates", "Kestrel and Solaris are current. Halcyon is expected, not issued.", {
+    vendors: ["K-900", "S-1080", "H-1320"].map(model => ({ model, certificate: model === "H-1320" ? "EXPECTED_NOT_CURRENT" : "CURRENT" })),
+  });
+  return files;
+}
+
+function messages(input, role, kind) {
+  return input.messages.filter(message => message.role === role).flatMap(message =>
+    typeof message.content === "string" ? [{ type: "text", text: message.content }] : message.content).filter(block => block.type === kind);
+}
+
+export function qualificationReply({ arm, session, accepted }) {
+  const turns = new Map();
+  let advanced = false;
+  return async (input, ordinal) => {
+    const users = messages(input, "user", "text");
+    const isWorker = users.some(block => block.text?.includes("You are a Palimpsest WORK WORKER"));
+    const isChild = users.some(block => block.text?.includes(childPrompt));
+    const role = isWorker ? "worker" : isChild ? "child" : "principal";
+    const step = turns.get(role) ?? 0;
+    turns.set(role, step + 1);
+    const conclude = intent => work("conclude", { intent, statement: "The committed qualification result is ready for this episode.",
+      ...(intent === "DELIVER" ? { artifacts: session === "T1" ? DELIVERABLES : [SUMMARY] } : {}) });
+    let command;
+    if (isWorker || isChild) {
+      if (step === 0) command = shell(writeFiles(packageFiles(true)));
+      else if (step === 1 && isWorker) command = { name: "palimpsest_worker_result", input: { kind: "READY_FOR_SETTLEMENT", summary: "The affected energy artifacts were revised and committed." } };
+    } else if (session === "T1") {
+      if (step === 0) command = shell(writeFiles(packageFiles(false)));
+      else if (step === 1 && arm === "P") command = conclude("DELIVER");
+    } else if (session === "T2" && arm === "P") {
+      const results = JSON.stringify(messages(input, "user", "tool_result").at(-1)?.content ?? "");
+      if (step === 0) command = work("plan", { reason: "A supplier bulletin needs isolated revision.", tasks: [{
+        task_id: "revise-energy-package", objective: "Apply the Harbor Flats supplier correction, update all affected artifacts, and commit the candidate while retaining the separate certificates.",
+        depends_on: [], write_paths: REVISION_PATHS, required_artifacts: REVISION_PATHS,
+      }] });
+      else if (step === 1) command = work("delegate", { taskId: "revise-energy-package" });
+      else if (step === 2) command = work("workers");
+      else if (/FINISHED/u.test(results) && /SETTLED/u.test(results)) {
+        command = advanced ? conclude("WAIT_FOR_OPERATOR") : work("run", { maxSteps: 8 });
+        advanced = true;
+      } else if (step < 45 && !/RECORDED|HOST_ERROR|nothing in this project currently awaits/u.test(results)) {
+        await delay(900);
+        command = work("workers");
+      }
+    } else if (session === "T2") {
+      if (step === 0) command = shell("git worktree add -b energy-candidate .palimpsest/native-candidate");
+      else if (step === 1) command = { name: "subagent", input: { cwd: ".palimpsest/native-candidate", description: "Revise deployment candidate", prompt: childPrompt } };
+      else if (step < 16 && !/Record deployment decision package/u.test(JSON.stringify(messages(input, "user", "tool_result").at(-1)?.content ?? ""))) {
+        command = shell("sleep 1; git log -1 --format=%s energy-candidate");
+      }
+    } else if (session === "T3") {
+      if (step === 0) command = shell(`cat acceptance.json ${DELIVERABLES[5]}`);
+      else if (step === 1) command = shell(writeFiles({ [SUMMARY]: markdown("Procurement review",
+        `Both sites now use K-900. The source ${BULLETIN} changes Harbor Flats capacity. The estimate increases by USD 51,000 and Harbor Flats installation starts five weeks later. Purchase and final budget approval remain pending.`,
+        { north: "K-900", harbor: "K-900", previousTotalUsd: 485000, totalUsd: 536000, previousHarborLeadWeeks: 9,
+          harborLeadWeeks: 14, approvedHead: accepted, pendingApprovals: ["Purchase order", "Budget release"] }) }));
+      else if (step === 2 && arm === "P") command = conclude("DELIVER");
+    }
+    if (!command) return finish;
+    assert(input.tools?.some(tool => tool.name === command.name), `MOCK_TOOL_UNAVAILABLE ${command.name} (${input.tools?.map(tool => tool.name).join(",")})`);
+    return [{ type: "tool_use", id: `energy_${ordinal}_${role}`, ...command }];
+  };
+}

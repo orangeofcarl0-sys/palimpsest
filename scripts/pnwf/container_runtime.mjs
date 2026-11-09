@@ -11,18 +11,21 @@ export function containerRepositoryPath(repository) {
   const path = resolve(repository).replaceAll("\\", "/");
   return /^[A-Za-z]:/u.test(path) ? "/" + path[0].toLowerCase() + path.slice(2) : "/product";
 }
-export function createPrincipal({ repository, stage, home, image, preflight }) {
+export function createPrincipal({ repository, stage, home, image, preflight, layout = "recorded", acceptance }) {
   const imageId = docker(["image", "inspect", image, "--format", "{{.Id}}"]);
   const name = `pnwf-qualified-${randomUUID()}`;
   const harness = `${name}-harness`;
-  const repoPath = containerRepositoryPath(repository);
+  const repoPath = layout === "recorded" ? containerRepositoryPath(repository) : "/product";
+  const runtimeParts = layout === "native" ? [] : layout === "recorded"
+    ? ["dist", "host", "node_modules"] : ["dist", "node_modules", "package.json", "runtime"];
   const mounts = [
-    ...["dist", "host", "node_modules"].map(part => ({ source: resolve(repository, part), target: `${repoPath}/${part}`, readOnly: true })),
+    ...runtimeParts.map(part => ({ source: resolve(repository, part), target: `${repoPath}/${part}`, readOnly: true })),
     { source: resolve(stage), target: "/run/stage", readOnly: false },
     { source: resolve(home), target: "/home/principal/.dsh", readOnly: false },
     { source: resolve(preflight), target: "/qualification/world_preflight.mjs", readOnly: true },
+    ...(acceptance === undefined ? [] : [{ source: resolve(acceptance), target: "/run/stage/world/acceptance.json", readOnly: true }]),
   ];
-  if (/^[A-Za-z]:/u.test(resolve(repository))) mounts.push({ source: resolve(repository, "node_modules"), target: `/mnt/host${repoPath}/node_modules`, readOnly: true });
+  if (layout === "recorded" && /^[A-Za-z]:/u.test(resolve(repository))) mounts.push({ source: resolve(repository, "node_modules"), target: `/mnt/host${repoPath}/node_modules`, readOnly: true });
   docker(["volume", "create", harness]);
   try {
     // This root helper has no network and only the two task-owned mounts. No owner credentials.
@@ -39,7 +42,7 @@ export function createPrincipal({ repository, stage, home, image, preflight }) {
     const id = docker(args);
     docker(["start", id]);
     docker(["exec", "--user", "1001:1001", id, "git", "config", "--global", "--add", "safe.directory", "*"]);
-    return { id, name, imageId, harness, repoPath, mounts,
+    return { id, name, imageId, harness, repoPath, mounts, layout,
       cleanup: () => { try { docker(["rm", "-f", id]); } finally { docker(["volume", "rm", harness]); } } };
   } catch (error) {
     try { docker(["rm", "-f", name]); } catch { /* creation may have failed */ }
@@ -75,6 +78,10 @@ function canary() {
   check("indirect_proc_harness", false, () => fs.readFileSync("/proc/1/root/harness/private-canary"));
   check("indirect_parent_harness", false, () => fs.readFileSync("/run/stage/world/../../../harness/private-canary"));
   check("rootfs_readonly", false, () => fs.writeFileSync("/etc/pnwf-canary", "no"));
+  check("no_docker_socket", true, () => { if (fs.existsSync("/var/run/docker.sock")) throw Error("host control socket mounted"); });
+  check("no_external_evaluator", true, () => {
+    if (fs.existsSync("/product/scripts") || fs.existsSync("/run/stage/evaluator")) throw Error("evaluator mounted");
+  });
   check("no_owner_credential", true, () => { if (fs.existsSync("/home/principal/.dsh/.credentials.yaml")) throw Error("credential present"); });
   check("no_provider_credential_env", true, () => {
     if (Object.keys(process.env).some(k => /API_KEY|AUTH_TOKEN|ACCESS_TOKEN|SECRET/iu.test(k) && k !== "CQ_PROXY_KEY")) throw Error("credential environment present");
@@ -99,7 +106,20 @@ export function qualifyPrincipal(runtime, expectedHead) {
   const harnessPresent = docker(["exec", "--user", "0:0", runtime.id, "node", "-e", "process.stdout.write(require('fs').readFileSync('/harness/private-canary','utf8'))"]) === "PNWF_PRIVATE";
   const checks = JSON.parse(docker(["exec", "--user", "1001:1001", runtime.id, "node", "-e", `(${canary.toString()})()`]));
   if (!harnessPresent || checks.some(c => c.status !== c.expected)) throw new Error(`ACTUAL_ISOLATION_FAILED: ${JSON.stringify(checks)}`);
-  const worlds = JSON.parse(docker(["exec", "--user", "1001:1001", "-e", `PNWF_EXPECTED_HEAD=${expectedHead}`, runtime.id, "node", "/qualification/world_preflight.mjs"]));
+  const worlds = JSON.parse(docker(["exec", "--user", "1001:1001", "-e", `PNWF_EXPECTED_HEAD=${expectedHead}`,
+    "-e", `PNWF_LAYOUT=${runtime.layout}`, runtime.id, "node", "/qualification/world_preflight.mjs"]));
+  if (runtime.layout === "worker") {
+    docker(["exec", "--user", "1001:1001", runtime.id, "node", "-e",
+      "const f=require('fs');for(const p of ['/run/stage/state','/run/stage/deployment-linux.json','/mnt/c/Users','/product/host'])if(f.existsSync(p))throw Error('worker mount exposure '+p)"]);
+  }
+  const acceptance = runtime.mounts.find(mount => mount.target === "/run/stage/world/acceptance.json");
+  if (acceptance) {
+    const expected = createHash("sha256").update(readFileSync(acceptance.source)).digest("hex");
+    const actual = docker(["exec", "--user", "1001:1001", runtime.id, "node", "-e", `const fs=require('node:fs');
+const file='/run/stage/world/acceptance.json';let wrote=false;try{fs.closeSync(fs.openSync(file,'r+'));wrote=true;}catch{}
+if(wrote)throw Error('acceptance write access');process.stdout.write(require('node:crypto').createHash('sha256').update(fs.readFileSync(file)).digest('hex'));`]);
+    if (actual !== expected) throw new Error("ACCEPTANCE_MOUNT_DRIFT");
+  }
   const descriptor = { imageId: runtime.imageId, user: inspected.Config.User, network: host.NetworkMode,
     readonlyRootfs: host.ReadonlyRootfs, capDrop: host.CapDrop, securityOpt: host.SecurityOpt,
     adapterFiles: Object.fromEntries(["container_adapter.mjs", "container_runtime.mjs", "container_bridge.mjs", "world_preflight.mjs", "bounded_provider.mjs", "execution_budget.mjs", "mock_provider.mjs", "run_pnwf_live.mjs"]

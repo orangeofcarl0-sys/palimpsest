@@ -8,6 +8,7 @@ export async function startMockProvider({ port = 0, reply, delayMs = 0, fault = 
   const instanceId = randomUUID();
   const calls = [];
   const requests = [];
+  const failures = [];
   const sockets = new Set();
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, "http://mock");
@@ -54,10 +55,10 @@ export async function startMockProvider({ port = 0, reply, delayMs = 0, fault = 
       if (fault === "interrupt") { res.destroy(); return; }
       if (fault !== "missing-usage") emit({ type: "message_delta", delta: { stop_reason: content.some(b => b.type === "tool_use") ? "tool_use" : "end_turn", stop_sequence: null }, usage });
       emit({ type: "message_stop" }); res.end();
-    } catch { if (!res.headersSent) res.writeHead(400); res.end(); }
+    } catch (error) { failures.push(error.message); if (!res.headersSent) res.writeHead(400); res.end(); }
   });
   server.on("connection", socket => { sockets.add(socket); socket.on("close", () => sockets.delete(socket)); });
   await new Promise((resolve, reject) => { server.once("error", reject); server.listen(port, "127.0.0.1", resolve); });
-  return { config: { kind: MOCK_KIND, instanceId, secret, url: `http://127.0.0.1:${server.address().port}/` }, calls, requests,
+  return { config: { kind: MOCK_KIND, instanceId, secret, url: `http://127.0.0.1:${server.address().port}/` }, calls, requests, failures,
     close: async () => { for (const socket of sockets) socket.destroy(); await new Promise(resolve => server.close(resolve)); } };
 }

@@ -4,7 +4,7 @@
  * Old isolation JSON is not an execution permit. Only this adapter may be invoked by the PNWF gate.
  */
 import { execFileSync, spawn } from "node:child_process";
-import { cpSync, mkdirSync, openSync, closeSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, mkdirSync, openSync, closeSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
@@ -15,13 +15,50 @@ import { startContainerBridge } from "./container_bridge.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const write = (path, value) => writeFileSync(path, JSON.stringify(value, null, 2) + "\n");
+export const DSH_BIN = "/usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js";
+
+export function prepareContainerProfile({ home, repository, layout = "recorded", workerControl = false }) {
+  mkdirSync(home);
+  const profile = join(home, "profiles", "alhs-core");
+  mkdirSync(profile, { recursive: true });
+  const packages = join(home, "profiles/node_modules");
+  mkdirSync(packages, { recursive: true });
+  const native = layout === "native";
+  const repoPath = layout === "recorded" ? containerRepositoryPath(repository) : "/product";
+  const entry = workerControl ? `${repoPath}/runtime/product-entry.mjs` : `${repoPath}/dist/src/advanced.js`;
+  write(join(profile, "package.json"), { name: "dsh-profile-alhs-core", private: true, dependencies: {},
+    dsh: { profile: { bundles: ["@deepseek-ai/dsh-base", native ? "@deepseek-ai/dsh-headless" : "palimpsest-dsh-host"], patchReload: "startup" } } });
+  writeFileSync(join(home, "settings.yaml"), "agent-default-model:\n  provider: deepseek-official\n  model: deepseek-flash\n");
+  writeFileSync(join(profile, "cordis.patch.yml"), [
+    "- id: llm-deepseek", "  config:", "    baseURL: http://127.0.0.1:18080", "    apiKeyEnv: CQ_PROXY_KEY",
+    "- id: llm-pi-ai", "  disabled: true",
+    "- id: agent-default-model", "  config:", "    provider: deepseek-official", "    model: deepseek-flash",
+    "- id: approval", "  config:", "    policy: never",
+    "- id: permission", "  config:", "    presets:",
+    "      read-only: { sandbox: read-only, approval: never }",
+    "      workspace-write: { sandbox: workspace-write, approval: never }",
+    "      danger-full-access: { sandbox: danger-full-access, approval: never }",
+    "    defaultPreset: workspace-write",
+    "- id: sandbox-policy", "  config:", "    mode: workspace-write", "    workspaceRoot: '/run/stage/world'",
+    "- id: session-title-llm", "  disabled: true", "- id: tool-web", "  disabled: true",
+    ...(!native ? ["- id: palimpsest-tools", "  config:", `    palimpsestEntry: '${entry}'`,
+      "    deploymentProfile: '/run/stage/deployment-linux.json'", "    serve: false", "    openDashboard: false"] : []),
+    ...(layout === "worker" ? ["- id: palimpsest-runner", "  disabled: true", "- insert:",
+      "    - id: pnwf-container-worker", "      name: 'pnwf-container-worker'"] : []), "",
+  ].join("\n"));
+  if (!native) {
+    cpSync(join(repository, "host/dsh"), join(packages, "palimpsest-dsh-host"), { recursive: true });
+    if (layout === "recorded") cpSync(join(repository, "host/deployment"), join(packages, "palimpsest-host-deployment"), { recursive: true });
+    if (layout === "worker") cpSync(join(repository, "runtime/worker"), join(packages, "pnwf-container-worker"), { recursive: true });
+  }
+}
 function within(root, path) {
   const base = resolve(root) + "/";
   const value = resolve(path).replaceAll("\\", "/");
   if (!value.startsWith(base.replaceAll("\\", "/"))) throw new Error("PREPARED_PATH_OUTSIDE_RUN");
   return resolve(path);
 }
-export async function runContainerSession({ run, sessionId, budgetPath, provider, mode = "mock", repository = process.cwd(), image = "palimpsest-pnwf-isolation:local" }) {
+export async function runContainerSession({ run, sessionId, budgetPath, provider, mode = "mock", repository = process.cwd(), image = "palimpsest-pnwf-isolation:local", experiment }) {
   // Capability/identity failures precede profile preparation, container creation and provider traffic.
   const paid = mode === PAID_MODE;
   if (!paid && mode !== "mock") throw new Error("UNKNOWN_EXECUTION_MODE");
@@ -29,7 +66,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
   const budget = new ExecutionBudget(budgetPath);
   try {
   if (budget.usageOnly !== paid) throw new Error("ACCOUNTING_MODE_MISMATCH");
-  let runtime, proxy, bridge, child, timeout, monitor;
+  let runtime, proxy, bridge, child, timeout, monitor, worker;
   let outFd, errFd, killedBy = null, exitCode = 1, failure = null, isolation = null;
   const startedAt = new Date().toISOString();
   const core = JSON.parse(readFileSync(join(run, "core.json"), "utf8"));
@@ -49,51 +86,31 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
   const out = join(run, "out", sessionId);
   mkdirSync(out, { recursive: true });
   const home = join(run, "runtime-" + sessionId);
+  const layout = experiment?.layout ?? "recorded";
   try {
-    // Exclusive new profile; never reuse a credential store or a prior runtime.
-    mkdirSync(home);
-    const profile = join(home, "profiles", "alhs-core");
-    mkdirSync(profile, { recursive: true });
-    mkdirSync(join(home, "profiles", "node_modules"), { recursive: true });
-    const deployment = JSON.parse(readFileSync(prepared.deployment, "utf8"));
-    deployment.repository = "/run/stage/world";
-    deployment.transport.databasePath = "/run/stage/state/transport.sqlite";
-    for (const key of Object.keys(deployment.databases)) deployment.databases[key] = "/run/stage/state/" + String(deployment.databases[key]).split(/[\\/]/u).pop();
-    write(join(stage, "deployment-linux.json"), deployment);
-    const repoPath = containerRepositoryPath(repository);
-    write(join(profile, "package.json"), { name: "dsh-profile-alhs-core", private: true, dependencies: {},
-      dsh: { profile: { bundles: ["@deepseek-ai/dsh-base", "palimpsest-dsh-host"], patchReload: "startup" } } });
-    writeFileSync(join(home, "settings.yaml"), "agent-default-model:\n  provider: deepseek-official\n  model: deepseek-flash\n");
-    writeFileSync(join(profile, "cordis.patch.yml"), [
-      "- id: llm-deepseek", "  config:", "    baseURL: http://127.0.0.1:18080", "    apiKeyEnv: CQ_PROXY_KEY",
-      "- id: llm-pi-ai", "  disabled: true",
-      "- id: agent-default-model", "  config:", "    provider: deepseek-official", "    model: deepseek-flash",
-      "- id: approval", "  config:", "    policy: never",
-      "- id: permission", "  config:", "    presets:",
-      "      read-only: { sandbox: read-only, approval: never }",
-      "      workspace-write: { sandbox: workspace-write, approval: never }",
-      "      danger-full-access: { sandbox: danger-full-access, approval: never }",
-      "    defaultPreset: workspace-write",
-      "- id: sandbox-policy", "  config:", "    mode: workspace-write", "    workspaceRoot: '/run/stage/world'",
-      "- id: session-title-llm", "  disabled: true", "- id: tool-web", "  disabled: true",
-      "- id: palimpsest-tools", "  config:",
-      "    palimpsestEntry: '" + repoPath + "/dist/src/advanced.js'",
-      "    deploymentProfile: '/run/stage/deployment-linux.json'", "    serve: false", "    openDashboard: false", "",
-    ].join("\n"));
-    cpSync(join(repository, "host/dsh"), join(home, "profiles/node_modules/palimpsest-dsh-host"), { recursive: true });
-    cpSync(join(repository, "host/deployment"), join(home, "profiles/node_modules/palimpsest-host-deployment"), { recursive: true });
-    runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs") });
+    prepareContainerProfile({ home, repository, layout, workerControl: experiment?.createWorker !== undefined });
+    if (layout !== "native") {
+      const deployment = JSON.parse(readFileSync(prepared.deployment, "utf8"));
+      deployment.repository = "/run/stage/world";
+      deployment.transport.databasePath = "/run/stage/state/transport.sqlite";
+      for (const key of Object.keys(deployment.databases)) deployment.databases[key] = "/run/stage/state/" + String(deployment.databases[key]).split(/[\\/]/u).pop();
+      write(join(stage, "deployment-linux.json"), deployment);
+    }
+    runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs"), layout, acceptance: experiment?.acceptance });
     isolation = qualifyPrincipal(runtime, prepared.expectedHead);
     write(join(out, "qualification.json"), isolation);
 
     // No provider request can happen before the actual container and ALL copied worlds pass.
     const sessionKey = randomBytes(32).toString("hex");
-    proxy = paid ? await startPaidProxy({ budget, sessionId, sessionKey }) : await startBoundedProxy({ provider, budget, sessionId, sessionKey });
-    bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey);
+    const onObservation = experiment === undefined ? undefined : event => appendFileSync(join(out, "request-observations.jsonl"), JSON.stringify(event) + "\n");
+    proxy = paid ? await startPaidProxy({ budget, sessionId, sessionKey, onObservation }) : await startBoundedProxy({ provider, budget, sessionId, sessionKey, onObservation });
+    worker = experiment?.createWorker?.({ stage, out, repository, image: runtime.imageId, principalId: runtime.id, gateway: proxy.url, sessionKey,
+      stopIsClosed: () => budget.snapshot().state !== "OPEN" });
+    bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey, { dispatchWork: worker?.dispatch });
     const prompt = readFileSync(prepared.promptPath, "utf8");
     outFd = openSync(join(out, "run.log"), "w"); errFd = openSync(join(out, "run.err"), "w");
     child = spawn("docker", ["exec", "--user", "1001:1001", "--workdir", "/run/stage/world",
-      runtime.id, "node", "/usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js", "--profile", "alhs-core", "--once", prompt],
+      runtime.id, "node", DSH_BIN, "--profile", "alhs-core", layout === "native" ? "--json" : "--once", prompt],
       { stdio: ["ignore", outFd, errFd] });
     const kill = reason => {
       if (killedBy !== null) return;
@@ -118,7 +135,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
     try { budget.stop(failure); } catch { failure = "UNOBSERVABLE_USAGE"; }
   } finally {
     clearTimeout(timeout); clearInterval(monitor);
-    for (const cleanup of [() => bridge?.close(), () => proxy?.close(), () => runtime?.cleanup()]) {
+    for (const cleanup of [() => worker?.close(), () => bridge?.close(), () => proxy?.close(), () => runtime?.cleanup()]) {
       try { await cleanup(); } catch (error) { failure ??= "CLEANUP_FAILED: " + error.message; }
     }
     if (outFd !== undefined) closeSync(outFd);

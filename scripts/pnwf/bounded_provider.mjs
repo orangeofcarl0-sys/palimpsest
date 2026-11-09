@@ -29,7 +29,15 @@ function mockEndpoint(config) {
 export async function verifyMock(config) {
   const url = mockEndpoint(config);
   const challenge = randomUUID();
-  const response = await fetch(new URL(`/.well-known/pnwf-mock?challenge=${challenge}`, url), { redirect: "error", signal: AbortSignal.timeout(3000) });
+  const target = new URL(`/.well-known/pnwf-mock?challenge=${challenge}`, url);
+  const probe = () => fetch(target, { redirect: "error", signal: AbortSignal.timeout(3000), headers: { connection: "close" } });
+  let response;
+  try { response = await probe(); }
+  catch (error) {
+    // Retry a local identity probe on a dead socket. The challenge and loopback endpoint are unchanged.
+    if (!["ECONNREFUSED", "ECONNRESET", "UND_ERR_SOCKET"].includes(error.cause?.code)) throw error;
+    response = await probe();
+  }
   const reply = await response.json();
   const expected = Buffer.from(mockProof(config.secret, challenge, config.instanceId));
   const actual = Buffer.from(String(reply.proof ?? ""));
@@ -48,7 +56,7 @@ export function finalUsage(usage) {
   return usageTotal(usageBreakdown(usage));
 }
 export class UsageReader {
-  constructor(stream) { this.stream = stream; this.decoder = new TextDecoder(); this.buffer = ""; this.final = null; this.stopped = false; }
+  constructor(stream) { this.stream = stream; this.decoder = new TextDecoder(); this.buffer = ""; this.final = null; this.stopped = false; this.messageId = null; }
   push(chunk) {
     this.buffer += this.decoder.decode(chunk, { stream: true });
     if (!this.stream) return;
@@ -59,6 +67,7 @@ export class UsageReader {
       if (!data) continue;
       const event = JSON.parse(data);
       if (event.error || event.type === "error") throw new BudgetRefusal("PROVIDER_ERROR");
+      if (event.type === "message_start" && typeof event.message?.id === "string") this.messageId = event.message.id;
       if (event.type === "message_delta" && event.usage !== undefined) {
         const usage = usageBreakdown(event.usage);
         if (this.final !== null && JSON.stringify(this.final) !== JSON.stringify(usage)) throw new BudgetRefusal("CONFLICTING_USAGE");
@@ -69,15 +78,19 @@ export class UsageReader {
   }
   end() {
     this.buffer += this.decoder.decode();
-    if (!this.stream) this.final = usageBreakdown(JSON.parse(this.buffer).usage);
+    if (!this.stream) {
+      const response = JSON.parse(this.buffer);
+      this.final = usageBreakdown(response.usage);
+      this.messageId = typeof response.id === "string" ? response.id : null;
+    }
     else if (!this.stopped || this.final === null || this.buffer.trim() !== "") throw new BudgetRefusal("UNOBSERVABLE_USAGE");
     return usageTotal(this.final);
   }
 }
-export async function startBoundedProxy({ provider, budget, sessionId, sessionKey, port = 0, timeoutMs = 10000 }) {
+export async function startBoundedProxy({ provider, budget, sessionId, sessionKey, port = 0, timeoutMs = 10000, onObservation }) {
   const upstream = await verifyMock(provider);
   if (budget.usageOnly) throw new BudgetRefusal("BOUNDED_LEDGER_REQUIRED");
-  return startMessagesProxy({ budget, sessionId, sessionKey, port, timeoutMs, target: new URL(MOCK_ROUTE, upstream),
+  return startMessagesProxy({ budget, sessionId, sessionKey, port, timeoutMs, onObservation, target: new URL(MOCK_ROUTE, upstream),
     headers: { "x-pnwf-mock-secret": provider.secret, "x-pnwf-mock-instance": provider.instanceId },
     requestAdmission: async body => { await verifyMock(provider); return requestBound(body); } });
 }
@@ -102,14 +115,14 @@ export function readDeepSeekKey(credentialFile = process.env.PNWF_DEEPSEEK_CREDE
   return key;
 }
 
-export async function startPaidProxy({ budget, sessionId, sessionKey, timeoutMs = 240000 }) {
+export async function startPaidProxy({ budget, sessionId, sessionKey, timeoutMs = 240000, onObservation }) {
   if (!budget.usageOnly) throw new BudgetRefusal("USAGE_ONLY_LEDGER_REQUIRED");
-  return startMessagesProxy({ budget, sessionId, sessionKey, timeoutMs, target: new URL(DEEPSEEK_MESSAGES),
+  return startMessagesProxy({ budget, sessionId, sessionKey, timeoutMs, onObservation, target: new URL(DEEPSEEK_MESSAGES),
     headers: { "x-api-key": readDeepSeekKey(), "accept-encoding": "identity" }, requestAdmission: paidRequestAdmission });
 }
 
 /** Trusted host composition only. The principal never supplies a destination or upstream headers. */
-export async function startMessagesProxy({ budget, sessionId, sessionKey, target, headers, requestAdmission, port = 0, timeoutMs = 10000 }) {
+export async function startMessagesProxy({ budget, sessionId, sessionKey, target, headers, requestAdmission, port = 0, timeoutMs = 10000, onObservation }) {
   if (typeof sessionKey !== "string" || sessionKey.length < 32) throw new BudgetRefusal("SESSION_KEY_REQUIRED");
   const transport = target.protocol === "https:" ? httpsRequest : request;
   const sockets = new Set();
@@ -146,6 +159,8 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
       const bound = await requestAdmission(body);
       if (fatalReason !== null || res.destroyed) return reject(503, "UNOBSERVABLE_USAGE");
       reservation = budget.reserve(sessionId, bound, createHash("sha256").update(body).digest("hex"));
+      const actor = req.headers["x-pnwf-actor"] === "worker" ? "worker" : "principal-container";
+      onObservation?.({ kind: "ADMITTED", requestId: reservation, actor });
       call = transport(target, { method: "POST", rejectUnauthorized: true, headers: {
         "content-type": "application/json", "content-length": body.length,
         ...headers,
@@ -165,7 +180,12 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
         });
         response.on("end", () => {
           if (finished) return;
-          try { budget.settle(reservation, reader.end(), reader.final); finished = true; clearTimeout(deadline); res.end(); }
+          try {
+            const actual = reader.end();
+            onObservation?.({ kind: "TERMINAL", requestId: reservation, actor, messageId: reader.messageId, usage: reader.final });
+            budget.settle(reservation, actual, reader.final);
+            finished = true; clearTimeout(deadline); res.end();
+          }
           catch (error) { unknown(error.code ?? "UNOBSERVABLE_USAGE"); }
         });
         response.on("aborted", () => unknown("INTERRUPTED_RESPONSE"));
