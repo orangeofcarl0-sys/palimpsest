@@ -122,7 +122,7 @@ node scripts/pnwf/energy/run.mjs --action=live --arm=P --session=T2 --execute "-
 
 真实复跑先用 `plan` 登记五个路径，再 `delegate` 一次。正式 Worker 独立修订并提交 `9c104a178807022c7cb20ea718c7bebb275872a6`。宿主观察到 Worker 自然退出、实际写范围为五文件、提交导入成功。Work 作业返回 `FINISHED / SETTLED`，持久化 Attempt 为 `COMPLETED`。同提交离线核对恰好五文件、证书 blob `6ef5f2c8a1056ba280e9659a83179e4e3e56384c` 未变、业务 45/45；隔离副本中的 `gate-release` 为 `PASS`。
 
-Principal 在等待时运行了 21 次 Bash 调用和多次状态查询。它再次把 Work 作业交给原生 `job_output`，收到未知作业错误。看到结算后，它调用用于重开的 `continue`，因任务仍为 `ACTIVE` 被拒；接着调用 `complete`，收到 `NO_RUNNING_ATTEMPT`，因为 Worker 已结算。随后 `next` 成功推进到 `VERIFYING`。它又调用 `continue`，得到 `STALE_INSPECTION`，然后查结果。下一请求被原会话窗口拒绝；没有新的 `WAIT_FOR_OPERATOR`，也没有自然退出和 Promotion。
+Principal 全程运行了 21 次 Bash 调用，其中 18 次发生在委派到首次观察到结算之间。它再次把 Work 作业交给原生 `job_output`，收到未知作业错误。看到结算后，它调用用于重开的 `continue`，因任务仍为 `ACTIVE` 被拒；接着调用 `complete`，收到 `NO_RUNNING_ATTEMPT`，因为 Worker 已结算。随后 `next` 成功推进到 `VERIFYING`。它又调用 `continue`，得到 `STALE_INSPECTION`，然后查结果。下一请求被原会话窗口拒绝；没有新的 `WAIT_FOR_OPERATOR`，也没有自然退出和 Promotion。
 
 99 个工具调用全部配对。归因记录 1 次工具错误、2 次领域拒绝、0 次 Worker 宿主或 Bash 作业失败。`STALE_INSPECTION` 是单独保留的返回状态，未归入现有拒绝计数。64 笔请求全部结算，共 2,111,816 tokens，宿主耗时 238.9 秒。相较首轮的 64 笔，Worker 从 34 笔降至 19 笔，Principal 从 30 笔增至 45 笔。这轮已经验证范围与正式结算，产物仍停在未送审状态。原始目录为 `C:/Users/66494/AppData/Local/Temp/pnwf-energy-scope-work-20261109-093453`。[请求窗口停止证据](../../research-evidence/pnwf-energy/2026-11-09/scope-request-stop.json)
 
@@ -207,3 +207,39 @@ Principal 读取更正、首版成果与 Git 历史，检查原分支和证书�
 - **耗时与恢复。** P 周期的会话用时少约 44.7 秒，P 的 T2 单独用时比 F 多约 8.6 秒；宿主秒包含容器和工具等待，两个候选的审批等待另计。P T2 的 `job_output` 查询错配仍出现一次，靠 Work 状态与调度继续；F T3 从一次本地探针失败恢复。未送审的复跑保留为独立观察，包含模型路径偏离、请求上限和对应返工用量。
 
 这次配对验证了有五文件范围守卫、明确 Work 路径和等待帮助时的闭环。范围守卫解决了证书越界；两条早期复跑显示，默认路径选择和结算后推进仍会影响成败。缓存命中、会话历史和模型动作都不同，单次配对不支持一般性的成本或效率结论。
+
+### 模型行为与接续
+
+| 会话 | Palimpsest Principal / Worker | 强原生 DSH Principal / Subagent |
+| --- | --- | --- |
+| T1 | `pulse` 后读取来源，直接生成六件并提交。先试 `WAIT_FOR_OPERATOR`，因没有待接受候选而被拒；改用 `DELIVER` 后自然退出。 | 读取来源后搜索 Git 历史、运行目录和额外约定，停止两次过宽搜索，回到任务合同计算交期、写六件并提交。多 6 笔请求，仍自然退出。 |
+| T2 | `plan` 登记五路径，`delegate` 只启一个正式 Worker。Worker 读取首版和更正、重写五件、检查证书摘要、提交并上报。Principal 经三次 `workers` 观察结算，`run` 推进到验证，核对 diff 后记录 `WAIT_FOR_OPERATOR`。 | Principal 看更正、首版和审批线索，创建独立 worktree。原生子任务用 11 笔请求生成五件、验范围、提交、回报 SHA；Principal 通过 `list_agents`、等待和 Git 核对候选，保持原分支干净。 |
+| T3 | 读取接受凭据、晋升后成果与首版对照，生成唯一摘要提交，`DELIVER` 后退出。 | 读取接受凭据，以 Git 比较两个版本，并搜索额外约定。首次 Bash 校验有引用错误，改用 heredoc 重做检查后提交，未重写摘要或修订包。 |
+
+只看正式 T2 两条轨迹，从 `delegate` 调用到首次看到 `FINISHED / SETTLED`，Principal 用了 **29 → 3 笔模型请求、30 → 3 次工具调用**。前一条在这段用了 7 次 `workers`、18 次 Bash，以及原生作业和项目状态查询；后一条只有 3 次宿主等待查询。后一条还在结算后正确调用了 `run`，跳过前一条的 `continue` 和 `complete` 试错，但仍误查了一次原生 `job_output`。Worker 从 19 笔变为 12 笔，说明模型生成路径也变了；请求下降集中在等待区间，不能把所有减少量或墙钟差都归给等待实现。
+
+### Fresh input 为什么更多
+
+这里的 fresh input 是兼容 Provider 终态账本的 `input_tokens`，与 `cache_read_input_tokens` 分开；两组 cache creation 均为 0。离线把 DSH 的 Provider 回放 ID 逐笔对上账本的响应 ID、再核对四项 usage，**136/136** 笔成功会话请求完全匹配。P 的总输入实际更少（1,511,247 对 1,623,334），但缓存读取占比更低（94.0% 对 96.1%）。因此 P 的 fresh 多 28,457，cache read 少 140,544。加上少 22,763 个 output，才得到总用量少 134,850；这个比例不是账单降幅。
+
+| 比较项 | P fresh | F fresh | P − F | 其中首请求差 | 其余请求差 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| T1 Principal | 22,009 | 9,814 | +12,195 | +5,525 | +6,670 |
+| T2 Principal | 31,177 | 21,660 | +9,517 | +4,710 | +4,807 |
+| T2 Worker / Subagent | 20,916 | 14,390 | +6,526 | −1,251 | +7,777 |
+| T3 Principal | 16,857 | 16,638 | +219 | +21 | +198 |
+| 完整周期 | 90,959 | 62,502 | **+28,457** | **+9,005** | **+19,452** |
+
+**首请求可直接核对。** 三个 P 主会话记录了 28 个工具，原生为 23 个。额外五个是 Palimpsest 工具，工具描述和参数清单多约 20 KB（记录中的 UTF-8 JSON 字节）。P 的系统消息文本本身更短（2,146 对 2,207 字节），额外上下文主要可见于工具清单。三个 P 主会话的首请求总输入都比 F 多约 5,000 tokens；在 T1、T2，这部分伴随更高 fresh，在 T3 则主要伴随 cache read：P 首请求 fresh/cache read 为 381/10,112，F 为 360/5,120。工具清单是较大起始上下文的可见来源，记录没有给出各工具单独占多少 tokens。
+
+**执行期差额集中在 T2。** P Worker 的首请求 fresh 比原生 Subagent 少 1,251，后续却多 7,777。它把首版六件和来源整批读回、再次读五件、最后回读完整 Git diff；Worker 最大的三笔 fresh（5,437、4,429、6,594）分别紧跟这些操作，合计占该 Worker fresh 的 78.7%。P Principal 第 2 笔紧跟 12,716 字节的 `pulse`（3,681 fresh），第 17 笔紧跟两段候选 diff 与格式检查（22,470 字节，6,354 fresh）。T3 两组都回读了较大材料：P 在 `pulse` 和整包回读后各约 5,000 fresh，F 在文件回读和 Git diff 后也出现相近峰值，因此两组 T3 总 fresh 接近。字节数来自前一段轨迹的工具结果，不能转换成该结果独占的 tokens。
+
+**能解释到哪一步。** 账本能定位哪些请求 miss 多，轨迹能指出这些请求之前读了什么。记录没有保留完整出站请求体或服务端命中的具体前缀，不能把 28,457 精确分摊给工具说明、历史或文件内容。新 DSH home 也不等于服务端冷缓存；八条模型流的首笔都已出现 cache read。按 [DeepSeek 上下文缓存说明](https://api-docs.deepseek.com/zh-cn/guides/kv_cache/)，命中依赖已保存且匹配的前缀，并非每次保证。这里运行顺序固定、P T1 复用更早的观测；不能据此分离工具清单、动态工具回显和已有缓存各自的因果贡献。若继续验证，先记录出站各段的长度和前缀摘要，再固定工具结果与模型输入，只改变工具清单或回显粒度做对照。
+
+复算只读本机原始轨迹和逐请求账本，不调用模型。新证据保留响应绑定后的本地请求 ID、步骤序号、用量分项、工具清单大小和峰值前的工具结果序号；未保存提示词、工具返回文本或服务端 ID。
+
+```powershell
+node scripts/pnwf/analyze_energy_trajectory.mjs $trial $originalT1
+```
+
+[逐请求轨迹归因](../../research-evidence/pnwf-energy/2026-11-09/trajectory-attribution.json)

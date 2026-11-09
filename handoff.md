@@ -15,6 +15,7 @@
 - Energy 首轮真实 T2 因 Worker 改写证书被宿主拦截。修复统一了 Work 与宿主的五文件范围，证书保持逐字节不变。后续两次观察分别为原生 Subagent 偏离（业务复核 45/45，缺少正式结算）和正式 Worker 结算后 Principal 达到 64 笔上限（业务 45/45，缺少等待结论）。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-写范围修复与复跑)
 - 等待式变体的 Palimpsest 真实闭环 3/3：T2 正式 Worker 候选 `e2bc1a424a30123213708990394fc8b19e18c445` 获所有者核准，Promotion 后 HEAD 为 `7aed12ea8618533c7acba5b1c8a4f60e8c1c97ce`；T3 从该 HEAD 提交采购摘要 `02fdf9c3aa3e2821e7fe32f82bd7e3b768baf234` 并自然退出。[复验报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#等待与结算引导的定向复验)
 - 强原生 DSH 真实闭环也为 3/3。所有者核准 `ba95fd0e384b1523170ebc41d125b072fd94941e` 后原生组快进到该 SHA，T3 从该版本提交摘要 `7ee3971ab8348a1c028a05520bc797cc8672c9b0` 并自然退出。[对比报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#配对结论) · [机器证据](research-evidence/pnwf-energy/2026-11-09/scope-rerun.json)
+- 逐请求复核 136/136。Palimpsest 多 28,457 fresh input，差额集中在 T1、T2；其中首请求差 9,005，后续差 19,452。T2 Worker 的大额请求紧跟整包和 diff 回读。两组缓存占比不同，不能仅用总 tokens 推断费用。[轨迹分析](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#fresh-input-为什么更多)
 - Bench 树与 README 导航已合入主线，改写后对应提交为 `234be03cd82de55455a8a316fec66b8886d26cf9`。合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
 - Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，改写后对应提交为 **`666b4446c0649b7a3f425f1291fff99b6f97a2bf`**。合并前 14/14 个 CI job 通过。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
@@ -221,6 +222,7 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 - `scripts/pnwf/isolation_gate.mjs` — 旧独立 canary；其 JSON 不是当前 runner 的执行许可
 - `scripts/pnwf/container_adapter.mjs` — 容器内 principal session adapter
 - `scripts/pnwf/energy/run.mjs` / `scripts/pnwf/summarize_energy.mjs` — 三会话资格、按 SHA 执行接受与可复算证据
+- `scripts/pnwf/analyze_energy_trajectory.mjs` — 离线按 Provider 响应 ID 绑定请求，统计工具清单和 fresh 峰值之前的结果
 - `scripts/pnwf/prepare_continuation.mjs` — 复制 recorded state + 相对 alternates
 - `scripts/pnwf/score_continuation.mjs` — 机械评分（stream/ledger/exit/domain refusals）
 - `scripts/psvr/session_attribution.mjs` — 逐调用归因
@@ -244,7 +246,7 @@ pnpm architecture:check-public-api
 
 Energy T2 范围修复：`node --test scripts/pnwf/energy/contract.test.mjs scripts/pnwf/qualification.test.mjs scripts/psvr/session_attribution.test.mjs` 通过 33/33；构建、架构和公共 API 检查通过。回归包含委派前拒绝六文件计划、Worker 上下文范围检查、证书越界、错 SHA 接受，以及在一次宿主查询中等待结算并提示下一动作。
 
-最终等待式变体的两组 Mock 6/6，29 笔请求全部对账，付费请求为 0。真实会话在通过相同的零付费资格之后才启动。
+最终等待式变体的两组 Mock 6/6，29 笔请求全部对账，付费请求为 0。真实会话在通过相同的零付费资格之后才启动。Energy 范围与等待回归纳入常规 CI 的 `unit`。
 
 ### 验收集（顺序执行，避免 Windows 并行超时）
 
@@ -386,6 +388,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 两个完整周期均通过：Palimpsest 61 笔、1,555,257 tokens、520.9 秒，含复用的 19 笔 T1；强原生 DSH 75 笔、1,690,107 tokens、565.6 秒。候选就绪到接受分别为 101.5 秒、269.3 秒，独立于模型时间。本轮新增 228 笔、6,324,199 tokens，含两个未送审复跑，全部结算。[账本、归因和接受记录](research-evidence/pnwf-energy/2026-11-09/scope-rerun.json)
 
+发布前离线分析再次按 Provider 响应 ID 核对 136 笔成功周期请求，未产生付费调用。P 总输入少 112,087，fresh 多 28,457；T2 占差额 16,043。主会话工具清单、后续大回显和缓存命中均有观测；各输入块的独占 miss 未测。[逐请求归因](research-evidence/pnwf-energy/2026-11-09/trajectory-attribution.json)
+
 ### 2026-11-07 历史 cohort
 
 | 项 | tokens |
@@ -514,6 +518,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-08 | 改写主线提交归因，核验 Contributors 并更新导航 | [归因与 SHA 映射](#主线归因与-sha-映射) | 归档原始主线和标签 |
 | 2026-11-09 | 安装提交归因门禁并启用主线必需检查 | [归因门禁](#提交归因门禁) | 本地 hook、精确 PR head 检查、rebase-only 发布 |
 | 2026-11-09 | 统一 energy T2 五文件写范围并完成等待式真实闭环与原生对照 | [报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md)，[证据](research-evidence/pnwf-energy/2026-11-09/scope-rerun.json) | 定向测试 33/33、最终 Mock 6/6、真实 6/6；本轮新增 228 笔、6,324,199 tokens |
+| 2026-11-09 | 按 Provider 响应 ID 复核 energy trajectory，分解 fresh input 差额 | [分析](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#fresh-input-为什么更多)，[逐请求归因](research-evidence/pnwf-energy/2026-11-09/trajectory-attribution.json) | 136/136 绑定；首请求 +9,005、后续 +19,452；新增付费 0 |
 
 ---
 
