@@ -11,6 +11,8 @@
 - `main` 是唯一常驻分支。日常保留一条工作分支，并行工作上限为三条。分支归并、R3-A2 导入与历史引用恢复入口见 [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)。
 - 主线归因改写、切换后 CI 和旧 SHA 查找见 [§2](#主线归因与-sha-映射)。
 - 自提交先启用仓库 `commit-msg`。主线逐个检查 PR 引入的提交归因，发布使用 rebase 合并。 [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
+- 2026-11-09 在 `codex/energy-project-continuity` 启动同一 energy 项目的三会话实验。首轮两组 Mock 资格 6/6。真实 Palimpsest T1 交付 `4cf360d5620fa10df5022c777aa0ed83c312a80a` 后自然退出，19 笔请求共 535,044 tokens。独立判分修复站点全名与缩写的等价归一化后，同提交离线复算 45/45，通过时新增付费请求为 0。所有者已核准 T2 基线 `8041871314136d417b285a800265858757463f68`。[报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md) · [机器证据](research-evidence/pnwf-energy/2026-11-09/continuity.json)
+- Energy 的真实 T2 接纳批准基线后运行两次 Worker。第一候选 `109ef58eabde723fd41f139f3ad1d7229e0689cb` 因证书文件越界被拒，Principal 转 `successor`，第二个 Worker 在 64 笔上限触发时终止。T2 共 1,648,043 tokens，全部结算，无正式候选及 Promotion。诊断副本只恢复证书文件后通过 45/45。真实 P T3 和原生对照的启动条件尚未满足。现场位于 `C:/Users/66494/AppData/Local/Temp/pnwf-energy-qualified-20261109-165601`。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#真实-palimpsest-t2)
 - Bench 树与 README 导航已合入主线，改写后对应提交为 `234be03cd82de55455a8a316fec66b8886d26cf9`。合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
 - Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，改写后对应提交为 **`666b4446c0649b7a3f425f1291fff99b6f97a2bf`**。合并前 14/14 个 CI job 通过。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。

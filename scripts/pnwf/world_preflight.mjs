@@ -4,20 +4,24 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const { installProduct } = await import(pathToFileURL(process.env.PNWF_PRODUCT_ENTRY).href);
-const deployment = JSON.parse(readFileSync("/run/stage/deployment-linux.json", "utf8"));
 const repository = "/run/stage/world";
 const git = (cwd, args) => execFileSync("git", ["-c", "safe.directory=*", "-C", cwd, ...args], { encoding: "utf8" }).trim();
 const head = git(repository, ["rev-parse", "HEAD"]);
 if (head !== process.env.PNWF_EXPECTED_HEAD) throw new Error("CANONICAL_HEAD_MISMATCH");
 git(repository, ["cat-file", "-e", `${head}^{commit}`]);
+const layout = process.env.PNWF_LAYOUT ?? "recorded";
+if (layout === "native" || layout === "worker") {
+  process.stdout.write(JSON.stringify({ schema: "pnwf-world-preflight/v1", status: "QUALIFIED", head, worlds: [] }) + "\n");
+} else {
+const { installProduct } = await import(pathToFileURL(process.env.PNWF_PRODUCT_ENTRY).href);
+const deployment = JSON.parse(readFileSync("/run/stage/deployment-linux.json", "utf8"));
 const installed = installProduct({ tools: { register: () => () => undefined } }, {
   projectId: deployment.projectId, repository, stateDir: "/run/stage/state", execution: "worktree",
   toolProfile: "normal", standard: deployment.standard,
 });
 try {
   const root = join(repository, ".palimpsest", "worlds");
-  const ids = readdirSync(root, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
+  const ids = existsSync(root) ? readdirSync(root, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name) : [];
   const live = installed.controller.work.openAttempts();
   for (const attempt of live) if (!ids.includes(attempt.attemptId)) throw new Error(`WORLD_MISSING: ${attempt.attemptId}`);
   const worlds = ids.map(attemptId => {
@@ -35,7 +39,8 @@ try {
     if (observation.observedHead !== result) throw new Error(`RESULT_OBSERVATION_MISMATCH: ${attemptId}`);
     return { attemptId, basis: envelope.base_commit, result, alternates, diff, status, observation };
   });
-  if (!worlds.length) throw new Error("NO_ATTEMPT_WORLDS");
+  if (!worlds.length && layout === "recorded") throw new Error("NO_ATTEMPT_WORLDS");
   process.stdout.write(JSON.stringify({ schema: "pnwf-world-preflight/v1", status: "QUALIFIED", head, worlds,
     product: installed.controller.status().directOutcome }) + "\n");
 } finally { await installed.dispose(); }
+}

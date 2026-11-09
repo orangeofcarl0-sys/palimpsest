@@ -383,6 +383,9 @@ function main() {
       facts: row.facts ?? {},
     })),
     failedJobs,
+    modelSteps: events.filter(event => event.type === "assistant/message" && event.data?.usage).map(event => ({
+      seq: event.seq, at: event.time, messageId: event.data.message?.id ?? null, usage: event.data.usage,
+    })),
   };
 
   const md = [

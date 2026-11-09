@@ -1,0 +1,1774 @@
+{
+  "schema": "pnwf-energy-evidence/v1",
+  "contract": {
+    "schema": "pnwf-energy-contract/v1",
+    "base": "112a7b50c25639ec5586afd170e9f7f311c561ba",
+    "implementationHead": "112a7b50c25639ec5586afd170e9f7f311c561ba",
+    "scripts": "3a3275655316b869851709625718861e88cd42d56a7ee2312f9f5541bf6a4faa",
+    "runtime": "424753055f1d7ead37950690d37aba6ecf29ef198ea177147f3aa9d42f5650b5",
+    "seedCommit": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+    "seedTree": "45f58f6ac06d7deb5f0030cd5163d93fcc4c2175",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "bulletin": {
+      "path": "updates/2026-11-06/hf-capacity-correction.csv",
+      "sha256": "97031e04a1496f584c6c44d74b1b452f8eafd927309b8b24d3521bebbb0980a4"
+    },
+    "prompts": {
+      "T1": "c2815e07452f563b221da34b677cdef7f3a74c64f9cb14b25bc417fef0fe2f73",
+      "T2": "d3f62dff92b2cec10f54d81d97aacdc3f3dfdaa5eb7a335611f602e9d2556ff2",
+      "T3": "32ed15a2e00d415bf6f50f5245c3d8b0f0445b0eeffeae087f0fa040ff8886f7"
+    },
+    "scorer": "a54deb261735f25cc8c36334a9be52dd3f360d37148d0b65388803130ecc2837",
+    "model": "deepseek-flash",
+    "dsh": "0.2.1-rc.5",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "recountOf": "7adc6b1dc5291bc62576dff6edc93e3733a22fe96f63ea478fe2a4a8d9f088fe"
+  },
+  "qualification": {
+    "passed": true,
+    "paidModelCalls": 0,
+    "seal": "4ac8f0a3f49fad38be0f457daddbc5740d8a0b93eea77288010656f578f2eceb",
+    "completedAt": "2026-11-09T09:02:54.296Z"
+  },
+  "paidRequestsAdmitted": 83,
+  "paidTokens": 2183087,
+  "arms": {
+    "mock": {
+      "P": {
+        "sessions": [
+          {
+            "id": "T1",
+            "status": "PASSED",
+            "basis": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+            "resultSha256": "79f111a7484ffb99adbfdb082bf87451f3aed38a848295a4a683bf8e2ba66e76",
+            "checks": {
+              "artifactsPresent": true,
+              "businessCorrect": true,
+              "persisted": true,
+              "settlement": null,
+              "accepted": null,
+              "naturalExit": true
+            },
+            "reason": null,
+            "requests": 3,
+            "knownTokens": 250472,
+            "totalTokens": 250472,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [],
+            "usage": {
+              "input_tokens": 247089,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 3383
+            },
+            "usageByRole": {
+              "principal": {
+                "requests": 3,
+                "input": 247089,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 3383,
+                "total": 250472
+              }
+            },
+            "elapsedMs": 46969,
+            "usageQualified": true,
+            "principalId": "session-8c0a740e-1b9a-448d-b64e-71470b00e973",
+            "natural": true,
+            "stop": null,
+            "traces": [
+              {
+                "id": "session-8c0a740e-1b9a-448d-b64e-71470b00e973",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "29feb01009fcfbe0d5ca770ffd1d0c10b89d0f444021be1f9ba0eef2d49d0d83",
+                "counts": {
+                  "steps": 3,
+                  "turns": 1,
+                  "toolCalls": 2,
+                  "pairedToolResults": 2,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 1
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 1,
+                  "work:conclude": 1
+                }
+              }
+            ],
+            "workerReceipts": [],
+            "business": {
+              "passed": true,
+              "commit": "d5911c7c0893defe2c6da945147b067f27ca7058",
+              "basis": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+              "tree": "145d8b2b7376788a9c342864974a2f7ff7f4dbb7",
+              "artifacts": {
+                "deliverables/technical-capacity.md": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "deliverables/cost-model.json": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "deliverables/schedule.md": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "deliverables/risk-review.md": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "deliverables/recommendation.md": "4003aa903c65af4c62adc8bd325f0b6dc5396781"
+              },
+              "changedPaths": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md",
+                "deliverables/vendor-compliance.md"
+              ],
+              "recommendation": {
+                "north": "K-900",
+                "harbor": "S-1080",
+                "totalUsd": 485000,
+                "corridorMm": 1250
+              },
+              "schedule": {
+                "start": "2026-11-05",
+                "installs": [
+                  {
+                    "site": "NR",
+                    "model": "K-900",
+                    "leadWeeks": 14,
+                    "installStart": "2027-02-11",
+                    "commission": "2027-02-18"
+                  },
+                  {
+                    "site": "HF",
+                    "model": "S-1080",
+                    "leadWeeks": 9,
+                    "installStart": "2027-01-07",
+                    "commission": "2027-01-14"
+                  }
+                ]
+              },
+              "normalizations": [],
+              "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=S-1080; total 485000 USD)"
+            },
+            "conclusion": "DELIVER",
+            "project": {
+              "head": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+              "tasks": [],
+              "attempts": [],
+              "promotions": [],
+              "latestJournalConclusion": {
+                "seq": 2,
+                "intent": "DELIVER",
+                "recordedThisSession": true
+              }
+            },
+            "scoringRecount": null
+          },
+          {
+            "id": "T2",
+            "status": "PASSED",
+            "basis": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+            "resultSha256": "0b1d2c1f541469c378abbd7983eb88dd62f97e29b74739f2908a94ec0c588e02",
+            "checks": {
+              "artifactsPresent": true,
+              "businessCorrect": true,
+              "persisted": true,
+              "settlement": true,
+              "accepted": false,
+              "naturalExit": true
+            },
+            "reason": null,
+            "requests": 16,
+            "knownTokens": 1048706,
+            "totalTokens": 1048706,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [],
+            "usage": {
+              "input_tokens": 1043805,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 4901
+            },
+            "usageByRole": {
+              "principal": {
+                "requests": 13,
+                "input": 888378,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 2064,
+                "total": 890442
+              },
+              "worker": {
+                "requests": 3,
+                "input": 155427,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 2837,
+                "total": 158264
+              }
+            },
+            "elapsedMs": 89123,
+            "usageQualified": true,
+            "principalId": "session-873c74c1-f6ad-436a-afb9-6cda9bb5d9f2",
+            "natural": true,
+            "stop": null,
+            "traces": [
+              {
+                "id": "session-873c74c1-f6ad-436a-afb9-6cda9bb5d9f2",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "99b07b6628925defe07c483cfbae131c24c29ac234ee2e65ebb99c443c1bc91c",
+                "counts": {
+                  "steps": 13,
+                  "turns": 1,
+                  "toolCalls": 12,
+                  "pairedToolResults": 12,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 8,
+                  "commits": 0,
+                  "jobs": 0
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "work:plan": 1,
+                  "work:delegate": 1,
+                  "work:workers": 8,
+                  "work:run": 1,
+                  "work:conclude": 1
+                }
+              },
+              {
+                "id": "worker-fc9bcfae-6533-4e2f-99b6-6d89fda878f6",
+                "cwd": "/run/stage/world",
+                "role": "worker",
+                "digest": "4c8e675ad357048a30ca2ae57e01ecc829142a7fdfa2c93a93b061c2525a9a76",
+                "counts": {
+                  "steps": 3,
+                  "turns": 1,
+                  "toolCalls": 2,
+                  "pairedToolResults": 2,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 1
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 1,
+                  "palimpsest_worker_result": 1
+                }
+              }
+            ],
+            "workerReceipts": [
+              {
+                "startedAt": "2026-11-09T08:59:12.453Z",
+                "outcome": "READY_FOR_SETTLEMENT",
+                "attemptId": "attempt-606613fb67161e2af72195a2a92b6fd3",
+                "basis": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+                "containerId": "fcf29b1dc66ab4d7dccdf63ac2cb4e982f5b05ddb1e1640bcac7644c2b4ff893",
+                "qualification": "3dfe4215505ac1d009c8cb74c8ebebb9bc9dd4209c10f00d22a83fe96274cad7",
+                "exit": {
+                  "code": 0,
+                  "signal": null
+                },
+                "sessionId": "worker-fc9bcfae-6533-4e2f-99b6-6d89fda878f6",
+                "result": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+                "paths": [
+                  "deliverables/cost-model.json",
+                  "deliverables/recommendation.md",
+                  "deliverables/risk-review.md",
+                  "deliverables/schedule.md",
+                  "deliverables/technical-capacity.md"
+                ],
+                "endedAt": "2026-11-09T08:59:44.873Z"
+              }
+            ],
+            "business": {
+              "passed": true,
+              "commit": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+              "basis": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+              "tree": "417cef0acce91a0698200c9f04495e8bb2d34867",
+              "artifacts": {
+                "deliverables/technical-capacity.md": "715902e8460576f98bead5361d9585da0fcd3518",
+                "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "deliverables/cost-model.json": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "deliverables/schedule.md": "630be116a008dbff49ffd313c3accf335be56912",
+                "deliverables/risk-review.md": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "deliverables/recommendation.md": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              "changedPaths": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md"
+              ],
+              "recommendation": {
+                "north": "K-900",
+                "harbor": "K-900",
+                "totalUsd": 536000,
+                "corridorMm": 1250
+              },
+              "schedule": {
+                "start": "2026-11-05",
+                "installs": [
+                  {
+                    "site": "NR",
+                    "model": "K-900",
+                    "leadWeeks": 14,
+                    "installStart": "2027-02-11",
+                    "commission": "2027-02-18"
+                  },
+                  {
+                    "site": "HF",
+                    "model": "K-900",
+                    "leadWeeks": 14,
+                    "installStart": "2027-02-11",
+                    "commission": "2027-02-18"
+                  }
+                ]
+              },
+              "normalizations": [],
+              "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=K-900; total 536000 USD)"
+            },
+            "conclusion": "WAIT_FOR_OPERATOR",
+            "project": {
+              "head": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+              "tasks": [
+                {
+                  "id": "revise-energy-package",
+                  "state": "VERIFYING"
+                }
+              ],
+              "attempts": [
+                {
+                  "id": "attempt-606613fb67161e2af72195a2a92b6fd3",
+                  "state": "COMPLETED"
+                }
+              ],
+              "promotions": [],
+              "latestJournalConclusion": {
+                "seq": 4,
+                "intent": "WAIT_FOR_OPERATOR",
+                "recordedThisSession": true
+              }
+            },
+            "scoringRecount": null
+          },
+          {
+            "id": "T3",
+            "status": "PASSED",
+            "basis": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7",
+            "resultSha256": "28be00cdba610cec571b08e243ad0a6ecc21a180c245334a8ba924218c4d359f",
+            "checks": {
+              "artifactsPresent": true,
+              "businessCorrect": true,
+              "persisted": true,
+              "settlement": null,
+              "accepted": true,
+              "naturalExit": true
+            },
+            "reason": null,
+            "requests": 4,
+            "knownTokens": 285124,
+            "totalTokens": 285124,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [],
+            "usage": {
+              "input_tokens": 283498,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 1626
+            },
+            "usageByRole": {
+              "principal": {
+                "requests": 4,
+                "input": 283498,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 1626,
+                "total": 285124
+              }
+            },
+            "elapsedMs": 46548,
+            "usageQualified": true,
+            "principalId": "session-640d1452-ecd7-4581-a1a8-950d7f722cca",
+            "natural": true,
+            "stop": null,
+            "traces": [
+              {
+                "id": "session-640d1452-ecd7-4581-a1a8-950d7f722cca",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "ddb03682e0470d5027271ba7daca49a6d4773b5301b7fa49a3f6ea131b6ec71f",
+                "counts": {
+                  "steps": 4,
+                  "turns": 1,
+                  "toolCalls": 3,
+                  "pairedToolResults": 3,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 2
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 2,
+                  "work:conclude": 1
+                }
+              }
+            ],
+            "workerReceipts": [],
+            "business": {
+              "passed": true,
+              "commit": "5ac4dfbb5d7798fd65f79a447f47e6b1727eae68",
+              "basis": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7",
+              "artifacts": {
+                "deliverables/procurement-review.md": "44700881ec0fd9ef1d0541aab88447b72236c33f"
+              },
+              "data": {
+                "north": "K-900",
+                "harbor": "K-900",
+                "previousTotalUsd": 485000,
+                "totalUsd": 536000,
+                "previousHarborLeadWeeks": 9,
+                "harborLeadWeeks": 14,
+                "approvedHead": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7",
+                "pendingApprovals": [
+                  "Purchase order",
+                  "Budget release"
+                ]
+              }
+            },
+            "conclusion": "DELIVER",
+            "project": {
+              "head": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7",
+              "tasks": [
+                {
+                  "id": "revise-energy-package",
+                  "state": "SATISFIED"
+                }
+              ],
+              "attempts": [
+                {
+                  "id": "attempt-606613fb67161e2af72195a2a92b6fd3",
+                  "state": "COMPLETED"
+                }
+              ],
+              "promotions": [
+                {
+                  "eventId": "18",
+                  "promotionId": "promotion-2b8c93f5f29c0b2b5645afced01db149",
+                  "attemptId": "attempt-606613fb67161e2af72195a2a92b6fd3",
+                  "sourceCommit": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+                  "expectedHeadCommit": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+                  "resultingHeadCommit": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7"
+                }
+              ],
+              "latestJournalConclusion": {
+                "seq": 5,
+                "intent": "DELIVER",
+                "recordedThisSession": true
+              }
+            },
+            "scoringRecount": null
+          }
+        ],
+        "basisReview": {
+          "kind": "DIRECT_BASIS",
+          "arm": "P",
+          "first": "d5911c7c0893defe2c6da945147b067f27ca7058",
+          "commit": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+          "correctionSha256": "97031e04a1496f584c6c44d74b1b452f8eafd927309b8b24d3521bebbb0980a4",
+          "changedPaths": [
+            "updates/2026-11-06/hf-capacity-correction.csv"
+          ],
+          "readyAt": "2026-11-09T08:58:02.426Z"
+        },
+        "basisApproval": null,
+        "basisAdmission": {
+          "actor": "operator:energy-mock-operator",
+          "priorHead": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+          "approved": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+          "eventId": 6,
+          "recordedAt": "2026-11-09T08:58:17.482Z",
+          "waitMs": 15056,
+          "mode": "mock"
+        },
+        "candidate": {
+          "attemptId": "attempt-606613fb67161e2af72195a2a92b6fd3",
+          "commit": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+          "receipt": {
+            "startedAt": "2026-11-09T08:59:12.453Z",
+            "outcome": "READY_FOR_SETTLEMENT",
+            "attemptId": "attempt-606613fb67161e2af72195a2a92b6fd3",
+            "basis": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+            "containerId": "fcf29b1dc66ab4d7dccdf63ac2cb4e982f5b05ddb1e1640bcac7644c2b4ff893",
+            "qualification": "3dfe4215505ac1d009c8cb74c8ebebb9bc9dd4209c10f00d22a83fe96274cad7",
+            "exit": {
+              "code": 0,
+              "signal": null
+            },
+            "sessionId": "worker-fc9bcfae-6533-4e2f-99b6-6d89fda878f6",
+            "result": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+            "paths": [
+              "deliverables/cost-model.json",
+              "deliverables/recommendation.md",
+              "deliverables/risk-review.md",
+              "deliverables/schedule.md",
+              "deliverables/technical-capacity.md"
+            ],
+            "endedAt": "2026-11-09T08:59:44.873Z"
+          },
+          "task": "revise-energy-package",
+          "gate": "PASS",
+          "basis": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+          "readyAt": "2026-11-09T09:00:33.338Z",
+          "artifactCommit": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+          "recommendation": {
+            "north": "K-900",
+            "harbor": "K-900",
+            "totalUsd": 536000,
+            "corridorMm": 1250
+          },
+          "changedPaths": [
+            "deliverables/cost-model.json",
+            "deliverables/recommendation.md",
+            "deliverables/risk-review.md",
+            "deliverables/schedule.md",
+            "deliverables/technical-capacity.md"
+          ],
+          "artifacts": {
+            "deliverables/technical-capacity.md": "715902e8460576f98bead5361d9585da0fcd3518",
+            "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+            "deliverables/cost-model.json": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+            "deliverables/schedule.md": "630be116a008dbff49ffd313c3accf335be56912",
+            "deliverables/risk-review.md": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+            "deliverables/recommendation.md": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+          },
+          "tree": "417cef0acce91a0698200c9f04495e8bb2d34867"
+        },
+        "candidateApproval": null,
+        "acceptance": {
+          "kind": "GOVERNED_PROMOTION",
+          "mode": "mock",
+          "arm": "P",
+          "approvedCandidate": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+          "approvedHead": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7",
+          "tree": "417cef0acce91a0698200c9f04495e8bb2d34867",
+          "basis": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+          "attemptId": "attempt-606613fb67161e2af72195a2a92b6fd3",
+          "promotion": {
+            "promotionId": "promotion-2b8c93f5f29c0b2b5645afced01db149",
+            "committed": {
+              "schema_version": 1,
+              "project_id": "energy-project-continuity",
+              "event_type": "PROMOTION_COMMITTED",
+              "payload_version": 1,
+              "entity_type": "promotion",
+              "entity_id": "promotion-2b8c93f5f29c0b2b5645afced01db149",
+              "payload": {
+                "promotion_id": "promotion-2b8c93f5f29c0b2b5645afced01db149",
+                "attempt_id": "attempt-606613fb67161e2af72195a2a92b6fd3",
+                "source_commit": "7aa77b9368cb298dd188effd92a09ff213b42a2e",
+                "expected_head_commit": "5be0b8b4ee9a11f18ddbec30ee1679ef4df14371",
+                "resulting_head_commit": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7",
+                "reason": "Owner approved candidate 7aa77b9368cb298dd188effd92a09ff213b42a2e",
+                "operation_id": "op_4f3d9e2d4373ea0afdad9be46cff32cbfa30be95",
+                "outcome_basis": "invoke_result",
+                "outcome_digest": "2e021804c0ce6f455efa72c5ff1bdb10fc28c5ad8dcf99a54cd43e987523db51"
+              },
+              "causation_id": null,
+              "correlation_id": "promotion:promotion-2b8c93f5f29c0b2b5645afced01db149",
+              "idempotency_key": "f2cefaac88ee0a2364a632f979c95828c60c192e0e21387ffec1ef74a2f02cba",
+              "expected_project_revision": 2,
+              "event_id": 18,
+              "project_sequence": 18,
+              "request_digest": "78147dad367c3ee597d287a2f10da96cb6a8cdd6805f6b58a9be66d3ed32ea00",
+              "previous_event_digest": "be8cd1eceded431536ba6a9f2aeac0c40fffb082d00c53cc07a9f22cffb2dbfd",
+              "event_digest": "4248802c5ad2cdaf27d6df5fbd2e0ece801b15e7cb064ffd2512b465a0a24264",
+              "committed_at": "2026-11-09T09:00:50.094000Z"
+            },
+            "resultingHeadCommit": "dce7548448fbcebff8f587fd6cb1d553e6cd9ca7"
+          },
+          "recordedAt": "2026-11-09T09:00:51.450Z",
+          "waitMs": 18112
+        },
+        "rejectedCandidateDiagnostic": null,
+        "complete": true
+      },
+      "F": {
+        "sessions": [
+          {
+            "id": "T1",
+            "status": "PASSED",
+            "basis": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+            "resultSha256": "3d4d6daa98fbc4adc844d3eea930385b34d1989315e6ce753d70352aa2c565e9",
+            "checks": {
+              "artifactsPresent": true,
+              "businessCorrect": true,
+              "persisted": true,
+              "settlement": null,
+              "accepted": null,
+              "naturalExit": true
+            },
+            "reason": null,
+            "requests": 2,
+            "knownTokens": 111099,
+            "totalTokens": 111099,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [],
+            "usage": {
+              "input_tokens": 108121,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 2978
+            },
+            "usageByRole": {
+              "principal": {
+                "requests": 2,
+                "input": 108121,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 2978,
+                "total": 111099
+              }
+            },
+            "elapsedMs": 11262,
+            "usageQualified": true,
+            "principalId": "session-617fd998-6d50-4141-9a2e-1b6c53e7b144",
+            "natural": true,
+            "stop": null,
+            "traces": [
+              {
+                "id": "session-617fd998-6d50-4141-9a2e-1b6c53e7b144",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "2d9656f1a363cf4f49406c86ec58912d552fd209b9e2248944b6c2d29eb783fc",
+                "counts": {
+                  "steps": 2,
+                  "turns": 1,
+                  "toolCalls": 1,
+                  "pairedToolResults": 1,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 1
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 1
+                }
+              }
+            ],
+            "workerReceipts": [],
+            "business": {
+              "passed": true,
+              "commit": "696ec4501684a07b06f95d091180d1bb490c95f7",
+              "basis": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+              "tree": "145d8b2b7376788a9c342864974a2f7ff7f4dbb7",
+              "artifacts": {
+                "deliverables/technical-capacity.md": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "deliverables/cost-model.json": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "deliverables/schedule.md": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "deliverables/risk-review.md": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "deliverables/recommendation.md": "4003aa903c65af4c62adc8bd325f0b6dc5396781"
+              },
+              "changedPaths": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md",
+                "deliverables/vendor-compliance.md"
+              ],
+              "recommendation": {
+                "north": "K-900",
+                "harbor": "S-1080",
+                "totalUsd": 485000,
+                "corridorMm": 1250
+              },
+              "schedule": {
+                "start": "2026-11-05",
+                "installs": [
+                  {
+                    "site": "NR",
+                    "model": "K-900",
+                    "leadWeeks": 14,
+                    "installStart": "2027-02-11",
+                    "commission": "2027-02-18"
+                  },
+                  {
+                    "site": "HF",
+                    "model": "S-1080",
+                    "leadWeeks": 9,
+                    "installStart": "2027-01-07",
+                    "commission": "2027-01-14"
+                  }
+                ]
+              },
+              "normalizations": [],
+              "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=S-1080; total 485000 USD)"
+            },
+            "conclusion": null,
+            "project": null,
+            "scoringRecount": null
+          },
+          {
+            "id": "T2",
+            "status": "PASSED",
+            "basis": "c556b8d42dd16d4a22c87a4cdaac916ff690f414",
+            "resultSha256": "6d5ccfc455f05f664fe8d9518404bd2ad2e85cc26c41ea27a86a251640cf4140",
+            "checks": {
+              "artifactsPresent": true,
+              "businessCorrect": true,
+              "persisted": true,
+              "settlement": null,
+              "accepted": false,
+              "naturalExit": true
+            },
+            "reason": null,
+            "requests": 7,
+            "knownTokens": 301888,
+            "totalTokens": 301888,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [],
+            "usage": {
+              "input_tokens": 298316,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 3572
+            },
+            "usageByRole": {
+              "native-child": {
+                "requests": 2,
+                "input": 110894,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 2648,
+                "total": 113542
+              },
+              "principal": {
+                "requests": 5,
+                "input": 187422,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 924,
+                "total": 188346
+              }
+            },
+            "elapsedMs": 14950,
+            "usageQualified": true,
+            "principalId": "session-76f818e1-6c6f-4c44-8b8b-ee16607814f1",
+            "natural": true,
+            "stop": null,
+            "traces": [
+              {
+                "id": "6f84c70d-a41b-4c72-835a-6ac650b8ff76",
+                "cwd": "/run/stage/world",
+                "role": "native-child",
+                "digest": "9f8ccf873309cf2131804aef4ecee887eb5dd1c877081b8d4d4500e9f425c9c2",
+                "counts": {
+                  "steps": 2,
+                  "turns": 1,
+                  "toolCalls": 1,
+                  "pairedToolResults": 1,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 1
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 1
+                }
+              },
+              {
+                "id": "session-76f818e1-6c6f-4c44-8b8b-ee16607814f1",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "4df386f70c8820f5436f5e43d21b18e521afbdf6b7b1e437dd1a510cb23c55a8",
+                "counts": {
+                  "steps": 5,
+                  "turns": 1,
+                  "toolCalls": 4,
+                  "pairedToolResults": 4,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 3
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 3,
+                  "subagent": 1
+                }
+              }
+            ],
+            "workerReceipts": [],
+            "business": {
+              "passed": true,
+              "commit": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+              "basis": "c556b8d42dd16d4a22c87a4cdaac916ff690f414",
+              "tree": "417cef0acce91a0698200c9f04495e8bb2d34867",
+              "artifacts": {
+                "deliverables/technical-capacity.md": "715902e8460576f98bead5361d9585da0fcd3518",
+                "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "deliverables/cost-model.json": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "deliverables/schedule.md": "630be116a008dbff49ffd313c3accf335be56912",
+                "deliverables/risk-review.md": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "deliverables/recommendation.md": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              "changedPaths": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md"
+              ],
+              "recommendation": {
+                "north": "K-900",
+                "harbor": "K-900",
+                "totalUsd": 536000,
+                "corridorMm": 1250
+              },
+              "schedule": {
+                "start": "2026-11-05",
+                "installs": [
+                  {
+                    "site": "NR",
+                    "model": "K-900",
+                    "leadWeeks": 14,
+                    "installStart": "2027-02-11",
+                    "commission": "2027-02-18"
+                  },
+                  {
+                    "site": "HF",
+                    "model": "K-900",
+                    "leadWeeks": 14,
+                    "installStart": "2027-02-11",
+                    "commission": "2027-02-18"
+                  }
+                ]
+              },
+              "normalizations": [],
+              "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=K-900; total 536000 USD)"
+            },
+            "conclusion": null,
+            "project": null,
+            "scoringRecount": null
+          },
+          {
+            "id": "T3",
+            "status": "PASSED",
+            "basis": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+            "resultSha256": "7e63d76530d702c8c79b9ac46d707bf1f44bc667121346879f981227c9017fa9",
+            "checks": {
+              "artifactsPresent": true,
+              "businessCorrect": true,
+              "persisted": true,
+              "settlement": null,
+              "accepted": true,
+              "naturalExit": true
+            },
+            "reason": null,
+            "requests": 3,
+            "knownTokens": 129058,
+            "totalTokens": 129058,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [],
+            "usage": {
+              "input_tokens": 127680,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 1378
+            },
+            "usageByRole": {
+              "principal": {
+                "requests": 3,
+                "input": 127680,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "output": 1378,
+                "total": 129058
+              }
+            },
+            "elapsedMs": 11944,
+            "usageQualified": true,
+            "principalId": "session-e8031e8a-812e-4021-9aea-0f7e12423e78",
+            "natural": true,
+            "stop": null,
+            "traces": [
+              {
+                "id": "session-e8031e8a-812e-4021-9aea-0f7e12423e78",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "fc2d894c06051b4d9ca30214b19e0bf8671a937262fb01f104b7c0760fec4cc7",
+                "counts": {
+                  "steps": 3,
+                  "turns": 1,
+                  "toolCalls": 2,
+                  "pairedToolResults": 2,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 2
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 2
+                }
+              }
+            ],
+            "workerReceipts": [],
+            "business": {
+              "passed": true,
+              "commit": "2510a178f4610b64b116e3a602769cb26e9b0b62",
+              "basis": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+              "artifacts": {
+                "deliverables/procurement-review.md": "6059d17c4ecb62d0156695e604cc3360366ba164"
+              },
+              "data": {
+                "north": "K-900",
+                "harbor": "K-900",
+                "previousTotalUsd": 485000,
+                "totalUsd": 536000,
+                "previousHarborLeadWeeks": 9,
+                "harborLeadWeeks": 14,
+                "approvedHead": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+                "pendingApprovals": [
+                  "Purchase order",
+                  "Budget release"
+                ]
+              }
+            },
+            "conclusion": null,
+            "project": null,
+            "scoringRecount": null
+          }
+        ],
+        "basisReview": {
+          "kind": "DIRECT_BASIS",
+          "arm": "F",
+          "first": "696ec4501684a07b06f95d091180d1bb490c95f7",
+          "commit": "c556b8d42dd16d4a22c87a4cdaac916ff690f414",
+          "correctionSha256": "97031e04a1496f584c6c44d74b1b452f8eafd927309b8b24d3521bebbb0980a4",
+          "changedPaths": [
+            "updates/2026-11-06/hf-capacity-correction.csv"
+          ],
+          "readyAt": "2026-11-09T09:02:23.344Z"
+        },
+        "basisApproval": null,
+        "basisAdmission": null,
+        "candidate": {
+          "commit": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+          "basis": "c556b8d42dd16d4a22c87a4cdaac916ff690f414",
+          "readyAt": "2026-11-09T09:02:40.646Z",
+          "artifactCommit": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+          "recommendation": {
+            "north": "K-900",
+            "harbor": "K-900",
+            "totalUsd": 536000,
+            "corridorMm": 1250
+          },
+          "changedPaths": [
+            "deliverables/cost-model.json",
+            "deliverables/recommendation.md",
+            "deliverables/risk-review.md",
+            "deliverables/schedule.md",
+            "deliverables/technical-capacity.md"
+          ],
+          "artifacts": {
+            "deliverables/technical-capacity.md": "715902e8460576f98bead5361d9585da0fcd3518",
+            "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+            "deliverables/cost-model.json": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+            "deliverables/schedule.md": "630be116a008dbff49ffd313c3accf335be56912",
+            "deliverables/risk-review.md": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+            "deliverables/recommendation.md": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+          },
+          "tree": "417cef0acce91a0698200c9f04495e8bb2d34867"
+        },
+        "candidateApproval": null,
+        "acceptance": {
+          "kind": "OWNER_ACCEPTED_GIT",
+          "mode": "mock",
+          "arm": "F",
+          "approvedCandidate": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+          "approvedHead": "53b6669c3abb59b815789de5548e0ee7e838fbd1",
+          "tree": "417cef0acce91a0698200c9f04495e8bb2d34867",
+          "basis": "c556b8d42dd16d4a22c87a4cdaac916ff690f414",
+          "attemptId": null,
+          "promotion": null,
+          "recordedAt": "2026-11-09T09:02:41.409Z",
+          "waitMs": 763
+        },
+        "rejectedCandidateDiagnostic": null,
+        "complete": true
+      }
+    },
+    "live": {
+      "P": {
+        "sessions": [
+          {
+            "id": "T1",
+            "status": "PASSED",
+            "basis": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+            "resultSha256": "7b89940ffd3e521da31277cec6551586a23870238e4bce5a18baa50338fad4ca",
+            "checks": {
+              "artifactsPresent": true,
+              "businessCorrect": true,
+              "persisted": true,
+              "settlement": null,
+              "accepted": null,
+              "naturalExit": true
+            },
+            "reason": null,
+            "requests": 19,
+            "knownTokens": 535044,
+            "totalTokens": 535044,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [],
+            "usage": {
+              "input_tokens": 22009,
+              "cache_read_input_tokens": 491776,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 21259
+            },
+            "usageByRole": {
+              "principal": {
+                "requests": 19,
+                "input": 22009,
+                "cacheRead": 491776,
+                "cacheWrite": 0,
+                "output": 21259,
+                "total": 535044
+              }
+            },
+            "elapsedMs": 199755,
+            "usageQualified": true,
+            "principalId": "session-ade315f9-e43a-4582-a5ec-c6ed13226e6a",
+            "natural": true,
+            "stop": null,
+            "traces": [
+              {
+                "id": "session-ade315f9-e43a-4582-a5ec-c6ed13226e6a",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "dc0d1e25de5c9339dae0d8b9ce5f3df2ea719b4733c95f3f79df26bcc70c972a",
+                "counts": {
+                  "steps": 19,
+                  "turns": 1,
+                  "toolCalls": 37,
+                  "pairedToolResults": 37,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 1,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 1,
+                  "stateQueries": 4,
+                  "commits": 0,
+                  "jobs": 11
+                },
+                "refs": [
+                  {
+                    "callId": "call_00_Atsud3RZ9uzswSK2m0qc5791",
+                    "seq": 172,
+                    "kind": "work:conclude",
+                    "state": "REFUSED",
+                    "reason": null,
+                    "detail": "the episode conclusion was refused: nothing in this project currently awaits an operator acceptance decision"
+                  }
+                ],
+                "failedJobs": [],
+                "byKind": {
+                  "continuity:pulse": 1,
+                  "bash": 11,
+                  "glob": 1,
+                  "read": 11,
+                  "project:overview": 1,
+                  "palimpsest_contribute": 1,
+                  "work:status": 2,
+                  "write": 6,
+                  "project:journal": 1,
+                  "work:conclude": 2
+                }
+              }
+            ],
+            "workerReceipts": [],
+            "business": {
+              "passed": true,
+              "commit": "4cf360d5620fa10df5022c777aa0ed83c312a80a",
+              "basis": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+              "tree": "e011e198499989f060d08917932d60da2eb659b7",
+              "artifacts": {
+                "deliverables/technical-capacity.md": "7a81ec728e980d80b12984822bcb1b0b944eacd5",
+                "deliverables/vendor-compliance.md": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+                "deliverables/cost-model.json": "32542899f522b16b5d18bbde269e6958ffc6b46e",
+                "deliverables/schedule.md": "00ac0b6e01a48b9e596784e178eeee4e3fbf0441",
+                "deliverables/risk-review.md": "f237c1eed3b51e7d82867e1a16f1352b5bbb4fcf",
+                "deliverables/recommendation.md": "1da9d31a93e70237cde7090a8e89f5b0f7e567d0"
+              },
+              "changedPaths": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md",
+                "deliverables/vendor-compliance.md"
+              ],
+              "recommendation": {
+                "north": "K-900",
+                "harbor": "S-1080",
+                "totalUsd": 485000,
+                "corridorMm": 1250,
+                "bindingSources": [
+                  "sources/sites.md",
+                  "sources/capacity.csv",
+                  "sources/vendors.md",
+                  "sources/quotes.csv",
+                  "sources/leads.csv"
+                ]
+              },
+              "schedule": {
+                "start": "2026-11-05",
+                "installs": [
+                  {
+                    "site": "NR",
+                    "model": "K-900",
+                    "leadWeeks": 14,
+                    "installStart": "2027-02-11",
+                    "commission": "2027-02-11"
+                  },
+                  {
+                    "site": "HF",
+                    "model": "S-1080",
+                    "leadWeeks": 9,
+                    "installStart": "2027-01-07",
+                    "commission": "2027-01-07"
+                  }
+                ]
+              },
+              "normalizations": [
+                {
+                  "path": "deliverables/technical-capacity.md",
+                  "changedLabels": [
+                    {
+                      "from": "North Ridge",
+                      "to": "NR"
+                    },
+                    {
+                      "from": "Harbor Flats",
+                      "to": "HF"
+                    }
+                  ]
+                },
+                {
+                  "path": "deliverables/cost-model.json",
+                  "changedLabels": [
+                    {
+                      "from": "North Ridge",
+                      "to": "NR"
+                    },
+                    {
+                      "from": "Harbor Flats",
+                      "to": "HF"
+                    }
+                  ]
+                },
+                {
+                  "path": "deliverables/schedule.md",
+                  "changedLabels": [
+                    {
+                      "from": "North Ridge",
+                      "to": "NR"
+                    },
+                    {
+                      "from": "Harbor Flats",
+                      "to": "HF"
+                    }
+                  ]
+                }
+              ],
+              "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=S-1080; total 485000 USD)"
+            },
+            "conclusion": "DELIVER",
+            "project": {
+              "head": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+              "tasks": [],
+              "attempts": [],
+              "promotions": [],
+              "latestJournalConclusion": {
+                "seq": 3,
+                "intent": "DELIVER",
+                "recordedThisSession": true
+              }
+            },
+            "scoringRecount": {
+              "originalResultSha256": "2b719956ac5ab10aec2da9efe59bf92de4ca979bd9b6b734af6ac60ae3426198",
+              "originalStatus": "STOPPED",
+              "originalReason": "check: FAIL (6 of 37 assertions)\n - technical-capacity: NR selects undefined, the sources require K-900\n - technical-capacity: HF selects undefined, the sources require S-1080\n - cost-model: North Ridge costs K-900, the selection is undefined\n - cost-model: Harbor Flats costs S-1080, the selection is undefined\n - schedule: NR is missing\n - schedule: HF is missing",
+              "inputCommit": "4cf360d5620fa10df5022c777aa0ed83c312a80a",
+              "scope": "Host-only exact aliases North Ridge/NR and Harbor Flats/HF",
+              "addedPaidRequests": 0
+            }
+          },
+          {
+            "id": "T2",
+            "status": "STOPPED",
+            "basis": "8041871314136d417b285a800265858757463f68",
+            "resultSha256": "7648747a184148568884f9da247dffa99f4dbf3507d5aa12bc5c359fffe327e3",
+            "checks": {
+              "artifactsPresent": false,
+              "businessCorrect": false,
+              "persisted": false,
+              "settlement": null,
+              "accepted": null,
+              "naturalExit": false
+            },
+            "reason": "SESSION_EVIDENCE_INCOMPLETE natural=false trace=1648043 ledger=1648043 requests=64/64 worker=34 error=null",
+            "requests": 64,
+            "knownTokens": 1648043,
+            "totalTokens": 1648043,
+            "unresolvedRequests": 0,
+            "ledgerRefusals": [
+              {
+                "sessionId": "T2",
+                "requestCount": 64,
+                "maxRequests": 64,
+                "reason": "REQUEST_LIMIT"
+              }
+            ],
+            "usage": {
+              "input_tokens": 61167,
+              "cache_read_input_tokens": 1555072,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 31804
+            },
+            "usageByRole": {
+              "principal": {
+                "requests": 30,
+                "input": 23115,
+                "cacheRead": 810752,
+                "cacheWrite": 0,
+                "output": 7310,
+                "total": 841177
+              },
+              "worker": {
+                "requests": 34,
+                "input": 38052,
+                "cacheRead": 744320,
+                "cacheWrite": 0,
+                "output": 24494,
+                "total": 806866
+              }
+            },
+            "elapsedMs": 315047,
+            "usageQualified": true,
+            "principalId": "session-675356f1-48c0-4e27-a050-7ff4216300bb",
+            "natural": false,
+            "stop": "request_limit",
+            "traces": [
+              {
+                "id": "session-675356f1-48c0-4e27-a050-7ff4216300bb",
+                "cwd": "/run/stage/world",
+                "role": "principal",
+                "digest": "f31cfbd1ce5efb8eb51b060eced0c6f89eed84eeefc3233488fcabf78312a2c8",
+                "counts": {
+                  "steps": 30,
+                  "turns": 1,
+                  "toolCalls": 46,
+                  "pairedToolResults": 45,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 3,
+                  "jobFailures": 0,
+                  "domainRefusals": 1,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 4,
+                  "stateQueries": 8,
+                  "commits": 0,
+                  "jobs": 12
+                },
+                "refs": [
+                  {
+                    "callId": "call_00_FpyVRMyU2O8xOLVifUAl6422",
+                    "seq": 98,
+                    "kind": "work:begin",
+                    "state": null,
+                    "reason": null,
+                    "detail": null
+                  },
+                  {
+                    "callId": "call_00_BYDZq0I2rfhrak33IgTo9252",
+                    "seq": 116,
+                    "kind": "job_output",
+                    "state": null,
+                    "reason": null,
+                    "detail": null
+                  },
+                  {
+                    "callId": "call_00_cQJAwopHKpdVQqA08tz85029",
+                    "seq": 209,
+                    "kind": "work:relay",
+                    "state": null,
+                    "reason": null,
+                    "detail": null
+                  },
+                  {
+                    "callId": "call_00_rqyMXvUKgEItDmtt6dbQ6342",
+                    "seq": 215,
+                    "kind": "work:relay",
+                    "state": "NOT_READY",
+                    "reason": "NO_SETTLEABLE_DELTA",
+                    "detail": "NOT_READY: the world holds no observable change against its base, so there is nothing to settle"
+                  }
+                ],
+                "failedJobs": [],
+                "byKind": {
+                  "continuity:pulse": 1,
+                  "bash": 12,
+                  "glob": 1,
+                  "read": 16,
+                  "work:status": 1,
+                  "work:begin": 1,
+                  "work:plan": 1,
+                  "work:delegate": 2,
+                  "job_output": 2,
+                  "work:workers": 4,
+                  "work:results": 1,
+                  "work:readiness": 1,
+                  "work:relay": 3
+                }
+              },
+              {
+                "id": "worker-bb36bf84-c7d0-46c1-b29c-b54e4dceda54",
+                "cwd": "/run/stage/world",
+                "role": "worker",
+                "digest": "22a08eabda4e8ef656f8250e4fdd014a787c1dbab7b8984eca0ee27c6623750f",
+                "counts": {
+                  "steps": 25,
+                  "turns": 1,
+                  "toolCalls": 38,
+                  "pairedToolResults": 38,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 17
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 17,
+                  "read": 6,
+                  "edit": 11,
+                  "write": 3,
+                  "palimpsest_worker_result": 1
+                }
+              },
+              {
+                "id": "worker-541593f0-5ceb-41f1-a18e-0d880626877a",
+                "cwd": "/run/stage/world",
+                "role": "worker",
+                "digest": "fa127754fe7e77f9167025a1a91d5f3b2f875d1d2fb99dfd2b320550d412de51",
+                "counts": {
+                  "steps": 10,
+                  "turns": 1,
+                  "toolCalls": 9,
+                  "pairedToolResults": 9,
+                  "unpairedToolResults": 0,
+                  "toolErrors": 0,
+                  "jobFailures": 0,
+                  "domainRefusals": 0,
+                  "repeatedRefusals": 0,
+                  "noProgressToolCalls": 0,
+                  "stateQueries": 0,
+                  "commits": 0,
+                  "jobs": 8
+                },
+                "refs": [],
+                "failedJobs": [],
+                "byKind": {
+                  "bash": 8,
+                  "todo_write": 1
+                }
+              }
+            ],
+            "workerReceipts": [
+              {
+                "startedAt": "2026-11-09T09:04:51.039Z",
+                "outcome": "HOST_FAILURE",
+                "attemptId": "attempt-306824f5c332355a7a06d82a31a92278",
+                "basis": "8041871314136d417b285a800265858757463f68",
+                "containerId": "dc9895ffbfe8d209d80a1f55d5fd521a262e8f694594b31dc461bbb52f65c4e7",
+                "qualification": "13a1d83df303ca7ac43a87180c136935b345bc687b5034f997afa3055834afc1",
+                "exit": {
+                  "code": 0,
+                  "signal": null
+                },
+                "sessionId": "worker-bb36bf84-c7d0-46c1-b29c-b54e4dceda54",
+                "reason": "WORKER_RESULT_OUTSIDE_SCOPE",
+                "endedAt": "2026-11-09T09:06:51.132Z"
+              },
+              {
+                "startedAt": "2026-11-09T09:07:32.844Z",
+                "outcome": "HOST_FAILURE",
+                "attemptId": "attempt-a8a8fd1955d98c18a4869f3ca3e4e071",
+                "basis": "8041871314136d417b285a800265858757463f68",
+                "containerId": "397d0d251648699221a58a2dcdc77644dcc60a23a92fc568958fd0fdf8f73ba8",
+                "qualification": "a72f22da2422b340ced74391e5e9a8dd97582e6f760ebe287b79435851c30122",
+                "exit": {
+                  "code": 137,
+                  "signal": null
+                },
+                "reason": "WORKER_DID_NOT_EXIT_NATURALLY",
+                "endedAt": "2026-11-09T09:08:57.661Z"
+              }
+            ],
+            "business": null,
+            "conclusion": null,
+            "project": {
+              "head": "8041871314136d417b285a800265858757463f68",
+              "tasks": [
+                {
+                  "id": "revise-hf-capacity",
+                  "state": "ACTIVE"
+                }
+              ],
+              "attempts": [
+                {
+                  "id": "attempt-306824f5c332355a7a06d82a31a92278",
+                  "state": "CANCELLED"
+                },
+                {
+                  "id": "attempt-a8a8fd1955d98c18a4869f3ca3e4e071",
+                  "state": "RUNNING"
+                }
+              ],
+              "promotions": [],
+              "latestJournalConclusion": {
+                "seq": 3,
+                "intent": "DELIVER",
+                "recordedThisSession": false
+              }
+            },
+            "scoringRecount": null
+          },
+          {
+            "id": "T3",
+            "status": "NOT_STARTED",
+            "basis": null,
+            "resultSha256": null,
+            "checks": null,
+            "reason": null,
+            "requests": 0,
+            "knownTokens": null,
+            "totalTokens": null,
+            "unresolvedRequests": null,
+            "ledgerRefusals": [],
+            "usage": null,
+            "usageByRole": null,
+            "elapsedMs": null,
+            "usageQualified": null,
+            "principalId": null,
+            "natural": null,
+            "stop": null,
+            "traces": [],
+            "workerReceipts": [],
+            "business": null,
+            "conclusion": null,
+            "project": null,
+            "scoringRecount": null
+          }
+        ],
+        "basisReview": {
+          "kind": "DIRECT_BASIS",
+          "arm": "P",
+          "first": "4cf360d5620fa10df5022c777aa0ed83c312a80a",
+          "commit": "8041871314136d417b285a800265858757463f68",
+          "correctionSha256": "97031e04a1496f584c6c44d74b1b452f8eafd927309b8b24d3521bebbb0980a4",
+          "changedPaths": [
+            "updates/2026-11-06/hf-capacity-correction.csv"
+          ],
+          "readyAt": "2026-11-09T08:47:54.598Z"
+        },
+        "basisApproval": {
+          "decision": "APPROVED",
+          "commit": "8041871314136d417b285a800265858757463f68",
+          "source": "Owner response to exact SHA review",
+          "observedBetweenUtc": [
+            "2026-11-09T08:48:07.912Z",
+            "2026-11-09T08:48:56.890Z"
+          ]
+        },
+        "basisAdmission": {
+          "actor": "operator:energy-project-owner",
+          "priorHead": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+          "approved": "8041871314136d417b285a800265858757463f68",
+          "eventId": 6,
+          "recordedAt": "2026-11-09T09:03:25.028Z",
+          "waitMs": 930430,
+          "mode": "paid-usage-only"
+        },
+        "candidate": null,
+        "candidateApproval": null,
+        "acceptance": null,
+        "rejectedCandidateDiagnostic": {
+          "kind": "OFFLINE_SCOPE_DIAGNOSTIC",
+          "rejectedCommit": "109ef58eabde723fd41f139f3ad1d7229e0689cb",
+          "approvedBasis": "8041871314136d417b285a800265858757463f68",
+          "derivedCommit": "a6779302c3f2e1e25b413adf7ee707f4398fa1f3",
+          "restoredPath": "deliverables/vendor-compliance.md",
+          "retainedWorkerBlobs": true,
+          "originalCertificateBlob": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+          "rewrittenCertificateBlob": "cf24254d6c6227894f2e61f6cd072b5b539db576",
+          "addedPaidRequests": 0,
+          "score": {
+            "passed": true,
+            "commit": "a6779302c3f2e1e25b413adf7ee707f4398fa1f3",
+            "basis": "8041871314136d417b285a800265858757463f68",
+            "tree": "01f9828a6554445cd9c9e51149821062819c27b9",
+            "artifacts": {
+              "deliverables/technical-capacity.md": "c738a696e37ffa875c2b30737d017bf60ec75b23",
+              "deliverables/vendor-compliance.md": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+              "deliverables/cost-model.json": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+              "deliverables/schedule.md": "0ebeafc81c421db97a7cebff334578bb30ad9c67",
+              "deliverables/risk-review.md": "8f032cd09df53db19f6baf82b4f098be179f6483",
+              "deliverables/recommendation.md": "979dee7b1f3540614285bb60699ec16d268ca71c"
+            },
+            "changedPaths": [
+              "deliverables/cost-model.json",
+              "deliverables/recommendation.md",
+              "deliverables/risk-review.md",
+              "deliverables/schedule.md",
+              "deliverables/technical-capacity.md"
+            ],
+            "recommendation": {
+              "north": "K-900",
+              "harbor": "K-900",
+              "totalUsd": 536000,
+              "corridorMm": 1250,
+              "bindingSources": [
+                "sources/sites.md",
+                "sources/capacity.csv",
+                "sources/vendors.md",
+                "sources/quotes.csv",
+                "sources/leads.csv",
+                "updates/2026-11-06/hf-capacity-correction.csv"
+              ]
+            },
+            "schedule": {
+              "start": "2026-11-05",
+              "installs": [
+                {
+                  "site": "NR",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-11"
+                },
+                {
+                  "site": "HF",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-11"
+                }
+              ]
+            },
+            "normalizations": [
+              {
+                "path": "deliverables/technical-capacity.md",
+                "changedLabels": [
+                  {
+                    "from": "North Ridge",
+                    "to": "NR"
+                  },
+                  {
+                    "from": "Harbor Flats",
+                    "to": "HF"
+                  }
+                ]
+              },
+              {
+                "path": "deliverables/cost-model.json",
+                "changedLabels": [
+                  {
+                    "from": "North Ridge",
+                    "to": "NR"
+                  },
+                  {
+                    "from": "Harbor Flats",
+                    "to": "HF"
+                  }
+                ]
+              },
+              {
+                "path": "deliverables/schedule.md",
+                "changedLabels": [
+                  {
+                    "from": "North Ridge",
+                    "to": "NR"
+                  },
+                  {
+                    "from": "Harbor Flats",
+                    "to": "HF"
+                  }
+                ]
+              }
+            ],
+            "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=K-900; total 536000 USD)"
+          }
+        },
+        "complete": false
+      },
+      "F": {
+        "sessions": [
+          {
+            "id": "T1",
+            "status": "NOT_STARTED",
+            "basis": null,
+            "resultSha256": null,
+            "checks": null,
+            "reason": null,
+            "requests": 0,
+            "knownTokens": null,
+            "totalTokens": null,
+            "unresolvedRequests": null,
+            "ledgerRefusals": [],
+            "usage": null,
+            "usageByRole": null,
+            "elapsedMs": null,
+            "usageQualified": null,
+            "principalId": null,
+            "natural": null,
+            "stop": null,
+            "traces": [],
+            "workerReceipts": [],
+            "business": null,
+            "conclusion": null,
+            "project": null,
+            "scoringRecount": null
+          },
+          {
+            "id": "T2",
+            "status": "NOT_STARTED",
+            "basis": null,
+            "resultSha256": null,
+            "checks": null,
+            "reason": null,
+            "requests": 0,
+            "knownTokens": null,
+            "totalTokens": null,
+            "unresolvedRequests": null,
+            "ledgerRefusals": [],
+            "usage": null,
+            "usageByRole": null,
+            "elapsedMs": null,
+            "usageQualified": null,
+            "principalId": null,
+            "natural": null,
+            "stop": null,
+            "traces": [],
+            "workerReceipts": [],
+            "business": null,
+            "conclusion": null,
+            "project": null,
+            "scoringRecount": null
+          },
+          {
+            "id": "T3",
+            "status": "NOT_STARTED",
+            "basis": null,
+            "resultSha256": null,
+            "checks": null,
+            "reason": null,
+            "requests": 0,
+            "knownTokens": null,
+            "totalTokens": null,
+            "unresolvedRequests": null,
+            "ledgerRefusals": [],
+            "usage": null,
+            "usageByRole": null,
+            "elapsedMs": null,
+            "usageQualified": null,
+            "principalId": null,
+            "natural": null,
+            "stop": null,
+            "traces": [],
+            "workerReceipts": [],
+            "business": null,
+            "conclusion": null,
+            "project": null,
+            "scoringRecount": null
+          }
+        ],
+        "basisReview": null,
+        "basisApproval": null,
+        "basisAdmission": null,
+        "candidate": null,
+        "candidateApproval": null,
+        "acceptance": null,
+        "rejectedCandidateDiagnostic": null,
+        "complete": false
+      }
+    }
+  }
+}

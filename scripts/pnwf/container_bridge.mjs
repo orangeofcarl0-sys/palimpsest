@@ -20,16 +20,18 @@ readline.createInterface({input:process.stdin}).on('line', line => {
   } catch { process.exit(2); }
 }).on('close',()=>process.exit(0));
 http.createServer(async(req,res)=>{
-  if(req.method!=='POST' || !['/v1/messages','/messages'].includes(req.url)) {res.writeHead(403);res.end();return;}
+  const work=req.url==='/pnwf/work' && process.argv[1]==='worker-control';
+  if(req.method!=='POST' || (!work && !['/v1/messages','/messages'].includes(req.url))) {res.writeHead(403);res.end();return;}
   const chunks=[];let bytes=0;
   for await(const chunk of req){bytes+=chunk.length;if(bytes>2097152){res.writeHead(413);res.end();return;}chunks.push(chunk);}
   const id=++serial;pending.set(id,res);
-  emit({id,body:Buffer.concat(chunks).toString('base64')});
+  emit({id,work,body:Buffer.concat(chunks).toString('base64')});
 }).listen(18080,'127.0.0.1',()=>emit({ready:true}));
 `;
 
-export async function startContainerBridge(containerId, gateway, sessionKey) {
-  const child = spawn("docker", ["exec", "-i", "--user", "1001:1001", containerId, "node", "-e", BRIDGE], { stdio: ["pipe", "pipe", "pipe"] });
+export async function startContainerBridge(containerId, gateway, sessionKey, { actor = "principal", dispatchWork } = {}) {
+  const child = spawn("docker", ["exec", "-i", "--user", "1001:1001", containerId, "node", "-e", BRIDGE,
+    ...(dispatchWork === undefined ? [] : ["worker-control"])], { stdio: ["pipe", "pipe", "pipe"] });
   const requests = new Set();
   let ready = false;
   let stderr = "";
@@ -48,8 +50,22 @@ export async function startContainerBridge(containerId, gateway, sessionKey) {
         if (!ready || !Number.isSafeInteger(message.id) || typeof message.body !== "string") throw new Error("invalid bridge frame");
         const body = Buffer.from(message.body, "base64");
         if (body.length > 2 * 1024 * 1024) throw new Error("oversized request");
+        if (message.work === true) {
+          if (dispatchWork === undefined) throw new Error("work control unavailable");
+          Promise.resolve().then(() => dispatchWork(JSON.parse(body))).then(
+            outcome => {
+              send({ id: message.id, status: 200, contentType: "application/json" });
+              send({ id: message.id, data: Buffer.from(JSON.stringify(outcome)).toString("base64"), end: true });
+            },
+            error => {
+              send({ id: message.id, status: 409, contentType: "application/json" });
+              send({ id: message.id, data: Buffer.from(JSON.stringify({ kind: "HOST_FAILURE", detail: error.message })).toString("base64"), end: true });
+            },
+          );
+          return;
+        }
         const upstream = request(gateway + "/v1/messages", { method: "POST", headers: {
-          "content-type": "application/json", "content-length": body.length, "x-api-key": sessionKey,
+          "content-type": "application/json", "content-length": body.length, "x-api-key": sessionKey, "x-pnwf-actor": actor,
         } }, response => {
           send({ id: message.id, status: response.statusCode, contentType: response.headers["content-type"] ?? "application/json" });
           response.on("data", chunk => send({ id: message.id, data: chunk.toString("base64") }));
