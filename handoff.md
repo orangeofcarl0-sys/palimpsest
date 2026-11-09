@@ -11,7 +11,7 @@
 - `main` 是唯一常驻分支。日常保留一条工作分支，并行工作上限为三条。分支归并、R3-A2 导入与历史引用恢复入口见 [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)。
 - 主线归因改写、切换后 CI 和旧 SHA 查找见 [§2](#主线归因与-sha-映射)。
 - 自提交先启用仓库 `commit-msg`。主线逐个检查 PR 引入的提交归因，发布使用 rebase 合并。 [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
-- 从 `fdfad589bf4eb7aab6aa4271a095de28fb36bf40` 接续，修复 `DELIVER` 工件 SHA 绑定并完成 gRPC 迁移双组 Mock 资格。两组均从同一 REST 种子出发，各完成三会话并自然退出，新增付费调用 0。真实配对另行使用获准的资源合同。 [资格报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md) · [逐请求与调用证据](research-evidence/pnwf-software/2026-11-10/qualification.json)
+- `DELIVER` 工件 SHA 修复、项目路线图和 gRPC 迁移双组 Mock 资格已通过 [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253) 发布。送审 head 的 16 项检查均成功，主线发布点为 `d34f34b4c528f7aa7788a1b7192c789dc73b790c`。六个会话均自然退出，38 笔 Mock 请求全部结算，新增付费调用 0。真实配对另行使用获准的资源合同。 [资格报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md) · [发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/release-ci.json)
 - 2026-11-09 在 `codex/energy-project-continuity` 启动同一 energy 项目的三会话实验。首轮两组 Mock 资格 6/6。真实 Palimpsest T1 交付 `4cf360d5620fa10df5022c777aa0ed83c312a80a` 后自然退出，19 笔请求共 535,044 tokens。独立判分修复站点全名与缩写的等价归一化后，同提交离线复算 45/45，通过时新增付费请求为 0。所有者已核准 T2 基线 `8041871314136d417b285a800265858757463f68`。[报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md) · [机器证据](research-evidence/pnwf-energy/2026-11-09/continuity.json)
 - Energy 首轮真实 T2 因 Worker 改写证书被宿主拦截。修复统一了 Work 与宿主的五文件范围，证书保持逐字节不变。后续两次观察分别为原生 Subagent 偏离（业务复核 45/45，缺少正式结算）和正式 Worker 结算后 Principal 达到 64 笔上限（业务 45/45，缺少等待结论）。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-写范围修复与复跑)
 - 等待式变体的 Palimpsest 真实闭环 3/3：T2 正式 Worker 候选 `e2bc1a424a30123213708990394fc8b19e18c445` 获所有者核准，Promotion 后 HEAD 为 `7aed12ea8618533c7acba5b1c8a4f60e8c1c97ce`；T3 从该 HEAD 提交采购摘要 `02fdf9c3aa3e2821e7fe32f82bd7e3b768baf234` 并自然退出。[复验报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#等待与结算引导的定向复验)
@@ -66,8 +66,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 规划基线 `2340fbb3edd5ec4ad57629d6c42377e2b308f098`，已含 Energy 发布 handoff。最新值用 `git rev-parse origin/main` 核对 |
-| 当前工作 | `codex/project-roadmap`，从路线图提交继续交付 SHA 修复、gRPC Mock 资格与 handoff |
+| `origin/main` | gRPC 资格发布点 `d34f34b4c528f7aa7788a1b7192c789dc73b790c`，最新值用 `git rev-parse origin/main` 核对 |
+| [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253) | `codex/project-roadmap` 已 rebase 合并，远端工作分支已自动删除。送审 head `94b59b20a566fa9e621727da89359d6d4a011129`，16/16 项检查成功。路线图送审提交 `fdfad589bf4eb7aab6aa4271a095de28fb36bf40` 对应主线 `fd4fa79e8c0ec2873ae1c43a3783864c0d179c42`。两次 rebase 的文件树与消息逐一核对，资格封存保留实验起点 SHA。[发布证据](research-evidence/pnwf-software/2026-11-10/release-ci.json) |
 | [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251) | `codex/energy-t2-context` 已 rebase 合并，远端工作分支自动删除。检验 head `1c578d34c1603aac8a667bdc356747a43d6b9f74`，16/16 项成功。主线依次为 T2 `1caa0db7eedbcf2efe8a7209014360b34420ee39`、核准与晋升 `f3ee25ef1f2fc9471bc26d915d0e96e9a14f06d9`、T3 `478d6b33879d2d64ac9f03aa70a1b57586ce9b67`。三组文件树和消息逐一核对。 [完整 SHA 与 CI 证据](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json) |
 | [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249) | `codex/energy-project-continuity` 已 rebase 合并；检验 head `e7ea59861c8b002c7b74571840f5cb44363f12f7`，16/16 项成功。原 3 个提交与新主线提交的文件树和消息逐一核验一致，[完整 SHA 对照](research-evidence/pnwf-energy/2026-11-09/release-ci.json) |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
@@ -558,6 +558,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-09 | 发布 Energy T2/T3 上下文试验与两份模型摘要原稿 | [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251)，[合并及检查记录](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json) | 16/16；主线 `478d6b33`，回执 T3 原判分与两份摘要 blob 已核验 |
 | 2026-11-10 | 确立长期项目的三个产品里程碑和下一轮试点 | [路线图](docs/product/PROJECT-ROADMAP.md)，[研究合同](.research-alignment/00_research_contract.md#长期项目的协作与适应) | 先复核交付 SHA 与 gRPC 双组零付费闭环，Energy 用于回归和第二领域复验 |
 | 2026-11-10 | 修复 `DELIVER` 工件 SHA 并完成 gRPC 接续资格 | [报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md)，[机器证据](research-evidence/pnwf-software/2026-11-10/qualification.json) | 6/6 Mock 自然退出，正式 Worker、原生子任务和接受后接续均核验，新增付费调用 0 |
+| 2026-11-10 | 发布路线图、交付 SHA 修复和 gRPC 资格并核对合并结果 | [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253)，[发布证据](research-evidence/pnwf-software/2026-11-10/release-ci.json) | 送审 head 16/16，主线发布点 `d34f34b4`，两次 rebase 的 SHA 对照已记录 |
 
 ---
 
