@@ -11,6 +11,7 @@
 - `main` 是唯一常驻分支。日常保留一条工作分支，并行工作上限为三条。分支归并、R3-A2 导入与历史引用恢复入口见 [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)。
 - 主线归因改写、切换后 CI 和旧 SHA 查找见 [§2](#主线归因与-sha-映射)。
 - 自提交先启用仓库 `commit-msg`。主线逐个检查 PR 引入的提交归因，发布使用 rebase 合并。 [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
+- 下一轮先复现并修正 `DELIVER` 的工件 SHA 绑定，再用 gRPC 迁移做普通业务提示下的跨会话协作试点。Energy 提供纵向回归和第二领域复验。 [项目发展路线图](docs/product/PROJECT-ROADMAP.md)
 - 2026-11-09 在 `codex/energy-project-continuity` 启动同一 energy 项目的三会话实验。首轮两组 Mock 资格 6/6。真实 Palimpsest T1 交付 `4cf360d5620fa10df5022c777aa0ed83c312a80a` 后自然退出，19 笔请求共 535,044 tokens。独立判分修复站点全名与缩写的等价归一化后，同提交离线复算 45/45，通过时新增付费请求为 0。所有者已核准 T2 基线 `8041871314136d417b285a800265858757463f68`。[报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md) · [机器证据](research-evidence/pnwf-energy/2026-11-09/continuity.json)
 - Energy 首轮真实 T2 因 Worker 改写证书被宿主拦截。修复统一了 Work 与宿主的五文件范围，证书保持逐字节不变。后续两次观察分别为原生 Subagent 偏离（业务复核 45/45，缺少正式结算）和正式 Worker 结算后 Principal 达到 64 笔上限（业务 45/45，缺少等待结论）。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-写范围修复与复跑)
 - 等待式变体的 Palimpsest 真实闭环 3/3：T2 正式 Worker 候选 `e2bc1a424a30123213708990394fc8b19e18c445` 获所有者核准，Promotion 后 HEAD 为 `7aed12ea8618533c7acba5b1c8a4f60e8c1c97ce`；T3 从该 HEAD 提交采购摘要 `02fdf9c3aa3e2821e7fe32f82bd7e3b768baf234` 并自然退出。[复验报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#等待与结算引导的定向复验)
@@ -60,12 +61,13 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-09，最近同步）
+## 2. 当前 Git / 分支状态（2026-11-10，最近同步）
 
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | Energy T2/T3 上下文发布点 `478d6b33879d2d64ac9f03aa70a1b57586ce9b67`，最新值用 `git rev-parse origin/main` 核对 |
+| `origin/main` | 规划基线 `2340fbb3edd5ec4ad57629d6c42377e2b308f098`，已含 Energy 发布 handoff。最新值用 `git rev-parse origin/main` 核对 |
+| 当前规划 | `codex/project-roadmap`，路线图、研究合同与 handoff 同步记录 |
 | [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251) | `codex/energy-t2-context` 已 rebase 合并，远端工作分支自动删除。检验 head `1c578d34c1603aac8a667bdc356747a43d6b9f74`，16/16 项成功。主线依次为 T2 `1caa0db7eedbcf2efe8a7209014360b34420ee39`、核准与晋升 `f3ee25ef1f2fc9471bc26d915d0e96e9a14f06d9`、T3 `478d6b33879d2d64ac9f03aa70a1b57586ce9b67`。三组文件树和消息逐一核对。 [完整 SHA 与 CI 证据](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json) |
 | [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249) | `codex/energy-project-continuity` 已 rebase 合并；检验 head `e7ea59861c8b002c7b74571840f5cb44363f12f7`，16/16 项成功。原 3 个提交与新主线提交的文件树和消息逐一核验一致，[完整 SHA 对照](research-evidence/pnwf-energy/2026-11-09/release-ci.json) |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
@@ -447,7 +449,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-按优先级：
+下一轮的实施顺序与判据见路线图。下列条目记录相应的剩余风险和证据。[项目发展路线图](docs/product/PROJECT-ROADMAP.md#下一轮实施顺序)
 
 1. **真实 Provider 的硬预算资格**
    - 请求前预留、Mock 身份和实际容器故障链已实现并验证。
@@ -553,13 +555,14 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-09 | 从两个晋升 HEAD 分别接续真实 T3 | [报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#两个晋升版本的真实-t3)，[机器证据](research-evidence/pnwf-energy/2026-11-09/t3-context-continuation.json) | Mock 2/2；真实新增 25 笔；均提交并自然退出，严格判分 1/2 |
 | 2026-11-09 | 发布 Energy 范围修复、真实三会话对照与轨迹分析；同步实际合并点 | [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249)，`08c6c6e8` | 精确 head 16/16；保留 rebase 前后 SHA 对照与主线工作流链接 |
 | 2026-11-09 | 发布 Energy T2/T3 上下文试验与两份模型摘要原稿 | [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251)，[合并及检查记录](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json) | 16/16；主线 `478d6b33`，回执 T3 原判分与两份摘要 blob 已核验 |
+| 2026-11-10 | 确立长期项目的三个产品里程碑和下一轮试点 | [路线图](docs/product/PROJECT-ROADMAP.md)，[研究合同](.research-alignment/00_research_contract.md#长期项目的协作与适应) | 先复核交付 SHA 与 gRPC 双组零付费闭环，Energy 用于回归和第二领域复验 |
 
 ---
 
 ## 10. 给下一个 agent 的最短路径
 
-1. 读本文件 §0–§3。
-2. 读 `PNWF-CQ-R1-QUALIFICATION.md`，并读历史 `PNWF-CQ-RESULT.md` 的 §6/§9。
+1. 读本文件 §0–§3 和 [项目发展路线图](docs/product/PROJECT-ROADMAP.md)。
+2. 按路线图确认本轮验收场景。运行边界查 [执行资格](docs/engineering/PNWF-CQ-R1-QUALIFICATION.md) 与 [按量记账](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)。
 3. 按 §2 核对当前分支与工作树。新工作先 fetch，再从当前主线开 `codex/` 分支。
 4. `pnpm build && pnpm architecture:check && pnpm architecture:check-public-api`。
 5. 跑 §5 的顺序验收集。
