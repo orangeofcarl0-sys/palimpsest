@@ -41,9 +41,9 @@ export function commitAll(repo, message) {
   return head(repo);
 }
 
-export function configureGit(repo) {
-  git(repo, "config", "user.name", "Energy experiment");
-  git(repo, "config", "user.email", "energy-experiment@example.invalid");
+export function configureGit(repo, { name = "Energy experiment", email = "energy-experiment@example.invalid" } = {}) {
+  git(repo, "config", "user.name", name);
+  git(repo, "config", "user.email", email);
   git(repo, "config", "core.autocrlf", "false");
   git(repo, "config", "core.filemode", "false");
   git(repo, "config", "commit.gpgsign", "false");

@@ -16,13 +16,15 @@ const STATE_FILES = {
   transportCursors: "transport-cursors.sqlite", projectJournal: "journal.sqlite", projectAssociations: "associations.sqlite", management: "management.sqlite",
 };
 
-export function profileFor({ world, state, path }) {
+export function profileFor({ world, state, path, projectId = PROJECT, localPeer = "energy-project-principal",
+  allowedCommands = [{ executable: "node", argv_prefix: ["check.mjs"] }],
+  standard = "Required artifacts exist, the public format check succeeds, and all changes are within the declared scope." }) {
   writeJson(path, {
-    schemaVersion: 1, profileId: PROJECT, projectId: PROJECT, localPeer: "energy-project-principal",
+    schemaVersion: 1, profileId: projectId, projectId, localPeer,
     repository: world, execution: "worktree", concurrency: 1, toolProfile: "normal",
-    policy: { allowed_commands: [{ executable: "node", argv_prefix: ["check.mjs"] }] },
-    standard: { statement: "Required artifacts exist, the public format check succeeds, and all changes are within the declared scope." },
-    transport: { namespace: PROJECT, databasePath: join(state, "transport.sqlite") },
+    policy: { allowed_commands: allowedCommands },
+    standard: { statement: standard },
+    transport: { namespace: projectId, databasePath: join(state, "transport.sqlite") },
     databases: Object.fromEntries(Object.entries(STATE_FILES).map(([name, file]) => [name, join(state, file)])),
   });
 }
@@ -33,8 +35,8 @@ async function withDeployment(profile, action) {
   finally { await deployment.close(); }
 }
 
-export async function initializeProject(profile, seed) {
-  return withDeployment(profile, controller => controller.start({ projectId: PROJECT, goal: GOAL, headCommit: seed, tasks: [] }));
+export async function initializeProject(profile, seed, { projectId = PROJECT, goal = GOAL } = {}) {
+  return withDeployment(profile, controller => controller.start({ projectId, goal, headCommit: seed, tasks: [] }));
 }
 
 export function checkpoint(state) {
@@ -61,22 +63,24 @@ function conclusion(state) {
   } finally { db.close(); }
 }
 
-export async function productFacts(profile, state) {
+export async function productFacts(profile, state, { projectId = PROJECT } = {}) {
   return withDeployment(profile, controller => {
     const status = controller.status();
     const attempts = status.attempts.map(attempt => ({ id: attempt.attempt_id, task: attempt.task_id, state: attempt.state,
       ...controller.attemptWorkRecord(attempt.attempt_id) }));
-    const events = controller.store.listEvents(PROJECT).map(event => ({ id: event.event_id, type: event.event_type, entityId: event.entity_id }));
+    const events = controller.store.listEvents(projectId).map(event => ({ id: event.event_id, type: event.event_type, entityId: event.entity_id }));
     return { head: status.headCommit, tasks: status.tasks, attempts, events, conclusion: conclusion(state),
       promotions: controller.promotions.promotionFactsSync(), headState: controller.promotions.projectHeadStatusSync() };
   });
 }
 
-export async function admitBasis({ world, state, approved, mode }) {
+export async function admitBasis({ world, state, approved, mode, projectId = PROJECT,
+  reason = "Owner admitted the committed initial package and supplier input as the execution basis.",
+  operatorNamespace = "energy" }) {
   assert(sha(approved) && head(world) === approved && clean(world), "BASIS_APPROVAL_MISMATCH");
-  const operatorId = mode === "mock" ? "energy-mock-operator" : "energy-project-owner";
+  const operatorId = operatorNamespace + (mode === "mock" ? "-mock-operator" : "-project-owner");
   const actor = `operator:${operatorId}`;
-  const purpose = `energy-basis:${approved}`;
+  const purpose = `${operatorNamespace}-basis:${approved}`;
   // The owner command's exact SHA is the authorization input. Its local token stays in this process.
   const { publicKey, privateKey } = generateKeyPairSync("ed25519");
   const token = signOperatorToken({ privateKeyPem: privateKey.export({ format: "pem", type: "pkcs8" }).toString(), claims: {
@@ -84,11 +88,10 @@ export async function admitBasis({ world, state, approved, mode }) {
   } });
   const verified = verifyOperatorToken({ token, publicKeyPem: publicKey.export({ format: "pem", type: "spki" }).toString(), expectedOperatorId: operatorId, expectedPurpose: purpose });
   assert(verified.valid, "OPERATOR_TOKEN_REFUSED");
-  const product = installProduct({ tools: { register: () => () => {} } }, { projectId: PROJECT, repository: world, stateDir: state,
+  const product = installProduct({ tools: { register: () => () => {} } }, { projectId, repository: world, stateDir: state,
     execution: "worktree", operatorAuthority: makeSignedOperatorAuthority({ claims: verified.claims, actor }) });
   try {
     const old = product.controller.work.project();
-    const reason = "Owner admitted the committed initial package and supplier input as the execution basis.";
     const admitted = product.controller.planReconciled({ tasks: old.tasks.map(task => ({ ...task })), reason }, {
       headAdvance: { source: "DIRECT_BASIS", toHead: approved, operator: actor, reason },
     });

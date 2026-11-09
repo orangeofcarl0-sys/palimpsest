@@ -1,0 +1,47 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "software-missing-usage",
+  "configDigest": "07416824cba8ee9573c60b69a45c406f2bf24198da3339b20c08409905cc2ea1",
+  "state": "STOPPED",
+  "reason": "UNOBSERVABLE_USAGE",
+  "confirmed": 0,
+  "reserved": 512,
+  "unresolvedRequests": 1,
+  "aggregateCeiling": 12000000,
+  "sessions": [
+    {
+      "id": "current",
+      "ordinal": 0,
+      "state": "RUNNING",
+      "ceiling": 12000000,
+      "softCeiling": 12000000,
+      "requestCount": 1,
+      "unresolvedRequests": 1,
+      "confirmed": 0,
+      "reserved": 512
+    },
+    {
+      "id": "next",
+      "ordinal": 1,
+      "state": "NOT_STARTED",
+      "ceiling": 12000000,
+      "softCeiling": 12000000,
+      "requestCount": 0,
+      "unresolvedRequests": 0,
+      "confirmed": 0,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "e5b7e8ef-594f-4c01-bb46-a63f31108b5c",
+      "session": "current",
+      "digest": "942c36022b5a2c15397e8b31a432ea77a612fdd4d914909aa004706f4e91527c",
+      "reserved": 512,
+      "actual": null,
+      "state": "UNKNOWN",
+      "reason": "UNOBSERVABLE_USAGE"
+    }
+  ],
+  "refusals": []
+}
