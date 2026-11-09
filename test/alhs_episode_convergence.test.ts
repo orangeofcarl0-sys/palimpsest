@@ -6,11 +6,12 @@
  * product does with it. The scenario run shows a real DSH host using the same path.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
 import { installProduct } from "../src/product.js";
 import type { ProjectStandard } from "../src/domain/standard.js";
@@ -20,6 +21,16 @@ import {
   validateEpisodeConclusion,
   type EpisodeReadiness,
 } from "../src/project_continuity/index.js";
+
+const gitObservation = vi.hoisted(() => ({ afterBlob: null as ((args: readonly string[]) => void) | null }));
+vi.mock("node:child_process", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:child_process")>();
+  return { ...actual, execFileSync: (...args: Parameters<typeof actual.execFileSync>) => {
+    const result = Reflect.apply(actual.execFileSync, undefined, args);
+    if (args[0] === "git" && args[1]?.[2] === "cat-file" && args[1][3] === "blob") gitObservation.afterBlob?.(args[1]);
+    return result;
+  } };
+});
 
 const cleanups: Array<() => void> = [];
 afterAll(() => {
@@ -117,7 +128,7 @@ type Conclude = {
   conclusion: {
     intent: string;
     conclusionId: string;
-    check?: { artifacts?: Array<{ path: string; present: boolean; tracked: boolean; committed: boolean }> };
+    check?: { artifacts?: Array<{ path: string; present: boolean; tracked: boolean; committed: boolean; commit?: string | null; digest?: string }> };
   } | null;
   episode: { state: string; current: boolean; changedSince: string[]; conclusion: { intent: string } | null } | null;
   session: { mayEnd: boolean; detail: string };
@@ -281,6 +292,46 @@ describe("ALHS-A episode conclusion", () => {
       tracked: true,
       committed: true,
     });
+  });
+
+  it("binds each DELIVER to the bytes of its current Git commit on the same Host", async () => {
+    const { repo, head, stateDir } = workspace("artifact-head");
+    const installed = install(repo, stateDir);
+    await start(installed, head, []);
+    const args = { action: "conclude", intent: "DELIVER", statement: "Deliver the current project artifacts.", artifacts: ["README.md"] };
+    const deliver = async () => (await call(installed, "palimpsest_work", args)) as unknown as Conclude;
+    expect((await deliver()).conclusion?.check?.artifacts?.[0]?.commit).toBe(head);
+
+    writeFileSync(join(repo, "README.md"), "# Revised package\n");
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qam", "revise"], { cwd: repo });
+    const revised = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
+    const bytes = execFileSync("git", ["cat-file", "blob", `${revised}:README.md`], { cwd: repo });
+    expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({
+      commit: revised, committed: true, digest: createHash("sha256").update(bytes).digest("hex"),
+    });
+
+    gitObservation.afterBlob = (command) => {
+      if (command[1] === repo && command[4] === `${revised}:README.md`) throw new Error("Git object read failed");
+    };
+    try {
+      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
+    } finally {
+      gitObservation.afterBlob = null;
+    }
+
+    gitObservation.afterBlob = (command) => {
+      if (command[1] === repo && command[4] === `${revised}:README.md`) {
+        gitObservation.afterBlob = null;
+        execFileSync("git", ["update-ref", "HEAD", head, revised], { cwd: repo });
+      }
+    };
+    try {
+      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ commit: null, committed: false });
+      expect(execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()).toBe(head);
+      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
+    } finally {
+      gitObservation.afterBlob = null;
+    }
   });
 
   it("CONTINUE requires a next step and does not pretend the episode ended", async () => {

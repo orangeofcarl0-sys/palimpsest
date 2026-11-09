@@ -17,7 +17,7 @@ const PREFLIGHT = fileURLToPath(new URL("../world_preflight.mjs", import.meta.ur
 const ATTEMPT_PATH = /^\/run\/stage\/world\/\.palimpsest\/worlds\/([a-zA-Z0-9_-]+)$/u;
 const READ_ATTEMPT = `const {DatabaseSync}=require('node:sqlite');
 const db=new DatabaseSync('/run/stage/state/palimpsest.sqlite',{readOnly:true});
-const row=db.prepare('SELECT state FROM attempts WHERE project_id=? AND attempt_id=?').get('energy-project-continuity',process.argv[1]);
+const row=db.prepare('SELECT state FROM attempts WHERE project_id=? AND attempt_id=?').get(process.argv[2],process.argv[1]);
 db.close();process.stdout.write(row?.state??'');`;
 
 export function stageRuntime({ repo, destination, variant = "baseline" }) {
@@ -54,7 +54,9 @@ function start(runtime, stdout, stderr) {
   });
 }
 
-export function makeWorkerBroker({ stage, out, repository, image, principalId, gateway, sessionKey, basis, stopIsClosed, variant }) {
+export function makeWorkerBroker({ stage, out, repository, image, principalId, gateway, sessionKey, basis, stopIsClosed, variant,
+  policy = { projectId: "energy-project-continuity", checkScope: requireRevisionScope, checkResult: validateWorkerResult,
+    requirements: [PRESERVE_CERTIFICATES, ...workerInstructions(variant)], preservedPath: CERTIFICATES } }) {
   let current = null;
   let closed = false;
   const attempted = new Set();
@@ -66,13 +68,13 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
     const attemptId = match[1];
     Object.assign(job.receipt, { attemptId, basis });
     const work = request.context.work;
-    requireRevisionScope(work.writeScope);
-    Object.assign(job.receipt, { writeScope: [...work.writeScope], preservedPath: CERTIFICATES });
+    policy.checkScope(work.writeScope);
+    Object.assign(job.receipt, { writeScope: [...work.writeScope], preservedPath: policy.preservedPath });
     assert(!attempted.has(attemptId), "WORKER_ATTEMPT_ALREADY_DISPATCHED");
     attempted.add(attemptId);
     const principalWorld = join(stage, "world");
     const attempt = join(principalWorld, ".palimpsest", "worlds", attemptId);
-    const active = () => docker(["exec", "--user", "1001:1001", principalId, "node", "-e", READ_ATTEMPT, attemptId], { stdio: ["ignore", "pipe", "pipe"] }) === "RUNNING";
+    const active = () => docker(["exec", "--user", "1001:1001", principalId, "node", "-e", READ_ATTEMPT, attemptId, policy.projectId], { stdio: ["ignore", "pipe", "pipe"] }) === "RUNNING";
     const attemptGit = (...args) => docker(["exec", "--user", "1001:1001", principalId, "git", "--no-optional-locks", "-c", "safe.directory=*", "-C", request.workDir, ...args]);
     const attemptAtBasis = () => attemptGit("rev-parse", "HEAD") === basis && attemptGit("status", "--porcelain", "--untracked-files=all") === "";
     assert(active() && realpathSync(attempt) === attempt && head(principalWorld) === basis && attemptAtBasis(), "WORKER_ATTEMPT_NOT_BOUND_AT_BASIS");
@@ -85,13 +87,13 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
     // Use the canonical basis only. The attempt store and its Git alternates never enter the peer.
     git(principalWorld, "clone", "--no-local", "--no-hardlinks", "--no-checkout", "--", principalWorld, peer);
     git(peer, "remote", "remove", "origin");
-    configureGit(peer);
+    configureGit(peer, policy.gitIdentity);
     git(peer, "checkout", "--quiet", "--detach", basis);
     assert(head(peer) === basis && clean(peer), "WORKER_PEER_BASIS_MISMATCH");
     const workerContract = await import(pathToFileURL(join(repository, "dist/src/deployment/work_worker.js")).href);
     const { context, resultTool, deniedAuthorityPrefix } = workerContract.workWorkerEnvironmentPayload({
       ...request.context,
-      work: { ...work, requirements: [...work.requirements, PRESERVE_CERTIFICATES, ...workerInstructions(variant)] },
+      work: { ...work, requirements: [...work.requirements, ...policy.requirements] },
     });
     // This new-source scenario needs the checked-out materials. No external context channel is mounted.
     writeJson(join(peerStage, "context.json"), { context, resultTool, deniedAuthorityPrefix });
@@ -123,7 +125,7 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
       job.receipt.sessionId = reported.sessionId;
       if (parsed.outcome.kind !== "READY_FOR_SETTLEMENT") return { kind: parsed.outcome.kind, detail: parsed.outcome.summary };
       const result = head(peer);
-      const paths = validateWorkerResult(peer, basis, result);
+      const paths = policy.checkResult(peer, basis, result, work.writeScope);
       assert(active() && attemptAtBasis() && head(principalWorld) === basis, "WORKER_RETURN_BASIS_DRIFT");
       // Transport the commit without changing the canonical live Git HEAD. Product observes and settles this Attempt.
       const bundle = join(directory, "result.bundle");

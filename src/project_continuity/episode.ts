@@ -146,7 +146,7 @@ export interface EpisodeArtifactState {
   readonly digest?: string | null | undefined;
   /** Where the bytes were found: the live worktree, a governed candidate's result commit, or nowhere. */
   readonly source?: "WORKTREE" | "RESULT_COMMIT" | "ABSENT" | undefined;
-  /** The result commit a governed candidate was read from, when `source` is RESULT_COMMIT. */
+  /** The exact commit used to read and digest the Git blob, when confirmed. */
   readonly commit?: string | null | undefined;
   readonly detail: string;
 }

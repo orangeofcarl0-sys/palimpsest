@@ -35,6 +35,8 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 
 ## 下一轮实施顺序
 
+交付工件 SHA 修复和 gRPC 双组零付费资格已完成。后续真实诊断配对沿用冻结的业务条件，单独核对运行授权。[实施报告与复算入口](../engineering/SOFTWARE-PROJECT-CONTINUITY.md)
+
 ### 核对交付引用
 
 先复现 Energy 两条接续 T3 暴露的引用错配。`DELIVER` 中的文件摘要值匹配新提交的 blob，`commit` 字段却指向先前的接受版本。`makeArtifactObserver` 在已安装的观察器上记住首次读取的 HEAD，后续 blob 读取仍解析当前 `HEAD:path`。先观察 A、原生提交 B、随后交付的回归可检验这一解释。[T3 核验](../engineering/ENERGY-PROJECT-CONTINUITY.md#摘要提交和退出) · [工件观察实现](../../src/composition/continuity.ts)
@@ -49,7 +51,7 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 
 ### 先验证两组运行条件
 
-用现有 PNWF 容器、账本和轨迹归因从复制的项目状态各跑一次 Mock 闭环。核验实际运行进程、镜像、身份、挂载、固定出口、新 DSH home、Git 对象以及独立评分。故障场景涵盖错接受 SHA、越界写入、评分资料不可见和用量缺失。单写者隔离用于本次试点。计划引入跨 Host 并发前，用真实写者竞争和接管故障验证 fence。普通 Direct 流程也要在同一资格里证明无需正式任务就能交付。[接续运行入口](../../scripts/pnwf/energy/run.mjs) · [归因入口](../../scripts/psvr/session_attribution.mjs)
+用现有 PNWF 容器、账本和轨迹归因从复制的项目状态各跑一次 Mock 闭环。核验实际运行进程、镜像、身份、挂载、固定出口、新 DSH home、Git 对象以及独立评分。故障场景涵盖错接受 SHA、越界写入、评分资料不可见和用量缺失。单写者隔离用于本次试点。计划引入跨 Host 并发前，用真实写者竞争和接管故障验证 fence。普通 Direct 流程也要在同一资格里证明无需正式任务就能交付。[软件资格入口](../../scripts/pnwf/software/run.mjs) · [Energy 接续入口](../../scripts/pnwf/energy/run.mjs) · [归因入口](../../scripts/psvr/session_attribution.mjs)
 
 资格通过后，从同一冻结输入各执行一条 Palimpsest 与强原生 DSH 的软件项目周期，作为诊断试点。两边的提示只写业务成果、验证要求和审批条件。双方都可以使用 Git、原生 Subagent、Workflow 与测试。Palimpsest 从常规 DSH 产品入口启动，宿主负责环境、计量和独立判分。共同冻结模型、提示、输入变化、业务上的审核条件、会话窗口和判分器。审批按完整 SHA 核对，各自的人工操作与等待单列，后续会话只读各组已接受或适用的交付状态。首对计划沿用每个 Session 64 笔、30 分钟、单请求 240 秒的已验证窗口。付费运行使用本轮获准的模式和窗口。若授权要求硬上限，先验证真实 Provider 的可执行上界。
 
@@ -79,4 +81,4 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 | 简单项目中原生 DSH 稳定等效，产品主要增加机械调用。 | 把这些任务交给直接路径，收缩默认工具和提示负担。 |
 | 软件与 Energy 的重复配对都缺少质量或全周期收益。 | 保存负面结果，收窄价值主张到已证实的接续或治理场景，再决定投入。 |
 
-每次迭代以一个用户能完成的纵向任务结项。产品行为看这份路线图，已观察结果看对应报告，执行状态看 handoff。下一轮的首项交付是可取回的 Git 工件回执和冻结的 gRPC 双组零付费闭环。[研究合同](../../.research-alignment/00_research_contract.md#长期项目的协作与适应) · [Handoff](../../handoff.md)
+每次迭代以一个用户能完成的纵向任务结项。产品行为看这份路线图，已观察结果看对应报告，执行状态看 handoff。[研究合同](../../.research-alignment/00_research_contract.md#长期项目的协作与适应) · [Handoff](../../handoff.md)

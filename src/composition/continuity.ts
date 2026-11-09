@@ -190,7 +190,8 @@ export function appliedDecisionFromHistory(
 function makeArtifactObserver(input: {
   readonly repository?: string | undefined;
   readonly candidates?: (() => readonly { attemptId: string; taskId: string | null; resultCommit: string }[]) | undefined;
-}): (path: string) => EpisodeArtifactState {  const digestOf = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
+}): (path: string) => EpisodeArtifactState {
+  const digestOf = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
   const absent = (path: string, detail: string): EpisodeArtifactState => ({
     path,
     present: false,
@@ -201,24 +202,6 @@ function makeArtifactObserver(input: {
     commit: null,
     detail,
   });
-  /**
-   * PNWF-B: a committed worktree artifact HAS a Git identity. Recording `commit: null` made a direct
-   * commit look like an anonymous worktree file to the next session. The read is memoized: one
-   * `rev-parse` per observation, never a mutation.
-   */
-  let headRead = false;
-  let observedHead: string | null = null;
-  const headCommit = (): string | null => {
-    if (headRead) return observedHead;
-    headRead = true;
-    if (input.repository === undefined) return (observedHead = null);
-    try {
-      observedHead = execFileSync("git", ["-C", input.repository, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
-    } catch {
-      observedHead = null;
-    }
-    return observedHead;
-  };
   return (path: string): EpisodeArtifactState => {
     if (input.repository === undefined) return absent(path, "repository not observable");
     const repository = input.repository;
@@ -227,58 +210,54 @@ function makeArtifactObserver(input: {
     if (rel.startsWith("..")) return absent(path, "outside the repository");
 
     if (existsSync(absolute) && statSync(absolute).isFile()) {
+      const readHead = (): string | null => {
+        try {
+          return execFileSync("git", ["-C", repository, "rev-parse", "--verify", "HEAD^{commit}"], { encoding: "utf8" }).trim();
+        } catch {
+          return null;
+        }
+      };
+      const observedHead = readHead();
       let tracked = false;
       try {
         execFileSync("git", ["-C", repository, "ls-files", "--error-unmatch", "--", rel], { stdio: "ignore" });
         tracked = true;
-      } catch {
-        tracked = false;
-      }
-      let inHead = false;
-      try {
-        execFileSync("git", ["-C", repository, "cat-file", "-e", `HEAD:${rel}`], { stdio: "ignore" });
-        inHead = true;
-      } catch {
-        inHead = false;
-      }
+      } catch { /* The file may be present only in the worktree. */ }
+
       let dirty = true;
       try {
         dirty = execFileSync("git", ["-C", repository, "status", "--porcelain", "--", rel], { encoding: "utf8" }).trim() !== "";
-      } catch {
-        dirty = true;
-      }
-      const committed = inHead && !dirty;
-      /**
-       * PWRS-C: a COMMITTED artifact is digested from its Git blob, not from the checked-out bytes.
-       * The worktree may normalize line endings (CRLF on Windows) while the blob stores LF, and the
-       * same artifact read from a result commit is a blob — hashing raw worktree bytes made the SAME
-       * committed content look changed after a promotion. An uncommitted file is digested as it
-       * actually is on disk, because that is the bytes a reader would get.
-       */
-      const blobDigest = ((): string | null => {
-        if (!committed) return null;
+      } catch { /* An unavailable status does not establish cleanliness. */ }
+
+      let commit: string | null = null;
+      let blobDigest: string | null = null;
+      let detail = tracked ? "tracked with uncommitted changes" : "not tracked by Git";
+      if (tracked && !dirty && observedHead !== null) {
         try {
-          const bytes = execFileSync("git", ["-C", repository, "cat-file", "blob", `HEAD:${rel}`], { maxBuffer: 8 * 1024 * 1024 });
-          return digestOf(bytes);
+          // Hash the pinned blob to preserve identity across checkout line-ending conversions.
+          const bytes = execFileSync("git", ["-C", repository, "cat-file", "blob", `${observedHead}:${rel}`], { maxBuffer: 8 * 1024 * 1024 });
+          if (readHead() === observedHead) {
+            commit = observedHead;
+            blobDigest = digestOf(bytes);
+            detail = "committed at HEAD";
+          } else {
+            detail = "HEAD changed during artifact observation";
+          }
         } catch {
-          return null;
+          detail = "artifact blob could not be read at observed HEAD";
         }
-      })();
+      } else if (tracked && observedHead === null) {
+        detail = "HEAD could not be verified";
+      }
       return {
         path,
         present: true,
         tracked,
-        committed,
+        committed: commit !== null,
         digest: blobDigest ?? digestOf(readFileSync(absolute)),
         source: "WORKTREE" as const,
-        commit: committed ? headCommit() : null,
-        detail: !tracked
-          ? "not tracked by Git"
-          : !inHead
-            ? "tracked but not in HEAD"
-            : dirty
-              ? "tracked with uncommitted changes"
-              : "committed at HEAD",
+        commit,
+        detail,
       };
     }
 

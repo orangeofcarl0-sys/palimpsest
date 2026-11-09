@@ -1,0 +1,3059 @@
+{
+  "passed": true,
+  "paidModelCalls": 0,
+  "seal": {
+    "implementationHead": "fdfad589bf4eb7aab6aa4271a095de28fb36bf40",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "dsh": "0.2.1-rc.5",
+    "seedCommit": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+    "seedTree": "c6518c93828813f90d937298e31d65cbc3ef7c08",
+    "scenario": "grpc-migration-continuation",
+    "mockWallClockMs": 180000,
+    "prompts": {
+      "T1": "692abbb86d9347ac2ace1e809d27d8dbe93e32af227e8eb20edfb47ab68a5432",
+      "T2": "486c5878f4c4ef1b923ff1a9c42dc042c1029b4a98812806646f77a832433f5f",
+      "T3": "0870ee0bb78d78a94ef515688e74eb55e04699774de64ba480f9d047397894c2"
+    },
+    "fixture": {
+      ".gitignore": "8697d970a378541c5a362341233660936d6f534a80310c1d9a5a720f303b0a8f",
+      "README.md": "d4fe030c6c86c5d1d90b7c05f8eb84a0424d8683de5fe47c68c208fa39cc0061",
+      "TASK.md": "8d2a17ed04b41a966ab59db13b7dfb87613a9bc649e5dfce0cce97a54c54efd5",
+      "expected/client/MIGRATION.md": "0efc71a32e4c4e2caf83b37241ec39246928d54338a4cb5311de7898ac6e8f35",
+      "expected/client/service/grpc_client.js": "24ff435deee2ea7ecdba96e200e34b9ae76930207df65290b843b78250acc054",
+      "expected/client/test/integration.test.js": "3b0437ff068df92defc06766844861be744ae9aea567a681a1957f42a4dbb283",
+      "expected/contract/proto/energy.proto": "82d48d34953dce13a29ff51f00616cf5a4586f0ce97b333b9a6adbbe1fcc87d1",
+      "expected/contract/service/wire.js": "3d55ac6e76a327d703f98ee61a34dcebb058c25930cecfffbd8502b6ef3b4083",
+      "expected/contract/test/wire.test.js": "df4cd552be474ed991b5b9c2802fb8e3726b342da38cd2f51aa328e5809200e3",
+      "expected/server/final/proto/energy.proto": "8d99af33e6cd511fb93dd3b747ffed23ccbc0646e3c191e89aba548e77afa3e7",
+      "expected/server/final/service/grpc_server.js": "712e0364727ab6b4d727d0d5e9c05ae6833670bebbc37ef51c68723a83c69ddb",
+      "expected/server/final/service/wire.js": "3befaabc649eb960fc35b4709e5144cbdffc5cc39c19eafd79a3d1f9d8707413",
+      "expected/server/final/test/server.test.js": "3ef821c1271322a68fb27acfe56da05d330d36228a7e80286414c691499a79bd",
+      "expected/server/final/test/wire.test.js": "3b5effc50d9e89224ec2377b344a987c8f7423e062527b13c2d3ff76637b65a8",
+      "expected/server/partial/service/grpc_server.js": "8ab19ef2fda05ff431c283cf0fa27f25cb33dd5eac53b830501d2f23f143ff62",
+      "expected/server/partial/test/server.test.js": "08f58ed912e1f23a7acf59715de256915698e7b46bb2ce626283bdae22e8b30c",
+      "package.json": "2206ca415e94ecde36bee87213b291ae41d3aa7e5603714709c76f5da50ee47e",
+      "service/data.js": "530072772fcf1d58d983d7af3737c90c1c18b77d0bbd01821fba08fac9ae3b7a",
+      "service/rest_client.js": "e17930a74f39b1f2cb7a08da9a0f1fb11a787390c7c777c20a47f6ab03a2b131",
+      "service/rest_server.js": "dacef9aef04556a90e1fdfc3243888460fc210aa1f46636c7e3f8d2efba8b185",
+      "test/rest.test.js": "5c77bfdb552f92bb818598dfaf71d3df905721f2bdcba6c57337154daca57dcd"
+    },
+    "scripts": {
+      "scripts/pnwf/analyze_energy_trajectory.mjs": "04193311dd75ed534c1a04adf049fc91d9fdb656e185e83e0d7936c58f9790cc",
+      "scripts/pnwf/bounded_provider.mjs": "bce3607083de30b06a39ab8006cdb7e132e53ed15cb80f61f9c7ff70bb25cca8",
+      "scripts/pnwf/container_adapter.mjs": "913863ee0e23f97d51297c51099d06fb02bf74043071956d05d71e3ee7c88270",
+      "scripts/pnwf/container_bridge.mjs": "a0f19c75bd2419825ff6270d639f1dcee36a30891365974a6b2fb4c618698c79",
+      "scripts/pnwf/container_runtime.mjs": "dfe511193a96bec855a5878be75805e043344a9b3c88d482bdd71ab6997b4976",
+      "scripts/pnwf/energy/container-worker.mjs": "49ea1b10b2ad39f027372c8fcb535b9b616024b18b9dd91cfcdc4ab9ea739e25",
+      "scripts/pnwf/energy/context-variants.mjs": "bb3f08d5822b863244e4695f28ee6ef9b171c8969d93469ae77529534b9482a0",
+      "scripts/pnwf/energy/contract.mjs": "04dd640219a2437f42a58cd635d7c0951184e31434e7bf84d6191d336947f403",
+      "scripts/pnwf/energy/contract.test.mjs": "06a80c0bbf2771f45091731103ff95d802e0ed857d2752efab5b6d54b7dec971",
+      "scripts/pnwf/energy/evidence.mjs": "d5d525a583c2ad49cfda15ea79671a516fbed6a15f9af4e45d2368a373ba1be5",
+      "scripts/pnwf/energy/mock.mjs": "b9a6931270e8f2e806b21269a93564f64da07ff5550e0366bba8f43fb9fa4b8a",
+      "scripts/pnwf/energy/owner-command.mjs": "186a32c8e51fc8b397af6f4306401f698dbb4dce6825f10555465f9e2a480c7b",
+      "scripts/pnwf/energy/product-entry.mjs": "046dede74bb9eadc100f2d4724979ece3642b1a5c5124a9f444b611d1bdb3dd0",
+      "scripts/pnwf/energy/product.mjs": "3638e0c86cf25d8bfb61980fe696f0e83dd743fd7e1a3f70c235488b73ef2ec0",
+      "scripts/pnwf/energy/revision-review.mjs": "e7039c6329e6da755f03c50c2a60ce6234e25ae28d9d658a46c54ec7aa477eeb",
+      "scripts/pnwf/energy/revision-scope.mjs": "65897825b78c629e8faf79ea44d4c0a710f715697bacd4045e9f06cdb0ef030b",
+      "scripts/pnwf/energy/revision-work.mjs": "50f840ad6660d08d94df1321de2082c0fa08f99cecb36c6d4da231623db775de",
+      "scripts/pnwf/energy/run.mjs": "3a27618a6570848f79f45dbcb088125d52c237511a48a986f230a3544bde0fcc",
+      "scripts/pnwf/energy/worker/index.js": "7599af86d0318f1f392374459d710c3b4e8f23427b553a2859aa9357900f6297",
+      "scripts/pnwf/energy/worker/package.json": "c295add61b0044974e66c736e3e90c3ff80f5715590e615e298b03d9d0350270",
+      "scripts/pnwf/execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "scripts/pnwf/isolation_gate.mjs": "56685265fb2c13b66566c5dd99d5723050db8dfc381e93d103faccc4b9a97c64",
+      "scripts/pnwf/mock_provider.mjs": "65f82d7656da2d442e665f06f349fb8bba81cfdd787989817eaad5a31686f19d",
+      "scripts/pnwf/prepare_continuation.mjs": "ba8974f20034d0ab31a38c71cc5e230d4ec6bec55c458a6de4bcdc6ee1a114f1",
+      "scripts/pnwf/prepare_direct.mjs": "cfb0fe2e90fd53b403757704c68589a553011ae9a6b30d17966c1e778b4f56b7",
+      "scripts/pnwf/prepare_direct_governed.mjs": "afc0969421adbf4e5b82404eb6139b66558d9985ce615ba192838f0e908312c1",
+      "scripts/pnwf/qualification.test.mjs": "df7c5ee856e987277c1ac3bc52896546d652845d5effce337fd46078ad18f51e",
+      "scripts/pnwf/qualify_execution.mjs": "689104b8661a5ab6d66de6b72e5b8689f1804d0fca3e6623e4f43411c56c1c33",
+      "scripts/pnwf/run_direct_governed_host.sh": "791f963dbf4d18e940e6116ee4f9ea4ff2feec025abdf5b148c74f1bcbca68d2",
+      "scripts/pnwf/run_direct_host.sh": "22a7b963b7877ab3bb89aef993b6d5ada24ea409da86f67ab3ff02c85194e016",
+      "scripts/pnwf/run_pnwf_live.mjs": "5fd13204e8e150582bcd1971ff3f91fd238cd396b9debca91f78417d522ce88e",
+      "scripts/pnwf/run_pnwf_live.sh": "96ec6abb280dd916e2c65bc0f29a1095a59d55c7917682073491c061902e2d35",
+      "scripts/pnwf/score_continuation.mjs": "70e680c3d882386a65a296a43ae0cb3535998e4a4123e4a6d895e1fd72090cd1",
+      "scripts/pnwf/software/contract.mjs": "bc71821b700fa9e17f73e8987c89f1407481bd9d535dcd6311a29d080820e4c9",
+      "scripts/pnwf/software/mock.mjs": "f1a3fddd5e82bf5da2a2533b0f50cdeab5bf6924b4f87691abae9e44d63bdf81",
+      "scripts/pnwf/software/probe.cjs": "4e79fffb36de7940eaeaeb64a154fd6673be1d024fbe51f5c311cc98c0171c49",
+      "scripts/pnwf/software/product-entry.mjs": "8cde0f9da9e30eac60fe96fca5f8b4815226188e7dcf249ede4260b89a3e2ae3",
+      "scripts/pnwf/software/run.mjs": "65a98d0127ebd52bb1d6098c32f89eeb76f4d03893165feb6ecb8660cf5202eb",
+      "scripts/pnwf/software/score.mjs": "8fe80e8f52378c4492a5e43a77312786de2cd93500d216eafc75f9700f3b94b5",
+      "scripts/pnwf/summarize_energy.mjs": "c9bd7500429a7d4db4fcec8db0a3835670913f25eedaae671ae4710c4e0ed608",
+      "scripts/pnwf/world_preflight.mjs": "5ba8ea46b5b8bf09361e53899537b750be8fe46b70da0ac07625249b79732d10"
+    },
+    "attribution": "ef31a557fd694da129c76bf6be5d8880c2a9c188aa691cd19d3e3d13f76a12ea",
+    "runtime": "cc0ee0590a3477effddc782d7620a15c69601cc54c5167dc6d4c581b3d2a2858"
+  },
+  "controls": {
+    "missingUsage": {
+      "reason": "UNOBSERVABLE_USAGE",
+      "nextRefusal": "COHORT_STOPPED",
+      "unresolvedRequests": 1,
+      "next": "NOT_STARTED"
+    },
+    "wrongWorkerBasis": "WORKER_REQUEST_BASIS_MISMATCH",
+    "outsideScope": {
+      "reason": "SOFTWARE_RESULT_OUTSIDE_SCOPE",
+      "basis": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+      "result": "ad5d84ebd2492da44504ca764d8690aa64efaf81",
+      "paths": [
+        "MIGRATION.md",
+        "README.md",
+        "service/grpc_server.js",
+        "test/integration.test.js"
+      ]
+    },
+    "wrongApprovalP": "CANDIDATE_APPROVAL_SHA_MISMATCH",
+    "wrongApprovalF": "CANDIDATE_APPROVAL_SHA_MISMATCH",
+    "scorerIsolation": {
+      "principals": 6,
+      "worker": 1
+    }
+  },
+  "sessions": [
+    {
+      "arm": "P",
+      "session": "T1",
+      "cohortId": "software-P-T1-399e4124-4081-473b-80f1-02c7ebbf9b7a",
+      "basis": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": null,
+        "accepted": null,
+        "naturalExit": true
+      },
+      "passed": true,
+      "trajectory": {
+        "streams": [
+          {
+            "id": "session-c7a6a8ce-8bd7-4cb9-9d86-7cc36496bd91",
+            "role": "principal",
+            "digest": "5167a236514eaacda969e2abbf5ebabad6be210669fb16726313e74a2296ffea",
+            "counts": {
+              "steps": 3,
+              "turns": 1,
+              "toolCalls": 2,
+              "pairedToolResults": 2,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 1
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_0_principal",
+                "callSeq": 15,
+                "resultSeq": 18,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_1_principal",
+                "callSeq": 23,
+                "resultSeq": 24,
+                "tool": "work:conclude",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          }
+        ],
+        "requestLedger": [
+          {
+            "kind": "ADMITTED",
+            "requestId": "a075acee-90b6-4389-b24a-087b01d25698",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "a075acee-90b6-4389-b24a-087b01d25698",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 94041,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 20991
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "05e9bcd7-bc9a-4151-a7eb-d9b878f9f1ad",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "05e9bcd7-bc9a-4151-a7eb-d9b878f9f1ad",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 209589,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 366
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "3d5cbd50-0a86-479b-ab28-b7e5eff95f96",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "3d5cbd50-0a86-479b-ab28-b7e5eff95f96",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 97960,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          }
+        ],
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "requests": 3,
+        "usageByRole": {
+          "principal": {
+            "requests": 3,
+            "input": 401590,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 21429,
+            "total": 423019
+          }
+        },
+        "unresolvedRequests": 0,
+        "elapsedMs": 52452
+      },
+      "isolation": {
+        "containerId": "e778a44fe60e4e5e8200b8ac61820d7b162784b5475a2ad809c929c15db53e24",
+        "descriptorDigest": "db73a459aa136a620f4c56a233871ba0ad33c01084e7bde060848c7444cf9abb",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "mounts": [
+          {
+            "destination": "/product/dist",
+            "writable": false
+          },
+          {
+            "destination": "/product/node_modules",
+            "writable": false
+          },
+          {
+            "destination": "/product/package.json",
+            "writable": false
+          },
+          {
+            "destination": "/product/runtime",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage",
+            "writable": true
+          },
+          {
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          },
+          {
+            "destination": "/harness",
+            "writable": false
+          }
+        ],
+        "checks": [
+          {
+            "name": "principal_uid",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_shell_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "write_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "git_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "node_build_fixture",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_version",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_native_addon",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "native_shell_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_proc_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_parent_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "rootfs_readonly",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "no_docker_socket",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_evaluator",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_owner_credential",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_provider_credential_env",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_routes",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          }
+        ],
+        "worlds": {
+          "schema": "pnwf-world-preflight/v1",
+          "status": "QUALIFIED",
+          "head": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+          "worlds": [],
+          "product": {
+            "repositoryHead": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+            "projectHead": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+            "relation": "IN_SYNC",
+            "uncommittedPaths": [],
+            "admittedDirectCommit": null
+          }
+        }
+      },
+      "conclusion": {
+        "id": "episode-3e54c529db7d5702243a0951",
+        "episodeBasis": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+        "artifacts": [
+          {
+            "path": "proto/energy.proto",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "8d99af33e6cd511fb93dd3b747ffed23ccbc0646e3c191e89aba548e77afa3e7",
+            "source": "WORKTREE",
+            "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+            "detail": "committed at HEAD"
+          },
+          {
+            "path": "service/wire.js",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "3befaabc649eb960fc35b4709e5144cbdffc5cc39c19eafd79a3d1f9d8707413",
+            "source": "WORKTREE",
+            "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+            "detail": "committed at HEAD"
+          },
+          {
+            "path": "service/grpc_server.js",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "712e0364727ab6b4d727d0d5e9c05ae6833670bebbc37ef51c68723a83c69ddb",
+            "source": "WORKTREE",
+            "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+            "detail": "committed at HEAD"
+          },
+          {
+            "path": "service/grpc_client.js",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "24ff435deee2ea7ecdba96e200e34b9ae76930207df65290b843b78250acc054",
+            "source": "WORKTREE",
+            "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+            "detail": "committed at HEAD"
+          },
+          {
+            "path": "test/server.test.js",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "3ef821c1271322a68fb27acfe56da05d330d36228a7e80286414c691499a79bd",
+            "source": "WORKTREE",
+            "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+            "detail": "committed at HEAD"
+          },
+          {
+            "path": "test/integration.test.js",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "14b4b25ce38a534c46eb4c0e3eec980c7058c4a93c36ac9762f41d60bc7410c7",
+            "source": "WORKTREE",
+            "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+            "detail": "committed at HEAD"
+          },
+          {
+            "path": "MIGRATION.md",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "ccf0f9f0f7141f27820dfeb00c4500f32ba975dea298ae163680d90edd64eb8d",
+            "source": "WORKTREE",
+            "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+            "detail": "committed at HEAD"
+          }
+        ]
+      },
+      "score": {
+        "commit": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+        "tree": "48d215de7c92425b99baf43aa8ae7da79ff651f7",
+        "changedPaths": [
+          "MIGRATION.md",
+          "proto/energy.proto",
+          "service/grpc_client.js",
+          "service/grpc_server.js",
+          "service/wire.js",
+          "test/integration.test.js",
+          "test/server.test.js"
+        ],
+        "blobs": {
+          "proto/energy.proto": "cb47047c924012d191fd39896da234c7fbd31ab9",
+          "service/wire.js": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+          "service/grpc_server.js": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+          "service/grpc_client.js": "66fd2884106de651ef79175faebd70ffe83ea50e",
+          "test/server.test.js": "6f26142895e018653df7645daa3674792b538c67",
+          "test/integration.test.js": "2bb2b3334b9b1e069192a2d0274e348240861964",
+          "MIGRATION.md": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+          "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+        },
+        "publicTests": 10,
+        "probes": {
+          "zero": {
+            "status": "0",
+            "frames": []
+          },
+          "omitted": {
+            "status": "0",
+            "frames": []
+          },
+          "positive2": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              }
+            ]
+          },
+          "positive6": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4210,
+                "atMs": 1762300180000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4150,
+                "atMs": 1762300240000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 3970,
+                "atMs": 1762300300000
+              }
+            ]
+          },
+          "unknownStream": {
+            "status": "5",
+            "frames": []
+          },
+          "unknownUnary": {
+            "status": "5",
+            "frames": []
+          },
+          "unary": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              }
+            ]
+          }
+        },
+        "oldRuleFailures": [],
+        "newRuleFailures": [
+          "zero",
+          "omitted"
+        ]
+      }
+    },
+    {
+      "arm": "P",
+      "session": "T2",
+      "cohortId": "software-P-T2-1bf2b5df-98c7-4235-b6d1-6d7c18268f1c",
+      "basis": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": true,
+        "accepted": false,
+        "naturalExit": true
+      },
+      "passed": true,
+      "trajectory": {
+        "streams": [
+          {
+            "id": "session-03cd9efb-54ca-4a3d-b274-a15f39d054bc",
+            "role": "principal",
+            "digest": "49dd0e6f50670c2b6429952f20f8f4a2c2ab5cca259c321a6a8bbdf6d8002efb",
+            "counts": {
+              "steps": 13,
+              "turns": 1,
+              "toolCalls": 12,
+              "pairedToolResults": 12,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 8,
+              "commits": 0,
+              "jobs": 0
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_0_principal",
+                "callSeq": 15,
+                "resultSeq": 16,
+                "tool": "work:plan",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_1_principal",
+                "callSeq": 21,
+                "resultSeq": 22,
+                "tool": "work:delegate",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_2_principal",
+                "callSeq": 27,
+                "resultSeq": 28,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_3_principal",
+                "callSeq": 33,
+                "resultSeq": 34,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_4_principal",
+                "callSeq": 39,
+                "resultSeq": 40,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_5_principal",
+                "callSeq": 48,
+                "resultSeq": 49,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_6_principal",
+                "callSeq": 54,
+                "resultSeq": 55,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_7_principal",
+                "callSeq": 63,
+                "resultSeq": 64,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_12_principal",
+                "callSeq": 69,
+                "resultSeq": 70,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_13_principal",
+                "callSeq": 75,
+                "resultSeq": 76,
+                "tool": "work:workers",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_14_principal",
+                "callSeq": 84,
+                "resultSeq": 85,
+                "tool": "work:run",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_15_principal",
+                "callSeq": 90,
+                "resultSeq": 91,
+                "tool": "work:conclude",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          },
+          {
+            "id": "worker-56e51510-9e5f-4674-961d-94211cade5ed",
+            "role": "worker",
+            "digest": "5c1dc7f0cb8796d5d6be340d81f0f2c0c064cfb9f898c8615eabad756c7e01fe",
+            "counts": {
+              "steps": 4,
+              "turns": 1,
+              "toolCalls": 3,
+              "pairedToolResults": 3,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 2
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_7_worker",
+                "callSeq": 15,
+                "resultSeq": 18,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_8_worker",
+                "callSeq": 23,
+                "resultSeq": 26,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_10_worker",
+                "callSeq": 31,
+                "resultSeq": 32,
+                "tool": "palimpsest_worker_result",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          }
+        ],
+        "requestLedger": [
+          {
+            "kind": "ADMITTED",
+            "requestId": "942689a7-b7de-4562-aa50-bd6b88d3e10a",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "942689a7-b7de-4562-aa50-bd6b88d3e10a",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 94209,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 489
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "cd9e18c0-be98-494f-ba71-e2c5b6921036",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "cd9e18c0-be98-494f-ba71-e2c5b6921036",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 57803,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 136
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "00233b37-8f07-4bbd-bbaf-b53eb36c4e29",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "00233b37-8f07-4bbd-bbaf-b53eb36c4e29",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 57428,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 103
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "aeaf5053-3506-47b8-9872-1a95e22ee463",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "aeaf5053-3506-47b8-9872-1a95e22ee463",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 58342,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 103
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "7d56fddd-6435-43e6-a3a7-d3b6aa406285",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "7d56fddd-6435-43e6-a3a7-d3b6aa406285",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 59758,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 103
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "eb85de3d-992a-4b24-851c-38668a7c14e9",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "eb85de3d-992a-4b24-851c-38668a7c14e9",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 62612,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 103
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "f2d51d61-f5f3-4ccc-a066-d18e300c8eec",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "f2d51d61-f5f3-4ccc-a066-d18e300c8eec",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 62852,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 103
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "3f28a116-d404-45b6-a98e-fdd869629139",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "bf92692d-8f86-45ba-b801-0a20f65670d7",
+            "actor": "worker"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "bf92692d-8f86-45ba-b801-0a20f65670d7",
+            "actor": "worker",
+            "usage": {
+              "input_tokens": 61712,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 195
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "d0870ef7-83d8-4110-8a97-18327546c803",
+            "actor": "worker"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "d0870ef7-83d8-4110-8a97-18327546c803",
+            "actor": "worker",
+            "usage": {
+              "input_tokens": 36403,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 6861
+            }
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "3f28a116-d404-45b6-a98e-fdd869629139",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 66054,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 103
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "dcb04aa6-1948-403e-873c-7625e6038443",
+            "actor": "worker"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "dcb04aa6-1948-403e-873c-7625e6038443",
+            "actor": "worker",
+            "usage": {
+              "input_tokens": 87958,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 179
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "5f346374-8179-4f51-b75c-a7b1072dd356",
+            "actor": "worker"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "5f346374-8179-4f51-b75c-a7b1072dd356",
+            "actor": "worker",
+            "usage": {
+              "input_tokens": 43655,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "93c02f9b-8224-47a9-abc2-6007aba18c89",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "93c02f9b-8224-47a9-abc2-6007aba18c89",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 66062,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 104
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "2b04207d-690d-4c6d-843a-d359b7290d3b",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "2b04207d-690d-4c6d-843a-d359b7290d3b",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 67488,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 104
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "ad738790-5756-4150-94e9-1715d97c5de6",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "ad738790-5756-4150-94e9-1715d97c5de6",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 70810,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 113
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "3fd90793-3319-4544-ba29-56bde535a742",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "3fd90793-3319-4544-ba29-56bde535a742",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 75688,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 210
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "c1747601-e8ba-4a11-bf10-916ab8e77570",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "c1747601-e8ba-4a11-bf10-916ab8e77570",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 82918,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          }
+        ],
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "requests": 17,
+        "usageByRole": {
+          "principal": {
+            "requests": 13,
+            "input": 882024,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1846,
+            "total": 883870
+          },
+          "worker": {
+            "requests": 4,
+            "input": 229728,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 7307,
+            "total": 237035
+          }
+        },
+        "unresolvedRequests": 0,
+        "elapsedMs": 94438
+      },
+      "isolation": {
+        "containerId": "9e41986d1c0fcba57caea716298d1e68f5156b13b58b4cb0548a98f1e1ff3f42",
+        "descriptorDigest": "bd2d4bfce4abd01382cf9f49f5f74705f80ecf47794269e50f5f822b267388c1",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "mounts": [
+          {
+            "destination": "/product/dist",
+            "writable": false
+          },
+          {
+            "destination": "/product/node_modules",
+            "writable": false
+          },
+          {
+            "destination": "/product/package.json",
+            "writable": false
+          },
+          {
+            "destination": "/product/runtime",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage",
+            "writable": true
+          },
+          {
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          },
+          {
+            "destination": "/harness",
+            "writable": false
+          }
+        ],
+        "checks": [
+          {
+            "name": "principal_uid",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_shell_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "write_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "git_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "node_build_fixture",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_version",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_native_addon",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "native_shell_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_proc_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_parent_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "rootfs_readonly",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "no_docker_socket",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_evaluator",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_owner_credential",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_provider_credential_env",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_routes",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          }
+        ],
+        "worlds": {
+          "schema": "pnwf-world-preflight/v1",
+          "status": "QUALIFIED",
+          "head": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+          "worlds": [],
+          "product": {
+            "repositoryHead": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+            "projectHead": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+            "relation": "IN_SYNC",
+            "uncommittedPaths": [],
+            "admittedDirectCommit": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8"
+          }
+        }
+      },
+      "workerIsolation": {
+        "containerId": "585335f97bf94b342389a08271b7ba15679e634f63ed7c42c72beec0517134e4",
+        "descriptorDigest": "9e47390c9009075d2945fe0bc422aa9ba1c1674bae8867d2bdea17d4328d4172",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "mounts": [
+          {
+            "destination": "/product/runtime",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage",
+            "writable": true
+          },
+          {
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          },
+          {
+            "destination": "/harness",
+            "writable": false
+          },
+          {
+            "destination": "/product/dist",
+            "writable": false
+          },
+          {
+            "destination": "/product/node_modules",
+            "writable": false
+          },
+          {
+            "destination": "/product/package.json",
+            "writable": false
+          }
+        ],
+        "checks": [
+          {
+            "name": "principal_uid",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_shell_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "write_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "git_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "node_build_fixture",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_version",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_native_addon",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "native_shell_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_proc_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_parent_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "rootfs_readonly",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "no_docker_socket",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_evaluator",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_owner_credential",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_provider_credential_env",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_routes",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          }
+        ],
+        "worlds": {
+          "schema": "pnwf-world-preflight/v1",
+          "status": "QUALIFIED",
+          "head": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+          "worlds": []
+        }
+      },
+      "conclusion": {
+        "intent": "WAIT_FOR_OPERATOR",
+        "eventId": "pjer-2a812bd635a13a5be033e746b7306179"
+      },
+      "attempt": {
+        "id": "attempt-363f762c3e2447fa0b3f6917a70496f5",
+        "outcome": "READY_FOR_SETTLEMENT",
+        "gate": "PASS",
+        "scope": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md",
+          "test/server.test.js"
+        ]
+      },
+      "score": {
+        "commit": "38dc32c50fc25214a5327cfdab5b14043dcd923e",
+        "tree": "63deb527999e4b6498870b79476813a11827104b",
+        "changedPaths": [
+          "MIGRATION.md",
+          "service/grpc_server.js",
+          "test/integration.test.js"
+        ],
+        "blobs": {
+          "proto/energy.proto": "cb47047c924012d191fd39896da234c7fbd31ab9",
+          "service/wire.js": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+          "service/grpc_server.js": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+          "service/grpc_client.js": "66fd2884106de651ef79175faebd70ffe83ea50e",
+          "test/server.test.js": "6f26142895e018653df7645daa3674792b538c67",
+          "test/integration.test.js": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+          "MIGRATION.md": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+          "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+        },
+        "publicTests": 10,
+        "probes": {
+          "zero": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "omitted": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "positive2": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              }
+            ]
+          },
+          "positive6": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4210,
+                "atMs": 1762300180000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4150,
+                "atMs": 1762300240000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 3970,
+                "atMs": 1762300300000
+              }
+            ]
+          },
+          "unknownStream": {
+            "status": "5",
+            "frames": []
+          },
+          "unknownUnary": {
+            "status": "5",
+            "frames": []
+          },
+          "unary": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              }
+            ]
+          }
+        },
+        "oldRuleFailures": [
+          "zero",
+          "omitted"
+        ],
+        "newRuleFailures": []
+      },
+      "bundle": {
+        "name": "P-candidate.bundle",
+        "sha256": "ce1f70e89b2b11af122480976c795956577b5fcd55a06bbd95b8f6be80eab204"
+      },
+      "correction": {
+        "commit": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+        "prior": "37b02d2e8b1806aeec8ba8845916cfc3a378a590",
+        "path": "updates/2026-11-10/fleet-default-limit.md",
+        "sha256": "969b003eacfb4b3e3050b7cbb9dbfda401c9dfb9a99ad48f81f8799ef3ab6334"
+      },
+      "admission": {
+        "actor": "operator:software-mock-operator",
+        "priorHead": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+        "approved": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+        "eventId": 6,
+        "recordedAt": "2026-11-09T19:01:17.343Z"
+      },
+      "acceptance": {
+        "kind": "GOVERNED_PROMOTION",
+        "approvedCandidate": "38dc32c50fc25214a5327cfdab5b14043dcd923e",
+        "approvedHead": "15349edbeab2366f95eb791b88d549be22f4ff3e",
+        "tree": "63deb527999e4b6498870b79476813a11827104b",
+        "basis": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+        "promotion": {
+          "promotionId": "promotion-5f488cb4f23839e5ee9e626f6a2c6468",
+          "committed": {
+            "schema_version": 1,
+            "project_id": "grpc-migration-continuation",
+            "event_type": "PROMOTION_COMMITTED",
+            "payload_version": 1,
+            "entity_type": "promotion",
+            "entity_id": "promotion-5f488cb4f23839e5ee9e626f6a2c6468",
+            "payload": {
+              "promotion_id": "promotion-5f488cb4f23839e5ee9e626f6a2c6468",
+              "attempt_id": "attempt-363f762c3e2447fa0b3f6917a70496f5",
+              "source_commit": "38dc32c50fc25214a5327cfdab5b14043dcd923e",
+              "expected_head_commit": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+              "resulting_head_commit": "15349edbeab2366f95eb791b88d549be22f4ff3e",
+              "reason": "Owner approved candidate 38dc32c50fc25214a5327cfdab5b14043dcd923e",
+              "operation_id": "op_ad7348b60087f4803c05d126ac0817c1fd212c75",
+              "outcome_basis": "invoke_result",
+              "outcome_digest": "40b140c7519fcd7e708870496428a02bbfeea8460bd8cdbfbb6493de098e869c"
+            },
+            "causation_id": null,
+            "correlation_id": "promotion:promotion-5f488cb4f23839e5ee9e626f6a2c6468",
+            "idempotency_key": "e845e7bc4db0fc0bf0bfb19cae2f9104c8515e0b02fc3c334449e81fef59985e",
+            "expected_project_revision": 2,
+            "event_id": 19,
+            "project_sequence": 19,
+            "request_digest": "f6cd62730b456b73cc72c79a317104c7b551d97857922888d4cba0db7fe88a05",
+            "previous_event_digest": "1cd221c47bf55b21a0f7f56d15c6dd9a5b51617f665f97e1eb38c942d92841a4",
+            "event_digest": "56dff1ce66554de761d6f37fb1d65ecd6ddaa08f622ab289c53d8107b8fcedb1",
+            "committed_at": "2026-11-09T19:03:58.990000Z"
+          },
+          "resultingHeadCommit": "15349edbeab2366f95eb791b88d549be22f4ff3e"
+        }
+      }
+    },
+    {
+      "arm": "P",
+      "session": "T3",
+      "cohortId": "software-P-T3-44da9a53-a03d-4692-9d20-3e32f396b299",
+      "basis": "15349edbeab2366f95eb791b88d549be22f4ff3e",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": null,
+        "accepted": true,
+        "naturalExit": true
+      },
+      "passed": true,
+      "trajectory": {
+        "streams": [
+          {
+            "id": "session-81797801-d837-4ea1-9143-9c4056fb1670",
+            "role": "principal",
+            "digest": "9865f1e92e2e66b5dbddf3c1afdf2618767f07c8c5d4e5e7b8059dc4f9701ea1",
+            "counts": {
+              "steps": 4,
+              "turns": 1,
+              "toolCalls": 3,
+              "pairedToolResults": 3,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 2
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_0_principal",
+                "callSeq": 15,
+                "resultSeq": 18,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_1_principal",
+                "callSeq": 23,
+                "resultSeq": 26,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_2_principal",
+                "callSeq": 31,
+                "resultSeq": 32,
+                "tool": "work:conclude",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          }
+        ],
+        "requestLedger": [
+          {
+            "kind": "ADMITTED",
+            "requestId": "36aa2149-bfbb-4f7d-823e-0cd9d88c930a",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "36aa2149-bfbb-4f7d-823e-0cd9d88c930a",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 94056,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 217
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "a8692d85-28e1-4012-a23e-9c40f100e6e0",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "a8692d85-28e1-4012-a23e-9c40f100e6e0",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 58568,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 980
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "72cd44cf-8f07-4eed-9137-2c8e9f30df76",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "72cd44cf-8f07-4eed-9137-2c8e9f30df76",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 63494,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 235
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "fdbaf040-f42d-49bb-a359-77d61de2eb7f",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "fdbaf040-f42d-49bb-a359-77d61de2eb7f",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 69522,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          }
+        ],
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "requests": 4,
+        "usageByRole": {
+          "principal": {
+            "requests": 4,
+            "input": 285640,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1504,
+            "total": 287144
+          }
+        },
+        "unresolvedRequests": 0,
+        "elapsedMs": 42219
+      },
+      "isolation": {
+        "containerId": "372e0054fb138c4628c756a8c462125dbf1e88e9e45fb70ebb905082c06acdc7",
+        "descriptorDigest": "c0da6d8f6b2d8ea636572576d560a80a9f46e2b24c96ac4be084da6d474a5f77",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "mounts": [
+          {
+            "destination": "/product/node_modules",
+            "writable": false
+          },
+          {
+            "destination": "/product/runtime",
+            "writable": false
+          },
+          {
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "destination": "/run/stage/world/acceptance.json",
+            "writable": false
+          },
+          {
+            "destination": "/product/dist",
+            "writable": false
+          },
+          {
+            "destination": "/product/package.json",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage",
+            "writable": true
+          },
+          {
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          },
+          {
+            "destination": "/harness",
+            "writable": false
+          }
+        ],
+        "checks": [
+          {
+            "name": "principal_uid",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_shell_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "write_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "git_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "node_build_fixture",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_version",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_native_addon",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "native_shell_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_proc_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_parent_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "rootfs_readonly",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "no_docker_socket",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_evaluator",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_owner_credential",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_provider_credential_env",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_routes",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          }
+        ],
+        "worlds": {
+          "schema": "pnwf-world-preflight/v1",
+          "status": "QUALIFIED",
+          "head": "15349edbeab2366f95eb791b88d549be22f4ff3e",
+          "worlds": [
+            {
+              "attemptId": "attempt-363f762c3e2447fa0b3f6917a70496f5",
+              "basis": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+              "result": "38dc32c50fc25214a5327cfdab5b14043dcd923e",
+              "alternates": "/run/stage/world/.git/objects",
+              "diff": "MIGRATION.md\nservice/grpc_server.js\ntest/integration.test.js",
+              "status": "",
+              "observation": {
+                "attemptId": "attempt-363f762c3e2447fa0b3f6917a70496f5",
+                "placement": "worktree",
+                "workDir": "/run/stage/world/.palimpsest/worlds/attempt-363f762c3e2447fa0b3f6917a70496f5",
+                "baseCommit": "503b2a733c3cd0f897f316f78349a8ae0ae28eb8",
+                "observedHead": "38dc32c50fc25214a5327cfdab5b14043dcd923e",
+                "committedChanges": [
+                  "MIGRATION.md",
+                  "service/grpc_server.js",
+                  "test/integration.test.js"
+                ],
+                "uncommittedChanges": [],
+                "changedFiles": [
+                  "MIGRATION.md",
+                  "service/grpc_server.js",
+                  "test/integration.test.js"
+                ],
+                "requiredArtifacts": [
+                  {
+                    "path": "service/grpc_server.js",
+                    "present": true
+                  },
+                  {
+                    "path": "test/integration.test.js",
+                    "present": true
+                  },
+                  {
+                    "path": "MIGRATION.md",
+                    "present": true
+                  }
+                ]
+              }
+            }
+          ],
+          "product": {
+            "repositoryHead": "15349edbeab2366f95eb791b88d549be22f4ff3e",
+            "projectHead": "15349edbeab2366f95eb791b88d549be22f4ff3e",
+            "relation": "IN_SYNC",
+            "uncommittedPaths": [],
+            "admittedDirectCommit": null
+          }
+        }
+      },
+      "conclusion": {
+        "id": "episode-4caf10c45d660e5cb4bf86dd",
+        "episodeBasis": "15349edbeab2366f95eb791b88d549be22f4ff3e",
+        "artifacts": [
+          {
+            "path": "MIGRATION-REVIEW.md",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "2d0ab83a371a3b6d8d0f5dce362308f2ab839afac3e266801de4ce6983cc268d",
+            "source": "WORKTREE",
+            "commit": "9db5c01536e2a31197a387a5d38d78aa3a426a1a",
+            "detail": "committed at HEAD"
+          }
+        ]
+      },
+      "score": {
+        "commit": "9db5c01536e2a31197a387a5d38d78aa3a426a1a",
+        "tree": "3e10869565b16253af8058980b36f150dc7306bf",
+        "changedPaths": [
+          "MIGRATION-REVIEW.md"
+        ],
+        "reviewSha256": "2d0ab83a371a3b6d8d0f5dce362308f2ab839afac3e266801de4ce6983cc268d"
+      },
+      "bundle": {
+        "name": "P-project.bundle",
+        "sha256": "d2551d57abb2a353b423293586c230783aa82c059215df8f7021f54d13688d1d"
+      }
+    },
+    {
+      "arm": "F",
+      "session": "T1",
+      "cohortId": "software-F-T1-949824d4-2faf-4c3f-87c4-d519491a1197",
+      "basis": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": null,
+        "accepted": null,
+        "naturalExit": true
+      },
+      "passed": true,
+      "trajectory": {
+        "streams": [
+          {
+            "id": "session-c150dc5e-a417-4a06-85a4-f40e3974447d",
+            "role": "principal",
+            "digest": "712504f9c5143f19522030aea396c3a32c3e662cf756d9be3b16822f84836790",
+            "counts": {
+              "steps": 2,
+              "turns": 1,
+              "toolCalls": 1,
+              "pairedToolResults": 1,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 1
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_0_principal",
+                "callSeq": 15,
+                "resultSeq": 18,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          }
+        ],
+        "requestLedger": [
+          {
+            "kind": "ADMITTED",
+            "requestId": "c9655945-a6f0-42f2-9350-10033267912b",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "c9655945-a6f0-42f2-9350-10033267912b",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 53359,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 20991
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "2955654e-e7dc-4825-9fc3-b11e46142b33",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "2955654e-e7dc-4825-9fc3-b11e46142b33",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 189224,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          }
+        ],
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "requests": 2,
+        "usageByRole": {
+          "principal": {
+            "requests": 2,
+            "input": 242583,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 21063,
+            "total": 263646
+          }
+        },
+        "unresolvedRequests": 0,
+        "elapsedMs": 12037
+      },
+      "isolation": {
+        "containerId": "58db1a2d73cc73751f8fea9c1afd688169cf8d3ef661099f70bc0fbd23013ff7",
+        "descriptorDigest": "055d385ada93036b86c4b634d29c3fcf64fadd905c009c5edc57a4fc5d36e7b9",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "mounts": [
+          {
+            "destination": "/harness",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage",
+            "writable": true
+          },
+          {
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          }
+        ],
+        "checks": [
+          {
+            "name": "principal_uid",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_shell_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "write_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "git_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "node_build_fixture",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_version",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_native_addon",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "native_shell_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_proc_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_parent_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "rootfs_readonly",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "no_docker_socket",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_evaluator",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_owner_credential",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_provider_credential_env",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_routes",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          }
+        ],
+        "worlds": {
+          "schema": "pnwf-world-preflight/v1",
+          "status": "QUALIFIED",
+          "head": "ca23763d36f8a821b0d9cf5ca24ac3dedf31e011",
+          "worlds": []
+        }
+      },
+      "score": {
+        "commit": "8c93ab860ce9d2da9c0b550b40fa7166a34b88a2",
+        "tree": "48d215de7c92425b99baf43aa8ae7da79ff651f7",
+        "changedPaths": [
+          "MIGRATION.md",
+          "proto/energy.proto",
+          "service/grpc_client.js",
+          "service/grpc_server.js",
+          "service/wire.js",
+          "test/integration.test.js",
+          "test/server.test.js"
+        ],
+        "blobs": {
+          "proto/energy.proto": "cb47047c924012d191fd39896da234c7fbd31ab9",
+          "service/wire.js": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+          "service/grpc_server.js": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+          "service/grpc_client.js": "66fd2884106de651ef79175faebd70ffe83ea50e",
+          "test/server.test.js": "6f26142895e018653df7645daa3674792b538c67",
+          "test/integration.test.js": "2bb2b3334b9b1e069192a2d0274e348240861964",
+          "MIGRATION.md": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+          "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+        },
+        "publicTests": 10,
+        "probes": {
+          "zero": {
+            "status": "0",
+            "frames": []
+          },
+          "omitted": {
+            "status": "0",
+            "frames": []
+          },
+          "positive2": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              }
+            ]
+          },
+          "positive6": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4210,
+                "atMs": 1762300180000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4150,
+                "atMs": 1762300240000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 3970,
+                "atMs": 1762300300000
+              }
+            ]
+          },
+          "unknownStream": {
+            "status": "5",
+            "frames": []
+          },
+          "unknownUnary": {
+            "status": "5",
+            "frames": []
+          },
+          "unary": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              }
+            ]
+          }
+        },
+        "oldRuleFailures": [],
+        "newRuleFailures": [
+          "zero",
+          "omitted"
+        ]
+      }
+    },
+    {
+      "arm": "F",
+      "session": "T2",
+      "cohortId": "software-F-T2-db218cfe-744d-428f-b441-3fbe36090d94",
+      "basis": "b61a12b616f50b5387c4e9ee0f9d1c885b1bc46f",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": null,
+        "accepted": false,
+        "naturalExit": true
+      },
+      "passed": true,
+      "trajectory": {
+        "streams": [
+          {
+            "id": "6a997914-5c22-4869-bbad-8209070e1f5d",
+            "role": "native-child",
+            "digest": "b492baa4462432f410d94dd38a58becd23fed934ce357db60c76e507be33d332",
+            "counts": {
+              "steps": 3,
+              "turns": 1,
+              "toolCalls": 2,
+              "pairedToolResults": 2,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 2
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_3_child",
+                "callSeq": 20,
+                "resultSeq": 23,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_4_child",
+                "callSeq": 28,
+                "resultSeq": 31,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          },
+          {
+            "id": "session-021fa685-2a04-4c3d-b09e-94a9c7041a5e",
+            "role": "principal",
+            "digest": "e81e0e5f902a3f38fb1e482d8490260da3b85610812ec41dad001c9f46fb619b",
+            "counts": {
+              "steps": 6,
+              "turns": 1,
+              "toolCalls": 5,
+              "pairedToolResults": 5,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 4
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_0_principal",
+                "callSeq": 15,
+                "resultSeq": 18,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_1_principal",
+                "callSeq": 23,
+                "resultSeq": 25,
+                "tool": "subagent",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_2_principal",
+                "callSeq": 30,
+                "resultSeq": 33,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_5_principal",
+                "callSeq": 38,
+                "resultSeq": 41,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_6_principal",
+                "callSeq": 46,
+                "resultSeq": 50,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          }
+        ],
+        "requestLedger": [
+          {
+            "kind": "ADMITTED",
+            "requestId": "e35b58a4-cd16-4568-805b-772ee51e9e83",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "e35b58a4-cd16-4568-805b-772ee51e9e83",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 53523,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 210
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "66936f2f-e8fb-4a8c-85f8-c46fdb2f0eea",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "66936f2f-e8fb-4a8c-85f8-c46fdb2f0eea",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 32747,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 249
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "87721ae3-e99f-4c78-a84d-e135a4429510",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "87721ae3-e99f-4c78-a84d-e135a4429510",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 32692,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 193
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "eab6155d-589e-4d22-82a9-a98d4960b15e",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "eab6155d-589e-4d22-82a9-a98d4960b15e",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 57876,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 194
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "c42531f5-a384-4b3f-bf7c-b0a55efed18a",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "c42531f5-a384-4b3f-bf7c-b0a55efed18a",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 34224,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 6860
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "8917afb8-27bb-4b7a-ab67-a148326f04f6",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "8917afb8-27bb-4b7a-ab67-a148326f04f6",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 33442,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 193
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "e69f3210-f6da-48cc-a6e5-4e7bf94c5961",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "e69f3210-f6da-48cc-a6e5-4e7bf94c5961",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 33849,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 193
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "d19601c8-22c9-40a2-9f92-e44af7bf7f73",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "d19601c8-22c9-40a2-9f92-e44af7bf7f73",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 85787,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "5527e14f-0704-47a6-959e-7f3bc7bf8733",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "5527e14f-0704-47a6-959e-7f3bc7bf8733",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 37255,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          }
+        ],
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "requests": 9,
+        "usageByRole": {
+          "native-child": {
+            "requests": 3,
+            "input": 177887,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 7126,
+            "total": 185013
+          },
+          "principal": {
+            "requests": 6,
+            "input": 223508,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1110,
+            "total": 224618
+          }
+        },
+        "unresolvedRequests": 0,
+        "elapsedMs": 15660
+      },
+      "isolation": {
+        "containerId": "bc65b7f006ad14d5925d86191d13ca1585d7f8b5cab57a4f21fa8eff0fdbb68c",
+        "descriptorDigest": "e4970ce8442d6677dbd6e8ddb11d22e97a6f508f90d39849e6d31e9fe48e7528",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "mounts": [
+          {
+            "destination": "/harness",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage",
+            "writable": true
+          },
+          {
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          }
+        ],
+        "checks": [
+          {
+            "name": "principal_uid",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_shell_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "write_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "git_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "node_build_fixture",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_version",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_native_addon",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "native_shell_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_proc_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_parent_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "rootfs_readonly",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "no_docker_socket",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_evaluator",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_owner_credential",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_provider_credential_env",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_routes",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          }
+        ],
+        "worlds": {
+          "schema": "pnwf-world-preflight/v1",
+          "status": "QUALIFIED",
+          "head": "b61a12b616f50b5387c4e9ee0f9d1c885b1bc46f",
+          "worlds": []
+        }
+      },
+      "score": {
+        "commit": "734925e3c945433b2accc1d20879dd7481d8ee50",
+        "tree": "63deb527999e4b6498870b79476813a11827104b",
+        "changedPaths": [
+          "MIGRATION.md",
+          "service/grpc_server.js",
+          "test/integration.test.js"
+        ],
+        "blobs": {
+          "proto/energy.proto": "cb47047c924012d191fd39896da234c7fbd31ab9",
+          "service/wire.js": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+          "service/grpc_server.js": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+          "service/grpc_client.js": "66fd2884106de651ef79175faebd70ffe83ea50e",
+          "test/server.test.js": "6f26142895e018653df7645daa3674792b538c67",
+          "test/integration.test.js": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+          "MIGRATION.md": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+          "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+        },
+        "publicTests": 10,
+        "probes": {
+          "zero": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "omitted": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "positive2": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              }
+            ]
+          },
+          "positive6": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4210,
+                "atMs": 1762300180000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4150,
+                "atMs": 1762300240000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 3970,
+                "atMs": 1762300300000
+              }
+            ]
+          },
+          "unknownStream": {
+            "status": "5",
+            "frames": []
+          },
+          "unknownUnary": {
+            "status": "5",
+            "frames": []
+          },
+          "unary": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              }
+            ]
+          }
+        },
+        "oldRuleFailures": [
+          "zero",
+          "omitted"
+        ],
+        "newRuleFailures": []
+      },
+      "correction": {
+        "commit": "b61a12b616f50b5387c4e9ee0f9d1c885b1bc46f",
+        "prior": "8c93ab860ce9d2da9c0b550b40fa7166a34b88a2",
+        "path": "updates/2026-11-10/fleet-default-limit.md",
+        "sha256": "969b003eacfb4b3e3050b7cbb9dbfda401c9dfb9a99ad48f81f8799ef3ab6334"
+      },
+      "acceptance": {
+        "kind": "OWNER_ACCEPTED_GIT",
+        "approvedCandidate": "734925e3c945433b2accc1d20879dd7481d8ee50",
+        "approvedHead": "734925e3c945433b2accc1d20879dd7481d8ee50",
+        "tree": "63deb527999e4b6498870b79476813a11827104b",
+        "basis": "b61a12b616f50b5387c4e9ee0f9d1c885b1bc46f",
+        "promotion": null
+      }
+    },
+    {
+      "arm": "F",
+      "session": "T3",
+      "cohortId": "software-F-T3-3ca68494-1cef-4637-a265-009424348306",
+      "basis": "734925e3c945433b2accc1d20879dd7481d8ee50",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": null,
+        "accepted": true,
+        "naturalExit": true
+      },
+      "passed": true,
+      "trajectory": {
+        "streams": [
+          {
+            "id": "session-e49ca868-a3a8-42d7-9469-6aa8dae001a8",
+            "role": "principal",
+            "digest": "b81bba480be4b324147a361cf2fc6a868d3c0a8d3dcdc487b7716fcfbf7bd40b",
+            "counts": {
+              "steps": 3,
+              "turns": 1,
+              "toolCalls": 2,
+              "pairedToolResults": 2,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 2
+            },
+            "failedJobs": [],
+            "pairs": [
+              {
+                "callId": "software_0_principal",
+                "callSeq": 15,
+                "resultSeq": 18,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              },
+              {
+                "callId": "software_1_principal",
+                "callSeq": 23,
+                "resultSeq": 26,
+                "tool": "bash",
+                "ok": true,
+                "refusal": null
+              }
+            ]
+          }
+        ],
+        "requestLedger": [
+          {
+            "kind": "ADMITTED",
+            "requestId": "57ce177a-7df6-4dcc-b5b4-b84df02e07e5",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "57ce177a-7df6-4dcc-b5b4-b84df02e07e5",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 53366,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 217
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "a5c7dee4-81bd-4c3e-81bf-e0f0a2ee7b53",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "a5c7dee4-81bd-4c3e-81bf-e0f0a2ee7b53",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 34513,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 980
+            }
+          },
+          {
+            "kind": "ADMITTED",
+            "requestId": "0320387c-18a7-4fd3-814b-86481169b7cd",
+            "actor": "principal-container"
+          },
+          {
+            "kind": "TERMINAL",
+            "requestId": "0320387c-18a7-4fd3-814b-86481169b7cd",
+            "actor": "principal-container",
+            "usage": {
+              "input_tokens": 41304,
+              "cache_read_input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "output_tokens": 72
+            }
+          }
+        ],
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "requests": 3,
+        "usageByRole": {
+          "principal": {
+            "requests": 3,
+            "input": 129183,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1269,
+            "total": 130452
+          }
+        },
+        "unresolvedRequests": 0,
+        "elapsedMs": 11981
+      },
+      "isolation": {
+        "containerId": "19ec668d84761ff3bbb302a54046f9b88fb629c23c1b6f03e9bd03f51c5f0fce",
+        "descriptorDigest": "675642b275b7418c3295a5e148c8beccfaed8fac1747f3daa312ff6e8fb6364a",
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "mounts": [
+          {
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage/world/acceptance.json",
+            "writable": false
+          },
+          {
+            "destination": "/harness",
+            "writable": false
+          },
+          {
+            "destination": "/run/stage",
+            "writable": true
+          }
+        ],
+        "checks": [
+          {
+            "name": "principal_uid",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_shell_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "write_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "git_task",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "node_build_fixture",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_version",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "dsh_native_addon",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "native_read_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "native_shell_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_proc_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "indirect_parent_harness",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "rootfs_readonly",
+            "expected": "DENIED",
+            "status": "DENIED"
+          },
+          {
+            "name": "no_docker_socket",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_evaluator",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_owner_credential",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_provider_credential_env",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          },
+          {
+            "name": "no_external_routes",
+            "expected": "ALLOW",
+            "status": "ALLOW"
+          }
+        ],
+        "worlds": {
+          "schema": "pnwf-world-preflight/v1",
+          "status": "QUALIFIED",
+          "head": "734925e3c945433b2accc1d20879dd7481d8ee50",
+          "worlds": []
+        }
+      },
+      "score": {
+        "commit": "11d8ba7072201beeeb8cb0e6a0b9c396f0c6732f",
+        "tree": "88ec4f6894b35ab3026bbaef79cf6c814a01bad3",
+        "changedPaths": [
+          "MIGRATION-REVIEW.md"
+        ],
+        "reviewSha256": "de905f9794918ed6cd6e37ec5391c6e7b666e42996f78e7f7df80e96a947de82"
+      },
+      "bundle": {
+        "name": "F-project.bundle",
+        "sha256": "b29612809d04c8e695e085bae3118785bd77469b93236c76b422769b7f5086a5"
+      }
+    }
+  ]
+}
