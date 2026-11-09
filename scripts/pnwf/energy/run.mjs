@@ -15,7 +15,9 @@ import { attribute, requireUsage } from "./evidence.mjs";
 import { makeWorkerBroker, stageRuntime } from "./container-worker.mjs";
 import { pendingCandidate, profileFor } from "./product.mjs";
 import { qualificationReply } from "./mock.mjs";
-import { ACCEPTANCE, BASE, BULLETIN, CORRECTION, PROMPTS, assert, checkPackage, checkReview, changed, clean, digest,
+import { CERTIFICATES, requireRevisionScope, REVISION_PATHS } from "./revision-scope.mjs";
+import { REVISION_WORKER_WAIT_MS } from "./revision-work.mjs";
+import { ACCEPTANCE, BASE, BULLETIN, CORRECTION, PROMPTS, WORK_T2_PROMPT, assert, checkPackage, checkReview, changed, clean, digest,
   descendant, git, head, injectCorrection, makeSeed, readJson, sha, writeJson } from "./contract.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -52,10 +54,16 @@ function initialize(prior) {
   const seal = { schema: "pnwf-energy-contract/v1", base: BASE, implementationHead: head(REPO), scripts: digestFiles(experimentFiles(), REPO),
     runtime: runtimeDigest(), seedCommit, seedTree: git(seed, "rev-parse", "HEAD^{tree}"), image,
     bulletin: { path: BULLETIN, sha256: digest(CORRECTION) }, prompts: Object.fromEntries(Object.entries(PROMPTS).map(([session, prompt]) => [session, digest(prompt)])),
-    scorer: digest(readFileSync(join(FIXTURE, "check.mjs"))), model: "deepseek-flash", dsh: "0.2.1-rc.5", window: fixedWindow };
+    scorer: digest(readFileSync(join(FIXTURE, "check.mjs"))), model: "deepseek-flash", dsh: "0.2.1-rc.5", window: fixedWindow,
+    revisionScope: { writePaths: REVISION_PATHS, preservedPath: CERTIFICATES, workT2Prompt: digest(WORK_T2_PROMPT), workerWaitMs: REVISION_WORKER_WAIT_MS } };
   if (previous) {
-    assert(["base", "seedCommit", "seedTree", "image", "bulletin", "prompts", "scorer", "model", "dsh", "window"].every(key =>
+    assert(["base", "seedCommit", "seedTree", "image", "bulletin", "scorer", "model", "dsh", "window"].every(key =>
       JSON.stringify(seal[key]) === JSON.stringify(previous[key])), "RECOUNT_EXPERIMENT_INPUT_DRIFT");
+    assert(seal.prompts.T1 === previous.prompts.T1 && seal.prompts.T3 === previous.prompts.T3, "RECOUNT_PROMPT_DRIFT");
+    if (seal.prompts.T2 !== previous.prompts.T2) {
+      assert(args.has("reuse-basis"), "RECOUNT_T2_SCOPE_CHANGE_REQUIRES_REUSED_BASIS");
+      seal.revisionScope.priorT2Prompt = previous.prompts.T2;
+    }
     seal.recountOf = digest(readFileSync(join(prior, "contract.json")));
   }
   writeJson(sealPath, seal);
@@ -220,8 +228,9 @@ async function runSession(mode, arm, session) {
   }
   const productBefore = arm === "P" ? owner(p, "facts") : null;
   const promptPath = join(p.run, "prompt.txt");
-  writeFileSync(promptPath, PROMPTS[session]);
-  assert(seal.prompts[session] === digest(readFileSync(promptPath)), "PROMPT_DRIFT");
+  const formalRevision = arm === "P" && session === "T2";
+  writeFileSync(promptPath, formalRevision ? WORK_T2_PROMPT : PROMPTS[session]);
+  assert((formalRevision ? seal.revisionScope.workT2Prompt : seal.prompts[session]) === digest(readFileSync(promptPath)), "PROMPT_DRIFT");
   const cohortId = `energy-${arm}-${session}-${randomUUID()}`;
   const paid = mode === PAID_MODE;
   const mockCeiling = 12000000;
@@ -236,7 +245,7 @@ async function runSession(mode, arm, session) {
     { schema: "pnwf-request-budget/v1", cohortId, aggregateCeiling: mockCeiling, sessions: [{ id: session, ceiling: mockCeiling, softCeiling: mockCeiling }] });
   const mock = paid ? null : await startMockProvider({ reply: qualificationReply({ arm, session, accepted: basis }), delayMs: 180 });
   const experiment = { layout: arm === "P" ? "product" : "native", acceptance: acceptancePath,
-    ...(arm === "P" && session === "T2" ? { createWorker: options => makeWorkerBroker({ ...options, basis }) } : {}) };
+    ...(formalRevision ? { createWorker: options => makeWorkerBroker({ ...options, basis }) } : {}) };
   let evidence = null;
   let business = null;
   let facts = null;
@@ -255,6 +264,10 @@ async function runSession(mode, arm, session) {
     if (session === "T2") {
       assert(current === basis, "T2_MOVED_CANONICAL_HEAD_BEFORE_APPROVAL");
       candidate = arm === "P" ? pendingCandidate(facts, evidence.workerReceipts, basis) : nativeCandidate(p.world, basis);
+      if (arm === "P") {
+        requireRevisionScope(candidate.receipt.writeScope);
+        assert(candidate.receipt.preservedPath === CERTIFICATES, "WORKER_CERTIFICATE_SCOPE_NOT_OBSERVED");
+      }
       checks.settlement = arm === "P" ? true : null;
       checks.accepted = false;
     }

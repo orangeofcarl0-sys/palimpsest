@@ -12,7 +12,9 @@
 - 主线归因改写、切换后 CI 和旧 SHA 查找见 [§2](#主线归因与-sha-映射)。
 - 自提交先启用仓库 `commit-msg`。主线逐个检查 PR 引入的提交归因，发布使用 rebase 合并。 [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
 - 2026-11-09 在 `codex/energy-project-continuity` 启动同一 energy 项目的三会话实验。首轮两组 Mock 资格 6/6。真实 Palimpsest T1 交付 `4cf360d5620fa10df5022c777aa0ed83c312a80a` 后自然退出，19 笔请求共 535,044 tokens。独立判分修复站点全名与缩写的等价归一化后，同提交离线复算 45/45，通过时新增付费请求为 0。所有者已核准 T2 基线 `8041871314136d417b285a800265858757463f68`。[报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md) · [机器证据](research-evidence/pnwf-energy/2026-11-09/continuity.json)
-- Energy 的真实 T2 接纳批准基线后运行两次 Worker。第一候选 `109ef58eabde723fd41f139f3ad1d7229e0689cb` 因证书文件越界被拒，Principal 转 `successor`，第二个 Worker 在 64 笔上限触发时终止。T2 共 1,648,043 tokens，全部结算，无正式候选及 Promotion。诊断副本只恢复证书文件后通过 45/45。真实 P T3 和原生对照的启动条件尚未满足。现场位于 `C:/Users/66494/AppData/Local/Temp/pnwf-energy-qualified-20261109-165601`。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#真实-palimpsest-t2)
+- Energy 首轮真实 T2 因 Worker 改写证书被宿主拦截。修复统一了 Work 与宿主的五文件范围，证书保持逐字节不变。后续两次观察分别为原生 Subagent 偏离（业务复核 45/45，缺少正式结算）和正式 Worker 结算后 Principal 达到 64 笔上限（业务 45/45，缺少等待结论）。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-写范围修复与复跑)
+- 等待式变体的 Palimpsest 真实闭环 3/3：T2 正式 Worker 候选 `e2bc1a424a30123213708990394fc8b19e18c445` 获所有者核准，Promotion 后 HEAD 为 `7aed12ea8618533c7acba5b1c8a4f60e8c1c97ce`；T3 从该 HEAD 提交采购摘要 `02fdf9c3aa3e2821e7fe32f82bd7e3b768baf234` 并自然退出。[复验报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#等待与结算引导的定向复验)
+- 强原生 DSH 真实闭环也为 3/3。所有者核准 `ba95fd0e384b1523170ebc41d125b072fd94941e` 后原生组快进到该 SHA，T3 从该版本提交摘要 `7ee3971ab8348a1c028a05520bc797cc8672c9b0` 并自然退出。[对比报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#配对结论) · [机器证据](research-evidence/pnwf-energy/2026-11-09/scope-rerun.json)
 - Bench 树与 README 导航已合入主线，改写后对应提交为 `234be03cd82de55455a8a316fec66b8886d26cf9`。合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
 - Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，改写后对应提交为 **`666b4446c0649b7a3f425f1291fff99b6f97a2bf`**。合并前 14/14 个 CI job 通过。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
 - 本地 `main` 被另一个 worktree 占用：`F:/Codex_Work_Space/DSH plugin/palimpsest-repo`。**不要**在这个 worktree 里 `git switch main`，也不要 reset/clean 其他 worktree。
@@ -58,7 +60,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 归因改写基线为 `0d7516488013e8f36883fd7ee27ef7deb8104bd2`。当前值以 `git rev-parse origin/main` 为准 |
+| `origin/main` | 本地已核验的 energy 实验起点为 `112a7b50c25639ec5586afd170e9f7f311c561ba`；归因改写基线为 `0d7516488013e8f36883fd7ee27ef7deb8104bd2` |
+| Energy 工作分支 | `codex/energy-project-continuity`，本轮代码、报告和证据在本地交付 |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
 | PR #231 | MERGED at `4d5d9704e902d33b1380bf5a1df85dc39541935b`，PR 与合并后主线均为 14/14 check jobs SUCCESS |
@@ -201,6 +204,7 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 - `docs/engineering/PNWF-CQ-RESULT.md` — 本阶段完整报告（含无效 cohort 与超支）
 - `docs/engineering/PNWF-CQ-R1-QUALIFICATION.md` — 本轮零付费资格、边界和复现；§5 区分初轮失败与修复后回归
 - `docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md` — 按量记账合同、software 与 energy 的模型行为、拒绝、恢复和用量对比
+- [Energy 三会话闭环](docs/engineering/ENERGY-PROJECT-CONTINUITY.md) — 首版交付、更正后的 Work 修订与晋升、原生对照；[机器证据](research-evidence/pnwf-energy/2026-11-09/)
 - `research-evidence/pnwf-cq-paid/2026-11-08/` — 修复前后与定向观察共六条按量记账轨迹的逐请求用量、归因与原始文件摘要
 - `research-evidence/pnwf-cq-paid/2026-11-08/readiness-rerun.json` — 修复后两条真实复跑、逐请求对账、退役窗口与前后对比
 - `research-evidence/pnwf-cq-paid/2026-11-08/readiness-hint-live.json` — 已退役且交付未记录状态的定向观察，含提示、调用顺序和逐请求对账
@@ -216,6 +220,7 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 - `scripts/pnwf/run_direct_governed_host.sh` — 真实 DSH Direct→Governed（含 operator CLI）
 - `scripts/pnwf/isolation_gate.mjs` — 旧独立 canary；其 JSON 不是当前 runner 的执行许可
 - `scripts/pnwf/container_adapter.mjs` — 容器内 principal session adapter
+- `scripts/pnwf/energy/run.mjs` / `scripts/pnwf/summarize_energy.mjs` — 三会话资格、按 SHA 执行接受与可复算证据
 - `scripts/pnwf/prepare_continuation.mjs` — 复制 recorded state + 相对 alternates
 - `scripts/pnwf/score_continuation.mjs` — 机械评分（stream/ledger/exit/domain refusals）
 - `scripts/psvr/session_attribution.mjs` — 逐调用归因
@@ -236,6 +241,10 @@ pnpm build
 pnpm architecture:check
 pnpm architecture:check-public-api
 ```
+
+Energy T2 范围修复：`node --test scripts/pnwf/energy/contract.test.mjs scripts/pnwf/qualification.test.mjs scripts/psvr/session_attribution.test.mjs` 通过 33/33；构建、架构和公共 API 检查通过。回归包含委派前拒绝六文件计划、Worker 上下文范围检查、证书越界、错 SHA 接受，以及在一次宿主查询中等待结算并提示下一动作。
+
+最终等待式变体的两组 Mock 6/6，29 笔请求全部对账，付费请求为 0。真实会话在通过相同的零付费资格之后才启动。
 
 ### 验收集（顺序执行，避免 Windows 并行超时）
 
@@ -369,6 +378,14 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 两次沿用 `paid-usage-only` 和原终止条件。Software 20 个请求、542,023 tokens，energy 10 个请求、214,469 tokens。30 个请求全部结算，共 756,492 tokens，逐请求用量与 DSH 相符。六条按量记账轨迹累计 141 个结算请求、5,190,064 tokens。[定向报告](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察)
 
+### Energy 三会话项目
+
+每个 Session 独立 cohort 和 DSH home；真实 T1 从原轨迹复用。仍用 `deepseek-flash`、DSH `0.2.1-rc.5` 和 `paid-usage-only`。每轮 64 笔、30 分钟、单请求 240 秒，Worker 和原生 Subagent 计入同一窗口，金额和总 token 不设上限。
+
+两个未送审复跑合计 111 笔、3,613,879 tokens，全部结算。原生路径偏离为 47 笔、1,502,063 tokens；正式 Worker 成功结算但 Principal 达到请求上限的轨迹为 64 笔、2,111,816 tokens。[路径偏离](research-evidence/pnwf-energy/2026-11-09/scope-route-observation.json) · [请求窗口停止](research-evidence/pnwf-energy/2026-11-09/scope-request-stop.json)
+
+两个完整周期均通过：Palimpsest 61 笔、1,555,257 tokens、520.9 秒，含复用的 19 笔 T1；强原生 DSH 75 笔、1,690,107 tokens、565.6 秒。候选就绪到接受分别为 101.5 秒、269.3 秒，独立于模型时间。本轮新增 228 笔、6,324,199 tokens，含两个未送审复跑，全部结算。[账本、归因和接受记录](research-evidence/pnwf-energy/2026-11-09/scope-rerun.json)
+
 ### 2026-11-07 历史 cohort
 
 | 项 | tokens |
@@ -417,7 +434,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 4. **真实模型产品闭环**（P1）
    - 两种状态各一次定向观察证实，指定先查 `readiness` 后，模型收到新提示，并在后续步骤记录 `DELIVER` 和自然退出。原始状态的两条修复后复跑都在退役后直接验证并交付，退役后查询 `readiness` 为 0。两组保留各自的起点和触发条件。[定向观察与原始状态复跑](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察)
    - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
-   - Direct→治理的 Worker、Settlement、Promotion 纵向验收来自确定性子进程。自主 Worker 结算及 promotion 仍需对应的真实模型证据。
+   - Energy 等待式变体已完成真实 Worker、结算、按 SHA 晋升和 T3 接续，强原生对照也完成。默认业务提示曾引发原生委派偏离；仅指定 Work 路径时又在结算后耗尽请求。后续产品验证可关注正式 Worker 的完成通知和 Work 作业 ID 提示；真实成功轨迹仍有一次把 Work ID 传给原生 `job_output` 的错误。
 
 5. **外部原生 HEAD 并发**
    - 提交前读取以前的变化可阻止并回滚；最后一次 Git 读取后的外部变化不能与 SQLite 原子封锁，后续执行 fence 会拒绝漂移。
@@ -496,6 +513,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-08 | 归并工作分支，导入 R3-A2 冻结证据并归档其余独有历史 | [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)，R3-A2 tip `10a5978` | 恢复验证 411 个引用，R3-A2 定向测试 116 项通过 |
 | 2026-11-08 | 改写主线提交归因，核验 Contributors 并更新导航 | [归因与 SHA 映射](#主线归因与-sha-映射) | 归档原始主线和标签 |
 | 2026-11-09 | 安装提交归因门禁并启用主线必需检查 | [归因门禁](#提交归因门禁) | 本地 hook、精确 PR head 检查、rebase-only 发布 |
+| 2026-11-09 | 统一 energy T2 五文件写范围并完成等待式真实闭环与原生对照 | [报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md)，[证据](research-evidence/pnwf-energy/2026-11-09/scope-rerun.json) | 定向测试 33/33、最终 Mock 6/6、真实 6/6；本轮新增 228 笔、6,324,199 tokens |
 
 ---
 

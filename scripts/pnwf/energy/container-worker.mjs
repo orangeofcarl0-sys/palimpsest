@@ -6,7 +6,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { prepareContainerProfile, DSH_BIN } from "../container_adapter.mjs";
 import { createPrincipal, docker, qualifyPrincipal } from "../container_runtime.mjs";
 import { startContainerBridge } from "../container_bridge.mjs";
-import { assert, changed, clean, configureGit, descendant, git, head, sha, writeJson, REVISION_PATHS } from "./contract.mjs";
+import { assert, changed, clean, configureGit, descendant, git, head, sha, writeJson } from "./contract.mjs";
+import { CERTIFICATES, PRESERVE_CERTIFICATES, requireRevisionScope, REVISION_PATHS } from "./revision-scope.mjs";
 
 const PREFLIGHT = fileURLToPath(new URL("../world_preflight.mjs", import.meta.url));
 const ATTEMPT_PATH = /^\/run\/stage\/world\/\.palimpsest\/worlds\/([a-zA-Z0-9_-]+)$/u;
@@ -28,12 +29,12 @@ export function stageRuntime({ repo, destination }) {
     cpSync(realpathSync(join(repo, "node_modules/@ordarium", name)), join(modules, name), { recursive: true, dereference: true });
   }
   mkdirSync(join(destination, "runtime"));
-  for (const part of ["product-entry.mjs", "worker"]) {
+  for (const part of ["product-entry.mjs", "revision-scope.mjs", "revision-work.mjs", "worker"]) {
     cpSync(fileURLToPath(new URL(part, import.meta.url)), join(destination, "runtime", part), { recursive: true });
   }
   const ownerScripts = join(destination, "scripts/pnwf/energy");
   mkdirSync(ownerScripts, { recursive: true });
-  for (const part of ["contract.mjs", "product.mjs", "owner-command.mjs"]) {
+  for (const part of ["contract.mjs", "revision-scope.mjs", "product.mjs", "owner-command.mjs"]) {
     cpSync(fileURLToPath(new URL(part, import.meta.url)), join(ownerScripts, part));
   }
 }
@@ -68,6 +69,9 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
     assert(match && request?.context?.work?.baseCommit === basis, "WORKER_REQUEST_BASIS_MISMATCH");
     const attemptId = match[1];
     Object.assign(job.receipt, { attemptId, basis });
+    const work = request.context.work;
+    requireRevisionScope(work.writeScope);
+    Object.assign(job.receipt, { writeScope: [...work.writeScope], preservedPath: CERTIFICATES });
     assert(!attempted.has(attemptId), "WORKER_ATTEMPT_ALREADY_DISPATCHED");
     attempted.add(attemptId);
     const principalWorld = join(stage, "world");
@@ -89,7 +93,10 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
     git(peer, "checkout", "--quiet", "--detach", basis);
     assert(head(peer) === basis && clean(peer), "WORKER_PEER_BASIS_MISMATCH");
     const workerContract = await import(pathToFileURL(join(repository, "dist/src/deployment/work_worker.js")).href);
-    const { context, resultTool, deniedAuthorityPrefix } = workerContract.workWorkerEnvironmentPayload(request.context);
+    const { context, resultTool, deniedAuthorityPrefix } = workerContract.workWorkerEnvironmentPayload({
+      ...request.context,
+      work: { ...work, requirements: [...work.requirements, PRESERVE_CERTIFICATES] },
+    });
     // This new-source scenario needs the checked-out materials. No external context channel is mounted.
     writeJson(join(peerStage, "context.json"), { context, resultTool, deniedAuthorityPrefix });
     prepareContainerProfile({ home, repository, layout: "worker" });

@@ -3,22 +3,23 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { CERTIFICATES, DELIVERABLES, REVISION_PATHS, REVISION_SCOPE_INSTRUCTIONS } from "./revision-scope.mjs";
+
+export { CERTIFICATES, DELIVERABLES, REVISION_PATHS } from "./revision-scope.mjs";
 
 export const BASE = "112a7b50c25639ec5586afd170e9f7f311c561ba";
 export const START = "2026-11-05";
 export const BULLETIN = "updates/2026-11-06/hf-capacity-correction.csv";
 export const CORRECTION = "model,site,capacity_kw,condition\nS-1080,HF,600,max +42 C\n";
-export const DELIVERABLES = ["technical-capacity.md", "vendor-compliance.md", "cost-model.json", "schedule.md", "risk-review.md", "recommendation.md"]
-  .map(name => `deliverables/${name}`);
-export const CERTIFICATES = DELIVERABLES[1];
-export const REVISION_PATHS = DELIVERABLES.filter(path => path !== CERTIFICATES);
 export const SUMMARY = "deliverables/procurement-review.md";
 export const ACCEPTANCE = "acceptance.json";
 export const PROMPTS = Object.freeze({
   T1: "Use the project materials to complete the initial deployment decision package for both sites. Deliver a committed version I can review. This is a planning exercise and does not authorize purchases.",
-  T2: "New material has arrived in this project. Have a separate executor revise the affected work in an isolated copy, keep what is still valid, and leave a committed candidate for my approval. Keep the accepted package available until I approve the candidate.",
+  T2: `New material has arrived in this project. Have a separate executor revise the affected work in an isolated copy, keep what is still valid, and leave a committed candidate for my approval. Keep the accepted package available until I approve the candidate. ${REVISION_SCOPE_INSTRUCTIONS}`,
   T3: "Use the accepted revision of this project to deliver a one-page procurement review. Include each site's configuration, the changes in cost and timing, and the decisions that still require approval. Commit the review without making any purchase.",
 });
+export const WORK_T2_INSTRUCTIONS = 'For this run, the separate executor is a formal Palimpsest Work Worker. Use palimpsest_work to plan one task with the five write paths and delegate it. Then call palimpsest_work with action "workers" to wait; use that action again if the Worker is still active. When the job is FINISHED and SETTLED, call action "run" with maxSteps 8. Once the task is VERIFYING, record action "conclude" with intent WAIT_FOR_OPERATOR, then reply and end the session with the candidate pending.';
+export const WORK_T2_PROMPT = `${PROMPTS.T2}\n\n${WORK_T2_INSTRUCTIONS}`;
 
 export const readJson = path => JSON.parse(readFileSync(path, "utf8"));
 export const writeJson = (path, value) => writeFileSync(path, JSON.stringify(value, null, 2) + "\n");
