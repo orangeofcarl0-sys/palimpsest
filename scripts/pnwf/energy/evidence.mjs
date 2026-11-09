@@ -27,7 +27,23 @@ const DSH_USAGE = { input_tokens: "inputTokens", cache_read_input_tokens: "cache
   cache_creation_input_tokens: "cacheWriteTokens", output_tokens: "outputTokens" };
 const tokenKey = usage => USAGE_FIELDS.map(key => usage[key] ?? 0).join("/");
 
-export function attribute(run, id, mode) {
+function contextActions(trace, variant) {
+  const results = new Map(trace.results.map(row => [row.callId, row]));
+  return trace.calls.flatMap(call => {
+    const result = results.get(call.callId);
+    const name = call.kind.split(" ", 1)[0];
+    const commit = result?.facts?.resultCommit;
+    let kind;
+    if (name === "palimpsest_revision_review") kind = call.args?.path ? "file" : "receipt";
+    else if (name === "work:run" && commit) kind = "receipt";
+    else if (name === "continuity:pulse") kind = call.args?.detail === "full" ? "full-pulse" : variant === "brief-pulse" ? "brief-pulse" : "pulse";
+    else return [];
+    return [{ kind, callId: call.callId, seq: call.seq, ok: result?.ok === true && result.refusal === null,
+      ...(commit ? { commit } : {}), ...(kind === "file" ? { path: call.args.path } : {}) }];
+  });
+}
+
+export function attribute(run, id, mode, variant) {
   const out = join(run, "out", id);
   const dir = join(out, "attribution");
   mkdirSync(dir);
@@ -48,7 +64,8 @@ export function attribute(run, id, mode) {
     return { id: trace.session.id, cwd: trace.session.cwd, role, digest: digest(readFileSync(input)), counts,
       refs: trace.results.filter(result => result.refusal !== null || !result.ok).map(result => ({ callId: result.callId, seq: result.seq,
         kind: result.callKind, state: result.state, reason: result.refusalReason, detail: result.refusalDetail })),
-      failedJobs: trace.failedJobs, modelSteps: trace.modelSteps, byKind: trace.byKind };
+      failedJobs: trace.failedJobs, modelSteps: trace.modelSteps, byKind: trace.byKind,
+      ...(variant ? { contextActions: contextActions(trace, variant) } : {}) };
   });
   const terminal = new Map(gateway.filter(row => row.kind === "TERMINAL").map(row => [row.requestId, row]));
   const admitted = new Map(gateway.filter(row => row.kind === "ADMITTED").map(row => [row.requestId, row]));

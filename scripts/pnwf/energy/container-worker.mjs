@@ -6,8 +6,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { prepareContainerProfile, DSH_BIN } from "../container_adapter.mjs";
 import { createPrincipal, docker, qualifyPrincipal } from "../container_runtime.mjs";
 import { startContainerBridge } from "../container_bridge.mjs";
-import { assert, changed, clean, configureGit, descendant, git, head, sha, writeJson } from "./contract.mjs";
-import { CERTIFICATES, PRESERVE_CERTIFICATES, requireRevisionScope, REVISION_PATHS } from "./revision-scope.mjs";
+import { assert, clean, configureGit, git, head, writeJson } from "./contract.mjs";
+import { workerInstructions } from "./context-variants.mjs";
+import { validateWorkerResult } from "./revision-review.mjs";
+import { CERTIFICATES, PRESERVE_CERTIFICATES, requireRevisionScope } from "./revision-scope.mjs";
+
+export { validateWorkerResult };
 
 const PREFLIGHT = fileURLToPath(new URL("../world_preflight.mjs", import.meta.url));
 const ATTEMPT_PATH = /^\/run\/stage\/world\/\.palimpsest\/worlds\/([a-zA-Z0-9_-]+)$/u;
@@ -16,7 +20,7 @@ const db=new DatabaseSync('/run/stage/state/palimpsest.sqlite',{readOnly:true});
 const row=db.prepare('SELECT state FROM attempts WHERE project_id=? AND attempt_id=?').get('energy-project-continuity',process.argv[1]);
 db.close();process.stdout.write(row?.state??'');`;
 
-export function stageRuntime({ repo, destination }) {
+export function stageRuntime({ repo, destination, variant = "baseline" }) {
   mkdirSync(destination);
   for (const part of ["dist/src", "host/dsh"]) {
     mkdirSync(join(destination, part, ".."), { recursive: true });
@@ -29,24 +33,16 @@ export function stageRuntime({ repo, destination }) {
     cpSync(realpathSync(join(repo, "node_modules/@ordarium", name)), join(modules, name), { recursive: true, dereference: true });
   }
   mkdirSync(join(destination, "runtime"));
-  for (const part of ["product-entry.mjs", "revision-scope.mjs", "revision-work.mjs", "worker"]) {
+  for (const part of ["product-entry.mjs", "contract.mjs", "context-variants.mjs", "revision-review.mjs",
+    "revision-scope.mjs", "revision-work.mjs", "worker"]) {
     cpSync(fileURLToPath(new URL(part, import.meta.url)), join(destination, "runtime", part), { recursive: true });
   }
+  writeJson(join(destination, "runtime", "variant.json"), { variant });
   const ownerScripts = join(destination, "scripts/pnwf/energy");
   mkdirSync(ownerScripts, { recursive: true });
   for (const part of ["contract.mjs", "revision-scope.mjs", "product.mjs", "owner-command.mjs"]) {
     cpSync(fileURLToPath(new URL(part, import.meta.url)), join(ownerScripts, part));
   }
-}
-
-export function validateWorkerResult(repo, basis, result) {
-  assert(sha(result) && result !== basis && descendant(repo, basis, result), "WORKER_RESULT_BASIS_MISMATCH");
-  assert(clean(repo), "WORKER_WORLD_DIRTY");
-  const paths = changed(repo, basis, result);
-  assert(paths.length > 0 && paths.every(path => REVISION_PATHS.includes(path)), "WORKER_RESULT_OUTSIDE_SCOPE");
-  const entries = git(repo, "ls-tree", "-r", "-z", result, "--", ...paths).split("\0").filter(Boolean);
-  assert(entries.length === paths.length && entries.every(entry => /^100644 blob /u.test(entry)), "WORKER_RESULT_NOT_REGULAR");
-  return paths;
 }
 
 function start(runtime, stdout, stderr) {
@@ -58,7 +54,7 @@ function start(runtime, stdout, stderr) {
   });
 }
 
-export function makeWorkerBroker({ stage, out, repository, image, principalId, gateway, sessionKey, basis, stopIsClosed }) {
+export function makeWorkerBroker({ stage, out, repository, image, principalId, gateway, sessionKey, basis, stopIsClosed, variant }) {
   let current = null;
   let closed = false;
   const attempted = new Set();
@@ -77,7 +73,7 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
     const principalWorld = join(stage, "world");
     const attempt = join(principalWorld, ".palimpsest", "worlds", attemptId);
     const active = () => docker(["exec", "--user", "1001:1001", principalId, "node", "-e", READ_ATTEMPT, attemptId], { stdio: ["ignore", "pipe", "pipe"] }) === "RUNNING";
-    const attemptGit = (...args) => docker(["exec", "--user", "1001:1001", principalId, "git", "-c", "safe.directory=*", "-C", request.workDir, ...args]);
+    const attemptGit = (...args) => docker(["exec", "--user", "1001:1001", principalId, "git", "--no-optional-locks", "-c", "safe.directory=*", "-C", request.workDir, ...args]);
     const attemptAtBasis = () => attemptGit("rev-parse", "HEAD") === basis && attemptGit("status", "--porcelain", "--untracked-files=all") === "";
     assert(active() && realpathSync(attempt) === attempt && head(principalWorld) === basis && attemptAtBasis(), "WORKER_ATTEMPT_NOT_BOUND_AT_BASIS");
     const directory = join(out, `worker-${attemptId}`);
@@ -95,7 +91,7 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
     const workerContract = await import(pathToFileURL(join(repository, "dist/src/deployment/work_worker.js")).href);
     const { context, resultTool, deniedAuthorityPrefix } = workerContract.workWorkerEnvironmentPayload({
       ...request.context,
-      work: { ...work, requirements: [...work.requirements, PRESERVE_CERTIFICATES] },
+      work: { ...work, requirements: [...work.requirements, PRESERVE_CERTIFICATES, ...workerInstructions(variant)] },
     });
     // This new-source scenario needs the checked-out materials. No external context channel is mounted.
     writeJson(join(peerStage, "context.json"), { context, resultTool, deniedAuthorityPrefix });

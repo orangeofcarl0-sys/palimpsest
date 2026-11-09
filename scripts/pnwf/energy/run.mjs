@@ -13,6 +13,7 @@ import { docker } from "../container_runtime.mjs";
 import { startMockProvider } from "../mock_provider.mjs";
 import { attribute, requireUsage } from "./evidence.mjs";
 import { makeWorkerBroker, stageRuntime } from "./container-worker.mjs";
+import { CONTEXT_VARIANTS, revisionPrompt } from "./context-variants.mjs";
 import { pendingCandidate, profileFor } from "./product.mjs";
 import { qualificationReply } from "./mock.mjs";
 import { CERTIFICATES, requireRevisionScope, REVISION_PATHS } from "./revision-scope.mjs";
@@ -45,8 +46,13 @@ const runtimeDigest = () => digestFiles(readdirSync(runtime, { recursive: true, 
 
 function initialize(prior) {
   assert(descendant(REPO, BASE, head(REPO)), "UNEXPECTED_IMPLEMENTATION_BASE");
+  const variant = args.get("variant") ?? "baseline";
+  assert(variant === "baseline" || CONTEXT_VARIANTS.includes(variant), "UNKNOWN_T2_CONTEXT_VARIANT");
+  if (variant !== "baseline") {
+    assert(prior && args.has("reuse-basis") && args.has("compare-to"), "T2_CONTEXT_VARIANT_REQUIRES_APPROVED_CONTROL");
+  }
   mkdirSync(root);
-  stageRuntime({ repo: REPO, destination: runtime });
+  stageRuntime({ repo: REPO, destination: runtime, variant });
   const previous = prior ? readJson(join(prior, "contract.json")) : null;
   if (previous) cpSync(join(prior, "seed"), seed, { recursive: true });
   const seedCommit = previous ? head(seed) : makeSeed(seed, FIXTURE);
@@ -55,7 +61,7 @@ function initialize(prior) {
     runtime: runtimeDigest(), seedCommit, seedTree: git(seed, "rev-parse", "HEAD^{tree}"), image,
     bulletin: { path: BULLETIN, sha256: digest(CORRECTION) }, prompts: Object.fromEntries(Object.entries(PROMPTS).map(([session, prompt]) => [session, digest(prompt)])),
     scorer: digest(readFileSync(join(FIXTURE, "check.mjs"))), model: "deepseek-flash", dsh: "0.2.1-rc.5", window: fixedWindow,
-    revisionScope: { writePaths: REVISION_PATHS, preservedPath: CERTIFICATES, workT2Prompt: digest(WORK_T2_PROMPT), workerWaitMs: REVISION_WORKER_WAIT_MS } };
+    revisionScope: { writePaths: REVISION_PATHS, preservedPath: CERTIFICATES, workT2Prompt: digest(revisionPrompt(variant)), workerWaitMs: REVISION_WORKER_WAIT_MS } };
   if (previous) {
     assert(["base", "seedCommit", "seedTree", "image", "bulletin", "scorer", "model", "dsh", "window"].every(key =>
       JSON.stringify(seal[key]) === JSON.stringify(previous[key])), "RECOUNT_EXPERIMENT_INPUT_DRIFT");
@@ -65,6 +71,22 @@ function initialize(prior) {
       seal.revisionScope.priorT2Prompt = previous.prompts.T2;
     }
     seal.recountOf = digest(readFileSync(join(prior, "contract.json")));
+  }
+  if (variant !== "baseline") {
+    const control = resolve(args.get("compare-to"));
+    const reference = readJson(join(control, "contract.json"));
+    const resultBytes = readFileSync(join(control, "live/P/T2/result.json"));
+    const result = JSON.parse(resultBytes);
+    const approval = readJson(join(resolve(args.get("reuse-basis")), "live/P/T2/basis-owner-observation.json"));
+    assert(result.passed && result.evidence.valid && result.basis === approval.commit && approval.decision === "APPROVED" &&
+      result.facts.conclusion?.intent === "WAIT_FOR_OPERATOR", "T2_CONTEXT_CONTROL_BASIS_MISMATCH");
+    assert(["seedCommit", "seedTree", "image", "bulletin", "prompts", "scorer", "model", "dsh", "window"].every(key =>
+      JSON.stringify(seal[key]) === JSON.stringify(reference[key])) &&
+      reference.revisionScope?.workT2Prompt === digest(WORK_T2_PROMPT) &&
+      reference.revisionScope.workerWaitMs === REVISION_WORKER_WAIT_MS &&
+      JSON.stringify(reference.revisionScope.writePaths) === JSON.stringify(REVISION_PATHS) &&
+      reference.revisionScope.preservedPath === CERTIFICATES, "T2_CONTEXT_CONTROL_DRIFT");
+    seal.contextVariant = { name: variant, approvedBasis: approval.commit, controlResultSha256: digest(resultBytes) };
   }
   writeJson(sealPath, seal);
   return seal;
@@ -169,6 +191,9 @@ function approveBasis(mode, approved) {
   const p = sessionPaths(mode, "P", "T2");
   const review = readJson(p.review);
   assert(sha(approved) && approved === review.commit && head(p.world) === approved && clean(p.world), "BASIS_APPROVAL_SHA_MISMATCH");
+  if (mode === PAID_MODE && readSeal().contextVariant) {
+    assert(approved === readSeal().contextVariant.approvedBasis, "T2_CONTEXT_CONTROL_BASIS_MISMATCH");
+  }
   const receipt = join(p.run, "basis-admission.json");
   assert(!existsSync(p.started) && !existsSync(receipt), "BASIS_ALREADY_APPLIED");
   assert(digest(readFileSync(join(p.world, BULLETIN))) === review.correctionSha256, "BASIS_BULLETIN_DRIFT");
@@ -229,7 +254,8 @@ async function runSession(mode, arm, session) {
   const productBefore = arm === "P" ? owner(p, "facts") : null;
   const promptPath = join(p.run, "prompt.txt");
   const formalRevision = arm === "P" && session === "T2";
-  writeFileSync(promptPath, formalRevision ? WORK_T2_PROMPT : PROMPTS[session]);
+  const variant = formalRevision ? seal.contextVariant?.name : undefined;
+  writeFileSync(promptPath, formalRevision ? revisionPrompt(variant) : PROMPTS[session]);
   assert((formalRevision ? seal.revisionScope.workT2Prompt : seal.prompts[session]) === digest(readFileSync(promptPath)), "PROMPT_DRIFT");
   const cohortId = `energy-${arm}-${session}-${randomUUID()}`;
   const paid = mode === PAID_MODE;
@@ -243,9 +269,9 @@ async function runSession(mode, arm, session) {
   const ledger = ExecutionBudget.initialize(budgetPath, paid ? { schema: USAGE_ONLY_SCHEMA, cohortId, aggregateCeiling: null,
     sessions: [{ id: session, ceiling: null, softCeiling: null, maxRequests: fixedWindow.maxRequests }] } :
     { schema: "pnwf-request-budget/v1", cohortId, aggregateCeiling: mockCeiling, sessions: [{ id: session, ceiling: mockCeiling, softCeiling: mockCeiling }] });
-  const mock = paid ? null : await startMockProvider({ reply: qualificationReply({ arm, session, accepted: basis }), delayMs: 180 });
+  const mock = paid ? null : await startMockProvider({ reply: qualificationReply({ arm, session, accepted: basis, variant }), delayMs: 180 });
   const experiment = { layout: arm === "P" ? "product" : "native", acceptance: acceptancePath,
-    ...(formalRevision ? { createWorker: options => makeWorkerBroker({ ...options, basis }) } : {}) };
+    ...(formalRevision ? { createWorker: options => makeWorkerBroker({ ...options, basis, variant }) } : {}) };
   let evidence = null;
   let business = null;
   let facts = null;
@@ -254,7 +280,7 @@ async function runSession(mode, arm, session) {
     writeJson(p.started, { at: new Date().toISOString(), cohortId, mode, basis });
     ledger.startSession(session);
     await runContainerSession({ run: p.run, sessionId: session, budgetPath, provider: mock?.config, mode, repository: runtime, image: seal.image, experiment });
-    evidence = attribute(p.run, session, mode);
+    evidence = attribute(p.run, session, mode, variant);
     checks.naturalExit = evidence.natural;
     if (arm === "P") facts = owner(p, "facts");
     const current = head(p.world);
@@ -267,6 +293,15 @@ async function runSession(mode, arm, session) {
       if (arm === "P") {
         requireRevisionScope(candidate.receipt.writeScope);
         assert(candidate.receipt.preservedPath === CERTIFICATES, "WORKER_CERTIFICATE_SCOPE_NOT_OBSERVED");
+      }
+      if (variant === "receipt") {
+        assert(["principal", "worker"].every(role => evidence.traces.some(trace => trace.role === role &&
+          trace.contextActions.some(action => action.kind === "receipt" && action.ok && action.commit === candidate.commit))),
+        "REVISION_RECEIPT_NOT_OBSERVED_FOR_CANDIDATE");
+      }
+      if (variant === "brief-pulse") {
+        assert(evidence.traces.some(trace => trace.role === "principal" &&
+          trace.contextActions.some(action => action.kind === "brief-pulse" && action.ok)), "BRIEF_PULSE_NOT_OBSERVED");
       }
       checks.settlement = arm === "P" ? true : null;
       checks.accepted = false;
@@ -322,7 +357,7 @@ async function qualify() {
       { cwd: REPO, encoding: "utf8", timeout: 90000 });
     writeFileSync(join(root, "negative-tests.log"), tests);
     const failures = [];
-    for (const arm of ["P", "F"]) {
+    for (const arm of seal.contextVariant ? ["P"] : ["P", "F"]) {
       try {
         await runSession("mock", arm, "T1");
         const second = sessionPaths("mock", arm, "T2");
@@ -370,6 +405,7 @@ try {
     else if (action === "accept") approveCandidate(PAID_MODE, arm, args.get("approve"));
     else if (action === "live") {
       assert(args.has("execute") && Object.hasOwn(PROMPTS, args.get("session")), "EXPLICIT_LIVE_SESSION_REQUIRED");
+      if (seal.contextVariant) assert(arm === "P" && args.get("session") === "T2", "T2_CONTEXT_VARIANT_SESSION_REQUIRED");
       await runSession(PAID_MODE, arm, args.get("session"));
     } else throw new Error("UNKNOWN_ACTION");
   }

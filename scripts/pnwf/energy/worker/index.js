@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { brandString } from "@deepseek-ai/dsh-brand";
 import { installModelSelection } from "@deepseek-ai/dsh-agent";
 import { workTask, userMessage } from "palimpsest-dsh-host/runner";
+import { head, readJson } from "file:///product/runtime/contract.mjs";
+import { revisionReviewTool } from "file:///product/runtime/revision-review.mjs";
 
 export const name = "pnwf-container-worker";
 export const inject = ["agents", "sessions", "agentDefaultModel", "palimpsestHost", "palimpsestStartup"];
@@ -16,6 +18,7 @@ async function run(ctx) {
     throw new Error("CONTAINER_WORKER_COMPOSITION_REFUSED");
   }
   const selection = ctx.get("agentDefaultModel").currentSelection();
+  const { variant } = readJson("/product/runtime/variant.json");
   const handle = await ctx.get("agents").create({
     sessionId: brandString(`worker-${randomUUID()}`), meta: { cwd: process.cwd() },
     agentOptions: { provider: selection.provider, model: selection.model },
@@ -24,6 +27,12 @@ async function run(ctx) {
       const inherited = agentCtx.tools.schemas().map(tool => tool.name).filter(tool => tool.startsWith("palimpsest_"));
       if (inherited.length) agentCtx.tools.restrict({ deny: inherited });
       agentCtx.tools.register(work.tool);
+      if (variant === "receipt") {
+        agentCtx.tools.register(revisionReviewTool(() => {
+          const repo = process.cwd();
+          return { repo, basis: work.context.work.baseCommit, candidate: head(repo), settlement: "AWAITING_WORKER_RESULT" };
+        }));
+      }
     },
   });
   const agent = handle.agent;
