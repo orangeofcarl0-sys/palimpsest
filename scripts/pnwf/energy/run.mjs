@@ -30,6 +30,7 @@ const runtime = join(root, "runtime");
 const seed = join(root, "seed");
 const sealPath = join(root, "contract.json");
 const qualificationPath = join(root, "qualification.json");
+const t3QualificationPath = join(root, "t3-qualification.json");
 const fixedWindow = { maxRequests: 64, wallClockMs: 1800000, requestTimeoutMs: 240000, billingCeiling: null };
 const mockWindowMs = 180000;
 
@@ -38,11 +39,12 @@ const readSeal = () => readJson(sealPath);
 const experimentFiles = () => [...readdirSync(HERE, { recursive: true }).filter(file => /\.(?:mjs|js|json)$/u.test(file)).map(file => join(HERE, file)),
   ...["container_adapter", "container_runtime", "container_bridge", "bounded_provider", "execution_budget", "world_preflight", "mock_provider"].map(name => join(HERE, `../${name}.mjs`)),
   join(REPO, "scripts/psvr/session_attribution.mjs"), join(REPO, "pnpm-lock.yaml")];
-function digestFiles(files, base) {
-  return digest(files.sort().map(file => `${file.slice(base.length).replaceAll("\\", "/")}\0${digest(readFileSync(file))}\n`).join(""));
+function digestFiles(files, base, read = readFileSync) {
+  return digest(files.sort().map(file => `${file.slice(base.length).replaceAll("\\", "/")}\0${digest(read(file))}\n`).join(""));
 }
-const runtimeDigest = () => digestFiles(readdirSync(runtime, { recursive: true, withFileTypes: true })
-  .filter(entry => entry.isFile()).map(entry => join(entry.parentPath, entry.name)), runtime);
+const treeDigest = dir => digestFiles(readdirSync(dir, { recursive: true, withFileTypes: true })
+  .filter(entry => entry.isFile()).map(entry => join(entry.parentPath, entry.name)), dir);
+const runtimeDigest = () => treeDigest(runtime);
 
 function initialize(prior) {
   assert(descendant(REPO, BASE, head(REPO)), "UNEXPECTED_IMPLEMENTATION_BASE");
@@ -92,15 +94,22 @@ function initialize(prior) {
   return seal;
 }
 
-function verifySeal() {
+function verifySeal(qualifiedDriver) {
   const seal = readSeal();
-  assert(seal.scripts === digestFiles(experimentFiles(), REPO) && seal.runtime === runtimeDigest() &&
+  let scripts = digestFiles(experimentFiles(), REPO);
+  if (qualifiedDriver) {
+    assert(sha(qualifiedDriver), "QUALIFIED_DRIVER_MUST_BE_A_GIT_BLOB_SHA");
+    const previous = execFileSync("git", ["cat-file", "blob", qualifiedDriver], { cwd: REPO });
+    const driver = fileURLToPath(import.meta.url);
+    // Only the entry point can differ. The original seal still binds every other file.
+    scripts = digestFiles(experimentFiles(), REPO, file => file === driver ? previous : readFileSync(file));
+  }
+  assert(seal.scripts === scripts && seal.runtime === runtimeDigest() &&
     seal.scorer === digest(readFileSync(join(FIXTURE, "check.mjs"))) && seal.seedCommit === head(seed) && clean(seed), "FROZEN_EXPERIMENT_DRIFT");
   return seal;
 }
 
-function sessionPaths(mode, arm, session) {
-  const group = join(root, mode === "mock" ? "mock" : "live", arm);
+function sessionPaths(mode, arm, session, group = join(root, mode === "mock" ? "mock" : "live", arm)) {
   const run = join(group, session);
   const stage = join(run, "stages", session);
   return { group, run, stage, world: join(stage, "world"), state: join(stage, "state"), profile: join(run, "profile.json"),
@@ -231,8 +240,7 @@ function approveCandidate(mode, arm, approved) {
   note("CANDIDATE_ACCEPTED", { arm, commit: approved, approvedHead, acceptance: join(p.run, ACCEPTANCE) });
 }
 
-async function runSession(mode, arm, session) {
-  const p = sessionPaths(mode, arm, session);
+async function runSession(mode, arm, session, p = sessionPaths(mode, arm, session)) {
   const seal = readSeal();
   assert(!existsSync(p.started), "SESSION_ALREADY_STARTED");
   if (session === "T1") {
@@ -247,11 +255,15 @@ async function runSession(mode, arm, session) {
     if (arm === "P") assert(readJson(join(p.run, "basis-admission.json")).approved === basis, "T2_BASIS_APPROVAL_MISSING");
   }
   const acceptancePath = session === "T3" ? join(p.run, ACCEPTANCE) : undefined;
+  const acceptance = acceptancePath && readJson(acceptancePath);
   if (acceptancePath) {
-    const receipt = readJson(acceptancePath);
-    assert(receipt.approvedHead === basis && receipt.tree === git(p.world, "rev-parse", "HEAD^{tree}"), "T3_ACCEPTED_HEAD_MISMATCH");
+    assert(acceptance.approvedHead === basis && acceptance.tree === git(p.world, "rev-parse", "HEAD^{tree}"), "T3_ACCEPTED_HEAD_MISMATCH");
   }
   const productBefore = arm === "P" ? owner(p, "facts") : null;
+  if (productBefore && acceptance && seal.contextVariant) {
+    assert(productBefore.head === basis && productBefore.events.some(event => event.type === "PROMOTION_COMMITTED" &&
+      event.entityId === acceptance.promotion.promotionId), "T3_ACCEPTED_PRODUCT_STATE_MISMATCH");
+  }
   const promptPath = join(p.run, "prompt.txt");
   const formalRevision = arm === "P" && session === "T2";
   const variant = formalRevision ? seal.contextVariant?.name : undefined;
@@ -348,6 +360,52 @@ async function runSession(mode, arm, session) {
   }
 }
 
+function acceptedT3Binding(seal, qualifiedDriver) {
+  const expectedHead = args.get("accepted-head");
+  const t2 = sessionPaths(PAID_MODE, "P", "T2");
+  const t3 = sessionPaths(PAID_MODE, "P", "T3");
+  assert(seal.contextVariant && sha(expectedHead) && JSON.stringify(seal.window) === JSON.stringify(fixedWindow), "T3_ACCEPTED_CONTEXT_REQUIRED");
+  assert(!existsSync(t3.started) && !existsSync(join(t3.run, "runtime-T3")) && !existsSync(join(t3.run, "request-ledger.sqlite")), "T3_SESSION_ALREADY_PREPARED");
+  const result = readJson(t2.result);
+  const candidate = readJson(join(t2.run, "candidate.json"));
+  const approvalPath = join(t2.run, "candidate-owner-observation.json");
+  const approval = readJson(approvalPath);
+  const acceptancePath = join(t3.run, ACCEPTANCE);
+  const acceptance = readJson(acceptancePath);
+  const event = acceptance.promotion?.committed;
+  const payload = event?.payload;
+  assert(result.passed && result.mode === PAID_MODE && result.evidence.valid && result.facts.conclusion?.intent === "WAIT_FOR_OPERATOR" &&
+    result.basis === candidate.basis && candidate.basis === seal.contextVariant.approvedBasis && result.business.commit === candidate.commit &&
+    sha(candidate.commit) && candidate.gate === "PASS" && approval.decision === "APPROVED" && approval.commit === candidate.commit &&
+    acceptance.kind === "GOVERNED_PROMOTION" && acceptance.mode === PAID_MODE && acceptance.arm === "P" &&
+    acceptance.approvedCandidate === candidate.commit && acceptance.approvedHead === expectedHead && acceptance.tree === candidate.tree &&
+    acceptance.basis === candidate.basis && acceptance.attemptId === candidate.attemptId && event?.event_type === "PROMOTION_COMMITTED" &&
+    event.entity_id === acceptance.promotion.promotionId && payload?.source_commit === candidate.commit &&
+    payload.expected_head_commit === candidate.basis && payload.attempt_id === candidate.attemptId &&
+    payload.resulting_head_commit === expectedHead && acceptance.promotion.resultingHeadCommit === expectedHead &&
+    head(t3.world) === expectedHead && clean(t3.world) && git(t3.world, "rev-parse", "HEAD^{tree}") === acceptance.tree,
+    "T3_ACCEPTED_CANDIDATE_MISMATCH");
+  return { sourceSeal: digest(JSON.stringify(seal)), qualifiedDriver: qualifiedDriver ?? null, scripts: digestFiles(experimentFiles(), REPO),
+    head: expectedHead, tree: acceptance.tree, candidate: candidate.commit, resultSha256: digest(readFileSync(t2.result)),
+    acceptanceSha256: digest(readFileSync(acceptancePath)), approvalSha256: digest(readFileSync(approvalPath)), stateSha256: treeDigest(t3.state) };
+}
+
+const t3Mock = () => sessionPaths("mock", "P", "T3", join(root, "continuation", "mock", "P"));
+
+async function qualifyT3(seal, qualifiedDriver) {
+  const binding = acceptedT3Binding(seal, qualifiedDriver);
+  const source = sessionPaths(PAID_MODE, "P", "T3");
+  const p = t3Mock();
+  assert(!existsSync(t3QualificationPath) && !existsSync(p.run), "T3_ALREADY_QUALIFIED_OR_PREPARED");
+  createStage(p, "P", source);
+  cpSync(join(source.run, ACCEPTANCE), join(p.run, ACCEPTANCE));
+  assert(treeDigest(p.state) === binding.stateSha256, "T3_MOCK_STATE_COPY_MISMATCH");
+  await runSession("mock", "P", "T3", p);
+  writeJson(t3QualificationPath, { passed: true, paidModelCalls: 0, binding,
+    mockResultSha256: digest(readFileSync(p.result)), completedAt: new Date().toISOString() });
+  note("T3_CONTINUATION_QUALIFIED", { head: binding.head, receipt: t3QualificationPath });
+}
+
 async function qualify() {
   const prior = args.has("adopt-t1") ? resolve(args.get("adopt-t1")) : null;
   const seal = initialize(prior);
@@ -395,18 +453,25 @@ try {
     lock = join(root, ".active-command");
     const fd = openSync(lock, "wx");
     try { writeFileSync(fd, `${process.pid}\n`); } finally { closeSync(fd); }
-    const seal = verifySeal();
+    const session = args.get("session");
+    const followup = action === "live" && session === "T3" && readSeal().contextVariant ? readJson(t3QualificationPath) : null;
+    const qualifiedDriver = action === "qualify-t3" ? args.get("qualified-driver") : followup?.binding.qualifiedDriver;
+    const seal = verifySeal(qualifiedDriver);
     const qualification = readJson(qualificationPath);
     assert(qualification.passed && qualification.paidModelCalls === 0 && qualification.seal === digest(JSON.stringify(seal)), "ZERO_PAID_QUALIFICATION_REQUIRED");
     const arm = args.get("arm") || "P";
     assert(arm === "P" || arm === "F", "UNKNOWN_ARM");
     if (arm === "F") assert(readJson(sessionPaths(PAID_MODE, "P", "T3").result).passed, "PALIMPSEST_VERTICAL_REQUIRED");
-    if (action === "basis" && arm === "P") approveBasis(PAID_MODE, args.get("approve"));
+    if (action === "qualify-t3" && arm === "P") await qualifyT3(seal, qualifiedDriver);
+    else if (action === "basis" && arm === "P") approveBasis(PAID_MODE, args.get("approve"));
     else if (action === "accept") approveCandidate(PAID_MODE, arm, args.get("approve"));
     else if (action === "live") {
-      assert(args.has("execute") && Object.hasOwn(PROMPTS, args.get("session")), "EXPLICIT_LIVE_SESSION_REQUIRED");
-      if (seal.contextVariant) assert(arm === "P" && args.get("session") === "T2", "T2_CONTEXT_VARIANT_SESSION_REQUIRED");
-      await runSession(PAID_MODE, arm, args.get("session"));
+      assert(args.has("execute") && Object.hasOwn(PROMPTS, session), "EXPLICIT_LIVE_SESSION_REQUIRED");
+      if (seal.contextVariant) assert(arm === "P" && (session === "T2" || followup), "T2_CONTEXT_VARIANT_SESSION_REQUIRED");
+      if (followup) assert(followup.passed && followup.paidModelCalls === 0 &&
+        JSON.stringify(followup.binding) === JSON.stringify(acceptedT3Binding(seal, qualifiedDriver)) &&
+        followup.mockResultSha256 === digest(readFileSync(t3Mock().result)), "T3_CONTINUATION_QUALIFICATION_REQUIRED");
+      await runSession(PAID_MODE, arm, session);
     } else throw new Error("UNKNOWN_ACTION");
   }
 } catch (error) {

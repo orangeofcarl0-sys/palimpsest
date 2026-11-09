@@ -17,6 +17,7 @@
 - 强原生 DSH 真实闭环也为 3/3。所有者核准 `ba95fd0e384b1523170ebc41d125b072fd94941e` 后原生组快进到该 SHA，T3 从该版本提交摘要 `7ee3971ab8348a1c028a05520bc797cc8672c9b0` 并自然退出。[对比报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#配对结论) · [机器证据](research-evidence/pnwf-energy/2026-11-09/scope-rerun.json)
 - 逐请求复核 136/136。Palimpsest 多 28,457 fresh input，差额集中在 T1、T2；其中首请求差 9,005，后续差 19,452。T2 Worker 的大额请求紧跟整包和 diff 回读。两组缓存占比不同，不能仅用总 tokens 推断费用。[轨迹分析](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#fresh-input-为什么更多)
 - T2 上下文三变体从已批准基线独立复跑。回执和定向回读候选 45/45、门禁 PASS，经所有者按完整 SHA 核准后已分别晋升。短版 Pulse 组首次直接展开全文，原试验记未采用，业务和门禁离线通过。新三组 87 笔已结算，连旧对照共 117 笔逐一绑定。 [独立对照](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-上下文干预的独立对照)
+- 回执与定向回读从各自晋升 HEAD 跑完真实 T3，各提交一页摘要并记录 `DELIVER` 后自然退出。定向回读严格判分 PASS。回执的数据正确，遗漏更正文件名而未过原判分。25 笔请求全部结算。 [T3 接续与原稿](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#两个晋升版本的真实-t3)
 - Energy 范围修复、真实对照与轨迹分析已通过 [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249) 发布。确切 head 的 16 项检查全部成功，rebase 后落地为 `08c6c6e847cd94cf662ba45e10e0a49e6b753eac`。[发布检查与 SHA 对照](research-evidence/pnwf-energy/2026-11-09/release-ci.json)
 - Bench 树与 README 导航已合入主线，改写后对应提交为 `234be03cd82de55455a8a316fec66b8886d26cf9`。合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
 - Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，改写后对应提交为 **`666b4446c0649b7a3f425f1291fff99b6f97a2bf`**。合并前 14/14 个 CI job 通过。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
@@ -64,7 +65,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
 | `origin/main` | Energy 发布点 `08c6c6e847cd94cf662ba45e10e0a49e6b753eac`；实验起点 `112a7b50c25639ec5586afd170e9f7f311c561ba`；最新值用 `git rev-parse origin/main` 核对 |
-| T2 上下文试验 | `codex/energy-t2-context` 从已核对的 `origin/main` `08cca77a8772804155d210c804b99956d1a3f702` 起步，实现及真实复跑记录在 `8d26803317422860816f3e7f4c880e7ebedb24db`，审批与晋升证据在本次同步提交 |
+| Energy 上下文试验 | `codex/energy-t2-context` 从已核对的 `origin/main` `08cca77a8772804155d210c804b99956d1a3f702` 起步。T2 实现及复跑 `8d26803317422860816f3e7f4c880e7ebedb24db`，审批与晋升 `e1a10851440a1a155a378b22e8e312ecbd35b9cf`，T3 接续、证据和报告见本次同步提交 |
 | [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249) | `codex/energy-project-continuity` 已 rebase 合并；检验 head `e7ea59861c8b002c7b74571840f5cb44363f12f7`，16/16 项成功。原 3 个提交与新主线提交的文件树和消息逐一核验一致，[完整 SHA 对照](research-evidence/pnwf-energy/2026-11-09/release-ci.json) |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
@@ -254,6 +255,8 @@ Energy T2 范围修复：`node --test scripts/pnwf/energy/contract.test.mjs scri
 
 T2 上下文试验的定向测试通过 35/35，补充错基线、错候选、缩写 SHA、越界文件、脏工作树和短版 Pulse 展开回归。既有 Work/Head 验收集本轮通过 7 文件 61/61，构建、架构及公共 API 检查通过。三个干预的复跑 Mock 9/9 会话、57 笔请求全部对账，付费 0。首轮的两次 Git 索引锁竞争作为零付费失败保留。 [方法与证据](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-上下文干预的独立对照)
 
+两个已接受版本的 T3 专项资格各通过一次 Mock，共 8 笔模拟请求，均提交并记录 `DELIVER` 后自然退出。互换晋升 HEAD 两次均被拒于会话准备前。定向回归通过 35/35。并行复核有一次账本断言期望 `STOPPED`，实际收到 `OPEN`，单独重跑全套通过。原三会话的 136 笔归因可按原输出复算。 [T3 接续资格](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#两个晋升版本的真实-t3)
+
 PR #249 合并前有 15 个 job 和 1 个独立的 `commit-attribution` 状态，全部成功。Linux 全量 5,101 通过 / 33 跳过、浏览器 E2E 38/38、Windows Host Boundary 通过。四个依赖外部 DSH 的步骤未配置宿主，按原条件跳过。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/249/checks) · [合并后主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42605621931) · [主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42605621573)
 
 ### 验收集（顺序执行，避免 Windows 并行超时）
@@ -402,8 +405,14 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 基线 `8041871314136d417b285a800265858757463f68` 已核准，三个变体按量记账，沿用 64 请求、30 分钟、单请求 240 秒。新增 **87 笔、1,980,317 tokens**，含主动取全文的短版 Pulse 观察，未确认用量为 0。三组 fresh / cache read 依次为 51,666 / 619,520，41,617 / 807,296，35,140 / 373,632。旧 T2 对照计量独立。 [对比证据](research-evidence/pnwf-energy/2026-11-09/t2-context-variants.json)
 
-- 回执候选 `8e8af7cc510f471e7a0b75ea6d878217307ace93` 晋升到 `caaeb4f1fa8f01681019ba38894dbab43db3222f`，定向回读候选 `027a4dc1e75fdd83ab8e81e32679664e5c5d467a` 晋升到 `3bf8da0006f9c1f72b057a1906afe4f0ba0942a1`。两次均按所有者核准的完整 SHA 绑定 Promotion，候选树和晋升后的 Git 树相同，证书 blob 与基线一致。两个隔离副本停在已接受版本，T3 待启动，晋升新增模型请求为 0。 [候选与接受](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#验收用量和展开)
+- 回执候选 `8e8af7cc510f471e7a0b75ea6d878217307ace93` 晋升到 `caaeb4f1fa8f01681019ba38894dbab43db3222f`，定向回读候选 `027a4dc1e75fdd83ab8e81e32679664e5c5d467a` 晋升到 `3bf8da0006f9c1f72b057a1906afe4f0ba0942a1`。两次均按所有者核准的完整 SHA 绑定 Promotion，候选树和晋升后的 Git 树相同，证书 blob 与基线一致。晋升新增模型请求为 0。 [候选与接受](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#验收用量和展开)
 - 短版 Pulse 原始结果 `BRIEF_PULSE_NOT_OBSERVED`，实测 `detail: full` 一次。离线复核候选 `21e05594218352978005764d6a1786f26bf406c3` 的门禁 PASS、业务 45/45，保存为诊断。短版将同一回显离线从 12,716 缩到 8,195 字节。 [验收和审批](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#验收用量和展开)
+
+### Energy 两个接受版本的 T3
+
+- 回执从 `caaeb4f1fa8f01681019ba38894dbab43db3222f` 提交摘要 `5d0ab8d6b841acc7a2e5f582e7ce4c97fb4a6b13`，14 笔请求，21,836 fresh、356,992 cache read。原判分 `REVIEW_CONTENT_MISMATCH`。摘要日期、容量、配置、成本、工期和审批事项通过内容核对，缺更正文件名。 [原稿](research-evidence/pnwf-energy/2026-11-09/t3-receipt-procurement-review.md)
+- 定向回读从 `3bf8da0006f9c1f72b057a1906afe4f0ba0942a1` 提交摘要 `c9951ce3a911cc55e140c4aab2195e3a32c4ec0c`，11 笔请求，20,643 fresh、274,304 cache read，严格判分 PASS。 [原稿](research-evidence/pnwf-energy/2026-11-09/t3-read-plan-procurement-review.md)
+- 两条 `DELIVER` 后均自然退出。各只改采购摘要，新增 25 笔、689,857 tokens，逐请求归因 25/25，未确认用量为 0。两组首笔输入相同，差异出现在后续工具序列。T3 专项资格收据在各原始目录的 `t3-qualification.json`，用 `--t3-context` 复算。 [T3 证据](research-evidence/pnwf-energy/2026-11-09/t3-context-continuation.json)
 
 ### 2026-11-07 历史 cohort
 
@@ -455,6 +464,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
    - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
    - Energy 等待式变体已完成真实 Worker、结算、按 SHA 晋升和 T3 接续，强原生对照也完成。默认业务提示曾引发原生委派偏离；仅指定 Work 路径时又在结算后耗尽请求。后续产品验证可关注正式 Worker 的完成通知和 Work 作业 ID 提示；真实成功轨迹仍有一次把 Work ID 传给原生 `job_output` 的错误。
    - T2 回执组 Worker 以回执替代大段修订 diff，Principal 仍读取一次完整 diff 加一次文件展开。定向回读组 Principal 略去结算后 diff，Worker 的细粒度编辑增多。短版 Pulse 的真实默认值采用和用量收益仍待观测。四组角色数相同，首笔缓存命中已存在差异。 [轨迹分解](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#如何解释缓存差异)
+   - 两条接续 T3 的 `DELIVER` 回执中，摘要内容摘要值匹配实际 Git blob，`commit` 字段却指接受 HEAD。交付持久化已另外由 Git 子提交核实。回执组读过更正文件但成文漏引精确文件名，严格 T3 判分保留失败。 [T3 核验](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#摘要提交和退出)
 
 5. **外部原生 HEAD 并发**
    - 提交前读取以前的变化可阻止并回滚；最后一次 Git 读取后的外部变化不能与 SQLite 原子封锁，后续执行 fence 会拒绝漂移。
@@ -537,6 +547,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-09 | 按 Provider 响应 ID 复核 energy trajectory，分解 fresh input 差额 | [分析](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#fresh-input-为什么更多)，[逐请求归因](research-evidence/pnwf-energy/2026-11-09/trajectory-attribution.json) | 136/136 绑定；首请求 +9,005、后续 +19,452；新增付费 0 |
 | 2026-11-09 | 独立复跑 T2 回执、定向回读和短版 Pulse | [对比](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-上下文干预的独立对照)，[机器证据](research-evidence/pnwf-energy/2026-11-09/t2-context-variants.json) | Mock 9/9；新增真实 87 笔；两候选待核准，短版未采用 |
 | 2026-11-09 | 按所有者核准的完整 SHA 分别晋升回执和定向回读候选 | [接受记录](research-evidence/pnwf-energy/2026-11-09/t2-context-variants.json) | 两次 `PROMOTION_COMMITTED`，Git 树与证书复核通过，新增模型请求 0 |
+| 2026-11-09 | 从两个晋升 HEAD 分别接续真实 T3 | [报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#两个晋升版本的真实-t3)，[机器证据](research-evidence/pnwf-energy/2026-11-09/t3-context-continuation.json) | Mock 2/2；真实新增 25 笔；均提交并自然退出，严格判分 1/2 |
 | 2026-11-09 | 发布 Energy 范围修复、真实三会话对照与轨迹分析；同步实际合并点 | [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249)，`08c6c6e8` | 精确 head 16/16；保留 rebase 前后 SHA 对照与主线工作流链接 |
 
 ---

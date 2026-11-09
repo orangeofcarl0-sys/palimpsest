@@ -1,0 +1,941 @@
+{
+  "schema": "pnwf-energy-t3-context-comparison/v1",
+  "binding": "provider-response-id",
+  "continuations": [
+    {
+      "treatment": "receipt",
+      "model": "deepseek-flash",
+      "dsh": "0.2.1-rc.5",
+      "window": {
+        "maxRequests": 64,
+        "wallClockMs": 1800000,
+        "requestTimeoutMs": 240000,
+        "billingCeiling": null
+      },
+      "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+      "promptSha256": "32ed15a2e00d415bf6f50f5245c3d8b0f0445b0eeffeae087f0fa040ff8886f7",
+      "qualification": {
+        "passed": true,
+        "paidModelCalls": 0,
+        "binding": {
+          "sourceSeal": "d7796eea58650a0a1bce7558b2870bf099d5d29d2c369984e7051695cfc882a5",
+          "qualifiedDriver": "2471838d4f83e2c034937e3a1bd2dce4b7d39d52",
+          "scripts": "a652f285e77530b89a0dd90fb0917301fc31237ce5c9cec6834e749ebc3658b6",
+          "head": "caaeb4f1fa8f01681019ba38894dbab43db3222f",
+          "tree": "edb303cadedc439d1a7530687bc23fab3e7230a2",
+          "candidate": "8e8af7cc510f471e7a0b75ea6d878217307ace93",
+          "resultSha256": "29d98a8fe63104dd5da8649d4a01c740803da31504dea8bcd556f1768d89faf7",
+          "acceptanceSha256": "f8e8341a0684c43eef93965b4be451d497168ab950c846e6bdf74ed3bf35b5d4",
+          "approvalSha256": "a713a7af04d29e325e6775320ee7c1b4f7bdfb07f22530086a335923bcb5e4d1",
+          "stateSha256": "2bc4e02ff922fcefc2059b334868a1ec811d4b1215b80cecb8ad9321879cd22a"
+        },
+        "mockResultSha256": "a3993ae6803b228f71e0f1775c58063688aad412ed684fe7bcc9e57800f16d3f",
+        "completedAt": "2026-11-09T15:07:28.933Z"
+      },
+      "mockRequests": 4,
+      "cohortId": "energy-P-T3-2477aac2-f34b-4144-9dad-95eb31f48426",
+      "accepted": {
+        "head": "caaeb4f1fa8f01681019ba38894dbab43db3222f",
+        "candidate": "8e8af7cc510f471e7a0b75ea6d878217307ace93",
+        "tree": "edb303cadedc439d1a7530687bc23fab3e7230a2",
+        "promotionId": "promotion-0a122adf0ab56fa3e61723d31c9f0b87"
+      },
+      "result": "STOPPED",
+      "reason": "REVIEW_CONTENT_MISMATCH",
+      "checks": {
+        "artifactsPresent": false,
+        "businessCorrect": false,
+        "persisted": false,
+        "settlement": null,
+        "accepted": true,
+        "naturalExit": true
+      },
+      "conclusion": "DELIVER",
+      "elapsedMs": 111093,
+      "delivery": {
+        "commit": "5d0ab8d6b841acc7a2e5f582e7ce4c97fb4a6b13",
+        "parent": "caaeb4f1fa8f01681019ba38894dbab43db3222f",
+        "paths": [
+          "deliverables/procurement-review.md"
+        ],
+        "clean": true,
+        "blob": "cdc344c790cb00223365143e6b04b1b5df89abdd",
+        "sha256": "3e35a94867479d851c2715bb3d9feed735773ef34ee9d89af7bf40edae3ddc6c",
+        "data": {
+          "north": "K-900",
+          "harbor": "K-900",
+          "previousTotalUsd": 485000,
+          "totalUsd": 536000,
+          "previousHarborLeadWeeks": 9,
+          "harborLeadWeeks": 14,
+          "approvedHead": "caaeb4f1fa8f01681019ba38894dbab43db3222f",
+          "pendingApprovals": [
+            "Approve the Harbor Flats configuration change from S-1080 to K-900",
+            "Approve the revised equipment total of USD 536,000 (USD 51,000 increase)",
+            "Approve the Harbor Flats install start of 2027-02-11 and the five-week schedule shift",
+            "Approve revalidation of the K-900 price after the 2026-12-31 quote expiry",
+            "Confirm the Harbor Flats corridor, North Ridge altitude rating and certificate validity before order",
+            "Authorize any purchase order; no purchase is authorized by this review"
+          ]
+        },
+        "exactCorrectionFilename": false,
+        "journalArtifact": {
+          "commit": "caaeb4f1fa8f01681019ba38894dbab43db3222f",
+          "source": "WORKTREE",
+          "committed": true,
+          "digest": "3e35a94867479d851c2715bb3d9feed735773ef34ee9d89af7bf40edae3ddc6c",
+          "digestMatchesGitBlob": true
+        }
+      },
+      "ledger": {
+        "requests": 14,
+        "unresolved": 0,
+        "qualified": true,
+        "confirmedTokens": 386034,
+        "usage": {
+          "input_tokens": 21836,
+          "cache_read_input_tokens": 356992,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 7206
+        }
+      },
+      "attribution": {
+        "arm": "P",
+        "session": "T3",
+        "boundRequests": 14,
+        "totals": {
+          "fresh": 21836,
+          "cacheRead": 356992,
+          "cacheWrite": 0,
+          "output": 7206
+        },
+        "traces": [
+          {
+            "role": "principal",
+            "sessionId": "session-5c2db518-05eb-4567-b482-0cd180644584",
+            "streamSha256": "687a7260a9d2b0c73df1889da2724c210303abe11ec0dae6a36f108fa4c2cd5b",
+            "headers": [
+              {
+                "seq": 10,
+                "tools": 28,
+                "toolManifestBytes": 38988,
+                "productTools": 5,
+                "productToolBytes": 19931
+              }
+            ],
+            "systemTextBytes": [
+              2146
+            ],
+            "counts": {
+              "steps": 14,
+              "turns": 1,
+              "toolCalls": 30,
+              "pairedToolResults": 30,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 1,
+              "commits": 0,
+              "jobs": 9
+            },
+            "byKind": {
+              "continuity:pulse": 1,
+              "bash": 9,
+              "glob": 1,
+              "read": 16,
+              "grep": 1,
+              "write": 1,
+              "work:conclude": 1
+            },
+            "totals": {
+              "fresh": 21836,
+              "cacheRead": 356992,
+              "cacheWrite": 0,
+              "output": 7206
+            },
+            "activity": [
+              {
+                "kind": "pulse",
+                "callId": "call_00_ymoL46MFfnDbPAjWhmwv0449",
+                "callSeq": 15,
+                "resultSeq": 16,
+                "ok": true,
+                "textBytes": 17607
+              },
+              {
+                "kind": "acceptance-read",
+                "callId": "call_03_vAAu4KkplRODYozkaQ6o2696",
+                "callSeq": 34,
+                "resultSeq": 38,
+                "ok": true,
+                "textBytes": 2459
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_00_3Lq1Yg0j4ArZHB4zIFsi4614",
+                "callSeq": 43,
+                "resultSeq": 49,
+                "ok": true,
+                "textBytes": 4288,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_01_X5oCDIWXmlIdL66YsNNn8855",
+                "callSeq": 44,
+                "resultSeq": 50,
+                "ok": true,
+                "textBytes": 1778,
+                "path": "deliverables/vendor-compliance.md"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_02_qn7nvY8PCDgKSBFyhNTC9731",
+                "callSeq": 45,
+                "resultSeq": 51,
+                "ok": true,
+                "textBytes": 522,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_03_IiYEMYL0otxkLQ0HzpGj1836",
+                "callSeq": 46,
+                "resultSeq": 52,
+                "ok": true,
+                "textBytes": 2359,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_04_tNNexQRHIn62Dxc2p9Wi0283",
+                "callSeq": 47,
+                "resultSeq": 53,
+                "ok": true,
+                "textBytes": 7325,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_05_lvZWsNZzoou40ukOO0CX9095",
+                "callSeq": 48,
+                "resultSeq": 54,
+                "ok": true,
+                "textBytes": 4056,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_00_JnlSc9JNw1Yqmjb6PYKf8824",
+                "callSeq": 59,
+                "resultSeq": 65,
+                "ok": true,
+                "textBytes": 724,
+                "path": "sources/sites.md"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_01_ceZsdkLmqOcp2u9pBMMR4955",
+                "callSeq": 60,
+                "resultSeq": 66,
+                "ok": true,
+                "textBytes": 738,
+                "path": "sources/vendors.md"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_02_Fg5l8HZcE9qwGK5ts1yu3241",
+                "callSeq": 61,
+                "resultSeq": 67,
+                "ok": true,
+                "textBytes": 316,
+                "path": "sources/capacity.csv"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_03_j7xhnIPzldnHE0b0lE6t9649",
+                "callSeq": 62,
+                "resultSeq": 68,
+                "ok": true,
+                "textBytes": 267,
+                "path": "sources/quotes.csv"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_04_jELxJYmFm7WWOXJvqaF18550",
+                "callSeq": 63,
+                "resultSeq": 69,
+                "ok": true,
+                "textBytes": 174,
+                "path": "sources/leads.csv"
+              },
+              {
+                "kind": "file-read",
+                "callId": "call_05_CRi1NkK9W3WoEO0AozvV9710",
+                "callSeq": 64,
+                "resultSeq": 70,
+                "ok": true,
+                "textBytes": 208,
+                "path": "updates/2026-11-06/hf-capacity-correction.csv"
+              },
+              {
+                "kind": "revision-patch",
+                "callId": "call_01_2BN9jMwQdMUAruNoCwMZ6368",
+                "callSeq": 93,
+                "resultSeq": 96,
+                "ok": true,
+                "textBytes": 3819
+              },
+              {
+                "kind": "conclude",
+                "callId": "call_00_DeGZ1dRYaw9RQYqysdGs5943",
+                "callSeq": 139,
+                "resultSeq": 140,
+                "ok": true,
+                "textBytes": 7132,
+                "intent": "DELIVER"
+              }
+            ],
+            "failedJobs": [],
+            "toolIssues": [],
+            "requests": [
+              {
+                "step": 1,
+                "seq": 14,
+                "requestId": "ce7d3573-b7a7-453a-8f32-1409143eee93",
+                "fresh": 253,
+                "cacheRead": 10240,
+                "cacheWrite": 0,
+                "output": 55
+              },
+              {
+                "step": 2,
+                "seq": 20,
+                "requestId": "97b3e640-80f5-4806-ba30-731085091521",
+                "fresh": 5153,
+                "cacheRead": 10496,
+                "cacheWrite": 0,
+                "output": 192
+              },
+              {
+                "step": 3,
+                "seq": 30,
+                "requestId": "58a79d62-8e49-4ee5-9740-844f3f4690c9",
+                "fresh": 1223,
+                "cacheRead": 15744,
+                "cacheWrite": 0,
+                "output": 242
+              },
+              {
+                "step": 4,
+                "seq": 42,
+                "requestId": "3651de3c-0e27-4c6f-926f-e9bf73d0a637",
+                "fresh": 1953,
+                "cacheRead": 17152,
+                "cacheWrite": 0,
+                "output": 264
+              },
+              {
+                "step": 5,
+                "seq": 58,
+                "requestId": "a326c604-e34a-4814-b79c-52317067a0d6",
+                "fresh": 5976,
+                "cacheRead": 19328,
+                "cacheWrite": 0,
+                "output": 258
+              },
+              {
+                "step": 6,
+                "seq": 74,
+                "requestId": "59d7506d-6037-48f4-81db-74775491628f",
+                "fresh": 1025,
+                "cacheRead": 25472,
+                "cacheWrite": 0,
+                "output": 463
+              },
+              {
+                "step": 7,
+                "seq": 88,
+                "requestId": "0b2b20ec-40f4-40b2-b696-13406d03702d",
+                "fresh": 656,
+                "cacheRead": 26880,
+                "cacheWrite": 0,
+                "output": 492
+              },
+              {
+                "step": 8,
+                "seq": 100,
+                "requestId": "76b831eb-6149-45d2-bb11-54026c20d41e",
+                "fresh": 2215,
+                "cacheRead": 27904,
+                "cacheWrite": 0,
+                "output": 925
+              },
+              {
+                "step": 9,
+                "seq": 108,
+                "requestId": "1758d9c4-2f1a-4390-8d73-01b32e753109",
+                "fresh": 296,
+                "cacheRead": 30976,
+                "cacheWrite": 0,
+                "output": 2546
+              },
+              {
+                "step": 10,
+                "seq": 114,
+                "requestId": "92d83c00-3d64-415f-9c2f-b398215b6602",
+                "fresh": 200,
+                "cacheRead": 33664,
+                "cacheWrite": 0,
+                "output": 340
+              },
+              {
+                "step": 11,
+                "seq": 122,
+                "requestId": "04319fed-a901-4471-bee0-4e236cc542f0",
+                "fresh": 289,
+                "cacheRead": 34176,
+                "cacheWrite": 0,
+                "output": 125
+              },
+              {
+                "step": 12,
+                "seq": 130,
+                "requestId": "2e7d8e79-a892-43bc-8a9c-126024477f8e",
+                "fresh": 247,
+                "cacheRead": 34432,
+                "cacheWrite": 0,
+                "output": 455
+              },
+              {
+                "step": 13,
+                "seq": 138,
+                "requestId": "f1421133-b02d-49cf-9f51-efea9275163c",
+                "fresh": 232,
+                "cacheRead": 34944,
+                "cacheWrite": 0,
+                "output": 417
+              },
+              {
+                "step": 14,
+                "seq": 144,
+                "requestId": "8ebb785f-0205-40f5-a5ff-3f39fa3f23d9",
+                "fresh": 2118,
+                "cacheRead": 35584,
+                "cacheWrite": 0,
+                "output": 432
+              }
+            ],
+            "largestFresh": [
+              {
+                "step": 5,
+                "seq": 58,
+                "requestId": "a326c604-e34a-4814-b79c-52317067a0d6",
+                "fresh": 5976,
+                "cacheRead": 19328,
+                "cacheWrite": 0,
+                "output": 258,
+                "precedingResults": [
+                  {
+                    "kind": "read",
+                    "callSeq": 43,
+                    "seq": 49,
+                    "textBytes": 4288
+                  },
+                  {
+                    "kind": "read",
+                    "callSeq": 44,
+                    "seq": 50,
+                    "textBytes": 1778
+                  },
+                  {
+                    "kind": "read",
+                    "callSeq": 45,
+                    "seq": 51,
+                    "textBytes": 522
+                  },
+                  {
+                    "kind": "read",
+                    "callSeq": 46,
+                    "seq": 52,
+                    "textBytes": 2359
+                  },
+                  {
+                    "kind": "read",
+                    "callSeq": 47,
+                    "seq": 53,
+                    "textBytes": 7325
+                  },
+                  {
+                    "kind": "read",
+                    "callSeq": 48,
+                    "seq": 54,
+                    "textBytes": 4056
+                  }
+                ],
+                "precedingTextBytes": 20328
+              },
+              {
+                "step": 2,
+                "seq": 20,
+                "requestId": "97b3e640-80f5-4806-ba30-731085091521",
+                "fresh": 5153,
+                "cacheRead": 10496,
+                "cacheWrite": 0,
+                "output": 192,
+                "precedingResults": [
+                  {
+                    "kind": "continuity:pulse",
+                    "callSeq": 15,
+                    "seq": 16,
+                    "textBytes": 17607
+                  }
+                ],
+                "precedingTextBytes": 17607
+              },
+              {
+                "step": 8,
+                "seq": 100,
+                "requestId": "76b831eb-6149-45d2-bb11-54026c20d41e",
+                "fresh": 2215,
+                "cacheRead": 27904,
+                "cacheWrite": 0,
+                "output": 925,
+                "precedingResults": [
+                  {
+                    "kind": "bash",
+                    "callSeq": 89,
+                    "seq": 92,
+                    "textBytes": 3091
+                  },
+                  {
+                    "kind": "bash",
+                    "callSeq": 93,
+                    "seq": 96,
+                    "textBytes": 3819
+                  }
+                ],
+                "precedingTextBytes": 6910
+              },
+              {
+                "step": 14,
+                "seq": 144,
+                "requestId": "8ebb785f-0205-40f5-a5ff-3f39fa3f23d9",
+                "fresh": 2118,
+                "cacheRead": 35584,
+                "cacheWrite": 0,
+                "output": 432,
+                "precedingResults": [
+                  {
+                    "kind": "work:conclude",
+                    "callSeq": 139,
+                    "seq": 140,
+                    "textBytes": 7132
+                  }
+                ],
+                "precedingTextBytes": 7132
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "treatment": "read-plan",
+      "model": "deepseek-flash",
+      "dsh": "0.2.1-rc.5",
+      "window": {
+        "maxRequests": 64,
+        "wallClockMs": 1800000,
+        "requestTimeoutMs": 240000,
+        "billingCeiling": null
+      },
+      "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+      "promptSha256": "32ed15a2e00d415bf6f50f5245c3d8b0f0445b0eeffeae087f0fa040ff8886f7",
+      "qualification": {
+        "passed": true,
+        "paidModelCalls": 0,
+        "binding": {
+          "sourceSeal": "b4c15a093d299ec6156c644f8e7cba44e7e447a2198ef97f50deb6dc4bbb4eb0",
+          "qualifiedDriver": "2471838d4f83e2c034937e3a1bd2dce4b7d39d52",
+          "scripts": "a652f285e77530b89a0dd90fb0917301fc31237ce5c9cec6834e749ebc3658b6",
+          "head": "3bf8da0006f9c1f72b057a1906afe4f0ba0942a1",
+          "tree": "cb0dafed4a8a69e3b42a3fd08088c59423975a29",
+          "candidate": "027a4dc1e75fdd83ab8e81e32679664e5c5d467a",
+          "resultSha256": "4a6fb99a0fa62cc5425f75b48af4c3ed4dd50222073c79b5fb28a947e4cc6fee",
+          "acceptanceSha256": "57c4ee02e73e35f6efa30cd0fa036b1634270c7873980571f08c832948a60d0a",
+          "approvalSha256": "4f4cb5dbebbff751a2cd3c18a11d8c8a3e00e3432d7a56fc42768f05fba94add",
+          "stateSha256": "676860a31a9e9039e6ecff3bfc02d6c011796cbefa71b3243adb9864edd15825"
+        },
+        "mockResultSha256": "2c5ed11c1c8565e903f55e0326d03ea45ec741aa70ef3ce044f1f607a0db808e",
+        "completedAt": "2026-11-09T15:07:28.428Z"
+      },
+      "mockRequests": 4,
+      "cohortId": "energy-P-T3-3bdf9b00-0d51-487c-bd1a-e43ceceda4b1",
+      "accepted": {
+        "head": "3bf8da0006f9c1f72b057a1906afe4f0ba0942a1",
+        "candidate": "027a4dc1e75fdd83ab8e81e32679664e5c5d467a",
+        "tree": "cb0dafed4a8a69e3b42a3fd08088c59423975a29",
+        "promotionId": "promotion-11e2913b41f89b9c9a069f7b484bd5fb"
+      },
+      "result": "PASSED",
+      "reason": null,
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": null,
+        "accepted": true,
+        "naturalExit": true
+      },
+      "conclusion": "DELIVER",
+      "elapsedMs": 126206,
+      "delivery": {
+        "commit": "c9951ce3a911cc55e140c4aab2195e3a32c4ec0c",
+        "parent": "3bf8da0006f9c1f72b057a1906afe4f0ba0942a1",
+        "paths": [
+          "deliverables/procurement-review.md"
+        ],
+        "clean": true,
+        "blob": "5c036fc6f1374b4bdc9ae7a291da657d45ece578",
+        "sha256": "ff024747214c9674f749971e332517853f469af9237173511cdd5758b685b368",
+        "data": {
+          "north": "K-900",
+          "harbor": "K-900",
+          "previousTotalUsd": 485000,
+          "totalUsd": 536000,
+          "previousHarborLeadWeeks": 9,
+          "harborLeadWeeks": 14,
+          "approvedHead": "3bf8da0006f9c1f72b057a1906afe4f0ba0942a1",
+          "pendingApprovals": [
+            "Approve K-900 at both sites and the revised total of USD 536,000.",
+            "Revalidate the K-900 quote, which expires on 2026-12-31, before the planned 2027-02-11 install starts.",
+            "Confirm that no later Harbor Flats survey supersedes the 1,250 mm corridor from HF-A-114 (2024).",
+            "Confirm the K-900 certificate remains current through commissioning and that its 880 kW rating is valid at North Ridge's 2,400 m altitude.",
+            "Authorize any purchase separately; no purchase is authorized by this review."
+          ]
+        },
+        "exactCorrectionFilename": true,
+        "journalArtifact": {
+          "commit": "3bf8da0006f9c1f72b057a1906afe4f0ba0942a1",
+          "source": "WORKTREE",
+          "committed": true,
+          "digest": "ff024747214c9674f749971e332517853f469af9237173511cdd5758b685b368",
+          "digestMatchesGitBlob": true
+        }
+      },
+      "ledger": {
+        "requests": 11,
+        "unresolved": 0,
+        "qualified": true,
+        "confirmedTokens": 303823,
+        "usage": {
+          "input_tokens": 20643,
+          "cache_read_input_tokens": 274304,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 8876
+        }
+      },
+      "attribution": {
+        "arm": "P",
+        "session": "T3",
+        "boundRequests": 11,
+        "totals": {
+          "fresh": 20643,
+          "cacheRead": 274304,
+          "cacheWrite": 0,
+          "output": 8876
+        },
+        "traces": [
+          {
+            "role": "principal",
+            "sessionId": "session-caa71f8a-4f07-4f60-9af0-a18590dafd90",
+            "streamSha256": "f53448682cbf74c33c0b46d38d70dcc4dd9dbd945cd4cd3efb75da8ceb7a07c5",
+            "headers": [
+              {
+                "seq": 10,
+                "tools": 28,
+                "toolManifestBytes": 38988,
+                "productTools": 5,
+                "productToolBytes": 19931
+              }
+            ],
+            "systemTextBytes": [
+              2146
+            ],
+            "counts": {
+              "steps": 11,
+              "turns": 1,
+              "toolCalls": 16,
+              "pairedToolResults": 16,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 3,
+              "commits": 0,
+              "jobs": 11
+            },
+            "byKind": {
+              "continuity:pulse": 1,
+              "bash": 11,
+              "project:overview": 1,
+              "write": 1,
+              "work:status": 1,
+              "work:conclude": 1
+            },
+            "totals": {
+              "fresh": 20643,
+              "cacheRead": 274304,
+              "cacheWrite": 0,
+              "output": 8876
+            },
+            "activity": [
+              {
+                "kind": "pulse",
+                "callId": "call_00_mSI6Lyu3FAc0VaaR4AiA9352",
+                "callSeq": 15,
+                "resultSeq": 16,
+                "ok": true,
+                "textBytes": 16862
+              },
+              {
+                "kind": "bulk-read",
+                "callId": "call_01_TIKPdF3boLCf88I8kcZ48551",
+                "callSeq": 35,
+                "resultSeq": 38,
+                "ok": true,
+                "textBytes": 17711
+              },
+              {
+                "kind": "bulk-read",
+                "callId": "call_02_S50pQ2tgIsKyI4RwauzP2504",
+                "callSeq": 39,
+                "resultSeq": 42,
+                "ok": true,
+                "textBytes": 1764
+              },
+              {
+                "kind": "other-patch",
+                "callId": "call_01_SGCgTawJcBkYQ0sv51Ty7662",
+                "callSeq": 51,
+                "resultSeq": 54,
+                "ok": true,
+                "textBytes": 1486
+              },
+              {
+                "kind": "conclude",
+                "callId": "call_00_WB8pjwWUBd2IN2EMTRo62868",
+                "callSeq": 103,
+                "resultSeq": 104,
+                "ok": true,
+                "textBytes": 7378,
+                "intent": "DELIVER"
+              }
+            ],
+            "failedJobs": [],
+            "toolIssues": [],
+            "requests": [
+              {
+                "step": 1,
+                "seq": 14,
+                "requestId": "32990d5c-0e09-40bc-941d-6d8c26d3fe49",
+                "fresh": 253,
+                "cacheRead": 10240,
+                "cacheWrite": 0,
+                "output": 52
+              },
+              {
+                "step": 2,
+                "seq": 20,
+                "requestId": "830202c6-e2d9-410b-bd8e-c027c56382f5",
+                "fresh": 5000,
+                "cacheRead": 10496,
+                "cacheWrite": 0,
+                "output": 227
+              },
+              {
+                "step": 3,
+                "seq": 30,
+                "requestId": "8c0fe91c-95fa-48b8-8a4d-14cce6944342",
+                "fresh": 1856,
+                "cacheRead": 15616,
+                "cacheWrite": 0,
+                "output": 267
+              },
+              {
+                "step": 4,
+                "seq": 46,
+                "requestId": "334c62eb-2609-4075-8ffe-f7faccdd74f6",
+                "fresh": 7244,
+                "cacheRead": 17664,
+                "cacheWrite": 0,
+                "output": 884
+              },
+              {
+                "step": 5,
+                "seq": 58,
+                "requestId": "70e6cd8e-8c9a-4a62-afac-8f2506d6a48f",
+                "fresh": 1365,
+                "cacheRead": 25728,
+                "cacheWrite": 0,
+                "output": 322
+              },
+              {
+                "step": 6,
+                "seq": 70,
+                "requestId": "70115cd9-e953-40b6-8ed8-71d212f6f94c",
+                "fresh": 1117,
+                "cacheRead": 27392,
+                "cacheWrite": 0,
+                "output": 3591
+              },
+              {
+                "step": 7,
+                "seq": 76,
+                "requestId": "b97013fd-bcf5-4829-a89e-f71bb68b7088",
+                "fresh": 146,
+                "cacheRead": 32000,
+                "cacheWrite": 0,
+                "output": 401
+              },
+              {
+                "step": 8,
+                "seq": 88,
+                "requestId": "f7d17851-4f8f-48f5-bde4-5a4418441bec",
+                "fresh": 321,
+                "cacheRead": 32512,
+                "cacheWrite": 0,
+                "output": 131
+              },
+              {
+                "step": 9,
+                "seq": 96,
+                "requestId": "1aa45f12-35ad-4a3b-b56a-c54f3dfd9e86",
+                "fresh": 179,
+                "cacheRead": 32896,
+                "cacheWrite": 0,
+                "output": 559
+              },
+              {
+                "step": 10,
+                "seq": 102,
+                "requestId": "110c30fb-fe26-4ff7-a004-4197c35d8abd",
+                "fresh": 972,
+                "cacheRead": 33536,
+                "cacheWrite": 0,
+                "output": 1821
+              },
+              {
+                "step": 11,
+                "seq": 108,
+                "requestId": "0814c26c-b0c2-498e-92ac-c08f3aea30b4",
+                "fresh": 2190,
+                "cacheRead": 36224,
+                "cacheWrite": 0,
+                "output": 621
+              }
+            ],
+            "largestFresh": [
+              {
+                "step": 4,
+                "seq": 46,
+                "requestId": "334c62eb-2609-4075-8ffe-f7faccdd74f6",
+                "fresh": 7244,
+                "cacheRead": 17664,
+                "cacheWrite": 0,
+                "output": 884,
+                "precedingResults": [
+                  {
+                    "kind": "bash",
+                    "callSeq": 31,
+                    "seq": 34,
+                    "textBytes": 5032
+                  },
+                  {
+                    "kind": "bash",
+                    "callSeq": 35,
+                    "seq": 38,
+                    "textBytes": 17711
+                  },
+                  {
+                    "kind": "bash",
+                    "callSeq": 39,
+                    "seq": 42,
+                    "textBytes": 1764
+                  }
+                ],
+                "precedingTextBytes": 24507
+              },
+              {
+                "step": 2,
+                "seq": 20,
+                "requestId": "830202c6-e2d9-410b-bd8e-c027c56382f5",
+                "fresh": 5000,
+                "cacheRead": 10496,
+                "cacheWrite": 0,
+                "output": 227,
+                "precedingResults": [
+                  {
+                    "kind": "continuity:pulse",
+                    "callSeq": 15,
+                    "seq": 16,
+                    "textBytes": 16862
+                  }
+                ],
+                "precedingTextBytes": 16862
+              },
+              {
+                "step": 11,
+                "seq": 108,
+                "requestId": "0814c26c-b0c2-498e-92ac-c08f3aea30b4",
+                "fresh": 2190,
+                "cacheRead": 36224,
+                "cacheWrite": 0,
+                "output": 621,
+                "precedingResults": [
+                  {
+                    "kind": "work:conclude",
+                    "callSeq": 103,
+                    "seq": 104,
+                    "textBytes": 7378
+                  }
+                ],
+                "precedingTextBytes": 7378
+              },
+              {
+                "step": 3,
+                "seq": 30,
+                "requestId": "8c0fe91c-95fa-48b8-8a4d-14cce6944342",
+                "fresh": 1856,
+                "cacheRead": 15616,
+                "cacheWrite": 0,
+                "output": 267,
+                "precedingResults": [
+                  {
+                    "kind": "bash",
+                    "callSeq": 21,
+                    "seq": 24,
+                    "textBytes": 1394
+                  },
+                  {
+                    "kind": "project:overview",
+                    "callSeq": 25,
+                    "seq": 26,
+                    "textBytes": 3724
+                  }
+                ],
+                "precedingTextBytes": 5118
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
