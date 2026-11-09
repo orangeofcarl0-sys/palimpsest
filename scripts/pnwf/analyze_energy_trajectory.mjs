@@ -1,10 +1,12 @@
 /** Offline Energy attribution by provider response ID; emits no request bodies or transcript text. */
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { zstdDecompressSync } from "node:zlib";
 import { briefPulse } from "./energy/context-variants.mjs";
+import { BULLETIN, SUMMARY, changed, clean, dataBlock, git, head } from "./energy/contract.mjs";
 
 const MAGIC = Buffer.from([0x28, 0xb5, 0x2f, 0xfd]);
 const FIELDS = {
@@ -15,6 +17,7 @@ const FIELDS = {
 };
 const json = path => JSON.parse(readFileSync(path, "utf8"));
 const optionalJson = path => existsSync(path) ? json(path) : null;
+const fileDigest = path => createHash("sha256").update(readFileSync(path)).digest("hex");
 const lines = text => text.split(/\r?\n/u).filter(line => line.trim()).map(line => JSON.parse(line));
 const bytes = value => Buffer.byteLength(value);
 const projectUsage = (usage, source) => Object.fromEntries(Object.entries(FIELDS).map(([key, fields]) => {
@@ -46,7 +49,7 @@ const messageBytes = message => typeof message?.content === "string" ? bytes(mes
 const messageText = message => typeof message?.content === "string" ? message.content :
   (message?.content ?? []).filter(block => block.type === "text").map(block => block.text).join("");
 
-function contextActivity(timeline, eventBySeq) {
+function contextActivity(timeline, eventBySeq, session) {
   const paired = new Map(timeline.results.map(result => [result.callId, result]));
   return timeline.calls.flatMap(call => {
     const result = paired.get(call.callId);
@@ -65,6 +68,8 @@ function contextActivity(timeline, eventBySeq) {
       kind = "certificate-diff";
     } else if (name === "bash" && /\b(?:cat|for)\b[^\n;]*(?:deliverables|sources)\/\*/u.test(call.args?.command)) kind = "bulk-read";
     else if (name === "read" && /(?:^|\/)(?:deliverables|sources|updates)\//u.test(call.args?.file_path)) kind = "file-read";
+    else if (session === "T3" && name === "read" && /(?:^|\/)acceptance\.json$/u.test(call.args?.file_path)) kind = "acceptance-read";
+    else if (session === "T3" && name === "work:conclude") kind = "conclude";
     else return [];
     const ok = result?.ok === true && result.refusal === null;
     let binding;
@@ -81,6 +86,7 @@ function contextActivity(timeline, eventBySeq) {
       ...(kind === "pulse-expansion" && ok ? { offlineBriefBytes: bytes(JSON.stringify(briefPulse(JSON.parse(text)), null, 2)) } : {}),
       ...(kind === "file-read" ? { path: call.args.file_path.replace(/^\/run\/stage\/world\//u, "") } : {}),
       ...(kind === "file-expansion" ? { path: call.args.path } : {}),
+      ...(kind === "conclude" ? { intent: call.args.intent } : {}),
     }];
   });
 }
@@ -149,7 +155,7 @@ function analyzeSession(trial, arm, session, originalT1) {
     return { role: trace.role, sessionId: id, streamSha256: trace.digest, headers,
       systemTextBytes: events.filter(event => event.type === "system/message").map(event => messageBytes(event.data.message)),
       counts: timeline.counts, byKind: timeline.byKind, totals: sum(steps),
-      ...(context ? { activity: contextActivity(timeline, eventBySeq), failedJobs: timeline.failedJobs.map(job => ({
+      ...(context ? { activity: contextActivity(timeline, eventBySeq, session), failedJobs: timeline.failedJobs.map(job => ({
         callSeq: job.callSeq, resultSeq: job.resultSeq, settledSeq: job.settledSeq, reason: job.reason,
       })), toolIssues: timeline.results.filter(row => row.refusal !== null || !row.ok).map(row => ({
         callId: row.callId, callSeq: row.callSeq, resultSeq: row.seq, kind: row.callKind, state: row.state,
@@ -253,9 +259,81 @@ function compareT2([control, ...trials]) {
     controlResultSha256: resultSha256, comparisons };
 }
 
+function observedT3Delivery(stage, result) {
+  const world = join(stage, "stages/T3/world");
+  const commit = head(world);
+  if (commit === result.basis) return null;
+  const paths = changed(world, result.basis, commit);
+  const committed = { commit, parent: git(world, "rev-parse", "HEAD^"), paths, clean: clean(world) };
+  if (!paths.includes(SUMMARY)) return committed;
+  const blob = git(world, "rev-parse", `${commit}:${SUMMARY}`);
+  const raw = execFileSync("git", ["-c", "safe.directory=*", "-C", world, "cat-file", "blob", blob]);
+  const text = raw.toString("utf8");
+  const sha256 = createHash("sha256").update(raw).digest("hex");
+  const body = result.facts?.conclusion?.body?.split("\n").findLast(line => line.startsWith('{"schema":"pc1-episode-conclusion/v1"'));
+  const artifact = body && JSON.parse(body).check?.artifacts?.find(row => row.path === SUMMARY);
+  let data = null;
+  try { data = dataBlock(text); } catch { /* An incomplete artifact is still evidence. */ }
+  if (result.passed) assert.equal(commit, result.business.commit);
+  return { ...committed, blob, sha256, data, exactCorrectionFilename: text.includes(basename(BULLETIN)),
+    journalArtifact: artifact ? { commit: artifact.commit, source: artifact.source, committed: artifact.committed,
+      digest: artifact.digest, digestMatchesGitBlob: artifact.digest === sha256 } : null };
+}
+
+function compareT3(trials) {
+  assert(trials.length > 0, "Provide the completed T3 continuation trials");
+  const names = new Set();
+  const continuations = trials.map(root => {
+    const stage = join(root, "live/P/T3");
+    const seal = json(join(root, "contract.json"));
+    const treatment = seal.contextVariant?.name;
+    assert(treatment && !names.has(treatment), "Missing or duplicate T3 origin");
+    names.add(treatment);
+    const qualification = json(join(root, "t3-qualification.json"));
+    const mock = json(join(root, "continuation/mock/P/T3/result.json"));
+    const accepted = json(join(stage, "acceptance.json"));
+    const result = json(join(stage, "result.json"));
+    const started = json(join(stage, "started.json"));
+    const t2Path = join(root, "live/P/T2/result.json");
+    assert(qualification.passed && qualification.paidModelCalls === 0 && mock.passed && mock.evidence.valid &&
+      mock.mode === "mock" && mock.basis === accepted.approvedHead && started.cohortId !== json(join(root, "continuation/mock/P/T3/started.json")).cohortId &&
+      qualification.mockResultSha256 === fileDigest(join(root, "continuation/mock/P/T3/result.json")) &&
+      qualification.binding.sourceSeal === createHash("sha256").update(JSON.stringify(seal)).digest("hex") &&
+      qualification.binding.resultSha256 === fileDigest(t2Path) &&
+      qualification.binding.acceptanceSha256 === fileDigest(join(stage, "acceptance.json")) &&
+      qualification.binding.approvalSha256 === fileDigest(join(root, "live/P/T2/candidate-owner-observation.json")) &&
+      qualification.binding.head === accepted.approvedHead && qualification.binding.candidate === accepted.approvedCandidate &&
+      qualification.binding.tree === accepted.tree && result.basis === accepted.approvedHead && started.basis === result.basis &&
+      result.mode === "paid-usage-only" && result.arm === "P" && result.session === "T3", "T3 differs from its qualified acceptance");
+    const evidence = result.evidence;
+    if (evidence?.principalId) assert(evidence.principalId !== mock.evidence.principalId &&
+      evidence.principalId !== json(t2Path).evidence.principalId, "T3 DSH session was reused");
+    const attribution = evidence?.usageQualified ? analyzeSession(root, "P", "T3") : null;
+    const fallback = evidence ? null : optionalJson(join(stage, "out/T3/request-accounting.json"));
+    return { treatment, model: seal.model, dsh: seal.dsh, window: seal.window, image: seal.image, promptSha256: seal.prompts.T3,
+      qualification, mockRequests: mock.evidence.requests, cohortId: started.cohortId,
+      accepted: { head: accepted.approvedHead, candidate: accepted.approvedCandidate, tree: accepted.tree,
+        promotionId: accepted.promotion.promotionId },
+      result: result.passed ? "PASSED" : "STOPPED", reason: result.reason ?? null, checks: result.checks,
+      conclusion: result.facts?.conclusion?.intent ?? null, elapsedMs: evidence?.elapsedMs ?? null,
+      delivery: observedT3Delivery(stage, result),
+      ledger: evidence ? { requests: evidence.requests, unresolved: evidence.unresolvedRequests, qualified: evidence.usageQualified,
+        confirmedTokens: evidence.knownTokens, usage: evidence.usage } : fallback ? { requests: fallback.requests.length,
+        unresolved: fallback.unresolvedRequests, qualified: false, confirmedTokens: fallback.confirmed, usage: null } : null,
+      attribution };
+  });
+  const reference = continuations[0];
+  for (const item of continuations.slice(1)) for (const field of ["model", "dsh", "window", "image", "promptSha256"]) {
+    assert.deepEqual(item[field], reference[field], `T3 ${field} differs across trials`);
+  }
+  return { schema: "pnwf-energy-t3-context-comparison/v1", binding: "provider-response-id", continuations };
+}
+
 const [trial, originalT1, ...more] = process.argv.slice(2);
 if (trial === "--t2-context") {
   console.log(JSON.stringify(compareT2([originalT1, ...more]), null, 2));
+} else if (trial === "--t3-context") {
+  console.log(JSON.stringify(compareT3(process.argv.slice(3)), null, 2));
 } else {
   assert(trial && originalT1, "Usage: node scripts/pnwf/analyze_energy_trajectory.mjs <paired-run> <original-T1-run>");
   const sessions = ["T1", "T2", "T3"].flatMap(session => ["P", "F"].map(arm => analyzeSession(trial, arm, session, originalT1)));

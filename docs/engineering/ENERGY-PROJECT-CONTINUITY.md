@@ -302,7 +302,7 @@ node scripts/pnwf/analyze_energy_trajectory.mjs --t2-context $control $receiptRu
 | 定向回读 | `027a4dc1e75fdd83ab8e81e32679664e5c5d467a` | `3bf8da0006f9c1f72b057a1906afe4f0ba0942a1` | 3,606.144 |
 | 短版 Pulse，模型主动取全文 | `21e05594218352978005764d6a1786f26bf406c3` | 离线诊断，短版采用判据未通过 | — |
 
-所有者逐案核准回执与定向回读的完整 SHA 后，宿主在各自隔离副本执行原有 Promotion。两条 `PROMOTION_COMMITTED` 分别绑定核准候选、执行基线和晋升后 HEAD。晋升后 Git 树与各自候选树完全一致，仍只涉及五个文件，证书 blob 与基线相同。T2 原始收据保留自然退出时的状态，接受记录单列于各组 `live/P/T3/acceptance.json`。两组停在已接受版本，T3 待启动。本次审批与晋升新增模型请求为 0。
+所有者逐案核准回执与定向回读的完整 SHA 后，宿主在各自隔离副本执行原有 Promotion。两条 `PROMOTION_COMMITTED` 分别绑定核准候选、执行基线和晋升后 HEAD。晋升后 Git 树与各自候选树完全一致，仍只涉及五个文件，证书 blob 与基线相同。T2 原始收据保留自然退出时的状态，接受记录单列于各组 `live/P/T3/acceptance.json`。审批与晋升新增模型请求为 0。后续从这两个接受版本分别启动 T3。[接续结果](#两个晋升版本的真实-t3)
 
 ### 回执组的实际复核路径
 
@@ -329,3 +329,48 @@ Principal 的首个工具调用就是 `pulse` 加 `detail: "full"`（调用 15�
 这一次对照支持 Worker 以回执替代一次大段 diff，也观察到 Principal 仍会自主选择正文核验。定向回读改了读写路径，本样本中它降低了 Principal 的后续 fresh，同时增加了 Worker 请求。短版组记录了显式展开的行为和离线压缩量。历史对照与三个真实变体各一次，服务端前缀命中和模型采样未受控，因此报告保留首笔、后续、角色和工具结果的分解。
 
 原始运行目录在 `C:/Users/66494/AppData/Local/Temp/`。旧对照为 `pnwf-energy-scope-wait-20261109-095221`，新组分别为 `pnwf-t2-receipt-20261109132955`、`pnwf-t2-read-plan-20261109132955`、`pnwf-t2-brief-pulse-20261109132955`。新组的 `live/P/T2` 保留终态账本、轨迹、原始结果及适用的候选审阅材料。 [逐请求对比证据](../../research-evidence/pnwf-energy/2026-11-09/t2-context-variants.json)
+
+## 两个晋升版本的真实 T3
+
+分别从回执和定向回读的晋升后 HEAD 接续，使用同一冻结的一页采购评审提示、镜像、`deepseek-flash` 和 DSH `0.2.1-rc.5`。每次创建全新 DSH home 和单会话 cohort。宿主按原条件计量，64 笔请求、30 分钟会话、单请求 240 秒，金额和总 token 上限均为 `null`。接受凭据只读挂载，模型读取各自的已接受项目资料。
+
+原上下文变体的付费入口限定在 T2。T3 接续新增独立资格记录，复核原封存中的运行文件、已接受的 Git 树、产品状态、所有者核准和 Promotion 事件。旧封存的入口文件由原 Git blob 精确核对。两个接受状态的副本各完成一次 Mock T3，均提交摘要、记录 `DELIVER` 并自然退出，共 8 笔模拟请求。互换两组的晋升 HEAD 时，两边均在准备会话前拒绝。真实 T3 依次执行，读取各自的接续资格记录和原接受状态。
+
+T3 使用同一套常规产品工具。两组 T2 的回执和定向回读配置用于形成被接受的版本，T3 比较的是从这两个版本接续时实际发生的模型行为。
+
+### 摘要、提交和退出
+
+| 来自 T2 | 晋升后起点 | T3 摘要提交 | 严格判分 | 结论与退出 |
+| --- | --- | --- | --- | --- |
+| 回执 | `caaeb4f1fa8f01681019ba38894dbab43db3222f` | `5d0ab8d6b841acc7a2e5f582e7ce4c97fb4a6b13` | `REVIEW_CONTENT_MISMATCH`，漏写更正文件名 | `DELIVER`，自然退出 |
+| 定向回读 | `3bf8da0006f9c1f72b057a1906afe4f0ba0942a1` | `c9951ce3a911cc55e140c4aab2195e3a32c4ec0c` | PASS | `DELIVER`，自然退出 |
+
+两份摘要都正确说明两站 K-900、总价从 USD 485,000 增到 USD 536,000、Harbor Flats 交期从 9 周增到 14 周、计划安装从 2027-01-07 推迟到 2027-02-11。North Ridge 计划日期仍为 2027-02-11。两份都列出预算和采购授权等待审批事项。宿主分别从首版和接受版 Git 树复核这些数值及更正记录。
+
+回执组读到了 `updates/2026-11-06/hf-capacity-correction.csv`（调用 64），正文正确引用 2026-11-06 更正及 600 kW 低于 620 kW 的约束，但遗漏精确文件名。原判分器要求该文件名，拒绝状态如实保留。定向回读组在来源清单写出了完整路径。两份原稿分别为约 361 和 441 个英文词（不计机器判分数据块）。[回执组原稿](../../research-evidence/pnwf-energy/2026-11-09/t3-receipt-procurement-review.md) · [定向回读组原稿](../../research-evidence/pnwf-energy/2026-11-09/t3-read-plan-procurement-review.md)
+
+两个摘要提交都是各自晋升 HEAD 的直接子提交，唯一变化均为 `deliverables/procurement-review.md`，工作树干净。两条 `DELIVER` 回执中摘要的内容摘要值都与提交的 Git blob 匹配，回执的 `commit` 字段仍指产品接受 HEAD。交付 SHA 以上表的 Git 子提交为准。原稿按 Git blob 字节保存，复核与发布副本的 blob 一致。
+
+### 逐请求轨迹比较
+
+| 来自 T2 | 请求数 | Fresh input | Cache read | Output | 总 tokens | 宿主秒数 | 配对工具结果 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 回执 | 14 | 21,836 | 356,992 | 7,206 | 386,034 | 111.1 | 30/30 |
+| 定向回读 | 11 | 20,643 | 274,304 | 8,876 | 303,823 | 126.2 | 16/16 |
+| 定向回读 − 回执 | −3 | −1,193 | −82,688 | +1,670 | −82,211 | +15.1 | |
+
+25 笔请求均按 Provider 响应 ID 与账本逐笔核对，共 689,857 tokens。两条均无未确认用量、cache creation、领域拒绝、工具错误或失败作业。模型各只使用一个新 Principal 会话。
+
+- 两组首笔输入完全相同，各 253 fresh 和 10,240 cache read。两边随后都查 `pulse`，回执组结果 17,607 字节，定向回读组 16,862 字节。紧接的 fresh 分别是 5,153 和 5,000。
+- 回执组用 `read` 分批取接受凭据、六份成果和来源，还检查 Git 历史、修改差异和不可达引用。最大一笔 fresh 为 5,976，紧跟六份成果的 20,328 字节。写入后再分开检查格式、提交和 Git 状态，最后调用 `conclude DELIVER`。
+- 定向回读组通过 Bash 将任务和接受凭据、全部成果、来源和更正集中取回。三段结果合计 24,507 字节，紧接的请求用 7,244 fresh，为两条中的单笔峰值。它在更少的步骤里读入更多材料，完成校验与提交后查一次 `work:status`，再记录 `DELIVER`。
+
+定向回读组的请求少 3 笔、fresh 少 5.5%，cache read 少 23.2%，总 tokens 少 21.3%。缓存读取占比为 93.0%，回执组为 94.2%。差异发生在首笔以后，两次采样走了不同的工具序列。定向回读组的生成用量和宿主耗时更高。该对照只有每个接受版本一次运行，描述本次接续行为和计量结果。
+
+同一运行根目录的 `live/P/T3` 保存原始结果和账本，`continuation/mock/P/T3` 保存接续资格验证。以下命令仅读取证据。
+
+```powershell
+node scripts/pnwf/analyze_energy_trajectory.mjs --t3-context $receiptRun $readPlanRun
+```
+
+[T3 逐请求及提交证据](../../research-evidence/pnwf-energy/2026-11-09/t3-context-continuation.json)
