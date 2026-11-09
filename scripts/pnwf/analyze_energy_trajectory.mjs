@@ -199,9 +199,21 @@ function compareT2([control, ...trials]) {
     const result = json(resultPath);
     assert(result.basis === reference.basis && result.mode === "paid-usage-only" && result.arm === "P" && result.session === "T2");
     const candidate = optionalJson(join(stage, "candidate.json"));
-    const acceptance = optionalJson(join(root, "live/P/T3/acceptance.json"));
-    if (acceptance) assert(candidate && acceptance.approvedCandidate === candidate.commit);
     if (candidate) assert(result.passed && candidate.basis === reference.basis && candidate.commit === result.business.commit);
+    const ownerApproval = optionalJson(join(stage, "candidate-owner-observation.json"));
+    if (ownerApproval) assert(candidate && ownerApproval.decision === "APPROVED" && ownerApproval.commit === candidate.commit);
+    const nextSession = join(root, "live/P/T3");
+    const acceptance = optionalJson(join(nextSession, "acceptance.json"));
+    const promotion = acceptance?.promotion?.committed;
+    if (acceptance) {
+      const payload = promotion?.payload;
+      assert(candidate && (index === 0 || ownerApproval) && acceptance.approvedCandidate === candidate.commit &&
+        acceptance.basis === candidate.basis && acceptance.attemptId === candidate.attemptId && acceptance.tree === candidate.tree &&
+        promotion?.event_type === "PROMOTION_COMMITTED" && payload?.source_commit === candidate.commit &&
+        payload.expected_head_commit === candidate.basis && payload.attempt_id === candidate.attemptId &&
+        payload.resulting_head_commit === acceptance.approvedHead && acceptance.promotion.resultingHeadCommit === acceptance.approvedHead,
+        "Promotion differs from the reviewed candidate or basis");
+    }
     const recount = optionalJson(join(stage, "offline-candidate-verification.json"));
     if (recount) assert(!result.passed && recount.originalResultSha256 === createHash("sha256").update(readFileSync(resultPath)).digest("hex") &&
       recount.basis === result.basis && result.evidence.workerReceipts.some(row => row.result === recount.commit));
@@ -227,7 +239,11 @@ function compareT2([control, ...trials]) {
         schedule: result.business.schedule,
         workerExit: candidate.receipt.exit, workerResult: candidate.receipt.outcome } : null,
       ...(recount ? { offlineCandidateVerification: recount } : {}),
-      acceptance: acceptance ? { approvedCandidate: acceptance.approvedCandidate, approvedHead: acceptance.approvedHead, waitMs: acceptance.waitMs } : null,
+      ownerApproval,
+      acceptance: acceptance ? { approvedCandidate: acceptance.approvedCandidate, approvedHead: acceptance.approvedHead,
+        tree: acceptance.tree, promotionId: promotion.entity_id, eventDigest: promotion.event_digest,
+        recordedAt: acceptance.recordedAt, waitMs: acceptance.waitMs } : null,
+      nextSessionStarted: existsSync(join(nextSession, "started.json")),
       attribution,
     };
   });

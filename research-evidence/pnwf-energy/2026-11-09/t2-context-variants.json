@@ -103,11 +103,25 @@
         },
         "workerResult": "READY_FOR_SETTLEMENT"
       },
+      "ownerApproval": {
+        "decision": "APPROVED",
+        "commit": "e2bc1a424a30123213708990394fc8b19e18c445",
+        "source": "Owner response to exact SHA review",
+        "observedBetweenUtc": [
+          "2026-11-09T10:04:49Z",
+          "2026-11-09T10:05:54Z"
+        ]
+      },
       "acceptance": {
         "approvedCandidate": "e2bc1a424a30123213708990394fc8b19e18c445",
         "approvedHead": "7aed12ea8618533c7acba5b1c8a4f60e8c1c97ce",
+        "tree": "e8c9dffac73835119dbc52b1c6359c8486234761",
+        "promotionId": "promotion-f4f2a4317236f4b4f52b2daf2fdb1b38",
+        "eventDigest": "5da1d4ac2f5d1a1cd793dd43b820e8c96adc367b376c66613908bd4843a2c50b",
+        "recordedAt": "2026-11-09T10:06:16.953Z",
         "waitMs": 101477
       },
+      "nextSessionStarted": true,
       "attribution": {
         "arm": "P",
         "session": "T2",
@@ -1131,7 +1145,22 @@
         },
         "workerResult": "READY_FOR_SETTLEMENT"
       },
-      "acceptance": null,
+      "ownerApproval": {
+        "decision": "APPROVED",
+        "commit": "8e8af7cc510f471e7a0b75ea6d878217307ace93",
+        "source": "Owner response to exact SHA review",
+        "observedAtUtc": "2026-11-09T14:46:17Z"
+      },
+      "acceptance": {
+        "approvedCandidate": "8e8af7cc510f471e7a0b75ea6d878217307ace93",
+        "approvedHead": "caaeb4f1fa8f01681019ba38894dbab43db3222f",
+        "tree": "edb303cadedc439d1a7530687bc23fab3e7230a2",
+        "promotionId": "promotion-0a122adf0ab56fa3e61723d31c9f0b87",
+        "eventDigest": "ff7f4b82e1a501793b5a671c6ba5011cee83a75fccaf65df06e185bb78dca013",
+        "recordedAt": "2026-11-09T14:46:48.840Z",
+        "waitMs": 3892331
+      },
+      "nextSessionStarted": false,
       "attribution": {
         "arm": "P",
         "session": "T2",
@@ -1993,7 +2022,22 @@
         },
         "workerResult": "READY_FOR_SETTLEMENT"
       },
-      "acceptance": null,
+      "ownerApproval": {
+        "decision": "APPROVED",
+        "commit": "027a4dc1e75fdd83ab8e81e32679664e5c5d467a",
+        "source": "Owner response to exact SHA review",
+        "observedAtUtc": "2026-11-09T14:46:17Z"
+      },
+      "acceptance": {
+        "approvedCandidate": "027a4dc1e75fdd83ab8e81e32679664e5c5d467a",
+        "approvedHead": "3bf8da0006f9c1f72b057a1906afe4f0ba0942a1",
+        "tree": "cb0dafed4a8a69e3b42a3fd08088c59423975a29",
+        "promotionId": "promotion-11e2913b41f89b9c9a069f7b484bd5fb",
+        "eventDigest": "d89edf71733277b94ca126d6ca86a8907bdcda214b6f992d25324ef30e2d7756",
+        "recordedAt": "2026-11-09T14:46:48.840Z",
+        "waitMs": 3606144
+      },
+      "nextSessionStarted": false,
       "attribution": {
         "arm": "P",
         "session": "T2",
@@ -3116,7 +3160,9 @@
         "natural": true,
         "paidRequestsAdded": 0
       },
+      "ownerApproval": null,
       "acceptance": null,
+      "nextSessionStarted": false,
       "attribution": {
         "arm": "P",
         "session": "T2",
