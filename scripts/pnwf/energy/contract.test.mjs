@@ -4,8 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { BULLETIN, REVISION_PATHS, commitAll, git, injectCorrection, makeSeed, normalizeSiteRows, readJson } from "./contract.mjs";
+import { BULLETIN, REVISION_PATHS, blob, commitAll, git, injectCorrection, makeSeed, normalizeSiteRows, readJson } from "./contract.mjs";
 import { makeWorkerBroker, validateWorkerResult } from "./container-worker.mjs";
+import { briefPulseTool } from "./context-variants.mjs";
+import { revisionReviewTool } from "./revision-review.mjs";
 import { CERTIFICATES, DELIVERABLES } from "./revision-scope.mjs";
 import { guardRevisionWork, SETTLED_GUIDANCE } from "./revision-work.mjs";
 
@@ -79,6 +81,66 @@ test("worker result transport checks exact basis and rejects non-deliverable pat
   assert.throws(() => validateWorkerResult(world, basis, result), /WORKER_WORLD_DIRTY/u);
   const escaped = commitAll(world, "Modify a protected input");
   assert.throws(() => validateWorkerResult(world, basis, escaped), /WORKER_RESULT_OUTSIDE_SCOPE/u);
+});
+
+test("a receipt and its file expansion refer to the same clean candidate and preserve the certificate", async () => {
+  const repo = mkdtempSync(join(tmpdir(), "pnwf-energy-review-"));
+  makeSeed(repo, fixture);
+  mkdirSync(join(repo, "deliverables"));
+  for (const path of DELIVERABLES) writeFileSync(join(repo, path), "previous result\n");
+  const basis = commitAll(repo, "Record approved review basis");
+  for (const path of REVISION_PATHS) writeFileSync(join(repo, path), `new ${path}\n`);
+  const candidate = commitAll(repo, "Record five changed artifacts");
+  const tool = revisionReviewTool(() => ({ repo, basis, candidate, settlement: "SETTLED" }));
+  const receipt = await tool.execute({});
+  assert.equal(receipt.basis, basis);
+  assert.equal(receipt.candidate, candidate);
+  assert.deepEqual(new Set(receipt.paths), new Set(REVISION_PATHS));
+  assert.deepEqual(receipt.certificate, { path: CERTIFICATES, blob: blob(repo, basis, CERTIFICATES), unchanged: true });
+  assert.equal(Object.hasOwn(receipt, "diff"), false);
+  await assert.rejects(tool.execute({ path: REVISION_PATHS[0] }), /REVISION_REVIEW_EXACT_SHA_REQUIRED/u);
+  await assert.rejects(tool.execute({ basis: candidate, candidate, path: REVISION_PATHS[0] }), /REVISION_REVIEW_SHA_MISMATCH/u);
+  await assert.rejects(tool.execute({ basis, candidate: basis, path: REVISION_PATHS[0] }), /REVISION_REVIEW_SHA_MISMATCH/u);
+  await assert.rejects(tool.execute({ basis, candidate, path: CERTIFICATES }), /REVISION_REVIEW_PATH_OUTSIDE_SCOPE/u);
+  const file = await tool.execute({ basis, candidate, path: REVISION_PATHS[0] });
+  assert.match(file.diff, /new deliverables\/technical-capacity\.md/u);
+  assert(!REVISION_PATHS.slice(1).some(path => file.diff.includes(path)));
+  writeFileSync(join(repo, CERTIFICATES), "altered certificate\n");
+  await assert.rejects(tool.execute({}), /WORKER_WORLD_DIRTY/u);
+  const changed = commitAll(repo, "Attempt to rewrite certificate");
+  await assert.rejects(tool.execute({}), /REVISION_REVIEW_CANDIDATE_MISMATCH/u);
+  const tampered = revisionReviewTool(() => ({ repo, basis, candidate: changed, settlement: "SETTLED" }));
+  await assert.rejects(tampered.execute({}), /WORKER_RESULT_OUTSIDE_SCOPE/u);
+});
+
+test("brief pulse keeps current authorization facts and can expand the original", async () => {
+  const conclusion = { conclusionId: "old", intent: "WAIT_FOR_OPERATOR", basis: { headCommit: "before" },
+    recordedAt: "2026-11-09", statement: "the old candidate needs review" };
+  const readiness = { awaitingOperator: ["task:current"], blockers: ["worker not observed"] };
+  const queue = [{ who: "OPERATOR", detail: "inspect the current result", advisory: true }];
+  const full = { digest: "full-view-digest", basis: { headCommit: "now" }, episode: {
+    state: "REOPENED", current: false, conclusion, readiness, changedSince: ["new material arrived"],
+  }, decisionQueue: queue, execution: { attempts: [{ hostObserved: false }] },
+  nextActions: { mechanical: ["workers"], decisionRelevant: ["operator: inspect the current result"] },
+  coverage: { complete: false, unavailable: ["other source"], omitted: [] } };
+  const inputs = [];
+  const tool = briefPulseTool({ parameters: { properties: {} }, async execute(input) { inputs.push(input); return full; } });
+  const brief = await tool.execute({ action: "pulse" });
+  assert.equal(brief.sourcePulseDigest, full.digest);
+  assert.equal(brief.episode.conclusion.conclusionId, conclusion.conclusionId);
+  assert.equal(Object.hasOwn(brief.episode.conclusion, "statement"), false);
+  assert.deepEqual(brief.episode.readiness, readiness);
+  assert.deepEqual(brief.episode.changedSince, full.episode.changedSince);
+  assert.deepEqual(brief.execution, full.execution);
+  assert.deepEqual(brief.decisionQueue, queue);
+  assert.deepEqual(brief.nextActions.mechanical, full.nextActions.mechanical);
+  assert.equal(Object.hasOwn(brief.nextActions, "decisionRelevant"), false);
+  assert.deepEqual(brief.coverage.unavailable, full.coverage.unavailable);
+  assert.equal(brief.coverage.omitted.length, 2);
+  assert.deepEqual(await tool.execute({ action: "pulse", detail: "full" }), full);
+  assert.deepEqual(inputs, [{ action: "pulse" }, { action: "pulse" }]);
+  full.episode = { ...full.episode, state: "WAITING_FOR_OPERATOR", current: true };
+  assert.deepEqual((await tool.execute({ action: "pulse" })).episode.conclusion, conclusion);
 });
 
 test("the scorer accepts only unambiguous site aliases and retains all other data", () => {

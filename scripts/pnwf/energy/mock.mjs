@@ -1,5 +1,6 @@
 /** Deterministic model responses for qualification. All tool calls still run through real DSH. */
 import { assert, BULLETIN, DELIVERABLES, REVISION_PATHS, START, SUMMARY, WORK_T2_INSTRUCTIONS } from "./contract.mjs";
+import { READ_PLAN } from "./context-variants.mjs";
 import { PRESERVE_CERTIFICATES } from "./revision-scope.mjs";
 import { SETTLED_GUIDANCE } from "./revision-work.mjs";
 import { setTimeout as delay } from "node:timers/promises";
@@ -8,6 +9,8 @@ const markdown = (title, prose, data) => `# ${title}\n\n${prose}\n\n<!-- data:st
 const childPrompt = "PNWF mock revision executor. Update the two-site package from the new material in this Git worktree.";
 const shell = command => ({ name: "bash", input: { command, description: "Check and record qualification artifacts" } });
 const work = (action, args = {}) => ({ name: "palimpsest_work", input: { action, ...args } });
+const pulse = (args = {}) => ({ name: "palimpsest_continuity", input: { action: "pulse", ...args } });
+const review = (input = {}) => ({ name: "palimpsest_revision_review", input });
 const finish = [{ type: "text", text: "The requested qualification step is complete." }];
 const quoted = value => "'" + value.replaceAll("'", "'\\''") + "'";
 
@@ -51,10 +54,29 @@ function messages(input, role, kind) {
     typeof message.content === "string" ? [{ type: "text", text: message.content }] : message.content).filter(block => block.type === kind);
 }
 
-export function qualificationReply({ arm, session, accepted }) {
+function latestResult(input) {
+  const content = messages(input, "user", "tool_result").at(-1)?.content;
+  return typeof content === "string" ? content : (content ?? []).map(block => block.text ?? "").join("");
+}
+
+function expandReceipt(receipt, accepted) {
+  assert(receipt.schema === "pnwf-energy-revision-receipt/v1" && receipt.basis === accepted &&
+    /^[a-f0-9]{40}$/u.test(receipt.candidate) && receipt.certificate?.unchanged && receipt.paths?.length === 5,
+  "MOCK_REVISION_RECEIPT_MISMATCH");
+  return review({ basis: receipt.basis, candidate: receipt.candidate, path: REVISION_PATHS[0] });
+}
+
+function expectExpansion(result) {
+  const value = JSON.parse(result);
+  assert(value.schema === "pnwf-energy-revision-file/v1" && value.path === REVISION_PATHS[0] &&
+    value.diff.includes("diff --git"), "MOCK_REVISION_EXPANSION_MISSING");
+}
+
+export function qualificationReply({ arm, session, accepted, variant }) {
   const turns = new Map();
   let advanced = false;
   let concluded = false;
+  let expanded = false;
   return async (input, ordinal) => {
     const users = messages(input, "user", "text");
     const isWorker = users.some(block => block.text?.includes("You are a Palimpsest WORK WORKER"));
@@ -64,6 +86,7 @@ export function qualificationReply({ arm, session, accepted }) {
     turns.set(role, step + 1);
     if (session === "T2" && role === "principal" && step === 0) {
       assert(users.some(block => block.text?.includes(WORK_T2_INSTRUCTIONS)) === (arm === "P"), "MOCK_T2_EXECUTOR_GUIDANCE_MISMATCH");
+      if (variant === "read-plan") assert(users.some(block => block.text?.includes(READ_PLAN)), "MOCK_PRINCIPAL_READ_PLAN_MISSING");
     }
     const conclude = intent => work("conclude", { intent, statement: "The committed qualification result is ready for this episode.",
       ...(intent === "DELIVER" ? { artifacts: session === "T1" ? DELIVERABLES : [SUMMARY] } : {}) });
@@ -73,29 +96,61 @@ export function qualificationReply({ arm, session, accepted }) {
         assert(users.some(block => block.text?.includes(PRESERVE_CERTIFICATES) &&
           REVISION_PATHS.every(path => block.text.includes(path))), "MOCK_WORKER_SCOPE_NOT_VISIBLE");
       }
-      if (step === 0) command = shell(writeFiles(packageFiles(true)));
-      else if (step === 1 && isWorker) command = { name: "palimpsest_worker_result", input: { kind: "READY_FOR_SETTLEMENT", summary: "The affected energy artifacts were revised and committed." } };
+      if (variant === "read-plan" && isWorker && step === 0) {
+        assert(users.some(block => block.text?.includes(READ_PLAN)), "MOCK_WORKER_READ_PLAN_MISSING");
+        command = shell(`git show HEAD:${BULLETIN}`);
+      } else {
+        const workerStep = step - (variant === "read-plan" && isWorker ? 1 : 0);
+        if (workerStep === 0) {
+          if (variant === "read-plan" && isWorker) assert(latestResult(input).includes("S-1080,HF,600"), "MOCK_BULLETIN_NOT_READ");
+          command = shell(writeFiles(packageFiles(true)));
+        } else if (variant === "receipt" && workerStep === 1) command = review();
+        else if (variant === "receipt" && workerStep === 2) command = expandReceipt(JSON.parse(latestResult(input)), accepted);
+        else if (isWorker && workerStep === (variant === "receipt" ? 3 : 1)) {
+          if (variant === "receipt") expectExpansion(latestResult(input));
+          command = { name: "palimpsest_worker_result", input: { kind: "READY_FOR_SETTLEMENT", summary: "The affected energy artifacts were revised and committed." } };
+        }
+      }
     } else if (session === "T1") {
       if (step === 0) command = shell(writeFiles(packageFiles(false)));
       else if (step === 1 && arm === "P") command = conclude("DELIVER");
     } else if (session === "T2" && arm === "P") {
-      const results = JSON.stringify(messages(input, "user", "tool_result").at(-1)?.content ?? "");
-      if (step === 1) assert(results.includes("ENERGY_REVISION_SCOPE_MISMATCH"), "MOCK_BROAD_PLAN_NOT_REFUSED");
-      if (step === 0 || step === 1) command = work("plan", { reason: "A supplier bulletin needs isolated revision.", tasks: [{
+      const results = latestResult(input);
+      const revisionStep = step - (variant === "brief-pulse" ? 2 : 0);
+      if (revisionStep === 1) assert(results.includes("ENERGY_REVISION_SCOPE_MISMATCH"), "MOCK_BROAD_PLAN_NOT_REFUSED");
+      if (revisionStep === -2) command = pulse();
+      else if (revisionStep === -1) {
+        const value = JSON.parse(results);
+        assert(value.presentation === "brief" && value.episode.state === "REOPENED" &&
+          value.episode.conclusion?.conclusionId && value.coverage.omitted.length > 0, "MOCK_BRIEF_PULSE_MISSING");
+        command = pulse({ detail: "full" });
+      } else if (revisionStep === 0 || revisionStep === 1) {
+        if (variant === "brief-pulse" && revisionStep === 0) {
+          const value = JSON.parse(results);
+          assert(value.digest && value.presentation === undefined && value.episode.conclusion?.check, "MOCK_FULL_PULSE_MISSING");
+        }
+        command = work("plan", { reason: "A supplier bulletin needs isolated revision.", tasks: [{
         task_id: "revise-energy-package", objective: "Apply the Harbor Flats supplier correction, update all affected artifacts, and commit the candidate while retaining the separate certificates.",
-        depends_on: [], write_paths: step === 0 ? DELIVERABLES : REVISION_PATHS, required_artifacts: REVISION_PATHS,
-      }] });
-      else if (step === 2) command = work("delegate", { taskId: "revise-energy-package" });
-      else if (step === 3) command = work("workers");
+        depends_on: [], write_paths: revisionStep === 0 ? DELIVERABLES : REVISION_PATHS, required_artifacts: REVISION_PATHS,
+        }] });
+      } else if (revisionStep === 2) command = work("delegate", { taskId: "revise-energy-package" });
+      else if (revisionStep === 3) command = work("workers");
       else if (!concluded && advanced) {
-        assert(results.includes("VERIFYING"), "MOCK_TASK_NOT_VERIFYING");
-        command = conclude("WAIT_FOR_OPERATOR");
-        concluded = true;
+        if (variant === "receipt" && !expanded) {
+          assert(results.includes("VERIFYING"), "MOCK_TASK_NOT_VERIFYING");
+          command = expandReceipt(JSON.parse(results).revisionReceipt, accepted);
+          expanded = true;
+        } else {
+          if (expanded) expectExpansion(results);
+          else assert(results.includes("VERIFYING"), "MOCK_TASK_NOT_VERIFYING");
+          command = conclude("WAIT_FOR_OPERATOR");
+          concluded = true;
+        }
       } else if (!concluded && /FINISHED/u.test(results) && /SETTLED/u.test(results)) {
         assert(results.includes(SETTLED_GUIDANCE.split(".")[0]), "MOCK_WORKER_SETTLEMENT_GUIDANCE_MISSING");
         command = work("run", { maxSteps: 8 });
         advanced = true;
-      } else if (!concluded && step < 12 && !/RECORDED|HOST_ERROR|nothing in this project currently awaits/u.test(results)) {
+      } else if (!concluded && revisionStep < 12 && !/RECORDED|HOST_ERROR|nothing in this project currently awaits/u.test(results)) {
         await delay(900);
         command = work("workers");
       }

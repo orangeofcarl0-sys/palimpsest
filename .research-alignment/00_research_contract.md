@@ -33,3 +33,5 @@ T2 复跑的干预是把同一份五文件写范围用于 Work 计划、委派�
 等待式变体的 Palimpsest 与强原生 DSH 均完成三个真实会话，两组 T2 候选分别按 SHA 核准。证据把两条未送审复跑、审批用时和成功周期分别计量。结论限定于该配置、该输入和这一次配对。[结果与局限](../docs/engineering/ENERGY-PROJECT-CONTINUITY.md#配对结论)
 
 Fresh input 复核先把 136 笔 DSH 终态逐一绑定到 Provider 账本，再按会话、角色和首笔/后续请求分解。工具清单长度和峰值前的工具结果是观测线索；原始试验没有记录每个输入块的缓存命中，不能从汇总做逐块因果归因。[分析边界](../docs/engineering/ENERGY-PROJECT-CONTINUITY.md#fresh-input-为什么更多)
+
+T2 上下文试验沿用已批准的完整基线和成功等待式对照。校验回执、定向回读、短版 Pulse 各自开启，分开考察候选检查、文件读取和历史状态摘要。保留五文件范围、证书 blob、正式结算、独立判分和按完整 SHA 审批。Mock 先验证闭环和绕过场景，真实 T2 使用原会话窗口与按量记账。逐笔比较 fresh input、cache read、请求和配对后的展开行为。服务端缓存状态与模型采样仍可能随次变化，比较只描述各单次运行。[试验设计](../docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-上下文干预的独立对照)

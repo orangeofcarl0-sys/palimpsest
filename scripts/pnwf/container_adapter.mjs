@@ -109,7 +109,9 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
     bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey, { dispatchWork: worker?.dispatch });
     const prompt = readFileSync(prepared.promptPath, "utf8");
     outFd = openSync(join(out, "run.log"), "w"); errFd = openSync(join(out, "run.err"), "w");
+    // Principal observations must not refresh the index while the Worker broker imports its commit.
     child = spawn("docker", ["exec", "--user", "1001:1001", "--workdir", "/run/stage/world",
+      ...(experiment?.createWorker ? ["-e", "GIT_OPTIONAL_LOCKS=0"] : []),
       runtime.id, "node", DSH_BIN, "--profile", "alhs-core", layout === "native" ? "--json" : "--once", prompt],
       { stdio: ["ignore", outFd, errFd] });
     const kill = reason => {
