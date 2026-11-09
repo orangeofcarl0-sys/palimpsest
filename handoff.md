@@ -18,6 +18,7 @@
 - 逐请求复核 136/136。Palimpsest 多 28,457 fresh input，差额集中在 T1、T2；其中首请求差 9,005，后续差 19,452。T2 Worker 的大额请求紧跟整包和 diff 回读。两组缓存占比不同，不能仅用总 tokens 推断费用。[轨迹分析](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#fresh-input-为什么更多)
 - T2 上下文三变体从已批准基线独立复跑。回执和定向回读候选 45/45、门禁 PASS，经所有者按完整 SHA 核准后已分别晋升。短版 Pulse 组首次直接展开全文，原试验记未采用，业务和门禁离线通过。新三组 87 笔已结算，连旧对照共 117 笔逐一绑定。 [独立对照](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-上下文干预的独立对照)
 - 回执与定向回读从各自晋升 HEAD 跑完真实 T3，各提交一页摘要并记录 `DELIVER` 后自然退出。定向回读严格判分 PASS。回执的数据正确，遗漏更正文件名而未过原判分。25 笔请求全部结算。 [T3 接续与原稿](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#两个晋升版本的真实-t3)
+- T2/T3 上下文实现、两份摘要原稿、轨迹和报告已通过 [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251) 合入主线。送审 head 16/16，rebase 后发布点 `478d6b33879d2d64ac9f03aa70a1b57586ce9b67`。回执 T3 仍为 `REVIEW_CONTENT_MISMATCH`。 [发布与 SHA 对照](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json)
 - Energy 范围修复、真实对照与轨迹分析已通过 [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249) 发布。确切 head 的 16 项检查全部成功，rebase 后落地为 `08c6c6e847cd94cf662ba45e10e0a49e6b753eac`。[发布检查与 SHA 对照](research-evidence/pnwf-energy/2026-11-09/release-ci.json)
 - Bench 树与 README 导航已合入主线，改写后对应提交为 `234be03cd82de55455a8a316fec66b8886d26cf9`。合并前 14/14 个 CI job 通过。导航入口见 §4。[PR #242](https://github.com/orangeofcarl0-sys/palimpsest/pull/242)
 - Software 和 energy 的 readiness 定向观察证据、报告和 handoff 已合入主线，改写后对应提交为 **`666b4446c0649b7a3f425f1291fff99b6f97a2bf`**。合并前 14/14 个 CI job 通过。[PR #239](https://github.com/orangeofcarl0-sys/palimpsest/pull/239)
@@ -64,8 +65,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | Energy 发布点 `08c6c6e847cd94cf662ba45e10e0a49e6b753eac`；实验起点 `112a7b50c25639ec5586afd170e9f7f311c561ba`；最新值用 `git rev-parse origin/main` 核对 |
-| Energy 上下文试验 | `codex/energy-t2-context` 从已核对的 `origin/main` `08cca77a8772804155d210c804b99956d1a3f702` 起步。T2 实现及复跑 `8d26803317422860816f3e7f4c880e7ebedb24db`，审批与晋升 `e1a10851440a1a155a378b22e8e312ecbd35b9cf`，T3 接续、证据和报告见本次同步提交 |
+| `origin/main` | Energy T2/T3 上下文发布点 `478d6b33879d2d64ac9f03aa70a1b57586ce9b67`，最新值用 `git rev-parse origin/main` 核对 |
+| [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251) | `codex/energy-t2-context` 已 rebase 合并，远端工作分支自动删除。检验 head `1c578d34c1603aac8a667bdc356747a43d6b9f74`，16/16 项成功。主线依次为 T2 `1caa0db7eedbcf2efe8a7209014360b34420ee39`、核准与晋升 `f3ee25ef1f2fc9471bc26d915d0e96e9a14f06d9`、T3 `478d6b33879d2d64ac9f03aa70a1b57586ce9b67`。三组文件树和消息逐一核对。 [完整 SHA 与 CI 证据](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json) |
 | [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249) | `codex/energy-project-continuity` 已 rebase 合并；检验 head `e7ea59861c8b002c7b74571840f5cb44363f12f7`，16/16 项成功。原 3 个提交与新主线提交的文件树和消息逐一核验一致，[完整 SHA 对照](research-evidence/pnwf-energy/2026-11-09/release-ci.json) |
 | PR #227 | MERGED at `1766a794a52fcdda323331429b6881d2b1dc8636`；CI 全绿（unit / e2e / host-boundary / gates / package-smoke） |
 | PR #230 | MERGED at `b7460f3785406ba8ad3c1a4a5f19f275a38813ad`；被检验 head `b1554f89ecfa0dacf98e7f52b3ddc677600da051`；14/14 check jobs SUCCESS，执行范围见 §5 |
@@ -258,6 +259,8 @@ T2 上下文试验的定向测试通过 35/35，补充错基线、错候选、�
 两个已接受版本的 T3 专项资格各通过一次 Mock，共 8 笔模拟请求，均提交并记录 `DELIVER` 后自然退出。互换晋升 HEAD 两次均被拒于会话准备前。定向回归通过 35/35。并行复核有一次账本断言期望 `STOPPED`，实际收到 `OPEN`，单独重跑全套通过。原三会话的 136 笔归因可按原输出复算。 [T3 接续资格](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#两个晋升版本的真实-t3)
 
 PR #249 合并前有 15 个 job 和 1 个独立的 `commit-attribution` 状态，全部成功。Linux 全量 5,101 通过 / 33 跳过、浏览器 E2E 38/38、Windows Host Boundary 通过。四个依赖外部 DSH 的步骤未配置宿主，按原条件跳过。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/249/checks) · [合并后主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42605621931) · [主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42605621573)
+
+PR #251 的 15 个 job 和精确 head 的 `commit-attribution` 状态全部成功。Linux 全量 5,101 通过 / 33 跳过，浏览器 E2E 38/38，Windows 的四项边界 conformance 检查通过。R0 中 D2、D4、D5 和 D5 可靠性的真实宿主步骤按条件跳过。 [PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/251/checks) · [发布点主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42647207683) · [发布点主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42647207656)
 
 ### 验收集（顺序执行，避免 Windows 并行超时）
 
@@ -549,6 +552,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-09 | 按所有者核准的完整 SHA 分别晋升回执和定向回读候选 | [接受记录](research-evidence/pnwf-energy/2026-11-09/t2-context-variants.json) | 两次 `PROMOTION_COMMITTED`，Git 树与证书复核通过，新增模型请求 0 |
 | 2026-11-09 | 从两个晋升 HEAD 分别接续真实 T3 | [报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#两个晋升版本的真实-t3)，[机器证据](research-evidence/pnwf-energy/2026-11-09/t3-context-continuation.json) | Mock 2/2；真实新增 25 笔；均提交并自然退出，严格判分 1/2 |
 | 2026-11-09 | 发布 Energy 范围修复、真实三会话对照与轨迹分析；同步实际合并点 | [PR #249](https://github.com/orangeofcarl0-sys/palimpsest/pull/249)，`08c6c6e8` | 精确 head 16/16；保留 rebase 前后 SHA 对照与主线工作流链接 |
+| 2026-11-09 | 发布 Energy T2/T3 上下文试验与两份模型摘要原稿 | [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251)，[合并及检查记录](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json) | 16/16；主线 `478d6b33`，回执 T3 原判分与两份摘要 blob 已核验 |
 
 ---
 
