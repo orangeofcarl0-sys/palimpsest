@@ -1,11 +1,23 @@
 /** Host-only composition for the experiment. The ordinary host entry is unchanged. */
 import { launchDeployment as launch } from "../dist/src/advanced.js";
+import { guardRevisionWork } from "./revision-work.mjs";
 
 export * from "../dist/src/advanced.js";
 
 export function launchDeployment(profile, options) {
-  return launch(profile, {
+  const tools = options.context.tools;
+  const deployment = launch(profile, {
     ...options,
+    context: {
+      ...options.context,
+      tools: {
+        register(definition) {
+          return tools.register(definition.name === "palimpsest_work"
+            ? guardRevisionWork(definition, () => deployment.installed.controller.work.project().tasks)
+            : definition);
+        },
+      },
+    },
     host: {
       ...options.host,
       workWorkerPort: () => ({
@@ -24,4 +36,5 @@ export function launchDeployment(profile, options) {
       }),
     },
   });
+  return deployment;
 }

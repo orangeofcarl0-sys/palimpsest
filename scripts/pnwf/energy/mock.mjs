@@ -1,5 +1,7 @@
 /** Deterministic model responses for qualification. All tool calls still run through real DSH. */
-import { assert, BULLETIN, DELIVERABLES, REVISION_PATHS, START, SUMMARY } from "./contract.mjs";
+import { assert, BULLETIN, DELIVERABLES, REVISION_PATHS, START, SUMMARY, WORK_T2_INSTRUCTIONS } from "./contract.mjs";
+import { PRESERVE_CERTIFICATES } from "./revision-scope.mjs";
+import { SETTLED_GUIDANCE } from "./revision-work.mjs";
 import { setTimeout as delay } from "node:timers/promises";
 
 const markdown = (title, prose, data) => `# ${title}\n\n${prose}\n\n<!-- data:start -->\n\`\`\`json\n${JSON.stringify(data)}\n\`\`\`\n<!-- data:end -->\n`;
@@ -52,6 +54,7 @@ function messages(input, role, kind) {
 export function qualificationReply({ arm, session, accepted }) {
   const turns = new Map();
   let advanced = false;
+  let concluded = false;
   return async (input, ordinal) => {
     const users = messages(input, "user", "text");
     const isWorker = users.some(block => block.text?.includes("You are a Palimpsest WORK WORKER"));
@@ -59,10 +62,17 @@ export function qualificationReply({ arm, session, accepted }) {
     const role = isWorker ? "worker" : isChild ? "child" : "principal";
     const step = turns.get(role) ?? 0;
     turns.set(role, step + 1);
+    if (session === "T2" && role === "principal" && step === 0) {
+      assert(users.some(block => block.text?.includes(WORK_T2_INSTRUCTIONS)) === (arm === "P"), "MOCK_T2_EXECUTOR_GUIDANCE_MISMATCH");
+    }
     const conclude = intent => work("conclude", { intent, statement: "The committed qualification result is ready for this episode.",
       ...(intent === "DELIVER" ? { artifacts: session === "T1" ? DELIVERABLES : [SUMMARY] } : {}) });
     let command;
     if (isWorker || isChild) {
+      if (isWorker && step === 0) {
+        assert(users.some(block => block.text?.includes(PRESERVE_CERTIFICATES) &&
+          REVISION_PATHS.every(path => block.text.includes(path))), "MOCK_WORKER_SCOPE_NOT_VISIBLE");
+      }
       if (step === 0) command = shell(writeFiles(packageFiles(true)));
       else if (step === 1 && isWorker) command = { name: "palimpsest_worker_result", input: { kind: "READY_FOR_SETTLEMENT", summary: "The affected energy artifacts were revised and committed." } };
     } else if (session === "T1") {
@@ -70,16 +80,22 @@ export function qualificationReply({ arm, session, accepted }) {
       else if (step === 1 && arm === "P") command = conclude("DELIVER");
     } else if (session === "T2" && arm === "P") {
       const results = JSON.stringify(messages(input, "user", "tool_result").at(-1)?.content ?? "");
-      if (step === 0) command = work("plan", { reason: "A supplier bulletin needs isolated revision.", tasks: [{
+      if (step === 1) assert(results.includes("ENERGY_REVISION_SCOPE_MISMATCH"), "MOCK_BROAD_PLAN_NOT_REFUSED");
+      if (step === 0 || step === 1) command = work("plan", { reason: "A supplier bulletin needs isolated revision.", tasks: [{
         task_id: "revise-energy-package", objective: "Apply the Harbor Flats supplier correction, update all affected artifacts, and commit the candidate while retaining the separate certificates.",
-        depends_on: [], write_paths: REVISION_PATHS, required_artifacts: REVISION_PATHS,
+        depends_on: [], write_paths: step === 0 ? DELIVERABLES : REVISION_PATHS, required_artifacts: REVISION_PATHS,
       }] });
-      else if (step === 1) command = work("delegate", { taskId: "revise-energy-package" });
-      else if (step === 2) command = work("workers");
-      else if (/FINISHED/u.test(results) && /SETTLED/u.test(results)) {
-        command = advanced ? conclude("WAIT_FOR_OPERATOR") : work("run", { maxSteps: 8 });
+      else if (step === 2) command = work("delegate", { taskId: "revise-energy-package" });
+      else if (step === 3) command = work("workers");
+      else if (!concluded && advanced) {
+        assert(results.includes("VERIFYING"), "MOCK_TASK_NOT_VERIFYING");
+        command = conclude("WAIT_FOR_OPERATOR");
+        concluded = true;
+      } else if (!concluded && /FINISHED/u.test(results) && /SETTLED/u.test(results)) {
+        assert(results.includes(SETTLED_GUIDANCE.split(".")[0]), "MOCK_WORKER_SETTLEMENT_GUIDANCE_MISSING");
+        command = work("run", { maxSteps: 8 });
         advanced = true;
-      } else if (step < 45 && !/RECORDED|HOST_ERROR|nothing in this project currently awaits/u.test(results)) {
+      } else if (!concluded && step < 12 && !/RECORDED|HOST_ERROR|nothing in this project currently awaits/u.test(results)) {
         await delay(900);
         command = work("workers");
       }

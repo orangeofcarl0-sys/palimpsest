@@ -45,7 +45,8 @@ for (const mode of ["mock", "live"]) {
         workerReceipts: observed?.workerReceipts.map(receipt => receipt.reason ? { ...receipt, reason: redact(receipt.reason) } : receipt) ?? [],
         business: result?.business ?? null, conclusion: freshConclusion ? latest.intent : null,
         project: result?.facts ? { head: result.facts.head, tasks: result.facts.tasks.map(task => ({ id: task.task_id, state: task.state })),
-          attempts: result.facts.attempts.map(({ id: attemptId, state }) => ({ id: attemptId, state })), promotions: result.facts.promotions,
+          attempts: result.facts.attempts.map(({ id: attemptId, state, envelope }) => ({ id: attemptId, state,
+            ...(contract?.revisionScope && envelope ? { writePaths: envelope.write_paths } : {}) })), promotions: result.facts.promotions,
           latestJournalConclusion: latest ? { seq: latest.seq, intent: latest.intent, recordedThisSession: freshConclusion } : null } : null,
         scoringRecount: result?.scoringRecount ? { ...result.scoringRecount, originalReason: scoreErrors(result.scoringRecount.originalReason) } : null };
     });
