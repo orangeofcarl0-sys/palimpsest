@@ -15,6 +15,7 @@
 - 2026-11-10 从主线 `268f14f9` 执行首组 gRPC 真实诊断配对。两组 T1 原判分保留，经所有者批准按原提交独立复核后分别启动 T2。Palimpsest 正式委派被写范围拦截，改走原生子任务加 `relay takeover`，记录 `WAIT_FOR_OPERATOR`。强原生直接使用 Git worktree 加 Subagent。两个 T2 的独立探针均通过，候选都修改了要求保留的 proto blob，均未进入核准，两组均未启动 T3。四个会话自然退出，140 笔真实请求、232 对调用与结果已复核。Palimpsest T2 切换前的故障排查占 26 笔请求、1,356,253 tokens 和 220.798 秒。[真实配对报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#真实诊断配对) · [机器证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json) · [用量审计](research-evidence/pnwf-software/2026-11-10/live-pair-150630/usage-audit.json)
 - 真实配对的宿主驱动、轨迹、四个 Git bundle 和用量审计已通过 [PR #255](https://github.com/orangeofcarl0-sys/palimpsest/pull/255) 发布。送审 head 的 16 项检查均成功，主线发布点为 `415f8bc48fd9019a0347e0f4c718c2775803d624`。发布核验的六会话 Mock 回归全部通过，新增付费请求 0。[发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/live-pair-150630/release-ci.json)
 - gRPC T2 写范围和拒绝回传复跑从 `52451a07` 接续。六会话 Mock 通过。两组从原 T2 SHA 重跑，均保留四个保护 blob。P 正式 Worker 结算和门禁 PASS，核准 `35f2fb69557e1965ef1e88f723fb600b9e9f0ae3` 后晋升为 `7deda735afa4ef97e71dd14b5ab4b48131e1e872`。F 保留原检出守卫失败，离线通过后按所有者核准从原基线副本接受 `5346a2f606b85962b8a12e8cca706ad8efe658b5`。两组真实 T3 各提交一份评审并自然退出。冻结评分均为 `SOFTWARE_REVIEW_MISSING zero or omitted`，原稿和逐项复核均已归档。P T2 少 17 笔和 1,475,868 tokens，F 多 6 笔和 272,722 tokens。全轮 106 笔已结算，186 对调用与结果复核通过。[复跑报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#t2-写范围与拒绝回传复跑) · [机器证据](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json)
+- gRPC T2 范围修复、双组 T2/T3 轨迹、Git bundle 和摘要原稿已通过 [PR #257](https://github.com/orangeofcarl0-sys/palimpsest/pull/257) 发布。送审 head 的 16 项检查首次全部成功，rebase 后主线发布点 `55e3238713da6dcd838a1d4157570fcb4383dff4`。发布复核的六会话 Mock 通过，39 笔模拟请求，新增付费请求 0。[发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/release-ci.json)
 - 2026-11-09 在 `codex/energy-project-continuity` 启动同一 energy 项目的三会话实验。首轮两组 Mock 资格 6/6。真实 Palimpsest T1 交付 `4cf360d5620fa10df5022c777aa0ed83c312a80a` 后自然退出，19 笔请求共 535,044 tokens。独立判分修复站点全名与缩写的等价归一化后，同提交离线复算 45/45，通过时新增付费请求为 0。所有者已核准 T2 基线 `8041871314136d417b285a800265858757463f68`。[报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md) · [机器证据](research-evidence/pnwf-energy/2026-11-09/continuity.json)
 - Energy 首轮真实 T2 因 Worker 改写证书被宿主拦截。修复统一了 Work 与宿主的五文件范围，证书保持逐字节不变。后续两次观察分别为原生 Subagent 偏离（业务复核 45/45，缺少正式结算）和正式 Worker 结算后 Principal 达到 64 笔上限（业务 45/45，缺少等待结论）。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-写范围修复与复跑)
 - 等待式变体的 Palimpsest 真实闭环 3/3：T2 正式 Worker 候选 `e2bc1a424a30123213708990394fc8b19e18c445` 获所有者核准，Promotion 后 HEAD 为 `7aed12ea8618533c7acba5b1c8a4f60e8c1c97ce`；T3 从该 HEAD 提交采购摘要 `02fdf9c3aa3e2821e7fe32f82bd7e3b768baf234` 并自然退出。[复验报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#等待与结算引导的定向复验)
@@ -69,7 +70,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | gRPC 真实配对发布点 `415f8bc48fd9019a0347e0f4c718c2775803d624`。原运行基线为 `268f14f98099b10b181ec9dd1ea4e07ecbe43d31`。最新值用 `git rev-parse origin/main` 核对 |
+| `origin/main` | gRPC T2 写范围复跑的发布点为 `55e3238713da6dcd838a1d4157570fcb4383dff4`，复跑启动基线为 `52451a076d73492b83ac5ea938d413e1993992c5`。当前主线 tip 用 `git rev-parse origin/main` 核对 |
+| [PR #257](https://github.com/orangeofcarl0-sys/palimpsest/pull/257) | `codex/grpc-t2-scope` 已 rebase 合并，远端工作分支自动删除。精确 head `3e23a0aca84267d9543cab5e802c3446e495dcc6` 的 16/16 项检查成功。合并前后文件树、作者和提交消息一致。强原生检出守卫失败、离线核准和两组 T3 冻结原判均保留。[发布证据](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/release-ci.json) |
 | [PR #255](https://github.com/orangeofcarl0-sys/palimpsest/pull/255) | `codex/grpc-live-pair` 已 rebase 合并，远端工作分支已自动删除。送审 head `b86b352cd7aec0b3748046b4aaefb0a294fc7189` 的 16/16 项检查成功，主线提交的文件树、消息和归因已核对。[发布证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/release-ci.json) |
 | [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253) | `codex/project-roadmap` 已 rebase 合并，远端工作分支已自动删除。送审 head `94b59b20a566fa9e621727da89359d6d4a011129`，16/16 项检查成功。路线图送审提交 `fdfad589bf4eb7aab6aa4271a095de28fb36bf40` 对应主线 `fd4fa79e8c0ec2873ae1c43a3783864c0d179c42`。两次 rebase 的文件树与消息逐一核对，资格封存保留实验起点 SHA。[发布证据](research-evidence/pnwf-software/2026-11-10/release-ci.json) |
 | [PR #251](https://github.com/orangeofcarl0-sys/palimpsest/pull/251) | `codex/energy-t2-context` 已 rebase 合并，远端工作分支自动删除。检验 head `1c578d34c1603aac8a667bdc356747a43d6b9f74`，16/16 项成功。主线依次为 T2 `1caa0db7eedbcf2efe8a7209014360b34420ee39`、核准与晋升 `f3ee25ef1f2fc9471bc26d915d0e96e9a14f06d9`、T3 `478d6b33879d2d64ac9f03aa70a1b57586ce9b67`。三组文件树和消息逐一核对。 [完整 SHA 与 CI 证据](research-evidence/pnwf-energy/2026-11-09/t2-t3-release-ci.json) |
@@ -269,6 +271,8 @@ PR #249 合并前有 15 个 job 和 1 个独立的 `commit-attribution` 状态�
 PR #251 的 15 个 job 和精确 head 的 `commit-attribution` 状态全部成功。Linux 全量 5,101 通过 / 33 跳过，浏览器 E2E 38/38，Windows 的四项边界 conformance 检查通过。R0 中 D2、D4、D5 和 D5 可靠性的真实宿主步骤按条件跳过。 [PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/251/checks) · [发布点主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42647207683) · [发布点主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42647207656)
 
 gRPC T2 写范围复跑通过两个软件策略测试、26 项定向产品回归和六个实际容器 Mock 会话。CI 的 `unit` 纳入软件策略测试，覆盖委派前拒绝过宽声明和接管时拒绝受保护文件的注释改动。[资格封存](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/mock-qualification.json)
+
+PR #257 的 15 个 job 和独立 `commit-attribution` 状态全部成功。Linux 全量 5,104 通过、33 跳过，浏览器 E2E 38/38，Windows Host Boundary 通过。R0 四个外部 DSH 宿主步骤按原环境条件跳过。[检查与执行范围](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/release-ci.json)
 
 ### 验收集（顺序执行，避免 Windows 并行超时）
 
@@ -572,6 +576,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-10 | 运行 gRPC 真实配对，核对正式委派、接管和原生子任务 | [报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#真实诊断配对)，[证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json) | 两组均止于 T2 写范围门禁，四会话自然退出，140 笔用量完整 |
 | 2026-11-10 | 发布 gRPC 真实诊断配对及用量审计 | [PR #255](https://github.com/orangeofcarl0-sys/palimpsest/pull/255)，[发布记录](research-evidence/pnwf-software/2026-11-10/live-pair-150630/release-ci.json) | 16/16，主线发布点 `415f8bc4`，T1 原判分和离线复核、T2 越界记录均归档，两组 T3 未启动 |
 | 2026-11-10 | 修复 gRPC T2 写范围与拒绝回传，复跑 T2 并接续 T3 | [复跑报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#t2-写范围与拒绝回传复跑)，[机器证据](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json) | Mock 6/6，真实 106 笔全部结算，保留强原生检出守卫失败、离线核准与两份 T3 冻结原判 |
+| 2026-11-10 | 发布 gRPC T2 写范围修复及 T2/T3 复跑证据 | [PR #257](https://github.com/orangeofcarl0-sys/palimpsest/pull/257)，[发布记录](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/release-ci.json) | 16/16，主线发布点 `55e32387`，两份摘要 blob 与各自 Git bundle 逐字节核对 |
 
 ---
 

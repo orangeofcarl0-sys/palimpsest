@@ -1,0 +1,243 @@
+{
+  "schema": "pnwf-software-scope-rerun-release-ci/v1",
+  "repository": "orangeofcarl0-sys/palimpsest",
+  "pullRequest": {
+    "number": 257,
+    "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/257",
+    "base": "52451a076d73492b83ac5ea938d413e1993992c5",
+    "checkedHead": "3e23a0aca84267d9543cab5e802c3446e495dcc6",
+    "mergedAt": "2026-11-10T09:16:47Z",
+    "mergeMethod": "rebase",
+    "resultingMain": "55e3238713da6dcd838a1d4157570fcb4383dff4",
+    "checks": [
+      {
+        "name": "inspect",
+        "workflow": "commit-attribution",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997536/job/129733977941"
+      },
+      {
+        "name": "gates-host-dependent (gate:d4-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969409"
+      },
+      {
+        "name": "gates (gate:e1-k-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969641"
+      },
+      {
+        "name": "host-boundary",
+        "workflow": "r1-hr-windows-host-boundary",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997559/job/129733974366"
+      },
+      {
+        "name": "package-smoke",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969337"
+      },
+      {
+        "name": "gates (gate:e-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969754"
+      },
+      {
+        "name": "gates (gate:e4-l-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969550"
+      },
+      {
+        "name": "gates (gate:e5-p-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969613"
+      },
+      {
+        "name": "unit",
+        "workflow": "ci",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997368/job/129733969336"
+      },
+      {
+        "name": "e2e",
+        "workflow": "ci",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997368/job/129733969044"
+      },
+      {
+        "name": "gates-host-dependent (gate:d2-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969548"
+      },
+      {
+        "name": "gates (gate:e3-c-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969513"
+      },
+      {
+        "name": "gates-host-dependent (gate:d5-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969533"
+      },
+      {
+        "name": "d5-reliability",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733968978"
+      },
+      {
+        "name": "gates (gate:e2-i-live)",
+        "workflow": "r0-gates",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997119/job/129733969237"
+      },
+      {
+        "name": "commit-attribution",
+        "workflow": "",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42787997536"
+      }
+    ]
+  },
+  "checkScope": {
+    "linuxTestsPassed": 5104,
+    "linuxTestsSkipped": 33,
+    "browserTestsPassed": 38,
+    "explicitHostOnlySkips": [
+      {
+        "job": "d5-reliability",
+        "step": "Run gate:d5-live 20 times and record every outcome"
+      },
+      {
+        "job": "gates-host-dependent (gate:d2-live)",
+        "step": "Run pnpm gate:d2-live"
+      },
+      {
+        "job": "gates-host-dependent (gate:d4-live)",
+        "step": "Run pnpm gate:d4-live"
+      },
+      {
+        "job": "gates-host-dependent (gate:d5-live)",
+        "step": "Run pnpm gate:d5-live"
+      }
+    ]
+  },
+  "commitMapping": {
+    "checkedCommit": "3e23a0aca84267d9543cab5e802c3446e495dcc6",
+    "mainCommit": "55e3238713da6dcd838a1d4157570fcb4383dff4",
+    "tree": "7976235d5145def21e2866aad1fec56533259d36",
+    "message": "Fix gRPC T2 scope enforcement and publish rerun evidence",
+    "authorUnchanged": true
+  },
+  "evidence": {
+    "blobs": {
+      "trajectory": "a6c21cf7cd20f9f4560e27e57de03edfed9da1b1",
+      "mockQualification": "c352ab8eeb810ac2f89e308409b3bd8886221468",
+      "t3OfflineAudit": "7dfa0977ba283d9277d10aa2ea9033a2bc052854",
+      "palimpsestReview": "f4e229979c5cb67508f537fe551f5e0dc43d9ab8",
+      "nativeReview": "d5eda5281c1afcc94145cc7d0797657c02858f3e"
+    },
+    "paidSessions": 4,
+    "confirmedRequests": 106,
+    "pairedCalls": 186,
+    "nativeT2": {
+      "guard": "T2_CHANGED_CANONICAL_WORLD_BEFORE_APPROVAL",
+      "resultSha256": "20dd78645cc52d7bdb208650aa2e529a46fff2e33f6e317a881b85e99bf32f22",
+      "offlineApproval": {
+        "approved": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+        "reviewedAt": "2026-11-10T08:57:55.335Z",
+        "basis": "df4271d9a43c963ed386dc4de103dcfcf30f02f7",
+        "tree": "3cdeb0fcfce00f1ff5c069a8be6caade370e7425",
+        "originalOutcome": "T2_CHANGED_CANONICAL_WORLD_BEFORE_APPROVAL",
+        "originalResultSha256": "20dd78645cc52d7bdb208650aa2e529a46fff2e33f6e317a881b85e99bf32f22",
+        "qualification": "OWNER_APPROVED_FROM_RESTORED_ORIGINAL_BASIS"
+      }
+    },
+    "t3": [
+      {
+        "arm": "P",
+        "commit": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+        "frozenOutcome": "SOFTWARE_REVIEW_MISSING zero or omitted",
+        "originalResultSha256": "6302139f9a2fd9bb45a81c3e6ea343eb0d33f7a664a6562268e3698b1d5285c7",
+        "review": {
+          "name": "P-MIGRATION-REVIEW.md",
+          "sha256": "ad0dba4dd408d1b09d3f6c3c275ccb7c1f73ec06561518933ebfa3da2bb66ad6"
+        }
+      },
+      {
+        "arm": "F",
+        "commit": "720b1756931abbec6418a4019d048cb2e0ba6b31",
+        "frozenOutcome": "SOFTWARE_REVIEW_MISSING zero or omitted",
+        "originalResultSha256": "5d2d7ae78f15496f24384f0cc899a28564bc1cb828ba3c23ae8c9326d9c5df48",
+        "review": {
+          "name": "F-MIGRATION-REVIEW.md",
+          "sha256": "52bdd6eac891a8ec85813551fd3cb12e8594202c33d1d7467c2430c66b1ecad0"
+        }
+      }
+    ],
+    "gitBundles": [
+      {
+        "name": "P-T2.bundle",
+        "commit": "35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+        "sha256": "7405903e1a19c0405f2982b527507d331cdacf40bea50126e4e1326138f82857"
+      },
+      {
+        "name": "F-T2-offline.bundle",
+        "commit": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+        "sha256": "53a91cbd63835e6a1b399b82f82b2f4ddeba60092d9f76da62895580b280cd0b"
+      },
+      {
+        "name": "P-T3.bundle",
+        "commit": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+        "sha256": "658db4e27895707a936a468aa4683598b74a5cc167d04673716726c8579f9bd0"
+      },
+      {
+        "name": "F-T3.bundle",
+        "commit": "720b1756931abbec6418a4019d048cb2e0ba6b31",
+        "sha256": "ef6e41c25c4e29ab9fb3c61e698228f05bf56b13bac5760a703a180b62c62cd1"
+      }
+    ]
+  },
+  "publicationMockReplay": {
+    "sessions": 6,
+    "passed": true,
+    "mockRequests": 39,
+    "paidModelCalls": 0,
+    "qualificationSha256": "56d6b44ec5ed2c5a1f9f653b86bf7d75ce7139e7bb46919e4047f34ccc126da3"
+  },
+  "mainPushWorkflows": [
+    {
+      "name": "ci",
+      "id": 42789374635,
+      "head": "55e3238713da6dcd838a1d4157570fcb4383dff4",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42789374635"
+    },
+    {
+      "name": "commit-attribution",
+      "id": 42789374745,
+      "head": "55e3238713da6dcd838a1d4157570fcb4383dff4",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42789374745"
+    },
+    {
+      "name": "r0-gates",
+      "id": 42789374887,
+      "head": "55e3238713da6dcd838a1d4157570fcb4383dff4",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42789374887"
+    },
+    {
+      "name": "r1-hr-windows-host-boundary",
+      "id": 42789374710,
+      "head": "55e3238713da6dcd838a1d4157570fcb4383dff4",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42789374710"
+    }
+  ]
+}
