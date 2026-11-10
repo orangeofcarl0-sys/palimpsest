@@ -1,0 +1,1194 @@
+{
+  "schema": "pnwf-work-revision-qualification/v1",
+  "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+  "paidModelCalls": 0,
+  "implementationHead": "57638dad88fdba00c30b6be85107086866e09dcf",
+  "readinessModuleSha256": "cd636eecb4c65b9a38c42ea8dd5082177094281f7dcbe2516c560bf19a3d34ec",
+  "scenarios": [
+    {
+      "name": "grpc",
+      "first": "384de71c716f57ef783a89d181dce7ebc1c47841",
+      "basis": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+      "obligations": {
+        "schemaVersion": 1,
+        "mayWrite": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md",
+          "test/server.test.js"
+        ],
+        "mustChange": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md"
+        ],
+        "mustExist": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md",
+          "test/server.test.js"
+        ],
+        "mustPreserve": [
+          "proto/energy.proto",
+          "service/wire.js",
+          "service/grpc_client.js",
+          "test/rest.test.js"
+        ]
+      },
+      "sessions": [
+        {
+          "interface": "normal-dsh",
+          "basis": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+          "receipt": {
+            "attemptId": "attempt-1430586dc27b2916a74ef340c2d13a6a",
+            "basis": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+            "candidate": "7682fe3d4fa0b18eb2032030b9273b388ffc37d5",
+            "checks": [
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "candidateBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/server.test.js"
+              },
+              {
+                "basisBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "candidateBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "proto/energy.proto"
+              },
+              {
+                "basisBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "candidateBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/grpc_client.js"
+              },
+              {
+                "basisBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "candidateBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/wire.js"
+              },
+              {
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "test/rest.test.js"
+              }
+            ],
+            "envelopeId": "envelope-dcfe7235837c1d4bd027a48f647f89e4",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "phase": "SETTLED",
+            "receiptId": "447df616f670588f28c1a98a8fba8b8390baa37ee61382dcaca3c57091660e51",
+            "schemaVersion": 1,
+            "taskId": "revise-fleet-default"
+          },
+          "preview": {
+            "schemaVersion": 1,
+            "phase": "PREVIEW",
+            "taskId": "revise-fleet-default",
+            "attemptId": "attempt-1430586dc27b2916a74ef340c2d13a6a",
+            "envelopeId": "envelope-dcfe7235837c1d4bd027a48f647f89e4",
+            "basis": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+            "candidate": "7682fe3d4fa0b18eb2032030b9273b388ffc37d5",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "receiptId": "447df616f670588f28c1a98a8fba8b8390baa37ee61382dcaca3c57091660e51",
+            "checks": [
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "test/server.test.js",
+                "passed": true,
+                "basisBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "candidateBlob": "6f26142895e018653df7645daa3674792b538c67"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "proto/energy.proto",
+                "passed": true,
+                "basisBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "candidateBlob": "cb47047c924012d191fd39896da234c7fbd31ab9"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "service/grpc_client.js",
+                "passed": true,
+                "basisBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "candidateBlob": "66fd2884106de651ef79175faebd70ffe83ea50e"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "service/wire.js",
+                "passed": true,
+                "basisBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "candidateBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "test/rest.test.js",
+                "passed": true,
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+              }
+            ]
+          },
+          "planRefusal": {
+            "state": "REFUSED",
+            "reason": "TASK_OBLIGATION_SCOPE_MISMATCH",
+            "detail": "Use only allowed paths and include every must-change path.",
+            "nextAction": "CORRECT_PLAN",
+            "paths": [
+              "proto/energy.proto"
+            ],
+            "candidate": null
+          },
+          "readiness": {
+            "active": {
+              "schema": "odpe-outcome-readiness/v1",
+              "action": "SEMANTIC_JUDGEMENT",
+              "reasons": [
+                "the attempt already settled at 7682fe3d4fa0b18eb2032030b9273b388ffc37d5; no second complete or finalize is needed",
+                "the scheduler's next transition is TASK_VERIFYING for this task"
+              ],
+              "observationDigest": "f4f93a18caeb06f1113840570949a8aa04cd781b023480fdf4e29c3bc7099eb3",
+              "task": {
+                "taskId": "revise-fleet-default",
+                "state": "ACTIVE",
+                "objective": null
+              },
+              "attempt": {
+                "attemptId": "attempt-1430586dc27b2916a74ef340c2d13a6a",
+                "state": "COMPLETED",
+                "baseCommit": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+                "worldPath": "/run/stage/world/.palimpsest/worlds/attempt-1430586dc27b2916a74ef340c2d13a6a",
+                "worldHead": "7682fe3d4fa0b18eb2032030b9273b388ffc37d5",
+                "uncommittedChanges": [],
+                "resultCommit": "7682fe3d4fa0b18eb2032030b9273b388ffc37d5",
+                "resultCommitted": true
+              },
+              "execution": {
+                "jobPhase": "FINISHED",
+                "active": false,
+                "stopRequested": false,
+                "processExit": "OBSERVED",
+                "liveness": "UNKNOWN"
+              },
+              "directOutcome": {
+                "repositoryHead": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+                "projectHead": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+                "relation": "IN_SYNC",
+                "uncommittedPaths": []
+              },
+              "artifacts": [
+                {
+                  "path": "service/grpc_server.js",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "test/integration.test.js",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "MIGRATION.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "test/server.test.js",
+                  "present": true,
+                  "committed": true
+                }
+              ],
+              "inputs": {
+                "state": "OBSERVED",
+                "paths": [],
+                "unreadable": [],
+                "relevance": "NONE_OBSERVED",
+                "detail": "the canonical project holds no content the basis 153b3c8a16a5 did not contain (2 limitation(s) recorded)"
+              },
+              "completion": {
+                "mechanicalChecksEvaluable": true,
+                "readinessState": "READY",
+                "blockers": [],
+                "verificationRequired": false,
+                "verificationSatisfiable": true
+              },
+              "next": [
+                "call palimpsest_work action=next to advance this task to VERIFYING",
+                "once the task is VERIFYING, call palimpsest_work action=conclude intent=WAIT_FOR_OPERATOR if the candidate is ready for operator review"
+              ]
+            },
+            "verifying": {
+              "schema": "odpe-outcome-readiness/v1",
+              "action": "SEMANTIC_JUDGEMENT",
+              "reasons": [
+                "the attempt already settled at 7682fe3d4fa0b18eb2032030b9273b388ffc37d5; no second complete or finalize is needed",
+                "the candidate awaits operator acceptance; the episode decision is the principal's"
+              ],
+              "observationDigest": "966955f313af37fed9c3db0ff12e66a32972bdfa795be03bee95f7d35f128228",
+              "task": {
+                "taskId": "revise-fleet-default",
+                "state": "VERIFYING",
+                "objective": null
+              },
+              "attempt": {
+                "attemptId": "attempt-1430586dc27b2916a74ef340c2d13a6a",
+                "state": "COMPLETED",
+                "baseCommit": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+                "worldPath": "/run/stage/world/.palimpsest/worlds/attempt-1430586dc27b2916a74ef340c2d13a6a",
+                "worldHead": "7682fe3d4fa0b18eb2032030b9273b388ffc37d5",
+                "uncommittedChanges": [],
+                "resultCommit": "7682fe3d4fa0b18eb2032030b9273b388ffc37d5",
+                "resultCommitted": true
+              },
+              "execution": {
+                "jobPhase": "FINISHED",
+                "active": false,
+                "stopRequested": false,
+                "processExit": "OBSERVED",
+                "liveness": "UNKNOWN"
+              },
+              "directOutcome": {
+                "repositoryHead": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+                "projectHead": "153b3c8a16a50afb9ba95373288e3fd85fbd71de",
+                "relation": "IN_SYNC",
+                "uncommittedPaths": []
+              },
+              "artifacts": [
+                {
+                  "path": "service/grpc_server.js",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "test/integration.test.js",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "MIGRATION.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "test/server.test.js",
+                  "present": true,
+                  "committed": true
+                }
+              ],
+              "inputs": {
+                "state": "OBSERVED",
+                "paths": [],
+                "unreadable": [],
+                "relevance": "NONE_OBSERVED",
+                "detail": "the canonical project holds no content the basis 153b3c8a16a5 did not contain (2 limitation(s) recorded)"
+              },
+              "completion": {
+                "mechanicalChecksEvaluable": true,
+                "readinessState": "READY",
+                "blockers": [],
+                "verificationRequired": false,
+                "verificationSatisfiable": true
+              },
+              "next": [
+                "if the candidate is ready for operator review, call palimpsest_work action=conclude intent=WAIT_FOR_OPERATOR with your statement"
+              ]
+            }
+          },
+          "acceptedHead": "d91b1f2e95891aac09c27f32fb7d3a40a7fe5784",
+          "promotionId": "promotion-582d2769d9b115cf9c54eb40559d5461",
+          "business": {
+            "commit": "7682fe3d4fa0b18eb2032030b9273b388ffc37d5",
+            "tree": "63deb527999e4b6498870b79476813a11827104b",
+            "changedPaths": [
+              "MIGRATION.md",
+              "service/grpc_server.js",
+              "test/integration.test.js"
+            ],
+            "blobs": {
+              "proto/energy.proto": "cb47047c924012d191fd39896da234c7fbd31ab9",
+              "service/wire.js": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+              "service/grpc_server.js": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+              "service/grpc_client.js": "66fd2884106de651ef79175faebd70ffe83ea50e",
+              "test/server.test.js": "6f26142895e018653df7645daa3674792b538c67",
+              "test/integration.test.js": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+              "MIGRATION.md": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+              "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+            },
+            "publicTests": 10,
+            "probes": {
+              "zero": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  }
+                ]
+              },
+              "omitted": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  }
+                ]
+              },
+              "positive2": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  }
+                ]
+              },
+              "positive6": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4210,
+                    "atMs": 1762300180000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4150,
+                    "atMs": 1762300240000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 3970,
+                    "atMs": 1762300300000
+                  }
+                ]
+              },
+              "unknownStream": {
+                "status": "5",
+                "frames": []
+              },
+              "unknownUnary": {
+                "status": "5",
+                "frames": []
+              },
+              "unary": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  }
+                ]
+              }
+            },
+            "oldRuleFailures": [
+              "zero",
+              "omitted"
+            ],
+            "newRuleFailures": []
+          },
+          "naturalExit": true,
+          "confirmedMockRequests": 22,
+          "unresolvedRequests": 0,
+          "requestIdsBound": true,
+          "usageTupleMatch": true,
+          "isolation": [
+            {
+              "attemptId": "attempt-1430586dc27b2916a74ef340c2d13a6a",
+              "qualification": "7e1e318bf8a9f9f24f8da3bc32fdd1f9504f08e403729cf5dc1f77f8fdc4d502",
+              "exit": {
+                "code": 0,
+                "signal": null
+              }
+            }
+          ],
+          "streams": [
+            {
+              "role": "principal",
+              "digest": "f0906d15c88b1cc1a7234f54d9a886c3cfc893fcbea1bc942868c276698639a2",
+              "counts": {
+                "steps": 18,
+                "turns": 1,
+                "toolCalls": 17,
+                "pairedToolResults": 17,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 1,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 1,
+                "stateQueries": 11,
+                "commits": 0,
+                "jobs": 0
+              }
+            },
+            {
+              "role": "worker",
+              "digest": "9996d33ff064bf95c2f552a00a7b07586ffd106c580ddc21be9d4ebc71a28b20",
+              "counts": {
+                "steps": 4,
+                "turns": 1,
+                "toolCalls": 3,
+                "pairedToolResults": 3,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 0,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 0,
+                "stateQueries": 0,
+                "commits": 0,
+                "jobs": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "energy",
+      "first": "42e05a6a189f4600b305bde99234132358615746",
+      "basis": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+      "obligations": {
+        "schemaVersion": 1,
+        "mayWrite": [
+          "deliverables/technical-capacity.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md"
+        ],
+        "mustChange": [
+          "deliverables/technical-capacity.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md"
+        ],
+        "mustExist": [
+          "deliverables/technical-capacity.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md"
+        ],
+        "mustPreserve": [
+          "deliverables/vendor-compliance.md"
+        ]
+      },
+      "sessions": [
+        {
+          "interface": "normal-dsh",
+          "basis": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+          "receipt": {
+            "attemptId": "attempt-f3b01c5f46c651d21556af0db09a5d91",
+            "basis": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+            "candidate": "ee0dbb5f022c5be15478b18ea58c0caff4fcf298",
+            "checks": [
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "candidateBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "deliverables/vendor-compliance.md"
+              }
+            ],
+            "envelopeId": "envelope-8743aa011b4de4a55c1471535fafcf07",
+            "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+            "phase": "SETTLED",
+            "receiptId": "516b3b57ce440444ca43fc13f7188a7b9c6b4303a7dac73763597e0111f5282a",
+            "schemaVersion": 1,
+            "taskId": "revise-energy-package"
+          },
+          "preview": {
+            "schemaVersion": 1,
+            "phase": "PREVIEW",
+            "taskId": "revise-energy-package",
+            "attemptId": "attempt-f3b01c5f46c651d21556af0db09a5d91",
+            "envelopeId": "envelope-8743aa011b4de4a55c1471535fafcf07",
+            "basis": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+            "candidate": "ee0dbb5f022c5be15478b18ea58c0caff4fcf298",
+            "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+            "receiptId": "516b3b57ce440444ca43fc13f7188a7b9c6b4303a7dac73763597e0111f5282a",
+            "checks": [
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "deliverables/vendor-compliance.md",
+                "passed": true,
+                "basisBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "candidateBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe"
+              }
+            ]
+          },
+          "planRefusal": {
+            "state": "REFUSED",
+            "reason": "TASK_OBLIGATION_SCOPE_MISMATCH",
+            "detail": "Use only allowed paths and include every must-change path.",
+            "nextAction": "CORRECT_PLAN",
+            "paths": [
+              "deliverables/vendor-compliance.md"
+            ],
+            "candidate": null
+          },
+          "readiness": {
+            "active": {
+              "schema": "odpe-outcome-readiness/v1",
+              "action": "SEMANTIC_JUDGEMENT",
+              "reasons": [
+                "the attempt already settled at ee0dbb5f022c5be15478b18ea58c0caff4fcf298; no second complete or finalize is needed",
+                "the scheduler's next transition is TASK_VERIFYING for this task"
+              ],
+              "observationDigest": "1defbe4f26f307784173cbba92ec4d785a216e3b007b007676ea689ae34e2150",
+              "task": {
+                "taskId": "revise-energy-package",
+                "state": "ACTIVE",
+                "objective": null
+              },
+              "attempt": {
+                "attemptId": "attempt-f3b01c5f46c651d21556af0db09a5d91",
+                "state": "COMPLETED",
+                "baseCommit": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+                "worldPath": "/run/stage/world/.palimpsest/worlds/attempt-f3b01c5f46c651d21556af0db09a5d91",
+                "worldHead": "ee0dbb5f022c5be15478b18ea58c0caff4fcf298",
+                "uncommittedChanges": [],
+                "resultCommit": "ee0dbb5f022c5be15478b18ea58c0caff4fcf298",
+                "resultCommitted": true
+              },
+              "execution": {
+                "jobPhase": "FINISHED",
+                "active": false,
+                "stopRequested": false,
+                "processExit": "OBSERVED",
+                "liveness": "UNKNOWN"
+              },
+              "directOutcome": {
+                "repositoryHead": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+                "projectHead": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+                "relation": "IN_SYNC",
+                "uncommittedPaths": []
+              },
+              "artifacts": [
+                {
+                  "path": "deliverables/technical-capacity.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/cost-model.json",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/schedule.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/risk-review.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/recommendation.md",
+                  "present": true,
+                  "committed": true
+                }
+              ],
+              "inputs": {
+                "state": "OBSERVED",
+                "paths": [],
+                "unreadable": [],
+                "relevance": "NONE_OBSERVED",
+                "detail": "the canonical project holds no content the basis 3bd1aa7cb827 did not contain (2 limitation(s) recorded)"
+              },
+              "completion": {
+                "mechanicalChecksEvaluable": true,
+                "readinessState": "READY",
+                "blockers": [],
+                "verificationRequired": false,
+                "verificationSatisfiable": true
+              },
+              "next": [
+                "call palimpsest_work action=next to advance this task to VERIFYING",
+                "once the task is VERIFYING, call palimpsest_work action=conclude intent=WAIT_FOR_OPERATOR if the candidate is ready for operator review"
+              ]
+            },
+            "verifying": {
+              "schema": "odpe-outcome-readiness/v1",
+              "action": "SEMANTIC_JUDGEMENT",
+              "reasons": [
+                "the attempt already settled at ee0dbb5f022c5be15478b18ea58c0caff4fcf298; no second complete or finalize is needed",
+                "the candidate awaits operator acceptance; the episode decision is the principal's"
+              ],
+              "observationDigest": "08d597657d89929bf5d95861468b85da35b892d4fcd55aba1a399bea76af806f",
+              "task": {
+                "taskId": "revise-energy-package",
+                "state": "VERIFYING",
+                "objective": null
+              },
+              "attempt": {
+                "attemptId": "attempt-f3b01c5f46c651d21556af0db09a5d91",
+                "state": "COMPLETED",
+                "baseCommit": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+                "worldPath": "/run/stage/world/.palimpsest/worlds/attempt-f3b01c5f46c651d21556af0db09a5d91",
+                "worldHead": "ee0dbb5f022c5be15478b18ea58c0caff4fcf298",
+                "uncommittedChanges": [],
+                "resultCommit": "ee0dbb5f022c5be15478b18ea58c0caff4fcf298",
+                "resultCommitted": true
+              },
+              "execution": {
+                "jobPhase": "FINISHED",
+                "active": false,
+                "stopRequested": false,
+                "processExit": "OBSERVED",
+                "liveness": "UNKNOWN"
+              },
+              "directOutcome": {
+                "repositoryHead": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+                "projectHead": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+                "relation": "IN_SYNC",
+                "uncommittedPaths": []
+              },
+              "artifacts": [
+                {
+                  "path": "deliverables/technical-capacity.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/cost-model.json",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/schedule.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/risk-review.md",
+                  "present": true,
+                  "committed": true
+                },
+                {
+                  "path": "deliverables/recommendation.md",
+                  "present": true,
+                  "committed": true
+                }
+              ],
+              "inputs": {
+                "state": "OBSERVED",
+                "paths": [],
+                "unreadable": [],
+                "relevance": "NONE_OBSERVED",
+                "detail": "the canonical project holds no content the basis 3bd1aa7cb827 did not contain (2 limitation(s) recorded)"
+              },
+              "completion": {
+                "mechanicalChecksEvaluable": true,
+                "readinessState": "READY",
+                "blockers": [],
+                "verificationRequired": false,
+                "verificationSatisfiable": true
+              },
+              "next": [
+                "if the candidate is ready for operator review, call palimpsest_work action=conclude intent=WAIT_FOR_OPERATOR with your statement"
+              ]
+            }
+          },
+          "acceptedHead": "c99435e3e256b3b351f25ef2c28008f0b3e82c4e",
+          "promotionId": "promotion-5af0b61feb4c66db2f40f289a1a77553",
+          "business": {
+            "passed": true,
+            "commit": "ee0dbb5f022c5be15478b18ea58c0caff4fcf298",
+            "basis": "3bd1aa7cb827cb17b93dad12493b6c341d46777f",
+            "tree": "417cef0acce91a0698200c9f04495e8bb2d34867",
+            "artifacts": {
+              "deliverables/technical-capacity.md": "715902e8460576f98bead5361d9585da0fcd3518",
+              "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+              "deliverables/cost-model.json": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+              "deliverables/schedule.md": "630be116a008dbff49ffd313c3accf335be56912",
+              "deliverables/risk-review.md": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+              "deliverables/recommendation.md": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+            },
+            "changedPaths": [
+              "deliverables/cost-model.json",
+              "deliverables/recommendation.md",
+              "deliverables/risk-review.md",
+              "deliverables/schedule.md",
+              "deliverables/technical-capacity.md"
+            ],
+            "recommendation": {
+              "north": "K-900",
+              "harbor": "K-900",
+              "totalUsd": 536000,
+              "corridorMm": 1250
+            },
+            "schedule": {
+              "start": "2026-11-05",
+              "installs": [
+                {
+                  "site": "NR",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-18"
+                },
+                {
+                  "site": "HF",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-18"
+                }
+              ]
+            },
+            "normalizations": [],
+            "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=K-900; total 536000 USD)"
+          },
+          "naturalExit": true,
+          "confirmedMockRequests": 20,
+          "unresolvedRequests": 0,
+          "requestIdsBound": true,
+          "usageTupleMatch": true,
+          "isolation": [
+            {
+              "attemptId": "attempt-f3b01c5f46c651d21556af0db09a5d91",
+              "qualification": "4a69f5c27917d2f91d26e79ee6c66124711ac62955ad0c63545c271f41ecf660",
+              "exit": {
+                "code": 0,
+                "signal": null
+              }
+            }
+          ],
+          "streams": [
+            {
+              "role": "principal",
+              "digest": "bcfd7fb8327e0bb87667efb84ba008f65dd3f699d0d14d5c46e471739b1b3dae",
+              "counts": {
+                "steps": 16,
+                "turns": 1,
+                "toolCalls": 15,
+                "pairedToolResults": 15,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 1,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 1,
+                "stateQueries": 9,
+                "commits": 0,
+                "jobs": 0
+              }
+            },
+            {
+              "role": "worker",
+              "digest": "225c0fa4b7c20c7e87317eaacfc1391e5e275170b8ca7e8d4b92d8fcc3a3e30c",
+              "counts": {
+                "steps": 4,
+                "turns": 1,
+                "toolCalls": 3,
+                "pairedToolResults": 3,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 0,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 0,
+                "stateQueries": 0,
+                "commits": 0,
+                "jobs": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "passed": true
+}

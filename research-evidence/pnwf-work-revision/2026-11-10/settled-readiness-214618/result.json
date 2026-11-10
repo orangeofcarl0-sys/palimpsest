@@ -1,0 +1,1409 @@
+{
+  "scenario": "grpc",
+  "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "cohortId": "work-revision-live-grpc-8ef7dcbd-1a07-41f3-8098-16ff51965fbb",
+  "passed": true,
+  "usageKnown": true,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "work-revision-live-grpc-8ef7dcbd-1a07-41f3-8098-16ff51965fbb",
+    "sessionId": "T2",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-settled-readiness-20261110134618\\grpc\\stages\\T2\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-settled-readiness-20261110134618\\grpc\\runtime-T2",
+    "principalRuntime": "container",
+    "containerId": "534207a49816677619145f447b4bc34930adde8e55c34c3dfb45e5306e61215d",
+    "qualification": "21f8e77b92d7b3b0ff583dc4a5c5c71146dd84a6fd2422c7663cb3c9508d8393",
+    "startedAt": "2026-11-10T13:51:54.738Z",
+    "endedAt": "2026-11-10T13:55:52.222Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "work-revision-live-grpc-8ef7dcbd-1a07-41f3-8098-16ff51965fbb",
+      "sessionId": "T2",
+      "observedAt": "2026-11-10T13:55:52.222Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 1492257,
+      "confirmedTokens": 1492257,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 47,
+    "paidModelCalls": 47
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-9c41ba18-7e85-4d41-8d8a-ee793e1b7b71",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 47,
+    "knownTokens": 1492257,
+    "totalTokens": 1492257,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 59064,
+      "cache_read_input_tokens": 1418750,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 14443
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 29,
+        "input": 36108,
+        "cacheRead": 989566,
+        "cacheWrite": 0,
+        "output": 7102,
+        "total": 1032776
+      },
+      "worker": {
+        "requests": 18,
+        "input": 22956,
+        "cacheRead": 429184,
+        "cacheWrite": 0,
+        "output": 7341,
+        "total": 459481
+      }
+    },
+    "traceTotal": 1492257,
+    "traceRequests": 47,
+    "workerRequests": 18,
+    "elapsedMs": 237484,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [
+      {
+        "startedAt": "2026-11-10T13:53:04.026Z",
+        "outcome": "READY_FOR_SETTLEMENT",
+        "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+        "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+        "writeScope": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md",
+          "test/server.test.js"
+        ],
+        "containerId": "1ac1d95242b737a698260dd8a0e9a0ed00be06f56b1fb3664dc03ca437d70a85",
+        "qualification": "972c72d06e9deebd8c05e1f1ced70f9d670ae97b798ac1fa9abde25198d43ffd",
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "sessionId": "worker-ac525352-ef6b-4e22-9b17-4487ac64bdd2",
+        "result": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+        "paths": [
+          "MIGRATION.md",
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "test/server.test.js"
+        ],
+        "endedAt": "2026-11-10T13:54:29.248Z"
+      }
+    ],
+    "traces": [
+      {
+        "id": "session-9c41ba18-7e85-4d41-8d8a-ee793e1b7b71",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "1a0fc906ef5bbd3ca6e428386564140bda3af1a0e4a28eb887d2c70d3a401ce8",
+        "counts": {
+          "steps": 29,
+          "turns": 1,
+          "toolCalls": 45,
+          "pairedToolResults": 45,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 9,
+          "commits": 0,
+          "jobs": 15
+        },
+        "refs": [
+          {
+            "callId": "call_00_NUajfbm77GpA9SZaTNUC0385",
+            "seq": 108,
+            "kind": "job_output",
+            "state": null,
+            "reason": null,
+            "detail": null
+          }
+        ],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794318746060,
+            "messageId": "ac068c94-cc61-4466-84f5-6cd2c4d41ea0",
+            "usage": {
+              "inputTokens": 134,
+              "outputTokens": 58,
+              "cacheReadTokens": 10622,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10814
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1794318752762,
+            "messageId": "7c88b966-69c6-4f8f-b644-99b7286ae0b4",
+            "usage": {
+              "inputTokens": 2689,
+              "outputTokens": 154,
+              "cacheReadTokens": 10752,
+              "cacheWriteTokens": 0,
+              "totalTokens": 13595
+            }
+          },
+          {
+            "seq": 30,
+            "at": 1794318755111,
+            "messageId": "87cf79a9-715a-4636-b106-f744f8fa7fc9",
+            "usage": {
+              "inputTokens": 497,
+              "outputTokens": 283,
+              "cacheReadTokens": 13568,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14348
+            }
+          },
+          {
+            "seq": 46,
+            "at": 1794318758001,
+            "messageId": "c63d7ca1-0a41-494a-b982-4c6065bc7b41",
+            "usage": {
+              "inputTokens": 7221,
+              "outputTokens": 421,
+              "cacheReadTokens": 14336,
+              "cacheWriteTokens": 0,
+              "totalTokens": 21978
+            }
+          },
+          {
+            "seq": 64,
+            "at": 1794318768172,
+            "messageId": "7ecc768e-c5a1-4573-94fa-bdd6b56aad3a",
+            "usage": {
+              "inputTokens": 7043,
+              "outputTokens": 1299,
+              "cacheReadTokens": 21888,
+              "cacheWriteTokens": 0,
+              "totalTokens": 30230
+            }
+          },
+          {
+            "seq": 70,
+            "at": 1794318769849,
+            "messageId": "c1537ad2-ba99-47a7-a7f4-392b1ce77d78",
+            "usage": {
+              "inputTokens": 926,
+              "outputTokens": 157,
+              "cacheReadTokens": 30208,
+              "cacheWriteTokens": 0,
+              "totalTokens": 31291
+            }
+          },
+          {
+            "seq": 76,
+            "at": 1794318771689,
+            "messageId": "4c364bc0-15c6-4bc7-b0c0-e6f3bfb3673d",
+            "usage": {
+              "inputTokens": 727,
+              "outputTokens": 65,
+              "cacheReadTokens": 31232,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32024
+            }
+          },
+          {
+            "seq": 82,
+            "at": 1794318773259,
+            "messageId": "70aabe99-bcf9-4a3c-8d94-c084cb93f15b",
+            "usage": {
+              "inputTokens": 728,
+              "outputTokens": 47,
+              "cacheReadTokens": 32000,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32775
+            }
+          },
+          {
+            "seq": 88,
+            "at": 1794318774788,
+            "messageId": "20b20321-7c0e-4590-9ae4-d596d3d9b8b7",
+            "usage": {
+              "inputTokens": 574,
+              "outputTokens": 68,
+              "cacheReadTokens": 32768,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33410
+            }
+          },
+          {
+            "seq": 94,
+            "at": 1794318794667,
+            "messageId": "7b28a69c-b68b-486e-b9d6-651db6a37e2c",
+            "usage": {
+              "inputTokens": 431,
+              "outputTokens": 360,
+              "cacheReadTokens": 33408,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34199
+            }
+          },
+          {
+            "seq": 106,
+            "at": 1794318796272,
+            "messageId": "eabbd6e2-ec09-4ae8-9415-4528f974aa15",
+            "usage": {
+              "inputTokens": 601,
+              "outputTokens": 108,
+              "cacheReadTokens": 34176,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34885
+            }
+          },
+          {
+            "seq": 112,
+            "at": 1794318797609,
+            "messageId": "bc5df49c-6ef4-4314-ae04-0e3df93c0ac5",
+            "usage": {
+              "inputTokens": 238,
+              "outputTokens": 89,
+              "cacheReadTokens": 34688,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35015
+            }
+          },
+          {
+            "seq": 118,
+            "at": 1794318801670,
+            "messageId": "e996ca3e-5bb7-47e0-80de-c090dfe9f65f",
+            "usage": {
+              "inputTokens": 409,
+              "outputTokens": 239,
+              "cacheReadTokens": 34944,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35592
+            }
+          },
+          {
+            "seq": 126,
+            "at": 1794318803187,
+            "messageId": "1d3f04bb-77d1-41e4-a729-f32cfb63eece",
+            "usage": {
+              "inputTokens": 184,
+              "outputTokens": 59,
+              "cacheReadTokens": 35456,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35699
+            }
+          },
+          {
+            "seq": 132,
+            "at": 1794318807195,
+            "messageId": "f7ceac27-ee04-42a8-a68b-e1af7ae76cff",
+            "usage": {
+              "inputTokens": 453,
+              "outputTokens": 186,
+              "cacheReadTokens": 35584,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36223
+            }
+          },
+          {
+            "seq": 142,
+            "at": 1794318808726,
+            "messageId": "7578e417-21c5-4d43-a277-266c042f3f1c",
+            "usage": {
+              "inputTokens": 1782,
+              "outputTokens": 158,
+              "cacheReadTokens": 36096,
+              "cacheWriteTokens": 0,
+              "totalTokens": 38036
+            }
+          },
+          {
+            "seq": 150,
+            "at": 1794318810460,
+            "messageId": "5a28c98b-8d7f-4604-a3c0-8b49abcbb809",
+            "usage": {
+              "inputTokens": 196,
+              "outputTokens": 65,
+              "cacheReadTokens": 37888,
+              "cacheWriteTokens": 0,
+              "totalTokens": 38149
+            }
+          },
+          {
+            "seq": 156,
+            "at": 1794318814123,
+            "messageId": "c03790d6-3b18-4137-93b9-ce6a33277d19",
+            "usage": {
+              "inputTokens": 343,
+              "outputTokens": 123,
+              "cacheReadTokens": 38144,
+              "cacheWriteTokens": 0,
+              "totalTokens": 38610
+            }
+          },
+          {
+            "seq": 164,
+            "at": 1794318815597,
+            "messageId": "d384f402-b7e3-4d98-aad8-cb614537d984",
+            "usage": {
+              "inputTokens": 718,
+              "outputTokens": 130,
+              "cacheReadTokens": 38528,
+              "cacheWriteTokens": 0,
+              "totalTokens": 39376
+            }
+          },
+          {
+            "seq": 172,
+            "at": 1794318817883,
+            "messageId": "a54a996a-c553-4665-864a-7a25ae821b1f",
+            "usage": {
+              "inputTokens": 822,
+              "outputTokens": 250,
+              "cacheReadTokens": 39296,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40368
+            }
+          },
+          {
+            "seq": 180,
+            "at": 1794318850202,
+            "messageId": "746fd8d3-6660-4b7a-8e6b-1c68ddbf41ba",
+            "usage": {
+              "inputTokens": 224,
+              "outputTokens": 150,
+              "cacheReadTokens": 40192,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40566
+            }
+          },
+          {
+            "seq": 188,
+            "at": 1794318852580,
+            "messageId": "86fc31ce-a586-46b1-8b0d-fc33747424df",
+            "usage": {
+              "inputTokens": 533,
+              "outputTokens": 287,
+              "cacheReadTokens": 40448,
+              "cacheWriteTokens": 0,
+              "totalTokens": 41268
+            }
+          },
+          {
+            "seq": 196,
+            "at": 1794318914875,
+            "messageId": "39651b82-683e-4d01-b564-9cb4c4182b36",
+            "usage": {
+              "inputTokens": 227,
+              "outputTokens": 255,
+              "cacheReadTokens": 41088,
+              "cacheWriteTokens": 0,
+              "totalTokens": 41570
+            }
+          },
+          {
+            "seq": 208,
+            "at": 1794318920756,
+            "messageId": "f2573fbb-0a07-4c78-9378-4eae22d11a62",
+            "usage": {
+              "inputTokens": 1282,
+              "outputTokens": 348,
+              "cacheReadTokens": 41472,
+              "cacheWriteTokens": 0,
+              "totalTokens": 43102
+            }
+          },
+          {
+            "seq": 220,
+            "at": 1794318924741,
+            "messageId": "2bef1f82-d7b7-404c-a6de-2755256f4cee",
+            "usage": {
+              "inputTokens": 2352,
+              "outputTokens": 267,
+              "cacheReadTokens": 43008,
+              "cacheWriteTokens": 0,
+              "totalTokens": 45627
+            }
+          },
+          {
+            "seq": 228,
+            "at": 1794318928984,
+            "messageId": "4b297679-a947-470e-b432-a76dd6b3c3d6",
+            "usage": {
+              "inputTokens": 473,
+              "outputTokens": 506,
+              "cacheReadTokens": 45568,
+              "cacheWriteTokens": 0,
+              "totalTokens": 46547
+            }
+          },
+          {
+            "seq": 234,
+            "at": 1794318932131,
+            "messageId": "08d84818-fc5c-4dec-86a9-20995aecc9ff",
+            "usage": {
+              "inputTokens": 874,
+              "outputTokens": 89,
+              "cacheReadTokens": 46464,
+              "cacheWriteTokens": 0,
+              "totalTokens": 47427
+            }
+          },
+          {
+            "seq": 240,
+            "at": 1794318935475,
+            "messageId": "af90f90c-fef2-487c-8984-8de22a58ad99",
+            "usage": {
+              "inputTokens": 691,
+              "outputTokens": 391,
+              "cacheReadTokens": 47360,
+              "cacheWriteTokens": 0,
+              "totalTokens": 48442
+            }
+          },
+          {
+            "seq": 246,
+            "at": 1794318951073,
+            "messageId": "e26ec625-8a8d-4507-b310-0a24ce6aa04a",
+            "usage": {
+              "inputTokens": 2736,
+              "outputTokens": 490,
+              "cacheReadTokens": 48384,
+              "cacheWriteTokens": 0,
+              "totalTokens": 51610
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 15,
+          "read": 14,
+          "work:status": 2,
+          "work:plan": 1,
+          "work:next": 3,
+          "work:delegate": 1,
+          "job_output": 1,
+          "work:workers": 4,
+          "work:results": 1,
+          "work:readiness": 1,
+          "work:conclude": 1
+        }
+      },
+      {
+        "id": "worker-ac525352-ef6b-4e22-9b17-4487ac64bdd2",
+        "cwd": "/run/stage/world",
+        "role": "worker",
+        "digest": "b9df5cc8dd41ef02629c4783717514947354891b968794bda66a4b5e109000c9",
+        "counts": {
+          "steps": 18,
+          "turns": 1,
+          "toolCalls": 32,
+          "pairedToolResults": 32,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 9
+        },
+        "refs": [],
+        "failedJobs": [
+          {
+            "jobId": "bash-71dfe8f4df1549eb",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_03_iXFdLD5e1COLdgsqiffV5703",
+            "callSeq": 35,
+            "callKind": "bash",
+            "resultSeq": null,
+            "settledSeq": 37,
+            "durationMs": 59
+          }
+        ],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794318809675,
+            "messageId": "f9adf243-6b64-4e94-ac62-84338967f659",
+            "usage": {
+              "inputTokens": 925,
+              "outputTokens": 197,
+              "cacheReadTokens": 5632,
+              "cacheWriteTokens": 0,
+              "totalTokens": 6754
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1794318811645,
+            "messageId": "db874cc0-81e2-49da-b046-71fb0206d145",
+            "usage": {
+              "inputTokens": 4517,
+              "outputTokens": 264,
+              "cacheReadTokens": 6656,
+              "cacheWriteTokens": 0,
+              "totalTokens": 11437
+            }
+          },
+          {
+            "seq": 42,
+            "at": 1794318813177,
+            "messageId": "bcc68fb0-210c-4f26-aa54-b5519d88d1ee",
+            "usage": {
+              "inputTokens": 3715,
+              "outputTokens": 205,
+              "cacheReadTokens": 11392,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15312
+            }
+          },
+          {
+            "seq": 50,
+            "at": 1794318815691,
+            "messageId": "86eedef3-c05a-4206-902d-31f459f38c12",
+            "usage": {
+              "inputTokens": 231,
+              "outputTokens": 312,
+              "cacheReadTokens": 15232,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15775
+            }
+          },
+          {
+            "seq": 64,
+            "at": 1794318822180,
+            "messageId": "e727cf47-fb0b-45ce-9060-a584ef26609d",
+            "usage": {
+              "inputTokens": 7055,
+              "outputTokens": 949,
+              "cacheReadTokens": 15744,
+              "cacheWriteTokens": 0,
+              "totalTokens": 23748
+            }
+          },
+          {
+            "seq": 75,
+            "at": 1794318825819,
+            "messageId": "ac8d86af-8538-4fa4-901b-ab9b0e4db464",
+            "usage": {
+              "inputTokens": 309,
+              "outputTokens": 582,
+              "cacheReadTokens": 23680,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24571
+            }
+          },
+          {
+            "seq": 83,
+            "at": 1794318830181,
+            "messageId": "56a9632e-36ff-4fbe-8769-682d1c678f18",
+            "usage": {
+              "inputTokens": 177,
+              "outputTokens": 755,
+              "cacheReadTokens": 24448,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25380
+            }
+          },
+          {
+            "seq": 89,
+            "at": 1794318834024,
+            "messageId": "3076c389-38f9-4833-96da-71a06e7b1b62",
+            "usage": {
+              "inputTokens": 193,
+              "outputTokens": 710,
+              "cacheReadTokens": 25216,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26119
+            }
+          },
+          {
+            "seq": 95,
+            "at": 1794318840016,
+            "messageId": "ea534b7e-6a2b-4c98-aec0-9df4c2925894",
+            "usage": {
+              "inputTokens": 162,
+              "outputTokens": 1052,
+              "cacheReadTokens": 25984,
+              "cacheWriteTokens": 0,
+              "totalTokens": 27198
+            }
+          },
+          {
+            "seq": 101,
+            "at": 1794318843359,
+            "messageId": "e07ba4d4-9e10-4c1a-9368-a8434fabed0b",
+            "usage": {
+              "inputTokens": 217,
+              "outputTokens": 636,
+              "cacheReadTokens": 27008,
+              "cacheWriteTokens": 0,
+              "totalTokens": 27861
+            }
+          },
+          {
+            "seq": 109,
+            "at": 1794318844885,
+            "messageId": "2cc44424-570b-4883-a18a-42db15fc4ef5",
+            "usage": {
+              "inputTokens": 135,
+              "outputTokens": 204,
+              "cacheReadTokens": 27776,
+              "cacheWriteTokens": 0,
+              "totalTokens": 28115
+            }
+          },
+          {
+            "seq": 121,
+            "at": 1794318847353,
+            "messageId": "e96c6534-cc26-45ca-a907-992fa5560d45",
+            "usage": {
+              "inputTokens": 812,
+              "outputTokens": 92,
+              "cacheReadTokens": 28032,
+              "cacheWriteTokens": 0,
+              "totalTokens": 28936
+            }
+          },
+          {
+            "seq": 129,
+            "at": 1794318850709,
+            "messageId": "3903b1bf-f7ae-4ba6-bb10-f060badc9ad4",
+            "usage": {
+              "inputTokens": 2081,
+              "outputTokens": 534,
+              "cacheReadTokens": 28928,
+              "cacheWriteTokens": 0,
+              "totalTokens": 31543
+            }
+          },
+          {
+            "seq": 140,
+            "at": 1794318853781,
+            "messageId": "eedde43b-e9e2-45e7-b369-d05a5681a7f2",
+            "usage": {
+              "inputTokens": 142,
+              "outputTokens": 216,
+              "cacheReadTokens": 31488,
+              "cacheWriteTokens": 0,
+              "totalTokens": 31846
+            }
+          },
+          {
+            "seq": 148,
+            "at": 1794318855492,
+            "messageId": "98ebec96-e70f-471c-8332-5dcb346ac90c",
+            "usage": {
+              "inputTokens": 516,
+              "outputTokens": 31,
+              "cacheReadTokens": 31744,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32291
+            }
+          },
+          {
+            "seq": 154,
+            "at": 1794318859386,
+            "messageId": "e475c558-5aba-4d18-a6c2-4e3cb669ffa9",
+            "usage": {
+              "inputTokens": 1450,
+              "outputTokens": 326,
+              "cacheReadTokens": 32256,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34032
+            }
+          },
+          {
+            "seq": 161,
+            "at": 1794318860952,
+            "messageId": "ecfc96bd-0059-490b-ad9c-4531813a9976",
+            "usage": {
+              "inputTokens": 140,
+              "outputTokens": 136,
+              "cacheReadTokens": 33920,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34196
+            }
+          },
+          {
+            "seq": 167,
+            "at": 1794318862345,
+            "messageId": "df29c527-3b1e-4cf1-961b-96e3f70d8467",
+            "usage": {
+              "inputTokens": 179,
+              "outputTokens": 140,
+              "cacheReadTokens": 34048,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34367
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 9,
+          "read": 11,
+          "todo_write": 3,
+          "edit": 7,
+          "palimpsest_worker_receipt": 1,
+          "palimpsest_worker_result": 1
+        }
+      }
+    ]
+  },
+  "facts": {
+    "head": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "tasks": [
+      {
+        "task_id": "revise-fleet-default",
+        "state": "VERIFYING",
+        "last_event_id": 17
+      }
+    ],
+    "attempts": [
+      {
+        "id": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+        "task": "revise-fleet-default",
+        "state": "COMPLETED",
+        "taskId": "revise-fleet-default",
+        "report": {
+          "attempt_id": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+          "base_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "changed_files": [
+            "MIGRATION.md",
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "test/server.test.js"
+          ],
+          "context_manifest": "context-manifest-a49c6fccd5cc83cc80060d1375670604",
+          "envelope_id": "envelope-52d808c0807ca79eb478403a31d28cc2",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "input_project_digest": "c77a07add032fe008e9806b8cf2146baf0f3ececc6d1e391b654083f1b66271c",
+          "input_project_revision": 2,
+          "produced_artifacts": [
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "MIGRATION.md"
+          ],
+          "project_id": "grpc-migration-continuation",
+          "result_commit": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+          "revision_receipt": {
+            "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+            "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+            "candidate": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+            "checks": [
+              {
+                "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+                "candidateBlob": "8d60d6fa9dbd1443b27a5cee98486b5531151bfa",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+                "candidateBlob": "1784f02a185703b44e4c8d0103abcb6d49a346b0",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+                "candidateBlob": "ce9cb1ae85bb86f85d202bbf7899a2382bfe8c57",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+                "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "test/server.test.js"
+              },
+              {
+                "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+                "candidateBlob": "8d60d6fa9dbd1443b27a5cee98486b5531151bfa",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+                "candidateBlob": "1784f02a185703b44e4c8d0103abcb6d49a346b0",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+                "candidateBlob": "ce9cb1ae85bb86f85d202bbf7899a2382bfe8c57",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+                "candidateBlob": "8d60d6fa9dbd1443b27a5cee98486b5531151bfa",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+                "candidateBlob": "1784f02a185703b44e4c8d0103abcb6d49a346b0",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+                "candidateBlob": "ce9cb1ae85bb86f85d202bbf7899a2382bfe8c57",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+                "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/server.test.js"
+              },
+              {
+                "basisBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+                "candidateBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "proto/energy.proto"
+              },
+              {
+                "basisBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+                "candidateBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/grpc_client.js"
+              },
+              {
+                "basisBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+                "candidateBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/wire.js"
+              },
+              {
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "test/rest.test.js"
+              }
+            ],
+            "envelopeId": "envelope-52d808c0807ca79eb478403a31d28cc2",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "phase": "SETTLED",
+            "receiptId": "f4821e6335b402d4c1cd52e568eec8fc0250eb4cf562562d25bdedf73e55bb77",
+            "schemaVersion": 1,
+            "taskId": "revise-fleet-default"
+          },
+          "runtime_metadata": {
+            "argv": [
+              "dsh-agent"
+            ],
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "exit_code": 0,
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "stderr_artifact": null,
+            "stdout_artifact": null
+          },
+          "schema_version": 1,
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "summary": "delegated work settled from its execution world",
+          "task_id": "revise-fleet-default",
+          "worker_status": "completed",
+          "worktree_id": "worktree-88a05c46"
+        },
+        "envelope": {
+          "schema_version": 1,
+          "project_id": "grpc-migration-continuation",
+          "task_id": "revise-fleet-default",
+          "envelope_id": "envelope-52d808c0807ca79eb478403a31d28cc2",
+          "project_revision": 2,
+          "project_digest": "c77a07add032fe008e9806b8cf2146baf0f3ececc6d1e391b654083f1b66271c",
+          "base_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "objective": "Implement the Fleet default-limit compatibility correction. In service/grpc_server.js, treat an omitted or zero StreamReadings limit as a request for the first three available readings in source order, leaving positive limits, GetReading, unknown-site errors, field numbers, framing, and REST behavior unchanged. Update test/integration.test.js so omitted and zero limits assert the first three readings and still compare with the REST baseline where applicable. Update MIGRATION.md to document the effective behavior, including that the unchanged proto/energy.proto comment still describes the superseded first-release behavior and is informational only. Revise test/server.test.js if needed so the raw-wire tests agree. Keep proto/energy.proto, service/wire.js, service/grpc_client.js, and test/rest.test.js byte-for-byte identical to the basis. Run node --test, and leave a tested commit in the isolated candidate for owner review without promoting it.",
+          "read_paths": [
+            "src"
+          ],
+          "write_paths": [
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "MIGRATION.md",
+            "test/server.test.js"
+          ],
+          "required_artifacts": [
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "MIGRATION.md"
+          ],
+          "allowed_commands": [
+            {
+              "executable": "node",
+              "argv_prefix": [
+                "--test"
+              ]
+            }
+          ],
+          "network_policy": "deny",
+          "network_allowlist": [],
+          "timeout_s": 60,
+          "lease_s": 10,
+          "attempt_limit": 2,
+          "candidate_limit": 1,
+          "idempotency_key": "bf50064f6c56eeecce3bbd6574cca6b0e2192b72e6064eb167fa25de464d80b7",
+          "obligations": {
+            "rules": {
+              "schemaVersion": 1,
+              "mayWrite": [
+                "MIGRATION.md",
+                "service/grpc_server.js",
+                "test/integration.test.js",
+                "test/server.test.js"
+              ],
+              "mustChange": [
+                "MIGRATION.md",
+                "service/grpc_server.js",
+                "test/integration.test.js"
+              ],
+              "mustExist": [
+                "MIGRATION.md",
+                "service/grpc_server.js",
+                "test/integration.test.js",
+                "test/server.test.js"
+              ],
+              "mustPreserve": [
+                "proto/energy.proto",
+                "service/grpc_client.js",
+                "service/wire.js",
+                "test/rest.test.js"
+              ]
+            },
+            "digest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa"
+          }
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": 1,
+        "type": "PROJECT_CREATED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 2,
+        "type": "GATE_DEFINED",
+        "entityId": "gate-release"
+      },
+      {
+        "id": 3,
+        "type": "ROLE_TABLE_DEFINED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 4,
+        "type": "STAGE_GRAPH_DEFINED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 5,
+        "type": "MANUAL_APPROVAL_RECORDED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 6,
+        "type": "PROJECT_REVISED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 7,
+        "type": "PROJECT_REVISED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 8,
+        "type": "TASK_CREATED",
+        "entityId": "revise-fleet-default"
+      },
+      {
+        "id": 9,
+        "type": "TASK_STARTED",
+        "entityId": "revise-fleet-default"
+      },
+      {
+        "id": 10,
+        "type": "ATTEMPT_CREATED",
+        "entityId": "attempt-50afeb5d5bdea0421a8ad97588a05c46"
+      },
+      {
+        "id": 11,
+        "type": "ATTEMPT_STARTED",
+        "entityId": "attempt-50afeb5d5bdea0421a8ad97588a05c46"
+      },
+      {
+        "id": 12,
+        "type": "CONTEXT_MANIFEST_ADDED",
+        "entityId": "context-manifest-a49c6fccd5cc83cc80060d1375670604"
+      },
+      {
+        "id": 13,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-7300050d1d9d29c6d2ac83e93c1c5f27"
+      },
+      {
+        "id": 14,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-03ad8a7242d60e0fee9bb79e52de44c1"
+      },
+      {
+        "id": 15,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-b3a1d99e04667dfc5c5ceafb1b0e1fc6"
+      },
+      {
+        "id": 16,
+        "type": "ATTEMPT_COMPLETED",
+        "entityId": "attempt-50afeb5d5bdea0421a8ad97588a05c46"
+      },
+      {
+        "id": 17,
+        "type": "TASK_VERIFYING",
+        "entityId": "revise-fleet-default"
+      }
+    ],
+    "conclusion": {
+      "seq": 4,
+      "eventId": "pjer-1037d53d38a350977b349dd302542259",
+      "intent": "WAIT_FOR_OPERATOR",
+      "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: WAIT_FOR_OPERATOR\nStatement: The Fleet default-limit correction is implemented in an isolated worktree at tested commit be05447, changing only the four authorized paths. The unchanged accepted basis fbeb895 remains the canonical HEAD. Full node --test passes 18/18 in the candidate, including the omitted/zero-limit defaults, positive limits, errors, and unchanged REST baseline. Protected files match the basis byte-for-byte. The task is VERIFYING; the candidate is ready for owner review and has not been promoted.\nArtifacts:\n- service/grpc_server.js\n- test/integration.test.js\n- MIGRATION.md\n- test/server.test.js\nWaiting on: Owner review and acceptance of candidate commit be05447e061a23157ed04e3ee4b27ec7f571e94e; canonical HEAD remains the accepted basis fbeb8958f440.\nNext step: (none)\nEvidence: commit:be05447e061a23157ed04e3ee4b27ec7f571e94e\nBasis: revision 2, head fbeb8958f4405688b13f37dbdec330157a660ab0\nArtifact provenance:\n- service/grpc_server.js: present=true tracked=true committed=true source=WORKTREE digest=e9ea974fff20 commit=fbeb8958f440\n- test/integration.test.js: present=true tracked=true committed=true source=WORKTREE digest=0a0c340ab909 commit=fbeb8958f440\n- MIGRATION.md: present=true tracked=true committed=true source=WORKTREE digest=d78a55f20dce commit=fbeb8958f440\n- test/server.test.js: present=true tracked=true committed=true source=WORKTREE digest=cbcc2213dd50 commit=fbeb8958f440\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"WAIT_FOR_OPERATOR\",\"statement\":\"The Fleet default-limit correction is implemented in an isolated worktree at tested commit be05447, changing only the four authorized paths. The unchanged accepted basis fbeb895 remains the canonical HEAD. Full node --test passes 18/18 in the candidate, including the omitted/zero-limit defaults, positive limits, errors, and unchanged REST baseline. Protected files match the basis byte-for-byte. The task is VERIFYING; the candidate is ready for owner review and has not been promoted.\",\"artifacts\":[\"service/grpc_server.js\",\"test/integration.test.js\",\"MIGRATION.md\",\"test/server.test.js\"],\"waitingOn\":\"Owner review and acceptance of candidate commit be05447e061a23157ed04e3ee4b27ec7f571e94e; canonical HEAD remains the accepted basis fbeb8958f440.\",\"nextStep\":null,\"evidenceRefs\":[\"commit:be05447e061a23157ed04e3ee4b27ec7f571e94e\"],\"recordedAt\":\"2026-11-10T13:55:43.461Z\",\"basis\":{\"projectRevision\":2,\"projectDigest\":\"c77a07add032fe008e9806b8cf2146baf0f3ececc6d1e391b654083f1b66271c\",\"headCommit\":\"fbeb8958f4405688b13f37dbdec330157a660ab0\"},\"check\":{\"deliveryBlockers\":[\"task revise-fleet-default is VERIFYING\",\"task:revise-fleet-default awaits an operator acceptance decision\"],\"awaitingOperator\":[\"task:revise-fleet-default\"],\"openTasks\":[\"revise-fleet-default:VERIFYING\"],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"service/grpc_server.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"e9ea974fff20fdefef07a25024f8c8ca734f17acf88f087577f114edf8e9e190\",\"source\":\"WORKTREE\",\"commit\":\"fbeb8958f4405688b13f37dbdec330157a660ab0\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/integration.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"0a0c340ab9094ffd2df41421252d3db814a5b354cbe63d4f51f261856e74f41b\",\"source\":\"WORKTREE\",\"commit\":\"fbeb8958f4405688b13f37dbdec330157a660ab0\",\"detail\":\"committed at HEAD\"},{\"path\":\"MIGRATION.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"d78a55f20dcea0e5ec6f2e361b66a340c035c96d7ba8c12915019045df3d27e0\",\"source\":\"WORKTREE\",\"commit\":\"fbeb8958f4405688b13f37dbdec330157a660ab0\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/server.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"cbcc2213dd503ae8d5cd80ccd95a400f016cd782625b7a9d414cecd60cfaae79\",\"source\":\"WORKTREE\",\"commit\":\"fbeb8958f4405688b13f37dbdec330157a660ab0\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-99900fcf44ea6d10ace8a1c3\"}"
+    },
+    "promotions": [],
+    "headState": {
+      "schemaVersion": 1,
+      "projectRevision": 2,
+      "projectHeadCommit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "provenEffectHeadCommit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "latestPromotionEventRef": null,
+      "state": "IN_SYNC"
+    }
+  },
+  "receipt": {
+    "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+    "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "candidate": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+    "checks": [
+      {
+        "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+        "candidateBlob": "8d60d6fa9dbd1443b27a5cee98486b5531151bfa",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "MIGRATION.md"
+      },
+      {
+        "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+        "candidateBlob": "1784f02a185703b44e4c8d0103abcb6d49a346b0",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "service/grpc_server.js"
+      },
+      {
+        "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+        "candidateBlob": "ce9cb1ae85bb86f85d202bbf7899a2382bfe8c57",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "test/integration.test.js"
+      },
+      {
+        "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+        "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "test/server.test.js"
+      },
+      {
+        "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+        "candidateBlob": "8d60d6fa9dbd1443b27a5cee98486b5531151bfa",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "MIGRATION.md"
+      },
+      {
+        "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+        "candidateBlob": "1784f02a185703b44e4c8d0103abcb6d49a346b0",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "service/grpc_server.js"
+      },
+      {
+        "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+        "candidateBlob": "ce9cb1ae85bb86f85d202bbf7899a2382bfe8c57",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "test/integration.test.js"
+      },
+      {
+        "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+        "candidateBlob": "8d60d6fa9dbd1443b27a5cee98486b5531151bfa",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "MIGRATION.md"
+      },
+      {
+        "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+        "candidateBlob": "1784f02a185703b44e4c8d0103abcb6d49a346b0",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "service/grpc_server.js"
+      },
+      {
+        "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+        "candidateBlob": "ce9cb1ae85bb86f85d202bbf7899a2382bfe8c57",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "test/integration.test.js"
+      },
+      {
+        "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+        "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "test/server.test.js"
+      },
+      {
+        "basisBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+        "candidateBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "proto/energy.proto"
+      },
+      {
+        "basisBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+        "candidateBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "service/grpc_client.js"
+      },
+      {
+        "basisBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+        "candidateBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "service/wire.js"
+      },
+      {
+        "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+        "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "test/rest.test.js"
+      }
+    ],
+    "envelopeId": "envelope-52d808c0807ca79eb478403a31d28cc2",
+    "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+    "phase": "SETTLED",
+    "receiptId": "f4821e6335b402d4c1cd52e568eec8fc0250eb4cf562562d25bdedf73e55bb77",
+    "schemaVersion": 1,
+    "taskId": "revise-fleet-default"
+  },
+  "route": "formal-worker",
+  "gate": {
+    "gate_id": "gate-release",
+    "version": 1,
+    "subject_type": "attempt",
+    "subject_id": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+    "verdict": "PASS",
+    "passed": [
+      "exists(write_scope_valid)",
+      "exists(tests_pass)",
+      "exists(expected_files_exist)"
+    ],
+    "failed": [],
+    "unresolved": [],
+    "evidence_used": [
+      "evidence-03ad8a7242d60e0fee9bb79e52de44c1",
+      "evidence-7300050d1d9d29c6d2ac83e93c1c5f27",
+      "evidence-b3a1d99e04667dfc5c5ceafb1b0e1fc6"
+    ],
+    "next_evidence_needed": []
+  },
+  "business": {
+    "commit": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+    "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+    "changedPaths": [
+      "MIGRATION.md",
+      "service/grpc_server.js",
+      "test/integration.test.js",
+      "test/server.test.js"
+    ],
+    "blobs": {
+      "proto/energy.proto": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+      "service/wire.js": "1cb66081224cda6472348330724a77bbed63d6c5",
+      "service/grpc_server.js": "1784f02a185703b44e4c8d0103abcb6d49a346b0",
+      "service/grpc_client.js": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+      "test/server.test.js": "dd09378dca950343179ee31e2a23f527339b90f3",
+      "test/integration.test.js": "ce9cb1ae85bb86f85d202bbf7899a2382bfe8c57",
+      "MIGRATION.md": "8d60d6fa9dbd1443b27a5cee98486b5531151bfa",
+      "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+    },
+    "publicTests": 18,
+    "probes": {
+      "zero": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4090,
+            "atMs": 1762300120000
+          }
+        ]
+      },
+      "omitted": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4090,
+            "atMs": 1762300120000
+          }
+        ]
+      },
+      "positive2": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          }
+        ]
+      },
+      "positive6": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4090,
+            "atMs": 1762300120000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4210,
+            "atMs": 1762300180000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4150,
+            "atMs": 1762300240000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 3970,
+            "atMs": 1762300300000
+          }
+        ]
+      },
+      "unknownStream": {
+        "status": "5",
+        "frames": []
+      },
+      "unknownUnary": {
+        "status": "5",
+        "frames": []
+      },
+      "unary": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          }
+        ]
+      }
+    },
+    "oldRuleFailures": [
+      "zero",
+      "omitted"
+    ],
+    "newRuleFailures": []
+  },
+  "frozenScore": {
+    "passed": false,
+    "reason": "SOFTWARE_PROTO_RPC_CONTRACT"
+  },
+  "scoreMode": "owner-approved-alias-recount",
+  "aliasScorerSha256": "28868110fc5bd9423020d6abfca79a305133b8706c83cb5e9b2b45c6326b9888",
+  "candidateQualified": true,
+  "waitRecorded": true,
+  "accounting": {
+    "requests": 47,
+    "unresolved": 0,
+    "confirmed": 1492257,
+    "state": "OPEN",
+    "reason": null
+  }
+}

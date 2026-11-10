@@ -58,3 +58,32 @@ Principal 也把 Work ID 传给原生 `job_output`（85→86），遇到未知�
 ## 复算
 
 `scripts/pnwf/revision/live.mjs` 负责准备、单次付费运行、离线复核和按 SHA 接受。 `scripts/pnwf/revision/analyze.mjs` 读取新的试验目录和两条旧对照 T2 的原运行目录，复用调用 ID 配对结果，再逐笔绑定 Provider 响应 ID。归档中的账本、候选回执和两份 Git bundle 可独立核对候选和接受 SHA。原始压缩 DSH 流及 SQLite 位于本地停写运行目录 `%TEMP%/pnwf-work-revision-real-20261110122113`。本轮到 T2 核准接受为止。 [证据目录](../../research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113)
+
+## 结算后 readiness 修复与 gRPC 同基线复跑
+
+修复从主线 `9b534c93` 开始，实际运行产品提交为 `57638dad88fdba00c30b6be85107086866e09dcf`。当任务仍为 `ACTIVE`、已完成 Attempt 的候选提交可从 Git 读出，且调度器明确下一步是该任务的 `TASK_VERIFYING` 时，`readiness` 给出 `SEMANTIC_JUDGEMENT`，先提示 `next`，再提示在 `VERIFYING` 记录 `WAIT_FOR_OPERATOR`。候选和工件按正式结算 SHA 核对。暂停时引导查看调度状态，缺候选对象或还有活跃作业时引导重查。重复 `finalize` 不产生第二次结算。
+
+gRPC 与 Energy 普通 DSH Mock 都用真实隔离 Worker 和持久结算验证了 `ACTIVE → VERIFYING → WAIT_FOR_OPERATOR`。两组均自然退出，分别对账 22 和 20 笔 Mock 请求，付费调用为 0。构建、架构和公共 API 检查通过，37 项定向产品回归与 13 项脚本回归通过。真实会话准入核验 Mock 资格摘要、镜像和构建后的 readiness 模块摘要。 [双场景 Mock 资格](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/qualification.json)
+
+真实 gRPC T2 沿用上轮完整基线 `fbeb8958f4405688b13f37dbdec330157a660ab0`、同一提示词、镜像、判分器和按量记账合同。独立 cohort、全新 DSH home、每会话最多 64 笔、30 分钟、单请求 240 秒，金额与总 token 无上限。 [输入与资源合同](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/contract.json)
+
+| 角色 | 调用 → 结果 | 实际行为 |
+| --- | --- | --- |
+| Worker | 149 → 150 | 查看 `PREVIEW`，15 项检查通过，随后交回已提交候选 |
+| Principal | 197 → 198 | 第四次 `workers` 看到 `FINISHED / SETTLED` 和结算摘要 |
+| Principal | 229 → 230 | 读到任务 `ACTIVE`、Attempt `COMPLETED`、`resultCommitted: true`，引导先推进 `VERIFYING` 再记录等待 |
+| Principal | 235 → 236 | `next` 产生 `TASK_VERIFYING`，调度提示 `WAIT_OPERATOR_ACCEPT` |
+| Principal | 241 → 242 | `conclude WAIT_FOR_OPERATOR` 返回 `RECORDED`、`session.mayEnd: true`，最终回复后退出码为 0 |
+
+本次 Principal 没有调用 `complete` 或 `finalize`，结论写入了本轮 Episode，未触发停止条件。上轮在同一 `ACTIVE / COMPLETED` 状态得到 `CONTINUE_WORK` 与 `resultCommitted: false`，随后重复 `complete` 被拒绝，最终回复待审但没有等待结论。这次在真实轨迹中观察到模型收到并执行新提示。仍有一次 `job_output` 用 Work ID 查原生作业失败，Principal 随后用 `workers` 继续。Worker 有一次读取资料目录的 Bash 作业非零退出，随后改用 `find` 读取文件并完成。77/77 对工具调用配对，领域拒绝和 Worker 宿主失败均为 0。 [结论与自然退出](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/readiness-exit.json) · [轨迹和逐笔对账](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/trajectory-comparison.json)
+
+| gRPC T2 | 请求 P / Worker | Fresh input | Cache read | Cache creation | Output | 总 tokens | 容器秒数 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 上轮共用义务 | 44（30 / 14） | 65,790 | 1,282,816 | 0 | 16,205 | 1,364,811 | 212.731 |
+| 修复后 | 47（29 / 18） | 59,064 | 1,418,750 | 0 | 14,443 | 1,492,257 | 237.484 |
+
+47 笔均按 Provider 响应 ID 绑定终态用量，未确认用量为 0。Principal 少 1 笔，Worker 多 4 笔。Fresh input 减 6,726，cache read 增 135,934，总量增 127,446 tokens，容器会话长 24.753 秒。差额主要来自缓存读取，单次观察用于验证结束路径，无法从中隔离引导的计费影响。
+
+候选 `be05447e061a23157ed04e3ee4b27ec7f571e94e` 正式结算并通过门禁。只改四个允许文件，四个受保护 blob 保留。冻结评分仍因原基线消息别名返回 `SOFTWARE_PROTO_RPC_CONTRACT`，按原授权在同一候选复核得 HTTP/2 7/7、公开测试 18/18。所有者核准完整 SHA 后，离线晋升至 `4639ae44d78e7c1f9f5269876fa333a99bff770f`，候选与晋升树均为 `99c40069ae834cf71618e2a142010f10bef0df06`。历史运行与评分原样保留，本轮止于 T2 接受。 [候选和判分](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/result.json) · [核准晋升记录](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/acceptance.json) · [Git bundle](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/candidate-and-accepted.bundle)
+
+复现 Mock 可运行 `node scripts/pnwf/revision/qualify.mjs --dsh-only --run=<新目录>`。本次原始 DSH 流和 SQLite 保存于 `%TEMP%/pnwf-settled-readiness-20261110134618`，归因入口可以只接收 gRPC 的旧 T2 对照目录。
