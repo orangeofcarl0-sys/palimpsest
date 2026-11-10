@@ -32,6 +32,7 @@
  *
  * Layer: L2 (`src/context/`). Consumed by the controller's façades and by D2-d's delegation kernel.
  */
+import { workRevisionBinding } from "../schema/work_revision.js";
 import {
   actionKey,
   stableEntityId,
@@ -338,6 +339,8 @@ export interface ContextServicePorts {
   semanticHits?(input: { readonly attemptId: string; readonly query: string }): Promise<readonly { readonly path: string; readonly score_permille: number }[] | undefined>;
   /** The task's canonical envelope. */
   taskEnvelope(taskId: string): TaskEnvelope;
+  /** Historical authorization for a Worker that carries revision obligations. */
+  attemptEnvelope?(attemptId: string): TaskEnvelope;
   /** The completion contract for one envelope. */
   completionContractForEnvelope(envelope: TaskEnvelope): { readonly verification: { readonly required: boolean } };
   /** The mechanical check summary, for the worker's task half. */
@@ -871,7 +874,9 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
           `attempt "${attemptId}" does not exist — worker context is compiled per attempt, after the attempt's identity and world exist`,
         );
       }
-      const work = taskContextOf(attemptRow.taskId);
+      const authorized = ports.attemptEnvelope?.(attemptId);
+      const revision = authorized && workRevisionBinding(authorized, attemptId);
+      const work = taskContextOf(attemptRow.taskId, revision ? authorized : undefined);
       const compiled = await compile(attemptId, options);
       /**
        * §11 / P2-E0 §8.2: the EXPERIMENTAL Attempt-bound Trajectory delivery, when the deployment composed
@@ -932,6 +937,7 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       }
       return Object.freeze({
         work,
+        ...(revision ? { revision } : {}),
         compiled: Object.freeze({
           manifestId: compiled.manifest.manifest_id,
           boot: Object.freeze(compiled.distribution.boot.map((entry) => Object.freeze({ ...entry }))),
@@ -971,8 +977,7 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
     },
   });
 
-  function taskContextOf(taskId: string): WorkWorkerTaskContext {
-    const envelope = ports.taskEnvelope(taskId);
+  function taskContextOf(taskId: string, envelope = ports.taskEnvelope(taskId)): WorkWorkerTaskContext {
     const project = ports.project();
     const task = project.tasks.find((entry) => entry.taskId === taskId);
     if (task === undefined) {

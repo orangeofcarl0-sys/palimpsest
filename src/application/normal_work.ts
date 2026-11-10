@@ -7,6 +7,7 @@
  * the work surface stays reviewable. Nothing here owns state or bypasses an existing owner: the
  * work surface and the project workspace are the same ones the adapter received.
  */
+import { WorkRevisionError } from "../schema/work_revision.js";
 import type { WorkApplicationSurface } from "./work_contract.js";
 import { EPISODE_INTENTS, type EpisodeIntent } from "../project_continuity/index.js";
 
@@ -74,6 +75,8 @@ export function projectTaskInput(raw: unknown, args: NormalWorkArgsPort): Array<
 }
 
 export function makeNormalWorkActions(port: NormalWorkActionsPort): {
+  refusal(error: unknown): unknown;
+  receipt(object: Record<string, unknown>): unknown;
   start(object: Record<string, unknown>): Promise<unknown>;
   conclude(object: Record<string, unknown>): Promise<unknown>;
   explore(action: string, object: Record<string, unknown>): Promise<unknown>;
@@ -85,6 +88,19 @@ export function makeNormalWorkActions(port: NormalWorkActionsPort): {
   const args = port.args;
   const fail: (message: string) => never = (message) => port.args.fail(message);
   return {
+    refusal(error) {
+      if (!(error instanceof WorkRevisionError)) throw error;
+      return { state: "REFUSED", ...error.refusal };
+    },
+    receipt(object) {
+      const optionalString = (key: string) => object[key] === undefined ? undefined : args.requiredString(object, key);
+      return work.readRevisionReceipt({
+        attemptId: args.requiredString(object, "attemptId"),
+        basis: optionalString("basis"),
+        candidate: optionalString("candidate"),
+        path: optionalString("path"),
+      });
+    },
     async start(object) {
         if (work.placement() !== "in-place") {
           return {

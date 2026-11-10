@@ -6,7 +6,6 @@
  * required string action, an error type a host can recognise) and the clusters supply the rest.
  */
 
-import { WorkRevisionError } from "../../schema/work_revision.js";
 import type { DshContentBlock, DshToolDefinition, DshToolRunContext } from "../../tools/dsh_types.js";
 import { materializeProofSourceRevisionRef } from "../../proof_asset/index.js";
 
@@ -64,6 +63,7 @@ function tool(input: {
   readonly mode: "read-only" | "mutating";
   readonly actions: readonly string[];
   readonly extraProperties?: Readonly<Record<string, unknown>>;
+  readonly onError?: (error: unknown) => unknown;
   readonly run: (action: string, object: Record<string, unknown>, context: DshToolRunContext) => Promise<unknown>;
 }): DshToolDefinition {
   const properties: Record<string, unknown> = {
@@ -84,8 +84,8 @@ function tool(input: {
       try {
         return await input.run(action, object, context);
       } catch (error) {
-        if (!(error instanceof WorkRevisionError)) throw error;
-        return { state: "REFUSED", ...error.refusal };
+        if (input.onError === undefined) throw error;
+        return input.onError(error);
       }
     },
   };

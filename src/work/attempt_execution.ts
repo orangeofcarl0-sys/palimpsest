@@ -35,8 +35,8 @@
  *
  * Layer: L2 (`src/work/`). Consumed by the controller's façade.
  */
-import { assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding } from "./revision.js";
-import { revisionError, type WorkRevisionReceipt, type WorkRevisionRefusal } from "../schema/work_revision.js";
+import { assertRevisionBasis, inspectWorkRevision, requireWorkRevision } from "./revision.js";
+import { revisionError, workRevisionBinding, WorkRevisionError, type WorkRevisionReceipt, type WorkRevisionRefusal } from "../schema/work_revision.js";
 import { DomainValidationError } from "../domain/errors.js";
 import type { TaskEnvelope } from "../schema/index.js";
 import {
@@ -202,6 +202,8 @@ export interface MutatingExecutionPorts {
   }): Promise<CompletionEvaluationOutcome>;
   /** Record the attempt's report (the observation is the product's, never the worker's word). */
   report(attemptId: string, expectedResultCommit?: string): WorkRevisionReceipt | undefined;
+  /** Replay a completed revision through the same report identity fence. */
+  replayCompletedRevision?(attemptId: string, expectedResultCommit?: string): WorkRevisionReceipt | undefined;
   /** The §D2-b projection of a prepared position. */
   preparedProjection(input: {
     readonly state: "PREPARED" | "RESUMED";
@@ -279,7 +281,7 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
     return admission;
   };
 
-  return Object.freeze({
+  const execution: MutatingAttemptService = {
     target(input: { readonly expectedTaskId?: string | undefined } = {}) {
       const expectedTaskId = normalize(input.expectedTaskId);
       assertWorktreePlacement();
@@ -734,6 +736,32 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}; ${evaluation.detail}; ${attribution.attribution}`,
       });
     },
+  };
+
+  return Object.freeze({
+    target: execution.target,
+    prepare: execution.prepare,
+    async settle(input: Parameters<MutatingAttemptService["settle"]>[0]): Promise<MutatingWorkSettlement> {
+      const { attemptId } = input;
+      try {
+        const receipt = input.workerOutcome.kind === "READY_FOR_SETTLEMENT"
+          ? ports.replayCompletedRevision?.(attemptId, input.observation?.expectedResultCommit)
+          : undefined;
+        if (receipt) {
+          return {
+            state: "SETTLED", attemptId, resultCommit: receipt.candidate, receipt, replayed: true,
+            changedFiles: receipt.checks.filter(check => check.kind === "WRITE_SCOPE").map(check => check.path),
+            exported: true, evidenceRecorded: [], inputsNotInBasis: [], inputsState: "OBSERVED", inputsDetail: "",
+            attribution: attributeSettlement({ invocations: [], observation: { path: "WORKER" }, settledHead: receipt.candidate }),
+            detail: "The candidate is already settled. Read the original receipt.",
+          };
+        }
+        return await execution.settle(input);
+      } catch (error) {
+        if (!(error instanceof WorkRevisionError)) throw error;
+        return { state: "NOT_READY", attemptId, ...error.refusal, refusal: error.refusal };
+      }
+    },
   });
 }
 
@@ -747,6 +775,6 @@ export * from "./execution_relay.js";
 /** ODPE-A: the project-input observer, re-exported so the host façade keeps one edge to this owner. */
 export { assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, unseenInputs } from "./unseen_inputs.js";
 
-export { assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding } from "./revision.js";
-export { revisionError, WorkRevisionError, type WorkRevisionBinding, type WorkRevisionReceipt, type WorkRevisionApproval, type WorkRevisionReceiptQuery, projectRevisionReceipt } from "../schema/work_revision.js";
+export { assertRevisionBasis, inspectWorkRevision, requireWorkRevision } from "./revision.js";
+export { revisionError, workRevisionBinding, type WorkRevisionBinding, type WorkRevisionReceipt, type WorkRevisionApproval, type WorkRevisionReceiptQuery, projectRevisionReceipt } from "../schema/work_revision.js";
 export { recordWorkReport, replayWorkReport } from "./attempt_report.js";
