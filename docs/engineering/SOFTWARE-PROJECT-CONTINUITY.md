@@ -64,3 +64,77 @@ node scripts/pnwf/software/run.mjs --action=qualify "--run=$run"
 从归档的八条原始轨迹重算，30 对调用 ID 和两端序号逐一匹配。从归档 Git bundles 重跑，六个会话的评分与原记录逐项相同，越界候选仍被拒绝。本轮构建、架构、公共 API 检查均通过。Episode、Attempt Result、Direct 到 Governed 和 Basis Admission 共 33 项回归通过，PNWF 账本、Energy 复用合同与轨迹归因共 35 项测试通过。
 
 脚本化 Mock 验证实际执行链，合成用量按 Mock 的字节口径记账。自主协作选择、真实用量、项目效果与净收益留给另行授权的真实配对。
+
+## 真实诊断配对
+
+从主线 `268f14f98099b10b181ec9dd1ea4e07ecbe43d31` 启动。两组使用相同 REST 种子树、三条业务提示、Fleet 更正、独立评分器和镜像，模型为 `deepseek-flash`，DSH 为 `0.2.1-rc.5`。宿主在启动前把这些输入与主线归档的 Mock 封存逐项核对。按量记账的执行条件为每会话 64 笔、30 分钟，单请求 240 秒。正式 Worker 与原生子任务计入所在会话。金额和总 token 上限均为空，任一已启动会话用量无法核对时关闭后续准入。
+
+运行顺序为 P T1、F T1、P T2、F T2，再按各组完整候选 SHA 的核准顺序启动 T3。两组 T2 提示只要求独立执行、隔离副本和候选送审。Palimpsest 可选择正式 Work Worker，也保留原生协作工具。正式候选与 Git 候选的接受分别记录，业务判分、隔离、正式结算、`WAIT_FOR_OPERATOR` 和自然退出各自判定。T1 和 T3 的 `DELIVER` 及可取回工件 SHA 也独立核验。
+
+完整运行保存在 `C:/Users/66494/AppData/Local/Temp/pnwf-grpc-live-20261110-150630`。每个会话保存请求前账本、终态用量、原始 DSH stream、按调用 ID 复算的时间线以及适用的 Git 和审批记录。[宿主运行入口](../../scripts/pnwf/software/live.mjs)
+
+### T1 冻结评分和离线定位
+
+Palimpsest T1 从 `continuity:pulse`（调用 15、结果 16）进入任务。它读原有 REST 服务、客户端和测试，自己实现迁移，没有委派。写完后多次执行公开测试，对客户端和服务端做局部修改。首次探索 shell 调用（17、20）出现一次非零退出，随后改用 Git 和文件树检查恢复。提交发生于调用 136，接着在 147 调用 `conclude DELIVER` 并得到 `RECORDED`。会话自然退出，七份回执均指向实际提交 `3dadc3a1df9cabf2fd40543f711e3720916e9447`，每个回执摘要都能从该提交的 Git blob 复算。Episode 基线保留 REST 种子 SHA。
+
+冻结评分器在原样 proto 上返回 `SOFTWARE_PROTO_RPC_CONTRACT`，因为它匹配的入参消息名为 `SiteRequest` 和 `StreamRequest`，模型声明的是 `GetReadingRequest` 和 `StreamReadingsRequest`。业务提示和公开任务只要求方法、流式形态与提交后的字段号稳定。宿主对同一完整 SHA 的只读快照执行原 HTTP/2 探针，旧规则 7/7，公开测试 17/17。显式零值和缺省值都返回空流，正数 2 和 6 的帧内容与顺序正确，unary 返回一帧，两个未知站点调用返回状态 5。原评分拒绝和离线定位单独记录。
+
+所有者批准 Palimpsest 从该原始 T1 SHA 继续。宿主把同义请求消息名纳入单独封存的复核，额外核对方法所属服务及消息字段编号。原评分和原始 Git 对象保留。T2 使用正式 Basis Admission 接纳首版与 Fleet 更正；只有在保留首版 proto blob 时，候选才适用同一别名复核。
+
+强原生 T1 先用 shell 与 `read` 探索项目，随后直接实施，同样没有委派。一次 README 编辑失败（119、120），之后先读取再编辑。它做了三次公开测试、语法检查，并在调用 187 发起自己的原始 HTTP/2 检查，再提交 `4bdfe5da0b79f5ad699c22ccb12e95ec781dc8c0`（215、218）并自然退出。它额外更新了 README 的迁移说明和文件导航，原评分在检查交付文件集合时返回 `SOFTWARE_T1_ARTIFACTS_MISMATCH`。其 proto 也采用两种请求消息别名。同一 Git 提交的离线 HTTP/2 探针 7/7、公开测试 16/16，REST 代码和测试的 blob 保留。
+
+| T1 | 模型请求 | fresh input | cache read | cache creation | output | 总 tokens | 容器会话秒数 | 配对调用 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Palimpsest | 18 | 11,660 | 532,864 | 0 | 28,467 | 572,991 | 257.956 | 24/24 |
+| 强原生 DSH | 31 | 13,515 | 999,808 | 0 | 36,837 | 1,050,160 | 288.916 | 33/33 |
+
+两个 T1 都由单个 Principal 执行，差额出现在同一会话内。强原生多 13 笔请求和 477,169 tokens，其中 466,944 为 cache read，fresh input 多 1,855。首笔缓存读取是 P 10,112、F 5,120，随后 F 的更多请求反复带上已缓存的上下文。F 多做文件树与环境探索、文档更新、codec 和客户端的后续检查。该轨迹支持重复请求和输入增长的解释，服务端跨会话缓存来源未知。两组的独立账本均无未决用量。
+
+强原生 T1 经所有者核准后采用同样的原提交复核。准入差异限于已审阅的 README 导航；复核同时核对两个请求别名、消息字段号和实际线协议。强原生 proto 将 `watts` 声明为 `int64`，首版的固定读数可按相同 varint 字段验证，T2 仍须保留其确切 proto blob。
+
+### Palimpsest T2 的正式委派与接管
+
+Principal 先读取更正、现有代码和测试，尝试 `work:begin`（97、98），收到该部署只支持在地 bootstrap 的错误。接着用 `work:plan`（103、104）建立正式任务，选择六个写路径，额外纳入 proto 注释和客户端文档。调用 `work:delegate`（109、110）创建 Attempt。宿主实际记录 `SOFTWARE_REVISION_SCOPE_MISMATCH`，未启动正式 Worker。模型查询 shell 作业时收到 `unknown job`（115、116），`work:workers`（121、122）只显示 `FINISHED / NOT_READY`，没有回传拒绝原因。
+
+从首次委派回复到原生 `subagent_fork`（359）前，Principal 又发出 26 笔请求、39 次工具调用，共 1,356,253 tokens，占 T2 全部 tokens 的 49.8%。这段轨迹查阅了作业、Attempt 副本、状态库、运行时文件和实现源码。随后原生子任务在同一个隔离 Attempt 中提交，Principal 查看差异、复跑测试，并调用 `work:relay takeover`（418、419）。结果为 `TAKEOVER_SETTLED`，产品记录 `MULTI_EXECUTOR`、`OBSERVED_EXIT` 和 `independenceEligible=false`。它再读 readiness（428、429），记录 `WAIT_FOR_OPERATOR`（436、437）后自然退出。正式 Worker 请求数为 0，原生子任务有 13 笔请求，与 Principal 的 44 笔使用同一账本。
+
+候选 `fa671796ad0a8e2ff8d99901df3c1b43fd1af0dd` 已结算，正式 Head 仍为含 Fleet 更正的 `fbeb8958f4405688b13f37dbdec330157a660ab0`。原采集器只识别正式 Worker 回执和原生链接 worktree，因此报告 `NATIVE_CANDIDATE_WORKTREE_NOT_UNIQUE`。用产品的接管结算记录从 canonical Git 取回同一对象后，独立写范围校验返回 `SOFTWARE_RESULT_OUTSIDE_SCOPE`。候选改了六个文件，超出的 proto 和客户端变更均为注释，wire codec 与 REST 测试的 blob 保留。离线补测新规则 7/7、公开测试 18/18，文件范围判据失败。该候选未进入核准，Palimpsest T3 未启动。
+
+### 强原生 T2 的独立执行
+
+Principal 先读更正和既有实现，跑基线测试。它在调用 88 创建 `.worktrees/fleet-default-limit` 及独立 Git 分支，用本地 Git exclude 隔离该目录，再通过原生 `subagent`（96）把修订交给子任务。子任务提交后，Principal 回看 Git 差异、复跑测试，并通过原生客户端做定向调用检查。Principal 18 笔、子任务 16 笔，共用同一账本。该组没有 Work 结算步骤，候选分支和工作树在退出时均可核对，canonical HEAD 留在含更正的 `df4271d9a43c963ed386dc4de103dcfcf30f02f7`。
+
+候选 `95a993390088c16f5bb029c9374b3fd581ee50c5` 只增加了一处越界修改。它在 proto 注释中改写零值和缺省值的含义，字段号与声明类型仍与首版一致。客户端、wire codec、README 和 REST 测试的 blob 都保留。独立新规则探针 7/7，公开测试 16/16，写范围返回 `SOFTWARE_RESULT_OUTSIDE_SCOPE`。会话自然退出，候选未进入核准，强原生 T3 未启动。
+
+### 两条轨迹的差异
+
+| T2 | 请求（Principal / 子任务） | fresh input | cache read | cache creation | output | 总 tokens | 容器会话秒数 | 配对调用 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Palimpsest | 57（44 / 13） | 89,764 | 2,606,464 | 0 | 29,342 | 2,725,570 | 431.360 | 114/114 |
+| 强原生 DSH | 34（18 / 16） | 42,136 | 735,488 | 0 | 16,172 | 793,796 | 124.626 | 61/61 |
+
+| 已执行 T1 和 T2 | 请求 | fresh input | cache read | output | 总 tokens | 容器会话累计 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Palimpsest | 75 | 101,424 | 3,139,328 | 57,809 | 3,298,561 | 11 分 29.316 秒 |
+| 强原生 DSH | 65 | 55,651 | 1,735,296 | 53,009 | 1,843,956 | 6 分 53.542 秒 |
+
+T2 的差额集中在 Principal。Palimpsest 比强原生多 26 笔 Principal 请求，原生子任务反而少 3 笔。正式委派之后到原生接管之前的排查贡献了 26 笔请求与 1,356,253 tokens。该段的缓存读取为 1,314,816，fresh input 为 32,635。两组已执行阶段的 cache read 占输入约 96.9%，Palimpsest 的额外消耗来自更多的重复上下文及排查带入的新内容。容器会话耗时包含启动和清理。T1 从进程退出到宿主写入授权复核记录的间隔分别为 370.046 秒和 546.057 秒，包含人工核准、离线验证及串行排程，单列于模型会话耗时之外。T2 候选均止于独立写范围检查。
+
+两组都保留了已接受的 canonical 版本，子任务在隔离副本完成提交。正式路径的差异体现在 Palimpsest 先尝试受控委派，宿主拒绝六路径授权后，模型沿原授权的较宽 Attempt 范围完成接管。产品结算与 `WAIT_FOR_OPERATOR` 对实际过程给出了可核查证据，独立写范围门禁仍拒绝该结果。强原生直接委派，文件范围更窄，仍修改了 proto 注释。两份 T1 都曾把旧默认值写进 proto 注释。更正后这段注释过时，两个模型都选择修订它。可观察到的偏离集中在文档文字与 blob 保留条件，两个 T2 的实际 wire 行为均通过。
+
+四个会话均自然退出。140 笔真实请求的终态用量逐一对账，232 对调用与结果按 ID 匹配。两条 T1 分别有一次 Bash 作业失败和一次编辑错误。Palimpsest T2 有两次工具错误，以及一次由 Worker 运输回执确认的宿主拒绝。强原生 T2 无工具或作业失败。两组 T2 的独立范围判据均失败，本次观测覆盖两组 T1 和 T2。它提供了一次受控路径选择与保留判据的诊断样本，T3 接续和完整项目周期差异仍未观测。[逐请求、调用配对、复核与 Git 证据](../../research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json)
+
+### 用量审计
+
+本样本的 Palimpsest T2 有明显的诊断开销。它使用了每会话 64 笔额度中的 57 笔，两组均由模型自然结束。按相同阶段比较，P T2 为 F T2 的 3.43 倍总 tokens 和 3.46 倍容器耗时。P T1 用量低于 F T1，累计差额因此由 T2 拉开。两组均在两会话内完成本次观察，累计缓存读取占输入都约 96.9%。累计请求多 10 笔，fresh input 多 45,773，cache read 多 1,404,032，output 多 4,800。账本记录的是用量分项，货币金额以 Provider 实际账单为准。
+
+| P T2 Principal 分段 | 请求 | 工具调用 | fresh input | cache read | output | 总 tokens |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 准备和委派 | 9 | 27 | 21,706 | 189,056 | 3,048 | 213,810 |
+| 委派回复到切换原生子任务 | 26 | 39 | 32,635 | 1,314,816 | 8,802 | 1,356,253 |
+| 原生执行期间的等待与复核 | 6 | 9 | 5,698 | 461,056 | 4,360 | 471,114 |
+| 接管结算和结束 | 3 | 5 | 6,556 | 256,512 | 3,309 | 266,377 |
+
+委派结果 110 到原生 fork 调用 359 相隔 220.798 秒。最大几份工具回显包括状态库查询 16,268 字节、完整 Pulse 12,022 字节，以及三次运行时源码读取各约 10–11 KB。它们出现在真实修改开始前，随后参与多次上下文重发。该段总量相当于两组 T2 总量差额的 70.2%，这是按已观测分段计数，无法据此计算删掉该段后的反事实用量。P 原生子任务的 418,016 tokens 与 F 的 338,148 tokens 相差 79,868，主要差额出在 Principal 对缺少具体原因的 `FINISHED / NOT_READY` 做排查。宿主回执中的写范围错误已明确，模型可见的作业状态只给出了通用结算状态。[分段、调用锚点和回显字节](../../research-evidence/pnwf-software/2026-11-10/live-pair-150630/usage-audit.json)
+
+发布前从六条原始 DSH stream 重跑归因，并与归档的请求 ID、四类终态用量和 232 对调用与结果核对。再从四个 Git bundle 取回原提交，重现两个 T1 的冻结拒绝、两个 T2 的越界拒绝及四组独立 HTTP/2 帧和公开测试结果。三个宿主驱动版本的 SHA-256 已记录。将发布版 `live.mjs` 复制到临时目录，依次使用 `git -c core.autocrlf=false apply --unidiff-zero` 应用 `driver-to-p-recount.patch` 和 `driver-to-t1.patch`，可恢复两次早期执行的驱动字节。此次核验使用离线工具。

@@ -20,16 +20,10 @@ import { OFFLINE, scoreDelivery, scoreReview } from "./score.mjs";
 
 const REPO = fileURLToPath(new URL("../../../", import.meta.url));
 const FIXTURE = join(REPO, "fixtures/psvr/grpc-migration");
-const [action, runArg, ...extra] = process.argv.slice(2);
-assert(action === "--action=qualify" && runArg?.startsWith("--run=") && runArg.length > 6 && extra.length === 0,
-  "Usage: node scripts/pnwf/software/run.mjs --action=qualify --run=<new directory>");
-const root = resolve(runArg.slice(6));
-mkdirSync(root);
-const runtime = join(root, "runtime");
-const seed = join(root, "seed");
+let root, runtime, seed;
 const CEILING = 12000000;
 const WINDOW_MS = 180000;
-const workerPolicy = {
+export const workerPolicy = {
   projectId: SCENARIO.projectId, checkScope, checkResult: revisionResult, gitIdentity: GIT_IDENTITY,
   requirements: ["Apply the Fleet compatibility correction in " + CORRECTION_PATH + ". Preserve the proto, codec, client and REST files."],
 };
@@ -37,14 +31,22 @@ let image, artifacts, seedCommit;
 const sessions = [];
 const controls = {};
 
-function paths(arm, id) {
+export function bindSoftwareRun(directory, imageId) {
+  root = resolve(directory);
+  runtime = join(root, "runtime");
+  seed = join(root, "seed");
+  image = imageId;
+  return { runtime, seed };
+}
+
+export function paths(arm, id) {
   const run = join(root, arm, id);
   const stage = join(run, "stages", id);
   return { arm, id, run, stage, world: join(stage, "world"), state: join(stage, "state"),
     out: join(run, "out", id), profile: join(run, "profile.json") };
 }
 
-function prepare(p, from) {
+export function prepare(p, from) {
   mkdirSync(p.stage, { recursive: true });
   cpSync(from?.world ?? seed, p.world, { recursive: true });
   if (p.arm === "P" && from) cpSync(from.state, p.state, { recursive: true });
@@ -52,7 +54,7 @@ function prepare(p, from) {
   if (p.arm === "P") profileFor({ ...SCENARIO, ...p, path: p.profile });
 }
 
-function owner(p, action, ...values) {
+export function owner(p, action, ...values) {
   const raw = docker(["run", "--rm", "--network", "none", ...OFFLINE, "--tmpfs", "/tmp:rw,nosuid,nodev,uid=1001,gid=1001",
     "-e", "HOME=/tmp", "-e", "GIT_CONFIG_COUNT=1", "-e", "GIT_CONFIG_KEY_0=safe.directory", "-e", "GIT_CONFIG_VALUE_0=*",
     "-v", runtime + ":/product:ro", "-v", p.stage + ":/run/stage", image,
@@ -96,7 +98,7 @@ async function verifyMissingUsage() {
   }
 }
 
-function artifactReceipts(repo, facts, commit, paths, episodeBasis) {
+export function artifactReceipts(repo, facts, commit, paths, episodeBasis) {
   const body = facts.conclusion?.body;
   const receipt = JSON.parse(body?.split(/\r?\n/u).find(line => line.startsWith('{"schema":"pc1-episode-conclusion/v1"')) ?? "null");
   assert(receipt?.intent === "DELIVER" && receipt.basis.headCommit === episodeBasis, "EPISODE_DELIVER_BASIS_NOT_RECORDED");
@@ -109,24 +111,26 @@ function artifactReceipts(repo, facts, commit, paths, episodeBasis) {
   return { id: receipt.conclusionId, episodeBasis, artifacts };
 }
 
-function traceSummary(p, evidence) {
+export function traceSummary(p, evidence, strict = true) {
   const streams = evidence.traces.map((trace, index) => {
     const data = readJson(join(p.out, "attribution", index + ".timeline.json")).summary;
     const results = new Map(data.results.map(row => [row.callId, row]));
-    assert(data.calls.length === results.size && data.calls.every(call => results.has(call.callId)), "SOFTWARE_TRACE_PAIRS_INCOMPLETE");
+    if (strict) assert(data.calls.length === results.size && data.calls.every(call => results.has(call.callId)), "SOFTWARE_TRACE_PAIRS_INCOMPLETE");
     return { id: trace.id, role: trace.role, digest: trace.digest, counts: trace.counts, failedJobs: trace.failedJobs,
       pairs: data.calls.map(call => {
         const result = results.get(call.callId);
-        return { callId: call.callId, callSeq: call.seq, resultSeq: result.seq, tool: call.kind.split(" ", 1)[0], ok: result.ok, refusal: result.refusalReason };
+        return { callId: call.callId, callSeq: call.seq, resultSeq: result?.seq ?? null, tool: call.kind.split(" ", 1)[0], ok: result?.ok ?? null,
+          refusal: result?.refusalReason ?? null };
       }) };
   });
-  const observations = readFileSync(join(p.out, "request-observations.jsonl"), "utf8").trim().split("\n").map(line => JSON.parse(line));
+  const observationPath = join(p.out, "request-observations.jsonl");
+  const observations = existsSync(observationPath) ? readFileSync(observationPath, "utf8").trim().split("\n").filter(Boolean).map(line => JSON.parse(line)) : [];
   return { streams, requestLedger: observations.map(({ kind, requestId, actor, usage }) => ({ kind, requestId, actor, usage })),
     requestIdsBound: evidence.requestIdsBound, tupleMatch: evidence.tupleMatch, requests: evidence.requests,
     usageByRole: evidence.usageByRole, unresolvedRequests: evidence.unresolvedRequests, elapsedMs: evidence.elapsedMs };
 }
 
-function isolated(qualification) {
+export function isolated(qualification) {
   assert(qualification.checks.some(row => row.name === "no_external_evaluator" && row.status === "ALLOW") &&
     qualification.checks.some(row => row.name === "native_shell_harness" && row.status === "DENIED"), "EVALUATOR_ISOLATION_NOT_OBSERVED");
   const { containerId, descriptorDigest, descriptor, checks, worlds } = qualification;
@@ -250,7 +254,7 @@ function accept(from, next, candidate, approved) {
   return record;
 }
 
-function preserveBundle(name, repo, ref) {
+export function preserveBundle(name, repo, ref) {
   const path = join(root, name);
   git(repo, "bundle", "create", path, ref);
   git(repo, "bundle", "verify", path);
@@ -291,6 +295,12 @@ function freeze() {
   return evidence;
 }
 
+async function qualify() {
+const [action, runArg, ...extra] = process.argv.slice(2);
+assert(action === "--action=qualify" && runArg?.startsWith("--run=") && runArg.length > 6 && extra.length === 0,
+  "Usage: node scripts/pnwf/software/run.mjs --action=qualify --run=<new directory>");
+bindSoftwareRun(runArg.slice(6));
+mkdirSync(root);
 let seal;
 try {
   image = docker(["image", "inspect", "palimpsest-pnwf-isolation:local", "--format", "{{.Id}}"]);
@@ -342,3 +352,6 @@ try {
   console.error(error);
   process.exitCode = 1;
 }
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await qualify();
