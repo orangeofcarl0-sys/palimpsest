@@ -1,0 +1,47 @@
+{
+  "kind": "GOVERNED_PROMOTION",
+  "approvedCandidate": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+  "approvedHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+  "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+  "promotion": {
+    "promotionId": "promotion-34fa933109fc3261015f35b8370c0e40",
+    "committed": {
+      "schema_version": 1,
+      "project_id": "grpc-migration-continuation",
+      "event_type": "PROMOTION_COMMITTED",
+      "payload_version": 1,
+      "entity_type": "promotion",
+      "entity_id": "promotion-34fa933109fc3261015f35b8370c0e40",
+      "payload": {
+        "promotion_id": "promotion-34fa933109fc3261015f35b8370c0e40",
+        "attempt_id": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+        "source_commit": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+        "expected_head_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+        "resulting_head_commit": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+        "reason": "promoted via Ordarium git.promote",
+        "operation_id": "op_ec004f3b92124bde55aa298dc55a1578d57d449f",
+        "outcome_basis": "invoke_result",
+        "outcome_digest": "62b0c39d55fd14631be2315d5ae686b097e77440b479303c747369c4f0ee0044"
+      },
+      "causation_id": null,
+      "correlation_id": "promotion:promotion-34fa933109fc3261015f35b8370c0e40",
+      "idempotency_key": "daf33c3c642a433aad5ba3d978ff88708718d86d37c8092f5fe177207c00a556",
+      "expected_project_revision": 2,
+      "event_id": 19,
+      "project_sequence": 19,
+      "request_digest": "f4c7012a3f21e3c49d4e3cd85a278964b43e2ecf4f32f2de67aff8df649bd79b",
+      "previous_event_digest": "6d09cff4536b3401c5789e2198c03084ca828a6e00837e96f9c34b25dd533292",
+      "event_digest": "b756e6dc4e6da7b6b550baa7093eaea5307c59438fb63d773cfdc56494161992",
+      "committed_at": "2026-11-10T13:58:04.419000Z"
+    },
+    "resultingHeadCommit": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "actor": "operator:software-project-owner",
+    "approved": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+    "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+    "receiptId": "f4821e6335b402d4c1cd52e568eec8fc0250eb4cf562562d25bdedf73e55bb77",
+    "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+    "recordedAt": "2026-11-10T13:58:05.499Z"
+  }
+}

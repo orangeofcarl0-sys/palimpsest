@@ -182,3 +182,29 @@ P 少 17 笔、1,475,868 tokens（54.1%）及 228.534 秒（53.0%），正式 Wo
 两组都只提交 `MIGRATION-REVIEW.md`，提交均是接受 HEAD 的直接子提交，公开测试的 18/18 可从各自工具结果复算。P 记录 `DELIVER`，回执把工件绑定到评审提交及其实际 blob 摘要。两组都自然退出。冻结评分均在 `SOFTWARE_REVIEW_MISSING zero or omitted` 停下。P 写的是 “an omitted limit and an explicitly zero limit”，F 用表头 “Zero or omitted”。两份原稿均明确引用接受 SHA 和更正文件，说明旧空流、新的前三条及顺序、正数限制、字段号和 REST 保留。F 明写 `GetReading` 为 unary，P 只写该调用保持原状。两份均未明确重述每条 Reading 一帧。原评分保持失败，离线审计逐项区分措辞和原稿未明确覆盖的边界。[T3 原稿与逐项审计](../../research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/t3-offline-audit.json)
 
 本轮四个真实会话合计 106 笔已结算请求、2,993,030 tokens，归因复算匹配 186 对工具调用与结果。两份 T3 原稿、T2 和 T3 的四个 Git bundle、零付费资格及实际账本配对均已归档。[复跑封存与机器证据](../../research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json)
+
+## 结算引导修复后的真实 gRPC T3
+
+2026-11-10 从主线 `a0daba3c` 启动一条全新普通 DSH T3。宿主复制停写的已接受 Git 和产品状态，核对 Promotion、原候选 `be05447e061a23157ed04e3ee4b27ec7f571e94e` 与接受 HEAD `4639ae44d78e7c1f9f5269876fa333a99bff770f`，两者树均为 `99c40069ae834cf71618e2a142010f10bef0df06`。容器内挂入只读接受记录。与上一轮普通 DSH T3 使用相同提示词、镜像和冻结评分器，继续使用 `deepseek-flash`、DSH `0.2.1-rc.5` 与 `paid-usage-only`。独立 cohort 的窗口为 64 笔、30 分钟、单请求 240 秒，金额与总 token 均无上限。 [冻结合同](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/contract.json) · [接受记录](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/acceptance.json)
+
+| 调用 → 结果 | 轨迹核对 |
+| --- | --- |
+| 26 → 28 | 读取 `acceptance.json`，结果含完整接受 HEAD 和候选 SHA |
+| 63 → 66 | 在接受 HEAD 运行公开测试，18/18 通过 |
+| 109 → 112 | 只提交 `MIGRATION-REVIEW.md`，提交 `12fbb83cb79a0f42fef8c007a30a8dec9ac747cd` 的唯一父提交为接受 HEAD |
+| 117 → 120 | 提交后再跑公开测试，18/18 通过，差异仍只有评审文档 |
+| 125 → 126 | `conclude DELIVER` 返回 `RECORDED` 与 `session.mayEnd=true`，会话自然退出，退出码为 0 |
+
+T3 没有创建新 Attempt 或 Promotion。Episode 基线仍是接受 HEAD，交付回执指向实际评审提交，工件 blob 为 `69ad8a99db056030c92a007bbc01e79c89fc3929`，SHA-256 与封存原稿一致。 [轨迹与 Git 核验](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/trajectory-and-review-audit.json) · [原稿](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/MIGRATION-REVIEW.md) · [Git bundle](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/accepted-and-review.bundle)
+
+**冻结原判仍为 `SOFTWARE_REVIEW_MISSING zero or omitted`。** 原稿写明省略或显式零值旧时返回空流、新版按源顺序返回最多前三条，正数限制、REST、协议字段号、错误边界保持一致。它明确写出了 `GetReading` 为 unary，比上轮普通 DSH 的原稿更明确。两份原稿都没有明确写出 `StreamReadings` 每条 Reading 单独一帧。本轮两次公开测试均覆盖该项并通过，测试事实和原稿内容分别记录。冻结判分对两份原稿停在同一短语，离线复核记录各项文字和行为证据，保留两轮原判。 [冻结结果](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/result.json) · [上轮原稿与审计](../../research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/t3-offline-audit.json)
+
+| T3 | 请求 | Fresh input | Cache read | Output | 总 tokens | 容器秒数 | 配对调用 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 上轮普通 DSH | 14 | 21,998 | 352,768 | 9,656 | 384,422 | 120.472 | 27/27 |
+| 本轮普通 DSH | 13 | 20,998 | 332,160 | 8,691 | 361,849 | 113.753 | 22/22 |
+| 上轮强原生 DSH | 12 | 20,132 | 261,760 | 10,496 | 292,388 | 87.238 | 见上轮封存 |
+
+本轮比上轮普通 DSH 少 1 笔请求、22,573 tokens 和 6.719 秒。两条普通 DSH 的 cache creation 均为 0，缓存读取占输入约 94%。本轮 Bash 从 17 次降至 12 次，文件读取从 5 次增至 7 次，省去了两次 glob。两条均读取接受凭据、直接提交、记录交付并自然退出。新旧普通 DSH 共 27 笔已按 Provider 响应 ID 与终态账本核对，本轮无未决用量、工具错误、领域拒绝或失败作业。两个样本各自读取不同的接受树，强原生行作为上轮参照。 [逐请求账本与对照](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/trajectory-and-review-audit.json)
+
+复现入口为 `scripts/pnwf/revision/review-t3.mjs`，需传入新运行目录、已停写的 T2 接受目录及上轮普通 DSH T3 目录。本次原始 DSH 流和 SQLite 保存在 `%TEMP%/pnwf-grpc-readiness-t3-20261110144632`。

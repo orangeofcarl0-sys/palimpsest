@@ -1,0 +1,1310 @@
+{
+  "basis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+  "cohortId": "software-t3-settled-readiness-d6b02ed9-44f9-4435-b4ad-c3fbb0010318",
+  "acceptance": {
+    "kind": "GOVERNED_PROMOTION",
+    "approvedCandidate": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+    "approvedHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+    "promotion": {
+      "promotionId": "promotion-34fa933109fc3261015f35b8370c0e40",
+      "committed": {
+        "schema_version": 1,
+        "project_id": "grpc-migration-continuation",
+        "event_type": "PROMOTION_COMMITTED",
+        "payload_version": 1,
+        "entity_type": "promotion",
+        "entity_id": "promotion-34fa933109fc3261015f35b8370c0e40",
+        "payload": {
+          "promotion_id": "promotion-34fa933109fc3261015f35b8370c0e40",
+          "attempt_id": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+          "source_commit": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+          "expected_head_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "resulting_head_commit": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+          "reason": "promoted via Ordarium git.promote",
+          "operation_id": "op_ec004f3b92124bde55aa298dc55a1578d57d449f",
+          "outcome_basis": "invoke_result",
+          "outcome_digest": "62b0c39d55fd14631be2315d5ae686b097e77440b479303c747369c4f0ee0044"
+        },
+        "causation_id": null,
+        "correlation_id": "promotion:promotion-34fa933109fc3261015f35b8370c0e40",
+        "idempotency_key": "daf33c3c642a433aad5ba3d978ff88708718d86d37c8092f5fe177207c00a556",
+        "expected_project_revision": 2,
+        "event_id": 19,
+        "project_sequence": 19,
+        "request_digest": "f4c7012a3f21e3c49d4e3cd85a278964b43e2ecf4f32f2de67aff8df649bd79b",
+        "previous_event_digest": "6d09cff4536b3401c5789e2198c03084ca828a6e00837e96f9c34b25dd533292",
+        "event_digest": "b756e6dc4e6da7b6b550baa7093eaea5307c59438fb63d773cfdc56494161992",
+        "committed_at": "2026-11-10T13:58:04.419000Z"
+      },
+      "resultingHeadCommit": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "actor": "operator:software-project-owner",
+      "approved": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+      "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+      "receiptId": "f4821e6335b402d4c1cd52e568eec8fc0250eb4cf562562d25bdedf73e55bb77",
+      "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+      "recordedAt": "2026-11-10T13:58:05.499Z"
+    }
+  },
+  "passed": false,
+  "usageKnown": true,
+  "frozenScore": {
+    "passed": false,
+    "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+  },
+  "checks": {
+    "accepted": true,
+    "naturalExit": true,
+    "persisted": true,
+    "artifactsPresent": true,
+    "onlyReview": true,
+    "noNewWork": true
+  },
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "software-t3-settled-readiness-d6b02ed9-44f9-4435-b4ad-c3fbb0010318",
+    "sessionId": "T3",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-grpc-readiness-t3-20261110144632\\P\\T3\\stages\\T3\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-grpc-readiness-t3-20261110144632\\P\\T3\\runtime-T3",
+    "principalRuntime": "container",
+    "containerId": "8806833f7951e489397277eaecece2e75d3ef837d439f977c93b20cd25311832",
+    "qualification": "d7c3188d4006d54b4914920128a0447551648345ea50463a995564bcdc66e546",
+    "startedAt": "2026-11-10T14:47:07.109Z",
+    "endedAt": "2026-11-10T14:49:00.862Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "software-t3-settled-readiness-d6b02ed9-44f9-4435-b4ad-c3fbb0010318",
+      "sessionId": "T3",
+      "observedAt": "2026-11-10T14:49:00.862Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 361849,
+      "confirmedTokens": 361849,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 13,
+    "paidModelCalls": 13
+  },
+  "current": "12fbb83cb79a0f42fef8c007a30a8dec9ac747cd",
+  "changedPaths": [
+    "MIGRATION-REVIEW.md"
+  ],
+  "conclusion": "DELIVER",
+  "review": {
+    "commit": "12fbb83cb79a0f42fef8c007a30a8dec9ac747cd",
+    "blob": "69ad8a99db056030c92a007bbc01e79c89fc3929",
+    "sha256": "379db3f55fe41b2170ed02e04365914dd28aecbc8178b7d16aa5ae53eb41b3ad"
+  },
+  "deliveryReceipt": {
+    "id": "episode-c9b4f3bd3e16a9a57ed63580",
+    "episodeBasis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "artifacts": [
+      {
+        "path": "MIGRATION-REVIEW.md",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "379db3f55fe41b2170ed02e04365914dd28aecbc8178b7d16aa5ae53eb41b3ad",
+        "source": "WORKTREE",
+        "commit": "12fbb83cb79a0f42fef8c007a30a8dec9ac747cd",
+        "detail": "committed at HEAD"
+      }
+    ]
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-64f08b0c-e531-497a-b981-0b4caaf2ae5f",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 13,
+    "knownTokens": 361849,
+    "totalTokens": 361849,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 20998,
+      "cache_read_input_tokens": 332160,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 8691
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 13,
+        "input": 20998,
+        "cacheRead": 332160,
+        "cacheWrite": 0,
+        "output": 8691,
+        "total": 361849
+      }
+    },
+    "traceTotal": 361849,
+    "traceRequests": 13,
+    "workerRequests": 0,
+    "elapsedMs": 113753,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-64f08b0c-e531-497a-b981-0b4caaf2ae5f",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "b6fe680cd9c6be49bd2b7fb088263e058e73325bf69139ff958d7f745eb07bfd",
+        "counts": {
+          "steps": 13,
+          "turns": 1,
+          "toolCalls": 22,
+          "pairedToolResults": 22,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 12
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794322064172,
+            "messageId": "40062511-af0c-47a1-9db6-7c67895dda57",
+            "usage": {
+              "inputTokens": 371,
+              "outputTokens": 122,
+              "cacheReadTokens": 10240,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10733
+            }
+          },
+          {
+            "seq": 24,
+            "at": 1794322070912,
+            "messageId": "a50f220c-996a-418f-944c-c5409316f893",
+            "usage": {
+              "inputTokens": 4024,
+              "outputTokens": 177,
+              "cacheReadTokens": 10624,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14825
+            }
+          },
+          {
+            "seq": 36,
+            "at": 1794322074141,
+            "messageId": "cff78698-41c2-4d57-be85-eeac1675bc94",
+            "usage": {
+              "inputTokens": 1833,
+              "outputTokens": 391,
+              "cacheReadTokens": 14720,
+              "cacheWriteTokens": 0,
+              "totalTokens": 16944
+            }
+          },
+          {
+            "seq": 48,
+            "at": 1794322076685,
+            "messageId": "92f8c0dc-1522-442c-9d38-d9215bb5e75b",
+            "usage": {
+              "inputTokens": 2616,
+              "outputTokens": 334,
+              "cacheReadTokens": 16896,
+              "cacheWriteTokens": 0,
+              "totalTokens": 19846
+            }
+          },
+          {
+            "seq": 62,
+            "at": 1794322081191,
+            "messageId": "de75a0b9-1613-4085-aa82-53a5ce311dcb",
+            "usage": {
+              "inputTokens": 2817,
+              "outputTokens": 685,
+              "cacheReadTokens": 19840,
+              "cacheWriteTokens": 0,
+              "totalTokens": 23342
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1794322087961,
+            "messageId": "fba13829-a058-4079-b515-a92de301ad66",
+            "usage": {
+              "inputTokens": 2037,
+              "outputTokens": 678,
+              "cacheReadTokens": 23296,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26011
+            }
+          },
+          {
+            "seq": 86,
+            "at": 1794322114072,
+            "messageId": "efce3aae-e762-4ada-9328-4ef1988b58f9",
+            "usage": {
+              "inputTokens": 4033,
+              "outputTokens": 4542,
+              "cacheReadTokens": 25984,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34559
+            }
+          },
+          {
+            "seq": 92,
+            "at": 1794322116065,
+            "messageId": "fda05432-4ac4-481c-a56c-72f4e9c42e57",
+            "usage": {
+              "inputTokens": 171,
+              "outputTokens": 203,
+              "cacheReadTokens": 34432,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34806
+            }
+          },
+          {
+            "seq": 100,
+            "at": 1794322118292,
+            "messageId": "665c733d-4af3-44de-93da-069177291ec0",
+            "usage": {
+              "inputTokens": 172,
+              "outputTokens": 109,
+              "cacheReadTokens": 34688,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34969
+            }
+          },
+          {
+            "seq": 108,
+            "at": 1794322119838,
+            "messageId": "a2e06fff-5d1d-4404-8610-6a68472d607d",
+            "usage": {
+              "inputTokens": 177,
+              "outputTokens": 164,
+              "cacheReadTokens": 34816,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35157
+            }
+          },
+          {
+            "seq": 116,
+            "at": 1794322122534,
+            "messageId": "3254df10-1364-4dce-a132-8e1dc1db962d",
+            "usage": {
+              "inputTokens": 207,
+              "outputTokens": 199,
+              "cacheReadTokens": 35072,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35478
+            }
+          },
+          {
+            "seq": 124,
+            "at": 1794322126613,
+            "messageId": "99313aa8-9933-40a4-bc1a-249cdae27193",
+            "usage": {
+              "inputTokens": 216,
+              "outputTokens": 543,
+              "cacheReadTokens": 35456,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36215
+            }
+          },
+          {
+            "seq": 130,
+            "at": 1794322139628,
+            "messageId": "6ba9eedc-5ca2-479a-be55-ba42e4a59f43",
+            "usage": {
+              "inputTokens": 2324,
+              "outputTokens": 544,
+              "cacheReadTokens": 36096,
+              "cacheWriteTokens": 0,
+              "totalTokens": 38964
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 12,
+          "read": 7,
+          "write": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "streams": [
+      {
+        "id": "session-64f08b0c-e531-497a-b981-0b4caaf2ae5f",
+        "role": "principal",
+        "digest": "b6fe680cd9c6be49bd2b7fb088263e058e73325bf69139ff958d7f745eb07bfd",
+        "counts": {
+          "steps": 13,
+          "turns": 1,
+          "toolCalls": 22,
+          "pairedToolResults": 22,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 12
+        },
+        "failedJobs": [],
+        "pairs": [
+          {
+            "callId": "call_00_bXHBbonxtqXTN6P9AJ7c0783",
+            "callSeq": 15,
+            "resultSeq": 16,
+            "tool": "continuity:pulse",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_01_sx2cMkS5hY4APrri8qHj3855",
+            "callSeq": 17,
+            "resultSeq": 20,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_eK1QOfW1byDouB9NS9Qn0868",
+            "callSeq": 25,
+            "resultSeq": 27,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_01_P5x9jULKCnaD0toBRtDk8298",
+            "callSeq": 26,
+            "resultSeq": 28,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_02_t1zpxkxqDhSjmUfWz63B8642",
+            "callSeq": 29,
+            "resultSeq": 32,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_zPcAAbZ4tETNDWd3cbf16987",
+            "callSeq": 37,
+            "resultSeq": 39,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_01_sqw6kNTxpQck3vO5jCTk4924",
+            "callSeq": 38,
+            "resultSeq": 40,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_02_Bns5Wmnw4uZJGD8hvROB5696",
+            "callSeq": 41,
+            "resultSeq": 44,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_ClSg4Jv4tlOz10fHQdjz6241",
+            "callSeq": 49,
+            "resultSeq": 52,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_01_7pz7vUEv3l4HIoDYm4tS4959",
+            "callSeq": 53,
+            "resultSeq": 54,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_02_RepxxjtE1AR7dOuIH1zD3495",
+            "callSeq": 55,
+            "resultSeq": 58,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_fW4v6gISeEG6k4mlp0kR3420",
+            "callSeq": 63,
+            "resultSeq": 66,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_01_Vaf8hO1iuwnui4u6gz9o2604",
+            "callSeq": 67,
+            "resultSeq": 70,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_UZDEYGwh4Jypxa5GtD2c4489",
+            "callSeq": 75,
+            "resultSeq": 78,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_01_7eAPWbJ6BZ1RUiOtSgIX1533",
+            "callSeq": 79,
+            "resultSeq": 81,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_02_F4137bpNdmxj09dcUCxA8554",
+            "callSeq": 80,
+            "resultSeq": 82,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_r05RvJCVwIhUrVeDLh252110",
+            "callSeq": 87,
+            "resultSeq": 88,
+            "tool": "write",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_WOkfPjznQH5XVPCldEyg1112",
+            "callSeq": 93,
+            "resultSeq": 96,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_3MxVawHDgP3Wkc6K9vdc7719",
+            "callSeq": 101,
+            "resultSeq": 104,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_MYoIufxLENBtbSRJniUL6914",
+            "callSeq": 109,
+            "resultSeq": 112,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_YrB55D8pNhiRG0v4zGlR9489",
+            "callSeq": 117,
+            "resultSeq": 120,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_00_OPOapX0kw5h1ROV4fzrp0674",
+            "callSeq": 125,
+            "resultSeq": 126,
+            "tool": "work:conclude",
+            "ok": true,
+            "refusal": null
+          }
+        ]
+      }
+    ],
+    "requestLedger": [
+      {
+        "kind": "ADMITTED",
+        "requestId": "a4a5d17d-9aeb-4f2b-a653-feb1fd819939",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "a4a5d17d-9aeb-4f2b-a653-feb1fd819939",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 371,
+          "cache_read_input_tokens": 10240,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 122
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "9ebd79d0-bea5-4f8b-b3b3-60dc5e9fe0f3",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "9ebd79d0-bea5-4f8b-b3b3-60dc5e9fe0f3",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 4024,
+          "cache_read_input_tokens": 10624,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 177
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "bfa0146a-4df7-4e6e-aa42-6c5ef1f7c178",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "bfa0146a-4df7-4e6e-aa42-6c5ef1f7c178",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 1833,
+          "cache_read_input_tokens": 14720,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 391
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "209292b5-7e02-4c43-8083-45360137875e",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "209292b5-7e02-4c43-8083-45360137875e",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2616,
+          "cache_read_input_tokens": 16896,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 334
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "6c0f2da2-efc2-495a-9383-0de6567b13b1",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "6c0f2da2-efc2-495a-9383-0de6567b13b1",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2817,
+          "cache_read_input_tokens": 19840,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 685
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "1c3a08c7-190b-463b-a0c3-ed62bcd5c780",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "1c3a08c7-190b-463b-a0c3-ed62bcd5c780",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2037,
+          "cache_read_input_tokens": 23296,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 678
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "d93444d2-46df-4223-be4a-6a229cd834ef",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "d93444d2-46df-4223-be4a-6a229cd834ef",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 4033,
+          "cache_read_input_tokens": 25984,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 4542
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "b0f4a6a6-8445-4e35-953a-055d3d9214e3",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "b0f4a6a6-8445-4e35-953a-055d3d9214e3",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 171,
+          "cache_read_input_tokens": 34432,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 203
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "3713271e-8067-4cdd-8bc9-c8003879738b",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "3713271e-8067-4cdd-8bc9-c8003879738b",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 172,
+          "cache_read_input_tokens": 34688,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 109
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "7a823c4b-0fab-4b85-863f-1f65abf0a097",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "7a823c4b-0fab-4b85-863f-1f65abf0a097",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 177,
+          "cache_read_input_tokens": 34816,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 164
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "56a70f76-ae64-488a-bab6-6a951475e1fe",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "56a70f76-ae64-488a-bab6-6a951475e1fe",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 207,
+          "cache_read_input_tokens": 35072,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 199
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "bd7b3834-3133-486d-9ad8-bd2a67440be6",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "bd7b3834-3133-486d-9ad8-bd2a67440be6",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 216,
+          "cache_read_input_tokens": 35456,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 543
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "35cca879-e934-49da-aa2d-704e5f2fa94e",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "35cca879-e934-49da-aa2d-704e5f2fa94e",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2324,
+          "cache_read_input_tokens": 36096,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 544
+        }
+      }
+    ],
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "requests": 13,
+    "usageByRole": {
+      "principal": {
+        "requests": 13,
+        "input": 20998,
+        "cacheRead": 332160,
+        "cacheWrite": 0,
+        "output": 8691,
+        "total": 361849
+      }
+    },
+    "unresolvedRequests": 0,
+    "elapsedMs": 113753
+  },
+  "responseAttribution": {
+    "arm": "P",
+    "session": "T3",
+    "boundRequests": 13,
+    "totals": {
+      "fresh": 20998,
+      "cacheRead": 332160,
+      "cacheWrite": 0,
+      "output": 8691
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-64f08b0c-e531-497a-b981-0b4caaf2ae5f",
+        "streamSha256": "b6fe680cd9c6be49bd2b7fb088263e058e73325bf69139ff958d7f745eb07bfd",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 28,
+            "toolManifestBytes": 39403,
+            "productTools": 5,
+            "productToolBytes": 20346
+          }
+        ],
+        "systemTextBytes": [
+          2146
+        ],
+        "counts": {
+          "steps": 13,
+          "turns": 1,
+          "toolCalls": 22,
+          "pairedToolResults": 22,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 12
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 12,
+          "read": 7,
+          "write": 1,
+          "work:conclude": 1
+        },
+        "totals": {
+          "fresh": 20998,
+          "cacheRead": 332160,
+          "cacheWrite": 0,
+          "output": 8691
+        },
+        "activity": [
+          {
+            "kind": "pulse",
+            "callId": "call_00_bXHBbonxtqXTN6P9AJ7c0783",
+            "callSeq": 15,
+            "resultSeq": 16,
+            "ok": true,
+            "textBytes": 12124
+          },
+          {
+            "kind": "acceptance-read",
+            "callId": "call_01_P5x9jULKCnaD0toBRtDk8298",
+            "callSeq": 26,
+            "resultSeq": 28,
+            "ok": true,
+            "textBytes": 2683
+          },
+          {
+            "kind": "other-patch",
+            "callId": "call_01_Vaf8hO1iuwnui4u6gz9o2604",
+            "callSeq": 67,
+            "resultSeq": 70,
+            "ok": true,
+            "textBytes": 5444
+          },
+          {
+            "kind": "conclude",
+            "callId": "call_00_OPOapX0kw5h1ROV4fzrp0674",
+            "callSeq": 125,
+            "resultSeq": 126,
+            "ok": true,
+            "textBytes": 7362,
+            "intent": "DELIVER"
+          }
+        ],
+        "failedJobs": [],
+        "toolIssues": [],
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "a4a5d17d-9aeb-4f2b-a653-feb1fd819939",
+            "fresh": 371,
+            "cacheRead": 10240,
+            "cacheWrite": 0,
+            "output": 122
+          },
+          {
+            "step": 2,
+            "seq": 24,
+            "requestId": "9ebd79d0-bea5-4f8b-b3b3-60dc5e9fe0f3",
+            "fresh": 4024,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 177
+          },
+          {
+            "step": 3,
+            "seq": 36,
+            "requestId": "bfa0146a-4df7-4e6e-aa42-6c5ef1f7c178",
+            "fresh": 1833,
+            "cacheRead": 14720,
+            "cacheWrite": 0,
+            "output": 391
+          },
+          {
+            "step": 4,
+            "seq": 48,
+            "requestId": "209292b5-7e02-4c43-8083-45360137875e",
+            "fresh": 2616,
+            "cacheRead": 16896,
+            "cacheWrite": 0,
+            "output": 334
+          },
+          {
+            "step": 5,
+            "seq": 62,
+            "requestId": "6c0f2da2-efc2-495a-9383-0de6567b13b1",
+            "fresh": 2817,
+            "cacheRead": 19840,
+            "cacheWrite": 0,
+            "output": 685
+          },
+          {
+            "step": 6,
+            "seq": 74,
+            "requestId": "1c3a08c7-190b-463b-a0c3-ed62bcd5c780",
+            "fresh": 2037,
+            "cacheRead": 23296,
+            "cacheWrite": 0,
+            "output": 678
+          },
+          {
+            "step": 7,
+            "seq": 86,
+            "requestId": "d93444d2-46df-4223-be4a-6a229cd834ef",
+            "fresh": 4033,
+            "cacheRead": 25984,
+            "cacheWrite": 0,
+            "output": 4542
+          },
+          {
+            "step": 8,
+            "seq": 92,
+            "requestId": "b0f4a6a6-8445-4e35-953a-055d3d9214e3",
+            "fresh": 171,
+            "cacheRead": 34432,
+            "cacheWrite": 0,
+            "output": 203
+          },
+          {
+            "step": 9,
+            "seq": 100,
+            "requestId": "3713271e-8067-4cdd-8bc9-c8003879738b",
+            "fresh": 172,
+            "cacheRead": 34688,
+            "cacheWrite": 0,
+            "output": 109
+          },
+          {
+            "step": 10,
+            "seq": 108,
+            "requestId": "7a823c4b-0fab-4b85-863f-1f65abf0a097",
+            "fresh": 177,
+            "cacheRead": 34816,
+            "cacheWrite": 0,
+            "output": 164
+          },
+          {
+            "step": 11,
+            "seq": 116,
+            "requestId": "56a70f76-ae64-488a-bab6-6a951475e1fe",
+            "fresh": 207,
+            "cacheRead": 35072,
+            "cacheWrite": 0,
+            "output": 199
+          },
+          {
+            "step": 12,
+            "seq": 124,
+            "requestId": "bd7b3834-3133-486d-9ad8-bd2a67440be6",
+            "fresh": 216,
+            "cacheRead": 35456,
+            "cacheWrite": 0,
+            "output": 543
+          },
+          {
+            "step": 13,
+            "seq": 130,
+            "requestId": "35cca879-e934-49da-aa2d-704e5f2fa94e",
+            "fresh": 2324,
+            "cacheRead": 36096,
+            "cacheWrite": 0,
+            "output": 544
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 7,
+            "seq": 86,
+            "requestId": "d93444d2-46df-4223-be4a-6a229cd834ef",
+            "fresh": 4033,
+            "cacheRead": 25984,
+            "cacheWrite": 0,
+            "output": 4542,
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 75,
+                "seq": 78,
+                "textBytes": 1656
+              },
+              {
+                "kind": "read",
+                "callSeq": 79,
+                "seq": 81,
+                "textBytes": 3715
+              },
+              {
+                "kind": "read",
+                "callSeq": 80,
+                "seq": 82,
+                "textBytes": 7892
+              }
+            ],
+            "precedingTextBytes": 13263
+          },
+          {
+            "step": 2,
+            "seq": 24,
+            "requestId": "9ebd79d0-bea5-4f8b-b3b3-60dc5e9fe0f3",
+            "fresh": 4024,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 177,
+            "precedingResults": [
+              {
+                "kind": "continuity:pulse",
+                "callSeq": 15,
+                "seq": 16,
+                "textBytes": 12124
+              },
+              {
+                "kind": "bash",
+                "callSeq": 17,
+                "seq": 20,
+                "textBytes": 860
+              }
+            ],
+            "precedingTextBytes": 12984
+          },
+          {
+            "step": 5,
+            "seq": 62,
+            "requestId": "6c0f2da2-efc2-495a-9383-0de6567b13b1",
+            "fresh": 2817,
+            "cacheRead": 19840,
+            "cacheWrite": 0,
+            "output": 685,
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 49,
+                "seq": 52,
+                "textBytes": 1229
+              },
+              {
+                "kind": "read",
+                "callSeq": 53,
+                "seq": 54,
+                "textBytes": 5940
+              },
+              {
+                "kind": "bash",
+                "callSeq": 55,
+                "seq": 58,
+                "textBytes": 1919
+              }
+            ],
+            "precedingTextBytes": 9088
+          },
+          {
+            "step": 4,
+            "seq": 48,
+            "requestId": "209292b5-7e02-4c43-8083-45360137875e",
+            "fresh": 2616,
+            "cacheRead": 16896,
+            "cacheWrite": 0,
+            "output": 334,
+            "precedingResults": [
+              {
+                "kind": "read",
+                "callSeq": 37,
+                "seq": 39,
+                "textBytes": 6900
+              },
+              {
+                "kind": "read",
+                "callSeq": 38,
+                "seq": 40,
+                "textBytes": 1147
+              },
+              {
+                "kind": "bash",
+                "callSeq": 41,
+                "seq": 44,
+                "textBytes": 1267
+              }
+            ],
+            "precedingTextBytes": 9314
+          }
+        ]
+      }
+    ]
+  },
+  "isolation": {
+    "containerId": "8806833f7951e489397277eaecece2e75d3ef837d439f977c93b20cd25311832",
+    "descriptorDigest": "d7c3188d4006d54b4914920128a0447551648345ea50463a995564bcdc66e546",
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "mounts": [
+      {
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "destination": "/run/stage/world/acceptance.json",
+        "writable": false
+      },
+      {
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "destination": "/product/node_modules",
+        "writable": false
+      },
+      {
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "destination": "/product/runtime",
+        "writable": false
+      }
+    ],
+    "checks": [
+      {
+        "name": "principal_uid",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_shell_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "write_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "git_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "node_build_fixture",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_version",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_native_addon",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "native_shell_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_proc_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_parent_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "rootfs_readonly",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "no_docker_socket",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_evaluator",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_owner_credential",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_provider_credential_env",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_routes",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      }
+    ],
+    "worlds": {
+      "schema": "pnwf-world-preflight/v1",
+      "status": "QUALIFIED",
+      "head": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "worlds": [
+        {
+          "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+          "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "result": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+          "alternates": "/run/stage/world/.git/objects",
+          "diff": "MIGRATION.md\nservice/grpc_server.js\ntest/integration.test.js\ntest/server.test.js",
+          "status": "",
+          "observation": {
+            "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+            "placement": "worktree",
+            "workDir": "/run/stage/world/.palimpsest/worlds/attempt-50afeb5d5bdea0421a8ad97588a05c46",
+            "baseCommit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+            "observedHead": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+            "committedChanges": [
+              "MIGRATION.md",
+              "service/grpc_server.js",
+              "test/integration.test.js",
+              "test/server.test.js"
+            ],
+            "uncommittedChanges": [],
+            "changedFiles": [
+              "MIGRATION.md",
+              "service/grpc_server.js",
+              "test/integration.test.js",
+              "test/server.test.js"
+            ],
+            "requiredArtifacts": [
+              {
+                "path": "service/grpc_server.js",
+                "present": true
+              },
+              {
+                "path": "test/integration.test.js",
+                "present": true
+              },
+              {
+                "path": "MIGRATION.md",
+                "present": true
+              }
+            ]
+          }
+        }
+      ],
+      "product": {
+        "repositoryHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+        "projectHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+        "relation": "IN_SYNC",
+        "uncommittedPaths": [],
+        "admittedDirectCommit": null
+      }
+    }
+  },
+  "accounting": {
+    "requests": 13,
+    "unresolved": 0,
+    "confirmed": 361849,
+    "state": "OPEN",
+    "reason": null
+  }
+}
