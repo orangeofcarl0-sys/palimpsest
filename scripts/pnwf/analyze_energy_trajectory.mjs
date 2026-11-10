@@ -58,6 +58,9 @@ function contextActivity(timeline, eventBySeq, session) {
     const name = call.kind.split(" ", 1)[0];
     let kind;
     if (name === "palimpsest_revision_review") kind = call.args?.path ? "file-expansion" : "receipt";
+    else if (name === "work:receipt" || name === "palimpsest_worker_receipt") kind = call.args?.path ? "work-receipt-file" : "work-receipt";
+    else if (["work:workers", "work:delegate", "work:complete", "relay:takeover"].includes(name) && text.includes('"receiptId"')) kind = "settled-receipt-summary";
+    else if (name === "work:readiness" || name === "work:next") kind = name;
     else if (name === "work:run" && text.includes("pnwf-energy-revision-receipt/v1")) kind = "receipt";
     else if (name === "continuity:pulse") kind = call.args?.detail === "full" ? "pulse-expansion" :
       /"presentation"\s*:\s*"brief"/u.test(text) ? "brief-pulse" : "pulse";
@@ -81,11 +84,37 @@ function contextActivity(timeline, eventBySeq, session) {
         "File expansion differs from the requested binding");
       binding = { basis, candidate };
     }
+    if (ok && (kind === "work-receipt" || kind === "work-receipt-file")) {
+      const { basis, candidate, receiptId, phase, checks } = JSON.parse(text);
+      assert(/^[a-f0-9]{40}$/u.test(basis) && /^[a-f0-9]{40}$/u.test(candidate) && receiptId, "Missing Work receipt binding");
+      if (call.args.basis) assert.equal(basis, call.args.basis);
+      if (call.args.candidate) assert.equal(candidate, call.args.candidate);
+      binding = { basis, candidate, receiptId, phase, failedChecks: (checks ?? []).filter(check => !check.passed).length };
+    }
+    let summaries;
+    let workState;
+    if (ok && kind === "settled-receipt-summary") {
+      const value = JSON.parse(text);
+      const jobs = value.workers?.jobs ?? value.jobs ?? [];
+      summaries = [value.receipt, ...jobs.map(job => job.receipt)].filter(receipt => receipt?.receiptId)
+        .map(({ receiptId, basis, candidate, phase }) => ({ receiptId, basis, candidate, phase }));
+    }
+    if (ok && kind === "work:readiness") {
+      const value = JSON.parse(text);
+      workState = { action: value.action, reasons: value.reasons, taskState: value.task?.state, attemptState: value.attempt?.state,
+        resultCommitted: value.attempt?.resultCommitted, candidate: value.attempt?.resultCommit };
+    }
+    if (ok && kind === "work:next") {
+      const value = JSON.parse(text);
+      workState = { event: value.eventType, nextAction: value.status?.nextAction?.kind };
+    }
     return [{ kind, callId: call.callId, callSeq: call.seq, resultSeq: result?.seq ?? null, ok, textBytes: messageBytes(message),
       ...(binding ? { binding } : {}),
+      ...(summaries ? { summaries } : {}),
+      ...(workState ? { workState } : {}),
       ...(kind === "pulse-expansion" && ok ? { offlineBriefBytes: bytes(JSON.stringify(briefPulse(JSON.parse(text)), null, 2)) } : {}),
       ...(kind === "file-read" ? { path: call.args.file_path.replace(/^\/run\/stage\/world\//u, "") } : {}),
-      ...(kind === "file-expansion" ? { path: call.args.path } : {}),
+      ...(["file-expansion", "work-receipt-file"].includes(kind) ? { path: call.args.path } : {}),
       ...(kind === "conclude" ? { intent: call.args.intent } : {}),
     }];
   });
@@ -93,11 +122,19 @@ function contextActivity(timeline, eventBySeq, session) {
 
 function analyzeSession(trial, arm, session, originalT1) {
   const stage = join(trial, "live", arm, session);
-  const out = join(stage, "out", session);
   const context = originalT1 === undefined;
   const original = arm === "P" && session === "T1" ? join(originalT1, "live/P/T1") : stage;
   const result = json(join(stage, "result.json"));
-  assert((context || result.passed) && result.evidence.usageQualified);
+  assert(context || result.passed);
+  return analyzeAttributedStage(stage, session, { arm, original, context, result });
+}
+
+/** Reconcile a completed single-stage experiment without altering its archived streams. */
+export function analyzeAttributedStage(stage, session, {
+  arm = "P", original = stage, context = false, result = json(join(stage, "result.json")),
+} = {}) {
+  assert(result.evidence.usageQualified);
+  const out = join(stage, "out", session);
   const observations = lines(readFileSync(join(out, "request-observations.jsonl"), "utf8"));
   const admitted = new Map(observations.filter(row => row.kind === "ADMITTED").map(row => [row.requestId, row]));
   const terminal = new Map(observations.filter(row => row.kind === "TERMINAL").map(row => [row.messageId, row]));
@@ -329,14 +366,16 @@ function compareT3(trials) {
   return { schema: "pnwf-energy-t3-context-comparison/v1", binding: "provider-response-id", continuations };
 }
 
-const [trial, originalT1, ...more] = process.argv.slice(2);
-if (trial === "--t2-context") {
-  console.log(JSON.stringify(compareT2([originalT1, ...more]), null, 2));
-} else if (trial === "--t3-context") {
-  console.log(JSON.stringify(compareT3(process.argv.slice(3)), null, 2));
-} else {
-  assert(trial && originalT1, "Usage: node scripts/pnwf/analyze_energy_trajectory.mjs <paired-run> <original-T1-run>");
-  const sessions = ["T1", "T2", "T3"].flatMap(session => ["P", "F"].map(arm => analyzeSession(trial, arm, session, originalT1)));
-  console.log(JSON.stringify({ schema: "pnwf-energy-trajectory-attribution/v1", binding: "provider-response-id",
-    boundRequests: sessions.reduce((n, session) => n + session.boundRequests, 0), sessions }, null, 2));
+if (import.meta.main) {
+  const [trial, originalT1, ...more] = process.argv.slice(2);
+  if (trial === "--t2-context") {
+    console.log(JSON.stringify(compareT2([originalT1, ...more]), null, 2));
+  } else if (trial === "--t3-context") {
+    console.log(JSON.stringify(compareT3(process.argv.slice(3)), null, 2));
+  } else {
+    assert(trial && originalT1, "Usage: node scripts/pnwf/analyze_energy_trajectory.mjs <paired-run> <original-T1-run>");
+    const sessions = ["T1", "T2", "T3"].flatMap(session => ["P", "F"].map(arm => analyzeSession(trial, arm, session, originalT1)));
+    console.log(JSON.stringify({ schema: "pnwf-energy-trajectory-attribution/v1", binding: "provider-response-id",
+      boundRequests: sessions.reduce((n, session) => n + session.boundRequests, 0), sessions }, null, 2));
+  }
 }

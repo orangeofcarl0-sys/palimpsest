@@ -1,0 +1,72 @@
+{
+  "release": "7f849be7058cb75992ba06fa226a0ff708b25111",
+  "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+  "scenario": "energy",
+  "basis": "8041871314136d417b285a800265858757463f68",
+  "first": "4cf360d5620fa10df5022c777aa0ed83c312a80a",
+  "tree": "b83b9f1680b9e9f7cdf8af1687f7be71207fc162",
+  "mode": "paid-usage-only",
+  "model": "deepseek-flash",
+  "dsh": "0.2.1-rc.5",
+  "window": {
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null
+  },
+  "admission": {
+    "actor": "operator:energy-project-owner",
+    "priorHead": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+    "approved": "8041871314136d417b285a800265858757463f68",
+    "eventId": 6,
+    "recordedAt": "2026-11-10T12:22:14.509Z"
+  },
+  "originalAdmission": {
+    "actor": "operator:energy-project-owner",
+    "priorHead": "b6aa1b89b27bc6bda2de7458ea5f7fdd1cb7abd6",
+    "approved": "8041871314136d417b285a800265858757463f68",
+    "eventId": 6,
+    "recordedAt": "2026-11-09T09:59:50.876Z",
+    "waitMs": 4316278,
+    "mode": "paid-usage-only"
+  },
+  "originalPrompt": "dcc226084921cd1d5fb4735634c2fa613a56fc4d21e2469a25ed2cd9935d83fb",
+  "prompt": "3d620a066bfc5abed0fb0db6173ff35fea36f4b6a549bd44a05afefa8c06a7c8",
+  "correction": "97031e04a1496f584c6c44d74b1b452f8eafd927309b8b24d3521bebbb0980a4",
+  "obligations": {
+    "schemaVersion": 1,
+    "mayWrite": [
+      "deliverables/technical-capacity.md",
+      "deliverables/cost-model.json",
+      "deliverables/schedule.md",
+      "deliverables/risk-review.md",
+      "deliverables/recommendation.md"
+    ],
+    "mustChange": [
+      "deliverables/technical-capacity.md",
+      "deliverables/cost-model.json",
+      "deliverables/schedule.md",
+      "deliverables/risk-review.md",
+      "deliverables/recommendation.md"
+    ],
+    "mustExist": [
+      "deliverables/technical-capacity.md",
+      "deliverables/cost-model.json",
+      "deliverables/schedule.md",
+      "deliverables/risk-review.md",
+      "deliverables/recommendation.md"
+    ],
+    "mustPreserve": [
+      "deliverables/vendor-compliance.md"
+    ]
+  },
+  "originalResultSha256": "f9584014055fa72011f486b427ab2d99f2ac25a4c10cbcc110eef2790fe56f54",
+  "t1ResultSha256": "7b89940ffd3e521da31277cec6551586a23870238e4bce5a18baa50338fad4ca",
+  "scorerSha256": "a54deb261735f25cc8c36334a9be52dd3f360d37148d0b65388803130ecc2837",
+  "productBinding": {
+    "product-entry.mjs": "0172c2f53c7b187c4f216c7d5723682824bde6f34490575c5007d8f35f2d5fa9",
+    "task-obligations.json": "aec2366f97dd2bb9d5a1fa0df4e41f740fa9f7221b13d7e3324d19cf3bc71a05",
+    "scenario.json": "f77f590bad367fdeb7e2ca1c7c6d405abccf02d9e7b7be8650a06845fbda59c5",
+    "owner-accept.mjs": "c7c18b42a2b6d65e316078340acab48739d5eb4b700659d09b834285cdfb62de"
+  }
+}

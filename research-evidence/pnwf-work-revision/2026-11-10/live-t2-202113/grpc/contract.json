@@ -1,0 +1,69 @@
+{
+  "release": "7f849be7058cb75992ba06fa226a0ff708b25111",
+  "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+  "scenario": "grpc",
+  "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "first": "3dadc3a1df9cabf2fd40543f711e3720916e9447",
+  "tree": "394093f947133d3b6e837438c6bdf95c0834b511",
+  "mode": "paid-usage-only",
+  "model": "deepseek-flash",
+  "dsh": "0.2.1-rc.5",
+  "window": {
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null
+  },
+  "admission": {
+    "actor": "operator:software-project-owner",
+    "priorHead": "6d6b4a5e3a880c32c3e361b76694ec7be85f8c9f",
+    "approved": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "eventId": 6,
+    "recordedAt": "2026-11-10T12:22:14.421Z"
+  },
+  "originalAdmission": {
+    "actor": "operator:software-project-owner",
+    "priorHead": "6d6b4a5e3a880c32c3e361b76694ec7be85f8c9f",
+    "approved": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "eventId": 6,
+    "recordedAt": "2026-11-10T08:37:22.082Z"
+  },
+  "originalPrompt": "096210bc8dfd58734139036c29eabac17a4093955c206f1d0daa0dab6f299547",
+  "prompt": "9919c9450ae1fc9cc1eb9801ff6716571ce4d1d405161a9bdb9bf9692b82bda3",
+  "correction": "969b003eacfb4b3e3050b7cbb9dbfda401c9dfb9a99ad48f81f8799ef3ab6334",
+  "obligations": {
+    "schemaVersion": 1,
+    "mayWrite": [
+      "service/grpc_server.js",
+      "test/integration.test.js",
+      "MIGRATION.md",
+      "test/server.test.js"
+    ],
+    "mustChange": [
+      "service/grpc_server.js",
+      "test/integration.test.js",
+      "MIGRATION.md"
+    ],
+    "mustExist": [
+      "service/grpc_server.js",
+      "test/integration.test.js",
+      "MIGRATION.md",
+      "test/server.test.js"
+    ],
+    "mustPreserve": [
+      "proto/energy.proto",
+      "service/wire.js",
+      "service/grpc_client.js",
+      "test/rest.test.js"
+    ]
+  },
+  "originalResultSha256": "1e6959092becb276561da73ec1f9b1900bb85b4b04a0a004c74526664f20986a",
+  "t1ResultSha256": "86d7e8a332fefefbee82de0dfc272d64a07531709f53ad0fdabc9d338af4adcf",
+  "scorerSha256": "8fe80e8f52378c4492a5e43a77312786de2cd93500d216eafc75f9700f3b94b5",
+  "productBinding": {
+    "product-entry.mjs": "0172c2f53c7b187c4f216c7d5723682824bde6f34490575c5007d8f35f2d5fa9",
+    "task-obligations.json": "da980d8d50a5b96f1b52fd61e83e3147773a8349bf2014cc6eadcd0d1f716306",
+    "scenario.json": "04fb1076bf01515102e040b6444332262c0f3a34345ab5acdc475e05ae4871d5",
+    "owner-accept.mjs": "c7c18b42a2b6d65e316078340acab48739d5eb4b700659d09b834285cdfb62de"
+  }
+}
