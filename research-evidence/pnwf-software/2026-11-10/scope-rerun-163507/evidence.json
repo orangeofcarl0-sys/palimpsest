@@ -1,0 +1,5501 @@
+{
+  "schema": "pnwf-software-scope-rerun/v1",
+  "seal": {
+    "base": "52451a076d73492b83ac5ea938d413e1993992c5",
+    "originalEvidence": "341f3d10e4abd4e80f4bb9846d11e1ead546f858",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "runtime": "cc03e9354fa27f54f979de8437a797acc7d09f6d67b2ca59f48d0b4735d451fd",
+    "mockSha256": "d787e1e7b85d094d471a5ad9986b859c3344b5127407a1099c62d1c298ea9ab3",
+    "mode": "paid-usage-only",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "prompts": {
+      "T2": "096210bc8dfd58734139036c29eabac17a4093955c206f1d0daa0dab6f299547",
+      "T3": "0870ee0bb78d78a94ef515688e74eb55e04699774de64ba480f9d047397894c2"
+    },
+    "driver": {
+      "live.mjs": "7aeda5672763a460d2cfc86c652b7e60ee45cc4e9555ef7b7161bccf0a8c1c3e",
+      "rerun-basis.mjs": "866c1541f6d04c704914d9263e8b12fd692d1e2f81debe34e294a0cf107443d1",
+      "score.mjs": "8fe80e8f52378c4492a5e43a77312786de2cd93500d216eafc75f9700f3b94b5",
+      "probe.cjs": "4e79fffb36de7940eaeaeb64a154fd6673be1d024fbe51f5c311cc98c0171c49",
+      "work-policy.mjs": "0bf1ae9aa52218b18350c2fc1e224aba4bc45d099ea221d6cdfc451f2f81cff0",
+      "product-entry.mjs": "b9f1b5ba857ea604107555056d5b35d7452b4331b2c9cc482d64f0ed3b8a2871",
+      "contract.mjs": "0fc7bce5326cc537a1c82fb063a5cf409356a8dc4f5b42cc44d6948daea26f5a",
+      "run.mjs": "67bfa8ba1ba741252e6c34093844e3edb9db87729c7667382c74527603c6e4f2"
+    },
+    "bases": {
+      "P": {
+        "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+        "tree": "394093f947133d3b6e837438c6bdf95c0834b511",
+        "first": "3dadc3a1df9cabf2fd40543f711e3720916e9447",
+        "correctionSha256": "969b003eacfb4b3e3050b7cbb9dbfda401c9dfb9a99ad48f81f8799ef3ab6334",
+        "rejectedCandidatePresent": false
+      },
+      "F": {
+        "basis": "df4271d9a43c963ed386dc4de103dcfcf30f02f7",
+        "tree": "5d3f44463b98ab2bff32bcec452aa8564ffcdf57",
+        "first": "4bdfe5da0b79f5ad699c22ccb12e95ec781dc8c0",
+        "correctionSha256": "969b003eacfb4b3e3050b7cbb9dbfda401c9dfb9a99ad48f81f8799ef3ab6334",
+        "rejectedCandidatePresent": false
+      }
+    }
+  },
+  "comparison": [
+    {
+      "arm": "P",
+      "requestsBefore": 57,
+      "requestsAfter": 40,
+      "elapsedMsBefore": 431360,
+      "elapsedMsAfter": 202826,
+      "tokensBefore": 2725570,
+      "tokensAfter": 1249702
+    },
+    {
+      "arm": "F",
+      "requestsBefore": 34,
+      "requestsAfter": 40,
+      "elapsedMsBefore": 124626,
+      "elapsedMsAfter": 152391,
+      "tokensBefore": 793796,
+      "tokensAfter": 1066518
+    }
+  ],
+  "sessions": [
+    {
+      "arm": "P",
+      "id": "T2",
+      "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "current": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "route": "formal-worker",
+      "conclusion": "WAIT_FOR_OPERATOR",
+      "passed": true,
+      "reason": null,
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": true,
+        "persisted": true,
+        "settlement": true,
+        "accepted": false,
+        "naturalExit": true
+      },
+      "score": {
+        "commit": "35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+        "tree": "d36f247e6580dfc42d445d571c0a4bc0f68ebe03",
+        "changedPaths": [
+          "MIGRATION.md",
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "test/server.test.js"
+        ],
+        "blobs": {
+          "proto/energy.proto": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+          "service/wire.js": "1cb66081224cda6472348330724a77bbed63d6c5",
+          "service/grpc_server.js": "cad88f88bf33dd6e7112ce9f4fd7305b8d8f65b5",
+          "service/grpc_client.js": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+          "test/server.test.js": "a3cd790462eeeaf04d33f3f82653cba2bee55629",
+          "test/integration.test.js": "4986a06192c2f536eed760ffd85126f6a752058f",
+          "MIGRATION.md": "dcef55662c3009d3e590b1114c2510d6d1e661f5",
+          "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+        },
+        "publicTests": 18,
+        "probes": {
+          "zero": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "omitted": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "positive2": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              }
+            ]
+          },
+          "positive6": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4210,
+                "atMs": 1762300180000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4150,
+                "atMs": 1762300240000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 3970,
+                "atMs": 1762300300000
+              }
+            ]
+          },
+          "unknownStream": {
+            "status": "5",
+            "frames": []
+          },
+          "unknownUnary": {
+            "status": "5",
+            "frames": []
+          },
+          "unary": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              }
+            ]
+          }
+        },
+        "oldRuleFailures": [
+          "zero",
+          "omitted"
+        ],
+        "newRuleFailures": []
+      },
+      "frozenScore": {
+        "passed": false,
+        "reason": "SOFTWARE_PROTO_RPC_CONTRACT"
+      },
+      "candidate": {
+        "commit": "35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+        "attemptId": "attempt-903c016ff56112b530ae08e9afa1c57e",
+        "gate": "PASS",
+        "worktrees": null,
+        "workerIsolation": {
+          "containerId": "89a51fc348b5602880448cb344ae93efc4825148e6a901ebffb66c8f0a484131",
+          "descriptorDigest": "34ce6c41f3a6266f8d17a90b1581f41569af504e159d174d2c680f7e496fd7af",
+          "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+          "user": "1001:1001",
+          "network": "none",
+          "mounts": [
+            {
+              "destination": "/product/runtime",
+              "writable": false
+            },
+            {
+              "destination": "/run/stage",
+              "writable": true
+            },
+            {
+              "destination": "/home/principal/.dsh",
+              "writable": true
+            },
+            {
+              "destination": "/qualification/world_preflight.mjs",
+              "writable": false
+            },
+            {
+              "destination": "/harness",
+              "writable": false
+            },
+            {
+              "destination": "/product/dist",
+              "writable": false
+            },
+            {
+              "destination": "/product/node_modules",
+              "writable": false
+            },
+            {
+              "destination": "/product/package.json",
+              "writable": false
+            }
+          ],
+          "checks": [
+            {
+              "name": "principal_uid",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "native_read_task",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "native_shell_task",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "write_task",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "git_task",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "node_build_fixture",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "dsh_version",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "dsh_native_addon",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "native_read_harness",
+              "expected": "DENIED",
+              "status": "DENIED"
+            },
+            {
+              "name": "native_shell_harness",
+              "expected": "DENIED",
+              "status": "DENIED"
+            },
+            {
+              "name": "indirect_proc_harness",
+              "expected": "DENIED",
+              "status": "DENIED"
+            },
+            {
+              "name": "indirect_parent_harness",
+              "expected": "DENIED",
+              "status": "DENIED"
+            },
+            {
+              "name": "rootfs_readonly",
+              "expected": "DENIED",
+              "status": "DENIED"
+            },
+            {
+              "name": "no_docker_socket",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "no_external_evaluator",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "no_owner_credential",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "no_provider_credential_env",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            },
+            {
+              "name": "no_external_routes",
+              "expected": "ALLOW",
+              "status": "ALLOW"
+            }
+          ],
+          "worlds": {
+            "schema": "pnwf-world-preflight/v1",
+            "status": "QUALIFIED",
+            "head": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+            "worlds": []
+          }
+        }
+      },
+      "offline": null,
+      "acceptance": null,
+      "deliveryReceipt": null,
+      "originalResultSha256": "1e6959092becb276561da73ec1f9b1900bb85b4b04a0a004c74526664f20986a",
+      "elapsedMs": 202826,
+      "requests": 40,
+      "usage": {
+        "input": 61317,
+        "cacheRead": 1175296,
+        "cacheWrite": 0,
+        "output": 13089,
+        "total": 1249702
+      },
+      "usageByRole": {
+        "principal": {
+          "requests": 29,
+          "input": 39396,
+          "cacheRead": 956544,
+          "cacheWrite": 0,
+          "output": 8633,
+          "total": 1004573
+        },
+        "worker": {
+          "requests": 11,
+          "input": 21921,
+          "cacheRead": 218752,
+          "cacheWrite": 0,
+          "output": 4456,
+          "total": 245129
+        }
+      },
+      "requestLedger": [
+        {
+          "kind": "ADMITTED",
+          "requestId": "670f3396-f794-4457-a827-7a11236b1ccd",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "670f3396-f794-4457-a827-7a11236b1ccd",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 5110,
+            "cache_read_input_tokens": 5632,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 54
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "6d6c4c80-7ce2-4281-9083-cc696721dda9",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "6d6c4c80-7ce2-4281-9083-cc696721dda9",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2668,
+            "cache_read_input_tokens": 10752,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 210
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "dc2f80f6-b37c-4c35-804b-8f7b52d515ef",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "dc2f80f6-b37c-4c35-804b-8f7b52d515ef",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 536,
+            "cache_read_input_tokens": 13568,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 254
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "e0090575-760c-4cad-ac6e-ef28f61f927a",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "e0090575-760c-4cad-ac6e-ef28f61f927a",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 1277,
+            "cache_read_input_tokens": 14336,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 208
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "a8ef71b7-c131-4ee3-ae04-b54c5fd51b6b",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "a8ef71b7-c131-4ee3-ae04-b54c5fd51b6b",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 7952,
+            "cache_read_input_tokens": 15744,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 268
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "e5f0c363-f41d-4b31-857f-1ad7cc0b2147",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "e5f0c363-f41d-4b31-857f-1ad7cc0b2147",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 5399,
+            "cache_read_input_tokens": 23936,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 471
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "5949a2df-1738-457f-bfa9-7e61da2ec2f0",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "5949a2df-1738-457f-bfa9-7e61da2ec2f0",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 763,
+            "cache_read_input_tokens": 29696,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 377
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "0543a175-952c-4179-aeae-49eb0b90acb3",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "0543a175-952c-4179-aeae-49eb0b90acb3",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 144,
+            "cache_read_input_tokens": 30720,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 333
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "3a3cfc5d-d00f-4791-b7c0-203707c2cad2",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "3a3cfc5d-d00f-4791-b7c0-203707c2cad2",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 932,
+            "cache_read_input_tokens": 31104,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 138
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "c0ae6a42-6758-4264-a071-1ffbe43775a0",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "c0ae6a42-6758-4264-a071-1ffbe43775a0",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 475,
+            "cache_read_input_tokens": 32128,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 205
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "4f0aebbe-e9b6-4813-a821-9ba31fb0cacb",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "4f0aebbe-e9b6-4813-a821-9ba31fb0cacb",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 196,
+            "cache_read_input_tokens": 32640,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 109
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "efffc113-1984-417b-95c4-7ef685d3e91c",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "efffc113-1984-417b-95c4-7ef685d3e91c",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 219,
+            "cache_read_input_tokens": 32768,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 110
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "ad0ada6a-b4c9-41de-9b8a-e9aafe15101b",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "ad0ada6a-b4c9-41de-9b8a-e9aafe15101b",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 410,
+            "cache_read_input_tokens": 33024,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 812
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "8c48bab1-2202-4523-8493-814fbb698722",
+          "actor": "worker"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "cac2b824-94ba-47fd-b78d-6e7d980e9c68",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "8c48bab1-2202-4523-8493-814fbb698722",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 951,
+            "cache_read_input_tokens": 5504,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 144
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "1dbb8f59-bd6b-42af-87b0-e20b106e7f20",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "cac2b824-94ba-47fd-b78d-6e7d980e9c68",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 216,
+            "cache_read_input_tokens": 34048,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 311
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "0500cab5-3d17-4ecd-8e01-effef22b91de",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "1dbb8f59-bd6b-42af-87b0-e20b106e7f20",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 300,
+            "cache_read_input_tokens": 6528,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 301
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "a7c0fd63-c8db-42bf-8730-5583018cd3a8",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "0500cab5-3d17-4ecd-8e01-effef22b91de",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 228,
+            "cache_read_input_tokens": 34560,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 326
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "eb7da66c-8612-48f8-8d22-b9359fd899e3",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "eb7da66c-8612-48f8-8d22-b9359fd899e3",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 412,
+            "cache_read_input_tokens": 35072,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 86
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "a7c0fd63-c8db-42bf-8730-5583018cd3a8",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 10741,
+            "cache_read_input_tokens": 7040,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 517
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "309e3772-b002-4c2e-a28e-341ce023e592",
+          "actor": "worker"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "0f4949c3-b6fa-49fa-ad29-8a258b3412df",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "309e3772-b002-4c2e-a28e-341ce023e592",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 311,
+            "cache_read_input_tokens": 18176,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 348
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "52690ef9-a439-4a49-a767-e71349314b07",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "52690ef9-a439-4a49-a767-e71349314b07",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 227,
+            "cache_read_input_tokens": 18688,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 175
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "0f4949c3-b6fa-49fa-ad29-8a258b3412df",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 451,
+            "cache_read_input_tokens": 35456,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 192
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "c796e5da-7620-4e03-b834-fe8fc495db15",
+          "actor": "worker"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "7d69b4c9-8a07-455d-89ac-59b3f1a3f0da",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "7d69b4c9-8a07-455d-89ac-59b3f1a3f0da",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 762,
+            "cache_read_input_tokens": 36096,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 203
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "d020b6f8-87f0-40d9-8d42-5281f54b9142",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "d020b6f8-87f0-40d9-8d42-5281f54b9142",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2045,
+            "cache_read_input_tokens": 36992,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 146
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "23952e9f-0c70-4844-afeb-fcedaebccafc",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "23952e9f-0c70-4844-afeb-fcedaebccafc",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 158,
+            "cache_read_input_tokens": 39040,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 203
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "92007656-a6ea-46dc-91fe-85df1f878073",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "c796e5da-7620-4e03-b834-fe8fc495db15",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 6408,
+            "cache_read_input_tokens": 19072,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1801
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "2d7fb280-6b5f-4dbb-a430-23b3a70d4d2d",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "2d7fb280-6b5f-4dbb-a430-23b3a70d4d2d",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 142,
+            "cache_read_input_tokens": 27264,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 112
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "92007656-a6ea-46dc-91fe-85df1f878073",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 983,
+            "cache_read_input_tokens": 39296,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 325
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "2bf9e8a6-368c-4521-9887-74d1fa508e44",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "2bf9e8a6-368c-4521-9887-74d1fa508e44",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 546,
+            "cache_read_input_tokens": 27392,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 365
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "81f56b2f-7c6f-43e1-ab95-41dd639148ce",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "81f56b2f-7c6f-43e1-ab95-41dd639148ce",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 1869,
+            "cache_read_input_tokens": 28288,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 174
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "7fa58d71-dcc1-4748-aad9-bfc4eb64eb27",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "7fa58d71-dcc1-4748-aad9-bfc4eb64eb27",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 191,
+            "cache_read_input_tokens": 30208,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 397
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "a9bc03cf-8148-44a3-9a37-876bbbd2788f",
+          "actor": "worker"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "a9bc03cf-8148-44a3-9a37-876bbbd2788f",
+          "actor": "worker",
+          "usage": {
+            "input_tokens": 235,
+            "cache_read_input_tokens": 30592,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 122
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "61b16fda-b58f-4e4e-bcb2-c275a95a2bb1",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "61b16fda-b58f-4e4e-bcb2-c275a95a2bb1",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 225,
+            "cache_read_input_tokens": 40448,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 215
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "8407025f-8e6f-41dc-831c-87cc4797a9f9",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "8407025f-8e6f-41dc-831c-87cc4797a9f9",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2183,
+            "cache_read_input_tokens": 40832,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 448
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "f5d113e6-062f-446e-b334-e1800327635f",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "f5d113e6-062f-446e-b334-e1800327635f",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 749,
+            "cache_read_input_tokens": 43392,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 182
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "09bcce01-f665-459b-93c3-63378fe59d48",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "09bcce01-f665-459b-93c3-63378fe59d48",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 522,
+            "cache_read_input_tokens": 44288,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 222
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "a68c6507-8239-467e-bd84-b514d2f613ff",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "a68c6507-8239-467e-bd84-b514d2f613ff",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 1528,
+            "cache_read_input_tokens": 44928,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 227
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "524522af-4a17-4c2d-a3e3-78198fcd1e7a",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "524522af-4a17-4c2d-a3e3-78198fcd1e7a",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 712,
+            "cache_read_input_tokens": 46592,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1348
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "1205d1bc-255b-4965-94a2-4a779a2309c6",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "1205d1bc-255b-4965-94a2-4a779a2309c6",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 1988,
+            "cache_read_input_tokens": 48640,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 313
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "7edf47c5-19c9-48e9-8252-b51e22beeaaa",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "7edf47c5-19c9-48e9-8252-b51e22beeaaa",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 153,
+            "cache_read_input_tokens": 50816,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 337
+          }
+        }
+      ],
+      "streams": [
+        {
+          "id": "session-2c7f000e-305a-49c0-9932-87db84744297",
+          "role": "principal",
+          "digest": "56e40687a9f29ee1bb1b14b5f278907a4f038c4c270fb094243ba94aee88a611",
+          "counts": {
+            "steps": 29,
+            "turns": 1,
+            "toolCalls": 43,
+            "pairedToolResults": 43,
+            "unpairedToolResults": 0,
+            "toolErrors": 1,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 1,
+            "stateQueries": 9,
+            "commits": 0,
+            "jobs": 13
+          },
+          "failedJobs": [],
+          "pairs": [
+            {
+              "callId": "call_00_vXhoQizretYTLakqA7HP0304",
+              "callSeq": 15,
+              "resultSeq": 16,
+              "tool": "continuity:pulse",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_V6z8b7hcyWWkDIEQwUhE7897",
+              "callSeq": 21,
+              "resultSeq": 24,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_RVebrp41wQh0ULxoH3J10107",
+              "callSeq": 25,
+              "resultSeq": 28,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_14cGGaYr8EBVwxAwV56s1257",
+              "callSeq": 33,
+              "resultSeq": 36,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_lSVkoDnqAVyNgGOMe4pl2107",
+              "callSeq": 34,
+              "resultSeq": 37,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_K6SQY9JygvX7s6bcXOww1356",
+              "callSeq": 35,
+              "resultSeq": 38,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_FXpErkF7b8nWPN8lGxLe6035",
+              "callSeq": 39,
+              "resultSeq": 42,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_61G9CG7NTfWdKfBFBFXs0569",
+              "callSeq": 47,
+              "resultSeq": 52,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_5tomZX2rql6TGZTs36e93382",
+              "callSeq": 48,
+              "resultSeq": 53,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_TzLBn2DXhW8mPULRYXqQ7336",
+              "callSeq": 49,
+              "resultSeq": 54,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_aRpd6QTOoOb2eJVGix2L4972",
+              "callSeq": 50,
+              "resultSeq": 55,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_04_1vtwqzPG1K8OS2a9dxAg4866",
+              "callSeq": 51,
+              "resultSeq": 56,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_YbvOco3PVNSiTlQaGJ0J6039",
+              "callSeq": 61,
+              "resultSeq": 65,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_7s3UvqIB3oVplU2Sijfw5873",
+              "callSeq": 62,
+              "resultSeq": 66,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_VFoo9Uzocf6VJuUdmIk90814",
+              "callSeq": 63,
+              "resultSeq": 67,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_skpakOEXQ2VsEKuh6jqp7125",
+              "callSeq": 64,
+              "resultSeq": 68,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_04_hlGuEyAkWClhZsywggIM9182",
+              "callSeq": 69,
+              "resultSeq": 72,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_V4TKVoqtYRWjGlxpA7Tr6700",
+              "callSeq": 77,
+              "resultSeq": 78,
+              "tool": "work:status",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_Yzn9Z28WWP1UN8qFyh9d1227",
+              "callSeq": 83,
+              "resultSeq": 85,
+              "tool": "todo_write",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_ET_GH1en1XCA56zpRcuKoV04708",
+              "callSeq": 90,
+              "resultSeq": 91,
+              "tool": "work:plan",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_My7hLaJIqXmMK8tJaI9c7885",
+              "callSeq": 96,
+              "resultSeq": 97,
+              "tool": "work:delegate",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_VWjNPsy9rhGoYRsQiCjt3346",
+              "callSeq": 102,
+              "resultSeq": 104,
+              "tool": "todo_write",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_BEM5KuOvJ4ZRWfrTXxcM7564",
+              "callSeq": 109,
+              "resultSeq": 110,
+              "tool": "job_output",
+              "ok": false,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_HMScfxCS5mCWU1bVl0z00762",
+              "callSeq": 115,
+              "resultSeq": 116,
+              "tool": "work:workers",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_GsqdIewQIXJDa5iaV9Md8031",
+              "callSeq": 121,
+              "resultSeq": 124,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_HPzS0lIWSYKytZq0KdK79427",
+              "callSeq": 129,
+              "resultSeq": 132,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_rA4ZsQqSACbzCg2luxlY7526",
+              "callSeq": 137,
+              "resultSeq": 140,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_aWkAEihcjmqc9fXs5iXM0479",
+              "callSeq": 145,
+              "resultSeq": 146,
+              "tool": "work:workers",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_IaA88eSpGgLd45mLjH8F6820",
+              "callSeq": 151,
+              "resultSeq": 154,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_swRjs0n0FXsvOVWmIjqJ6149",
+              "callSeq": 159,
+              "resultSeq": 162,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_zFiyMoSMx8QJodCZrAH49240",
+              "callSeq": 167,
+              "resultSeq": 168,
+              "tool": "list_agents",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_nqtsY5Ec7GGFaD9sZT6e8437",
+              "callSeq": 173,
+              "resultSeq": 174,
+              "tool": "project:overview",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_0z9i4KqFcdqg0WWXgNLW4895",
+              "callSeq": 179,
+              "resultSeq": 182,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_x4YKpX3avVLv7N1VC61b2940",
+              "callSeq": 187,
+              "resultSeq": 190,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_k9Q10T3rK9cBzEtgGHUa5977",
+              "callSeq": 191,
+              "resultSeq": 192,
+              "tool": "work:workers",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_zKRKBFKuWFLfbdA5C4D80748",
+              "callSeq": 197,
+              "resultSeq": 200,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_fmAXyXIAbVO3EF7dNXx20686",
+              "callSeq": 201,
+              "resultSeq": 204,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_Y5O7f5ypV9ZT9jYysf633180",
+              "callSeq": 209,
+              "resultSeq": 210,
+              "tool": "work:results",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_pRiumSF5HIwd9uxLW3K16375",
+              "callSeq": 215,
+              "resultSeq": 216,
+              "tool": "work:readiness",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_OTCGV0OJM5z9ZqkXleQ84183",
+              "callSeq": 217,
+              "resultSeq": 218,
+              "tool": "work:status",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_IEnaZwjB3SWEHaVazxO47999",
+              "callSeq": 223,
+              "resultSeq": 224,
+              "tool": "work:next",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_CbPllUzXHk53lnPSVpEl8935",
+              "callSeq": 229,
+              "resultSeq": 230,
+              "tool": "work:conclude",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_zdHscosuCjQh4U9msnCP8700",
+              "callSeq": 235,
+              "resultSeq": 237,
+              "tool": "todo_write",
+              "ok": true,
+              "refusal": null
+            }
+          ]
+        },
+        {
+          "id": "worker-624110d4-2d56-4bea-9d4f-454aba674de5",
+          "role": "worker",
+          "digest": "d78b37a6863cf8d7312d0c39b965d82cbde990c3ffb586507d3b0c87eff5a365",
+          "counts": {
+            "steps": 11,
+            "turns": 1,
+            "toolCalls": 23,
+            "pairedToolResults": 23,
+            "unpairedToolResults": 0,
+            "toolErrors": 2,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 2,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 11
+          },
+          "failedJobs": [],
+          "pairs": [
+            {
+              "callId": "call_00_Sv11IibRSRp3ALrTjXAv6067",
+              "callSeq": 15,
+              "resultSeq": 18,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_fCkeFUjNNvH3xIsw8ToS4152",
+              "callSeq": 19,
+              "resultSeq": 22,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_ET_N2tmeouwQYPsExQBVXWj4204",
+              "callSeq": 27,
+              "resultSeq": 30,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_ET_6bIX4xtfwUkVsDQaUBfj6266",
+              "callSeq": 31,
+              "resultSeq": 34,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_ET_A9HcmxawXBttNATzgMt31649",
+              "callSeq": 35,
+              "resultSeq": 38,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_IkVlSWhEvG5Ialzcrvie7719",
+              "callSeq": 43,
+              "resultSeq": 46,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_ET_O87hf3AnbrkzJUxfY4H49320",
+              "callSeq": 51,
+              "resultSeq": 52,
+              "tool": "edit",
+              "ok": false,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_ET_2hTV2EvZeB2CrdnjRtre6979",
+              "callSeq": 53,
+              "resultSeq": 54,
+              "tool": "edit",
+              "ok": false,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_eEaVlLMzdndntl6G3aDs7147",
+              "callSeq": 59,
+              "resultSeq": 63,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_3g4YeF7zgtPDjmjKHgKs5782",
+              "callSeq": 60,
+              "resultSeq": 64,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_TINXf4fzTbvTApKYON3S6971",
+              "callSeq": 61,
+              "resultSeq": 65,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_CUON1k1RqcM1LAa4XN9q6135",
+              "callSeq": 62,
+              "resultSeq": 66,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_nAKhhjy4H9xhgDzNyiLz3480",
+              "callSeq": 71,
+              "resultSeq": 72,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_ry7at4kjpmvkVX1rV4ty2721",
+              "callSeq": 73,
+              "resultSeq": 74,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_otK9HTKvnnDWJJ7eNkYq2588",
+              "callSeq": 75,
+              "resultSeq": 76,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_tInoX6td4gtacCPfAgmR4981",
+              "callSeq": 77,
+              "resultSeq": 78,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_04_YtCIdQUObnY6xUHDLYyv7926",
+              "callSeq": 79,
+              "resultSeq": 80,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_5nwixW1UHzrD7Ncero3G1248",
+              "callSeq": 85,
+              "resultSeq": 88,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_trGk1mOuxpHRUQTlTY3V1658",
+              "callSeq": 93,
+              "resultSeq": 96,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_KFgPQNBZL9tdS7Q8yYQT9256",
+              "callSeq": 97,
+              "resultSeq": 100,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_ILC63bj1qFUxeAXjAPcw6703",
+              "callSeq": 101,
+              "resultSeq": 104,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_b6vvJtqn8gryb8cd2AuG4694",
+              "callSeq": 109,
+              "resultSeq": 112,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_CRM8pB3SjBd3JMvGVLec9717",
+              "callSeq": 117,
+              "resultSeq": 118,
+              "tool": "palimpsest_worker_result",
+              "ok": true,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-2c7f000e-305a-49c0-9932-87db84744297",
+          "modelSteps": [
+            {
+              "seq": 14,
+              "at": 1794299899698,
+              "usage": {
+                "inputTokens": 5110,
+                "outputTokens": 54,
+                "cacheReadTokens": 5632,
+                "cacheWriteTokens": 0,
+                "totalTokens": 10796
+              }
+            },
+            {
+              "seq": 20,
+              "at": 1794299907398,
+              "usage": {
+                "inputTokens": 2668,
+                "outputTokens": 210,
+                "cacheReadTokens": 10752,
+                "cacheWriteTokens": 0,
+                "totalTokens": 13630
+              }
+            },
+            {
+              "seq": 32,
+              "at": 1794299910202,
+              "usage": {
+                "inputTokens": 536,
+                "outputTokens": 254,
+                "cacheReadTokens": 13568,
+                "cacheWriteTokens": 0,
+                "totalTokens": 14358
+              }
+            },
+            {
+              "seq": 46,
+              "at": 1794299912334,
+              "usage": {
+                "inputTokens": 1277,
+                "outputTokens": 208,
+                "cacheReadTokens": 14336,
+                "cacheWriteTokens": 0,
+                "totalTokens": 15821
+              }
+            },
+            {
+              "seq": 60,
+              "at": 1794299914783,
+              "usage": {
+                "inputTokens": 7952,
+                "outputTokens": 268,
+                "cacheReadTokens": 15744,
+                "cacheWriteTokens": 0,
+                "totalTokens": 23964
+              }
+            },
+            {
+              "seq": 76,
+              "at": 1794299919734,
+              "usage": {
+                "inputTokens": 5399,
+                "outputTokens": 471,
+                "cacheReadTokens": 23936,
+                "cacheWriteTokens": 0,
+                "totalTokens": 29806
+              }
+            },
+            {
+              "seq": 82,
+              "at": 1794299923478,
+              "usage": {
+                "inputTokens": 763,
+                "outputTokens": 377,
+                "cacheReadTokens": 29696,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30836
+              }
+            },
+            {
+              "seq": 89,
+              "at": 1794299925606,
+              "usage": {
+                "inputTokens": 144,
+                "outputTokens": 333,
+                "cacheReadTokens": 30720,
+                "cacheWriteTokens": 0,
+                "totalTokens": 31197
+              }
+            },
+            {
+              "seq": 95,
+              "at": 1794299941223,
+              "usage": {
+                "inputTokens": 932,
+                "outputTokens": 138,
+                "cacheReadTokens": 31104,
+                "cacheWriteTokens": 0,
+                "totalTokens": 32174
+              }
+            },
+            {
+              "seq": 101,
+              "at": 1794299961539,
+              "usage": {
+                "inputTokens": 475,
+                "outputTokens": 205,
+                "cacheReadTokens": 32128,
+                "cacheWriteTokens": 0,
+                "totalTokens": 32808
+              }
+            },
+            {
+              "seq": 108,
+              "at": 1794299962746,
+              "usage": {
+                "inputTokens": 196,
+                "outputTokens": 109,
+                "cacheReadTokens": 32640,
+                "cacheWriteTokens": 0,
+                "totalTokens": 32945
+              }
+            },
+            {
+              "seq": 114,
+              "at": 1794299963931,
+              "usage": {
+                "inputTokens": 219,
+                "outputTokens": 110,
+                "cacheReadTokens": 32768,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33097
+              }
+            },
+            {
+              "seq": 120,
+              "at": 1794299972260,
+              "usage": {
+                "inputTokens": 410,
+                "outputTokens": 812,
+                "cacheReadTokens": 33024,
+                "cacheWriteTokens": 0,
+                "totalTokens": 34246
+              }
+            },
+            {
+              "seq": 128,
+              "at": 1794299980248,
+              "usage": {
+                "inputTokens": 216,
+                "outputTokens": 311,
+                "cacheReadTokens": 34048,
+                "cacheWriteTokens": 0,
+                "totalTokens": 34575
+              }
+            },
+            {
+              "seq": 136,
+              "at": 1794299982859,
+              "usage": {
+                "inputTokens": 228,
+                "outputTokens": 326,
+                "cacheReadTokens": 34560,
+                "cacheWriteTokens": 0,
+                "totalTokens": 35114
+              }
+            },
+            {
+              "seq": 144,
+              "at": 1794299984426,
+              "usage": {
+                "inputTokens": 412,
+                "outputTokens": 86,
+                "cacheReadTokens": 35072,
+                "cacheWriteTokens": 0,
+                "totalTokens": 35570
+              }
+            },
+            {
+              "seq": 150,
+              "at": 1794299988751,
+              "usage": {
+                "inputTokens": 451,
+                "outputTokens": 192,
+                "cacheReadTokens": 35456,
+                "cacheWriteTokens": 0,
+                "totalTokens": 36099
+              }
+            },
+            {
+              "seq": 158,
+              "at": 1794299990984,
+              "usage": {
+                "inputTokens": 762,
+                "outputTokens": 203,
+                "cacheReadTokens": 36096,
+                "cacheWriteTokens": 0,
+                "totalTokens": 37061
+              }
+            },
+            {
+              "seq": 166,
+              "at": 1794299993381,
+              "usage": {
+                "inputTokens": 2045,
+                "outputTokens": 146,
+                "cacheReadTokens": 36992,
+                "cacheWriteTokens": 0,
+                "totalTokens": 39183
+              }
+            },
+            {
+              "seq": 172,
+              "at": 1794299995171,
+              "usage": {
+                "inputTokens": 158,
+                "outputTokens": 203,
+                "cacheReadTokens": 39040,
+                "cacheWriteTokens": 0,
+                "totalTokens": 39401
+              }
+            },
+            {
+              "seq": 178,
+              "at": 1794299998730,
+              "usage": {
+                "inputTokens": 983,
+                "outputTokens": 325,
+                "cacheReadTokens": 39296,
+                "cacheWriteTokens": 0,
+                "totalTokens": 40604
+              }
+            },
+            {
+              "seq": 186,
+              "at": 1794300031098,
+              "usage": {
+                "inputTokens": 225,
+                "outputTokens": 215,
+                "cacheReadTokens": 40448,
+                "cacheWriteTokens": 0,
+                "totalTokens": 40888
+              }
+            },
+            {
+              "seq": 196,
+              "at": 1794300035521,
+              "usage": {
+                "inputTokens": 2183,
+                "outputTokens": 448,
+                "cacheReadTokens": 40832,
+                "cacheWriteTokens": 0,
+                "totalTokens": 43463
+              }
+            },
+            {
+              "seq": 208,
+              "at": 1794300039211,
+              "usage": {
+                "inputTokens": 749,
+                "outputTokens": 182,
+                "cacheReadTokens": 43392,
+                "cacheWriteTokens": 0,
+                "totalTokens": 44323
+              }
+            },
+            {
+              "seq": 214,
+              "at": 1794300042970,
+              "usage": {
+                "inputTokens": 522,
+                "outputTokens": 222,
+                "cacheReadTokens": 44288,
+                "cacheWriteTokens": 0,
+                "totalTokens": 45032
+              }
+            },
+            {
+              "seq": 222,
+              "at": 1794300047100,
+              "usage": {
+                "inputTokens": 1528,
+                "outputTokens": 227,
+                "cacheReadTokens": 44928,
+                "cacheWriteTokens": 0,
+                "totalTokens": 46683
+              }
+            },
+            {
+              "seq": 228,
+              "at": 1794300055994,
+              "usage": {
+                "inputTokens": 712,
+                "outputTokens": 1348,
+                "cacheReadTokens": 46592,
+                "cacheWriteTokens": 0,
+                "totalTokens": 48652
+              }
+            },
+            {
+              "seq": 234,
+              "at": 1794300065803,
+              "usage": {
+                "inputTokens": 1988,
+                "outputTokens": 313,
+                "cacheReadTokens": 48640,
+                "cacheWriteTokens": 0,
+                "totalTokens": 50941
+              }
+            },
+            {
+              "seq": 241,
+              "at": 1794300068401,
+              "usage": {
+                "inputTokens": 153,
+                "outputTokens": 337,
+                "cacheReadTokens": 50816,
+                "cacheWriteTokens": 0,
+                "totalTokens": 51306
+              }
+            }
+          ],
+          "refusals": [
+            {
+              "callId": "call_00_BEM5KuOvJ4ZRWfrTXxcM7564",
+              "seq": 110,
+              "kind": "job_output",
+              "state": null,
+              "reason": null,
+              "detail": null
+            }
+          ],
+          "choices": [
+            {
+              "id": "call_00_vXhoQizretYTLakqA7HP0304",
+              "seq": 15,
+              "kind": "continuity:pulse",
+              "intent": null
+            },
+            {
+              "id": "call_00_V4TKVoqtYRWjGlxpA7Tr6700",
+              "seq": 77,
+              "kind": "work:status",
+              "intent": null
+            },
+            {
+              "id": "call_00_ET_GH1en1XCA56zpRcuKoV04708",
+              "seq": 90,
+              "kind": "work:plan",
+              "intent": null
+            },
+            {
+              "id": "call_00_My7hLaJIqXmMK8tJaI9c7885",
+              "seq": 96,
+              "kind": "work:delegate fleet-default-limit",
+              "intent": null
+            },
+            {
+              "id": "call_00_HMScfxCS5mCWU1bVl0z00762",
+              "seq": 115,
+              "kind": "work:workers fleet-default-limit",
+              "intent": null
+            },
+            {
+              "id": "call_00_aWkAEihcjmqc9fXs5iXM0479",
+              "seq": 145,
+              "kind": "work:workers fleet-default-limit",
+              "intent": null
+            },
+            {
+              "id": "call_01_k9Q10T3rK9cBzEtgGHUa5977",
+              "seq": 191,
+              "kind": "work:workers fleet-default-limit",
+              "intent": null
+            },
+            {
+              "id": "call_00_Y5O7f5ypV9ZT9jYysf633180",
+              "seq": 209,
+              "kind": "work:results fleet-default-limit",
+              "intent": null
+            },
+            {
+              "id": "call_00_pRiumSF5HIwd9uxLW3K16375",
+              "seq": 215,
+              "kind": "work:readiness fleet-default-limit",
+              "intent": null
+            },
+            {
+              "id": "call_01_OTCGV0OJM5z9ZqkXleQ84183",
+              "seq": 217,
+              "kind": "work:status",
+              "intent": null
+            },
+            {
+              "id": "call_00_IEnaZwjB3SWEHaVazxO47999",
+              "seq": 223,
+              "kind": "work:next fleet-default-limit",
+              "intent": null
+            },
+            {
+              "id": "call_00_CbPllUzXHk53lnPSVpEl8935",
+              "seq": 229,
+              "kind": "work:conclude",
+              "intent": "WAIT_FOR_OPERATOR"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "worker-624110d4-2d56-4bea-9d4f-454aba674de5",
+          "modelSteps": [
+            {
+              "seq": 14,
+              "at": 1794299978291,
+              "usage": {
+                "inputTokens": 951,
+                "outputTokens": 144,
+                "cacheReadTokens": 5504,
+                "cacheWriteTokens": 0,
+                "totalTokens": 6599
+              }
+            },
+            {
+              "seq": 26,
+              "at": 1794299980871,
+              "usage": {
+                "inputTokens": 300,
+                "outputTokens": 301,
+                "cacheReadTokens": 6528,
+                "cacheWriteTokens": 0,
+                "totalTokens": 7129
+              }
+            },
+            {
+              "seq": 42,
+              "at": 1794299984989,
+              "usage": {
+                "inputTokens": 10741,
+                "outputTokens": 517,
+                "cacheReadTokens": 7040,
+                "cacheWriteTokens": 0,
+                "totalTokens": 18298
+              }
+            },
+            {
+              "seq": 50,
+              "at": 1794299986905,
+              "usage": {
+                "inputTokens": 311,
+                "outputTokens": 348,
+                "cacheReadTokens": 18176,
+                "cacheWriteTokens": 0,
+                "totalTokens": 18835
+              }
+            },
+            {
+              "seq": 58,
+              "at": 1794299988495,
+              "usage": {
+                "inputTokens": 227,
+                "outputTokens": 175,
+                "cacheReadTokens": 18688,
+                "cacheWriteTokens": 0,
+                "totalTokens": 19090
+              }
+            },
+            {
+              "seq": 70,
+              "at": 1794299996898,
+              "usage": {
+                "inputTokens": 6408,
+                "outputTokens": 1801,
+                "cacheReadTokens": 19072,
+                "cacheWriteTokens": 0,
+                "totalTokens": 27281
+              }
+            },
+            {
+              "seq": 84,
+              "at": 1794299998714,
+              "usage": {
+                "inputTokens": 142,
+                "outputTokens": 112,
+                "cacheReadTokens": 27264,
+                "cacheWriteTokens": 0,
+                "totalTokens": 27518
+              }
+            },
+            {
+              "seq": 92,
+              "at": 1794300001436,
+              "usage": {
+                "inputTokens": 546,
+                "outputTokens": 365,
+                "cacheReadTokens": 27392,
+                "cacheWriteTokens": 0,
+                "totalTokens": 28303
+              }
+            },
+            {
+              "seq": 108,
+              "at": 1794300004416,
+              "usage": {
+                "inputTokens": 1869,
+                "outputTokens": 174,
+                "cacheReadTokens": 28288,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30331
+              }
+            },
+            {
+              "seq": 116,
+              "at": 1794300008296,
+              "usage": {
+                "inputTokens": 191,
+                "outputTokens": 397,
+                "cacheReadTokens": 30208,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30796
+              }
+            },
+            {
+              "seq": 122,
+              "at": 1794300009482,
+              "usage": {
+                "inputTokens": 235,
+                "outputTokens": 122,
+                "cacheReadTokens": 30592,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30949
+              }
+            }
+          ],
+          "refusals": [
+            {
+              "callId": "call_00_ET_O87hf3AnbrkzJUxfY4H49320",
+              "seq": 52,
+              "kind": "edit",
+              "state": null,
+              "reason": null,
+              "detail": null
+            },
+            {
+              "callId": "call_01_ET_2hTV2EvZeB2CrdnjRtre6979",
+              "seq": 54,
+              "kind": "edit",
+              "state": null,
+              "reason": null,
+              "detail": null
+            }
+          ],
+          "choices": [
+            {
+              "id": "call_00_CRM8pB3SjBd3JMvGVLec9717",
+              "seq": 117,
+              "kind": "palimpsest_worker_result",
+              "intent": null
+            }
+          ]
+        }
+      ],
+      "workerReceipts": [
+        {
+          "startedAt": "2026-11-10T08:39:09.950Z",
+          "outcome": "READY_FOR_SETTLEMENT",
+          "attemptId": "attempt-903c016ff56112b530ae08e9afa1c57e",
+          "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "writeScope": [
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "MIGRATION.md",
+            "test/server.test.js"
+          ],
+          "containerId": "89a51fc348b5602880448cb344ae93efc4825148e6a901ebffb66c8f0a484131",
+          "qualification": "34ce6c41f3a6266f8d17a90b1581f41569af504e159d174d2c680f7e496fd7af",
+          "exit": {
+            "code": 0,
+            "signal": null
+          },
+          "sessionId": "worker-624110d4-2d56-4bea-9d4f-454aba674de5",
+          "result": "35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+          "paths": [
+            "MIGRATION.md",
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "test/server.test.js"
+          ],
+          "endedAt": "2026-11-10T08:40:16.826Z"
+        }
+      ],
+      "bundle": {
+        "name": "P-T2.bundle",
+        "commit": "35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+        "sha256": "7405903e1a19c0405f2982b527507d331cdacf40bea50126e4e1326138f82857"
+      },
+      "review": null
+    },
+    {
+      "arm": "F",
+      "id": "T2",
+      "basis": "df4271d9a43c963ed386dc4de103dcfcf30f02f7",
+      "current": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+      "route": null,
+      "conclusion": null,
+      "passed": false,
+      "reason": "T2_CHANGED_CANONICAL_WORLD_BEFORE_APPROVAL",
+      "checks": {
+        "artifactsPresent": false,
+        "businessCorrect": false,
+        "persisted": false,
+        "settlement": null,
+        "accepted": false,
+        "naturalExit": true
+      },
+      "score": null,
+      "frozenScore": null,
+      "candidate": null,
+      "offline": {
+        "commit": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+        "basis": "df4271d9a43c963ed386dc4de103dcfcf30f02f7",
+        "tree": "3cdeb0fcfce00f1ff5c069a8be6caade370e7425",
+        "route": "native-subagent",
+        "readyAt": "2026-11-10T08:45:33.135Z",
+        "originalOutcome": "T2_CHANGED_CANONICAL_WORLD_BEFORE_APPROVAL",
+        "originalResultSha256": "20dd78645cc52d7bdb208650aa2e529a46fff2e33f6e317a881b85e99bf32f22",
+        "originalAcceptedRef": "refs/heads/master",
+        "changedPaths": [
+          "MIGRATION.md",
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "test/server.test.js"
+        ],
+        "retained": {
+          "proto/energy.proto": true,
+          "service/wire.js": true,
+          "service/grpc_client.js": true,
+          "test/rest.test.js": true
+        },
+        "publicTests": 18,
+        "probes": {
+          "zero": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "omitted": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              }
+            ]
+          },
+          "positive2": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              }
+            ]
+          },
+          "positive6": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4185,
+                "atMs": 1762300060000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4090,
+                "atMs": 1762300120000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4210,
+                "atMs": 1762300180000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 4150,
+                "atMs": 1762300240000
+              },
+              {
+                "siteId": "site-a",
+                "watts": 3970,
+                "atMs": 1762300300000
+              }
+            ]
+          },
+          "unknownStream": {
+            "status": "5",
+            "frames": []
+          },
+          "unknownUnary": {
+            "status": "5",
+            "frames": []
+          },
+          "unary": {
+            "status": "0",
+            "frames": [
+              {
+                "siteId": "site-a",
+                "watts": 4120,
+                "atMs": 1762300000000
+              }
+            ]
+          }
+        }
+      },
+      "acceptance": null,
+      "deliveryReceipt": null,
+      "originalResultSha256": "20dd78645cc52d7bdb208650aa2e529a46fff2e33f6e317a881b85e99bf32f22",
+      "elapsedMs": 152391,
+      "requests": 40,
+      "usage": {
+        "input": 45882,
+        "cacheRead": 999424,
+        "cacheWrite": 0,
+        "output": 21212,
+        "total": 1066518
+      },
+      "usageByRole": {
+        "native-child": {
+          "requests": 16,
+          "input": 21113,
+          "cacheRead": 366464,
+          "cacheWrite": 0,
+          "output": 8885,
+          "total": 396462
+        },
+        "principal": {
+          "requests": 24,
+          "input": 24769,
+          "cacheRead": 632960,
+          "cacheWrite": 0,
+          "output": 12327,
+          "total": 670056
+        }
+      },
+      "requestLedger": [
+        {
+          "kind": "ADMITTED",
+          "requestId": "aea89998-70cd-4128-a359-cfba6e555b22",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "aea89998-70cd-4128-a359-cfba6e555b22",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 361,
+            "cache_read_input_tokens": 5248,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 143
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "6020fdf0-5952-4fcb-9c98-62f656b309b7",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "6020fdf0-5952-4fcb-9c98-62f656b309b7",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 789,
+            "cache_read_input_tokens": 5632,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 212
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "de699863-e5cc-40ed-b901-d2d6616985f7",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "de699863-e5cc-40ed-b901-d2d6616985f7",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2647,
+            "cache_read_input_tokens": 6528,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 309
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "56319bad-c306-4677-b4d5-f072842171ba",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "56319bad-c306-4677-b4d5-f072842171ba",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 7820,
+            "cache_read_input_tokens": 9472,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 225
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "71223bdd-1622-404c-9b64-c97beeea3574",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "71223bdd-1622-404c-9b64-c97beeea3574",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 3902,
+            "cache_read_input_tokens": 17408,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 896
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "65457a0a-1f1c-4e1f-b88c-4c2f0dbeb742",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "65457a0a-1f1c-4e1f-b88c-4c2f0dbeb742",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 1522,
+            "cache_read_input_tokens": 22144,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2479
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "050d9f75-ef6d-4f51-b10a-a0e504e0c3c3",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "050d9f75-ef6d-4f51-b10a-a0e504e0c3c3",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 200,
+            "cache_read_input_tokens": 25984,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 203
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "878910d9-9d78-4a74-9b3d-ed7e3923f534",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "878910d9-9d78-4a74-9b3d-ed7e3923f534",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 175,
+            "cache_read_input_tokens": 26240,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 101
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "521181a6-0d55-4b05-a391-ee7560604bae",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "521181a6-0d55-4b05-a391-ee7560604bae",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 239,
+            "cache_read_input_tokens": 26368,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 946
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "cd07a98d-ef1a-4442-a489-15c20ca76c3e",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "678db847-7d5f-41c5-b2fb-0181cc2764b0",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "678db847-7d5f-41c5-b2fb-0181cc2764b0",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 1465,
+            "cache_read_input_tokens": 5120,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 241
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "abcb29eb-bf7d-4f8c-a8ec-ba5f6016bd69",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "abcb29eb-bf7d-4f8c-a8ec-ba5f6016bd69",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2076,
+            "cache_read_input_tokens": 6784,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 282
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "cd07a98d-ef1a-4442-a489-15c20ca76c3e",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 201,
+            "cache_read_input_tokens": 27392,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 593
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "a8c3109c-a52e-4a06-84eb-5931aae0726a",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "6daa2f8b-d8d3-4860-a303-a2dad9cfd13f",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "6daa2f8b-d8d3-4860-a303-a2dad9cfd13f",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 8107,
+            "cache_read_input_tokens": 9088,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 304
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "39c07150-0e2c-47a2-84bd-baa0f837b139",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "39c07150-0e2c-47a2-84bd-baa0f837b139",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 3489,
+            "cache_read_input_tokens": 17408,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 151
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "a8c3109c-a52e-4a06-84eb-5931aae0726a",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 287,
+            "cache_read_input_tokens": 28160,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 636
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "57d169fb-4b1e-440b-b6de-78eaef360f5a",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "dd6999f6-ec6b-47da-a2b5-fe744a591c0c",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "57d169fb-4b1e-440b-b6de-78eaef360f5a",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 198,
+            "cache_read_input_tokens": 28928,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 144
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "c6e90ad4-41d4-47e1-acfd-3a3ae0cb4fba",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "c6e90ad4-41d4-47e1-acfd-3a3ae0cb4fba",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 452,
+            "cache_read_input_tokens": 29184,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 108
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "b380d22b-405a-462c-bc2c-184da879ea07",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "b380d22b-405a-462c-bc2c-184da879ea07",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 232,
+            "cache_read_input_tokens": 29568,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1161
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "cd37cfb5-1d02-4a82-bc39-fdabfdf5cbd3",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "dd6999f6-ec6b-47da-a2b5-fe744a591c0c",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 718,
+            "cache_read_input_tokens": 20992,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2268
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "cd37cfb5-1d02-4a82-bc39-fdabfdf5cbd3",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 156,
+            "cache_read_input_tokens": 30848,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 107
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "25373c4e-02f7-4d8a-98ec-cc24d4c5145c",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "d43f1706-d2fc-437b-b3d6-a03dbe6fc1ab",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "d43f1706-d2fc-437b-b3d6-a03dbe6fc1ab",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 255,
+            "cache_read_input_tokens": 23936,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 328
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "c9770a5a-923b-4e7d-a824-9e9b851f1d97",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "25373c4e-02f7-4d8a-98ec-cc24d4c5145c",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 149,
+            "cache_read_input_tokens": 30976,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 413
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "c9770a5a-923b-4e7d-a824-9e9b851f1d97",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 143,
+            "cache_read_input_tokens": 24448,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 402
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "09f4d2fe-ca9a-414f-8223-a8734ae61992",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "09f4d2fe-ca9a-414f-8223-a8734ae61992",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 199,
+            "cache_read_input_tokens": 24832,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 574
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "504eab52-dffb-495e-8c5e-02180a6e05e8",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "504eab52-dffb-495e-8c5e-02180a6e05e8",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 169,
+            "cache_read_input_tokens": 25472,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1263
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "f2e9d89f-d0a4-45ac-ab9d-745618cc9b6a",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "f2e9d89f-d0a4-45ac-ab9d-745618cc9b6a",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 220,
+            "cache_read_input_tokens": 26752,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 186
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "b87a8fe9-c475-4b24-b3af-f49aacfd1f20",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "d91a2418-2079-45dd-818d-cef80800c2c0",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "b87a8fe9-c475-4b24-b3af-f49aacfd1f20",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 539,
+            "cache_read_input_tokens": 27136,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 212
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "357d2544-5a98-427c-8121-731e2fef3070",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "d91a2418-2079-45dd-818d-cef80800c2c0",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 244,
+            "cache_read_input_tokens": 31360,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 150
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "357d2544-5a98-427c-8121-731e2fef3070",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2296,
+            "cache_read_input_tokens": 27776,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 576
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "2091f85c-b61f-491c-b92d-d77d81e5656a",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "2091f85c-b61f-491c-b92d-d77d81e5656a",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 213,
+            "cache_read_input_tokens": 30592,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 311
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "091888fc-b597-483f-ae25-c139fcb9852b",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "4a750421-c5db-43a7-a457-1a5c455e007d",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "4a750421-c5db-43a7-a457-1a5c455e007d",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 172,
+            "cache_read_input_tokens": 31616,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 389
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "091888fc-b597-483f-ae25-c139fcb9852b",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 758,
+            "cache_read_input_tokens": 31104,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 496
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "b88c7485-3b07-46b5-8eca-29e83dc91192",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "925e7075-a438-4b2b-a153-a03fa435c311",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "b88c7485-3b07-46b5-8eca-29e83dc91192",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2170,
+            "cache_read_input_tokens": 32128,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 633
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "925e7075-a438-4b2b-a153-a03fa435c311",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 256,
+            "cache_read_input_tokens": 32128,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 681
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "c1ca5962-d512-4ce0-9b62-c8a709ecd244",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "33e82278-a791-4848-94f8-a9eafd1c84dc",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "c1ca5962-d512-4ce0-9b62-c8a709ecd244",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 210,
+            "cache_read_input_tokens": 32896,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 610
+          }
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "33e82278-a791-4848-94f8-a9eafd1c84dc",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 1116,
+            "cache_read_input_tokens": 34816,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1335
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "0cbef776-9b4f-4831-8184-2f8f18bbe0b5",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "0cbef776-9b4f-4831-8184-2f8f18bbe0b5",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 675,
+            "cache_read_input_tokens": 37248,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 124
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "e119b3b1-0c67-4380-95e2-6823e182d3ac",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "e119b3b1-0c67-4380-95e2-6823e182d3ac",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 254,
+            "cache_read_input_tokens": 37888,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 422
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "e03f708a-f64a-4e77-aff3-ca664d01d658",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "e03f708a-f64a-4e77-aff3-ca664d01d658",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 649,
+            "cache_read_input_tokens": 38528,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 250
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "ff2190ba-f405-4336-8895-33e4d13d5dbf",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "ff2190ba-f405-4336-8895-33e4d13d5dbf",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 159,
+            "cache_read_input_tokens": 39296,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 348
+          }
+        }
+      ],
+      "streams": [
+        {
+          "id": "75ec1535-16f0-4ff4-8bc7-bdeb8bb92e66",
+          "role": "native-child",
+          "digest": "cb120d109676595dc5be7a0c6c4a8914e218c4312aa1ba67d09c7c83e8aa8f50",
+          "counts": {
+            "steps": 16,
+            "turns": 1,
+            "toolCalls": 30,
+            "pairedToolResults": 30,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 12
+          },
+          "failedJobs": [],
+          "pairs": [
+            {
+              "callId": "call_00_FaOMiwz2AXXtUnV6SiEW5375",
+              "callSeq": 20,
+              "resultSeq": 23,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_am7NAL2o8pFFvS5ZvDIx7035",
+              "callSeq": 24,
+              "resultSeq": 27,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_2m3aqGqPmNrzX89FmJlG1592",
+              "callSeq": 25,
+              "resultSeq": 28,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_ZnexmA79saNu1EtqajN21666",
+              "callSeq": 26,
+              "resultSeq": 29,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_hRZspp1gq7euZuEIOL170914",
+              "callSeq": 34,
+              "resultSeq": 37,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_F0ymvc5K8fdiG5oyXzAJ0094",
+              "callSeq": 38,
+              "resultSeq": 41,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_mPjeHh3Y3vdgmBUN5sGr3261",
+              "callSeq": 39,
+              "resultSeq": 42,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_NFzccXo6RXDYdRHgYtik4330",
+              "callSeq": 40,
+              "resultSeq": 43,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_UyUgKsWF4gAAUE6u8emA7261",
+              "callSeq": 48,
+              "resultSeq": 52,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_Lo6eIluvicdj3TYC3MqD0862",
+              "callSeq": 49,
+              "resultSeq": 53,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_LJf4ty2Tp90vtrSUf3rt0078",
+              "callSeq": 50,
+              "resultSeq": 54,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_3vGdpK89CfQzhNenPbea8292",
+              "callSeq": 51,
+              "resultSeq": 55,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_AkTmCzgRLbhbOYa27qTn9116",
+              "callSeq": 60,
+              "resultSeq": 61,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_wZwIc8psjW5ThjOxVaXv8863",
+              "callSeq": 62,
+              "resultSeq": 65,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_5LVekLMavo8n9m1npSpB1663",
+              "callSeq": 70,
+              "resultSeq": 73,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_en9jIixORlfJCjvxJXE01311",
+              "callSeq": 78,
+              "resultSeq": 79,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_jNXdPrZHIfJmRT3HRtR36596",
+              "callSeq": 80,
+              "resultSeq": 81,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_gxlqYXzIVGfJN7AHFVwl4927",
+              "callSeq": 86,
+              "resultSeq": 87,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_IVxqvz3WNAz1GevNHKGs6359",
+              "callSeq": 92,
+              "resultSeq": 93,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_umd0zoiTDYHreYfhGOLl8126",
+              "callSeq": 98,
+              "resultSeq": 99,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_jHl3NTVUIOUmKnFn2OmF7347",
+              "callSeq": 100,
+              "resultSeq": 101,
+              "tool": "edit",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_n5Qrao5XbrAOdmlo79tA6433",
+              "callSeq": 106,
+              "resultSeq": 109,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_DrvAaVpKnf0jt5UVudy12245",
+              "callSeq": 110,
+              "resultSeq": 113,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_szt52tWPCugVnkpfZVQK7280",
+              "callSeq": 118,
+              "resultSeq": 121,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_upcIuibue2ZGP2ns4nEF7313",
+              "callSeq": 122,
+              "resultSeq": 125,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_9yNfgkmel6G3J5esFTvZ7800",
+              "callSeq": 130,
+              "resultSeq": 133,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_uoXL8sXYhBvgLsQOKpaB3002",
+              "callSeq": 138,
+              "resultSeq": 141,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_fbbRBtLYh3gNkFF8opft1235",
+              "callSeq": 142,
+              "resultSeq": 145,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_lHRTrB3dVojEsioZrYwz0369",
+              "callSeq": 150,
+              "resultSeq": 153,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_J94fhuF4iN80eC8lxWik0998",
+              "callSeq": 158,
+              "resultSeq": 159,
+              "tool": "send_message",
+              "ok": true,
+              "refusal": null
+            }
+          ]
+        },
+        {
+          "id": "session-b04c231c-b121-4585-b48f-e9c7b3a5e19f",
+          "role": "principal",
+          "digest": "ebb57ce87d1d9d2d7df77fab06fad0e206202765d2ec0fada6aa518c6799f2cf",
+          "counts": {
+            "steps": 24,
+            "turns": 1,
+            "toolCalls": 40,
+            "pairedToolResults": 40,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 21
+          },
+          "failedJobs": [],
+          "pairs": [
+            {
+              "callId": "call_00_SL4FUSEUPLHE2RMyQ3JP8990",
+              "callSeq": 15,
+              "resultSeq": 18,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_PU8vyGjiXmoQCpKbI6tP8430",
+              "callSeq": 19,
+              "resultSeq": 22,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_G6rRcoZmxopoGL4ObZ349371",
+              "callSeq": 27,
+              "resultSeq": 32,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_DH6sAsKmSF8oHakkD60C2384",
+              "callSeq": 28,
+              "resultSeq": 33,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_RXRMqFDqKXWBX54I6ACQ0982",
+              "callSeq": 29,
+              "resultSeq": 34,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_RdlNCxoJeMwmIazJb97O6046",
+              "callSeq": 30,
+              "resultSeq": 35,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_04_2vjylR9gnQfzD36EAn9f9553",
+              "callSeq": 31,
+              "resultSeq": 36,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_wge980DoifXHkAKHRts38490",
+              "callSeq": 41,
+              "resultSeq": 45,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_ucUNFx774F9Djg7bCUKS0510",
+              "callSeq": 42,
+              "resultSeq": 46,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_ofeiWUq5P6ksO0PSyE9z2578",
+              "callSeq": 43,
+              "resultSeq": 47,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_sfbxfrQQsBevKAVxsGNr1067",
+              "callSeq": 44,
+              "resultSeq": 48,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_5T1Srl7ulBfgcxHwW9gI7260",
+              "callSeq": 53,
+              "resultSeq": 57,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_gXj8Hlr4bHKONS0FroYt5176",
+              "callSeq": 54,
+              "resultSeq": 58,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_vc8mahI2UfguDvyme6RO0267",
+              "callSeq": 55,
+              "resultSeq": 59,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_lWKgTTHEmL0JpR2LLtgz4341",
+              "callSeq": 56,
+              "resultSeq": 60,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_fOjg97WPnENPWUT7e53r2747",
+              "callSeq": 65,
+              "resultSeq": 68,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_L0lQ5CqMMp2oaKuAZ1bs9620",
+              "callSeq": 69,
+              "resultSeq": 72,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_ZCsNjCg2yU7POGbbhlWp4500",
+              "callSeq": 73,
+              "resultSeq": 76,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_nOP3JvO0ysKfSdPxj3cv0173",
+              "callSeq": 81,
+              "resultSeq": 84,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_peuDVWMxzn3AIeOWoMK08290",
+              "callSeq": 89,
+              "resultSeq": 91,
+              "tool": "todo_write",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_ET_Z2IUoF7pDZDjxiEvwOaO2701",
+              "callSeq": 96,
+              "resultSeq": 99,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_ljMVC6Z3FKeqiZV4YVkS8332",
+              "callSeq": 104,
+              "resultSeq": 106,
+              "tool": "subagent",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_xIlwSqekUqkLIxQ6CbsR7608",
+              "callSeq": 111,
+              "resultSeq": 114,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_CXtTWJvHkczXnQ7ZhHr80644",
+              "callSeq": 119,
+              "resultSeq": 120,
+              "tool": "list_agents",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_PU4VZ9TzNccfad5HKWhz0916",
+              "callSeq": 125,
+              "resultSeq": 128,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_WAdAb7YOyAFOdUS9gqy74145",
+              "callSeq": 133,
+              "resultSeq": 136,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_siUTQZVZEcm0zWWnUhDQ0779",
+              "callSeq": 141,
+              "resultSeq": 142,
+              "tool": "list_agents",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_ZfyVPmDlI9HyI1A6nzqp8102",
+              "callSeq": 147,
+              "resultSeq": 150,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_TXPMu2kQYYfco5gGHOhB3295",
+              "callSeq": 155,
+              "resultSeq": 158,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_Rr0AOVreBHGyiXHlvJM99425",
+              "callSeq": 163,
+              "resultSeq": 166,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_P9sKR4FVG1tE5fDw8hxN9533",
+              "callSeq": 171,
+              "resultSeq": 174,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_5L4gig1q4oHtsxCUl9sv8053",
+              "callSeq": 175,
+              "resultSeq": 178,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_k9lVWjKEcvL7MmykTPGA9308",
+              "callSeq": 179,
+              "resultSeq": 182,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_6Ap65sC2bhiWpGuS36Rx0372",
+              "callSeq": 187,
+              "resultSeq": 191,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_FDzU1WzLNqw9wmu92j9n0130",
+              "callSeq": 192,
+              "resultSeq": 195,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_9UutNbktjo7RmcRL14Qb2976",
+              "callSeq": 203,
+              "resultSeq": 205,
+              "tool": "todo_write",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_o5XWweQ6E11MEs4POIOO5496",
+              "callSeq": 212,
+              "resultSeq": 215,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_PFF1FAh68RnGklEX4Myy0019",
+              "callSeq": 220,
+              "resultSeq": 223,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_FqWHRfutw7XFI1JLUMi91202",
+              "callSeq": 224,
+              "resultSeq": 227,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_dHqJzSxp4WthySr2iLLD6667",
+              "callSeq": 232,
+              "resultSeq": 234,
+              "tool": "todo_write",
+              "ok": true,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "role": "native-child",
+          "id": "75ec1535-16f0-4ff4-8bc7-bdeb8bb92e66",
+          "modelSteps": [
+            {
+              "seq": 19,
+              "at": 1794300169030,
+              "usage": {
+                "inputTokens": 1465,
+                "outputTokens": 241,
+                "cacheReadTokens": 5120,
+                "cacheWriteTokens": 0,
+                "totalTokens": 6826
+              }
+            },
+            {
+              "seq": 33,
+              "at": 1794300172160,
+              "usage": {
+                "inputTokens": 2076,
+                "outputTokens": 282,
+                "cacheReadTokens": 6784,
+                "cacheWriteTokens": 0,
+                "totalTokens": 9142
+              }
+            },
+            {
+              "seq": 47,
+              "at": 1794300175667,
+              "usage": {
+                "inputTokens": 8107,
+                "outputTokens": 304,
+                "cacheReadTokens": 9088,
+                "cacheWriteTokens": 0,
+                "totalTokens": 17499
+              }
+            },
+            {
+              "seq": 59,
+              "at": 1794300178193,
+              "usage": {
+                "inputTokens": 3489,
+                "outputTokens": 151,
+                "cacheReadTokens": 17408,
+                "cacheWriteTokens": 0,
+                "totalTokens": 21048
+              }
+            },
+            {
+              "seq": 69,
+              "at": 1794300194333,
+              "usage": {
+                "inputTokens": 718,
+                "outputTokens": 2268,
+                "cacheReadTokens": 20992,
+                "cacheWriteTokens": 0,
+                "totalTokens": 23978
+              }
+            },
+            {
+              "seq": 77,
+              "at": 1794300197051,
+              "usage": {
+                "inputTokens": 255,
+                "outputTokens": 328,
+                "cacheReadTokens": 23936,
+                "cacheWriteTokens": 0,
+                "totalTokens": 24519
+              }
+            },
+            {
+              "seq": 85,
+              "at": 1794300199705,
+              "usage": {
+                "inputTokens": 143,
+                "outputTokens": 402,
+                "cacheReadTokens": 24448,
+                "cacheWriteTokens": 0,
+                "totalTokens": 24993
+              }
+            },
+            {
+              "seq": 91,
+              "at": 1794300202978,
+              "usage": {
+                "inputTokens": 199,
+                "outputTokens": 574,
+                "cacheReadTokens": 24832,
+                "cacheWriteTokens": 0,
+                "totalTokens": 25605
+              }
+            },
+            {
+              "seq": 97,
+              "at": 1794300209086,
+              "usage": {
+                "inputTokens": 169,
+                "outputTokens": 1263,
+                "cacheReadTokens": 25472,
+                "cacheWriteTokens": 0,
+                "totalTokens": 26904
+              }
+            },
+            {
+              "seq": 105,
+              "at": 1794300211349,
+              "usage": {
+                "inputTokens": 220,
+                "outputTokens": 186,
+                "cacheReadTokens": 26752,
+                "cacheWriteTokens": 0,
+                "totalTokens": 27158
+              }
+            },
+            {
+              "seq": 117,
+              "at": 1794300214485,
+              "usage": {
+                "inputTokens": 539,
+                "outputTokens": 212,
+                "cacheReadTokens": 27136,
+                "cacheWriteTokens": 0,
+                "totalTokens": 27887
+              }
+            },
+            {
+              "seq": 129,
+              "at": 1794300220422,
+              "usage": {
+                "inputTokens": 2296,
+                "outputTokens": 576,
+                "cacheReadTokens": 27776,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30648
+              }
+            },
+            {
+              "seq": 137,
+              "at": 1794300224358,
+              "usage": {
+                "inputTokens": 213,
+                "outputTokens": 311,
+                "cacheReadTokens": 30592,
+                "cacheWriteTokens": 0,
+                "totalTokens": 31116
+              }
+            },
+            {
+              "seq": 149,
+              "at": 1794300230640,
+              "usage": {
+                "inputTokens": 758,
+                "outputTokens": 496,
+                "cacheReadTokens": 31104,
+                "cacheWriteTokens": 0,
+                "totalTokens": 32358
+              }
+            },
+            {
+              "seq": 157,
+              "at": 1794300236689,
+              "usage": {
+                "inputTokens": 256,
+                "outputTokens": 681,
+                "cacheReadTokens": 32128,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33065
+              }
+            },
+            {
+              "seq": 163,
+              "at": 1794300241542,
+              "usage": {
+                "inputTokens": 210,
+                "outputTokens": 610,
+                "cacheReadTokens": 32896,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33716
+              }
+            }
+          ],
+          "refusals": [],
+          "choices": []
+        },
+        {
+          "role": "principal",
+          "id": "session-b04c231c-b121-4585-b48f-e9c7b3a5e19f",
+          "modelSteps": [
+            {
+              "seq": 14,
+              "at": 1794300120408,
+              "usage": {
+                "inputTokens": 361,
+                "outputTokens": 143,
+                "cacheReadTokens": 5248,
+                "cacheWriteTokens": 0,
+                "totalTokens": 5752
+              }
+            },
+            {
+              "seq": 26,
+              "at": 1794300122404,
+              "usage": {
+                "inputTokens": 789,
+                "outputTokens": 212,
+                "cacheReadTokens": 5632,
+                "cacheWriteTokens": 0,
+                "totalTokens": 6633
+              }
+            },
+            {
+              "seq": 40,
+              "at": 1794300125894,
+              "usage": {
+                "inputTokens": 2647,
+                "outputTokens": 309,
+                "cacheReadTokens": 6528,
+                "cacheWriteTokens": 0,
+                "totalTokens": 9484
+              }
+            },
+            {
+              "seq": 52,
+              "at": 1794300128226,
+              "usage": {
+                "inputTokens": 7820,
+                "outputTokens": 225,
+                "cacheReadTokens": 9472,
+                "cacheWriteTokens": 0,
+                "totalTokens": 17517
+              }
+            },
+            {
+              "seq": 64,
+              "at": 1794300134854,
+              "usage": {
+                "inputTokens": 3902,
+                "outputTokens": 896,
+                "cacheReadTokens": 17408,
+                "cacheWriteTokens": 0,
+                "totalTokens": 22206
+              }
+            },
+            {
+              "seq": 80,
+              "at": 1794300154794,
+              "usage": {
+                "inputTokens": 1522,
+                "outputTokens": 2479,
+                "cacheReadTokens": 22144,
+                "cacheWriteTokens": 0,
+                "totalTokens": 26145
+              }
+            },
+            {
+              "seq": 88,
+              "at": 1794300157023,
+              "usage": {
+                "inputTokens": 200,
+                "outputTokens": 203,
+                "cacheReadTokens": 25984,
+                "cacheWriteTokens": 0,
+                "totalTokens": 26387
+              }
+            },
+            {
+              "seq": 95,
+              "at": 1794300158269,
+              "usage": {
+                "inputTokens": 175,
+                "outputTokens": 101,
+                "cacheReadTokens": 26240,
+                "cacheWriteTokens": 0,
+                "totalTokens": 26516
+              }
+            },
+            {
+              "seq": 103,
+              "at": 1794300166910,
+              "usage": {
+                "inputTokens": 239,
+                "outputTokens": 946,
+                "cacheReadTokens": 26368,
+                "cacheWriteTokens": 0,
+                "totalTokens": 27553
+              }
+            },
+            {
+              "seq": 110,
+              "at": 1794300172294,
+              "usage": {
+                "inputTokens": 201,
+                "outputTokens": 593,
+                "cacheReadTokens": 27392,
+                "cacheWriteTokens": 0,
+                "totalTokens": 28186
+              }
+            },
+            {
+              "seq": 118,
+              "at": 1794300178622,
+              "usage": {
+                "inputTokens": 287,
+                "outputTokens": 636,
+                "cacheReadTokens": 28160,
+                "cacheWriteTokens": 0,
+                "totalTokens": 29083
+              }
+            },
+            {
+              "seq": 124,
+              "at": 1794300180413,
+              "usage": {
+                "inputTokens": 198,
+                "outputTokens": 144,
+                "cacheReadTokens": 28928,
+                "cacheWriteTokens": 0,
+                "totalTokens": 29270
+              }
+            },
+            {
+              "seq": 132,
+              "at": 1794300182224,
+              "usage": {
+                "inputTokens": 452,
+                "outputTokens": 108,
+                "cacheReadTokens": 29184,
+                "cacheWriteTokens": 0,
+                "totalTokens": 29744
+              }
+            },
+            {
+              "seq": 140,
+              "at": 1794300192880,
+              "usage": {
+                "inputTokens": 232,
+                "outputTokens": 1161,
+                "cacheReadTokens": 29568,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30961
+              }
+            },
+            {
+              "seq": 146,
+              "at": 1794300194343,
+              "usage": {
+                "inputTokens": 156,
+                "outputTokens": 107,
+                "cacheReadTokens": 30848,
+                "cacheWriteTokens": 0,
+                "totalTokens": 31111
+              }
+            },
+            {
+              "seq": 154,
+              "at": 1794300198306,
+              "usage": {
+                "inputTokens": 149,
+                "outputTokens": 413,
+                "cacheReadTokens": 30976,
+                "cacheWriteTokens": 0,
+                "totalTokens": 31538
+              }
+            },
+            {
+              "seq": 162,
+              "at": 1794300215922,
+              "usage": {
+                "inputTokens": 244,
+                "outputTokens": 150,
+                "cacheReadTokens": 31360,
+                "cacheWriteTokens": 0,
+                "totalTokens": 31754
+              }
+            },
+            {
+              "seq": 170,
+              "at": 1794300229423,
+              "usage": {
+                "inputTokens": 172,
+                "outputTokens": 389,
+                "cacheReadTokens": 31616,
+                "cacheWriteTokens": 0,
+                "totalTokens": 32177
+              }
+            },
+            {
+              "seq": 186,
+              "at": 1794300235586,
+              "usage": {
+                "inputTokens": 2170,
+                "outputTokens": 633,
+                "cacheReadTokens": 32128,
+                "cacheWriteTokens": 0,
+                "totalTokens": 34931
+              }
+            },
+            {
+              "seq": 202,
+              "at": 1794300247876,
+              "usage": {
+                "inputTokens": 1116,
+                "outputTokens": 1335,
+                "cacheReadTokens": 34816,
+                "cacheWriteTokens": 0,
+                "totalTokens": 37267
+              }
+            },
+            {
+              "seq": 211,
+              "at": 1794300249116,
+              "usage": {
+                "inputTokens": 675,
+                "outputTokens": 124,
+                "cacheReadTokens": 37248,
+                "cacheWriteTokens": 0,
+                "totalTokens": 38047
+              }
+            },
+            {
+              "seq": 219,
+              "at": 1794300253952,
+              "usage": {
+                "inputTokens": 254,
+                "outputTokens": 422,
+                "cacheReadTokens": 37888,
+                "cacheWriteTokens": 0,
+                "totalTokens": 38564
+              }
+            },
+            {
+              "seq": 231,
+              "at": 1794300257281,
+              "usage": {
+                "inputTokens": 649,
+                "outputTokens": 250,
+                "cacheReadTokens": 38528,
+                "cacheWriteTokens": 0,
+                "totalTokens": 39427
+              }
+            },
+            {
+              "seq": 238,
+              "at": 1794300259959,
+              "usage": {
+                "inputTokens": 159,
+                "outputTokens": 348,
+                "cacheReadTokens": 39296,
+                "cacheWriteTokens": 0,
+                "totalTokens": 39803
+              }
+            }
+          ],
+          "refusals": [],
+          "choices": [
+            {
+              "id": "call_00_ljMVC6Z3FKeqiZV4YVkS8332",
+              "seq": 104,
+              "kind": "subagent",
+              "intent": null
+            }
+          ]
+        }
+      ],
+      "workerReceipts": [],
+      "bundle": {
+        "name": "F-T2-offline.bundle",
+        "commit": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+        "sha256": "53a91cbd63835e6a1b399b82f82b2f4ddeba60092d9f76da62895580b280cd0b"
+      },
+      "review": null
+    },
+    {
+      "arm": "P",
+      "id": "T3",
+      "basis": "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
+      "current": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+      "route": null,
+      "conclusion": "DELIVER",
+      "passed": false,
+      "reason": "SOFTWARE_REVIEW_MISSING zero or omitted",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": false,
+        "persisted": true,
+        "settlement": null,
+        "accepted": true,
+        "naturalExit": true
+      },
+      "score": null,
+      "frozenScore": null,
+      "candidate": null,
+      "offline": null,
+      "acceptance": {
+        "kind": "GOVERNED_PROMOTION",
+        "approvedCandidate": "35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+        "approvedHead": "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
+        "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+        "tree": "d36f247e6580dfc42d445d571c0a4bc0f68ebe03",
+        "promotion": {
+          "promotionId": "promotion-e9e873288568959862b7ba36bc08cdfe",
+          "committed": {
+            "schema_version": 1,
+            "project_id": "grpc-migration-continuation",
+            "event_type": "PROMOTION_COMMITTED",
+            "payload_version": 1,
+            "entity_type": "promotion",
+            "entity_id": "promotion-e9e873288568959862b7ba36bc08cdfe",
+            "payload": {
+              "promotion_id": "promotion-e9e873288568959862b7ba36bc08cdfe",
+              "attempt_id": "attempt-903c016ff56112b530ae08e9afa1c57e",
+              "source_commit": "35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+              "expected_head_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+              "resulting_head_commit": "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
+              "reason": "Owner approved candidate 35f2fb69557e1965ef1e88f723fb600b9e9f0ae3",
+              "operation_id": "op_a14e94e004df59d07fbb5a6a756c581d9b7f936a",
+              "outcome_basis": "invoke_result",
+              "outcome_digest": "3b60aba71b3528a14f91dd91a8ac5e4c870180ad810aaba3979a683b3bbc3397"
+            },
+            "causation_id": null,
+            "correlation_id": "promotion:promotion-e9e873288568959862b7ba36bc08cdfe",
+            "idempotency_key": "a241073c662fdaddaefa445335be6c4b5924ad85096dfc30eebeb3e3a1db9a38",
+            "expected_project_revision": 2,
+            "event_id": 19,
+            "project_sequence": 19,
+            "request_digest": "3d3d78c1e13a8910276bee7bd47f572bd6dee3dd59d124250a61b30799ede7b6",
+            "previous_event_digest": "e68104f9c545ad06492e1eb60d0caf4420b6110f34221977965032decc8755ee",
+            "event_digest": "079db822e3b991c3d4ec87546a90ff51fca475ffd0bc58e87f5a13c36e71359e",
+            "committed_at": "2026-11-10T08:55:18.168000Z"
+          },
+          "resultingHeadCommit": "7deda735afa4ef97e71dd14b5ab4b48131e1e872"
+        },
+        "admission": null,
+        "readyAt": "2026-11-10T08:41:48.514Z",
+        "decisionAt": "2026-11-10T08:55:03.255Z",
+        "waitingMs": 794741
+      },
+      "deliveryReceipt": {
+        "id": "episode-97dd0b9e3c4be338ab877b81",
+        "episodeBasis": "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
+        "artifacts": [
+          {
+            "path": "MIGRATION-REVIEW.md",
+            "present": true,
+            "tracked": true,
+            "committed": true,
+            "digest": "ad0dba4dd408d1b09d3f6c3c275ccb7c1f73ec06561518933ebfa3da2bb66ad6",
+            "source": "WORKTREE",
+            "commit": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+            "detail": "committed at HEAD"
+          }
+        ]
+      },
+      "originalResultSha256": "6302139f9a2fd9bb45a81c3e6ea343eb0d33f7a664a6562268e3698b1d5285c7",
+      "elapsedMs": 120472,
+      "requests": 14,
+      "usage": {
+        "input": 21998,
+        "cacheRead": 352768,
+        "cacheWrite": 0,
+        "output": 9656,
+        "total": 384422
+      },
+      "usageByRole": {
+        "principal": {
+          "requests": 14,
+          "input": 21998,
+          "cacheRead": 352768,
+          "cacheWrite": 0,
+          "output": 9656,
+          "total": 384422
+        }
+      },
+      "requestLedger": [
+        {
+          "kind": "ADMITTED",
+          "requestId": "a0cd9e55-efbd-4e1d-bffd-3d5d3f2268a4",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "a0cd9e55-efbd-4e1d-bffd-3d5d3f2268a4",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 393,
+            "cache_read_input_tokens": 10112,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 95
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "0c76ebf6-bd10-4723-b34a-954377c57670",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "0c76ebf6-bd10-4723-b34a-954377c57670",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 3114,
+            "cache_read_input_tokens": 10496,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 152
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "6322db82-c4cb-47ae-afa6-71e246e5641c",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "6322db82-c4cb-47ae-afa6-71e246e5641c",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 517,
+            "cache_read_input_tokens": 13696,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 230
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "54de1293-ca2a-4071-a2ea-14d607751f8d",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "54de1293-ca2a-4071-a2ea-14d607751f8d",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 3738,
+            "cache_read_input_tokens": 14336,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 473
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "dac79462-21c5-4783-a5ce-7287f3f8e533",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "dac79462-21c5-4783-a5ce-7287f3f8e533",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2730,
+            "cache_read_input_tokens": 18432,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 287
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "db39af84-46c2-4b80-92af-fb1fdec453bb",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "db39af84-46c2-4b80-92af-fb1fdec453bb",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 4435,
+            "cache_read_input_tokens": 21376,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 915
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "c4461945-bdd5-42ca-bc33-d8f82b406244",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "c4461945-bdd5-42ca-bc33-d8f82b406244",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 1748,
+            "cache_read_input_tokens": 26624,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2080
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "aa3c3d4c-cc4b-4d9f-b971-df3ec864ae24",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "aa3c3d4c-cc4b-4d9f-b971-df3ec864ae24",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 201,
+            "cache_read_input_tokens": 30336,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 436
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "7a5d6afd-e858-48b8-8403-76613d72bf55",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "7a5d6afd-e858-48b8-8403-76613d72bf55",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 140,
+            "cache_read_input_tokens": 30848,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2556
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "e8e45925-4eda-40c5-bdb9-700316cb6910",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "e8e45925-4eda-40c5-bdb9-700316cb6910",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 180,
+            "cache_read_input_tokens": 33408,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 62
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "685645e6-c845-4d05-8678-106ef380a159",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "685645e6-c845-4d05-8678-106ef380a159",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2017,
+            "cache_read_input_tokens": 33536,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 470
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "e5d7b973-b7da-4f3f-844d-98eaeab57cd2",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "e5d7b973-b7da-4f3f-844d-98eaeab57cd2",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 244,
+            "cache_read_input_tokens": 35840,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 384
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "ac5e8d61-8662-455e-a9ba-726d0676457f",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "ac5e8d61-8662-455e-a9ba-726d0676457f",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 234,
+            "cache_read_input_tokens": 36352,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 802
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "926d3b38-587e-433f-b409-c9cdee263689",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "926d3b38-587e-433f-b409-c9cdee263689",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2307,
+            "cache_read_input_tokens": 37376,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 714
+          }
+        }
+      ],
+      "streams": [
+        {
+          "id": "session-2382f844-11c0-44dd-ac97-e5b825259b22",
+          "role": "principal",
+          "digest": "d4d9181d6b1fda5641dec13afed727ba301ba156935b8be1db089abb2405925a",
+          "counts": {
+            "steps": 14,
+            "turns": 1,
+            "toolCalls": 27,
+            "pairedToolResults": 27,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 1,
+            "commits": 0,
+            "jobs": 17
+          },
+          "failedJobs": [],
+          "pairs": [
+            {
+              "callId": "call_00_jKfuORlrMZfafIrE1brB8209",
+              "callSeq": 15,
+              "resultSeq": 16,
+              "tool": "continuity:pulse",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_Ux833riugx2L61St23D03382",
+              "callSeq": 21,
+              "resultSeq": 24,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_aVI0ZqZ63HAhtuJo7XYl6385",
+              "callSeq": 25,
+              "resultSeq": 26,
+              "tool": "glob",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_a0nwhqnMxilxV8ZJpIMN4578",
+              "callSeq": 27,
+              "resultSeq": 28,
+              "tool": "glob",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_DTzRH4loMpBwI5sVZcp68787",
+              "callSeq": 33,
+              "resultSeq": 37,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_tuNF40ZgoPsf7zUNxQrq3942",
+              "callSeq": 34,
+              "resultSeq": 38,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_xmBTeDsvNKWQU5nL2BEd4411",
+              "callSeq": 35,
+              "resultSeq": 39,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_XqKM8PcpkpVWOOACVv9Z3883",
+              "callSeq": 36,
+              "resultSeq": 40,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_hawpMv4nH8JuP6QBTKUk2121",
+              "callSeq": 45,
+              "resultSeq": 48,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_jhL9U8gFTm6CL8zWkDVd1905",
+              "callSeq": 49,
+              "resultSeq": 52,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_BVOJCeBsT0pqNn9uETcr7467",
+              "callSeq": 53,
+              "resultSeq": 56,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_Nz7cj9jHHQevfXk8doKX4276",
+              "callSeq": 61,
+              "resultSeq": 64,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_N0DFdHE7ur4ttt74VtBR6188",
+              "callSeq": 65,
+              "resultSeq": 68,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_hNn9HZkWj76PAoQ2jbri3798",
+              "callSeq": 69,
+              "resultSeq": 72,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_ze3e5APWGtG5FDnkmbwi6869",
+              "callSeq": 77,
+              "resultSeq": 80,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_JS5Q63VtJn939IagYUSr7380",
+              "callSeq": 81,
+              "resultSeq": 84,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_xeRPAg4XFEtTiG7r7L502082",
+              "callSeq": 85,
+              "resultSeq": 88,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_P9uG7xMn4fdHqKV1LDaK0156",
+              "callSeq": 93,
+              "resultSeq": 96,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_ssQB4VB44xuALkPpBxuB0242",
+              "callSeq": 97,
+              "resultSeq": 100,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_ZOQeHw5K32Ka5yCKHBWI3350",
+              "callSeq": 101,
+              "resultSeq": 104,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_RV1FgAbFVzn24Oh8NueD8264",
+              "callSeq": 109,
+              "resultSeq": 112,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_i4CTwm9nAp3uunNdQMXr2873",
+              "callSeq": 117,
+              "resultSeq": 118,
+              "tool": "write",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_HQLMI5J7BAbJIK3cVKzX4868",
+              "callSeq": 123,
+              "resultSeq": 124,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_sfRRkFCcuujptIo9klPq3199",
+              "callSeq": 129,
+              "resultSeq": 132,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_PlWM3Wrb4KCOdI6ToiPS3753",
+              "callSeq": 137,
+              "resultSeq": 140,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_RPQ9SIYLjxGyG3lsZY9t4181",
+              "callSeq": 141,
+              "resultSeq": 144,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_Jl3V3H4z7bv0HDsRg0Ka5489",
+              "callSeq": 149,
+              "resultSeq": 150,
+              "tool": "work:conclude",
+              "ok": true,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-2382f844-11c0-44dd-ac97-e5b825259b22",
+          "modelSteps": [
+            {
+              "seq": 14,
+              "at": 1794300967897,
+              "usage": {
+                "inputTokens": 393,
+                "outputTokens": 95,
+                "cacheReadTokens": 10112,
+                "cacheWriteTokens": 0,
+                "totalTokens": 10600
+              }
+            },
+            {
+              "seq": 20,
+              "at": 1794300970983,
+              "usage": {
+                "inputTokens": 3114,
+                "outputTokens": 152,
+                "cacheReadTokens": 10496,
+                "cacheWriteTokens": 0,
+                "totalTokens": 13762
+              }
+            },
+            {
+              "seq": 32,
+              "at": 1794300973202,
+              "usage": {
+                "inputTokens": 517,
+                "outputTokens": 230,
+                "cacheReadTokens": 13696,
+                "cacheWriteTokens": 0,
+                "totalTokens": 14443
+              }
+            },
+            {
+              "seq": 44,
+              "at": 1794300976927,
+              "usage": {
+                "inputTokens": 3738,
+                "outputTokens": 473,
+                "cacheReadTokens": 14336,
+                "cacheWriteTokens": 0,
+                "totalTokens": 18547
+              }
+            },
+            {
+              "seq": 60,
+              "at": 1794300980519,
+              "usage": {
+                "inputTokens": 2730,
+                "outputTokens": 287,
+                "cacheReadTokens": 18432,
+                "cacheWriteTokens": 0,
+                "totalTokens": 21449
+              }
+            },
+            {
+              "seq": 76,
+              "at": 1794300986765,
+              "usage": {
+                "inputTokens": 4435,
+                "outputTokens": 915,
+                "cacheReadTokens": 21376,
+                "cacheWriteTokens": 0,
+                "totalTokens": 26726
+              }
+            },
+            {
+              "seq": 92,
+              "at": 1794301003328,
+              "usage": {
+                "inputTokens": 1748,
+                "outputTokens": 2080,
+                "cacheReadTokens": 26624,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30452
+              }
+            },
+            {
+              "seq": 108,
+              "at": 1794301007868,
+              "usage": {
+                "inputTokens": 201,
+                "outputTokens": 436,
+                "cacheReadTokens": 30336,
+                "cacheWriteTokens": 0,
+                "totalTokens": 30973
+              }
+            },
+            {
+              "seq": 116,
+              "at": 1794301024571,
+              "usage": {
+                "inputTokens": 140,
+                "outputTokens": 2556,
+                "cacheReadTokens": 30848,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33544
+              }
+            },
+            {
+              "seq": 122,
+              "at": 1794301026043,
+              "usage": {
+                "inputTokens": 180,
+                "outputTokens": 62,
+                "cacheReadTokens": 33408,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33650
+              }
+            },
+            {
+              "seq": 128,
+              "at": 1794301030156,
+              "usage": {
+                "inputTokens": 2017,
+                "outputTokens": 470,
+                "cacheReadTokens": 33536,
+                "cacheWriteTokens": 0,
+                "totalTokens": 36023
+              }
+            },
+            {
+              "seq": 136,
+              "at": 1794301034073,
+              "usage": {
+                "inputTokens": 244,
+                "outputTokens": 384,
+                "cacheReadTokens": 35840,
+                "cacheWriteTokens": 0,
+                "totalTokens": 36468
+              }
+            },
+            {
+              "seq": 148,
+              "at": 1794301040713,
+              "usage": {
+                "inputTokens": 234,
+                "outputTokens": 802,
+                "cacheReadTokens": 36352,
+                "cacheWriteTokens": 0,
+                "totalTokens": 37388
+              }
+            },
+            {
+              "seq": 154,
+              "at": 1794301052364,
+              "usage": {
+                "inputTokens": 2307,
+                "outputTokens": 714,
+                "cacheReadTokens": 37376,
+                "cacheWriteTokens": 0,
+                "totalTokens": 40397
+              }
+            }
+          ],
+          "refusals": [],
+          "choices": [
+            {
+              "id": "call_00_jKfuORlrMZfafIrE1brB8209",
+              "seq": 15,
+              "kind": "continuity:pulse",
+              "intent": null
+            },
+            {
+              "id": "call_00_Jl3V3H4z7bv0HDsRg0Ka5489",
+              "seq": 149,
+              "kind": "work:conclude",
+              "intent": "DELIVER"
+            }
+          ]
+        }
+      ],
+      "workerReceipts": [],
+      "bundle": {
+        "name": "P-T3.bundle",
+        "commit": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+        "sha256": "658db4e27895707a936a468aa4683598b74a5cc167d04673716726c8579f9bd0"
+      },
+      "review": {
+        "name": "P-MIGRATION-REVIEW.md",
+        "sha256": "ad0dba4dd408d1b09d3f6c3c275ccb7c1f73ec06561518933ebfa3da2bb66ad6"
+      }
+    },
+    {
+      "arm": "F",
+      "id": "T3",
+      "basis": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+      "current": "720b1756931abbec6418a4019d048cb2e0ba6b31",
+      "route": null,
+      "conclusion": null,
+      "passed": false,
+      "reason": "SOFTWARE_REVIEW_MISSING zero or omitted",
+      "checks": {
+        "artifactsPresent": true,
+        "businessCorrect": false,
+        "persisted": true,
+        "settlement": null,
+        "accepted": true,
+        "naturalExit": true
+      },
+      "score": null,
+      "frozenScore": null,
+      "candidate": null,
+      "offline": null,
+      "acceptance": {
+        "kind": "OWNER_ACCEPTED_GIT",
+        "approvedCandidate": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+        "approvedHead": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+        "basis": "df4271d9a43c963ed386dc4de103dcfcf30f02f7",
+        "tree": "3cdeb0fcfce00f1ff5c069a8be6caade370e7425",
+        "promotion": null,
+        "admission": null,
+        "readyAt": "2026-11-10T08:45:33.135Z",
+        "decisionAt": "2026-11-10T08:58:00.546Z",
+        "waitingMs": 747411
+      },
+      "deliveryReceipt": null,
+      "originalResultSha256": "5d2d7ae78f15496f24384f0cc899a28564bc1cb828ba3c23ae8c9326d9c5df48",
+      "elapsedMs": 87238,
+      "requests": 12,
+      "usage": {
+        "input": 20132,
+        "cacheRead": 261760,
+        "cacheWrite": 0,
+        "output": 10496,
+        "total": 292388
+      },
+      "usageByRole": {
+        "principal": {
+          "requests": 12,
+          "input": 20132,
+          "cacheRead": 261760,
+          "cacheWrite": 0,
+          "output": 10496,
+          "total": 292388
+        }
+      },
+      "requestLedger": [
+        {
+          "kind": "ADMITTED",
+          "requestId": "f309572c-3fa1-4d11-bcc7-fc93bd095a03",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "f309572c-3fa1-4d11-bcc7-fc93bd095a03",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 372,
+            "cache_read_input_tokens": 5120,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 124
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "e51acecc-3d09-4360-8820-3f5e84a4a6ae",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "e51acecc-3d09-4360-8820-3f5e84a4a6ae",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 448,
+            "cache_read_input_tokens": 5504,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 254
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "fc281112-2d8a-4fe6-b660-949ddff01423",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "fc281112-2d8a-4fe6-b660-949ddff01423",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 2875,
+            "cache_read_input_tokens": 6144,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 860
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "82869b1f-3158-4e5e-ac5d-0ec0e15e10a5",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "82869b1f-3158-4e5e-ac5d-0ec0e15e10a5",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 10970,
+            "cache_read_input_tokens": 9856,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 650
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "a47779dd-47ad-43ab-b230-928dd6b2a9d8",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "a47779dd-47ad-43ab-b230-928dd6b2a9d8",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 3414,
+            "cache_read_input_tokens": 21376,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 867
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "b3ff0b5c-316f-4910-861c-ad11bc255c54",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "b3ff0b5c-316f-4910-861c-ad11bc255c54",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 724,
+            "cache_read_input_tokens": 25600,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 155
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "9c7a553e-c44c-4957-a056-4f5dbd8db60f",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "9c7a553e-c44c-4957-a056-4f5dbd8db60f",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 253,
+            "cache_read_input_tokens": 26240,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 3225
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "1b7bdd49-ca76-4cc4-9799-33b44039b8b1",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "1b7bdd49-ca76-4cc4-9799-33b44039b8b1",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 196,
+            "cache_read_input_tokens": 29696,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2761
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "7edd11ee-a50b-4353-bfe5-76814fc3d049",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "7edd11ee-a50b-4353-bfe5-76814fc3d049",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 185,
+            "cache_read_input_tokens": 32512,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 323
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "29bdc5c1-a5f6-4a00-8ed5-5ea0df0c9d81",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "29bdc5c1-a5f6-4a00-8ed5-5ea0df0c9d81",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 171,
+            "cache_read_input_tokens": 32896,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 202
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "98f661f5-be1c-4ce9-87bc-aa18f62ced5c",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "98f661f5-be1c-4ce9-87bc-aa18f62ced5c",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 302,
+            "cache_read_input_tokens": 33152,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 322
+          }
+        },
+        {
+          "kind": "ADMITTED",
+          "requestId": "7edfaf4f-e010-42cc-bccb-2d7695a93e3e",
+          "actor": "principal-container"
+        },
+        {
+          "kind": "TERMINAL",
+          "requestId": "7edfaf4f-e010-42cc-bccb-2d7695a93e3e",
+          "actor": "principal-container",
+          "usage": {
+            "input_tokens": 222,
+            "cache_read_input_tokens": 33664,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 753
+          }
+        }
+      ],
+      "streams": [
+        {
+          "id": "session-d593fd10-c163-4df1-9b76-c6d2794d149d",
+          "role": "principal",
+          "digest": "758df45c6f523be89c994b4407ba5deb6f72285260d2a1091e093df2284883e8",
+          "counts": {
+            "steps": 12,
+            "turns": 1,
+            "toolCalls": 23,
+            "pairedToolResults": 23,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 17
+          },
+          "failedJobs": [],
+          "pairs": [
+            {
+              "callId": "call_00_o6xnSzalXvkuyymQ8LVZ6718",
+              "callSeq": 15,
+              "resultSeq": 18,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_wL8Wi2m7QA6MB1T6zYhx0765",
+              "callSeq": 19,
+              "resultSeq": 20,
+              "tool": "glob",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_LxGrDt7hp5YFEx6vYIWU9096",
+              "callSeq": 25,
+              "resultSeq": 29,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_Gu9QkgfmxLhLo5FdJJcr1835",
+              "callSeq": 26,
+              "resultSeq": 30,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_X3aENIrqlKIn7MPvLT3s9445",
+              "callSeq": 27,
+              "resultSeq": 31,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_qCXp7RkgfD4A4TwukgMG3707",
+              "callSeq": 28,
+              "resultSeq": 32,
+              "tool": "read",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_04_msf5BlScYZ7wxdHmteoE4524",
+              "callSeq": 33,
+              "resultSeq": 36,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_W9RU85lJsuiUqV2qkk5i8010",
+              "callSeq": 41,
+              "resultSeq": 44,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_zyvzKq0X9hOnEwT1tFqm8610",
+              "callSeq": 45,
+              "resultSeq": 48,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_nhfc00IxVQScW8M5GnV05418",
+              "callSeq": 49,
+              "resultSeq": 52,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_03_PXbLboYcLwFqB9qeuJZO1493",
+              "callSeq": 53,
+              "resultSeq": 56,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_XqiRLrbou6wBYiOXl3t40173",
+              "callSeq": 61,
+              "resultSeq": 64,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_ZAydsKDSHkB7zYQ5qZnO7485",
+              "callSeq": 65,
+              "resultSeq": 68,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_02_TSp7PKEr68WYmq9tq0gV3337",
+              "callSeq": 69,
+              "resultSeq": 72,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_H5IFtLBqW83ihGAX1PIq3399",
+              "callSeq": 77,
+              "resultSeq": 80,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_xsn0sdFoyKXyaXUCnwNf3971",
+              "callSeq": 81,
+              "resultSeq": 84,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_obfSLeHpovz2Bi12EGuE6148",
+              "callSeq": 89,
+              "resultSeq": 92,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_6g5WbAhaDF0GnMyiE2TE0560",
+              "callSeq": 97,
+              "resultSeq": 100,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_01_tfCJwMZElBEOEBZgMJWq2995",
+              "callSeq": 101,
+              "resultSeq": 104,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_cWWZ0kdb8EqC24BVx3js3003",
+              "callSeq": 109,
+              "resultSeq": 110,
+              "tool": "write",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_hx9AWzekZlcC5vt1D9JQ0377",
+              "callSeq": 115,
+              "resultSeq": 118,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_fy1oe7EbFMREWMiDpvkm7841",
+              "callSeq": 123,
+              "resultSeq": 126,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            },
+            {
+              "callId": "call_00_1gSlFYnLAt5RE1di0Ldp2688",
+              "callSeq": 131,
+              "resultSeq": 134,
+              "tool": "bash",
+              "ok": true,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-d593fd10-c163-4df1-9b76-c6d2794d149d",
+          "modelSteps": [
+            {
+              "seq": 14,
+              "at": 1794301092931,
+              "usage": {
+                "inputTokens": 372,
+                "outputTokens": 124,
+                "cacheReadTokens": 5120,
+                "cacheWriteTokens": 0,
+                "totalTokens": 5616
+              }
+            },
+            {
+              "seq": 24,
+              "at": 1794301094895,
+              "usage": {
+                "inputTokens": 448,
+                "outputTokens": 254,
+                "cacheReadTokens": 5504,
+                "cacheWriteTokens": 0,
+                "totalTokens": 6206
+              }
+            },
+            {
+              "seq": 40,
+              "at": 1794301100133,
+              "usage": {
+                "inputTokens": 2875,
+                "outputTokens": 860,
+                "cacheReadTokens": 6144,
+                "cacheWriteTokens": 0,
+                "totalTokens": 9879
+              }
+            },
+            {
+              "seq": 60,
+              "at": 1794301105396,
+              "usage": {
+                "inputTokens": 10970,
+                "outputTokens": 650,
+                "cacheReadTokens": 9856,
+                "cacheWriteTokens": 0,
+                "totalTokens": 21476
+              }
+            },
+            {
+              "seq": 76,
+              "at": 1794301112823,
+              "usage": {
+                "inputTokens": 3414,
+                "outputTokens": 867,
+                "cacheReadTokens": 21376,
+                "cacheWriteTokens": 0,
+                "totalTokens": 25657
+              }
+            },
+            {
+              "seq": 88,
+              "at": 1794301115310,
+              "usage": {
+                "inputTokens": 724,
+                "outputTokens": 155,
+                "cacheReadTokens": 25600,
+                "cacheWriteTokens": 0,
+                "totalTokens": 26479
+              }
+            },
+            {
+              "seq": 96,
+              "at": 1794301134669,
+              "usage": {
+                "inputTokens": 253,
+                "outputTokens": 3225,
+                "cacheReadTokens": 26240,
+                "cacheWriteTokens": 0,
+                "totalTokens": 29718
+              }
+            },
+            {
+              "seq": 108,
+              "at": 1794301153244,
+              "usage": {
+                "inputTokens": 196,
+                "outputTokens": 2761,
+                "cacheReadTokens": 29696,
+                "cacheWriteTokens": 0,
+                "totalTokens": 32653
+              }
+            },
+            {
+              "seq": 114,
+              "at": 1794301155719,
+              "usage": {
+                "inputTokens": 185,
+                "outputTokens": 323,
+                "cacheReadTokens": 32512,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33020
+              }
+            },
+            {
+              "seq": 122,
+              "at": 1794301159063,
+              "usage": {
+                "inputTokens": 171,
+                "outputTokens": 202,
+                "cacheReadTokens": 32896,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33269
+              }
+            },
+            {
+              "seq": 130,
+              "at": 1794301162814,
+              "usage": {
+                "inputTokens": 302,
+                "outputTokens": 322,
+                "cacheReadTokens": 33152,
+                "cacheWriteTokens": 0,
+                "totalTokens": 33776
+              }
+            },
+            {
+              "seq": 138,
+              "at": 1794301168358,
+              "usage": {
+                "inputTokens": 222,
+                "outputTokens": 753,
+                "cacheReadTokens": 33664,
+                "cacheWriteTokens": 0,
+                "totalTokens": 34639
+              }
+            }
+          ],
+          "refusals": [],
+          "choices": []
+        }
+      ],
+      "workerReceipts": [],
+      "bundle": {
+        "name": "F-T3.bundle",
+        "commit": "720b1756931abbec6418a4019d048cb2e0ba6b31",
+        "sha256": "ef6e41c25c4e29ab9fb3c61e698228f05bf56b13bac5760a703a180b62c62cd1"
+      },
+      "review": {
+        "name": "F-MIGRATION-REVIEW.md",
+        "sha256": "52bdd6eac891a8ec85813551fd3cb12e8594202c33d1d7467c2430c66b1ecad0"
+      },
+      "offlineApproval": {
+        "approved": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+        "reviewedAt": "2026-11-10T08:57:55.335Z",
+        "basis": "df4271d9a43c963ed386dc4de103dcfcf30f02f7",
+        "tree": "3cdeb0fcfce00f1ff5c069a8be6caade370e7425",
+        "originalOutcome": "T2_CHANGED_CANONICAL_WORLD_BEFORE_APPROVAL",
+        "originalResultSha256": "20dd78645cc52d7bdb208650aa2e529a46fff2e33f6e317a881b85e99bf32f22",
+        "qualification": "OWNER_APPROVED_FROM_RESTORED_ORIGINAL_BASIS"
+      }
+    }
+  ]
+}

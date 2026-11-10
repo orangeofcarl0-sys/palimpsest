@@ -1,0 +1,75 @@
+{
+  "schema": "pnwf-software-t3-offline-audit/v1",
+  "outcomes": [
+    {
+      "arm": "P",
+      "basis": "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
+      "commit": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+      "reviewSha256": "ad0dba4dd408d1b09d3f6c3c275ccb7c1f73ec06561518933ebfa3da2bb66ad6",
+      "originalResultSha256": "6302139f9a2fd9bb45a81c3e6ea343eb0d33f7a664a6562268e3698b1d5285c7",
+      "originalReason": "SOFTWARE_REVIEW_MISSING zero or omitted",
+      "naturalExit": true,
+      "onlyReviewChanged": true,
+      "tests": [
+        {
+          "callSeq": 81,
+          "resultSeq": 84,
+          "tests": 18,
+          "failed": 0
+        }
+      ],
+      "literalMissing": [
+        "zero or omitted",
+        "one Reading per frame",
+        "unary GetReading",
+        "protocol field numbers",
+        "node --test passed"
+      ],
+      "facts": {
+        "acceptedAndCorrection": true,
+        "mentionsOldEmptyStream": true,
+        "mentionsNewFirstThree": true,
+        "explicitUnary": false,
+        "explicitOneReadingPerFrame": false,
+        "mentionsPositiveLimits": true,
+        "mentionsFieldNumbers": true,
+        "mentionsRest": true
+      }
+    },
+    {
+      "arm": "F",
+      "basis": "5346a2f606b85962b8a12e8cca706ad8efe658b5",
+      "commit": "720b1756931abbec6418a4019d048cb2e0ba6b31",
+      "reviewSha256": "52bdd6eac891a8ec85813551fd3cb12e8594202c33d1d7467c2430c66b1ecad0",
+      "originalResultSha256": "5d2d7ae78f15496f24384f0cc899a28564bc1cb828ba3c23ae8c9326d9c5df48",
+      "originalReason": "SOFTWARE_REVIEW_MISSING zero or omitted",
+      "naturalExit": true,
+      "onlyReviewChanged": true,
+      "tests": [
+        {
+          "callSeq": 77,
+          "resultSeq": 80,
+          "tests": 18,
+          "failed": 0
+        }
+      ],
+      "literalMissing": [
+        "zero or omitted",
+        "one Reading per frame",
+        "unary GetReading",
+        "protocol field numbers",
+        "node --test passed"
+      ],
+      "facts": {
+        "acceptedAndCorrection": true,
+        "mentionsOldEmptyStream": true,
+        "mentionsNewFirstThree": true,
+        "explicitUnary": true,
+        "explicitOneReadingPerFrame": false,
+        "mentionsPositiveLimits": true,
+        "mentionsFieldNumbers": true,
+        "mentionsRest": true
+      }
+    }
+  ]
+}

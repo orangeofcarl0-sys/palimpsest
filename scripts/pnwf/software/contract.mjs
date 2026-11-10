@@ -20,13 +20,17 @@ export const FIRST = ["proto/energy.proto", "service/wire.js", "service/grpc_ser
   "test/server.test.js", "test/integration.test.js", "MIGRATION.md"];
 export const REQUIRED = ["service/grpc_server.js", "test/integration.test.js", "MIGRATION.md"];
 export const SCOPE = [...REQUIRED, "test/server.test.js"];
-const RETAINED = ["proto/energy.proto", "service/wire.js", "service/grpc_client.js", "test/rest.test.js"];
+export const RETAINED = ["proto/energy.proto", "service/wire.js", "service/grpc_client.js", "test/rest.test.js"];
+export const SCOPE_GUIDANCE = "Allowed write paths are exactly these files: " + SCOPE.join(", ") +
+  ". The first three must change; the server test is optional. Keep these files byte-for-byte identical to the basis, including comments: " +
+  RETAINED.join(", ") + ". If an old comment conflicts with the correction, explain the effective behavior in MIGRATION.md.";
 const SEED = ["README.md", "TASK.md", "package.json", "service/data.js", "service/rest_client.js", "service/rest_server.js", "test/rest.test.js"];
 export const PROMPTS = {
   T1: "Complete the gRPC migration described in TASK.md. Deliver a tested commit and end the session. StreamReadings returns one Reading per frame in source order, with zero or omitted limit returning an empty stream. Keep GetReading unary and preserve REST. Document the behavior in MIGRATION.md.",
   T2: "Apply the new Fleet compatibility note in " + CORRECTION_PATH + ". Use a separate executor in an isolated copy. Update the server, integration tests and migration notes. Server tests may also be revised. Preserve the remaining work and leave a tested commit for owner review. The accepted version stays available until approval.",
   T3: "Use the accepted version from acceptance.json. Commit only MIGRATION-REVIEW.md. Cite the complete accepted HEAD and the Fleet correction path, explain the old and new default, summarize the unchanged compatibility boundaries and report the checks you ran. Deliver the review and end the session.",
 };
+export const GUARDED_T2_PROMPT = PROMPTS.T2 + " " + SCOPE_GUIDANCE;
 
 export function seedSoftware(repo, fixture) {
   for (const path of SEED) {

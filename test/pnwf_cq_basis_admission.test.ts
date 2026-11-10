@@ -216,6 +216,33 @@ describe("PNWF-CQ-H — operator-mediated direct basis admission", () => {
     expect(execFileSync("git", ["rev-parse", "HEAD"], { cwd: prepared.worldPath }).toString().trim()).toBe(direct);
   });
 
+  it("exposes an actual worker host refusal through the model-facing workers action", async () => {
+    const { repo, stateDir, head } = workspace("worker-refusal");
+    const installed = install(repo, stateDir, authority, {
+      workWorkerPort: () => ({
+        adapterId: "pnwf-refusing-worker",
+        run: async () => ({ kind: "HOST_FAILURE", detail: "SOFTWARE_REVISION_SCOPE_MISMATCH" }),
+      }),
+    });
+    await started(installed, head);
+    const tool = installed.tools.find(entry => entry.name === "palimpsest_work")!;
+    const execute = (input: Record<string, unknown>) => tool.execute(input, {
+      callId: "worker-refusal", rootCallId: "worker-refusal", name: "palimpsest_work", arguments: input, signal: new AbortController().signal,
+    });
+    await execute({ action: "delegate", taskId: "governed-next" });
+    let view;
+    for (let i = 0; i < 100; i++) {
+      view = await execute({ action: "workers" }) as { jobs: Array<{ phase: string }> };
+      if (view.jobs.some(job => job.phase === "FINISHED")) break;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    expect(view?.jobs).toContainEqual(expect.objectContaining({
+      phase: "FINISHED", settlementState: "NOT_READY", settlementReason: "HOST_FAILURE",
+      settlementDetail: "SOFTWARE_REVISION_SCOPE_MISMATCH",
+    }));
+    expect(installed.controller.status().attempts[0]?.state).toBe("RUNNING");
+  });
+
   it("runs a real child worker from the admitted basis through settlement, promotion and dependent continuation", async () => {
     const { repo, stateDir, head } = workspace("vertical");
     const workers: Array<{ pid: number; base: string; result: string; file: string }> = [];

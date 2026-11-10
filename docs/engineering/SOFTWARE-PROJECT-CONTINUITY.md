@@ -138,3 +138,47 @@ T2 的差额集中在 Principal。Palimpsest 比强原生多 26 笔 Principal �
 委派结果 110 到原生 fork 调用 359 相隔 220.798 秒。最大几份工具回显包括状态库查询 16,268 字节、完整 Pulse 12,022 字节，以及三次运行时源码读取各约 10–11 KB。它们出现在真实修改开始前，随后参与多次上下文重发。该段总量相当于两组 T2 总量差额的 70.2%，这是按已观测分段计数，无法据此计算删掉该段后的反事实用量。P 原生子任务的 418,016 tokens 与 F 的 338,148 tokens 相差 79,868，主要差额出在 Principal 对缺少具体原因的 `FINISHED / NOT_READY` 做排查。宿主回执中的写范围错误已明确，模型可见的作业状态只给出了通用结算状态。[分段、调用锚点和回显字节](../../research-evidence/pnwf-software/2026-11-10/live-pair-150630/usage-audit.json)
 
 发布前从六条原始 DSH stream 重跑归因，并与归档的请求 ID、四类终态用量和 232 对调用与结果核对。再从四个 Git bundle 取回原提交，重现两个 T1 的冻结拒绝、两个 T2 的越界拒绝及四组独立 HTTP/2 帧和公开测试结果。三个宿主驱动版本的 SHA-256 已记录。将发布版 `live.mjs` 复制到临时目录，依次使用 `git -c core.autocrlf=false apply --unidiff-zero` 应用 `driver-to-p-recount.patch` 和 `driver-to-t1.patch`，可恢复两次早期执行的驱动字节。此次核验使用离线工具。
+
+## T2 写范围与拒绝回传复跑
+
+复跑从主线 `52451a07` 上的上一轮发布接续。P 和 F 的确切 T2 基线分别为 `fbeb8958f4405688b13f37dbdec330157a660ab0` 与 `df4271d9a43c963ed386dc4de103dcfcf30f02f7`。宿主从上一轮证据重建只含基线祖先的 Git 副本，并检查此前的越界候选对象不可读。P 从上次 T1 的已退出产品状态重新接纳同一个 T2 SHA。每个会话仍使用独立 cohort、全新 DSH home 和原 `paid-usage-only` 窗口。
+
+两组得到同一条范围说明。允许修改 `service/grpc_server.js`、`test/integration.test.js`、`MIGRATION.md` 和可选的 `test/server.test.js`。proto、wire codec、客户端和 REST 测试的 blob 连注释一起保留。Palimpsest 在登记计划和派发前核验声明。Worker、Principal 完成和接管使用同一实际候选校验，结算再次核对被校验的完整 SHA。作业查询返回实际结算原因和宿主细节。
+
+零付费资格的六个会话均通过。Palimpsest Mock T2 先收到越界拒绝，再用正确范围完成正式委派。另补测了已存在的宽授权、仅改 proto 注释的接管、校验后 HEAD 移动，以及真实 Work 作业失败原因通过 `workers` 返回。架构、公共 API、两个软件策略测试和 26 项定向产品回归通过。
+
+### Palimpsest 真实 T2
+
+Principal 在计划中声明了正确的四个路径，`delegate`（96、97）启动正式 Worker。Worker 使用 11 笔请求，提交 `35f2fb69557e1965ef1e88f723fb600b9e9f0ae3`，只改四个允许文件。独立新规则探针 7/7，公开测试 18/18，正式门禁 PASS，受保护 blob 全部与基线相同。冻结评分器仍保留首版请求消息名的原始判定，业务通过来自已获授权的同义消息复核。Principal 29 笔请求，记录 `WAIT_FOR_OPERATOR`（229、230）后自然退出。
+
+本轮没有委派失败后切换原生子任务的排查窗口。委派回复 97 到 `workers` 结果 192 确认正式结算之间经过 82.998 秒，Principal 发出 13 笔请求，使用 471,591 tokens。这段有一次 `job_output` 查询未知 Work 作业的错误，另有状态和目录检查以及显式 shell 等待。该段保留为正式 Worker 等待与复核开销。上一轮失败排查窗口为 26 笔、1,356,253 tokens、220.798 秒。
+
+### 强原生真实 T2
+
+模型通过原生子任务（104、106）在独立 worktree 提交 `5346a2f606b85962b8a12e8cca706ad8efe658b5`。Principal 查看差异、计算四份保护文件摘要并复跑测试。随后它删除干净的临时 worktree，再把主工作区切换到候选分支（212、215），以便重复验证和展示候选。原 `master` 仍指向 `df4271d9a43c963ed386dc4de103dcfcf30f02f7`。原运行保留 `T2_CHANGED_CANONICAL_WORLD_BEFORE_APPROVAL`，会话自然退出并完成对账。Principal 和子任务分别用了 24 笔和 16 笔。
+
+宿主从原候选 Git 对象离线核验，四个允许文件是全部差异，proto、codec、客户端及 REST 测试逐字节相同。独立新规则探针 7/7，公开测试 18/18。该复核把产物是否通过与原工作区切换分开记录。
+
+### 同基线用量变化
+
+| T2 | 请求 | fresh input | cache read | output | 总 tokens | 容器秒数 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| P 原运行 | 57 | 89,764 | 2,606,464 | 29,342 | 2,725,570 | 431.360 |
+| P 本轮 | 40 | 61,317 | 1,175,296 | 13,089 | 1,249,702 | 202.826 |
+| F 原运行 | 34 | 42,136 | 735,488 | 16,172 | 793,796 | 124.626 |
+| F 本轮 | 40 | 45,882 | 999,424 | 21,212 | 1,066,518 | 152.391 |
+
+P 少 17 笔、1,475,868 tokens（54.1%）及 228.534 秒（53.0%），正式 Worker 路径替代了上一轮的拒绝排查与原生接管。F 多 6 笔、272,722 tokens 和 27.765 秒，轨迹增加了保护文件摘要对照、等待和切换检出后的再次测试。两组合计少 11 笔和 1,203,146 tokens，两次 T2 复跑均无未决用量。范围提示在两组同时加强，Work 校验与回传只影响 P；每组一次复跑支持这条具体轨迹的对照。
+
+### 核准与 T3
+
+所有者分别批准了两个完整候选 SHA。P 使用原有 Promotion 从候选晋升到 `7deda735afa4ef97e71dd14b5ab4b48131e1e872`。F 在原 `master` SHA 的新副本中按核准候选快进，接受 HEAD 为 `5346a2f606b85962b8a12e8cca706ad8efe658b5`，原 T2 守卫失败及原始结果摘要保留。两组 T3 均从实际接受 HEAD 的全新会话启动。候选就绪到宿主执行接受的间隔为 P 794.741 秒、F 747.411 秒，含等待授权与串行排程，单列于模型耗时之外。
+
+| T3 | 评审提交 | 请求 | fresh input | cache read | output | 总 tokens | 容器秒数 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Palimpsest | `f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7` | 14 | 21,998 | 352,768 | 9,656 | 384,422 | 120.472 |
+| 强原生 DSH | `720b1756931abbec6418a4019d048cb2e0ba6b31` | 12 | 20,132 | 261,760 | 10,496 | 292,388 | 87.238 |
+
+两组都只提交 `MIGRATION-REVIEW.md`，提交均是接受 HEAD 的直接子提交，公开测试的 18/18 可从各自工具结果复算。P 记录 `DELIVER`，回执把工件绑定到评审提交及其实际 blob 摘要。两组都自然退出。冻结评分均在 `SOFTWARE_REVIEW_MISSING zero or omitted` 停下。P 写的是 “an omitted limit and an explicitly zero limit”，F 用表头 “Zero or omitted”。两份原稿均明确引用接受 SHA 和更正文件，说明旧空流、新的前三条及顺序、正数限制、字段号和 REST 保留。F 明写 `GetReading` 为 unary，P 只写该调用保持原状。两份均未明确重述每条 Reading 一帧。原评分保持失败，离线审计逐项区分措辞和原稿未明确覆盖的边界。[T3 原稿与逐项审计](../../research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/t3-offline-audit.json)
+
+本轮四个真实会话合计 106 笔已结算请求、2,993,030 tokens，归因复算匹配 186 对工具调用与结果。两份 T3 原稿、T2 和 T3 的四个 Git bundle、零付费资格及实际账本配对均已归档。[复跑封存与机器证据](../../research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json)

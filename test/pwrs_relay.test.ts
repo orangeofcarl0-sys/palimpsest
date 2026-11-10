@@ -390,6 +390,21 @@ describe("PWRS real Work paths", () => {
     expect(pulse.execution.attempts.some((attempt) => attempt.relay?.attribution === "ORIGINAL_WORKER_OBSERVED")).toBe(true);
   });
 
+  it("keeps a result that moved after host validation out of canonical settlement", async () => {
+    const { repo, head, stateDir } = workspace("validated-result-drift");
+    const installed = install(repo, stateDir);
+    await start(installed, head);
+    const { attemptId, workDir } = await runningAttempt(installed);
+    writeCandidate(workDir, "# Candidate\n");
+    commitAll(workDir, "candidate");
+    const outcome = await installed.controller.settleMutatingWork({
+      attemptId, workerOutcome: { kind: "READY_FOR_SETTLEMENT" },
+      observation: { path: "PRINCIPAL", expectedResultCommit: head },
+    });
+    expect(outcome).toMatchObject({ state: "NOT_READY", reason: "RESULT_DRIFT" });
+    expect(installed.controller.status().attempts.find(attempt => attempt.attempt_id === attemptId)?.state).toBe("RUNNING");
+  });
+
   it("records a principal-written candidate as DECLARED recovery, not as worker output", async () => {
     const { repo, head, stateDir } = workspace("takeover-declared");
     const installed = install(repo, stateDir);

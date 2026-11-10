@@ -12,12 +12,14 @@ import { ExecutionBudget, USAGE_ONLY_SCHEMA } from "../execution_budget.mjs";
 import { makeWorkerBroker, stageRuntime } from "../energy/container-worker.mjs";
 import { assert, changed, clean, configureGit, descendant, digest, git, head, readJson, sha, writeJson } from "../energy/contract.mjs";
 import { attribute } from "../energy/evidence.mjs";
-import { CORRECTION, CORRECTION_PATH, FIRST, injectCorrection, PROMPTS, REVIEW, SCENARIO, seedSoftware } from "./contract.mjs";
-import { artifactReceipts, bindSoftwareRun, isolated, owner, paths, prepare, preserveBundle, traceSummary, workerPolicy } from "./run.mjs";
+import { CORRECTION, CORRECTION_PATH, FIRST, GUARDED_T2_PROMPT, injectCorrection, PROMPTS, REVIEW, SCENARIO, seedSoftware } from "./contract.mjs";
+import { artifactReceipts, bindSoftwareRun, isolated, owner, paths, prepare, preserveBundle, stageSoftwareRuntime, traceSummary, workerPolicy } from "./run.mjs";
+import { PUBLISHED_PAIR, restoreOriginalBasis } from "./rerun-basis.mjs";
 import { scoreDelivery, scoreReview } from "./score.mjs";
 
 const REPO = fileURLToPath(new URL("../../../", import.meta.url));
 const BASE = "268f14f98099b10b181ec9dd1ea4e07ecbe43d31";
+const RERUN_BASE = "52451a076d73492b83ac5ea938d413e1993992c5";
 const QUALIFICATION = "research-evidence/pnwf-software/2026-11-10/qualification.json";
 const FIXTURE = join(REPO, "fixtures/psvr/grpc-migration");
 const ARMS = ["P", "F"];
@@ -43,12 +45,14 @@ const args = new Map(process.argv.slice(2).map(arg => {
   return [match[1], match[2] ?? true];
 }));
 const action = args.get("action");
-assert(["prepare", "start", "continue", "accept"].includes(action) && typeof args.get("run") === "string", "EXPECTED_PAID_ACTION_AND_RUN");
-if (action !== "prepare") assert(args.get("execute") === true, "PAID_EXECUTE_FLAG_REQUIRED");
+assert(["prepare", "start", "continue", "accept", "prepare-rerun", "rerun"].includes(action) && typeof args.get("run") === "string", "EXPECTED_PAID_ACTION_AND_RUN");
+if (!["prepare", "prepare-rerun"].includes(action)) assert(args.get("execute") === true, "PAID_EXECUTE_FLAG_REQUIRED");
 const root = resolve(args.get("run"));
 const sealPath = join(root, "paid-seal.json");
 const addendumPath = join(root, "paid-addendum.json");
 const nativeAddendumPath = join(root, "paid-native-addendum.json");
+const rerunSealPath = join(root, "rerun-seal.json");
+const rerun = action === "prepare-rerun" || action === "rerun" || existsSync(rerunSealPath);
 const qualified = JSON.parse(fileBytes(REPO, BASE, QUALIFICATION).toString("utf8"));
 assert(qualified.passed && qualified.paidModelCalls === 0 && qualified.sessions.length === 6, "MOCK_QUALIFICATION_REQUIRED");
 const image = qualified.seal.image;
@@ -79,6 +83,69 @@ function stagedBinding(binding) {
   const seedTree = git(seed, "rev-parse", "HEAD^{tree}");
   assert(runtimeDigest === qualified.seal.runtime && seedTree === qualified.seal.seedTree && clean(seed), "QUALIFIED_RUNTIME_OR_SEED_DRIFT");
   return { ...binding, runtime: runtimeDigest, seedCommit: head(seed), seedTree };
+}
+
+function rerunBinding() {
+  assert(head(REPO) === RERUN_BASE, "CHECKOUT_MUST_MATCH_RERUN_BASE");
+  const mockPath = join(root, "mock-qualification.json");
+  const mock = readJson(mockPath);
+  const principal = mock.sessions?.find(s => s.arm === "P" && s.session === "T2");
+  assert(mock.passed && mock.paidModelCalls === 0 && mock.sessions.length === 6 &&
+    principal?.trajectory?.streams.some(stream => stream.pairs.some(pair => pair.refusal === "SOFTWARE_REVISION_SCOPE_MISMATCH")),
+    "GUARDED_MOCK_QUALIFICATION_REQUIRED");
+  const promptHashes = { T2: digest(GUARDED_T2_PROMPT), T3: digest(PROMPTS.T3) };
+  const runtimeHash = digest(JSON.stringify(manifest(runtime)));
+  assert(mock.seal.image === image && mock.seal.runtime === runtimeHash &&
+    mock.seal.prompts.T2 === promptHashes.T2 && mock.seal.prompts.T3 === promptHashes.T3, "RERUN_MOCK_RUNTIME_OR_PROMPT_DRIFT");
+  const keys = ["score.mjs", "probe.cjs", "work-policy.mjs", "product-entry.mjs", "contract.mjs", "run.mjs"];
+  for (const name of keys) {
+    const path = "scripts/pnwf/software/" + name;
+    assert(sha256(join(REPO, path)) === mock.seal.scripts[path], "RERUN_MOCK_SCRIPT_DRIFT " + path);
+  }
+  return {
+    base: RERUN_BASE, originalEvidence: git(REPO, "rev-parse", RERUN_BASE + ":" + PUBLISHED_PAIR + "/evidence.json"),
+    image, runtime: runtimeHash, mockSha256: sha256(mockPath), mode: PAID_MODE, window: WINDOW, prompts: promptHashes,
+    driver: Object.fromEntries(["live.mjs", "rerun-basis.mjs", ...keys].map(name => [name, sha256(join(REPO, "scripts/pnwf/software", name))])),
+    bases: Object.fromEntries(ARMS.map(arm => [arm, readJson(join(paths(arm, "T2").run, "replay-basis.json"))])),
+  };
+}
+
+function prepareRerun() {
+  assert(head(REPO) === RERUN_BASE && typeof args.get("mock") === "string" && typeof args.get("from") === "string",
+    "RERUN_REQUIRES_MOCK_AND_ORIGINAL_RUN");
+  const archive = join(REPO, PUBLISHED_PAIR);
+  const original = readJson(join(archive, "evidence.json"));
+  assert(original.confirmedRequests === 140 && original.t3.P === "BLOCKED_BY_SCOPE" && original.t3.F === "BLOCKED_BY_SCOPE", "ORIGINAL_PAIR_NOT_BOUND");
+  mkdirSync(root);
+  stageSoftwareRuntime(REPO, runtime);
+  cpSync(join(resolve(args.get("mock")), "qualification.json"), join(root, "mock-qualification.json"));
+  const raw = resolve(args.get("from"));
+  for (const arm of ARMS) {
+    const first = original.cases.find(row => row.arm === arm && row.session === "T1");
+    const previous = original.cases.find(row => row.arm === arm && row.session === "T2");
+    const p = paths(arm, "T2");
+    const input = join(root, "replay-inputs", arm);
+    const world = join(input, "basis");
+    const proof = restoreOriginalBasis({ archive, source: join(input, "archive"), output: world, previous, first });
+    const originalT1 = join(raw, arm, "T1");
+    const originalResult = join(originalT1, "result.json");
+    assert(sha256(originalResult) === first.originalResultSha256 && first.t1Recount.approved === proof.first, "ORIGINAL_T1_RECEIPT_DRIFT");
+    mkdirSync(paths(arm, "T1").run, { recursive: true });
+    writeJson(join(paths(arm, "T1").run, "owner-recount.json"), first.t1Recount);
+    prepare(p, { world, state: join(originalT1, "stages/T1/state") });
+    if (arm === "P") {
+      const before = owner(p, "facts");
+      assert(before.head === first.basis && before.conclusion?.intent === "DELIVER" && before.attempts.length === 0, "ORIGINAL_PRODUCT_T1_STATE_DRIFT");
+      const oldAdmission = readJson(join(raw, arm, "T2", "basis-admission.json"));
+      assert(oldAdmission.approved === proof.basis && oldAdmission.priorHead === before.head, "ORIGINAL_T2_ADMISSION_DRIFT");
+      const admission = owner(p, "basis", proof.basis, PAID_MODE);
+      assert(admission.approved === proof.basis && admission.priorHead === before.head, "RERUN_BASIS_ADMISSION_DRIFT");
+      writeJson(join(p.run, "basis-admission.json"), { oldAdmission, admission });
+    }
+    writeJson(join(p.run, "replay-basis.json"), proof);
+  }
+  writeJson(rerunSealPath, rerunBinding());
+  console.log("RERUN_PREPARED", root);
 }
 
 function verifyPaidBinding(binding) {
@@ -209,7 +276,21 @@ function nativeCandidate(p, basis, evidence) {
 
 function formalCandidate(p, basis, facts, evidence) {
   const ready = evidence.workerReceipts.filter(row => row.outcome === "READY_FOR_SETTLEMENT");
-  if (!ready.length) return null;
+  if (!ready.length) {
+    if (!rerun || !evidence.usageByRole["native-child"]?.requests) return null;
+    const relays = evidence.traces.flatMap((trace, index) => trace.role === "principal"
+      ? readJson(join(p.out, "attribution", index + ".timeline.json")).summary.results
+          .filter(row => row.facts?.state === "TAKEOVER_SETTLED").map(row => row.facts.resultCommit)
+      : []);
+    if (!relays.length) return null;
+    const attempts = facts.attempts.filter(row => row.state === "COMPLETED" && row.envelope?.base_commit === basis &&
+      relays.includes(row.report?.result_commit));
+    assert(facts.head === basis && facts.promotions.length === 0 && attempts.length === 1, "TAKEOVER_CANDIDATE_NOT_BOUND");
+    const attempt = attempts[0];
+    const gate = owner(p, "gate", attempt.id);
+    writeJson(join(p.run, "gate.json"), gate);
+    return { commit: attempt.report.result_commit, attemptId: attempt.id, route: "governed-takeover", gate: gate.verdict };
+  }
   const matches = facts.attempts.filter(row => row.state === "COMPLETED" && row.envelope?.base_commit === basis &&
     ready.some(receipt => receipt.attemptId === row.id && receipt.result === row.report?.result_commit));
   assert(facts.head === basis && facts.promotions.length === 0 && matches.length === 1, "FORMAL_CANDIDATE_NOT_BOUND");
@@ -246,7 +327,7 @@ async function runStage(p, acceptance = null) {
   const before = product ? owner(p, "facts") : null;
   if (product && id !== "T1") assert(before.head === basis, "PRODUCT_BASIS_NOT_ADMITTED");
   const promptPath = join(p.run, "prompt.txt");
-  writeFileSync(promptPath, PROMPTS[id]);
+  writeFileSync(promptPath, rerun && id === "T2" ? GUARDED_T2_PROMPT : PROMPTS[id]);
   const cohortId = "software-paid-" + arm + "-" + id + "-" + randomUUID();
   writeJson(join(p.run, "cohort.json"), { schema: PAID_COHORT_SCHEMA, cohortId, stages: [{ id }], ...WINDOW });
   writeJson(join(p.run, "core.json"), { cohortId, budget: null, sessions: [{ id, condition: arm, world: p.world, state: p.state,
@@ -283,7 +364,7 @@ async function runStage(p, acceptance = null) {
       assert(current === basis && !result.dirty, "T2_CHANGED_CANONICAL_WORLD_BEFORE_APPROVAL");
       candidate = (product && formalCandidate(p, basis, facts, evidence)) || nativeCandidate(p, basis, evidence);
       result.route = candidate.route;
-      checks.settlement = candidate.route === "formal-worker" ? candidate.gate === "PASS" : null;
+      checks.settlement = candidate.attemptId ? candidate.gate === "PASS" : null;
       result.candidate = { commit: candidate.commit, attemptId: candidate.attemptId ?? null, gate: candidate.gate ?? null,
         worktrees: candidate.worktrees ?? null, workerIsolation: candidate.isolation ?? null };
       checks.persisted = true;
@@ -362,7 +443,7 @@ function approve(arm, approved) {
   const decisionAt = new Date().toISOString();
   let promotion = null;
   let admission = null;
-  if (candidate.route === "formal-worker") {
+  if (candidate.attemptId) {
     prepare(next, from);
     promotion = owner(next, "promote", candidate.attemptId, candidate.basis, approved);
   } else if (arm === "P") {
@@ -430,8 +511,32 @@ async function continueWithRecount(arm, approved) {
 
 let lock;
 try {
-  const binding = contractBinding();
-  if (action === "prepare") {
+  if (action === "prepare-rerun") {
+    prepareRerun();
+  } else if (rerun) {
+    assert(["rerun", "accept"].includes(action) && JSON.stringify(rerunBinding()) === JSON.stringify(readJson(rerunSealPath)), "PAID_RERUN_SEAL_DRIFT");
+    assert(readDeepSeekKey(), "PAID_GATEWAY_CREDENTIAL_MISSING");
+    const lockPath = join(root, ".paid-command");
+    const fd = openSync(lockPath, "wx");
+    lock = lockPath;
+    closeSync(fd);
+    useKnownUsage();
+    if (action === "rerun") {
+      assert(ARMS.every(arm => !existsSync(join(paths(arm, "T2").run, "started.json"))), "PAIR_ALREADY_STARTED");
+      for (const arm of ARMS) {
+        const p = paths(arm, "T2");
+        assert(head(p.world) === readJson(join(p.run, "replay-basis.json")).basis, "RERUN_BASIS_DRIFT");
+        await runStage(p);
+        useKnownUsage();
+      }
+    } else {
+      const arm = args.get("arm");
+      assert(ARMS.includes(arm), "UNKNOWN_ARM");
+      const { next, acceptance } = approve(arm, args.get("approve"));
+      await runStage(next, acceptance);
+    }
+  } else if (action === "prepare") {
+    const binding = contractBinding();
     mkdirSync(root);
     stageRuntime({ repo: REPO, destination: runtime });
     cpSync(fileURLToPath(new URL("./product-entry.mjs", import.meta.url)), join(runtime, "runtime/product-entry.mjs"));
@@ -441,7 +546,7 @@ try {
     writeJson(sealPath, stagedBinding(binding));
     console.log("PREPARED", root);
   } else {
-    const extension = verifyPaidBinding(stagedBinding(binding));
+    const extension = verifyPaidBinding(stagedBinding(contractBinding()));
     assert(readDeepSeekKey(), "PAID_GATEWAY_CREDENTIAL_MISSING");
     const lockPath = join(root, ".paid-command");
     const fd = openSync(lockPath, "wx");

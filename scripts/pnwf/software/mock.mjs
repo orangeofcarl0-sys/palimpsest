@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { assert } from "../energy/contract.mjs";
-import { CORRECTION_PATH, FIRST, REQUIRED, REVIEW, SCOPE } from "./contract.mjs";
+import { CORRECTION_PATH, FIRST, REQUIRED, RETAINED, REVIEW, SCOPE } from "./contract.mjs";
 
 const TASK = "revise-fleet-default";
 const SUBJECT = "Revise Fleet default limit";
@@ -69,7 +69,8 @@ export function qualificationReply({ arm, session, basis, artifacts }) {
     if (actor !== "principal") {
       assert(session === "T2", "UNEXPECTED_MOCK_EXECUTOR");
       if (step === 0) {
-        if (actor === "worker") assert(users.some(block => SCOPE.every(path => block.text?.includes(path))), "MOCK_WORKER_SCOPE_NOT_VISIBLE");
+        if (actor === "worker") assert(users.some(block => [...SCOPE, ...RETAINED, "including comments"].every(path => block.text?.includes(path))),
+          "MOCK_WORKER_SCOPE_NOT_VISIBLE");
         call = shell("git show HEAD:" + CORRECTION_PATH);
       } else if (step === 1) {
         assert(result.includes("first three"), "FLEET_CORRECTION_NOT_READ");
@@ -85,12 +86,13 @@ export function qualificationReply({ arm, session, basis, artifacts }) {
         if (arm === "P") call = conclude("DELIVER", FIRST);
       }
     } else if (session === "T2" && arm === "P") {
-      if (step === 0) call = work("plan", { reason: "Fleet compatibility changed.", tasks: [{
+      if (step === 1) assert(result.includes("SOFTWARE_REVISION_SCOPE_MISMATCH") && result.includes("including comments"), "MOCK_SCOPE_REFUSAL_NOT_VISIBLE");
+      if (step <= 1) call = work("plan", { reason: "Fleet compatibility changed.", tasks: [{
         task_id: TASK, objective: "Apply the Fleet note, preserve compatibility, and commit the tested candidate.",
-        depends_on: [], write_paths: SCOPE, required_artifacts: REQUIRED,
+        depends_on: [], write_paths: step === 0 ? [...SCOPE, RETAINED[0]] : SCOPE, required_artifacts: REQUIRED,
       }] });
-      else if (step === 1) call = work("delegate", { taskId: TASK });
-      else if (step === 2) call = work("workers");
+      else if (step === 2) call = work("delegate", { taskId: TASK });
+      else if (step === 3) call = work("workers");
       else if (!concluded && advanced) {
         assert(result.includes("VERIFYING"), "MOCK_TASK_NOT_VERIFYING");
         call = conclude("WAIT_FOR_OPERATOR");

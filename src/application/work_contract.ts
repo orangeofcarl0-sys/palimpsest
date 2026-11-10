@@ -331,6 +331,8 @@ export interface WorkApplicationSurface {
       readonly taskId: string;
       readonly phase: string;
       readonly settlementState: string | null;
+      readonly settlementReason?: string;
+      readonly settlementDetail?: string;
       readonly hostError: string | null;
       readonly stopRequested: boolean;
     }[];

@@ -479,7 +479,7 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
           state: "NOT_READY" as const,
           attemptId,
           reason: input.workerOutcome.kind,
-          detail: "the worker did not report the work ready for settlement, so nothing is observed, exported or recorded — the attempt and its world are untouched",
+          detail: input.workerOutcome.detail || "the worker did not report the work ready for settlement, so nothing is observed, exported or recorded — the attempt and its world are untouched",
         });
       }
 
@@ -493,6 +493,14 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
           attemptId,
           reason: "WORLD_UNOBSERVABLE",
           detail: "this attempt's execution world cannot be observed, so nothing can be established about its work",
+        });
+      }
+      if (observation.expectedResultCommit !== undefined && observed.observedHead !== observation.expectedResultCommit) {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "RESULT_DRIFT",
+          detail: "the execution world's HEAD moved after host result validation; validate the current commit before settling it",
         });
       }
 
