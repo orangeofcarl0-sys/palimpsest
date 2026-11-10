@@ -14,7 +14,7 @@ import { makeWorkerBroker, stageRuntime } from "../energy/container-worker.mjs";
 import { assert, changed, clean, commitAll, configureGit, descendant, digest, git, head, readJson, sha, writeJson } from "../energy/contract.mjs";
 import { attribute, requireUsage } from "../energy/evidence.mjs";
 import { pendingCandidate, profileFor } from "../energy/product.mjs";
-import { checkScope, CORRECTION_PATH, GIT_IDENTITY, injectCorrection, FIRST, PROMPTS, REVIEW, revisionResult, SCENARIO, seedSoftware } from "./contract.mjs";
+import { checkScope, CORRECTION_PATH, GIT_IDENTITY, GUARDED_T2_PROMPT, injectCorrection, FIRST, PROMPTS, REVIEW, revisionResult, SCENARIO, SCOPE_GUIDANCE, seedSoftware } from "./contract.mjs";
 import { qualificationReply, scriptedArtifacts } from "./mock.mjs";
 import { OFFLINE, scoreDelivery, scoreReview } from "./score.mjs";
 
@@ -25,7 +25,7 @@ const CEILING = 12000000;
 const WINDOW_MS = 180000;
 export const workerPolicy = {
   projectId: SCENARIO.projectId, checkScope, checkResult: revisionResult, gitIdentity: GIT_IDENTITY,
-  requirements: ["Apply the Fleet compatibility correction in " + CORRECTION_PATH + ". Preserve the proto, codec, client and REST files."],
+  requirements: ["Apply the Fleet compatibility correction in " + CORRECTION_PATH + ". " + SCOPE_GUIDANCE],
 };
 let image, artifacts, seedCommit;
 const sessions = [];
@@ -37,6 +37,20 @@ export function bindSoftwareRun(directory, imageId) {
   seed = join(root, "seed");
   image = imageId;
   return { runtime, seed };
+}
+
+export function stageSoftwareRuntime(repository, destination) {
+  stageRuntime({ repo: repository, destination });
+  const mount = join(destination, "runtime");
+  for (const [folder, files] of [
+    ["software", ["contract.mjs", "work-policy.mjs"]],
+    ["energy", ["contract.mjs", "revision-scope.mjs"]],
+  ]) {
+    mkdirSync(join(mount, folder));
+    for (const file of files) cpSync(join(repository, "scripts/pnwf", folder, file), join(mount, folder, file));
+  }
+  cpSync(fileURLToPath(new URL("./product-entry.mjs", import.meta.url)), join(mount, "product-entry.mjs"));
+  writeJson(join(mount, "scenario.json"), SCENARIO);
 }
 
 export function paths(arm, id) {
@@ -149,7 +163,7 @@ async function session(p, acceptance) {
   if (before && acceptance) assert(before.head === basis && before.events.some(event => event.type === "PROMOTION_COMMITTED" &&
     event.entityId === acceptance.promotion.promotionId), "T3_ACCEPTED_PRODUCT_STATE_MISMATCH");
   const promptPath = join(p.run, "prompt.txt");
-  writeFileSync(promptPath, PROMPTS[id]);
+  writeFileSync(promptPath, id === "T2" ? GUARDED_T2_PROMPT : PROMPTS[id]);
   const cohortId = "software-" + arm + "-" + id + "-" + randomUUID();
   writeJson(join(p.run, "core.json"), { cohortId, budget: CEILING, sessions: [{ id, condition: arm, world: p.world,
     state: p.state, expectedHead: basis, killAfterMs: WINDOW_MS, deployment: p.profile, promptPath }] });
@@ -287,7 +301,7 @@ function freeze() {
   const manifest = (dir, base = dir) => Object.fromEntries(files(dir).map(path => [relative(base, path).replaceAll("\\", "/"), digest(readFileSync(path))]));
   const evidence = { implementationHead: head(REPO), image, dsh: "0.2.1-rc.5", seedCommit,
     seedTree: git(seed, "rev-parse", "HEAD^{tree}"), scenario: SCENARIO.projectId, mockWallClockMs: WINDOW_MS,
-    prompts: Object.fromEntries(Object.entries(PROMPTS).map(([id, prompt]) => [id, digest(prompt)])),
+    prompts: Object.fromEntries(Object.entries({ ...PROMPTS, T2: GUARDED_T2_PROMPT }).map(([id, prompt]) => [id, digest(prompt)])),
     fixture: manifest(FIXTURE), scripts: manifest(join(REPO, "scripts/pnwf"), REPO),
     attribution: digest(readFileSync(join(REPO, "scripts/psvr/session_attribution.mjs"))),
     runtime: digest(JSON.stringify(manifest(runtime))) };
@@ -304,9 +318,7 @@ mkdirSync(root);
 let seal;
 try {
   image = docker(["image", "inspect", "palimpsest-pnwf-isolation:local", "--format", "{{.Id}}"]);
-  stageRuntime({ repo: REPO, destination: runtime });
-  cpSync(fileURLToPath(new URL("./product-entry.mjs", import.meta.url)), join(runtime, "runtime/product-entry.mjs"));
-  writeJson(join(runtime, "runtime/scenario.json"), SCENARIO);
+  stageSoftwareRuntime(REPO, runtime);
   mkdirSync(seed);
   seedCommit = seedSoftware(seed, FIXTURE);
   artifacts = scriptedArtifacts(FIXTURE);

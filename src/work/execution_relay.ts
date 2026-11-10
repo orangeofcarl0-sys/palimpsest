@@ -64,6 +64,8 @@ export interface ExecutionInvocation {
 export interface SettlementObservation {
   /** Which product path is closing the attempt. */
   readonly path: "WORKER" | "PRINCIPAL";
+  /** Exact result already checked by a trusted host policy, when present. */
+  readonly expectedResultCommit?: string | undefined;
   /** The invocation that reported the work ready, when the worker path settled it. */
   readonly invocationId?: string | null | undefined;
   /**

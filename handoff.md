@@ -14,6 +14,7 @@
 - `DELIVER` 工件 SHA 修复、项目路线图和 gRPC 迁移双组 Mock 资格已通过 [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253) 发布。送审 head 的 16 项检查均成功，主线发布点为 `d34f34b4c528f7aa7788a1b7192c789dc73b790c`。六个会话均自然退出，38 笔 Mock 请求全部结算，新增付费调用 0。真实配对另行使用获准的资源合同。 [资格报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md) · [发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/release-ci.json)
 - 2026-11-10 从主线 `268f14f9` 执行首组 gRPC 真实诊断配对。两组 T1 原判分保留，经所有者批准按原提交独立复核后分别启动 T2。Palimpsest 正式委派被写范围拦截，改走原生子任务加 `relay takeover`，记录 `WAIT_FOR_OPERATOR`。强原生直接使用 Git worktree 加 Subagent。两个 T2 的独立探针均通过，候选都修改了要求保留的 proto blob，均未进入核准，两组均未启动 T3。四个会话自然退出，140 笔真实请求、232 对调用与结果已复核。Palimpsest T2 切换前的故障排查占 26 笔请求、1,356,253 tokens 和 220.798 秒。[真实配对报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#真实诊断配对) · [机器证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json) · [用量审计](research-evidence/pnwf-software/2026-11-10/live-pair-150630/usage-audit.json)
 - 真实配对的宿主驱动、轨迹、四个 Git bundle 和用量审计已通过 [PR #255](https://github.com/orangeofcarl0-sys/palimpsest/pull/255) 发布。送审 head 的 16 项检查均成功，主线发布点为 `415f8bc48fd9019a0347e0f4c718c2775803d624`。发布核验的六会话 Mock 回归全部通过，新增付费请求 0。[发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/live-pair-150630/release-ci.json)
+- gRPC T2 写范围和拒绝回传复跑从 `52451a07` 接续。六会话 Mock 通过。两组从原 T2 SHA 重跑，均保留四个保护 blob。P 正式 Worker 结算和门禁 PASS，核准 `35f2fb69557e1965ef1e88f723fb600b9e9f0ae3` 后晋升为 `7deda735afa4ef97e71dd14b5ab4b48131e1e872`。F 保留原检出守卫失败，离线通过后按所有者核准从原基线副本接受 `5346a2f606b85962b8a12e8cca706ad8efe658b5`。两组真实 T3 各提交一份评审并自然退出。冻结评分均为 `SOFTWARE_REVIEW_MISSING zero or omitted`，原稿和逐项复核均已归档。P T2 少 17 笔和 1,475,868 tokens，F 多 6 笔和 272,722 tokens。全轮 106 笔已结算，186 对调用与结果复核通过。[复跑报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#t2-写范围与拒绝回传复跑) · [机器证据](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json)
 - 2026-11-09 在 `codex/energy-project-continuity` 启动同一 energy 项目的三会话实验。首轮两组 Mock 资格 6/6。真实 Palimpsest T1 交付 `4cf360d5620fa10df5022c777aa0ed83c312a80a` 后自然退出，19 笔请求共 535,044 tokens。独立判分修复站点全名与缩写的等价归一化后，同提交离线复算 45/45，通过时新增付费请求为 0。所有者已核准 T2 基线 `8041871314136d417b285a800265858757463f68`。[报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md) · [机器证据](research-evidence/pnwf-energy/2026-11-09/continuity.json)
 - Energy 首轮真实 T2 因 Worker 改写证书被宿主拦截。修复统一了 Work 与宿主的五文件范围，证书保持逐字节不变。后续两次观察分别为原生 Subagent 偏离（业务复核 45/45，缺少正式结算）和正式 Worker 结算后 Principal 达到 64 笔上限（业务 45/45，缺少等待结论）。[T2 报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#t2-写范围修复与复跑)
 - 等待式变体的 Palimpsest 真实闭环 3/3：T2 正式 Worker 候选 `e2bc1a424a30123213708990394fc8b19e18c445` 获所有者核准，Promotion 后 HEAD 为 `7aed12ea8618533c7acba5b1c8a4f60e8c1c97ce`；T3 从该 HEAD 提交采购摘要 `02fdf9c3aa3e2821e7fe32f82bd7e3b768baf234` 并自然退出。[复验报告](docs/engineering/ENERGY-PROJECT-CONTINUITY.md#等待与结算引导的定向复验)
@@ -267,6 +268,8 @@ PR #249 合并前有 15 个 job 和 1 个独立的 `commit-attribution` 状态�
 
 PR #251 的 15 个 job 和精确 head 的 `commit-attribution` 状态全部成功。Linux 全量 5,101 通过 / 33 跳过，浏览器 E2E 38/38，Windows 的四项边界 conformance 检查通过。R0 中 D2、D4、D5 和 D5 可靠性的真实宿主步骤按条件跳过。 [PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/251/checks) · [发布点主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42647207683) · [发布点主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/42647207656)
 
+gRPC T2 写范围复跑通过两个软件策略测试、26 项定向产品回归和六个实际容器 Mock 会话。CI 的 `unit` 纳入软件策略测试，覆盖委派前拒绝过宽声明和接管时拒绝受保护文件的注释改动。[资格封存](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/mock-qualification.json)
+
 ### 验收集（顺序执行，避免 Windows 并行超时）
 
 ```bash
@@ -422,6 +425,10 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 - 定向回读从 `3bf8da0006f9c1f72b057a1906afe4f0ba0942a1` 提交摘要 `c9951ce3a911cc55e140c4aab2195e3a32c4ec0c`，11 笔请求，20,643 fresh、274,304 cache read，严格判分 PASS。 [原稿](research-evidence/pnwf-energy/2026-11-09/t3-read-plan-procurement-review.md)
 - 两条 `DELIVER` 后均自然退出。各只改采购摘要，新增 25 笔、689,857 tokens，逐请求归因 25/25，未确认用量为 0。两组首笔输入相同，差异出现在后续工具序列。T3 专项资格收据在各原始目录的 `t3-qualification.json`，用 `--t3-context` 复算。 [T3 证据](research-evidence/pnwf-energy/2026-11-09/t3-context-continuation.json)
 
+### gRPC T2 写范围复跑与 T3
+
+两组从各自原 T2 基线各复跑一次，按核准 SHA 接受后启动 T3。四个真实会话共 106 笔、2,993,030 tokens，全部结算，186 对工具调用和结果已复算。T2 前后对比和审批等待分列于报告。[复跑报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#t2-写范围与拒绝回传复跑) · [账本与轨迹](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json)
+
 ### 2026-11-07 历史 cohort
 
 | 项 | tokens |
@@ -468,7 +475,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
    - 远程部署应提供自己的 `OperatorAuthorityPort`。
 
 4. **真实模型产品闭环**（P1）
-   - 软件 gRPC 三会话已完成双组 Mock 资格。后续真实配对使用相同业务合同，观察模型选择与采纳情况，运行前单独核对授权。Energy 的原稿与判分保留，供历史回归与第二领域复验。[软件试点](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md)
+   - gRPC T2 写范围复跑保留了四个保护 blob。Palimpsest 走正式 Worker，强原生组的主工作区检出切换仍触发守卫，候选经离线核准后从原基线副本接受。两组 T3 均提交并自然退出，冻结原判均失败。离线核对区分了措辞差异与原稿未明确覆盖的协议边界。[软件试点](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#t2-写范围与拒绝回传复跑)
    - 两种状态各一次定向观察证实，指定先查 `readiness` 后，模型收到新提示，并在后续步骤记录 `DELIVER` 和自然退出。原始状态的两条修复后复跑都在退役后直接验证并交付，退役后查询 `readiness` 为 0。两组保留各自的起点和触发条件。[定向观察与原始状态复跑](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察)
    - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
    - Energy 等待式变体已完成真实 Worker、结算、按 SHA 晋升和 T3 接续，强原生对照也完成。默认业务提示曾引发原生委派偏离；仅指定 Work 路径时又在结算后耗尽请求。后续产品验证可关注正式 Worker 的完成通知和 Work 作业 ID 提示；真实成功轨迹仍有一次把 Work ID 传给原生 `job_output` 的错误。
@@ -564,6 +571,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-10 | 发布路线图、交付 SHA 修复和 gRPC 资格并核对合并结果 | [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253)，[发布证据](research-evidence/pnwf-software/2026-11-10/release-ci.json) | 送审 head 16/16，主线发布点 `d34f34b4`，两次 rebase 的 SHA 对照已记录 |
 | 2026-11-10 | 运行 gRPC 真实配对，核对正式委派、接管和原生子任务 | [报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#真实诊断配对)，[证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json) | 两组均止于 T2 写范围门禁，四会话自然退出，140 笔用量完整 |
 | 2026-11-10 | 发布 gRPC 真实诊断配对及用量审计 | [PR #255](https://github.com/orangeofcarl0-sys/palimpsest/pull/255)，[发布记录](research-evidence/pnwf-software/2026-11-10/live-pair-150630/release-ci.json) | 16/16，主线发布点 `415f8bc4`，T1 原判分和离线复核、T2 越界记录均归档，两组 T3 未启动 |
+| 2026-11-10 | 修复 gRPC T2 写范围与拒绝回传，复跑 T2 并接续 T3 | [复跑报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#t2-写范围与拒绝回传复跑)，[机器证据](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json) | Mock 6/6，真实 106 笔全部结算，保留强原生检出守卫失败、离线核准与两份 T3 冻结原判 |
 
 ---
 

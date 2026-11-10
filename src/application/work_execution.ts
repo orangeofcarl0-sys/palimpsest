@@ -53,7 +53,7 @@ export function makeWorkExecutionSurface(
               resumed: started.resumed,
               detail:
                 current.phase === "FINISHED"
-                  ? "the worker finished and the product settled its result before this reply"
+                  ? "the worker finished before this reply; inspect its settlement state and refusal detail in workers"
                   : `the execution position is prepared and the worker is ${current.phase}; the task is canonical before this reply`,
             };
           }
@@ -129,17 +129,21 @@ export function makeWorkExecutionSurface(
       });
       return {
         placement: deps.controller.execution,
-        jobs: jobs.map((job) => ({
+        jobs: jobs.map((job) => {
+          const outcome = typeof job.settlement === "object" && job.settlement !== null
+            ? job.settlement as { state?: unknown; reason?: unknown; detail?: unknown }
+            : null;
+          return {
           jobId: job.jobId,
           taskId: job.taskId,
           phase: job.phase,
-          settlementState:
-            typeof job.settlement === "object" && job.settlement !== null && "state" in job.settlement
-              ? String((job.settlement as { state: unknown }).state)
-              : null,
+          settlementState: typeof outcome?.state === "string" ? outcome.state : null,
+          ...(outcome?.state !== "SETTLED" && typeof outcome?.reason === "string" ? { settlementReason: outcome.reason } : {}),
+          ...(outcome?.state !== "SETTLED" && typeof outcome?.detail === "string" ? { settlementDetail: outcome.detail } : {}),
           hostError: job.hostError,
           stopRequested: job.stopRequested,
-        })),
+          };
+        }),
         attempts,
         detail:
           deps.workDelegation === undefined
