@@ -1,0 +1,145 @@
+{
+  "schema": "pnwf-work-revision-verification/v1",
+  "sourceBase": "2cc5aef5f879b27a58d995e098f39731239f15db",
+  "build": {
+    "typescript": "PASS",
+    "architecture": "PASS",
+    "publicApi": "PASS",
+    "packagedConsumer": "PASS"
+  },
+  "productTests": {
+    "passed": 55,
+    "failed": 0,
+    "files": 6,
+    "coverage": [
+      "scope before enrollment",
+      "wrong basis before Attempt creation",
+      "protected bytes and missing obligations",
+      "Worker and takeover refusal parity",
+      "HEAD drift before report",
+      "exact SHA operator admission",
+      "repeat and concurrent submission",
+      "restart reauthorization",
+      "event replay and legacy compatibility"
+    ]
+  },
+  "nodeTests": {
+    "passed": 37,
+    "failed": 0
+  },
+  "legacyMock": [
+    {
+      "scenario": "grpc",
+      "passed": true,
+      "paidModelCalls": 0,
+      "sessions": [
+        {
+          "arm": "P",
+          "session": "T1",
+          "passed": true,
+          "requests": 3,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "P",
+          "session": "T2",
+          "passed": true,
+          "requests": 18,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "P",
+          "session": "T3",
+          "passed": true,
+          "requests": 4,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "F",
+          "session": "T1",
+          "passed": true,
+          "requests": 2,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "F",
+          "session": "T2",
+          "passed": true,
+          "requests": 9,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "F",
+          "session": "T3",
+          "passed": true,
+          "requests": 3,
+          "unresolvedRequests": 0
+        }
+      ],
+      "requests": 39.0
+    },
+    {
+      "scenario": "energy",
+      "passed": true,
+      "paidModelCalls": 0,
+      "sessions": [
+        {
+          "arm": "P",
+          "session": "T1",
+          "passed": true,
+          "requests": 3,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "P",
+          "session": "T2",
+          "passed": true,
+          "requests": 10,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "P",
+          "session": "T3",
+          "passed": true,
+          "requests": 4,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "F",
+          "session": "T1",
+          "passed": true,
+          "requests": 2,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "F",
+          "session": "T2",
+          "passed": true,
+          "requests": 7,
+          "unresolvedRequests": 0
+        },
+        {
+          "arm": "F",
+          "session": "T3",
+          "passed": true,
+          "requests": 3,
+          "unresolvedRequests": 0
+        }
+      ],
+      "requests": 29.0
+    }
+  ],
+  "preFixFindings": [
+    {
+      "where": "normal DSH plan",
+      "reason": "TaskEnvelope does not match ProjectIR.TaskSpec",
+      "resolution": "Preserve legacy required_artifacts order and keep mustExist in the new obligations."
+    },
+    {
+      "where": "reauthorize after restart without taskObligations configuration",
+      "reason": "TaskEnvelope differs from the trusted policy output",
+      "resolution": "Use the previous persisted obligations at ledger admission as well as plan compilation."
+    }
+  ],
+  "paidModelCalls": 0
+}

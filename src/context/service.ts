@@ -216,6 +216,7 @@ export interface TrajectoryDeliveryRecord {
  * assert on.
  */
 export interface WorkWorkerAttemptContext {
+  readonly revision?: import("../schema/work_revision.js").WorkRevisionBinding | undefined;
   readonly work: WorkWorkerTaskContext;
   readonly compiled: {
     readonly manifestId: string;

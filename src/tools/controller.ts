@@ -53,8 +53,8 @@ import {
 import { makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
 import { assertDirectBasisHeadOnly, invalidationAffectedForPlan, planReceipt } from "../work/plan_revision.js";
 import { makeProjectHeadService, appendDirectBasisApproval, validatedHeadAdvance, directBasisCommitFence } from "../work/head.js";
-import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput } from "../work/attempt_execution.js";
-import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation } from "../work/attempt_execution.js";
+import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, attributeSettlement, assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding, projectRevisionReceipt, recordWorkReport, replayWorkReport, revisionError, WorkRevisionError } from "../work/attempt_execution.js";
+import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation, WorkRevisionBinding, WorkRevisionReceipt, WorkRevisionApproval, WorkRevisionReceiptQuery } from "../work/attempt_execution.js";
 import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
@@ -394,6 +394,7 @@ interface WorkWorkerTaskContext {
  * pull handles, and — for a rework attempt — the read-only PriorResultContext).
  */
 interface WorkWorkerAttemptContext {
+  readonly revision?: WorkRevisionBinding | undefined;
   readonly work: WorkWorkerTaskContext;
   readonly compiled: {
     readonly manifestId: string;
@@ -1051,8 +1052,9 @@ export class ProjectController {
           },
         });
       },
-      report: (attemptId: string) => {
-        this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" });
+      report: (attemptId, expectedResultCommit) => {
+        const event = this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" }, expectedResultCommit);
+        return (event.payload.attempt_report as AttemptReport).revision_receipt;
       },
       preparedProjection: (input) =>
         this.#preparedProjection(
@@ -1089,6 +1091,7 @@ export class ProjectController {
       options.verificationAdmission,
       (attemptId, gateId) => this.evaluateGate(gateId, "attempt", attemptId),
       options.sourceIntakeAdmission,
+      options.operatorAuthority,
     );
     this.recovery = createPromotionRecoveryService({
       store: options.store,
@@ -1220,6 +1223,7 @@ export class ProjectController {
       headCommit: input.headCommit ?? DEFAULT_HEAD_COMMIT,
       committedAt: input.committedAt ?? this.#now(),
     });
+    const authorizations = project.tasks.map(task => this.policy.authorize(project, task.task_id));
     const created = this.store.append(
       parseNewEvent({
         schema_version: 1,
@@ -1266,9 +1270,7 @@ export class ProjectController {
     // ...as is the default stage graph: the phase0-2 hardcoded pipeline,
     // declared verbatim (H1 §3.4 D-3) unless the caller declares its own.
     this.declareStageGraph(declaredGraph, 1);
-    for (const task of input.tasks) {
-      this.scheduler.registerTask(this.policy.authorize(project, task.task_id));
-    }
+    for (const authorization of authorizations) this.scheduler.registerTask(authorization);
     return created;
   }
 
@@ -2118,6 +2120,14 @@ export class ProjectController {
     // and the stored value is controller-owned (never a caller alias).
     const ownedAttribution =
       attribution === undefined ? undefined : parseAttemptAttribution(attribution);
+    const binding = workRevisionBinding(this.#attemptContext(attemptId)[1], attemptId);
+    if (binding) {
+      const repository = this.#canonicalRepository();
+      assertRevisionBasis(repository, binding);
+      if (this.#observedHead(repository) !== binding.basis) {
+        throw revisionError("HEAD_BASIS_MISMATCH", "Restore the authorized basis before claiming Work.", "REOBSERVE");
+      }
+    }
     const project = this.#project();
     const role = this.#roleOf(attemptId);
     const runningRoles = this.#runningRoles();
@@ -2196,61 +2206,26 @@ export class ProjectController {
   }
 
   /** Submit an attempt report; the report's claims are never evidence. */
-  report(attemptId: string, input: ReportInput): SchedulerEvent {
-    const terminal: Record<AttemptReport["worker_status"], EventType> = {
-      completed: "ATTEMPT_COMPLETED",
-      failed: "ATTEMPT_FAILED",
-      cancelled: "ATTEMPT_CANCELLED",
-      expired: "ATTEMPT_EXPIRED",
-    };
-    // The product observes the tree itself, synchronously, whatever the execution PLACEMENT is. The
-    // caller's changed_files and result_commit are overwritten by what `git status`/HEAD actually
-    // say, so the report records an observation, not a claim — the SAME rule for an in-place attempt
-    // and for one that ran in its own isolated worktree (§D2-a). The envelope's write_paths are then
-    // the CONTRACT the observation is checked against: an out-of-scope change fails here, at the
-    // moment it can be named, instead of surfacing later as a gate that can only count evidence
-    // atoms.
-    const observed = (() => {
-      const envelope = this.#attemptContext(attemptId)[1];
-      return this.#observeAttemptResultSync(attemptId, envelope.base_commit);
-    })();
-    if (observed !== null) {
-      const envelope = this.#attemptContext(attemptId)[1];
-      const scope = envelope.write_paths;
-      const outOfScope = observed.changedFiles.filter(
-        (path) => !scope.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
-      );
-      if (outOfScope.length > 0) {
-        throw new DomainValidationError(
-          `${observed.placement} attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan`,
-        );
-      }
-      // §2.6: a COMPLETED attempt must have materialized its work as a commit, in EITHER placement.
-      // Only completion is held to this — a failed or cancelled attempt is allowed to stop
-      // mid-edit, and its report is still worth observing.
-      if (input.workerStatus === "completed") {
-        this.#assertCompletionMaterialized(attemptId, observed.uncommittedChanges);
-        // §3.3: and it must have left observable work at all. Enforced HERE, on the report path, so
-        // the automatic pump cannot mint the zero-work COMPLETED attempt that `finish` refuses —
-        // which is exactly what the 2A live gate measured it doing.
-        this.#assertCompletionHasWork(attemptId, observed.changedFiles);
-      }
-      input = {
-        ...input,
-        changedFiles: observed.changedFiles,
-        // The observed HEAD is the tree's result commit: a placed worktree starts at the base and
-        // moves only when the worker commits inside it.
-        ...(observed.observedHead === "" ? {} : { resultCommit: observed.observedHead }),
-      };
-      if (input.workerStatus === "completed" && observed.observedHead !== "") {
-        input = {
-          ...input,
-          resultCommit: this.#exportAndResolveResultCommit(attemptId, observed.observedHead),
-        };
-      }
-    }
-    const report = this.#buildReport(attemptId, input);
-    return this.scheduler.recordCallback(attemptId, terminal[input.workerStatus], report);
+  report(attemptId: string, input: ReportInput, expectedResultCommit?: string): SchedulerEvent {
+    const [row, envelope] = this.#attemptContext(attemptId);
+    return recordWorkReport({
+      state: row.state,
+      observe: () => this.#observeAttemptResultSync(attemptId, envelope.base_commit),
+      basisCurrent: () => this.execution === "in-place" || (this.#observedHead(this.#canonicalRepository()) === envelope.base_commit &&
+        this.promotions.projectHeadStatusSync().projectHeadCommit === envelope.base_commit),
+      assertMaterialized: paths => this.#assertCompletionMaterialized(attemptId, paths),
+      assertHasWork: paths => this.#assertCompletionHasWork(attemptId, paths),
+      exportResult: commit => this.#exportAndResolveResultCommit(attemptId, commit),
+      build: report => this.#buildReport(attemptId, report),
+      record: (type, report) => this.scheduler.recordCallback(attemptId, type, report),
+      replay: expected => this.#replayRevisionReport(attemptId, expected),
+    }, attemptId, envelope, input, expectedResultCommit);
+  }
+
+  #replayRevisionReport(attemptId: string, expected?: string): SchedulerEvent {
+    const event = this.store.listEvents(this.projectId).find(row =>
+      row.event_type === "ATTEMPT_COMPLETED" && row.entity_id === attemptId);
+    return replayWorkReport(event, expected === undefined ? this.observeAttemptResult(attemptId)?.observedHead : undefined, expected);
   }
 
   /** Export the result object and return its full identity; see `work/report_integrity.ts`. */
@@ -2895,7 +2870,24 @@ export class ProjectController {
     /** PWRS-A: which path closes the attempt, and whether a principal declared a continuation. */
     readonly observation?: SettlementObservation | undefined;
   }): Promise<MutatingWorkSettlement> {
-    return this.attemptExecution.settle(input);
+    try {
+      const record = this.attemptWorkRecord(input.attemptId);
+      const receipt = (record?.report as AttemptReport | null)?.revision_receipt;
+      if (record?.state === "COMPLETED" && receipt && input.workerOutcome.kind === "READY_FOR_SETTLEMENT") {
+        this.#replayRevisionReport(input.attemptId, input.observation?.expectedResultCommit);
+        return {
+          state: "SETTLED", attemptId: input.attemptId, resultCommit: receipt.candidate, receipt, replayed: true,
+          changedFiles: receipt.checks.filter(check => check.kind === "WRITE_SCOPE").map(check => check.path),
+          exported: true, evidenceRecorded: [], inputsNotInBasis: [], inputsState: "OBSERVED", inputsDetail: "",
+          attribution: attributeSettlement({ invocations: [], observation: { path: "WORKER" }, settledHead: receipt.candidate }),
+          detail: "The candidate is already settled. Read the original receipt.",
+        };
+      }
+      return await this.attemptExecution.settle(input);
+    } catch (error) {
+      if (!(error instanceof WorkRevisionError)) throw error;
+      return { state: "NOT_READY", attemptId: input.attemptId, ...error.refusal, refusal: error.refusal };
+    }
   }
 
   /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */  /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */
@@ -3094,6 +3086,8 @@ export class ProjectController {
     }
     // A local mutable copy: the observation is a frozen read, while the evidence payload and the
     // report want ordinary arrays.
+    const binding = workRevisionBinding(envelope, attemptId);
+    if (binding) requireWorkRevision(inspectWorkRevision(observed.workDir, binding, observed.observedHead));
     const changedFiles = [...observed.changedFiles];
     // Before any command runs and before any evidence is recorded, so a refusal leaves nothing
     // behind. `report` holds the same invariant as the last line of defence.
@@ -3183,7 +3177,7 @@ export class ProjectController {
         (observed === null
           ? "finished"
           : `finished: ${changedFiles.length} changed file(s) observed in the repository`),
-    });
+    }, binding ? observed.observedHead : undefined);
 
     return {
       attemptId,
@@ -3503,6 +3497,7 @@ export class ProjectController {
     attemptId: string;
     gateId?: string | undefined;
     reason?: string | undefined;
+    revisionApproval?: WorkRevisionApproval | undefined;
   }): Promise<PromoteResult> {
     // async on purpose: the in-place precondition below fails by THROWING, and every caller of
     // this entry point expects a promise (the tool and HTTP surfaces await it), so a synchronous
@@ -3518,6 +3513,11 @@ export class ProjectController {
    * keeps no shadow envelope cache — the G10-W source firewall pins `envelope_json`'s writers to the
    * projector and its namers to a short list, and this keeps that list short rather than widening it.
    */
+  readRevisionReceipt(query: WorkRevisionReceiptQuery): WorkRevisionReceipt {
+    const record = this.attemptWorkRecord(query.attemptId);
+    return projectRevisionReceipt((record?.report as AttemptReport | null)?.revision_receipt, query);
+  }
+
   attemptWorkRecord(attemptId: string): {
     readonly state: string;
     readonly taskId: string | null;
@@ -3653,7 +3653,9 @@ export class ProjectController {
       knowledge?: KnowledgeSelectionRequest | undefined; // E1-K §23: optional explicit selection (never authority)
     } = {},
   ): Promise<WorkWorkerAttemptContext> {
-    return this.context.workWorkerContext(attemptId, options);
+    const context = await this.context.workWorkerContext(attemptId, options);
+    const revision = workRevisionBinding(this.#attemptContext(attemptId)[1], attemptId);
+    return revision ? { ...context, revision } : context;
   }
 
   workWorkerTaskContext(taskId: string): WorkWorkerTaskContext {

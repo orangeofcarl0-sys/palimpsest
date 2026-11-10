@@ -19,7 +19,7 @@ function writeFiles(files) {
   return `node -e ${quoted(script)} && node check.mjs --final && git add deliverables && git commit -m 'Record deployment decision package'`;
 }
 
-function packageFiles(revised) {
+export function packageFiles(revised) {
   const harbor = revised ? "K-900" : "S-1080";
   const total = revised ? 536000 : 485000;
   const install = revised ? "2027-02-11" : "2027-01-07";

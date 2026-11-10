@@ -5,6 +5,7 @@
  * through `controller.settleMutatingWork`; this module never writes a result, a promotion or a
  * second state machine, and it records the observed attribution through the existing journal port.
  */
+import { revisionError, WorkRevisionError } from "../schema/work_revision.js";
 import { gitTextRunner, planPathReuse, type PathReuseFacts } from "../work/path_reuse.js";
 import { observeProjectInputs } from "../work/unseen_inputs.js";
 import type { WorkApplicationSurface, WorkController, WorkRuntimeDeps } from "./work_contract.js";
@@ -139,6 +140,7 @@ export function makeWorkSettlementSurface(
         },
       });
       if (settled.state !== "SETTLED") {
+        if (settled.state === "NOT_READY" && settled.refusal) throw new WorkRevisionError(settled.refusal);
         throw new Error(`${settled.state}: ${settled.detail}`);
       }
       deps.controller.step();
@@ -150,6 +152,7 @@ export function makeWorkSettlementSurface(
         changedFiles: settled.changedFiles,
         evidenceRecorded: settled.evidenceRecorded,
         nextEvidenceNeeded: Object.freeze([]),
+        ...(settled.receipt ? { receipt: settled.receipt } : {}),
         attribution: settled.attribution,
       };
     },
@@ -181,6 +184,7 @@ export function makeWorkSettlementSurface(
           changedFiles: Object.freeze([]),
         };
       }
+      const attemptId = rawRunning[0]!.attempt_id;
       const jobs = deps.workDelegation === undefined ? [] : await deps.workDelegation.jobs();
       const active = jobs.find(
         (job) => job.taskId === input.taskId && (job.phase === "QUEUED" || job.phase === "RUNNING"),
@@ -188,13 +192,15 @@ export function makeWorkSettlementSurface(
       if (active !== undefined) {
         return {
           state: "WORKER_ACTIVE" as const,
+          ...(deps.controller.attemptWorkRecord(attemptId)?.envelope?.obligations ? {
+            refusal: revisionError("WORKER_STILL_RUNNING", "Wait for the observed worker exit before settling.", "WAIT").refusal,
+          } : {}),
           taskId: input.taskId,
           detail: `this host still has an active worker job (${active.jobId}, ${active.phase}) for the task; stop it or wait for the host observation instead of racing it`,
           resultCommit: null,
           changedFiles: Object.freeze([]),
         };
       }
-      const attemptId = rawRunning[0]!.attempt_id;
       try {
         const settled = await deps.controller.settleMutatingWork({
           attemptId,
@@ -214,6 +220,7 @@ export function makeWorkSettlementSurface(
             resultCommit: settled.resultCommit,
             changedFiles: settled.changedFiles,
             attribution: settled.attribution,
+            ...(settled.receipt ? { receipt: settled.receipt } : {}),
           };
         }
         return {
@@ -221,6 +228,7 @@ export function makeWorkSettlementSurface(
           taskId: input.taskId,
           detail: settled.detail,
           resultCommit: settled.state === "BASE_DRIFT" ? settled.resultCommit : null,
+          ...(settled.state === "NOT_READY" && settled.refusal ? { refusal: settled.refusal } : {}),
           changedFiles: Object.freeze([]),
         };
       } catch (error) {
@@ -243,11 +251,13 @@ export function makeWorkSettlementSurface(
         const record = deps.controller.attemptWorkRecord(attempt.attempt_id) as { state?: string } | null;
         return record?.state === "RUNNING";
       });
-      const refused = (detail: string): Awaited<ReturnType<WorkApplicationSurface["relay"]>> => ({
+      const refused = (detail: string, wait = false): Awaited<ReturnType<WorkApplicationSurface["relay"]>> => ({
         state: "REFUSED" as const,
         taskId: input.taskId,
         route: input.route,
         attemptId: running.length === 1 ? running[0]!.attempt_id : null,
+        ...(wait && running.length === 1 && deps.controller.attemptWorkRecord(running[0]!.attempt_id)?.envelope?.obligations
+          ? { refusal: revisionError("WORKER_STILL_RUNNING", detail, "WAIT").refusal } : {}),
         detail,
         resultCommit: null,
         changedFiles: Object.freeze([]),
@@ -274,14 +284,14 @@ export function makeWorkSettlementSurface(
       );
       if (active !== undefined) {
         return refused(
-          `this host still observes an active worker job (${active.jobId}, ${active.phase}) for the task; a relay would race a writer it can see — stop it or wait for its observed exit`,
+          `this host still observes an active worker job (${active.jobId}, ${active.phase}) for the task; a relay would race a writer it can see — stop it or wait for its observed exit`, true,
         );
       }
       const invocations = deps.controller.executionInvocations.list(attemptId);
       const open = invocations.find((invocation) => invocation.outcome === "OPEN");
       if (open !== undefined) {
         return refused(
-          `this host still observes worker invocation ${open.invocationId} as OPEN; the world is being written, so no takeover or successor is recorded`,
+          `this host still observes worker invocation ${open.invocationId} as OPEN; the world is being written, so no takeover or successor is recorded`, true,
         );
       }
 
@@ -319,6 +329,7 @@ export function makeWorkSettlementSurface(
               ...refused(`${settled.state}: ${settled.detail}`),
               state: "NOT_READY" as const,
               resultCommit: settled.state === "BASE_DRIFT" ? settled.resultCommit : null,
+          ...(settled.state === "NOT_READY" && settled.refusal ? { refusal: settled.refusal } : {}),
             };
           }
           deps.controller.step();
@@ -335,6 +346,7 @@ export function makeWorkSettlementSurface(
             resultCommit: settled.resultCommit,
             changedFiles: settled.changedFiles,
             attribution: settled.attribution,
+            ...(settled.receipt ? { receipt: settled.receipt } : {}),
             retainedWorldPath: null,
             reuse: null,
             inputsNotInBasis: settled.inputsNotInBasis,

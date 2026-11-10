@@ -256,7 +256,7 @@ export function compilePlanRevision(input: CompilePlanRevisionInput): PlanRevisi
       });
       continue;
     }
-    retainedReauthorized.push(policy.authorize(next, taskId).envelope);
+    retainedReauthorized.push(policy.authorize(next, taskId, row.envelope?.obligations).envelope);
     diffs.push({ taskId, class: "RETAIN_UNCHANGED", reason: "spec unchanged; reauthorized against the new head" });
   }
 

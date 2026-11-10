@@ -20,6 +20,7 @@
  * and the per-model digest helpers).
  */
 
+import { assertObligationScope, parseBoundTaskObligations, parseSettledRevisionReceipt, parseWorkRevisionApproval, type BoundTaskObligations, type WorkRevisionReceipt } from "./work_revision.js";
 import { canonicalDigest } from "./canonical.js";
 import { canonicalDatetime, datetimeToEpochMicros } from "./datetime.js";
 // G9-F2 WIRE-INV-3: the durable declaration grammars are owned by the domain
@@ -560,6 +561,7 @@ function validateNullableDigestString(value: unknown): string | null {
 }
 
 export interface TaskEnvelope {
+  obligations?: BoundTaskObligations | undefined;
   schema_version: 1;
   project_id: string;
   task_id: string;
@@ -630,6 +632,7 @@ export function parseTaskEnvelope(value: unknown): TaskEnvelope {
       "candidate_limit",
       "idempotency_key",
       "suggested_skills",
+      "obligations",
     ],
     "task envelope",
   );
@@ -686,6 +689,10 @@ export function parseTaskEnvelope(value: unknown): TaskEnvelope {
       validateDigest(expectString(inner)),
     ),
   };
+  if (raw.obligations !== undefined) {
+    envelope.obligations = parseBoundTaskObligations(raw.obligations);
+    assertObligationScope(envelope.obligations, envelope.write_paths);
+  }
   if (envelope.lease_s > envelope.timeout_s) {
     throw new ContractError("lease_s must not exceed timeout_s");
   }
@@ -713,6 +720,7 @@ function parsePathList(value: unknown): string[] {
 }
 
 export interface AttemptReport {
+  revision_receipt?: WorkRevisionReceipt | undefined;
   schema_version: 1;
   project_id: string;
   attempt_id: string;
@@ -790,6 +798,7 @@ export function parseAttemptReport(value: unknown): AttemptReport {
       "finished_at",
       "runtime_metadata",
       "context_manifest",
+      "revision_receipt",
     ],
     "attempt report",
   );
@@ -838,6 +847,15 @@ export function parseAttemptReport(value: unknown): AttemptReport {
     ),
     runtime_metadata: parseRuntimeMetadata(raw.runtime_metadata),
   };
+  if (raw.revision_receipt !== undefined) {
+    const receipt = parseSettledRevisionReceipt(raw.revision_receipt);
+    if (report.worker_status !== "completed" || receipt.attemptId !== report.attempt_id ||
+        receipt.taskId !== report.task_id || receipt.envelopeId !== report.envelope_id ||
+        receipt.basis !== report.base_commit || receipt.candidate !== report.result_commit) {
+      throw new ContractError("revision receipt does not bind the completed report");
+    }
+    report.revision_receipt = receipt;
+  }
   if (datetimeToEpochMicros(report.finished_at) < datetimeToEpochMicros(report.started_at)) {
     throw new ContractError("finished_at must not precede started_at");
   }
@@ -1181,7 +1199,7 @@ const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   MANUAL_APPROVAL_RECORDED: ["approver", "subject_type", "subject_id", "subject_digest", "risk_summary"],
   PROMOTION_PREPARED: [
     "promotion_id", "attempt_id", "source_commit",
-    "expected_head_commit", "resulting_head_commit", "reason",
+    "expected_head_commit", "resulting_head_commit", "reason", "revision_approval",
   ],
   PROMOTION_GIT_STARTED: [
     "promotion_id", "attempt_id", "source_commit",
@@ -2300,6 +2318,8 @@ export function normalizeEventPayload(
         }),
         reason: expectNullableString(raw.reason),
         ...provenanceOf(eventType, raw),
+        ...(eventType === "PROMOTION_PREPARED" && raw.revision_approval !== undefined
+          ? { revision_approval: parseWorkRevisionApproval(raw.revision_approval) } : {}),
       };
     }
   }

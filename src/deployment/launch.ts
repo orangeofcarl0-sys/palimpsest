@@ -99,6 +99,7 @@ export interface DeploymentHostServices {
    * Absent ⇒ the continuation service still inspects, rematerializes, reopens and reconciles, and
    * honestly reports READY_FOR_DELEGATION (capability absent, never stubbed).
    */
+  readonly taskObligations?: Readonly<Record<string, import("../schema/work_revision.js").TaskObligations>> | undefined;
   readonly workWorkerPort?: ((worldPath: string) => import("../interaction/work_delegation.js").WorkWorkerRunPort) | undefined;
   /**
    * Trajectory-P2-C §7.1: the host's own WORK WORKER facts (its DSH bin and `--profile`). Supplying them
@@ -477,6 +478,7 @@ export function launchDeployment(
   // actually run. A deployment with a repository never falls back to a packaged command.
   const authorized = authorizedCommands(deploymentStandard, policyCommands);
   const deploymentPolicy = trustedDefaultPolicy({
+    ...(options.host?.taskObligations === undefined ? {} : { taskObligations: options.host.taskObligations }),
     allowed_commands: (authorized.length > 0 ? authorized : policyCommands).map((command) => ({
       executable: command.executable,
       argv_prefix: [...command.argv_prefix],

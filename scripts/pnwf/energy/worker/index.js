@@ -27,6 +27,7 @@ async function run(ctx) {
       const inherited = agentCtx.tools.schemas().map(tool => tool.name).filter(tool => tool.startsWith("palimpsest_"));
       if (inherited.length) agentCtx.tools.restrict({ deny: inherited });
       agentCtx.tools.register(work.tool);
+      if (work.previewTool) agentCtx.tools.register(work.previewTool);
       if (variant === "receipt") {
         agentCtx.tools.register(revisionReviewTool(() => {
           const repo = process.cwd();

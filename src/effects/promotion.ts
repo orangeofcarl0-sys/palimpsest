@@ -18,6 +18,9 @@
  * never double-commits.
  */
 
+import { parseWorkRevisionApproval, revisionError, type WorkRevisionApproval } from "../schema/work_revision.js";
+import type { AttemptReport } from "../schema/index.js";
+import type { OperatorAuthorityPort } from "../domain/operator_authority.js";
 import {
   operationIdentityPreview,
   OrdariumError,
@@ -86,6 +89,7 @@ export interface PromoteOptions {
   sourceCommit: string;
   expectedHeadCommit: string;
   reason?: string | undefined;
+  revisionApproval?: WorkRevisionApproval | undefined;
 }
 
 export interface PromoteResult {
@@ -136,6 +140,7 @@ export class PromotionManager {
      * so ordinary promotions are unchanged.
      */
     sourceIntakeAdmission?: PromotionSourceIntakeAdmissionPort | undefined,
+    private readonly operatorAuthority?: OperatorAuthorityPort | undefined,
   ) {
     this.#store = store;
     this.#effects = effects;
@@ -298,11 +303,37 @@ export class PromotionManager {
    * task's CURRENT batch, a current VERIFYING task, an input world matching the
    * current ProjectIR, and a head compatible with the supported protocol.
    */
+  #revisionApproval(attemptId: string, request?: WorkRevisionApproval): WorkRevisionApproval | undefined {
+    const row = this.#store.connection.prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as { report_json: Uint8Array | null } | undefined;
+    const report = row?.report_json
+      ? JSON.parse(Buffer.from(row.report_json).toString("utf8")) as AttemptReport
+      : null;
+    const receipt = report?.revision_receipt;
+    if (!receipt && request === undefined) return undefined;
+    if (!receipt || request === undefined) {
+      throw revisionError("REVISION_APPROVAL_REQUIRED", "Use the settled receipt to request exact-SHA operator approval.", "REQUEST_OPERATOR");
+    }
+    const approval = parseWorkRevisionApproval(request);
+    const actor = this.operatorAuthority?.authorize(approval.actor);
+    if (actor?.authorized !== true || actor.role !== "operator") {
+      throw revisionError("OPERATOR_APPROVAL_REQUIRED", "Use an operator verified by the deployment.", "REQUEST_OPERATOR");
+    }
+    if (approval.basis !== receipt.basis || approval.candidate !== receipt.candidate ||
+        approval.receiptId !== receipt.receiptId) {
+      throw revisionError("APPROVAL_SHA_MISMATCH", "Review and approve the exact settled basis, candidate and receipt.",
+        "REQUEST_OPERATOR", [], receipt.candidate);
+    }
+    return approval;
+  }
+
   async promoteAttempt(input: {
     attemptId: string;
     gateId?: string | undefined;
     reason?: string | undefined;
+    revisionApproval?: WorkRevisionApproval | undefined;
   }): Promise<PromoteResult> {
+    const approval = this.#revisionApproval(input.attemptId, input.revisionApproval);
     const replay = this.#terminalReplay(input.attemptId);
     if (replay !== undefined) return replay;
     const assessment = this.assessEligibility(input.attemptId, {
@@ -325,6 +356,7 @@ export class PromotionManager {
       attemptId: input.attemptId,
       sourceCommit: assessment.sourceCommit,
       expectedHeadCommit,
+      ...(approval ? { revisionApproval: approval } : {}),
       ...(input.reason === undefined ? {} : { reason: input.reason }),
     });
   }
@@ -465,6 +497,10 @@ export class PromotionManager {
   }
 
   async promote(options: PromoteOptions): Promise<PromoteResult> {
+    const approval = this.#revisionApproval(options.attemptId, options.revisionApproval);
+    if (approval && (approval.candidate !== options.sourceCommit || approval.basis !== options.expectedHeadCommit)) {
+      throw revisionError("APPROVAL_SHA_MISMATCH", "Promote the exact approved candidate from its approved basis.", "REQUEST_OPERATOR");
+    }
     // §32 first: a terminal promotion is answered from history before any
     // question of current authority is asked.
     const replay = this.#terminalReplay(options.attemptId);
@@ -500,7 +536,7 @@ export class PromotionManager {
       );
     }
 
-    this.#appendPrepared(promotionId, options);
+    this.#appendPrepared(promotionId, approval ? { ...options, revisionApproval: approval } : options);
     const revision = this.projectRevision();
 
     try {
@@ -944,6 +980,7 @@ export class PromotionManager {
           expected_head_commit: options.expectedHeadCommit,
           resulting_head_commit: null,
           reason: "promotion intent recorded before git.promote",
+          ...(options.revisionApproval ? { revision_approval: options.revisionApproval } : {}),
         },
         causation_id: null,
         correlation_id: `promotion:${promotionId}`,
