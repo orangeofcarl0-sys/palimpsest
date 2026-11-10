@@ -53,7 +53,7 @@ import {
 import { makeWorkReadModel, observeStatusFacts } from "../work/read_model.js";
 import { assertDirectBasisHeadOnly, invalidationAffectedForPlan, planReceipt } from "../work/plan_revision.js";
 import { makeProjectHeadService, appendDirectBasisApproval, validatedHeadAdvance, directBasisCommitFence } from "../work/head.js";
-import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, attributeSettlement, assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding, projectRevisionReceipt, recordWorkReport, replayWorkReport, revisionError, WorkRevisionError } from "../work/attempt_execution.js";
+import { makeMutatingAttemptService, makeExecutionInvocationLedger, assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding, projectRevisionReceipt, recordWorkReport, replayWorkReport, revisionError } from "../work/attempt_execution.js";
 import type { ExecutionInvocationLedger, MutatingWorkSettlement, SettlementObservation, WorkRevisionBinding, WorkRevisionReceipt, WorkRevisionApproval, WorkRevisionReceiptQuery } from "../work/attempt_execution.js";
 import { attachCompletionEvidence, attemptWorkDir, exportAndResolveResultCommit, findRecordedEvidence, observeAttemptResultPort, observeStructuralGate, recordCommandEvidence, recordObservedEvidence, type WorkEvidenceContext } from "./work_evidence.js";
 import { makeContextService } from "../context/service.js";
@@ -846,6 +846,7 @@ export class ProjectController {
             },
           }),
       taskEnvelope: (taskId) => this.#taskEnvelope(taskId),
+      attemptEnvelope: (attemptId) => this.#attemptAuthorization(attemptId).envelope,
       completionContractForEnvelope: (envelope) => this.#completionContractForEnvelope(envelope),
       mechanicalCheckSummary: () => (this.#standard === undefined ? [] : this.#mechanicalCheckSummary(this.#standard)),
       hasStandard: () => this.#standard !== undefined,
@@ -1055,6 +1056,11 @@ export class ProjectController {
       report: (attemptId, expectedResultCommit) => {
         const event = this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" }, expectedResultCommit);
         return (event.payload.attempt_report as AttemptReport).revision_receipt;
+      },
+      replayCompletedRevision: (attemptId, expected) => {
+        const record = this.attemptWorkRecord(attemptId);
+        if (record?.state !== "COMPLETED" || !record.envelope?.obligations) return undefined;
+        return (this.#replayRevisionReport(attemptId, expected).payload.attempt_report as AttemptReport).revision_receipt;
       },
       preparedProjection: (input) =>
         this.#preparedProjection(
@@ -2870,24 +2876,7 @@ export class ProjectController {
     /** PWRS-A: which path closes the attempt, and whether a principal declared a continuation. */
     readonly observation?: SettlementObservation | undefined;
   }): Promise<MutatingWorkSettlement> {
-    try {
-      const record = this.attemptWorkRecord(input.attemptId);
-      const receipt = (record?.report as AttemptReport | null)?.revision_receipt;
-      if (record?.state === "COMPLETED" && receipt && input.workerOutcome.kind === "READY_FOR_SETTLEMENT") {
-        this.#replayRevisionReport(input.attemptId, input.observation?.expectedResultCommit);
-        return {
-          state: "SETTLED", attemptId: input.attemptId, resultCommit: receipt.candidate, receipt, replayed: true,
-          changedFiles: receipt.checks.filter(check => check.kind === "WRITE_SCOPE").map(check => check.path),
-          exported: true, evidenceRecorded: [], inputsNotInBasis: [], inputsState: "OBSERVED", inputsDetail: "",
-          attribution: attributeSettlement({ invocations: [], observation: { path: "WORKER" }, settledHead: receipt.candidate }),
-          detail: "The candidate is already settled. Read the original receipt.",
-        };
-      }
-      return await this.attemptExecution.settle(input);
-    } catch (error) {
-      if (!(error instanceof WorkRevisionError)) throw error;
-      return { state: "NOT_READY", attemptId: input.attemptId, ...error.refusal, refusal: error.refusal };
-    }
+    return this.attemptExecution.settle(input);
   }
 
   /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */  /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */
@@ -3653,9 +3642,7 @@ export class ProjectController {
       knowledge?: KnowledgeSelectionRequest | undefined; // E1-K §23: optional explicit selection (never authority)
     } = {},
   ): Promise<WorkWorkerAttemptContext> {
-    const context = await this.context.workWorkerContext(attemptId, options);
-    const revision = workRevisionBinding(this.#attemptContext(attemptId)[1], attemptId);
-    return revision ? { ...context, revision } : context;
+    return this.context.workWorkerContext(attemptId, options);
   }
 
   workWorkerTaskContext(taskId: string): WorkWorkerTaskContext {

@@ -6,18 +6,6 @@ import {
 
 type Entry = { readonly mode: string; readonly blob: string };
 
-export function workRevisionBinding(envelope: {
-  readonly task_id: string;
-  readonly envelope_id: string;
-  readonly base_commit: string;
-  readonly write_paths: readonly string[];
-  readonly obligations?: WorkRevisionBinding["obligations"] | undefined;
-}, attemptId: string): WorkRevisionBinding | undefined {
-  if (!envelope.obligations) return undefined;
-  return { taskId: envelope.task_id, attemptId, envelopeId: envelope.envelope_id,
-    basis: envelope.base_commit, writePaths: envelope.write_paths, obligations: envelope.obligations };
-}
-
 function git(repository: string, ...args: string[]): string {
   return execFileSync("git", ["--no-optional-locks", "--literal-pathspecs", "-C", repository, ...args], {
     encoding: "utf8", maxBuffer: 8 * 1024 * 1024, stdio: ["ignore", "pipe", "pipe"],

@@ -1,7 +1,7 @@
 import { DomainValidationError } from "../domain/index.js";
 import type { AttemptReport, EventType, SchedulerEvent, TaskEnvelope } from "../schema/index.js";
-import { revisionError, type WorkRevisionReceipt } from "../schema/work_revision.js";
-import { inspectWorkRevision, requireWorkRevision, workRevisionBinding } from "./revision.js";
+import { revisionError, workRevisionBinding, type WorkRevisionReceipt } from "../schema/work_revision.js";
+import { inspectWorkRevision, requireWorkRevision } from "./revision.js";
 
 interface ReportObservation {
   readonly placement: string;
@@ -29,7 +29,7 @@ export function recordWorkReport<Input extends {
 }, attemptId: string, envelope: TaskEnvelope, input: Input, expectedResultCommit?: string): SchedulerEvent {
   const binding = input.workerStatus === "completed" ? workRevisionBinding(envelope, attemptId) : undefined;
   if (binding && ports.state === "COMPLETED") {
-    return ports.replay( expectedResultCommit ?? input.resultCommit ?? undefined);
+    return ports.replay(expectedResultCommit ?? input.resultCommit ?? undefined);
   }
   let receipt: WorkRevisionReceipt | undefined;
   const terminal: Record<AttemptReport["worker_status"], EventType> = {
