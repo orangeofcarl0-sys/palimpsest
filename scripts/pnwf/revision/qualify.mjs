@@ -22,12 +22,13 @@ import { scoreDelivery } from "../software/score.mjs";
 const repo = fileURLToPath(new URL("../../../", import.meta.url));
 const here = dirname(fileURLToPath(import.meta.url));
 const argv = new Map(process.argv.slice(2).map(value => value.split(/=(.*)/su, 2)));
-if (!argv.get("--run") || !argv.get("--consumer")) {
-  throw new Error("Usage: node scripts/pnwf/revision/qualify.mjs --run=<new directory> --consumer=<installed smoke embedder>");
+const dshOnly = argv.has("--dsh-only");
+if (!argv.get("--run") || (!dshOnly && !argv.get("--consumer"))) {
+  throw new Error("Usage: node scripts/pnwf/revision/qualify.mjs --run=<new directory> [--dsh-only | --consumer=<installed smoke embedder>]");
 }
 const root = resolve(argv.get("--run"));
-const consumer = resolve(argv.get("--consumer"));
-ok(!consumer.toLowerCase().startsWith(resolve(repo).toLowerCase()), "Consumer must be outside the source repository");
+const consumer = dshOnly ? null : resolve(argv.get("--consumer"));
+ok(consumer === null || !consumer.toLowerCase().startsWith(resolve(repo).toLowerCase()), "Consumer must be outside the source repository");
 const image = docker(["image", "inspect", "palimpsest-pnwf-isolation:local", "--format", "{{.Id}}"]);
 const ceiling = 12_000_000;
 const actor = "operator:mock";
@@ -132,12 +133,40 @@ function mockReply(scenario, basis, observed) {
     } else if (!worker && phase === "READ") {
       observed.receipt = JSON.parse(result);
       deepStrictEqual(observed.receipt, { ...observed.preview, phase: "SETTLED" });
-      call = work("run", { maxSteps: 8 });
-      phase = "RUN";
-    } else if (!worker && phase === "RUN") {
-      ok(result.includes("VERIFYING"), "Candidate did not reach VERIFYING");
+      call = work("readiness");
+      phase = "ACTIVE_READINESS";
+    } else if (!worker && phase === "ACTIVE_READINESS") {
+      const readiness = JSON.parse(result);
+      equal(readiness.action, "SEMANTIC_JUDGEMENT");
+      equal(readiness.task?.taskId, scenario.taskId);
+      equal(readiness.task.state, "ACTIVE");
+      equal(readiness.attempt?.state, "COMPLETED");
+      equal(readiness.attempt.resultCommit, observed.receipt.candidate);
+      equal(readiness.attempt.resultCommitted, true);
+      ok(readiness.artifacts.every(artifact => artifact.present && artifact.committed));
+      ok(readiness.next[0].includes("action=next") && readiness.next[0].includes("VERIFYING"));
+      ok(readiness.next[1].includes("intent=WAIT_FOR_OPERATOR"));
+      observed.activeReadiness = readiness;
+      call = work("next");
+      phase = "ADVANCED";
+    } else if (!worker && phase === "ADVANCED") {
+      equal(JSON.parse(result).eventType, "TASK_VERIFYING");
+      call = work("readiness", { taskId: scenario.taskId });
+      phase = "VERIFYING_READINESS";
+    } else if (!worker && phase === "VERIFYING_READINESS") {
+      const readiness = JSON.parse(result);
+      equal(readiness.action, "SEMANTIC_JUDGEMENT");
+      equal(readiness.task?.state, "VERIFYING");
+      equal(readiness.attempt?.resultCommit, observed.receipt.candidate);
+      equal(readiness.attempt.resultCommitted, true);
+      ok(readiness.next[0].includes("action=conclude intent=WAIT_FOR_OPERATOR"));
+      observed.verifyingReadiness = readiness;
       call = work("conclude", { intent: "WAIT_FOR_OPERATOR", statement: "The checked revision awaits approval." });
       phase = "DONE";
+    } else if (!worker && phase === "DONE") {
+      const conclusion = JSON.parse(result);
+      equal(conclusion.state, "RECORDED");
+      equal(conclusion.session?.mayEnd, true);
     }
     if (!call) return [{ type: "text", text: "The qualification step is complete." }];
     ok(input.tools?.some(tool => tool.name === call.name), "Mock tool unavailable " + call.name);
@@ -223,6 +252,7 @@ async function dsh(scenario, parent, frozen, first, basis) {
       equal(git(p.repository, "rev-parse", "HEAD^{tree}"), business.tree);
     } finally { await reopened.dispose(); }
     return { interface: "normal-dsh", basis, receipt, preview: observed.preview, planRefusal: observed.planRefusal,
+      readiness: { active: observed.activeReadiness, verifying: observed.verifyingReadiness },
       acceptedHead: accepted.resultingHeadCommit, promotionId: accepted.promotionId, business,
       naturalExit: evidence.natural, confirmedMockRequests: evidence.requests, unresolvedRequests: evidence.unresolvedRequests,
       requestIdsBound: evidence.requestIdsBound, usageTupleMatch: evidence.tupleMatch,
@@ -265,7 +295,8 @@ function sdk(scenario, parent, frozen, first, basis, run) {
 }
 
 mkdirSync(root);
-const report = { schema: "pnwf-work-revision-qualification/v1", image, paidModelCalls: 0, scenarios: [] };
+const report = { schema: "pnwf-work-revision-qualification/v1", image, paidModelCalls: 0, implementationHead: head(repo),
+  readinessModuleSha256: energy.digest(readFileSync(join(repo, "dist/src/application/work_outcome.js"))), scenarios: [] };
 try {
   for (const scenario of scenarios) {
     const folder = join(root, scenario.name);
@@ -280,17 +311,19 @@ try {
     row.sessions.push(await dsh(scenario, join(folder, "dsh"), frozen, first, basis));
     console.log(scenario.name, "dsh PASS", row.sessions.at(-1).acceptedHead);
   }
-  const tarball = readdirSync(dirname(consumer)).find(file => file.endsWith(".tgz"));
-  ok(tarball, "Run consumer-smoke before qualification");
-  report.packageSha256 = energy.digest(readFileSync(join(dirname(consumer), tarball)));
-  const consume = compileConsumer();
-  for (const [index, scenario] of scenarios.entries()) {
-    const row = report.scenarios[index];
-    const folder = join(root, scenario.name);
-    const external = sdk(scenario, join(folder, "sdk"), join(folder, "basis"), row.first, row.basis, consume);
-    equal(external.business.tree, row.sessions[0].business.tree, "The two interfaces produced different candidate trees");
-    row.sessions.push(external);
-    console.log(scenario.name, "sdk PASS", row.sessions.at(-1).acceptedHead);
+  if (!dshOnly) {
+    const tarball = readdirSync(dirname(consumer)).find(file => file.endsWith(".tgz"));
+    ok(tarball, "Run consumer-smoke before qualification");
+    report.packageSha256 = energy.digest(readFileSync(join(dirname(consumer), tarball)));
+    const consume = compileConsumer();
+    for (const [index, scenario] of scenarios.entries()) {
+      const row = report.scenarios[index];
+      const folder = join(root, scenario.name);
+      const external = sdk(scenario, join(folder, "sdk"), join(folder, "basis"), row.first, row.basis, consume);
+      equal(external.business.tree, row.sessions[0].business.tree, "The two interfaces produced different candidate trees");
+      row.sessions.push(external);
+      console.log(scenario.name, "sdk PASS", row.sessions.at(-1).acceptedHead);
+    }
   }
   report.passed = true;
 } catch (error) {

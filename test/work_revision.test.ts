@@ -155,7 +155,22 @@ test("pins final report, deduplicates settlement and accepts the exact persisted
   expect(await submit(product, attemptId, candidate)).toMatchObject({ replayed: true });
   expect(await submit(product, attemptId, basis)).toMatchObject({ reason: "RESULT_ALREADY_RECORDED" });
   expect(product.controller.store.listEvents("revision").filter(event => event.event_type === "ATTEMPT_COMPLETED")).toHaveLength(1);
+  const work = product.application.work;
+  const settled = await work.outcomeReadiness();
+  expect(settled).toMatchObject({ action: "SEMANTIC_JUDGEMENT", task: { taskId, state: "ACTIVE" },
+    attempt: { attemptId, state: "COMPLETED", resultCommit: candidate, resultCommitted: true } });
+  expect(settled.next).toEqual([expect.stringContaining("action=next"), expect.stringContaining("intent=WAIT_FOR_OPERATOR")]);
+  expect(await work.finalizeOutcome({ taskId, expectedObservationDigest: settled.observationDigest })).toMatchObject({ state: "NOT_READY" });
+  expect(product.controller.store.listEvents("revision").filter(event => event.event_type === "ATTEMPT_COMPLETED")).toHaveLength(1);
+  product.controller.pause("Hold review advancement.");
+  const paused = await work.outcomeReadiness({ taskId });
+  expect(paused.next.join(" ")).toContain("action=status");
+  expect(paused.next.join(" ")).not.toMatch(/action=next|intent=WAIT_FOR_OPERATOR/u);
+  product.controller.resume("Resume review advancement.");
   while (product.controller.status().tasks[0]?.state !== "VERIFYING") expect(product.controller.step()).not.toBeNull();
+  const verifying = await work.outcomeReadiness();
+  expect(verifying).toMatchObject({ task: { taskId, state: "VERIFYING" }, attempt: { resultCommit: candidate, resultCommitted: true } });
+  expect(verifying.next).toEqual([expect.stringContaining("action=conclude intent=WAIT_FOR_OPERATOR")]);
   await close();
   const reopened = open(false).product;
   const receipt = reopened.revision.readReceipt({ attemptId });
