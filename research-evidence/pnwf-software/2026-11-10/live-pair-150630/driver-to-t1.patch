@@ -1,0 +1,121 @@
+diff --git a/live.mjs b/live.mjs
+index 14909659..fab82f7a 100644
+--- a/live.mjs
++++ b/live.mjs
+@@ -46 +46 @@ const action = args.get("action");
+-assert(["prepare", "start", "continue", "accept"].includes(action) && typeof args.get("run") === "string", "EXPECTED_PAID_ACTION_AND_RUN");
++assert(["prepare", "start", "accept"].includes(action) && typeof args.get("run") === "string", "EXPECTED_PREPARE_START_OR_ACCEPT_AND_RUN");
+@@ -50 +49,0 @@ const sealPath = join(root, "paid-seal.json");
+-const addendumPath = join(root, "paid-addendum.json");
+@@ -83,64 +81,0 @@ function stagedBinding(binding) {
+-function verifyPaidBinding(binding) {
+-  const original = readJson(sealPath);
+-  if (JSON.stringify(binding) === JSON.stringify(original)) return null;
+-  const { driver, ...common } = binding;
+-  const { driver: originalDriver, ...originalCommon } = original;
+-  assert(JSON.stringify(common) === JSON.stringify(originalCommon), "PAID_SEAL_DRIFT");
+-  for (const [path, hash] of Object.entries(originalDriver)) {
+-    const name = path.slice(path.lastIndexOf("/") + 1);
+-    assert(sha256(join(root, "original-host-driver", name)) === hash, "ORIGINAL_PAID_DRIVER_DRIFT");
+-  }
+-  const extension = { originalSeal: sha256(sealPath), driver, scope: "Owner-approved request-message alias recount" };
+-  if (existsSync(addendumPath)) {
+-    assert(JSON.stringify(extension) === JSON.stringify(readJson(addendumPath)), "PAID_ADDENDUM_DRIFT");
+-    return null;
+-  }
+-  assert(action === "continue", "RECOUNT_CONTINUATION_REQUIRED_FOR_ADDENDUM");
+-  return extension;
+-}
+-
+-async function scoreRequestAliases(input) {
+-  const protocol = fileBytes(input.repo, input.commit, "proto/energy.proto").toString("utf8")
+-    .replace(/\/\*[\s\S]*?\*\/|\/\/[^\r\n]*/gu, "");
+-  assert(/\bpackage\s+energy\.v1\s*;/u.test(protocol) && /\bservice\s+EnergyService\s*\{/u.test(protocol), "RECOUNT_PROTOCOL_SERVICE_MISMATCH");
+-  const fields = [
+-    ["(?:SiteRequest|GetReadingRequest)", /^\s*string\s+site_id\s*=\s*1\s*;\s*$/u],
+-    ["(?:StreamRequest|StreamReadingsRequest)", /^\s*string\s+site_id\s*=\s*1\s*;\s*u?int32\s+limit\s*=\s*2\s*;\s*$/u],
+-    ["Reading", /^\s*string\s+site_id\s*=\s*1\s*;\s*u?int32\s+watts\s*=\s*2\s*;\s*int64\s+at_ms\s*=\s*3\s*;\s*$/u],
+-  ];
+-  for (const [name, expected] of fields) {
+-    const body = new RegExp("\\bmessage\\s+" + name + "\\s*\\{([^}]*)\\}", "u").exec(protocol)?.[1];
+-    assert(body !== undefined && expected.test(body), "RECOUNT_PROTOCOL_FIELD_MISMATCH " + name);
+-  }
+-  const entry = new URL("./score.mjs", import.meta.url);
+-  const frozen = readFileSync(entry, "utf8");
+-  let source = frozen;
+-  for (const [from, to] of [["\\(SiteRequest\\)", "\\((?:SiteRequest|GetReadingRequest)\\)"],
+-    ["\\(StreamRequest\\)", "\\((?:StreamRequest|StreamReadingsRequest)\\)"]]) {
+-    assert(source.split(from).length === 2, "RECOUNT_FROZEN_RPC_MATCHER_DRIFT");
+-    source = source.replace(from, to);
+-  }
+-  const scorerSha256 = digest(source);
+-  // Keep all other checks and execute the original probe against the original Git bytes.
+-  source = source.replace(/from "(\.\.?\/[^"]+)"/gu, (_, path) => "from " + JSON.stringify(new URL(path, entry).href))
+-    .replaceAll("import.meta.url", JSON.stringify(entry.href));
+-  const scorer = await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));
+-  return { score: scorer.scoreDelivery(input), scorerSha256 };
+-}
+-
+-async function scoreStage(p, input) {
+-  try {
+-    return { score: scoreDelivery(input), frozenScore: { passed: true } };
+-  } catch (error) {
+-    const authorization = join(paths(p.arm, "T1").run, "owner-recount.json");
+-    if (p.id !== "T2" || error.message !== "SOFTWARE_PROTO_RPC_CONTRACT" || !existsSync(authorization)) throw error;
+-    const first = readJson(authorization);
+-    const basisProto = git(input.repo, "rev-parse", input.basis + ":proto/energy.proto");
+-    assert(first.score.blobs["proto/energy.proto"] === basisProto, "RECOUNT_PROTO_NOT_RETAINED");
+-    const output = join(p.run, "recount");
+-    mkdirSync(output);
+-    return { ...await scoreRequestAliases({ ...input, output: join(output, "scorer") }),
+-      frozenScore: { passed: false, reason: error.message }, scoreMode: "owner-approved-alias-recount" };
+-  }
+-}
+-
+@@ -288,2 +223,2 @@ async function runStage(p, acceptance = null) {
+-    if (id === "T3") result.score = scoreReview({ repo, basis, commit });
+-    else Object.assign(result, await scoreStage(p, { repo, basis, commit, revised: id === "T2", output: join(p.run, "scorer"), image }));
++    result.score = id === "T3" ? scoreReview({ repo, basis, commit }) :
++      scoreDelivery({ repo, basis, commit, revised: id === "T2", output: join(p.run, "scorer"), image });
+@@ -315 +250 @@ async function runStage(p, acceptance = null) {
+-function secondStage(arm, authorizedScore = null) {
++function secondStage(arm) {
+@@ -319,2 +254 @@ function secondStage(arm, authorizedScore = null) {
+-  const score = authorizedScore ?? (first.passed ? first.score : null);
+-  assert(score?.commit === head(from.world), "FIRST_DELIVERY_NOT_QUALIFIED");
++  assert(first.passed && first.score.commit === head(from.world), "FIRST_DELIVERY_NOT_QUALIFIED");
+@@ -323 +257 @@ function secondStage(arm, authorizedScore = null) {
+-  const pathsChanged = changed(p.world, score.commit, basis);
++  const pathsChanged = changed(p.world, first.score.commit, basis);
+@@ -326 +260 @@ function secondStage(arm, authorizedScore = null) {
+-  writeJson(join(p.run, "correction.json"), { path: CORRECTION_PATH, sha256: digest(CORRECTION), first: score.commit, commit: basis });
++  writeJson(join(p.run, "correction.json"), { path: CORRECTION_PATH, sha256: digest(CORRECTION), first: first.score.commit, commit: basis });
+@@ -393,15 +326,0 @@ async function start() {
+-async function continueWithRecount(arm, approved) {
+-  const p = paths(arm, "T1");
+-  const resultPath = join(p.run, "result.json");
+-  const original = readJson(resultPath);
+-  assert(sha(approved) && original.current === approved && head(p.world) === approved && clean(p.world) && original.usageKnown &&
+-    original.checks.naturalExit && original.reason === "SOFTWARE_PROTO_RPC_CONTRACT" && !existsSync(paths(arm, "T2").run), "FIRST_RECOUNT_SHA_MISMATCH");
+-  const output = join(p.run, "owner-recount");
+-  mkdirSync(output);
+-  const recount = await scoreRequestAliases({ repo: p.world, basis: original.basis, commit: approved, revised: false, output: join(output, "scorer"), image });
+-  writeJson(join(p.run, "owner-recount.json"), { approved, decisionAt: new Date().toISOString(), originalResultSha256: sha256(resultPath),
+-    frozenReason: original.reason, ...recount });
+-  console.log("T1_RECOUNT_PASS", arm, approved, recount.score.publicTests);
+-  await runStage(secondStage(arm, recount.score));
+-}
+-
+@@ -421 +340 @@ try {
+-    const extension = verifyPaidBinding(stagedBinding(binding));
++    assert(JSON.stringify(stagedBinding(binding)) === JSON.stringify(readJson(sealPath)), "PAID_SEAL_DRIFT");
+@@ -428 +346,0 @@ try {
+-    if (extension) writeJson(addendumPath, extension);
+@@ -433,5 +351,2 @@ try {
+-      if (action === "continue") await continueWithRecount(arm, args.get("first"));
+-      else {
+-        const { next, acceptance } = approve(arm, args.get("approve"));
+-        await runStage(next, acceptance);
+-      }
++      const { next, acceptance } = approve(arm, args.get("approve"));
++      await runStage(next, acceptance);

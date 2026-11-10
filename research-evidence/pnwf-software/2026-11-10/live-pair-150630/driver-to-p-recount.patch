@@ -1,0 +1,56 @@
+diff --git a/live.mjs b/live.mjs
+index 1d18993b..14909659 100644
+--- a/live.mjs
++++ b/live.mjs
+@@ -51 +50,0 @@ const addendumPath = join(root, "paid-addendum.json");
+-const nativeAddendumPath = join(root, "paid-native-addendum.json");
+@@ -96,14 +95,2 @@ function verifyPaidBinding(binding) {
+-    const prior = readJson(addendumPath);
+-    if (JSON.stringify(extension) === JSON.stringify(prior)) return null;
+-    const nativeExtension = { ...extension, previousAddendum: sha256(addendumPath),
+-      scope: "Owner-approved native T1 README navigation and protocol aliases" };
+-    if (existsSync(nativeAddendumPath)) {
+-      assert(JSON.stringify(nativeExtension) === JSON.stringify(readJson(nativeAddendumPath)), "PAID_NATIVE_ADDENDUM_DRIFT");
+-      return null;
+-    }
+-    assert(action === "continue" && args.get("arm") === "F", "NATIVE_RECOUNT_CONTINUATION_REQUIRED");
+-    for (const [path, hash] of Object.entries(prior.driver)) {
+-      const name = path.slice(path.lastIndexOf("/") + 1);
+-      assert(sha256(join(root, "first-recount-driver", name)) === hash, "FIRST_RECOUNT_DRIVER_DRIFT");
+-    }
+-    return { path: nativeAddendumPath, value: nativeExtension };
++    assert(JSON.stringify(extension) === JSON.stringify(readJson(addendumPath)), "PAID_ADDENDUM_DRIFT");
++    return null;
+@@ -112 +99 @@ function verifyPaidBinding(binding) {
+-  return { path: addendumPath, value: extension };
++  return extension;
+@@ -115 +102 @@ function verifyPaidBinding(binding) {
+-async function scoreRequestAliases(input, { native = false, includeReadme = false } = {}) {
++async function scoreRequestAliases(input) {
+@@ -122,3 +109 @@ async function scoreRequestAliases(input, { native = false, includeReadme = fals
+-    ["Reading", native
+-      ? /^\s*string\s+site_id\s*=\s*1\s*;\s*(?:u?int32|int64)\s+watts\s*=\s*2\s*;\s*int64\s+at_ms\s*=\s*3\s*;\s*$/u
+-      : /^\s*string\s+site_id\s*=\s*1\s*;\s*u?int32\s+watts\s*=\s*2\s*;\s*int64\s+at_ms\s*=\s*3\s*;\s*$/u],
++    ["Reading", /^\s*string\s+site_id\s*=\s*1\s*;\s*u?int32\s+watts\s*=\s*2\s*;\s*int64\s+at_ms\s*=\s*3\s*;\s*$/u],
+@@ -138,5 +122,0 @@ async function scoreRequestAliases(input, { native = false, includeReadme = fals
+-  if (includeReadme) {
+-    const original = "samePaths(changedPaths, FIRST)";
+-    assert(native && !input.revised && source.split(original).length === 2, "RECOUNT_NATIVE_PATH_MATCHER_DRIFT");
+-    source = source.replace(original, 'samePaths(changedPaths, [...FIRST, "README.md"])');
+-  }
+@@ -162 +142 @@ async function scoreStage(p, input) {
+-    return { ...await scoreRequestAliases({ ...input, output: join(output, "scorer") }, { native: p.arm === "F" }),
++    return { ...await scoreRequestAliases({ ...input, output: join(output, "scorer") }),
+@@ -417,2 +396,0 @@ async function continueWithRecount(arm, approved) {
+-  const native = arm === "F";
+-  const reason = native ? "SOFTWARE_T1_ARTIFACTS_MISMATCH" : "SOFTWARE_PROTO_RPC_CONTRACT";
+@@ -420 +398 @@ async function continueWithRecount(arm, approved) {
+-    original.checks.naturalExit && original.reason === reason && !existsSync(paths(arm, "T2").run), "FIRST_RECOUNT_SHA_MISMATCH");
++    original.checks.naturalExit && original.reason === "SOFTWARE_PROTO_RPC_CONTRACT" && !existsSync(paths(arm, "T2").run), "FIRST_RECOUNT_SHA_MISMATCH");
+@@ -423,2 +401 @@ async function continueWithRecount(arm, approved) {
+-  const recount = await scoreRequestAliases({ repo: p.world, basis: original.basis, commit: approved, revised: false, output: join(output, "scorer"), image },
+-    { native, includeReadme: native });
++  const recount = await scoreRequestAliases({ repo: p.world, basis: original.basis, commit: approved, revised: false, output: join(output, "scorer"), image });
+@@ -451 +428 @@ try {
+-    if (extension) writeJson(extension.path, extension.value);
++    if (extension) writeJson(addendumPath, extension);

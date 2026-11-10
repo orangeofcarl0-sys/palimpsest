@@ -1,0 +1,207 @@
+{
+  "schema": "pnwf-software-live-usage-audit/v1",
+  "evidenceSha256": "abece0e941a53219fa03408b70cdc805745fec1978cad808b9ead70cf20e92e0",
+  "rechecked": [
+    {
+      "arm": "P",
+      "session": "T1",
+      "requests": 18,
+      "pairs": 24,
+      "natural": true,
+      "scopePass": null
+    },
+    {
+      "arm": "P",
+      "session": "T2",
+      "requests": 57,
+      "pairs": 114,
+      "natural": true,
+      "scopePass": false
+    },
+    {
+      "arm": "F",
+      "session": "T1",
+      "requests": 31,
+      "pairs": 33,
+      "natural": true,
+      "scopePass": null
+    },
+    {
+      "arm": "F",
+      "session": "T2",
+      "requests": 34,
+      "pairs": 61,
+      "natural": true,
+      "scopePass": false
+    }
+  ],
+  "partitions": [
+    {
+      "label": "prepare-and-dispatch",
+      "fromSeq": 0,
+      "untilSeqExclusive": 110,
+      "requests": 9,
+      "toolCalls": 27,
+      "usage": {
+        "inputTokens": 21706,
+        "cacheReadTokens": 189056,
+        "cacheWriteTokens": 0,
+        "outputTokens": 3048,
+        "totalTokens": 213810
+      }
+    },
+    {
+      "label": "diagnose-after-dispatch",
+      "fromSeq": 110,
+      "untilSeqExclusive": 359,
+      "requests": 26,
+      "toolCalls": 39,
+      "usage": {
+        "inputTokens": 32635,
+        "cacheReadTokens": 1314816,
+        "cacheWriteTokens": 0,
+        "outputTokens": 8802,
+        "totalTokens": 1356253
+      }
+    },
+    {
+      "label": "run-and-review-native-fallback",
+      "fromSeq": 359,
+      "untilSeqExclusive": 418,
+      "requests": 6,
+      "toolCalls": 9,
+      "usage": {
+        "inputTokens": 5698,
+        "cacheReadTokens": 461056,
+        "cacheWriteTokens": 0,
+        "outputTokens": 4360,
+        "totalTokens": 471114
+      }
+    },
+    {
+      "label": "relay-and-close",
+      "fromSeq": 418,
+      "untilSeqExclusive": 9007199254740991,
+      "requests": 3,
+      "toolCalls": 5,
+      "usage": {
+        "inputTokens": 6556,
+        "cacheReadTokens": 256512,
+        "cacheWriteTokens": 0,
+        "outputTokens": 3309,
+        "totalTokens": 266377
+      }
+    }
+  ],
+  "byRole": [
+    {
+      "arm": "P",
+      "native-child": {
+        "requests": 13,
+        "input": 23169,
+        "cacheRead": 385024,
+        "cacheWrite": 0,
+        "output": 9823,
+        "total": 418016
+      },
+      "principal": {
+        "requests": 44,
+        "input": 66595,
+        "cacheRead": 2221440,
+        "cacheWrite": 0,
+        "output": 19519,
+        "total": 2307554
+      }
+    },
+    {
+      "arm": "F",
+      "native-child": {
+        "requests": 16,
+        "input": 19235,
+        "cacheRead": 313088,
+        "cacheWrite": 0,
+        "output": 5825,
+        "total": 338148
+      },
+      "principal": {
+        "requests": 18,
+        "input": 22901,
+        "cacheRead": 422400,
+        "cacheWrite": 0,
+        "output": 10347,
+        "total": 455648
+      }
+    }
+  ],
+  "dispatchReply": {
+    "seq": 110,
+    "offsetMs": 48420
+  },
+  "workerStatusReply": {
+    "seq": 122,
+    "offsetMs": 55504
+  },
+  "nativeFallbackCall": {
+    "seq": 359,
+    "offsetMs": 269218
+  },
+  "takeoverReply": {
+    "seq": 419,
+    "offsetMs": 352670
+  },
+  "waitRecorded": {
+    "seq": 437,
+    "offsetMs": 391359
+  },
+  "topDiagnosticResultText": [
+    {
+      "callId": "call_00_sHXh6gkIw5nZzkokSSOD3436",
+      "callSeq": 189,
+      "resultSeq": 192,
+      "tool": "bash",
+      "label": "state inspection",
+      "resultTextBytes": 16268
+    },
+    {
+      "callId": "call_01_vUPeOiyboU05MylsHLo59338",
+      "callSeq": 159,
+      "resultSeq": 160,
+      "tool": "continuity:pulse",
+      "label": "other diagnostics",
+      "resultTextBytes": 12022
+    },
+    {
+      "callId": "call_01_DaBGyYPhZHDXn1FPuG5d9387",
+      "callSeq": 249,
+      "resultSeq": 252,
+      "tool": "bash",
+      "label": "runtime-source inspection",
+      "resultTextBytes": 11304
+    },
+    {
+      "callId": "call_00_j4HJcCYvGNRGs6oQ5lnw3222",
+      "callSeq": 331,
+      "resultSeq": 334,
+      "tool": "bash",
+      "label": "runtime-source inspection",
+      "resultTextBytes": 11171
+    },
+    {
+      "callId": "call_00_ET_dHTtOTFdzWBIRUG0oKZK4666",
+      "callSeq": 315,
+      "resultSeq": 318,
+      "tool": "bash",
+      "label": "runtime-source inspection",
+      "resultTextBytes": 10416
+    },
+    {
+      "callId": "call_00_u8hVA9Xgl12koLaGLuHa4040",
+      "callSeq": 351,
+      "resultSeq": 354,
+      "tool": "bash",
+      "label": "runtime-source inspection",
+      "resultTextBytes": 9880
+    }
+  ],
+  "diagnosticWallMs": 220798
+}
