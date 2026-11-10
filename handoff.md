@@ -11,7 +11,7 @@
 - `main` 是唯一常驻分支。日常保留一条工作分支，并行工作上限为三条。分支归并、R3-A2 导入与历史引用恢复入口见 [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)。
 - 主线归因改写、切换后 CI 和旧 SHA 查找见 [§2](#主线归因与-sha-映射)。
 - 共用 Work 修订契约已通过 [PR #259](https://github.com/orangeofcarl0-sys/palimpsest/pull/259) 发布到 `e42b9ef7`。Attempt 持久绑定宿主签发的四类文件义务。Worker 预检、Principal 结算与接管、普通 DSH 和 `/product` 共用绑定完整基线和候选 SHA 的回执。gRPC 与 Energy 各两条 T2 均按 SHA 接受并从新实例读回。发布复跑四条均通过，新增付费请求 0。[契约](docs/engineering/WORK-REVISION-CONTRACT.md) · [零付费资格](research-evidence/pnwf-work-revision/2026-11-10/qualification.json) · [发布记录](research-evidence/pnwf-work-revision/2026-11-10/release-ci.json)
-- 从 `7f849be7` 用普通 DSH 在两个原基线真实复跑 T2。两名正式 Worker 均查看预检并结算，门禁 PASS，Principal 均自然退出。Energy 记录 `WAIT_FOR_OPERATOR`，gRPC 在 `VERIFYING` 回复待审但未写等待结论。所有者逐案核准后分别晋升至 `c950736d` 和 `bfe377ab`。共 90 笔已结算、2,482,369 tokens，未启动 T3。[真实复跑报告](docs/engineering/WORK-REVISION-LIVE-T2.md)
+- 普通 DSH 共用任务义务的两条真实 T2 已通过 [PR #261](https://github.com/orangeofcarl0-sys/palimpsest/pull/261) 发布到 `b1e9d90a`。两名正式 Worker 均查看预检并结算，门禁 PASS，Principal 均自然退出。Energy 记录 `WAIT_FOR_OPERATOR`，gRPC 在 `VERIFYING` 回复待审但未写等待结论。所有者按完整 SHA 核准后分别晋升至 `c950736d` 和 `bfe377ab`。90 笔已结算、2,482,369 tokens，实验止于 T2 接受。[报告](docs/engineering/WORK-REVISION-LIVE-T2.md) · [发布记录](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/release-ci.json)
 - 自提交先启用仓库 `commit-msg`。主线逐个检查 PR 引入的提交归因，发布使用 rebase 合并。 [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
 - `DELIVER` 工件 SHA 修复、项目路线图和 gRPC 迁移双组 Mock 资格已通过 [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253) 发布。送审 head 的 16 项检查均成功，主线发布点为 `d34f34b4c528f7aa7788a1b7192c789dc73b790c`。六个会话均自然退出，38 笔 Mock 请求全部结算，新增付费调用 0。真实配对另行使用获准的资源合同。 [资格报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md) · [发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/release-ci.json)
 - 2026-11-10 从主线 `268f14f9` 执行首组 gRPC 真实诊断配对。两组 T1 原判分保留，经所有者批准按原提交独立复核后分别启动 T2。Palimpsest 正式委派被写范围拦截，改走原生子任务加 `relay takeover`，记录 `WAIT_FOR_OPERATOR`。强原生直接使用 Git worktree 加 Subagent。两个 T2 的独立探针均通过，候选都修改了要求保留的 proto blob，均未进入核准，两组均未启动 T3。四个会话自然退出，140 笔真实请求、232 对调用与结果已复核。Palimpsest T2 切换前的故障排查占 26 笔请求、1,356,253 tokens 和 220.798 秒。[真实配对报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#真实诊断配对) · [机器证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json) · [用量审计](research-evidence/pnwf-software/2026-11-10/live-pair-150630/usage-audit.json)
@@ -72,8 +72,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | 共用 Work 修订契约的发布点为 `e42b9ef7a5e69c34a667cfcbca34cc25bfb02569`，实现基线为 `2cc5aef5f879b27a58d995e098f39731239f15db`。当前主线 tip 用 `git rev-parse origin/main` 核对 |
-| `codex/work-revision-live` | 真实复跑产品基线为 `7f849be7058cb75992ba06fa226a0ff708b25111`。运行入口、对比报告和归档在工作分支。实验的候选和接受 SHA 保存在各自 Git bundle 中 |
+| `origin/main` | 共用 Work 义务的真实 T2 证据发布点为 `b1e9d90a13b8eab6d8974b61c1d9a19091c706a0`，运行的产品基线为 `7f849be7058cb75992ba06fa226a0ff708b25111`。当前主线 tip 用 `git rev-parse origin/main` 核对 |
+| [PR #261](https://github.com/orangeofcarl0-sys/palimpsest/pull/261) | `codex/work-revision-live` 已 rebase 合并，远端分支已自动删除。精确 head `633a907b39f91dab3fb1f900ded08b42e198570f` 的 16/16 项检查成功，合并前后文件树、作者和消息一致。候选与接受 SHA 仍指向各自实验 Git 对象。[完整发布记录](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/release-ci.json) |
 | [PR #259](https://github.com/orangeofcarl0-sys/palimpsest/pull/259) | `codex/work-revision-obligations` 已 rebase 合并。精确 head `e499b3965f83caaedddbbbc2e480c422d41dd1f4` 的 16/16 项检查成功。三个提交的文件树、作者和消息逐一核对。历史轨迹、核准记录和冻结原判逐字节核对。[完整 SHA 映射与检查](research-evidence/pnwf-work-revision/2026-11-10/release-ci.json) |
 | [PR #257](https://github.com/orangeofcarl0-sys/palimpsest/pull/257) | `codex/grpc-t2-scope` 已 rebase 合并，远端工作分支自动删除。精确 head `3e23a0aca84267d9543cab5e802c3446e495dcc6` 的 16/16 项检查成功。合并前后文件树、作者和提交消息一致。强原生检出守卫失败、离线核准和两组 T3 冻结原判均保留。[发布证据](research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/release-ci.json) |
 | [PR #255](https://github.com/orangeofcarl0-sys/palimpsest/pull/255) | `codex/grpc-live-pair` 已 rebase 合并，远端工作分支已自动删除。送审 head `b86b352cd7aec0b3748046b4aaefb0a294fc7189` 的 16/16 项检查成功，主线提交的文件树、消息和归因已核对。[发布证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/release-ci.json) |
@@ -285,6 +285,8 @@ PR #257 的 15 个 job 和独立 `commit-attribution` 状态全部成功。Linux
 发布 CI 修复了 DSH 适配器的依赖和文件长度回归，把结算重放与 Worker 上下文归回各自所有者，并将 Controller 行数上限收紧至实测的 4,810 行。本地架构与 Work 回归通过 319 项。PR 的 Linux 测试 5,108 项通过、33 项跳过，浏览器 E2E 38 项通过，Windows 边界、归因和打包安装检查通过。R0 的四个外部 Host 实测步骤按工作流条件跳过。发布复跑的普通 DSH 39 笔 Mock 请求全部对账，打包 SDK 两条均从新实例读回已接受版本。[发布验证](research-evidence/pnwf-work-revision/2026-11-10/release-ci.json)
 
 真实复跑沿用主线产品实现，构建、架构和公共 API 通过，轨迹配对与两领域脚本回归共 13 项通过。新旧四条共 160 笔按 Provider 响应 ID 对账。新两条的 118 对调用全部匹配。gRPC 保留冻结消息别名拒绝和首次复核输出错误，在离线副本对同一候选重算 7/7 与 18/18。Energy 独立判分 45/45。两份候选和晋升 Git 树一致。[轨迹证据](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/trajectory-comparison.json)
+
+发布时从原始轨迹离线复算，归因输出与封存一致。两份 Git bundle 独立检出后均能核对候选树与接受树。PR 的 Linux 测试 5,108 项通过、33 项跳过，浏览器 E2E 38 项通过，归因、打包安装和 Windows 边界检查通过。R0 四个外部 Host 实测步骤按现有条件跳过。[发布验证](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/release-ci.json)
 
 ```bash
 npx vitest run --fileParallelism=false \
@@ -596,6 +598,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-10 | 实现 gRPC 与 Energy 共用的任务义务、候选回执及按 SHA 接受 | [契约](docs/engineering/WORK-REVISION-CONTRACT.md)，[资格](research-evidence/pnwf-work-revision/2026-11-10/qualification.json) | 普通 DSH 和外部 SDK 各覆盖两个 T2，新增付费请求 0 |
 | 2026-11-10 | 发布共用 Work 修订契约并复跑资格 | [PR #259](https://github.com/orangeofcarl0-sys/palimpsest/pull/259)，[发布记录](research-evidence/pnwf-work-revision/2026-11-10/release-ci.json) | 16/16，主线发布点 `e42b9ef7`，四条零付费资格复跑通过，历史证据逐字节保留 |
 | 2026-11-10 | 共用任务义务的两条真实 T2 复跑与按 SHA 接受 | [报告](docs/engineering/WORK-REVISION-LIVE-T2.md)，[对比证据](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/trajectory-comparison.json) | 90 笔全部对账，两个候选核准并晋升，保留 gRPC 缺等待结论 |
+| 2026-11-10 | 发布共用 Work 义务的两条真实 T2 | [PR #261](https://github.com/orangeofcarl0-sys/palimpsest/pull/261)，[发布记录](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/release-ci.json) | 16/16，主线发布点 `b1e9d90a`，原会话、冻结评分和离线复核分别保留 |
 
 ---
 
