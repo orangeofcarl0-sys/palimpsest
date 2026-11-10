@@ -1,0 +1,40 @@
+{
+  "promotionId": "promotion-221e21ece480ed264379a82d11580b55",
+  "committed": {
+    "schema_version": 1,
+    "project_id": "grpc-migration-continuation",
+    "event_type": "PROMOTION_COMMITTED",
+    "payload_version": 1,
+    "entity_type": "promotion",
+    "entity_id": "promotion-221e21ece480ed264379a82d11580b55",
+    "payload": {
+      "promotion_id": "promotion-221e21ece480ed264379a82d11580b55",
+      "attempt_id": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+      "source_commit": "134f65dbf895e8dd5d3e19ea6316fde9db15e7e2",
+      "expected_head_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "resulting_head_commit": "c950736d7d2005011c2d4bd071d8d5e6e2143118",
+      "reason": "promoted via Ordarium git.promote",
+      "operation_id": "op_7fa70f7c23f7f3715876fc85272cb2eac734e248",
+      "outcome_basis": "invoke_result",
+      "outcome_digest": "011de113c5616ed0c2b48477adbaa1e79b25d9956375bde5385cc61a5de21f13"
+    },
+    "causation_id": null,
+    "correlation_id": "promotion:promotion-221e21ece480ed264379a82d11580b55",
+    "idempotency_key": "f4f1b77027b874dc809192131f90963d857999af58ed517836396d326781525d",
+    "expected_project_revision": 2,
+    "event_id": 19,
+    "project_sequence": 19,
+    "request_digest": "f1571b0ff2915570bc97a6f59d74dded4da0be77e4ad358d03b08d6d8bf67518",
+    "previous_event_digest": "37743dba4a429f2d89a20e9b1809a352f6e44e7c33781f060c25a9678c998d7e",
+    "event_digest": "adc734716e96163c10f8ce86418a3112fb04261e89d9f81c0a49562372f3e107",
+    "committed_at": "2026-11-10T12:31:37.449000Z"
+  },
+  "resultingHeadCommit": "c950736d7d2005011c2d4bd071d8d5e6e2143118",
+  "actor": "operator:software-project-owner",
+  "approved": "134f65dbf895e8dd5d3e19ea6316fde9db15e7e2",
+  "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "attemptId": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+  "receiptId": "c10b6b02e6ad8edba2314945a1982856a3597ee8cf0d844763a5df8079f2c86b",
+  "tree": "a700e682a13facfdbcc36b4b44a34809a85848da",
+  "recordedAt": "2026-11-10T12:31:38.642Z"
+}

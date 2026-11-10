@@ -37,3 +37,5 @@ node scripts/pnwf/revision/qualify.mjs --run=<new-directory> --consumer=<smoke-d
 每个领域的两条路径使用同一个冻结基线，独立提交和接受。资格记录包含候选回执、错误核准拒绝、业务评分及重启读回的接受 HEAD。已有三会话 Mock 可分别用 `scripts/pnwf/software/run.mjs` 和 `scripts/pnwf/energy/run.mjs` 的 `--action=qualify --run=<new-directory>` 复验。
 
 2026-11-10 的最终资格四条全部通过。每个领域的两种入口产出同一候选树。gRPC 两条均通过七项独立 HTTP/2 探针和十项公开测试，候选修改三个必改文件，Server 单测仍存在。Energy 两条均通过 45 项业务断言，五个成果更新，证书 blob 保留。普通 DSH 两条都记录 `WAIT_FOR_OPERATOR` 后自然退出，共 38 笔 Mock 请求全部对账。打包 SDK 两条使用确定性子进程，模型请求为 0。[资格与 Git 证据](../../research-evidence/pnwf-work-revision/2026-11-10/qualification.json)
+
+从发布主线在原 gRPC 和 Energy T2 基线各跑了一条普通 DSH 真实会话。两条均经正式 Worker 预检、结算、独立评分和按完整 SHA 接受。Energy 记录等待结论，gRPC 保留等待结论缺项。[真实复跑报告](WORK-REVISION-LIVE-T2.md)

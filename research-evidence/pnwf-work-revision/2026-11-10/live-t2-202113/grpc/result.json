@@ -1,0 +1,1228 @@
+{
+  "scenario": "grpc",
+  "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "cohortId": "work-revision-live-grpc-d2df10eb-94a2-4fd7-8744-ccf618593b16",
+  "passed": false,
+  "usageKnown": true,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "work-revision-live-grpc-d2df10eb-94a2-4fd7-8744-ccf618593b16",
+    "sessionId": "T2",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-work-revision-real-20261110122113\\grpc\\stages\\T2\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-work-revision-real-20261110122113\\grpc\\runtime-T2",
+    "principalRuntime": "container",
+    "containerId": "159a275cc0d1d9ec3eb479f96fa6d9138873ab92f631ca8dfd99fee29950959b",
+    "qualification": "248b9c33387e48c060c77a797e8b01b8a0382ac728f96068180d79057632477c",
+    "startedAt": "2026-11-10T12:22:51.446Z",
+    "endedAt": "2026-11-10T12:26:24.177Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "work-revision-live-grpc-d2df10eb-94a2-4fd7-8744-ccf618593b16",
+      "sessionId": "T2",
+      "observedAt": "2026-11-10T12:26:24.177Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 1364811,
+      "confirmedTokens": 1364811,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 44,
+    "paidModelCalls": 44
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-615da238-fe98-4367-922f-02623d754061",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 44,
+    "knownTokens": 1364811,
+    "totalTokens": 1364811,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 65790,
+      "cache_read_input_tokens": 1282816,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 16205
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 30,
+        "input": 39594,
+        "cacheRead": 977920,
+        "cacheWrite": 0,
+        "output": 10857,
+        "total": 1028371
+      },
+      "worker": {
+        "requests": 14,
+        "input": 26196,
+        "cacheRead": 304896,
+        "cacheWrite": 0,
+        "output": 5348,
+        "total": 336440
+      }
+    },
+    "traceTotal": 1364811,
+    "traceRequests": 44,
+    "workerRequests": 14,
+    "elapsedMs": 212731,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [
+      {
+        "startedAt": "2026-11-10T12:24:04.983Z",
+        "outcome": "READY_FOR_SETTLEMENT",
+        "attemptId": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+        "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+        "writeScope": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md",
+          "test/server.test.js"
+        ],
+        "containerId": "ee5ea3f75400de6f2acabdc710aea7705b39d41323af900edc0079e896207ac2",
+        "qualification": "5b7ab802b1acf80c58abf0098b447008d69a0d0814e34a424b40423b805e8526",
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "sessionId": "worker-751c086d-f413-4312-bda5-eeae7dca1623",
+        "result": "134f65dbf895e8dd5d3e19ea6316fde9db15e7e2",
+        "paths": [
+          "MIGRATION.md",
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "test/server.test.js"
+        ],
+        "endedAt": "2026-11-10T12:25:28.265Z"
+      }
+    ],
+    "traces": [
+      {
+        "id": "session-615da238-fe98-4367-922f-02623d754061",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "3835b9624b3f1ae62bb519852534e5a7778cbf7c0ca5e1301942c24c300160e1",
+        "counts": {
+          "steps": 30,
+          "turns": 1,
+          "toolCalls": 41,
+          "pairedToolResults": 41,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 1,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 2,
+          "stateQueries": 9,
+          "commits": 0,
+          "jobs": 15
+        },
+        "refs": [
+          {
+            "callId": "call_00_3MP9AqZxsNpyqRjMe0vi7019",
+            "seq": 70,
+            "kind": "job_output",
+            "state": null,
+            "reason": null,
+            "detail": null
+          },
+          {
+            "callId": "call_00_QJ2jiFFdC5X9GHIgztBw6861",
+            "seq": 222,
+            "kind": "work:complete",
+            "state": "NO_RUNNING_ATTEMPT",
+            "reason": null,
+            "detail": "this task has no canonically RUNNING attempt; nothing was observed or settled. If its result already settled, inspect `results` instead"
+          }
+        ],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794313410753,
+            "messageId": "0c970ffa-73b2-4806-ac66-b8a94af7a28c",
+            "usage": {
+              "inputTokens": 5124,
+              "outputTokens": 120,
+              "cacheReadTokens": 5632,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10876
+            }
+          },
+          {
+            "seq": 24,
+            "at": 1794313419450,
+            "messageId": "307e1fb7-91b2-4300-9035-9be609258dc3",
+            "usage": {
+              "inputTokens": 3095,
+              "outputTokens": 195,
+              "cacheReadTokens": 10752,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14042
+            }
+          },
+          {
+            "seq": 36,
+            "at": 1794313421304,
+            "messageId": "e5cbd24f-7a40-468d-b608-72b9adb85f98",
+            "usage": {
+              "inputTokens": 2596,
+              "outputTokens": 141,
+              "cacheReadTokens": 13952,
+              "cacheWriteTokens": 0,
+              "totalTokens": 16689
+            }
+          },
+          {
+            "seq": 46,
+            "at": 1794313425973,
+            "messageId": "7f5774ad-a8b6-4541-b0ca-8de7d8a410df",
+            "usage": {
+              "inputTokens": 4756,
+              "outputTokens": 467,
+              "cacheReadTokens": 16640,
+              "cacheWriteTokens": 0,
+              "totalTokens": 21863
+            }
+          },
+          {
+            "seq": 56,
+            "at": 1794313431168,
+            "messageId": "2f61c7a7-4dee-4c23-b8c0-5e8e7ca31631",
+            "usage": {
+              "inputTokens": 1441,
+              "outputTokens": 590,
+              "cacheReadTokens": 21760,
+              "cacheWriteTokens": 0,
+              "totalTokens": 23791
+            }
+          },
+          {
+            "seq": 62,
+            "at": 1794313434086,
+            "messageId": "dbbabf21-36de-43f8-9f37-f49a5b319edb",
+            "usage": {
+              "inputTokens": 950,
+              "outputTokens": 308,
+              "cacheReadTokens": 23680,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24938
+            }
+          },
+          {
+            "seq": 68,
+            "at": 1794313455806,
+            "messageId": "9fdebcf4-b926-4ef8-92cf-3c5897919fba",
+            "usage": {
+              "inputTokens": 538,
+              "outputTokens": 163,
+              "cacheReadTokens": 24832,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25533
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1794313456955,
+            "messageId": "234fc849-b3f5-494a-bf8d-072b5545c6b3",
+            "usage": {
+              "inputTokens": 231,
+              "outputTokens": 96,
+              "cacheReadTokens": 25344,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25671
+            }
+          },
+          {
+            "seq": 82,
+            "at": 1794313462020,
+            "messageId": "8d5a7d98-9f06-4e86-9468-8ecd2b1a200a",
+            "usage": {
+              "inputTokens": 422,
+              "outputTokens": 266,
+              "cacheReadTokens": 25600,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26288
+            }
+          },
+          {
+            "seq": 90,
+            "at": 1794313464406,
+            "messageId": "80e1d7ee-c317-4106-a803-fc2a1ef5d83f",
+            "usage": {
+              "inputTokens": 441,
+              "outputTokens": 193,
+              "cacheReadTokens": 26240,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26874
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1794313467317,
+            "messageId": "216fb1e4-b282-40fe-a3e0-2e6a3b71651b",
+            "usage": {
+              "inputTokens": 170,
+              "outputTokens": 230,
+              "cacheReadTokens": 26752,
+              "cacheWriteTokens": 0,
+              "totalTokens": 27152
+            }
+          },
+          {
+            "seq": 104,
+            "at": 1794313469455,
+            "messageId": "cadd3171-85c8-4bb0-9993-353b290d222e",
+            "usage": {
+              "inputTokens": 3010,
+              "outputTokens": 153,
+              "cacheReadTokens": 27136,
+              "cacheWriteTokens": 0,
+              "totalTokens": 30299
+            }
+          },
+          {
+            "seq": 110,
+            "at": 1794313471609,
+            "messageId": "1c0c17e8-e51d-44dd-a437-45ba09eb0861",
+            "usage": {
+              "inputTokens": 2474,
+              "outputTokens": 216,
+              "cacheReadTokens": 30208,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32898
+            }
+          },
+          {
+            "seq": 118,
+            "at": 1794313474867,
+            "messageId": "e4e2cb87-3c57-471a-a44a-842234805966",
+            "usage": {
+              "inputTokens": 1178,
+              "outputTokens": 293,
+              "cacheReadTokens": 32896,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34367
+            }
+          },
+          {
+            "seq": 126,
+            "at": 1794313475916,
+            "messageId": "3c992fd0-35b1-49ef-addd-9f9aa33063c9",
+            "usage": {
+              "inputTokens": 898,
+              "outputTokens": 55,
+              "cacheReadTokens": 34304,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35257
+            }
+          },
+          {
+            "seq": 132,
+            "at": 1794313479755,
+            "messageId": "6633035a-2e76-402b-a945-25089444bb5d",
+            "usage": {
+              "inputTokens": 397,
+              "outputTokens": 154,
+              "cacheReadTokens": 35200,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35751
+            }
+          },
+          {
+            "seq": 140,
+            "at": 1794313482334,
+            "messageId": "04cd7fae-6227-41d4-852d-23c4e628f919",
+            "usage": {
+              "inputTokens": 181,
+              "outputTokens": 173,
+              "cacheReadTokens": 35584,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35938
+            }
+          },
+          {
+            "seq": 148,
+            "at": 1794313483934,
+            "messageId": "6befe2dc-26b8-476b-90ad-5c4ce1e1f21d",
+            "usage": {
+              "inputTokens": 281,
+              "outputTokens": 121,
+              "cacheReadTokens": 35840,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36242
+            }
+          },
+          {
+            "seq": 156,
+            "at": 1794313488626,
+            "messageId": "8803ea65-31e5-4321-82cf-c96b621c01ff",
+            "usage": {
+              "inputTokens": 660,
+              "outputTokens": 514,
+              "cacheReadTokens": 36224,
+              "cacheWriteTokens": 0,
+              "totalTokens": 37398
+            }
+          },
+          {
+            "seq": 164,
+            "at": 1794313493795,
+            "messageId": "14211b4b-c39e-4814-a2aa-7f512c847c9e",
+            "usage": {
+              "inputTokens": 1899,
+              "outputTokens": 498,
+              "cacheReadTokens": 37376,
+              "cacheWriteTokens": 0,
+              "totalTokens": 39773
+            }
+          },
+          {
+            "seq": 170,
+            "at": 1794313496322,
+            "messageId": "539e320d-10e6-429c-a151-4b80d1551aea",
+            "usage": {
+              "inputTokens": 236,
+              "outputTokens": 276,
+              "cacheReadTokens": 39552,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40064
+            }
+          },
+          {
+            "seq": 176,
+            "at": 1794313498533,
+            "messageId": "a72c3642-355b-45ae-bcf2-162079f65c43",
+            "usage": {
+              "inputTokens": 341,
+              "outputTokens": 330,
+              "cacheReadTokens": 40064,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40735
+            }
+          },
+          {
+            "seq": 184,
+            "at": 1794313503517,
+            "messageId": "7fa9f2d2-ec9d-4ed8-9817-5591d0838d5b",
+            "usage": {
+              "inputTokens": 871,
+              "outputTokens": 645,
+              "cacheReadTokens": 40704,
+              "cacheWriteTokens": 0,
+              "totalTokens": 42220
+            }
+          },
+          {
+            "seq": 192,
+            "at": 1794313539653,
+            "messageId": "c86eaceb-3836-4092-8cdf-81b8bbcdf964",
+            "usage": {
+              "inputTokens": 158,
+              "outputTokens": 215,
+              "cacheReadTokens": 42112,
+              "cacheWriteTokens": 0,
+              "totalTokens": 42485
+            }
+          },
+          {
+            "seq": 202,
+            "at": 1794313549693,
+            "messageId": "a022abb6-415a-46b4-b055-b3a77a4f59ec",
+            "usage": {
+              "inputTokens": 2652,
+              "outputTokens": 1189,
+              "cacheReadTokens": 42368,
+              "cacheWriteTokens": 0,
+              "totalTokens": 46209
+            }
+          },
+          {
+            "seq": 212,
+            "at": 1794313559059,
+            "messageId": "7add40bf-0605-4b62-b4ae-d2bb2fbbb974",
+            "usage": {
+              "inputTokens": 1317,
+              "outputTokens": 614,
+              "cacheReadTokens": 46208,
+              "cacheWriteTokens": 0,
+              "totalTokens": 48139
+            }
+          },
+          {
+            "seq": 220,
+            "at": 1794313565022,
+            "messageId": "1d73060e-a5e6-4dcb-a821-94d5efa8cbe5",
+            "usage": {
+              "inputTokens": 1446,
+              "outputTokens": 494,
+              "cacheReadTokens": 48128,
+              "cacheWriteTokens": 0,
+              "totalTokens": 50068
+            }
+          },
+          {
+            "seq": 226,
+            "at": 1794313566326,
+            "messageId": "f02f1645-ebdb-413d-b08c-fbad66377994",
+            "usage": {
+              "inputTokens": 297,
+              "outputTokens": 76,
+              "cacheReadTokens": 50048,
+              "cacheWriteTokens": 0,
+              "totalTokens": 50421
+            }
+          },
+          {
+            "seq": 232,
+            "at": 1794313576428,
+            "messageId": "381ed247-81fc-43f9-a0e8-d320443b1f38",
+            "usage": {
+              "inputTokens": 742,
+              "outputTokens": 1549,
+              "cacheReadTokens": 50304,
+              "cacheWriteTokens": 0,
+              "totalTokens": 52595
+            }
+          },
+          {
+            "seq": 242,
+            "at": 1794313581516,
+            "messageId": "fad59537-b46d-482f-b8d5-2f87eeda2b09",
+            "usage": {
+              "inputTokens": 792,
+              "outputTokens": 523,
+              "cacheReadTokens": 52480,
+              "cacheWriteTokens": 0,
+              "totalTokens": 53795
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 15,
+          "read": 10,
+          "work:status": 3,
+          "work:plan": 1,
+          "work:delegate": 1,
+          "job_output": 1,
+          "work:workers": 3,
+          "job_list": 1,
+          "list_agents": 1,
+          "work:results": 1,
+          "work:readiness": 1,
+          "work:complete": 1,
+          "work:next": 1
+        }
+      },
+      {
+        "id": "worker-751c086d-f413-4312-bda5-eeae7dca1623",
+        "cwd": "/run/stage/world",
+        "role": "worker",
+        "digest": "a92dd252ce7d5d3aab71b546b18b85b8c19ff170763d170e6b801287e73adcb4",
+        "counts": {
+          "steps": 14,
+          "turns": 1,
+          "toolCalls": 29,
+          "pairedToolResults": 29,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 6
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794313474411,
+            "messageId": "acc94435-9de5-4b2c-8fad-445bbb960699",
+            "usage": {
+              "inputTokens": 3931,
+              "outputTokens": 114,
+              "cacheReadTokens": 2560,
+              "cacheWriteTokens": 0,
+              "totalTokens": 6605
+            }
+          },
+          {
+            "seq": 24,
+            "at": 1794313476416,
+            "messageId": "e3f857ac-0bc0-43b7-975b-1b3c5688ddde",
+            "usage": {
+              "inputTokens": 505,
+              "outputTokens": 217,
+              "cacheReadTokens": 6528,
+              "cacheWriteTokens": 0,
+              "totalTokens": 7250
+            }
+          },
+          {
+            "seq": 38,
+            "at": 1794313478429,
+            "messageId": "a34275e5-5d77-48d3-985e-c0b5dd84da8c",
+            "usage": {
+              "inputTokens": 5035,
+              "outputTokens": 225,
+              "cacheReadTokens": 7168,
+              "cacheWriteTokens": 0,
+              "totalTokens": 12428
+            }
+          },
+          {
+            "seq": 52,
+            "at": 1794313481149,
+            "messageId": "59ecef1a-16cb-4ec1-8ac0-82ae251c58c9",
+            "usage": {
+              "inputTokens": 8253,
+              "outputTokens": 312,
+              "cacheReadTokens": 12416,
+              "cacheWriteTokens": 0,
+              "totalTokens": 20981
+            }
+          },
+          {
+            "seq": 66,
+            "at": 1794313493798,
+            "messageId": "5b01b415-10e6-4c3a-8304-35772459eb27",
+            "usage": {
+              "inputTokens": 2658,
+              "outputTokens": 1794,
+              "cacheReadTokens": 20864,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25316
+            }
+          },
+          {
+            "seq": 76,
+            "at": 1794313497071,
+            "messageId": "745ff6cc-a702-4208-84a9-33cafbe6bd0e",
+            "usage": {
+              "inputTokens": 179,
+              "outputTokens": 540,
+              "cacheReadTokens": 25216,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25935
+            }
+          },
+          {
+            "seq": 82,
+            "at": 1794313501287,
+            "messageId": "9e6a2592-f468-4d3c-9c33-abb612340403",
+            "usage": {
+              "inputTokens": 234,
+              "outputTokens": 737,
+              "cacheReadTokens": 25728,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26699
+            }
+          },
+          {
+            "seq": 90,
+            "at": 1794313503277,
+            "messageId": "a25cf22b-be82-40c0-bcc9-28bf8d7f340f",
+            "usage": {
+              "inputTokens": 253,
+              "outputTokens": 245,
+              "cacheReadTokens": 26496,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26994
+            }
+          },
+          {
+            "seq": 102,
+            "at": 1794313507226,
+            "messageId": "e147e5b2-fae1-495f-9667-dd4ec9500a7a",
+            "usage": {
+              "inputTokens": 829,
+              "outputTokens": 256,
+              "cacheReadTokens": 26880,
+              "cacheWriteTokens": 0,
+              "totalTokens": 27965
+            }
+          },
+          {
+            "seq": 110,
+            "at": 1794313509199,
+            "messageId": "9845d8a5-04a1-496c-9b25-6a3f4970dbf3",
+            "usage": {
+              "inputTokens": 1879,
+              "outputTokens": 221,
+              "cacheReadTokens": 27904,
+              "cacheWriteTokens": 0,
+              "totalTokens": 30004
+            }
+          },
+          {
+            "seq": 116,
+            "at": 1794313511612,
+            "messageId": "bba94242-a925-46ce-ac53-adffe4d5c774",
+            "usage": {
+              "inputTokens": 209,
+              "outputTokens": 250,
+              "cacheReadTokens": 29824,
+              "cacheWriteTokens": 0,
+              "totalTokens": 30283
+            }
+          },
+          {
+            "seq": 124,
+            "at": 1794313514448,
+            "messageId": "85d330de-67ad-4db3-9cdc-456b2404b02a",
+            "usage": {
+              "inputTokens": 550,
+              "outputTokens": 49,
+              "cacheReadTokens": 30208,
+              "cacheWriteTokens": 0,
+              "totalTokens": 30807
+            }
+          },
+          {
+            "seq": 130,
+            "at": 1794313519174,
+            "messageId": "1461113d-15f2-4cb3-a14a-eaf41fa62b85",
+            "usage": {
+              "inputTokens": 1506,
+              "outputTokens": 302,
+              "cacheReadTokens": 30720,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32528
+            }
+          },
+          {
+            "seq": 136,
+            "at": 1794313520451,
+            "messageId": "b8943cf4-f514-478c-bde4-59b538f2f88a",
+            "usage": {
+              "inputTokens": 175,
+              "outputTokens": 86,
+              "cacheReadTokens": 32384,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32645
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 6,
+          "glob": 1,
+          "read": 13,
+          "edit": 7,
+          "palimpsest_worker_receipt": 1,
+          "palimpsest_worker_result": 1
+        }
+      }
+    ]
+  },
+  "facts": {
+    "head": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "tasks": [
+      {
+        "task_id": "revise-fleet-default",
+        "state": "VERIFYING",
+        "last_event_id": 17
+      }
+    ],
+    "attempts": [
+      {
+        "id": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+        "task": "revise-fleet-default",
+        "state": "COMPLETED",
+        "taskId": "revise-fleet-default",
+        "report": {
+          "attempt_id": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+          "base_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "changed_files": [
+            "MIGRATION.md",
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "test/server.test.js"
+          ],
+          "context_manifest": "context-manifest-29b8340e91799a2303c0f691f5111a5b",
+          "envelope_id": "envelope-7b41a24b5a6d1dcdfe6df967759e6187",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "input_project_digest": "0f2f5cdaf9b370351f7ff94b2d3402888e8de67f00f9956fd7d330b5ea364ae6",
+          "input_project_revision": 2,
+          "produced_artifacts": [
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "MIGRATION.md"
+          ],
+          "project_id": "grpc-migration-continuation",
+          "result_commit": "134f65dbf895e8dd5d3e19ea6316fde9db15e7e2",
+          "revision_receipt": {
+            "attemptId": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+            "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+            "candidate": "134f65dbf895e8dd5d3e19ea6316fde9db15e7e2",
+            "checks": [
+              {
+                "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+                "candidateBlob": "4162a9184d1b7f66f56e37b6a1bdca2f5643018f",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+                "candidateBlob": "f413e22d6bf4afa1ad0e632349d184cbd634984a",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+                "candidateBlob": "71e4d9346454689a55cc8b5a42fbdc88333ecf42",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+                "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "test/server.test.js"
+              },
+              {
+                "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+                "candidateBlob": "4162a9184d1b7f66f56e37b6a1bdca2f5643018f",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+                "candidateBlob": "f413e22d6bf4afa1ad0e632349d184cbd634984a",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+                "candidateBlob": "71e4d9346454689a55cc8b5a42fbdc88333ecf42",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+                "candidateBlob": "4162a9184d1b7f66f56e37b6a1bdca2f5643018f",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+                "candidateBlob": "f413e22d6bf4afa1ad0e632349d184cbd634984a",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+                "candidateBlob": "71e4d9346454689a55cc8b5a42fbdc88333ecf42",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+                "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/server.test.js"
+              },
+              {
+                "basisBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+                "candidateBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "proto/energy.proto"
+              },
+              {
+                "basisBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+                "candidateBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/grpc_client.js"
+              },
+              {
+                "basisBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+                "candidateBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/wire.js"
+              },
+              {
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "test/rest.test.js"
+              }
+            ],
+            "envelopeId": "envelope-7b41a24b5a6d1dcdfe6df967759e6187",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "phase": "SETTLED",
+            "receiptId": "c10b6b02e6ad8edba2314945a1982856a3597ee8cf0d844763a5df8079f2c86b",
+            "schemaVersion": 1,
+            "taskId": "revise-fleet-default"
+          },
+          "runtime_metadata": {
+            "argv": [
+              "dsh-agent"
+            ],
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "exit_code": 0,
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "stderr_artifact": null,
+            "stdout_artifact": null
+          },
+          "schema_version": 1,
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "summary": "delegated work settled from its execution world",
+          "task_id": "revise-fleet-default",
+          "worker_status": "completed",
+          "worktree_id": "worktree-715d9ef0"
+        },
+        "envelope": {
+          "schema_version": 1,
+          "project_id": "grpc-migration-continuation",
+          "task_id": "revise-fleet-default",
+          "envelope_id": "envelope-7b41a24b5a6d1dcdfe6df967759e6187",
+          "project_revision": 2,
+          "project_digest": "0f2f5cdaf9b370351f7ff94b2d3402888e8de67f00f9956fd7d330b5ea364ae6",
+          "base_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "objective": "Apply updates/2026-11-10/fleet-default-limit.md to the gRPC service. A zero or omitted StreamReadings limit must return the first three readings in source order; positive limits, GetReading, unknown-site errors, field numbers and REST behavior remain unchanged. Update service/grpc_server.js, test/integration.test.js and MIGRATION.md, optionally revisiting test/server.test.js. Preserve frozen protocol/client/REST files byte-for-byte. Run node --test, commit the tested change in the isolated worktree, and leave it for owner review without promoting or accepting it.",
+          "read_paths": [
+            "src"
+          ],
+          "write_paths": [
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "MIGRATION.md",
+            "test/server.test.js"
+          ],
+          "required_artifacts": [
+            "service/grpc_server.js",
+            "test/integration.test.js",
+            "MIGRATION.md"
+          ],
+          "allowed_commands": [
+            {
+              "executable": "node",
+              "argv_prefix": [
+                "--test"
+              ]
+            }
+          ],
+          "network_policy": "deny",
+          "network_allowlist": [],
+          "timeout_s": 60,
+          "lease_s": 10,
+          "attempt_limit": 2,
+          "candidate_limit": 1,
+          "idempotency_key": "71992fca1bd40daff90af6f92d25d53c3caf8e8fe0753874ff163bc913c504d5",
+          "obligations": {
+            "rules": {
+              "schemaVersion": 1,
+              "mayWrite": [
+                "MIGRATION.md",
+                "service/grpc_server.js",
+                "test/integration.test.js",
+                "test/server.test.js"
+              ],
+              "mustChange": [
+                "MIGRATION.md",
+                "service/grpc_server.js",
+                "test/integration.test.js"
+              ],
+              "mustExist": [
+                "MIGRATION.md",
+                "service/grpc_server.js",
+                "test/integration.test.js",
+                "test/server.test.js"
+              ],
+              "mustPreserve": [
+                "proto/energy.proto",
+                "service/grpc_client.js",
+                "service/wire.js",
+                "test/rest.test.js"
+              ]
+            },
+            "digest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa"
+          }
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": 1,
+        "type": "PROJECT_CREATED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 2,
+        "type": "GATE_DEFINED",
+        "entityId": "gate-release"
+      },
+      {
+        "id": 3,
+        "type": "ROLE_TABLE_DEFINED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 4,
+        "type": "STAGE_GRAPH_DEFINED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 5,
+        "type": "MANUAL_APPROVAL_RECORDED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 6,
+        "type": "PROJECT_REVISED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 7,
+        "type": "PROJECT_REVISED",
+        "entityId": "grpc-migration-continuation"
+      },
+      {
+        "id": 8,
+        "type": "TASK_CREATED",
+        "entityId": "revise-fleet-default"
+      },
+      {
+        "id": 9,
+        "type": "TASK_STARTED",
+        "entityId": "revise-fleet-default"
+      },
+      {
+        "id": 10,
+        "type": "ATTEMPT_CREATED",
+        "entityId": "attempt-6b4984b3222c08768c5113e4715d9ef0"
+      },
+      {
+        "id": 11,
+        "type": "ATTEMPT_STARTED",
+        "entityId": "attempt-6b4984b3222c08768c5113e4715d9ef0"
+      },
+      {
+        "id": 12,
+        "type": "CONTEXT_MANIFEST_ADDED",
+        "entityId": "context-manifest-29b8340e91799a2303c0f691f5111a5b"
+      },
+      {
+        "id": 13,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-8cc56f0c2846c388324501e6d2c51889"
+      },
+      {
+        "id": 14,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-9d4e65433fed1cee617448b7771e9dbc"
+      },
+      {
+        "id": 15,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-352dfcc9b250a28c2f98cdb49bfabc1c"
+      },
+      {
+        "id": 16,
+        "type": "ATTEMPT_COMPLETED",
+        "entityId": "attempt-6b4984b3222c08768c5113e4715d9ef0"
+      },
+      {
+        "id": 17,
+        "type": "TASK_VERIFYING",
+        "entityId": "revise-fleet-default"
+      }
+    ],
+    "conclusion": {
+      "seq": 2,
+      "eventId": "pjer-7d324e0ea80946dfe23e8b2aec2acad9",
+      "intent": "DELIVER",
+      "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Implemented the gRPC migration in a tested commit. The proto contract, local wire codec, node:http2 server/client, server and integration tests, and MIGRATION.md are all committed. The full node --test suite passes (17/17), including the unchanged REST baseline tests, and the working tree is clean.\nArtifacts:\n- proto/energy.proto\n- service/wire.js\n- service/grpc_server.js\n- service/grpc_client.js\n- test/server.test.js\n- test/integration.test.js\n- MIGRATION.md\nWaiting on: (none)\nNext step: No further implementation work is required; operator review/acceptance remains.\nEvidence: commit:3dadc3a\nBasis: revision 0, head 6d6b4a5e3a880c32c3e361b76694ec7be85f8c9f\nArtifact provenance:\n- proto/energy.proto: present=true tracked=true committed=true source=WORKTREE digest=972156dc95cb commit=3dadc3a1df9c\n- service/wire.js: present=true tracked=true committed=true source=WORKTREE digest=a01e2ed83ed0 commit=3dadc3a1df9c\n- service/grpc_server.js: present=true tracked=true committed=true source=WORKTREE digest=e9ea974fff20 commit=3dadc3a1df9c\n- service/grpc_client.js: present=true tracked=true committed=true source=WORKTREE digest=8036e6c2bb2b commit=3dadc3a1df9c\n- test/server.test.js: present=true tracked=true committed=true source=WORKTREE digest=cbcc2213dd50 commit=3dadc3a1df9c\n- test/integration.test.js: present=true tracked=true committed=true source=WORKTREE digest=0a0c340ab909 commit=3dadc3a1df9c\n- MIGRATION.md: present=true tracked=true committed=true source=WORKTREE digest=d78a55f20dce commit=3dadc3a1df9c\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Implemented the gRPC migration in a tested commit. The proto contract, local wire codec, node:http2 server/client, server and integration tests, and MIGRATION.md are all committed. The full node --test suite passes (17/17), including the unchanged REST baseline tests, and the working tree is clean.\",\"artifacts\":[\"proto/energy.proto\",\"service/wire.js\",\"service/grpc_server.js\",\"service/grpc_client.js\",\"test/server.test.js\",\"test/integration.test.js\",\"MIGRATION.md\"],\"waitingOn\":null,\"nextStep\":\"No further implementation work is required; operator review/acceptance remains.\",\"evidenceRefs\":[\"commit:3dadc3a\"],\"recordedAt\":\"2026-11-10T07:11:33.546Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"517db3b9e046ea5593f5b6376f9aa45afa1063632c4392e981955ab1531de25c\",\"headCommit\":\"6d6b4a5e3a880c32c3e361b76694ec7be85f8c9f\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"proto/energy.proto\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"972156dc95cb01c0b771903195ca4cbacdbbfe07c326f390a87e1acb146f3834\",\"source\":\"WORKTREE\",\"commit\":\"3dadc3a1df9cabf2fd40543f711e3720916e9447\",\"detail\":\"committed at HEAD\"},{\"path\":\"service/wire.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"a01e2ed83ed0bb38d4a55b3690db57fd2df5a1cf1db70a5f4291af4b44285454\",\"source\":\"WORKTREE\",\"commit\":\"3dadc3a1df9cabf2fd40543f711e3720916e9447\",\"detail\":\"committed at HEAD\"},{\"path\":\"service/grpc_server.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"e9ea974fff20fdefef07a25024f8c8ca734f17acf88f087577f114edf8e9e190\",\"source\":\"WORKTREE\",\"commit\":\"3dadc3a1df9cabf2fd40543f711e3720916e9447\",\"detail\":\"committed at HEAD\"},{\"path\":\"service/grpc_client.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"8036e6c2bb2b4a6de71b8b001953f1108fff1bb5a6c519a4c180547a62c7573e\",\"source\":\"WORKTREE\",\"commit\":\"3dadc3a1df9cabf2fd40543f711e3720916e9447\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/server.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"cbcc2213dd503ae8d5cd80ccd95a400f016cd782625b7a9d414cecd60cfaae79\",\"source\":\"WORKTREE\",\"commit\":\"3dadc3a1df9cabf2fd40543f711e3720916e9447\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/integration.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"0a0c340ab9094ffd2df41421252d3db814a5b354cbe63d4f51f261856e74f41b\",\"source\":\"WORKTREE\",\"commit\":\"3dadc3a1df9cabf2fd40543f711e3720916e9447\",\"detail\":\"committed at HEAD\"},{\"path\":\"MIGRATION.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"d78a55f20dcea0e5ec6f2e361b66a340c035c96d7ba8c12915019045df3d27e0\",\"source\":\"WORKTREE\",\"commit\":\"3dadc3a1df9cabf2fd40543f711e3720916e9447\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-2ac49fa60228eb96a92aed70\"}"
+    },
+    "promotions": [],
+    "headState": {
+      "schemaVersion": 1,
+      "projectRevision": 2,
+      "projectHeadCommit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "provenEffectHeadCommit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "latestPromotionEventRef": null,
+      "state": "IN_SYNC"
+    }
+  },
+  "receipt": {
+    "attemptId": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+    "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "candidate": "134f65dbf895e8dd5d3e19ea6316fde9db15e7e2",
+    "checks": [
+      {
+        "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+        "candidateBlob": "4162a9184d1b7f66f56e37b6a1bdca2f5643018f",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "MIGRATION.md"
+      },
+      {
+        "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+        "candidateBlob": "f413e22d6bf4afa1ad0e632349d184cbd634984a",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "service/grpc_server.js"
+      },
+      {
+        "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+        "candidateBlob": "71e4d9346454689a55cc8b5a42fbdc88333ecf42",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "test/integration.test.js"
+      },
+      {
+        "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+        "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "test/server.test.js"
+      },
+      {
+        "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+        "candidateBlob": "4162a9184d1b7f66f56e37b6a1bdca2f5643018f",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "MIGRATION.md"
+      },
+      {
+        "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+        "candidateBlob": "f413e22d6bf4afa1ad0e632349d184cbd634984a",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "service/grpc_server.js"
+      },
+      {
+        "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+        "candidateBlob": "71e4d9346454689a55cc8b5a42fbdc88333ecf42",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "test/integration.test.js"
+      },
+      {
+        "basisBlob": "0c5146ec9d27919e63fd199ddadc1d9908470908",
+        "candidateBlob": "4162a9184d1b7f66f56e37b6a1bdca2f5643018f",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "MIGRATION.md"
+      },
+      {
+        "basisBlob": "64203dfd35ba14fc6db437c8caa8a373b0c74b81",
+        "candidateBlob": "f413e22d6bf4afa1ad0e632349d184cbd634984a",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "service/grpc_server.js"
+      },
+      {
+        "basisBlob": "6c9753cccf9da105765141fe1ee9ef2c40999c35",
+        "candidateBlob": "71e4d9346454689a55cc8b5a42fbdc88333ecf42",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "test/integration.test.js"
+      },
+      {
+        "basisBlob": "d9f3ccfa23e7e14133499e0bc1a6baca9d5f7310",
+        "candidateBlob": "dd09378dca950343179ee31e2a23f527339b90f3",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "test/server.test.js"
+      },
+      {
+        "basisBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+        "candidateBlob": "c30c4888d516e384aefdc29df4d93aabfdedd37c",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "proto/energy.proto"
+      },
+      {
+        "basisBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+        "candidateBlob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "service/grpc_client.js"
+      },
+      {
+        "basisBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+        "candidateBlob": "1cb66081224cda6472348330724a77bbed63d6c5",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "service/wire.js"
+      },
+      {
+        "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+        "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "test/rest.test.js"
+      }
+    ],
+    "envelopeId": "envelope-7b41a24b5a6d1dcdfe6df967759e6187",
+    "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+    "phase": "SETTLED",
+    "receiptId": "c10b6b02e6ad8edba2314945a1982856a3597ee8cf0d844763a5df8079f2c86b",
+    "schemaVersion": 1,
+    "taskId": "revise-fleet-default"
+  },
+  "route": "formal-worker",
+  "gate": {
+    "gate_id": "gate-release",
+    "version": 1,
+    "subject_type": "attempt",
+    "subject_id": "attempt-6b4984b3222c08768c5113e4715d9ef0",
+    "verdict": "PASS",
+    "passed": [
+      "exists(write_scope_valid)",
+      "exists(tests_pass)",
+      "exists(expected_files_exist)"
+    ],
+    "failed": [],
+    "unresolved": [],
+    "evidence_used": [
+      "evidence-352dfcc9b250a28c2f98cdb49bfabc1c",
+      "evidence-8cc56f0c2846c388324501e6d2c51889",
+      "evidence-9d4e65433fed1cee617448b7771e9dbc"
+    ],
+    "next_evidence_needed": []
+  },
+  "reason": "ENOENT: no such file or directory, mkdir 'C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-work-revision-real-20261110122113\\grpc\\recount\\scorer'",
+  "accounting": {
+    "requests": 44,
+    "unresolved": 0,
+    "confirmed": 1364811,
+    "state": "OPEN",
+    "reason": null
+  }
+}

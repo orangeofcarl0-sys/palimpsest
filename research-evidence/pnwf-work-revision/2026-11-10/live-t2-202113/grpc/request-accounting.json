@@ -1,0 +1,688 @@
+{
+  "schema": "pnwf-usage-snapshot/v1",
+  "cohortId": "work-revision-live-grpc-d2df10eb-94a2-4fd7-8744-ccf618593b16",
+  "configDigest": "68369082ff59463305a35b8ab501256ccc3b733b58da43e250717390c4779f1c",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 1364811,
+  "reserved": null,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": null,
+  "sessions": [
+    {
+      "id": "T2",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": null,
+      "softCeiling": null,
+      "maxRequests": 64,
+      "requestCount": 44,
+      "unresolvedRequests": 0,
+      "confirmed": 1364811,
+      "reserved": null
+    }
+  ],
+  "requests": [
+    {
+      "id": "955533fc-f6ce-4862-b83d-9fff4b10ab22",
+      "session": "T2",
+      "digest": "b1db1ae93af5632c70deacca3d66b2c8337b4f2cb3cd9ff5da21810438cd6b68",
+      "reserved": null,
+      "actual": 10876,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 5124,
+        "cache_read_input_tokens": 5632,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 120
+      }
+    },
+    {
+      "id": "8dc0b6ae-a54d-46e2-a7ac-8842e6f67c2f",
+      "session": "T2",
+      "digest": "ccd1f78c7ec081ca3b8cdfb99f096d08e06856dde344a136dc640a06c7967def",
+      "reserved": null,
+      "actual": 14042,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 3095,
+        "cache_read_input_tokens": 10752,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 195
+      }
+    },
+    {
+      "id": "31e15673-7491-40d7-98da-38a58bd8b257",
+      "session": "T2",
+      "digest": "eba745379db4faac165691a5a28e978a148fc97c18dddded364c8fffc9c98443",
+      "reserved": null,
+      "actual": 16689,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 2596,
+        "cache_read_input_tokens": 13952,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 141
+      }
+    },
+    {
+      "id": "208a8577-8262-4010-b730-3fef99bf35b2",
+      "session": "T2",
+      "digest": "b6eb7025eff1af01803fbd9ac7b46533f36e7da407223d65af445f7a0ed60422",
+      "reserved": null,
+      "actual": 21863,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 4756,
+        "cache_read_input_tokens": 16640,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 467
+      }
+    },
+    {
+      "id": "8a961269-3561-4cb5-9dd4-3b2b3a831c77",
+      "session": "T2",
+      "digest": "c3a91e55b6f822a09770592415bc12b66481111c197e8e8ff6b7c18b3f05b584",
+      "reserved": null,
+      "actual": 23791,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1441,
+        "cache_read_input_tokens": 21760,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 590
+      }
+    },
+    {
+      "id": "8ba2642d-d5ad-4b69-bb4c-7291e5b06e95",
+      "session": "T2",
+      "digest": "9e1365ceee1b43fed3426d14334d4aab34f05843f13d54c85dea503e38b9d852",
+      "reserved": null,
+      "actual": 24938,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 950,
+        "cache_read_input_tokens": 23680,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 308
+      }
+    },
+    {
+      "id": "103ff86c-a0b1-4298-a51e-f58000e50a48",
+      "session": "T2",
+      "digest": "b0aa2cc768ff4cd733f30a1973682a0c753254ce073e2de45124348ab5a232d1",
+      "reserved": null,
+      "actual": 25533,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 538,
+        "cache_read_input_tokens": 24832,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 163
+      }
+    },
+    {
+      "id": "60882eb7-3eeb-4bb2-af0a-09e635949f12",
+      "session": "T2",
+      "digest": "b10f7dd847568be287359fab1f94da7c4b723da304dd2ba3fbdaba25b6b069fc",
+      "reserved": null,
+      "actual": 25671,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 231,
+        "cache_read_input_tokens": 25344,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 96
+      }
+    },
+    {
+      "id": "1a8bd999-d127-49da-8815-26d8cda902d1",
+      "session": "T2",
+      "digest": "2714f436fa8bba6b3f5da8d7808ad1d4d6b9cf8da2ebc7ff9e3651ffc797bd70",
+      "reserved": null,
+      "actual": 26288,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 422,
+        "cache_read_input_tokens": 25600,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 266
+      }
+    },
+    {
+      "id": "d97ea0f4-154f-4441-b04b-c00da1eb0cfc",
+      "session": "T2",
+      "digest": "64e8f6e92613c489e0e43499034b6ac911fc96b230f8c5f6e785977e5e4ce1ba",
+      "reserved": null,
+      "actual": 26874,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 441,
+        "cache_read_input_tokens": 26240,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 193
+      }
+    },
+    {
+      "id": "ba6c3902-d536-4dee-8150-7f6c86736e12",
+      "session": "T2",
+      "digest": "dc1bc0344c0d98c4b118f05754f6324a02c24b47b6eeeff093d85c965804e39d",
+      "reserved": null,
+      "actual": 27152,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 170,
+        "cache_read_input_tokens": 26752,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 230
+      }
+    },
+    {
+      "id": "d732596d-875f-4b47-9398-d61490aca5bf",
+      "session": "T2",
+      "digest": "6b45edb5c314f536508d3d5c57e9fedc9f94ed3c28fe91955b30e04ac018d4ba",
+      "reserved": null,
+      "actual": 30299,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 3010,
+        "cache_read_input_tokens": 27136,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 153
+      }
+    },
+    {
+      "id": "2ec708df-4951-4ac9-813b-c0452ffbfe9c",
+      "session": "T2",
+      "digest": "3659c9b1f00eae30ae8d4dc449ed259979650fb9b46359981d525ac91f2dd9ae",
+      "reserved": null,
+      "actual": 32898,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 2474,
+        "cache_read_input_tokens": 30208,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 216
+      }
+    },
+    {
+      "id": "33b10a04-3497-44e3-b90a-3bf0f6c0be12",
+      "session": "T2",
+      "digest": "f6ad6285834ef4caf28e1271575eb1930b029c80cdfb14c3c5afde5fc58c6c70",
+      "reserved": null,
+      "actual": 34367,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1178,
+        "cache_read_input_tokens": 32896,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 293
+      }
+    },
+    {
+      "id": "fb28ba29-aed8-4753-858b-ac2e8cc6434d",
+      "session": "T2",
+      "digest": "d6eb36e5f3a03c0f9f9370db0d89fad0f5fafc6dbb3090edfbef45c7b5a304d4",
+      "reserved": null,
+      "actual": 6605,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 3931,
+        "cache_read_input_tokens": 2560,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 114
+      }
+    },
+    {
+      "id": "60f3f895-3266-41b7-89f1-9650108fafbe",
+      "session": "T2",
+      "digest": "ac8c4a2a6c5fc176bf1ac86e796b75f67f6d1ea74ac3fb6e17a33b12565d3b57",
+      "reserved": null,
+      "actual": 35257,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 898,
+        "cache_read_input_tokens": 34304,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 55
+      }
+    },
+    {
+      "id": "fba051cf-970b-4e2d-b6fe-c2de4c6eecf8",
+      "session": "T2",
+      "digest": "4884c5994490e1e2264b4da2e1d0c772672a557bac9db3d5c92572ba18ab30fd",
+      "reserved": null,
+      "actual": 7250,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 505,
+        "cache_read_input_tokens": 6528,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 217
+      }
+    },
+    {
+      "id": "16f3b011-58aa-4397-9dbc-7f4d0dd5f659",
+      "session": "T2",
+      "digest": "bd88c07fd95dbe7c317d298c73b8d7e53807113a48ff1e922007a87feb1bfee9",
+      "reserved": null,
+      "actual": 12428,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 5035,
+        "cache_read_input_tokens": 7168,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 225
+      }
+    },
+    {
+      "id": "c9c08eec-457c-493a-ad84-3f0a61f5e416",
+      "session": "T2",
+      "digest": "c6ffe0a3af3e6d718e00424cad2be3a820960e68d2103b8df36165c5b342c056",
+      "reserved": null,
+      "actual": 35751,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 397,
+        "cache_read_input_tokens": 35200,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 154
+      }
+    },
+    {
+      "id": "3a776d6d-f268-4853-adf7-3808b006c4fd",
+      "session": "T2",
+      "digest": "987e3857362468efcf7b4e2ac37e36e33be287666676d4838a22a02ba9df2030",
+      "reserved": null,
+      "actual": 20981,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 8253,
+        "cache_read_input_tokens": 12416,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 312
+      }
+    },
+    {
+      "id": "89dee0bb-fe5f-4c71-b9a1-0e2179c9da7e",
+      "session": "T2",
+      "digest": "41354063cec6316dc4c96a73763505db9a9310bba7c4447101fc6e4b0944de08",
+      "reserved": null,
+      "actual": 35938,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 181,
+        "cache_read_input_tokens": 35584,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 173
+      }
+    },
+    {
+      "id": "243aa25a-39a8-4867-956c-6c5916f66678",
+      "session": "T2",
+      "digest": "655828e6cb32ecd6a99d47a60aad057c4fc96ae6b399147879c2079675815fe8",
+      "reserved": null,
+      "actual": 25316,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 2658,
+        "cache_read_input_tokens": 20864,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1794
+      }
+    },
+    {
+      "id": "81bca253-4945-4850-a2f7-d93edc6f97d3",
+      "session": "T2",
+      "digest": "949fb3ebb129df14c4374561bbc251ac2e8540b90dfe06ec48b5190f108047eb",
+      "reserved": null,
+      "actual": 36242,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 281,
+        "cache_read_input_tokens": 35840,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 121
+      }
+    },
+    {
+      "id": "c3d15f07-558a-4944-83fd-7ba1200ef1ec",
+      "session": "T2",
+      "digest": "4af945774a30ab6fce6963585d58dd3ffc27e91e1cf882f4ad86df66916a7c47",
+      "reserved": null,
+      "actual": 37398,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 660,
+        "cache_read_input_tokens": 36224,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 514
+      }
+    },
+    {
+      "id": "568e225d-4e0a-4323-a0d3-c9bd56b7ab06",
+      "session": "T2",
+      "digest": "d71b9d48b1c14307e2eaa0221dc2ed8c951ad58e319b370fc301cded95c4db84",
+      "reserved": null,
+      "actual": 39773,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1899,
+        "cache_read_input_tokens": 37376,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 498
+      }
+    },
+    {
+      "id": "30862545-8b42-4f40-b898-ca4be73bb883",
+      "session": "T2",
+      "digest": "59f6ed1435e183111e6c392e3d6f983adfccbfbd9d257019db818812caf4eabb",
+      "reserved": null,
+      "actual": 40064,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 236,
+        "cache_read_input_tokens": 39552,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 276
+      }
+    },
+    {
+      "id": "85eb2a7f-7129-4dfe-9ae0-8307948094fb",
+      "session": "T2",
+      "digest": "86338dfb65440ef57c7322c78fa5417556f78421af6a2619720a2f9d91d55c98",
+      "reserved": null,
+      "actual": 25935,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 179,
+        "cache_read_input_tokens": 25216,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 540
+      }
+    },
+    {
+      "id": "c059564e-ce58-4cca-bec4-f1c1b571f84f",
+      "session": "T2",
+      "digest": "046e8de88bc7112c656f5a1777955f0669b0557b9cbeae3daf4f02c54419f746",
+      "reserved": null,
+      "actual": 40735,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 341,
+        "cache_read_input_tokens": 40064,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 330
+      }
+    },
+    {
+      "id": "09954594-de13-406b-83ee-a2d740d688b7",
+      "session": "T2",
+      "digest": "72e9ca3570890ffed8b188a0c3921be3e43aa648ee85bf74a445904e663ffff3",
+      "reserved": null,
+      "actual": 26699,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 234,
+        "cache_read_input_tokens": 25728,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 737
+      }
+    },
+    {
+      "id": "822a7f0f-50db-4f6a-aa08-a59c476dabf4",
+      "session": "T2",
+      "digest": "5589c2857af33c7ad9bf87b866f2555e2293630975e4ef4d65dcfc4065000a11",
+      "reserved": null,
+      "actual": 42220,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 871,
+        "cache_read_input_tokens": 40704,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 645
+      }
+    },
+    {
+      "id": "31401187-2cce-47aa-8274-2cc4560cd009",
+      "session": "T2",
+      "digest": "824edd50a3c14a31d8cff8b202cc65f606e0867621b7e41e8eb16c05170d7e0f",
+      "reserved": null,
+      "actual": 26994,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 253,
+        "cache_read_input_tokens": 26496,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 245
+      }
+    },
+    {
+      "id": "1e027b67-eecd-4c2a-9add-caae3ee6b932",
+      "session": "T2",
+      "digest": "855441351ea1c538490d56018b62aade8f2a7c88a165453c15e20a8ccfd39e43",
+      "reserved": null,
+      "actual": 27965,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 829,
+        "cache_read_input_tokens": 26880,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 256
+      }
+    },
+    {
+      "id": "4cc60e91-e872-430c-97ba-ca79df8ad164",
+      "session": "T2",
+      "digest": "0f9c87d7119b2def044025f4c8bd07dc338e1a68a579a1c686d2bee4515320a2",
+      "reserved": null,
+      "actual": 30004,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1879,
+        "cache_read_input_tokens": 27904,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 221
+      }
+    },
+    {
+      "id": "c1402d94-539d-4ac6-9fa7-dc6c12e20534",
+      "session": "T2",
+      "digest": "6fcb40433eb8ab51ff6b834ff760b266343488acfc3de9cf304d38c645bbe1b2",
+      "reserved": null,
+      "actual": 30283,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 209,
+        "cache_read_input_tokens": 29824,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 250
+      }
+    },
+    {
+      "id": "fa3a89a1-118b-4cba-802d-9b9e576beeb2",
+      "session": "T2",
+      "digest": "f4848d58eb87f0729b886bbc02b145b4c50942090e7866d3fdcf4aa1547ae670",
+      "reserved": null,
+      "actual": 30807,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 550,
+        "cache_read_input_tokens": 30208,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 49
+      }
+    },
+    {
+      "id": "de63977e-a642-46ec-9340-ae257dc42351",
+      "session": "T2",
+      "digest": "7a64b119d66b2a9194f3d2459241ac85a5117628d7d97d93efdb94bf49343e9c",
+      "reserved": null,
+      "actual": 32528,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1506,
+        "cache_read_input_tokens": 30720,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 302
+      }
+    },
+    {
+      "id": "7e4f44f0-edd1-4a71-ac95-23f581fcc576",
+      "session": "T2",
+      "digest": "02ff329b9a153f15a80c811b501b18c4e22abc5e00505b145082bd47f7a10fcb",
+      "reserved": null,
+      "actual": 32645,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 175,
+        "cache_read_input_tokens": 32384,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 86
+      }
+    },
+    {
+      "id": "e961c406-5f2a-4f29-9628-bb92825c440f",
+      "session": "T2",
+      "digest": "b89955934960a707855a7507c53c77380f3d14291c24f6d428a835047feb03ee",
+      "reserved": null,
+      "actual": 42485,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 158,
+        "cache_read_input_tokens": 42112,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 215
+      }
+    },
+    {
+      "id": "50782604-ca05-4d77-96ae-e28037bda503",
+      "session": "T2",
+      "digest": "1d0b6d96b5266d4f25c0a503e0c698b10dac18c20328015af91dce17579e9ca6",
+      "reserved": null,
+      "actual": 46209,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 2652,
+        "cache_read_input_tokens": 42368,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1189
+      }
+    },
+    {
+      "id": "eda52a2c-97ae-4399-af33-e127bd553ce8",
+      "session": "T2",
+      "digest": "d1e6a5bb4031075f0e7b81390492de97161b17e8a8e73f45f021f84e9addb206",
+      "reserved": null,
+      "actual": 48139,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1317,
+        "cache_read_input_tokens": 46208,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 614
+      }
+    },
+    {
+      "id": "4e1c121d-eb00-42a0-84ed-ffb865b618ad",
+      "session": "T2",
+      "digest": "ecc47edff66bed262850306d251100fba1c96cb580e3e29b071097f28a22de1a",
+      "reserved": null,
+      "actual": 50068,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1446,
+        "cache_read_input_tokens": 48128,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 494
+      }
+    },
+    {
+      "id": "16b34222-2f35-4712-98a6-3582bb0d6773",
+      "session": "T2",
+      "digest": "b00e575fff1e9a74b51767491993f41f284b5cd4b92d4e61b62c115d1873f7a1",
+      "reserved": null,
+      "actual": 50421,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 297,
+        "cache_read_input_tokens": 50048,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 76
+      }
+    },
+    {
+      "id": "378fc2d0-b83f-486f-ae4f-8c243746b925",
+      "session": "T2",
+      "digest": "1cfbb37b542ad9591657784c504c88691caabc4eba09532d5f1cf63c47447edd",
+      "reserved": null,
+      "actual": 52595,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 742,
+        "cache_read_input_tokens": 50304,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1549
+      }
+    },
+    {
+      "id": "fb13dd20-df3a-4c32-9556-d834c9b49092",
+      "session": "T2",
+      "digest": "78178ff12ab449bc5fafcc2bfdd3babea0068121603a1b9bd255610483d53139",
+      "reserved": null,
+      "actual": 53795,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 792,
+        "cache_read_input_tokens": 52480,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 523
+      }
+    }
+  ],
+  "refusals": []
+}

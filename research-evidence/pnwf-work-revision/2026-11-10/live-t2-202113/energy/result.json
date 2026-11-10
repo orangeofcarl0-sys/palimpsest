@@ -1,0 +1,1359 @@
+{
+  "scenario": "energy",
+  "basis": "8041871314136d417b285a800265858757463f68",
+  "cohortId": "work-revision-live-energy-c6f1b02a-e618-4ae4-8247-c75b1820243c",
+  "passed": true,
+  "usageKnown": true,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "work-revision-live-energy-c6f1b02a-e618-4ae4-8247-c75b1820243c",
+    "sessionId": "T2",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-work-revision-real-20261110122113\\energy\\stages\\T2\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-work-revision-real-20261110122113\\energy\\runtime-T2",
+    "principalRuntime": "container",
+    "containerId": "848007eada2b2357289390a631d893ee6595ffdcfd269bcc8d1c17c8f0f28591",
+    "qualification": "0a94e0657ad632b17a8240d84b446b2a86d3a2f9b48efdbd09a97f86e46db27c",
+    "startedAt": "2026-11-10T12:27:31.013Z",
+    "endedAt": "2026-11-10T12:31:21.767Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "work-revision-live-energy-c6f1b02a-e618-4ae4-8247-c75b1820243c",
+      "sessionId": "T2",
+      "observedAt": "2026-11-10T12:31:21.767Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 1117558,
+      "confirmedTokens": 1117558,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 46,
+    "paidModelCalls": 46
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-2200b902-d195-4dfb-85b5-4663155bba8d",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 46,
+    "knownTokens": 1117558,
+    "totalTokens": 1117558,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 47335,
+      "cache_read_input_tokens": 1054080,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 16143
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 25,
+        "input": 25622,
+        "cacheRead": 603520,
+        "cacheWrite": 0,
+        "output": 5525,
+        "total": 634667
+      },
+      "worker": {
+        "requests": 21,
+        "input": 21713,
+        "cacheRead": 450560,
+        "cacheWrite": 0,
+        "output": 10618,
+        "total": 482891
+      }
+    },
+    "traceTotal": 1117558,
+    "traceRequests": 46,
+    "workerRequests": 21,
+    "elapsedMs": 230754,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [
+      {
+        "startedAt": "2026-11-10T12:28:44.839Z",
+        "outcome": "READY_FOR_SETTLEMENT",
+        "attemptId": "attempt-4d19a2e7ecd345572d8eae9befa64d41",
+        "basis": "8041871314136d417b285a800265858757463f68",
+        "writeScope": [
+          "deliverables/technical-capacity.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md"
+        ],
+        "containerId": "90e4a0f935271dac1fcb9e936e04ac4533d0d17a44ac2895d4af5cb23f86af43",
+        "qualification": "2fbbcee244af0070573a17c0e08435968c942f94d7bd2b2d0a57264f584f4087",
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "sessionId": "worker-580f3857-9983-4f2d-80f9-e82098bbc2a8",
+        "result": "de0b02e1ed08c649384056d3a3c2306cc961203a",
+        "paths": [
+          "deliverables/cost-model.json",
+          "deliverables/recommendation.md",
+          "deliverables/risk-review.md",
+          "deliverables/schedule.md",
+          "deliverables/technical-capacity.md"
+        ],
+        "endedAt": "2026-11-10T12:30:39.321Z"
+      }
+    ],
+    "traces": [
+      {
+        "id": "session-2200b902-d195-4dfb-85b5-4663155bba8d",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "7451261572725fd16e5c6e193b05eac2ba7b127031b0997a6985a471c6b3f0b9",
+        "counts": {
+          "steps": 25,
+          "turns": 1,
+          "toolCalls": 24,
+          "pairedToolResults": 24,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 7,
+          "commits": 0,
+          "jobs": 12
+        },
+        "refs": [
+          {
+            "callId": "call_00_jLHiNfVhbgLt87FvtZtU8592",
+            "seq": 86,
+            "kind": "job_output",
+            "state": null,
+            "reason": null,
+            "detail": null
+          }
+        ],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794313687559,
+            "messageId": "7cffc58d-bb6d-4e1b-9d91-90e5cbcd9783",
+            "usage": {
+              "inputTokens": 574,
+              "outputTokens": 60,
+              "cacheReadTokens": 10240,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10874
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1794313695044,
+            "messageId": "59b1d071-e9a8-4ce6-b393-f1f98039a225",
+            "usage": {
+              "inputTokens": 3721,
+              "outputTokens": 140,
+              "cacheReadTokens": 10752,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14613
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1794313697454,
+            "messageId": "7f50a4fc-3c2f-4b84-b0ba-e7359770d700",
+            "usage": {
+              "inputTokens": 473,
+              "outputTokens": 125,
+              "cacheReadTokens": 14592,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15190
+            }
+          },
+          {
+            "seq": 36,
+            "at": 1794313699546,
+            "messageId": "51b67f9a-0d4b-47e8-8119-aa8760abe743",
+            "usage": {
+              "inputTokens": 346,
+              "outputTokens": 224,
+              "cacheReadTokens": 15104,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15674
+            }
+          },
+          {
+            "seq": 44,
+            "at": 1794313700929,
+            "messageId": "4c85d101-8474-432c-8618-e24cb5a8d02b",
+            "usage": {
+              "inputTokens": 1345,
+              "outputTokens": 82,
+              "cacheReadTokens": 15616,
+              "cacheWriteTokens": 0,
+              "totalTokens": 17043
+            }
+          },
+          {
+            "seq": 52,
+            "at": 1794313705203,
+            "messageId": "2fa55fd6-5a4a-4549-b757-4e2407ff317c",
+            "usage": {
+              "inputTokens": 4087,
+              "outputTokens": 557,
+              "cacheReadTokens": 17024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 21668
+            }
+          },
+          {
+            "seq": 60,
+            "at": 1794313706704,
+            "messageId": "f1ffe2e3-0bbb-4973-a874-6e3b5fcd69b5",
+            "usage": {
+              "inputTokens": 240,
+              "outputTokens": 58,
+              "cacheReadTokens": 21504,
+              "cacheWriteTokens": 0,
+              "totalTokens": 21802
+            }
+          },
+          {
+            "seq": 66,
+            "at": 1794313712249,
+            "messageId": "f0dab718-0a59-4334-afe3-87ffa1526bdc",
+            "usage": {
+              "inputTokens": 686,
+              "outputTokens": 706,
+              "cacheReadTokens": 21760,
+              "cacheWriteTokens": 0,
+              "totalTokens": 23152
+            }
+          },
+          {
+            "seq": 72,
+            "at": 1794313714618,
+            "messageId": "2fb611e7-c3a7-43f2-95ea-5565115f4930",
+            "usage": {
+              "inputTokens": 1048,
+              "outputTokens": 166,
+              "cacheReadTokens": 23040,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24254
+            }
+          },
+          {
+            "seq": 78,
+            "at": 1794313735261,
+            "messageId": "62ea5915-f857-4abe-92a3-0269687914b9",
+            "usage": {
+              "inputTokens": 486,
+              "outputTokens": 125,
+              "cacheReadTokens": 24192,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24803
+            }
+          },
+          {
+            "seq": 84,
+            "at": 1794313740822,
+            "messageId": "81b46ce4-8961-451d-b22e-ea1e9c64c81b",
+            "usage": {
+              "inputTokens": 433,
+              "outputTokens": 291,
+              "cacheReadTokens": 24704,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25428
+            }
+          },
+          {
+            "seq": 90,
+            "at": 1794313741886,
+            "messageId": "7dab048c-2625-4935-86c1-46e8f8f3d8d8",
+            "usage": {
+              "inputTokens": 252,
+              "outputTokens": 113,
+              "cacheReadTokens": 25216,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25581
+            }
+          },
+          {
+            "seq": 96,
+            "at": 1794313746328,
+            "messageId": "42448c12-2d64-4b75-a64b-14be0caf12b9",
+            "usage": {
+              "inputTokens": 443,
+              "outputTokens": 188,
+              "cacheReadTokens": 25472,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26103
+            }
+          },
+          {
+            "seq": 104,
+            "at": 1794313763047,
+            "messageId": "318c8a9f-5521-4729-b938-dd23c0596f5e",
+            "usage": {
+              "inputTokens": 137,
+              "outputTokens": 75,
+              "cacheReadTokens": 25984,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26196
+            }
+          },
+          {
+            "seq": 110,
+            "at": 1794313767083,
+            "messageId": "eda029a4-69c7-4c4f-aab1-5358c016dacd",
+            "usage": {
+              "inputTokens": 418,
+              "outputTokens": 206,
+              "cacheReadTokens": 26112,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26736
+            }
+          },
+          {
+            "seq": 118,
+            "at": 1794313799019,
+            "messageId": "56b5d94f-3e4c-4ef7-8e74-251b3a5e82fc",
+            "usage": {
+              "inputTokens": 168,
+              "outputTokens": 75,
+              "cacheReadTokens": 26624,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26867
+            }
+          },
+          {
+            "seq": 124,
+            "at": 1794313803129,
+            "messageId": "12f42f86-571f-473a-a7da-28527f3101ee",
+            "usage": {
+              "inputTokens": 449,
+              "outputTokens": 149,
+              "cacheReadTokens": 26752,
+              "cacheWriteTokens": 0,
+              "totalTokens": 27350
+            }
+          },
+          {
+            "seq": 132,
+            "at": 1794313804959,
+            "messageId": "8d72115a-4892-4f85-8798-6dd3f69cf1ab",
+            "usage": {
+              "inputTokens": 1275,
+              "outputTokens": 194,
+              "cacheReadTokens": 27264,
+              "cacheWriteTokens": 0,
+              "totalTokens": 28733
+            }
+          },
+          {
+            "seq": 140,
+            "at": 1794313852566,
+            "messageId": "5f15f718-03ee-4486-802d-80c05984c666",
+            "usage": {
+              "inputTokens": 235,
+              "outputTokens": 74,
+              "cacheReadTokens": 28544,
+              "cacheWriteTokens": 0,
+              "totalTokens": 28853
+            }
+          },
+          {
+            "seq": 146,
+            "at": 1794313855183,
+            "messageId": "652ecebf-eee6-4f4b-943f-71cdcbfbba78",
+            "usage": {
+              "inputTokens": 654,
+              "outputTokens": 75,
+              "cacheReadTokens": 28800,
+              "cacheWriteTokens": 0,
+              "totalTokens": 29529
+            }
+          },
+          {
+            "seq": 152,
+            "at": 1794313858668,
+            "messageId": "f27d1440-d32a-4660-958c-baeb925c4d71",
+            "usage": {
+              "inputTokens": 1109,
+              "outputTokens": 449,
+              "cacheReadTokens": 29440,
+              "cacheWriteTokens": 0,
+              "totalTokens": 30998
+            }
+          },
+          {
+            "seq": 160,
+            "at": 1794313861629,
+            "messageId": "fc2e7029-0bf3-4711-81b7-40accf736925",
+            "usage": {
+              "inputTokens": 319,
+              "outputTokens": 158,
+              "cacheReadTokens": 30976,
+              "cacheWriteTokens": 0,
+              "totalTokens": 31453
+            }
+          },
+          {
+            "seq": 168,
+            "at": 1794313864710,
+            "messageId": "59f701a2-416d-4b31-8126-563367eb86a4",
+            "usage": {
+              "inputTokens": 4375,
+              "outputTokens": 257,
+              "cacheReadTokens": 31360,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35992
+            }
+          },
+          {
+            "seq": 176,
+            "at": 1794313869397,
+            "messageId": "fb6b6f50-1638-4287-98e0-dd8a6e5586ef",
+            "usage": {
+              "inputTokens": 219,
+              "outputTokens": 625,
+              "cacheReadTokens": 35840,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36684
+            }
+          },
+          {
+            "seq": 182,
+            "at": 1794313880169,
+            "messageId": "4e576ce7-ef4e-443a-8b56-e818ddb039d5",
+            "usage": {
+              "inputTokens": 2130,
+              "outputTokens": 353,
+              "cacheReadTokens": 36608,
+              "cacheWriteTokens": 0,
+              "totalTokens": 39091
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 12,
+          "work:status": 1,
+          "work:plan": 1,
+          "work:delegate": 1,
+          "work:workers": 5,
+          "job_output": 1,
+          "work:run": 1,
+          "work:conclude": 1
+        }
+      },
+      {
+        "id": "worker-580f3857-9983-4f2d-80f9-e82098bbc2a8",
+        "cwd": "/run/stage/world",
+        "role": "worker",
+        "digest": "1ce4e048211e7f65d1a71de2a68f80407b58c45c37d4670542d0ca9297671c10",
+        "counts": {
+          "steps": 21,
+          "turns": 1,
+          "toolCalls": 24,
+          "pairedToolResults": 24,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 10
+        },
+        "refs": [
+          {
+            "callId": "call_00_k2RzKOefRENf9A5ebMDf5493",
+            "seq": 56,
+            "kind": "write",
+            "state": null,
+            "reason": null,
+            "detail": null
+          }
+        ],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794313752663,
+            "messageId": "c0bc703a-6f5a-4592-8299-bf4af3566b29",
+            "usage": {
+              "inputTokens": 1075,
+              "outputTokens": 83,
+              "cacheReadTokens": 5504,
+              "cacheWriteTokens": 0,
+              "totalTokens": 6662
+            }
+          },
+          {
+            "seq": 22,
+            "at": 1794313754412,
+            "messageId": "921cf96c-e3b1-4b34-9631-5e9fcd38ace9",
+            "usage": {
+              "inputTokens": 325,
+              "outputTokens": 142,
+              "cacheReadTokens": 6656,
+              "cacheWriteTokens": 0,
+              "totalTokens": 7123
+            }
+          },
+          {
+            "seq": 30,
+            "at": 1794313755900,
+            "messageId": "45a0dd70-a1fc-4e81-a6e1-76decb3e15d0",
+            "usage": {
+              "inputTokens": 860,
+              "outputTokens": 130,
+              "cacheReadTokens": 7040,
+              "cacheWriteTokens": 0,
+              "totalTokens": 8030
+            }
+          },
+          {
+            "seq": 38,
+            "at": 1794313757640,
+            "messageId": "28d4ce06-470c-41b9-af32-8a1d8a98e3f3",
+            "usage": {
+              "inputTokens": 723,
+              "outputTokens": 89,
+              "cacheReadTokens": 7936,
+              "cacheWriteTokens": 0,
+              "totalTokens": 8748
+            }
+          },
+          {
+            "seq": 46,
+            "at": 1794313763660,
+            "messageId": "f36d38eb-cb06-45db-b721-3c27256bbaf4",
+            "usage": {
+              "inputTokens": 4119,
+              "outputTokens": 877,
+              "cacheReadTokens": 8704,
+              "cacheWriteTokens": 0,
+              "totalTokens": 13700
+            }
+          },
+          {
+            "seq": 54,
+            "at": 1794313776375,
+            "messageId": "9c6ebfe3-e916-4ea7-b717-01c425284397",
+            "usage": {
+              "inputTokens": 510,
+              "outputTokens": 1582,
+              "cacheReadTokens": 13696,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15788
+            }
+          },
+          {
+            "seq": 60,
+            "at": 1794313778275,
+            "messageId": "36793653-dc8f-4a85-a68b-d3f11680e802",
+            "usage": {
+              "inputTokens": 216,
+              "outputTokens": 203,
+              "cacheReadTokens": 15616,
+              "cacheWriteTokens": 0,
+              "totalTokens": 16035
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1794313780799,
+            "messageId": "1293c6f1-79eb-43ff-868e-0adde17c7e15",
+            "usage": {
+              "inputTokens": 4339,
+              "outputTokens": 215,
+              "cacheReadTokens": 16000,
+              "cacheWriteTokens": 0,
+              "totalTokens": 20554
+            }
+          },
+          {
+            "seq": 80,
+            "at": 1794313786735,
+            "messageId": "77511062-b108-48d1-bf2b-e05b2a287ef0",
+            "usage": {
+              "inputTokens": 247,
+              "outputTokens": 1153,
+              "cacheReadTokens": 20352,
+              "cacheWriteTokens": 0,
+              "totalTokens": 21752
+            }
+          },
+          {
+            "seq": 86,
+            "at": 1794313790311,
+            "messageId": "4172a5b3-df94-487f-b00f-079f97b120c5",
+            "usage": {
+              "inputTokens": 166,
+              "outputTokens": 640,
+              "cacheReadTokens": 21632,
+              "cacheWriteTokens": 0,
+              "totalTokens": 22438
+            }
+          },
+          {
+            "seq": 92,
+            "at": 1794313800776,
+            "messageId": "f80dffc9-5b9e-460c-ac54-64c903f4281c",
+            "usage": {
+              "inputTokens": 210,
+              "outputTokens": 2093,
+              "cacheReadTokens": 22272,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24575
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1794313805797,
+            "messageId": "77e2ad65-72b4-473e-b5c1-198510bc1796",
+            "usage": {
+              "inputTokens": 172,
+              "outputTokens": 1058,
+              "cacheReadTokens": 24448,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25678
+            }
+          },
+          {
+            "seq": 104,
+            "at": 1794313807498,
+            "messageId": "37bd873f-f92a-4899-8bf2-b9d072627d3e",
+            "usage": {
+              "inputTokens": 252,
+              "outputTokens": 144,
+              "cacheReadTokens": 25472,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25868
+            }
+          },
+          {
+            "seq": 112,
+            "at": 1794313809642,
+            "messageId": "f0eedcfc-feed-4d89-ae77-34935bc3ff1b",
+            "usage": {
+              "inputTokens": 225,
+              "outputTokens": 91,
+              "cacheReadTokens": 25856,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26172
+            }
+          },
+          {
+            "seq": 120,
+            "at": 1794313817081,
+            "messageId": "9f5b664c-3c57-4d11-bd56-1d7c6df4fca5",
+            "usage": {
+              "inputTokens": 5706,
+              "outputTokens": 1095,
+              "cacheReadTokens": 26112,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32913
+            }
+          },
+          {
+            "seq": 126,
+            "at": 1794313818992,
+            "messageId": "c940a928-73b4-4373-820c-58e9f5bca87a",
+            "usage": {
+              "inputTokens": 176,
+              "outputTokens": 222,
+              "cacheReadTokens": 32768,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33166
+            }
+          },
+          {
+            "seq": 134,
+            "at": 1794313821333,
+            "messageId": "71c73641-b59e-44b4-af82-3cd89080e09a",
+            "usage": {
+              "inputTokens": 211,
+              "outputTokens": 135,
+              "cacheReadTokens": 33024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33370
+            }
+          },
+          {
+            "seq": 142,
+            "at": 1794313823810,
+            "messageId": "b12a5c78-12a6-4a27-8350-503a0c0a72b8",
+            "usage": {
+              "inputTokens": 166,
+              "outputTokens": 32,
+              "cacheReadTokens": 33280,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33478
+            }
+          },
+          {
+            "seq": 148,
+            "at": 1794313828975,
+            "messageId": "04d01702-0644-4069-af81-0c00b634175b",
+            "usage": {
+              "inputTokens": 1582,
+              "outputTokens": 464,
+              "cacheReadTokens": 33408,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35454
+            }
+          },
+          {
+            "seq": 156,
+            "at": 1794313831252,
+            "messageId": "b90aa650-ba35-411b-9b6b-b002bf918d5f",
+            "usage": {
+              "inputTokens": 188,
+              "outputTokens": 154,
+              "cacheReadTokens": 35328,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35670
+            }
+          },
+          {
+            "seq": 162,
+            "at": 1794313832202,
+            "messageId": "24c61f56-9bae-4b94-ba95-527b4579edb8",
+            "usage": {
+              "inputTokens": 245,
+              "outputTokens": 16,
+              "cacheReadTokens": 35456,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35717
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 10,
+          "write": 6,
+          "read": 5,
+          "edit": 1,
+          "palimpsest_worker_receipt": 1,
+          "palimpsest_worker_result": 1
+        }
+      }
+    ]
+  },
+  "facts": {
+    "head": "8041871314136d417b285a800265858757463f68",
+    "tasks": [
+      {
+        "task_id": "revise-energy-package",
+        "state": "VERIFYING",
+        "last_event_id": 16
+      }
+    ],
+    "attempts": [
+      {
+        "id": "attempt-4d19a2e7ecd345572d8eae9befa64d41",
+        "task": "revise-energy-package",
+        "state": "COMPLETED",
+        "taskId": "revise-energy-package",
+        "report": {
+          "attempt_id": "attempt-4d19a2e7ecd345572d8eae9befa64d41",
+          "base_commit": "8041871314136d417b285a800265858757463f68",
+          "changed_files": [
+            "deliverables/cost-model.json",
+            "deliverables/recommendation.md",
+            "deliverables/risk-review.md",
+            "deliverables/schedule.md",
+            "deliverables/technical-capacity.md"
+          ],
+          "context_manifest": "context-manifest-1fda8128e51dbb8238c5572a11e099a1",
+          "envelope_id": "envelope-47cb79cdaa84ab110817106a2b2075b4",
+          "finished_at": "2026-08-13T00:00:01.000000Z",
+          "input_project_digest": "a2c7d107a97af08f0a025cc57354c3a79df88cf9b5abeb664bf6ec8eb6f3bfd9",
+          "input_project_revision": 2,
+          "produced_artifacts": [
+            "deliverables/technical-capacity.md",
+            "deliverables/cost-model.json",
+            "deliverables/schedule.md",
+            "deliverables/risk-review.md",
+            "deliverables/recommendation.md"
+          ],
+          "project_id": "energy-project-continuity",
+          "result_commit": "de0b02e1ed08c649384056d3a3c2306cc961203a",
+          "revision_receipt": {
+            "attemptId": "attempt-4d19a2e7ecd345572d8eae9befa64d41",
+            "basis": "8041871314136d417b285a800265858757463f68",
+            "candidate": "de0b02e1ed08c649384056d3a3c2306cc961203a",
+            "checks": [
+              {
+                "basisBlob": "32542899f522b16b5d18bbde269e6958ffc6b46e",
+                "candidateBlob": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "1da9d31a93e70237cde7090a8e89f5b0f7e567d0",
+                "candidateBlob": "8198854959b5fad33eba89d17d33ac697c22cbc9",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "f237c1eed3b51e7d82867e1a16f1352b5bbb4fcf",
+                "candidateBlob": "803dd343f8771f9e02cca978673fbb50599b6b55",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "00ac0b6e01a48b9e596784e178eeee4e3fbf0441",
+                "candidateBlob": "405795c3923f52b009c7016721428178cb01f7cd",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "7a81ec728e980d80b12984822bcb1b0b944eacd5",
+                "candidateBlob": "93fa3b2f7a3b7c169291e3937a77441eef2deefc",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "32542899f522b16b5d18bbde269e6958ffc6b46e",
+                "candidateBlob": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "1da9d31a93e70237cde7090a8e89f5b0f7e567d0",
+                "candidateBlob": "8198854959b5fad33eba89d17d33ac697c22cbc9",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "f237c1eed3b51e7d82867e1a16f1352b5bbb4fcf",
+                "candidateBlob": "803dd343f8771f9e02cca978673fbb50599b6b55",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "00ac0b6e01a48b9e596784e178eeee4e3fbf0441",
+                "candidateBlob": "405795c3923f52b009c7016721428178cb01f7cd",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "7a81ec728e980d80b12984822bcb1b0b944eacd5",
+                "candidateBlob": "93fa3b2f7a3b7c169291e3937a77441eef2deefc",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "32542899f522b16b5d18bbde269e6958ffc6b46e",
+                "candidateBlob": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "1da9d31a93e70237cde7090a8e89f5b0f7e567d0",
+                "candidateBlob": "8198854959b5fad33eba89d17d33ac697c22cbc9",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "f237c1eed3b51e7d82867e1a16f1352b5bbb4fcf",
+                "candidateBlob": "803dd343f8771f9e02cca978673fbb50599b6b55",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "00ac0b6e01a48b9e596784e178eeee4e3fbf0441",
+                "candidateBlob": "405795c3923f52b009c7016721428178cb01f7cd",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "7a81ec728e980d80b12984822bcb1b0b944eacd5",
+                "candidateBlob": "93fa3b2f7a3b7c169291e3937a77441eef2deefc",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+                "candidateBlob": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "deliverables/vendor-compliance.md"
+              }
+            ],
+            "envelopeId": "envelope-47cb79cdaa84ab110817106a2b2075b4",
+            "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+            "phase": "SETTLED",
+            "receiptId": "eabef741111d2a04ee6890687f2093bbde05a62793efa37e31fe02f3453604e3",
+            "schemaVersion": 1,
+            "taskId": "revise-energy-package"
+          },
+          "runtime_metadata": {
+            "argv": [
+              "dsh-agent"
+            ],
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "exit_code": 0,
+            "runner": "dsh-agent",
+            "runner_version": "1",
+            "stderr_artifact": null,
+            "stdout_artifact": null
+          },
+          "schema_version": 1,
+          "started_at": "2026-08-13T00:00:00.000000Z",
+          "summary": "delegated work settled from its execution world",
+          "task_id": "revise-energy-package",
+          "worker_status": "completed",
+          "worktree_id": "worktree-efa64d41"
+        },
+        "envelope": {
+          "schema_version": 1,
+          "project_id": "energy-project-continuity",
+          "task_id": "revise-energy-package",
+          "envelope_id": "envelope-47cb79cdaa84ab110817106a2b2075b4",
+          "project_revision": 2,
+          "project_digest": "a2c7d107a97af08f0a025cc57354c3a79df88cf9b5abeb664bf6ec8eb6f3bfd9",
+          "base_commit": "8041871314136d417b285a800265858757463f68",
+          "objective": "In an isolated worktree, revise the North Ridge / Harbor Flats deployment decision package for the 2026-11-06 supplier capacity correction (S-1080 at HF is 600 kW, below the 620 kW requirement). Keep all still-valid facts and the accepted package intact on the basis HEAD. Modify exactly five paths: deliverables/technical-capacity.md, deliverables/cost-model.json, deliverables/schedule.md, deliverables/risk-review.md, deliverables/recommendation.md. Keep deliverables/vendor-compliance.md byte-for-byte identical to the basis; its certificate evidence is read-only. Select the lowest landed-cost configuration that meets all eligibility requirements, update the schedule from vendor lead weeks with the common 2026-11-05 start, refresh the risk review for the corrected capacity basis, and commit the candidate in the isolated worktree for owner approval without promoting or accepting it.",
+          "read_paths": [
+            "src"
+          ],
+          "write_paths": [
+            "deliverables/technical-capacity.md",
+            "deliverables/cost-model.json",
+            "deliverables/schedule.md",
+            "deliverables/risk-review.md",
+            "deliverables/recommendation.md"
+          ],
+          "required_artifacts": [
+            "deliverables/technical-capacity.md",
+            "deliverables/cost-model.json",
+            "deliverables/schedule.md",
+            "deliverables/risk-review.md",
+            "deliverables/recommendation.md"
+          ],
+          "allowed_commands": [
+            {
+              "executable": "node",
+              "argv_prefix": [
+                "check.mjs"
+              ]
+            }
+          ],
+          "network_policy": "deny",
+          "network_allowlist": [],
+          "timeout_s": 60,
+          "lease_s": 10,
+          "attempt_limit": 2,
+          "candidate_limit": 1,
+          "idempotency_key": "2744e5f173c11a8ce45203d4fbe296957363f55aa37de5282b8a64d57395e479",
+          "obligations": {
+            "rules": {
+              "schemaVersion": 1,
+              "mayWrite": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md"
+              ],
+              "mustChange": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md"
+              ],
+              "mustExist": [
+                "deliverables/cost-model.json",
+                "deliverables/recommendation.md",
+                "deliverables/risk-review.md",
+                "deliverables/schedule.md",
+                "deliverables/technical-capacity.md"
+              ],
+              "mustPreserve": [
+                "deliverables/vendor-compliance.md"
+              ]
+            },
+            "digest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26"
+          }
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": 1,
+        "type": "PROJECT_CREATED",
+        "entityId": "energy-project-continuity"
+      },
+      {
+        "id": 2,
+        "type": "GATE_DEFINED",
+        "entityId": "gate-release"
+      },
+      {
+        "id": 3,
+        "type": "ROLE_TABLE_DEFINED",
+        "entityId": "energy-project-continuity"
+      },
+      {
+        "id": 4,
+        "type": "STAGE_GRAPH_DEFINED",
+        "entityId": "energy-project-continuity"
+      },
+      {
+        "id": 5,
+        "type": "MANUAL_APPROVAL_RECORDED",
+        "entityId": "energy-project-continuity"
+      },
+      {
+        "id": 6,
+        "type": "PROJECT_REVISED",
+        "entityId": "energy-project-continuity"
+      },
+      {
+        "id": 7,
+        "type": "PROJECT_REVISED",
+        "entityId": "energy-project-continuity"
+      },
+      {
+        "id": 8,
+        "type": "TASK_CREATED",
+        "entityId": "revise-energy-package"
+      },
+      {
+        "id": 9,
+        "type": "TASK_STARTED",
+        "entityId": "revise-energy-package"
+      },
+      {
+        "id": 10,
+        "type": "ATTEMPT_CREATED",
+        "entityId": "attempt-4d19a2e7ecd345572d8eae9befa64d41"
+      },
+      {
+        "id": 11,
+        "type": "ATTEMPT_STARTED",
+        "entityId": "attempt-4d19a2e7ecd345572d8eae9befa64d41"
+      },
+      {
+        "id": 12,
+        "type": "CONTEXT_MANIFEST_ADDED",
+        "entityId": "context-manifest-1fda8128e51dbb8238c5572a11e099a1"
+      },
+      {
+        "id": 13,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-429d73098fa7df8a2295c135938de1bc"
+      },
+      {
+        "id": 14,
+        "type": "EVIDENCE_ADDED",
+        "entityId": "evidence-afc29826312ee56e0c2826730b1e57f7"
+      },
+      {
+        "id": 15,
+        "type": "ATTEMPT_COMPLETED",
+        "entityId": "attempt-4d19a2e7ecd345572d8eae9befa64d41"
+      },
+      {
+        "id": 16,
+        "type": "TASK_VERIFYING",
+        "entityId": "revise-energy-package"
+      }
+    ],
+    "conclusion": {
+      "seq": 5,
+      "eventId": "pjer-d31a3a484a4c825b46d4ef365bbae561",
+      "intent": "WAIT_FOR_OPERATOR",
+      "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: WAIT_FOR_OPERATOR\nStatement: The governed task revise-energy-package has a completed Worker result and is VERIFYING. The Worker revised exactly the five authorized deliverables in an isolated worktree for the 2026-11-06 S-1080/Harbor Flats capacity correction, kept deliverables/vendor-compliance.md byte-for-byte identical to the basis (SHA-256 9470e55a...), preserved still-valid facts, passed node check.mjs --final, and committed candidate de0b02e1ed08c649384056d3a3c2306cc961203a. The revised package selects K-900 at both sites at USD 536,000, updates both schedules to 2027-02-11, and documents the corrected-capacity risks. The accepted package remains at canonical HEAD 8041871314136d417b285a800265858757463f68; nothing has been promoted or accepted.\nArtifacts: none\nWaiting on: Project owner review and approval (or rework) of candidate de0b02e1ed08c649384056d3a3c2306cc961203a in the isolated worktree, with the accepted package still at canonical HEAD 8041871314136d417b285a800265858757463f68.\nNext step: Owner reviews the candidate; acceptance/promotion is the owner's action, not the agent's.\nEvidence: commit:de0b02e1ed08c649384056d3a3c2306cc961203a, commit:8041871314136d417b285a800265858757463f68\nBasis: revision 2, head 8041871314136d417b285a800265858757463f68\nArtifact provenance: (not recorded)\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"WAIT_FOR_OPERATOR\",\"statement\":\"The governed task revise-energy-package has a completed Worker result and is VERIFYING. The Worker revised exactly the five authorized deliverables in an isolated worktree for the 2026-11-06 S-1080/Harbor Flats capacity correction, kept deliverables/vendor-compliance.md byte-for-byte identical to the basis (SHA-256 9470e55a...), preserved still-valid facts, passed node check.mjs --final, and committed candidate de0b02e1ed08c649384056d3a3c2306cc961203a. The revised package selects K-900 at both sites at USD 536,000, updates both schedules to 2027-02-11, and documents the corrected-capacity risks. The accepted package remains at canonical HEAD 8041871314136d417b285a800265858757463f68; nothing has been promoted or accepted.\",\"artifacts\":[],\"waitingOn\":\"Project owner review and approval (or rework) of candidate de0b02e1ed08c649384056d3a3c2306cc961203a in the isolated worktree, with the accepted package still at canonical HEAD 8041871314136d417b285a800265858757463f68.\",\"nextStep\":\"Owner reviews the candidate; acceptance/promotion is the owner's action, not the agent's.\",\"evidenceRefs\":[\"commit:de0b02e1ed08c649384056d3a3c2306cc961203a\",\"commit:8041871314136d417b285a800265858757463f68\"],\"recordedAt\":\"2026-11-10T12:31:15.420Z\",\"basis\":{\"projectRevision\":2,\"projectDigest\":\"a2c7d107a97af08f0a025cc57354c3a79df88cf9b5abeb664bf6ec8eb6f3bfd9\",\"headCommit\":\"8041871314136d417b285a800265858757463f68\"},\"check\":{\"deliveryBlockers\":[\"task revise-energy-package is VERIFYING\",\"task:revise-energy-package awaits an operator acceptance decision\"],\"awaitingOperator\":[\"task:revise-energy-package\"],\"openTasks\":[\"revise-energy-package:VERIFYING\"],\"openAttempts\":[],\"unresolvedQuestions\":[\"journal:pje-e433171fdb13888b81f01b147b668976\"],\"blockedEffects\":[],\"artifacts\":[]},\"conclusionId\":\"episode-a9d53f9127732aa7504a5916\"}"
+    },
+    "promotions": [],
+    "headState": {
+      "schemaVersion": 1,
+      "projectRevision": 2,
+      "projectHeadCommit": "8041871314136d417b285a800265858757463f68",
+      "provenEffectHeadCommit": "8041871314136d417b285a800265858757463f68",
+      "latestPromotionEventRef": null,
+      "state": "IN_SYNC"
+    }
+  },
+  "receipt": {
+    "attemptId": "attempt-4d19a2e7ecd345572d8eae9befa64d41",
+    "basis": "8041871314136d417b285a800265858757463f68",
+    "candidate": "de0b02e1ed08c649384056d3a3c2306cc961203a",
+    "checks": [
+      {
+        "basisBlob": "32542899f522b16b5d18bbde269e6958ffc6b46e",
+        "candidateBlob": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "deliverables/cost-model.json"
+      },
+      {
+        "basisBlob": "1da9d31a93e70237cde7090a8e89f5b0f7e567d0",
+        "candidateBlob": "8198854959b5fad33eba89d17d33ac697c22cbc9",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "deliverables/recommendation.md"
+      },
+      {
+        "basisBlob": "f237c1eed3b51e7d82867e1a16f1352b5bbb4fcf",
+        "candidateBlob": "803dd343f8771f9e02cca978673fbb50599b6b55",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "deliverables/risk-review.md"
+      },
+      {
+        "basisBlob": "00ac0b6e01a48b9e596784e178eeee4e3fbf0441",
+        "candidateBlob": "405795c3923f52b009c7016721428178cb01f7cd",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "deliverables/schedule.md"
+      },
+      {
+        "basisBlob": "7a81ec728e980d80b12984822bcb1b0b944eacd5",
+        "candidateBlob": "93fa3b2f7a3b7c169291e3937a77441eef2deefc",
+        "kind": "WRITE_SCOPE",
+        "passed": true,
+        "path": "deliverables/technical-capacity.md"
+      },
+      {
+        "basisBlob": "32542899f522b16b5d18bbde269e6958ffc6b46e",
+        "candidateBlob": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "deliverables/cost-model.json"
+      },
+      {
+        "basisBlob": "1da9d31a93e70237cde7090a8e89f5b0f7e567d0",
+        "candidateBlob": "8198854959b5fad33eba89d17d33ac697c22cbc9",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "deliverables/recommendation.md"
+      },
+      {
+        "basisBlob": "f237c1eed3b51e7d82867e1a16f1352b5bbb4fcf",
+        "candidateBlob": "803dd343f8771f9e02cca978673fbb50599b6b55",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "deliverables/risk-review.md"
+      },
+      {
+        "basisBlob": "00ac0b6e01a48b9e596784e178eeee4e3fbf0441",
+        "candidateBlob": "405795c3923f52b009c7016721428178cb01f7cd",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "deliverables/schedule.md"
+      },
+      {
+        "basisBlob": "7a81ec728e980d80b12984822bcb1b0b944eacd5",
+        "candidateBlob": "93fa3b2f7a3b7c169291e3937a77441eef2deefc",
+        "kind": "MUST_CHANGE",
+        "passed": true,
+        "path": "deliverables/technical-capacity.md"
+      },
+      {
+        "basisBlob": "32542899f522b16b5d18bbde269e6958ffc6b46e",
+        "candidateBlob": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "deliverables/cost-model.json"
+      },
+      {
+        "basisBlob": "1da9d31a93e70237cde7090a8e89f5b0f7e567d0",
+        "candidateBlob": "8198854959b5fad33eba89d17d33ac697c22cbc9",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "deliverables/recommendation.md"
+      },
+      {
+        "basisBlob": "f237c1eed3b51e7d82867e1a16f1352b5bbb4fcf",
+        "candidateBlob": "803dd343f8771f9e02cca978673fbb50599b6b55",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "deliverables/risk-review.md"
+      },
+      {
+        "basisBlob": "00ac0b6e01a48b9e596784e178eeee4e3fbf0441",
+        "candidateBlob": "405795c3923f52b009c7016721428178cb01f7cd",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "deliverables/schedule.md"
+      },
+      {
+        "basisBlob": "7a81ec728e980d80b12984822bcb1b0b944eacd5",
+        "candidateBlob": "93fa3b2f7a3b7c169291e3937a77441eef2deefc",
+        "kind": "MUST_EXIST",
+        "passed": true,
+        "path": "deliverables/technical-capacity.md"
+      },
+      {
+        "basisBlob": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+        "candidateBlob": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+        "kind": "MUST_PRESERVE",
+        "passed": true,
+        "path": "deliverables/vendor-compliance.md"
+      }
+    ],
+    "envelopeId": "envelope-47cb79cdaa84ab110817106a2b2075b4",
+    "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+    "phase": "SETTLED",
+    "receiptId": "eabef741111d2a04ee6890687f2093bbde05a62793efa37e31fe02f3453604e3",
+    "schemaVersion": 1,
+    "taskId": "revise-energy-package"
+  },
+  "route": "formal-worker",
+  "gate": {
+    "gate_id": "gate-release",
+    "version": 1,
+    "subject_type": "attempt",
+    "subject_id": "attempt-4d19a2e7ecd345572d8eae9befa64d41",
+    "verdict": "PASS",
+    "passed": [
+      "exists(write_scope_valid)",
+      "exists(expected_files_exist)"
+    ],
+    "failed": [],
+    "unresolved": [],
+    "evidence_used": [
+      "evidence-429d73098fa7df8a2295c135938de1bc",
+      "evidence-afc29826312ee56e0c2826730b1e57f7"
+    ],
+    "next_evidence_needed": []
+  },
+  "business": {
+    "passed": true,
+    "commit": "de0b02e1ed08c649384056d3a3c2306cc961203a",
+    "basis": "8041871314136d417b285a800265858757463f68",
+    "tree": "bf18bbad72f17fdc7f1885127c6bb1bb8b9daa8c",
+    "artifacts": {
+      "deliverables/technical-capacity.md": "93fa3b2f7a3b7c169291e3937a77441eef2deefc",
+      "deliverables/vendor-compliance.md": "6ef5f2c8a1056ba280e9659a83179e4e3e56384c",
+      "deliverables/cost-model.json": "ed27ca1d43bc8b834de85bcee32906d226cd5bf6",
+      "deliverables/schedule.md": "405795c3923f52b009c7016721428178cb01f7cd",
+      "deliverables/risk-review.md": "803dd343f8771f9e02cca978673fbb50599b6b55",
+      "deliverables/recommendation.md": "8198854959b5fad33eba89d17d33ac697c22cbc9"
+    },
+    "changedPaths": [
+      "deliverables/cost-model.json",
+      "deliverables/recommendation.md",
+      "deliverables/risk-review.md",
+      "deliverables/schedule.md",
+      "deliverables/technical-capacity.md"
+    ],
+    "recommendation": {
+      "north": "K-900",
+      "harbor": "K-900",
+      "totalUsd": 536000,
+      "corridorMm": 1250,
+      "bindingSources": [
+        "sources/sites.md",
+        "sources/capacity.csv",
+        "updates/2026-11-06/hf-capacity-correction.csv",
+        "sources/vendors.md",
+        "sources/quotes.csv",
+        "sources/leads.csv"
+      ]
+    },
+    "schedule": {
+      "start": "2026-11-05",
+      "installs": [
+        {
+          "site": "NR",
+          "model": "K-900",
+          "leadWeeks": 14,
+          "installStart": "2027-02-11",
+          "commission": "2027-02-11"
+        },
+        {
+          "site": "HF",
+          "model": "K-900",
+          "leadWeeks": 14,
+          "installStart": "2027-02-11",
+          "commission": "2027-02-11"
+        }
+      ]
+    },
+    "normalizations": [
+      {
+        "path": "deliverables/technical-capacity.md",
+        "changedLabels": [
+          {
+            "from": "North Ridge",
+            "to": "NR"
+          },
+          {
+            "from": "Harbor Flats",
+            "to": "HF"
+          }
+        ]
+      },
+      {
+        "path": "deliverables/cost-model.json",
+        "changedLabels": [
+          {
+            "from": "North Ridge",
+            "to": "NR"
+          },
+          {
+            "from": "Harbor Flats",
+            "to": "HF"
+          }
+        ]
+      },
+      {
+        "path": "deliverables/schedule.md",
+        "changedLabels": [
+          {
+            "from": "North Ridge",
+            "to": "NR"
+          },
+          {
+            "from": "Harbor Flats",
+            "to": "HF"
+          }
+        ]
+      }
+    ],
+    "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=K-900; total 536000 USD)"
+  },
+  "accounting": {
+    "requests": 46,
+    "unresolved": 0,
+    "confirmed": 1117558,
+    "state": "OPEN",
+    "reason": null
+  }
+}
