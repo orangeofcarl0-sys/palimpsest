@@ -6,7 +6,7 @@ import { analyzeAttributedStage } from "../analyze_energy_trajectory.mjs";
 import { digest, readJson } from "../energy/contract.mjs";
 
 const [root, grpcControl, energyControl] = process.argv.slice(2);
-ok(root && grpcControl && energyControl, "Usage: node scripts/pnwf/revision/analyze.mjs <run> <grpc-control-T2> <energy-control-T2>");
+ok(root && grpcControl, "Usage: node scripts/pnwf/revision/analyze.mjs <run> <grpc-control-T2> [energy-control-T2]");
 
 function grpcEvidence(result) {
   const { trajectory, workerReceipts } = result;
@@ -64,7 +64,8 @@ function analyze(stage, result) {
   };
 }
 
-const comparisons = Object.entries({ grpc: grpcControl, energy: energyControl }).map(([scenario, control]) => {
+const controls = energyControl ? { grpc: grpcControl, energy: energyControl } : { grpc: grpcControl };
+const comparisons = Object.entries(controls).map(([scenario, control]) => {
   const stage = join(root, scenario);
   const seal = readJson(join(stage, "contract.json"));
   const priorPath = join(control, "result.json");

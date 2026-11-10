@@ -129,11 +129,15 @@ async function snapshot(
   });
   const requested = input.taskId ?? null;
   const runningForTask = requested === null ? running : running.filter((attempt) => attempt.task_id === requested);
+  const schedulerStep = status.nextAction?.kind === "EXECUTE_SCHEDULER_STEP" && running.length === 0
+    ? deps.controller.nextDecisionPreview()
+    : null;
+  const nextVerification = schedulerStep?.eventType === "TASK_VERIFYING" ? schedulerStep.entityId : null;
   const taskId =
     requested ??
     (running.length === 1 ? running[0]!.task_id : null) ??
     (status.tasks ?? []).find((task) => task.state === "VERIFYING")?.task_id ??
-    null;
+    nextVerification;
   const task = taskId === null ? null : taskRowOf(status, taskId);
   const taskAttempts = taskId === null ? [] : attempts.filter((attempt) => attempt.task_id === taskId);
   const runningForThisTask = taskAttempts.filter((attempt) => {
@@ -207,19 +211,24 @@ async function snapshot(
   const candidateCommit = worldHead !== null && baseCommit !== "" && worldHead !== baseCommit ? worldHead : null;
   const resultCommit = canonicalResultCommit ?? candidateCommit;
   const uncommittedChanges = world?.uncommittedChanges ?? [];
-  const resultCommitted =
-    runningForThisTask.length === 1 &&
-    worldHead !== null &&
-    baseCommit !== "" &&
-    worldHead !== baseCommit &&
-    uncommittedChanges.length === 0;
+  const settledCommit = runningForThisTask.length === 0 && record?.state === "COMPLETED" ? canonicalResultCommit : null;
+  const settled = settledCommit !== null;
+  const resultRepository = settled ? repositoryPath ?? world?.workDir : world?.workDir;
+  const resultGit = resultRepository === undefined ? null : gitTextRunner(resultRepository);
+  const resultCommitted = settled
+    ? resultGit?.(["cat-file", "-t", settledCommit])?.trim() === "commit"
+    : runningForThisTask.length === 1 &&
+      worldHead !== null &&
+      baseCommit !== "" &&
+      worldHead !== baseCommit &&
+      uncommittedChanges.length === 0;
+  const artifactCommit = settledCommit ?? worldHead;
 
   const artifacts: OutcomeReadinessArtifact[] = requiredArtifacts.map((path) => {
     const present = world === null ? false : existsSync(join(world.workDir, path));
     const committed =
-      resultCommitted && world !== null
-        ? gitTextRunner(world.workDir)(["cat-file", "-e", `${world.observedHead}:${path}`]) !== null
-        : false;
+      resultCommitted && artifactCommit !== null && resultGit !== null &&
+        resultGit(["cat-file", "-e", `${artifactCommit}:${path}`]) !== null;
     return Object.freeze({ path, present, committed });
   });
   const missing = artifacts.filter((artifact) => !artifact.present || (resultCommitted && !artifact.committed));
@@ -236,6 +245,7 @@ async function snapshot(
     ? await retiredDelivery(deps, status, requested)
     : null;
   let action: OutcomeAction;
+  let settledNext: string[] | undefined;
   if (delivery !== null) {
     action = "SEMANTIC_JUDGEMENT";
     reasons.push(...delivery.reasons);
@@ -246,7 +256,25 @@ async function snapshot(
     action = "CONTINUE_WORK";
     reasons.push(`${String(runningForThisTask.length)} attempts are RUNNING for this task; pass the taskId the decision is about`);
   } else if (runningForThisTask.length === 0) {
-    if (task.state === "VERIFYING") {
+    if (settled && (task.state === "ACTIVE" || task.state === "VERIFYING")) {
+      action = "SEMANTIC_JUDGEMENT";
+      reasons.push(`the attempt already settled at ${settledCommit}; no second complete or finalize is needed`);
+      if (active || !resultCommitted) {
+        reasons.push(active ? "a worker job is still active" : "the recorded candidate commit cannot be read");
+        settledNext = ["inspect the named facts and re-read readiness"];
+      } else if (task.state === "VERIFYING") {
+        reasons.push("the candidate awaits operator acceptance; the episode decision is the principal's");
+        settledNext = ["if the candidate is ready for operator review, call palimpsest_work action=conclude intent=WAIT_FOR_OPERATOR with your statement"];
+      } else if (nextVerification === task.task_id) {
+        reasons.push("the scheduler's next transition is TASK_VERIFYING for this task");
+        settledNext = [
+          "call palimpsest_work action=next to advance this task to VERIFYING",
+          "once the task is VERIFYING, call palimpsest_work action=conclude intent=WAIT_FOR_OPERATOR if the candidate is ready for operator review",
+        ];
+      } else {
+        settledNext = ["inspect palimpsest_work action=status for the scheduler's current action, then re-read readiness"];
+      }
+    } else if (task.state === "VERIFYING") {
       action = "SEMANTIC_JUDGEMENT";
       reasons.push("a candidate is settled and awaits operator acceptance; the episode decision (WAIT_FOR_OPERATOR) is the principal's");
     } else if (task.state === "SATISFIED") {
@@ -353,6 +381,8 @@ async function snapshot(
     worldHead,
     uncommittedChanges: [...uncommittedChanges].sort(),
     resultCommit,
+    resultCommitted,
+    nextVerification,
     artifacts,
     inputState,
     inputs: (inputObservation?.inputs ?? []).map((entry) => ({ path: entry.path, digest: entry.digest, identity: entry.identity })),
@@ -433,7 +463,7 @@ async function snapshot(
         verificationSatisfiable,
       }),
       next: Object.freeze(
-        delivery?.next ?? (action === "MECHANICAL_FINALIZATION"
+        delivery?.next ?? settledNext ?? (action === "MECHANICAL_FINALIZATION"
           ? ["call further action=finalize with this observationDigest"]
           : action === "SEMANTIC_JUDGEMENT"
             ? ["inspect the named facts", "decide, then either finalize with the digest or conclude the episode"]

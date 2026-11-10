@@ -21,12 +21,13 @@ import { OFFLINE, scoreDelivery } from "../software/score.mjs";
 const { assert, changed, clean, digest, git, head, readJson, sha, writeJson } = energy;
 const repo = fileURLToPath(new URL("../../../", import.meta.url));
 const here = fileURLToPath(new URL(".", import.meta.url));
-const release = "7f849be7058cb75992ba06fa226a0ff708b25111";
+const originalRelease = "7f849be7058cb75992ba06fa226a0ff708b25111";
 const image = "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0";
 const window = { maxRequests: 64, wallClockMs: 1800000, requestTimeoutMs: 240000, billingCeiling: null };
 const { values } = parseArgs({ options: Object.fromEntries(
-  ["action", "scenario", "run", "world", "t1", "control", "approve"].map(key => [key, { type: "string" }])) });
+  ["action", "scenario", "run", "world", "t1", "control", "approve", "release", "qualification"].map(key => [key, { type: "string" }])) });
 const { action, scenario } = values;
+const release = values.release ?? originalRelease;
 assert(["prepare", "run", "review", "accept"].includes(action) && ["grpc", "energy"].includes(scenario) && values.run, "LIVE_T2_ARGUMENTS_REQUIRED");
 const root = resolve(values.run);
 const stage = join(root, "stages/T2");
@@ -80,6 +81,19 @@ function productBinding() {
   return Object.fromEntries(productFiles.map(path => [path, shaFile(join(runtime, "runtime", path))]));
 }
 
+function qualificationDigest() {
+  if (release === originalRelease) return null;
+  assert(values.qualification, "READINESS_MOCK_QUALIFICATION_REQUIRED");
+  const report = readJson(values.qualification);
+  assert(report.passed && report.paidModelCalls === 0 && report.implementationHead === release && report.image === image &&
+    report.readinessModuleSha256 === shaFile(join(runtime, "dist/src/application/work_outcome.js")) &&
+    ["grpc", "energy"].every(name => report.scenarios.find(row => row.name === name)?.sessions.some(row =>
+      row.interface === "normal-dsh" && row.naturalExit && row.unresolvedRequests === 0 &&
+      row.readiness?.active.task.state === "ACTIVE" && row.readiness?.verifying.task.state === "VERIFYING")),
+  "READINESS_MOCK_QUALIFICATION_MISMATCH");
+  return shaFile(values.qualification);
+}
+
 function prepare() {
   assert(values.world && values.t1 && values.control, "ORIGINAL_INPUT_PATHS_REQUIRED");
   const source = resolve(values.world);
@@ -118,7 +132,8 @@ function prepare() {
     mode: PAID_MODE, model: "deepseek-flash", dsh: "0.2.1-rc.5", window, admission, originalAdmission: original,
     originalPrompt: digest(spec.prompt), prompt: digest(prompt), correction: digest(correctionBytes), obligations,
     originalResultSha256: shaFile(join(control, "result.json")), t1ResultSha256: shaFile(join(first, "result.json")),
-    scorerSha256: shaFile(software ? frozenScore : join(scoreFixture, "check.mjs")), productBinding: productBinding() };
+    scorerSha256: shaFile(software ? frozenScore : join(scoreFixture, "check.mjs")), productBinding: productBinding(),
+    qualificationSha256: qualificationDigest() };
   writeJson(sealPath, seal);
   console.log("REPLAY_PREPARED", scenario, spec.basis, root);
 }
@@ -167,6 +182,7 @@ async function run() {
   assert(!existsSync(lock) && !existsSync(resultPath) && seal.release === release && seal.image === image && seal.scenario === scenario &&
     seal.basis === spec.basis && head(world) === spec.basis && clean(world) && shaFile(promptPath) === seal.prompt, "LIVE_PREPARATION_DRIFT");
   deepStrictEqual(productBinding(), seal.productBinding);
+  assert((seal.qualificationSha256 ?? null) === qualificationDigest(), "READINESS_MOCK_QUALIFICATION_DRIFT");
   const before = owner("facts");
   assert(before.head === spec.basis && before.attempts.length === 0 && before.promotions.length === 0, "PRE_RUN_PRODUCT_STATE_DRIFT");
   readDeepSeekKey();
@@ -265,7 +281,7 @@ function accept() {
     receiptId: candidate.receiptId, tree: candidate.tree, recordedAt: new Date().toISOString() });
 }
 
-assert(energy.descendant(repo, release, head(repo)) &&
+assert(sha(release) && energy.descendant(repo, originalRelease, release) && energy.descendant(repo, release, head(repo)) &&
   git(repo, "diff", "--name-only", release, "--", "src", "host", "package.json", "pnpm-lock.yaml", "tsconfig.json") === "" &&
   docker(["image", "inspect", image, "--format", "{{.Id}}"]) === image, "RELEASE_OR_IMAGE_DRIFT");
 if (action === "prepare") prepare();
