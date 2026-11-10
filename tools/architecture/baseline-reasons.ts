@@ -338,14 +338,14 @@ export const DEPENDENCY_FIREWALLS: readonly DependencyFirewall[] = Object.freeze
 export const HOTSPOT_RATCHETS: readonly HotspotRatchet[] = Object.freeze([
   {
     file: "src/tools/controller.ts",
-    maxLoc: 4830,
+    maxLoc: 4810,
     maxFanOut: 39,
     maxFanIn: 19,
     reason:
       "the Work orchestration façade and the measured hotspot SR-2 exists for. It was 5378 LOC / " +
       "fanOut 35 / fanIn 20 at the SR-2 start snapshot and 4828 / 39 / 19 after the b-slices: the " +
       "KNOWLEDGE it owns fell even though its fan-out rose (it now composes its owners). The ceiling " +
-      "is where SR-2 left it — it may fall, and it may not grow back.",
+      "was tightened to 4810 after Work revision settlement and Worker context moved to their owners.",
   },
   {
     file: "src/composition/install_contract.ts",
