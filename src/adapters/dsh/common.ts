@@ -6,6 +6,7 @@
  * required string action, an error type a host can recognise) and the clusters supply the rest.
  */
 
+import { WorkRevisionError } from "../../schema/work_revision.js";
 import type { DshContentBlock, DshToolDefinition, DshToolRunContext } from "../../tools/dsh_types.js";
 import { materializeProofSourceRevisionRef } from "../../proof_asset/index.js";
 
@@ -80,7 +81,12 @@ function tool(input: {
       const object = argsObject(args, allowed);
       const action = requiredString(object, "action");
       if (!input.actions.includes(action)) throw new ToolArgsError(`unknown action "${action}"`);
-      return input.run(action, object, context);
+      try {
+        return await input.run(action, object, context);
+      } catch (error) {
+        if (!(error instanceof WorkRevisionError)) throw error;
+        return { state: "REFUSED", ...error.refusal };
+      }
     },
   };
 }

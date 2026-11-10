@@ -1,0 +1,1566 @@
+{
+  "schema": "pnwf-work-revision-qualification/v1",
+  "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+  "paidModelCalls": 0,
+  "scenarios": [
+    {
+      "name": "grpc",
+      "first": "a97480ac5fc1d6ad60ae08941c5e882728b9762e",
+      "basis": "52f9fe8b425a1f3288f61d9c5953ca6cd38f545a",
+      "obligations": {
+        "schemaVersion": 1,
+        "mayWrite": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md",
+          "test/server.test.js"
+        ],
+        "mustChange": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md"
+        ],
+        "mustExist": [
+          "service/grpc_server.js",
+          "test/integration.test.js",
+          "MIGRATION.md",
+          "test/server.test.js"
+        ],
+        "mustPreserve": [
+          "proto/energy.proto",
+          "service/wire.js",
+          "service/grpc_client.js",
+          "test/rest.test.js"
+        ]
+      },
+      "sessions": [
+        {
+          "interface": "normal-dsh",
+          "basis": "52f9fe8b425a1f3288f61d9c5953ca6cd38f545a",
+          "receipt": {
+            "attemptId": "attempt-4bec4b77a3da2079a39be477690142a9",
+            "basis": "52f9fe8b425a1f3288f61d9c5953ca6cd38f545a",
+            "candidate": "566bd36c4aa9f29ff0838456bea034ed8e54df68",
+            "checks": [
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "candidateBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/server.test.js"
+              },
+              {
+                "basisBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "candidateBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "proto/energy.proto"
+              },
+              {
+                "basisBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "candidateBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/grpc_client.js"
+              },
+              {
+                "basisBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "candidateBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/wire.js"
+              },
+              {
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "test/rest.test.js"
+              }
+            ],
+            "envelopeId": "envelope-defc391cc2c2a0adc82e1a67a55ea9a2",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "phase": "SETTLED",
+            "receiptId": "b1b9d4d768a1fb5737fdeccaf3693a8069a039a6bd9cecec0d5887eae138a2d8",
+            "schemaVersion": 1,
+            "taskId": "revise-fleet-default"
+          },
+          "preview": {
+            "schemaVersion": 1,
+            "phase": "PREVIEW",
+            "taskId": "revise-fleet-default",
+            "attemptId": "attempt-4bec4b77a3da2079a39be477690142a9",
+            "envelopeId": "envelope-defc391cc2c2a0adc82e1a67a55ea9a2",
+            "basis": "52f9fe8b425a1f3288f61d9c5953ca6cd38f545a",
+            "candidate": "566bd36c4aa9f29ff0838456bea034ed8e54df68",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "receiptId": "b1b9d4d768a1fb5737fdeccaf3693a8069a039a6bd9cecec0d5887eae138a2d8",
+            "checks": [
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "test/server.test.js",
+                "passed": true,
+                "basisBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "candidateBlob": "6f26142895e018653df7645daa3674792b538c67"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "proto/energy.proto",
+                "passed": true,
+                "basisBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "candidateBlob": "cb47047c924012d191fd39896da234c7fbd31ab9"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "service/grpc_client.js",
+                "passed": true,
+                "basisBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "candidateBlob": "66fd2884106de651ef79175faebd70ffe83ea50e"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "service/wire.js",
+                "passed": true,
+                "basisBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "candidateBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "test/rest.test.js",
+                "passed": true,
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+              }
+            ]
+          },
+          "planRefusal": {
+            "state": "REFUSED",
+            "reason": "TASK_OBLIGATION_SCOPE_MISMATCH",
+            "detail": "Use only allowed paths and include every must-change path.",
+            "nextAction": "CORRECT_PLAN",
+            "paths": [
+              "proto/energy.proto"
+            ],
+            "candidate": null
+          },
+          "acceptedHead": "902f3c8a6285ca88c7e923751353cdeaad6c477d",
+          "promotionId": "promotion-24ded91b96e1ec775ef02e0ebcc84219",
+          "business": {
+            "commit": "566bd36c4aa9f29ff0838456bea034ed8e54df68",
+            "tree": "63deb527999e4b6498870b79476813a11827104b",
+            "changedPaths": [
+              "MIGRATION.md",
+              "service/grpc_server.js",
+              "test/integration.test.js"
+            ],
+            "blobs": {
+              "proto/energy.proto": "cb47047c924012d191fd39896da234c7fbd31ab9",
+              "service/wire.js": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+              "service/grpc_server.js": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+              "service/grpc_client.js": "66fd2884106de651ef79175faebd70ffe83ea50e",
+              "test/server.test.js": "6f26142895e018653df7645daa3674792b538c67",
+              "test/integration.test.js": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+              "MIGRATION.md": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+              "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+            },
+            "publicTests": 10,
+            "probes": {
+              "zero": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  }
+                ]
+              },
+              "omitted": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  }
+                ]
+              },
+              "positive2": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  }
+                ]
+              },
+              "positive6": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4210,
+                    "atMs": 1762300180000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4150,
+                    "atMs": 1762300240000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 3970,
+                    "atMs": 1762300300000
+                  }
+                ]
+              },
+              "unknownStream": {
+                "status": "5",
+                "frames": []
+              },
+              "unknownUnary": {
+                "status": "5",
+                "frames": []
+              },
+              "unary": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  }
+                ]
+              }
+            },
+            "oldRuleFailures": [
+              "zero",
+              "omitted"
+            ],
+            "newRuleFailures": []
+          },
+          "naturalExit": true,
+          "confirmedMockRequests": 20,
+          "unresolvedRequests": 0,
+          "requestIdsBound": true,
+          "usageTupleMatch": true,
+          "isolation": [
+            {
+              "attemptId": "attempt-4bec4b77a3da2079a39be477690142a9",
+              "qualification": "b1e4ef595441de67e3066616f75cddd1c25a3994e979733dd3c4e1c6c1dfc02b",
+              "exit": {
+                "code": 0,
+                "signal": null
+              }
+            }
+          ],
+          "streams": [
+            {
+              "role": "principal",
+              "digest": "75df0f2e101dc30f2322e66d74dde280a87b19144991ce46bfae0404b776f2ac",
+              "counts": {
+                "steps": 16,
+                "turns": 1,
+                "toolCalls": 15,
+                "pairedToolResults": 15,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 1,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 1,
+                "stateQueries": 9,
+                "commits": 0,
+                "jobs": 0
+              }
+            },
+            {
+              "role": "worker",
+              "digest": "6c2b682f8c4ae13173f95a0d4374d7b22b941df0ff2eb4979d82ef1cab7b877b",
+              "counts": {
+                "steps": 4,
+                "turns": 1,
+                "toolCalls": 3,
+                "pairedToolResults": 3,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 0,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 0,
+                "stateQueries": 0,
+                "commits": 0,
+                "jobs": 1
+              }
+            }
+          ],
+          "gitBundle": {
+            "file": "grpc-dsh.bundle",
+            "sha256": "4309983283fa2991d73920db6aa7e4f9f6ac24deb145e07452b1286263c677ae"
+          },
+          "requestLedger": "grpc-dsh-request-accounting.json"
+        },
+        {
+          "interface": "packed-product",
+          "basis": "52f9fe8b425a1f3288f61d9c5953ca6cd38f545a",
+          "receipt": {
+            "attemptId": "attempt-6a145ed1b20747f679ea58671249497f",
+            "basis": "52f9fe8b425a1f3288f61d9c5953ca6cd38f545a",
+            "candidate": "cb5aea3db9aa1c0685c394639bb3d5a5a71c50cb",
+            "checks": [
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "MIGRATION.md"
+              },
+              {
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "service/grpc_server.js"
+              },
+              {
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/integration.test.js"
+              },
+              {
+                "basisBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "candidateBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "test/server.test.js"
+              },
+              {
+                "basisBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "candidateBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "proto/energy.proto"
+              },
+              {
+                "basisBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "candidateBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/grpc_client.js"
+              },
+              {
+                "basisBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "candidateBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "service/wire.js"
+              },
+              {
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "test/rest.test.js"
+              }
+            ],
+            "envelopeId": "envelope-d11d145e2401c7708dd352c247b2a9f9",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "phase": "SETTLED",
+            "receiptId": "6f7db27e601eae59972f09843528a009f9066aa84f78d067355dea76d6a0b856",
+            "schemaVersion": 1,
+            "taskId": "revise-fleet-default"
+          },
+          "preview": {
+            "schemaVersion": 1,
+            "phase": "PREVIEW",
+            "taskId": "revise-fleet-default",
+            "attemptId": "attempt-6a145ed1b20747f679ea58671249497f",
+            "envelopeId": "envelope-d11d145e2401c7708dd352c247b2a9f9",
+            "basis": "52f9fe8b425a1f3288f61d9c5953ca6cd38f545a",
+            "candidate": "cb5aea3db9aa1c0685c394639bb3d5a5a71c50cb",
+            "obligationsDigest": "47f6158f2d109af393c1d6ab53a315014b7e14b9d0db71e86d9d63f3dbe875fa",
+            "receiptId": "6f7db27e601eae59972f09843528a009f9066aa84f78d067355dea76d6a0b856",
+            "checks": [
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "MIGRATION.md",
+                "passed": true,
+                "basisBlob": "cdf17b0f12a90c99ceed387b86836b990bbc8f09",
+                "candidateBlob": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "service/grpc_server.js",
+                "passed": true,
+                "basisBlob": "3bb6aad357d03aab3195411656f1e4e9e459cd12",
+                "candidateBlob": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "test/integration.test.js",
+                "passed": true,
+                "basisBlob": "2bb2b3334b9b1e069192a2d0274e348240861964",
+                "candidateBlob": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "test/server.test.js",
+                "passed": true,
+                "basisBlob": "6f26142895e018653df7645daa3674792b538c67",
+                "candidateBlob": "6f26142895e018653df7645daa3674792b538c67"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "proto/energy.proto",
+                "passed": true,
+                "basisBlob": "cb47047c924012d191fd39896da234c7fbd31ab9",
+                "candidateBlob": "cb47047c924012d191fd39896da234c7fbd31ab9"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "service/grpc_client.js",
+                "passed": true,
+                "basisBlob": "66fd2884106de651ef79175faebd70ffe83ea50e",
+                "candidateBlob": "66fd2884106de651ef79175faebd70ffe83ea50e"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "service/wire.js",
+                "passed": true,
+                "basisBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+                "candidateBlob": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "test/rest.test.js",
+                "passed": true,
+                "basisBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2",
+                "candidateBlob": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+              }
+            ]
+          },
+          "childPid": 3440,
+          "acceptedHead": "71515e8555f174c23c024a426e49ae736964b6b7",
+          "promotionId": "promotion-75f657e01fae58fda8a2063318828e06",
+          "wrongShaRefused": true,
+          "business": {
+            "commit": "cb5aea3db9aa1c0685c394639bb3d5a5a71c50cb",
+            "tree": "63deb527999e4b6498870b79476813a11827104b",
+            "changedPaths": [
+              "MIGRATION.md",
+              "service/grpc_server.js",
+              "test/integration.test.js"
+            ],
+            "blobs": {
+              "proto/energy.proto": "cb47047c924012d191fd39896da234c7fbd31ab9",
+              "service/wire.js": "0b6af8c9e658b6c90a4b2d11cdb4fcb8b6c18122",
+              "service/grpc_server.js": "3983fc3f1d4220401c217bcf4e33d7fd43c0dbaf",
+              "service/grpc_client.js": "66fd2884106de651ef79175faebd70ffe83ea50e",
+              "test/server.test.js": "6f26142895e018653df7645daa3674792b538c67",
+              "test/integration.test.js": "8b7967d77d49e80fd7e8cbd322c5e974ed5234c5",
+              "MIGRATION.md": "d40859f5ded2ddaa3a0dae92bbbee035fbaa59dc",
+              "test/rest.test.js": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+            },
+            "publicTests": 10,
+            "probes": {
+              "zero": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  }
+                ]
+              },
+              "omitted": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  }
+                ]
+              },
+              "positive2": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  }
+                ]
+              },
+              "positive6": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4185,
+                    "atMs": 1762300060000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4090,
+                    "atMs": 1762300120000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4210,
+                    "atMs": 1762300180000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 4150,
+                    "atMs": 1762300240000
+                  },
+                  {
+                    "siteId": "site-a",
+                    "watts": 3970,
+                    "atMs": 1762300300000
+                  }
+                ]
+              },
+              "unknownStream": {
+                "status": "5",
+                "frames": []
+              },
+              "unknownUnary": {
+                "status": "5",
+                "frames": []
+              },
+              "unary": {
+                "status": "0",
+                "frames": [
+                  {
+                    "siteId": "site-a",
+                    "watts": 4120,
+                    "atMs": 1762300000000
+                  }
+                ]
+              }
+            },
+            "oldRuleFailures": [
+              "zero",
+              "omitted"
+            ],
+            "newRuleFailures": []
+          },
+          "confirmedMockRequests": 0,
+          "unresolvedRequests": 0,
+          "gitBundle": {
+            "file": "grpc-sdk.bundle",
+            "sha256": "1ad9d0ebd4fb43b5c646aa1c2015c32733bd9998403ccd02565ee283b231081f"
+          }
+        }
+      ]
+    },
+    {
+      "name": "energy",
+      "first": "50e27f15561c283abc645ad3d722c09463482eba",
+      "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+      "obligations": {
+        "schemaVersion": 1,
+        "mayWrite": [
+          "deliverables/technical-capacity.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md"
+        ],
+        "mustChange": [
+          "deliverables/technical-capacity.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md"
+        ],
+        "mustExist": [
+          "deliverables/technical-capacity.md",
+          "deliverables/cost-model.json",
+          "deliverables/schedule.md",
+          "deliverables/risk-review.md",
+          "deliverables/recommendation.md"
+        ],
+        "mustPreserve": [
+          "deliverables/vendor-compliance.md"
+        ]
+      },
+      "sessions": [
+        {
+          "interface": "normal-dsh",
+          "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+          "receipt": {
+            "attemptId": "attempt-85b12b7078a982fb529e830028cf97bf",
+            "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+            "candidate": "fe8bae227daa1e6fefb220712b93207a67b4d5e4",
+            "checks": [
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "candidateBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "deliverables/vendor-compliance.md"
+              }
+            ],
+            "envelopeId": "envelope-34996e0509893424d5cfcde3a0ddb680",
+            "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+            "phase": "SETTLED",
+            "receiptId": "92c7e5ab144b2fc765515d137f50bb39c9ecebb48d04b26f6700e64d185de044",
+            "schemaVersion": 1,
+            "taskId": "revise-energy-package"
+          },
+          "preview": {
+            "schemaVersion": 1,
+            "phase": "PREVIEW",
+            "taskId": "revise-energy-package",
+            "attemptId": "attempt-85b12b7078a982fb529e830028cf97bf",
+            "envelopeId": "envelope-34996e0509893424d5cfcde3a0ddb680",
+            "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+            "candidate": "fe8bae227daa1e6fefb220712b93207a67b4d5e4",
+            "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+            "receiptId": "92c7e5ab144b2fc765515d137f50bb39c9ecebb48d04b26f6700e64d185de044",
+            "checks": [
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "deliverables/vendor-compliance.md",
+                "passed": true,
+                "basisBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "candidateBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe"
+              }
+            ]
+          },
+          "planRefusal": {
+            "state": "REFUSED",
+            "reason": "TASK_OBLIGATION_SCOPE_MISMATCH",
+            "detail": "Use only allowed paths and include every must-change path.",
+            "nextAction": "CORRECT_PLAN",
+            "paths": [
+              "deliverables/vendor-compliance.md"
+            ],
+            "candidate": null
+          },
+          "acceptedHead": "9a375f77f008ce871a566f531d65c586af7edf19",
+          "promotionId": "promotion-11bc6afcb6f7ed5e0533598af5a4b4a3",
+          "business": {
+            "passed": true,
+            "commit": "fe8bae227daa1e6fefb220712b93207a67b4d5e4",
+            "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+            "tree": "417cef0acce91a0698200c9f04495e8bb2d34867",
+            "artifacts": {
+              "deliverables/technical-capacity.md": "715902e8460576f98bead5361d9585da0fcd3518",
+              "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+              "deliverables/cost-model.json": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+              "deliverables/schedule.md": "630be116a008dbff49ffd313c3accf335be56912",
+              "deliverables/risk-review.md": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+              "deliverables/recommendation.md": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+            },
+            "changedPaths": [
+              "deliverables/cost-model.json",
+              "deliverables/recommendation.md",
+              "deliverables/risk-review.md",
+              "deliverables/schedule.md",
+              "deliverables/technical-capacity.md"
+            ],
+            "recommendation": {
+              "north": "K-900",
+              "harbor": "K-900",
+              "totalUsd": 536000,
+              "corridorMm": 1250
+            },
+            "schedule": {
+              "start": "2026-11-05",
+              "installs": [
+                {
+                  "site": "NR",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-18"
+                },
+                {
+                  "site": "HF",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-18"
+                }
+              ]
+            },
+            "normalizations": [],
+            "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=K-900; total 536000 USD)"
+          },
+          "naturalExit": true,
+          "confirmedMockRequests": 18,
+          "unresolvedRequests": 0,
+          "requestIdsBound": true,
+          "usageTupleMatch": true,
+          "isolation": [
+            {
+              "attemptId": "attempt-85b12b7078a982fb529e830028cf97bf",
+              "qualification": "e159b2be5557d570af43b1e67e75fba30e6da059178e8c3e31d698598a04d04d",
+              "exit": {
+                "code": 0,
+                "signal": null
+              }
+            }
+          ],
+          "streams": [
+            {
+              "role": "principal",
+              "digest": "e5ea1d40ab534844fbd6e160d1bdc41bc51a65fcb445ffc09fce91ee005b60d5",
+              "counts": {
+                "steps": 14,
+                "turns": 1,
+                "toolCalls": 13,
+                "pairedToolResults": 13,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 1,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 1,
+                "stateQueries": 7,
+                "commits": 0,
+                "jobs": 0
+              }
+            },
+            {
+              "role": "worker",
+              "digest": "e2abb9242571920cee91d4abbe0ed61a8c38934d2948254c665a3335987cc746",
+              "counts": {
+                "steps": 4,
+                "turns": 1,
+                "toolCalls": 3,
+                "pairedToolResults": 3,
+                "unpairedToolResults": 0,
+                "toolErrors": 0,
+                "jobFailures": 0,
+                "domainRefusals": 0,
+                "repeatedRefusals": 0,
+                "noProgressToolCalls": 0,
+                "stateQueries": 0,
+                "commits": 0,
+                "jobs": 1
+              }
+            }
+          ],
+          "gitBundle": {
+            "file": "energy-dsh.bundle",
+            "sha256": "aba53ef2a12e38a81e44444d8c68cba6a684dd596e043154d2e7fcd18ee75d50"
+          },
+          "requestLedger": "energy-dsh-request-accounting.json"
+        },
+        {
+          "interface": "packed-product",
+          "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+          "receipt": {
+            "attemptId": "attempt-d9b41b9d810f1c3265d37623d6623f31",
+            "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+            "candidate": "7edc4e9b5d0a2052abe56a3a3e730394fe43f5d6",
+            "checks": [
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "WRITE_SCOPE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "MUST_CHANGE",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/cost-model.json"
+              },
+              {
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/recommendation.md"
+              },
+              {
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/risk-review.md"
+              },
+              {
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/schedule.md"
+              },
+              {
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518",
+                "kind": "MUST_EXIST",
+                "passed": true,
+                "path": "deliverables/technical-capacity.md"
+              },
+              {
+                "basisBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "candidateBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "kind": "MUST_PRESERVE",
+                "passed": true,
+                "path": "deliverables/vendor-compliance.md"
+              }
+            ],
+            "envelopeId": "envelope-52f32f053c031e585af31e2a6fc94a53",
+            "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+            "phase": "SETTLED",
+            "receiptId": "4b23c1a0c1fdaeca3eeb642c902a8e713b6b98b8b300c52debe5ece2388131a2",
+            "schemaVersion": 1,
+            "taskId": "revise-energy-package"
+          },
+          "preview": {
+            "schemaVersion": 1,
+            "phase": "PREVIEW",
+            "taskId": "revise-energy-package",
+            "attemptId": "attempt-d9b41b9d810f1c3265d37623d6623f31",
+            "envelopeId": "envelope-52f32f053c031e585af31e2a6fc94a53",
+            "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+            "candidate": "7edc4e9b5d0a2052abe56a3a3e730394fe43f5d6",
+            "obligationsDigest": "b90af928855178ce910dc7b2918df6250bed995d8c35fc7ad400d143157cab26",
+            "receiptId": "4b23c1a0c1fdaeca3eeb642c902a8e713b6b98b8b300c52debe5ece2388131a2",
+            "checks": [
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "WRITE_SCOPE",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "MUST_CHANGE",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/cost-model.json",
+                "passed": true,
+                "basisBlob": "e73b4328d723c0cbf31f4ae33c1c0fafb9d1fe96",
+                "candidateBlob": "eca1308fa080547c99ec0f959a250bc37dd9922a"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/recommendation.md",
+                "passed": true,
+                "basisBlob": "4003aa903c65af4c62adc8bd325f0b6dc5396781",
+                "candidateBlob": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/risk-review.md",
+                "passed": true,
+                "basisBlob": "7546d0d3bf92443af047e82a4588e6a7153747b2",
+                "candidateBlob": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/schedule.md",
+                "passed": true,
+                "basisBlob": "190cce9faa5c9bb9668102e280bbb44333559a1e",
+                "candidateBlob": "630be116a008dbff49ffd313c3accf335be56912"
+              },
+              {
+                "kind": "MUST_EXIST",
+                "path": "deliverables/technical-capacity.md",
+                "passed": true,
+                "basisBlob": "e49f30b03429f7f39f555bd1a4fb75db5c38cc7f",
+                "candidateBlob": "715902e8460576f98bead5361d9585da0fcd3518"
+              },
+              {
+                "kind": "MUST_PRESERVE",
+                "path": "deliverables/vendor-compliance.md",
+                "passed": true,
+                "basisBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+                "candidateBlob": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe"
+              }
+            ]
+          },
+          "childPid": 15228,
+          "acceptedHead": "b579faa451dc512e9dd4161435e46caa84e6dce3",
+          "promotionId": "promotion-449bf47925fbf01990017a2e86d0afec",
+          "wrongShaRefused": true,
+          "business": {
+            "passed": true,
+            "commit": "7edc4e9b5d0a2052abe56a3a3e730394fe43f5d6",
+            "basis": "b1e474620535ea57e68dbf85ac628dbdeea22e6f",
+            "tree": "417cef0acce91a0698200c9f04495e8bb2d34867",
+            "artifacts": {
+              "deliverables/technical-capacity.md": "715902e8460576f98bead5361d9585da0fcd3518",
+              "deliverables/vendor-compliance.md": "bdc8a9f5d0ed74ea09ef9914601a5d8277532cbe",
+              "deliverables/cost-model.json": "eca1308fa080547c99ec0f959a250bc37dd9922a",
+              "deliverables/schedule.md": "630be116a008dbff49ffd313c3accf335be56912",
+              "deliverables/risk-review.md": "7c52ac38df3e40088ddf2e9599b3f7f95c7ce1c0",
+              "deliverables/recommendation.md": "8fc1cc337384dff38b83abff2ed7e2606bc1a5ab"
+            },
+            "changedPaths": [
+              "deliverables/cost-model.json",
+              "deliverables/recommendation.md",
+              "deliverables/risk-review.md",
+              "deliverables/schedule.md",
+              "deliverables/technical-capacity.md"
+            ],
+            "recommendation": {
+              "north": "K-900",
+              "harbor": "K-900",
+              "totalUsd": 536000,
+              "corridorMm": 1250
+            },
+            "schedule": {
+              "start": "2026-11-05",
+              "installs": [
+                {
+                  "site": "NR",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-18"
+                },
+                {
+                  "site": "HF",
+                  "model": "K-900",
+                  "leadWeeks": 14,
+                  "installStart": "2027-02-11",
+                  "commission": "2027-02-18"
+                }
+              ]
+            },
+            "normalizations": [],
+            "verifier": "check: PASS (final) (45 assertions; corridor 1250 mm; selection NR=K-900 HF=K-900; total 536000 USD)"
+          },
+          "confirmedMockRequests": 0,
+          "unresolvedRequests": 0,
+          "gitBundle": {
+            "file": "energy-sdk.bundle",
+            "sha256": "b520b2381ed7931d6994a9cbd89be1bf3982fbd81ee5addb55295f99bef994a4"
+          }
+        }
+      ]
+    }
+  ],
+  "packageSha256": "f7529b57453e0a26ef09d611bfb2e7838f87f3cd41103bf0801c370ed71c81ce",
+  "passed": true
+}

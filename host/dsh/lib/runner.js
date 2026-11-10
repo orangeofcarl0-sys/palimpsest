@@ -175,6 +175,12 @@ function workTask(context, indexText) {
     `What completion will require:\n${list(work.completionChecks)}`,
     `Independent verification required: ${work.independentVerificationRequired === true ? 'yes' : 'no'}`,
   ];
+  if (context.revision) {
+    const rules = context.revision.obligations.rules;
+    lines.push(`Must change:\n${list(rules.mustChange)}`, `Must exist:\n${list(rules.mustExist)}`,
+      `Must preserve byte for byte and mode for mode:\n${list(rules.mustPreserve)}`,
+      'After committing, use palimpsest_worker_receipt to inspect the candidate before reporting.');
+  }
   /**
    * §D5-c2: the read-only PriorResultContext, when this attempt is a governed re-execution. It is
    * PRESENTATION — what a prior attempt did and how the world moved since — never authority: the
@@ -610,6 +616,7 @@ async function runWorker(ctx, deps) {
           // the composed environment (one place knows what Palimpsest's tools are called).
           const prefix = typeof environment.deniedAuthorityPrefix === 'string' ? environment.deniedAuthorityPrefix : 'palimpsest_';
           const keep = [resultToolName, pullToolName].filter((name) => typeof name === 'string');
+          if (environment.previewTool !== undefined) keep.push(environment.previewTool.name);
           /**
            * Trajectory-P2-E1RD: ENUMERATE THE AGENT'S OWN VIEW, NOT THE GLOBAL ONE.
            *
@@ -644,6 +651,7 @@ async function runWorker(ctx, deps) {
           if (withdrawal.withdraw.length > 0) agentCtx.tools.restrict({ deny: [...withdrawal.withdraw] });
           withdrawn = [...withdrawal.withdraw];
           const surfaceAfter = [...scopedNames(), resultToolName, pullToolName].filter((name) => typeof name === 'string');
+          if (environment.previewTool !== undefined) surfaceAfter.push(environment.previewTool.name);
           /**
            * R1-HR §10/§11: THE FAIL-CLOSED CAPABILITY GATE.
            *
@@ -698,6 +706,7 @@ async function runWorker(ctx, deps) {
           // already converted by the plugin layer, which owns that conversion.
           agentCtx.tools.register(environment.tool);
           if (pullToolName !== undefined) agentCtx.tools.register(environment.contextPullTool);
+          if (environment.previewTool !== undefined) agentCtx.tools.register(environment.previewTool);
           if (typeof agentCtx.tools.presentAs === 'function') {
             agentCtx.tools.presentAs('ptc');
             presentation = 'ptc';

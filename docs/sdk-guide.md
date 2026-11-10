@@ -8,6 +8,7 @@
 |---|---|---|
 | `palimpsest-dsh` | schema、domain、state、scheduler | 合同核心：仅依赖 `node:sqlite` |
 | `palimpsest-dsh/advanced` | effects、evidence、select、allocate、telemetry、tools、`installPalimpsest` | 完整嵌入面 |
+| `palimpsest-dsh/product` | `installProduct`、`TaskObligations`、候选回执与受保护接受 | 普通产品嵌入与 Work 修订 |
 | `palimpsest-dsh/procedures` | E5-P 程序化资产：`ProcedureStore`、`SqliteProcedureStore`、内容/候选/admission 契约 | 需要为 `procedureStore` 提供存储的宿主 |
 | `palimpsest-dsh/project-intent` | E2-I 意图对账：`ProjectIntentService`、admission 端口、proposal/receipt 类型 | 需要意图对账面或独立 admission 权威的宿主 |
 | `palimpsest-dsh/project-collaboration` | E3-C 协作需求：`ProjectCollaborationService`、authoring/admission 端口 | 需要协作需求面的宿主 |
@@ -76,6 +77,8 @@ controller.step();
 ```
 
 ## 3. 执行模型
+
+受信任宿主可用 `installProduct` 的 `taskObligations` 按任务 ID 声明允许改、必须改、必须存在和必须保留的路径。委派和接管依据 Attempt 的持久授权。结算后，`installed.revision.readReceipt({ attemptId })` 返回绑定基线与候选 SHA 的回执。核准由配有 `operatorAuthority` 的宿主调用 `installed.revision.accept({ attemptId, actor, basis, candidate, receiptId })`，返回 Promotion 及其接受 HEAD。[Work 修订契约](engineering/WORK-REVISION-CONTRACT.md)
 
 | 模型 | 入口 | 适用 | 完成判定 |
 |---|---|---|---|

@@ -9,6 +9,8 @@
  * It changes no authority. The same ProjectController, effects runtime, ProjectIR, Work and
  * Ordarium ledgers are the owners; this function only chooses a configuration.
  */
+import { WorkRevisionError, type TaskObligations, type WorkRevisionApproval, type WorkRevisionReceiptQuery } from "./schema/work_revision.js";
+import { inspectWorkRevision } from "./work/revision.js";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -39,6 +41,9 @@ export interface InstallProductOptions {
   /** The operator's confirmed completion standard, if one exists. */
   readonly standard?: ProjectStandard | undefined;
   readonly policy?: TaskPolicy | undefined;
+  /** Host-authorized obligations by canonical task ID. */
+  readonly taskObligations?: Readonly<Record<string, TaskObligations>> | undefined;
+  readonly workWorkerPort?: PalimpsestInstallOptions["workWorkerPort"];
   readonly clock?: (() => string) | undefined;
   /** Defaults to `normal`. `expert` is available for debugging/migration. */
   readonly toolProfile?: "normal" | "expert" | undefined;
@@ -55,6 +60,10 @@ export interface InstallProductOptions {
 }
 
 export interface InstalledProduct extends InstalledPalimpsest {
+  readonly revision: {
+    readReceipt(query: WorkRevisionReceiptQuery): import("./schema/work_revision.js").WorkRevisionReceipt;
+    accept(request: WorkRevisionApproval & { readonly attemptId: string }): Promise<import("./effects/promotion.js").PromoteResult>;
+  };
   readonly product: {
     readonly stateDir: string;
     readonly toolProfile: "normal" | "expert";
@@ -83,6 +92,9 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
   const sourceIntakeAdmission: PromotionSourceIntakeAdmissionPort = {
     read: (input) => reviewRef?.sourceIntakeAdmissionForAttempt(input) ?? null,
   };
+  const policy = options.taskObligations
+    ? (options.policy ?? trustedDefaultPolicy()).withTaskObligations(options.taskObligations)
+    : options.policy;
   const installed = installPalimpsest(context, {
     ...(options.advanced ?? {}),
     operatorAuthority: options.operatorAuthority,
@@ -93,7 +105,8 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
     execution: options.execution ?? "in-place",
     toolProfile,
     ...(options.standard === undefined ? {} : { standard: options.standard }),
-    ...(options.policy === undefined ? {} : { policy: options.policy }),
+    ...(policy === undefined ? {} : { policy }),
+    ...(options.workWorkerPort === undefined ? {} : { workWorkerPort: options.workWorkerPort }),
     ...(options.clock === undefined ? {} : { clock: options.clock }),
     ...(options.git === undefined ? {} : { git: options.git }),
     ...(options.projectIntentAdmission === undefined ? {} : { projectIntentAdmission: options.projectIntentAdmission }),
@@ -148,6 +161,17 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
   const dispose = installed.dispose;
   return {
     ...installed,
+    revision: {
+      readReceipt: query => installed.controller.readRevisionReceipt(query),
+      accept: async ({ attemptId, ...revisionApproval }) => {
+        const accepted = await installed.controller.promoteAttempt({ attemptId, revisionApproval });
+        for (let steps = 0; steps < 16 && installed.controller.step() !== null; steps += 1) {
+          // Drain the existing scheduler so the accepted candidate's task is terminal.
+        }
+        await installed.controller.reconcileProjectHead();
+        return accepted;
+      },
+    },
     review,
     product: {
       stateDir,
@@ -163,4 +187,8 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
   };
 }
 
-export { trustedDefaultPolicy };
+export { trustedDefaultPolicy, inspectWorkRevision, WorkRevisionError };
+export type {
+  TaskObligations, WorkRevisionApproval, WorkRevisionBinding, WorkRevisionReceipt,
+  WorkRevisionReceiptQuery, WorkRevisionRefusal,
+} from "./schema/work_revision.js";

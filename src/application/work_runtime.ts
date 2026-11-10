@@ -15,6 +15,7 @@ import { makeWorkSettlementSurface } from "./work_settlement.js";
 export function makeWorkApplicationSurface(deps: WorkRuntimeDeps): WorkApplicationSurface {
   const settlement = makeWorkSettlementSurface(deps);
   return {
+    readRevisionReceipt: query => deps.controller.readRevisionReceipt(query),
     ...makeWorkProjectionSurface(deps),
     ...makeWorkExecutionSurface(deps),
     ...settlement,

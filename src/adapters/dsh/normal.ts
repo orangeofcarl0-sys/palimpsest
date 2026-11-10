@@ -47,6 +47,7 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
       "conclude",
       "delegate",
       "workers",
+      "receipt",
       "stop",
       "results",
       "continue",
@@ -59,6 +60,10 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
     ],
     extraProperties: {
       goal: { type: "string", description: "for start/begin/plan: what the work is, in the user's own words; on start it also lets the product bootstrap a direct position when the plan has no claimable one" },
+      attemptId: { type: "string", description: "for receipt: read the settled receipt for this Attempt ID" },
+      basis: { type: "string", description: "for receipt file expansion: the full recorded basis SHA" },
+      candidate: { type: "string", description: "for receipt file expansion: the full recorded candidate SHA" },
+      path: { type: "string", description: "for receipt: expand checks for one file, with both SHAs" },
       writePaths: { type: "array", items: { type: "string" }, description: "for begin/propose: the paths this work or proposed action may change" },
       requiredArtifacts: { type: "array", items: { type: "string" }, description: "for begin: paths the work must leave in place" },
       summary: { type: "string", description: "for complete: what you consider done, in your own words" },
@@ -225,6 +230,12 @@ export function defineNormalWorkTool(application: PalimpsestApplicationSurface):
         return { ...started, workers: await work.workers() };
       }
       if (action === "workers") return await work.workers();
+      if (action === "receipt") return work.readRevisionReceipt({
+        attemptId: requiredString(object, "attemptId"),
+        basis: object.basis === undefined ? undefined : requiredString(object, "basis"),
+        candidate: object.candidate === undefined ? undefined : requiredString(object, "candidate"),
+        path: object.path === undefined ? undefined : requiredString(object, "path"),
+      });
       if (action === "stop") {
         const taskId = requiredString(object, "taskId");
         return await work.stopWorker({ taskId });

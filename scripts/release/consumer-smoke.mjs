@@ -126,7 +126,7 @@ function pnpm(args, options = {}) {
 /* ------------------------------------------------------------------ 1. build the artifact */
 
 process.stdout.write("=== 1. build the distributable ===\n");
-npm(["run", "build"], { cwd: REPO, stdio: ["ignore", "pipe", "pipe"] });
+run(process.execPath, [join(REPO, "node_modules/typescript/bin/tsc"), "-b"], { cwd: REPO, stdio: ["ignore", "pipe", "pipe"] });
 record("build", "tsc -b succeeded");
 
 // The DECLARED export surface is read from the package manifest, so the smoke validates what the

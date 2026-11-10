@@ -297,7 +297,10 @@ export class AggregateValidator {
     if (policy === undefined) {
       throw new PolicyError("TaskEnvelope policy is not registered as trusted");
     }
-    const authorized = policy.authorize(project, event.entity_id);
+    const previous = event.event_type === "TASK_REAUTHORIZED"
+      ? parseTaskEnvelope(decodeNullableJsonBlob(this.#taskRow(connection, event).envelope_json))
+      : undefined;
+    const authorized = policy.authorize(project, event.entity_id, previous?.obligations);
     const envelope = parseTaskEnvelope(event.payload.task_envelope);
     if (!envelopesEqual(authorized.envelope, envelope)) {
       throw new PolicyError("TaskEnvelope differs from the trusted policy output");
@@ -533,6 +536,10 @@ export class AggregateValidator {
     }
     const [, project] = this.#project(connection, event.project_id);
     const envelope = parseTaskEnvelope(event.payload.task_envelope);
+    const previous = parseTaskEnvelope(decodeNullableJsonBlob(row.envelope_json));
+    if (previous.obligations && envelope.obligations?.digest !== previous.obligations.digest) {
+      throw new DomainValidationError("TASK_REAUTHORIZED must keep the task's registered obligations");
+    }
     const task = project.tasks.find((item) => item.task_id === event.entity_id);
     if (task === undefined) {
       throw new DomainValidationError("Task is not declared by the current ProjectIR");
@@ -1135,6 +1142,10 @@ export class AggregateValidator {
         report.base_commit !== envelope.base_commit
       ) {
         throw new DomainValidationError("AttemptReport input identity does not match");
+      }
+      if (event.event_type === "ATTEMPT_COMPLETED" &&
+          report.revision_receipt?.obligationsDigest !== envelope.obligations?.digest) {
+        throw new DomainValidationError("AttemptReport revision receipt does not match its authorized obligations");
       }
     }
     if (

@@ -35,6 +35,8 @@
  *
  * Layer: L2 (`src/work/`). Consumed by the controller's façade.
  */
+import { assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding } from "./revision.js";
+import { revisionError, type WorkRevisionReceipt, type WorkRevisionRefusal } from "../schema/work_revision.js";
 import { DomainValidationError } from "../domain/errors.js";
 import type { TaskEnvelope } from "../schema/index.js";
 import {
@@ -68,6 +70,8 @@ export interface PreparedMutatingWork {
 export type MutatingWorkSettlement =
   | {
       readonly state: "SETTLED";
+      readonly receipt?: WorkRevisionReceipt | undefined;
+      readonly replayed?: boolean | undefined;
       readonly attemptId: string;
       readonly resultCommit: string;
       readonly changedFiles: readonly string[];
@@ -81,7 +85,7 @@ export type MutatingWorkSettlement =
       readonly inputsDetail: string;
       readonly detail: string;
     }
-  | { readonly state: "NOT_READY"; readonly attemptId: string; readonly reason: string; readonly detail: string }
+  | { readonly state: "NOT_READY"; readonly attemptId: string; readonly reason: string; readonly detail: string; readonly refusal?: WorkRevisionRefusal | undefined }
   | { readonly state: "BASE_DRIFT"; readonly attemptId: string; readonly resultCommit: string; readonly worldRetained: true; readonly detail: string };
 
 /**
@@ -197,7 +201,7 @@ export interface MutatingExecutionPorts {
     readonly worldPath: string;
   }): Promise<CompletionEvaluationOutcome>;
   /** Record the attempt's report (the observation is the product's, never the worker's word). */
-  report(attemptId: string): void;
+  report(attemptId: string, expectedResultCommit?: string): WorkRevisionReceipt | undefined;
   /** The §D2-b projection of a prepared position. */
   preparedProjection(input: {
     readonly state: "PREPARED" | "RESUMED";
@@ -286,13 +290,23 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
        * tasks may be in flight is what the PLAN declares, not a product-wide constant.
        */
       const admission = assertAdmission(expectedTaskId);
+      const envelope = ports.taskEnvelope(admission.taskId);
       const holder =
         admission.kind === "RESUME"
           ? ports.nonterminalAttempts().find((attempt) => attempt.taskId === admission.taskId) ?? null
           : null;
+      const authorized = holder ? ports.attemptContext(holder.attemptId)[1] : envelope;
+      const binding = workRevisionBinding(authorized, holder?.attemptId ?? "");
+      if (binding) {
+        const repository = ports.canonicalRepository();
+        assertRevisionBasis(repository, binding);
+        if (ports.observedHead(repository) !== binding.basis) {
+          throw revisionError("HEAD_BASIS_MISMATCH", "Restore the authorized basis before delegating.", "REOBSERVE");
+        }
+      }
       return Object.freeze({
         taskId: admission.taskId,
-        baseCommit: ports.taskEnvelope(admission.taskId).base_commit,
+        baseCommit: binding?.basis ?? envelope.base_commit,
         resumed: admission.kind === "RESUME",
         openAttempt:
           holder === null ? null : Object.freeze({ attemptId: holder.attemptId, state: holder.state }),
@@ -327,7 +341,15 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
             `the admission named task "${admission.taskId}" as holding a position, but no nonterminal attempt for it exists — the read and the state disagree, and this refuses rather than guessing`,
           );
         }
-        const envelope = ports.taskEnvelope(holder.taskId);
+        const recorded = ports.attemptContext(holder.attemptId)[1];
+        const envelope = recorded.obligations ? recorded : ports.taskEnvelope(holder.taskId);
+        const binding = workRevisionBinding(envelope, holder.attemptId);
+        if (binding) {
+          assertRevisionBasis(repository, binding);
+          if (ports.observedHead(repository) !== binding.basis || headStatus.projectHeadCommit !== binding.basis) {
+            throw revisionError("HEAD_BASIS_MISMATCH", "Restore the authorized basis before resuming Work.", "REOBSERVE");
+          }
+        }
         const contract = ports.completionContractForEnvelope(envelope);
         const resumedStandard = ports.standard();
         if (resumedStandard === undefined) {
@@ -405,6 +427,9 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         );
       }
 
+      const binding = workRevisionBinding(envelope, "");
+      if (binding) assertRevisionBasis(repository, binding);
+
       // ONLY NOW: lifecycle events, then the isolated world.
       const attemptId = ports.advanceToClaimableAttempt();
       const claimed = await ports.claim(attemptId);
@@ -431,6 +456,8 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
       const { attemptId } = input;
       const observation: SettlementObservation = input.observation ?? { path: "WORKER" };
       const invocations = ports.executionInvocations(attemptId);
+      const [, envelope] = ports.attemptContext(attemptId);
+      const binding = workRevisionBinding(envelope, attemptId);
 
       /**
        * PWRS-A order: an OPEN invocation is a writer this host can still see. Closing the attempt
@@ -440,6 +467,7 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
        */
       const openInvocation = invocations.find((invocation) => invocation.outcome === "OPEN");
       if (openInvocation !== undefined) {
+        if (binding) throw revisionError("WORKER_STILL_RUNNING", "Wait for the observed worker exit before settling.", "WAIT");
         return Object.freeze({
           state: "NOT_READY" as const,
           attemptId,
@@ -485,9 +513,9 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
 
       // Observe the WORLD. The observation is D2-a's, unchanged: same commands, same `.palimpsest/`
       // filter, same completion invariant as an in-place attempt.
-      const [, envelope] = ports.attemptContext(attemptId);
       const observed = ports.observeAttemptResult(attemptId, envelope.base_commit);
       if (observed === null) {
+        if (binding) throw revisionError("WORLD_UNOBSERVABLE", "Restore access to the Attempt world and inspect it again.", "REOBSERVE");
         return Object.freeze({
           state: "NOT_READY" as const,
           attemptId,
@@ -495,7 +523,12 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
           detail: "this attempt's execution world cannot be observed, so nothing can be established about its work",
         });
       }
-      if (observation.expectedResultCommit !== undefined && observed.observedHead !== observation.expectedResultCommit) {
+      const expected = observation.expectedResultCommit ?? (binding && observation.path === "WORKER"
+        ? invocations.find(item => item.invocationId === observation.invocationId)?.headAtEnd ?? undefined : undefined);
+      if (binding && expected !== undefined && observed.observedHead !== expected) {
+        throw revisionError("RESULT_DRIFT", "Re-observe HEAD before submitting the candidate again.", "REOBSERVE", [], observed.observedHead);
+      }
+      if (expected !== undefined && observed.observedHead !== expected) {
         return Object.freeze({
           state: "NOT_READY" as const,
           attemptId,
@@ -507,6 +540,8 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
       // §2.6, the SAME invariant: a completed attempt's work must be commit-materialized. `report`
       // holds this too — this is the early, explanatory refusal, not a second rule.
       if (observed.uncommittedChanges.length > 0) {
+        if (binding) throw revisionError("UNCOMMITTED_WORK", "Commit or revert the pending files.", "FIX_CANDIDATE",
+          observed.uncommittedChanges, observed.observedHead);
         return Object.freeze({
           state: "NOT_READY" as const,
           attemptId,
@@ -522,10 +557,11 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
           detail: "the world holds no observable change against its base, so there is nothing to settle",
         });
       }
+      if (binding) requireWorkRevision(inspectWorkRevision(observed.workDir, binding, observed.observedHead));
       const outOfScope = observed.changedFiles.filter(
         (path) => !envelope.write_paths.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
       );
-      if (outOfScope.length > 0) {
+      if (!binding && outOfScope.length > 0) {
         return Object.freeze({
           state: "NOT_READY" as const,
           attemptId,
@@ -679,7 +715,7 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         });
       }
 
-      ports.report(attemptId);
+      const receipt = ports.report(attemptId, binding ? observed.observedHead : undefined);
       return Object.freeze({
         state: "SETTLED" as const,
         attemptId,
@@ -687,6 +723,7 @@ export function makeMutatingAttemptService(ports: MutatingExecutionPorts): Mutat
         changedFiles: observed.changedFiles,
         exported,
         evidenceRecorded: evaluation.evidenceRecorded,
+        ...(receipt ? { receipt } : {}),
         attribution,
         inputsNotInBasis: unseenInputs,
         inputsState: inputObservation.state,
@@ -709,3 +746,7 @@ export * from "./execution_relay.js";
 
 /** ODPE-A: the project-input observer, re-exported so the host façade keeps one edge to this owner. */
 export { assessCanonicalInputs, canonicalWorktreeChanges, observeCanonicalBasis, observeProjectInputs, readProjectInput, unseenInputs } from "./unseen_inputs.js";
+
+export { assertRevisionBasis, inspectWorkRevision, requireWorkRevision, workRevisionBinding } from "./revision.js";
+export { revisionError, WorkRevisionError, type WorkRevisionBinding, type WorkRevisionReceipt, type WorkRevisionApproval, type WorkRevisionReceiptQuery, projectRevisionReceipt } from "../schema/work_revision.js";
+export { recordWorkReport, replayWorkReport } from "./attempt_report.js";

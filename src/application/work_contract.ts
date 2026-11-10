@@ -215,6 +215,8 @@ export interface FinalizeOutcome {
   readonly taskId: string;
   readonly detail: string;
   readonly resultCommit: string | null;
+  readonly receipt?: import("../schema/work_revision.js").WorkRevisionReceipt | undefined;
+  readonly refusal?: import("../schema/work_revision.js").WorkRevisionRefusal | undefined;
   readonly attribution: import("../work/execution_relay.js").ExecutionAttribution | null;
   readonly taskState: string | null;
   /** The readiness the reply was derived from (fresh, not the caller's copy). */
@@ -222,6 +224,7 @@ export interface FinalizeOutcome {
 }
 
 export interface WorkApplicationSurface {
+  readRevisionReceipt(query: import("../schema/work_revision.js").WorkRevisionReceiptQuery): import("../schema/work_revision.js").WorkRevisionReceipt;
   /**
    * Where a human can watch this project, or null when no dashboard is known.
    *
@@ -314,6 +317,8 @@ export interface WorkApplicationSurface {
    * The call returns once the position is prepared (or refused); it never waits for the worker.
    */
   startWorker(input?: { readonly taskId?: string | undefined } | undefined): Promise<{
+    readonly refusal?: import("../schema/work_revision.js").WorkRevisionRefusal | undefined;
+    readonly receipt?: import("../schema/work_revision.js").WorkRevisionReceipt | undefined;
     readonly state: "STARTED" | "UNAVAILABLE" | "REFUSED";
     readonly taskId: string | null;
     readonly jobId: string | null;
@@ -332,6 +337,8 @@ export interface WorkApplicationSurface {
       readonly phase: string;
       readonly settlementState: string | null;
       readonly settlementReason?: string;
+      readonly refusal?: import("../schema/work_revision.js").WorkRevisionRefusal | undefined;
+      readonly receipt?: Omit<import("../schema/work_revision.js").WorkRevisionReceipt, "checks"> | undefined;
       readonly settlementDetail?: string;
       readonly hostError: string | null;
       readonly stopRequested: boolean;
@@ -419,6 +426,8 @@ export interface WorkApplicationSurface {
     /** PWRS-D: acknowledge project inputs that arrived after the attempt's base. */
     readonly acknowledgeInputs?: boolean | undefined;
   }): Promise<{
+    readonly refusal?: import("../schema/work_revision.js").WorkRevisionRefusal | undefined;
+    readonly receipt?: import("../schema/work_revision.js").WorkRevisionReceipt | undefined;
     readonly state: "SETTLED" | "NOT_READY" | "BASE_DRIFT" | "NO_RUNNING_ATTEMPT" | "MULTIPLE_ATTEMPTS" | "WORKER_ACTIVE";
     readonly taskId: string;
     readonly detail: string;
@@ -450,6 +459,8 @@ export interface WorkApplicationSurface {
     readonly acknowledgeInputs?: boolean | undefined;
     readonly summary?: string | undefined;
   }): Promise<{
+    readonly refusal?: import("../schema/work_revision.js").WorkRevisionRefusal | undefined;
+    readonly receipt?: import("../schema/work_revision.js").WorkRevisionReceipt | undefined;
     readonly state: "TAKEOVER_SETTLED" | "SUCCESSOR_READY" | "REFUSED" | "NOT_READY";
     readonly taskId: string;
     readonly route: "takeover" | "successor";

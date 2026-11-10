@@ -496,6 +496,7 @@ export function makeWorkOutcomeSurface(
         state: settled.state === "NO_RUNNING_ATTEMPT" && completed ? ("ALREADY_SETTLED" as const) : ("NOT_READY" as const),
         taskId: input.taskId,
         detail: settled.detail,
+        ...(settled.refusal ? { refusal: settled.refusal } : {}),
         resultCommit: completed ? (after.readiness.attempt?.resultCommit ?? settled.resultCommit) : settled.resultCommit,
         attribution: settled.attribution ?? null,
         taskState: after.readiness.task?.state ?? null,
@@ -509,6 +510,7 @@ export function makeWorkOutcomeSurface(
         `${settled.detail}. The mechanical chain stopped here: the task is ${after.readiness.task?.state ?? "unknown"}. ` +
         "An operator must accept the result, and the episode conclusion remains the principal's judgement",
       resultCommit: settled.resultCommit,
+      ...(settled.receipt ? { receipt: settled.receipt } : {}),
       attribution: settled.attribution ?? null,
       taskState: after.readiness.task?.state ?? null,
       readiness: after.readiness,

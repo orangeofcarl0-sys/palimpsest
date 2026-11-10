@@ -8,6 +8,7 @@ import {
   type ProjectIr,
   type TaskEnvelope,
 } from "../schema/index.js";
+import { assertObligationScope, bindTaskObligations, revisionError, type BoundTaskObligations, type TaskObligations } from "../schema/work_revision.js";
 import { PolicyError } from "./errors.js";
 import { actionKey, stableEntityId } from "./idempotency.js";
 
@@ -18,6 +19,7 @@ export interface AuthorizedTaskEnvelope {
 }
 
 export interface TaskPolicyInput {
+  taskObligations?: Readonly<Record<string, TaskObligations>> | undefined;
   policy_id: string;
   read_paths: string[];
   allowed_commands: AllowedCommand[];
@@ -35,6 +37,7 @@ export interface TaskPolicyInput {
  * (canonical JSON over the same fields).
  */
 export class TaskPolicy {
+  readonly #obligations: ReadonlyMap<string, BoundTaskObligations>;
   readonly policy_id: string;
   readonly read_paths: string[];
   readonly allowed_commands: AllowedCommand[];
@@ -46,6 +49,7 @@ export class TaskPolicy {
   readonly candidate_limit: 1 | 2 | 4;
 
   constructor(input: TaskPolicyInput) {
+    this.#obligations = new Map(Object.entries(input.taskObligations ?? {}).map(([taskId, rules]) => [taskId, bindTaskObligations(rules)]));
     this.policy_id = input.policy_id;
     this.read_paths = [...input.read_paths];
     this.allowed_commands = input.allowed_commands.map((command) => ({ ...command, argv_prefix: [...command.argv_prefix] }));
@@ -55,6 +59,11 @@ export class TaskPolicy {
     this.lease_s = input.lease_s;
     this.attempt_limit = input.attempt_limit;
     this.candidate_limit = input.candidate_limit;
+  }
+
+  withTaskObligations(taskObligations: Readonly<Record<string, TaskObligations>>): TaskPolicy {
+    const existing = Object.fromEntries([...this.#obligations].map(([taskId, binding]) => [taskId, binding.rules]));
+    return new TaskPolicy({ ...this, taskObligations: { ...existing, ...taskObligations } });
   }
 
   get digest(): string {
@@ -68,14 +77,22 @@ export class TaskPolicy {
       lease_s: this.lease_s,
       attempt_limit: this.attempt_limit,
       candidate_limit: this.candidate_limit,
+      ...(this.#obligations.size ? { taskObligations: Object.fromEntries(this.#obligations) } : {}),
     });
   }
 
-  authorize(project: ProjectIr, taskId: string): AuthorizedTaskEnvelope {
+  authorize(project: ProjectIr, taskId: string, previous?: BoundTaskObligations): AuthorizedTaskEnvelope {
     const task = project.tasks.find((item) => item.task_id === taskId);
     if (task === undefined) {
       throw new PolicyError(`Task ${taskId} is not declared by ProjectIR`);
     }
+
+    const configured = this.#obligations.get(taskId);
+    if (previous && configured && previous.digest !== configured.digest) {
+      throw revisionError("TASK_OBLIGATIONS_CHANGED", "Declare a new task ID to change its obligations.", "CORRECT_PLAN");
+    }
+    const obligations = previous ?? configured;
+    if (obligations) assertObligationScope(obligations, task.write_paths);
 
     const identity = actionKey("task-envelope-v1", {
       project_id: project.project_id,
@@ -84,6 +101,7 @@ export class TaskPolicy {
       project_digest: project.digest,
       policy_id: this.policy_id,
       policy_digest: this.digest,
+      ...(obligations ? { obligations: obligations.digest } : {}),
     });
     const registrationKey = actionKey("task-register-v1", {
       project_id: project.project_id,
@@ -92,6 +110,7 @@ export class TaskPolicy {
       project_digest: project.digest,
       policy_id: this.policy_id,
       policy_digest: this.digest,
+      ...(obligations ? { obligations: obligations.digest } : {}),
     });
     try {
       const envelope = parseTaskEnvelope({
@@ -106,6 +125,7 @@ export class TaskPolicy {
         read_paths: this.read_paths,
         write_paths: task.write_paths,
         required_artifacts: task.required_artifacts,
+        ...(obligations ? { obligations } : {}),
         suggested_skills: task.suggested_skills,
         allowed_commands: this.allowed_commands,
         network_policy: this.network_policy,

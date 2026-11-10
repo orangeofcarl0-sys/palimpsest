@@ -6,6 +6,7 @@
  * continuation route. None of these accepts or promotes anything.
  */
 import type { WorkApplicationSurface, WorkRuntimeDeps } from "./work_contract.js";
+import { WorkRevisionError, type WorkRevisionReceipt, type WorkRevisionRefusal } from "../schema/work_revision.js";
 import { observeProjectInputs } from "../work/unseen_inputs.js";
 
 export function makeWorkExecutionSurface(
@@ -73,6 +74,7 @@ export function makeWorkExecutionSurface(
           jobId: null,
           resumed: false,
           detail: error instanceof Error ? error.message : String(error),
+          ...(error instanceof WorkRevisionError ? { refusal: error.refusal } : {}),
         };
       }
     },
@@ -131,8 +133,14 @@ export function makeWorkExecutionSurface(
         placement: deps.controller.execution,
         jobs: jobs.map((job) => {
           const outcome = typeof job.settlement === "object" && job.settlement !== null
-            ? job.settlement as { state?: unknown; reason?: unknown; detail?: unknown }
+            ? job.settlement as { state?: unknown; reason?: unknown; detail?: unknown;
+                receipt?: WorkRevisionReceipt; refusal?: WorkRevisionRefusal }
             : null;
+          const receipt = outcome?.receipt;
+          const summary = receipt && { schemaVersion: receipt.schemaVersion, phase: receipt.phase,
+            receiptId: receipt.receiptId, taskId: receipt.taskId, attemptId: receipt.attemptId,
+            envelopeId: receipt.envelopeId, obligationsDigest: receipt.obligationsDigest,
+            basis: receipt.basis, candidate: receipt.candidate };
           return {
           jobId: job.jobId,
           taskId: job.taskId,
@@ -140,6 +148,8 @@ export function makeWorkExecutionSurface(
           settlementState: typeof outcome?.state === "string" ? outcome.state : null,
           ...(outcome?.state !== "SETTLED" && typeof outcome?.reason === "string" ? { settlementReason: outcome.reason } : {}),
           ...(outcome?.state !== "SETTLED" && typeof outcome?.detail === "string" ? { settlementDetail: outcome.detail } : {}),
+          ...(outcome?.refusal ? { refusal: outcome.refusal } : {}),
+          ...(summary ? { receipt: summary } : {}),
           hostError: job.hostError,
           stopRequested: job.stopRequested,
           };

@@ -49,7 +49,7 @@ export function checkpoint(state) {
   }
 }
 
-function conclusion(state) {
+export function conclusion(state) {
   const path = join(state, "journal.sqlite");
   if (!existsSync(path)) return null;
   const db = new DatabaseSync(path, { readOnly: true });

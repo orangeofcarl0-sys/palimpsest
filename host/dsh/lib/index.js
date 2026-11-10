@@ -146,7 +146,7 @@ function deriveWorkWorkerFacts() {
  * FIRST report, print it. Every rule about what an outcome may say is enforced on the way back, in
  * `parseWorkWorkerResult`, so a lenient host cannot widen the vocabulary.
  */
-async function applyWork(ctx, palimpsest, workFile) {
+async function applyWork(ctx, palimpsest, workFile, entry) {
   const toolNames = [];
   const context = {
     tools: {
@@ -281,10 +281,29 @@ async function applyWork(ctx, palimpsest, workFile) {
         }
       : undefined;
 
+  const binding = raw.context?.revision;
+  const preview = binding === undefined ? undefined
+    : palimpsest.inspectWorkRevision ?? (await import(pathToFileURL(join(dirname(entry), 'product.js')).href)).inspectWorkRevision;
+  const previewTool = preview === undefined ? undefined : toRealTool({
+    name: 'palimpsest_worker_receipt',
+    description: 'Inspect the committed candidate in this isolated world against its authorized file obligations.',
+    mode: 'read-only',
+    parameters: { type: 'object', properties: {}, additionalProperties: false },
+    output: { schema: { type: 'object' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
+    async execute() {
+      try {
+        return preview(process.cwd(), binding);
+      } catch (error) {
+        if (!error?.refusal) throw error;
+        return { state: 'REFUSED', ...error.refusal };
+      }
+    },
+  });
   ctx.provide('palimpsestHost', {
     palimpsest,
     work: {
       context: raw.context,
+      ...(previewTool === undefined ? {} : { previewTool }),
       recorder,
       // Already converted to the host's own definition shape: the runner registers it into the WORKER
       // AGENT's scope (not the plugin scope), which is what keeps it out of reach of the restriction
@@ -388,7 +407,7 @@ export async function apply(ctx, config) {
   // worker is an ephemeral engineering agent inside one prepared execution world.
   const workFile = flagValue('--work');
   if (workFile !== undefined) {
-    return applyWork(ctx, palimpsest, workFile);
+    return applyWork(ctx, palimpsest, workFile, config.palimpsestEntry);
   }
 
   const profile = palimpsest.loadDeploymentProfile(config.deploymentProfile);

@@ -125,7 +125,7 @@ export function makeWorkerBroker({ stage, out, repository, image, principalId, g
       job.receipt.sessionId = reported.sessionId;
       if (parsed.outcome.kind !== "READY_FOR_SETTLEMENT") return { kind: parsed.outcome.kind, detail: parsed.outcome.summary };
       const result = head(peer);
-      const paths = policy.checkResult(peer, basis, result, work.writeScope);
+      const paths = policy.checkResult(peer, basis, result, work.writeScope, request.context.revision);
       assert(active() && attemptAtBasis() && head(principalWorld) === basis, "WORKER_RETURN_BASIS_DRIFT");
       // Transport the commit without changing the canonical live Git HEAD. Product observes and settles this Attempt.
       const bundle = join(directory, "result.bundle");
