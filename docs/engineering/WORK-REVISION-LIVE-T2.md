@@ -87,3 +87,5 @@ gRPC 与 Energy 普通 DSH Mock 都用真实隔离 Worker 和持久结算验证�
 候选 `be05447e061a23157ed04e3ee4b27ec7f571e94e` 正式结算并通过门禁。只改四个允许文件，四个受保护 blob 保留。冻结评分仍因原基线消息别名返回 `SOFTWARE_PROTO_RPC_CONTRACT`，按原授权在同一候选复核得 HTTP/2 7/7、公开测试 18/18。所有者核准完整 SHA 后，离线晋升至 `4639ae44d78e7c1f9f5269876fa333a99bff770f`，候选与晋升树均为 `99c40069ae834cf71618e2a142010f10bef0df06`。历史运行与评分原样保留，本轮止于 T2 接受。 [候选和判分](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/result.json) · [核准晋升记录](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/acceptance.json) · [Git bundle](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/candidate-and-accepted.bundle)
 
 复现 Mock 可运行 `node scripts/pnwf/revision/qualify.mjs --dsh-only --run=<新目录>`。本次原始 DSH 流和 SQLite 保存于 `%TEMP%/pnwf-settled-readiness-20261110134618`，归因入口可以只接收 gRPC 的旧 T2 对照目录。
+
+该 gRPC 晋升 HEAD 已接续一条真实普通 DSH T3。评审只提交一份文档并记录 `DELIVER` 后自然退出，冻结原判保留。[T3 对比与封存](SOFTWARE-PROJECT-CONTINUITY.md#结算引导修复后的真实-grpc-t3)

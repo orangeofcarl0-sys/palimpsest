@@ -1,0 +1,141 @@
+{
+  "schema": "pnwf-grpc-settled-readiness-t3-audit/v1",
+  "principalStreamSha256": "b6fe680cd9c6be49bd2b7fb088263e058e73325bf69139ff958d7f745eb07bfd",
+  "acceptedRead": {
+    "callId": "call_01_P5x9jULKCnaD0toBRtDk8298",
+    "callSeq": 26,
+    "resultSeq": 28,
+    "ok": true,
+    "head": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "candidate": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+    "headFound": true,
+    "candidateFound": true
+  },
+  "acceptanceReadOnly": true,
+  "tests": [
+    {
+      "callId": "call_00_fW4v6gISeEG6k4mlp0kR3420",
+      "callSeq": 63,
+      "resultSeq": 66,
+      "ok": true,
+      "tests": 18,
+      "passed": 18,
+      "failed": 0,
+      "oneReadingPerFrameTestPassed": true
+    },
+    {
+      "callId": "call_00_YrB55D8pNhiRG0v4zGlR9489",
+      "callSeq": 117,
+      "resultSeq": 120,
+      "ok": true,
+      "tests": 18,
+      "passed": 18,
+      "failed": 0,
+      "oneReadingPerFrameTestPassed": false
+    }
+  ],
+  "commit": {
+    "callId": "call_00_MYoIufxLENBtbSRJniUL6914",
+    "callSeq": 109,
+    "resultSeq": 112,
+    "ok": true,
+    "commit": "12fbb83cb79a0f42fef8c007a30a8dec9ac747cd",
+    "changedPaths": [
+      "MIGRATION-REVIEW.md"
+    ]
+  },
+  "conclude": {
+    "callId": "call_00_OPOapX0kw5h1ROV4fzrp0674",
+    "callSeq": 125,
+    "resultSeq": 126,
+    "ok": true,
+    "intent": "DELIVER",
+    "state": "RECORDED",
+    "mayEnd": true
+  },
+  "exitCode": 0,
+  "protectedBlobs": [
+    {
+      "path": "proto/energy.proto",
+      "blob": "c30c4888d516e384aefdc29df4d93aabfdedd37c"
+    },
+    {
+      "path": "service/wire.js",
+      "blob": "1cb66081224cda6472348330724a77bbed63d6c5"
+    },
+    {
+      "path": "service/grpc_client.js",
+      "blob": "b5277d5f8cf4b4cf226af9ac7fd4a01d9e9e2bcc"
+    },
+    {
+      "path": "test/rest.test.js",
+      "blob": "465d7fd877444ed6e07d59c8ab1ca07974014df2"
+    }
+  ],
+  "compare": [
+    {
+      "case": "previous-ordinary-dsh",
+      "basis": "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
+      "reviewCommit": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+      "requests": 14,
+      "usage": {
+        "fresh": 21998,
+        "cacheRead": 352768,
+        "cacheWrite": 0,
+        "output": 9656
+      },
+      "totalTokens": 384422,
+      "elapsedMs": 120472,
+      "toolPairs": 27,
+      "conclusion": "DELIVER",
+      "naturalExit": true,
+      "frozenScore": {
+        "passed": false,
+        "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+      },
+      "exactText": {
+        "exactAcceptedHead": true,
+        "exactCorrectionPath": true,
+        "frozenExactMissing": [
+          "zero or omitted",
+          "one Reading per frame",
+          "unary GetReading",
+          "protocol field numbers",
+          "node --test passed"
+        ]
+      }
+    },
+    {
+      "case": "settled-readiness-ordinary-dsh",
+      "basis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "reviewCommit": "12fbb83cb79a0f42fef8c007a30a8dec9ac747cd",
+      "requests": 13,
+      "usage": {
+        "fresh": 20998,
+        "cacheRead": 332160,
+        "cacheWrite": 0,
+        "output": 8691
+      },
+      "totalTokens": 361849,
+      "elapsedMs": 113753,
+      "toolPairs": 22,
+      "conclusion": "DELIVER",
+      "naturalExit": true,
+      "frozenScore": {
+        "passed": false,
+        "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+      },
+      "exactText": {
+        "exactAcceptedHead": true,
+        "exactCorrectionPath": true,
+        "frozenExactMissing": [
+          "zero or omitted",
+          "one Reading per frame",
+          "unary GetReading",
+          "protocol field numbers",
+          "node --test passed"
+        ]
+      }
+    }
+  ]
+}
