@@ -1,0 +1,70 @@
+{
+  "schema": "pnwf-settled-work-readiness-exit/v1",
+  "principalStreamSha256": "1a0fc906ef5bbd3ca6e428386564140bda3af1a0e4a28eb887d2c70d3a401ce8",
+  "readiness": {
+    "callSeq": 229,
+    "resultSeq": 230,
+    "callId": "call_00_S4szklDHWc4uVcWHUYzT3855",
+    "value": {
+      "action": "SEMANTIC_JUDGEMENT",
+      "task": {
+        "taskId": "revise-fleet-default",
+        "state": "ACTIVE",
+        "objective": null
+      },
+      "attempt": {
+        "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+        "state": "COMPLETED",
+        "baseCommit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+        "worldPath": "/run/stage/world/.palimpsest/worlds/attempt-50afeb5d5bdea0421a8ad97588a05c46",
+        "worldHead": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+        "uncommittedChanges": [],
+        "resultCommit": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+        "resultCommitted": true
+      },
+      "artifacts": [
+        {
+          "path": "service/grpc_server.js",
+          "present": true,
+          "committed": true
+        },
+        {
+          "path": "test/integration.test.js",
+          "present": true,
+          "committed": true
+        },
+        {
+          "path": "MIGRATION.md",
+          "present": true,
+          "committed": true
+        }
+      ],
+      "next": [
+        "call palimpsest_work action=next to advance this task to VERIFYING",
+        "once the task is VERIFYING, call palimpsest_work action=conclude intent=WAIT_FOR_OPERATOR if the candidate is ready for operator review"
+      ]
+    }
+  },
+  "next": {
+    "callSeq": 235,
+    "resultSeq": 236,
+    "callId": "call_00_ZptGOPmH9jaggtjKpuFL9881",
+    "value": {
+      "eventType": "TASK_VERIFYING",
+      "nextAction": "WAIT_OPERATOR_ACCEPT"
+    }
+  },
+  "conclude": {
+    "callSeq": 241,
+    "resultSeq": 242,
+    "callId": "call_00_WUIH5nxdsk7AcLjem1170869",
+    "value": {
+      "state": "RECORDED",
+      "mayEnd": true,
+      "intent": "WAIT_FOR_OPERATOR"
+    }
+  },
+  "repeatedSettlementCalls": 0,
+  "exitCode": 0,
+  "naturalExit": true
+}

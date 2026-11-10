@@ -23,6 +23,8 @@ Worker 提交后使用私有的 `palimpsest_worker_receipt` 观察 `PREVIEW`。W
 
 普通 DSH 在 `work workers` 返回摘要。使用 `work receipt` 按 Attempt 查看完整检查，传入原始 `basis`、`candidate` 和 `path` 可展开单文件检查。SDK 使用同源的 `revision.readReceipt`。失败回执说明原因及受影响路径。例如 `TASK_OBLIGATION_SCOPE_MISMATCH` 指向 `CORRECT_PLAN`，`PROTECTED_FILE_CHANGED` 指向 `FIX_CANDIDATE`，`RESULT_DRIFT` 指向 `REOBSERVE`。
 
+Worker 已结算而任务仍为 `ACTIVE` 时，`work readiness` 读取结算 SHA 对应的 Git 对象。调度器下一步确为该任务的 `TASK_VERIFYING` 时，它提示调用 `next`，进入 `VERIFYING` 后由 Principal 判断是否记录 `conclude WAIT_FOR_OPERATOR`。已结算候选无需再次 `complete`。 [两场景 Mock 与真实 gRPC 观察](WORK-REVISION-LIVE-T2.md#结算后-readiness-修复与-grpc-同基线复跑)
+
 可信宿主经 `revision.accept` 提交 Attempt、完整基线、完整候选、回执 ID 和已验证的 Operator。接受沿用门禁、Promotion 和项目 Head 对账。核准前后均可核对候选 SHA 与晋升后 HEAD。对同一候选的重复提交与重复接受分别返回原结算回执和原晋升结果。不同 SHA 会触发明确拒绝。
 
 ## 零付费复现
