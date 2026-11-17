@@ -240,3 +240,11 @@ T3 没有创建新 Attempt 或 Promotion。Episode 基线仍是接受 HEAD，交
 备用 `opencode/deepseek-v4.1-flash` 已在 ZCode 配置中定位。以选定的 OpenCode Go 配置只读访问配置路径与官方文档列出的模型目录，两次均为 401。目录查询未验证推理或终态用量，现有 T3 gateway 仍固定 DeepSeek 官方 Messages 路由。若采用备用 Provider，需先验证宿主固定路由、工具调用和终态用量，报告中应标明 Provider 变化。[OpenCode Go 文档](https://opencode.ai/docs/console/go/) · [终态用量字段](https://opencode.ai/docs/console/api/inference/#cost)
 
 本次未启动新 T3，新增推理请求为 0。核准 HEAD `4639ae44d78e7c1f9f5269876fa333a99bff770f`、接受树与停写的状态副本均在。等原请求用量可核对且选定 Provider 恢复后，再以新 DSH 会话沿用 64 笔、30 分钟、单笔 240 秒的按量窗口，金额与总 token 不限。本次没有新的真实摘要、轨迹或自然退出样本，上一节的对照继续有效。
+
+## OpenCode Go 同一接受版本的真实 T3
+
+2026-11-18 所有者明确允许将 DeepSeek HTTP 402 的 `UNKNOWN` 保留在旧 cohort，独立归档，并启动新的已计量 cohort。旧账本保持停止，历史用量仍为空。两轮冻结原判、原稿和 402 现场按原字节保留。[旧账本](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/request-accounting.json)
+
+本次从当前 ZCode `provider_config.json` 读取已验证的 OpenCode Go 配置。旧 `config.json` 的凭据在前次只读查询中返回 401。新配置先通过官方模型目录查询，再用官方 Go Anthropic Messages 路由发出一笔独立最小请求。HTTP 200，Provider 返回 `deepseek-v4.1-flash`、响应 ID 和完整终态用量。34 fresh input、0 cache read、0 cache creation、16 output 共 50 tokens，与 SQLite 逐项一致，未决 0。Provider 报告计入 Go allowance，余额扣款字段为 0。[最小请求账本](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/opencode-probe.json) · [OpenCode 路由](https://opencode.ai/docs/console/harnesses/#base-urls)
+
+真实 T3 的产品代码基线为主线 `fdda682e`。宿主不改变容器内的 DSH 配置和任务提示，固定把经准入的模型别名转成 `deepseek-v4.1-flash`，凭据只在宿主读入。同一会话使用稳定的 OpenCode 会话 ID。宿主核对响应模型、响应 ID、终态事件以及 OpenCode 和 Messages 的四项用量，缺失或冲突则按原条件停止。42 项 PNWF 定向回归通过，含模型漂移、缺失和冲突的拒绝用例。独立的 T3 仍使用 `paid-usage-only`，每会话 64 笔、30 分钟、单请求 240 秒，金额与总 token 均无上限。[终态用量文档](https://opencode.ai/docs/console/api/inference/#cost)

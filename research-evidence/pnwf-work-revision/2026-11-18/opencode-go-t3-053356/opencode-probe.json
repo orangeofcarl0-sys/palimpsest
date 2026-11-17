@@ -1,0 +1,110 @@
+{
+  "schema": "pnwf-opencode-go-probe/v1",
+  "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+  "model": "deepseek-v4.1-flash",
+  "profileId": "5c7f8d75-e85e-4de5-9b27-e2b59eab1c7a",
+  "startedAt": "2026-11-17T21:33:56.252Z",
+  "requestId": "dc76df62-c33e-4ef4-b173-a1ed66c5e310",
+  "providerResponseId": "msg_6b0acb59a4e6430e9b58986cd25eaabd",
+  "terminalUsage": {
+    "input_tokens": 34,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "output_tokens": 16
+  },
+  "passed": true,
+  "httpStatus": 200,
+  "providerDate": "Tue, 17 Nov 2026 21:33:57 GMT",
+  "stream": {
+    "types": [
+      "message_start",
+      "content_block_start",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_stop",
+      "content_block_start",
+      "content_block_delta",
+      "content_block_stop",
+      "message_delta",
+      "message_stop"
+    ],
+    "startUsage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    },
+    "finalUsage": {
+      "input_tokens": 34,
+      "output_tokens": 16,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cost": 0,
+      "opencode": {
+        "billing_source": "go",
+        "list_cost": 0.0000147,
+        "allowance": 0.00000882,
+        "tokens": {
+          "input": 34,
+          "output": 16,
+          "reasoning": 13,
+          "cache_read": 0,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0
+        }
+      }
+    },
+    "model": "deepseek-v4.1-flash",
+    "stopReason": "end_turn"
+  },
+  "endedAt": "2026-11-17T21:33:58.560Z",
+  "accounting": {
+    "schema": "pnwf-usage-snapshot/v1",
+    "cohortId": "grpc-t3-go-probe-9d0b6bcd-5830-4913-9363-674e42b0a154",
+    "configDigest": "f9a1b98f0e41c109768dab09dcc778ff43bfac810905e4239995fac95e622647",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 50,
+    "reserved": null,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": null,
+    "sessions": [
+      {
+        "id": "probe",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": null,
+        "softCeiling": null,
+        "maxRequests": 1,
+        "requestCount": 1,
+        "unresolvedRequests": 0,
+        "confirmed": 50,
+        "reserved": null
+      }
+    ],
+    "requests": [
+      {
+        "id": "dc76df62-c33e-4ef4-b173-a1ed66c5e310",
+        "session": "probe",
+        "digest": "00f77b39cc0a94462825547a84a7ec19de64d22e1877d84975fd1bb97a7029ce",
+        "reserved": null,
+        "actual": 50,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 34,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 16
+        }
+      }
+    ],
+    "refusals": []
+  }
+}

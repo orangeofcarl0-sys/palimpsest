@@ -11,6 +11,7 @@ import { PAID_COHORT_SCHEMA, PAID_MODE, readDeepSeekKey } from "../bounded_provi
 import { runContainerSession } from "../container_adapter.mjs";
 import { docker } from "../container_runtime.mjs";
 import { ExecutionBudget, USAGE_ONLY_SCHEMA } from "../execution_budget.mjs";
+import { OPENCODE_GO_MESSAGES, OPENCODE_GO_MODEL, readOpenCodeGoKey, requireOpenCodeGoProbe } from "../opencode_go.mjs";
 import { assert, changed, clean, descendant, digest, git, head, readJson, writeJson } from "../energy/contract.mjs";
 import { attribute } from "../energy/evidence.mjs";
 import { GUIDED_T3_PROMPT, REVIEW } from "../software/contract.mjs";
@@ -27,10 +28,11 @@ const archive = join(repo, "research-evidence/pnwf-work-revision/2026-11-10/sett
 const previous = join(repo, "research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632");
 const { values } = parseArgs({ options: {
   mode: { type: "string" }, run: { type: "string" }, accepted: { type: "string" }, qualification: { type: "string" },
+  "opencode-go-probe": { type: "string" },
 } });
 const paid = values.mode === "live";
 assert(values.run && values.accepted && (paid ? values.qualification : values.mode === "mock"),
-  "Usage: node review-t3.mjs --mode=mock|live --run=<new directory> --accepted=<accepted T2 run> [--qualification=<Mock result.json>]");
+  "Usage: node review-t3.mjs --mode=mock|live --run=<new directory> --accepted=<accepted T2 run> [--qualification=<Mock result.json>] [--opencode-go-probe=<settled probe.json>]");
 assert(descendant(repo, release, head(repo)) && git(repo, "diff", "--name-only", release, "--", "src", "host", "package.json", "pnpm-lock.yaml") === "",
   "PRODUCT_RELEASE_DRIFT");
 const root = resolve(values.run);
@@ -43,6 +45,10 @@ const accepted = readJson(join(archive, "acceptance.json"));
 const frozen = readJson(join(archive, "contract.json"));
 const previousContract = readJson(join(previous, "contract.json"));
 const shaFile = path => digest(readFileSync(path));
+const openCodeProbePath = values["opencode-go-probe"];
+const openCodeGoProfile = openCodeProbePath ? requireOpenCodeGoProbe(readJson(openCodeProbePath)) : undefined;
+const openCodeBase = "fdda682e1fd03071a3c4770f511d248df027a689";
+if (openCodeGoProfile) assert(descendant(repo, openCodeBase, head(repo)), "OPENCODE_T3_MAIN_BASE_DRIFT");
 for (const file of ["acceptance.json", "candidate.json", "result.json"]) {
   assert(shaFile(join(source, file)) === shaFile(join(archive, file)), "APPROVED_T2_ARCHIVE_DRIFT " + file);
 }
@@ -56,11 +62,13 @@ assert(legacyScorerSha256 === previousContract.scorerSha256 && previousContract.
 deepStrictEqual(frozen.window, previousContract.window);
 const { image, window } = frozen;
 assert(docker(["image", "inspect", image, "--format", "{{.Id}}"]) === image && image === previousContract.image, "T3_IMAGE_DRIFT");
-const seal = { release, basis, tree: accepted.tree, model: frozen.model, dsh: frozen.dsh, image, window,
+const seal = { release, basis, tree: accepted.tree, model: openCodeGoProfile ? OPENCODE_GO_MODEL : frozen.model, dsh: frozen.dsh, image, window,
+  ...(openCodeGoProfile ? { mainBase: openCodeBase, provider: "opencode-go", route: OPENCODE_GO_MESSAGES,
+    providerProbeSha256: shaFile(openCodeProbePath) } : {}),
   promptSha256: digest(GUIDED_T3_PROMPT), scoreSchema: REVIEW_SCORE_SCHEMA, legacyScorerSha256,
   files: Object.fromEntries(["revision/review-t3.mjs", "software/contract.mjs", "software/review-score.mjs", "software/mock.mjs",
     "software/run.mjs", "software/product-entry.mjs", "container_adapter.mjs", "container_runtime.mjs", "bounded_provider.mjs",
-    "execution_budget.mjs"].map(file => [file, shaFile(join(repo, "scripts/pnwf", file))])),
+    "execution_budget.mjs", "opencode_go.mjs"].map(file => [file, shaFile(join(repo, "scripts/pnwf", file))])),
   originalAcceptanceSha256: shaFile(join(archive, "acceptance.json")), previousResultSha256: shaFile(join(previous, "result.json")) };
 if (paid) {
   const qualification = readJson(resolve(values.qualification));
@@ -68,7 +76,8 @@ if (paid) {
     qualification.accounting.requests > 0 && qualification.accounting.unresolved === 0 && qualification.semanticScore?.passed,
   "T3_MOCK_NOT_QUALIFIED");
   deepStrictEqual(qualification.seal, seal);
-  readDeepSeekKey();
+  if (openCodeGoProfile) readOpenCodeGoKey(openCodeGoProfile);
+  else readDeepSeekKey();
 }
 
 mkdirSync(root);
@@ -110,7 +119,8 @@ try {
   ledger.startSession("T3");
   console.log("REVIEW_T3_STARTED", mode, basis);
   result.execution = await runContainerSession({ run: p.run, sessionId: "T3", budgetPath, mode, provider: mock?.config,
-    repository: runtime, image, experiment: { layout: "product", acceptance: acceptancePath } });
+    repository: runtime, image, experiment: { layout: "product", acceptance: acceptancePath,
+      openCodeGoProfile: paid ? openCodeGoProfile : undefined } });
   result.checks.naturalExit = result.execution.natural;
   const current = head(p.world);
   const facts = owner(p, "facts");
@@ -159,6 +169,6 @@ try {
   writeJson(join(p.run, "result.json"), result);
   console.log("REVIEW_T3_RESULT", JSON.stringify({ passed: result.passed, usageKnown: result.usageKnown, ...result.accounting,
     current: result.current, semanticPassed: result.semanticScore?.passed, failedCriteria: result.semanticScore?.checks?.filter(check => !check.passed),
-    reason: result.reason ?? result.attributionFailure ?? result.execution?.error, checks: result.checks }));
+    reason: result.reason ?? result.attributionFailure ?? result.execution?.error ?? result.accounting.reason, checks: result.checks }));
   if (!result.passed) process.exitCode = 1;
 }
