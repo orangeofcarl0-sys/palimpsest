@@ -1,0 +1,171 @@
+{
+  "schema": "pnwf-opencode-go-probe/v1",
+  "model": "deepseek-v4.1-flash",
+  "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+  "profileId": "5c7f8d75-e85e-4de5-9b27-e2b59eab1c7a",
+  "startedAt": "2026-11-17T21:56:02.798Z",
+  "passed": true,
+  "requestId": "0229de4e-9eb7-4301-b66b-3c327f2e17f9",
+  "providerResponseId": "msg_986c7757de3847969cabc7b10cad2304",
+  "terminalUsage": {
+    "input_tokens": 321,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "output_tokens": 54
+  },
+  "requestShape": {
+    "inbound": [
+      "dsh_plugin_packages",
+      "dsh_session_log",
+      "max_tokens",
+      "messages",
+      "model",
+      "output_config",
+      "stream",
+      "thinking",
+      "tools"
+    ],
+    "outbound": [
+      "max_tokens",
+      "messages",
+      "model",
+      "stream",
+      "tools"
+    ],
+    "toolName": "record_probe",
+    "requestCount": 1
+  },
+  "gatewayHttpStatus": 200,
+  "httpStatus": 200,
+  "stream": {
+    "types": [
+      "message_start",
+      "content_block_start",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_stop",
+      "content_block_start",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_stop",
+      "message_delta",
+      "message_stop"
+    ],
+    "model": "deepseek-v4.1-flash",
+    "finalUsage": {
+      "input_tokens": 321,
+      "output_tokens": 54,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cost": 0,
+      "opencode": {
+        "billing_source": "go",
+        "list_cost": 0.00008055,
+        "allowance": 0.00004833,
+        "tokens": {
+          "input": 321,
+          "output": 54,
+          "reasoning": 14,
+          "cache_read": 0,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0
+        }
+      }
+    },
+    "stopReason": "tool_use"
+  },
+  "tool": {
+    "call": {
+      "id": "call_7282bf5d54f34de7a8442e13",
+      "name": "record_probe",
+      "input": {
+        "value": 7
+      }
+    },
+    "result": {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "call_7282bf5d54f34de7a8442e13",
+          "content": "{\"result\":8}"
+        }
+      ]
+    },
+    "coupled": true,
+    "resultReturnedToProvider": false
+  },
+  "endedAt": "2026-11-17T21:56:05.127Z",
+  "observations": [
+    {
+      "kind": "ADMITTED",
+      "requestId": "0229de4e-9eb7-4301-b66b-3c327f2e17f9",
+      "actor": "principal-container"
+    },
+    {
+      "kind": "TERMINAL",
+      "requestId": "0229de4e-9eb7-4301-b66b-3c327f2e17f9",
+      "actor": "principal-container",
+      "messageId": "msg_986c7757de3847969cabc7b10cad2304",
+      "usage": {
+        "input_tokens": 321,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 54
+      },
+      "providerBilling": {
+        "billingSource": "go",
+        "cost": 0,
+        "allowance": 0.00004833,
+        "listCost": 0.00008055,
+        "reasoning": 14
+      }
+    }
+  ],
+  "accounting": {
+    "schema": "pnwf-usage-snapshot/v1",
+    "cohortId": "grpc-t3-go-tool-probe-e5e211f7-92b9-487d-9b55-da7dcb9237d9",
+    "configDigest": "901b5bf0bb5ad6606948ddac3ecfbfca1e5bd440e51264f3af624aac530c3a7a",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 375,
+    "reserved": null,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": null,
+    "sessions": [
+      {
+        "id": "probe",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": null,
+        "softCeiling": null,
+        "maxRequests": 1,
+        "requestCount": 1,
+        "unresolvedRequests": 0,
+        "confirmed": 375,
+        "reserved": null
+      }
+    ],
+    "requests": [
+      {
+        "id": "0229de4e-9eb7-4301-b66b-3c327f2e17f9",
+        "session": "probe",
+        "digest": "3acd0af1c9ac90acee35ffd04ac25e0ff933667be00ac75f1ed7cb8c13d41785",
+        "reserved": null,
+        "actual": 375,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 321,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 54
+        }
+      }
+    ],
+    "refusals": []
+  }
+}

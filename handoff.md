@@ -15,7 +15,7 @@
 - 结算后的 readiness 修复已通过 [PR #263](https://github.com/orangeofcarl0-sys/palimpsest/pull/263) 发布到 `2d741933`。gRPC 和 Energy Mock 均从 `ACTIVE / COMPLETED` 推进至 `VERIFYING` 并记录等待后退出。真实 gRPC 同基线复跑按 `readiness → next → conclude WAIT_FOR_OPERATOR` 自然退出，47 笔全部对账。候选核准后离线晋升至 `4639ae44`。[修复与复跑](docs/engineering/WORK-REVISION-LIVE-T2.md#结算后-readiness-修复与-grpc-同基线复跑) · [发布记录](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/release-ci.json)
 - 真实 gRPC T3 已通过 [PR #265](https://github.com/orangeofcarl0-sys/palimpsest/pull/265) 发布到 `b3c3de40`。普通 DSH 从晋升 HEAD `4639ae44` 接续，只提交 `MIGRATION-REVIEW.md`（`12fbb83c`），记录 `DELIVER` 后自然退出。13 笔全部对账，两轮冻结原判和逐项内容复核均已归档。[T3 对比与原稿](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#结算引导修复后的真实-grpc-t3) · [发布记录](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/release-ci.json)
 - gRPC T3 语义验收和交付提示已通过 [PR #267](https://github.com/orangeofcarl0-sys/palimpsest/pull/267) 发布到 `02940a03`，16/16 项检查首次通过。新版认可默认值同义表述，仍要求每条 Reading 独占一帧。两轮冻结原判保留。同一接受 HEAD `4639ae44` 的最终 Mock 完成 12/12 项核验，记录 `DELIVER` 并自然退出。真实 T3 首笔收到 Provider HTTP 402，终态用量未知，按原条件停止，未产生摘要。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#grpc-t3-语义验收与同一接受版本复跑) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/release-ci.json)
-- gRPC T3 的旧 DeepSeek 402 独立保留 `UNKNOWN`。OpenCode Go 最小请求 50 tokens 已对账，同基线 Mock 通过。真实 T3 从 `4639ae44` 启动，首笔完整请求收到 HTTP 400，独立账本为 1 笔未知，按原条件停止，未生成摘要。[最小请求](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/opencode-probe.json) · [真实轨迹](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/trajectory-and-review-audit.json)
+- gRPC T3 的 HTTP 402 与 HTTP 400 停止现场分别保留为 `UNKNOWN`。修正后 OpenCode Go 带工具探针单笔结算 375 tokens，同基线 Mock 通过。真实 T3 从 `4639ae44` 提交 `f30c6644`、记录 `DELIVER` 后自然退出，14 笔全结算、27 对工具调用全配对。原自动验收维持失败，原因是旧空流表格表述漏识别及 DSH 回放缺 Provider 响应 ID；同 SHA 原稿和用量已离线复核。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#带工具探针通过后的-opencode-go-t3) · [轨迹证据](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/trajectory-and-review-audit.json)
 - 自提交先启用仓库 `commit-msg`。主线逐个检查 PR 引入的提交归因，发布使用 rebase 合并。 [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
 - `DELIVER` 工件 SHA 修复、项目路线图和 gRPC 迁移双组 Mock 资格已通过 [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253) 发布。送审 head 的 16 项检查均成功，主线发布点为 `d34f34b4c528f7aa7788a1b7192c789dc73b790c`。六个会话均自然退出，38 笔 Mock 请求全部结算，新增付费调用 0。真实配对另行使用获准的资源合同。 [资格报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md) · [发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/release-ci.json)
 - 2026-11-10 从主线 `268f14f9` 执行首组 gRPC 真实诊断配对。两组 T1 原判分保留，经所有者批准按原提交独立复核后分别启动 T2。Palimpsest 正式委派被写范围拦截，改走原生子任务加 `relay takeover`，记录 `WAIT_FOR_OPERATOR`。强原生直接使用 Git worktree 加 Subagent。两个 T2 的独立探针均通过，候选都修改了要求保留的 proto blob，均未进入核准，两组均未启动 T3。四个会话自然退出，140 笔真实请求、232 对调用与结果已复核。Palimpsest T2 切换前的故障排查占 26 笔请求、1,356,253 tokens 和 220.798 秒。[真实配对报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#真实诊断配对) · [机器证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json) · [用量审计](research-evidence/pnwf-software/2026-11-10/live-pair-150630/usage-audit.json)
@@ -77,7 +77,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
 | `origin/main` | 本轮 gRPC T3 语义验收发布点为 `02940a0303d4e4d9cc1ac96569dd3ec726ef3f98`，当前 tip 用 `git rev-parse origin/main` 核对。历史真实运行的产品基线仍为 `a0daba3c4f43f91fe5ab92b1a0bad94c5d2dfee1` |
-| 当前 OpenCode Go T3 | 本地 `codex/grpc-t3-opencode-go` 从 `fdda682e1fd03071a3c4770f511d248df027a689` 起步，纳入旧 402 对账、宿主固定路由与真实 HTTP 400 停止现场 |
+| 当前 OpenCode Go T3 | 本地 `codex/grpc-t3-opencode-go` 从 `fdda682e1fd03071a3c4770f511d248df027a689` 起步。带工具探针和真实会话沿用宿主实现 `9fe4bd62`，本轮补录交付、原判和离线证据 |
 | [PR #267](https://github.com/orangeofcarl0-sys/palimpsest/pull/267) | `codex/grpc-t3-review-semantics` 已 rebase 合并，送审 `c2ed9dd2649abdef62b6e2da4cbfa3fc13fae7f9` 的 16/16 项检查通过。合并前后文件树、作者和提交消息一致，远端工作分支已自动删除。[检查与 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/release-ci.json) |
 | [PR #265](https://github.com/orangeofcarl0-sys/palimpsest/pull/265) | `codex/grpc-settled-readiness-t3` 已 rebase 合并，送审 `68df9f8b6d68f4de51b495158147b4028d895ca4` 的 16/16 项检查通过。合并前后文件树、作者和提交消息一致。远端工作分支已自动删除。[发布记录](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/release-ci.json) |
 | [PR #263](https://github.com/orangeofcarl0-sys/palimpsest/pull/263) | `codex/settled-worker-readiness` 已 rebase 合并，远端分支自动删除。精确 head `85e5a8c4e637d9228deb9b95e980d159104fd95b` 的 16/16 项检查成功。真实运行使用 `57638dad88fdba00c30b6be85107086866e09dcf`，对应主线修复提交 `c2c51db99a258d051c33e592ad2ef364089f0c1a`。送审和主线的文件树、作者与消息逐一核对。[发布与 SHA 映射](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/release-ci.json) |
@@ -478,6 +478,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 所有者随后明确允许将旧 402 留在独立 cohort。用当前 ZCode Provider 配置跑通 OpenCode Go 一笔最小请求，并从同一接受 HEAD 启动真 T3。两条新账本独立，最小请求全结算 50 tokens，真实 T3 首笔 HTTP 400 后使用未知用量规则停止，登记 1、结算 0、未知 1。旧 402 和两轮冻结原判逐字节保留。[OpenCode Go 报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#opencode-go-同一接受版本的真实-t3)
 
+随后所有者也允许将 HTTP 400 独立留档。修正后工具探针和真实 T3 使用两个新 cohort。探针 1 笔、375 tokens，工具结果按调用 ID 在本地配对。真实 T3 14 笔、458,889 tokens 全结算，0 未决，194.233 秒。只提交评审，记录 `DELIVER` 后自然退出。两次历史停止的 SQLite 与归档均核对为 `UNKNOWN`，没有并入本轮账本。[历史停止核对](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/prior-stops.json) · [真实账本](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/request-accounting.json)
+
 ### 2026-11-07 历史 cohort
 
 | 项 | tokens |
@@ -526,7 +528,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
    - 远程部署应提供自己的 `OperatorAuthorityPort`。
 
 4. **真实模型产品闭环**（P1）
-   - gRPC T3 同基线 Mock 通过，两份历史稿仍缺逐条成帧。OpenCode Go 的最小请求通过，真实 T3 的完整 DSH 请求首笔返回 HTTP 400。已离线收敛 DSH 专用字段与思考配置，并加 HTTP 拒绝时的上游 ID 记录。原 400 的具体拒绝字段和用量仍待 Provider 证据，收敛后的路由尚未经付费验证。两次中止分属不同 cohort。[OpenCode Go 复跑报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#opencode-go-同一接受版本的真实-t3)
+   - 修正路由的 OpenCode Go T3 已真实交付并自然退出。原自动验收仍有两项缺口：评分器未识别原稿以表格和承接句写出的旧空流规则；归因脚本要求 DSH 回放携带 Provider 响应 ID，而本轮未保存该字段。离线用原稿补证旧规则，并以单流的 14 组不重复用量四元组逐笔核对。两轮冻结原判和两个独立的 `UNKNOWN` 停止现场均保留。[最新 OpenCode Go 报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#带工具探针通过后的-opencode-go-t3)
    - gRPC T2 写范围复跑保留了四个保护 blob。Palimpsest 走正式 Worker，强原生组的主工作区检出切换仍触发守卫，候选经离线核准后从原基线副本接受。两组 T3 均提交并自然退出，冻结原判均失败。离线核对区分了措辞差异与原稿未明确覆盖的协议边界。[软件试点](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#t2-写范围与拒绝回传复跑)
    - 两种状态各一次定向观察证实，指定先查 `readiness` 后，模型收到新提示，并在后续步骤记录 `DELIVER` 和自然退出。原始状态的两条修复后复跑都在退役后直接验证并交付，退役后查询 `readiness` 为 0。两组保留各自的起点和触发条件。[定向观察与原始状态复跑](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md#退役状态下的-readiness-定向观察)
    - Energy 在 RUNNING Attempt 下用 `metadata_only` 移除任务，收到 `quiescence_required`，随后按 `successor` → `plan` 恢复。Software 的失败探针是另一个层级的作业错误。两种恢复顺序及耗时见对比报告。
@@ -638,6 +640,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-18 | 只读核对 DeepSeek HTTP 402 和备用 OpenCode | [对账记录](research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-provider-reconciliation.json) | 原用量仍未知，DeepSeek 余额不可用，旧 OpenCode 配置返回 401，新增推理请求 0 |
 | 2026-11-18 | 将旧 402 独立保留，接入并验证 OpenCode Go | [最小请求账本](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/opencode-probe.json) | 当前 ZCode 配置，`deepseek-v4.1-flash` 单笔 50 tokens，终态用量和 SQLite 一致 |
 | 2026-11-18 | 从同一核准 HEAD 复跑 OpenCode Go gRPC T3 | [轨迹对照](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/trajectory-and-review-audit.json)，[账本](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/request-accounting.json) | 同基线 Mock 通过，真实首笔 HTTP 400，1 笔未知后停止，接受 HEAD 未变化 |
+| 2026-11-18 | 旧 HTTP 400 保留未知并独立留档，验证修正路由后复跑真实 T3 | [探针](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json)，[轨迹和离线复核](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/trajectory-and-review-audit.json) | 探针 375 tokens；真实 14 笔、458,889 tokens，`f30c6644` 交付并自然退出；原自动判分与归因失败保留 |
 
 ---
 
