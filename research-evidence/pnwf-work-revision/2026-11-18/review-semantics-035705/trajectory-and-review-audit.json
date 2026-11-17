@@ -1,0 +1,353 @@
+{
+  "schema": "pnwf-grpc-review-semantics-audit/v1",
+  "principalStreamSha256": "bc5c373a6ce68531d35c110b0fd22187a07abeacdcd8a0d427fdb6761234ca36",
+  "counts": {
+    "steps": 1,
+    "turns": 1,
+    "toolCalls": 0,
+    "pairedToolResults": 0,
+    "unpairedToolResults": 0,
+    "toolErrors": 0,
+    "jobFailures": 0,
+    "domainRefusals": 0,
+    "repeatedRefusals": 0,
+    "noProgressToolCalls": 0,
+    "stateQueries": 0,
+    "commits": 0,
+    "jobs": 0
+  },
+  "byKind": {},
+  "acceptanceRead": [],
+  "tests": [],
+  "writes": [],
+  "commits": [],
+  "conclusions": [],
+  "exit": {
+    "code": 137,
+    "natural": false,
+    "killedBy": "usage_unobservable",
+    "callsAfterDelivery": null
+  },
+  "acceptanceReadOnly": true,
+  "git": {
+    "accepted": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "headAfter": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+    "netPaths": []
+  },
+  "sourceRecovery": {
+    "gitBundleSha256": "375a9fe2c28a9f3292ec401430549809dc0934abec76a63bafbbd1d59b62bba2",
+    "gitWasRestoredFromBundle": true,
+    "productStateReused": true,
+    "stateFiles": {
+      "attempt_world_basis.sqlite": "e0e54222d71df3101dafd634b98b770b55bad83864460418f0ebf283d660e69e",
+      "journal.sqlite": "22d178cb83084c0efe108d22148022dddc3bfc7ccc3ac55f946813d7ac5bc878",
+      "ordarium.sqlite": "ee4008f12305e54daae65e12236721d7df60a07559faed74692307a8099a6a80",
+      "palimpsest.sqlite": "8aa7d873ec5311fc6fabb2dfd52b4fe07114de2164430e93d582a0d6a61662cf"
+    }
+  },
+  "mock": {
+    "commit": "46f1d1da79016aad716df169e877042a9c957f14",
+    "receipt": {
+      "id": "episode-dee1205dec512ca38317511c",
+      "episodeBasis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "artifacts": [
+        {
+          "path": "MIGRATION-REVIEW.md",
+          "present": true,
+          "tracked": true,
+          "committed": true,
+          "digest": "442200af120bd78e3dac816e68088c9b849a28e98f11c2dff023574bf5cd1f8d",
+          "source": "WORKTREE",
+          "commit": "46f1d1da79016aad716df169e877042a9c957f14",
+          "detail": "committed at HEAD"
+        }
+      ]
+    },
+    "bundleSha256": "5d173f5c4aa903ddb1759dcd5ff02f0216e11a54818f7e4056d3ee38d60ca21f",
+    "requests": 4,
+    "paidModelCalls": 0,
+    "naturalExit": true,
+    "checksPassed": 12,
+    "checksTotal": 12,
+    "principalStreamSha256": "b93170fcb7e8fd6b95299ba377529f05480ce9c5ceea92b40b029531f1b245c8",
+    "acceptanceRead": {
+      "callId": "software_0_principal",
+      "callSeq": 15,
+      "resultSeq": 18,
+      "tool": "bash",
+      "ok": true,
+      "refusal": null,
+      "acceptedHeadSeen": true,
+      "candidateSeen": true
+    },
+    "testAndCommit": {
+      "callId": "software_1_principal",
+      "callSeq": 23,
+      "resultSeq": 26,
+      "tool": "bash",
+      "ok": true,
+      "refusal": null,
+      "tests": 18,
+      "pass": 18,
+      "fail": 0,
+      "framingTestOutput": false
+    },
+    "conclude": {
+      "callId": "software_2_principal",
+      "callSeq": 31,
+      "resultSeq": 32,
+      "tool": "work:conclude",
+      "ok": true,
+      "refusal": null,
+      "state": "RECORDED",
+      "mayEnd": true
+    },
+    "exitCode": 0,
+    "callsAfterDelivery": 0
+  },
+  "compare": [
+    {
+      "case": "previous-ordinary-dsh",
+      "basis": "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
+      "reviewCommit": "f4b523902ceb55ca27426c4bb1b24e5b5f5d7fa7",
+      "requests": 14,
+      "usage": {
+        "fresh": 21998,
+        "cacheRead": 352768,
+        "cacheWrite": 0,
+        "output": 9656
+      },
+      "totalTokens": 384422,
+      "elapsedMs": 120472,
+      "toolPairs": 27,
+      "conclusion": "DELIVER",
+      "naturalExit": true,
+      "frozenScore": {
+        "passed": false,
+        "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+      },
+      "exactText": {
+        "exactAcceptedHead": true,
+        "exactCorrectionPath": true,
+        "frozenExactMissing": [
+          "zero or omitted",
+          "one Reading per frame",
+          "unary GetReading",
+          "protocol field numbers",
+          "node --test passed"
+        ]
+      },
+      "originalReviewSha256": "ad0dba4dd408d1b09d3f6c3c275ccb7c1f73ec06561518933ebfa3da2bb66ad6",
+      "semanticRecount": {
+        "schema": "pnwf-grpc-review-semantics/v1",
+        "passed": false,
+        "checks": [
+          {
+            "id": "ACCEPTED_HEAD",
+            "passed": true,
+            "evidence": "7deda735afa4ef97e71dd14b5ab4b48131e1e872"
+          },
+          {
+            "id": "FLEET_CORRECTION_PATH",
+            "passed": true,
+            "evidence": "updates/2026-11-10/fleet-default-limit.md"
+          },
+          {
+            "id": "OLD_ZERO_AND_OMITTED_EMPTY",
+            "passed": true,
+            "evidence": "The old behaviour treated both an omitted limit and an explicitly zero limit as an empty stream: no Reading frames followed by grpc-status: 0."
+          },
+          {
+            "id": "NEW_ZERO_AND_OMITTED_FIRST_THREE",
+            "passed": true,
+            "evidence": "The old behaviour treated both an omitted limit and an explicitly zero limit as an empty stream: no Reading frames followed by grpc-status: 0. The accepted behaviour treats both forms as a request for the first three available readings in source order, followed by grpc-status: 0."
+          },
+          {
+            "id": "SOURCE_ORDER",
+            "passed": true,
+            "evidence": "The old behaviour treated both an omitted limit and an explicitly zero limit as an empty stream: no Reading frames followed by grpc-status: 0. The accepted behaviour treats both forms as a request for the first three available readings in source order, followed by grpc-status: 0."
+          },
+          {
+            "id": "ONE_READING_PER_FRAME",
+            "passed": false,
+            "evidence": null,
+            "detail": "State that StreamReadings sends each Reading in its own gRPC message frame."
+          },
+          {
+            "id": "POSITIVE_LIMITS",
+            "passed": true,
+            "evidence": "Positive limits remain unchanged and still select readings.slice(0, limit)."
+          },
+          {
+            "id": "UNARY_GET_READING",
+            "passed": false,
+            "evidence": null
+          },
+          {
+            "id": "UNKNOWN_SITE_NOT_FOUND",
+            "passed": true,
+            "evidence": "GetReading, positive StreamReadings limits, source ordering, NOT_FOUND for unknown sites, INVALID_ARGUMENT for malformed or invalid requests, UNIMPLEMENTED for unknown methods and unsupported compression, HTTP/2 status 200 with the outcome in grpc-status trailers, and the h2c test setup are unchanged."
+          },
+          {
+            "id": "PROTO_FIELD_NUMBERS",
+            "passed": true,
+            "evidence": "The service name, method names, message field numbers, field types, and at_ms epoch-millisecond representation are unchanged."
+          },
+          {
+            "id": "REST_COMPATIBILITY",
+            "passed": true,
+            "evidence": "service/rest_server.js, service/rest_client.js, and test/rest.test.js are unchanged."
+          },
+          {
+            "id": "PUBLIC_TESTS_PASSED",
+            "passed": true,
+            "evidence": "- node --test — 18 tests passed, 0 failed, 0 cancelled, 0 skipped (duration 335.381019 ms)."
+          }
+        ]
+      }
+    },
+    {
+      "case": "settled-readiness-ordinary-dsh",
+      "basis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "reviewCommit": "12fbb83cb79a0f42fef8c007a30a8dec9ac747cd",
+      "requests": 13,
+      "usage": {
+        "fresh": 20998,
+        "cacheRead": 332160,
+        "cacheWrite": 0,
+        "output": 8691
+      },
+      "totalTokens": 361849,
+      "elapsedMs": 113753,
+      "toolPairs": 22,
+      "conclusion": "DELIVER",
+      "naturalExit": true,
+      "frozenScore": {
+        "passed": false,
+        "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+      },
+      "exactText": {
+        "exactAcceptedHead": true,
+        "exactCorrectionPath": true,
+        "frozenExactMissing": [
+          "zero or omitted",
+          "one Reading per frame",
+          "unary GetReading",
+          "protocol field numbers",
+          "node --test passed"
+        ]
+      },
+      "originalReviewSha256": "379db3f55fe41b2170ed02e04365914dd28aecbc8178b7d16aa5ae53eb41b3ad",
+      "semanticRecount": {
+        "schema": "pnwf-grpc-review-semantics/v1",
+        "passed": false,
+        "checks": [
+          {
+            "id": "ACCEPTED_HEAD",
+            "passed": true,
+            "evidence": "4639ae44d78e7c1f9f5269876fa333a99bff770f"
+          },
+          {
+            "id": "FLEET_CORRECTION_PATH",
+            "passed": true,
+            "evidence": "updates/2026-11-10/fleet-default-limit.md"
+          },
+          {
+            "id": "OLD_ZERO_AND_OMITTED_EMPTY",
+            "passed": true,
+            "evidence": "Both an omitted limit and an explicitly zero limit decode to limit: 0 in StreamReadingsRequest. - Old default (first release): limit 0 was passed directly to readings.slice(0, 0). The result was a successful but empty stream: no Reading frames and grpc-status: 0."
+          },
+          {
+            "id": "NEW_ZERO_AND_OMITTED_FIRST_THREE",
+            "passed": true,
+            "evidence": "- New default (accepted correction): service/grpc_server.js maps limit 0 to DEFAULT_STREAM_LIMIT = 3, then serves readings.slice(0, 3). An omitted or zero limit therefore returns the first three available readings in source order, or fewer when the site has fewer than three."
+          },
+          {
+            "id": "SOURCE_ORDER",
+            "passed": true,
+            "evidence": "- New default (accepted correction): service/grpc_server.js maps limit 0 to DEFAULT_STREAM_LIMIT = 3, then serves readings.slice(0, 3). An omitted or zero limit therefore returns the first three available readings in source order, or fewer when the site has fewer than three."
+          },
+          {
+            "id": "ONE_READING_PER_FRAME",
+            "passed": false,
+            "evidence": null,
+            "detail": "State that StreamReadings sends each Reading in its own gRPC message frame."
+          },
+          {
+            "id": "POSITIVE_LIMITS",
+            "passed": true,
+            "evidence": "- Positive limits: unchanged."
+          },
+          {
+            "id": "UNARY_GET_READING",
+            "passed": true,
+            "evidence": "- GetReading: remains unary, returns the current reading, and returns NOT_FOUND (grpc-status: 5, unknown_site) for an unknown site."
+          },
+          {
+            "id": "UNKNOWN_SITE_NOT_FOUND",
+            "passed": true,
+            "evidence": "- GetReading: remains unary, returns the current reading, and returns NOT_FOUND (grpc-status: 5, unknown_site) for an unknown site."
+          },
+          {
+            "id": "PROTO_FIELD_NUMBERS",
+            "passed": true,
+            "evidence": "- Protobuf contract: energy.v1.EnergyService, both method names, message names, and field numbers (site_id = 1, limit = 2, watts = 2, at_ms = 3) are unchanged."
+          },
+          {
+            "id": "REST_COMPATIBILITY",
+            "passed": true,
+            "evidence": "- REST contract: GET /sites/:id/reading, GET /sites/:id/readings?limit=N, source ordering, { siteId, watts, atMs } values, 404 { error: \"unknown_site\" }, and 400 { error: \"invalid_limit\" } are unchanged."
+          },
+          {
+            "id": "PUBLIC_TESTS_PASSED",
+            "passed": true,
+            "evidence": "- node --test from the repository root at accepted HEAD: 18 passed, 0 failed, 0 skipped, 0 cancelled."
+          }
+        ]
+      }
+    },
+    {
+      "case": "review-semantics-ordinary-dsh",
+      "basis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "reviewCommit": null,
+      "requests": 1,
+      "usage": null,
+      "totalTokens": null,
+      "elapsedMs": 28863,
+      "toolPairs": 0,
+      "totalCalls": 0,
+      "conclusion": null,
+      "naturalExit": false,
+      "usageKnown": false,
+      "settledRequests": 0,
+      "unresolvedRequests": 1,
+      "stopReason": "PROVIDER_HTTP_402",
+      "semanticScore": null,
+      "headAfter": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "rawScorerOutcome": "SOFTWARE_REVIEW_SCOPE_MISMATCH"
+    }
+  ],
+  "deltas": [
+    {
+      "from": "previous-ordinary-dsh",
+      "sameAcceptedHead": false,
+      "requests": null,
+      "elapsedMs": null,
+      "totalTokens": null,
+      "toolPairs": null,
+      "usage": null,
+      "reason": "PAID_SESSION_STOPPED_WITH_UNKNOWN_USAGE"
+    },
+    {
+      "from": "settled-readiness-ordinary-dsh",
+      "sameAcceptedHead": true,
+      "requests": null,
+      "elapsedMs": null,
+      "totalTokens": null,
+      "toolPairs": null,
+      "usage": null,
+      "reason": "PAID_SESSION_STOPPED_WITH_UNKNOWN_USAGE"
+    }
+  ]
+}

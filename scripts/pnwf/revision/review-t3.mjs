@@ -1,4 +1,4 @@
-/** One paid ordinary DSH review from the accepted settled-readiness gRPC revision. */
+/** Qualify, then run one ordinary DSH review from the accepted gRPC revision. */
 import { deepStrictEqual } from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -13,31 +13,35 @@ import { docker } from "../container_runtime.mjs";
 import { ExecutionBudget, USAGE_ONLY_SCHEMA } from "../execution_budget.mjs";
 import { assert, changed, clean, descendant, digest, git, head, readJson, writeJson } from "../energy/contract.mjs";
 import { attribute } from "../energy/evidence.mjs";
-import { PROMPTS, REVIEW } from "../software/contract.mjs";
+import { GUIDED_T3_PROMPT, REVIEW } from "../software/contract.mjs";
+import { qualificationReply } from "../software/mock.mjs";
+import { REVIEW_SCORE_SCHEMA, scoreSemanticReview } from "../software/review-score.mjs";
 import { artifactReceipts, bindSoftwareRun, isolated, owner, paths, prepare, stageSoftwareRuntime, traceSummary } from "../software/run.mjs";
 import { scoreReview } from "../software/score.mjs";
+import { startMockProvider } from "../mock_provider.mjs";
 
 const repo = fileURLToPath(new URL("../../../", import.meta.url));
 const release = "a0daba3c4f43f91fe5ab92b1a0bad94c5d2dfee1";
 const basis = "4639ae44d78e7c1f9f5269876fa333a99bff770f";
 const archive = join(repo, "research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618");
-const previous = join(repo, "research-evidence/pnwf-software/2026-11-10/scope-rerun-163507");
-const { values } = parseArgs({ options: { run: { type: "string" }, accepted: { type: "string" }, "previous-t3": { type: "string" } } });
-assert(values.run && values.accepted && values["previous-t3"], "T3_RUN_ACCEPTED_AND_PREVIOUS_PATHS_REQUIRED");
+const previous = join(repo, "research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632");
+const { values } = parseArgs({ options: {
+  mode: { type: "string" }, run: { type: "string" }, accepted: { type: "string" }, qualification: { type: "string" },
+} });
+const paid = values.mode === "live";
+assert(values.run && values.accepted && (paid ? values.qualification : values.mode === "mock"),
+  "Usage: node review-t3.mjs --mode=mock|live --run=<new directory> --accepted=<accepted T2 run> [--qualification=<Mock result.json>]");
 assert(descendant(repo, release, head(repo)) && git(repo, "diff", "--name-only", release, "--", "src", "host", "package.json", "pnpm-lock.yaml") === "",
   "PRODUCT_RELEASE_DRIFT");
 const root = resolve(values.run);
 const source = resolve(values.accepted);
-const prior = resolve(values["previous-t3"]);
 const sourceStage = join(source, "accepted-stage");
 const sourceWorld = join(sourceStage, "world");
 const t2 = readJson(join(archive, "result.json"));
 const candidate = readJson(join(archive, "candidate.json"));
 const accepted = readJson(join(archive, "acceptance.json"));
 const frozen = readJson(join(archive, "contract.json"));
-const previousResult = readJson(join(prior, "result.json"));
-const previousEvidence = readJson(join(previous, "evidence.json"));
-const previousCase = previousEvidence.sessions.find(row => row.arm === "P" && row.id === "T3");
+const previousContract = readJson(join(previous, "contract.json"));
 const shaFile = path => digest(readFileSync(path));
 for (const file of ["acceptance.json", "candidate.json", "result.json"]) {
   assert(shaFile(join(source, file)) === shaFile(join(archive, file)), "APPROVED_T2_ARCHIVE_DRIFT " + file);
@@ -47,16 +51,25 @@ assert(t2.passed && t2.usageKnown && t2.accounting.unresolved === 0 && accepted.
   accepted.committed.event_type === "PROMOTION_COMMITTED" && accepted.committed.payload.source_commit === candidate.commit &&
   accepted.committed.payload.resulting_head_commit === basis && head(sourceWorld) === basis && clean(sourceWorld) &&
   git(sourceWorld, "rev-parse", "HEAD^{tree}") === accepted.tree && !existsSync(join(sourceWorld, "acceptance.json")), "T3_ACCEPTANCE_MISMATCH");
-assert(previousCase?.basis === previousResult.basis && previousCase.current === previousResult.current &&
-  previousCase.originalResultSha256 === shaFile(join(prior, "result.json")), "HISTORICAL_T3_EVIDENCE_DRIFT");
-const scorerSha256 = shaFile(join(repo, "scripts/pnwf/software/score.mjs"));
-const previousSeal = readJson(join(prior, "../../rerun-seal.json"));
-assert(scorerSha256 === previousSeal.driver["score.mjs"] && digest(PROMPTS.T3) === previousSeal.prompts.T3 &&
-  shaFile(join(prior, "prompt.txt")) === digest(PROMPTS.T3), "FROZEN_T3_PROMPT_OR_SCORER_DRIFT");
-deepStrictEqual(frozen.window, previousSeal.window);
+const legacyScorerSha256 = shaFile(join(repo, "scripts/pnwf/software/score.mjs"));
+assert(legacyScorerSha256 === previousContract.scorerSha256 && previousContract.basis === basis, "FROZEN_T3_SCORER_OR_BASIS_DRIFT");
+deepStrictEqual(frozen.window, previousContract.window);
 const { image, window } = frozen;
-assert(docker(["image", "inspect", image, "--format", "{{.Id}}"]) === image && image === previousSeal.image, "T3_IMAGE_DRIFT");
-readDeepSeekKey();
+assert(docker(["image", "inspect", image, "--format", "{{.Id}}"]) === image && image === previousContract.image, "T3_IMAGE_DRIFT");
+const seal = { release, basis, tree: accepted.tree, model: frozen.model, dsh: frozen.dsh, image, window,
+  promptSha256: digest(GUIDED_T3_PROMPT), scoreSchema: REVIEW_SCORE_SCHEMA, legacyScorerSha256,
+  files: Object.fromEntries(["revision/review-t3.mjs", "software/contract.mjs", "software/review-score.mjs", "software/mock.mjs",
+    "software/run.mjs", "software/product-entry.mjs", "container_adapter.mjs", "container_runtime.mjs", "bounded_provider.mjs",
+    "execution_budget.mjs"].map(file => [file, shaFile(join(repo, "scripts/pnwf", file))])),
+  originalAcceptanceSha256: shaFile(join(archive, "acceptance.json")), previousResultSha256: shaFile(join(previous, "result.json")) };
+if (paid) {
+  const qualification = readJson(resolve(values.qualification));
+  assert(qualification.mode === "mock" && qualification.passed && qualification.usageKnown && qualification.execution.paidModelCalls === 0 &&
+    qualification.accounting.requests > 0 && qualification.accounting.unresolved === 0 && qualification.semanticScore?.passed,
+  "T3_MOCK_NOT_QUALIFIED");
+  deepStrictEqual(qualification.seal, seal);
+  readDeepSeekKey();
+}
 
 mkdirSync(root);
 const { runtime } = bindSoftwareRun(root, image);
@@ -74,25 +87,29 @@ const acceptance = { kind: "GOVERNED_PROMOTION", approvedCandidate: candidate.co
 const acceptancePath = join(p.run, "acceptance.json");
 writeJson(acceptancePath, acceptance);
 writeFileSync(join(p.world, "acceptance.json"), "", { flag: "wx" });
-const contract = { release, session: "T3", basis, model: frozen.model, dsh: frozen.dsh, image, window, mode: PAID_MODE,
-  promptSha256: digest(PROMPTS.T3), scorerSha256, originalAcceptanceSha256: shaFile(join(archive, "acceptance.json")),
-  acceptanceMountSha256: shaFile(acceptancePath), previousResultSha256: shaFile(join(prior, "result.json")) };
+const mode = paid ? PAID_MODE : "mock";
+const contract = { ...seal, session: "T3", implementationHead: head(repo), mode, acceptanceMountSha256: shaFile(acceptancePath),
+  ...(paid ? { qualificationSha256: shaFile(resolve(values.qualification)) } : {}) };
 writeJson(join(p.run, "contract.json"), contract);
 const promptPath = join(p.run, "prompt.txt");
-writeFileSync(promptPath, PROMPTS.T3);
-const cohortId = "software-t3-settled-readiness-" + randomUUID();
-writeJson(join(p.run, "cohort.json"), { schema: PAID_COHORT_SCHEMA, cohortId, stages: [{ id: "T3" }], ...window });
-writeJson(join(p.run, "core.json"), { cohortId, budget: null, sessions: [{ id: "T3", condition: "P", world: p.world, state: p.state,
+writeFileSync(promptPath, GUIDED_T3_PROMPT);
+const cohortId = "software-t3-review-" + randomUUID();
+const ceiling = paid ? null : 12000000;
+if (paid) writeJson(join(p.run, "cohort.json"), { schema: PAID_COHORT_SCHEMA, cohortId, stages: [{ id: "T3" }], ...window });
+writeJson(join(p.run, "core.json"), { cohortId, budget: ceiling, sessions: [{ id: "T3", condition: "P", world: p.world, state: p.state,
   expectedHead: basis, killAfterMs: window.wallClockMs, deployment: p.profile, promptPath }] });
 const budgetPath = join(p.run, "request-ledger.sqlite");
-const ledger = ExecutionBudget.initialize(budgetPath, { schema: USAGE_ONLY_SCHEMA, cohortId, aggregateCeiling: null,
-  sessions: [{ id: "T3", ceiling: null, softCeiling: null, maxRequests: window.maxRequests }] });
-const result = { basis, cohortId, acceptance, passed: false, usageKnown: false, frozenScore: null, checks: { accepted: true } };
+const ledger = ExecutionBudget.initialize(budgetPath, { schema: paid ? USAGE_ONLY_SCHEMA : "pnwf-request-budget/v1", cohortId, aggregateCeiling: ceiling,
+  sessions: [{ id: "T3", ceiling, softCeiling: ceiling, maxRequests: window.maxRequests }] });
+const result = { mode, seal, basis, cohortId, acceptance, passed: false, usageKnown: false, semanticScore: null,
+  legacyCrossScore: null, checks: { accepted: true } };
+let mock;
 try {
+  if (!paid) mock = await startMockProvider({ reply: qualificationReply({ arm: "P", session: "T3", basis }) });
   writeFileSync(join(p.run, "started.json"), JSON.stringify({ cohortId, basis, at: new Date().toISOString() }) + "\n", { flag: "wx" });
   ledger.startSession("T3");
-  console.log("PAID_T3_STARTED", basis);
-  result.execution = await runContainerSession({ run: p.run, sessionId: "T3", budgetPath, mode: PAID_MODE,
+  console.log("REVIEW_T3_STARTED", mode, basis);
+  result.execution = await runContainerSession({ run: p.run, sessionId: "T3", budgetPath, mode, provider: mock?.config,
     repository: runtime, image, experiment: { layout: "product", acceptance: acceptancePath } });
   result.checks.naturalExit = result.execution.natural;
   const current = head(p.world);
@@ -109,20 +126,27 @@ try {
     writeFileSync(join(p.run, REVIEW), bytes);
     result.review = { commit: current, blob: git(p.world, "rev-parse", current + ":" + REVIEW), sha256: digest(bytes) };
   }
-  try { result.frozenScore = { passed: true, score: scoreReview({ repo: p.world, basis, commit: current }) }; }
-  catch (error) { result.frozenScore = { passed: false, reason: error.message }; }
+  try { result.semanticScore = scoreSemanticReview({ repo: p.world, basis, commit: current }); }
+  catch (error) { result.semanticScore = { passed: false, reason: error.message }; }
+  try { result.legacyCrossScore = { passed: true, score: scoreReview({ repo: p.world, basis, commit: current }) }; }
+  catch (error) { result.legacyCrossScore = { passed: false, reason: error.message }; }
   if (result.conclusion === "DELIVER") {
     try { result.deliveryReceipt = artifactReceipts(p.world, facts, current, [REVIEW], basis); }
     catch (error) { result.deliveryReceiptFailure = error.message; }
   }
   try {
-    result.evidence = attribute(p.run, "T3", PAID_MODE);
+    result.evidence = attribute(p.run, "T3", mode);
     result.usageKnown = result.evidence.usageQualified;
-    result.trajectory = traceSummary(p, result.evidence, false);
-    if (result.usageKnown) result.responseAttribution = analyzeAttributedStage(p.run, "T3", { context: true, result });
+    result.trajectory = traceSummary(p, result.evidence);
+    if (paid && result.usageKnown) result.responseAttribution = analyzeAttributedStage(p.run, "T3", { context: true, result });
     result.isolation = isolated(readJson(join(p.out, "qualification.json")));
   } catch (error) { result.attributionFailure = error.message; }
-  result.passed = result.responseAttribution !== undefined && result.isolation !== undefined && Object.values(result.checks).every(Boolean) && result.frozenScore.passed &&
+  if (mock) {
+    result.mock = { failures: mock.failures, requests: mock.requests.length, paidModelCalls: result.execution.paidModelCalls };
+    assert(mock.failures.length === 0 && mock.requests.length > 0 && result.mock.paidModelCalls === 0, "T3_MOCK_PROVIDER_FAILURE");
+  }
+  result.passed = result.evidence?.valid === true && result.trajectory !== undefined && (!paid || result.responseAttribution !== undefined) &&
+    result.isolation !== undefined && Object.values(result.checks).every(Boolean) && result.semanticScore.passed &&
     result.conclusion === "DELIVER" && result.deliveryReceipt !== undefined;
 } catch (error) {
   result.reason = error.message;
@@ -131,7 +155,10 @@ try {
   result.accounting = { requests: accounting.requests.length, unresolved: accounting.unresolvedRequests, confirmed: accounting.confirmed,
     state: accounting.state, reason: accounting.reason };
   ledger.close();
+  await mock?.close();
   writeJson(join(p.run, "result.json"), result);
-  console.log("PAID_T3_RESULT", JSON.stringify({ passed: result.passed, usageKnown: result.usageKnown, ...result.accounting,
-    current: result.current, frozenScore: result.frozenScore, reason: result.reason, checks: result.checks }));
+  console.log("REVIEW_T3_RESULT", JSON.stringify({ passed: result.passed, usageKnown: result.usageKnown, ...result.accounting,
+    current: result.current, semanticPassed: result.semanticScore?.passed, failedCriteria: result.semanticScore?.checks?.filter(check => !check.passed),
+    reason: result.reason ?? result.attributionFailure ?? result.execution?.error, checks: result.checks }));
+  if (!result.passed) process.exitCode = 1;
 }
