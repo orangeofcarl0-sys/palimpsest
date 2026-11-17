@@ -263,3 +263,38 @@ T3 没有创建新 Attempt 或 Promotion。Episode 基线仍是接受 HEAD，交
 离线用同一镜像、产品状态和提示捕获首笔 Mock 的请求结构，共 96,554 字节、28 个工具。最小请求没有工具或 DSH 专用字段。实际 DSH 的轨迹与 Mock 都配置了 `max_tokens=256000` 和 high reasoning；OpenCode 目录报告该模型支持 384,000 输出 tokens。Mock 还捕获 `dsh_plugin_packages`、`dsh_session_log`，以及 DeepSeek 专用的 `thinking: { type: "enabled" }` 和 `output_config.effort`。标准 Anthropic Messages 的手动思考配置要求 `budget_tokens`。这些是可复现的请求差异，旧网关只保留了 HTTP 状态，具体拒绝字段未获 Provider 证实。[离线请求结构](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/mock-first-request-shape.json) · [Messages 请求契约](https://platform.claude.com/docs/en/api/typescript/messages)
 
 随后收敛 OpenCode 宿主适配：去掉 `dsh_*` 专用字段，遇到无预算的 DeepSeek 思考扩展时交给 OpenCode 模型默认值。保留任务消息、system、工具声明、输出上限与原终止条件。后续非 200 还会记录可安全提取的上游请求 ID，仍按未知用量停止。43 项零付费脚本回归通过，包含出站结构、终态四项和 HTTP 拒绝记录。收敛后同一接受 HEAD 的新 Mock 再次通过 12/12 项摘要检查，4 笔全结算并自然退出。真实 400 现场对应改动前的宿主实现 `20ade30c`，本轮未再发送付费请求验证这次收敛，仍需用 Provider 证据或明确处置后再试。[请求适配](../../scripts/pnwf/opencode_go.mjs) · [收敛后 Mock](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/normalized-qualification.json)
+
+## 带工具探针通过后的 OpenCode Go T3
+
+2026-11-18 所有者明确允许将 OpenCode Go HTTP 400 与 DeepSeek HTTP 402 分别留在原停止 cohort。只读逐行核对两个 SQLite 和已归档账本，两笔仍为 `UNKNOWN`，用量为空。新探针和 T3 分别使用独立账本。[两次停止的核对清单](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/prior-stops.json)
+
+从修正后的宿主路由 `9fe4bd62` 发出单笔带工具探针。请求通过与 T3 相同的 OpenCode Go Messages 网关，从 DSH 模型别名转到 `deepseek-v4.1-flash`，并验证专用字段与非标准思考配置在出站前移除。模型返回一次 `record_probe(value=7)`，宿主计算 `8`，用同一 tool-use ID 形成 `tool_result`。本地完成调用结果配对，单笔探针没有再将结果发回。Provider 响应 ID、终态四项和 SQLite 相符，321 fresh input、0 cache read、0 cache creation、54 output，共 375 tokens，未决 0。[带工具探针与终态账本](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json) · [OpenCode 用量字段](https://opencode.ai/docs/console/api/inference/#cost)
+
+带工具探针通过后，新的 Mock 资格从同一接受 HEAD `4639ae44d78e7c1f9f5269876fa333a99bff770f` 启动，4 笔模拟请求全结算，12 项摘要检查通过，交付后自然退出。随后真实 T3 保持产品主线基线 `fdda682e`、同一核准树、任务提示、DSH 镜像和评分器，采用新 home、容器和 cohort。真实窗口继续为 64 笔、30 分钟、单请求 240 秒，按量记账，无金额或总 token 上限。[同基线 Mock 资格](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/qualification.json)
+
+真实会话只提交 `MIGRATION-REVIEW.md`，提交 `f30c66446f88c99343ffc0fc752fca4463dbedef` 是核准 HEAD 的直接子提交。交付回执指向评审提交与实际 blob 摘要，未创建新 Work Attempt 或 Promotion。27 对工具调用与结果全部按调用 ID 配对，无工具错误、领域拒绝或失败作业。[原始运行结果](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/result.json) · [评审原稿](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/MIGRATION-REVIEW.md) · [Git bundle](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/accepted-and-review.bundle)
+
+| 调用 → 结果 | 观察 |
+| --- | --- |
+| 26 → 28 | 读到完整接受 HEAD 和候选 SHA |
+| 73 → 76、105 → 108 | 两次公开测试均为 18/18，后续回看逐条成帧相关测试 |
+| 99 → 100、125 → 128 | 写入评审并只提交该文件 |
+| 133 → 134 | `conclude DELIVER` 返回 `RECORDED`、`mayEnd=true`，此后没有工具调用，进程自然退出，退出码 0 |
+
+**自动整体验收保持 `passed:false`。** 语义评分原判为 11/12，唯一拒绝项为 `OLD_ZERO_AND_OMITTED_EMPTY`。同一评审 blob 第 24、25 行分别把缺省值和显式零值的旧行为写为“空流”，紧随的正文也说明两种输入旧时都切到 `slice(0, 0)`。新版行为、源顺序、逐条成帧及其他兼容边界均明确写出。原评分器逐子句检查，没有把第一版的承接句和表头、表格行合在一起。离线补证证明原稿覆盖了该项。两轮历史稿仍缺逐条成帧，两轮冻结失败及本轮原判均保留。[原稿旧规则说明](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/MIGRATION-REVIEW.md#streamreadings-default-old-and-new-behaviour) · [逐项复核](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/trajectory-and-review-audit.json)
+
+原归因脚本要求 Provider 响应 ID 出现在 DSH 回放签名中。OpenCode Go 这批回放没有写入这些 ID，原脚本报 `Model step has no unique provider response ID`。账本仍有 14 个独立的 Provider 响应 ID 和 14 个已结算请求。离线同时检查同一 Principal、任一时刻只有一笔登记未结算、14 组不同的四项用量，以及 DSH 和 Provider 两边每组四项都精确相等。14/14 笔逐项映射，无歧义，映射顺序与轨迹一致。这次离线核对独立于原脚本，原失败记录保留。[逐请求账本](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/request-accounting.json) · [逐步映射](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/trajectory-and-review-audit.json)
+
+| 真实普通 DSH T3 | 接受 HEAD | 登记 / 结算 | Fresh input | Cache read | Output | 总 tokens | 容器秒数 | 配对调用 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 写范围修复后，DeepSeek | `7deda735` | 14 / 14 | 21,998 | 352,768 | 9,656 | 384,422 | 120.472 | 27/27 |
+| 结算引导修复后，DeepSeek | `4639ae44` | 13 / 13 | 20,998 | 332,160 | 8,691 | 361,849 | 113.753 | 22/22 |
+| 首笔 HTTP 402，DeepSeek | `4639ae44` | 1 / 0 | 未知 | 未知 | 未知 | 未知 | 28.863 | 未触发 |
+| 首笔 HTTP 400，OpenCode Go | `4639ae44` | 1 / 0 | 未知 | 未知 | 未知 | 未知 | 33.884 | 未触发 |
+| 本轮，修正后 OpenCode Go | `4639ae44` | 14 / 14 | 46,913 | 402,944 | 9,032 | 458,889 | 194.233 | 27/27 |
+
+同一接受 HEAD 的已交付 DeepSeek 样本和本轮都只提交评审、记录 `DELIVER` 并自然退出。本轮的 27 对工具调用比它多 5 对，主要是文件读取从 7 次增到 15 次，Bash 从 12 次降到 9 次。模型先核对接受记录与代码，再从测试和实现确认顺序及分帧，成文时把缺省和显式零值分别列出，明确补上历史稿遗漏的逐条成帧。相较同一 HEAD 的已交付样本，本轮增加 1 笔、25,915 fresh input、70,784 cache read、341 output、总计 97,040 tokens 和 80.480 秒。三条完成样本的 cache creation 均为 0。[轨迹对照](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/trajectory-and-review-audit.json)
+
+首笔输入上下文大小接近。DeepSeek 的首笔为 371 fresh 加 10,240 cache，本轮为 10,723 fresh 且 cache 为 0。仅首笔就贡献了 10,352 个额外 fresh，占总增量约 40%，其余 15,563 来自后续请求。输入缓存占比从 94.05% 降至 89.57%。两轮的 Provider、时点和实际工具轨迹有差别，这组数据无法单独判断是路由缓存策略、冷启动还是后续回读各贡献多少。375 tokens 的探针单独结算。14 笔 T3 响应的余额扣款字段合计为 0，同时记录有 Go allowance 用量。[Provider 的费用字段定义](https://opencode.ai/docs/console/api/inference/#cost) · [用量分解](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/trajectory-and-review-audit.json)
+
+原始 DSH 流和 SQLite 位于 `%TEMP%/pnwf-grpc-t3-opencode-tooled-20261118-055602`。归档保存探针、两次停止现场的哈希、原判、逐笔用量和调用配对，以及实际交付的原稿与 Git 对象。
