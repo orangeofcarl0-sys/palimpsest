@@ -14,7 +14,7 @@
 - 普通 DSH 共用任务义务的两条真实 T2 已通过 [PR #261](https://github.com/orangeofcarl0-sys/palimpsest/pull/261) 发布到 `b1e9d90a`。两名正式 Worker 均查看预检并结算，门禁 PASS，Principal 均自然退出。Energy 记录 `WAIT_FOR_OPERATOR`，gRPC 在 `VERIFYING` 回复待审但未写等待结论。所有者按完整 SHA 核准后分别晋升至 `c950736d` 和 `bfe377ab`。90 笔已结算、2,482,369 tokens，实验止于 T2 接受。[报告](docs/engineering/WORK-REVISION-LIVE-T2.md) · [发布记录](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/release-ci.json)
 - 结算后的 readiness 修复已通过 [PR #263](https://github.com/orangeofcarl0-sys/palimpsest/pull/263) 发布到 `2d741933`。gRPC 和 Energy Mock 均从 `ACTIVE / COMPLETED` 推进至 `VERIFYING` 并记录等待后退出。真实 gRPC 同基线复跑按 `readiness → next → conclude WAIT_FOR_OPERATOR` 自然退出，47 笔全部对账。候选核准后离线晋升至 `4639ae44`。[修复与复跑](docs/engineering/WORK-REVISION-LIVE-T2.md#结算后-readiness-修复与-grpc-同基线复跑) · [发布记录](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/release-ci.json)
 - 真实 gRPC T3 已通过 [PR #265](https://github.com/orangeofcarl0-sys/palimpsest/pull/265) 发布到 `b3c3de40`。普通 DSH 从晋升 HEAD `4639ae44` 接续，只提交 `MIGRATION-REVIEW.md`（`12fbb83c`），记录 `DELIVER` 后自然退出。13 笔全部对账，两轮冻结原判和逐项内容复核均已归档。[T3 对比与原稿](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#结算引导修复后的真实-grpc-t3) · [发布记录](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/release-ci.json)
-- 2026-11-18 在 `codex/grpc-t3-review-semantics` 修复 gRPC T3 语义验收和交付提示。同义默认值表述通过，缺逐条成帧仍拒绝，两轮冻结原判保留。同一接受 HEAD `4639ae44` 的最终 Mock 完成 12/12 项核验，记录 `DELIVER` 并自然退出。真实 T3 首笔收到 Provider HTTP 402，终态用量未知，按原条件停止，未产生摘要。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#grpc-t3-语义验收与同一接受版本复跑) · [轨迹与账本对照](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/trajectory-and-review-audit.json)
+- gRPC T3 语义验收和交付提示已通过 [PR #267](https://github.com/orangeofcarl0-sys/palimpsest/pull/267) 发布到 `02940a03`，16/16 项检查首次通过。新版认可默认值同义表述，仍要求每条 Reading 独占一帧。两轮冻结原判保留。同一接受 HEAD `4639ae44` 的最终 Mock 完成 12/12 项核验，记录 `DELIVER` 并自然退出。真实 T3 首笔收到 Provider HTTP 402，终态用量未知，按原条件停止，未产生摘要。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#grpc-t3-语义验收与同一接受版本复跑) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/release-ci.json)
 - 自提交先启用仓库 `commit-msg`。主线逐个检查 PR 引入的提交归因，发布使用 rebase 合并。 [归因门禁](docs/engineering/repository/COMMIT-ATTRIBUTION.md)
 - `DELIVER` 工件 SHA 修复、项目路线图和 gRPC 迁移双组 Mock 资格已通过 [PR #253](https://github.com/orangeofcarl0-sys/palimpsest/pull/253) 发布。送审 head 的 16 项检查均成功，主线发布点为 `d34f34b4c528f7aa7788a1b7192c789dc73b790c`。六个会话均自然退出，38 笔 Mock 请求全部结算，新增付费调用 0。真实配对另行使用获准的资源合同。 [资格报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md) · [发布与 SHA 对照](research-evidence/pnwf-software/2026-11-10/release-ci.json)
 - 2026-11-10 从主线 `268f14f9` 执行首组 gRPC 真实诊断配对。两组 T1 原判分保留，经所有者批准按原提交独立复核后分别启动 T2。Palimpsest 正式委派被写范围拦截，改走原生子任务加 `relay takeover`，记录 `WAIT_FOR_OPERATOR`。强原生直接使用 Git worktree 加 Subagent。两个 T2 的独立探针均通过，候选都修改了要求保留的 proto blob，均未进入核准，两组均未启动 T3。四个会话自然退出，140 笔真实请求、232 对调用与结果已复核。Palimpsest T2 切换前的故障排查占 26 笔请求、1,356,253 tokens 和 220.798 秒。[真实配对报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#真实诊断配对) · [机器证据](research-evidence/pnwf-software/2026-11-10/live-pair-150630/evidence.json) · [用量审计](research-evidence/pnwf-software/2026-11-10/live-pair-150630/usage-audit.json)
@@ -75,8 +75,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `origin/main` | `62440b504f5d9cf42fe32421d52b8496e6d9a5f6`。上一轮真实 gRPC T3 的发布点为 `b3c3de40f0ef7b2082a03c192ed8e4bede455beb`，产品运行基线为 `a0daba3c4f43f91fe5ab92b1a0bad94c5d2dfee1` |
-| 当前工作分支 | `codex/grpc-t3-review-semantics` 从 `62440b50` 起步，本轮实现、Mock 和真实停止现场与报告一并提交 |
+| `origin/main` | 本轮 gRPC T3 语义验收发布点为 `02940a0303d4e4d9cc1ac96569dd3ec726ef3f98`，当前 tip 用 `git rev-parse origin/main` 核对。历史真实运行的产品基线仍为 `a0daba3c4f43f91fe5ab92b1a0bad94c5d2dfee1` |
+| [PR #267](https://github.com/orangeofcarl0-sys/palimpsest/pull/267) | `codex/grpc-t3-review-semantics` 已 rebase 合并，送审 `c2ed9dd2649abdef62b6e2da4cbfa3fc13fae7f9` 的 16/16 项检查通过。合并前后文件树、作者和提交消息一致，远端工作分支已自动删除。[检查与 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/release-ci.json) |
 | [PR #265](https://github.com/orangeofcarl0-sys/palimpsest/pull/265) | `codex/grpc-settled-readiness-t3` 已 rebase 合并，送审 `68df9f8b6d68f4de51b495158147b4028d895ca4` 的 16/16 项检查通过。合并前后文件树、作者和提交消息一致。远端工作分支已自动删除。[发布记录](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/release-ci.json) |
 | [PR #263](https://github.com/orangeofcarl0-sys/palimpsest/pull/263) | `codex/settled-worker-readiness` 已 rebase 合并，远端分支自动删除。精确 head `85e5a8c4e637d9228deb9b95e980d159104fd95b` 的 16/16 项检查成功。真实运行使用 `57638dad88fdba00c30b6be85107086866e09dcf`，对应主线修复提交 `c2c51db99a258d051c33e592ad2ef364089f0c1a`。送审和主线的文件树、作者与消息逐一核对。[发布与 SHA 映射](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/release-ci.json) |
 | [PR #261](https://github.com/orangeofcarl0-sys/palimpsest/pull/261) | `codex/work-revision-live` 已 rebase 合并，远端分支已自动删除。精确 head `633a907b39f91dab3fb1f900ded08b42e198570f` 的 16/16 项检查成功，合并前后文件树、作者和消息一致。候选与接受 SHA 仍指向各自实验 Git 对象。[完整发布记录](research-evidence/pnwf-work-revision/2026-11-10/live-t2-202113/release-ci.json) |
@@ -260,7 +260,7 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
-2026-11-18 gRPC T3 语义验收回归已加入 CI。PNWF 脚本测试 37/37，Work、Episode 和 Direct→Governed 定向测试 20/20。构建、架构和公共 API 检查通过。同一核准 HEAD 的最终 T3 Mock 通过，4 笔模拟请求全部结算，公开测试 18/18。[最终 Mock 资格](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/qualification.json)
+2026-11-18 gRPC T3 语义验收回归在 PR #267 的 CI 通过。PNWF 脚本测试 37/37，Linux 单测 5,108 项通过、33 项跳过，浏览器 E2E 38/38，Windows Host Boundary 通过。R0 的四个外部 Host 步骤按环境条件跳过。本地 Work、Episode 和 Direct→Governed 定向测试 20/20，构建、架构和公共 API 检查通过。同一核准 HEAD 的最终 T3 Mock 通过，4 笔模拟请求全部结算，公开测试 18/18。[发布检查](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/release-ci.json)
 
 ### 必跑
 
@@ -626,6 +626,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-10 | 从 readiness 修复后的晋升 HEAD 接续真实 gRPC T3 | [报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#结算引导修复后的真实-grpc-t3)，[证据](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/trajectory-and-review-audit.json) | 13 笔全部对账，只提交评审，记录交付后自然退出，冻结原判保留 |
 | 2026-11-14 | 发布真实 gRPC T3 与逐项内容复核 | [PR #265](https://github.com/orangeofcarl0-sys/palimpsest/pull/265)，[发布记录](research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/release-ci.json) | 16/16，主线 `b3c3de40`，Linux 5108 项通过、33 项跳过，浏览器 E2E 38 项通过 |
 | 2026-11-18 | 修复 gRPC T3 摘要语义验收与交付提示，同一核准 HEAD 复跑 | [报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#grpc-t3-语义验收与同一接受版本复跑)，[轨迹和原判对照](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/trajectory-and-review-audit.json) | 最终 Mock 12/12、4 笔全结算并自然退出。真实首笔 HTTP 402，1 笔用量未知后停止，两轮冻结原判保留 |
+| 2026-11-18 | 发布 gRPC T3 语义验收和交付引导，同步 handoff | [PR #267](https://github.com/orangeofcarl0-sys/palimpsest/pull/267)，[发布与检查记录](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/release-ci.json) | 16/16 首次通过，主线发布点 `02940a03`，原判、用量未知及 Mock 证据逐字节核验 |
 
 ---
 
