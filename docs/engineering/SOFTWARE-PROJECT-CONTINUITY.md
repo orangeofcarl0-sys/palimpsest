@@ -230,3 +230,13 @@ T3 没有创建新 Attempt 或 Promotion。Episode 基线仍是接受 HEAD，交
 前两轮的 cache creation 均为 0，本轮该项未知。28.863 秒是首笔 Provider 拒绝后的停止耗时，完整 T3 的请求量、费用、摘要完整性与自然退出变化仍无真实样本。Mock 验证了提示、同义稿、判分和交付的连接，实际模型是否采用引导留待真实运行核验。[轨迹和历史原判对照](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/trajectory-and-review-audit.json)
 
 复算从归档原稿和 Git bundle 开始，`node --test scripts/pnwf/software/review-score.test.mjs` 可重跑语义及历史样本回归。新运行用 `scripts/pnwf/revision/review-t3.mjs --mode=mock --run=<新目录> --accepted=<T2 接受目录>`。真实入口为 `--mode=live`，另指定与本次脚本、提示、镜像和基线匹配的 `--qualification=<Mock 的 P/T3/result.json>`。本轮原始 DSH 流和 SQLite 保留在 `%TEMP%/pnwf-grpc-review-semantics-20261118-035705`。
+
+### HTTP 402 对账与复跑准入
+
+2026-11-18 从主线 `fdda682e` 核对停止现场。原 SQLite 与发布账本都记载同一笔 `UNKNOWN`，`actual` 和 `usage` 均为空。请求日志只有一条 `ADMITTED`，没有终态记录或 Provider 响应 ID。会话发生在北京时间 04:01:20–04:01:49，本地请求 ID 为 `c9ebb54f-1643-46f6-a0b1-271d077c9d3f`。本地结果、运行合同、账本与观测日志分别与归档逐字节相同，两轮历史冻结原判也已校验。[只读核对记录](../../research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-provider-reconciliation.json)
+
+使用原 DeepSeek 路由对应的当前宿主凭据查询官方 `GET /user/balance`，HTTP 200，`is_available=false`。该结果与官方对 402 余额不足的定义一致，只能说明查询时账户无法调用，不能确定历史单笔用量。原路由收到非 200 后将请求记为未知，没有保留可用于 Provider 对账的响应 ID。Firefox 的账单页面查询因当前 Windows 浏览器无法执行 URL 策略校验而停止，未获得账单明细。该笔仍需 Provider 账单或支持回执确认。[DeepSeek 错误码](https://api-docs.deepseek.com/quick_start/error_codes/) · [余额接口](https://api-docs.deepseek.com/zh-cn/api/get-user-balance/)
+
+备用 `opencode/deepseek-v4.1-flash` 已在 ZCode 配置中定位。以选定的 OpenCode Go 配置只读访问配置路径与官方文档列出的模型目录，两次均为 401。目录查询未验证推理或终态用量，现有 T3 gateway 仍固定 DeepSeek 官方 Messages 路由。若采用备用 Provider，需先验证宿主固定路由、工具调用和终态用量，报告中应标明 Provider 变化。[OpenCode Go 文档](https://opencode.ai/docs/console/go/) · [终态用量字段](https://opencode.ai/docs/console/api/inference/#cost)
+
+本次未启动新 T3，新增推理请求为 0。核准 HEAD `4639ae44d78e7c1f9f5269876fa333a99bff770f`、接受树与停写的状态副本均在。等原请求用量可核对且选定 Provider 恢复后，再以新 DSH 会话沿用 64 笔、30 分钟、单笔 240 秒的按量窗口，金额与总 token 不限。本次没有新的真实摘要、轨迹或自然退出样本，上一节的对照继续有效。
