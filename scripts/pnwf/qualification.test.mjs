@@ -9,6 +9,7 @@ import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import { ExecutionBudget, USAGE_ONLY_SCHEMA } from "./execution_budget.mjs";
 import { startBoundedProxy, verifyMock, UsageReader, finalUsage, startMessagesProxy, paidRequestAdmission, PAID_COHORT_SCHEMA, PAID_MODE } from "./bounded_provider.mjs";
+import { OPENCODE_GO_MODEL, openCodeGoBilling, openCodeGoBody, openCodeGoUsage } from "./opencode_go.mjs";
 import { startMockProvider } from "./mock_provider.mjs";
 
 function fixtureLedger(t, config) {
@@ -244,28 +245,74 @@ test("runner refuses missing prior ledger and cannot restart an unresolved cohor
   assert.equal(mock.requests.length, 0);
 });
 
-async function meteredRig(t, { complete = true, maxRequests = 1 } = {}) {
+async function meteredRig(t, { complete = true, maxRequests = 1, openCode } = {}) {
   const { budget, path } = fixtureLedger(t, { schema: USAGE_ONLY_SCHEMA, cohortId: "paid-transport-fixture", aggregateCeiling: null,
     sessions: ["a", "b"].map(id => ({ id, ceiling: null, softCeiling: null, maxRequests })) });
   const observations = [];
   const terminal = { input_tokens: 3_000_000, cache_read_input_tokens: 2_000_000, cache_creation_input_tokens: 0, output_tokens: 700 };
-  const upstream = createServer((req, res) => {
-    observations.push({ route: req.url, key: req.headers["x-api-key"], request: budget.snapshot().requests.at(-1) });
-    req.resume();
+  const upstream = createServer(async (req, res) => {
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    observations.push({ route: req.url, key: req.headers["x-api-key"], request: budget.snapshot().requests.at(-1),
+      body: Buffer.concat(chunks).toString("utf8") });
     res.writeHead(200, { "content-type": "text/event-stream" });
-    res.write(`data: ${JSON.stringify({ type: "message_start", message: { usage: { input_tokens: 1, output_tokens: 0 } } })}\n\n`);
-    res.write(`data: ${JSON.stringify({ type: "message_delta", usage: terminal })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: "message_start", message: { usage: { input_tokens: 1, output_tokens: 0 },
+      ...(openCode ? { id: "msg_fixture", model: openCode.responseModel ?? OPENCODE_GO_MODEL } : {}) } })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: "message_delta", usage: openCode?.terminal ?? terminal })}\n\n`);
     res.end(complete ? 'data: {"type":"message_stop"}\n\n' : '');
   });
   await new Promise(resolve => upstream.listen(0, "127.0.0.1", resolve));
   const key = randomBytes(32).toString("hex");
+  const gatewayEvents = [];
   const proxy = await startMessagesProxy({ budget, sessionId: "a", sessionKey: key, requestAdmission: paidRequestAdmission,
-    target: new URL(`http://127.0.0.1:${upstream.address().port}/anthropic/v1/messages`), headers: { "x-api-key": "fixture-upstream" } });
+    target: new URL(`http://127.0.0.1:${upstream.address().port}/anthropic/v1/messages`), headers: { "x-api-key": "fixture-upstream" },
+    onObservation: event => gatewayEvents.push(event),
+    ...(openCode ? { providerBody: openCodeGoBody, responsePolicy: {
+      expectedModel: OPENCODE_GO_MODEL, terminalUsage: openCodeGoUsage, billing: openCodeGoBilling,
+    } } : {}) });
   t.after(async () => { await proxy.close(); await new Promise(resolve => upstream.close(resolve)); });
   const send = (overrides = {}) => fetch(proxy.url + "/v1/messages", { method: "POST", headers: { "x-api-key": key },
     body: JSON.stringify({ model: "deepseek-flash", stream: true, max_tokens: 400, messages: [{ role: "user", content: "fixture" }], ...overrides }) });
-  return { budget, path, observations, terminal, send };
+  return { budget, path, observations, terminal, send, gatewayEvents };
 }
+
+const goParts = { input_tokens: 34, cache_read_input_tokens: 12, cache_creation_input_tokens: 3, output_tokens: 16 };
+const goTerminal = { ...goParts, cost: 0, opencode: { billing_source: "go", allowance: 0.00000882,
+  tokens: { input: 34, cache_read: 12, cache_write_5m: 1, cache_write_1h: 2, output: 16, reasoning: 13 } } };
+
+test("OpenCode Go rewrites the fixed model and settles matching terminal usage and response id", async t => {
+  const { budget, observations, gatewayEvents, send } = await meteredRig(t, { openCode: { terminal: goTerminal } });
+  assert.equal((await send({ model: OPENCODE_GO_MODEL })).status, 403);
+  assert.equal((await send({ tools: [{ type: "web_search_20250305" }] })).status, 403);
+  await (await send()).text();
+  assert.equal(observations.length, 1);
+  assert.equal(JSON.parse(observations[0].body).model, OPENCODE_GO_MODEL);
+  assert.equal(observations[0].request.state, "PENDING");
+  const row = budget.snapshot().requests[0];
+  assert.deepEqual(row.usage, goParts);
+  assert.equal(row.actual, 65);
+  assert.equal(gatewayEvents[1].requestId, row.id);
+  assert.equal(gatewayEvents[1].messageId, "msg_fixture");
+  assert.equal(gatewayEvents[1].providerBilling.billingSource, "go");
+});
+
+test("OpenCode Go marks model drift, missing usage and conflicting totals unknown", async t => {
+  for (const [options, reason] of [
+    [{ terminal: goTerminal, responseModel: "unexpected" }, "PROVIDER_MODEL_OR_RESPONSE_ID_DRIFT"],
+    [{ terminal: goParts }, "OPENCODE_TERMINAL_USAGE_MISSING"],
+    [{ terminal: { ...goTerminal, cache_read_input_tokens: 13 } }, "OPENCODE_CONFLICTING_USAGE"],
+  ]) {
+    await t.test(reason, async child => {
+      const { budget, send, gatewayEvents } = await meteredRig(child, { openCode: options });
+      await (await send()).text();
+      const row = budget.snapshot().requests[0];
+      assert.equal(row.state, "UNKNOWN");
+      assert.equal(row.reason, reason);
+      assert.equal(row.actual, null);
+      assert.equal(gatewayEvents.length, 1);
+    });
+  }
+});
 
 test("usage-only requests settle beyond former token ceilings and stop at the request count", async t => {
   const { budget, observations, terminal, send } = await meteredRig(t);

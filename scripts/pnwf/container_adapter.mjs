@@ -103,7 +103,8 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
     // No provider request can happen before the actual container and ALL copied worlds pass.
     const sessionKey = randomBytes(32).toString("hex");
     const onObservation = experiment === undefined ? undefined : event => appendFileSync(join(out, "request-observations.jsonl"), JSON.stringify(event) + "\n");
-    proxy = paid ? await startPaidProxy({ budget, sessionId, sessionKey, onObservation }) : await startBoundedProxy({ provider, budget, sessionId, sessionKey, onObservation });
+    proxy = paid ? await startPaidProxy({ budget, sessionId, sessionKey, onObservation, openCodeGoProfile: experiment?.openCodeGoProfile }) :
+      await startBoundedProxy({ provider, budget, sessionId, sessionKey, onObservation });
     worker = experiment?.createWorker?.({ stage, out, repository, image: runtime.imageId, principalId: runtime.id, gateway: proxy.url, sessionKey,
       stopIsClosed: () => budget.snapshot().state !== "OPEN" });
     bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey, { dispatchWork: worker?.dispatch });

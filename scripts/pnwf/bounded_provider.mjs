@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { BudgetRefusal, tokens, usageBreakdown, usageTotal } from "./execution_budget.mjs";
+import { OPENCODE_GO_MESSAGES, OPENCODE_GO_MODEL, openCodeGoBilling, openCodeGoBody, openCodeGoUsage, readOpenCodeGoKey } from "./opencode_go.mjs";
 
 export const MOCK_KIND = "pnwf-deterministic-mock/v1";
 export const MOCK_ROUTE = "/pnwf-mock/v1/messages";
@@ -56,7 +57,28 @@ export function finalUsage(usage) {
   return usageTotal(usageBreakdown(usage));
 }
 export class UsageReader {
-  constructor(stream) { this.stream = stream; this.decoder = new TextDecoder(); this.buffer = ""; this.final = null; this.stopped = false; this.messageId = null; }
+  constructor(stream, { expectedModel, terminalUsage = usageBreakdown, billing } = {}) {
+    this.stream = stream;
+    this.expectedModel = expectedModel;
+    this.terminalUsage = terminalUsage;
+    this.billing = billing;
+    this.decoder = new TextDecoder();
+    this.buffer = "";
+    this.final = null;
+    this.stopped = false;
+    this.messageId = null;
+  }
+  setIdentity(message) {
+    if (this.expectedModel && (message?.model !== this.expectedModel || this.messageId !== null ||
+        !/^[\w.-]{1,200}$/u.test(message?.id ?? ""))) throw new BudgetRefusal("PROVIDER_MODEL_OR_RESPONSE_ID_DRIFT");
+    if (typeof message?.id === "string") this.messageId = message.id;
+  }
+  setUsage(raw) {
+    const usage = this.terminalUsage(raw);
+    if (this.final !== null && JSON.stringify(this.final) !== JSON.stringify(usage)) throw new BudgetRefusal("CONFLICTING_USAGE");
+    this.final = usage;
+    this.providerBilling = this.billing?.(raw);
+  }
   push(chunk) {
     this.buffer += this.decoder.decode(chunk, { stream: true });
     if (!this.stream) return;
@@ -67,12 +89,9 @@ export class UsageReader {
       if (!data) continue;
       const event = JSON.parse(data);
       if (event.error || event.type === "error") throw new BudgetRefusal("PROVIDER_ERROR");
-      if (event.type === "message_start" && typeof event.message?.id === "string") this.messageId = event.message.id;
-      if (event.type === "message_delta" && event.usage !== undefined) {
-        const usage = usageBreakdown(event.usage);
-        if (this.final !== null && JSON.stringify(this.final) !== JSON.stringify(usage)) throw new BudgetRefusal("CONFLICTING_USAGE");
-        this.final = usage;
-      }
+      if (this.expectedModel && this.stopped) throw new BudgetRefusal("PROVIDER_STREAM_AFTER_STOP");
+      if (event.type === "message_start") this.setIdentity(event.message);
+      if (event.type === "message_delta" && event.usage !== undefined) this.setUsage(event.usage);
       if (event.type === "message_stop") this.stopped = true;
     }
   }
@@ -80,10 +99,11 @@ export class UsageReader {
     this.buffer += this.decoder.decode();
     if (!this.stream) {
       const response = JSON.parse(this.buffer);
-      this.final = usageBreakdown(response.usage);
-      this.messageId = typeof response.id === "string" ? response.id : null;
+      this.setIdentity(response);
+      this.setUsage(response.usage);
     }
     else if (!this.stopped || this.final === null || this.buffer.trim() !== "") throw new BudgetRefusal("UNOBSERVABLE_USAGE");
+    if (this.expectedModel && this.messageId === null) throw new BudgetRefusal("PROVIDER_MODEL_OR_RESPONSE_ID_DRIFT");
     return usageTotal(this.final);
   }
 }
@@ -115,14 +135,22 @@ export function readDeepSeekKey(credentialFile = process.env.PNWF_DEEPSEEK_CREDE
   return key;
 }
 
-export async function startPaidProxy({ budget, sessionId, sessionKey, timeoutMs = 240000, onObservation }) {
+export async function startPaidProxy({ budget, sessionId, sessionKey, timeoutMs = 240000, onObservation, openCodeGoProfile }) {
   if (!budget.usageOnly) throw new BudgetRefusal("USAGE_ONLY_LEDGER_REQUIRED");
+  if (openCodeGoProfile !== undefined) {
+    return startMessagesProxy({ budget, sessionId, sessionKey, timeoutMs, onObservation, target: new URL(OPENCODE_GO_MESSAGES),
+      headers: { authorization: "Bearer " + readOpenCodeGoKey(openCodeGoProfile), "accept-encoding": "identity",
+        "anthropic-version": "2023-06-01", "user-agent": "Palimpsest-T3/1.0", "x-opencode-session": "ses_" + budget.config.cohortId },
+      requestAdmission: paidRequestAdmission, providerBody: openCodeGoBody,
+      responsePolicy: { expectedModel: OPENCODE_GO_MODEL, terminalUsage: openCodeGoUsage, billing: openCodeGoBilling } });
+  }
   return startMessagesProxy({ budget, sessionId, sessionKey, timeoutMs, onObservation, target: new URL(DEEPSEEK_MESSAGES),
     headers: { "x-api-key": readDeepSeekKey(), "accept-encoding": "identity" }, requestAdmission: paidRequestAdmission });
 }
 
 /** Trusted host composition only. The principal never supplies a destination or upstream headers. */
-export async function startMessagesProxy({ budget, sessionId, sessionKey, target, headers, requestAdmission, port = 0, timeoutMs = 10000, onObservation }) {
+export async function startMessagesProxy({ budget, sessionId, sessionKey, target, headers, requestAdmission, port = 0, timeoutMs = 10000,
+  onObservation, providerBody, responsePolicy }) {
   if (typeof sessionKey !== "string" || sessionKey.length < 32) throw new BudgetRefusal("SESSION_KEY_REQUIRED");
   const transport = target.protocol === "https:" ? httpsRequest : request;
   const sockets = new Set();
@@ -158,15 +186,16 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
       const body = Buffer.concat(chunks);
       const bound = await requestAdmission(body);
       if (fatalReason !== null || res.destroyed) return reject(503, "UNOBSERVABLE_USAGE");
-      reservation = budget.reserve(sessionId, bound, createHash("sha256").update(body).digest("hex"));
+      const upstreamBody = providerBody ? providerBody(body) : body;
+      reservation = budget.reserve(sessionId, bound, createHash("sha256").update(upstreamBody).digest("hex"));
       const actor = req.headers["x-pnwf-actor"] === "worker" ? "worker" : "principal-container";
       onObservation?.({ kind: "ADMITTED", requestId: reservation, actor });
       call = transport(target, { method: "POST", rejectUnauthorized: true, headers: {
-        "content-type": "application/json", "content-length": body.length,
+        "content-type": "application/json", "content-length": upstreamBody.length,
         ...headers,
       } }, response => {
         if (response.statusCode !== 200) { response.resume(); unknown(budget.usageOnly ? `PROVIDER_HTTP_${response.statusCode}` : "PROVIDER_ERROR"); return; }
-        const reader = new UsageReader(String(response.headers["content-type"]).includes("text/event-stream"));
+        const reader = new UsageReader(String(response.headers["content-type"]).includes("text/event-stream"), responsePolicy);
         let received = 0;
         res.writeHead(200, { "content-type": response.headers["content-type"] ?? "application/json" });
         response.on("data", chunk => {
@@ -182,7 +211,8 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
           if (finished) return;
           try {
             const actual = reader.end();
-            onObservation?.({ kind: "TERMINAL", requestId: reservation, actor, messageId: reader.messageId, usage: reader.final });
+            onObservation?.({ kind: "TERMINAL", requestId: reservation, actor, messageId: reader.messageId, usage: reader.final,
+              ...(reader.providerBilling ? { providerBilling: reader.providerBilling } : {}) });
             budget.settle(reservation, actual, reader.final);
             finished = true; clearTimeout(deadline); res.end();
           }
@@ -195,7 +225,7 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
       deadline = setTimeout(() => unknown("PROVIDER_TIMEOUT"), timeoutMs);
       call.on("error", () => unknown("UPSTREAM_UNCERTAIN"));
       res.on("close", () => { if (!res.writableFinished) unknown("CLIENT_DISCONNECTED"); });
-      call.end(body);
+      call.end(upstreamBody);
     } catch (error) {
       if (reservation !== null) unknown(error.code ?? "UNOBSERVABLE_USAGE");
       else reject(["BUDGET_EXHAUSTED", "REQUEST_LIMIT"].includes(error.code) ? 429 : 403, error.code ?? "INVALID_REQUEST");
