@@ -248,3 +248,18 @@ T3 没有创建新 Attempt 或 Promotion。Episode 基线仍是接受 HEAD，交
 本次从当前 ZCode `provider_config.json` 读取已验证的 OpenCode Go 配置。旧 `config.json` 的凭据在前次只读查询中返回 401。新配置先通过官方模型目录查询，再用官方 Go Anthropic Messages 路由发出一笔独立最小请求。HTTP 200，Provider 返回 `deepseek-v4.1-flash`、响应 ID 和完整终态用量。34 fresh input、0 cache read、0 cache creation、16 output 共 50 tokens，与 SQLite 逐项一致，未决 0。Provider 报告计入 Go allowance，余额扣款字段为 0。[最小请求账本](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/opencode-probe.json) · [OpenCode 路由](https://opencode.ai/docs/console/harnesses/#base-urls)
 
 真实 T3 的产品代码基线为主线 `fdda682e`。宿主不改变容器内的 DSH 配置和任务提示，固定把经准入的模型别名转成 `deepseek-v4.1-flash`，凭据只在宿主读入。同一会话使用稳定的 OpenCode 会话 ID。宿主核对响应模型、响应 ID、终态事件以及 OpenCode 和 Messages 的四项用量，缺失或冲突则按原条件停止。42 项 PNWF 定向回归通过，含模型漂移、缺失和冲突的拒绝用例。独立的 T3 仍使用 `paid-usage-only`，每会话 64 笔、30 分钟、单请求 240 秒，金额与总 token 均无上限。[终态用量文档](https://opencode.ai/docs/console/api/inference/#cost)
+
+同一核准 HEAD 的复验 Mock 通过 12/12 项摘要检查，4 笔模拟请求全结算，提交评审后记录 `DELIVER` 并自然退出。真实运行使用新容器、新 DSH home 和新 cohort，核对相同的接受记录与树后启动。首笔完整 DSH 请求收到 `PROVIDER_HTTP_400`，未收到 Provider 响应 ID 或终态用量。账本登记 1 笔、结算 0 笔、未知 1 笔，33.884 秒后因 `usage_unobservable` 停止，退出码 137。DSH 记录了上游失败后的本地重试计划，账本只登记一笔。没有模型工具调用、测试、摘要提交或 `DELIVER`，接受 HEAD 和树保持原样。[Mock 资格](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/qualification.json) · [真实结果](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/result.json) · [真实账本](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/request-accounting.json)
+
+| 真实普通 DSH T3 | 接受 HEAD | 登记 / 结算 | Fresh input | Cache read | Output | 工具配对 | 摘要与退出 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 写范围修复后，DeepSeek | `7deda735` | 14 / 14 | 21,998 | 352,768 | 9,656 | 27/27 | 提交、`DELIVER`、自然退出；缺逐条成帧和明确 unary |
+| 结算引导修复后，DeepSeek | `4639ae44` | 13 / 13 | 20,998 | 332,160 | 8,691 | 22/22 | 提交、`DELIVER`、自然退出；缺逐条成帧 |
+| 语义验收复跑，DeepSeek | `4639ae44` | 1 / 0 | 未知 | 未知 | 未知 | 未触发 | 首笔 HTTP 402，未生成摘要，未自然退出 |
+| 本轮，OpenCode Go | `4639ae44` | 1 / 0 | 未知 | 未知 | 未知 | 未触发 | 首笔 HTTP 400，未生成摘要，未自然退出 |
+
+两次中止均发生在模型读取接受凭据或开始调用工具前。OpenCode Go 的最小请求与 T3 分开记账，已结算的 50 tokens 不能用于填补 T3 的未知用量。表中两份历史摘要的缺项来自语义复核，原冻结判分仍均为 `SOFTWARE_REVIEW_MISSING zero or omitted`。本轮没有可比较的新模型内容或自然退出样本，33.884 秒是停止耗时。[轨迹及原判对照](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/trajectory-and-review-audit.json)
+
+离线用同一镜像、产品状态和提示捕获首笔 Mock 的请求结构，共 96,554 字节、28 个工具。最小请求没有工具或 DSH 专用字段。实际 DSH 的轨迹与 Mock 都配置了 `max_tokens=256000` 和 high reasoning；OpenCode 目录报告该模型支持 384,000 输出 tokens。Mock 还捕获 `dsh_plugin_packages`、`dsh_session_log`，以及 DeepSeek 专用的 `thinking: { type: "enabled" }` 和 `output_config.effort`。标准 Anthropic Messages 的手动思考配置要求 `budget_tokens`。这些是可复现的请求差异，旧网关只保留了 HTTP 状态，具体拒绝字段未获 Provider 证实。[离线请求结构](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/mock-first-request-shape.json) · [Messages 请求契约](https://platform.claude.com/docs/en/api/typescript/messages)
+
+随后收敛 OpenCode 宿主适配：去掉 `dsh_*` 专用字段，遇到无预算的 DeepSeek 思考扩展时交给 OpenCode 模型默认值。保留任务消息、system、工具声明、输出上限与原终止条件。后续非 200 还会记录可安全提取的上游请求 ID，仍按未知用量停止。43 项零付费脚本回归通过，包含出站结构、终态四项和 HTTP 拒绝记录。收敛后同一接受 HEAD 的新 Mock 再次通过 12/12 项摘要检查，4 笔全结算并自然退出。真实 400 现场对应改动前的宿主实现 `20ade30c`，本轮未再发送付费请求验证这次收敛，仍需用 Provider 证据或明确处置后再试。[请求适配](../../scripts/pnwf/opencode_go.mjs) · [收敛后 Mock](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-t3-053356/normalized-qualification.json)
