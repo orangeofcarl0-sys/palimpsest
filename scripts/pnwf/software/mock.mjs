@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { assert } from "../energy/contract.mjs";
-import { CORRECTION_PATH, FIRST, REQUIRED, RETAINED, REVIEW, SCOPE } from "./contract.mjs";
+import { CORRECTION_PATH, FIRST, GUIDED_T3_PROMPT, REQUIRED, RETAINED, REVIEW, SCOPE } from "./contract.mjs";
 
 const TASK = "revise-fleet-default";
 const SUBJECT = "Revise Fleet default limit";
@@ -110,17 +110,20 @@ export function qualificationReply({ arm, session, basis, artifacts }) {
       else if (step === 1) call = { name: "subagent", input: { cwd: ".palimpsest/native-candidate", description: "Revise Fleet compatibility", prompt: CHILD } };
       else if (step === 2 || (step < 20 && !result.includes(SUBJECT))) call = shell("sleep 1; git log -1 --format=%s software-candidate");
     } else if (step === 0) {
+      if (arm === "P") assert(users.some(block => block.text?.includes(GUIDED_T3_PROMPT)), "MOCK_REVIEW_GUIDANCE_NOT_VISIBLE");
       call = shell("cat acceptance.json " + CORRECTION_PATH + " MIGRATION.md");
     } else if (step === 1) {
       assert(result.includes(basis) && result.includes("first three"), "ACCEPTED_INPUT_NOT_READ");
       call = shell(writeFiles({ [REVIEW]: "# Migration review\n\nAccepted HEAD: " + basis + "\n\n" +
-        "Fleet correction: " + CORRECTION_PATH + ". The first release returned an empty stream for zero or omitted limits. " +
-        "Either form now returns the first three available readings in source order, one Reading per frame. " +
+        "Fleet correction: " + CORRECTION_PATH + ". Previously, supplying limit=0 or leaving the limit unset yielded no readings. " +
+        "Both forms now return the first 3 available readings in dataset order. StreamReadings sends every Reading in its own gRPC message frame. " +
         "Positive limits, unary GetReading, unknown-site NOT_FOUND, protocol field numbers and REST behavior stay compatible.\n\n" +
         "Verification: node --test passed for gRPC server, integration and REST tests.\n" }, REVIEW_SUBJECT));
     } else if (step === 2) {
       assert(result.includes(REVIEW_SUBJECT), "MOCK_REVIEW_COMMIT_NOT_OBSERVED");
       if (arm === "P") call = conclude("DELIVER", [REVIEW]);
+    } else if (step === 3 && arm === "P") {
+      assert(/RECORDED/u.test(result) && /"mayEnd"\s*:\s*true/u.test(result), "MOCK_REVIEW_DELIVERY_NOT_OBSERVED");
     }
     if (!call) return [{ type: "text", text: "The requested qualification step is complete." }];
     assert(input.tools?.some(tool => tool.name === call.name), "MOCK_TOOL_UNAVAILABLE " + call.name);

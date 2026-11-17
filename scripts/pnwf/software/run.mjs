@@ -14,9 +14,10 @@ import { makeWorkerBroker, stageRuntime } from "../energy/container-worker.mjs";
 import { assert, changed, clean, commitAll, configureGit, descendant, digest, git, head, readJson, sha, writeJson } from "../energy/contract.mjs";
 import { attribute, requireUsage } from "../energy/evidence.mjs";
 import { pendingCandidate, profileFor } from "../energy/product.mjs";
-import { checkScope, CORRECTION_PATH, GIT_IDENTITY, GUARDED_T2_PROMPT, injectCorrection, FIRST, PROMPTS, REVIEW, revisionResult, SCENARIO, SCOPE_GUIDANCE, seedSoftware } from "./contract.mjs";
+import { checkScope, CORRECTION_PATH, GIT_IDENTITY, GUARDED_T2_PROMPT, GUIDED_T3_PROMPT, injectCorrection, FIRST, PROMPTS, REVIEW, revisionResult, SCENARIO, SCOPE_GUIDANCE, seedSoftware } from "./contract.mjs";
 import { qualificationReply, scriptedArtifacts } from "./mock.mjs";
-import { OFFLINE, scoreDelivery, scoreReview } from "./score.mjs";
+import { OFFLINE, scoreDelivery } from "./score.mjs";
+import { scoreSemanticReview } from "./review-score.mjs";
 
 const REPO = fileURLToPath(new URL("../../../", import.meta.url));
 const FIXTURE = join(REPO, "fixtures/psvr/grpc-migration");
@@ -163,7 +164,8 @@ async function session(p, acceptance) {
   if (before && acceptance) assert(before.head === basis && before.events.some(event => event.type === "PROMOTION_COMMITTED" &&
     event.entityId === acceptance.promotion.promotionId), "T3_ACCEPTED_PRODUCT_STATE_MISMATCH");
   const promptPath = join(p.run, "prompt.txt");
-  writeFileSync(promptPath, id === "T2" ? GUARDED_T2_PROMPT : PROMPTS[id]);
+  const prompt = id === "T2" ? GUARDED_T2_PROMPT : id === "T3" && arm === "P" ? GUIDED_T3_PROMPT : PROMPTS[id];
+  writeFileSync(promptPath, prompt);
   const cohortId = "software-" + arm + "-" + id + "-" + randomUUID();
   writeJson(join(p.run, "core.json"), { cohortId, budget: CEILING, sessions: [{ id, condition: arm, world: p.world,
     state: p.state, expectedHead: basis, killAfterMs: WINDOW_MS, deployment: p.profile, promptPath }] });
@@ -221,8 +223,10 @@ async function session(p, acceptance) {
         result.conclusion = artifactReceipts(p.world, facts, current, id === "T1" ? FIRST : [REVIEW], before.head);
       }
     }
-    result.score = id === "T3" ? scoreReview({ repo: p.world, basis, commit: current }) :
+    result.score = id === "T3" ? scoreSemanticReview({ repo: p.world, basis, commit: current }) :
       scoreDelivery({ repo: evaluated, basis, commit: candidate?.commit ?? current, revised: id === "T2", output: join(p.run, "scorer"), image });
+    if (id === "T3") assert(result.score.passed, "SOFTWARE_REVIEW_CLAIMS_MISSING " +
+      result.score.checks.filter(check => !check.passed).map(check => check.id).join(", "));
     if (candidate) {
       writeJson(join(p.run, "candidate.json"), { ...candidate, basis, tree: result.score.tree, commit: result.score.commit });
       if (formal) result.bundle = preserveBundle("P-candidate.bundle", evaluated, "refs/heads/pnwf-worker-result");
@@ -302,6 +306,7 @@ function freeze() {
   const evidence = { implementationHead: head(REPO), image, dsh: "0.2.1-rc.5", seedCommit,
     seedTree: git(seed, "rev-parse", "HEAD^{tree}"), scenario: SCENARIO.projectId, mockWallClockMs: WINDOW_MS,
     prompts: Object.fromEntries(Object.entries({ ...PROMPTS, T2: GUARDED_T2_PROMPT }).map(([id, prompt]) => [id, digest(prompt)])),
+    principalT3Prompt: digest(GUIDED_T3_PROMPT),
     fixture: manifest(FIXTURE), scripts: manifest(join(REPO, "scripts/pnwf"), REPO),
     attribution: digest(readFileSync(join(REPO, "scripts/psvr/session_attribution.mjs"))),
     runtime: digest(JSON.stringify(manifest(runtime))) };

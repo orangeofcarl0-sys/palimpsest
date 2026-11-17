@@ -207,4 +207,26 @@ T3 没有创建新 Attempt 或 Promotion。Episode 基线仍是接受 HEAD，交
 
 本轮比上轮普通 DSH 少 1 笔请求、22,573 tokens 和 6.719 秒。两条普通 DSH 的 cache creation 均为 0，缓存读取占输入约 94%。本轮 Bash 从 17 次降至 12 次，文件读取从 5 次增至 7 次，省去了两次 glob。两条均读取接受凭据、直接提交、记录交付并自然退出。新旧普通 DSH 共 27 笔已按 Provider 响应 ID 与终态账本核对，本轮无未决用量、工具错误、领域拒绝或失败作业。两个样本各自读取不同的接受树，强原生行作为上轮参照。 [逐请求账本与对照](../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/trajectory-and-review-audit.json)
 
-复现入口为 `scripts/pnwf/revision/review-t3.mjs`，需传入新运行目录、已停写的 T2 接受目录及上轮普通 DSH T3 目录。本次原始 DSH 流和 SQLite 保存在 `%TEMP%/pnwf-grpc-readiness-t3-20261110144632`。
+该轮的复现入口保存在发布提交 `b3c3de40` 的 `scripts/pnwf/revision/review-t3.mjs`，需传入新运行目录、已停写的 T2 接受目录及上轮普通 DSH T3 目录。该轮原始 DSH 流和 SQLite 保存在 `%TEMP%/pnwf-grpc-readiness-t3-20261110144632`。
+
+## gRPC T3 语义验收与同一接受版本复跑
+
+2026-11-18 将 T3 摘要验收改为逐项核对已提交文件。新版检查分别识别显式零值、字段缺省、旧版空流和接受版按源顺序返回前三条；例如 “supplying limit=0 or leaving the limit unset” 与 “both forms” 可以组成完整说明。每条 Reading 单独成帧是独立的必填项，光写帧头、codec 或多帧解码无法满足。其余检查继续覆盖完整接受 SHA、更正路径、正数限制、unary、未知站点、字段号、REST 和测试结果。判分器返回命中的文字或缺项；它按本场景支持的语义表述匹配，实际协议行为与测试执行另有证据。[语义判分器](../../scripts/pnwf/software/review-score.mjs) · [回归](../../scripts/pnwf/software/review-score.test.mjs)
+
+普通 DSH 的 T3 提示要求提交前检查两种输入在新旧两版的行为，明写 `StreamReadings` 每条 Reading 在自己的 gRPC 消息帧，并在提交后以评审文件记录 `DELIVER`。验收仍读取 Git blob，校验单文件差异和普通文件模式。历史提示、冻结判分器、两轮原判与原稿均按原字节保留。离线把新版应用到历史原稿后，两份都通过旧、新默认值检查，较早稿缺逐条成帧和明确的 unary，较近同基线稿只缺逐条成帧。两份原稿仍未通过新版。[提示与运行合同](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/contract.json) · [逐项对照](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/trajectory-and-review-audit.json)
+
+旧临时副本缺 Git 管理文件。本轮从归档 bundle 恢复原接受 HEAD `4639ae44d78e7c1f9f5269876fa333a99bff770f` 和树 `99c40069ae834cf71618e2a142010f10bef0df06`，复用停写的接受状态副本。启动前核对 Promotion、已结算 Attempt、候选 SHA、回执和只读接受凭据。Mock 首轮的摘要已完整提交并交付，但新版正数限制检查漏识别 “stay compatible”。补齐该同义表述后，同一基线的最终 Mock 通过 12/12 项内容核验，18/18 项公开测试，4 笔模拟用量全部结算，新增付费调用 0。[首轮 Mock](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/qualification-first-attempt.json) · [最终资格](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/qualification.json)
+
+最终 Mock 的工具按调用 ID 配对 3/3。调用 15→18 读到完整接受和候选 SHA，23→26 测试并提交唯一文件 `MIGRATION-REVIEW.md`，31→32 记录 `DELIVER` 并返回 `mayEnd=true`，随后无工具调用，退出码 0。评审提交 `46f1d1da79016aad716df169e877042a9c957f14` 的唯一父提交是核准 HEAD，交付回执绑定实际评审提交和 blob 摘要。新版通过的同义稿在旧评分器交叉检查仍报 `SOFTWARE_REVIEW_MISSING empty stream`。[Mock 原稿](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/mock-MIGRATION-REVIEW.md) · [Mock Git bundle](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/mock-accepted-and-review.bundle)
+
+真实 T3 通过本轮 Mock 封存校验后启动。镜像、`deepseek-flash`、DSH `0.2.1-rc.5` 和按量窗口沿用前轮，每会话 64 笔、30 分钟、单请求 240 秒，金额与总 token 均无上限。容器资格通过，首笔请求收到 `PROVIDER_HTTP_402`，缺终态用量，账本为 `STOPPED`，1 笔 `UNKNOWN`。运行在 28.863 秒后按 `usage_unobservable` 停止，退出码 137。Principal 有会话记录，但无已结算响应、工具调用、摘要提交或 `DELIVER`。HEAD 和树仍为原接受版本，没有文件差异。本轮没有再次发出付费请求。[真实结果](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/result.json) · [逐请求账本](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/request-accounting.json)
+
+| 真实普通 DSH T3 | 接受 HEAD | 请求已登记 / 已结算 | Fresh input | Cache read | Output | 总 tokens | 容器秒数 | 配对调用 | 摘要与退出 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 写范围修复后 | `7deda735` | 14 / 14 | 21,998 | 352,768 | 9,656 | 384,422 | 120.472 | 27/27 | 提交并自然退出，冻结判分失败 |
+| 结算引导修复后 | `4639ae44` | 13 / 13 | 20,998 | 332,160 | 8,691 | 361,849 | 113.753 | 22/22 | 提交并自然退出，冻结判分失败 |
+| 本轮语义验收 | `4639ae44` | 1 / 0 | 未知 | 未知 | 未知 | 未知 | 28.863 | 未触发 | 首笔被拒，未产生摘要，未自然退出 |
+
+前两轮的 cache creation 均为 0，本轮该项未知。28.863 秒是首笔 Provider 拒绝后的停止耗时，完整 T3 的请求量、费用、摘要完整性与自然退出变化仍无真实样本。Mock 验证了提示、同义稿、判分和交付的连接，实际模型是否采用引导留待真实运行核验。[轨迹和历史原判对照](../../research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/trajectory-and-review-audit.json)
+
+复算从归档原稿和 Git bundle 开始，`node --test scripts/pnwf/software/review-score.test.mjs` 可重跑语义及历史样本回归。新运行用 `scripts/pnwf/revision/review-t3.mjs --mode=mock --run=<新目录> --accepted=<T2 接受目录>`。真实入口为 `--mode=live`，另指定与本次脚本、提示、镜像和基线匹配的 `--qualification=<Mock 的 P/T3/result.json>`。本轮原始 DSH 流和 SQLite 保留在 `%TEMP%/pnwf-grpc-review-semantics-20261118-035705`。

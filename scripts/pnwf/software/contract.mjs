@@ -31,6 +31,12 @@ export const PROMPTS = {
   T3: "Use the accepted version from acceptance.json. Commit only MIGRATION-REVIEW.md. Cite the complete accepted HEAD and the Fleet correction path, explain the old and new default, summarize the unchanged compatibility boundaries and report the checks you ran. Deliver the review and end the session.",
 };
 export const GUARDED_T2_PROMPT = PROMPTS.T2 + " " + SCOPE_GUIDANCE;
+export const GUIDED_T3_PROMPT = PROMPTS.T3 + "\n\n" +
+  "Before committing, check that the review explicitly covers both a supplied limit of zero and an absent limit, " +
+  "with the first-release and accepted behavior for both. State the source ordering and explicitly say that " +
+  "StreamReadings sends each Reading in its own gRPC message frame. Also cover positive limits, unary GetReading, " +
+  "unknown-site NOT_FOUND, protobuf field numbers and REST compatibility. Run node --test and report its outcome. " +
+  "After committing the review, record DELIVER with MIGRATION-REVIEW.md as the artifact, then give the final response.";
 
 export function seedSoftware(repo, fixture) {
   for (const path of SEED) {
