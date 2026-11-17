@@ -255,6 +255,11 @@ async function meteredRig(t, { complete = true, maxRequests = 1, openCode } = {}
     for await (const chunk of req) chunks.push(chunk);
     observations.push({ route: req.url, key: req.headers["x-api-key"], request: budget.snapshot().requests.at(-1),
       body: Buffer.concat(chunks).toString("utf8") });
+    if (openCode?.httpStatus) {
+      res.writeHead(openCode.httpStatus, { "x-request-id": "req_fixture_rejected" });
+      res.end();
+      return;
+    }
     res.writeHead(200, { "content-type": "text/event-stream" });
     res.write(`data: ${JSON.stringify({ type: "message_start", message: { usage: { input_tokens: 1, output_tokens: 0 },
       ...(openCode ? { id: "msg_fixture", model: openCode.responseModel ?? OPENCODE_GO_MODEL } : {}) } })}\n\n`);
@@ -284,9 +289,16 @@ test("OpenCode Go rewrites the fixed model and settles matching terminal usage a
   const { budget, observations, gatewayEvents, send } = await meteredRig(t, { openCode: { terminal: goTerminal } });
   assert.equal((await send({ model: OPENCODE_GO_MODEL })).status, 403);
   assert.equal((await send({ tools: [{ type: "web_search_20250305" }] })).status, 403);
-  await (await send()).text();
+  const tools = [{ name: "read", input_schema: {type: "object", properties: {path: {type: "string"}}} }];
+  await (await send({ dsh_plugin_packages: ["fixture"], dsh_session_log: { status: "fixture" },
+    thinking: { type: "enabled" }, output_config: { effort: "high" }, tools, max_tokens: 256000 })).text();
   assert.equal(observations.length, 1);
-  assert.equal(JSON.parse(observations[0].body).model, OPENCODE_GO_MODEL);
+  const input = JSON.parse(observations[0].body);
+  assert.equal(input.model, OPENCODE_GO_MODEL);
+  assert.equal(input.max_tokens, 256000);
+  assert.deepEqual(input.tools, tools);
+  assert.deepEqual(input.messages, [{ role: "user", content: "fixture" }]);
+  for (const field of ["dsh_session_log", "dsh_plugin_packages", "thinking", "output_config"]) assert(!Object.hasOwn(input, field));
   assert.equal(observations[0].request.state, "PENDING");
   const row = budget.snapshot().requests[0];
   assert.deepEqual(row.usage, goParts);
@@ -294,6 +306,16 @@ test("OpenCode Go rewrites the fixed model and settles matching terminal usage a
   assert.equal(gatewayEvents[1].requestId, row.id);
   assert.equal(gatewayEvents[1].messageId, "msg_fixture");
   assert.equal(gatewayEvents[1].providerBilling.billingSource, "go");
+});
+
+test("OpenCode Go records a safe upstream request ID on HTTP refusal without settling usage", async t => {
+  const { budget, send, gatewayEvents } = await meteredRig(t, { openCode: { httpStatus: 400 } });
+  await (await send()).text();
+  const row = budget.snapshot().requests[0];
+  assert.equal(row.reason, "PROVIDER_HTTP_400");
+  assert.equal(row.state, "UNKNOWN");
+  assert.deepEqual(gatewayEvents[1], { kind: "UPSTREAM_REJECTED", requestId: row.id, actor: "principal-container",
+    status: 400, upstreamRequestId: "req_fixture_rejected" });
 });
 
 test("OpenCode Go marks model drift, missing usage and conflicting totals unknown", async t => {

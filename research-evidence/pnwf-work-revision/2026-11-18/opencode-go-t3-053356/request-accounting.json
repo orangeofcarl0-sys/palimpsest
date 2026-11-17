@@ -1,0 +1,38 @@
+{
+  "schema": "pnwf-usage-snapshot/v1",
+  "cohortId": "software-t3-review-2be1f0be-569d-41e9-91d5-aef38c4d76f9",
+  "configDigest": "60c9beb2034a673abaf93cc93dc46bb4090440d9b87f93baa8e4666d8813345b",
+  "state": "STOPPED",
+  "reason": "PROVIDER_HTTP_400",
+  "confirmed": 0,
+  "reserved": null,
+  "unresolvedRequests": 1,
+  "aggregateCeiling": null,
+  "sessions": [
+    {
+      "id": "T3",
+      "ordinal": 0,
+      "state": "STOPPED",
+      "ceiling": null,
+      "softCeiling": null,
+      "maxRequests": 64,
+      "requestCount": 1,
+      "unresolvedRequests": 1,
+      "confirmed": 0,
+      "reserved": null
+    }
+  ],
+  "requests": [
+    {
+      "id": "1cbc6dfe-efbf-442a-8968-08c487c5e929",
+      "session": "T3",
+      "digest": "3ed3c0382b36173c8f8cb0b86c925f903b373e2d018fde80152cd4ba6cc281c4",
+      "reserved": null,
+      "actual": null,
+      "state": "UNKNOWN",
+      "reason": "PROVIDER_HTTP_400",
+      "usage": null
+    }
+  ],
+  "refusals": []
+}

@@ -194,7 +194,18 @@ export async function startMessagesProxy({ budget, sessionId, sessionKey, target
         "content-type": "application/json", "content-length": upstreamBody.length,
         ...headers,
       } }, response => {
-        if (response.statusCode !== 200) { response.resume(); unknown(budget.usageOnly ? `PROVIDER_HTTP_${response.statusCode}` : "PROVIDER_ERROR"); return; }
+        if (response.statusCode !== 200) {
+          if (responsePolicy?.expectedModel) {
+            const upstreamId = response.headers["x-request-id"] ?? response.headers["request-id"];
+            try {
+              onObservation?.({ kind: "UPSTREAM_REJECTED", requestId: reservation, actor, status: response.statusCode,
+                upstreamRequestId: typeof upstreamId === "string" && /^[\w.-]{1,200}$/u.test(upstreamId) ? upstreamId : null });
+            } catch { /* The usage ledger still closes for the rejected request. */ }
+          }
+          response.resume();
+          unknown(budget.usageOnly ? `PROVIDER_HTTP_${response.statusCode}` : "PROVIDER_ERROR");
+          return;
+        }
         const reader = new UsageReader(String(response.headers["content-type"]).includes("text/event-stream"), responsePolicy);
         let received = 0;
         res.writeHead(200, { "content-type": response.headers["content-type"] ?? "application/json" });

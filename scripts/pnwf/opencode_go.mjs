@@ -21,6 +21,16 @@ export function readOpenCodeGoKey(profileId, path = join(homedir(), ".zcode/v2/p
 
 export function openCodeGoBody(body) {
   const request = JSON.parse(body.toString("utf8"));
+  for (const field of Object.keys(request)) if (field.startsWith("dsh_")) delete request[field];
+  // DSH uses DeepSeek's enabled-without-budget extension. Go's translated
+  // Messages route already defaults to the model's reasoning configuration.
+  if (request.thinking?.type === "enabled" && request.thinking.budget_tokens === undefined) {
+    delete request.thinking;
+    if (request.output_config && Object.hasOwn(request.output_config, "effort")) {
+      delete request.output_config.effort;
+      if (Object.keys(request.output_config).length === 0) delete request.output_config;
+    }
+  }
   return Buffer.from(JSON.stringify({ ...request, model: OPENCODE_GO_MODEL }));
 }
 

@@ -1,0 +1,333 @@
+{
+  "shape": [
+    "dsh_plugin_packages",
+    "dsh_session_log",
+    "max_tokens",
+    "messages",
+    "model",
+    "output_config",
+    "stream",
+    "system",
+    "thinking",
+    "tools"
+  ],
+  "model": "deepseek-flash",
+  "stream": true,
+  "maxTokens": 256000,
+  "thinking": {
+    "type": "enabled"
+  },
+  "outputConfig": {
+    "effort": "high"
+  },
+  "reasoningEffort": null,
+  "metadataFields": [],
+  "toolChoice": null,
+  "toolTypes": {
+    "default": 28
+  },
+  "system": {
+    "textBytes": 2146
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "textBytes": 1074,
+          "cacheControl": null
+        },
+        {
+          "type": "text",
+          "textBytes": 529,
+          "cacheControl": null
+        }
+      ]
+    }
+  ],
+  "schemas": [
+    {
+      "name": "bash",
+      "type": "object",
+      "propertyCount": 7,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "create_goal",
+      "type": "object",
+      "propertyCount": 2,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "edit",
+      "type": "object",
+      "propertyCount": 6,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "exit_plan_mode",
+      "type": "object",
+      "propertyCount": 1,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "get_goal",
+      "type": "object",
+      "propertyCount": 0,
+      "rootKeywords": [
+        "type",
+        "properties"
+      ]
+    },
+    {
+      "name": "glob",
+      "type": "object",
+      "propertyCount": 2,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "grep",
+      "type": "object",
+      "propertyCount": 3,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "interrupt_agent",
+      "type": "object",
+      "propertyCount": 1,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "job_kill",
+      "type": "object",
+      "propertyCount": 2,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "job_list",
+      "type": "object",
+      "propertyCount": 0,
+      "rootKeywords": [
+        "type",
+        "properties"
+      ]
+    },
+    {
+      "name": "job_output",
+      "type": "object",
+      "propertyCount": 3,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "list_agents",
+      "type": "object",
+      "propertyCount": 1,
+      "rootKeywords": [
+        "type",
+        "properties"
+      ]
+    },
+    {
+      "name": "palimpsest_continuity",
+      "type": "object",
+      "propertyCount": 3,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ]
+    },
+    {
+      "name": "palimpsest_contribute",
+      "type": "object",
+      "propertyCount": 16,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ]
+    },
+    {
+      "name": "palimpsest_project",
+      "type": "object",
+      "propertyCount": 11,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ]
+    },
+    {
+      "name": "palimpsest_start",
+      "type": "object",
+      "propertyCount": 4,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ]
+    },
+    {
+      "name": "palimpsest_work",
+      "type": "object",
+      "propertyCount": 40,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ]
+    },
+    {
+      "name": "read",
+      "type": "object",
+      "propertyCount": 3,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "read_image",
+      "type": "object",
+      "propertyCount": 1,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "send_message",
+      "type": "object",
+      "propertyCount": 2,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "skill",
+      "type": "object",
+      "propertyCount": 1,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "subagent",
+      "type": "object",
+      "propertyCount": 3,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "subagent_fork",
+      "type": "object",
+      "propertyCount": 3,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "todo_write",
+      "type": "object",
+      "propertyCount": 1,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "update_goal",
+      "type": "object",
+      "propertyCount": 6,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "workflow",
+      "type": "object",
+      "propertyCount": 4,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    },
+    {
+      "name": "working_directory",
+      "type": "object",
+      "propertyCount": 1,
+      "rootKeywords": [
+        "type",
+        "properties"
+      ]
+    },
+    {
+      "name": "write",
+      "type": "object",
+      "propertyCount": 4,
+      "rootKeywords": [
+        "type",
+        "properties",
+        "required"
+      ]
+    }
+  ],
+  "bytes": 96554
+}
