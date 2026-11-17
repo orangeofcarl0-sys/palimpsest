@@ -1,0 +1,75 @@
+{
+  "schema": "pnwf-grpc-t3-provider-reconciliation/v1",
+  "main": "fdda682e1fd03071a3c4770f511d248df027a689",
+  "acceptedHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+  "acceptedTree": "99c40069ae834cf71618e2a142010f10bef0df06",
+  "source": "review-semantics-035705",
+  "request": {
+    "localId": "c9ebb54f-1643-46f6-a0b1-271d077c9d3f",
+    "gatewayBodySha256": "4bc51f5fae2bba9366457493b00bd7933d9b5a6d92a286705d94698809b44a35",
+    "sessionStartedAt": "2026-11-17T20:01:20.103Z",
+    "sessionEndedAt": "2026-11-17T20:01:48.966Z",
+    "state": "UNKNOWN",
+    "reason": "PROVIDER_HTTP_402",
+    "providerResponseId": null,
+    "terminalUsage": null,
+    "actual": null,
+    "admittedObservations": 1,
+    "terminalObservations": 0,
+    "settledResponses": 0,
+    "sqliteMatchesPublishedLedger": true,
+    "originalArchiveMatchesLocal": {
+      "result.json": "4f7f559e245f762d0358d5fb1c55a844e39cc87ab3cf06e466b703a2b49d227e",
+      "contract.json": "2c550943e092273f77f1bf4b0f56e292561c2843378136821a9b0f1ad29a776a",
+      "request-accounting.json": "2068fcc5b0d7b8f311b53e02e61589cfb3f373996f8158f190935d88d4372fd0",
+      "request-observations.jsonl": "f75f415cf334bd7f28caaa4d1665a024079a981749c360107dab016ca65c7a06"
+    }
+  },
+  "deepSeek": {
+    "errorDocumentation": "https://api-docs.deepseek.com/quick_start/error_codes/",
+    "balanceDocumentation": "https://api-docs.deepseek.com/zh-cn/api/get-user-balance/",
+    "balanceProbe": {
+      "method": "GET",
+      "url": "https://api.deepseek.com/user/balance",
+      "at": "2026-11-17T21:22:46Z",
+      "httpStatus": 200,
+      "isAvailable": false
+    },
+    "perRequestBillingEvidence": null,
+    "consoleCheck": "STOPPED_BROWSER_URL_POLICY_UNAVAILABLE"
+  },
+  "openCode": {
+    "targetModel": "deepseek-v4.1-flash",
+    "credentialSource": "ZCode provider configuration",
+    "documentation": "https://opencode.ai/docs/console/go/",
+    "catalogueProbes": [
+      {
+        "method": "GET",
+        "url": "https://opencode.ai/zen/go/v1/models",
+        "at": "2026-11-17T21:24:08Z",
+        "httpStatus": 401
+      },
+      {
+        "method": "GET",
+        "url": "https://opencode.ai/inference/go/v1/models",
+        "at": "2026-11-17T21:24:41Z",
+        "httpStatus": 401
+      }
+    ],
+    "inferenceQualified": false
+  },
+  "rerun": {
+    "state": "NOT_STARTED",
+    "reason": [
+      "PRIOR_USAGE_NOT_RECONCILED",
+      "NO_QUALIFIED_PROVIDER"
+    ],
+    "requestMode": "paid-usage-only",
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null,
+    "totalTokenCeiling": null,
+    "newInferenceRequests": 0
+  }
+}
