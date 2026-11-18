@@ -1,0 +1,1081 @@
+{
+  "seal": {
+    "provider": "opencode-go",
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "model": "deepseek-v4.1-flash",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "accepted": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+    "prompt": "Prepare the Fleet rollout for both windows using fleet/BRIEF.md and the operations records. Deliver a tested, committed release plan and review for the owner.",
+    "files": {
+      "fixtures/psvr/fleet-rollout/BRIEF.md": "73a703dac8d29851740a73f4786bcac8515f5a676839d94c0809007fd88db0b7",
+      "fixtures/psvr/fleet-rollout/registry.json": "df06ebb0df75f80345dfda693e239f6935d5371d5e493e7a0e60ec310f2f50bd",
+      "fixtures/psvr/fleet-rollout/replay.json": "d7074067451a795989371408d349f87e9123350a438bae3c1ca78ae14663e17e",
+      "fixtures/psvr/fleet-rollout/traffic.csv": "f745783e7aa3e2f78e139524c66917eebe599b316d977cc583880cfebb4ee4a2",
+      "fixtures/psvr/fleet-rollout/egress.json": "e939a3a8e04d4afdef71ff874f58d9941b052fd3398dbaeadbbea6e476503d59",
+      "fixtures/psvr/fleet-rollout/change-orders.json": "fcbdb043e4081f13d106a688a4c9b2296691fc8985f7b7a9fdcc3109079531a0",
+      "scripts/pnwf/software/fleet-rollout/run.mjs": "9b718256ec9727be5fbfc5bd8e0eca8300c1d4d87314a24ba43faf888eff3cb5",
+      "scripts/pnwf/software/fleet-rollout/score.mjs": "260d41cfa3946d45db28ee64a73d3ac0226cef5eef447aa6e0e8d6b7d95f6032",
+      "scripts/pnwf/software/fleet-rollout/mock.mjs": "cb0945d694e6b0c2baf91908b694ad30499b3fb05acd7259057c92a6020ba410"
+    }
+  },
+  "basis": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+  "mode": "live",
+  "qualified": true,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "fleet-rollout-d3c801ea-3a52-4e0b-a40d-f0173f273aca",
+    "sessionId": "ROLLOUT",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-synthesis-de3691a6-44b3-4cc1-b83f-740412aa6f03-live\\stages\\ROLLOUT\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-synthesis-de3691a6-44b3-4cc1-b83f-740412aa6f03-live\\runtime-ROLLOUT",
+    "principalRuntime": "container",
+    "containerId": "fae1d85c5df8f377b3fe1c6ae6536d94c2402b17f4c7564f32186ad8a9f0f8bd",
+    "qualification": "ab54cefa663c923532f0a319e7d327918b3d7515367b32c440820bb8b005a1a9",
+    "startedAt": "2026-11-18T17:48:29.235Z",
+    "endedAt": "2026-11-18T17:52:23.518Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "fleet-rollout-d3c801ea-3a52-4e0b-a40d-f0173f273aca",
+      "sessionId": "ROLLOUT",
+      "observedAt": "2026-11-18T17:52:23.518Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 320861,
+      "confirmedTokens": 320861,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 14,
+    "paidModelCalls": 14
+  },
+  "paidModelCalls": 14,
+  "isolation": {
+    "containerId": "fae1d85c5df8f377b3fe1c6ae6536d94c2402b17f4c7564f32186ad8a9f0f8bd",
+    "descriptorDigest": "ab54cefa663c923532f0a319e7d327918b3d7515367b32c440820bb8b005a1a9",
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "mounts": [
+      {
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "destination": "/product/node_modules",
+        "writable": false
+      },
+      {
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "destination": "/product/runtime",
+        "writable": false
+      },
+      {
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      }
+    ],
+    "checks": [
+      {
+        "name": "principal_uid",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_shell_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "write_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "git_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "node_build_fixture",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_version",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_native_addon",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "native_shell_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_proc_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_parent_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "rootfs_readonly",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "no_docker_socket",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_evaluator",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_owner_credential",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_provider_credential_env",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_routes",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      }
+    ],
+    "worlds": {
+      "schema": "pnwf-world-preflight/v1",
+      "status": "QUALIFIED",
+      "head": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+      "worlds": [],
+      "product": {
+        "repositoryHead": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+        "projectHead": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+        "relation": "IN_SYNC",
+        "uncommittedPaths": [],
+        "admittedDirectCommit": null
+      }
+    }
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-5e7ae6e2-50fa-4168-946f-3019e3e5c26f",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 14,
+    "knownTokens": 320861,
+    "totalTokens": 320861,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 33905,
+      "cache_read_input_tokens": 275200,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 11756
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 14,
+        "input": 33905,
+        "cacheRead": 275200,
+        "cacheWrite": 0,
+        "output": 11756,
+        "total": 320861
+      }
+    },
+    "traceTotal": 320861,
+    "traceRequests": 14,
+    "workerRequests": 0,
+    "elapsedMs": 234283,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-5e7ae6e2-50fa-4168-946f-3019e3e5c26f",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "f3311c946632d04bb60678fd337a4f169dccfd64a3221531259bf439a08a6e21",
+        "counts": {
+          "steps": 14,
+          "turns": 1,
+          "toolCalls": 27,
+          "pairedToolResults": 27,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 2,
+          "commits": 0,
+          "jobs": 10
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795024147161,
+            "messageId": "9edc49a1-83ab-4f5c-9e1a-62023b2e9ad6",
+            "usage": {
+              "inputTokens": 10585,
+              "outputTokens": 59,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10644
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795024151844,
+            "messageId": "28e0e714-ada6-41bf-aafa-2d23136d941e",
+            "usage": {
+              "inputTokens": 1217,
+              "outputTokens": 177,
+              "cacheReadTokens": 10496,
+              "cacheWriteTokens": 0,
+              "totalTokens": 11890
+            }
+          },
+          {
+            "seq": 32,
+            "at": 1795024155255,
+            "messageId": "9b2f586c-0c15-4a69-9541-3ecabe42e817",
+            "usage": {
+              "inputTokens": 777,
+              "outputTokens": 159,
+              "cacheReadTokens": 11648,
+              "cacheWriteTokens": 0,
+              "totalTokens": 12584
+            }
+          },
+          {
+            "seq": 44,
+            "at": 1795024160543,
+            "messageId": "36472bcd-ba79-43d9-9bb3-8998bd320403",
+            "usage": {
+              "inputTokens": 3271,
+              "outputTokens": 282,
+              "cacheReadTokens": 12416,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15969
+            }
+          },
+          {
+            "seq": 60,
+            "at": 1795024187016,
+            "messageId": "6c91b8ef-9c85-4576-b1b6-5df1c3884f55",
+            "usage": {
+              "inputTokens": 1384,
+              "outputTokens": 1974,
+              "cacheReadTokens": 15616,
+              "cacheWriteTokens": 0,
+              "totalTokens": 18974
+            }
+          },
+          {
+            "seq": 72,
+            "at": 1795024223314,
+            "messageId": "d3e2826a-01a6-407c-97e5-49b55bffb341",
+            "usage": {
+              "inputTokens": 3143,
+              "outputTokens": 2305,
+              "cacheReadTokens": 16896,
+              "cacheWriteTokens": 0,
+              "totalTokens": 22344
+            }
+          },
+          {
+            "seq": 80,
+            "at": 1795024229831,
+            "messageId": "07399f2d-98ad-4e97-b1e9-7b490bb773ba",
+            "usage": {
+              "inputTokens": 3202,
+              "outputTokens": 230,
+              "cacheReadTokens": 19968,
+              "cacheWriteTokens": 0,
+              "totalTokens": 23400
+            }
+          },
+          {
+            "seq": 88,
+            "at": 1795024255797,
+            "messageId": "dfb5fead-1a65-48e6-9840-2bb273e31cb1",
+            "usage": {
+              "inputTokens": 245,
+              "outputTokens": 1860,
+              "cacheReadTokens": 23168,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25273
+            }
+          },
+          {
+            "seq": 96,
+            "at": 1795024282904,
+            "messageId": "3d71b3a0-a6a6-47ca-872c-4e0c63bcbf6f",
+            "usage": {
+              "inputTokens": 2059,
+              "outputTokens": 2133,
+              "cacheReadTokens": 23296,
+              "cacheWriteTokens": 0,
+              "totalTokens": 27488
+            }
+          },
+          {
+            "seq": 104,
+            "at": 1795024299342,
+            "messageId": "afa9ed3b-a23a-4f33-9ef0-330b50a83326",
+            "usage": {
+              "inputTokens": 2240,
+              "outputTokens": 965,
+              "cacheReadTokens": 25344,
+              "cacheWriteTokens": 0,
+              "totalTokens": 28549
+            }
+          },
+          {
+            "seq": 116,
+            "at": 1795024304997,
+            "messageId": "c5644874-bcbc-43ba-9e49-8965c326eeec",
+            "usage": {
+              "inputTokens": 1458,
+              "outputTokens": 140,
+              "cacheReadTokens": 27520,
+              "cacheWriteTokens": 0,
+              "totalTokens": 29118
+            }
+          },
+          {
+            "seq": 124,
+            "at": 1795024316493,
+            "messageId": "3c41d17c-18a8-4605-ae71-7d5f6b6c1da3",
+            "usage": {
+              "inputTokens": 306,
+              "outputTokens": 670,
+              "cacheReadTokens": 28928,
+              "cacheWriteTokens": 0,
+              "totalTokens": 29904
+            }
+          },
+          {
+            "seq": 134,
+            "at": 1795024325729,
+            "messageId": "8f5d431e-a974-4177-8aef-f5ff00d19c6b",
+            "usage": {
+              "inputTokens": 1538,
+              "outputTokens": 380,
+              "cacheReadTokens": 29184,
+              "cacheWriteTokens": 0,
+              "totalTokens": 31102
+            }
+          },
+          {
+            "seq": 140,
+            "at": 1795024342805,
+            "messageId": "d53554d2-ef13-4746-8e84-00e89901e274",
+            "usage": {
+              "inputTokens": 2480,
+              "outputTokens": 422,
+              "cacheReadTokens": 30720,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33622
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 10,
+          "read": 12,
+          "write": 2,
+          "work:status": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "attribution": {
+    "arm": "P",
+    "session": "ROLLOUT",
+    "boundRequests": 14,
+    "totals": {
+      "fresh": 33905,
+      "cacheRead": 275200,
+      "cacheWrite": 0,
+      "output": 11756
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-5e7ae6e2-50fa-4168-946f-3019e3e5c26f",
+        "streamSha256": "f3311c946632d04bb60678fd337a4f169dccfd64a3221531259bf439a08a6e21",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 28,
+            "toolManifestBytes": 39403,
+            "productTools": 5,
+            "productToolBytes": 20346
+          }
+        ],
+        "systemTextBytes": [
+          2146
+        ],
+        "counts": {
+          "steps": 14,
+          "turns": 1,
+          "toolCalls": 27,
+          "pairedToolResults": 27,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 2,
+          "commits": 0,
+          "jobs": 10
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 10,
+          "read": 12,
+          "write": 2,
+          "work:status": 1,
+          "work:conclude": 1
+        },
+        "totals": {
+          "fresh": 33905,
+          "cacheRead": 275200,
+          "cacheWrite": 0,
+          "output": 11756
+        },
+        "activity": [
+          {
+            "kind": "pulse",
+            "callId": "call_b99cfbb2210c4604bab48880",
+            "callSeq": 15,
+            "resultSeq": 16,
+            "ok": true,
+            "textBytes": 4261
+          },
+          {
+            "kind": "file-read",
+            "callId": "call_8fb03fc01ec34a7ba54ea20c",
+            "callSeq": 50,
+            "resultSeq": 56,
+            "ok": true,
+            "textBytes": 499,
+            "path": "updates/2026-11-10/fleet-default-limit.md"
+          }
+        ],
+        "failedJobs": [],
+        "toolIssues": [],
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "20643585-274d-4a16-a9d6-7361a2e36b35",
+            "fresh": 10585,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 59,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a045e4ab5538479894aad5065d801bba"
+          },
+          {
+            "step": 2,
+            "seq": 20,
+            "requestId": "6865a5d5-596a-42ff-94e6-faff157cb4e2",
+            "fresh": 1217,
+            "cacheRead": 10496,
+            "cacheWrite": 0,
+            "output": 177,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_bfcc6262200b4913a8b619289f988dd4"
+          },
+          {
+            "step": 3,
+            "seq": 32,
+            "requestId": "4dec5664-c610-4041-ade5-671f2ce0efa0",
+            "fresh": 777,
+            "cacheRead": 11648,
+            "cacheWrite": 0,
+            "output": 159,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f6820f1ba12f4e64bf13f1e0d21a2fde"
+          },
+          {
+            "step": 4,
+            "seq": 44,
+            "requestId": "d0d2bbba-1186-4307-b37b-d3d56b82509e",
+            "fresh": 3271,
+            "cacheRead": 12416,
+            "cacheWrite": 0,
+            "output": 282,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5dc495ac0ce24662838f2e99e31f0f09"
+          },
+          {
+            "step": 5,
+            "seq": 60,
+            "requestId": "5ec2d040-da11-41e5-99c6-9f0363fd6b1b",
+            "fresh": 1384,
+            "cacheRead": 15616,
+            "cacheWrite": 0,
+            "output": 1974,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_e431c15cf2334015a9033f9fb14f0790"
+          },
+          {
+            "step": 6,
+            "seq": 72,
+            "requestId": "3d9ae13e-405f-4659-839c-868d129c44a3",
+            "fresh": 3143,
+            "cacheRead": 16896,
+            "cacheWrite": 0,
+            "output": 2305,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2c91fdab336148ad8ad5f710478808e6"
+          },
+          {
+            "step": 7,
+            "seq": 80,
+            "requestId": "1aeafe0e-4cc7-4fca-880a-71ac9a6af951",
+            "fresh": 3202,
+            "cacheRead": 19968,
+            "cacheWrite": 0,
+            "output": 230,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c784dc1ea62e4b4ab36d29f05443afc1"
+          },
+          {
+            "step": 8,
+            "seq": 88,
+            "requestId": "840cc12e-1bca-4f9f-bd90-c777acee088c",
+            "fresh": 245,
+            "cacheRead": 23168,
+            "cacheWrite": 0,
+            "output": 1860,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_4b5e18e2c0db49c0a9668ca6d1428e38"
+          },
+          {
+            "step": 9,
+            "seq": 96,
+            "requestId": "242188f9-2df5-4753-b2b2-74a2f0f2b10a",
+            "fresh": 2059,
+            "cacheRead": 23296,
+            "cacheWrite": 0,
+            "output": 2133,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_44802b0df1224cd2b2effb8f55d78ba7"
+          },
+          {
+            "step": 10,
+            "seq": 104,
+            "requestId": "815937d8-7070-46c7-8dfd-c11f1dc3141d",
+            "fresh": 2240,
+            "cacheRead": 25344,
+            "cacheWrite": 0,
+            "output": 965,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_d68ea57625984678b914dc7abb5b381d"
+          },
+          {
+            "step": 11,
+            "seq": 116,
+            "requestId": "a956df9c-65a1-443d-a8db-c1b5fddc51ac",
+            "fresh": 1458,
+            "cacheRead": 27520,
+            "cacheWrite": 0,
+            "output": 140,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ad572c2bf0a048b1a172c92e3ada1245"
+          },
+          {
+            "step": 12,
+            "seq": 124,
+            "requestId": "e3f6a9f4-7fb9-47de-a57c-fdf2aea9c532",
+            "fresh": 306,
+            "cacheRead": 28928,
+            "cacheWrite": 0,
+            "output": 670,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_92ca831dbe4f49b19f44ffe2a8dd6779"
+          },
+          {
+            "step": 13,
+            "seq": 134,
+            "requestId": "8d85a7b6-f3ed-40bc-aa87-45c3246440ce",
+            "fresh": 1538,
+            "cacheRead": 29184,
+            "cacheWrite": 0,
+            "output": 380,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5f1279e211a54097b9b7c7f5151b18a1"
+          },
+          {
+            "step": 14,
+            "seq": 140,
+            "requestId": "65715d67-7567-45ec-8cbc-6ffa4bf12d8d",
+            "fresh": 2480,
+            "cacheRead": 30720,
+            "cacheWrite": 0,
+            "output": 422,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_530b699b256a4cfa93566692cd198c30"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "20643585-274d-4a16-a9d6-7361a2e36b35",
+            "fresh": 10585,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 59,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a045e4ab5538479894aad5065d801bba",
+            "precedingResults": [],
+            "precedingTextBytes": 0
+          },
+          {
+            "step": 4,
+            "seq": 44,
+            "requestId": "d0d2bbba-1186-4307-b37b-d3d56b82509e",
+            "fresh": 3271,
+            "cacheRead": 12416,
+            "cacheWrite": 0,
+            "output": 282,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5dc495ac0ce24662838f2e99e31f0f09",
+            "precedingResults": [
+              {
+                "kind": "read",
+                "callSeq": 33,
+                "seq": 37,
+                "textBytes": 1169
+              },
+              {
+                "kind": "read",
+                "callSeq": 34,
+                "seq": 38,
+                "textBytes": 1723
+              },
+              {
+                "kind": "read",
+                "callSeq": 35,
+                "seq": 39,
+                "textBytes": 1147
+              },
+              {
+                "kind": "read",
+                "callSeq": 36,
+                "seq": 40,
+                "textBytes": 7563
+              }
+            ],
+            "precedingTextBytes": 11602
+          },
+          {
+            "step": 7,
+            "seq": 80,
+            "requestId": "1aeafe0e-4cc7-4fca-880a-71ac9a6af951",
+            "fresh": 3202,
+            "cacheRead": 19968,
+            "cacheWrite": 0,
+            "output": 230,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c784dc1ea62e4b4ab36d29f05443afc1",
+            "precedingResults": [
+              {
+                "kind": "read",
+                "callSeq": 73,
+                "seq": 75,
+                "textBytes": 942
+              },
+              {
+                "kind": "read",
+                "callSeq": 74,
+                "seq": 76,
+                "textBytes": 1523
+              }
+            ],
+            "precedingTextBytes": 2465
+          },
+          {
+            "step": 6,
+            "seq": 72,
+            "requestId": "3d9ae13e-405f-4659-839c-868d129c44a3",
+            "fresh": 3143,
+            "cacheRead": 16896,
+            "cacheWrite": 0,
+            "output": 2305,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2c91fdab336148ad8ad5f710478808e6",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 61,
+                "seq": 64,
+                "textBytes": 2452
+              },
+              {
+                "kind": "bash",
+                "callSeq": 65,
+                "seq": 68,
+                "textBytes": 1504
+              }
+            ],
+            "precedingTextBytes": 3956
+          }
+        ]
+      }
+    ]
+  },
+  "contributions": [],
+  "candidate": "7c5cef3989b394b69191a43104c8fa8cdaa21bf2",
+  "clean": true,
+  "childSessions": [],
+  "business": {
+    "plan": {
+      "windows": {
+        "W1": {
+          "grpc": [
+            "Alder",
+            "Birch"
+          ],
+          "rest": [
+            "Cedar",
+            "Dune"
+          ],
+          "used": 9,
+          "available": 10,
+          "priority": 20
+        },
+        "W2": {
+          "grpc": [
+            "Birch",
+            "Cedar"
+          ],
+          "rest": [
+            "Alder",
+            "Dune"
+          ],
+          "used": 8,
+          "available": 8,
+          "priority": 17
+        }
+      },
+      "siteUnits": {
+        "Alder": 5,
+        "Birch": 4,
+        "Cedar": 4,
+        "Dune": 3
+      }
+    },
+    "review": "# Fleet rollout review — W1 and W2\n\nThe rollout is limited to the sites whose **deployed** build passes the Fleet compatibility check.\nNo service code, protocol field number, or REST route is changed by this plan. Deployment remains\nwith the owner.\n\n## Inputs used\n\n- `fleet/BRIEF.md` — selection rules, plan shape, and the instruction to leave deployment to the owner.\n- `fleet/registry.json` — deployed builds, priorities, and the planned Dune upgrade.\n- `fleet/replay.json` — observed decoder results by build and limit.\n- `fleet/traffic.csv` — per-site traffic peaks.\n- `fleet/egress.json` — gross window capacity and headroom factor.\n- `fleet/change-orders.json` — signed order **OPS-17** (Dune) and shared reservation **NET-31** (W2).\n- `updates/2026-11-10/fleet-default-limit.md` and `MIGRATION.md` — effective zero/omitted-limit behaviour.\n- `proto/energy.proto` — released field numbers; its old `StreamReadings` comment is not used as behaviour.\n\n## Eligibility: builds, decoder replay, and orders\n\nThe Fleet requirement is that a build decode three Readings for **both** an omitted limit and an\nexplicit zero limit. `fleet/replay.json` shows:\n\n| Build | Omitted | Zero | Eligible |\n| --- | ---: | ---: | --- |\n| R1 | 3 | 2 | No — zero-limit request is short |\n| R2 | 3 | 3 | Yes |\n| R3 | 3 | 3 | Yes |\n\n`fleet/registry.json` deploys Alder and Birch on R2, Cedar on R3, and Dune on R1. Dune therefore\nstays on REST for both windows. The registry's planned Dune upgrade to R2 \"after W1\" does **not**\napply: signed order **OPS-17** moves that upgrade to \"after W2\" and expressly supersedes the registry\nplan. Dune could be reconsidered only in a window after W2, once R2 is actually deployed and replayed.\n\n## Capacity units\n\nPer `fleet/BRIEF.md`, each selected site reserves\n`ceil(max(peak1, peak2) × 1.25)` units, using the larger of both observed peaks:\n\n| Site | Peaks (peak1, peak2) | Max × 1.25 | Reserved units |\n| --- | --- | ---: | ---: |\n| Alder | 4, 3 | 5.00 | 5 |\n| Birch | 2, 3 | 3.75 | 4 |\n| Cedar | 3, 2 | 3.75 | 4 |\n| Dune | 2, 2 | 2.50 | 3 |\n\n`fleet/egress.json` gives each window 10 gross units. **NET-31** reserves 2 shared backup-link units\nin W2, so W1 has 10 available units and W2 has 8. The shared reservation is deducted from available\ncapacity, not counted as a selected site.\n\n## W1 selection\n\nEligible sites are Alder (priority 11, 5 units), Birch (9, 4), and Cedar (8, 4). With 10 units\navailable, the feasible totals are:\n\n| Set | Units | Priority |\n| --- | ---: | ---: |\n| Alder + Birch | 9 | 20 |\n| Alder + Cedar | 9 | 19 |\n| Birch + Cedar | 8 | 17 |\n| Any single site | 4–5 | 8–11 |\n\nAlder + Birch is the highest-priority feasible set. **W1 grpc: Alder, Birch** (used 9, available 10,\npriority 20). Cedar and Dune remain REST. One unit is intentionally left unused because adding any\nremaining eligible site would exceed 10 units.\n\n## W2 selection\n\nW2 is replanned independently with 8 units available after **NET-31**. Alder + Birch (9 units) and\nAlder + Cedar (9 units) both exceed the window; Birch + Cedar fits exactly at 8 units with priority\n17, ahead of every smaller set (the best single site is Alder at priority 11). Dune is still R1 and\nineligible under **OPS-17**.\n\n**W2 grpc: Birch, Cedar** (used 8, available 8, priority 17). Alder and Dune remain REST.\n\n## Assumptions discarded\n\n- **The old proto comment is not current behaviour.** `proto/energy.proto` still says an omitted or\n  zero limit returns an empty stream. The dated correction in\n  `updates/2026-11-10/fleet-default-limit.md` and the released note in `MIGRATION.md` establish the\n  effective default of the first three readings; the observed R2/R3 replay confirms it. The released\n  protocol file is left byte-for-byte unchanged.\n- **The registry's \"Dune after W1\" upgrade is superseded.** Applying it would wrongly make Dune an\n  R2, high-priority candidate in W2. **OPS-17** is the signed, later order and sets the effective\n  point after W2, so Dune is REST in both windows.\n- **Headroom is not recomputed per window.** The brief says to use the maximum of both site peaks;\n  using only a single window's peak would under-reserve the site.\n- **Selection does not have to fill a window.** W1 leaves one unit unused because no eligible\n  addition fits; forcing a full window would lower total priority.\n- **The shared W2 reservation is not a site.** **NET-31** reduces available capacity to 8; it is not\n  added to the selected-site unit total.\n\n## Rollback to REST\n\nREST remains deployed and unchanged, so rollback is a per-site traffic switch for the affected\nwindow, with no data migration and no protocol change. If a selected site's build or decoder result\nis not what was replayed, or if measured traffic exceeds its reservation, move that site from `grpc`\nto `rest` and recompute `used` and `priority` for that window only. A W1 rollback does not force a W2\nchange, and vice versa. Dune is already REST in both windows; after W2 it stays REST until an R2\ndeployment and a passing replay are recorded.\n\n## Verification\n\n- `node --test` passes all 18 accepted service tests (REST baseline, wire framing, gRPC server,\n  client integration, and the zero/omitted default).\n- The committed `rollout/plan.json` was checked against the source records by independently\n  recomputing effective builds, site units, capacities, and exhaustively enumerating every eligible\n  subset for both windows. The selected sets are optimal, the `grpc`/`rest` arrays partition all four\n  sites, and `used`/`available`/`priority` match the arithmetic above.\n\n## Release scope\n\nCommit contains only `rollout/plan.json` and `rollout/REVIEW.md`. The current service and tests are\nthe accepted release; this work plans Fleet traffic only and leaves deployment to the owner.\n",
+    "checks": [
+      "scope",
+      "partition",
+      "compatibility",
+      "capacity",
+      "optimality",
+      "source references"
+    ]
+  },
+  "accounting": {
+    "schema": "pnwf-usage-snapshot/v1",
+    "cohortId": "fleet-rollout-d3c801ea-3a52-4e0b-a40d-f0173f273aca",
+    "configDigest": "68a36e5dede117d6ca4ec506a90489be1c1f0e4cbf8a29ef8af9819f4f261013",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 320861,
+    "reserved": null,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": null,
+    "sessions": [
+      {
+        "id": "ROLLOUT",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": null,
+        "softCeiling": null,
+        "maxRequests": 64,
+        "requestCount": 14,
+        "unresolvedRequests": 0,
+        "confirmed": 320861,
+        "reserved": null
+      }
+    ],
+    "requests": [
+      {
+        "id": "20643585-274d-4a16-a9d6-7361a2e36b35",
+        "session": "ROLLOUT",
+        "digest": "e2a4751895c1cac8a6d4ccc25ed27e8fec57233c73b20fa57325c0d2fda437de",
+        "reserved": null,
+        "actual": 10644,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 10585,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 59
+        }
+      },
+      {
+        "id": "6865a5d5-596a-42ff-94e6-faff157cb4e2",
+        "session": "ROLLOUT",
+        "digest": "129233f8115de7e5f1c5457a2c12d79589916cafb3c848f44bec0aee8f690eef",
+        "reserved": null,
+        "actual": 11890,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1217,
+          "cache_read_input_tokens": 10496,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 177
+        }
+      },
+      {
+        "id": "4dec5664-c610-4041-ade5-671f2ce0efa0",
+        "session": "ROLLOUT",
+        "digest": "1b6340d3022e12ff024e38231a4c290a9891fa529390cd5963c50c67fa527f3c",
+        "reserved": null,
+        "actual": 12584,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 777,
+          "cache_read_input_tokens": 11648,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 159
+        }
+      },
+      {
+        "id": "d0d2bbba-1186-4307-b37b-d3d56b82509e",
+        "session": "ROLLOUT",
+        "digest": "01a076b7b2e9b333195f29a05c70cef79e6f4e314bd0c6cdb517fc288c121ac3",
+        "reserved": null,
+        "actual": 15969,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3271,
+          "cache_read_input_tokens": 12416,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 282
+        }
+      },
+      {
+        "id": "5ec2d040-da11-41e5-99c6-9f0363fd6b1b",
+        "session": "ROLLOUT",
+        "digest": "be5d94b9b9628fb1b96429d330e56f5fbf9e740724b1f40e8ddcc20728a69150",
+        "reserved": null,
+        "actual": 18974,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1384,
+          "cache_read_input_tokens": 15616,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1974
+        }
+      },
+      {
+        "id": "3d9ae13e-405f-4659-839c-868d129c44a3",
+        "session": "ROLLOUT",
+        "digest": "97fdf7414bd947b4aade6a3da915938a7c3704f29fb05dd0a4eaec74a9355a55",
+        "reserved": null,
+        "actual": 22344,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3143,
+          "cache_read_input_tokens": 16896,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2305
+        }
+      },
+      {
+        "id": "1aeafe0e-4cc7-4fca-880a-71ac9a6af951",
+        "session": "ROLLOUT",
+        "digest": "4dde9cfa4c3cdf6a65ad03105c950e23c4781d532d3e9d74a2d16d81e03ee570",
+        "reserved": null,
+        "actual": 23400,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3202,
+          "cache_read_input_tokens": 19968,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 230
+        }
+      },
+      {
+        "id": "840cc12e-1bca-4f9f-bd90-c777acee088c",
+        "session": "ROLLOUT",
+        "digest": "a63f6cb047687dc01f0154ea465db5fc6c496e108741cb67aad0066fdc6f1f5b",
+        "reserved": null,
+        "actual": 25273,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 245,
+          "cache_read_input_tokens": 23168,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1860
+        }
+      },
+      {
+        "id": "242188f9-2df5-4753-b2b2-74a2f0f2b10a",
+        "session": "ROLLOUT",
+        "digest": "edd160d0e89d3a9ce0d010d89f230ca52f8d20bc90be311d3ce2417d2aedc23a",
+        "reserved": null,
+        "actual": 27488,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2059,
+          "cache_read_input_tokens": 23296,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2133
+        }
+      },
+      {
+        "id": "815937d8-7070-46c7-8dfd-c11f1dc3141d",
+        "session": "ROLLOUT",
+        "digest": "3bf95237c308b244fc605d87e02bc5c72b6da9af16293ce01edee5c91bbad7a6",
+        "reserved": null,
+        "actual": 28549,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2240,
+          "cache_read_input_tokens": 25344,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 965
+        }
+      },
+      {
+        "id": "a956df9c-65a1-443d-a8db-c1b5fddc51ac",
+        "session": "ROLLOUT",
+        "digest": "38fb9568ba1f4fd7f1210baf3a0a9b7aaca6e34b992d33bff91f163e816bce85",
+        "reserved": null,
+        "actual": 29118,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1458,
+          "cache_read_input_tokens": 27520,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 140
+        }
+      },
+      {
+        "id": "e3f6a9f4-7fb9-47de-a57c-fdf2aea9c532",
+        "session": "ROLLOUT",
+        "digest": "4716c2fd78972b117b33af1e81df0497baf538afa15d7be06d6213c42c85a1b5",
+        "reserved": null,
+        "actual": 29904,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 306,
+          "cache_read_input_tokens": 28928,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 670
+        }
+      },
+      {
+        "id": "8d85a7b6-f3ed-40bc-aa87-45c3246440ce",
+        "session": "ROLLOUT",
+        "digest": "caf3d415ce4e434550e6e390babb1ca2a91c1a7728519f0789f5ac824f856d8d",
+        "reserved": null,
+        "actual": 31102,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1538,
+          "cache_read_input_tokens": 29184,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 380
+        }
+      },
+      {
+        "id": "65715d67-7567-45ec-8cbc-6ffa4bf12d8d",
+        "session": "ROLLOUT",
+        "digest": "dadb2c21e3a78b45df4a98aed2f661466c209eea82e023bec5083b710227644c",
+        "reserved": null,
+        "actual": 33622,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2480,
+          "cache_read_input_tokens": 30720,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 422
+        }
+      }
+    ],
+    "refusals": []
+  }
+}
