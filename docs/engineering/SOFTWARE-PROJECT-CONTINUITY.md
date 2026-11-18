@@ -298,3 +298,36 @@ T3 没有创建新 Attempt 或 Promotion。Episode 基线仍是接受 HEAD，交
 首笔输入上下文大小接近。DeepSeek 的首笔为 371 fresh 加 10,240 cache，本轮为 10,723 fresh 且 cache 为 0。仅首笔就贡献了 10,352 个额外 fresh，占总增量约 40%，其余 15,563 来自后续请求。输入缓存占比从 94.05% 降至 89.57%。两轮的 Provider、时点和实际工具轨迹有差别，这组数据无法单独判断是路由缓存策略、冷启动还是后续回读各贡献多少。375 tokens 的探针单独结算。14 笔 T3 响应的余额扣款字段合计为 0，同时记录有 Go allowance 用量。[Provider 的费用字段定义](https://opencode.ai/docs/console/api/inference/#cost) · [用量分解](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/trajectory-and-review-audit.json)
 
 原始 DSH 流和 SQLite 位于 `%TEMP%/pnwf-grpc-t3-opencode-tooled-20261118-055602`。归档保存探针、两次停止现场的哈希、原判、逐笔用量和调用配对，以及实际交付的原稿与 Git 对象。
+
+## 同一 gRPC T3 原稿与轨迹的离线复算
+
+从主线 `33495ed1` 修复两项验收，从 Git bundle 恢复接受 HEAD `4639ae44d78e7c1f9f5269876fa333a99bff770f` 和它的直接子提交 `f30c66446f88c99343ffc0fc752fca4463dbedef`。唯一改动 `MIGRATION-REVIEW.md` 的 blob 为 `53bc09a10ac0d7741df3d8a49fd0541f0fe70fc7`，其摘要与原 `DELIVER` 回执一致。用原 DSH 流、gateway 观察和账本重算，14 条映射与先前独立复核逐笔一致。观察到 `DELIVER` 的调用与结果为 `133 → 134`，原会话随后自然退出，退出码 0，耗时 194.233 秒。[复算证据](../../research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-offline-acceptance.json) · [原运行](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/result.json)
+
+| 验收项 | 原判 | 同一证据离线复算 |
+| --- | --- | --- |
+| 摘要内容 | 11/12，拒绝 `OLD_ZERO_AND_OMITTED_EMPTY` | 12/12。首版列的两行分别确认缺省值、显式零值为空流。移去表格后，同一段承接句也独立通过 |
+| 模型请求归因 | `Model step has no unique provider response ID` | 14/14。46,913 fresh、402,944 cache read、0 cache creation、9,032 output，合计 458,889 tokens，未决 0 |
+| 工具调用配对 | 27/27 | 27/27，无工具错误、域拒绝或失败作业 |
+
+语义评分版本升为 `pnwf-grpc-review-semantics/v2`。表格按请求列和首版行为列核对，要求两种输入都明确返回空流。承接句中的 `explicit-zero` 需要同段的 `limit` 语境。逐条成帧仍是独立必查项。两轮冻结原判 `SOFTWARE_REVIEW_MISSING zero or omitted`、OpenCode Go 本轮原判及归因失败逐字节保留。HTTP 402 和 HTTP 400 各自留在原 cohort，状态均为 `UNKNOWN`、用量均为空。本次新增模型请求 0。[历史判分与停止记录](../../research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-offline-acceptance.json)
+
+请求归因优先使用回放中可确认的 Provider 响应 ID。缺 ID 时，已封存的 OpenCode Go Messages 路由需要单一 Principal 流、顺序登记和结算、完整且唯一的用量四元组。以 `fresh / cache read / cache creation / output` 精确找出对应账本行，再核对请求顺序和 SQLite 导出。重复四元组、交错、顺序不符、未知用量或互相冲突的 ID 均拒绝。14 条映射和逐项语义评分已归档，原始压缩流留在本机临时目录，完整复算需要该流及原运行输出。新的 T3 封存记录同时绑定评分器和归因脚本摘要。[评分器](../../scripts/pnwf/software/review-score.mjs) · [归因脚本](../../scripts/pnwf/analyze_energy_trajectory.mjs)
+
+在仓库根目录离线重算。命令只导入本地 Git bundle，并读取原运行文件。
+
+```powershell
+$archive = 'research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602'
+$stage = Join-Path $env:TEMP 'pnwf-grpc-t3-opencode-tooled-20261118-055602/live/P/T3'
+$world = (New-Item -ItemType Directory (Join-Path $env:TEMP ('grpc-t3-offline-' + [guid]::NewGuid()))).FullName
+git -C $world init -q
+git -C $world fetch -q (Resolve-Path "$archive/accepted-and-review.bundle").Path 'refs/evidence/accepted:refs/evidence/accepted' 'refs/evidence/review:refs/evidence/review'
+@'
+import { readFileSync } from "node:fs";
+import { analyzeAttributedStage } from "./scripts/pnwf/analyze_energy_trajectory.mjs";
+import { scoreSemanticReview } from "./scripts/pnwf/software/review-score.mjs";
+const [repo, stage, archive] = process.argv.slice(2);
+const result = JSON.parse(readFileSync(`${archive}/result.json`, "utf8"));
+console.log(JSON.stringify({ score: scoreSemanticReview({ repo, basis: result.basis, commit: result.current }),
+  attribution: analyzeAttributedStage(stage, "T3", { context: true, result }) }, null, 2));
+'@ | node --input-type=module - $world $stage $archive
+```

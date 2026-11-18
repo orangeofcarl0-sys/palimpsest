@@ -62,6 +62,43 @@ test("requires both zero and omitted inputs under both versions", () => {
   equal(wrong.checks.find(check => check.id === "NEW_ZERO_AND_OMITTED_FIRST_THREE").passed, false);
 });
 
+const historicalCheck = body => reviewClaims(body, basis).checks.find(check => check.id === "OLD_ZERO_AND_OMITTED_EMPTY");
+const historicalTable = [
+  "| Request form | First-release behaviour | Corrected behaviour |",
+  "| :--- | --- | ---: |",
+  "| `limit` absent | Empty stream | First three readings |",
+  "| `limit` explicitly supplied as `0` | Empty stream | First three readings |",
+  "| Positive limit | As requested | Unchanged |",
+].join("\n");
+
+test("recognizes old empty streams from the historical table column", () => {
+  const criterion = historicalCheck(historicalTable);
+  equal(criterion.passed, true);
+  equal(criterion.evidence.split("\n").length, 3);
+  for (const body of [
+    historicalTable.replace(/^.*explicitly supplied.*\n/mu, ""),
+    historicalTable.replaceAll("Empty stream | First three readings", "First three readings | Empty stream"),
+    historicalTable.replace("Empty stream", "Never returns an empty stream"),
+    historicalTable + "\n| `limit` absent | First three readings | Empty stream |",
+  ]) equal(historicalCheck(body).passed, false, body);
+});
+
+test("resolves explicit-zero in a continuation about the historical limit", () => {
+  const first = "In the first release, the server passed the decoded limit directly to slice.";
+  const continuation = "The absent and explicit-zero cases produced an empty stream.";
+  equal(historicalCheck(first + "\n" + continuation).passed, true);
+  equal(historicalCheck(first + "\n\n" + continuation).passed, false);
+  equal(historicalCheck(first.replace("decoded limit", "value") + " " + continuation).passed, false);
+  equal(historicalCheck(first + " Now the absent and explicit-zero cases produce an empty stream.").passed, false);
+});
+
+test("recognizes all requirements in the original OpenCode Go review", () => {
+  const archived = new URL("../../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/MIGRATION-REVIEW.md", import.meta.url);
+  const body = readFileSync(archived, "utf8");
+  const accepted = "4639ae44d78e7c1f9f5269876fa333a99bff770f";
+  deepStrictEqual(failures(reviewClaims(body, accepted)), []);
+});
+
 test("recognizes both historical default explanations but still rejects both historical reviews", () => {
   const originalReviews = [
     ["pnwf-software/2026-11-10/scope-rerun-163507/P-MIGRATION-REVIEW.md", "7deda735afa4ef97e71dd14b5ab4b48131e1e872",
