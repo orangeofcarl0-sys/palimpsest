@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { parseGateDefinition } from "../src/evidence/index.js";
 import {
+  buildOrchestrationGraph,
   definePalimpsestControl,
   type ControllerStatusView,
   type GateInput,
@@ -71,6 +72,29 @@ function eventCount(store: EventStore): number {
 }
 
 describe("orchestration graph projection (PLMP-VIS-1)", () => {
+  it("rebuilds the exact Work event cut without later attempts, volatile attribution or a ledger write", async () => {
+    const { controller, store, cleanup } = makeRig();
+    try {
+      controller.start({ projectId: controller.projectId, goal: "Observe a handoff", tasks: [taskSpec("a"), taskSpec("b", ["a"])] });
+      const before = controller.orchestrationGraph();
+      const point = store.projectTimeline(controller.projectId)[0]!;
+      controller.step();
+      const created = controller.step()!;
+      await controller.claim(created.entity_id);
+      const tail = store.projectTimeline(controller.projectId)[0]!;
+      const count = eventCount(store);
+      const at = (sequence: number) => store.readProjectPrefix(controller.projectId, sequence, (connection, project) =>
+        buildOrchestrationGraph({ connection, project, projectId: controller.projectId, attribution: new Map() }));
+      expect(await at(point.seq)).toEqual(before);
+      expect(await at(tail.seq)).toEqual(controller.orchestrationGraph());
+      expect(store.projectTimeline(controller.projectId, tail.seq, 1)[0]?.seq).toBe(tail.seq - 1);
+      expect(store.projectTimeline("other-project")).toEqual([]);
+      await expect(at(tail.seq + 1)).rejects.toThrow(/does not exist/);
+      expect(eventCount(store)).toBe(count);
+    } finally {
+      await cleanup();
+    }
+  });
   it("VIS-A01: the graph agrees with status and is deterministic", async () => {
     const { controller, cleanup } = makeRig();
     try {

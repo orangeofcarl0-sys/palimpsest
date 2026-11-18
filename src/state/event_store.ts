@@ -8,6 +8,7 @@
  */
 
 import { existsSync } from "node:fs";
+import { setImmediate as yieldToHost } from "node:timers/promises";
 
 import { DatabaseSync } from "node:sqlite";
 import type { DatabaseSync as DatabaseSyncType } from "node:sqlite";
@@ -21,7 +22,9 @@ import {
   computeEventDigest,
   computeRequestDigest,
   parseNewEvent,
+  parseProjectIr,
   parseSchedulerEvent,
+  type ProjectIr,
   type NewEvent,
   type SchedulerEvent,
 } from "../schema/index.js";
@@ -46,7 +49,7 @@ import {
   RevisionConflict,
   StateStoreError,
 } from "./errors.js";
-import { APPLICATION_ID, getApplicationId, validateMigrationHistory } from "./migrations.js";
+import { APPLICATION_ID, applyMigrations, getApplicationId, validateMigrationHistory } from "./migrations.js";
 import { CoreProjector, PROJECTION_NAME, PROJECTION_SCHEMA_VERSION } from "./projector.js";
 import { clearProjections, normalizedSnapshot, snapshotDigest } from "./snapshot.js";
 
@@ -703,8 +706,8 @@ export class EventStore {
     return [rowInt(tail, "project_sequence") + 1, rowStr(tail, "event_digest")];
   }
 
-  #insertEvent(event: SchedulerEvent): void {
-    this.connection
+  #insertEvent(event: SchedulerEvent, destination = this.connection): void {
+    destination
       .prepare(
         `
         INSERT INTO events(
@@ -742,6 +745,54 @@ export class EventStore {
       .prepare("SELECT * FROM events WHERE event_id=?")
       .get(eventId) as Row | undefined;
     return row === undefined ? undefined : rowToEvent(row);
+  }
+
+  /** Newest first. Reading the timeline never fetches report bodies or scans another project. */
+  projectTimeline(projectId: string, before = Number.MAX_SAFE_INTEGER, limit = 60) {
+    if (!Number.isSafeInteger(before) || before < 1 || !Number.isInteger(limit) || limit < 1 || limit > 120) {
+      throw new RangeError("invalid project timeline window");
+    }
+    return this.connection.prepare(
+      "SELECT project_sequence AS seq, committed_at AS at, event_type AS kind, entity_id AS subject, " +
+      "event_digest AS digest FROM events WHERE project_id=? AND project_sequence < ? ORDER BY project_sequence DESC LIMIT ?",
+    ).all(projectId, before, limit) as { seq: number; at: string; kind: string; subject: string; digest: string }[];
+  }
+
+  /** An exact, project-local Work cut. The normal projector runs only against a temporary in-memory database. */
+  async readProjectPrefix<T>(projectId: string, through: number, read: (db: DatabaseSync, project: ProjectIr) => T | Promise<T>, signal?: AbortSignal): Promise<T> {
+    if (!Number.isSafeInteger(through) || through < 1) throw new RangeError("invalid Work sequence");
+    const cut = this.connection.prepare("SELECT committed_at FROM events WHERE project_id=? AND project_sequence=?").get(projectId, through);
+    if (cut === undefined) throw new RangeError("Work sequence does not exist in this project");
+    const scratch = new DatabaseSync(":memory:");
+    try {
+      applyMigrations(scratch, { initialize: true, appliedAt: () => rowStr(cut, "committed_at") });
+      const rows = this.connection.prepare("SELECT * FROM events WHERE project_id=? AND project_sequence>? AND project_sequence<=? ORDER BY project_sequence LIMIT 64");
+      let previous = EMPTY_PREVIOUS_EVENT_DIGEST;
+      let sequence = 0;
+      let project: ProjectIr | undefined;
+      while (sequence < through) {
+        signal?.throwIfAborted();
+        const batch = rows.all(projectId, sequence, through);
+        if (batch.length === 0) throw new EventChainError("project prefix ended early");
+        for (const row of batch) {
+          const event = rowToEvent(row);
+          if (event.project_sequence !== sequence + 1 || event.previous_event_digest !== previous) {
+            throw new EventChainError("broken project prefix");
+          }
+          this.#insertEvent(event, scratch);
+          this.projector.apply(scratch, event);
+          previous = event.event_digest;
+          sequence = event.project_sequence;
+          if (event.event_type === "PROJECT_CREATED" || event.event_type === "PROJECT_REVISED") project = parseProjectIr(event.payload.project_ir);
+        }
+        if (sequence < through) await yieldToHost();
+      }
+      if (project === undefined) throw new EventChainError("project prefix has no ProjectIR");
+      scratch.exec("PRAGMA query_only = ON");
+      return await read(scratch, project);
+    } finally {
+      scratch.close();
+    }
   }
 
   listEvents(projectId?: string): SchedulerEvent[] {

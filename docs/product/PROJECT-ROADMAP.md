@@ -8,7 +8,7 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 
 ## 产品路径与职责
 
-多智能体协作可视化首先进入普通 DSH 会话。在 Chat、Trajectory 同一行提供「协作」与「成果」，让用户就地定位当前工作、执行者和等待事项。跨会话接手从项目侧栏和 Workspace 进入。首轮在真实 DSH Web 用零付费 Mock 验证挂载、并行、失败恢复和选中对象的连续性，再用 gRPC、Energy 与无文件的调查检验成果如何被采用。已有七幕 gRPC 原型用于复盘和核对历史事实。[可视化规划](visualization/PLAN.md) · [系统盘点](visualization/SYSTEMS.md) · [位置与形式调研](visualization/RESEARCH.md#工作视图在宿主里的位置)
+多智能体工作的日常入口是 DSH 侧栏的 Palimpsest 工作检查器。它在项目范围内跟随真实状态，支持暂停观察、检查对象关系和按序号重建历史 Work 图。后续验证重点是复杂项目里能否迅速定位交接、等待和跨会话采用的成果。[检查器与后续规划](visualization/PLAN.md) · [系统盘点](visualization/SYSTEMS.md)
 
 协作页的设计把组织修订与工作世界作为稳定参照，在同一格点图上观察对象和关系的变化。选定两个集合时可核对交集与成员依据。首轮把退出后仍能追到工件、切换世界后重算文件归属列为读者任务。[设计取舍与验证方法](visualization/STRUCTURE-AND-OVERLAP.md) · [观察五个时点](visualization/prototype/structure.html)
 

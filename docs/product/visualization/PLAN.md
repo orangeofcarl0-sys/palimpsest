@@ -1,19 +1,19 @@
-# Palimpsest 多智能体协作可视化规划
+# Palimpsest 工作检查器与多智能体协作可视化
 
-2026-11-18 · 产品盘点基线 `4e291944fd355adf3ff4fbb864401dfd1edb35d9` · **会话内工作视图为设计提案。可运行样例包括 gRPC 历史回放和组织、世界与协作集合的交互研究。**
-
-用户刚在 DSH 的 Chat 交代完任务，下一刻就可能想看「谁接了哪一块，另一块还在等谁」。建议在**同一会话的标签行**提供「协作」和「成果」，分别对应 dsh-layerfs 的 Work 和 History。进入其中一页时，项目、会话和返回对话的位置都已确定。跨会话查成果从项目侧栏进入。原有七幕回放适合向后来人解释一次已结束的工作，继续作为历史样本使用。[位置与形式的上游依据](RESEARCH.md#工作视图在宿主里的位置) · [65 个源码目录及现有界面](SYSTEMS.md) · [gRPC 历史样例](prototype/index.html)
+DSH 左侧栏的 **Palimpsest** 打开当前部署的工作检查器。即使没有打开对话，中央工作区也能显示项目现状。项目图和时间线共用一个时点。点角色、任务、执行尝试或成果，可以查看该对象在这个时点的来源与相邻关系。[使用与启动](../../user-guide.md#dsh-侧栏工作检查器) · [宿主读面](../../../host/dsh/lib/inspector/observe.js) · [原生侧栏](../../../host/dsh/lib/client.js)
 
 ## 工作视图放在哪里
 
-| 人此刻在做什么 | 宿主中的位置 | 这个位置负责什么 |
+| 想查什么 | 在检查器里怎么做 | 依据 |
 | --- | --- | --- |
-| 新建或返回对话 | 新会话选项区显示项目选择，已有会话标题旁显示绑定项目 | 在发消息前确认工作归属。项目未绑定或不可见时显示相应状态。 |
-| 在 Chat 交代任务，偶尔看进度 | 在同一标签行切到「协作」 | 中央区域用于查看本会话里并行的工作。只有确有事项需要当前用户判断时，标签旁才给出待办提示。切回 Chat 保有草稿和阅读位置。 |
-| 一项工作已有结果，想看具体改动 | 同一标签行的「成果」，从选中的工作直接定位 | 查看该对象的来源、差异、采用情况与原件。继承的来源可早于当前会话，标出其所属会话。打开某次调用可转到 Trajectory 的对应记录，返回时仍选中原对象。 |
-| 隔天来接项目，尚未打开任何会话 | DSH 项目侧栏或已有 Project Workspace | 跨会话查当前接受的版本、开放问题、可沿用的成果。点一次能回到产生它的会话，也能以有权使用的版本开始新会话。 |
+| 此刻谁在处理哪项任务，谁需要判断 | 从侧栏直接进入，点角色、Worker 作业或待所有者判断的关系 | 任务角色来自计划，作业来自本宿主，验收待办来自 Project Pulse |
+| 盯住一条关系，等下一次变化 | 点「暂停跟随」。固定画面时仍接收新的观察，点「返回实时」追上最新状态 | 现场观察按图、来源状态和 Work 序号去重，保留最近 90 次变化 |
+| 在大量变化中追查一个交接 | 在「Work 事件」选提交序号，再点对象检查引用。可逐页读取较早的事件 | 从该项目账本前缀在临时内存数据库重建，沿用线上 Work 投影器 |
+| 看其他对话留下的工作 | 直接留在同一项目面板，按项目看任务、接续成果与本 DSH 宿主观察到的调用 | 每个调用以本会话和调用 ID 配对。一旦进程重启，DSH 活动与现场观察开始新窗口 |
 
-dsh-layerfs 把 Work 和 History 注册到 `conversation.view`，标题、空白会话的项目选择和全局侧栏各用不同的宿主位置。Palimpsest 的实验版本 DSH `0.2.1-rc.5` 也声明了按 Session 呈现的 `conversation.view` 和可用时按 `callId` 打开检查器的 `inspectCall`。Palimpsest 当前发货的 bundle 注册 startup、tools、runner，独立 Web 已有 Project Workspace。新增会话视图需要 DSH Web 的客户端插件，还要把实际 Session 绑定到获准读取的项目和工作。槽位已核对到源码，安装、绑定和切页后的行为留给第一轮 Mock 验证。[LayerFS 的注册位置](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/client/src/client/index.ts) · [目标 DSH 的槽位契约](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.5/packages/client/ui-conversation/src/client/contract/slots.ts) · [现有宿主](../../../host/dsh/cordis.patch.yml) · [现有 Web](../../../web/src/App.tsx)
+面板挂载在 `sidebar.panellist` 与全局 `main` 槽。打开时立即读取状态，随后每 1.5 秒重新观察。视图记录读取时间及各来源的覆盖情况。时间线上的 Work 序号属于同一账本，其他来源有自己的时钟。选中一个早期 Work 事件时，画面仅重建当时可证明的 Work 关系。[DSH LayerFS 注册位置](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/client/src/client/index.ts) · [时间截面](../../../src/state/event_store.ts)
+
+下列章节保留空间布局、按文件展开、会话深链和集合交叠的后续设计。归档样例用于核对来源及交互假设。[系统盘点](SYSTEMS.md) · [历史样例](prototype/index.html)
 
 ## 屏幕上什么保持原位
 
@@ -116,13 +116,13 @@ Chat    Trajectory    [协作]    成果
 | 请求与用量 | 归因脚本优先匹配响应 ID，缺响应 ID 时仅使用可唯一绑定的用量四元组。终态账本按 cohort 和请求关联。按角色加总 fresh、cache read、cache creation、output | 歧义、缺终态显示 UNKNOWN 并列出已确认小计。402/400 属于各自 cohort，不折算为零、不摊入 T3。分别记录会话墙钟、工具耗时、人工等待，重叠区间不相加。 |
 | 内容验收 | 独立判分工件绑定场景、协议/判分器版本、commit、blob/摘要与原文位置。人工或离线复核另有方法和时间 | 同一提交可同时保有多个结论。跨版本、原生和 Palimpsest 的制度差异显示为不适用。权限过滤后缺失的正文展示披露状态。 |
 
-先用普通 DSH Web 验证原生挂载点与授权作用域。由宿主解析当前 Session 及已确证的子会话关联，再按项目权限获取事实。可复用 `/api/application/surfaces`、`/api/project/workspace`、`/api/project/history` 和已有图投影，缺少的只读字段按首轮验证结果补齐。缓存键至少包括项目、会话或项目级作用域、授权视图、投影版本、所有者依据和页位置。缓存只存过滤后的投影。详情返回未解析或冲突的来源，保留原披露范围。读取、筛选和回放都可用 Mock 验证权威账本及模型调用计数保持原值。[现有适配器矩阵](../../engineering/architecture/APPLICATION-ADAPTER-MATRIX.md) · [执行关联](../../../src/execution_association/contract.ts) · [依据向量](../../../src/trajectory/contract.ts) · [产品修订端口](../../../src/product.ts)
+宿主通过 DSH Connection 的所有者通道读取当前部署。请求只接受时点、序号和分页位置。历史 Work 截面复用正式投影器。现场跨来源观察若遇 Work 游标移动会重新读取，连续漂移时提示等待。后续的会话深链需要另行核验执行归属与可见范围。[执行关联](../../../src/execution_association/contract.ts) · [依据向量](../../../src/trajectory/contract.ts)
 
 ## 实施顺序与验收
 
 | 阶段 | 纵向交付 | 合入前可证伪的条件 |
 | --- | --- | --- |
-| 1 · 会话内看工作 | 在普通 DSH Web 安装客户端，零付费 Mock 从 Chat 切到「协作」「成果」，同场注入两项并行工作、一次失败和恢复。用 gRPC 归档固定几个真实时点与期望状态。 | 新建、未绑定、切换两个会话、回到原草稿及原选中对象都可操作。固定 A 时，B 的更新可见且不抢焦点。229→230 和 241→242 显示不同的待办人。跨项目和未归属的活动不串入当前会话。 |
+| 1 · 现场检查 | DSH 侧栏打开已绑定部署，查看当前图、固定观察、追踪 Work 提交序号。 | 在页面打开后登记两项任务并认领执行尝试。核对暂停、追上、按序号重建和账本只读。[原生浏览器验收](../../../scripts/inspector/dsh-web.mjs) |
 | 2 · 项目接续 | 在项目侧栏和 Workspace 打开同一成果，脱离原会话、重启宿主，再由新会话读回。用 gRPC、Energy 和一个只产生发现的 Mock 检验通用性。 | 可查证四个 gRPC SHA、15 项义务、Energy 五处修改与沿用的证书。未采纳的发现保留在问题下。错基线、错核准、来源漂移、PREVIEW、权限不足各有明确读面。查看原件不改变权威记录。 |
 | 3 · 调查和复盘 | 从选中的成果深入轨迹、历史回放、用量和运行比较。使用原有 Work/MultiGraph/Proof 查看专门证据。 | T3 129→130、11/12 冻结判分、同 SHA 复核与两条 UNKNOWN 分别可查。两个不同原因的 NOT_READY、失败作业、恢复和折叠的轮询均可还原。 |
 
@@ -136,4 +136,4 @@ Chat    Trajectory    [协作]    成果
 
 凭据核对覆盖 12 个可查看记录、11 个不同的原始来源链接、8 项两轮指标和文件义务展开。界面中的候选、接受、交付 SHA 和回执 ID 均与归档一致。这个案例使用静态资料摘录，链接可打开同一仓库中的原件。[结算与候选](../../../research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-214618/candidate.json) · [比较原据](../../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json)
 
-当前主线的 TypeScript 与 Web 构建通过，架构与公共 API 检查通过。Workspace、MultiGraph、Proof Vault 三组既有浏览器 E2E 共 8/8 通过。它们验证了准备复用的现有入口。新增在线读面、历史大样本负载和真实读者的完成时间属于后续验收。
+当前主线的 TypeScript 与 Web 构建通过，架构与公共 API 检查通过。Workspace、MultiGraph、Proof Vault 三组既有浏览器 E2E 共 8/8 通过。它们验证了准备复用的现有入口。以上结果属于既有独立 Web。大样本负载和读者定位交接所需的时间仍待测量。

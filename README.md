@@ -173,7 +173,7 @@ Runtime、Router 或第二套 canonical authority**：
 | [docs/sdk-guide.md](docs/sdk-guide.md) | SDK 指南：嵌入、执行器协议、错误模型 |
 | [docs/api-reference.md](docs/api-reference.md) | API 参考 |
 | [项目发展路线图](docs/product/PROJECT-ROADMAP.md) | 当前产品里程碑、下一轮实施顺序与自主协作验收 |
-| [多智能体协作可视化规划](docs/product/visualization/PLAN.md) | DSH 会话内的协作与成果视图提案、dsh-layerfs 的原生位置和交互、可查证的 gRPC 历史样例 |
+| [DSH 侧栏工作检查器](docs/user-guide.md#dsh-侧栏工作检查器) | 查看当前项目的实时关系图，固定时间线，按 Work 事件回溯。[设计与覆盖范围](docs/product/visualization/PLAN.md) |
 | [docs/product/](docs/product/) | 产品面：零配置协作、单请求协作、跨项目协作 |
 | [docs/engineering/](docs/engineering/) | 内部工程档案（移植记录、规格修订流水） |
 | [Bench 树](docs/engineering/README.md#bench-树) | 发布门禁、研究阶段、续作用例与证据入口 |

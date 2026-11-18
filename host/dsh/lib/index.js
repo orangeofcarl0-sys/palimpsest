@@ -20,6 +20,7 @@ import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { openInDefaultBrowser, shouldOpenDashboard } from './browser.js';
+import { mountInspector } from './inspector/observe.js';
 import z from '@deepseek-ai/schemastery';
 
 export const name = 'palimpsest-tools';
@@ -508,13 +509,15 @@ export async function apply(ctx, config) {
     }
   }
 
-  ctx.provide('palimpsestHost', {
+  const projectHost = {
     deployment,
     profile,
     serve,
     toolNames,
     palimpsest,
-  });
+  };
+  ctx.provide('palimpsestHost', projectHost);
+  mountInspector(ctx, projectHost);
 
   ctx.effect(function* () {
     yield async () => {
