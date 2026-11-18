@@ -1,0 +1,298 @@
+{
+  "arm": "auto",
+  "mode": "mock",
+  "basis": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "af3ed2b2-1fc5-4c49-83ed-83151cd2999a",
+    "sessionId": "REVIEW",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\shift-peer-79e3a96a-qualified\\auto\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\shift-peer-79e3a96a-qualified\\auto\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "27b35f0e59dae961522e0f9e47bc2095af3f7c605b811ac1d887da4de195cf5c",
+    "qualification": "54ac8bc83ce15af630d804e50ec3dfc3522bb0a970d4914da6e65ab3953f3d7b",
+    "startedAt": "2026-11-18T21:24:40.322Z",
+    "endedAt": "2026-11-18T21:25:18.135Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "af3ed2b2-1fc5-4c49-83ed-83151cd2999a",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-18T21:25:18.135Z",
+      "maxTokens": 12000000,
+      "softCeiling": 12000000,
+      "totalTokens": 860165,
+      "confirmedTokens": 860165,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "isolation": {
+    "containerId": "27b35f0e59dae961522e0f9e47bc2095af3f7c605b811ac1d887da4de195cf5c",
+    "descriptorDigest": "54ac8bc83ce15af630d804e50ec3dfc3522bb0a970d4914da6e65ab3953f3d7b",
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "mounts": [
+      {
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "destination": "/product/node_modules",
+        "writable": false
+      },
+      {
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "destination": "/product/runtime",
+        "writable": false
+      },
+      {
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "destination": "/harness",
+        "writable": false
+      }
+    ],
+    "checks": [
+      {
+        "name": "principal_uid",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_shell_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "write_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "git_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "node_build_fixture",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_version",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_native_addon",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "native_shell_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_proc_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_parent_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "rootfs_readonly",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "no_docker_socket",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_evaluator",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_owner_credential",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_provider_credential_env",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_routes",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      }
+    ],
+    "worlds": {
+      "schema": "pnwf-world-preflight/v1",
+      "status": "QUALIFIED",
+      "head": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+      "worlds": [],
+      "product": {
+        "repositoryHead": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+        "projectHead": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+        "relation": "IN_SYNC",
+        "uncommittedPaths": [],
+        "admittedDirectCommit": null
+      }
+    }
+  },
+  "head": "c22642f44219a406bee1319d6ec74fbbf6948801",
+  "clean": true,
+  "changed": [
+    "handover/HANDOVER.md",
+    "handover/replay.mjs"
+  ],
+  "grade": {
+    "head": "c22642f44219a406bee1319d6ec74fbbf6948801",
+    "unchangedEvidence": true,
+    "checks": [
+      {
+        "event": "P",
+        "input": "c76bb857f8877413ffa91cbd9d736a09053c09ba94afb3ed1fe7bd500b8bc68a",
+        "exit": 0,
+        "passed": true,
+        "stdout": "{\n  \"schema\": \"fleet-night-shift-replay/v1\",\n  \"inputs\": {\n    \"inventory\": \"handover/evidence/inventory.csv\",\n    \"ingress\": \"handover/evidence/ingress.csv\",\n    \"terminal\": \"handover/evidence/terminal.tsv\",\n    \"fieldArchive\": \"handover/evidence/field-archive.txt\",\n    \"fieldNote\": \"handover/evidence/field-note.txt\",\n    \"reservation\": \"handover/evidence/reservation.txt\",\n    \"dashboard\": \"operations/dashboard.csv\",\n    \"registry\": \"operations/registry.csv\"\n  },\n  \"transport\": {\n    \"green\": true,\n    \"ingressFailures\": [],\n    \"dashboardGrpcErrors\": 0,\n    \"lastGrpcCompleted\": 482,\n    \"schedulerPlannedHolds\": 0\n  },\n  \"duplicateRequests\": [\n    {\n      \"connection\": \"relay-9\",\n      \"request\": \"req-a\",\n      \"feed\": \"B\",\n      \"sequence\": 40,\n      \"attempts\": [\n        {\n          \"utc\": \"22:02:57\",\n          \"attempt\": 1,\n          \"grpcStatus\": 0\n        },\n        {\n          \"utc\": \"22:03:15\",\n          \"attempt\": 2,\n          \"grpcStatus\": 0\n        }\n      ]\n    }\n  ],\n  \"staleRetries\": [\n    {\n      \"request\": \"req-a\",\n      \"attempt\": 2,\n      \"retryUtc\": \"22:03:15\",\n      \"replayedSequence\": 40,\n      \"alreadyDeliveredNewer\": [\n        {\n          \"request\": \"req-b\",\n          \"sequence\": 41,\n          \"utc\": \"22:03:11\"\n        }\n      ]\n    }\n  ],\n  \"panels\": [\n    {\n      \"panel\": \"p17\",\n      \"site\": \"Birch\",\n      \"stationType\": \"live\",\n      \"paints\": [\n        {\n          \"utc\": \"22:02:58\",\n          \"feed\": \"B\",\n          \"sequence\": 40,\n          \"request\": \"req-a\",\n          \"event\": \"P\"\n        },\n        {\n          \"utc\": \"22:03:12\",\n          \"feed\": \"B\",\n          \"sequence\": 41,\n          \"request\": \"req-b\",\n          \"event\": \"P\"\n        },\n        {\n          \"utc\": \"22:03:17\",\n          \"feed\": \"B\",\n          \"sequence\": 40,\n          \"request\": \"req-a\",\n          \"event\": \"P\"\n        }\n      ]\n    },\n    {\n      \"panel\": \"p04\",\n      \"site\": \"Alder\",\n      \"stationType\": \"live\",\n      \"paints\": [\n        {\n          \"utc\": \"22:03:14\",\n          \"feed\": \"A\",\n          \"sequence\": 86,\n          \"request\": \"req-c\",\n          \"event\": \"P\"\n        }\n      ]\n    },\n    {\n      \"panel\": \"p09\",\n      \"site\": \"Alder\",\n      \"stationType\": \"live\",\n      \"paints\": [\n        {\n          \"utc\": \"22:03:14\",\n          \"feed\": \"A\",\n          \"sequence\": 86,\n          \"request\": \"req-c\",\n          \"event\": \"P\"\n        }\n      ]\n    },\n    {\n      \"panel\": \"p71\",\n      \"site\": \"Birch\",\n      \"stationType\": \"training\",\n      \"paints\": [\n        {\n          \"utc\": \"22:03:16\",\n          \"feed\": \"B\",\n          \"sequence\": 39,\n          \"request\": \"req-d\",\n          \"event\": \"P\"\n        }\n      ]\n    }\n  ],\n  \"liveInversions\": [\n    {\n      \"panel\": \"p17\",\n      \"site\": \"Birch\",\n      \"stationType\": \"live\",\n      \"utc\": \"22:03:17\",\n      \"request\": \"req-a\",\n      \"sequence\": 40,\n      \"previousPaint\": {\n        \"utc\": \"22:03:12\",\n        \"request\": \"req-b\",\n        \"sequence\": 41\n      },\n      \"highestSequenceBefore\": 41\n    }\n  ],\n  \"trainingInversions\": [],\n  \"field\": {\n    \"localNotebookTime\": \"23:04\",\n    \"clockOffsetHours\": 1,\n    \"clockFastSeconds\": 52,\n    \"clockUncertaintySeconds\": 12,\n    \"correctedApproxUtc\": \"22:03:08Z\",\n    \"correctedWindowUtc\": {\n      \"fromUtc\": \"22:02:26Z\",\n      \"toUtc\": \"22:03:50Z\",\n      \"marginSeconds\": 42\n    },\n    \"siteFromB12Alias\": \"Birch\",\n    \"boardsInWindow\": [\n      {\n        \"panel\": \"p17\",\n        \"site\": \"Birch\",\n        \"stationType\": \"live\"\n      },\n      {\n        \"panel\": \"p71\",\n        \"site\": \"Birch\",\n        \"stationType\": \"training\"\n      }\n    ],\n    \"ambiguous\": true,\n    \"note\": \"The field note alone does not identify p17 or p71; the ingress/terminal records do.\"\n  },\n  \"registryAliases\": [\n    {\n      \"export\": \"older\",\n      \"alias\": \"B-12\",\n      \"assignment\": \"Birch training\",\n      \"comment\": \"previous handheld label\"\n    },\n    {\n      \"export\": \"older\",\n      \"alias\": \"relay-9\",\n      \"assignment\": \"Cedar\",\n      \"comment\": \"prior cabinet\"\n    }\n  ],\n  \"reservation\": \"Ticket CAP-08 / signed 22:19Z. Cedar has the only REST overflow lane from 06:00 to 06:30Z. No second lane has been commissioned. A hold may park an affected pilot without moving traffic to REST. Release owner can change a booking after talking to Cedar; the request has not been made. No field authority has accepted a production switch.\",\n  \"limits\": [\n    \"The terminal trace is sampled by panel, not by request; p23 has no terminal row in this archive.\",\n    \"B-13's uploader was unplugged for the rehearsal and retained no local recording.\",\n    \"The field note's minute is rounded, its clock was 52 s fast (+/- 12 s), and it cannot distinguish p17 from the adjacent training simulator.\",\n    \"No maximum stale-data duration was agreed, so this replay can establish ordering but not a freshness SLO.\",\n    \"The dashboard is aggregate; its zero grpc_error count cannot detect a successfully delivered duplicate or an out-of-order paint.\"\n  ],\n  \"diagnosis\": {\n    \"reproduced\": true,\n    \"summary\": \"A successful retry replayed an older sequence onto a live Birch panel after a newer sequence had already painted, so the live board moved backwards even though every RPC was green. The adjacent training simulator painted a lower number at the same time, which the field note cannot reliably distinguish from the live board.\",\n    \"transportGreen\": true,\n    \"liveInversions\": [\n      {\n        \"panel\": \"p17\",\n        \"site\": \"Birch\",\n        \"stationType\": \"live\",\n        \"utc\": \"22:03:17\",\n        \"request\": \"req-a\",\n        \"sequence\": 40,\n        \"previousPaint\": {\n          \"utc\": \"22:03:12\",\n          \"request\": \"req-b\",\n          \"sequence\": 41\n        },\n        \"highestSequenceBefore\": 41\n      }\n    ],\n    \"trainingInversions\": [],\n    \"staleRetries\": [\n      {\n        \"request\": \"req-a\",\n        \"attempt\": 2,\n        \"retryUtc\": \"22:03:15\",\n        \"replayedSequence\": 40,\n        \"alreadyDeliveredNewer\": [\n          {\n            \"request\": \"req-b\",\n            \"sequence\": 41,\n            \"utc\": \"22:03:11\"\n          }\n        ]\n      }\n    ],\n    \"serviceDataRegression\": false,\n    \"trafficChange\": \"none proposed by replay; release owner owns traffic\"\n  }\n}\n",
+        "stderr": ""
+      },
+      {
+        "event": "S",
+        "input": "77f6d9a53429c6c081d51aef62b5bfd68fd23bfac5df1ff9208997812d5caa5e",
+        "exit": 1,
+        "passed": true,
+        "stdout": "{\n  \"schema\": \"fleet-night-shift-replay/v1\",\n  \"inputs\": {\n    \"inventory\": \"handover/evidence/inventory.csv\",\n    \"ingress\": \"handover/evidence/ingress.csv\",\n    \"terminal\": \"handover/evidence/terminal.tsv\",\n    \"fieldArchive\": \"handover/evidence/field-archive.txt\",\n    \"fieldNote\": \"handover/evidence/field-note.txt\",\n    \"reservation\": \"handover/evidence/reservation.txt\",\n    \"dashboard\": \"operations/dashboard.csv\",\n    \"registry\": \"operations/registry.csv\"\n  },\n  \"transport\": {\n    \"green\": true,\n    \"ingressFailures\": [],\n    \"dashboardGrpcErrors\": 0,\n    \"lastGrpcCompleted\": 482,\n    \"schedulerPlannedHolds\": 0\n  },\n  \"duplicateRequests\": [\n    {\n      \"connection\": \"relay-9\",\n      \"request\": \"req-a\",\n      \"feed\": \"B\",\n      \"sequence\": 40,\n      \"attempts\": [\n        {\n          \"utc\": \"22:02:57\",\n          \"attempt\": 1,\n          \"grpcStatus\": 0\n        },\n        {\n          \"utc\": \"22:03:15\",\n          \"attempt\": 2,\n          \"grpcStatus\": 0\n        }\n      ]\n    }\n  ],\n  \"staleRetries\": [\n    {\n      \"request\": \"req-a\",\n      \"attempt\": 2,\n      \"retryUtc\": \"22:03:15\",\n      \"replayedSequence\": 40,\n      \"alreadyDeliveredNewer\": [\n        {\n          \"request\": \"req-b\",\n          \"sequence\": 41,\n          \"utc\": \"22:03:11\"\n        }\n      ]\n    }\n  ],\n  \"panels\": [\n    {\n      \"panel\": \"p17\",\n      \"site\": \"Birch\",\n      \"stationType\": \"live\",\n      \"paints\": [\n        {\n          \"utc\": \"22:02:58\",\n          \"feed\": \"B\",\n          \"sequence\": 40,\n          \"request\": \"req-a\",\n          \"event\": \"P\"\n        },\n        {\n          \"utc\": \"22:03:12\",\n          \"feed\": \"B\",\n          \"sequence\": 41,\n          \"request\": \"req-b\",\n          \"event\": \"P\"\n        }\n      ]\n    },\n    {\n      \"panel\": \"p04\",\n      \"site\": \"Alder\",\n      \"stationType\": \"live\",\n      \"paints\": [\n        {\n          \"utc\": \"22:03:14\",\n          \"feed\": \"A\",\n          \"sequence\": 86,\n          \"request\": \"req-c\",\n          \"event\": \"P\"\n        }\n      ]\n    },\n    {\n      \"panel\": \"p09\",\n      \"site\": \"Alder\",\n      \"stationType\": \"live\",\n      \"paints\": [\n        {\n          \"utc\": \"22:03:14\",\n          \"feed\": \"A\",\n          \"sequence\": 86,\n          \"request\": \"req-c\",\n          \"event\": \"P\"\n        }\n      ]\n    },\n    {\n      \"panel\": \"p71\",\n      \"site\": \"Birch\",\n      \"stationType\": \"training\",\n      \"paints\": [\n        {\n          \"utc\": \"22:03:16\",\n          \"feed\": \"B\",\n          \"sequence\": 39,\n          \"request\": \"req-d\",\n          \"event\": \"P\"\n        }\n      ]\n    }\n  ],\n  \"liveInversions\": [],\n  \"trainingInversions\": [],\n  \"field\": {\n    \"localNotebookTime\": \"23:04\",\n    \"clockOffsetHours\": 1,\n    \"clockFastSeconds\": 52,\n    \"clockUncertaintySeconds\": 12,\n    \"correctedApproxUtc\": \"22:03:08Z\",\n    \"correctedWindowUtc\": {\n      \"fromUtc\": \"22:02:26Z\",\n      \"toUtc\": \"22:03:50Z\",\n      \"marginSeconds\": 42\n    },\n    \"siteFromB12Alias\": \"Birch\",\n    \"boardsInWindow\": [\n      {\n        \"panel\": \"p17\",\n        \"site\": \"Birch\",\n        \"stationType\": \"live\"\n      },\n      {\n        \"panel\": \"p71\",\n        \"site\": \"Birch\",\n        \"stationType\": \"training\"\n      }\n    ],\n    \"ambiguous\": true,\n    \"note\": \"The field note alone does not identify p17 or p71; the ingress/terminal records do.\"\n  },\n  \"registryAliases\": [\n    {\n      \"export\": \"older\",\n      \"alias\": \"B-12\",\n      \"assignment\": \"Birch training\",\n      \"comment\": \"previous handheld label\"\n    },\n    {\n      \"export\": \"older\",\n      \"alias\": \"relay-9\",\n      \"assignment\": \"Cedar\",\n      \"comment\": \"prior cabinet\"\n    }\n  ],\n  \"reservation\": \"Ticket CAP-08 / signed 22:19Z. Cedar has the only REST overflow lane from 06:00 to 06:30Z. No second lane has been commissioned. A hold may park an affected pilot without moving traffic to REST. Release owner can change a booking after talking to Cedar; the request has not been made. No field authority has accepted a production switch.\",\n  \"limits\": [\n    \"The terminal trace is sampled by panel, not by request; p23 has no terminal row in this archive.\",\n    \"B-13's uploader was unplugged for the rehearsal and retained no local recording.\",\n    \"The field note's minute is rounded, its clock was 52 s fast (+/- 12 s), and it cannot distinguish p17 from the adjacent training simulator.\",\n    \"No maximum stale-data duration was agreed, so this replay can establish ordering but not a freshness SLO.\",\n    \"The dashboard is aggregate; its zero grpc_error count cannot detect a successfully delivered duplicate or an out-of-order paint.\"\n  ],\n  \"diagnosis\": {\n    \"reproduced\": false,\n    \"summary\": \"The archived evidence does not reproduce a live panel inversion together with a stale retry.\",\n    \"transportGreen\": true,\n    \"liveInversions\": [],\n    \"trainingInversions\": [],\n    \"staleRetries\": [\n      {\n        \"request\": \"req-a\",\n        \"attempt\": 2,\n        \"retryUtc\": \"22:03:15\",\n        \"replayedSequence\": 40,\n        \"alreadyDeliveredNewer\": [\n          {\n            \"request\": \"req-b\",\n            \"sequence\": 41,\n            \"utc\": \"22:03:11\"\n          }\n        ]\n      }\n    ],\n    \"serviceDataRegression\": false,\n    \"trafficChange\": \"none proposed by replay; release owner owns traffic\"\n  }\n}\n",
+        "stderr": "Expected the live stale-retry inversion, but the archived evidence did not reproduce it.\n"
+      }
+    ],
+    "passed": true
+  },
+  "accounted": true,
+  "ledger": {
+    "schema": "pnwf-spend-snapshot/v1",
+    "cohortId": "af3ed2b2-1fc5-4c49-83ed-83151cd2999a",
+    "configDigest": "395cd54de56f0fc94d20d4dd4b3b29eb98b59bbf6fe48d2a380e77a7f1332ad7",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 860165,
+    "reserved": 0,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": 12000000,
+    "sessions": [
+      {
+        "id": "REVIEW",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": 12000000,
+        "softCeiling": 12000000,
+        "requestCount": 6,
+        "unresolvedRequests": 0,
+        "confirmed": 860165,
+        "reserved": 0
+      }
+    ],
+    "requests": [
+      {
+        "id": "fc5e6561-866e-4420-93de-9a06f4be7d30",
+        "session": "REVIEW",
+        "digest": "5c76dd58c44f788e4a22123f46ef0a252ac776841f6f9c604d1356bc092427e8",
+        "reserved": 352239,
+        "actual": 96311,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "1ef5d711-52cf-45ce-b891-27add3791f9f",
+        "session": "REVIEW",
+        "digest": "2b3fc6626f2e575ffcc627129743314a2a26a36f215868b53509033405f1e8d6",
+        "reserved": 308993,
+        "actual": 53224,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "137263cd-66e2-4e48-937d-b7bf85449a3d",
+        "session": "REVIEW",
+        "digest": "a2f32124d0e8f9eb772a07b5693b26172bd7224ef1e4fe289ed8f357af200667",
+        "reserved": 578885,
+        "actual": 323385,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "4e876a75-0e4e-4882-a2cc-da5ae8ca8578",
+        "session": "REVIEW",
+        "digest": "efb46f4d0afbe7c404fb246c169160cd1ff44f22b568ca47c9e8ed7900f67af9",
+        "reserved": 529810,
+        "actual": 273984,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "26b9cd3f-2eda-4da6-983f-40a08fb6d598",
+        "session": "REVIEW",
+        "digest": "e7233b00e1936b0b4ba5b5cff41a60b6b3a7aa731be3b55f73ba0e39b7050d1a",
+        "reserved": 310332,
+        "actual": 54960,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "349a9cf3-95a0-4e36-8a53-fedc4a87a91d",
+        "session": "REVIEW",
+        "digest": "61c65f8bdf5dfd5474331325865f12b073b9bec4ee46edc5e528a9cf3df74542",
+        "reserved": 314209,
+        "actual": 58301,
+        "state": "SETTLED",
+        "reason": null
+      }
+    ],
+    "refusals": []
+  },
+  "mockFailures": []
+}

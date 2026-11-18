@@ -1,0 +1,128 @@
+{
+  "cases": [
+    {
+      "arm": "auto",
+      "head": "c22642f44219a406bee1319d6ec74fbbf6948801",
+      "changed": [
+        "handover/HANDOVER.md",
+        "handover/replay.mjs"
+      ],
+      "clean": true,
+      "elapsedMs": 37813,
+      "natural": true,
+      "stop": null,
+      "requests": 6,
+      "confirmed": 860165,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 4,
+          "fresh": 261773,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 1023
+        },
+        "resumed-maintainer": {
+          "requests": 2,
+          "fresh": 596695,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 674
+        }
+      },
+      "roles": [
+        {
+          "session": "session-72b07dc6-59e6-4dbe-91f6-bc17fed7d219",
+          "role": "principal",
+          "paired": 3,
+          "tools": 3,
+          "directory": [
+            15
+          ],
+          "contacts": [
+            {
+              "seq": 21,
+              "response": 22,
+              "question": "Please check this replay against your previous shift record and return a reproducible observation."
+            }
+          ],
+          "conclusions": []
+        },
+        {
+          "session": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+          "role": "resumed-maintainer",
+          "paired": 1,
+          "tools": 1,
+          "directory": [],
+          "contacts": [],
+          "conclusions": []
+        }
+      ],
+      "originalTerminalPreserved": true,
+      "checks": [
+        {
+          "input": "P",
+          "exit": 0,
+          "passed": true
+        },
+        {
+          "input": "S",
+          "exit": 1,
+          "passed": true
+        }
+      ],
+      "qualifiedCandidate": true
+    },
+    {
+      "arm": "solo",
+      "head": "17533fec681777cde2eee527211c09a634724ffe",
+      "changed": [
+        "handover/HANDOVER.md",
+        "handover/replay.mjs"
+      ],
+      "clean": true,
+      "elapsedMs": 28497,
+      "natural": true,
+      "stop": null,
+      "requests": 4,
+      "confirmed": 221584,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 4,
+          "fresh": 220292,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 1292
+        }
+      },
+      "roles": [
+        {
+          "session": "session-1419f5f4-e3d2-4500-a792-ce90c24624ec",
+          "role": "principal",
+          "paired": 3,
+          "tools": 3,
+          "directory": [
+            15
+          ],
+          "contacts": [],
+          "conclusions": []
+        }
+      ],
+      "originalTerminalPreserved": true,
+      "checks": [
+        {
+          "input": "P",
+          "exit": 0,
+          "passed": true
+        },
+        {
+          "input": "S",
+          "exit": 1,
+          "passed": true
+        }
+      ],
+      "qualifiedCandidate": true
+    }
+  ]
+}

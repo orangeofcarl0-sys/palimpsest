@@ -1,0 +1,81 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "af3ed2b2-1fc5-4c49-83ed-83151cd2999a",
+  "configDigest": "395cd54de56f0fc94d20d4dd4b3b29eb98b59bbf6fe48d2a380e77a7f1332ad7",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 860165,
+  "reserved": 0,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": 12000000,
+  "sessions": [
+    {
+      "id": "REVIEW",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": 12000000,
+      "softCeiling": 12000000,
+      "requestCount": 6,
+      "unresolvedRequests": 0,
+      "confirmed": 860165,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "fc5e6561-866e-4420-93de-9a06f4be7d30",
+      "session": "REVIEW",
+      "digest": "5c76dd58c44f788e4a22123f46ef0a252ac776841f6f9c604d1356bc092427e8",
+      "reserved": 352239,
+      "actual": 96311,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "1ef5d711-52cf-45ce-b891-27add3791f9f",
+      "session": "REVIEW",
+      "digest": "2b3fc6626f2e575ffcc627129743314a2a26a36f215868b53509033405f1e8d6",
+      "reserved": 308993,
+      "actual": 53224,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "137263cd-66e2-4e48-937d-b7bf85449a3d",
+      "session": "REVIEW",
+      "digest": "a2f32124d0e8f9eb772a07b5693b26172bd7224ef1e4fe289ed8f357af200667",
+      "reserved": 578885,
+      "actual": 323385,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "4e876a75-0e4e-4882-a2cc-da5ae8ca8578",
+      "session": "REVIEW",
+      "digest": "efb46f4d0afbe7c404fb246c169160cd1ff44f22b568ca47c9e8ed7900f67af9",
+      "reserved": 529810,
+      "actual": 273984,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "26b9cd3f-2eda-4da6-983f-40a08fb6d598",
+      "session": "REVIEW",
+      "digest": "e7233b00e1936b0b4ba5b5cff41a60b6b3a7aa731be3b55f73ba0e39b7050d1a",
+      "reserved": 310332,
+      "actual": 54960,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "349a9cf3-95a0-4e36-8a53-fedc4a87a91d",
+      "session": "REVIEW",
+      "digest": "61c65f8bdf5dfd5474331325865f12b073b9bec4ee46edc5e528a9cf3df74542",
+      "reserved": 314209,
+      "actual": 58301,
+      "state": "SETTLED",
+      "reason": null
+    }
+  ],
+  "refusals": []
+}

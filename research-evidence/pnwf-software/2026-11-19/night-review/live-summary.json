@@ -1,0 +1,175 @@
+{
+  "cases": [
+    {
+      "arm": "auto",
+      "head": "fc6aa6253d9b0c97105c1791fc878909e04fb4c1",
+      "changed": [
+        "handover/HANDOVER.md",
+        "handover/REPLAY.md",
+        "handover/evidence/README.md",
+        "handover/evidence/terminal.tsv",
+        "handover/replay.mjs",
+        "handover/replay.sh"
+      ],
+      "clean": true,
+      "elapsedMs": 721530,
+      "natural": true,
+      "stop": null,
+      "requests": 53,
+      "confirmed": 4211190,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 22,
+          "fresh": 87863,
+          "cacheRead": 1029120,
+          "cacheWrite": 0,
+          "output": 18069
+        },
+        "resumed-maintainer": {
+          "requests": 31,
+          "fresh": 121498,
+          "cacheRead": 2933120,
+          "cacheWrite": 0,
+          "output": 21520
+        }
+      },
+      "roles": [
+        {
+          "session": "session-47af5f31-ff45-49ea-8b7c-08ee5775ee31",
+          "role": "principal",
+          "paired": 66,
+          "tools": 66,
+          "directory": [
+            129
+          ],
+          "contacts": [
+            {
+              "seq": 159,
+              "response": 160,
+              "question": "I am reviewing the current handover/replay on commit 4f80c3b against your previous-shift records at 584d61c. Your archived terminal.tsv has row `22:03:17 p17 B 40 req-a S` (suppressed), while the current candidate has `P` (painted) and therefore claims a live Birch inversion. Can you confirm which terminal event is the exact archived record, and whether p17 painted or suppressed the stale req-a retry at 22:03:17? Was your evidence file changed after you committed it?"
+            }
+          ],
+          "conclusions": [
+            {
+              "seq": 281,
+              "intent": "DELIVER",
+              "result": "{\n  \"state\": \"RECORDED\",\n  \"conclusion\": {\n    \"schema\": \"pc1-episode-conclusion/v1\",\n    \"intent\": \"DELIVER\",\n    \"statement\": \"Reviewed the candidat"
+            }
+          ]
+        },
+        {
+          "session": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+          "role": "resumed-maintainer",
+          "paired": 46,
+          "tools": 46,
+          "directory": [
+            290
+          ],
+          "contacts": [
+            {
+              "seq": 456,
+              "response": 457,
+              "question": "We corrected candidate 4f80c3b on branch review at dcd2f74: restored terminal.tsv 22:03:17 p17 req-a event to the archived S (suppressed), and fixed replay.mjs so only P rows count as paints. Can you confirm from your previous-shift 584d61c record that S is exact and that no later commit on your branch changed terminal.tsv?"
+            },
+            {
+              "seq": 462,
+              "response": 463,
+              "question": "Confirm archived terminal.tsv row at 22:03:17 was S and unchanged after your commit; candidate restore is dcd2f74."
+            },
+            {
+              "seq": 468,
+              "response": 469,
+              "question": "Is the previous-shift terminal.tsv blob unchanged after 584d61c?"
+            },
+            {
+              "seq": 474,
+              "response": 475,
+              "question": "Can the previous shift confirm the archived event?"
+            }
+          ],
+          "conclusions": [
+            {
+              "seq": 494,
+              "intent": "DELIVER",
+              "result": "{\n  \"state\": \"RECORDED\",\n  \"conclusion\": {\n    \"schema\": \"pc1-episode-conclusion/v1\",\n    \"intent\": \"DELIVER\",\n    \"statement\": \"Confirmed the exact a"
+            }
+          ]
+        }
+      ],
+      "originalTerminalPreserved": false,
+      "checks": [
+        {
+          "input": "P",
+          "exit": 1,
+          "passed": false
+        },
+        {
+          "input": "S",
+          "exit": 0,
+          "passed": false
+        }
+      ],
+      "qualifiedCandidate": false
+    },
+    {
+      "arm": "solo",
+      "head": "3993ece58bbc484ff6a66916d1bb15313f780ba6",
+      "changed": [
+        "handover/HANDOVER.md",
+        "handover/REPLAY.md",
+        "handover/evidence/README.md",
+        "handover/evidence/terminal.tsv",
+        "handover/replay.mjs",
+        "handover/replay.sh"
+      ],
+      "clean": true,
+      "elapsedMs": 714010,
+      "natural": true,
+      "stop": null,
+      "requests": 44,
+      "confirmed": 4431654,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 44,
+          "fresh": 145342,
+          "cacheRead": 4237056,
+          "cacheWrite": 0,
+          "output": 49256
+        }
+      },
+      "roles": [
+        {
+          "session": "session-ba3aabe4-a2f6-4e80-ae50-b7cbfa1d1974",
+          "role": "principal",
+          "paired": 68,
+          "tools": 68,
+          "directory": [],
+          "contacts": [],
+          "conclusions": [
+            {
+              "seq": 408,
+              "intent": "DELIVER",
+              "result": "{\n  \"state\": \"RECORDED\",\n  \"conclusion\": {\n    \"schema\": \"pc1-episode-conclusion/v1\",\n    \"intent\": \"DELIVER\",\n    \"statement\": \"Reviewed the candidat"
+            }
+          ]
+        }
+      ],
+      "originalTerminalPreserved": false,
+      "checks": [
+        {
+          "input": "P",
+          "exit": 1,
+          "passed": false
+        },
+        {
+          "input": "S",
+          "exit": 0,
+          "passed": false
+        }
+      ],
+      "qualifiedCandidate": false
+    }
+  ]
+}

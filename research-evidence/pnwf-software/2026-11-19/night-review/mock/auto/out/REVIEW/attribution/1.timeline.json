@@ -1,0 +1,150 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-18T18:38:15.792Z",
+      "endedAt": "2026-11-18T21:25:16.589Z",
+      "durationMs": 10020797
+    },
+    "counts": {
+      "steps": 2,
+      "turns": 1,
+      "toolCalls": 1,
+      "pairedToolResults": 1,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 0,
+      "commits": 0,
+      "jobs": 1
+    },
+    "byKind": {
+      "bash": 1
+    },
+    "stateQueries": [],
+    "calls": [
+      {
+        "seq": 244,
+        "callId": "review_2",
+        "offsetMs": 10020232,
+        "kind": "bash d=$(mktemp -d) && git archive HEAD | tar -x -C \"$d\" && git show refs/remotes/dispatch/previous-shift:handover/evidence/t…",
+        "args": {
+          "command": "d=$(mktemp -d) && git archive HEAD | tar -x -C \"$d\" && git show refs/remotes/dispatch/previous-shift:handover/evidence/terminal.tsv > \"$d/handover/evidence/terminal.tsv\" && cd \"$d\" && node handover/replay.mjs --json --require-anomaly | node -e 'let s=\"\";process.stdin.on(\"data\",x=>s+=x);process.stdin.on(\"end\",()=>console.log(JSON.parse(s).diagnosis.reproduced))'",
+          "description": "Test the submitted dispatch replay"
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 247,
+        "callId": "review_2",
+        "callSeq": 244,
+        "offsetMs": 10020701,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 243,
+        "at": 1795037116023,
+        "messageId": "a83bd706-9bd4-49a0-8d84-637cd4c30e30",
+        "usage": {
+          "inputTokens": 322885,
+          "outputTokens": 500,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 323385
+        }
+      },
+      {
+        "seq": 251,
+        "at": 1795037116588,
+        "messageId": "180e48aa-6583-4cf0-a9d6-b6215b724efe",
+        "usage": {
+          "inputTokens": 273810,
+          "outputTokens": 174,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 273984
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 239,
+      "at": 1795037115909,
+      "offsetMs": 10020117,
+      "kind": "USER",
+      "detail": "New shift inquiry for your replay maintenance desk. The requesting shift is working at 4f80c3bd5d606e2a2192fd56badb4a138d139ee2. Work from this commit, use a temporary copy for any experiments, and return your observations to the caller. Their question follows. Please check this replay against your previous shift record and return a reproducible observation."
+    },
+    {
+      "seq": 244,
+      "at": 1795037116024,
+      "offsetMs": 10020232,
+      "kind": "CALL",
+      "detail": "bash d=$(mktemp -d) && git archive HEAD | tar -x -C \"$d\" && git show refs/remotes/dispatch/previous-shift:handover/evidence/t…",
+      "callId": "review_2",
+      "tool": "bash",
+      "args": {
+        "command": "d=$(mktemp -d) && git archive HEAD | tar -x -C \"$d\" && git show refs/remotes/dispatch/previous-shift:handover/evidence/terminal.tsv > \"$d/handover/evidence/terminal.tsv\" && cd \"$d\" && node handover/replay.mjs --json --require-anomaly | node -e 'let s=\"\";process.stdin.on(\"data\",x=>s+=x);process.stdin.on(\"end\",()=>console.log(JSON.parse(s).diagnosis.reproduced))'",
+        "description": "Test the submitted dispatch replay"
+      }
+    },
+    {
+      "seq": 245,
+      "at": 1795037116038,
+      "offsetMs": 10020246,
+      "kind": "JOB",
+      "detail": "start bash d=$(mktemp -d) && git archive HEAD | tar -x -C \"$d\" && git show refs/remotes/dispatch/previous-shift…"
+    },
+    {
+      "seq": 246,
+      "at": 1795037116490,
+      "offsetMs": 10020698,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) d=$(mktemp -d) && git archive HEAD | tar -x -C \"$d\" && git show refs/remotes/dispatch/previous-shift…"
+    },
+    {
+      "seq": 247,
+      "at": 1795037116493,
+      "offsetMs": 10020701,
+      "kind": "RESULT",
+      "detail": "ok true",
+      "callId": "review_2",
+      "callSeq": 244,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 251,
+      "at": 1795037116588,
+      "offsetMs": 10020796,
+      "kind": "DECISION",
+      "detail": "With my archived terminal input, p17 suppressed the retry, but the submitted replay still returns reproduced=true. It counts an S event as a paint."
+    },
+    {
+      "seq": 253,
+      "at": 1795037116589,
+      "offsetMs": 10020797,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}
