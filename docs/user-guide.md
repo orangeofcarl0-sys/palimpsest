@@ -198,6 +198,25 @@ node "$CLI" promote gate-release
 
 ## 4. DSH 集成
 
+### DSH 侧栏工作检查器
+
+在运行项目的 DSH Web 左侧栏点 **Palimpsest**。中央工作区直接打开该部署的关系图，顶部显示项目名。切换对话也能回到同一项目、同一选中对象。DSH 配置需同时加载 `@deepseek-ai/dsh-web-app` 和当前版本的 `palimpsest-dsh-host`，并将 `palimpsest-tools.deploymentProfile` 指向该项目的部署文件。检查器使用 DSH 的所有者连接，独立 Dashboard 的 `serve` 开关可以保持关闭。
+
+- **现在工作在谁手上**　从角色或任务沿箭头查看依赖、执行尝试、宿主看到的正式 Worker 作业、结算结果和等待所有者判断的关系。点节点查看来源、标识和状态，点线查看方向、两端对象与关系依据。图中执行尝试的 `RUNNING` 取自 Work 账本，Worker 作业的阶段取自运行它的宿主。
+- **停住一个交接**　左下时间线默认跟随实时观察。点「暂停跟随」或在「现场观察」拖至较早时点，继续检查当时的人、任务和成果。右上「返回实时 +N」显示固定画面后新到的观察数，点它回到最新现场。「数据来源」显示各来源的读取状态。
+- **追到具体事件**　在「Work 事件」选中项目序号，关系图会按该条账本记录重建，可往前翻页。这个历史跨进程重启有效。现场观察只在有人打开面板时采样，每 1.5 秒读取一次，最近 90 次变化可回看。DSH 工具调用按当前宿主的会话和调用 ID 配对，保留最近 64 笔。打开前的其他来源状态及两次采样之间的短暂变化没有完整历史。
+
+已有部署只有命令行入口时，可以在本仓库编译后用独立的 DSH Web 进程打开它。在下面的命令中替换部署文件的绝对路径。默认浏览器会收到 DSH 的本机授权，按 Ctrl+C 关闭此进程。这个入口能看到共享账本。要看到执行进程私有的作业与 DSH 调用，在运行 Principal 的那份 DSH 配置中一起加载 Web 和宿主包。
+
+```powershell
+pnpm build
+node scripts/inspector/dsh-web.mjs --deployment="C:/path/to/deployment.json"
+```
+
+运行 `node scripts/inspector/dsh-web.mjs --smoke` 可以复验原生侧栏。在隔离的 Git、数据库和 DSH home 中，脚本在浏览器已打开的情况下通过第二个宿主登记任务、认领执行，核对固定与实时两种视点以及任一早期 Work 截面。该命令使用本机安装的 DSH 和 Playwright Chromium，全程无模型请求。
+
+### DSH 技能
+
 技能安装于 `.zcode/skills/palimpsest/`（项目级）或 `~/.zcode/skills/palimpsest/`（用户级）后，ZCode/DSH agent 可直接说“并行探索……”“检查当前项目状态”“问一下另一个项目”。技能文档中的示例使用 `git rev-parse --show-toplevel` 解析仓库根；构建产物位于 `dist/src/cli.js`。
 
 注意：**shipped DSH principal 不读取该技能文件**——它是 ZCode 客户端技能。principal 的工具选择由 `palimpsest_collaborate` / `palimpsest_cross_project` 的**工具描述**与用户措辞驱动；技能文件服务于 ZCode 侧的产品路径。
