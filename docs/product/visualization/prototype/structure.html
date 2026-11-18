@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>台站读数复核 · 协作结构研究</title>
+    <style>
+      :root {
+        --paper: #f7f8f4;
+        --sheet: #fffefa;
+        --ink: #213631;
+        --quiet: #50625a;
+        --line: #cfd6cb;
+        --green: #27634f;
+        --green-pale: #e4efe4;
+        --purple: #75547d;
+        --purple-pale: #f1e9f3;
+        --rust: #865638;
+        --focus: #126b99;
+        --mono: "Cascadia Mono", Consolas, monospace;
+        font-family: "Instrument Sans", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+        font-size: 15px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-width: 290px;
+      }
+      button,
+      summary,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button {
+        cursor: pointer;
+        color: inherit;
+        font: inherit;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      summary:focus-visible,
+      [tabindex="0"]:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 3px;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .shell {
+        min-height: 49px;
+        padding: 0 clamp(15px, 3.8vw, 65px);
+        background: #243f36;
+        color: #eef4eb;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        font-size: 13px;
+      }
+      .brand {
+        font-family: var(--mono);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+      .divider {
+        opacity: 0.5;
+      }
+      .shell .study {
+        margin-left: auto;
+        color: #ceddce;
+      }
+      main {
+        max-width: 1560px;
+        margin: auto;
+        padding: clamp(16px, 2.4vw, 36px) clamp(15px, 3.8vw, 65px) 25px;
+      }
+      header,
+      .toolbar,
+      .legend,
+      .view-switch,
+      .steps,
+      .map-title,
+      .tree-row,
+      .inspector-head {
+        display: flex;
+        align-items: center;
+      }
+      header {
+        justify-content: space-between;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(23px, 2.3vw, 34px);
+        font-weight: 630;
+        letter-spacing: -0.02em;
+      }
+      h2 {
+        font-size: 19px;
+        font-weight: 620;
+      }
+      .view-switch {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 3px;
+        background: #ecf0e9;
+      }
+      .view-switch button {
+        background: transparent;
+        border: 0;
+        border-radius: 4px;
+        padding: 6px 16px;
+        font-size: 13px;
+      }
+      .view-switch [aria-pressed="true"] {
+        background: var(--sheet);
+        box-shadow: 0 1px 3px #23382e28;
+        font-weight: 650;
+      }
+      .toolbar {
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 17px 0 18px;
+      }
+      .muted,
+      .step-label {
+        color: var(--quiet);
+        font-size: 13px;
+      }
+      .steps {
+        flex-wrap: wrap;
+        gap: 3px;
+      }
+      .steps button {
+        border: 1px solid transparent;
+        background: transparent;
+        padding: 5px 11px;
+        font-size: 13px;
+        border-radius: 14px;
+      }
+      .steps button:hover {
+        background: #e7ede5;
+      }
+      .steps [aria-pressed="true"] {
+        border-color: #98ae9c;
+        background: #e4ede3;
+        font-weight: 650;
+      }
+      .surface {
+        display: grid;
+        grid-template-columns: minmax(167px, 18.2%) minmax(0, 1fr);
+        background: var(--sheet);
+        border: 1px solid #bfc9be;
+        border-radius: 10px;
+        overflow: clip;
+      }
+      .rail {
+        background: #f0f3ec;
+        padding: 17px 15px 18px;
+        border-right: 1px solid var(--line);
+      }
+      .rail summary {
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 650;
+      }
+      .rail .directory > summary {
+        font-size: 16px;
+      }
+      .rail .subtree {
+        margin: 10px 0 0 2px;
+      }
+      .rail h3 {
+        margin: 20px 0 6px;
+        color: var(--quiet);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .branch {
+        border-left: 1px solid #becbbd;
+        margin: 5px 0 0 6px;
+        padding: 0 0 0 11px;
+      }
+      .tree-row {
+        gap: 7px;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        border-radius: 3px;
+        padding: 4px 5px;
+        font-size: 13px;
+        background: transparent;
+      }
+      .tree-row small {
+        font: 10px var(--mono);
+        color: var(--quiet);
+      }
+      .tree-row[aria-pressed="true"] {
+        background: #d9e6d9;
+        font-weight: 650;
+      }
+      .tree-row:hover {
+        text-decoration: underline;
+      }
+      .ref {
+        font: 11px var(--mono);
+        color: var(--quiet);
+      }
+      .space {
+        min-width: 0;
+      }
+      .map-title {
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        padding: 17px 20px 7px;
+      }
+      .legend {
+        padding: 4px 20px 12px;
+        flex-wrap: wrap;
+        gap: 7px 13px;
+      }
+      .set-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid transparent;
+        border-radius: 5px;
+        padding: 2px 5px 2px 1px;
+        font-size: 13px;
+        background: transparent;
+      }
+      .set-toggle[aria-pressed="false"] {
+        color: #647068;
+        text-decoration: line-through;
+      }
+      .swatch {
+        display: inline-block;
+        width: 20px;
+        height: 13px;
+        border-radius: 6px;
+      }
+      .swatch.a {
+        background: var(--green-pale);
+        border: 2px solid var(--green);
+      }
+      .swatch.b {
+        background: var(--purple-pale);
+        border: 2px dashed var(--purple);
+      }
+      .intersection {
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+      .viewport {
+        overflow-x: auto;
+        border-block: 1px solid var(--line);
+      }
+      .plane {
+        width: 100%;
+        min-width: 680px;
+        aspect-ratio: 900/352;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background-color: #fcfcf6;
+        background-image: radial-gradient(#b5c0ae 0.7px, transparent 0.9px);
+        background-size: 19px 19px;
+      }
+      .plane canvas {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        width: 100%;
+        pointer-events: none;
+      }
+      .world-frame {
+        position: absolute;
+        pointer-events: none;
+        border: 1px solid #9eac96;
+        border-radius: 7px;
+        background: #f6f7efb0;
+        z-index: -1;
+      }
+      .world-frame span {
+        position: absolute;
+        left: 8px;
+        top: 5px;
+        font-size: clamp(10px, 1vw, 13px);
+        color: #495d50;
+      }
+      .world-frame b {
+        font: 600 11px var(--mono);
+        margin-right: 5px;
+      }
+      .world-zero {
+        left: 62.2%;
+        top: 7%;
+        width: 35.2%;
+        height: 32%;
+      }
+      .world-one {
+        left: 62.2%;
+        top: 45.5%;
+        width: 35.2%;
+        height: 50%;
+        border-style: dashed;
+      }
+      .node {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: clamp(3px, 0.6vw, 9px);
+        width: 15%;
+        height: 13%;
+        max-height: 56px;
+        padding: 0 0.8%;
+        text-align: left;
+        border: 1px solid #9eab9b;
+        border-radius: 7px;
+        background: #fffefa;
+        z-index: 1;
+        color: #24382e;
+        box-shadow: 0 1px 2px #24382e0d;
+        font-size: clamp(11px, 1.13vw, 16px);
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .node:hover {
+        border-color: #4e735e;
+      }
+      .node[aria-pressed="true"] {
+        border: 2px solid #275d49;
+        outline: 2px solid #fffefa;
+        box-shadow: 0 0 0 3px #71957c;
+      }
+      .node:focus-visible {
+        outline: 3px solid var(--focus);
+      }
+      .node .symbol {
+        width: 25%;
+        max-width: 31px;
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: #2b5446;
+        background: #e3ebe1;
+        border: 1px solid #bccdbd;
+        font: 600 clamp(10px, 1vw, 14px) var(--mono);
+        flex-shrink: 0;
+      }
+      .node .node-text {
+        display: grid;
+        gap: 3px;
+        font-weight: 600;
+      }
+      .node .sub {
+        font-size: clamp(9px, 0.82vw, 12px);
+        color: var(--quiet);
+        font-weight: 500;
+      }
+      .node.artifact {
+        width: 12.5%;
+        border-radius: 3px;
+      }
+      .node.artifact .symbol {
+        border-radius: 2px;
+        background: #f2eadd;
+        border-color: #d5bfa9;
+        color: #754529;
+      }
+      .node.artifact[aria-pressed="true"] {
+        border-color: var(--rust);
+        box-shadow: 0 0 0 3px #b18a66;
+      }
+      .graph-note {
+        padding: 7px 20px;
+        color: var(--quiet);
+        font-size: 12px;
+      }
+      .matrix {
+        padding: 13px 20px 18px;
+        border-block: 1px solid var(--line);
+      }
+      .matrix table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      caption {
+        text-align: left;
+        font-size: 13px;
+        color: var(--quiet);
+        padding-bottom: 8px;
+      }
+      th,
+      td {
+        padding: 8px 5px;
+        border-bottom: 1px solid #dde2d8;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      th {
+        font-weight: 600;
+      }
+      th:first-child {
+        text-align: left;
+      }
+      td[data-member="yes"] {
+        color: var(--green);
+        font-weight: 650;
+      }
+      .matrix tr.selected {
+        background: #edf2e9;
+      }
+      .matrix .matrix-peer,
+      .fact-link {
+        background: transparent;
+        border: 0;
+        padding: 3px 1px;
+        text-align: left;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .inspector {
+        padding: 15px 20px 18px;
+        border-top: 1px solid var(--line);
+      }
+      .inspector-head {
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .inspector h3 {
+        font-size: 17px;
+      }
+      .inspector p {
+        margin: 7px 0;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .facts {
+        margin: 0;
+        padding-left: 18px;
+        color: #48594f;
+        font-size: 13px;
+        line-height: 1.65;
+      }
+      .event-note {
+        margin-top: 12px;
+        color: #40564a;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .event-note b {
+        margin-right: 8px;
+      }
+      @media (max-width: 780px) {
+        .surface {
+          grid-template-columns: 1fr;
+        }
+        .rail {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+          padding: 9px 14px;
+        }
+        .rail .directory[open] .rail-content {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .rail h3 {
+          margin-top: 10px;
+        }
+        .toolbar {
+          gap: 5px 9px;
+        }
+        .steps button {
+          padding: 5px 8px;
+        }
+      }
+      @media (max-width: 540px) {
+        .shell {
+          gap: 7px;
+          font-size: 11px;
+        }
+        .view-switch button {
+          padding: 5px 10px;
+        }
+        .map-title,
+        .legend,
+        .graph-note,
+        .inspector,
+        .matrix {
+          padding-inline: 12px;
+        }
+        .steps {
+          gap: 0;
+        }
+        .steps button {
+          font-size: 12px;
+        }
+        .toolbar {
+          margin: 12px 0;
+        }
+        .map-title {
+          padding-top: 12px;
+        }
+        th,
+        td {
+          padding-inline: 2px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="shell" aria-label="宿主位置">
+      <span class="brand">DSH</span><span class="divider">/</span><span>当前会话</span
+      ><span class="divider">/</span> <strong aria-current="page">协作</strong
+      ><span class="study">合成设计样例</span>
+    </nav>
+    <main>
+      <header>
+        <h1>台站读数复核</h1>
+        <div class="view-switch" role="group" aria-label="显示方式">
+          <button type="button" id="map-mode" aria-pressed="true">格点图</button>
+          <button type="button" id="table-mode" aria-pressed="false">成员表</button>
+        </div>
+      </header>
+      <div class="toolbar">
+        <span class="step-label">观察时点</span>
+        <div class="steps" id="steps" role="group" aria-label="观察时点"></div>
+      </div>
+      <div class="surface">
+        <aside class="rail" aria-label="组织和世界目录">
+          <details class="directory" id="directory" open>
+            <summary>结构目录</summary>
+            <div class="rail-content">
+              <section>
+                <h3>正式组织</h3>
+                <details class="subtree" open>
+                  <summary>采集组 <span class="ref" id="revision"></span></summary>
+                  <div class="branch" id="org-a"></div>
+                </details>
+                <details class="subtree" open>
+                  <summary>质量组 <span class="ref">r1</span></summary>
+                  <div class="branch" id="org-q"></div>
+                </details>
+              </section>
+              <section>
+                <h3>工作世界</h3>
+                <details class="subtree" open>
+                  <summary>项目基线 <span class="ref">W0</span></summary>
+                  <div class="branch" id="world-zero"></div>
+                </details>
+                <details class="subtree" open>
+                  <summary>复核副本 <span class="ref">W1</span></summary>
+                  <div class="branch" id="world-one"></div>
+                </details>
+              </section>
+            </div>
+          </details>
+        </aside>
+        <section class="space" aria-label="协作工作面">
+          <div class="map-title">
+            <h2 id="view-title">参与者与工件</h2>
+            <span class="muted">4 位参与者 · 2 个工作世界</span>
+          </div>
+          <div class="legend" aria-label="集合与交集">
+            <button type="button" class="set-toggle" id="toggle-a" aria-pressed="true">
+              <i class="swatch a" aria-hidden="true"></i><span id="legend-a"></span>
+            </button>
+            <button type="button" class="set-toggle" id="toggle-b" aria-pressed="true">
+              <i class="swatch b" aria-hidden="true"></i><span id="legend-b"></span>
+            </button>
+            <span class="intersection" id="intersection" aria-live="polite"></span>
+          </div>
+          <div id="graph-view">
+            <div class="viewport" tabindex="0" role="region" aria-label="工作图，可横向滚动">
+              <div class="plane" id="plane">
+                <div class="world-frame world-zero">
+                  <span><b>W0</b>项目基线</span>
+                </div>
+                <div class="world-frame world-one">
+                  <span><b>W1</b>复核副本</span>
+                </div>
+                <canvas id="drawing" aria-hidden="true"></canvas>
+              </div>
+            </div>
+            <p class="graph-note">轮廓圈出成员。箭头从执行者或引用方指向工件，选中任一端可读动作。</p>
+          </div>
+          <div class="matrix" id="table-view" hidden>
+            <table>
+              <caption>
+                在当前时点逐人核对两个集合，点选姓名查看依据。
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">参与者</th>
+                  <th scope="col">A 采集组</th>
+                  <th scope="col">B 本轮复核</th>
+                  <th scope="col">A ∩ B</th>
+                </tr>
+              </thead>
+              <tbody id="members"></tbody>
+            </table>
+          </div>
+          <section class="inspector" aria-label="所选对象" aria-live="polite" aria-atomic="true">
+            <div class="inspector-head">
+              <span class="muted">选中</span>
+              <h3 id="selection-name" tabindex="-1"></h3>
+              <span class="ref" id="selection-ref"></span>
+            </div>
+            <p id="selection-summary"></p>
+            <ul class="facts" id="selection-facts"></ul>
+          </section>
+        </section>
+      </div>
+      <p class="event-note" aria-live="polite"><b id="event-name"></b><span id="event-description"></span></p>
+      <noscript>这个交互样例需要 JavaScript 才能切换观察时点。</noscript>
+    </main>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const width = 900,
+        height = 352;
+      const peers = ["P1", "P2", "P3", "P4"];
+      const quality = ["P3", "P4"];
+      const objects = {
+        P1: { name: "采样助手", x: 101, y: 109 },
+        P2: { name: "分析助手", x: 363, y: 109 },
+        P3: { name: "资料助手", x: 101, y: 244 },
+        P4: { name: "复核助手", x: 363, y: 244 },
+        R0: { name: "原始读数", x: 729, y: 89, world: "W0", born: 0 },
+        C1: { name: "比对表", x: 665, y: 222, world: "W1", born: 1 },
+        N1: { name: "复核注记", x: 796, y: 293, world: "W1", born: 2 },
+      };
+      const stages = [
+        {
+          name: "取样",
+          org: ["P1", "P2", "P3"],
+          review: ["P4"],
+          rev: "r1",
+          event: "采样助手将原始读数 R0 记入 W0。W1 已从 W0 派生，尚无复核工件。",
+        },
+        {
+          name: "加入复核",
+          org: ["P1", "P2", "P3"],
+          review: ["P2", "P4"],
+          rev: "r1",
+          event: "分析助手登记加入本轮复核，在 W1 产出引用原始读数 R0 的比对表 C1。",
+        },
+        {
+          name: "留下注记",
+          org: ["P1", "P2", "P3"],
+          review: ["P2", "P4"],
+          rev: "r1",
+          event: "复核助手为比对表 C1 留下复核注记 N1。两组成员与上一时点相同。",
+        },
+        {
+          name: "退出复核",
+          org: ["P1", "P2", "P3"],
+          review: ["P4"],
+          rev: "r1",
+          event: "分析助手退出本轮复核，仍是采集组成员。W1 保留其比对表和复核助手的注记。",
+        },
+        {
+          name: "组织换版",
+          org: ["P1", "P2"],
+          review: ["P4"],
+          rev: "r2",
+          event:
+            "采集组 r2 生效，资料助手从该组退出，仍属质量组 r1。临时复核成员和两处世界沿用上一时点的记录。",
+        },
+      ];
+      // Curves end at the visible object edge. The source and target IDs supply meaning.
+      const actions = [
+        {
+          from: "P1",
+          to: "R0",
+          since: 0,
+          verb: "记录",
+          curve: [131, 87, 229, 15, 581, 18, 673, 83],
+          label: [500, 38],
+        },
+        {
+          from: "P2",
+          to: "C1",
+          since: 1,
+          verb: "产出",
+          curve: [430, 109, 509, 109, 535, 203, 609, 220],
+          label: [523, 155],
+        },
+        {
+          from: "C1",
+          to: "R0",
+          since: 1,
+          verb: "引用",
+          curve: [697, 200, 747, 166, 750, 146, 731, 113],
+          label: [758, 152],
+        },
+        {
+          from: "P4",
+          to: "N1",
+          since: 2,
+          verb: "签注",
+          curve: [430, 251, 531, 292, 527, 328, 739, 295],
+          label: [550, 304],
+        },
+        {
+          from: "N1",
+          to: "C1",
+          since: 2,
+          verb: "引用",
+          curve: [775, 270, 751, 247, 741, 234, 722, 226],
+          label: [774, 249],
+        },
+      ];
+      let current = 2;
+      let selected = "P2";
+      let tableMode = window.matchMedia("(max-width: 540px)").matches;
+      const visibleSets = { a: true, b: true };
+      const hosts = new Map();
+      const ctx = $("drawing").getContext("2d");
+      if (window.matchMedia("(max-width: 780px)").matches) $("directory").open = false;
+
+      function roundedPolygon(points, radius) {
+        const path = new Path2D();
+        const last = points[points.length - 1],
+          first = points[0];
+        path.moveTo((last[0] + first[0]) / 2, (last[1] + first[1]) / 2);
+        for (let i = 0; i < points.length; i++) {
+          const point = points[i],
+            next = points[(i + 1) % points.length];
+          path.arcTo(point[0], point[1], next[0], next[1], radius);
+        }
+        path.closePath();
+        return path;
+      }
+
+      function contourFor(set, index) {
+        // This finite specimen has four distinct member sets at fixed peer coordinates.
+        const { org, review } = stages[index];
+        if (set === "a") {
+          if (org.includes("P3"))
+            return roundedPolygon(
+              [
+                [18, 65],
+                [452, 65],
+                [452, 153],
+                [192, 153],
+                [192, 289],
+                [18, 289],
+              ],
+              20,
+            );
+          return roundedPolygon(
+            [
+              [18, 65],
+              [452, 65],
+              [452, 153],
+              [18, 153],
+            ],
+            20,
+          );
+        }
+        const top = review.includes("P2") ? 55 : 198;
+        return roundedPolygon(
+          [
+            [273, top],
+            [457, top],
+            [457, 294],
+            [273, 294],
+          ],
+          28,
+        );
+      }
+
+      function drawArrow(action, highlighted) {
+        const [x0, y0, x1, y1, x2, y2, x3, y3] = action.curve;
+        const color = highlighted ? "#345d47" : "#788e7e";
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = highlighted ? 2.6 : 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.bezierCurveTo(x1, y1, x2, y2, x3, y3);
+        ctx.stroke();
+        const angle = Math.atan2(y3 - y2, x3 - x2),
+          tip = highlighted ? 9 : 7;
+        ctx.beginPath();
+        ctx.moveTo(x3, y3);
+        ctx.lineTo(x3 - tip * Math.cos(angle - 0.46), y3 - tip * Math.sin(angle - 0.46));
+        ctx.lineTo(x3 - tip * Math.cos(angle + 0.46), y3 - tip * Math.sin(angle + 0.46));
+        ctx.closePath();
+        ctx.fill();
+        if (highlighted) {
+          const [x, y] = action.label;
+          ctx.font = "600 13px 'Microsoft YaHei', sans-serif";
+          ctx.textAlign = "center";
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = "#fcfcf6";
+          ctx.strokeText(action.verb, x, y);
+          ctx.fillText(action.verb, x, y);
+        }
+        ctx.restore();
+      }
+
+      function draw() {
+        if (tableMode || !ctx) return;
+        const canvas = $("drawing"),
+          box = canvas.getBoundingClientRect(),
+          scale = window.devicePixelRatio || 1;
+        if (!box.width || !box.height) return;
+        canvas.width = Math.round(box.width * scale);
+        canvas.height = Math.round(box.height * scale);
+        ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+        for (const key of ["a", "b"]) {
+          if (!visibleSets[key]) continue;
+          const path = contourFor(key, current);
+          ctx.fillStyle = key === "a" ? "rgba(103,164,119,.16)" : "rgba(150,108,157,.13)";
+          ctx.strokeStyle = key === "a" ? "#548768" : "#885e8e";
+          ctx.lineWidth = 1.8;
+          ctx.setLineDash(key === "a" ? [] : [7, 4]);
+          ctx.fill(path);
+          ctx.stroke(path);
+        }
+        ctx.setLineDash([]);
+        const present = actions.filter((action) => action.since <= current);
+        const concernsSelection = (action) => action.from === selected || action.to === selected;
+        for (const highlighted of [false, true]) {
+          for (const action of present.filter((item) => concernsSelection(item) === highlighted))
+            drawArrow(action, highlighted);
+        }
+      }
+
+      function element(tag, className, value) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (value !== undefined) node.textContent = value;
+        return node;
+      }
+      function choose(id) {
+        selected = id;
+        render();
+      }
+      function selectionButton(id, className) {
+        const button = element("button", className);
+        button.type = "button";
+        button.dataset.ref = id;
+        button.addEventListener("click", () => choose(id));
+        return button;
+      }
+      function displayName(id) {
+        return objects[id].name + " " + id;
+      }
+      function actionEndpoint(id) {
+        if (id === selected) return document.createTextNode(displayName(id));
+        const button = element("button", "fact-link", displayName(id));
+        button.type = "button";
+        button.addEventListener("click", () => {
+          choose(id);
+          $("selection-name").focus({ preventScroll: true });
+        });
+        return button;
+      }
+      function addNodes() {
+        for (const [id, item] of Object.entries(objects)) {
+          const node = selectionButton(id, "node" + (item.world ? " artifact" : ""));
+          node.style.left = (item.x / width) * 100 + "%";
+          node.style.top = (item.y / height) * 100 + "%";
+          const text = element("span", "node-text");
+          text.append(element("span", "", item.name), element("small", "sub"));
+          node.append(element("span", "symbol", id), text);
+          $("plane").append(node);
+          hosts.set(id, node);
+        }
+      }
+      function fillTree(container, ids) {
+        const key = ids.join("|");
+        if (container.dataset.members === key) return;
+        container.dataset.members = key;
+        container.replaceChildren();
+        for (const id of ids) {
+          const row = selectionButton(id, "tree-row");
+          row.append(element("span", "", objects[id].name), element("small", "", id));
+          container.append(row);
+        }
+        if (!ids.length) container.append(element("span", "muted", "尚无已登记工件"));
+      }
+      function fillTable() {
+        for (const id of peers) {
+          const row = document.createElement("tr");
+          row.dataset.peer = id;
+          const title = document.createElement("th");
+          title.scope = "row";
+          const button = selectionButton(id, "matrix-peer");
+          button.textContent = displayName(id);
+          title.append(button);
+          row.append(title);
+          for (let column = 0; column < 3; column++) row.append(document.createElement("td"));
+          $("members").append(row);
+        }
+      }
+
+      function showSelection(stage) {
+        const item = objects[selected],
+          name = displayName(selected);
+        const seen = actions.filter((a) => a.since <= current && (a.from === selected || a.to === selected));
+        const facts = [];
+        let summary;
+        $("selection-name").textContent = item.name;
+        $("selection-ref").textContent = item.world ? selected + " · " + item.world : "peer " + selected;
+        if (item.world) {
+          if (item.born > current) {
+            summary = name + " 在此时点尚未登记。";
+          } else {
+            summary =
+              name +
+              " 位于" +
+              (item.world === "W0" ? "项目基线 W0" : "由 W0 派生的复核副本 W1") +
+              "，首次登记在「" +
+              stages[item.born].name +
+              "」。";
+          }
+        } else {
+          const memberOf = [];
+          if (stage.org.includes(selected)) memberOf.push("采集组 " + stage.rev);
+          if (quality.includes(selected)) memberOf.push("质量组 r1");
+          const inReview = stage.review.includes(selected);
+          summary = "正式归属为" + memberOf.join("、") + "。";
+          if (selected === "P2" && current >= 3) summary += "已退出本轮复核，此前产出的比对表 C1 仍在 W1。";
+          else summary += inReview ? "本轮复核名单中有此人。" : "本轮复核名单中没有此人。";
+          if (selected === "P3" && current === 4) summary += "组织 r2 已生效，上一修订仍可在前一时点查看。";
+          facts.push(
+            element("li", "", "成员依据 · 采集组 " + stage.rev + "、质量组 r1 的名册及本轮复核进出记录。"),
+          );
+        }
+        for (const a of seen) {
+          const row = element("li");
+          row.append(
+            stages[a.since].name + " · ",
+            actionEndpoint(a.from),
+            " " + a.verb + " ",
+            actionEndpoint(a.to),
+          );
+          facts.push(row);
+        }
+        if (!seen.length && (!item.world || item.born <= current))
+          facts.push(element("li", "", "到此时点未登记与这个对象直接相连的工件动作。"));
+        $("selection-summary").textContent = summary;
+        $("selection-facts").replaceChildren(...facts);
+      }
+
+      function render() {
+        const stage = stages[current];
+        $("revision").textContent = stage.rev;
+        fillTree($("org-a"), stage.org);
+        fillTree($("org-q"), quality);
+        fillTree($("world-zero"), ["R0"]);
+        fillTree(
+          $("world-one"),
+          ["C1", "N1"].filter((id) => objects[id].born <= current),
+        );
+        $("legend-a").textContent = "A 采集组 · " + stage.org.length;
+        $("legend-b").textContent = "B 本轮复核 · " + stage.review.length;
+        const common = stage.org.filter((id) => stage.review.includes(id));
+        $("intersection").textContent =
+          "A ∩ B  " +
+          common.length +
+          " 人" +
+          (common.length ? " · " + common.map((id) => objects[id].name).join("、") : "");
+        $("event-name").textContent = stage.name;
+        $("event-description").textContent = stage.event;
+        $("graph-view").hidden = tableMode;
+        $("table-view").hidden = !tableMode;
+        $("view-title").textContent = tableMode ? "参与者的集合归属" : "参与者与工件";
+        $("table-mode").setAttribute("aria-pressed", String(tableMode));
+        $("map-mode").setAttribute("aria-pressed", String(!tableMode));
+        for (const key of ["a", "b"]) {
+          const button = $("toggle-" + key);
+          button.disabled = tableMode;
+          button.title = tableMode ? "成员表显示两组成员" : "显示或隐藏集合 " + key.toUpperCase() + " 的轮廓";
+          button.setAttribute("aria-pressed", String(tableMode || visibleSets[key]));
+        }
+        Array.from($("steps").children).forEach((button, i) =>
+          button.setAttribute("aria-pressed", String(i === current)),
+        );
+        for (const [id, node] of hosts) {
+          const item = objects[id],
+            a = stage.org.includes(id),
+            b = stage.review.includes(id);
+          node.hidden = item.born > current;
+          node.querySelector(".sub").textContent =
+            item.world || (a && b ? "A ∩ B" : a ? "集合 A" : b ? "集合 B" : "两组之外");
+        }
+        for (const row of $("members").rows) {
+          const id = row.dataset.peer,
+            a = stage.org.includes(id),
+            b = stage.review.includes(id);
+          row.classList.toggle("selected", selected === id);
+          [a, b, a && b].forEach((yes, i) => {
+            const cell = row.cells[i + 1];
+            cell.dataset.member = yes ? "yes" : "no";
+            cell.textContent = yes ? "是" : "否";
+          });
+        }
+        for (const button of document.querySelectorAll("button[data-ref]")) {
+          button.setAttribute("aria-pressed", String(button.dataset.ref === selected));
+        }
+        showSelection(stage);
+        draw();
+      }
+
+      stages.forEach((stage, index) => {
+        const button = element("button", "", stage.name);
+        button.type = "button";
+        button.dataset.step = String(index);
+        button.addEventListener("click", () => {
+          current = index;
+          render();
+        });
+        button.addEventListener("keydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          if (event.key === "Home") current = 0;
+          else if (event.key === "End") current = stages.length - 1;
+          else current = (index + (event.key === "ArrowRight" ? 1 : -1) + stages.length) % stages.length;
+          render();
+          $("steps").children[current].focus();
+        });
+        $("steps").append(button);
+      });
+      for (const key of ["a", "b"])
+        $("toggle-" + key).addEventListener("click", () => {
+          visibleSets[key] = !visibleSets[key];
+          render();
+        });
+      $("map-mode").addEventListener("click", () => {
+        tableMode = false;
+        render();
+      });
+      $("table-mode").addEventListener("click", () => {
+        tableMode = true;
+        render();
+      });
+      addNodes();
+      fillTable();
+      render();
+      new ResizeObserver(draw).observe($("plane"));
+    </script>
+  </body>
+</html>

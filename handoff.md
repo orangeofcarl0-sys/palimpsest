@@ -526,6 +526,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 ## 7. 已知未解决问题 / 建议下一步
 
 - 当前可视化规划优先做 DSH 会话内的「协作」和「成果」。目标版本 `0.2.1-rc.5` 的会话槽位已做源码核对，宿主原生安装与交互尚待 Mock 验证。首个切片从 Chat 原地查看并行工作和谁待办，验证固定选中项、失败恢复、会话隔离及回到原对话。项目侧栏承担跨会话接手。已有 gRPC 七幕样例继续用于历史复核。[规划与验收](docs/product/visualization/PLAN.md) · [上游的原生位置](docs/product/visualization/RESEARCH.md#工作视图在宿主里的位置) · [历史回放](docs/product/visualization/prototype/index.html)
+- 协作页专项研究已把组织修订、工作世界、动态动作和交叠成员分别映射到目录、区域、箭头与集合轮廓。可操作样例用合成数据区分加入、生成工件、退出和正式换版。真实 gRPC 与 Energy 的文件集合另从原 Git 对象复算。下一次原生 Mock 从同一身份的多个目录入口、退出后的工件溯源及可见范围入手。[研究、依据与验收](docs/product/visualization/STRUCTURE-AND-OVERLAP.md) · [工作面样例](docs/product/visualization/prototype/structure.html)
 
 上轮 gRPC 的 `CONTINUE_WORK`、重复完成拒绝和缺等待结论均保留。修复后的真实复跑已走通结算到等待结论。原生 `job_output` 与 Work 作业 ID 的误用在本轮仍出现一次，随后用 `work workers` 恢复。[调用序列](docs/engineering/WORK-REVISION-LIVE-T2.md#结算后-readiness-修复与-grpc-同基线复跑)
 
@@ -667,6 +668,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-18 | 盘点 65 个源码目录，调研 dsh-layerfs 与多 Agent 可视化，提出项目历程读面 | [系统与来源](docs/product/visualization/SYSTEMS.md) · [调研](docs/product/visualization/RESEARCH.md) · [规划与离线原型](docs/product/visualization/PLAN.md) | 设计基线 `4e291944`。样本取自既有归档，产品接入与人因验收待实施 |
 | 2026-11-18 | 交接回放成为档案原型首页，七步呈现实际角色、交接物与接续凭据 | [交接原型](docs/product/visualization/prototype/index.html) · [阅读设计](docs/product/visualization/PLAN.md#一份工作如何交到下一位手里) | 支持逐步选择、连续播放、暂停与静态阅读，使用原有封存 |
 | 2026-11-18 | 依 dsh-layerfs 的宿主位置及工作对象重订可视化规划 | [位置与形式](docs/product/visualization/RESEARCH.md#工作视图在宿主里的位置) · [会话内布局和状态样例](docs/product/visualization/PLAN.md#一个时点的布局) | 首个验收改为在 DSH 会话里判断并行与待办。已核对槽位源码和真实归档，本次产物为设计 |
+| 2026-11-18 | 调研组织、世界、格点动作和交叠集合，制作五时点交互样例 | [文献与两组 Git 复算](docs/product/visualization/STRUCTURE-AND-OVERLAP.md) · [格点图与成员表](docs/product/visualization/prototype/structure.html) | 组织与边界四组回归 47/47。下一项资格为 DSH 原生挂载、授权读面和可读性对照 |
 
 ---
 

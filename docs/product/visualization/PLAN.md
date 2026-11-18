@@ -1,6 +1,6 @@
 # Palimpsest 多智能体协作可视化规划
 
-2026-11-18 · 产品盘点基线 `4e291944fd355adf3ff4fbb864401dfd1edb35d9` · **会话内工作视图为设计提案。已有可运行样例为 gRPC 历史回放。**
+2026-11-18 · 产品盘点基线 `4e291944fd355adf3ff4fbb864401dfd1edb35d9` · **会话内工作视图为设计提案。可运行样例包括 gRPC 历史回放和组织、世界与协作集合的交互研究。**
 
 用户刚在 DSH 的 Chat 交代完任务，下一刻就可能想看「谁接了哪一块，另一块还在等谁」。建议在**同一会话的标签行**提供「协作」和「成果」，分别对应 dsh-layerfs 的 Work 和 History。进入其中一页时，项目、会话和返回对话的位置都已确定。跨会话查成果从项目侧栏进入。原有七幕回放适合向后来人解释一次已结束的工作，继续作为历史样本使用。[位置与形式的上游依据](RESEARCH.md#工作视图在宿主里的位置) · [65 个源码目录及现有界面](SYSTEMS.md) · [gRPC 历史样例](prototype/index.html)
 
@@ -16,6 +16,8 @@
 dsh-layerfs 把 Work 和 History 注册到 `conversation.view`，标题、空白会话的项目选择和全局侧栏各用不同的宿主位置。Palimpsest 的实验版本 DSH `0.2.1-rc.5` 也声明了按 Session 呈现的 `conversation.view` 和可用时按 `callId` 打开检查器的 `inspectCall`。Palimpsest 当前发货的 bundle 注册 startup、tools、runner，独立 Web 已有 Project Workspace。新增会话视图需要 DSH Web 的客户端插件，还要把实际 Session 绑定到获准读取的项目和工作。槽位已核对到源码，安装、绑定和切页后的行为留给第一轮 Mock 验证。[LayerFS 的注册位置](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/client/src/client/index.ts) · [目标 DSH 的槽位契约](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.5/packages/client/ui-conversation/src/client/contract/slots.ts) · [现有宿主](../../../host/dsh/cordis.patch.yml) · [现有 Web](../../../web/src/App.tsx)
 
 ## 屏幕上什么保持原位
+
+在「协作」工作面保留两种可独立展开的参照，即有修订的组织和有版本的世界。中央格点给主体和工件稳定的位置，动作边写出发生的事。比较归属时，在同一批可见对象上叠两组成员轮廓，随时可切换精确名单。切换世界会重新计算依赖世界的谓词。首轮 Mock 应验证一次成员退出只收回相应关系，一次组织换版才更新组织目录，退出者此前交回的工作仍有来源。核对图与名单逐人一致，并在缺少资料的场景区分未知与零。[形状、时间与实证](STRUCTURE-AND-OVERLAP.md) · [可切换时点的合成样例](prototype/structure.html)
 
 **给工作对象一个位置，让执行者出现在对象旁。** 用户交待的是「修订 Fleet 默认上限」「核验供应商证书」或「查清一条反例」。以这些可辨认的事项命名工作行。每行显示当前执行者、最近一次被观察到的动作、产出的东西。如果在等，写出等谁、等什么。同一人先后做两项工作会出现在两处。两人先后处理同一件事，行保留，执行者和动作更新，前一位的贡献留在详情。
 
