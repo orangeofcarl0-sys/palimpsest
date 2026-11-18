@@ -30,6 +30,8 @@ Gutwin 与 Greenberg 在实时协作研究中区分了观察参与者、观察�
 
 ## 其他路线分别解答什么
 
+关于固定组织、工作世界、动态关系和交叠成员的组合，另有专项调研。它比较层次与邻接、约束格点、成员轮廓、交集矩阵和动态图实验，并用 Palimpsest 的组织及边界用例与两份真实 Git 归档核对表达是否会产生错误归属。[专项调研与原始文献](STRUCTURE-AND-OVERLAP.md) · [交互样例](prototype/structure.html)
+
 | 参照 | 官方资料支持的做法 | 在 Palimpsest 中的取舍 |
 | --- | --- | --- |
 | LangSmith | 可从 thread 读分轮摘要，再深入子 Agent 和各次运行。thread 视图依赖 `thread_id`。Studio 另有图架构与线程调试入口。 | 采用「项目 → 会话 → 角色 → 调用」及返回时保留上下文。跨会话接续使用完整接受 SHA 和接受凭据。thread ID 只组织消息。普通用户默认看动作、输入来源和结果。[线程阅读](https://docs.langchain.com/langsmith/view-traces) · [Studio](https://docs.langchain.com/langsmith/studio) |

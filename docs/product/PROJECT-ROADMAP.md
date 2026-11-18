@@ -10,6 +10,8 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 
 多智能体协作可视化首先进入普通 DSH 会话。在 Chat、Trajectory 同一行提供「协作」与「成果」，让用户就地定位当前工作、执行者和等待事项。跨会话接手从项目侧栏和 Workspace 进入。首轮在真实 DSH Web 用零付费 Mock 验证挂载、并行、失败恢复和选中对象的连续性，再用 gRPC、Energy 与无文件的调查检验成果如何被采用。已有七幕 gRPC 原型用于复盘和核对历史事实。[可视化规划](visualization/PLAN.md) · [系统盘点](visualization/SYSTEMS.md) · [位置与形式调研](visualization/RESEARCH.md#工作视图在宿主里的位置)
 
+协作页的设计把组织修订与工作世界作为稳定参照，在同一格点图上观察对象和关系的变化。选定两个集合时可核对交集与成员依据。首轮把退出后仍能追到工件、切换世界后重算文件归属列为读者任务。[设计取舍与验证方法](visualization/STRUCTURE-AND-OVERLAP.md) · [观察五个时点](visualization/prototype/structure.html)
+
 普通路径使用原生 DSH 推理、Git、Shell 和测试。ProjectWorkspace、Pulse 与 Continuity 从已有所有者读取目标、成果、未决问题与当前依据。下一次 Session 优先看到足以决定下一步的状态，详情按需读取。持久化对象包括可定位的成果、来源、适用条件、未决假设与失败记录。接受状态和当前适用性分别判断。[项目工作区与交互](PALIMPSEST-INTERACTION-MODEL.md) · [语义所有者](../engineering/architecture/SEMANTIC-OWNER-MAP.md)
 
 协作规模与治理强度分别选择。一个 Agent 可以直接完成并提交。几个 Agent 可以并行调查、提出反例或接手部分成果。需要隔离写入、正式结算或受保护接受时，由既有 Work、Execution World、Evidence、Basis Admission 和 Promotion 承担对应合同。Git 提供版本事实，产品 Head 表示正式项目基线，Operator 决定需要批准的接受。模型负责需要判断的部分，程序负责可确定的检查、等待和状态转移。[Work 和 Continuity 产品路径](../programs/pc1/S02-NORMAL-PATH.md) · [审核与权限](../programs/pc1/S04-REVIEW-AND-AUTHORITY.md)
