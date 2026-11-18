@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- `codex/project-visualization-plan` 已实现 DSH 侧栏的项目工作检查器。在运行中的 DSH Web 打开 **Palimpsest**，可跟随当前关系、固定视点和按账本事件回查。实机复验命令为 `node scripts/inspector/dsh-web.mjs --smoke`。[使用说明](docs/user-guide.md#dsh-侧栏工作检查器)
+- `codex/project-visualization-plan` 的 DSH 侧栏工作检查器支持实时图谱、固定视点与账本回查。点任务即可锁定直接相连的角色和结果，按 `/` 搜索完整标识。界面跟随 DSH 主题，窄屏自动使用两列。实机复验命令为 `node scripts/inspector/dsh-web.mjs --smoke`。[使用说明](docs/user-guide.md#dsh-侧栏工作检查器)
 
 - OpenCode Go gRPC T3 复跑证据已由 [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) 发布到主线 `e4f037b8`，16/16 项检查首次通过。证据来自主线 `77f2d87e`、同一核准 HEAD `4639ae44` 的普通 DSH 会话。只提交评审 `ccb07d36`，记录 `DELIVER` 后自然退出，13/13 笔请求自动归因、25/25 对工具配对。冻结 v2 保留 11/12，同一原稿离线复核 12/12、HTTP/2 7/7、公开测试 18/18。历史原判及 402/400 `UNKNOWN` 逐字节保留，本次发布新增付费请求 0。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#语义与归因修复后的真实-opencode-go-t3) · [轨迹与账本](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json)
 
@@ -673,6 +673,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-18 | 调研组织、世界、格点动作和交叠集合，制作五时点交互样例 | [文献与两组 Git 复算](docs/product/visualization/STRUCTURE-AND-OVERLAP.md) · [格点图与成员表](docs/product/visualization/prototype/structure.html) | 组织与边界四组回归 47/47。下一项资格为 DSH 原生挂载、授权读面和可读性对照 |
 | 2026-11-18 | 会话样例可播放交接、固定观察对象并在当前时点循线回看旧动作 | [回放与查证语义](docs/product/visualization/STRUCTURE-AND-OVERLAP.md#四时间选择和可见范围) · [交互样例](docs/product/visualization/prototype/structure.html) | 窄屏同屏显示人物和两个世界，减少动效时可静态阅读。使用原五个合成时点 |
 | 2026-11-18 | 原生 DSH 侧栏接入当前项目，时间线驱动实时图与账本截面 | [操作](docs/user-guide.md#dsh-侧栏工作检查器) · [实机回归](scripts/inspector/dsh-web.mjs) · [宿主观察](host/dsh/lib/inspector/observe.js) | 在打开的 DSH 中登记并认领任务，核对实时新增、固定后续到达、返回现场、早期无此尝试与只读轮询。未启动付费模型 |
+| 2026-11-19 | 打磨原生关系图、局部聚焦、时间线和对象检查 | [操作](docs/user-guide.md#dsh-侧栏工作检查器) · [实机回归与截图入口](scripts/inspector/dsh-web.mjs) | 真实 DSH 检查深浅主题、390 像素双列、键盘搜索与完整 ID，核对回溯和筛选后的连线数与当前投影一致 |
 
 ---
 

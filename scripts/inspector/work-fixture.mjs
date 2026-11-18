@@ -13,7 +13,10 @@ try {
   if (action === 'start') {
     const task = (id, objective, deps = []) => ({ task_id: id, objective, depends_on: deps, write_paths: [id + '.md'], required_artifacts: [id + '.md'] });
     const headCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: profile.repository, encoding: 'utf8' }).trim();
-    work.start({ projectId: profile.projectId, headCommit, goal: '核对工作交接', tasks: [task('reading', '核对现场读数'), task('review', '复核读数来源', ['reading'])] });
+    work.start({ projectId: profile.projectId, headCommit, goal: '核对工作交接', tasks: [
+      task('reading', '核对现场读数'),
+      task('review', '复核读数来源并确认两座站点的原始记录与本次更正一致', ['reading']),
+    ] });
   } else if (action === 'claim') {
     work.step();
     const created = work.step();
