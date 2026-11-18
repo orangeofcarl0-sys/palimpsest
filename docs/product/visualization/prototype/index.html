@@ -6,18 +6,17 @@
     <title>gRPC 迁移 · Palimpsest 项目历程</title>
     <style>
       :root {
-        color-scheme: dark;
-        --bg: #101824;
-        --panel: #151f2e;
-        --inset: #101925;
-        --line: #354457;
-        --soft: #aab9c9;
-        --text: #edf3f7;
-        --aqua: #8bdfcf;
-        --amber: #f5c78a;
-        --lav: #ccbbf0;
-        --blue: #a2c8ec;
-        --sans: Inter, "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif;
+        color-scheme: light;
+        --paper: #f7f5ed;
+        --sheet: #fffef9;
+        --ink: #283b35;
+        --soft: #52635a;
+        --line: #cdd3c5;
+        --green: #205844;
+        --mint: #e0ecda;
+        --rust: #8b442c;
+        --serif: "Baskervville", Georgia, "Noto Serif CJK SC", "Songti SC", SimSun, serif;
+        --sans: "DM Sans", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
         --mono: "IBM Plex Mono", Consolas, monospace;
       }
       * {
@@ -25,565 +24,543 @@
       }
       body {
         margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font: 15px/1.6 var(--sans);
+        color: var(--ink);
+        background: var(--paper);
+        font: 15px/1.65 var(--sans);
       }
       button,
       a {
+        color: inherit;
         font: inherit;
       }
       button {
         cursor: pointer;
-        color: inherit;
       }
       a {
-        color: var(--aqua);
-        text-underline-offset: 4px;
-      }
-      button:focus-visible,
-      a:focus-visible,
-      summary:focus-visible,
-      [tabindex="-1"]:focus-visible {
-        outline: 3px solid var(--amber);
-        outline-offset: 3px;
+        color: var(--green);
+        text-underline-offset: 0.24em;
       }
       [hidden] {
         display: none !important;
       }
+      :is(button, a, summary, [tabindex]):focus-visible {
+        outline: 3px solid #8b492c;
+        outline-offset: 3px;
+      }
       .skip {
         position: absolute;
-        left: 1rem;
-        top: -5rem;
-        z-index: 3;
-        background: var(--panel);
-        padding: 0.5rem;
+        left: 12px;
+        top: -80px;
+        padding: 8px 14px;
+        background: var(--sheet);
+        z-index: 1;
       }
       .skip:focus {
-        top: 0.5rem;
+        top: 8px;
       }
       .wrap {
-        max-width: 1240px;
-        margin: auto;
-        padding: 0 clamp(16px, 4vw, 58px);
-      }
-      header {
-        border-bottom: 1px solid var(--line);
-        background: #111b29;
+        width: min(1200px, 100%);
+        margin-inline: auto;
+        padding-inline: clamp(18px, 4.5vw, 68px);
       }
       .mast {
+        min-height: 72px;
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        min-height: 58px;
+        gap: 16px;
+        border-bottom: 1px solid var(--line);
       }
-      .brand {
-        font-weight: 700;
-        letter-spacing: 0.01em;
-      }
-      .crumb,
-      .muted {
-        color: var(--soft);
-      }
-      .crumb {
-        margin-left: 12px;
-        padding-left: 12px;
-        border-left: 1px solid var(--line);
-      }
-      .archive {
-        font-size: 13px;
-        color: var(--soft);
-      }
-      main {
-        padding-bottom: 32px !important;
-      }
-      .hero {
+      .branding {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        gap: 26px;
-        padding: 32px 0 23px;
-      }
-      .hero h1 {
-        margin: 0;
-        font-size: clamp(27px, 3.6vw, 45px);
-        line-height: 1.22;
-        letter-spacing: -0.035em;
-      }
-      .hero p {
-        color: var(--soft);
-        margin: 8px 0 0;
-      }
-      .entry {
-        font-size: 13px;
+        gap: 10px;
+        align-items: center;
+        color: var(--ink);
+        text-decoration: none;
         white-space: nowrap;
       }
-      h2 {
-        font-size: 19px;
-        margin: 0;
-        letter-spacing: 0.01em;
+      .mark {
+        width: 22px;
+        height: 25px;
+        position: relative;
       }
-      h3 {
-        font-size: 18px;
-        line-height: 1.5;
-        margin: 0;
+      .mark::before,
+      .mark::after {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 18px;
+        border: 1.7px solid var(--green);
+        border-radius: 8px 3px 6px 2px;
+        transform: rotate(-17deg);
       }
+      .mark::before {
+        top: 5px;
+        left: 1px;
+        background: #acbfa8;
+      }
+      .mark::after {
+        top: 1px;
+        left: 7px;
+        background: var(--paper);
+      }
+      .brand {
+        font: 600 25px/1 var(--serif);
+        letter-spacing: -0.045em;
+      }
+      .mast nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .mast nav a {
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 30px;
+        font-size: 14px;
+        color: var(--soft);
+      }
+      .mast nav a[aria-current="page"] {
+        background: var(--green);
+        color: #fff;
+      }
+      .mast nav a:hover:not([aria-current="page"]) {
+        background: #e8ebdf;
+      }
+      .hero {
+        padding-block: 29px 24px;
+      }
+      .dateline,
+      .step-meta,
+      .kind {
+        margin: 0;
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 650;
+      }
+      .hero h1 {
+        margin: 3px 0 7px;
+        font: 650 clamp(33px, 4.1vw, 55px) / 1.26 var(--serif);
+        letter-spacing: -0.04em;
+      }
+      .hero > p:last-child {
+        max-width: 73ch;
+        color: var(--soft);
+        margin: 0;
+        font-size: 16px;
+      }
+      h2,
+      h3,
       p {
         margin: 0;
       }
-      code,
-      .mono,
-      td.num {
-        font: 0.94em/1.55 var(--mono);
-        font-variant-numeric: tabular-nums;
-        overflow-wrap: anywhere;
+      h2,
+      h3 {
+        line-height: 1.4;
+      }
+      .journey {
+        display: grid;
+        grid-template-areas: "sequence spread";
+        grid-template-columns: minmax(210px, 0.31fr) minmax(0, 1fr);
+        gap: clamp(16px, 2.5vw, 36px);
+        align-items: start;
+      }
+      .sequence {
+        grid-area: sequence;
+        padding: 8px 0;
+      }
+      .sequence h2,
+      .box h2,
+      .trail h2 {
+        font-size: 19px;
+      }
+      .date-group {
+        margin: 16px 0 5px;
+        color: var(--soft);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .date-group time {
+        font-family: var(--mono);
+      }
+      .sequence ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .sequence li {
+        position: relative;
+      }
+      .sequence li:not(:last-child)::before {
+        content: "";
+        position: absolute;
+        top: 27px;
+        bottom: -16px;
+        left: 16px;
+        width: 1px;
+        background: #bdc5b7;
+      }
+      .pick {
+        display: grid;
+        grid-template-columns: 15px 1fr;
+        column-gap: 8px;
+        width: 100%;
+        min-height: 46px;
+        padding: 5px 9px;
+        align-items: center;
+        position: relative;
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: 8px;
+        text-align: left;
+      }
+      .pick::before {
+        content: "";
+        justify-self: center;
+        width: 6px;
+        height: 6px;
+        background: var(--paper);
+        border: 1.5px solid #788c79;
+        border-radius: 50%;
+      }
+      .pick[aria-current="step"] {
+        background: #e3ebdc;
+      }
+      .pick[aria-current="step"]::before {
+        background: var(--green);
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px #c7d8bf;
+      }
+      .pick:hover {
+        background: #e9ede2;
+      }
+      .pick strong,
+      .pick small {
+        display: block;
+      }
+      .pick strong {
+        font-size: 14px;
+        font-weight: 650;
+        line-height: 1.4;
+      }
+      .pick small {
+        font-size: 11px;
+        color: var(--soft);
+      }
+      .spread {
+        grid-area: spread;
+        container-type: inline-size;
+        background: var(--sheet);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .scene-head {
+        padding: 20px clamp(16px, 3vw, 32px) 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .counter {
+        font: 12px var(--mono);
+        color: var(--soft);
+      }
+      .spread h2 {
+        margin: 5px clamp(16px, 3vw, 32px) 6px;
+        font: 650 clamp(22px, 2.6vw, 34px) / 1.42 var(--serif);
+        letter-spacing: -0.022em;
+      }
+      .diagram {
+        position: relative;
+        height: clamp(172px, 16vw, 208px);
+        margin: 0 7px;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .transfer-label {
+        position: absolute;
+        left: 50%;
+        top: 23%;
+        transform: translate(-50%, -50%);
+        color: var(--green);
+        background: #f0f3e8;
+        border: 1px solid #cbd6c5;
+        border-radius: 30px;
+        padding: 2px 11px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .people {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 0 2%;
+        text-align: center;
+        margin: -6px 0 17px;
+      }
+      .people.to-left > :first-child {
+        order: 1;
+      }
+      .people strong,
+      .people small {
+        display: block;
+      }
+      .people strong {
+        font-size: 18px;
+        line-height: 1.3;
+      }
+      .people small {
+        color: var(--soft);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .story-text {
+        margin: 0 clamp(16px, 3vw, 32px);
+        padding: 12px 0 15px;
+        border-top: 1px solid #e3e6d9;
+      }
+      .story-text p {
+        color: #3c5045;
+        font-size: 15px;
+        line-height: 1.75;
+        min-block-size: 2lh;
+      }
+      @container (max-width: 570px) {
+        .story-text p {
+          min-block-size: 3lh;
+        }
+      }
+      @container (max-width: 400px) {
+        #flow-title {
+          min-block-size: 2lh;
+        }
+        .story-text p {
+          min-block-size: 4lh;
+        }
+      }
+      .story-text a {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 13px;
+      }
+      .player {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 12px clamp(14px, 3vw, 30px);
+        border-top: 1px solid #dde2d4;
+        background: #f3f5eb;
+      }
+      .player button,
+      .filters button {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        min-height: 39px;
+        background: var(--sheet);
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 550;
+      }
+      .player #play {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+      .player button:hover:enabled,
+      .filters button:hover {
+        box-shadow: inset 0 0 0 1px #64856e;
+      }
+      .player button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .step-buttons,
+      .filters {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
       }
       .trail,
       .box {
         border: 1px solid var(--line);
-        border-radius: 10px;
-        background: var(--panel);
+        border-radius: 12px;
+        background: var(--sheet);
+        padding: 18px 20px;
+        min-width: 0;
       }
       .trail {
-        padding: 16px 20px 18px;
+        margin-bottom: 15px;
       }
       .trailhead,
-      .barhead,
-      .sectionhead {
+      .boxhead,
+      .barhead {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
         gap: 12px;
+        justify-content: space-between;
+        align-items: center;
       }
-      .trailhead {
-        margin-bottom: 12px;
-      }
-      .trailhead small,
-      .sectionhead small {
+      .trailhead small {
         color: var(--soft);
       }
       .versions {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 20px;
+        gap: 12px;
+        margin-top: 12px;
       }
       .version {
-        position: relative;
         text-align: left;
-        background: var(--inset);
+        padding: 8px 12px;
         border: 1px solid var(--line);
-        border-radius: 6px;
-        padding: 9px 13px;
-        min-width: 0;
-      }
-      .version:not(:last-child):after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: calc(100% + 1px);
-        width: 20px;
-        border-top: 1px dashed #627587;
+        border-radius: 9px;
+        background: #f5f6ec;
       }
       .version span {
         display: block;
         font-size: 13px;
         color: var(--soft);
       }
+      .version b,
+      .mono,
+      code,
+      .ref,
+      .num {
+        font-family: var(--mono);
+        overflow-wrap: anywhere;
+      }
       .version b {
-        font: 600 19px/1.6 var(--mono);
-        letter-spacing: 0.025em;
+        color: var(--ink);
+        font-size: 17px;
       }
-      .version[data-id="accepted"] b {
-        color: var(--aqua);
+      .version[aria-pressed="true"],
+      .event[aria-pressed="true"],
+      .lane button[aria-pressed="true"] {
+        border-color: var(--green);
+        background: #e4eedf;
       }
-      .version[aria-pressed="true"] {
-        outline: 1px solid var(--aqua);
-        border-color: var(--aqua);
-      }
-      .version:hover,
-      .event:hover {
-        background: #203042;
-      }
-      .tabs {
-        display: flex;
-        gap: 22px;
-        border-bottom: 1px solid var(--line);
-        margin: 18px 0;
-      }
-      .tabs button {
-        border: 0;
-        border-bottom: 3px solid transparent;
-        padding: 10px 0;
-        background: transparent;
-        color: var(--soft);
-        font-weight: 600;
-      }
-      .tabs [aria-pressed="true"] {
-        border-color: var(--aqua);
-        color: var(--text);
-      }
-      .layout {
+      .layout,
+      .pair {
         display: grid;
-        grid-template-columns: minmax(0, 1.42fr) minmax(310px, 1fr);
-        gap: 16px;
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+        gap: 15px;
         align-items: start;
       }
-      .box {
-        min-width: 0;
-        padding: 18px 20px;
-      }
-      .boxhead {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: center;
-        margin-bottom: 12px;
-      }
       .filters {
-        display: flex;
-        flex-wrap: wrap;
         gap: 4px;
       }
       .filters button {
-        border: 1px solid transparent;
-        background: transparent;
-        color: var(--soft);
-        border-radius: 5px;
-        padding: 3px 9px;
-        font-size: 13px;
-        min-height: 33px;
+        padding: 3px 10px;
+        min-height: 32px;
       }
-      .filters button[aria-pressed="true"] {
-        border-color: #52687b;
-        background: #263649;
-        color: var(--text);
+      .filters [aria-pressed="true"] {
+        border-color: var(--green);
+        color: var(--green);
+        background: var(--mint);
+      }
+      .layoutmode {
+        margin-top: 10px;
       }
       .group {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--soft);
-        margin: 18px 0 7px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        font-size: 14px;
+        margin: 16px 0 7px;
       }
-      .group:after {
-        content: "";
-        height: 1px;
-        background: var(--line);
-        flex: 1;
-      }
-      .events {
-        margin: 0;
+      .events,
+      .stoplist {
         padding: 0;
+        margin: 0;
         list-style: none;
       }
       .event {
         display: grid;
-        grid-template-columns: 82px 1fr auto;
-        width: 100%;
+        grid-template-columns: 78px 1fr auto;
+        gap: 7px;
         align-items: center;
-        gap: 9px;
+        text-align: left;
+        width: 100%;
+        padding: 7px;
         border: 1px solid transparent;
         background: transparent;
-        text-align: left;
-        border-radius: 5px;
-        min-height: 41px;
-        padding: 7px 8px;
+        border-radius: 6px;
+        font-size: 13px;
       }
-      .event[aria-pressed="true"] {
-        background: #223749;
-        border-color: #4c697b;
+      .role,
+      .ref,
+      .notes,
+      .stoplist {
+        color: var(--soft);
       }
+      .ref,
       .role {
         font-size: 12px;
-        color: var(--soft);
-        letter-spacing: 0.003em;
       }
-      .event .role:before {
-        content: "";
-        display: inline-block;
-        vertical-align: middle;
-        width: 6px;
-        height: 6px;
-        background: var(--blue);
-        border-radius: 50%;
-        margin-right: 6px;
-      }
-      .role.worker:before {
-        background: var(--lav);
-        border-radius: 1px;
-      }
-      .role.operator:before {
-        background: var(--aqua);
-        border-radius: 1px;
-        transform: rotate(45deg);
-      }
-      .role.host:before {
-        background: var(--amber);
-        border-radius: 0;
-      }
-      .evname {
-        font-size: 14px;
-      }
-      .ref {
-        color: var(--soft);
-        font: 12px var(--mono);
-      }
-      .issue {
-        color: var(--amber);
+      .issue,
+      .warning {
+        color: var(--rust);
       }
       .detail {
-        border-top: 3px solid var(--aqua);
         position: sticky;
         top: 12px;
       }
-      .kind {
-        font-size: 12px;
-        color: var(--aqua);
-        margin-bottom: 7px;
-      }
-      .detail p {
-        margin: 10px 0;
-        color: var(--soft);
+      .detail p,
+      .notes {
+        margin: 9px 0;
       }
       .detail dl {
-        margin: 13px 0 0;
+        margin: 12px 0;
       }
-      .detail .field {
+      .field {
         display: grid;
-        grid-template-columns: 6em 1fr;
+        grid-template-columns: 6.2em 1fr;
         gap: 8px;
-        padding: 8px 0;
+        padding: 7px 0;
         border-top: 1px solid var(--line);
         font-size: 13px;
       }
-      .field dt {
+      dt,
+      th {
         color: var(--soft);
       }
-      .field dd {
+      dd {
         margin: 0;
         overflow-wrap: anywhere;
       }
-      .detail cite {
-        font-style: normal;
+      summary {
+        cursor: pointer;
+        color: var(--green);
+        padding: 5px 0;
       }
       .sources {
-        margin-top: 15px;
         display: flex;
         flex-wrap: wrap;
-        gap: 8px 16px;
-        font-size: 13px;
-      }
-      .detail details {
-        margin-top: 10px;
-        font-size: 13px;
-      }
-      .detail summary {
-        cursor: pointer;
-        color: var(--aqua);
-        padding: 3px 0;
-      }
-      .detail details table {
-        margin-top: 8px;
-      }
-      .pair {
-        display: grid;
-        grid-template-columns: 1.25fr 1fr;
-        gap: 16px;
-        align-items: start;
-      }
-      .bars {
-        padding: 13px 0 7px;
-      }
-      .barhead {
-        font-size: 13px;
-        margin-bottom: 5px;
-      }
-      .bar {
-        display: flex;
-        overflow: hidden;
-        height: 12px;
-        background: #243244;
-        border-radius: 3px;
-        margin-bottom: 12px;
-      }
-      .bar i {
-        height: 100%;
-        display: block;
-      }
-      .fresh {
-        background: var(--blue);
-      }
-      .cache {
-        background: #569f99;
-      }
-      .out {
-        background: var(--lav);
-      }
-      .legend {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        color: var(--soft);
-        font-size: 12px;
-      }
-      .legend i {
-        display: inline-block;
-        width: 9px;
-        height: 9px;
-        margin-right: 4px;
-      }
-      .notes {
-        margin: 10px 0;
-        color: var(--soft);
+        gap: 6px 14px;
+        margin-top: 12px;
         font-size: 13px;
       }
       table {
-        width: 100%;
         border-collapse: collapse;
+        width: 100%;
         font-size: 13px;
       }
       th,
       td {
-        padding: 7px 4px;
         text-align: left;
+        padding: 6px 4px;
         border-bottom: 1px solid var(--line);
-        vertical-align: top;
         overflow-wrap: anywhere;
-      }
-      th {
-        font-weight: 500;
-        color: var(--soft);
-      }
-      .numbers th:not(:first-child),
-      .numbers td:not(:first-child) {
-        text-align: right;
-      }
-      .numbers th,
-      .numbers td {
-        white-space: nowrap;
-      }
-      .warning {
-        color: var(--amber);
-      }
-      .score {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        padding: 9px 0;
-        border-bottom: 1px solid var(--line);
-      }
-      .score b {
-        font: 600 18px var(--mono);
-      }
-      .stoplist {
-        margin: 8px 0 0;
-        padding-left: 20px;
-        color: var(--soft);
-        font-size: 13px;
-      }
-      .stoplist li {
-        margin: 4px 0;
-      }
-      footer {
-        margin-top: 24px;
-        border-top: 1px solid var(--line);
-        padding-top: 14px;
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-        font-size: 12px;
-        color: var(--soft);
-      }
-      @media (max-width: 850px) {
-        .layout,
-        .pair {
-          grid-template-columns: 1fr;
-        }
-        .detail {
-          position: static;
-        }
-        .hero {
-          align-items: flex-start;
-        }
-        .versions {
-          gap: 12px;
-        }
-        .version:not(:last-child):after {
-          width: 12px;
-        }
-        .event {
-          grid-template-columns: 86px 1fr auto;
-        }
-      }
-      @media (max-width: 560px) {
-        .hero {
-          display: block;
-          padding: 22px 0 16px;
-        }
-        .hero p {
-          font-size: 14px;
-        }
-        .entry {
-          display: inline-block;
-          margin-top: 9px;
-        }
-        .trail,
-        .box {
-          padding: 14px;
-        }
-        .versions {
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-        }
-        .version:not(:last-child):after {
-          display: none;
-        }
-        .trailhead small {
-          font-size: 11px;
-        }
-        .crumb {
-          display: none;
-        }
-        .event {
-          grid-template-columns: 72px minmax(0, 1fr) auto;
-          gap: 5px;
-          padding: 6px 2px;
-        }
-        .evname {
-          font-size: 13px;
-        }
-        .ref {
-          font-size: 11px;
-        }
-        .brand {
-          font-size: 15px;
-        }
-        .detail .field {
-          grid-template-columns: 5.7em 1fr;
-        }
-        .boxhead {
-          align-items: flex-start;
-          flex-wrap: wrap;
-        }
-        .numbers {
-          font-size: 12px;
-        }
-        .archive {
-          font-size: 12px;
-        }
-      }
-      .layoutmode {
-        display: flex;
-        gap: 2px;
-        border-top: 1px solid var(--line);
-        padding-top: 9px;
-      }
-      .layoutmode button {
-        font-size: 12px;
       }
       .lane {
         table-layout: fixed;
@@ -592,83 +569,252 @@
       .lane col:first-child {
         width: 17%;
       }
-      .lane th,
-      .lane td {
-        padding: 5px 3px;
-        vertical-align: middle;
-      }
-      .lane td:empty:after {
-        content: "·";
-        color: var(--soft);
-      }
       .lane button {
         width: 100%;
-        display: block;
-        margin: 3px 0;
-        padding: 5px 6px;
+        padding: 5px;
+        margin: 2px 0;
         text-align: left;
         font-size: 12px;
-        line-height: 1.4;
-        color: var(--text);
-        background: #213346;
-        border: 1px solid #476176;
-        border-radius: 4px;
-      }
-      .lane button:hover,
-      .lane button[aria-pressed="true"] {
-        border-color: var(--aqua);
-        color: var(--aqua);
+        border-radius: 5px;
+        border: 1px solid var(--line);
+        background: #f3f5eb;
       }
       .lane .exception {
-        border-left: 3px solid var(--amber);
+        border-left: 3px solid var(--rust);
       }
-      .lane th[scope="row"] {
-        color: var(--text);
-        font-weight: 500;
+      .notes,
+      .stoplist {
+        font-size: 13px;
       }
-      .lane th[scope="col"] {
+      .numbers th:not(:first-child),
+      .numbers td:not(:first-child) {
+        text-align: right;
+      }
+      .bars {
+        margin: 15px 0 6px;
+      }
+      .barhead,
+      .legend {
+        font-size: 12px;
+      }
+      .bar {
+        display: flex;
+        height: 12px;
+        background: #e3e7db;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .bar i {
+        height: 100%;
+      }
+      .fresh {
+        background: #788da2;
+      }
+      .cache {
+        background: #5d886f;
+      }
+      .out {
+        background: #b47e69;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 7px;
+      }
+      .legend i {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-right: 3px;
+      }
+      .score {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        margin: 26px 0 20px;
+        padding-top: 11px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        justify-content: space-between;
         color: var(--soft);
+        font-size: 12px;
       }
-      .role.audit:before {
-        background: var(--amber);
-        border: 1px solid var(--amber);
-        background: transparent;
-      }
-      @media (max-width: 560px) {
-        .lane col:first-child {
-          width: 20%;
+      @media (max-width: 830px) {
+        .journey {
+          grid-template-columns: minmax(175px, 0.32fr) minmax(0, 1fr);
+          gap: 15px;
         }
-        .lane button {
-          padding: 5px 3px;
+        .layout,
+        .pair {
+          grid-template-columns: 1fr;
         }
-        .lane th[scope="row"] {
-          font-size: 11px;
+        .detail {
+          position: static;
         }
       }
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          scroll-behavior: auto !important;
+      @media (max-width: 660px) {
+        .wrap {
+          padding-inline: 16px;
+        }
+        .mast {
+          min-height: 58px;
+          gap: 5px;
+        }
+        .brand {
+          font-size: 21px;
+        }
+        .branding {
+          gap: 6px;
+        }
+        .mast nav {
+          gap: 1px;
+        }
+        .mast nav a {
+          font-size: 12px;
+          padding: 7px 8px;
+        }
+        .hero {
+          padding-block: 20px 16px;
+        }
+        .hero h1 {
+          font-size: 33px;
+        }
+        .hero > p:last-child {
+          font-size: 14px;
+        }
+        .journey {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+        .spread {
+          order: -1;
+          width: 100%;
+        }
+        .sequence {
+          width: 100%;
+        }
+        .sequence ol {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 2px;
+        }
+        .sequence li:not(:last-child)::before {
+          display: none;
+        }
+        .spread h2 {
+          font-size: 23px;
+        }
+        .diagram {
+          height: 158px;
+          margin: 0;
+        }
+        .people {
+          margin-bottom: 10px;
+        }
+        .people strong {
+          font-size: 15px;
+        }
+        .transfer-label {
+          font-size: 12px;
+          padding: 2px 8px;
+        }
+        .player {
+          gap: 5px;
+        }
+        .player button {
+          padding: 6px 10px;
+        }
+        .trail,
+        .box {
+          padding: 13px;
+        }
+        .trailhead,
+        .boxhead {
+          flex-wrap: wrap;
+        }
+        .versions {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 7px;
+        }
+        .event {
+          grid-template-columns: 61px 1fr auto;
+          padding: 5px 1px;
+        }
+      }
+      @media (max-width: 350px) {
+        .mast {
+          flex-wrap: wrap;
+          padding-block: 6px;
+        }
+        .player button {
+          padding: 5px 7px;
         }
       }
     </style>
   </head>
   <body>
     <a class="skip" href="#main">跳至项目历程</a>
-    <header>
-      <div class="mast wrap">
-        <div><span class="brand">Palimpsest</span><span class="crumb">项目工作区</span></div>
-        <span class="archive">历史回放 · 2026 年 11 月 18 日</span>
+    <header class="wrap">
+      <div class="mast">
+        <a class="branding" href="#journey" aria-label="Palimpsest 项目手记"
+          ><span class="mark" aria-hidden="true"></span><span class="brand">Palimpsest</span></a
+        >
+        <nav aria-label="项目阅读方式">
+          <a id="journey-tab" href="#journey" aria-current="page">交接回放</a>
+          <a id="history-tab" href="#evidence">事件凭据</a>
+          <a id="cost-tab" href="#compare">运行对比</a>
+        </nav>
       </div>
     </header>
     <main class="wrap" id="main" tabindex="-1">
       <div class="hero">
-        <div>
-          <h1>gRPC 迁移评审</h1>
-          <p>T2 修订已获核准。T3 已交付评审，冻结原判与同一提交的复核相差一项。</p>
-        </div>
-        <a class="entry" href="../PLAN.md">查看设计规划 ↗</a>
+        <p class="dateline">项目手记　/　2026 年 11 月 10 日至 18 日</p>
+        <h1>一次 gRPC 修订的交接</h1>
+        <p>Fleet 把读取上限留空或填 0 时，服务原先返回空流。这次修订让它按原顺序返回最多三条读数。</p>
       </div>
-      <section class="trail" aria-labelledby="version-title">
+      <section class="journey" id="journey" aria-label="工作在参与者之间的流转">
+        <article class="spread" aria-labelledby="flow-title">
+          <div class="scene-head">
+            <p class="step-meta" id="step-meta"></p>
+            <span class="counter" id="step-counter"></span>
+          </div>
+          <h2 id="flow-title" tabindex="-1"></h2>
+          <div class="diagram">
+            <canvas id="transfer-drawing" aria-hidden="true"></canvas>
+            <span class="transfer-label" id="parcel"></span>
+          </div>
+          <div class="people" id="participants">
+            <div><strong id="from-name"></strong><small id="from-kind"></small></div>
+            <div><strong id="to-name"></strong><small id="to-kind"></small></div>
+          </div>
+          <p class="sr-only" id="transfer-summary" aria-live="polite"></p>
+          <div class="story-text">
+            <p id="story-description"></p>
+            <a id="step-evidence" href="#delegated"></a>
+          </div>
+          <div class="player" role="group" aria-label="交接回放控制">
+            <button type="button" id="play" aria-pressed="false">▶ 连续回放</button>
+            <div class="step-buttons">
+              <button type="button" id="previous-step">← 上一步</button>
+              <button type="button" id="next-step">下一步 →</button>
+            </div>
+          </div>
+        </article>
+        <nav class="sequence" aria-label="按交接顺序选择">
+          <h2>谁交给了谁</h2>
+          <div id="step-index"></div>
+        </nav>
+      </section>
+      <section class="trail" id="version-section" aria-labelledby="version-title" hidden>
         <div class="trailhead">
           <h2 id="version-title">版本记录</h2>
           <small>按工作阶段排列 · 点选查看完整 SHA</small>
@@ -680,11 +826,7 @@
           <button class="version" data-id="review"><span>T3 · 交付工件</span><b>ccb07d36</b></button>
         </div>
       </section>
-      <nav class="tabs" aria-label="阅读方式">
-        <button id="history-tab" aria-controls="history" aria-pressed="true">协作历程</button
-        ><button id="cost-tab" aria-controls="compare" aria-pressed="false">两次 T3 对比</button>
-      </nav>
-      <div class="layout" id="history">
+      <div class="layout" id="history" hidden>
         <section class="box" aria-labelledby="events-title">
           <div class="boxhead">
             <h2 id="events-title">会话事件</h2>
@@ -708,6 +850,7 @@
           <dl id="fields"></dl>
           <div id="extra"></div>
           <div class="sources" id="sources"></div>
+          <div class="sources"><a id="back-to-flow" href="#journey">回到这次交接</a></div>
         </aside>
       </div>
       <div id="compare" class="pair" hidden>
@@ -752,9 +895,7 @@
           <p class="notes">各自独立归档。上表仅统计两条完成 T3 的已确认用量。</p>
         </section>
       </div>
-      <footer>
-        <span>归档原型 · 只读 · 本地运行</span><span>记录来自 gRPC T2（11.10）与 T3（11.18）</span>
-      </footer>
+      <footer><span>真实运行档案 · 按交接顺序回放</span><a href="../PLAN.md">设计与证据来源 ↗</a></footer>
     </main>
     <script>
       "use strict";
@@ -975,6 +1116,129 @@
         ["保留", "service/wire.js"],
         ["保留", "test/rest.test.js"],
       ];
+      const participants = {
+        lead: {
+          name: "修订负责人",
+          kind: "AI · Principal",
+          ink: "#275d4a",
+          wash: "#dbebd5",
+          figure: "agent",
+        },
+        worker: { name: "执行助手", kind: "AI · Worker", ink: "#7e482f", wash: "#f3dfc3", figure: "worker" },
+        service: { name: "结算服务", kind: "系统 · Work", ink: "#39596e", wash: "#dce8eb", figure: "tray" },
+        owner: {
+          name: "项目所有者",
+          kind: "人 · Operator",
+          ink: "#784b62",
+          wash: "#eedee4",
+          figure: "human",
+        },
+        archive: {
+          name: "项目档案",
+          kind: "记录 · Git 与回执",
+          ink: "#635737",
+          wash: "#ece5cb",
+          figure: "archive",
+        },
+        successor: {
+          name: "接续负责人",
+          kind: "AI · 新会话",
+          ink: "#485779",
+          wash: "#e2e5f0",
+          figure: "agent",
+        },
+      };
+      const journeyDays = { T2: "11 月 10 日 · 修订与核准", T3: "11 月 18 日 · 接续交付" };
+      // Edges describe observed transfers, including reads and durable writes. A waiting
+      // conclusion records availability to the operator, not a direct message from the AI.
+      const transfers = [
+        {
+          from: "lead",
+          to: "worker",
+          parcel: "修订任务",
+          action: "委派修订",
+          title: "负责人把修订交给执行助手",
+          story: "负责人圈定四个可以改动的文件。执行助手拿到任务，在独立副本里修改服务、测试和迁移说明。",
+          evidence: "delegated",
+          link: "查看这次委派",
+        },
+        {
+          from: "worker",
+          to: "service",
+          parcel: "候选版本",
+          action: "交回候选",
+          title: "执行助手把改好的版本交回",
+          story:
+            "助手先核对了 15 项文件义务，再交回候选。结算服务复查了这个版本，确认四份受保护文件都和原来一样。",
+          evidence: "candidate",
+          link: "查看候选与文件回执",
+        },
+        {
+          from: "service",
+          to: "lead",
+          parcel: "结算回执",
+          action: "查收回执",
+          title: "负责人查到了这份结算回执",
+          fromLabel: "回执来源",
+          toLabel: "查询方",
+          story: "负责人主动查询作业，看到候选已结算。收到回执后，负责人可以推进验证，把决定留给项目所有者。",
+          evidence: "candidate",
+          link: "查看结算记录",
+        },
+        {
+          from: "lead",
+          to: "owner",
+          parcel: "待审候选",
+          action: "留下待审候选",
+          title: "负责人把核准决定留给所有者",
+          fromLabel: "登记方",
+          toLabel: "待审方",
+          pending: true,
+          story:
+            "负责人记下「等待所有者核准」，随后会话自然结束。虚线表示此刻候选仍待审，所有者的核准记录在下一步出现。",
+          evidence: "waiting",
+          link: "查看等待与退出记录",
+        },
+        {
+          from: "owner",
+          to: "archive",
+          parcel: "接受记录",
+          action: "核准并留档",
+          title: "所有者核准候选，接受版本入档",
+          fromLabel: "核准者",
+          toLabel: "归档处",
+          period: "11 月 10 日 · 修订会话结束后",
+          story: "所有者核准了候选的完整提交号。项目随后记下晋升后的版本，并保留它和原候选的对应关系。",
+          evidence: "accepted",
+          link: "查看核准者与接受版本",
+        },
+        {
+          from: "archive",
+          to: "successor",
+          parcel: "已接受版本",
+          action: "读取接受版本",
+          title: "八天后，新会话从接受版本接手",
+          fromLabel: "来源",
+          toLabel: "读取方",
+          story:
+            "接续负责人打开项目里的接受记录，读出所有者核准后的版本，作为这次评审的起点。两次会话通过这份记录接续。",
+          evidence: "inherits",
+          link: "查看新会话读到的凭据",
+        },
+        {
+          from: "successor",
+          to: "archive",
+          parcel: "迁移评审",
+          action: "交付评审",
+          title: "接续负责人把评审留在项目里",
+          fromLabel: "撰写方",
+          toLabel: "保存处",
+          story:
+            "新会话只提交了一份迁移评审，记录交付后自然退出。冻结评分为 11/12，后来在同一份原稿上逐项复核得到 12/12。",
+          evidence: "review",
+          link: "查看原稿与交付回执",
+        },
+      ];
       const $ = (id) => document.getElementById(id);
       const element = (tag, content, cls) => {
         const el = document.createElement(tag);
@@ -984,16 +1248,354 @@
       };
       let selected = "accepted",
         filter = "all";
-      function displayTab(cost) {
-        $("history").hidden = cost;
-        $("compare").hidden = !cost;
-        $("history-tab").setAttribute("aria-pressed", String(!cost));
-        $("cost-tab").setAttribute("aria-pressed", String(cost));
+      let stepIndex = 0;
+      let playTimer = null;
+      let animationFrame = null;
+      let parcelPosition = 0.46;
+      let focusAfterSelection = false;
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      const canvas = $("transfer-drawing");
+      const context = canvas.getContext("2d");
+
+      function displayView(view) {
+        $("journey").hidden = view !== "journey";
+        $("history").hidden = view !== "history";
+        $("version-section").hidden = view !== "history";
+        $("compare").hidden = view !== "compare";
+        for (const name of ["journey", "history", "cost"]) {
+          const tab = $(name + "-tab");
+          if ((name === "cost" ? "compare" : name) === view) tab.setAttribute("aria-current", "page");
+          else tab.removeAttribute("aria-current");
+        }
       }
+
+      // The picture repeats the labelled DOM transfer. Human, AI and storage marks
+      // stay different even in monochrome. No frame represents elapsed run time.
+      function drawParticipant(person, x, y, scale, facingLeft) {
+        const ctx = context;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(facingLeft ? -scale : scale, scale);
+        ctx.lineWidth = 2.1;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        const ink = person.ink,
+          wash = person.wash,
+          paper = "#fffaf0";
+        function shape(path, fill, stroke = ink) {
+          const outline = new Path2D(path);
+          if (fill) {
+            ctx.fillStyle = fill;
+            ctx.fill(outline);
+          }
+          if (stroke) {
+            ctx.strokeStyle = stroke;
+            ctx.stroke(outline);
+          }
+        }
+        function dot(cx, cy, radius, color) {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        shape(
+          "M-73 5 C-75-31-46-60-13-62 C25-70 60-49 71-15 C85 19 62 55 23 59 C-21 69-68 49-73 5Z",
+          wash,
+          null,
+        );
+        shape("M-67 20 Q-62 42-42 50 M49-42 Q62-32 66-20", null, "#ffffff");
+        shape("M-47 48 Q-8 54 45 46", null, ink + "65");
+        if (person.figure === "human") {
+          shape("M-36 45 Q-33 16-15 12 L9 8 Q28 10 38 40 Q-1 53-36 45Z", ink);
+          shape("M-12 6 L-12 18 L-3 26 L10 15 L5 1Z", "#dcae8e");
+          shape("M-24-21 Q-21-45 2-41 Q23-39 23-15 L28-6 L22-3 Q20 12 4 14 Q-14 12-21-3Z", "#e9bc97");
+          shape(
+            "M-26-9 Q-37-26-26-40 Q-12-56 8-48 Q27-47 28-29 Q17-34 10-36 Q3-23-8-21 L-12-9 L-16-13 Q-23-19-23-6Z",
+            ink,
+          );
+          shape("M-14 18 L-4 29 L-12 34 L-21 20 M-3 28 L9 17 L17 20 L5 36", null, paper);
+          shape("M13-4 Q16-2 20-5 M-26 41 L-22 30", null, ink);
+          dot(11, -15, 1.8, ink);
+        } else if (person.figure === "agent" || person.figure === "worker") {
+          const worker = person.figure === "worker";
+          shape("M-26 23 Q-49 20-49 5 Q-43 1-37 9 L-25 13 M21 15 Q37 13 42 3 Q49 3 46 12 Q38 26 20 27", wash);
+          shape(
+            "M-21 30 L-23 43 L-33 46 Q-34 49-20 48 L-14 45 L-10 32 M8 32 L10 45 L20 48 Q32 49 28 44 L20 41 L19 31",
+            paper,
+          );
+          if (worker) {
+            shape(
+              "M-33-19 Q-34-29-22-32 L18-35 Q32-35 34-22 L37 18 Q37 31 26 33 L-19 37 Q-31 37-32 25Z",
+              "#e5b680",
+            );
+            shape("M-36-24 Q-29-43 0-45 Q21-47 30-36 L36-27 L-32-17Z", ink);
+            shape("M-29-19 L37-29", null, paper);
+            shape("M-23-7 Q-22-14-15-15 L19-18 Q26-18 26-12 L27-5 Q27 0 17 1 L-16 4 Q-23 5-23-3Z", paper);
+            shape("M-10 18 L20 15 L20 23 Q11 29-7 27Z", wash);
+            dot(-5, -5, 2.4, ink);
+            dot(15, -7, 2.4, ink);
+          } else {
+            shape(
+              "M-26-34 L13-40 Q25-40 28-29 L35 20 Q36 29 26 32 L-16 39 Q-27 40-29 29 L-36-19 Q-38-31-26-34Z",
+              ink,
+            );
+            shape(
+              "M-23-32 L15-38 Q22-38 24-30 L31 20 Q32 26 24 28 L-15 35 Q-23 36-25 28 L-32-20 Q-34-29-23-32Z",
+              paper,
+            );
+            shape("M-23-30 L-13 32 M-33-17 L-25-19 M-30-6 L-23-8 M-28 6 L-21 4", null, ink);
+            shape("M-1 9 Q6 14 14 5", null, ink);
+            dot(-2, -5, 2.6, ink);
+            dot(15, -8, 2.6, ink);
+            shape("M6-37 L14-39 L16-19 L11-22 L7-17Z", wash);
+            if (person === participants.successor) shape("M19 16 L25 15 M20 20 L26 19", null, ink);
+          }
+        } else if (person.figure === "tray") {
+          shape("M-42 4 L-30-20 L25-25 L42-3 L41 24 L-33 35 L-43 27Z", "#a9bcc1");
+          shape("M-24 1 L-30-29 L12-38 L24-31 L29-5Z", paper);
+          shape("M12-38 L15-28 L24-31 M-19-18 L9-24 M-16-10 L15-16", null, ink);
+          shape("M-42 5 L-17 1 L-10 10 L11 7 L15-4 L42-8 L41 26 L-33 37 L-42 30Z", wash);
+          shape("M-30 24 L30 15 M-23 29 L21 22", null, ink);
+        } else {
+          shape("M-36-14 L19-24 L36-15 L-18-3Z", paper);
+          shape("M-36-14 L-18-3 L-16 38 L-35 24Z", "#c9b887");
+          shape("M-18-3 L36-15 L37 26 L-16 38Z", wash);
+          shape("M-37-16 L17-27 L36-18 L37-12 L-18 0 L-38-11Z", "#d6c59c");
+          shape("M-5 7 L24 0 L24 12 L-5 19Z", paper);
+          shape("M3 10 L16 7 M-29-8 L-27 21", null, ink);
+          shape("M-27-20 L-29-32 L-12-36 L-6-32 L14-36 L17-26Z", paper);
+        }
+        ctx.restore();
+      }
+
+      function drawTransfer() {
+        if (!context || $("journey").hidden) return;
+        const width = canvas.clientWidth,
+          height = canvas.clientHeight;
+        if (!width || !height) return;
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const pixels = Math.round(width * ratio),
+          rows = Math.round(height * ratio);
+        if (canvas.width !== pixels || canvas.height !== rows) {
+          canvas.width = pixels;
+          canvas.height = rows;
+        }
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.clearRect(0, 0, width, height);
+        const step = transfers[stepIndex],
+          scale = Math.min(1.12, width / 625, height / 160);
+        const left = width * 0.245,
+          right = width * 0.755,
+          middle = width / 2,
+          y = height * 0.58;
+        // Adjacent handoffs share a participant. The receiver stays on the same side
+        // when it becomes the next sender, so the reader can follow the work by eye.
+        const toLeft = stepIndex % 2 === 1;
+        const start = toLeft ? right - 57 * scale : left + 57 * scale;
+        const end = toLeft ? left + 57 * scale : right - 57 * scale;
+        const rise = Math.min(50, height * 0.22);
+        drawParticipant(participants[toLeft ? step.to : step.from], left, y, scale, false);
+        drawParticipant(participants[toLeft ? step.from : step.to], right, y, scale, true);
+        context.lineCap = "round";
+        context.lineWidth = 2.1;
+        context.strokeStyle = "#81947e";
+        context.setLineDash(step.pending ? [5, 5] : []);
+        context.beginPath();
+        context.moveTo(start, y);
+        context.quadraticCurveTo(middle, y - 2 * rise, end, y);
+        context.stroke();
+        context.setLineDash([]);
+        const angle = Math.atan2(2 * rise, end - middle);
+        context.save();
+        context.translate(end, y);
+        context.rotate(angle);
+        context.beginPath();
+        context.moveTo(-8, -4);
+        context.lineTo(0, 0);
+        context.lineTo(-8, 4);
+        context.stroke();
+        context.restore();
+        const t = step.pending ? parcelPosition * 0.7 : parcelPosition;
+        const x = start + (end - start) * t,
+          packetY = y - 4 * rise * t * (1 - t);
+        context.save();
+        context.translate(x, packetY);
+        const packetScale = Math.min(1, width / 450);
+        context.scale(packetScale, packetScale);
+        context.rotate(-0.12 + 0.24 * t);
+        const packet = new Path2D(
+          "M-10-14 L5-14 L12-7 L12 12 Q12 15 9 15 L-9 15 Q-12 15-12 12 L-12-11 Q-12-14-10-14Z",
+        );
+        context.fillStyle = "#f3d19a";
+        context.fill(packet);
+        context.lineWidth = 1.8;
+        context.strokeStyle = "#76542f";
+        context.stroke(packet);
+        context.stroke(new Path2D("M5-14 L5-7 L12-7 M-6-2 L5-2 M-6 4 L2 4"));
+        context.restore();
+      }
+
+      function animateParcel(start = 0) {
+        cancelAnimationFrame(animationFrame);
+        if (reducedMotion.matches || !context) {
+          parcelPosition = 1;
+          drawTransfer();
+          return;
+        }
+        const began = performance.now(),
+          duration = 1250 * (1 - start);
+        function frame(now) {
+          const elapsed = Math.min(1, (now - began) / Math.max(1, duration));
+          parcelPosition = start + (1 - start) * elapsed * elapsed * (3 - 2 * elapsed);
+          drawTransfer();
+          if (elapsed < 1) animationFrame = requestAnimationFrame(frame);
+        }
+        parcelPosition = start;
+        drawTransfer();
+        animationFrame = requestAnimationFrame(frame);
+      }
+
+      function showStep(index, animate = true) {
+        stepIndex = index;
+        displayView("journey");
+        const step = transfers[index],
+          from = participants[step.from],
+          to = participants[step.to];
+        const session = records[step.evidence].session;
+        $("step-meta").textContent = step.period ?? journeyDays[session];
+        $("step-counter").textContent = index + 1 + " / " + transfers.length;
+        $("flow-title").textContent = step.title;
+        $("parcel").textContent = step.parcel;
+        $("participants").classList.toggle("to-left", index % 2 === 1);
+        $("from-name").textContent = from.name;
+        $("from-kind").textContent = (step.fromLabel ?? "交出方") + " · " + from.kind;
+        $("to-name").textContent = to.name;
+        $("to-kind").textContent = (step.toLabel ?? "接收方") + " · " + to.kind;
+        $("transfer-summary").textContent =
+          "第" +
+          (index + 1) +
+          "次交接。" +
+          step.title +
+          "。从" +
+          from.name +
+          "到" +
+          to.name +
+          "，" +
+          step.parcel +
+          "。";
+        $("story-description").textContent = step.story;
+        $("step-evidence").textContent = step.link + " ↗";
+        $("step-evidence").href = "#" + step.evidence;
+        $("previous-step").disabled = index === 0;
+        $("next-step").disabled = index === transfers.length - 1;
+        if (playTimer === null) updatePlaybackButton(false);
+        document.querySelectorAll(".pick").forEach((button, i) => {
+          if (i === index) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+        if (animate) animateParcel();
+        else {
+          parcelPosition = 0.48;
+          drawTransfer();
+        }
+        if (focusAfterSelection) {
+          focusAfterSelection = false;
+          $("flow-title").focus({ preventScroll: true });
+          if (matchMedia("(max-width:660px)").matches) $("journey").scrollIntoView({ block: "start" });
+        }
+      }
+      function updatePlaybackButton(playing) {
+        $("play").setAttribute("aria-pressed", String(playing));
+        $("play").textContent = playing
+          ? "Ⅱ 暂停回放"
+          : stepIndex === transfers.length - 1
+            ? "↺ 从头回放"
+            : "▶ 连续回放";
+      }
+      function stopPlayback() {
+        clearTimeout(playTimer);
+        playTimer = null;
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+        updatePlaybackButton(false);
+      }
+      function chooseStep(index, reveal = false) {
+        stopPlayback();
+        focusAfterSelection = reveal;
+        const hash = "#handoff-" + (index + 1);
+        if (location.hash === hash) showStep(index);
+        else location.hash = hash;
+      }
+      function scheduleNextStep() {
+        const routeAtStart = location.hash;
+        playTimer = setTimeout(() => {
+          if (location.hash !== routeAtStart || stepIndex === transfers.length - 1) {
+            stopPlayback();
+            return;
+          }
+          showStep(stepIndex + 1);
+          history.replaceState(null, "", "#handoff-" + (stepIndex + 1));
+          scheduleNextStep();
+        }, 5200);
+      }
+      function togglePlayback() {
+        if (playTimer !== null) {
+          stopPlayback();
+          return;
+        }
+        if (stepIndex === transfers.length - 1) {
+          showStep(0);
+          history.replaceState(null, "", "#handoff-1");
+        } else animateParcel(parcelPosition >= 1 ? 0 : parcelPosition);
+        updatePlaybackButton(true);
+        scheduleNextStep();
+      }
+      for (const session of ["T2", "T3"]) {
+        const heading = element("h3", journeyDays[session], "date-group"),
+          list = element("ol");
+        for (const [index, step] of transfers.entries()) {
+          if (records[step.evidence].session !== session) continue;
+          const item = element("li"),
+            button = element("button", undefined, "pick"),
+            text = element("span");
+          text.append(
+            element("strong", step.action),
+            element("small", participants[step.from].name + " → " + participants[step.to].name),
+          );
+          button.append(text);
+          button.addEventListener("click", () => chooseStep(index, matchMedia("(max-width:660px)").matches));
+          item.append(button);
+          list.append(item);
+        }
+        $("step-index").append(heading, list);
+      }
+      $("previous-step").onclick = () => chooseStep(Math.max(0, stepIndex - 1));
+      $("next-step").onclick = () => chooseStep(Math.min(transfers.length - 1, stepIndex + 1));
+      $("play").onclick = togglePlayback;
+      $("back-to-flow").addEventListener("click", () => {
+        focusAfterSelection = true;
+      });
+      new ResizeObserver(drawTransfer).observe(canvas);
+      reducedMotion.addEventListener("change", () => {
+        if (reducedMotion.matches) {
+          cancelAnimationFrame(animationFrame);
+          parcelPosition = 1;
+          drawTransfer();
+        }
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopPlayback();
+      });
       function showRecord(id, focus = false) {
         const r = records[id];
         selected = id;
-        displayTab(false);
+        stopPlayback();
+        displayView("history");
+        const related = { basis: 0, failedJob: 1, toolError: 2, preview: 1, exit: 6, score: 6 };
+        const first = transfers.findIndex((step) => step.evidence === id);
+        const origin = transfers[stepIndex].evidence === id ? stepIndex : (related[id] ?? first);
+        $("back-to-flow").href = "#handoff-" + (origin + 1);
         if (filter !== "all" && filter !== r.session) setFilter(r.session);
         $("kind").textContent = r.session + " · " + roles[r.role] + " / " + r.label;
         $("detail-title").textContent = r.title;
@@ -1158,21 +1760,24 @@
       function route(focus) {
         const id = location.hash.slice(1);
         if (id === "main") {
-          if (!$("detail-title").textContent) showRecord("accepted");
+          if (!$("journey").hidden && !$("flow-title").textContent) showStep(0, false);
           if (focus) $("main").focus();
           return;
         }
+        stopPlayback();
         if (id === "compare") {
-          displayTab(true);
+          displayView("compare");
           return;
         }
-        showRecord(Object.hasOwn(records, id) ? id : "accepted", focus);
+        if (id === "evidence" || Object.hasOwn(records, id)) {
+          showRecord(id === "evidence" ? selected : id, focus && id !== "evidence");
+          return;
+        }
+        const target = /^handoff-(\d+)$/.exec(id);
+        const index = target ? Number(target[1]) - 1 : stepIndex;
+        showStep(index >= 0 && index < transfers.length ? index : stepIndex, focus);
       }
       window.addEventListener("hashchange", () => route(true));
-      $("history-tab").onclick = () => openRecord(selected);
-      $("cost-tab").onclick = () => {
-        location.hash = "compare";
-      };
       const runs = [
         {
           name: "上轮",
