@@ -18,6 +18,16 @@
 
 **移植边界。** 插件的文件系统对象很适合有大量并发写入的任务。Palimpsest 的 Explore 可能只产生反证，跨项目 Ask 可能只产生尚未采用的建议，T3 也可以只有 Principal。首版采用其信息组织和原件下钻方式，沿用 Git、现有 World、DSH 及 Promotion。若以后有实际 LayerFS 项目，可把它作为只读外部证据来源，再验证对象绑定、披露权限和历史可重放性。[LayerFS 集成约束](https://layerfs.ai/docs/integrations/dsh/) · [Palimpsest 既有路线图](../PROJECT-ROADMAP.md)
 
+## 工作视图在宿主里的位置
+
+上游教程的一个镜头是两个子 Agent 分头做 About 和 Contact 页面。读者从发出任务的那段对话切到 Work，单选分支就能看到该处分支操作和挂载期间的 Workspace 终端。About 第一次写入因目录缺失而失败，同一处分支随后出现建目录和写入成功。固定位置让用户能把失败和恢复认作同一件事。切到 History，两个成果如何汇入发布分支、最后谁改变了 main 则一眼可追。上游给出了两个视图的实际画面。[Work 中的失败与恢复](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/docs/tutorial/07-work-early.jpg) · [History 中的分支和发布](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/docs/tutorial/10-history-graph.jpg) · [作者操作记录](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/TUTORIAL.md)
+
+注册代码给出了位置的精确含义。新会话的项目选择在 `conversation.hero.options`，已打开会话的项目名在 `conversation.session.header.actions`。Work 和 History 都在 `conversation.view`，各自使用当前 Session。它们占用会话中央区域，该插件挂载视图期间收起输入区。侧栏 `sidebar.panellist` 另有项目入口。用于脚本场景的 Run bar 有自己的条件和位置。把所有这些功能搬进聊天气泡，会丢掉工作面、会话范围和项目范围这三层区别。[插件槽位注册](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/client/src/client/index.ts) · [会话中央区域](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/client/src/client/composer.ts) · [侧栏项目页实景](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/docs/tutorial/18-layerfs-page.jpg)
+
+形式也有两层。Work 里的角色、气泡和移动标记依附具体分支、终端和刚发生的操作。History 给主线、分支、提交、汇合和发布各自一种形状。点提交读到该点的文件，点分支名称回到对应工作。Play 是回看历史时可选的入口。实时画面按记录的调用更新，原始历史支持会话开始前已存在的项目。动画退场后，读者依旧能看见刚才那件事在哪留下了结果。[工作面与动效](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/view/src/view.js) · [历史图例与交互](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/view/src/history.js) · [会话与已有项目历史的组装](https://github.com/Ephemeral-AI-Lab/dsh-layerfs/blob/d91577e979a022f71627d2451caa44c4f5eded2a/packages/client/src/client/LayerFsView.tsx)
+
+Gutwin 与 Greenberg 在实时协作研究中区分了观察参与者、观察共享工件变化和直接沟通这几种了解他人工作的途径。由此推到 Agent 界面，我们可以检验一个具体假设。读者看见谁在场时能辨认身份，同时看见对方正在改的对象及其变化时，应当更容易判断轮到谁行动。AgentCoord 研究中的 Agent 关系、任务依赖和结果对应，也提示这三类信息需要能分别核查。[工作区感知研究](https://doi.org/10.1023/A:1021271517844) · [AgentCoord 作者论文](https://arxiv.org/abs/2404.11943)
+
 ## 其他路线分别解答什么
 
 | 参照 | 官方资料支持的做法 | 在 Palimpsest 中的取舍 |
@@ -29,12 +39,13 @@
 | AgentCoord | 把协作策略结构化，让用户干预生成阶段、探索策略，然后查看执行结果。研究关注任务依赖、Agent 关系和成果对应。 | 当调查「这次独立探索改变了什么」时，把提议、采纳决定、改动的成果并排。放在调查详情。若链条只到建议，则终止在建议。[AgentCoord 作者论文](https://arxiv.org/abs/2404.11943) |
 | OpenTelemetry | Trace、span、parent 与 span link 提供跨执行关联词汇，GenAI 约定描述 Agent 调用。 | 可作为后续互操作出口。一个 span 的完成、耗时或 error 很适合调试。结算要读 AttemptReport、接受要读 Promotion，账本要读终态 usage。将传入的 trace 信息作为补充来源，保留独立判定。[Trace 与 span](https://opentelemetry.io/docs/concepts/signals/traces/) · [GenAI Agent spans](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/) |
 
-## 三种入口的取舍
+## 不同入口分别服务哪个时刻
 
 | 入口方案 | 对哪类任务最省力 | 在本项目要付出的代价 | 建议位置 |
 | --- | --- | --- | --- |
 | Agent 关系图作首页 | 找团队定义、谁能向谁发送消息 | 用户必须先识别拓扑，再拼出被接受的版本。直接交付样本几乎无图可看 | 保留现有 MultiGraph/Canvas 的专家入口 |
 | 原始聊天或 span 瀑布作首页 | 工程师找失败的调用、并行与等待 | 跨 Session 的项目 Head、保留成果和 Operator 接受会散在多个流里 | 单次会话调查、账本诊断 |
-| 已接受成果作首页，按版本联动历程、文件和证据 | 项目所有者接手、审批前定位、跨会话复核和比较 | 要做多来源绑定、权限过滤并处理缺失。完成后可复用现有专门视图 | **第一版。** 用真实 T2 → T3 和非代码 Energy 样本验收 |
+| 会话内的协作与成果标签 | 边做边看、定位并行工作、发现谁在等自己 | 需要真正的 DSH Web 插件，并绑定本次 Session 与其获准读取的工作 | **第一版。** 用普通 DSH 的零付费 Mock 验证原生位置、并行更新和等待状态 |
+| 从项目中的成果进入来源、采用和证据 | 隔天接手、找批准版本、查某份资产如何沿用 | 要联结跨会话的来源并按权限披露 | 项目侧栏和 Workspace。gRPC 七幕可用作这里的历史回看样本 |
 
-实践上的取舍是让默认界面能解释一次工作**改变了什么、谁接受了它、后来谁沿用了它**。并行规模、工具调用量、时间线与 Git 树在解释这些问题时展开。一次调研提供的是设计依据。人是否读得更快、更准，按规划中的任务对照测量。[样本与阅读验收](PLAN.md)
+同一个人运行中需要看工作落在谁手里，回来时需要找自己能接着用的成果。保留这两个入口后，原始调用、成本和复盘都可以从对应事项打开。上游界面和研究提供设计依据，本项目读者能否更快判断与接手仍须测量。[样本与阅读验收](PLAN.md)
