@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 上一轮 gRPC 接续的确切提交 `e3f63313` 已送审 [PR #277](https://github.com/orangeofcarl0-sys/palimpsest/pull/277)，封存保留旧 Episode ID 的 `UNKNOWN`。接续开发位于 `codex/fleet-rollout-synthesis`。新场景从已接受服务衍生四站、两窗口的资源分配。三名 Mock 原生子会话交回各自测量，三项贡献被采纳；真实样本由单一 Principal 合成正确的两轮清单。14 笔请求均已对账，真实候选 `7c5cef3989b394b69191a43104c8fa8cdaa21bf2` 已提交供审。[场景、轨迹与复算](docs/engineering/FLEET-ROLLOUT-SYNTHESIS.md)
+
 - 路线图第二个里程碑已完成同一 gRPC 案例的首个业务提示样本。Mock 的原生子会话实测反例，Principal 记录采纳并修订；真实模型选择独立完成，HTTP/2 7/7、公开测试 18/18。所有者按完整 SHA 核准 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`，Work 事件 8 记录接受。宿主重启后，全新模型会话、DSH 侧栏及 Workspace 均找到同一版本和核验日志；真实模型的贡献链为空。两会话均自然退出。[报告](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md) · [接受记录](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/acceptance.json)
 
 - DSH 侧栏工作检查器已在主线 `a7751302` 发布。从 **Palimpsest** 打开当前项目，点任务看谁负责、谁在执行和已有成果。固定时间点可回看交接，选择 Work 事件可按账本序号重建当时的关系。可视化设计文档、交互样例和实机回归随同发布。[PR #275](https://github.com/orangeofcarl0-sys/palimpsest/pull/275) · [使用说明](docs/user-guide.md#dsh-侧栏工作检查器) · [设计与来源](docs/product/visualization/PLAN.md)

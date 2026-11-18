@@ -1,0 +1,28 @@
+{
+  "seal": {
+    "provider": "opencode-go",
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "model": "deepseek-v4.1-flash",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "accepted": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+    "prompt": "Prepare the Fleet rollout for both windows using fleet/BRIEF.md and the operations records. Deliver a tested, committed release plan and review for the owner.",
+    "files": {
+      "fixtures/psvr/fleet-rollout/BRIEF.md": "73a703dac8d29851740a73f4786bcac8515f5a676839d94c0809007fd88db0b7",
+      "fixtures/psvr/fleet-rollout/registry.json": "df06ebb0df75f80345dfda693e239f6935d5371d5e493e7a0e60ec310f2f50bd",
+      "fixtures/psvr/fleet-rollout/replay.json": "d7074067451a795989371408d349f87e9123350a438bae3c1ca78ae14663e17e",
+      "fixtures/psvr/fleet-rollout/traffic.csv": "f745783e7aa3e2f78e139524c66917eebe599b316d977cc583880cfebb4ee4a2",
+      "fixtures/psvr/fleet-rollout/egress.json": "e939a3a8e04d4afdef71ff874f58d9941b052fd3398dbaeadbbea6e476503d59",
+      "fixtures/psvr/fleet-rollout/change-orders.json": "fcbdb043e4081f13d106a688a4c9b2296691fc8985f7b7a9fdcc3109079531a0",
+      "scripts/pnwf/software/fleet-rollout/run.mjs": "9b718256ec9727be5fbfc5bd8e0eca8300c1d4d87314a24ba43faf888eff3cb5",
+      "scripts/pnwf/software/fleet-rollout/score.mjs": "260d41cfa3946d45db28ee64a73d3ac0226cef5eef447aa6e0e8d6b7d95f6032",
+      "scripts/pnwf/software/fleet-rollout/mock.mjs": "cb0945d694e6b0c2baf91908b694ad30499b3fb05acd7259057c92a6020ba410"
+    }
+  },
+  "basis": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+}

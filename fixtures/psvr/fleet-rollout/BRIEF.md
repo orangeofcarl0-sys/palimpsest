@@ -1,0 +1,5 @@
+# Fleet change review
+
+Choose the highest total priority set of gRPC sites for each of two windows. A site not selected stays on REST. A build must decode three Readings on both omitted and explicit-zero requests. Use deployed builds, superseding signed change orders, and the observed decoder replay. Reserve ceil(max of both site traffic peaks × headroom factor) units per selected site. Shared reservations reduce the gross window capacity. Each window can be replanned independently.
+
+Commit only rollout/plan.json and rollout/REVIEW.md. The machine-readable plan has a windows object keyed W1 and W2. Each window contains grpc and rest arrays of site names, used and available integer capacity units, and priority (the sum for selected sites). Include a siteUnits object covering all four sites. The review must explain both selection decisions, discarded assumptions and rollback to REST, and cite the input filenames and relevant order IDs. The current service and its tests are the accepted release. Leave deployment to the owner.

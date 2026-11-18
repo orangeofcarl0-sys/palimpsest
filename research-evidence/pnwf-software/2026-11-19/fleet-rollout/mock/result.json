@@ -1,0 +1,1104 @@
+{
+  "seal": {
+    "provider": "opencode-go",
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "model": "deepseek-v4.1-flash",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "accepted": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+    "prompt": "Prepare the Fleet rollout for both windows using fleet/BRIEF.md and the operations records. Deliver a tested, committed release plan and review for the owner.",
+    "files": {
+      "fixtures/psvr/fleet-rollout/BRIEF.md": "73a703dac8d29851740a73f4786bcac8515f5a676839d94c0809007fd88db0b7",
+      "fixtures/psvr/fleet-rollout/registry.json": "df06ebb0df75f80345dfda693e239f6935d5371d5e493e7a0e60ec310f2f50bd",
+      "fixtures/psvr/fleet-rollout/replay.json": "d7074067451a795989371408d349f87e9123350a438bae3c1ca78ae14663e17e",
+      "fixtures/psvr/fleet-rollout/traffic.csv": "f745783e7aa3e2f78e139524c66917eebe599b316d977cc583880cfebb4ee4a2",
+      "fixtures/psvr/fleet-rollout/egress.json": "e939a3a8e04d4afdef71ff874f58d9941b052fd3398dbaeadbbea6e476503d59",
+      "fixtures/psvr/fleet-rollout/change-orders.json": "fcbdb043e4081f13d106a688a4c9b2296691fc8985f7b7a9fdcc3109079531a0",
+      "scripts/pnwf/software/fleet-rollout/run.mjs": "9b718256ec9727be5fbfc5bd8e0eca8300c1d4d87314a24ba43faf888eff3cb5",
+      "scripts/pnwf/software/fleet-rollout/score.mjs": "260d41cfa3946d45db28ee64a73d3ac0226cef5eef447aa6e0e8d6b7d95f6032",
+      "scripts/pnwf/software/fleet-rollout/mock.mjs": "cb0945d694e6b0c2baf91908b694ad30499b3fb05acd7259057c92a6020ba410"
+    }
+  },
+  "basis": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+  "mode": "mock",
+  "qualified": true,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "fleet-rollout-fcfe6316-842f-4384-a09d-074d4a6804c5",
+    "sessionId": "ROLLOUT",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-synthesis-de3691a6-44b3-4cc1-b83f-740412aa6f03\\stages\\ROLLOUT\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-synthesis-de3691a6-44b3-4cc1-b83f-740412aa6f03\\runtime-ROLLOUT",
+    "principalRuntime": "container",
+    "containerId": "764ed0858a81e78f9740c3d37947deab494c05a821e468a8637a94d5fcfbc21c",
+    "qualification": "b41840adf2d550783aff5a8adf316b056e6170e7b138dc9a359de1ab90b3b3a6",
+    "startedAt": "2026-11-18T17:47:18.376Z",
+    "endedAt": "2026-11-18T17:48:04.397Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "fleet-rollout-fcfe6316-842f-4384-a09d-074d4a6804c5",
+      "sessionId": "ROLLOUT",
+      "observedAt": "2026-11-18T17:48:04.397Z",
+      "maxTokens": 12000000,
+      "softCeiling": 12000000,
+      "totalTokens": 1429860,
+      "confirmedTokens": 1429860,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "paidModelCalls": 0,
+  "isolation": {
+    "containerId": "764ed0858a81e78f9740c3d37947deab494c05a821e468a8637a94d5fcfbc21c",
+    "descriptorDigest": "b41840adf2d550783aff5a8adf316b056e6170e7b138dc9a359de1ab90b3b3a6",
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "mounts": [
+      {
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "destination": "/product/node_modules",
+        "writable": false
+      },
+      {
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "destination": "/product/runtime",
+        "writable": false
+      },
+      {
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      }
+    ],
+    "checks": [
+      {
+        "name": "principal_uid",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_shell_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "write_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "git_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "node_build_fixture",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_version",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_native_addon",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "native_shell_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_proc_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_parent_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "rootfs_readonly",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "no_docker_socket",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_evaluator",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_owner_credential",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_provider_credential_env",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_routes",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      }
+    ],
+    "worlds": {
+      "schema": "pnwf-world-preflight/v1",
+      "status": "QUALIFIED",
+      "head": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+      "worlds": [],
+      "product": {
+        "repositoryHead": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+        "projectHead": "567f84b7c64fd35ed1c19090dbeab14544a136ee",
+        "relation": "IN_SYNC",
+        "uncommittedPaths": [],
+        "admittedDirectCommit": null
+      }
+    }
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-2c89bd8f-f5fc-4434-87eb-5b600c43a4e5",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 20,
+    "knownTokens": 1429860,
+    "totalTokens": 1429860,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 1422220,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 7640
+    },
+    "usageByRole": {
+      "native-child": {
+        "requests": 6,
+        "input": 465709,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 2612,
+        "total": 468321
+      },
+      "principal": {
+        "requests": 14,
+        "input": 956511,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 5028,
+        "total": 961539
+      }
+    },
+    "traceTotal": 1429860,
+    "traceRequests": 20,
+    "workerRequests": 0,
+    "elapsedMs": 46021,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "20f5d16c-f1a2-4a84-a39e-84da613a7b6e",
+        "cwd": "/run/stage/world",
+        "role": "native-child",
+        "digest": "5f6b6ea5c1d16e1adcb4e40f0420bd863e482bb96b16c3ced44a49aa6fa487f1",
+        "counts": {
+          "steps": 2,
+          "turns": 1,
+          "toolCalls": 1,
+          "pairedToolResults": 1,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 15,
+            "at": 1795024079626,
+            "messageId": "dc60a163-d104-4412-82b0-04f8ee3a3659",
+            "usage": {
+              "inputTokens": 97557,
+              "outputTokens": 552,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 98109
+            }
+          },
+          {
+            "seq": 23,
+            "at": 1795024079792,
+            "messageId": "cf970317-0d67-41c8-bab4-c81c42525b0d",
+            "usage": {
+              "inputTokens": 56524,
+              "outputTokens": 110,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 56634
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 1
+        }
+      },
+      {
+        "id": "c39c72da-ac5c-4ef3-8be8-b580bd81efe1",
+        "cwd": "/run/stage/world",
+        "role": "native-child",
+        "digest": "b676556be9e610242aae81dc5a2a633343f629a758de7442c9622e97661a3483",
+        "counts": {
+          "steps": 2,
+          "turns": 1,
+          "toolCalls": 1,
+          "pairedToolResults": 1,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 15,
+            "at": 1795024077884,
+            "messageId": "9ee8ddc7-adce-479c-9278-1922c13c6245",
+            "usage": {
+              "inputTokens": 97553,
+              "outputTokens": 813,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 98366
+            }
+          },
+          {
+            "seq": 23,
+            "at": 1795024078060,
+            "messageId": "57989bdf-de8a-4ae2-a750-a68f149c4628",
+            "usage": {
+              "inputTokens": 58467,
+              "outputTokens": 125,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 58592
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 1
+        }
+      },
+      {
+        "id": "d9b52a93-6365-47ef-9c37-06d186baaf4d",
+        "cwd": "/run/stage/world",
+        "role": "native-child",
+        "digest": "d719a7c7c46498a055c1b44035eb44d05b4c96fe187c544ed93e93372490a33b",
+        "counts": {
+          "steps": 2,
+          "turns": 1,
+          "toolCalls": 1,
+          "pairedToolResults": 1,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 15,
+            "at": 1795024081401,
+            "messageId": "6f6d00bf-a601-444b-a169-2b0081749fb5",
+            "usage": {
+              "inputTokens": 97543,
+              "outputTokens": 723,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 98266
+            }
+          },
+          {
+            "seq": 23,
+            "at": 1795024081599,
+            "messageId": "9a15ddc0-53bc-4e3c-9b17-f75d913ec206",
+            "usage": {
+              "inputTokens": 58065,
+              "outputTokens": 289,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 58354
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 1
+        }
+      },
+      {
+        "id": "session-2c89bd8f-f5fc-4434-87eb-5b600c43a4e5",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "c76739f9353301d3f4d4286c6121fe4295b20916877f7f3d7147a7ba0700cd8a",
+        "counts": {
+          "steps": 14,
+          "turns": 1,
+          "toolCalls": 13,
+          "pairedToolResults": 13,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 4
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795024077576,
+            "messageId": "7df4c615-3be5-4c8c-8d45-c367e1f64c94",
+            "usage": {
+              "inputTokens": 94475,
+              "outputTokens": 188,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94663
+            }
+          },
+          {
+            "seq": 21,
+            "at": 1795024077758,
+            "messageId": "6103ce99-ab0e-4846-a8f5-244c8e27da19",
+            "usage": {
+              "inputTokens": 52381,
+              "outputTokens": 220,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 52601
+            }
+          },
+          {
+            "seq": 32,
+            "at": 1795024078926,
+            "messageId": "3eb9c820-549c-4b57-9e04-4c14a1a6d3c7",
+            "usage": {
+              "inputTokens": 55482,
+              "outputTokens": 388,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 55870
+            }
+          },
+          {
+            "seq": 38,
+            "at": 1795024079032,
+            "messageId": "6a5670a3-9d27-4ec8-8368-ec8107e39a5f",
+            "usage": {
+              "inputTokens": 56679,
+              "outputTokens": 246,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 56925
+            }
+          },
+          {
+            "seq": 44,
+            "at": 1795024079444,
+            "messageId": "91d10d58-7a9e-4d93-b916-591a4112f7db",
+            "usage": {
+              "inputTokens": 63435,
+              "outputTokens": 190,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 63625
+            }
+          },
+          {
+            "seq": 51,
+            "at": 1795024079569,
+            "messageId": "c6f172ce-5fd4-4f5d-a669-31b38742e8a6",
+            "usage": {
+              "inputTokens": 59719,
+              "outputTokens": 220,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 59939
+            }
+          },
+          {
+            "seq": 62,
+            "at": 1795024080667,
+            "messageId": "9eb50345-aa54-4b0f-a7b8-58b1ab77b424",
+            "usage": {
+              "inputTokens": 62745,
+              "outputTokens": 376,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 63121
+            }
+          },
+          {
+            "seq": 68,
+            "at": 1795024080768,
+            "messageId": "2ba0be34-420b-4f75-8ddf-fb4e07e23bfd",
+            "usage": {
+              "inputTokens": 63853,
+              "outputTokens": 247,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 64100
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1795024081190,
+            "messageId": "dc8df4fa-660e-4920-a47d-3268894996fb",
+            "usage": {
+              "inputTokens": 70674,
+              "outputTokens": 190,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 70864
+            }
+          },
+          {
+            "seq": 81,
+            "at": 1795024081337,
+            "messageId": "bd76f8eb-99e2-48b0-bb11-42820e7d6fca",
+            "usage": {
+              "inputTokens": 66978,
+              "outputTokens": 223,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 67201
+            }
+          },
+          {
+            "seq": 92,
+            "at": 1795024082464,
+            "messageId": "a0bcda2c-8c91-4e78-a80e-d1d1aa279f8b",
+            "usage": {
+              "inputTokens": 70844,
+              "outputTokens": 554,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 71398
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1795024082571,
+            "messageId": "fed901af-f7ce-46de-b40e-a15c7cf7439e",
+            "usage": {
+              "inputTokens": 73159,
+              "outputTokens": 248,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 73407
+            }
+          },
+          {
+            "seq": 104,
+            "at": 1795024082998,
+            "messageId": "69a614ab-6f7f-41ed-a238-64524f668e49",
+            "usage": {
+              "inputTokens": 79221,
+              "outputTokens": 1680,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 80901
+            }
+          },
+          {
+            "seq": 112,
+            "at": 1795024083780,
+            "messageId": "469d1d79-fcbd-4449-86a6-2024cb92b212",
+            "usage": {
+              "inputTokens": 86866,
+              "outputTokens": 58,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 86924
+            }
+          }
+        ],
+        "byKind": {
+          "subagent": 3,
+          "bash": 4,
+          "palimpsest_contribute": 6
+        }
+      }
+    ]
+  },
+  "contributions": [
+    {
+      "record": {
+        "schema": "pc1-contribution/v1",
+        "contributionId": "ctb-c2b9ef518a166eee1cdf01a2e03e4171",
+        "projectId": "fleet-rollout",
+        "sourceKind": "NATIVE_SUBAGENT",
+        "sourceRef": "clients",
+        "task": "Check deployed client compatibility for both windows using the replay and change orders.",
+        "finding": "clients measured [{\"type\":\"text\",\"text\":\"[\\\"Alder\\\",\\\"Birch\\\",\\\"Cedar\\\"]\"}]",
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+          "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+        },
+        "observation": "PRINCIPAL_DECLARED",
+        "declaredReadFootprint": [],
+        "readFootprintObservation": "NOT_OBSERVED",
+        "artifacts": [
+          "rollout/plan.json"
+        ],
+        "independentVerification": false,
+        "createdAt": "2026-11-18T17:47:58.938Z"
+      },
+      "journalEntryId": "pje-93f98afe15a74bf997bed7061b471fe8",
+      "decisions": [
+        {
+          "record": {
+            "schema": "pc1-contribution-decision/v1",
+            "decisionId": "ctd-4a9b628f57d5db705767d5e9bbf16a67",
+            "projectId": "fleet-rollout",
+            "contributionId": "ctb-c2b9ef518a166eee1cdf01a2e03e4171",
+            "decision": "ACCEPT_AS_CANDIDATE",
+            "decisionNote": "Use clients measurement in window allocation",
+            "basisAtDecision": {
+              "projectRevision": 0,
+              "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+              "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+            },
+            "basisState": "CURRENT",
+            "declaredChangedPlan": false,
+            "planChange": null,
+            "createdAt": "2026-11-18T17:47:59.045Z"
+          },
+          "journalEntryId": "pje-9dd6de9a5db3b244a3700764aa0694a4"
+        }
+      ],
+      "latestDecision": {
+        "record": {
+          "schema": "pc1-contribution-decision/v1",
+          "decisionId": "ctd-4a9b628f57d5db705767d5e9bbf16a67",
+          "projectId": "fleet-rollout",
+          "contributionId": "ctb-c2b9ef518a166eee1cdf01a2e03e4171",
+          "decision": "ACCEPT_AS_CANDIDATE",
+          "decisionNote": "Use clients measurement in window allocation",
+          "basisAtDecision": {
+            "projectRevision": 0,
+            "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+            "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+          },
+          "basisState": "CURRENT",
+          "declaredChangedPlan": false,
+          "planChange": null,
+          "createdAt": "2026-11-18T17:47:59.045Z"
+        },
+        "journalEntryId": "pje-9dd6de9a5db3b244a3700764aa0694a4"
+      },
+      "status": "CANDIDATE",
+      "basisState": "CURRENT",
+      "downstream": {
+        "planRevision": null,
+        "addedTaskIds": [],
+        "taskStates": [],
+        "acceptedTaskIds": [],
+        "observableOutcome": false
+      }
+    },
+    {
+      "record": {
+        "schema": "pc1-contribution/v1",
+        "contributionId": "ctb-01b6d28591a88b6c1e16c2dd99e544b2",
+        "projectId": "fleet-rollout",
+        "sourceKind": "NATIVE_SUBAGENT",
+        "sourceRef": "network",
+        "task": "Compute the shared capacity available in each window from the network reservation records.",
+        "finding": "network measured [{\"type\":\"text\",\"text\":\"{\\\"W1\\\":10,\\\"W2\\\":8}\"}]",
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+          "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+        },
+        "observation": "PRINCIPAL_DECLARED",
+        "declaredReadFootprint": [],
+        "readFootprintObservation": "NOT_OBSERVED",
+        "artifacts": [
+          "rollout/plan.json"
+        ],
+        "independentVerification": false,
+        "createdAt": "2026-11-18T17:48:00.679Z"
+      },
+      "journalEntryId": "pje-fe8be9d081d9c27cabbfb8ae4338842a",
+      "decisions": [
+        {
+          "record": {
+            "schema": "pc1-contribution-decision/v1",
+            "decisionId": "ctd-211db7362ebd00ec9d23eeb39363bdff",
+            "projectId": "fleet-rollout",
+            "contributionId": "ctb-01b6d28591a88b6c1e16c2dd99e544b2",
+            "decision": "ACCEPT_AS_CANDIDATE",
+            "decisionNote": "Use network measurement in window allocation",
+            "basisAtDecision": {
+              "projectRevision": 0,
+              "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+              "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+            },
+            "basisState": "CURRENT",
+            "declaredChangedPlan": false,
+            "planChange": null,
+            "createdAt": "2026-11-18T17:48:00.779Z"
+          },
+          "journalEntryId": "pje-0c3f74688da5e45375abcf16cf3f5a54"
+        }
+      ],
+      "latestDecision": {
+        "record": {
+          "schema": "pc1-contribution-decision/v1",
+          "decisionId": "ctd-211db7362ebd00ec9d23eeb39363bdff",
+          "projectId": "fleet-rollout",
+          "contributionId": "ctb-01b6d28591a88b6c1e16c2dd99e544b2",
+          "decision": "ACCEPT_AS_CANDIDATE",
+          "decisionNote": "Use network measurement in window allocation",
+          "basisAtDecision": {
+            "projectRevision": 0,
+            "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+            "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+          },
+          "basisState": "CURRENT",
+          "declaredChangedPlan": false,
+          "planChange": null,
+          "createdAt": "2026-11-18T17:48:00.779Z"
+        },
+        "journalEntryId": "pje-0c3f74688da5e45375abcf16cf3f5a54"
+      },
+      "status": "CANDIDATE",
+      "basisState": "CURRENT",
+      "downstream": {
+        "planRevision": null,
+        "addedTaskIds": [],
+        "taskStates": [],
+        "acceptedTaskIds": [],
+        "observableOutcome": false
+      }
+    },
+    {
+      "record": {
+        "schema": "pc1-contribution/v1",
+        "contributionId": "ctb-e3625fea0c122eae26c58f2931da1c53",
+        "projectId": "fleet-rollout",
+        "sourceKind": "NATIVE_SUBAGENT",
+        "sourceRef": "dispatch",
+        "task": "Calculate the site costs and priority values for dispatch from traffic and the registry.",
+        "finding": "dispatch measured [{\"type\":\"text\",\"text\":\"{\\\"Alder\\\":{\\\"units\\\":5,\\\"priority\\\":11},\\\"Birch\\\":{\\\"units\\\":4,\\\"priority\\\":9},\\\"Cedar\\\":{\\\"units\\\":4,\\\"priority\\\":8},\\\"Dune\\\":{\\\"units\\\":3,\\\"priority\\\":15}}\"}]",
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+          "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+        },
+        "observation": "PRINCIPAL_DECLARED",
+        "declaredReadFootprint": [],
+        "readFootprintObservation": "NOT_OBSERVED",
+        "artifacts": [
+          "rollout/plan.json"
+        ],
+        "independentVerification": false,
+        "createdAt": "2026-11-18T17:48:02.476Z"
+      },
+      "journalEntryId": "pje-fae50710acb398db6ca8da3ca3261494",
+      "decisions": [
+        {
+          "record": {
+            "schema": "pc1-contribution-decision/v1",
+            "decisionId": "ctd-d9731a1a903a45887cbc75d0b1699c71",
+            "projectId": "fleet-rollout",
+            "contributionId": "ctb-e3625fea0c122eae26c58f2931da1c53",
+            "decision": "ACCEPT_AS_CANDIDATE",
+            "decisionNote": "Use dispatch measurement in window allocation",
+            "basisAtDecision": {
+              "projectRevision": 0,
+              "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+              "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+            },
+            "basisState": "CURRENT",
+            "declaredChangedPlan": false,
+            "planChange": null,
+            "createdAt": "2026-11-18T17:48:02.582Z"
+          },
+          "journalEntryId": "pje-df99236e473391226b190ba3f0bb285f"
+        }
+      ],
+      "latestDecision": {
+        "record": {
+          "schema": "pc1-contribution-decision/v1",
+          "decisionId": "ctd-d9731a1a903a45887cbc75d0b1699c71",
+          "projectId": "fleet-rollout",
+          "contributionId": "ctb-e3625fea0c122eae26c58f2931da1c53",
+          "decision": "ACCEPT_AS_CANDIDATE",
+          "decisionNote": "Use dispatch measurement in window allocation",
+          "basisAtDecision": {
+            "projectRevision": 0,
+            "projectDigest": "b83d73b25fe5d28432b60cf28a716ad31135d5eeecd00444198ea4b551f3e9ba",
+            "headCommit": "567f84b7c64fd35ed1c19090dbeab14544a136ee"
+          },
+          "basisState": "CURRENT",
+          "declaredChangedPlan": false,
+          "planChange": null,
+          "createdAt": "2026-11-18T17:48:02.582Z"
+        },
+        "journalEntryId": "pje-df99236e473391226b190ba3f0bb285f"
+      },
+      "status": "CANDIDATE",
+      "basisState": "CURRENT",
+      "downstream": {
+        "planRevision": null,
+        "addedTaskIds": [],
+        "taskStates": [],
+        "acceptedTaskIds": [],
+        "observableOutcome": false
+      }
+    }
+  ],
+  "candidate": "5c35385f6156707a69ac7e16f365a2ca0ebca7bc",
+  "clean": true,
+  "childSessions": [
+    "20f5d16c-f1a2-4a84-a39e-84da613a7b6e",
+    "c39c72da-ac5c-4ef3-8be8-b580bd81efe1",
+    "d9b52a93-6365-47ef-9c37-06d186baaf4d"
+  ],
+  "business": {
+    "plan": {
+      "windows": {
+        "W1": {
+          "grpc": [
+            "Alder",
+            "Birch"
+          ],
+          "used": 9,
+          "priority": 20,
+          "available": 10,
+          "rest": [
+            "Cedar",
+            "Dune"
+          ]
+        },
+        "W2": {
+          "grpc": [
+            "Birch",
+            "Cedar"
+          ],
+          "used": 8,
+          "priority": 17,
+          "available": 8,
+          "rest": [
+            "Alder",
+            "Dune"
+          ]
+        }
+      },
+      "siteUnits": {
+        "Alder": 5,
+        "Birch": 4,
+        "Cedar": 4,
+        "Dune": 3
+      }
+    },
+    "review": "Use REST on rollback. registry.json and replay.json show Dune R1 cannot consume explicit zero; OPS-17 in change-orders.json defers its upgrade. traffic.csv and egress.json set the site reservations. NET-31 reduces W2 capacity. W1 selects Alder+Birch for priority 20 using 9/10; W2 selects Birch+Cedar for priority 17 using 8/8",
+    "checks": [
+      "scope",
+      "partition",
+      "compatibility",
+      "capacity",
+      "optimality",
+      "source references"
+    ]
+  },
+  "accounting": {
+    "schema": "pnwf-spend-snapshot/v1",
+    "cohortId": "fleet-rollout-fcfe6316-842f-4384-a09d-074d4a6804c5",
+    "configDigest": "340f49a6756c21c4d2560294b996155396404c8320b7f0d52a40c65174fff776",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 1429860,
+    "reserved": 0,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": 12000000,
+    "sessions": [
+      {
+        "id": "ROLLOUT",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": 12000000,
+        "softCeiling": 12000000,
+        "requestCount": 20,
+        "unresolvedRequests": 0,
+        "confirmed": 1429860,
+        "reserved": 0
+      }
+    ],
+    "requests": [
+      {
+        "id": "e8336c2a-7711-4ab2-9b9f-744b4c4cf593",
+        "session": "ROLLOUT",
+        "digest": "7f78014ce4bcf9091a926e84044ebb414db724f2d5982bc431f26c69a9f8330d",
+        "reserved": 350475,
+        "actual": 94663,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "29b8da00-dee8-4fa8-8340-0241975121dd",
+        "session": "ROLLOUT",
+        "digest": "06ad9b0e236ccbbf442307bc94e45b6c4a4126e9d5baa45347c49108788df4f7",
+        "reserved": 308381,
+        "actual": 52601,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "4639a2ec-0257-4dbe-a8ec-cdfaf5367325",
+        "session": "ROLLOUT",
+        "digest": "dd59bd14d35e395d58c23f18455d15accf8cc866761cf3ee7ec2364c68909b17",
+        "reserved": 353553,
+        "actual": 98366,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "7171e314-625f-457e-95ec-781775b20e33",
+        "session": "ROLLOUT",
+        "digest": "e51ec60d18cc0179df0608d43bcd1911456ed432cc7761862aa8134379813ebf",
+        "reserved": 314467,
+        "actual": 58592,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "a3bfcf39-935f-481e-887f-643b21794d87",
+        "session": "ROLLOUT",
+        "digest": "998a5802ef50aa509aa4a53b3fdd8161907bf2e574ae271e9b9a62eedc9bb80f",
+        "reserved": 311482,
+        "actual": 55870,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "aaf99e23-9049-4921-9a43-d54ffdddd738",
+        "session": "ROLLOUT",
+        "digest": "f2e1e2b19efee7fb63d884e001d8f2c69c004a9bf9240f934d7ce0189da3c88b",
+        "reserved": 312679,
+        "actual": 56925,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "a8200322-0f55-4869-a277-3ac2c5bc6793",
+        "session": "ROLLOUT",
+        "digest": "26c65fe63017a3e1c67e1d3beb6857e6bc13044431587d75e8392d389b5a97f4",
+        "reserved": 319435,
+        "actual": 63625,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "d5ceb767-cf52-4e98-9c4b-ffeebf1e094e",
+        "session": "ROLLOUT",
+        "digest": "11415862fd09c08c29d0f5c1ebc71b251083be6a09bc811b2fd32868457294a7",
+        "reserved": 315719,
+        "actual": 59939,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "df43f4f6-8d10-4ac0-badc-3ad5ed3aba72",
+        "session": "ROLLOUT",
+        "digest": "100b287a064d8ded8b85fb8a110635d190e852da045f9b761bfa3667382e30fb",
+        "reserved": 353557,
+        "actual": 98109,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "97ca8e74-5ff0-472c-85bd-6e6c05bd427e",
+        "session": "ROLLOUT",
+        "digest": "2512ea66b7791f1a362cb91b05f4f5371ccd7e2690f049d83a28d76aa4a4d3b4",
+        "reserved": 312524,
+        "actual": 56634,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "34368202-3446-48a6-ac79-b267a240ddb7",
+        "session": "ROLLOUT",
+        "digest": "14f71f5bc032fcdc09f88468be107f6f03ac2a697802cdd332af298a8b06e73d",
+        "reserved": 318745,
+        "actual": 63121,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "8e2e5e78-ccc8-44fa-af3a-e2868d049d9e",
+        "session": "ROLLOUT",
+        "digest": "4c5afa0188650ba0ee3c1f4184f3d4bbe51e8af4b81ae28558c8c20d4129e900",
+        "reserved": 319853,
+        "actual": 64100,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "b93e3e5a-26bb-4e27-b2fb-887aa548dc94",
+        "session": "ROLLOUT",
+        "digest": "431d324d0d08cbfae815d77fd85129e8cf008664e1e3a03b33c9f4e860665722",
+        "reserved": 326674,
+        "actual": 70864,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "f2d55f85-7d1f-452f-b3ba-af00fdc32ad9",
+        "session": "ROLLOUT",
+        "digest": "5553fd1e63c5d881a6aa03d0504866192d5a9f152cb6437152870cd2c21522e1",
+        "reserved": 322978,
+        "actual": 67201,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "d3e3019e-d599-4300-aefb-fb23485ff3b9",
+        "session": "ROLLOUT",
+        "digest": "34d89d4bc191c1896ba1659f3dce84b61bacd1eaa8f42ea5a2644ae9cf56e559",
+        "reserved": 353543,
+        "actual": 98266,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "c7c3e69c-5ddb-4456-89dd-a899f9825495",
+        "session": "ROLLOUT",
+        "digest": "b045825eb8d00f3d18c38d47f566ffb1812ec1adf25394c303ca90adad58a630",
+        "reserved": 314065,
+        "actual": 58354,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "195e9f93-39e9-4da0-904f-3cdec57d55ca",
+        "session": "ROLLOUT",
+        "digest": "38668d55ddb1ad4cdea0e3e75a45a51f3eefa3f54bf9bf5ed51db25a145fb13b",
+        "reserved": 326844,
+        "actual": 71398,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "f58bcd95-36a9-4104-9b5f-dd1cccfb4632",
+        "session": "ROLLOUT",
+        "digest": "e06f40b2979c9f09efdba6edc6bab3b4e3279971ce911e6d8a1a5590f600c1e4",
+        "reserved": 329159,
+        "actual": 73407,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "32f8e74d-a3d0-43cd-8817-326a12e0f008",
+        "session": "ROLLOUT",
+        "digest": "963b30efbe4753bc331be7afcefa796e36c952a099d73ea766f020e86911a909",
+        "reserved": 335221,
+        "actual": 80901,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "d77dc66e-4162-4cbb-8311-290b60eb0ceb",
+        "session": "ROLLOUT",
+        "digest": "9e955a67aaa05242da61619074d02a34b97ad96117e7a2c6bce7adbcb6afcd11",
+        "reserved": 342866,
+        "actual": 86924,
+        "state": "SETTLED",
+        "reason": null
+      }
+    ],
+    "refusals": []
+  },
+  "mockFailures": []
+}

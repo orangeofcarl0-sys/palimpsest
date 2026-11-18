@@ -1,0 +1,1 @@
+Use REST on rollback. registry.json and replay.json show Dune R1 cannot consume explicit zero; OPS-17 in change-orders.json defers its upgrade. traffic.csv and egress.json set the site reservations. NET-31 reduces W2 capacity. W1 selects Alder+Birch for priority 20 using 9/10; W2 selects Birch+Cedar for priority 17 using 8/8
