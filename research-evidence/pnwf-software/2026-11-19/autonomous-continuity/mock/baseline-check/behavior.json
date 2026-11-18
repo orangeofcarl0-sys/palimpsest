@@ -1,0 +1,91 @@
+{
+  "commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "tree": "394093f947133d3b6e837438c6bdf95c0834b511",
+  "publicTests": 17,
+  "paths": [],
+  "observed": {
+    "zero": {
+      "status": "0",
+      "frames": []
+    },
+    "omitted": {
+      "status": "0",
+      "frames": []
+    },
+    "positive2": {
+      "status": "0",
+      "frames": [
+        {
+          "siteId": "site-a",
+          "watts": 4120,
+          "atMs": 1762300000000
+        },
+        {
+          "siteId": "site-a",
+          "watts": 4185,
+          "atMs": 1762300060000
+        }
+      ]
+    },
+    "positive6": {
+      "status": "0",
+      "frames": [
+        {
+          "siteId": "site-a",
+          "watts": 4120,
+          "atMs": 1762300000000
+        },
+        {
+          "siteId": "site-a",
+          "watts": 4185,
+          "atMs": 1762300060000
+        },
+        {
+          "siteId": "site-a",
+          "watts": 4090,
+          "atMs": 1762300120000
+        },
+        {
+          "siteId": "site-a",
+          "watts": 4210,
+          "atMs": 1762300180000
+        },
+        {
+          "siteId": "site-a",
+          "watts": 4150,
+          "atMs": 1762300240000
+        },
+        {
+          "siteId": "site-a",
+          "watts": 3970,
+          "atMs": 1762300300000
+        }
+      ]
+    },
+    "unknownStream": {
+      "status": "5",
+      "frames": []
+    },
+    "unknownUnary": {
+      "status": "5",
+      "frames": []
+    },
+    "unary": {
+      "status": "0",
+      "frames": [
+        {
+          "siteId": "site-a",
+          "watts": 4120,
+          "atMs": 1762300000000
+        }
+      ]
+    }
+  },
+  "correctionBlob": "0951003a7d83af8591a151bf560da0f4bebe1150",
+  "preserved": {
+    "proto/energy.proto": true,
+    "service/wire.js": true,
+    "service/grpc_client.js": true,
+    "test/rest.test.js": true
+  }
+}

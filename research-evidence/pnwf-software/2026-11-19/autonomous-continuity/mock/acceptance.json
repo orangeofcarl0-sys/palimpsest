@@ -1,0 +1,28 @@
+{
+  "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "candidate": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+  "acceptedHead": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+  "source": "DIRECT_BASIS",
+  "acceptance": {
+    "actor": "operator:software-mock-operator",
+    "priorHead": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "approved": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+    "eventId": 8,
+    "recordedAt": "2026-11-18T17:18:26.191Z"
+  },
+  "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+  "note": {
+    "id": "pje-46854bad0b584c688482c109db97c82f",
+    "title": "Fleet rollout verification",
+    "body": "Fleet source updates/2026-11-10/fleet-default-limit.md (blob 0951003a7d83af8591a151bf560da0f4bebe1150).\nObserved by the independent release verifier: before the change, explicit zero and omitted limits returned zero frames. In the accepted tree both returned three, in source order.\nReviewed candidate 45211c60a81da3b87d8e25e46afa8ffd89f47840. Accepted project version 45211c60a81da3b87d8e25e46afa8ffd89f47840.\nProject contribution ctb-498c69f1f25ef8e1c08cb80a6069e614 / ctd-fbda4e9e76f3d6dfbd0f4e9271e5c5fa / ACCEPT_AS_CANDIDATE: Use the measured zero-frame counterexample to revise the stream default and its public tests. Preserve the existing wire contract."
+  },
+  "recorded": [
+    {
+      "contribution": "ctb-498c69f1f25ef8e1c08cb80a6069e614",
+      "finding": "Both the explicit-zero and omitted requests returned zero Readings for site-a on the basis although Fleet requires three.",
+      "decision": "ACCEPT_AS_CANDIDATE",
+      "decisionId": "ctd-fbda4e9e76f3d6dfbd0f4e9271e5c5fa",
+      "note": "Use the measured zero-frame counterexample to revise the stream default and its public tests. Preserve the existing wire contract."
+    }
+  ]
+}

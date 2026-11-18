@@ -1,0 +1,103 @@
+{
+  "schema": "pnwf-usage-snapshot/v1",
+  "cohortId": "fleet-resume-9d229801-6689-4aed-a329-3df4f2563949",
+  "configDigest": "634e429ddfbee0747891429bcc3079311b2861f044c24be9f1c6f5e9ded8bd37",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 81552,
+  "reserved": null,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": null,
+  "sessions": [
+    {
+      "id": "RESUME",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": null,
+      "softCeiling": null,
+      "maxRequests": 64,
+      "requestCount": 5,
+      "unresolvedRequests": 0,
+      "confirmed": 81552,
+      "reserved": null
+    }
+  ],
+  "requests": [
+    {
+      "id": "039fdef2-16a1-4dc9-b648-c756c4b1dda8",
+      "session": "RESUME",
+      "digest": "59eadb774c5d18f9efb5938e60afc1947a62be755b2f33714f4694bb6609e617",
+      "reserved": null,
+      "actual": 10665,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 10611,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 54
+      }
+    },
+    {
+      "id": "3d61423a-8165-4312-95ae-7a6f0af8d327",
+      "session": "RESUME",
+      "digest": "c1b88e270a1d64658923e8c4425fa22f204bb93189824f82b84263a5e3dd2695",
+      "reserved": null,
+      "actual": 14199,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 3576,
+        "cache_read_input_tokens": 10496,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 127
+      }
+    },
+    {
+      "id": "002cf70a-1b8f-4ade-bf6f-c110b79678c6",
+      "session": "RESUME",
+      "digest": "e2a7707e015558a4171b524b77d1d8e02ec2f6ec0b77d56a4729cba599700892",
+      "reserved": null,
+      "actual": 16579,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 2241,
+        "cache_read_input_tokens": 13952,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 386
+      }
+    },
+    {
+      "id": "fe0bb619-4e1a-44f2-88c1-800d755516ab",
+      "session": "RESUME",
+      "digest": "62dba99e7917e948c5a55210eebe7cf7ee5044e4ba010d6ec917a1b3913c9c5a",
+      "reserved": null,
+      "actual": 18988,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 2215,
+        "cache_read_input_tokens": 16128,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 645
+      }
+    },
+    {
+      "id": "d7c8cddc-23c7-4f10-8bc7-80da41c83be8",
+      "session": "RESUME",
+      "digest": "f231204518743ca8a69bfffd5b821ae0333402838c57afad03559b42d864bfa3",
+      "reserved": null,
+      "actual": 21121,
+      "state": "SETTLED",
+      "reason": null,
+      "usage": {
+        "input_tokens": 1687,
+        "cache_read_input_tokens": 18304,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1130
+      }
+    }
+  ],
+  "refusals": []
+}

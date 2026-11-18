@@ -1,0 +1,186 @@
+{
+  "schema": "pnwf-actual-isolation/v2",
+  "status": "EVALUATION_ISOLATION_QUALIFIED",
+  "containerId": "005db70db92175b76317fdf2a70c163889f34249cf90a4f4ed9d4a6ac147efef",
+  "descriptor": {
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "readonlyRootfs": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "adapterFiles": {
+      "container_adapter.mjs": "a0df9ed25b1a33f3e6e4012be34af52518b2fced570a6f9b8233a7b3e886861b",
+      "container_runtime.mjs": "dfe511193a96bec855a5878be75805e043344a9b3c88d482bdd71ab6997b4976",
+      "container_bridge.mjs": "a0f19c75bd2419825ff6270d639f1dcee36a30891365974a6b2fb4c618698c79",
+      "world_preflight.mjs": "5ba8ea46b5b8bf09361e53899537b750be8fe46b70da0ac07625249b79732d10",
+      "bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+      "execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "mock_provider.mjs": "65f82d7656da2d442e665f06f349fb8bba81cfdd787989817eaad5a31686f19d",
+      "run_pnwf_live.mjs": "5fd13204e8e150582bcd1971ff3f91fd238cd396b9debca91f78417d522ce88e"
+    },
+    "mounts": [
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/palimpsest-grpc-autonomy-398a101c2e82/mock-01/runtime/package.json",
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/palimpsest-grpc-autonomy-398a101c2e82/mock-01/runtime/runtime",
+        "destination": "/product/runtime",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/palimpsest-grpc-autonomy-398a101c2e82/mock-01/accepted/stages/RESUME",
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-grpc-autonomy-398a101c2e82\\mock-01\\accepted\\runtime-RESUME",
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\pnwf\\world_preflight.mjs",
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-qualified-1ddd8eea-1420-42c8-a898-1967e353bb68-harness/_data",
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/palimpsest-grpc-autonomy-398a101c2e82/mock-01/runtime/dist",
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/palimpsest-grpc-autonomy-398a101c2e82/mock-01/runtime/node_modules",
+        "destination": "/product/node_modules",
+        "writable": false
+      }
+    ]
+  },
+  "descriptorDigest": "c180f411acb941a8f80db891fc98afe4aa7bf4938a0c302d19ec7efb42cce0a0",
+  "harnessPresent": true,
+  "externalScorerRead": true,
+  "checks": [
+    {
+      "name": "principal_uid",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_shell_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "write_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "git_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "node_build_fixture",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_version",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_native_addon",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "native_shell_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_proc_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_parent_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "rootfs_readonly",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "no_docker_socket",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_evaluator",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_owner_credential",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_provider_credential_env",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_routes",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    }
+  ],
+  "worlds": {
+    "schema": "pnwf-world-preflight/v1",
+    "status": "QUALIFIED",
+    "head": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+    "worlds": [],
+    "product": {
+      "repositoryHead": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+      "projectHead": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+      "relation": "IN_SYNC",
+      "uncommittedPaths": [],
+      "admittedDirectCommit": "45211c60a81da3b87d8e25e46afa8ffd89f47840"
+    }
+  },
+  "checkedAt": "2026-11-18T17:19:32.006Z"
+}

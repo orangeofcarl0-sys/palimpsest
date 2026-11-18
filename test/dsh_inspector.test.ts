@@ -24,6 +24,38 @@ function fixture() {
 }
 
 describe("DSH project inspector", () => {
+  it("shows a received finding separately from its recorded decision", () => {
+    const record = { contributionId: "finding", finding: "zero frames", sourceRef: "child", task: "measure default", artifacts: [] };
+    const decision = { decisionId: "decision", decision: "REJECT", decisionNote: "unrelated version",
+      basisAtDecision: { headCommit: "a".repeat(40) }, basisState: "STALE" };
+    function at(decisions: unknown[]) {
+      const d = drawing();
+      drawPulse(d, { projectId: "p", episode: {}, delegations: [], decisionQueue: [], acceptedAssets: [], candidates: [],
+        execution: { attempts: [] }, contributions: [{ record, status: "UNASSESSED", downstream: { addedTaskIds: [] }, decisions }] });
+      return d.finish();
+    }
+    expect(at([]).nodes.some((n: { kind: string }) => n.kind === "贡献决定")).toBe(false);
+    const view = at([{ record: decision, journalEntryId: "entry" }]);
+    expect(view.nodes).toContainEqual(expect.objectContaining({ ref: "decision", label: "REJECT", facts:
+      expect.objectContaining({ 依据: "unrelated version", 日志: "entry" }) }));
+    expect(view.edges).toContainEqual(expect.objectContaining({ kind: "评估发现", ref: "entry" }));
+  });
+
+  it("only shows journal references explicitly linked to the current project and exact version", async () => {
+    const current = "a".repeat(40), old = "b".repeat(40);
+    const entry = { projectId: "p", kind: "REFERENCE_NOTE", entryId: "good", title: "Measured behavior", body: "three frames", provenance: "verifier",
+      relatedRefs: [{kind: "git_commit", id: current}] };
+    const entries = [entry, { ...entry, entryId: "wrong-project", projectId: "q" }, { ...entry, entryId: "old", relatedRefs: [{kind: "git_commit", id: old}] },
+      { ...entry, entryId: "unlinked", relatedRefs: [] }, { ...entry, entryId: "unrelated", kind: "OPEN_QUESTION" }];
+    const inspector = createInspector({ profile: { projectId: "p" }, toolNames: [], deployment: { installed: {
+      controller: { store: { projectTimeline: () => [] }, viewCursor: () => "1", isProjectInitialized: () => true,
+        orchestrationGraph: () => ({ project: {projectId: "p"}, tasks: [], promotions: [] }), work: { project: () => ({head_commit: current}) } },
+      application: { projectWorkspace: { journal: async () => entries.map(entry => ({entry})) } },
+    } } });
+    const live = await inspector.read("live", {});
+    expect(live.value.frame.state.nodes.filter((n: {kind: string}) => n.kind === "版本依据").map((n: {ref: string}) => n.ref)).toEqual(["good"]);
+    expect(live.value.frame.state.edges).toContainEqual(expect.objectContaining({ from: key("commit",current), to: key("journal","good") }));
+  });
   it("connects a settled result to the recorded executor and keeps pending work out of the outcomes column", () => {
     const d = drawing();
     d.node(key("project", "p"), 0, "项目", "p", null, "Work", "p");
