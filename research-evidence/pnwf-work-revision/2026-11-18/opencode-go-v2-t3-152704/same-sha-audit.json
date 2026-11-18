@@ -1,0 +1,190 @@
+{
+  "schema": "pnwf-grpc-t3-same-sha-review-audit/v1",
+  "commit": "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+  "acceptedHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+  "blob": "1137d4b9a653b636b833fdc041a540e787ea54ea",
+  "reviewSha256": "42d78d9b26700a679a999e04ce669f4b972000b6fcfb131abc79df2bd22b439e",
+  "frozen": {
+    "schema": "pnwf-grpc-review-semantics/v2",
+    "passed": false,
+    "passedChecks": 11,
+    "totalChecks": 12,
+    "failed": [
+      {
+        "id": "NEW_ZERO_AND_OMITTED_FIRST_THREE",
+        "passed": false,
+        "evidence": null,
+        "detail": "State that both forms now return the first three available readings."
+      }
+    ]
+  },
+  "contentRecount": {
+    "passedChecks": 12,
+    "totalChecks": 12,
+    "method": "original passing criteria plus separately verified rows of the original committed review",
+    "additionalCriterion": "NEW_ZERO_AND_OMITTED_FIRST_THREE",
+    "evidence": [
+      {
+        "line": 26,
+        "input": "**Supplied limit of zero** (`limit` field present, value `0`)",
+        "historical": "Empty stream: no Reading frames, followed by `grpc-status: 0`.",
+        "updated": "The first three available readings in source order, or fewer if the site has fewer; `grpc-status: 0`."
+      },
+      {
+        "line": 27,
+        "input": "**Absent limit** (`limit` field omitted, decoded as `0`)",
+        "historical": "Empty stream: no Reading frames, followed by `grpc-status: 0`.",
+        "updated": "The first three available readings in source order, or fewer if the site has fewer; `grpc-status: 0`."
+      }
+    ]
+  },
+  "git": {
+    "onlyChanged": [
+      "MIGRATION-REVIEW.md"
+    ],
+    "unchangedCompatibilityBlobs": [
+      "proto/energy.proto",
+      "service/wire.js",
+      "service/grpc_client.js",
+      "test/rest.test.js",
+      "service/rest_server.js",
+      "service/rest_client.js"
+    ],
+    "receiptCommit": "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+    "receiptDigest": "42d78d9b26700a679a999e04ce669f4b972000b6fcfb131abc79df2bd22b439e"
+  },
+  "behavior": {
+    "probeSha256": "4e79fffb36de7940eaeaeb64a154fd6673be1d024fbe51f5c311cc98c0171c49",
+    "http2Passed": 7,
+    "http2Cases": {
+      "zero": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4090,
+            "atMs": 1762300120000
+          }
+        ]
+      },
+      "omitted": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4090,
+            "atMs": 1762300120000
+          }
+        ]
+      },
+      "positive2": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          }
+        ]
+      },
+      "positive6": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4185,
+            "atMs": 1762300060000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4090,
+            "atMs": 1762300120000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4210,
+            "atMs": 1762300180000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 4150,
+            "atMs": 1762300240000
+          },
+          {
+            "siteId": "site-a",
+            "watts": 3970,
+            "atMs": 1762300300000
+          }
+        ]
+      },
+      "unknownStream": {
+        "status": "5",
+        "frames": []
+      },
+      "unknownUnary": {
+        "status": "5",
+        "frames": []
+      },
+      "unary": {
+        "status": "0",
+        "frames": [
+          {
+            "siteId": "site-a",
+            "watts": 4120,
+            "atMs": 1762300000000
+          }
+        ]
+      }
+    },
+    "publicTests": {
+      "tests": 18,
+      "passed": 18,
+      "failed": 0
+    },
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "network": "none"
+  },
+  "responseAttribution": {
+    "replayedMatchesRun": true,
+    "boundRequests": 13,
+    "observationsMatchSqlite": true,
+    "unresolvedRequests": 0,
+    "totals": {
+      "fresh": 39634,
+      "cacheRead": 325376,
+      "cacheWrite": 0,
+      "output": 6171
+    }
+  },
+  "additionalPaidRequests": 0
+}

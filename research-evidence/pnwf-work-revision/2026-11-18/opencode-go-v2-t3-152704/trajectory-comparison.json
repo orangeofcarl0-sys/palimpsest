@@ -1,0 +1,224 @@
+{
+  "schema": "pnwf-grpc-t3-opencode-go-v2-comparison/v1",
+  "sameContract": {
+    "basis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+    "model": "deepseek-v4.1-flash",
+    "dsh": "0.2.1-rc.5",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "provider": "opencode-go",
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "promptSha256": "74e3815e25630dd20d78de8e13714b283e60d2183e2cd2a9b807c256107f3641",
+    "legacyScorerSha256": "8fe80e8f52378c4492a5e43a77312786de2cd93500d216eafc75f9700f3b94b5",
+    "acceptanceMountSha256": "5b36a8aa9be1ee8e2e19db96fda943b30e023312477a8c7172c6ddd4717bf3e2"
+  },
+  "mock": {
+    "failedPreparation": {
+      "cohortId": "software-t3-review-97b30a22-1398-49e1-a6fb-0409cc84e9cf",
+      "paidModelCalls": 0,
+      "admitted": 3,
+      "unresolved": 1,
+      "providerFailure": "MOCK_REVIEW_COMMIT_NOT_OBSERVED",
+      "toolFailure": "Author identity unknown (exit 128 after 18/18 public tests)",
+      "recovery": "Restored the prior experiment repository-local Git identity and reran in a new Mock directory."
+    },
+    "qualified": {
+      "cohortId": "software-t3-review-b51bd610-20a2-4862-a297-b55558c86f46",
+      "principalId": "session-fbe0215f-821f-4ce2-97e3-7f81a50d84e3",
+      "requests": 4,
+      "passed": true,
+      "score": 12,
+      "paidModelCalls": 0,
+      "conclusion": "DELIVER",
+      "naturalExit": true
+    }
+  },
+  "previous": {
+    "archive": "research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602",
+    "offlineAcceptance": "research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-offline-acceptance.json",
+    "implementationHead": "9fe4bd62e7a6a330282ddcbbddc1de92d1edd490",
+    "commit": "f30c66446f88c99343ffc0fc752fca4463dbedef",
+    "cohortId": "software-t3-review-c05ec844-57e0-4330-8d33-cd1875532127",
+    "principalId": "session-8bf67bc2-9841-4f78-a7d5-6a217655cdf8",
+    "originalPassed": false,
+    "originalAttributionFailure": "Model step has no unique provider response ID\n\n0 !== 1\n",
+    "originalScore": 11,
+    "failedCriterion": "OLD_ZERO_AND_OMITTED_EMPTY",
+    "offlineScore": 12,
+    "offlineBoundRequests": 14,
+    "metrics": {
+      "paidRequests": 14,
+      "confirmedTokens": 458889,
+      "elapsedMs": 194233,
+      "usage": {
+        "input_tokens": 46913,
+        "cache_read_input_tokens": 402944,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 9032
+      },
+      "first": {
+        "input_tokens": 10723,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 118
+      },
+      "laterFreshInput": 36190,
+      "cacheReadShare": 0.8957157496715623,
+      "billing": {
+        "cost": 0,
+        "allowance": 0.008199,
+        "listCost": 0.01366496,
+        "reasoning": 4688
+      },
+      "toolPairs": 27,
+      "byTool": {
+        "continuity:pulse": 1,
+        "bash": 9,
+        "read": 15,
+        "write": 1,
+        "work:conclude": 1
+      },
+      "failedJobs": 0,
+      "refusals": 0,
+      "tests": [
+        {
+          "callSeq": 73,
+          "resultSeq": 76,
+          "tests": 18,
+          "pass": 18,
+          "fail": 0
+        },
+        {
+          "callSeq": 105,
+          "resultSeq": 108,
+          "tests": 18,
+          "pass": 18,
+          "fail": 0
+        }
+      ],
+      "deliver": {
+        "callSeq": 133,
+        "resultSeq": 134,
+        "status": "RECORDED",
+        "mayEnd": true,
+        "resultOffsetMs": 154684,
+        "msUntilExit": 39549
+      }
+    }
+  },
+  "current": {
+    "implementationHead": "77f2d87e4a1226dfe02509d9a181ca56d1f0be70",
+    "commit": "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+    "cohortId": "software-t3-review-743cedf4-1107-4dfb-b2d3-1163f66864eb",
+    "principalId": "session-54199746-c1b9-4c1a-bf40-fcf5d76b64f5",
+    "originalPassed": false,
+    "originalScore": 11,
+    "failedCriterion": "NEW_ZERO_AND_OMITTED_FIRST_THREE",
+    "offlineContentChecks": 12,
+    "originalLegacyCrossScore": {
+      "passed": false,
+      "reason": "SOFTWARE_REVIEW_MISSING one Reading per frame"
+    },
+    "boundRequests": 13,
+    "bindingMethod": "unique-usage-tuple",
+    "unresolved": 0,
+    "conclusion": "DELIVER",
+    "naturalExit": true,
+    "exitCode": 0,
+    "runResultSha256": "5a277f5b3e23c00bc4d2c7e21ce2812bb735345804c18f15ce184c3e346c9cf1",
+    "reviewBytes": 5928,
+    "streamSha256": "d5d5c28c171a7731e7291a602562cbd4cb65876cf83c96d2349877b66821b376",
+    "metrics": {
+      "paidRequests": 13,
+      "confirmedTokens": 371181,
+      "elapsedMs": 147050,
+      "usage": {
+        "input_tokens": 39634,
+        "cache_read_input_tokens": 325376,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 6171
+      },
+      "first": {
+        "input_tokens": 10723,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 126
+      },
+      "laterFreshInput": 28911,
+      "cacheReadShare": 0.8914166735157941,
+      "billing": {
+        "cost": 0,
+        "allowance": 0.01274861,
+        "listCost": 0.02124766,
+        "reasoning": 2404
+      },
+      "toolPairs": 25,
+      "byTool": {
+        "continuity:pulse": 1,
+        "bash": 11,
+        "read": 11,
+        "write": 1,
+        "work:conclude": 1
+      },
+      "failedJobs": 0,
+      "refusals": 0,
+      "tests": [
+        {
+          "callSeq": 81,
+          "resultSeq": 84,
+          "tests": 18,
+          "pass": 18,
+          "fail": 0
+        }
+      ],
+      "deliver": {
+        "callSeq": 129,
+        "resultSeq": 130,
+        "status": "RECORDED",
+        "mayEnd": true,
+        "resultOffsetMs": 108392,
+        "msUntilExit": 38658
+      }
+    }
+  },
+  "delta": {
+    "paidRequests": -1,
+    "confirmedTokens": -87708,
+    "elapsedMs": -47183,
+    "toolPairs": -2,
+    "cacheReadShare": -0.004299076155768189,
+    "laterFreshInput": -7279,
+    "usage": {
+      "input_tokens": -7279,
+      "cache_read_input_tokens": -77568,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": -2861
+    },
+    "allowance": 0.00454961
+  },
+  "originalUnknownStops": [
+    {
+      "archive": "review-semantics-035705",
+      "httpStatus": 402,
+      "requestId": "c9ebb54f-1643-46f6-a0b1-271d077c9d3f",
+      "cohortId": "software-t3-review-dc36f2f9-a1a9-4d25-9225-b7b48d7198a1",
+      "state": "UNKNOWN",
+      "usage": null
+    },
+    {
+      "archive": "opencode-go-t3-053356",
+      "httpStatus": 400,
+      "requestId": "1cbc6dfe-efbf-442a-8968-08c487c5e929",
+      "cohortId": "software-t3-review-2be1f0be-569d-41e9-91d5-aef38c4d76f9",
+      "state": "UNKNOWN",
+      "usage": null
+    }
+  ],
+  "additionalPaidRequestsOutsideT3": 0
+}
