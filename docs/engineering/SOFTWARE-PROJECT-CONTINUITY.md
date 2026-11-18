@@ -2,6 +2,8 @@
 
 2026-11-10 · 路线图基线 fdfad589bf4eb7aab6aa4271a095de28fb36bf40
 
+2026-11-19 从同一 Fleet 修订基线开展业务目标提示实验，分别记录模型选取的协作方式、所有者按 SHA 接受，以及新宿主上从 DSH 侧栏和 Workspace 读回依据的结果。[自主协作与宿主重启接续](GRPC-AUTONOMOUS-CONTINUITY.md)
+
 ## 交付回执
 
 工件观察器每次核验当前完整 HEAD，用该提交和路径读取 Git blob，然后复查 HEAD。成功回执的 SHA 与摘要由同一次 Git 对象读取绑定。脏文件、读不到 Git 对象或观察期间 HEAD 漂移时，回执报告工作树中的文件，提交字段为空。Episode 的基线继续由项目 Head owner 提供。缺少现场文件时，仍可由已完成 Attempt 的结果提交提供正式候选工件。[实现](../../src/composition/continuity.ts) · [同一 Host 的回归](../../test/alhs_episode_convergence.test.ts) · [Attempt Result 回归](../../test/pwrs_relay.test.ts)

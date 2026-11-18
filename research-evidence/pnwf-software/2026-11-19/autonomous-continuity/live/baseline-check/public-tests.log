@@ -1,0 +1,25 @@
+✔ GetReading is unary and returns the current sample (28.494947ms)
+✔ StreamReadings honours the limit and preserves source order (10.610574ms)
+✔ StreamReadings with zero limit returns an empty stream (4.966935ms)
+✔ StreamReadings with an omitted limit returns an empty stream (5.237408ms)
+✔ an unknown site is a NOT_FOUND error on both gRPC methods (11.268212ms)
+✔ gRPC readings match the preserved REST baseline (28.286356ms)
+✔ GET one reading returns the current sample (29.722019ms)
+✔ GET readings honours the limit and preserves order (9.455947ms)
+✔ an unknown site is an error, not an empty list (6.593385ms)
+✔ wire frame is a compressed flag plus a big-endian length and the protobuf bytes (3.185087ms)
+✔ wire decoder handles frames split across chunks and preserves order (2.295832ms)
+✔ wire request messages round-trip with omitted and zero limits (1.126433ms)
+✔ GetReading is one unary frame with grpc-status 0 in trailers (35.833227ms)
+✔ StreamReadings sends one frame per reading in source order (11.121774ms)
+✔ StreamReadings with a zero limit sends no frames and completes successfully (5.913543ms)
+✔ server reports NOT_FOUND for an unknown site instead of an empty stream (9.822008ms)
+✔ server reports UNIMPLEMENTED for an unknown method (5.899024ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 407.757302

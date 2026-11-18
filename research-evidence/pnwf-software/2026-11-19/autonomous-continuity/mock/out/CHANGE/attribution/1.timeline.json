@@ -1,0 +1,454 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-6a9a06d4-8b92-4499-ab02-0dfe0c5da526",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-18T17:15:50.739Z",
+      "endedAt": "2026-11-18T17:15:55.594Z",
+      "durationMs": 4855
+    },
+    "counts": {
+      "steps": 6,
+      "turns": 1,
+      "toolCalls": 5,
+      "pairedToolResults": 5,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 0,
+      "commits": 0,
+      "jobs": 2
+    },
+    "byKind": {
+      "subagent": 1,
+      "bash": 2,
+      "palimpsest_contribute": 2
+    },
+    "stateQueries": [],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "fleet_0",
+        "offsetMs": 1570,
+        "kind": "subagent",
+        "args": {
+          "description": "Fleet compatibility measurement",
+          "prompt": "Measure the Fleet client's zero and omitted stream limits against this release, and return a reproducible counterexample."
+        }
+      },
+      {
+        "seq": 22,
+        "callId": "fleet_1",
+        "offsetMs": 1797,
+        "kind": "bash for n in $(seq 1 25); do test -s .palimpsest/child-observation.json && break; sleep 1; done; cat .palimpsest/child-obser…",
+        "args": {
+          "command": "for n in $(seq 1 25); do test -s .palimpsest/child-observation.json && break; sleep 1; done; cat .palimpsest/child-observation.json",
+          "description": "Check the Fleet release"
+        }
+      },
+      {
+        "seq": 33,
+        "callId": "fleet_4",
+        "offsetMs": 2996,
+        "kind": "palimpsest_contribute",
+        "args": {
+          "action": "record",
+          "sourceKind": "NATIVE_SUBAGENT",
+          "sourceRef": "fleet-compatibility-measurement",
+          "task": "Measure the Fleet client's zero and omitted stream limits against this release, and return a reproducible counterexample.",
+          "finding": "Both the explicit-zero and omitted requests returned zero Readings for site-a on the basis although Fleet requires three.",
+          "artifacts": [
+            "service/grpc_server.js",
+            "test/integration.test.js"
+          ]
+        }
+      },
+      {
+        "seq": 39,
+        "callId": "fleet_5",
+        "offsetMs": 3114,
+        "kind": "palimpsest_contribute",
+        "args": {
+          "action": "decide",
+          "contributionId": "ctb-498c69f1f25ef8e1c08cb80a6069e614",
+          "decision": "ACCEPT_AS_CANDIDATE",
+          "decisionNote": "Use the measured zero-frame counterexample to revise the stream default and its public tests. Preserve the existing wire contract."
+        }
+      },
+      {
+        "seq": 45,
+        "callId": "fleet_6",
+        "offsetMs": 3569,
+        "kind": "bash printf %s 'ZGlmZiAtLWdpdCBhL01JR1JBVElPTi5tZCBiL01JR1JBVElPTi5tZAppbmRleCAwYzUxNDZlLi44ZDYwZDZmIDEwMDY0NAotLS0gYS9NSUdSQ…",
+        "args": {
+          "command": "printf %s 'ZGlmZiAtLWdpdCBhL01JR1JBVElPTi5tZCBiL01JR1JBVElPTi5tZAppbmRleCAwYzUxNDZlLi44ZDYwZDZmIDEwMDY0NAotLS0gYS9NSUdSQVRJT04ubWQKKysrIGIvTUlHUkFUSU9OLm1kCkBAIC02OSw5ICs2OSwxNSBAQCBpcyByZXBvcnRlZCB0aHJvdWdoIHRoZSBnUlBDIGVycm9yIHBhdGggcmF0aGVyIHRoYW4gYmVpbmcgc2lsZW50bHkgYWNjZXB0ZWQuCiAKIC0gUmVxdWVzdDogZXhhY3RseSBvbmUgYFN0cmVhbVJlYWRpbmdzUmVxdWVzdGAgZnJhbWUuCiAtIFJlc3BvbnNlOiBvbmUgYFJlYWRpbmdgIGZyYW1lIHBlciBzZWxlY3RlZCByZWFkaW5nLCBpbiB0aGUgc2FtZSBzb3VyY2Ugb3JkZXIgYXMgdGhlIFJFU1QgbGlzdC4KLS0gYGxpbWl0YCBzZWxlY3RzIGByZWFkaW5ncy5zbGljZSgwLCBsaW1pdClgLgotLSBBbiAqKm9taXR0ZWQgbGltaXQqKiBhbmQgYW4gKipleHBsaWNpdGx5IHplcm8gbGltaXQqKiBib3RoIHJldHVybiBhbiBlbXB0eSBzdHJlYW06IG5vIFJlYWRpbmcKLSAgZnJhbWVzLCBmb2xsb3dlZCBieSBgZ3JwYy1zdGF0dXM6IDBgLiBUaGV5IGRvIG5vdCBtZWFuICJhbGwgcmVhZGluZ3MiLgorLSBBIHBvc2l0aXZlIGBsaW1pdGAgc2VsZWN0cyBgcmVhZGluZ3Muc2xpY2UoMCwgbGltaXQpYCwgc28gYSBsaW1pdCBsYXJnZXIgdGhhbiB0aGUgYXZhaWxhYmxlCisgIHJlYWRpbmdzIHN0aWxsIHJldHVybnMgYWxsIGF2YWlsYWJsZSByZWFkaW5ncy4KKy0gQW4gKipvbWl0dGVkIGxpbWl0KiogYW5kIGFuICoqZXhwbGljaXRseSB6ZXJvIGxpbWl0KiogYm90aCBzZWxlY3QgdGhlIEZsZWV0LWNvbXBhdGlibGUgZGVmYXVsdDoKKyAgdGhlIGZpcnN0IHRocmVlIGF2YWlsYWJsZSByZWFkaW5ncyBpbiBzb3VyY2Ugb3JkZXIgKGByZWFkaW5ncy5zbGljZSgwLCAzKWApLCBvciBmZXdlciBpZiB0aGUgc2l0ZQorICBoYXMgZmV3ZXIuIFRoZXkgZG8gbm90IG1lYW4gImFsbCByZWFkaW5ncyIsIGFuZCB0aGV5IG5vIGxvbmdlciByZXR1cm4gYW4gZW1wdHkgc3RyZWFtLgorLSBUaGUgYFN0cmVhbVJlYWRpbmdzYCBjb21tZW50IGluIGBwcm90by9lbmVyZ3kucHJvdG9gIHN0aWxsIHNheXMgdGhhdCBhbiBvbWl0dGVkIG9yIHplcm8gbGltaXQKKyAgcmV0dXJucyBhbiBlbXB0eSBzdHJlYW0uIFRoYXQgY29tbWVudCBkZXNjcmliZXMgdGhlIHN1cGVyc2VkZWQgZmlyc3QtcmVsZWFzZSBiZWhhdmlvcjsgaXQgaXMKKyAgcmV0YWluZWQgYmVjYXVzZSB0aGUgcHJvdG8gaXMgYnl0ZS1mb3ItYnl0ZSB1bmNoYW5nZWQsIGFuZCBpdCBpcyBpbmZvcm1hdGlvbmFsIG9ubHkuIFRoaXMKKyAgc2VjdGlvbiBhbmQgYHNlcnZpY2UvZ3JwY19zZXJ2ZXIuanNgIGRvY3VtZW50IHRoZSBlZmZlY3RpdmUgYmVoYXZpb3IuCiAtIEFuIHVua25vd24gc2l0ZSByZXR1cm5zIE5PVF9GT1VORCAoYGdycGMtc3RhdHVzOiA1YCwgYHVua25vd25fc2l0ZWApIGluc3RlYWQgb2YgYW4gZW1wdHkgc3RyZWFtLAogICBwcmVzZXJ2aW5nIHRoZSBSRVNUIGVycm9yIHNlbWFudGljcy4KIC0gQSBsaW1pdCB0aGF0IGNhbm5vdCBiZSByZXByZXNlbnRlZCBhcyBhIG5vbi1uZWdhdGl2ZSBpbnRlZ2VyIGlzIElOVkFMSURfQVJHVU1FTlQKQEAgLTc5LDYgKzg1LDkgQEAgaXMgcmVwb3J0ZWQgdGhyb3VnaCB0aGUgZ1JQQyBlcnJvciBwYXRoIHJhdGhlciB0aGFuIGJlaW5nIHNpbGVudGx5IGFjY2VwdGVkLgogLSBNYWxmb3JtZWQgcmVxdWVzdHMgYXJlIElOVkFMSURfQVJHVU1FTlQgKGBpbnZhbGlkX3JlcXVlc3RgKSwgdW5rbm93biBtZXRob2RzIGFyZSBVTklNUExFTUVOVEVECiAgIChgdW5pbXBsZW1lbnRlZGApLCBhbmQgdW5zdXBwb3J0ZWQgY29tcHJlc3Npb24gaXMgVU5JTVBMRU1FTlRFRCAoYHVuc3VwcG9ydGVkX2NvbXByZXNzaW9uYCkuCiAKK1Bvc2l0aXZlIGxpbWl0cywgYEdldFJlYWRpbmdgLCB1bmtub3duLXNpdGUgZXJyb3JzLCBwcm90b2J1ZiBmaWVsZCBudW1iZXJzLCBnUlBDIGZyYW1pbmcsIGFuZCBSRVNUCitiZWhhdmlvciBhcmUgdW5jaGFuZ2VkLgorCiBUaGUgc2VydmVyIHJldHVybnMgSFRUUC8yIHN0YXR1cyBgMjAwYCBmb3IgZ1JQQyBjYWxscywgaW5jbHVkaW5nIGZhaWxlZCBjYWxsczsgdGhlIHJlYWwgb3V0Y29tZSBpcwogdGhlIGBncnBjLXN0YXR1c2AgdHJhaWxlciwgYXMgcmVxdWlyZWQgYnkgZ1JQQy4gYHNlcnZpY2UvZ3JwY19zZXJ2ZXIuanNgIGV4cG9zZXMKIGBjcmVhdGVHcnBjU2VydmVyKClgLCB3aGljaCByZXR1cm5zIGFuIHVuYm91bmQgYGh0dHAyLlNlcnZlcmAgc28gY2FsbGVycy90ZXN0cyBjYW4gY2hvb3NlIHRoZSBwb3J0LgpAQCAtMTI4LDYgKzEzNyw3IEBAIG5vZGUgLS10ZXN0CiBgYGAKIAogYHRlc3Qvc2VydmVyLnRlc3QuanNgIHNwZWFrcyByYXcgSFRUUC8yIHRvIHZlcmlmeSB0aGUgZml2ZS1ieXRlIGZyYW1lIGhlYWRlciwgb25lIGZyYW1lIHBlciBSZWFkaW5nLAotc291cmNlIG9yZGVyLCB0cmFpbGVycywgYW5kIE5PVF9GT1VORC9VTklNUExFTUVOVEVEIG91dGNvbWVzLiBgdGVzdC9pbnRlZ3JhdGlvbi50ZXN0LmpzYCBydW5zIHRoZQotcmVhbCBzZXJ2ZXIgdGhyb3VnaCBgc2VydmljZS9ncnBjX2NsaWVudC5qc2AsIGNvdmVycyBvbWl0dGVkL3plcm8gbGltaXRzIGFuZCBlcnJvcnMsIGFuZCBjb21wYXJlcyB0aGUKLWdSUEMgcmVhZGluZ3Mgd2l0aCB0aGUgcHJlc2VydmVkIFJFU1QgYmFzZWxpbmUuIFRoZSB1bmNoYW5nZWQgUkVTVCB0ZXN0cyByZW1haW4gaW4gdGhlIHN1aXRlLgorc291cmNlIG9yZGVyLCB0cmFpbGVycywgdGhlIG9taXR0ZWQvemVybyBkZWZhdWx0IGxpbWl0LCBhbmQgTk9UX0ZPVU5EL1VOSU1QTEVNRU5URUQgb3V0Y29tZXMuCitgdGVzdC9pbnRlZ3JhdGlvbi50ZXN0LmpzYCBydW5zIHRoZSByZWFsIHNlcnZlciB0aHJvdWdoIGBzZXJ2aWNlL2dycGNfY2xpZW50LmpzYCwgY292ZXJzIHRoZQorb21pdHRlZC96ZXJvIGRlZmF1bHQgbGltaXRzIGFuZCBlcnJvcnMsIGFuZCBjb21wYXJlcyB0aGUgZ1JQQyByZWFkaW5ncyB3aXRoIHRoZSBwcmVzZXJ2ZWQgUkVTVAorYmFzZWxpbmUuIFRoZSB1bmNoYW5nZWQgUkVTVCB0ZXN0cyByZW1haW4gaW4gdGhlIHN1aXRlLgpkaWZmIC0tZ2l0IGEvc2VydmljZS9ncnBjX3NlcnZlci5qcyBiL3NlcnZpY2UvZ3JwY19zZXJ2ZXIuanMKaW5kZXggNjQyMDNkZi4uMTc4NGYwMiAxMDA2NDQKLS0tIGEvc2VydmljZS9ncnBjX3NlcnZlci5qcworKysgYi9zZXJ2aWNlL2dycGNfc2VydmVyLmpzCkBAIC0yOSw2ICsyOSwxMCBAQCBjb25zdCBHUlBDX1NUQVRVUyA9IE9iamVjdC5mcmVlemUoewogY29uc3QgR0VUX1JFQURJTkcgPSAiL2VuZXJneS52MS5FbmVyZ3lTZXJ2aWNlL0dldFJlYWRpbmciOwogY29uc3QgU1RSRUFNX1JFQURJTkdTID0gIi9lbmVyZ3kudjEuRW5lcmd5U2VydmljZS9TdHJlYW1SZWFkaW5ncyI7CiAKKy8vIEZsZWV0IGNvbXBhdGliaWxpdHk6IGFuIG9taXR0ZWQgbGltaXQgZGVjb2RlcyBhcyB6ZXJvLCBhbmQgYm90aCByZXF1ZXN0IHRoZQorLy8gZmlyc3QgdGhyZWUgYXZhaWxhYmxlIHJlYWRpbmdzIGluIHNvdXJjZSBvcmRlci4KK2NvbnN0IERFRkFVTFRfU1RSRUFNX0xJTUlUID0gMzsKKwogZnVuY3Rpb24gZ3JwY0Vycm9yKHN0YXR1cywgbWVzc2FnZSkgewogICBjb25zdCBlcnJvciA9IG5ldyBFcnJvcihtZXNzYWdlKTsKICAgZXJyb3IuZ3JwY1N0YXR1cyA9IHN0YXR1czsKQEAgLTExOSw4ICsxMjMsMTAgQEAgYXN5bmMgZnVuY3Rpb24gZGlzcGF0Y2gocGF0aCwgYm9keSkgewogICBpZiAoIU51bWJlci5pc0ludGVnZXIocmVxdWVzdC5saW1pdCkgfHwgcmVxdWVzdC5saW1pdCA8IDAgfHwgcmVxdWVzdC5saW1pdCA+IDB4ZmZmZmZmZmYpIHsKICAgICB0aHJvdyBncnBjRXJyb3IoR1JQQ19TVEFUVVMuSU5WQUxJRF9BUkdVTUVOVCwgImludmFsaWRfbGltaXQiKTsKICAgfQotICAvLyBBIHplcm8gb3Igb21pdHRlZCBsaW1pdCBpcyBhbiBleHBsaWNpdGx5IGVtcHR5IHN0cmVhbSwgbm90ICJhbGwgcmVhZGluZ3MiLgotICByZXR1cm4gcmVhZGluZ3Muc2xpY2UoMCwgcmVxdWVzdC5saW1pdCkubWFwKChyZWFkaW5nKSA9PiBlbmNvZGVSZWFkaW5nKHJlYWRpbmcpKTsKKyAgLy8gQSB6ZXJvIG9yIG9taXR0ZWQgbGltaXQgcmVxdWVzdHMgdGhlIEZsZWV0IGRlZmF1bHQgcmF0aGVyIHRoYW4gYW4gZW1wdHkKKyAgLy8gc3RyZWFtOyBhIHBvc2l0aXZlIGxpbWl0IHN0aWxsIHNlbGVjdHMgZXhhY3RseSB0aGF0IG1hbnkgcmVhZGluZ3MuCisgIGNvbnN0IGxpbWl0ID0gcmVxdWVzdC5saW1pdCA9PT0gMCA/IERFRkFVTFRfU1RSRUFNX0xJTUlUIDogcmVxdWVzdC5saW1pdDsKKyAgcmV0dXJuIHJlYWRpbmdzLnNsaWNlKDAsIGxpbWl0KS5tYXAoKHJlYWRpbmcpID0+IGVuY29kZVJlYWRpbmcocmVhZGluZykpOwogfQogCiAvKioKZGlmZiAtLWdpdCBhL3Rlc3QvaW50ZWdyYXRpb24udGVzdC5qcyBiL3Rlc3QvaW50ZWdyYXRpb24udGVzdC5qcwppbmRleCA2Yzk3NTNjLi5jZTljYjFhIDEwMDY0NAotLS0gYS90ZXN0L2ludGVncmF0aW9uLnRlc3QuanMKKysrIGIvdGVzdC9pbnRlZ3JhdGlvbi50ZXN0LmpzCkBAIC01NywxMiArNTcsMjIgQEAgdGVzdCgiU3RyZWFtUmVhZGluZ3MgaG9ub3VycyB0aGUgbGltaXQgYW5kIHByZXNlcnZlcyBzb3VyY2Ugb3JkZXIiLCBhc3luYyAoKSA9PgogICApOwogfSk7CiAKLXRlc3QoIlN0cmVhbVJlYWRpbmdzIHdpdGggemVybyBsaW1pdCByZXR1cm5zIGFuIGVtcHR5IHN0cmVhbSIsIGFzeW5jICgpID0+IHsKLSAgYXNzZXJ0LmRlZXBFcXVhbChhd2FpdCBjb2xsZWN0KGdycGMuc3RyZWFtUmVhZGluZ3MoInNpdGUtYSIsIDApKSwgW10pOwordGVzdCgiU3RyZWFtUmVhZGluZ3Mgd2l0aCB6ZXJvIGxpbWl0IHJldHVybnMgdGhlIGZpcnN0IHRocmVlIHJlYWRpbmdzIiwgYXN5bmMgKCkgPT4geworICBjb25zdCByZWFkaW5ncyA9IGF3YWl0IGNvbGxlY3QoZ3JwYy5zdHJlYW1SZWFkaW5ncygic2l0ZS1hIiwgMCkpOworICBhc3NlcnQuZGVlcEVxdWFsKHJlYWRpbmdzLCBhd2FpdCByZXN0LmdldFJlYWRpbmdzKCJzaXRlLWEiLCAzKSk7CisgIGFzc2VydC5kZWVwRXF1YWwoCisgICAgcmVhZGluZ3MubWFwKChyZWFkaW5nKSA9PiByZWFkaW5nLmF0TXMpLAorICAgIFsxNzYyMzAwMDAwMDAwLCAxNzYyMzAwMDYwMDAwLCAxNzYyMzAwMTIwMDAwXSwKKyAgKTsKIH0pOwogCi10ZXN0KCJTdHJlYW1SZWFkaW5ncyB3aXRoIGFuIG9taXR0ZWQgbGltaXQgcmV0dXJucyBhbiBlbXB0eSBzdHJlYW0iLCBhc3luYyAoKSA9PiB7Ci0gIGFzc2VydC5kZWVwRXF1YWwoYXdhaXQgY29sbGVjdChncnBjLnN0cmVhbVJlYWRpbmdzKCJzaXRlLWEiKSksIFtdKTsKK3Rlc3QoIlN0cmVhbVJlYWRpbmdzIHdpdGggYW4gb21pdHRlZCBsaW1pdCByZXR1cm5zIHRoZSBmaXJzdCB0aHJlZSByZWFkaW5ncyIsIGFzeW5jICgpID0+IHsKKyAgY29uc3QgcmVhZGluZ3MgPSBhd2FpdCBjb2xsZWN0KGdycGMuc3RyZWFtUmVhZGluZ3MoInNpdGUtYSIpKTsKKyAgYXNzZXJ0LmRlZXBFcXVhbChyZWFkaW5ncywgYXdhaXQgcmVzdC5nZXRSZWFkaW5ncygic2l0ZS1hIiwgMykpOworICBhc3NlcnQuZGVlcEVxdWFsKAorICAgIHJlYWRpbmdzLm1hcCgocmVhZGluZykgPT4gcmVhZGluZy5hdE1zKSwKKyAgICBbMTc2MjMwMDAwMDAwMCwgMTc2MjMwMDA2MDAwMCwgMTc2MjMwMDEyMDAwMF0sCisgICk7CiB9KTsKIAogdGVzdCgiYW4gdW5rbm93biBzaXRlIGlzIGEgTk9UX0ZPVU5EIGVycm9yIG9uIGJvdGggZ1JQQyBtZXRob2RzIiwgYXN5bmMgKCkgPT4gewpkaWZmIC0tZ2l0IGEvdGVzdC9zZXJ2ZXIudGVzdC5qcyBiL3Rlc3Qvc2VydmVyLnRlc3QuanMKaW5kZXggZDlmM2NjZi4uZGQwOTM3OCAxMDA2NDQKLS0tIGEvdGVzdC9zZXJ2ZXIudGVzdC5qcworKysgYi90ZXN0L3NlcnZlci50ZXN0LmpzCkBAIC0xMzgsMTMgKzEzOCwzNCBAQCB0ZXN0KCJTdHJlYW1SZWFkaW5ncyBzZW5kcyBvbmUgZnJhbWUgcGVyIHJlYWRpbmcgaW4gc291cmNlIG9yZGVyIiwgYXN5bmMgKCkgPT4gewogICBdKTsKIH0pOwogCi10ZXN0KCJTdHJlYW1SZWFkaW5ncyB3aXRoIGEgemVybyBsaW1pdCBzZW5kcyBubyBmcmFtZXMgYW5kIGNvbXBsZXRlcyBzdWNjZXNzZnVsbHkiLCBhc3luYyAoKSA9PiB7Cit0ZXN0KCJTdHJlYW1SZWFkaW5ncyB3aXRoIGEgemVybyBsaW1pdCBzZW5kcyB0aGUgZmlyc3QgdGhyZWUgcmVhZGluZ3MiLCBhc3luYyAoKSA9PiB7CiAgIGNvbnN0IHJlc3BvbnNlID0gYXdhaXQgcmF3Q2FsbCgKICAgICAiL2VuZXJneS52MS5FbmVyZ3lTZXJ2aWNlL1N0cmVhbVJlYWRpbmdzIiwKICAgICBlbmNvZGVTdHJlYW1SZWFkaW5nc1JlcXVlc3QoeyBzaXRlSWQ6ICJzaXRlLWEiLCBsaW1pdDogMCB9KSwKICAgKTsKLSAgYXNzZXJ0LmVxdWFsKHJlc3BvbnNlLmJvZHkubGVuZ3RoLCAwKTsKICAgYXNzZXJ0LmVxdWFsKHJlc3BvbnNlLnRyYWlsZXJzWyJncnBjLXN0YXR1cyJdLCAiMCIpOworICBjb25zdCBtZXNzYWdlcyA9IGRlY29kZUZyYW1lcyhyZXNwb25zZS5ib2R5KTsKKyAgYXNzZXJ0LmVxdWFsKG1lc3NhZ2VzLmxlbmd0aCwgMyk7CisgIGFzc2VydC5kZWVwRXF1YWwobWVzc2FnZXMubWFwKGRlY29kZVJlYWRpbmcpLCBbCisgICAgeyBzaXRlSWQ6ICJzaXRlLWEiLCB3YXR0czogNDEyMCwgYXRNczogMTc2MjMwMDAwMDAwMCB9LAorICAgIHsgc2l0ZUlkOiAic2l0ZS1hIiwgd2F0dHM6IDQxODUsIGF0TXM6IDE3NjIzMDAwNjAwMDAgfSwKKyAgICB7IHNpdGVJZDogInNpdGUtYSIsIHdhdHRzOiA0MDkwLCBhdE1zOiAxNzYyMzAwMTIwMDAwIH0sCisgIF0pOworfSk7CisKK3Rlc3QoIlN0cmVhbVJlYWRpbmdzIHdpdGggYW4gb21pdHRlZCBsaW1pdCBzZW5kcyB0aGUgZmlyc3QgdGhyZWUgcmVhZGluZ3MiLCBhc3luYyAoKSA9PiB7CisgIGNvbnN0IHJlc3BvbnNlID0gYXdhaXQgcmF3Q2FsbCgKKyAgICAiL2VuZXJneS52MS5FbmVyZ3lTZXJ2aWNlL1N0cmVhbVJlYWRpbmdzIiwKKyAgICBlbmNvZGVTdHJlYW1SZWFkaW5nc1JlcXVlc3QoeyBzaXRlSWQ6ICJzaXRlLWEiIH0pLAorICApOworICBhc3NlcnQuZXF1YWwocmVzcG9uc2UudHJhaWxlcnNbImdycGMtc3RhdHVzIl0sICIwIik7CisgIGNvbnN0IG1lc3NhZ2VzID0gZGVjb2RlRnJhbWVzKHJlc3BvbnNlLmJvZHkpOworICBhc3NlcnQuZXF1YWwobWVzc2FnZXMubGVuZ3RoLCAzKTsKKyAgYXNzZXJ0LmRlZXBFcXVhbChtZXNzYWdlcy5tYXAoZGVjb2RlUmVhZGluZyksIFsKKyAgICB7IHNpdGVJZDogInNpdGUtYSIsIHdhdHRzOiA0MTIwLCBhdE1zOiAxNzYyMzAwMDAwMDAwIH0sCisgICAgeyBzaXRlSWQ6ICJzaXRlLWEiLCB3YXR0czogNDE4NSwgYXRNczogMTc2MjMwMDA2MDAwMCB9LAorICAgIHsgc2l0ZUlkOiAic2l0ZS1hIiwgd2F0dHM6IDQwOTAsIGF0TXM6IDE3NjIzMDAxMjAwMDAgfSwKKyAgXSk7CiB9KTsKIAogdGVzdCgic2VydmVyIHJlcG9ydHMgTk9UX0ZPVU5EIGZvciBhbiB1bmtub3duIHNpdGUgaW5zdGVhZCBvZiBhbiBlbXB0eSBzdHJlYW0iLCBhc3luYyAoKSA9PiB7Cg==' | base64 -d | git apply - && node --test && git add -u && git commit -m 'Apply the measured Fleet default correction'",
+          "description": "Check the Fleet release"
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 17,
+        "callId": "fleet_0",
+        "callSeq": 15,
+        "offsetMs": 1680,
+        "callKind": "subagent",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 26,
+        "callId": "fleet_1",
+        "callSeq": 22,
+        "offsetMs": 2914,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 34,
+        "callId": "fleet_4",
+        "callSeq": 33,
+        "offsetMs": 3044,
+        "callKind": "palimpsest_contribute",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 40,
+        "callId": "fleet_5",
+        "callSeq": 39,
+        "offsetMs": 3496,
+        "callKind": "palimpsest_contribute",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 48,
+        "callId": "fleet_6",
+        "callSeq": 45,
+        "offsetMs": 4766,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795022152305,
+        "messageId": "589d3609-2891-4c92-a240-09ac4448b140",
+        "usage": {
+          "inputTokens": 96344,
+          "outputTokens": 245,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 96589
+        }
+      },
+      {
+        "seq": 21,
+        "at": 1795022152535,
+        "messageId": "a5cfa32c-8df1-4d11-95b2-07c14d632b4a",
+        "usage": {
+          "inputTokens": 53491,
+          "outputTokens": 244,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 53735
+        }
+      },
+      {
+        "seq": 32,
+        "at": 1795022153734,
+        "messageId": "5514d12d-b2da-4ab0-9cac-f8c3327ef458",
+        "usage": {
+          "inputTokens": 56517,
+          "outputTokens": 503,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 57020
+        }
+      },
+      {
+        "seq": 38,
+        "at": 1795022153852,
+        "messageId": "977e2e64-4e7d-4c3b-8766-c3fc55d904d2",
+        "usage": {
+          "inputTokens": 58179,
+          "outputTokens": 332,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 58511
+        }
+      },
+      {
+        "seq": 44,
+        "at": 1795022154307,
+        "messageId": "68efd5a2-8af3-4a16-a85e-257c3f86506c",
+        "usage": {
+          "inputTokens": 65760,
+          "outputTokens": 10263,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 76023
+        }
+      },
+      {
+        "seq": 52,
+        "at": 1795022155593,
+        "messageId": "dde07d83-5ded-41bb-9ed0-b1b9867bd3ed",
+        "usage": {
+          "inputTokens": 135616,
+          "outputTokens": 88,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 135704
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795022152099,
+      "offsetMs": 1360,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. The Fleet team is deciding whether the site readings service is ready for rollout. Bring the gRPC server, its tests and the migration guide into line with the dated Fleet notic…"
+    },
+    {
+      "seq": 9,
+      "at": 1795022152101,
+      "offsetMs": 1362,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795022152309,
+      "offsetMs": 1570,
+      "kind": "CALL",
+      "detail": "subagent",
+      "callId": "fleet_0",
+      "tool": "subagent",
+      "args": {
+        "description": "Fleet compatibility measurement",
+        "prompt": "Measure the Fleet client's zero and omitted stream limits against this release, and return a reproducible counterexample."
+      }
+    },
+    {
+      "seq": 17,
+      "at": 1795022152419,
+      "offsetMs": 1680,
+      "kind": "RESULT",
+      "detail": "ok started subagent c99e54d1-a22b-488c-8c58-9d51b3458621",
+      "callId": "fleet_0",
+      "callSeq": 15,
+      "callKind": "subagent",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 22,
+      "at": 1795022152536,
+      "offsetMs": 1797,
+      "kind": "CALL",
+      "detail": "bash for n in $(seq 1 25); do test -s .palimpsest/child-observation.json && break; sleep 1; done; cat .palimpsest/child-obser…",
+      "callId": "fleet_1",
+      "tool": "bash",
+      "args": {
+        "command": "for n in $(seq 1 25); do test -s .palimpsest/child-observation.json && break; sleep 1; done; cat .palimpsest/child-observation.json",
+        "description": "Check the Fleet release"
+      }
+    },
+    {
+      "seq": 23,
+      "at": 1795022152550,
+      "offsetMs": 1811,
+      "kind": "JOB",
+      "detail": "start bash for n in $(seq 1 25); do test -s .palimpsest/child-observation.json && break; sleep 1; done; cat .pa…"
+    },
+    {
+      "seq": 25,
+      "at": 1795022153651,
+      "offsetMs": 2912,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) for n in $(seq 1 25); do test -s .palimpsest/child-observation.json && break; sleep 1; done; cat .pa…"
+    },
+    {
+      "seq": 26,
+      "at": 1795022153653,
+      "offsetMs": 2914,
+      "kind": "RESULT",
+      "detail": "ok [0,0]",
+      "callId": "fleet_1",
+      "callSeq": 22,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 30,
+      "at": 1795022153694,
+      "offsetMs": 2955,
+      "kind": "USER",
+      "detail": "Background subagent c99e54d1-a22b-488c-8c58-9d51b3458621 finished and will do no further work unless you send it more. Its closing message: Both the explicit-zero and omitted requests returned zero Readings for site-a on the basis although Fleet requires three."
+    },
+    {
+      "seq": 33,
+      "at": 1795022153735,
+      "offsetMs": 2996,
+      "kind": "CALL",
+      "detail": "palimpsest_contribute",
+      "callId": "fleet_4",
+      "tool": "palimpsest_contribute",
+      "args": {
+        "action": "record",
+        "sourceKind": "NATIVE_SUBAGENT",
+        "sourceRef": "fleet-compatibility-measurement",
+        "task": "Measure the Fleet client's zero and omitted stream limits against this release, and return a reproducible counterexample.",
+        "finding": "Both the explicit-zero and omitted requests returned zero Readings for site-a on the basis although Fleet requires three.",
+        "artifacts": [
+          "service/grpc_server.js",
+          "test/integration.test.js"
+        ]
+      }
+    },
+    {
+      "seq": 34,
+      "at": 1795022153783,
+      "offsetMs": 3044,
+      "kind": "RESULT",
+      "detail": "ok { \"contribution\": { \"schema\": \"pc1-contribution/v1\", \"contributionId\": \"ctb-498c69f1f25ef8e1c08cb80a6069e614\", \"projectId\": \"grpc-migration-continuation\", \"sourceKind\": \"NATIVE_SUBAGENT\", \"sourceRef\": \"fleet-compatibilit…",
+      "callId": "fleet_4",
+      "callSeq": 33,
+      "callKind": "palimpsest_contribute",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 39,
+      "at": 1795022153853,
+      "offsetMs": 3114,
+      "kind": "CALL",
+      "detail": "palimpsest_contribute",
+      "callId": "fleet_5",
+      "tool": "palimpsest_contribute",
+      "args": {
+        "action": "decide",
+        "contributionId": "ctb-498c69f1f25ef8e1c08cb80a6069e614",
+        "decision": "ACCEPT_AS_CANDIDATE",
+        "decisionNote": "Use the measured zero-frame counterexample to revise the stream default and its public tests. Preserve the existing wire contract."
+      }
+    },
+    {
+      "seq": 40,
+      "at": 1795022154235,
+      "offsetMs": 3496,
+      "kind": "RESULT",
+      "detail": "ok { \"decision\": { \"schema\": \"pc1-contribution-decision/v1\", \"decisionId\": \"ctd-fbda4e9e76f3d6dfbd0f4e9271e5c5fa\", \"projectId\": \"grpc-migration-continuation\", \"contributionId\": \"ctb-498c69f1f25ef8e1c08cb80a6069e614\", \"decis…",
+      "callId": "fleet_5",
+      "callSeq": 39,
+      "callKind": "palimpsest_contribute",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 45,
+      "at": 1795022154308,
+      "offsetMs": 3569,
+      "kind": "CALL",
+      "detail": "bash printf %s 'ZGlmZiAtLWdpdCBhL01JR1JBVElPTi5tZCBiL01JR1JBVElPTi5tZAppbmRleCAwYzUxNDZlLi44ZDYwZDZmIDEwMDY0NAotLS0gYS9NSUdSQ…",
+      "callId": "fleet_6",
+      "tool": "bash",
+      "args": {
+        "command": "printf %s 'ZGlmZiAtLWdpdCBhL01JR1JBVElPTi5tZCBiL01JR1JBVElPTi5tZAppbmRleCAwYzUxNDZlLi44ZDYwZDZmIDEwMDY0NAotLS0gYS9NSUdSQVRJT04ubWQKKysrIGIvTUlHUkFUSU9OLm1kCkBAIC02OSw5ICs2OSwxNSBAQCBpcyByZXBvcnRlZCB0aHJvdWdoIHRoZSBnUlBDIGVycm9yIHBhdGggcmF0aGVyIHRoYW4gYmVpbmcgc2lsZW50bHkgYWNjZXB0ZWQuCiAKIC0gUmVxdWVzdDogZXhhY3RseSBvbmUgYFN0cmVhbVJlYWRpbmdzUmVxdWVzdGAgZnJhbWUuCiAtIFJlc3BvbnNlOiBvbmUgYFJlYWRpbmdgIGZyYW1lIHBlciBzZWxlY3RlZCByZWFkaW5nLCBpbiB0aGUgc2FtZSBzb3VyY2Ugb3JkZXIgYXMgdGhlIFJFU1QgbGlzdC4KLS0gYGxpbWl0YCBzZWxlY3RzIGByZWFkaW5ncy5zbGljZSgwLCBsaW1pdClgLgotLSBBbiAqKm9taXR0ZWQgbGltaXQqKiBhbmQgYW4gKipleHBsaWNpdGx5IHplcm8gbGltaXQqKiBib3RoIHJldHVybiBhbiBlbXB0eSBzdHJlYW06IG5vIFJlYWRpbmcKLSAgZnJhbWVzLCBmb2xsb3dlZCBieSBgZ3JwYy1zdGF0dXM6IDBgLiBUaGV5IGRvIG5vdCBtZWFuICJhbGwgcmVhZGluZ3MiLgorLSBBIHBvc2l0aXZlIGBsaW1pdGAgc2VsZWN0cyBgcmVhZGluZ3Muc2xpY2UoMCwgbGltaXQpYCwgc28gYSBsaW1pdCBsYXJnZXIgdGhhbiB0aGUgYXZhaWxhYmxlCisgIHJlYWRpbmdzIHN0aWxsIHJldHVybnMgYWxsIGF2YWlsYWJsZSByZWFkaW5ncy4KKy0gQW4gKipvbWl0dGVkIGxpbWl0KiogYW5kIGFuICoqZXhwbGljaXRseSB6ZXJvIGxpbWl0KiogYm90aCBzZWxlY3QgdGhlIEZsZWV0LWNvbXBhdGlibGUgZGVmYXVsdDoKKyAgdGhlIGZpcnN0IHRocmVlIGF2YWlsYWJsZSByZWFkaW5ncyBpbiBzb3VyY2Ugb3JkZXIgKGByZWFkaW5ncy5zbGljZSgwLCAzKWApLCBvciBmZXdlciBpZiB0aGUgc2l0ZQorICBoYXMgZmV3ZXIuIFRoZXkgZG8gbm90IG1lYW4gImFsbCByZWFkaW5ncyIsIGFuZCB0aGV5IG5vIGxvbmdlciByZXR1cm4gYW4gZW1wdHkgc3RyZWFtLgorLSBUaGUgYFN0cmVhbVJlYWRpbmdzYCBjb21tZW50IGluIGBwcm90by9lbmVyZ3kucHJvdG9gIHN0aWxsIHNheXMgdGhhdCBhbiBvbWl0dGVkIG9yIHplcm8gbGltaXQKKyAgcmV0dXJucyBhbiBlbXB0eSBzdHJlYW0uIFRoYXQgY29tbWVudCBkZXNjcmliZXMgdGhlIHN1cGVyc2VkZWQgZmlyc3QtcmVsZWFzZSBiZWhhdmlvcjsgaXQgaXMKKyAgcmV0YWluZWQgYmVjYXVzZSB0aGUgcHJvdG8gaXMgYnl0ZS1mb3ItYnl0ZSB1bmNoYW5nZWQsIGFuZCBpdCBpcyBpbmZvcm1hdGlvbmFsIG9ubHkuIFRoaXMKKyAgc2VjdGlvbiBhbmQgYHNlcnZpY2UvZ3JwY19zZXJ2ZXIuanNgIGRvY3VtZW50IHRoZSBlZmZlY3RpdmUgYmVoYXZpb3IuCiAtIEFuIHVua25vd24gc2l0ZSByZXR1cm5zIE5PVF9GT1VORCAoYGdycGMtc3RhdHVzOiA1YCwgYHVua25vd25fc2l0ZWApIGluc3RlYWQgb2YgYW4gZW1wdHkgc3RyZWFtLAogICBwcmVzZXJ2aW5nIHRoZSBSRVNUIGVycm9yIHNlbWFudGljcy4KIC0gQSBsaW1pdCB0aGF0IGNhbm5vdCBiZSByZXByZXNlbnRlZCBhcyBhIG5vbi1uZWdhdGl2ZSBpbnRlZ2VyIGlzIElOVkFMSURfQVJHVU1FTlQKQEAgLTc5LDYgKzg1LDkgQEAgaXMgcmVwb3J0ZWQgdGhyb3VnaCB0aGUgZ1JQQyBlcnJvciBwYXRoIHJhdGhlciB0aGFuIGJlaW5nIHNpbGVudGx5IGFjY2VwdGVkLgogLSBNYWxmb3JtZWQgcmVxdWVzdHMgYXJlIElOVkFMSURfQVJHVU1FTlQgKGBpbnZhbGlkX3JlcXVlc3RgKSwgdW5rbm93biBtZXRob2RzIGFyZSBVTklNUExFTUVOVEVECiAgIChgdW5pbXBsZW1lbnRlZGApLCBhbmQgdW5zdXBwb3J0ZWQgY29tcHJlc3Npb24gaXMgVU5JTVBMRU1FTlRFRCAoYHVuc3VwcG9ydGVkX2NvbXByZXNzaW9uYCkuCiAKK1Bvc2l0aXZlIGxpbWl0cywgYEdldFJlYWRpbmdgLCB1bmtub3duLXNpdGUgZXJyb3JzLCBwcm90b2J1ZiBmaWVsZCBudW1iZXJzLCBnUlBDIGZyYW1pbmcsIGFuZCBSRVNUCitiZWhhdmlvciBhcmUgdW5jaGFuZ2VkLgorCiBUaGUgc2VydmVyIHJldHVybnMgSFRUUC8yIHN0YXR1cyBgMjAwYCBmb3IgZ1JQQyBjYWxscywgaW5jbHVkaW5nIGZhaWxlZCBjYWxsczsgdGhlIHJlYWwgb3V0Y29tZSBpcwogdGhlIGBncnBjLXN0YXR1c2AgdHJhaWxlciwgYXMgcmVxdWlyZWQgYnkgZ1JQQy4gYHNlcnZpY2UvZ3JwY19zZXJ2ZXIuanNgIGV4cG9zZXMKIGBjcmVhdGVHcnBjU2VydmVyKClgLCB3aGljaCByZXR1cm5zIGFuIHVuYm91bmQgYGh0dHAyLlNlcnZlcmAgc28gY2FsbGVycy90ZXN0cyBjYW4gY2hvb3NlIHRoZSBwb3J0LgpAQCAtMTI4LDYgKzEzNyw3IEBAIG5vZGUgLS10ZXN0CiBgYGAKIAogYHRlc3Qvc2VydmVyLnRlc3QuanNgIHNwZWFrcyByYXcgSFRUUC8yIHRvIHZlcmlmeSB0aGUgZml2ZS1ieXRlIGZyYW1lIGhlYWRlciwgb25lIGZyYW1lIHBlciBSZWFkaW5nLAotc291cmNlIG9yZGVyLCB0cmFpbGVycywgYW5kIE5PVF9GT1VORC9VTklNUExFTUVOVEVEIG91dGNvbWVzLiBgdGVzdC9pbnRlZ3JhdGlvbi50ZXN0LmpzYCBydW5zIHRoZQotcmVhbCBzZXJ2ZXIgdGhyb3VnaCBgc2VydmljZS9ncnBjX2NsaWVudC5qc2AsIGNvdmVycyBvbWl0dGVkL3plcm8gbGltaXRzIGFuZCBlcnJvcnMsIGFuZCBjb21wYXJlcyB0aGUKLWdSUEMgcmVhZGluZ3Mgd2l0aCB0aGUgcHJlc2VydmVkIFJFU1QgYmFzZWxpbmUuIFRoZSB1bmNoYW5nZWQgUkVTVCB0ZXN0cyByZW1haW4gaW4gdGhlIHN1aXRlLgorc291cmNlIG9yZGVyLCB0cmFpbGVycywgdGhlIG9taXR0ZWQvemVybyBkZWZhdWx0IGxpbWl0LCBhbmQgTk9UX0ZPVU5EL1VOSU1QTEVNRU5URUQgb3V0Y29tZXMuCitgdGVzdC9pbnRlZ3JhdGlvbi50ZXN0LmpzYCBydW5zIHRoZSByZWFsIHNlcnZlciB0aHJvdWdoIGBzZXJ2aWNlL2dycGNfY2xpZW50LmpzYCwgY292ZXJzIHRoZQorb21pdHRlZC96ZXJvIGRlZmF1bHQgbGltaXRzIGFuZCBlcnJvcnMsIGFuZCBjb21wYXJlcyB0aGUgZ1JQQyByZWFkaW5ncyB3aXRoIHRoZSBwcmVzZXJ2ZWQgUkVTVAorYmFzZWxpbmUuIFRoZSB1bmNoYW5nZWQgUkVTVCB0ZXN0cyByZW1haW4gaW4gdGhlIHN1aXRlLgpkaWZmIC0tZ2l0IGEvc2VydmljZS9ncnBjX3NlcnZlci5qcyBiL3NlcnZpY2UvZ3JwY19zZXJ2ZXIuanMKaW5kZXggNjQyMDNkZi4uMTc4NGYwMiAxMDA2NDQKLS0tIGEvc2VydmljZS9ncnBjX3NlcnZlci5qcworKysgYi9zZXJ2aWNlL2dycGNfc2VydmVyLmpzCkBAIC0yOSw2ICsyOSwxMCBAQCBjb25zdCBHUlBDX1NUQVRVUyA9IE9iamVjdC5mcmVlemUoewogY29uc3QgR0VUX1JFQURJTkcgPSAiL2VuZXJneS52MS5FbmVyZ3lTZXJ2aWNlL0dldFJlYWRpbmciOwogY29uc3QgU1RSRUFNX1JFQURJTkdTID0gIi9lbmVyZ3kudjEuRW5lcmd5U2VydmljZS9TdHJlYW1SZWFkaW5ncyI7CiAKKy8vIEZsZWV0IGNvbXBhdGliaWxpdHk6IGFuIG9taXR0ZWQgbGltaXQgZGVjb2RlcyBhcyB6ZXJvLCBhbmQgYm90aCByZXF1ZXN0IHRoZQorLy8gZmlyc3QgdGhyZWUgYXZhaWxhYmxlIHJlYWRpbmdzIGluIHNvdXJjZSBvcmRlci4KK2NvbnN0IERFRkFVTFRfU1RSRUFNX0xJTUlUID0gMzsKKwogZnVuY3Rpb24gZ3JwY0Vycm9yKHN0YXR1cywgbWVzc2FnZSkgewogICBjb25zdCBlcnJvciA9IG5ldyBFcnJvcihtZXNzYWdlKTsKICAgZXJyb3IuZ3JwY1N0YXR1cyA9IHN0YXR1czsKQEAgLTExOSw4ICsxMjMsMTAgQEAgYXN5bmMgZnVuY3Rpb24gZGlzcGF0Y2gocGF0aCwgYm9keSkgewogICBpZiAoIU51bWJlci5pc0ludGVnZXIocmVxdWVzdC5saW1pdCkgfHwgcmVxdWVzdC5saW1pdCA8IDAgfHwgcmVxdWVzdC5saW1pdCA+IDB4ZmZmZmZmZmYpIHsKICAgICB0aHJvdyBncnBjRXJyb3IoR1JQQ19TVEFUVVMuSU5WQUxJRF9BUkdVTUVOVCwgImludmFsaWRfbGltaXQiKTsKICAgfQotICAvLyBBIHplcm8gb3Igb21pdHRlZCBsaW1pdCBpcyBhbiBleHBsaWNpdGx5IGVtcHR5IHN0cmVhbSwgbm90ICJhbGwgcmVhZGluZ3MiLgotICByZXR1cm4gcmVhZGluZ3Muc2xpY2UoMCwgcmVxdWVzdC5saW1pdCkubWFwKChyZWFkaW5nKSA9PiBlbmNvZGVSZWFkaW5nKHJlYWRpbmcpKTsKKyAgLy8gQSB6ZXJvIG9yIG9taXR0ZWQgbGltaXQgcmVxdWVzdHMgdGhlIEZsZWV0IGRlZmF1bHQgcmF0aGVyIHRoYW4gYW4gZW1wdHkKKyAgLy8gc3RyZWFtOyBhIHBvc2l0aXZlIGxpbWl0IHN0aWxsIHNlbGVjdHMgZXhhY3RseSB0aGF0IG1hbnkgcmVhZGluZ3MuCisgIGNvbnN0IGxpbWl0ID0gcmVxdWVzdC5saW1pdCA9PT0gMCA/IERFRkFVTFRfU1RSRUFNX0xJTUlUIDogcmVxdWVzdC5saW1pdDsKKyAgcmV0dXJuIHJlYWRpbmdzLnNsaWNlKDAsIGxpbWl0KS5tYXAoKHJlYWRpbmcpID0+IGVuY29kZVJlYWRpbmcocmVhZGluZykpOwogfQogCiAvKioKZGlmZiAtLWdpdCBhL3Rlc3QvaW50ZWdyYXRpb24udGVzdC5qcyBiL3Rlc3QvaW50ZWdyYXRpb24udGVzdC5qcwppbmRleCA2Yzk3NTNjLi5jZTljYjFhIDEwMDY0NAotLS0gYS90ZXN0L2ludGVncmF0aW9uLnRlc3QuanMKKysrIGIvdGVzdC9pbnRlZ3JhdGlvbi50ZXN0LmpzCkBAIC01NywxMiArNTcsMjIgQEAgdGVzdCgiU3RyZWFtUmVhZGluZ3MgaG9ub3VycyB0aGUgbGltaXQgYW5kIHByZXNlcnZlcyBzb3VyY2Ugb3JkZXIiLCBhc3luYyAoKSA9PgogICApOwogfSk7CiAKLXRlc3QoIlN0cmVhbVJlYWRpbmdzIHdpdGggemVybyBsaW1pdCByZXR1cm5zIGFuIGVtcHR5IHN0cmVhbSIsIGFzeW5jICgpID0+IHsKLSAgYXNzZXJ0LmRlZXBFcXVhbChhd2FpdCBjb2xsZWN0KGdycGMuc3RyZWFtUmVhZGluZ3MoInNpdGUtYSIsIDApKSwgW10pOwordGVzdCgiU3RyZWFtUmVhZGluZ3Mgd2l0aCB6ZXJvIGxpbWl0IHJldHVybnMgdGhlIGZpcnN0IHRocmVlIHJlYWRpbmdzIiwgYXN5bmMgKCkgPT4geworICBjb25zdCByZWFkaW5ncyA9IGF3YWl0IGNvbGxlY3QoZ3JwYy5zdHJlYW1SZWFkaW5ncygic2l0ZS1hIiwgMCkpOworICBhc3NlcnQuZGVlcEVxdWFsKHJlYWRpbmdzLCBhd2FpdCByZXN0LmdldFJlYWRpbmdzKCJzaXRlLWEiLCAzKSk7CisgIGFzc2VydC5kZWVwRXF1YWwoCisgICAgcmVhZGluZ3MubWFwKChyZWFkaW5nKSA9PiByZWFkaW5nLmF0TXMpLAorICAgIFsxNzYyMzAwMDAwMDAwLCAxNzYyMzAwMDYwMDAwLCAxNzYyMzAwMTIwMDAwXSwKKyAgKTsKIH0pOwogCi10ZXN0KCJTdHJlYW1SZWFkaW5ncyB3aXRoIGFuIG9taXR0ZWQgbGltaXQgcmV0dXJucyBhbiBlbXB0eSBzdHJlYW0iLCBhc3luYyAoKSA9PiB7Ci0gIGFzc2VydC5kZWVwRXF1YWwoYXdhaXQgY29sbGVjdChncnBjLnN0cmVhbVJlYWRpbmdzKCJzaXRlLWEiKSksIFtdKTsKK3Rlc3QoIlN0cmVhbVJlYWRpbmdzIHdpdGggYW4gb21pdHRlZCBsaW1pdCByZXR1cm5zIHRoZSBmaXJzdCB0aHJlZSByZWFkaW5ncyIsIGFzeW5jICgpID0+IHsKKyAgY29uc3QgcmVhZGluZ3MgPSBhd2FpdCBjb2xsZWN0KGdycGMuc3RyZWFtUmVhZGluZ3MoInNpdGUtYSIpKTsKKyAgYXNzZXJ0LmRlZXBFcXVhbChyZWFkaW5ncywgYXdhaXQgcmVzdC5nZXRSZWFkaW5ncygic2l0ZS1hIiwgMykpOworICBhc3NlcnQuZGVlcEVxdWFsKAorICAgIHJlYWRpbmdzLm1hcCgocmVhZGluZykgPT4gcmVhZGluZy5hdE1zKSwKKyAgICBbMTc2MjMwMDAwMDAwMCwgMTc2MjMwMDA2MDAwMCwgMTc2MjMwMDEyMDAwMF0sCisgICk7CiB9KTsKIAogdGVzdCgiYW4gdW5rbm93biBzaXRlIGlzIGEgTk9UX0ZPVU5EIGVycm9yIG9uIGJvdGggZ1JQQyBtZXRob2RzIiwgYXN5bmMgKCkgPT4gewpkaWZmIC0tZ2l0IGEvdGVzdC9zZXJ2ZXIudGVzdC5qcyBiL3Rlc3Qvc2VydmVyLnRlc3QuanMKaW5kZXggZDlmM2NjZi4uZGQwOTM3OCAxMDA2NDQKLS0tIGEvdGVzdC9zZXJ2ZXIudGVzdC5qcworKysgYi90ZXN0L3NlcnZlci50ZXN0LmpzCkBAIC0xMzgsMTMgKzEzOCwzNCBAQCB0ZXN0KCJTdHJlYW1SZWFkaW5ncyBzZW5kcyBvbmUgZnJhbWUgcGVyIHJlYWRpbmcgaW4gc291cmNlIG9yZGVyIiwgYXN5bmMgKCkgPT4gewogICBdKTsKIH0pOwogCi10ZXN0KCJTdHJlYW1SZWFkaW5ncyB3aXRoIGEgemVybyBsaW1pdCBzZW5kcyBubyBmcmFtZXMgYW5kIGNvbXBsZXRlcyBzdWNjZXNzZnVsbHkiLCBhc3luYyAoKSA9PiB7Cit0ZXN0KCJTdHJlYW1SZWFkaW5ncyB3aXRoIGEgemVybyBsaW1pdCBzZW5kcyB0aGUgZmlyc3QgdGhyZWUgcmVhZGluZ3MiLCBhc3luYyAoKSA9PiB7CiAgIGNvbnN0IHJlc3BvbnNlID0gYXdhaXQgcmF3Q2FsbCgKICAgICAiL2VuZXJneS52MS5FbmVyZ3lTZXJ2aWNlL1N0cmVhbVJlYWRpbmdzIiwKICAgICBlbmNvZGVTdHJlYW1SZWFkaW5nc1JlcXVlc3QoeyBzaXRlSWQ6ICJzaXRlLWEiLCBsaW1pdDogMCB9KSwKICAgKTsKLSAgYXNzZXJ0LmVxdWFsKHJlc3BvbnNlLmJvZHkubGVuZ3RoLCAwKTsKICAgYXNzZXJ0LmVxdWFsKHJlc3BvbnNlLnRyYWlsZXJzWyJncnBjLXN0YXR1cyJdLCAiMCIpOworICBjb25zdCBtZXNzYWdlcyA9IGRlY29kZUZyYW1lcyhyZXNwb25zZS5ib2R5KTsKKyAgYXNzZXJ0LmVxdWFsKG1lc3NhZ2VzLmxlbmd0aCwgMyk7CisgIGFzc2VydC5kZWVwRXF1YWwobWVzc2FnZXMubWFwKGRlY29kZVJlYWRpbmcpLCBbCisgICAgeyBzaXRlSWQ6ICJzaXRlLWEiLCB3YXR0czogNDEyMCwgYXRNczogMTc2MjMwMDAwMDAwMCB9LAorICAgIHsgc2l0ZUlkOiAic2l0ZS1hIiwgd2F0dHM6IDQxODUsIGF0TXM6IDE3NjIzMDAwNjAwMDAgfSwKKyAgICB7IHNpdGVJZDogInNpdGUtYSIsIHdhdHRzOiA0MDkwLCBhdE1zOiAxNzYyMzAwMTIwMDAwIH0sCisgIF0pOworfSk7CisKK3Rlc3QoIlN0cmVhbVJlYWRpbmdzIHdpdGggYW4gb21pdHRlZCBsaW1pdCBzZW5kcyB0aGUgZmlyc3QgdGhyZWUgcmVhZGluZ3MiLCBhc3luYyAoKSA9PiB7CisgIGNvbnN0IHJlc3BvbnNlID0gYXdhaXQgcmF3Q2FsbCgKKyAgICAiL2VuZXJneS52MS5FbmVyZ3lTZXJ2aWNlL1N0cmVhbVJlYWRpbmdzIiwKKyAgICBlbmNvZGVTdHJlYW1SZWFkaW5nc1JlcXVlc3QoeyBzaXRlSWQ6ICJzaXRlLWEiIH0pLAorICApOworICBhc3NlcnQuZXF1YWwocmVzcG9uc2UudHJhaWxlcnNbImdycGMtc3RhdHVzIl0sICIwIik7CisgIGNvbnN0IG1lc3NhZ2VzID0gZGVjb2RlRnJhbWVzKHJlc3BvbnNlLmJvZHkpOworICBhc3NlcnQuZXF1YWwobWVzc2FnZXMubGVuZ3RoLCAzKTsKKyAgYXNzZXJ0LmRlZXBFcXVhbChtZXNzYWdlcy5tYXAoZGVjb2RlUmVhZGluZyksIFsKKyAgICB7IHNpdGVJZDogInNpdGUtYSIsIHdhdHRzOiA0MTIwLCBhdE1zOiAxNzYyMzAwMDAwMDAwIH0sCisgICAgeyBzaXRlSWQ6ICJzaXRlLWEiLCB3YXR0czogNDE4NSwgYXRNczogMTc2MjMwMDA2MDAwMCB9LAorICAgIHsgc2l0ZUlkOiAic2l0ZS1hIiwgd2F0dHM6IDQwOTAsIGF0TXM6IDE3NjIzMDAxMjAwMDAgfSwKKyAgXSk7CiB9KTsKIAogdGVzdCgic2VydmVyIHJlcG9ydHMgTk9UX0ZPVU5EIGZvciBhbiB1bmtub3duIHNpdGUgaW5zdGVhZCBvZiBhbiBlbXB0eSBzdHJlYW0iLCBhc3luYyAoKSA9PiB7Cg==' | base64 -d | git apply - && node --test && git add -u && git commit -m 'Apply the measured Fleet default correction'",
+        "description": "Check the Fleet release"
+      }
+    },
+    {
+      "seq": 46,
+      "at": 1795022154319,
+      "offsetMs": 3580,
+      "kind": "JOB",
+      "detail": "start bash printf %s 'ZGlmZiAtLWdpdCBhL01JR1JBVElPTi5tZCBiL01JR1JBVElPTi5tZAppbmRleCAwYzUxNDZlLi44ZDYwZDZmIDEwM…"
+    },
+    {
+      "seq": 47,
+      "at": 1795022155503,
+      "offsetMs": 4764,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) printf %s 'ZGlmZiAtLWdpdCBhL01JR1JBVElPTi5tZCBiL01JR1JBVElPTi5tZAppbmRleCAwYzUxNDZlLi44ZDYwZDZmIDEwM…"
+    },
+    {
+      "seq": 48,
+      "at": 1795022155505,
+      "offsetMs": 4766,
+      "kind": "RESULT",
+      "detail": "ok ✔ GetReading is unary and returns the current sample (20.838935ms) ✔ StreamReadings honours the limit and preserves source order (8.192124ms) ✔ StreamReadings with zero limit returns the first three readings (18.28048ms)…",
+      "callId": "fleet_6",
+      "callSeq": 45,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 52,
+      "at": 1795022155593,
+      "offsetMs": 4854,
+      "kind": "DECISION",
+      "detail": "The tested revision is committed and awaiting release review."
+    },
+    {
+      "seq": 54,
+      "at": 1795022155594,
+      "offsetMs": 4855,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

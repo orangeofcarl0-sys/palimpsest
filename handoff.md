@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 路线图第二个里程碑已完成同一 gRPC 案例的首个业务提示样本。Mock 的原生子会话实测反例，Principal 记录采纳并修订；真实模型选择独立完成，HTTP/2 7/7、公开测试 18/18。所有者按完整 SHA 核准 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`，Work 事件 8 记录接受。宿主重启后，全新模型会话、DSH 侧栏及 Workspace 均找到同一版本和核验日志；真实模型的贡献链为空。两会话均自然退出。[报告](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md) · [接受记录](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/acceptance.json)
+
 - DSH 侧栏工作检查器已在主线 `a7751302` 发布。从 **Palimpsest** 打开当前项目，点任务看谁负责、谁在执行和已有成果。固定时间点可回看交接，选择 Work 事件可按账本序号重建当时的关系。可视化设计文档、交互样例和实机回归随同发布。[PR #275](https://github.com/orangeofcarl0-sys/palimpsest/pull/275) · [使用说明](docs/user-guide.md#dsh-侧栏工作检查器) · [设计与来源](docs/product/visualization/PLAN.md)
 
 - OpenCode Go gRPC T3 复跑证据已由 [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) 发布到主线 `e4f037b8`，16/16 项检查首次通过。证据来自主线 `77f2d87e`、同一核准 HEAD `4639ae44` 的普通 DSH 会话。只提交评审 `ccb07d36`，记录 `DELIVER` 后自然退出，13/13 笔请求自动归因、25/25 对工具配对。冻结 v2 保留 11/12，同一原稿离线复核 12/12、HTTP/2 7/7、公开测试 18/18。历史原判及 402/400 `UNKNOWN` 逐字节保留，本次发布新增付费请求 0。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#语义与归因修复后的真实-opencode-go-t3) · [轨迹与账本](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json)
@@ -81,6 +83,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
+| 当前实验 | 本地工作分支 `codex/grpc-autonomous-continuity` 起点为 `88621e34dbb707766d1f16c565d9631c314dc94e`。实验内的 Fleet 接受版本独立于本仓库的主线 Git 状态。 |
 | `origin/main` | DSH 侧栏检查器的主线发布点为 `a77513024a0c847a1a7bf5a76aa4a5a38648e827`。后续包括交接文档提交，当前 tip 用 `git fetch origin` 和 `git rev-parse origin/main` 核对 |
 | [PR #275](https://github.com/orangeofcarl0-sys/palimpsest/pull/275) | 从 `4e291944` 送审的 7 个提交经 rebase 合入主线。原生检查器 `e7c6f68a` 对应 `abba2519`，交互与样式的送审 HEAD `311f101e67076f6ed68541216421c1360e6dde19` 对应 `a77513024a0c847a1a7bf5a76aa4a5a38648e827`。逐项核对文件树、作者和提交消息一致，远端 `codex/project-visualization-plan` 已自动删除。[检查结果](https://github.com/orangeofcarl0-sys/palimpsest/pull/275/checks) |
 | [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) | `codex/grpc-t3-opencode-v2` 已 rebase 合并，送审 `981891a693ce2e270911cce6128292a341830d18` 对应发布 `e4f037b868c7c36a65aa28396e2f25f8b5fbdf5b`。前后文件树、作者和消息一致，远端工作分支已自动删除。[检查及 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json) |
@@ -270,6 +273,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+自主 gRPC 本地验证包括构建、架构及公共 API 检查、30 项检查器与项目语义单测、15 项归因与摘要回归、4 项 Workspace 浏览器测试和原生侧栏交互回归。封存含逐笔账本、压缩会话流、Git bundle、Work/Journal 快照和两个界面的读回结果。从归档新建本地项目的命令见[复算与恢复](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#离线复算和打开项目)。
+
 PR #275 的 15 个 CI job 和独立的 `commit-attribution` 状态首次全部通过。Linux 单测通过 5,112 项、跳过 33 项，浏览器 E2E 38/38，Windows Host Boundary 的四项验证全部通过。R0 的 D2、D4、D5 外部 DSH 执行及 D5 重复运行四个步骤按环境条件跳过。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/275/checks) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44346795814) · [主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44346796036)
 
 本地在同一送审 SHA 通过 6 组定向测试共 59 项，并运行 `node scripts/inspector/dsh-web.mjs --smoke`。隔离项目的第二个宿主在 DSH 窗口打开时登记并认领任务，验证实时新增、固定期间的新观察计数、历史回查、关系聚焦、键盘搜索、深浅主题和 390 像素窄屏。轮询后再次读取账本，序号一致。该实机回归的模型请求数为 0。[复验脚本](scripts/inspector/dsh-web.mjs)
@@ -435,6 +440,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-19 自主 gRPC 样本沿用 OpenCode Go 和普通 DSH。修订 17 笔、504,260 tokens，接续 5 笔、81,552 tokens，共 22/22 笔归因、585,812 tokens。运行耗时合计 269.315 秒，批准等待与接纳操作另计。Mock 全程 11 笔合成请求，付费调用 0。[分析和复算命令](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md)
+
 ### 修复前按量记账
 
 Owner 于 2026-11-07 授权启动付费模型调用，2026-11-08 允许不设计费上限，随后明确授权一条同条件的 energy 续作。software 和 energy 分别使用全新单会话 cohort、独立账本及 `--mode=paid-usage-only`。金额与 token 总量上限为 `null`，每轮最多 64 次请求、30 分钟，单请求等待终态最多 240 秒。[执行与复现](docs/engineering/PNWF-CQ-PAID-USAGE-ONLY.md)
@@ -531,6 +538,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 ---
 
 ## 7. 已知未解决问题 / 建议下一步
+
+- gRPC 真实样本的贡献和采纳决定均为零。接续者成功查到核验日志，但 `explain` 直接查已重开的 Episode ID 返回 `UNKNOWN`，版本依据也出现在 Pulse 的 open questions 中。该条记录原类为 `REFERENCE_NOTE`，正式接受由 Work 事件 8 证明。[逐项读回](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#真实项目的接受与接续)
 
 - Work 历史按项目账本序号重建，跨重启可查。侧栏打开期间每 1.5 秒采样，保留最近 90 次现场变化。Worker 作业和 DSH 调用只能从实际运行它们的宿主观察，重启后现场观察重新积累。本轮在 DSH `0.2.2-rc.2` 验证了这些视图的切换。[使用与复验](docs/user-guide.md#dsh-侧栏工作检查器) · [时间与来源边界](docs/product/visualization/PLAN.md)
 - 组织修订、工作世界和动态关系已可按绑定来源查看。成员集合轮廓、多入口身份导航与人因对照仍属设计工作。gRPC 与 Energy 的历史材料及五时点样例供复核。[结构与交叠](docs/product/visualization/STRUCTURE-AND-OVERLAP.md) · [工作面样例](docs/product/visualization/prototype/structure.html)
@@ -680,6 +689,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-18 | 原生 DSH 侧栏接入当前项目，时间线驱动实时图与账本截面 | [操作](docs/user-guide.md#dsh-侧栏工作检查器) · [实机回归](scripts/inspector/dsh-web.mjs) · [宿主观察](host/dsh/lib/inspector/observe.js) | 在打开的 DSH 中登记并认领任务，核对实时新增、固定后续到达、返回现场、早期无此尝试与只读轮询。未启动付费模型 |
 | 2026-11-19 | 打磨原生关系图、局部聚焦、时间线和对象检查 | [操作](docs/user-guide.md#dsh-侧栏工作检查器) · [实机回归与截图入口](scripts/inspector/dsh-web.mjs) | 真实 DSH 检查深浅主题、390 像素双列、键盘搜索与完整 ID，核对回溯和筛选后的连线数与当前投影一致 |
 | 2026-11-19 | 发布可视化设计、DSH 侧栏工作检查器和交互回归 | [PR #275](https://github.com/orangeofcarl0-sys/palimpsest/pull/275) · [CI](https://github.com/orangeofcarl0-sys/palimpsest/pull/275/checks) | 送审 `311f101e` 的 16/16 项检查首次通过，主线发布点 `a7751302`。7 个提交的内容和归因均已核对 |
+| 2026-11-19 | 从 `88621e34` 验证 gRPC 自主修订与重启接手 | [报告与离线恢复](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md) · [真实轨迹](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/observations.json) | Mock 有贡献采纳，真实模型独立完成，按完整 SHA 接受后两端读回 |
 
 ---
 

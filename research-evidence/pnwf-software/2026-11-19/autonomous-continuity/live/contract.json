@@ -1,0 +1,55 @@
+{
+  "seal": {
+    "release": "88621e34dbb707766d1f16c565d9631c314dc94e",
+    "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "tree": "394093f947133d3b6e837438c6bdf95c0834b511",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "dsh": "0.2.1-rc.5",
+    "model": "deepseek-v4.1-flash",
+    "provider": "opencode-go",
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "originalAdmission": {
+      "actor": "operator:software-project-owner",
+      "priorHead": "6d6b4a5e3a880c32c3e361b76694ec7be85f8c9f",
+      "approved": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "eventId": 6,
+      "recordedAt": "2026-11-10T08:37:22.082Z"
+    },
+    "fixture": "abece0e941a53219fa03408b70cdc805745fec1978cad808b9ead70cf20e92e0",
+    "changePrompt": "a6e7154b6e3d229faaa29318cc7461f3b2f86f08f5fdb4211021a08ac015b9df",
+    "handoffPrompt": "f57ec80b759f7ec3cd6fe3a5bd74578dbbcf7a44ff4317d57df4729e22587930",
+    "probe": "039324da18caf0f9d11c06484eac36c4105ce1d9d29e12140e1284059099074a",
+    "files": {
+      "scripts/pnwf/software/autonomy.mjs": "e2cd58c31c156bc30024cb7b8ef4e35a24f0735b40611b8ee02a5fda7370e3d6",
+      "scripts/pnwf/software/autonomy-evidence.mjs": "4061742fe6df1e86a20d57ee1689e2d198e707275c884b5e3320c92d8920d245",
+      "scripts/pnwf/software/autonomy-mock.mjs": "04d91adb9d6f0cb47c6dff25aaf4a6067cab025a4fcb38ea17d497e911104ae6",
+      "scripts/pnwf/software/probe.cjs": "4e79fffb36de7940eaeaeb64a154fd6673be1d024fbe51f5c311cc98c0171c49",
+      "scripts/inspector/dsh-web.mjs": "8202cc36f77b077997394dcb33d7537246ba1cf8ee6738eac040e790b45dec1f",
+      "host/dsh/lib/inspector/graph.js": "18803ddcd6a04ece8ae8c0b24b2003b72df89971558835ac6ac9074cb44ae45f",
+      "host/dsh/lib/inspector/observe.js": "402c7fa1ad409900a60e52722416e46fcf39b5bedfc4e351844d96c1a536e23a",
+      "web/src/project_workspace/ProjectWorkspaceView.tsx": "8fb75d761e730e67e1d70325bd35f873b2a24713fbd30bc96605ae42af2d9d17"
+    }
+  },
+  "mode": "live",
+  "implementation": "88621e34dbb707766d1f16c565d9631c314dc94e",
+  "input": {
+    "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "tree": "394093f947133d3b6e837438c6bdf95c0834b511",
+    "first": "3dadc3a1df9cabf2fd40543f711e3720916e9447",
+    "correctionSha256": "969b003eacfb4b3e3050b7cbb9dbfda401c9dfb9a99ad48f81f8799ef3ab6334",
+    "rejectedCandidatePresent": false
+  },
+  "admission": {
+    "actor": "operator:software-project-owner",
+    "priorHead": "3dadc3a1df9cabf2fd40543f711e3720916e9447",
+    "approved": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "eventId": 6,
+    "recordedAt": "2026-11-18T17:21:44.948Z"
+  }
+}

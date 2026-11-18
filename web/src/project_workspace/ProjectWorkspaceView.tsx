@@ -525,6 +525,12 @@ function AssetsPanel(props: {
                   <div key={entry.entry.entryId} data-testid="journal-entry-row" style={{ fontSize: 12 }}>
                     <Tag>{entry.entry.kind}</Tag> <b>{entry.entry.title}</b> · <Mono>{entry.entry.entryId}</Mono> ·{" "}
                     {entry.resolution === undefined ? "open" : `resolution ${entry.resolution.status}`}
+                    <details>
+                      <summary>Source and recorded note</summary>
+                      <div>{entry.entry.provenance}</div>
+                      {entry.entry.relatedRefs.map(ref => <div key={JSON.stringify(ref)}><Mono>{ref.kind} {ref.id}</Mono></div>)}
+                      <div style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{entry.entry.body}</div>
+                    </details>
                   </div>
                 ))
               )}

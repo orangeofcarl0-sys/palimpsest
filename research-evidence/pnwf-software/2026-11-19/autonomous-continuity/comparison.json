@@ -1,0 +1,148 @@
+{
+  "productRelease": "88621e34dbb707766d1f16c565d9631c314dc94e",
+  "fixtureBasis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+  "originalTree": "394093f947133d3b6e837438c6bdf95c0834b511",
+  "prompts": {
+    "change": "a6e7154b6e3d229faaa29318cc7461f3b2f86f08f5fdb4211021a08ac015b9df",
+    "handoff": "f57ec80b759f7ec3cd6fe3a5bd74578dbbcf7a44ff4317d57df4729e22587930"
+  },
+  "mock": {
+    "syntheticRequests": 11,
+    "paidRequests": 0,
+    "candidate": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+    "accepted": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+    "contributorDecisions": [
+      {
+        "contribution": "ctb-498c69f1f25ef8e1c08cb80a6069e614",
+        "finding": "Both the explicit-zero and omitted requests returned zero Readings for site-a on the basis although Fleet requires three.",
+        "decision": "ACCEPT_AS_CANDIDATE",
+        "decisionId": "ctd-fbda4e9e76f3d6dfbd0f4e9271e5c5fa",
+        "note": "Use the measured zero-frame counterexample to revise the stream default and its public tests. Preserve the existing wire contract."
+      }
+    ],
+    "acceptedVersionNote": "pje-46854bad0b584c688482c109db97c82f",
+    "portableReadback": {
+      "bothSurfaces": true,
+      "head": "45211c60a81da3b87d8e25e46afa8ffd89f47840",
+      "noteId": "pje-46854bad0b584c688482c109db97c82f",
+      "epoch": "0e717a19-9264-4c1f-b1a9-6a90d6e3a240",
+      "decisionIds": [
+        "ctd-fbda4e9e76f3d6dfbd0f4e9271e5c5fa"
+      ],
+      "sidebarVersionId": "[\"commit\",\"45211c60a81da3b87d8e25e46afa8ffd89f47840\"]",
+      "sidebarNoteId": "[\"journal\",\"pje-46854bad0b584c688482c109db97c82f\"]",
+      "workspaceJournal": true,
+      "observedAt": "2026-11-18T17:32:56.290Z"
+    }
+  },
+  "live": {
+    "model": "deepseek-v4.1-flash",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "ownerApprovedSha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+    "approvalText": "核准该完整 SHA，继续接续验证",
+    "acceptanceAuthority": "operator:software-project-owner",
+    "acceptanceSource": "DIRECT_BASIS",
+    "projectEvent": 8,
+    "head": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+    "versionNote": "pje-d0c977aae7bb8bfeca9159f76e14a7d1",
+    "contributorDecisions": [],
+    "candidateReviewFileAt": "2026-11-18T17:25:38.345Z",
+    "acceptedAt": "2026-11-18T17:31:47.901Z",
+    "independentFrames": {
+      "before": [
+        0,
+        0
+      ],
+      "after": [
+        3,
+        3
+      ],
+      "caseCount": 7
+    },
+    "finalAnswer": {
+      "acceptedHead": true,
+      "versionNote": true,
+      "correction": true,
+      "decisionIds": []
+    },
+    "modelSessions": {
+      "change": {
+        "requests": 17,
+        "unknown": 0,
+        "roles": {
+          "principal": {
+            "requests": 17,
+            "input": 45672,
+            "cacheRead": 448256,
+            "cacheWrite": 0,
+            "output": 10332,
+            "total": 504260
+          }
+        },
+        "fresh": 45672,
+        "cacheRead": 448256,
+        "cacheWrite": 0,
+        "output": 10332,
+        "total": 504260,
+        "elapsedMs": 208216,
+        "natural": true,
+        "pairedToolCalls": 36,
+        "refusals": 1,
+        "failedJobs": 0,
+        "billing": {
+          "cost": 0,
+          "allowance": 0.00863686,
+          "listCost": 0.01439478
+        }
+      },
+      "handoff": {
+        "requests": 5,
+        "unknown": 0,
+        "roles": {
+          "principal": {
+            "requests": 5,
+            "input": 20330,
+            "cacheRead": 58880,
+            "cacheWrite": 0,
+            "output": 2342,
+            "total": 81552
+          }
+        },
+        "fresh": 20330,
+        "cacheRead": 58880,
+        "cacheWrite": 0,
+        "output": 2342,
+        "total": 81552,
+        "elapsedMs": 61099,
+        "natural": true,
+        "pairedToolCalls": 9,
+        "refusals": 0,
+        "failedJobs": 0,
+        "billing": {
+          "cost": 0,
+          "allowance": 0.0027788,
+          "listCost": 0.00463134
+        }
+      }
+    },
+    "productHostEpochs": [
+      "2503e347-0f74-470e-84e9-38e8235323b6",
+      "8ebd302e-b603-436c-b5f8-e0c0223cd3a5"
+    ],
+    "portableOwners": [
+      "palimpsest.sqlite",
+      "journal.sqlite"
+    ]
+  },
+  "sourceDigests": {
+    "scripts/inspector/cold-readback.mjs": "2351591d6500b637613cd984b0b3422f2e09407fc0c3c97d35ea2172cc345aca",
+    "host/dsh/lib/client.js": "ccf8d5512607c53e2b3d418f0fef6ed92077d52b84d1a5f3cbab3090f40e99d6",
+    "scripts/pnwf/software/autonomy-archive.mjs": "47d2ce167dcbedae82a6946af9e3ed626528eb828545f3bb10e811676c4bd31a",
+    "scripts/pnwf/analyze_energy_trajectory.mjs": "246a013384c0e5484c0d554f86ff8fc9dde3539330632f3c93983164b48054f1"
+  }
+}

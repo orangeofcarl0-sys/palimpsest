@@ -7,3 +7,8 @@
 
 # LHAPE runtime evidence is byte-identity evidence: do not normalize line endings.
 research-evidence/lhape/** -text
+
+# These manifests cover original Git, DSH, browser and journal bytes.
+research-evidence/pnwf-software/2026-11-19/autonomous-continuity/** -text
+# Empty unified-diff context lines consist of one space.
+research-evidence/pnwf-software/2026-11-19/autonomous-continuity/*/candidate.patch whitespace=-blank-at-eol

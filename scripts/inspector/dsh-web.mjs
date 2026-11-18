@@ -2,7 +2,7 @@
 // writes real Work events while its browser is open. With --deployment it opens the supplied project.
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -15,6 +15,8 @@ const repo = fileURLToPath(new URL('../../', import.meta.url));
 const opts = process.argv.slice(2);
 const smoke = opts.includes('--smoke');
 const arg = name => opts.find(v => v.startsWith('--' + name + '='))?.split('=').slice(1).join('=');
+const readback = arg('readback');
+if (readback && (!arg('deployment') || !arg('result') || smoke)) throw new Error('Readback requires a deployment, acceptance file and result path.');
 if (smoke === Boolean(arg('deployment'))) throw new Error('Choose --smoke or --deployment=<project profile JSON>.');
 const defaultRoot = () => process.platform === 'win32' ? join(process.env.APPDATA, 'npm/node_modules') : execFileSync('npm', ['root', '-g'], { encoding: 'utf8' }).trim();
 const bin = resolve(arg('dsh-bin') ?? process.env.DSH_BIN ?? join(defaultRoot(), '@deepseek-ai/dsh/lib/bin.js'));
@@ -52,7 +54,7 @@ writeFileSync(join(directory, 'cordis.patch.yml'), [
   '- id: palimpsest-startup', '  disabled: true', '- id: palimpsest-runner', '  disabled: true',
   '- id: ui-settings-models', '  config:', '    credentialOnboarding: false',
   '- id: palimpsest-tools', '  config:', '    palimpsestEntry: ' + pathValue(join(repo, 'dist/src/advanced.js')),
-  '    deploymentProfile: ' + pathValue(deployment), '    serve: false', '',
+  '    deploymentProfile: ' + pathValue(deployment), '    serve: ' + Boolean(readback), '    openDashboard: false', '',
 ].join('\n'));
 
 const proc = spawn(process.execPath, [bin, '--profile', 'inspector', '--port', '0', '--no-open'], {
@@ -79,7 +81,17 @@ try {
     if (!address) await sleep(250);
   }
   if (!address) throw new Error('DSH did not publish its listening address.');
-  if (!smoke) {
+  if (readback) {
+    const { chromium } = await import('@playwright/test');
+    const { inspectAccepted } = await import('./cold-readback.mjs');
+    browser = await chromium.launch();
+    const result = await inspectAccepted(browser, address, () => {
+      const line = logs.match(/PALIMPSEST_DASHBOARD (\{[^\r\n]+\})/u);
+      return line && JSON.parse(line[1]).url;
+    }, JSON.parse(readFileSync(resolve(readback), 'utf8')), arg('screenshots'));
+    writeFileSync(resolve(arg('result')), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });
+    console.log('PASS · cold sidebar and Workspace', result.head, result.noteId);
+  } else if (!smoke) {
     const manual = opts.includes('--no-open');
     const opened = !manual && openInDefaultBrowser(address);
     console.log('DSH Web · ' + profile.projectId + '\n' + (opened ? new URL(address).origin : address));

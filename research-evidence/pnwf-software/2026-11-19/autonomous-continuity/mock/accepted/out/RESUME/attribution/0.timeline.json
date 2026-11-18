@@ -1,0 +1,207 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-668ea3ef-4fa5-4acb-8f3c-65c006939c58",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-18T17:19:47.920Z",
+      "endedAt": "2026-11-18T17:19:50.061Z",
+      "durationMs": 2141
+    },
+    "counts": {
+      "steps": 3,
+      "turns": 1,
+      "toolCalls": 2,
+      "pairedToolResults": 2,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 2,
+      "commits": 0,
+      "jobs": 0
+    },
+    "byKind": {
+      "project:overview": 1,
+      "project:journal_entries": 1
+    },
+    "stateQueries": [
+      "1633ms project:overview",
+      "2049ms project:journal_entries"
+    ],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "resume_0",
+        "offsetMs": 1633,
+        "kind": "project:overview",
+        "args": {
+          "action": "overview"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "resume_1",
+        "offsetMs": 2049,
+        "kind": "project:journal_entries",
+        "args": {
+          "action": "journal_entries"
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "resume_0",
+        "callSeq": 15,
+        "offsetMs": 1963,
+        "callKind": "project:overview",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 22,
+        "callId": "resume_1",
+        "callSeq": 21,
+        "offsetMs": 2062,
+        "callKind": "project:journal_entries",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795022389552,
+        "messageId": "b566e73b-14eb-48ee-b15a-fc4c92232ec9",
+        "usage": {
+          "inputTokens": 94898,
+          "outputTokens": 95,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 94993
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795022389968,
+        "messageId": "32fe8514-e352-47c5-9b20-3eaccc24684b",
+        "usage": {
+          "inputTokens": 57317,
+          "outputTokens": 102,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 57419
+        }
+      },
+      {
+        "seq": 26,
+        "at": 1795022390059,
+        "messageId": "d08348bb-a8d5-4527-ad41-207f0b35c4e5",
+        "usage": {
+          "inputTokens": 66193,
+          "outputTokens": 146,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 66339
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795022389367,
+      "offsetMs": 1447,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. I am taking over the Fleet rollout. Which exact project version is accepted, what changed the rollout judgment, and whose evidence supports that conclusion? Identify the record…"
+    },
+    {
+      "seq": 9,
+      "at": 1795022389369,
+      "offsetMs": 1449,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795022389553,
+      "offsetMs": 1633,
+      "kind": "CALL",
+      "detail": "project:overview",
+      "callId": "resume_0",
+      "tool": "palimpsest_project",
+      "args": {
+        "action": "overview"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795022389883,
+      "offsetMs": 1963,
+      "kind": "RESULT",
+      "detail": "ok { \"schemaVersion\": 1, \"projectId\": \"grpc-migration-continuation\", \"project\": { \"goal\": \"Deliver and maintain a compatible migration of the site readings service.\", \"revision\": 2, \"digest\": \"458e2608dfb984dfcdc721cead030e…",
+      "callId": "resume_0",
+      "callSeq": 15,
+      "callKind": "project:overview",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795022389969,
+      "offsetMs": 2049,
+      "kind": "CALL",
+      "detail": "project:journal_entries",
+      "callId": "resume_1",
+      "tool": "palimpsest_project",
+      "args": {
+        "action": "journal_entries"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795022389982,
+      "offsetMs": 2062,
+      "kind": "RESULT",
+      "detail": "ok [ { \"entry\": { \"schemaVersion\": 1, \"projectId\": \"grpc-migration-continuation\", \"kind\": \"REFERENCE_NOTE\", \"title\": \"Contribution: Measure the Fleet client's zero and omitted stream limits against this release, and return …",
+      "callId": "resume_1",
+      "callSeq": 21,
+      "callKind": "project:journal_entries",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 26,
+      "at": 1795022390059,
+      "offsetMs": 2139,
+      "kind": "DECISION",
+      "detail": "45211c60a81da3b87d8e25e46afa8ffd89f47840 pje-46854bad0b584c688482c109db97c82f updates/2026-11-10/fleet-default-limit.md"
+    },
+    {
+      "seq": 28,
+      "at": 1795022390061,
+      "offsetMs": 2141,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

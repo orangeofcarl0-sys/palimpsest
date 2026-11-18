@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { drawing, drawWork, drawPulse, drawProjection, key, sessionCalls } from './graph.js';
 
-const coverageNames = ['Work', '正式 Worker', '项目接续', '协作', '运行域', '组织依据', '推理', 'DSH'];
+const coverageNames = ['Work', '正式 Worker', '项目接续', '版本引用', '协作', '运行域', '组织依据', '推理', 'DSH'];
 const safeError = error => error instanceof Error ? error.message : String(error);
 
 // One project per mounted principal. No client-provided project, DB path or source URL.
@@ -40,6 +40,15 @@ export function createInspector(host, { clock = Date.now, retention = 90, interv
       try { coverage[name] = await action() ?? '已读取'; }
       catch (error) { coverage[name] = '读取失败 · ' + safeError(error); }
     }
+    await read('版本引用', head && app.projectWorkspace, async () => {
+      for (const { entry } of await app.projectWorkspace.journal()) {
+        if (entry.projectId !== projectId || entry.kind !== 'REFERENCE_NOTE' ||
+            !entry.relatedRefs.some(r => r.kind === 'git_commit' && r.id === head)) continue;
+        const note = d.node(key('journal', entry.entryId), 3, '版本依据', entry.title, null, '项目日志',
+          entry.entryId, { 依据: entry.body, 记录来源: entry.provenance, 版本: head });
+        d.edge(key('commit', head), note, '关联记录', '项目日志', entry.entryId);
+      }
+    });
     await read('正式 Worker', workDelegation, async () => {
       for (const job of await workDelegation.jobs()) {
         const node = d.node(key('worker', job.jobId), 1, 'Worker 作业', job.jobId, job.phase, '正式 Worker', job.jobId,

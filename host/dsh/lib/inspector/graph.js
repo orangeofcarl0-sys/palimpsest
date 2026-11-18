@@ -84,10 +84,16 @@ export function drawPulse(d, pulse) {
     const owner = d.node(key('operator'), 1, '审批角色', '项目所有者', null, '项目接续', 'OPERATOR');
     d.edge(key('task', item.ref.slice(5)), owner, '待所有者判断', '项目接续', item.ref);
   }
-  for (const { record, status, downstream } of pulse.contributions) {
+  for (const { record, status, downstream, decisions = [] } of pulse.contributions) {
     const n = d.node(key('contribution', record.contributionId), 3, '贡献', record.finding, status, '项目接续', record.contributionId,
       { 来源: record.sourceRef, 任务: record.task, 工件: record.artifacts });
     for (const id of downstream.addedTaskIds) d.edge(n, key('task', id), '产生后续任务', '项目接续');
+    for (const { record: decision, journalEntryId } of decisions) {
+      const choice = d.node(key('contribution-decision', decision.decisionId), 3, '贡献决定', decision.decision,
+        decision.basisState, '项目接续', decision.decisionId,
+        { 依据: decision.decisionNote, 决定时版本: decision.basisAtDecision.headCommit, 日志: journalEntryId });
+      d.edge(n, choice, '评估发现', '项目接续', journalEntryId);
+    }
   }
   for (const { taskId, relay } of pulse.execution.attempts) {
     if (!taskId || !relay) continue;

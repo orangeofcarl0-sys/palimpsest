@@ -44,7 +44,7 @@ function indexOpenCodeUsage(observations) {
 }
 
 // DSH v4 writes one independent zstd frame per event.
-function readStream(path, digest) {
+export function readStream(path, digest) {
   const source = readFileSync(path);
   assert.equal(createHash("sha256").update(source).digest("hex"), digest, "Stream differs from attributed evidence");
   const events = [];

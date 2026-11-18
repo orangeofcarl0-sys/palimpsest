@@ -1,0 +1,144 @@
+diff --git a/MIGRATION.md b/MIGRATION.md
+index 0c5146e..8d60d6f 100644
+--- a/MIGRATION.md
++++ b/MIGRATION.md
+@@ -69,9 +69,15 @@ is reported through the gRPC error path rather than being silently accepted.
+ 
+ - Request: exactly one `StreamReadingsRequest` frame.
+ - Response: one `Reading` frame per selected reading, in the same source order as the REST list.
+-- `limit` selects `readings.slice(0, limit)`.
+-- An **omitted limit** and an **explicitly zero limit** both return an empty stream: no Reading
+-  frames, followed by `grpc-status: 0`. They do not mean "all readings".
++- A positive `limit` selects `readings.slice(0, limit)`, so a limit larger than the available
++  readings still returns all available readings.
++- An **omitted limit** and an **explicitly zero limit** both select the Fleet-compatible default:
++  the first three available readings in source order (`readings.slice(0, 3)`), or fewer if the site
++  has fewer. They do not mean "all readings", and they no longer return an empty stream.
++- The `StreamReadings` comment in `proto/energy.proto` still says that an omitted or zero limit
++  returns an empty stream. That comment describes the superseded first-release behavior; it is
++  retained because the proto is byte-for-byte unchanged, and it is informational only. This
++  section and `service/grpc_server.js` document the effective behavior.
+ - An unknown site returns NOT_FOUND (`grpc-status: 5`, `unknown_site`) instead of an empty stream,
+   preserving the REST error semantics.
+ - A limit that cannot be represented as a non-negative integer is INVALID_ARGUMENT
+@@ -79,6 +85,9 @@ is reported through the gRPC error path rather than being silently accepted.
+ - Malformed requests are INVALID_ARGUMENT (`invalid_request`), unknown methods are UNIMPLEMENTED
+   (`unimplemented`), and unsupported compression is UNIMPLEMENTED (`unsupported_compression`).
+ 
++Positive limits, `GetReading`, unknown-site errors, protobuf field numbers, gRPC framing, and REST
++behavior are unchanged.
++
+ The server returns HTTP/2 status `200` for gRPC calls, including failed calls; the real outcome is
+ the `grpc-status` trailer, as required by gRPC. `service/grpc_server.js` exposes
+ `createGrpcServer()`, which returns an unbound `http2.Server` so callers/tests can choose the port.
+@@ -128,6 +137,7 @@ node --test
+ ```
+ 
+ `test/server.test.js` speaks raw HTTP/2 to verify the five-byte frame header, one frame per Reading,
+-source order, trailers, and NOT_FOUND/UNIMPLEMENTED outcomes. `test/integration.test.js` runs the
+-real server through `service/grpc_client.js`, covers omitted/zero limits and errors, and compares the
+-gRPC readings with the preserved REST baseline. The unchanged REST tests remain in the suite.
++source order, trailers, the omitted/zero default limit, and NOT_FOUND/UNIMPLEMENTED outcomes.
++`test/integration.test.js` runs the real server through `service/grpc_client.js`, covers the
++omitted/zero default limits and errors, and compares the gRPC readings with the preserved REST
++baseline. The unchanged REST tests remain in the suite.
+diff --git a/service/grpc_server.js b/service/grpc_server.js
+index 64203df..1784f02 100644
+--- a/service/grpc_server.js
++++ b/service/grpc_server.js
+@@ -29,6 +29,10 @@ const GRPC_STATUS = Object.freeze({
+ const GET_READING = "/energy.v1.EnergyService/GetReading";
+ const STREAM_READINGS = "/energy.v1.EnergyService/StreamReadings";
+ 
++// Fleet compatibility: an omitted limit decodes as zero, and both request the
++// first three available readings in source order.
++const DEFAULT_STREAM_LIMIT = 3;
++
+ function grpcError(status, message) {
+   const error = new Error(message);
+   error.grpcStatus = status;
+@@ -119,8 +123,10 @@ async function dispatch(path, body) {
+   if (!Number.isInteger(request.limit) || request.limit < 0 || request.limit > 0xffffffff) {
+     throw grpcError(GRPC_STATUS.INVALID_ARGUMENT, "invalid_limit");
+   }
+-  // A zero or omitted limit is an explicitly empty stream, not "all readings".
+-  return readings.slice(0, request.limit).map((reading) => encodeReading(reading));
++  // A zero or omitted limit requests the Fleet default rather than an empty
++  // stream; a positive limit still selects exactly that many readings.
++  const limit = request.limit === 0 ? DEFAULT_STREAM_LIMIT : request.limit;
++  return readings.slice(0, limit).map((reading) => encodeReading(reading));
+ }
+ 
+ /**
+diff --git a/test/integration.test.js b/test/integration.test.js
+index 6c9753c..ce9cb1a 100644
+--- a/test/integration.test.js
++++ b/test/integration.test.js
+@@ -57,12 +57,22 @@ test("StreamReadings honours the limit and preserves source order", async () =>
+   );
+ });
+ 
+-test("StreamReadings with zero limit returns an empty stream", async () => {
+-  assert.deepEqual(await collect(grpc.streamReadings("site-a", 0)), []);
++test("StreamReadings with zero limit returns the first three readings", async () => {
++  const readings = await collect(grpc.streamReadings("site-a", 0));
++  assert.deepEqual(readings, await rest.getReadings("site-a", 3));
++  assert.deepEqual(
++    readings.map((reading) => reading.atMs),
++    [1762300000000, 1762300060000, 1762300120000],
++  );
+ });
+ 
+-test("StreamReadings with an omitted limit returns an empty stream", async () => {
+-  assert.deepEqual(await collect(grpc.streamReadings("site-a")), []);
++test("StreamReadings with an omitted limit returns the first three readings", async () => {
++  const readings = await collect(grpc.streamReadings("site-a"));
++  assert.deepEqual(readings, await rest.getReadings("site-a", 3));
++  assert.deepEqual(
++    readings.map((reading) => reading.atMs),
++    [1762300000000, 1762300060000, 1762300120000],
++  );
+ });
+ 
+ test("an unknown site is a NOT_FOUND error on both gRPC methods", async () => {
+diff --git a/test/server.test.js b/test/server.test.js
+index d9f3ccf..dd09378 100644
+--- a/test/server.test.js
++++ b/test/server.test.js
+@@ -138,13 +138,34 @@ test("StreamReadings sends one frame per reading in source order", async () => {
+   ]);
+ });
+ 
+-test("StreamReadings with a zero limit sends no frames and completes successfully", async () => {
++test("StreamReadings with a zero limit sends the first three readings", async () => {
+   const response = await rawCall(
+     "/energy.v1.EnergyService/StreamReadings",
+     encodeStreamReadingsRequest({ siteId: "site-a", limit: 0 }),
+   );
+-  assert.equal(response.body.length, 0);
+   assert.equal(response.trailers["grpc-status"], "0");
++  const messages = decodeFrames(response.body);
++  assert.equal(messages.length, 3);
++  assert.deepEqual(messages.map(decodeReading), [
++    { siteId: "site-a", watts: 4120, atMs: 1762300000000 },
++    { siteId: "site-a", watts: 4185, atMs: 1762300060000 },
++    { siteId: "site-a", watts: 4090, atMs: 1762300120000 },
++  ]);
++});
++
++test("StreamReadings with an omitted limit sends the first three readings", async () => {
++  const response = await rawCall(
++    "/energy.v1.EnergyService/StreamReadings",
++    encodeStreamReadingsRequest({ siteId: "site-a" }),
++  );
++  assert.equal(response.trailers["grpc-status"], "0");
++  const messages = decodeFrames(response.body);
++  assert.equal(messages.length, 3);
++  assert.deepEqual(messages.map(decodeReading), [
++    { siteId: "site-a", watts: 4120, atMs: 1762300000000 },
++    { siteId: "site-a", watts: 4185, atMs: 1762300060000 },
++    { siteId: "site-a", watts: 4090, atMs: 1762300120000 },
++  ]);
+ });
+ 
+ test("server reports NOT_FOUND for an unknown site instead of an empty stream", async () => {
