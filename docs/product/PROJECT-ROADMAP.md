@@ -8,6 +8,8 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 
 ## 产品路径与职责
 
+面向所有者和接手者的「项目历程」已形成设计提案。从项目的接受版本和最新交付进入角色泳道、文件与证据。首个切片用 gRPC 的真实 T2 → T3 离线检验，第二个切片用 Energy 验证非代码成果与受保护证书，再接入普通 DSH 的在线只读视图。实施以读者能辨认核准 SHA、冻结原判及未确认用量为验收依据。[可视化规划与原型](visualization/PLAN.md) · [系统盘点](visualization/SYSTEMS.md) · [外部方案调研](visualization/RESEARCH.md)
+
 普通路径使用原生 DSH 推理、Git、Shell 和测试。ProjectWorkspace、Pulse 与 Continuity 从已有所有者读取目标、成果、未决问题与当前依据。下一次 Session 优先看到足以决定下一步的状态，详情按需读取。持久化对象包括可定位的成果、来源、适用条件、未决假设与失败记录。接受状态和当前适用性分别判断。[项目工作区与交互](PALIMPSEST-INTERACTION-MODEL.md) · [语义所有者](../engineering/architecture/SEMANTIC-OWNER-MAP.md)
 
 协作规模与治理强度分别选择。一个 Agent 可以直接完成并提交。几个 Agent 可以并行调查、提出反例或接手部分成果。需要隔离写入、正式结算或受保护接受时，由既有 Work、Execution World、Evidence、Basis Admission 和 Promotion 承担对应合同。Git 提供版本事实，产品 Head 表示正式项目基线，Operator 决定需要批准的接受。模型负责需要判断的部分，程序负责可确定的检查、等待和状态转移。[Work 和 Continuity 产品路径](../programs/pc1/S02-NORMAL-PATH.md) · [审核与权限](../programs/pc1/S04-REVIEW-AND-AUTHORITY.md)

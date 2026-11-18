@@ -1,0 +1,1243 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>gRPC 迁移 · Palimpsest 项目历程</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101824;
+        --panel: #151f2e;
+        --inset: #101925;
+        --line: #354457;
+        --soft: #aab9c9;
+        --text: #edf3f7;
+        --aqua: #8bdfcf;
+        --amber: #f5c78a;
+        --lav: #ccbbf0;
+        --blue: #a2c8ec;
+        --sans: Inter, "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif;
+        --mono: "IBM Plex Mono", Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 15px/1.6 var(--sans);
+      }
+      button,
+      a {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+        color: inherit;
+      }
+      a {
+        color: var(--aqua);
+        text-underline-offset: 4px;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      summary:focus-visible,
+      [tabindex="-1"]:focus-visible {
+        outline: 3px solid var(--amber);
+        outline-offset: 3px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .skip {
+        position: absolute;
+        left: 1rem;
+        top: -5rem;
+        z-index: 3;
+        background: var(--panel);
+        padding: 0.5rem;
+      }
+      .skip:focus {
+        top: 0.5rem;
+      }
+      .wrap {
+        max-width: 1240px;
+        margin: auto;
+        padding: 0 clamp(16px, 4vw, 58px);
+      }
+      header {
+        border-bottom: 1px solid var(--line);
+        background: #111b29;
+      }
+      .mast {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 58px;
+      }
+      .brand {
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+      .crumb,
+      .muted {
+        color: var(--soft);
+      }
+      .crumb {
+        margin-left: 12px;
+        padding-left: 12px;
+        border-left: 1px solid var(--line);
+      }
+      .archive {
+        font-size: 13px;
+        color: var(--soft);
+      }
+      main {
+        padding-bottom: 32px !important;
+      }
+      .hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 26px;
+        padding: 32px 0 23px;
+      }
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(27px, 3.6vw, 45px);
+        line-height: 1.22;
+        letter-spacing: -0.035em;
+      }
+      .hero p {
+        color: var(--soft);
+        margin: 8px 0 0;
+      }
+      .entry {
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      h2 {
+        font-size: 19px;
+        margin: 0;
+        letter-spacing: 0.01em;
+      }
+      h3 {
+        font-size: 18px;
+        line-height: 1.5;
+        margin: 0;
+      }
+      p {
+        margin: 0;
+      }
+      code,
+      .mono,
+      td.num {
+        font: 0.94em/1.55 var(--mono);
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+      }
+      .trail,
+      .box {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--panel);
+      }
+      .trail {
+        padding: 16px 20px 18px;
+      }
+      .trailhead,
+      .barhead,
+      .sectionhead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .trailhead {
+        margin-bottom: 12px;
+      }
+      .trailhead small,
+      .sectionhead small {
+        color: var(--soft);
+      }
+      .versions {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+      }
+      .version {
+        position: relative;
+        text-align: left;
+        background: var(--inset);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 9px 13px;
+        min-width: 0;
+      }
+      .version:not(:last-child):after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: calc(100% + 1px);
+        width: 20px;
+        border-top: 1px dashed #627587;
+      }
+      .version span {
+        display: block;
+        font-size: 13px;
+        color: var(--soft);
+      }
+      .version b {
+        font: 600 19px/1.6 var(--mono);
+        letter-spacing: 0.025em;
+      }
+      .version[data-id="accepted"] b {
+        color: var(--aqua);
+      }
+      .version[aria-pressed="true"] {
+        outline: 1px solid var(--aqua);
+        border-color: var(--aqua);
+      }
+      .version:hover,
+      .event:hover {
+        background: #203042;
+      }
+      .tabs {
+        display: flex;
+        gap: 22px;
+        border-bottom: 1px solid var(--line);
+        margin: 18px 0;
+      }
+      .tabs button {
+        border: 0;
+        border-bottom: 3px solid transparent;
+        padding: 10px 0;
+        background: transparent;
+        color: var(--soft);
+        font-weight: 600;
+      }
+      .tabs [aria-pressed="true"] {
+        border-color: var(--aqua);
+        color: var(--text);
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.42fr) minmax(310px, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .box {
+        min-width: 0;
+        padding: 18px 20px;
+      }
+      .boxhead {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .filters button {
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--soft);
+        border-radius: 5px;
+        padding: 3px 9px;
+        font-size: 13px;
+        min-height: 33px;
+      }
+      .filters button[aria-pressed="true"] {
+        border-color: #52687b;
+        background: #263649;
+        color: var(--text);
+      }
+      .group {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--soft);
+        margin: 18px 0 7px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .group:after {
+        content: "";
+        height: 1px;
+        background: var(--line);
+        flex: 1;
+      }
+      .events {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .event {
+        display: grid;
+        grid-template-columns: 82px 1fr auto;
+        width: 100%;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid transparent;
+        background: transparent;
+        text-align: left;
+        border-radius: 5px;
+        min-height: 41px;
+        padding: 7px 8px;
+      }
+      .event[aria-pressed="true"] {
+        background: #223749;
+        border-color: #4c697b;
+      }
+      .role {
+        font-size: 12px;
+        color: var(--soft);
+        letter-spacing: 0.003em;
+      }
+      .event .role:before {
+        content: "";
+        display: inline-block;
+        vertical-align: middle;
+        width: 6px;
+        height: 6px;
+        background: var(--blue);
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+      .role.worker:before {
+        background: var(--lav);
+        border-radius: 1px;
+      }
+      .role.operator:before {
+        background: var(--aqua);
+        border-radius: 1px;
+        transform: rotate(45deg);
+      }
+      .role.host:before {
+        background: var(--amber);
+        border-radius: 0;
+      }
+      .evname {
+        font-size: 14px;
+      }
+      .ref {
+        color: var(--soft);
+        font: 12px var(--mono);
+      }
+      .issue {
+        color: var(--amber);
+      }
+      .detail {
+        border-top: 3px solid var(--aqua);
+        position: sticky;
+        top: 12px;
+      }
+      .kind {
+        font-size: 12px;
+        color: var(--aqua);
+        margin-bottom: 7px;
+      }
+      .detail p {
+        margin: 10px 0;
+        color: var(--soft);
+      }
+      .detail dl {
+        margin: 13px 0 0;
+      }
+      .detail .field {
+        display: grid;
+        grid-template-columns: 6em 1fr;
+        gap: 8px;
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .field dt {
+        color: var(--soft);
+      }
+      .field dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      .detail cite {
+        font-style: normal;
+      }
+      .sources {
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        font-size: 13px;
+      }
+      .detail details {
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .detail summary {
+        cursor: pointer;
+        color: var(--aqua);
+        padding: 3px 0;
+      }
+      .detail details table {
+        margin-top: 8px;
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .bars {
+        padding: 13px 0 7px;
+      }
+      .barhead {
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+      .bar {
+        display: flex;
+        overflow: hidden;
+        height: 12px;
+        background: #243244;
+        border-radius: 3px;
+        margin-bottom: 12px;
+      }
+      .bar i {
+        height: 100%;
+        display: block;
+      }
+      .fresh {
+        background: var(--blue);
+      }
+      .cache {
+        background: #569f99;
+      }
+      .out {
+        background: var(--lav);
+      }
+      .legend {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        color: var(--soft);
+        font-size: 12px;
+      }
+      .legend i {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        margin-right: 4px;
+      }
+      .notes {
+        margin: 10px 0;
+        color: var(--soft);
+        font-size: 13px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 7px 4px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+      th {
+        font-weight: 500;
+        color: var(--soft);
+      }
+      .numbers th:not(:first-child),
+      .numbers td:not(:first-child) {
+        text-align: right;
+      }
+      .numbers th,
+      .numbers td {
+        white-space: nowrap;
+      }
+      .warning {
+        color: var(--amber);
+      }
+      .score {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .score b {
+        font: 600 18px var(--mono);
+      }
+      .stoplist {
+        margin: 8px 0 0;
+        padding-left: 20px;
+        color: var(--soft);
+        font-size: 13px;
+      }
+      .stoplist li {
+        margin: 4px 0;
+      }
+      footer {
+        margin-top: 24px;
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: var(--soft);
+      }
+      @media (max-width: 850px) {
+        .layout,
+        .pair {
+          grid-template-columns: 1fr;
+        }
+        .detail {
+          position: static;
+        }
+        .hero {
+          align-items: flex-start;
+        }
+        .versions {
+          gap: 12px;
+        }
+        .version:not(:last-child):after {
+          width: 12px;
+        }
+        .event {
+          grid-template-columns: 86px 1fr auto;
+        }
+      }
+      @media (max-width: 560px) {
+        .hero {
+          display: block;
+          padding: 22px 0 16px;
+        }
+        .hero p {
+          font-size: 14px;
+        }
+        .entry {
+          display: inline-block;
+          margin-top: 9px;
+        }
+        .trail,
+        .box {
+          padding: 14px;
+        }
+        .versions {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        .version:not(:last-child):after {
+          display: none;
+        }
+        .trailhead small {
+          font-size: 11px;
+        }
+        .crumb {
+          display: none;
+        }
+        .event {
+          grid-template-columns: 72px minmax(0, 1fr) auto;
+          gap: 5px;
+          padding: 6px 2px;
+        }
+        .evname {
+          font-size: 13px;
+        }
+        .ref {
+          font-size: 11px;
+        }
+        .brand {
+          font-size: 15px;
+        }
+        .detail .field {
+          grid-template-columns: 5.7em 1fr;
+        }
+        .boxhead {
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+        .numbers {
+          font-size: 12px;
+        }
+        .archive {
+          font-size: 12px;
+        }
+      }
+      .layoutmode {
+        display: flex;
+        gap: 2px;
+        border-top: 1px solid var(--line);
+        padding-top: 9px;
+      }
+      .layoutmode button {
+        font-size: 12px;
+      }
+      .lane {
+        table-layout: fixed;
+        font-size: 12px;
+      }
+      .lane col:first-child {
+        width: 17%;
+      }
+      .lane th,
+      .lane td {
+        padding: 5px 3px;
+        vertical-align: middle;
+      }
+      .lane td:empty:after {
+        content: "·";
+        color: var(--soft);
+      }
+      .lane button {
+        width: 100%;
+        display: block;
+        margin: 3px 0;
+        padding: 5px 6px;
+        text-align: left;
+        font-size: 12px;
+        line-height: 1.4;
+        color: var(--text);
+        background: #213346;
+        border: 1px solid #476176;
+        border-radius: 4px;
+      }
+      .lane button:hover,
+      .lane button[aria-pressed="true"] {
+        border-color: var(--aqua);
+        color: var(--aqua);
+      }
+      .lane .exception {
+        border-left: 3px solid var(--amber);
+      }
+      .lane th[scope="row"] {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .lane th[scope="col"] {
+        color: var(--soft);
+      }
+      .role.audit:before {
+        background: var(--amber);
+        border: 1px solid var(--amber);
+        background: transparent;
+      }
+      @media (max-width: 560px) {
+        .lane col:first-child {
+          width: 20%;
+        }
+        .lane button {
+          padding: 5px 3px;
+        }
+        .lane th[scope="row"] {
+          font-size: 11px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">跳至项目历程</a>
+    <header>
+      <div class="mast wrap">
+        <div><span class="brand">Palimpsest</span><span class="crumb">项目工作区</span></div>
+        <span class="archive">历史回放 · 2026 年 11 月 18 日</span>
+      </div>
+    </header>
+    <main class="wrap" id="main" tabindex="-1">
+      <div class="hero">
+        <div>
+          <h1>gRPC 迁移评审</h1>
+          <p>T2 修订已获核准。T3 已交付评审，冻结原判与同一提交的复核相差一项。</p>
+        </div>
+        <a class="entry" href="../PLAN.md">查看设计规划 ↗</a>
+      </div>
+      <section class="trail" aria-labelledby="version-title">
+        <div class="trailhead">
+          <h2 id="version-title">版本记录</h2>
+          <small>按工作阶段排列 · 点选查看完整 SHA</small>
+        </div>
+        <div class="versions">
+          <button class="version" data-id="basis"><span>T2 · 执行基线</span><b>fbeb8958</b></button>
+          <button class="version" data-id="candidate"><span>T2 · 结算候选</span><b>be05447e</b></button>
+          <button class="version" data-id="accepted"><span>T2 · 正式接受</span><b>4639ae44</b></button>
+          <button class="version" data-id="review"><span>T3 · 交付工件</span><b>ccb07d36</b></button>
+        </div>
+      </section>
+      <nav class="tabs" aria-label="阅读方式">
+        <button id="history-tab" aria-controls="history" aria-pressed="true">协作历程</button
+        ><button id="cost-tab" aria-controls="compare" aria-pressed="false">两次 T3 对比</button>
+      </nav>
+      <div class="layout" id="history">
+        <section class="box" aria-labelledby="events-title">
+          <div class="boxhead">
+            <h2 id="events-title">会话事件</h2>
+            <div id="filters" class="filters" role="group" aria-label="筛选会话">
+              <button data-filter="all" aria-pressed="true">全部</button
+              ><button data-filter="T2" aria-pressed="false">T2</button
+              ><button data-filter="T3" aria-pressed="false">T3</button>
+            </div>
+          </div>
+          <div class="filters layoutmode" role="group" aria-label="事件排列方式">
+            <button data-mode="lanes" aria-controls="lane-list">角色泳道</button
+            ><button data-mode="events" aria-controls="event-list">事件列表</button>
+          </div>
+          <div id="lane-list"></div>
+          <div id="event-list"></div>
+        </section>
+        <aside class="box detail" id="detail" aria-labelledby="detail-title">
+          <div id="kind" class="kind"></div>
+          <h2 id="detail-title" tabindex="-1"></h2>
+          <p id="description"></p>
+          <dl id="fields"></dl>
+          <div id="extra"></div>
+          <div class="sources" id="sources"></div>
+        </aside>
+      </div>
+      <div id="compare" class="pair" hidden>
+        <section class="box" aria-labelledby="cost-title">
+          <h2 id="cost-title">相同接受版本上的两次 T3</h2>
+          <p class="notes">单位为 token。两条总量条使用同一刻度，表格保留各用量分项。</p>
+          <div class="bars" id="bars" aria-hidden="true"></div>
+          <div class="legend" aria-hidden="true">
+            <span><i class="fresh"></i>Fresh input</span><span><i class="cache"></i>Cache read</span
+            ><span><i class="out"></i>Output</span>
+          </div>
+          <table class="numbers" aria-label="两次 gRPC T3 的请求、用量和会话墙钟">
+            <thead>
+              <tr>
+                <th scope="col">观测</th>
+                <th scope="col">上轮</th>
+                <th scope="col">本轮</th>
+              </tr>
+            </thead>
+            <tbody id="metrics"></tbody>
+          </table>
+          <div class="sources">
+            <a id="comparison-source">逐笔归因与对比 ↗</a><a id="ledger-source">本轮请求账本 ↗</a>
+          </div>
+        </section>
+        <section class="box" aria-labelledby="score-title">
+          <h2 id="score-title">交付与内容核验</h2>
+          <div class="score"><span>本轮冻结原判</span><b class="warning">11/12</b></div>
+          <div class="score"><span>本轮同 SHA 离线复核</span><b>12/12</b></div>
+          <p class="notes">
+            原判漏识别「显式零值与省略值返回前三条」。复核定位到原稿第 26、27 行。上轮冻结原判也是
+            11/12，遗漏项为旧版空流规则。
+          </p>
+          <div class="sources">
+            <a id="audit-source">核对复核方法 ↗</a><a id="review-source">打开评审原稿 ↗</a>
+          </div>
+          <h3 style="margin-top: 22px">历史停止记录</h3>
+          <ul class="stoplist">
+            <li>HTTP 402 · 终态用量 UNKNOWN</li>
+            <li>HTTP 400 · 终态用量 UNKNOWN</li>
+          </ul>
+          <p class="notes">各自独立归档。上表仅统计两条完成 T3 的已确认用量。</p>
+        </section>
+      </div>
+      <footer>
+        <span>归档原型 · 只读 · 本地运行</span><span>记录来自 gRPC T2（11.10）与 T3（11.18）</span>
+      </footer>
+    </main>
+    <script>
+      "use strict";
+      const evidenceRoot = "../../../../research-evidence/pnwf-work-revision/";
+      const t2 = evidenceRoot + "2026-11-10/settled-readiness-214618/";
+      const t3 = evidenceRoot + "2026-11-18/opencode-go-v2-t3-152704/";
+      const sha = {
+        basis: "fbeb8958f4405688b13f37dbdec330157a660ab0",
+        candidate: "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+        accepted: "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+        review: "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+      };
+      const receipt = "f4821e6335b402d4c1cd52e568eec8fc0250eb4cf562562d25bdedf73e55bb77";
+      const tree = "99c40069ae834cf71618e2a142010f10bef0df06";
+      const roles = {
+        principal: "Principal",
+        worker: "Worker",
+        host: "宿主",
+        operator: "Operator",
+        audit: "核验资料",
+      };
+      const groups = { T2: "11 月 10 日 · T2 正式修订", T3: "11 月 18 日 · T3 直接交付" };
+      const candidateSource = ["候选与逐文件回执", t2 + "candidate.json"];
+      const waitSource = ["调用与收尾记录", t2 + "readiness-exit.json"];
+      const promotionSource = ["Operator 核准与晋升事件", t2 + "acceptance.json"];
+      const deliverySource = ["交付回执与进程终态", t3 + "result.json"];
+      const trace2 = ["T2 分角色轨迹", t2 + "trajectory-comparison.json"];
+      const trace3 = ["T3 轨迹与用量", t3 + "trajectory-comparison.json"];
+      const auditSource = ["同 SHA 复核与 Git 依据", t3 + "same-sha-audit.json"];
+      const reviewSource = ["评审原稿", t3 + "MIGRATION-REVIEW.md"];
+      const records = {
+        basis: {
+          session: "T2",
+          role: "host",
+          label: "执行基线",
+          title: "基于已获准的 Fleet 更正执行",
+          desc: "执行范围绑定到本次授权。四个路径允许修改，三个必须改、四个必须存在，另有四个受保护文件。",
+          fields: [
+            ["基线 SHA", sha.basis],
+            ["任务", "revise-fleet-default"],
+            ["保护范围", "协议、wire codec、客户端与 REST 测试"],
+          ],
+          links: [["冻结合同", t2 + "contract.json"], candidateSource],
+        },
+        delegated: {
+          session: "T2",
+          role: "principal",
+          label: "委派正式 Worker",
+          ref: "1 个 Worker",
+          title: "Principal 选择隔离的正式 Work 路径",
+          desc: "宿主的 Worker 回执记录了真实会话、容器与绑定基线。Principal 与 Worker 的 29 笔和 18 笔请求分别归属到同一 T2 窗口。",
+          fields: [
+            ["Attempt", "attempt-50afeb5d5bdea0421a8ad97588a05c46"],
+            ["Worker 会话", "worker-ac525352-ef6b-4e22-9b17-4487ac64bdd2"],
+            ["基线", sha.basis],
+            ["写范围", "4 个路径"],
+          ],
+          links: [trace2, ["正式 Worker 执行记录", t2 + "result.json"]],
+        },
+        failedJob: {
+          session: "T2",
+          role: "worker",
+          label: "作业非零后恢复",
+          ref: "35 → 37¹",
+          title: "Worker 的一次 Bash 作业非零退出",
+          desc: "列目录的作业失败，Worker 后续改用 find 读取文件并完成候选。35 是调用序号，37 是作业终态序号。",
+          fields: [
+            ["作业 ID", "bash-71dfe8f4df1549eb"],
+            ["原始原因", "NONZERO_EXIT"],
+            ["执行窗口", "Worker 会话内，59 ms"],
+          ],
+          links: [["作业终态", t2 + "result.json"], trace2],
+        },
+        toolError: {
+          session: "T2",
+          role: "principal",
+          label: "查询作业时用了另一类 ID",
+          ref: "107 → 108",
+          title: "Principal 改用 Work 的作业查询",
+          desc: "Principal 将 Work job ID 交给原生 job_output，收到未知作业错误，随后回到 work workers 查看正式 Worker。",
+          fields: [
+            ["调用 ID", "call_00_NUajfbm77GpA9SZaTNUC0385"],
+            ["工具", "job_output"],
+            ["分类", "工具错误。正式 Worker 继续执行。"],
+          ],
+          links: [trace2],
+        },
+        preview: {
+          session: "T2",
+          role: "worker",
+          label: "预检候选回执",
+          ref: "149 → 150",
+          title: "Worker 检查自己的候选",
+          desc: "Worker 的只读预检通过 15 项文件义务，随后交回候选供宿主结算。",
+          fields: [
+            ["阶段", "PREVIEW"],
+            ["候选 SHA", sha.candidate],
+            ["核验结果", "15/15 项文件检查"],
+          ],
+          links: [trace2, candidateSource],
+        },
+        candidate: {
+          session: "T2",
+          role: "host",
+          label: "正式结算",
+          ref: "SETTLED",
+          title: "候选已正式结算",
+          desc: "门禁 PASS。四个受保护 blob 与基线逐字节相同。Principal 在 197 → 198 的 workers 查询中读到结算摘要。",
+          fields: [
+            ["候选 SHA", sha.candidate],
+            ["回执 ID", receipt],
+            ["原冻结判分", "SOFTWARE_PROTO_RPC_CONTRACT"],
+            ["同 SHA 复核", "HTTP/2 7/7 · 公开测试 18/18"],
+          ],
+          links: [candidateSource, trace2],
+        },
+        waiting: {
+          session: "T2",
+          role: "principal",
+          label: "推进验证，记录等待核准",
+          ref: "241 → 242",
+          title: "正式结算之后，Principal 记录等待核准",
+          desc: "readiness 读到任务 ACTIVE、Attempt COMPLETED。Principal 推进任务并记录 WAIT_FOR_OPERATOR，T2 自然退出。",
+          fields: [
+            ["readiness", "229 → 230 · SEMANTIC_JUDGEMENT"],
+            ["next", "235 → 236 · TASK_VERIFYING"],
+            ["conclude", "241 → 242 · RECORDED"],
+            ["收尾", "重复结算 0 次 · 进程退出码 0"],
+          ],
+          links: [waitSource, candidateSource],
+        },
+        accepted: {
+          session: "T2",
+          role: "operator",
+          label: "按完整 SHA 核准并晋升",
+          ref: "事件 19",
+          title: "所有者接受了哪份成果",
+          desc: "Operator 核准已结算的候选，Promotion 将结果记入项目 Head。T3 继承这份接受凭据。",
+          fields: [
+            ["核准候选", sha.candidate],
+            ["接受 HEAD", sha.accepted],
+            ["共同 tree", tree],
+            ["核准者", "operator:software-project-owner"],
+          ],
+          links: [promotionSource, ["T3 接受凭据", t3 + "acceptance.json"]],
+        },
+        inherits: {
+          session: "T3",
+          role: "principal",
+          label: "读取已接受版本",
+          ref: "25 → 28",
+          title: "新会话从正式接受的版本接续",
+          desc: "普通 DSH 会话先取项目 Pulse，再读取本次接续的接受记录。",
+          fields: [
+            ["Episode 基线", sha.accepted],
+            ["Pulse", "15 → 16"],
+            ["读取接受记录", "25 → 28"],
+          ],
+          links: [deliverySource, ["接续凭据", t3 + "acceptance.json"]],
+        },
+        review: {
+          session: "T3",
+          role: "principal",
+          label: "提交评审并记录交付",
+          ref: "129 → 130",
+          title: "T3 的交付指向评审文件所在的提交",
+          desc: "本次只提交 MIGRATION-REVIEW.md。回执把工件定位到新提交，Episode 保留其启动时的接受版本。",
+          fields: [
+            ["工件提交", sha.review],
+            ["Episode 基线", sha.accepted],
+            ["文件 blob", "1137d4b9a653b636b833fdc041a540e787ea54ea"],
+            ["conclude", "129 → 130 · DELIVER / RECORDED"],
+          ],
+          links: [deliverySource, reviewSource, auditSource],
+        },
+        exit: {
+          session: "T3",
+          role: "host",
+          label: "会话自然退出",
+          ref: "exit 0",
+          title: "宿主观察到 T3 自然退出",
+          desc: "从交付工具返回到进程结束用时 38.658 秒，整个 T3 的墙钟为 147.050 秒。",
+          fields: [
+            ["退出码", "0 · natural = true"],
+            ["请求", "13/13 已绑定"],
+            ["工具配对", "25/25"],
+            ["停止条件", "未触发"],
+          ],
+          links: [deliverySource, trace3],
+        },
+        score: {
+          session: "T3",
+          role: "audit",
+          label: "原判与离线复核相差一项",
+          ref: "11 / 12",
+          title: "同一份原稿有两份内容结论",
+          desc: "冻结判分漏识别新规则。离线检查原稿表格，在第 26、27 行分别找到显式零值和字段省略时的行为。",
+          fields: [
+            ["冻结原判", "11/12 · NEW_ZERO_AND_OMITTED_FIRST_THREE"],
+            ["离线内容复核", "12/12 · 同一 SHA"],
+            ["协议与公开测试", "HTTP/2 7/7 · 18/18"],
+            ["提交", sha.review],
+          ],
+          links: [auditSource, reviewSource, deliverySource],
+        },
+      };
+      const timeline = {
+        T2: ["delegated", "failedJob", "toolError", "preview", "candidate", "waiting", "accepted"],
+        T3: ["inherits", "review", "exit", "score"],
+      };
+      const obligations = [
+        ["允许且必改、必存", "MIGRATION.md"],
+        ["允许且必改、必存", "service/grpc_server.js"],
+        ["允许且必改、必存", "test/integration.test.js"],
+        ["允许、必存", "test/server.test.js"],
+        ["保留", "proto/energy.proto"],
+        ["保留", "service/grpc_client.js"],
+        ["保留", "service/wire.js"],
+        ["保留", "test/rest.test.js"],
+      ];
+      const $ = (id) => document.getElementById(id);
+      const element = (tag, content, cls) => {
+        const el = document.createElement(tag);
+        if (content !== undefined) el.textContent = content;
+        if (cls) el.className = cls;
+        return el;
+      };
+      let selected = "accepted",
+        filter = "all";
+      function displayTab(cost) {
+        $("history").hidden = cost;
+        $("compare").hidden = !cost;
+        $("history-tab").setAttribute("aria-pressed", String(!cost));
+        $("cost-tab").setAttribute("aria-pressed", String(cost));
+      }
+      function showRecord(id, focus = false) {
+        const r = records[id];
+        selected = id;
+        displayTab(false);
+        if (filter !== "all" && filter !== r.session) setFilter(r.session);
+        $("kind").textContent = r.session + " · " + roles[r.role] + " / " + r.label;
+        $("detail-title").textContent = r.title;
+        $("description").textContent = r.desc;
+        $("fields").replaceChildren(
+          ...r.fields.map(([k, v]) => {
+            const row = element("div", undefined, "field");
+            row.append(element("dt", k), element("dd", v, /^[a-f0-9]{40,}$/.test(v) ? "mono" : ""));
+            return row;
+          }),
+        );
+        $("sources").replaceChildren(
+          ...r.links.map(([name, href]) => {
+            const a = element("a", name + " ↗");
+            a.href = href;
+            return a;
+          }),
+        );
+        $("extra").replaceChildren();
+        if (id === "basis" || id === "candidate" || id === "preview") {
+          const d = element("details"),
+            table = element("table");
+          const head = table.createTHead().insertRow();
+          ["义务", "文件"].forEach((label) => {
+            const cell = element("th", label);
+            cell.scope = "col";
+            head.append(cell);
+          });
+          const body = table.createTBody();
+          for (const [k, v] of obligations) {
+            const r = body.insertRow();
+            r.insertCell().textContent = k;
+            r.insertCell().append(element("code", v));
+          }
+          d.append(element("summary", "查看 8 个路径的义务"), table);
+          $("extra").append(d);
+        }
+        document
+          .querySelectorAll("[data-id]")
+          .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+        if (focus) {
+          $("detail-title").focus({ preventScroll: true });
+          if (matchMedia("(max-width:850px)").matches) $("detail").scrollIntoView({ block: "start" });
+        }
+      }
+      function setFilter(value) {
+        filter = value;
+        document
+          .querySelectorAll("[data-filter]")
+          .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === value)));
+        document
+          .querySelectorAll("[data-session]")
+          .forEach((g) => (g.hidden = value !== "all" && g.dataset.session !== value));
+      }
+      function openRecord(id) {
+        if (location.hash === "#" + id) showRecord(id, true);
+        else location.hash = id;
+      }
+      const phases = {
+        T2: [
+          ["启动与调查", ["delegated", "failedJob", "toolError"]],
+          ["检查与结算", ["preview", "candidate"]],
+          ["等待与接受", ["waiting", "accepted"]],
+        ],
+        T3: [
+          ["接续", ["inherits"]],
+          ["交付", ["review"]],
+          ["退出与核验", ["exit", "score"]],
+        ],
+      };
+      for (const [session, cols] of Object.entries(phases)) {
+        const section = element("section");
+        section.dataset.session = session;
+        section.append(element("h3", groups[session], "group"));
+        const table = element("table", undefined, "lane");
+        table.setAttribute("aria-label", groups[session] + "的角色与阶段");
+        const colgroup = element("colgroup");
+        for (let i = 0; i <= cols.length; i++) colgroup.append(element("col"));
+        table.append(colgroup);
+        const head = table.createTHead().insertRow();
+        for (const label of ["记录主体", ...cols.map((c) => c[0])]) {
+          const th = element("th", label);
+          th.scope = "col";
+          head.append(th);
+        }
+        const body = table.createTBody();
+        for (const [role, label] of Object.entries(roles)) {
+          if (!timeline[session].some((id) => records[id].role === role)) continue;
+          const row = body.insertRow(),
+            th = element("th", label);
+          th.scope = "row";
+          row.append(th);
+          for (const [, items] of cols) {
+            const cell = row.insertCell();
+            for (const id of items.filter((i) => records[i].role === role)) {
+              const btn = element("button", records[id].label);
+              btn.dataset.id = id;
+              if (["failedJob", "toolError", "score"].includes(id)) btn.className = "exception";
+              cell.append(btn);
+            }
+          }
+        }
+        section.append(table);
+        $("lane-list").append(section);
+      }
+      $("lane-list").append(
+        element("p", "列按工作阶段排列，格宽不表示执行时长。点击动作可查看归属与原件。", "notes"),
+      );
+      function setMode(mode) {
+        $("lane-list").hidden = mode !== "lanes";
+        $("event-list").hidden = mode !== "events";
+        document
+          .querySelectorAll("[data-mode]")
+          .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+      }
+      document
+        .querySelectorAll("[data-mode]")
+        .forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
+      setMode(matchMedia("(max-width:560px)").matches ? "events" : "lanes");
+      for (const [session, ids] of Object.entries(timeline)) {
+        const g = element("section");
+        g.dataset.session = session;
+        g.append(element("h3", groups[session], "group"));
+        const list = element("ol", undefined, "events");
+        for (const id of ids) {
+          const r = records[id],
+            li = element("li"),
+            btn = element("button", undefined, "event");
+          btn.dataset.id = id;
+          btn.setAttribute("aria-controls", "detail");
+          btn.append(
+            element("span", roles[r.role], "role " + r.role),
+            element(
+              "span",
+              r.label,
+              "evname" + (["failedJob", "toolError", "score"].includes(id) ? " issue" : ""),
+            ),
+            element("span", r.ref, "ref"),
+          );
+          li.append(btn);
+          list.append(li);
+        }
+        g.append(list);
+        if (session === "T2")
+          g.append(element("p", "¹ Worker 的 37 为作业终态序号。不同角色的序号属于各自会话流。", "notes"));
+        $("event-list").append(g);
+      }
+      document.querySelectorAll("[data-id]").forEach((b) => {
+        b.setAttribute("aria-controls", "detail");
+        b.addEventListener("click", () => openRecord(b.dataset.id));
+      });
+      document.querySelectorAll("[data-filter]").forEach((b) =>
+        b.addEventListener("click", () => {
+          setFilter(b.dataset.filter);
+          if (filter !== "all" && records[selected].session !== filter) {
+            const id = filter === "T3" ? "inherits" : "candidate";
+            showRecord(id);
+            history.replaceState(null, "", "#" + id);
+          }
+        }),
+      );
+      function route(focus) {
+        const id = location.hash.slice(1);
+        if (id === "main") {
+          if (!$("detail-title").textContent) showRecord("accepted");
+          if (focus) $("main").focus();
+          return;
+        }
+        if (id === "compare") {
+          displayTab(true);
+          return;
+        }
+        showRecord(Object.hasOwn(records, id) ? id : "accepted", focus);
+      }
+      window.addEventListener("hashchange", () => route(true));
+      $("history-tab").onclick = () => openRecord(selected);
+      $("cost-tab").onclick = () => {
+        location.hash = "compare";
+      };
+      const runs = [
+        {
+          name: "上轮",
+          requests: 14,
+          fresh: 46913,
+          cache: 402944,
+          creation: 0,
+          output: 9032,
+          total: 458889,
+          tools: 27,
+          seconds: "194.233",
+        },
+        {
+          name: "本轮",
+          requests: 13,
+          fresh: 39634,
+          cache: 325376,
+          creation: 0,
+          output: 6171,
+          total: 371181,
+          tools: 25,
+          seconds: "147.050",
+        },
+      ];
+      const format = (n) => (typeof n === "number" ? n.toLocaleString("en-US") : n);
+      for (const run of runs) {
+        const cap = element("div", undefined, "barhead");
+        cap.append(element("span", run.name), element("span", format(run.total), "mono"));
+        const bar = element("div", undefined, "bar");
+        for (const [key, cls] of [
+          ["fresh", "fresh"],
+          ["cache", "cache"],
+          ["output", "out"],
+        ]) {
+          const i = element("i", undefined, cls);
+          i.style.width = (100 * run[key]) / runs[0].total + "%";
+          bar.append(i);
+        }
+        $("bars").append(cap, bar);
+      }
+      for (const [key, label] of [
+        ["requests", "模型请求"],
+        ["fresh", "Fresh input"],
+        ["cache", "Cache read"],
+        ["creation", "Cache creation"],
+        ["output", "Output"],
+        ["total", "总 tokens"],
+        ["tools", "工具调用 / 结果对"],
+        ["seconds", "会话墙钟（秒）"],
+      ]) {
+        const row = $("metrics").insertRow();
+        const h = element("th", label);
+        h.scope = "row";
+        row.append(h);
+        runs.forEach((run) => {
+          const td = row.insertCell();
+          td.className = "num";
+          td.textContent = format(run[key]);
+        });
+      }
+      $("comparison-source").href = trace3[1];
+      $("ledger-source").href = t3 + "request-accounting.json";
+      $("audit-source").href = auditSource[1];
+      $("review-source").href = reviewSource[1];
+      route(false);
+    </script>
+  </body>
+</html>
