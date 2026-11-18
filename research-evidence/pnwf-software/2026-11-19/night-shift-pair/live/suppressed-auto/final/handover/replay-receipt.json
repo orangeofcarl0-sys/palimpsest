@@ -1,0 +1,134 @@
+{
+  "replay": "overnight-dispatch-handover/v1",
+  "ok": true,
+  "command": "node handover/replay.mjs",
+  "tests": {
+    "exitCode": 0,
+    "pass": 18,
+    "fail": 0
+  },
+  "service": {
+    "transports": [
+      "gRPC",
+      "REST"
+    ],
+    "explicitLimit": 3,
+    "zeroLimit": 3,
+    "omittedLimit": 3,
+    "sourceOrder": [
+      1762300000000,
+      1762300060000,
+      1762300120000
+    ],
+    "unknownSite": "grpc-status 5 / unknown_site",
+    "retryIsStateless": true
+  },
+  "dashboard": {
+    "utcMinutes": [
+      "22:02",
+      "22:02",
+      "22:03",
+      "22:03",
+      "22:03",
+      "22:04"
+    ],
+    "grpcCompleted": [
+      480,
+      482
+    ],
+    "grpcErrors": 0,
+    "consoleUpload": "1 panel(s), Birch/2",
+    "rolloutHold": "0 site(s), scheduler-planned",
+    "bench": {
+      "edgeErrors": 0,
+      "decision": "continue",
+      "blindSpots": [
+        "console_upload",
+        "rollout_hold",
+        "freshness/order"
+      ]
+    }
+  },
+  "archive": {
+    "alias": {
+      "olderB12": "Birch training",
+      "currentBirch": "B-12 plus B-13"
+    },
+    "inventory": {
+      "liveBirch": [
+        "p17",
+        "p23"
+      ],
+      "liveAlder": [
+        "p04",
+        "p09"
+      ],
+      "trainingSimulator": "sim-4/p71"
+    },
+    "ingress": {
+      "staleRetry": {
+        "request": "req-a",
+        "feed": "B",
+        "sequence": 40,
+        "attempt": 2,
+        "afterNewerSequence": 41,
+        "grpcStatus": 0
+      },
+      "simulatorReading": {
+        "connection": "sim-4",
+        "sequence": 39
+      }
+    },
+    "terminal": {
+      "sampledPanels": [
+        "p17",
+        "p04",
+        "p09",
+        "p71"
+      ],
+      "liveBirchPaints": [
+        40,
+        41
+      ],
+      "liveBirchSuppressed": "req-a/sequence 40",
+      "simulatorPaints": [
+        39
+      ],
+      "note": "the trace covers p17/p04/p09/p71; live Birch p23 is not represented"
+    },
+    "field": {
+      "clock": "UTC+01, 52 seconds fast at 22:10Z (±12 s), minute-rounded",
+      "terminalUncertain": true,
+      "b13Uploader": "unplugged for the whole rehearsal; no local recording"
+    },
+    "reservation": {
+      "ticket": "CAP-08",
+      "cedarRestOverflowWindow": "06:00-06:30Z",
+      "secondLane": false,
+      "parkDoesNotMoveTraffic": true,
+      "productionSwitchAccepted": false
+    }
+  },
+  "diagnosis": {
+    "conclusion": "No service-side backwards reading is supported. The live Birch panel p17 painted 40 then 41 and suppressed the retried older 40. The retry is a transport sequence, and the field note is alias/time-ambiguous with a training simulator.",
+    "staleRetryExplainsBackwards": true,
+    "livePanelSuppressionWorked": true,
+    "trainingSimulatorPaint": "p71/B/39",
+    "fieldObservationAttribution": "unresolved between live p17 and training simulator",
+    "serviceRegressionEvidence": "none",
+    "instrumentationGaps": [
+      "B-13 uploader unplugged; its screen retained no local recording",
+      "terminal trace covers p17/p04/p09/p71; live Birch p23 is not represented",
+      "bench/check.mjs ignores console_upload and rollout_hold and cannot test freshness/order",
+      "no maximum stale interval was agreed for the rehearsal"
+    ]
+  },
+  "proposal": {
+    "startUtc": "06:10",
+    "birch": "park",
+    "cedar": "overflow",
+    "cedarLane": "06:00-06:30Z",
+    "insideCedarLane": true
+  },
+  "productionAuthority": "release owner only; this replay is not a traffic change or approval"
+}

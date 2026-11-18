@@ -1,0 +1,1393 @@
+{
+  "label": "suppressed-solo",
+  "mode": "live",
+  "seal": {
+    "provider": "opencode-go",
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "model": "deepseek-v4.1-flash",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "prompt": "Handle the overnight dispatch handover described in SHIFT.md. Leave the next shift a runnable replay, a committed handover and a dry-run booking receipt for a practical morning plan. Production changes belong to the release owner.",
+    "files": {
+      "scripts/pnwf/software/night-shift/case.mjs": "43b5ce88d5dfc2e4e487f6f33aaef8e107d97b560ea509b8c368cd1ee8f910ea",
+      "scripts/pnwf/software/night-shift/mock.mjs": "7d9dd7ea5a29a0e78b3986785c3a475364dbd0aeb84de4bc7e13e8f4601c546a",
+      "scripts/pnwf/software/night-shift/port.mjs": "7284d7610999def550b37c278c640353191a9be5d4c42087387e335ea4a0bc32",
+      "scripts/pnwf/software/night-shift/run.mjs": "75b8683be746d478bc2b5a7dee7a0b62b83c16a985886ec12300df9298b82ab0",
+      "scripts/pnwf/software/night-shift/desk/field.txt": "dbcb0babbfc89064183a23d1737994a638102a5533d0e9e80bc106c1ee95d9d6",
+      "scripts/pnwf/software/night-shift/desk/format.txt": "2906c79b4419376b30a439bf7478ac7c965e6cd7973ca0ddd4607c40a8476c4e",
+      "scripts/pnwf/software/night-shift/desk/ingress.csv": "4871a55a7bb74e6c6be6b4db865f8cd0275870509bc68b10aa5faa9dc70fd8a6",
+      "scripts/pnwf/software/night-shift/desk/inventory.csv": "70c79a9fe6a20334bdb87f8b4e369a378e4a9431cb051eeb4ef336f1ca78a175",
+      "scripts/pnwf/software/night-shift/desk/reservation.txt": "205e533fcc092fe97503bc38d26d8d42070b285831e2dc1e5e6cab94652e492d",
+      "scripts/pnwf/software/night-shift/desk/terminal.tsv": "af27124b61adca6d5c1c4f14261b328407f348569f60d58e502003f37fcc4e4b",
+      "scripts/pnwf/software/night-shift/plugin/index.js": "80100c9842911436170777dd09d36aa0231f3b0f0de4e8ec2089fbba007f4a87",
+      "scripts/pnwf/software/night-shift/plugin/package.json": "878791657079b96e607b6dcfb7187dc64138626b925009b51589a410ec07a803",
+      "fixtures/psvr/fleet-night-shift/SHIFT.md": "6882620320974fc008250debc31d05d71ee84684c84bda6c724389ab88362b37",
+      "fixtures/psvr/fleet-night-shift/bench/check.mjs": "9a4fbaca0f4eb9a08f9d9272a2ad33a352313795c2ca41f375be6c0a23af429d",
+      "fixtures/psvr/fleet-night-shift/operations/dashboard.csv": "64b3b64479b15f1e29aff0e30e5fcf5fbe4bd9cb60cd81ac0cc7eef28cb1d038",
+      "fixtures/psvr/fleet-night-shift/operations/desk.md": "4327ec8f89aa39f3eb4132a09ccfd5b7c9a131df17bffc13f55ab860a053a993",
+      "fixtures/psvr/fleet-night-shift/operations/registry.csv": "f13fb8f1c489f714f3afba45003b9bec2ac1cadeb06ab82691983dbe15e45cf4",
+      "fixtures/psvr/fleet-night-shift/operations/shift-mail.txt": "ed437d6f69a6d9acfa0049f3d0ba531bc35f27115e2e4d8bb842cf8a127b27f6",
+      "scripts/pnwf/container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+      "scripts/pnwf/container_adapter.mjs": "2e0f26f74666b4e2a521bd0c8185fe2aa792d134060373578172de7eca40df5e"
+    }
+  },
+  "basis": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "78979aa5-492f-4f04-9d14-5f0a065bb441",
+    "sessionId": "NIGHT",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live\\suppressed-solo\\stages\\NIGHT\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live\\suppressed-solo\\runtime-NIGHT",
+    "principalRuntime": "container",
+    "containerId": "3aa4407d0581816b2b4327526268421309341cb688cf6d53874ac2532e969c5e",
+    "qualification": "c568ab2f61e11d8dd715a96cf74c0a680d438a4f4d062351056c321c4a70c6a8",
+    "startedAt": "2026-11-18T18:37:49.964Z",
+    "endedAt": "2026-11-18T18:44:42.094Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "78979aa5-492f-4f04-9d14-5f0a065bb441",
+      "sessionId": "NIGHT",
+      "observedAt": "2026-11-18T18:44:42.094Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 969251,
+      "confirmedTokens": 969251,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 23,
+    "paidModelCalls": 23
+  },
+  "isolation": {
+    "containerId": "3aa4407d0581816b2b4327526268421309341cb688cf6d53874ac2532e969c5e",
+    "descriptorDigest": "c568ab2f61e11d8dd715a96cf74c0a680d438a4f4d062351056c321c4a70c6a8",
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "mounts": [
+      {
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "destination": "/product/node_modules",
+        "writable": false
+      },
+      {
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "destination": "/product/runtime",
+        "writable": false
+      },
+      {
+        "destination": "/run/stage",
+        "writable": true
+      }
+    ],
+    "checks": [
+      {
+        "name": "principal_uid",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_shell_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "write_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "git_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "node_build_fixture",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_version",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_native_addon",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "native_shell_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_proc_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_parent_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "rootfs_readonly",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "no_docker_socket",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_evaluator",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_owner_credential",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_provider_credential_env",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_routes",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      }
+    ],
+    "worlds": {
+      "schema": "pnwf-world-preflight/v1",
+      "status": "QUALIFIED",
+      "head": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+      "worlds": [],
+      "product": {
+        "repositoryHead": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+        "projectHead": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+        "relation": "IN_SYNC",
+        "uncommittedPaths": [],
+        "admittedDirectCommit": null
+      }
+    }
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 23,
+    "knownTokens": 969251,
+    "totalTokens": 969251,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 66061,
+      "cache_read_input_tokens": 882304,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 20886
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 23,
+        "input": 66061,
+        "cacheRead": 882304,
+        "cacheWrite": 0,
+        "output": 20886,
+        "total": 969251
+      }
+    },
+    "traceTotal": 969251,
+    "traceRequests": 23,
+    "workerRequests": 0,
+    "elapsedMs": 412130,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "0f1aeb0124938134ebff0acb6d06e148dccafa4e107997c0e08fffbe042380e4",
+        "counts": {
+          "steps": 23,
+          "turns": 1,
+          "toolCalls": 49,
+          "pairedToolResults": 49,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 15
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795027107072,
+            "messageId": "f3d98bce-de94-4708-8521-c2705890ad16",
+            "usage": {
+              "inputTokens": 8895,
+              "outputTokens": 103,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 8998
+            }
+          },
+          {
+            "seq": 24,
+            "at": 1795027113674,
+            "messageId": "45574605-e468-4085-ac3e-80ed6119a505",
+            "usage": {
+              "inputTokens": 1632,
+              "outputTokens": 240,
+              "cacheReadTokens": 8832,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10704
+            }
+          },
+          {
+            "seq": 40,
+            "at": 1795027121158,
+            "messageId": "7af7c6b6-4de1-42b8-a2ac-5b0c73209ef7",
+            "usage": {
+              "inputTokens": 3681,
+              "outputTokens": 308,
+              "cacheReadTokens": 10368,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14357
+            }
+          },
+          {
+            "seq": 60,
+            "at": 1795027129933,
+            "messageId": "1bb19cc4-7ac0-4b4b-bb0a-eaac758abdb2",
+            "usage": {
+              "inputTokens": 3706,
+              "outputTokens": 376,
+              "cacheReadTokens": 13952,
+              "cacheWriteTokens": 0,
+              "totalTokens": 18034
+            }
+          },
+          {
+            "seq": 72,
+            "at": 1795027149767,
+            "messageId": "3c0186dc-5093-4d6d-93ec-b676bf51b3ae",
+            "usage": {
+              "inputTokens": 14215,
+              "outputTokens": 1108,
+              "cacheReadTokens": 17536,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32859
+            }
+          },
+          {
+            "seq": 88,
+            "at": 1795027169166,
+            "messageId": "cf5adb75-c261-47a5-ba23-e452ca732856",
+            "usage": {
+              "inputTokens": 2116,
+              "outputTokens": 1006,
+              "cacheReadTokens": 31744,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34866
+            }
+          },
+          {
+            "seq": 94,
+            "at": 1795027173427,
+            "messageId": "6e6be2e7-0b39-4cf1-94b1-08483241d7f3",
+            "usage": {
+              "inputTokens": 1121,
+              "outputTokens": 91,
+              "cacheReadTokens": 33792,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35004
+            }
+          },
+          {
+            "seq": 102,
+            "at": 1795027178414,
+            "messageId": "b37c0dc9-1143-4230-8043-ee9f8de451b9",
+            "usage": {
+              "inputTokens": 262,
+              "outputTokens": 77,
+              "cacheReadTokens": 34816,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35155
+            }
+          },
+          {
+            "seq": 108,
+            "at": 1795027184710,
+            "messageId": "746447b4-b7ca-46b5-86a2-4e0543c7174a",
+            "usage": {
+              "inputTokens": 122,
+              "outputTokens": 275,
+              "cacheReadTokens": 35072,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35469
+            }
+          },
+          {
+            "seq": 122,
+            "at": 1795027226100,
+            "messageId": "9525452d-7a14-43cb-931e-e78232b34eed",
+            "usage": {
+              "inputTokens": 1095,
+              "outputTokens": 2803,
+              "cacheReadTokens": 35072,
+              "cacheWriteTokens": 0,
+              "totalTokens": 38970
+            }
+          },
+          {
+            "seq": 130,
+            "at": 1795027275815,
+            "messageId": "4ad346e3-12e4-46e6-bb62-b4846b9cd357",
+            "usage": {
+              "inputTokens": 3060,
+              "outputTokens": 3397,
+              "cacheReadTokens": 36096,
+              "cacheWriteTokens": 0,
+              "totalTokens": 42553
+            }
+          },
+          {
+            "seq": 146,
+            "at": 1795027341651,
+            "messageId": "b8d203a8-23e7-4c7f-9986-bde1ec29bcaf",
+            "usage": {
+              "inputTokens": 3764,
+              "outputTokens": 5061,
+              "cacheReadTokens": 39040,
+              "cacheWriteTokens": 0,
+              "totalTokens": 47865
+            }
+          },
+          {
+            "seq": 152,
+            "at": 1795027346593,
+            "messageId": "5c74e110-518c-447e-a03d-062aa4f564ec",
+            "usage": {
+              "inputTokens": 5156,
+              "outputTokens": 140,
+              "cacheReadTokens": 42752,
+              "cacheWriteTokens": 0,
+              "totalTokens": 48048
+            }
+          },
+          {
+            "seq": 158,
+            "at": 1795027350483,
+            "messageId": "9e85f386-ac69-4f43-bdf0-f658117efb22",
+            "usage": {
+              "inputTokens": 218,
+              "outputTokens": 66,
+              "cacheReadTokens": 47872,
+              "cacheWriteTokens": 0,
+              "totalTokens": 48156
+            }
+          },
+          {
+            "seq": 166,
+            "at": 1795027389138,
+            "messageId": "983c7fc2-ffdd-443c-ab68-b990dedcab16",
+            "usage": {
+              "inputTokens": 4531,
+              "outputTokens": 2503,
+              "cacheReadTokens": 48000,
+              "cacheWriteTokens": 0,
+              "totalTokens": 55034
+            }
+          },
+          {
+            "seq": 172,
+            "at": 1795027393216,
+            "messageId": "27b869c9-dd64-4fd5-89e2-c1327c110fe1",
+            "usage": {
+              "inputTokens": 2597,
+              "outputTokens": 123,
+              "cacheReadTokens": 52480,
+              "cacheWriteTokens": 0,
+              "totalTokens": 55200
+            }
+          },
+          {
+            "seq": 180,
+            "at": 1795027398542,
+            "messageId": "ca87681f-d2ec-4e5e-8b74-980d502251d4",
+            "usage": {
+              "inputTokens": 345,
+              "outputTokens": 89,
+              "cacheReadTokens": 55040,
+              "cacheWriteTokens": 0,
+              "totalTokens": 55474
+            }
+          },
+          {
+            "seq": 186,
+            "at": 1795027408124,
+            "messageId": "844f6ec7-a207-40c6-98f7-24f03e2a13af",
+            "usage": {
+              "inputTokens": 266,
+              "outputTokens": 444,
+              "cacheReadTokens": 55296,
+              "cacheWriteTokens": 0,
+              "totalTokens": 56006
+            }
+          },
+          {
+            "seq": 192,
+            "at": 1795027412387,
+            "messageId": "b6130750-3ca8-4810-ba41-83e102e6d00d",
+            "usage": {
+              "inputTokens": 499,
+              "outputTokens": 207,
+              "cacheReadTokens": 55552,
+              "cacheWriteTokens": 0,
+              "totalTokens": 56258
+            }
+          },
+          {
+            "seq": 200,
+            "at": 1795027419600,
+            "messageId": "f907c46c-e29f-4ddd-8edb-4d6ae6f38cd4",
+            "usage": {
+              "inputTokens": 400,
+              "outputTokens": 371,
+              "cacheReadTokens": 55936,
+              "cacheWriteTokens": 0,
+              "totalTokens": 56707
+            }
+          },
+          {
+            "seq": 218,
+            "at": 1795027438531,
+            "messageId": "310ff94d-a4ce-4ae5-a3a2-eb2869aed033",
+            "usage": {
+              "inputTokens": 1355,
+              "outputTokens": 986,
+              "cacheReadTokens": 56320,
+              "cacheWriteTokens": 0,
+              "totalTokens": 58661
+            }
+          },
+          {
+            "seq": 224,
+            "at": 1795027448096,
+            "messageId": "d4560f62-115d-425b-8df8-9841bb377a23",
+            "usage": {
+              "inputTokens": 1592,
+              "outputTokens": 523,
+              "cacheReadTokens": 57600,
+              "cacheWriteTokens": 0,
+              "totalTokens": 59715
+            }
+          },
+          {
+            "seq": 230,
+            "at": 1795027481336,
+            "messageId": "4732d4f6-412f-46bb-be69-410a7f63503c",
+            "usage": {
+              "inputTokens": 5433,
+              "outputTokens": 589,
+              "cacheReadTokens": 59136,
+              "cacheWriteTokens": 0,
+              "totalTokens": 65158
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 15,
+          "read": 12,
+          "write": 11,
+          "fleet_desk": 8,
+          "project:journal": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "attribution": {
+    "arm": "P",
+    "session": "NIGHT",
+    "boundRequests": 23,
+    "totals": {
+      "fresh": 66061,
+      "cacheRead": 882304,
+      "cacheWrite": 0,
+      "output": 20886
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+        "streamSha256": "0f1aeb0124938134ebff0acb6d06e148dccafa4e107997c0e08fffbe042380e4",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 23,
+            "toolManifestBytes": 32485,
+            "productTools": 5,
+            "productToolBytes": 20346
+          }
+        ],
+        "systemTextBytes": [
+          1678
+        ],
+        "counts": {
+          "steps": 23,
+          "turns": 1,
+          "toolCalls": 49,
+          "pairedToolResults": 49,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 15
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 15,
+          "read": 12,
+          "write": 11,
+          "fleet_desk": 8,
+          "project:journal": 1,
+          "work:conclude": 1
+        },
+        "totals": {
+          "fresh": 66061,
+          "cacheRead": 882304,
+          "cacheWrite": 0,
+          "output": 20886
+        },
+        "activity": [
+          {
+            "kind": "pulse",
+            "callId": "call_d7d25d2b2cdf4a8e88f439e7",
+            "callSeq": 15,
+            "resultSeq": 16,
+            "ok": true,
+            "textBytes": 4337
+          },
+          {
+            "kind": "file-read",
+            "callId": "call_2628c5eb4c754e27bf3f6a4e",
+            "callSeq": 48,
+            "resultSeq": 56,
+            "ok": true,
+            "textBytes": 499,
+            "path": "updates/2026-11-10/fleet-default-limit.md"
+          }
+        ],
+        "failedJobs": [],
+        "toolIssues": [],
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "3ff347f9-9d4b-4b54-8b7c-b24c7fd7ac69",
+            "fresh": 8895,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 103,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_48f2d5edcccc4cf49d30bfa1c606d55a"
+          },
+          {
+            "step": 2,
+            "seq": 24,
+            "requestId": "2202e801-7578-4e8e-8328-b8bd79156192",
+            "fresh": 1632,
+            "cacheRead": 8832,
+            "cacheWrite": 0,
+            "output": 240,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2f56c625796945f88c5b1189890ceea9"
+          },
+          {
+            "step": 3,
+            "seq": 40,
+            "requestId": "6a3909e7-a579-423f-a17e-b54b478aec82",
+            "fresh": 3681,
+            "cacheRead": 10368,
+            "cacheWrite": 0,
+            "output": 308,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_fe3c75510a314e63abc397fceb50086c"
+          },
+          {
+            "step": 4,
+            "seq": 60,
+            "requestId": "35d27781-7ec3-419a-a86e-da73033128c8",
+            "fresh": 3706,
+            "cacheRead": 13952,
+            "cacheWrite": 0,
+            "output": 376,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_9d1880a52f88435dbc12fb1a02346e16"
+          },
+          {
+            "step": 5,
+            "seq": 72,
+            "requestId": "3e91ea39-c6f1-49d2-a17f-ea5c056f5a7b",
+            "fresh": 14215,
+            "cacheRead": 17536,
+            "cacheWrite": 0,
+            "output": 1108,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_41dba1bc91514e198e801fa899cdb139"
+          },
+          {
+            "step": 6,
+            "seq": 88,
+            "requestId": "7cf0b718-91b9-47de-a01b-49c97edb4653",
+            "fresh": 2116,
+            "cacheRead": 31744,
+            "cacheWrite": 0,
+            "output": 1006,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a0ae6dc132de4124b8f1a616002b4f3f"
+          },
+          {
+            "step": 7,
+            "seq": 94,
+            "requestId": "da746f49-e487-4754-9a9a-8a08d5d43495",
+            "fresh": 1121,
+            "cacheRead": 33792,
+            "cacheWrite": 0,
+            "output": 91,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_255b684401e3456b96e3d5f9b2eb8238"
+          },
+          {
+            "step": 8,
+            "seq": 102,
+            "requestId": "b6318562-6f51-4b2a-b84f-e9121f357c93",
+            "fresh": 262,
+            "cacheRead": 34816,
+            "cacheWrite": 0,
+            "output": 77,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0d136fe455cb4c5e9504118f7454a34f"
+          },
+          {
+            "step": 9,
+            "seq": 108,
+            "requestId": "77ec577a-a030-49ca-bbc3-20a9bc74dc12",
+            "fresh": 122,
+            "cacheRead": 35072,
+            "cacheWrite": 0,
+            "output": 275,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7c198a8a104a4a96bb3a2193a7cd1321"
+          },
+          {
+            "step": 10,
+            "seq": 122,
+            "requestId": "d5b2d0cf-e5d2-45d5-b588-4b1db0fe16e7",
+            "fresh": 1095,
+            "cacheRead": 35072,
+            "cacheWrite": 0,
+            "output": 2803,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1d29b59a8a8d4074a0fee16a4d8a0fa2"
+          },
+          {
+            "step": 11,
+            "seq": 130,
+            "requestId": "397a52b1-d465-4076-85d6-df77e4396f2c",
+            "fresh": 3060,
+            "cacheRead": 36096,
+            "cacheWrite": 0,
+            "output": 3397,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0956357341af4118936d92228062f4f8"
+          },
+          {
+            "step": 12,
+            "seq": 146,
+            "requestId": "3671a043-3112-41b0-a9d3-60f5a9bf9b50",
+            "fresh": 3764,
+            "cacheRead": 39040,
+            "cacheWrite": 0,
+            "output": 5061,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_d0b5ef3ef319497f8ec456682e9ca0d9"
+          },
+          {
+            "step": 13,
+            "seq": 152,
+            "requestId": "4f8e2064-c64d-404d-b766-5eabce73646e",
+            "fresh": 5156,
+            "cacheRead": 42752,
+            "cacheWrite": 0,
+            "output": 140,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_77b414e6ef5f49ccb54416a45126e173"
+          },
+          {
+            "step": 14,
+            "seq": 158,
+            "requestId": "3461eb5f-3181-4835-b822-1c4dc7795bb6",
+            "fresh": 218,
+            "cacheRead": 47872,
+            "cacheWrite": 0,
+            "output": 66,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7bc82b241b4c4e88bb679a022f107166"
+          },
+          {
+            "step": 15,
+            "seq": 166,
+            "requestId": "471ab358-a235-47c9-b990-4503a86487a0",
+            "fresh": 4531,
+            "cacheRead": 48000,
+            "cacheWrite": 0,
+            "output": 2503,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2aef8616be02442c81fa1d56f90f447d"
+          },
+          {
+            "step": 16,
+            "seq": 172,
+            "requestId": "a09f38a5-4572-47bd-83dc-9e886d996ed1",
+            "fresh": 2597,
+            "cacheRead": 52480,
+            "cacheWrite": 0,
+            "output": 123,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ff1e1c2bf7b34569af67c184bbf529cb"
+          },
+          {
+            "step": 17,
+            "seq": 180,
+            "requestId": "4369671d-2af9-4086-8eea-bfe19891b224",
+            "fresh": 345,
+            "cacheRead": 55040,
+            "cacheWrite": 0,
+            "output": 89,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_6b337d16b7a14e30a2adbfd6e98f9281"
+          },
+          {
+            "step": 18,
+            "seq": 186,
+            "requestId": "462ecfc4-358e-4946-9079-5f09a990b97e",
+            "fresh": 266,
+            "cacheRead": 55296,
+            "cacheWrite": 0,
+            "output": 444,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ffce0ec0cfd24ff5942c2abdd97e79e3"
+          },
+          {
+            "step": 19,
+            "seq": 192,
+            "requestId": "1eb4b9f1-d180-43c5-ab4d-59af21eb8f6b",
+            "fresh": 499,
+            "cacheRead": 55552,
+            "cacheWrite": 0,
+            "output": 207,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1e464b730e1a4feb90f132b189c5fbdc"
+          },
+          {
+            "step": 20,
+            "seq": 200,
+            "requestId": "de9a1fee-01f8-46bf-b52b-56378f841c6e",
+            "fresh": 400,
+            "cacheRead": 55936,
+            "cacheWrite": 0,
+            "output": 371,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8648f9e15adb49ecbe55b2dd35c874db"
+          },
+          {
+            "step": 21,
+            "seq": 218,
+            "requestId": "36f25f7f-2b12-4820-b952-d9b08741d55d",
+            "fresh": 1355,
+            "cacheRead": 56320,
+            "cacheWrite": 0,
+            "output": 986,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5942cb4e622c44d799f131ab6bb81b9c"
+          },
+          {
+            "step": 22,
+            "seq": 224,
+            "requestId": "a2b0ea56-aaf4-4725-8f95-4bf552005fa5",
+            "fresh": 1592,
+            "cacheRead": 57600,
+            "cacheWrite": 0,
+            "output": 523,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ac420bdaaa0e4b05a0e47fcba567c1e3"
+          },
+          {
+            "step": 23,
+            "seq": 230,
+            "requestId": "0f5366ce-2712-427f-bc4a-2123ec44d79f",
+            "fresh": 5433,
+            "cacheRead": 59136,
+            "cacheWrite": 0,
+            "output": 589,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b418ea62e75e422db077da6a560b04d8"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 5,
+            "seq": 72,
+            "requestId": "3e91ea39-c6f1-49d2-a17f-ea5c056f5a7b",
+            "fresh": 14215,
+            "cacheRead": 17536,
+            "cacheWrite": 0,
+            "output": 1108,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_41dba1bc91514e198e801fa899cdb139",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 61,
+                "seq": 64,
+                "textBytes": 39172
+              },
+              {
+                "kind": "bash",
+                "callSeq": 65,
+                "seq": 68,
+                "textBytes": 4267
+              }
+            ],
+            "precedingTextBytes": 43439
+          },
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "3ff347f9-9d4b-4b54-8b7c-b24c7fd7ac69",
+            "fresh": 8895,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 103,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_48f2d5edcccc4cf49d30bfa1c606d55a",
+            "precedingResults": [],
+            "precedingTextBytes": 0
+          },
+          {
+            "step": 23,
+            "seq": 230,
+            "requestId": "0f5366ce-2712-427f-bc4a-2123ec44d79f",
+            "fresh": 5433,
+            "cacheRead": 59136,
+            "cacheWrite": 0,
+            "output": 589,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b418ea62e75e422db077da6a560b04d8",
+            "precedingResults": [
+              {
+                "kind": "work:conclude",
+                "callSeq": 225,
+                "seq": 226,
+                "textBytes": 15938
+              }
+            ],
+            "precedingTextBytes": 15938
+          },
+          {
+            "step": 13,
+            "seq": 152,
+            "requestId": "4f8e2064-c64d-404d-b766-5eabce73646e",
+            "fresh": 5156,
+            "cacheRead": 42752,
+            "cacheWrite": 0,
+            "output": 140,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_77b414e6ef5f49ccb54416a45126e173",
+            "precedingResults": [
+              {
+                "kind": "write",
+                "callSeq": 147,
+                "seq": 148,
+                "textBytes": 101
+              }
+            ],
+            "precedingTextBytes": 101
+          }
+        ]
+      }
+    ]
+  },
+  "children": [],
+  "head": "584d61c4bd5ae71bcb1fa687e9b3ad053da4f509",
+  "clean": true,
+  "changed": [
+    "handover/HANDOVER.md",
+    "handover/INITIAL_ASSESSMENT.md",
+    "handover/booking-receipt.json",
+    "handover/evidence/README.md",
+    "handover/evidence/field.txt",
+    "handover/evidence/ingress.csv",
+    "handover/evidence/inventory.csv",
+    "handover/evidence/reservation.txt",
+    "handover/evidence/terminal.tsv",
+    "handover/proposal.json",
+    "handover/replay.mjs"
+  ],
+  "draft": "772735dfba6875df105234e1945d7da178fe6ef6",
+  "bookings": [
+    {
+      "commit": "91f4b7bc240feb90cc8ea9ca1b4ce74f35430e91",
+      "proposalBlob": "ecae06b26fc502431682e550d048766d5aac7226",
+      "booking": "feasible",
+      "reasons": [],
+      "productionApproval": "unissued"
+    },
+    {
+      "commit": "584d61c4bd5ae71bcb1fa687e9b3ad053da4f509",
+      "proposalBlob": "ecae06b26fc502431682e550d048766d5aac7226",
+      "booking": "feasible",
+      "reasons": [],
+      "productionApproval": "unissued"
+    }
+  ],
+  "accounted": true,
+  "accounting": {
+    "schema": "pnwf-usage-snapshot/v1",
+    "cohortId": "78979aa5-492f-4f04-9d14-5f0a065bb441",
+    "configDigest": "87c7554dd7b1f64987af843d50dcffef473654931dbb1400ea5257729ceb2f40",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 969251,
+    "reserved": null,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": null,
+    "sessions": [
+      {
+        "id": "NIGHT",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": null,
+        "softCeiling": null,
+        "maxRequests": 64,
+        "requestCount": 23,
+        "unresolvedRequests": 0,
+        "confirmed": 969251,
+        "reserved": null
+      }
+    ],
+    "requests": [
+      {
+        "id": "3ff347f9-9d4b-4b54-8b7c-b24c7fd7ac69",
+        "session": "NIGHT",
+        "digest": "69c5befd2a5d408233191bd970d8300fd573c730bcbc1569f8727d4125a82af9",
+        "reserved": null,
+        "actual": 8998,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 8895,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 103
+        }
+      },
+      {
+        "id": "2202e801-7578-4e8e-8328-b8bd79156192",
+        "session": "NIGHT",
+        "digest": "7db9cf0694b66f9c5ef9e201c03d2121b89144a431e1074e74759c9c4ad7c790",
+        "reserved": null,
+        "actual": 10704,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1632,
+          "cache_read_input_tokens": 8832,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 240
+        }
+      },
+      {
+        "id": "6a3909e7-a579-423f-a17e-b54b478aec82",
+        "session": "NIGHT",
+        "digest": "9ab2cc9e0e0973f71afa58d5cd5b1919297bdb8519849ca124c9ed761c301ec4",
+        "reserved": null,
+        "actual": 14357,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3681,
+          "cache_read_input_tokens": 10368,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 308
+        }
+      },
+      {
+        "id": "35d27781-7ec3-419a-a86e-da73033128c8",
+        "session": "NIGHT",
+        "digest": "53654c98217cf038f8faa4d181cc0cd9f4197c39e5f0cfef53185fc96c8c0550",
+        "reserved": null,
+        "actual": 18034,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3706,
+          "cache_read_input_tokens": 13952,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 376
+        }
+      },
+      {
+        "id": "3e91ea39-c6f1-49d2-a17f-ea5c056f5a7b",
+        "session": "NIGHT",
+        "digest": "5675748b6aeea54ea26a84e6020a0f57b30968e0de6e9f3fb767ce670f100a5d",
+        "reserved": null,
+        "actual": 32859,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 14215,
+          "cache_read_input_tokens": 17536,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1108
+        }
+      },
+      {
+        "id": "7cf0b718-91b9-47de-a01b-49c97edb4653",
+        "session": "NIGHT",
+        "digest": "7ab8b77073ecee0be5d6653287b3badff30b3738ec7edde1deaf322a77d50558",
+        "reserved": null,
+        "actual": 34866,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2116,
+          "cache_read_input_tokens": 31744,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1006
+        }
+      },
+      {
+        "id": "da746f49-e487-4754-9a9a-8a08d5d43495",
+        "session": "NIGHT",
+        "digest": "5dccf18bd4c68cc04d9174a860f266404cb108f23a6b2ccc9b0bbc631bc234b7",
+        "reserved": null,
+        "actual": 35004,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1121,
+          "cache_read_input_tokens": 33792,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 91
+        }
+      },
+      {
+        "id": "b6318562-6f51-4b2a-b84f-e9121f357c93",
+        "session": "NIGHT",
+        "digest": "f2d19478ed3ef24787c7b16dfe3af44a6062bed97fb32c1cc2567eb51a3d8349",
+        "reserved": null,
+        "actual": 35155,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 262,
+          "cache_read_input_tokens": 34816,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 77
+        }
+      },
+      {
+        "id": "77ec577a-a030-49ca-bbc3-20a9bc74dc12",
+        "session": "NIGHT",
+        "digest": "a414cea4873601ca086e04c6a19cacaba289976234a2f9cd3f16f040abe2bcef",
+        "reserved": null,
+        "actual": 35469,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 122,
+          "cache_read_input_tokens": 35072,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 275
+        }
+      },
+      {
+        "id": "d5b2d0cf-e5d2-45d5-b588-4b1db0fe16e7",
+        "session": "NIGHT",
+        "digest": "0edc3a1339fc3c3a77e702c8120514815716aa106c83da7a294a8bfababf505d",
+        "reserved": null,
+        "actual": 38970,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1095,
+          "cache_read_input_tokens": 35072,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2803
+        }
+      },
+      {
+        "id": "397a52b1-d465-4076-85d6-df77e4396f2c",
+        "session": "NIGHT",
+        "digest": "992bafd9bcb0817ae541c0d0750d5528919d2cafd7f9a3653cf7c157b9031500",
+        "reserved": null,
+        "actual": 42553,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3060,
+          "cache_read_input_tokens": 36096,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 3397
+        }
+      },
+      {
+        "id": "3671a043-3112-41b0-a9d3-60f5a9bf9b50",
+        "session": "NIGHT",
+        "digest": "bd9fb544ddc001ed089f5d74ee1e7f5671814149fb7ee6c88c353426d596422f",
+        "reserved": null,
+        "actual": 47865,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 3764,
+          "cache_read_input_tokens": 39040,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 5061
+        }
+      },
+      {
+        "id": "4f8e2064-c64d-404d-b766-5eabce73646e",
+        "session": "NIGHT",
+        "digest": "546b8fdad5ec84583428e4fe971add8e284dc2c21b3db3a20fb29da1caa19c80",
+        "reserved": null,
+        "actual": 48048,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5156,
+          "cache_read_input_tokens": 42752,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 140
+        }
+      },
+      {
+        "id": "3461eb5f-3181-4835-b822-1c4dc7795bb6",
+        "session": "NIGHT",
+        "digest": "8579b56b5edcf24e04da6e25ea306888fd134fac938830874e953f10ca174096",
+        "reserved": null,
+        "actual": 48156,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 218,
+          "cache_read_input_tokens": 47872,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 66
+        }
+      },
+      {
+        "id": "471ab358-a235-47c9-b990-4503a86487a0",
+        "session": "NIGHT",
+        "digest": "ed1d459f6a8153b5e63df8e39b6c3a0b4ad414255b1669cb8dec4393f095f4f8",
+        "reserved": null,
+        "actual": 55034,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 4531,
+          "cache_read_input_tokens": 48000,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2503
+        }
+      },
+      {
+        "id": "a09f38a5-4572-47bd-83dc-9e886d996ed1",
+        "session": "NIGHT",
+        "digest": "82a5167d7e58c13c368f7a86a13950a83f9aae4128d74e9cd0f734033ef6854d",
+        "reserved": null,
+        "actual": 55200,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 2597,
+          "cache_read_input_tokens": 52480,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 123
+        }
+      },
+      {
+        "id": "4369671d-2af9-4086-8eea-bfe19891b224",
+        "session": "NIGHT",
+        "digest": "d626459967e21ebbf7a2fb8723cdad2cd4b198c3a618ccb7cd4fa387b050149a",
+        "reserved": null,
+        "actual": 55474,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 345,
+          "cache_read_input_tokens": 55040,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 89
+        }
+      },
+      {
+        "id": "462ecfc4-358e-4946-9079-5f09a990b97e",
+        "session": "NIGHT",
+        "digest": "dfa4a875870618a0d09c04b02984f81c9e5a58fd6f519182dd88d0ab22145b4f",
+        "reserved": null,
+        "actual": 56006,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 266,
+          "cache_read_input_tokens": 55296,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 444
+        }
+      },
+      {
+        "id": "1eb4b9f1-d180-43c5-ab4d-59af21eb8f6b",
+        "session": "NIGHT",
+        "digest": "038a5a682498fcaecba397fd227d475d17ae8767fbcaf8fac13ba2847a0c5f7c",
+        "reserved": null,
+        "actual": 56258,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 499,
+          "cache_read_input_tokens": 55552,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 207
+        }
+      },
+      {
+        "id": "de9a1fee-01f8-46bf-b52b-56378f841c6e",
+        "session": "NIGHT",
+        "digest": "615ac76b0484d3faf6caff0e8b2b8058536c7b7ca02d10a256ca92b8802afd16",
+        "reserved": null,
+        "actual": 56707,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 400,
+          "cache_read_input_tokens": 55936,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 371
+        }
+      },
+      {
+        "id": "36f25f7f-2b12-4820-b952-d9b08741d55d",
+        "session": "NIGHT",
+        "digest": "acfe5d40912fd0699403affa0656b373d9f67fdd791a86495a90457571df3d3a",
+        "reserved": null,
+        "actual": 58661,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1355,
+          "cache_read_input_tokens": 56320,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 986
+        }
+      },
+      {
+        "id": "a2b0ea56-aaf4-4725-8f95-4bf552005fa5",
+        "session": "NIGHT",
+        "digest": "a93d9538df96fcee89964d87680044cd6b76d7885832b63c7927e3fa66eb3a7c",
+        "reserved": null,
+        "actual": 59715,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 1592,
+          "cache_read_input_tokens": 57600,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 523
+        }
+      },
+      {
+        "id": "0f5366ce-2712-427f-bc4a-2123ec44d79f",
+        "session": "NIGHT",
+        "digest": "32d88110d85e053ec5baeb0d9fab64773390800531fa4cf52dacdb7c28774505",
+        "reserved": null,
+        "actual": 65158,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 5433,
+          "cache_read_input_tokens": 59136,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 589
+        }
+      }
+    ],
+    "refusals": []
+  }
+}

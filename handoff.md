@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- Fleet 夜班场景已落地设计与本地宿主夹具。两种现场拥有同一初始 Git 提交与绿灯看板；第二班档案才区分终端重绘和正常抑制。预约台可以按具体方案 SHA 拒绝占用 Cedar 通道的回退。两条零付费回归通过。新场景尚无真实 Agent 样本，普通 DSH 的查询端口和候选回放资格留待接入。[设计与运行入口](docs/engineering/FLEET-NIGHT-SHIFT-DESIGN.md)
+- Fleet 夜班已接入普通 DSH 的档案查询和按 SHA 试排。四格 Mock 后完成重绘/抑制 × 开放协作/单 Principal 的真实配对。四条均取得可行试排、记录 `DELIVER`、自然退出。两个开放协作的 Principal 均独立完成，真实轨迹中没有同伴反例采纳。四份原回放均成功；翻转最后一个终端事件后，重绘单人组仍误报倒退。[报告与复算](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md)
 
 - 上一轮 gRPC 接续的确切提交 `e3f63313` 已送审 [PR #277](https://github.com/orangeofcarl0-sys/palimpsest/pull/277)，封存保留旧 Episode ID 的 `UNKNOWN`。接续开发位于 `codex/fleet-rollout-synthesis`。新场景从已接受服务衍生四站、两窗口的资源分配。三名 Mock 原生子会话交回各自测量，三项贡献被采纳；真实样本由单一 Principal 合成正确的两轮清单。14 笔请求均已对账，真实候选 `7c5cef3989b394b69191a43104c8fa8cdaa21bf2` 已提交供审。[场景、轨迹与复算](docs/engineering/FLEET-ROLLOUT-SYNTHESIS.md)
 
@@ -277,6 +277,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+夜班档案和按 SHA 试排的定向回归 3/3、计量与提供方回归 30/30、归因回归 8/8，TypeScript 构建通过。四格普通 DSH Mock 用 54 笔合成请求验证检查点、子会话、越界时序、旧 SHA 及预约冲突恢复，付费调用为零。各组的原始 DSH 流、结算、Git bundle 和以提交为输入的隔离回放可分别复算。[复算入口](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#复算)
+
 自主 gRPC 本地验证包括构建、架构及公共 API 检查、30 项检查器与项目语义单测、15 项归因与摘要回归、4 项 Workspace 浏览器测试和原生侧栏交互回归。封存含逐笔账本、压缩会话流、Git bundle、Work/Journal 快照和两个界面的读回结果。从归档新建本地项目的命令见[复算与恢复](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#离线复算和打开项目)。
 
 PR #275 的 15 个 CI job 和独立的 `commit-attribution` 状态首次全部通过。Linux 单测通过 5,112 项、跳过 33 项，浏览器 E2E 38/38，Windows Host Boundary 的四项验证全部通过。R0 的 D2、D4、D5 外部 DSH 执行及 D5 重复运行四个步骤按环境条件跳过。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/275/checks) · [主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44346795814) · [主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44346796036)
@@ -444,6 +446,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-19 夜班四格共 130/130 笔归因，fresh input 306,112、cache read 6,117,760、output 118,409，共 6,542,281 tokens。相加耗时 36 分 25.209 秒。每格使用独立新会话与账本，64 笔、30 分钟、240 秒单笔，金额与总 token 按量。四条试排的最终方案 blob 一致；宿主未签发生产批准。[逐会话用量、调用与版本](research-evidence/pnwf-software/2026-11-19/night-shift-pair/live-comparison.json)
+
 2026-11-19 自主 gRPC 样本沿用 OpenCode Go 和普通 DSH。修订 17 笔、504,260 tokens，接续 5 笔、81,552 tokens，共 22/22 笔归因、585,812 tokens。运行耗时合计 269.315 秒，批准等待与接纳操作另计。Mock 全程 11 笔合成请求，付费调用 0。[分析和复算命令](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md)
 
 ### 修复前按量记账
@@ -542,6 +546,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 ---
 
 ## 7. 已知未解决问题 / 建议下一步
+
+- 夜班的重绘单人回放把被抑制的旧读数也当成一次绘制。相反事件的隔离复算已经留档，候选保留原稿。两条自主组均未发起复核，这组观察还无法回答同伴会不会提出这个反例、接收方会不会修改交付物。[具体失败及其复算](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#重绘现场的单-principal)
 
 - gRPC 真实样本的贡献和采纳决定均为零。接续者成功查到核验日志，但 `explain` 直接查已重开的 Episode ID 返回 `UNKNOWN`，版本依据也出现在 Pulse 的 open questions 中。该条记录原类为 `REFERENCE_NOTE`，正式接受由 Work 事件 8 证明。[逐项读回](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#真实项目的接受与接续)
 

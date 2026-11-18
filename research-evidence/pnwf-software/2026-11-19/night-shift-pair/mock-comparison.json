@@ -1,0 +1,835 @@
+{
+  "mode": "mock",
+  "cases": [
+    {
+      "label": "redraw-auto",
+      "basis": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+      "draft": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03",
+      "head": "cf78823945f9f7ee3f40c17371488e6fcd824821",
+      "changed": [
+        "handover/proposal.json",
+        "handover/shift.md"
+      ],
+      "children": [
+        "63229489-90eb-4540-8afa-31449a47fb1b"
+      ],
+      "natural": true,
+      "requests": 15,
+      "unknown": 0,
+      "tokens": 927019,
+      "usage": {
+        "input_tokens": 924208,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2811
+      },
+      "usageByRole": {
+        "native-child": {
+          "requests": 3,
+          "input": 209135,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 398,
+          "total": 209533
+        },
+        "principal": {
+          "requests": 12,
+          "input": 715073,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 2413,
+          "total": 717486
+        }
+      },
+      "elapsedMs": 45499,
+      "bookingCount": 2,
+      "lastBooking": {
+        "commit": "cf78823945f9f7ee3f40c17371488e6fcd824821",
+        "proposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+        "booking": "feasible",
+        "reasons": [],
+        "productionApproval": "unissued"
+      },
+      "receiptMatchesFinalHead": true,
+      "finalProposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+      "receiptMatchesProposalBlob": true,
+      "traces": [
+        {
+          "id": "63229489-90eb-4540-8afa-31449a47fb1b",
+          "parent": "session-ac5e2b1b-100c-43af-9a33-b50babed5f2f",
+          "role": "native-child",
+          "collaborationTools": [
+            "subagent",
+            "subagent_fork",
+            "workflow"
+          ],
+          "calls": [
+            {
+              "seq": 16,
+              "id": "shift_5",
+              "tool": "fleet_desk",
+              "resultSeq": 17,
+              "offsetMs": 206,
+              "action": "request",
+              "topic": "terminal",
+              "ok": true
+            },
+            {
+              "seq": 22,
+              "id": "shift_6",
+              "tool": "bash",
+              "resultSeq": 25,
+              "offsetMs": 290,
+              "command": "mkdir -p .palimpsest && echo redrawn > .palimpsest/terminal-measurement"
+            }
+          ],
+          "counts": {
+            "steps": 3,
+            "turns": 1,
+            "toolCalls": 2,
+            "pairedToolResults": 2,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 1
+          }
+        },
+        {
+          "id": "session-ac5e2b1b-100c-43af-9a33-b50babed5f2f",
+          "parent": null,
+          "role": "principal",
+          "collaborationTools": [
+            "subagent",
+            "subagent_fork",
+            "workflow"
+          ],
+          "calls": [
+            {
+              "seq": 15,
+              "id": "shift_0",
+              "tool": "fleet_desk",
+              "resultSeq": 16,
+              "offsetMs": 1588,
+              "action": "request",
+              "topic": "terminal",
+              "ok": false,
+              "reason": "Archive a committed initial assessment first and use a catalog topic."
+            },
+            {
+              "seq": 21,
+              "id": "shift_1",
+              "tool": "bash",
+              "resultSeq": 24,
+              "offsetMs": 1690,
+              "command": "mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating globally.' > handover/shift.md && git add handover && git commit -qm 'Initial shift assessment' && git rev"
+            },
+            {
+              "seq": 29,
+              "id": "shift_2",
+              "tool": "fleet_desk",
+              "resultSeq": 30,
+              "offsetMs": 2506,
+              "action": "checkpoint",
+              "sha": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03",
+              "ok": true,
+              "commit": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03"
+            },
+            {
+              "seq": 35,
+              "id": "shift_3",
+              "tool": "subagent",
+              "resultSeq": 37,
+              "offsetMs": 2840,
+              "input": {
+                "description": "Check terminal replay",
+                "prompt": "Check whether the terminal evidence supports the initial duplicate-delivery diagnosis. Return a reproducible counterexample."
+              },
+              "reply": "started subagent 63229489-90eb-4540-8afa-31449a47fb1b"
+            },
+            {
+              "seq": 42,
+              "id": "shift_4",
+              "tool": "bash",
+              "resultSeq": 46,
+              "offsetMs": 2999,
+              "command": "for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .palimpsest/terminal-measurement"
+            },
+            {
+              "seq": 53,
+              "id": "shift_8",
+              "tool": "fleet_desk",
+              "resultSeq": 54,
+              "offsetMs": 4108,
+              "action": "request",
+              "topic": "reservation",
+              "ok": true
+            },
+            {
+              "seq": 59,
+              "id": "shift_9",
+              "tool": "bash",
+              "resultSeq": 62,
+              "offsetMs": 4182,
+              "command": "echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git commit -qm 'Try fallback' && git rev-parse HEAD"
+            },
+            {
+              "seq": 67,
+              "id": "shift_10",
+              "tool": "fleet_desk",
+              "resultSeq": 68,
+              "offsetMs": 4894,
+              "action": "rehearse",
+              "sha": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03",
+              "ok": false,
+              "reason": "Use the current full descendant SHA with a committed valid handover/proposal.json after checkpoint."
+            },
+            {
+              "seq": 73,
+              "id": "shift_11",
+              "tool": "fleet_desk",
+              "resultSeq": 74,
+              "offsetMs": 5029,
+              "action": "rehearse",
+              "sha": "ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0",
+              "ok": true,
+              "booking": "conflict",
+              "commit": "ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0"
+            },
+            {
+              "seq": 79,
+              "id": "shift_12",
+              "tool": "bash",
+              "resultSeq": 82,
+              "offsetMs": 5413,
+              "command": "echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains CAP-08. Owner decides.' >> handover/shift.md && echo '{\"startUtc\":\"06:10\",\"birch\":\"park\",\"cedar\":\"ove"
+            },
+            {
+              "seq": 87,
+              "id": "shift_13",
+              "tool": "fleet_desk",
+              "resultSeq": 88,
+              "offsetMs": 6129,
+              "action": "rehearse",
+              "sha": "cf78823945f9f7ee3f40c17371488e6fcd824821",
+              "ok": true,
+              "booking": "feasible",
+              "commit": "cf78823945f9f7ee3f40c17371488e6fcd824821"
+            }
+          ],
+          "counts": {
+            "steps": 12,
+            "turns": 1,
+            "toolCalls": 11,
+            "pairedToolResults": 11,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 4
+          }
+        }
+      ]
+    },
+    {
+      "label": "suppressed-solo",
+      "basis": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+      "draft": "84d9e20dc0fa6c18590d4f902cbb2edb582fb925",
+      "head": "f23b583c3476307988a15f9e55d8462b2705eeba",
+      "changed": [
+        "handover/proposal.json",
+        "handover/shift.md"
+      ],
+      "children": [],
+      "natural": true,
+      "requests": 12,
+      "unknown": 0,
+      "tokens": 606644,
+      "usage": {
+        "input_tokens": 604475,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2169
+      },
+      "usageByRole": {
+        "principal": {
+          "requests": 12,
+          "input": 604475,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 2169,
+          "total": 606644
+        }
+      },
+      "elapsedMs": 31994,
+      "bookingCount": 2,
+      "lastBooking": {
+        "commit": "f23b583c3476307988a15f9e55d8462b2705eeba",
+        "proposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+        "booking": "feasible",
+        "reasons": [],
+        "productionApproval": "unissued"
+      },
+      "receiptMatchesFinalHead": true,
+      "finalProposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+      "receiptMatchesProposalBlob": true,
+      "traces": [
+        {
+          "id": "session-27381430-ad10-4bda-b1e0-2e697b102a8e",
+          "parent": null,
+          "role": "principal",
+          "collaborationTools": [],
+          "calls": [
+            {
+              "seq": 15,
+              "id": "shift_0",
+              "tool": "fleet_desk",
+              "resultSeq": 16,
+              "offsetMs": 1564,
+              "action": "request",
+              "topic": "terminal",
+              "ok": false,
+              "reason": "Archive a committed initial assessment first and use a catalog topic."
+            },
+            {
+              "seq": 21,
+              "id": "shift_1",
+              "tool": "bash",
+              "resultSeq": 24,
+              "offsetMs": 1656,
+              "command": "mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating globally.' > handover/shift.md && git add handover && git commit -qm 'Initial shift assessment' && git rev"
+            },
+            {
+              "seq": 29,
+              "id": "shift_2",
+              "tool": "fleet_desk",
+              "resultSeq": 30,
+              "offsetMs": 2461,
+              "action": "checkpoint",
+              "sha": "84d9e20dc0fa6c18590d4f902cbb2edb582fb925",
+              "ok": true,
+              "commit": "84d9e20dc0fa6c18590d4f902cbb2edb582fb925"
+            },
+            {
+              "seq": 35,
+              "id": "shift_3",
+              "tool": "fleet_desk",
+              "resultSeq": 36,
+              "offsetMs": 2777,
+              "action": "request",
+              "topic": "terminal",
+              "ok": true
+            },
+            {
+              "seq": 41,
+              "id": "shift_4",
+              "tool": "bash",
+              "resultSeq": 44,
+              "offsetMs": 2856,
+              "command": "printf suppressed"
+            },
+            {
+              "seq": 49,
+              "id": "shift_5",
+              "tool": "fleet_desk",
+              "resultSeq": 50,
+              "offsetMs": 2941,
+              "action": "request",
+              "topic": "reservation",
+              "ok": true
+            },
+            {
+              "seq": 55,
+              "id": "shift_6",
+              "tool": "bash",
+              "resultSeq": 58,
+              "offsetMs": 3015,
+              "command": "echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git commit -qm 'Try fallback' && git rev-parse HEAD"
+            },
+            {
+              "seq": 63,
+              "id": "shift_7",
+              "tool": "fleet_desk",
+              "resultSeq": 64,
+              "offsetMs": 3723,
+              "action": "rehearse",
+              "sha": "84d9e20dc0fa6c18590d4f902cbb2edb582fb925",
+              "ok": false,
+              "reason": "Use the current full descendant SHA with a committed valid handover/proposal.json after checkpoint."
+            },
+            {
+              "seq": 69,
+              "id": "shift_8",
+              "tool": "fleet_desk",
+              "resultSeq": 70,
+              "offsetMs": 3852,
+              "action": "rehearse",
+              "sha": "1fd29378fda96868c439110749832f2cd179c729",
+              "ok": true,
+              "booking": "conflict",
+              "commit": "1fd29378fda96868c439110749832f2cd179c729"
+            },
+            {
+              "seq": 75,
+              "id": "shift_9",
+              "tool": "bash",
+              "resultSeq": 78,
+              "offsetMs": 4226,
+              "command": "echo 'p17 retry suppressed; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains CAP-08. Owner decides.' >> handover/shift.md && echo '{\"startUtc\":\"06:10\",\"birch\":\"park\",\"cedar\":\""
+            },
+            {
+              "seq": 83,
+              "id": "shift_10",
+              "tool": "fleet_desk",
+              "resultSeq": 84,
+              "offsetMs": 4954,
+              "action": "rehearse",
+              "sha": "f23b583c3476307988a15f9e55d8462b2705eeba",
+              "ok": true,
+              "booking": "feasible",
+              "commit": "f23b583c3476307988a15f9e55d8462b2705eeba"
+            }
+          ],
+          "counts": {
+            "steps": 12,
+            "turns": 1,
+            "toolCalls": 11,
+            "pairedToolResults": 11,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 4
+          }
+        }
+      ]
+    },
+    {
+      "label": "redraw-solo",
+      "basis": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+      "draft": "1b86358047f0c6849742a60328608652fd41e11d",
+      "head": "d604b1a69b976383899d822477e8cb90458701fd",
+      "changed": [
+        "handover/proposal.json",
+        "handover/shift.md"
+      ],
+      "children": [],
+      "natural": true,
+      "requests": 12,
+      "unknown": 0,
+      "tokens": 606551,
+      "usage": {
+        "input_tokens": 604388,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2163
+      },
+      "usageByRole": {
+        "principal": {
+          "requests": 12,
+          "input": 604388,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 2163,
+          "total": 606551
+        }
+      },
+      "elapsedMs": 30803,
+      "bookingCount": 2,
+      "lastBooking": {
+        "commit": "d604b1a69b976383899d822477e8cb90458701fd",
+        "proposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+        "booking": "feasible",
+        "reasons": [],
+        "productionApproval": "unissued"
+      },
+      "receiptMatchesFinalHead": true,
+      "finalProposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+      "receiptMatchesProposalBlob": true,
+      "traces": [
+        {
+          "id": "session-31aefe45-5b7d-4a60-9dec-9c7435615ff3",
+          "parent": null,
+          "role": "principal",
+          "collaborationTools": [],
+          "calls": [
+            {
+              "seq": 15,
+              "id": "shift_0",
+              "tool": "fleet_desk",
+              "resultSeq": 16,
+              "offsetMs": 1410,
+              "action": "request",
+              "topic": "terminal",
+              "ok": false,
+              "reason": "Archive a committed initial assessment first and use a catalog topic."
+            },
+            {
+              "seq": 21,
+              "id": "shift_1",
+              "tool": "bash",
+              "resultSeq": 24,
+              "offsetMs": 1499,
+              "command": "mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating globally.' > handover/shift.md && git add handover && git commit -qm 'Initial shift assessment' && git rev"
+            },
+            {
+              "seq": 29,
+              "id": "shift_2",
+              "tool": "fleet_desk",
+              "resultSeq": 30,
+              "offsetMs": 2267,
+              "action": "checkpoint",
+              "sha": "1b86358047f0c6849742a60328608652fd41e11d",
+              "ok": true,
+              "commit": "1b86358047f0c6849742a60328608652fd41e11d"
+            },
+            {
+              "seq": 35,
+              "id": "shift_3",
+              "tool": "fleet_desk",
+              "resultSeq": 36,
+              "offsetMs": 2565,
+              "action": "request",
+              "topic": "terminal",
+              "ok": true
+            },
+            {
+              "seq": 41,
+              "id": "shift_4",
+              "tool": "bash",
+              "resultSeq": 44,
+              "offsetMs": 2647,
+              "command": "printf redrawn"
+            },
+            {
+              "seq": 49,
+              "id": "shift_5",
+              "tool": "fleet_desk",
+              "resultSeq": 50,
+              "offsetMs": 2733,
+              "action": "request",
+              "topic": "reservation",
+              "ok": true
+            },
+            {
+              "seq": 55,
+              "id": "shift_6",
+              "tool": "bash",
+              "resultSeq": 58,
+              "offsetMs": 2812,
+              "command": "echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git commit -qm 'Try fallback' && git rev-parse HEAD"
+            },
+            {
+              "seq": 63,
+              "id": "shift_7",
+              "tool": "fleet_desk",
+              "resultSeq": 64,
+              "offsetMs": 3509,
+              "action": "rehearse",
+              "sha": "1b86358047f0c6849742a60328608652fd41e11d",
+              "ok": false,
+              "reason": "Use the current full descendant SHA with a committed valid handover/proposal.json after checkpoint."
+            },
+            {
+              "seq": 69,
+              "id": "shift_8",
+              "tool": "fleet_desk",
+              "resultSeq": 70,
+              "offsetMs": 3636,
+              "action": "rehearse",
+              "sha": "933d1c6810e8df26c80d20f1467e1f70d0deba33",
+              "ok": true,
+              "booking": "conflict",
+              "commit": "933d1c6810e8df26c80d20f1467e1f70d0deba33"
+            },
+            {
+              "seq": 75,
+              "id": "shift_9",
+              "tool": "bash",
+              "resultSeq": 78,
+              "offsetMs": 3988,
+              "command": "echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains CAP-08. Owner decides.' >> handover/shift.md && echo '{\"startUtc\":\"06:10\",\"birch\":\"park\",\"cedar\":\"ove"
+            },
+            {
+              "seq": 83,
+              "id": "shift_10",
+              "tool": "fleet_desk",
+              "resultSeq": 84,
+              "offsetMs": 4706,
+              "action": "rehearse",
+              "sha": "d604b1a69b976383899d822477e8cb90458701fd",
+              "ok": true,
+              "booking": "feasible",
+              "commit": "d604b1a69b976383899d822477e8cb90458701fd"
+            }
+          ],
+          "counts": {
+            "steps": 12,
+            "turns": 1,
+            "toolCalls": 11,
+            "pairedToolResults": 11,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 4
+          }
+        }
+      ]
+    },
+    {
+      "label": "suppressed-auto",
+      "basis": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+      "draft": "907b912414825fba1a386f60fd0dea921dc83886",
+      "head": "667f20e425402f5a2df04e0c5f5f13ed5556e4bd",
+      "changed": [
+        "handover/proposal.json",
+        "handover/shift.md"
+      ],
+      "children": [
+        "beb15885-b444-42df-a929-844d8f2d1bdd"
+      ],
+      "natural": true,
+      "requests": 15,
+      "unknown": 0,
+      "tokens": 927124,
+      "usage": {
+        "input_tokens": 924304,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2820
+      },
+      "usageByRole": {
+        "native-child": {
+          "requests": 3,
+          "input": 209156,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 404,
+          "total": 209560
+        },
+        "principal": {
+          "requests": 12,
+          "input": 715148,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 2416,
+          "total": 717564
+        }
+      },
+      "elapsedMs": 32460,
+      "bookingCount": 2,
+      "lastBooking": {
+        "commit": "667f20e425402f5a2df04e0c5f5f13ed5556e4bd",
+        "proposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+        "booking": "feasible",
+        "reasons": [],
+        "productionApproval": "unissued"
+      },
+      "receiptMatchesFinalHead": true,
+      "finalProposalBlob": "f6dc59a7aa1f5c72f56718beec220fdf8dc6c619",
+      "receiptMatchesProposalBlob": true,
+      "traces": [
+        {
+          "id": "beb15885-b444-42df-a929-844d8f2d1bdd",
+          "parent": "session-b9b9f64d-8df4-4462-9fcc-f92e065f8f64",
+          "role": "native-child",
+          "collaborationTools": [
+            "subagent",
+            "subagent_fork",
+            "workflow"
+          ],
+          "calls": [
+            {
+              "seq": 16,
+              "id": "shift_5",
+              "tool": "fleet_desk",
+              "resultSeq": 17,
+              "offsetMs": 198,
+              "action": "request",
+              "topic": "terminal",
+              "ok": true
+            },
+            {
+              "seq": 22,
+              "id": "shift_6",
+              "tool": "bash",
+              "resultSeq": 25,
+              "offsetMs": 280,
+              "command": "mkdir -p .palimpsest && echo suppressed > .palimpsest/terminal-measurement"
+            }
+          ],
+          "counts": {
+            "steps": 3,
+            "turns": 1,
+            "toolCalls": 2,
+            "pairedToolResults": 2,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 1
+          }
+        },
+        {
+          "id": "session-b9b9f64d-8df4-4462-9fcc-f92e065f8f64",
+          "parent": null,
+          "role": "principal",
+          "collaborationTools": [
+            "subagent",
+            "subagent_fork",
+            "workflow"
+          ],
+          "calls": [
+            {
+              "seq": 15,
+              "id": "shift_0",
+              "tool": "fleet_desk",
+              "resultSeq": 16,
+              "offsetMs": 1599,
+              "action": "request",
+              "topic": "terminal",
+              "ok": false,
+              "reason": "Archive a committed initial assessment first and use a catalog topic."
+            },
+            {
+              "seq": 21,
+              "id": "shift_1",
+              "tool": "bash",
+              "resultSeq": 24,
+              "offsetMs": 1697,
+              "command": "mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating globally.' > handover/shift.md && git add handover && git commit -qm 'Initial shift assessment' && git rev"
+            },
+            {
+              "seq": 29,
+              "id": "shift_2",
+              "tool": "fleet_desk",
+              "resultSeq": 30,
+              "offsetMs": 2493,
+              "action": "checkpoint",
+              "sha": "907b912414825fba1a386f60fd0dea921dc83886",
+              "ok": true,
+              "commit": "907b912414825fba1a386f60fd0dea921dc83886"
+            },
+            {
+              "seq": 35,
+              "id": "shift_3",
+              "tool": "subagent",
+              "resultSeq": 37,
+              "offsetMs": 2818,
+              "input": {
+                "description": "Check terminal replay",
+                "prompt": "Check whether the terminal evidence supports the initial duplicate-delivery diagnosis. Return a reproducible counterexample."
+              },
+              "reply": "started subagent beb15885-b444-42df-a929-844d8f2d1bdd"
+            },
+            {
+              "seq": 42,
+              "id": "shift_4",
+              "tool": "bash",
+              "resultSeq": 46,
+              "offsetMs": 2972,
+              "command": "for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .palimpsest/terminal-measurement"
+            },
+            {
+              "seq": 53,
+              "id": "shift_8",
+              "tool": "fleet_desk",
+              "resultSeq": 54,
+              "offsetMs": 4072,
+              "action": "request",
+              "topic": "reservation",
+              "ok": true
+            },
+            {
+              "seq": 59,
+              "id": "shift_9",
+              "tool": "bash",
+              "resultSeq": 62,
+              "offsetMs": 4145,
+              "command": "echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git commit -qm 'Try fallback' && git rev-parse HEAD"
+            },
+            {
+              "seq": 67,
+              "id": "shift_10",
+              "tool": "fleet_desk",
+              "resultSeq": 68,
+              "offsetMs": 4836,
+              "action": "rehearse",
+              "sha": "907b912414825fba1a386f60fd0dea921dc83886",
+              "ok": false,
+              "reason": "Use the current full descendant SHA with a committed valid handover/proposal.json after checkpoint."
+            },
+            {
+              "seq": 73,
+              "id": "shift_11",
+              "tool": "fleet_desk",
+              "resultSeq": 74,
+              "offsetMs": 4961,
+              "action": "rehearse",
+              "sha": "4ccd7a09150d4ca3ca058b0ad3a5eedd0081409e",
+              "ok": true,
+              "booking": "conflict",
+              "commit": "4ccd7a09150d4ca3ca058b0ad3a5eedd0081409e"
+            },
+            {
+              "seq": 79,
+              "id": "shift_12",
+              "tool": "bash",
+              "resultSeq": 82,
+              "offsetMs": 5319,
+              "command": "echo 'p17 retry suppressed; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains CAP-08. Owner decides.' >> handover/shift.md && echo '{\"startUtc\":\"06:10\",\"birch\":\"park\",\"cedar\":\""
+            },
+            {
+              "seq": 87,
+              "id": "shift_13",
+              "tool": "fleet_desk",
+              "resultSeq": 88,
+              "offsetMs": 6032,
+              "action": "rehearse",
+              "sha": "667f20e425402f5a2df04e0c5f5f13ed5556e4bd",
+              "ok": true,
+              "booking": "feasible",
+              "commit": "667f20e425402f5a2df04e0c5f5f13ed5556e4bd"
+            }
+          ],
+          "counts": {
+            "steps": 12,
+            "turns": 1,
+            "toolCalls": 11,
+            "pairedToolResults": 11,
+            "unpairedToolResults": 0,
+            "toolErrors": 0,
+            "jobFailures": 0,
+            "domainRefusals": 0,
+            "repeatedRefusals": 0,
+            "noProgressToolCalls": 0,
+            "stateQueries": 0,
+            "commits": 0,
+            "jobs": 4
+          }
+        }
+      ]
+    }
+  ]
+}

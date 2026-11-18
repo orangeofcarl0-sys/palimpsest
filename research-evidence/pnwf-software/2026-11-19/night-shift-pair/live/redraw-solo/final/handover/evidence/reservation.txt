@@ -1,0 +1,1 @@
+Ticket CAP-08 / signed 22:19Z. Cedar has the only REST overflow lane from 06:00 to 06:30Z. No second lane has been commissioned. A hold may park an affected pilot without moving traffic to REST. Release owner can change a booking after talking to Cedar; the request has not been made. No field authority has accepted a production switch.

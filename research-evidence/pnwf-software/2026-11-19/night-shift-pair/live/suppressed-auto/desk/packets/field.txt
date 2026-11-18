@@ -1,0 +1,1 @@
+Desk B / addendum 22:25Z. B-12 wall clock uses UTC+01 and was 52 seconds fast at 22:10Z (uncertainty ±12 s). Notebook times were rounded to the minute. The reporter remembers a number that looked like a sequence. Cannot establish whether the board was p17 or the adjacent simulator. B-13 uploader was unplugged for the whole rehearsal. Its screen retained no local recording.
