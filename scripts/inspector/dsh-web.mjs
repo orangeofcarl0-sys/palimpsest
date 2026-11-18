@@ -89,14 +89,23 @@ try {
     await stopped;
   } else {
     const { chromium } = await import('@playwright/test');
+    const captures = arg('screenshots');
+    if (captures) mkdirSync(resolve(captures), { recursive: true });
+    const snapshot = async (surface, filename) => {
+      if (captures) await surface.screenshot({ path: join(resolve(captures), filename + '.png'), animations: 'disabled' });
+    };
     const fixture = action => JSON.parse(execFileSync(process.execPath,
       [join(repo, 'scripts/inspector/work-fixture.mjs'), deployment, action],
       { cwd: home, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'inherit'] }));
     const unauthenticated = await fetch(new URL('/api/palimpsest/inspector?view=live', address));
     assert.ok([401, 403].includes(unauthenticated.status), 'a browser without the owner credential must be refused');
     browser = await chromium.launch();
-    page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
-    page.on('pageerror', e => { logs += '\nBrowser: ' + e.message; });
+    page = await browser.newPage({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark', locale: 'zh-CN' });
+    const pageErrors = [];
+    page.on('pageerror', e => { pageErrors.push(e.message); logs += '\nBrowser: ' + e.message; });
+    page.on('console', m => {
+      if (m.type() === 'error' && /same key|unique "key"/i.test(m.text())) pageErrors.push(m.text());
+    });
     await page.goto(address);
     const panel = page.getByRole('button', { name: 'Palimpsest', exact: true });
     const intro = page.getByRole('button', { name: /^(继续|Continue)$/ });
@@ -111,8 +120,40 @@ try {
     const attemptId = fixture('claim');
     await surface.getByRole('button', { name: /返回实时 \+[1-9]/ }).waitFor();
     assert.equal(await surface.locator('.pi-graph').textContent(), state);
+    await snapshot(surface, 'pinned-dark');
     await surface.getByRole('button', { name: /返回实时/ }).click();
     await surface.getByRole('button', { name: /执行尝试 .*RUNNING/ }).waitFor();
+    const edgeCount = await surface.locator('.pi-link').count();
+    assert.match(await surface.locator('.pi-count').innerText(), new RegExp(edgeCount + ' 条关系$'));
+    await snapshot(surface, 'live-dark');
+    const reading = surface.getByRole('button', { name: /任务 核对现场读数/ });
+    const project = surface.getByRole('button', { name: /^项目 inspect-test/ });
+    await reading.hover();
+    assert.ok(await surface.locator('.pi-link.pi-hot').count() > 0);
+    assert.ok(await surface.locator('.pi-link.pi-distant').count() > 0);
+    await reading.click();
+    const incident = await surface.locator('.pi-link.pi-hot').evaluateAll(nodes => nodes.map(n => n.getAttribute('aria-label')));
+    await project.hover();
+    assert.deepEqual(await surface.locator('.pi-link.pi-hot').evaluateAll(nodes => nodes.map(n => n.getAttribute('aria-label'))), incident);
+    await surface.getByRole('button', { name: '相邻关系', exact: true }).click();
+    assert.equal(await project.count(), 0);
+    await surface.getByRole('button', { name: '相邻关系', exact: true }).click();
+    assert.equal(await surface.locator('.pi-link').count(), edgeCount, 'showing all neighbors again must not leave stale SVG paths');
+    await snapshot(surface, 'focus-dark');
+    if (captures) await page.screenshot({ path: join(resolve(captures), 'dsh-desktop.png'), animations: 'disabled' });
+    await surface.locator('.pi-link.pi-hot').first().press('Enter');
+    await surface.getByRole('complementary', { name: '对象检查' }).getByText('起点', { exact: true }).waitFor();
+    const search = surface.getByRole('searchbox', { name: '查找对象' });
+    await surface.locator('.pi-surface').focus();
+    await page.keyboard.press('/');
+    assert.equal(await search.evaluate(el => el === document.activeElement), true);
+    await search.fill('两座站点');
+    await search.press('Enter');
+    await surface.getByRole('complementary', { name: '对象检查' }).getByRole('heading', { name: /两座站点/ }).waitFor();
+    await search.fill('does-not-match-any-object');
+    await surface.getByText('没有匹配对象', { exact: true }).waitFor();
+    await search.press('Escape');
+    await surface.getByRole('button', { name: '关闭对象检查' }).click();
     await surface.getByRole('button', { name: 'Work 事件' }).click();
     await surface.getByRole('button', { name: /#1\s.*PROJECT_CREATED/ }).click();
     await surface.getByText('Work 账本重建 · #1', { exact: true }).waitFor();
@@ -120,10 +161,33 @@ try {
     await surface.getByRole('button', { name: /返回实时/ }).click();
     await surface.getByRole('button', { name: /执行尝试 .*RUNNING/ }).click();
     await surface.getByRole('complementary', { name: '对象检查' }).getByText(attemptId, { exact: true }).first().waitFor();
+    await snapshot(surface, 'detail-dark');
     const tail = fixture('tail');
+    const canvasColor = () => surface.locator('.pi-surface').evaluate(el => getComputedStyle(el).backgroundColor);
+    const dark = await canvasColor();
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.waitForFunction(() => document.documentElement.style.colorScheme === 'light');
+    assert.notEqual(await canvasColor(), dark, 'the inspector must follow the actual DSH appearance');
+    await snapshot(surface, 'detail-light');
+    await surface.getByRole('button', { name: '关闭对象检查' }).click();
+    await surface.getByRole('button', { name: '现场观察', exact: true }).click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    const canvas = surface.locator('.pi-surface');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.pi-surface');
+      return el && el.clientWidth < 500 && el.scrollWidth <= el.clientWidth + 1;
+    });
+    const roots = await surface.locator('.pi-node').evaluateAll(nodes => nodes.map(n => n.transform.baseVal.getItem(0).matrix.e));
+    assert.equal(new Set(roots).size, 2, 'the narrow canvas must fit two columns');
+    assert.equal(await surface.locator('.pi-link').count(), edgeCount, 'resizing and history navigation must draw each current edge exactly once');
+    await surface.getByRole('button', { name: '放大关系图' }).click();
+    assert.ok(await canvas.evaluate(el => el.scrollWidth > el.clientWidth));
+    await surface.getByRole('button', { name: '重置缩放' }).click();
+    await snapshot(surface, 'narrow-light');
     await sleep(2000);
     assert.deepEqual(fixture('tail'), tail);
-    console.log('PASS · native sidebar, live Work update, pinned graph, catch-up, historical cut, identity inspection and read-only polling.');
+    assert.deepEqual(pageErrors, []);
+    console.log('PASS · native sidebar, read-only history, focus and search, two DSH appearances and narrow layout.');
   }
 } catch (error) {
   console.error('Inspector:', error.message);
