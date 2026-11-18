@@ -1,0 +1,1429 @@
+{
+  "mode": "paid-usage-only",
+  "seal": {
+    "release": "a0daba3c4f43f91fe5ab92b1a0bad94c5d2dfee1",
+    "basis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+    "model": "deepseek-v4.1-flash",
+    "dsh": "0.2.1-rc.5",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "mainBase": "fdda682e1fd03071a3c4770f511d248df027a689",
+    "provider": "opencode-go",
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "providerProbeSha256": "039324da18caf0f9d11c06484eac36c4105ce1d9d29e12140e1284059099074a",
+    "promptSha256": "74e3815e25630dd20d78de8e13714b283e60d2183e2cd2a9b807c256107f3641",
+    "scoreSchema": "pnwf-grpc-review-semantics/v2",
+    "legacyScorerSha256": "8fe80e8f52378c4492a5e43a77312786de2cd93500d216eafc75f9700f3b94b5",
+    "files": {
+      "revision/review-t3.mjs": "4e02f305b40114f6df16829385f4f657fb6979631bede05346e71900e680e759",
+      "software/contract.mjs": "16e42f5594c9966183d16ac7f0b4a8cf6442ba905c572651601a07719b6265f3",
+      "software/review-score.mjs": "252139f7cadd72dd1b757a762571ebe81f7a9646f29151ceb6493cccf3d91a67",
+      "software/mock.mjs": "1ccb71352a88c07451ed0aebcc5518f5d4c0d4e738348ec71fb6a5299a1a4f3a",
+      "software/run.mjs": "7936a3da11eabf196a2bd003fbc202ab618c20cec66e6a4c52ae97e38aac862e",
+      "software/product-entry.mjs": "b9f1b5ba857ea604107555056d5b35d7452b4331b2c9cc482d64f0ed3b8a2871",
+      "container_adapter.mjs": "a0df9ed25b1a33f3e6e4012be34af52518b2fced570a6f9b8233a7b3e886861b",
+      "container_runtime.mjs": "dfe511193a96bec855a5878be75805e043344a9b3c88d482bdd71ab6997b4976",
+      "bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+      "execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "opencode_go.mjs": "ef03d6053c21b391ff216748513dbce3a10779a8dddab58c1d1d2370dc000b9b",
+      "analyze_energy_trajectory.mjs": "68ef35e9bdace94ba7dd5c39f687688847c3cf773eba5104499e1f827c36f12d"
+    },
+    "originalAcceptanceSha256": "88e1af09f04bc383d14cb415dde35ffc3453783a3ace8acfffa315aebbcaa48f",
+    "previousResultSha256": "2108321dac0f5883dc49fbb670ab1f0703b6af2b711ab3251cc59135d1f5879b"
+  },
+  "basis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+  "cohortId": "software-t3-review-743cedf4-1107-4dfb-b2d3-1163f66864eb",
+  "acceptance": {
+    "kind": "GOVERNED_PROMOTION",
+    "approvedCandidate": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+    "approvedHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+    "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+    "promotion": {
+      "promotionId": "promotion-34fa933109fc3261015f35b8370c0e40",
+      "committed": {
+        "schema_version": 1,
+        "project_id": "grpc-migration-continuation",
+        "event_type": "PROMOTION_COMMITTED",
+        "payload_version": 1,
+        "entity_type": "promotion",
+        "entity_id": "promotion-34fa933109fc3261015f35b8370c0e40",
+        "payload": {
+          "promotion_id": "promotion-34fa933109fc3261015f35b8370c0e40",
+          "attempt_id": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+          "source_commit": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+          "expected_head_commit": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+          "resulting_head_commit": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+          "reason": "promoted via Ordarium git.promote",
+          "operation_id": "op_ec004f3b92124bde55aa298dc55a1578d57d449f",
+          "outcome_basis": "invoke_result",
+          "outcome_digest": "62b0c39d55fd14631be2315d5ae686b097e77440b479303c747369c4f0ee0044"
+        },
+        "causation_id": null,
+        "correlation_id": "promotion:promotion-34fa933109fc3261015f35b8370c0e40",
+        "idempotency_key": "daf33c3c642a433aad5ba3d978ff88708718d86d37c8092f5fe177207c00a556",
+        "expected_project_revision": 2,
+        "event_id": 19,
+        "project_sequence": 19,
+        "request_digest": "f4c7012a3f21e3c49d4e3cd85a278964b43e2ecf4f32f2de67aff8df649bd79b",
+        "previous_event_digest": "6d09cff4536b3401c5789e2198c03084ca828a6e00837e96f9c34b25dd533292",
+        "event_digest": "b756e6dc4e6da7b6b550baa7093eaea5307c59438fb63d773cfdc56494161992",
+        "committed_at": "2026-11-10T13:58:04.419000Z"
+      },
+      "resultingHeadCommit": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "actor": "operator:software-project-owner",
+      "approved": "be05447e061a23157ed04e3ee4b27ec7f571e94e",
+      "basis": "fbeb8958f4405688b13f37dbdec330157a660ab0",
+      "attemptId": "attempt-50afeb5d5bdea0421a8ad97588a05c46",
+      "receiptId": "f4821e6335b402d4c1cd52e568eec8fc0250eb4cf562562d25bdedf73e55bb77",
+      "tree": "99c40069ae834cf71618e2a142010f10bef0df06",
+      "recordedAt": "2026-11-10T13:58:05.499Z"
+    }
+  },
+  "passed": false,
+  "usageKnown": true,
+  "semanticScore": {
+    "commit": "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+    "tree": "7ebaba38e9bd0b6cb99617500c036d504457d84a",
+    "changedPaths": [
+      "MIGRATION-REVIEW.md"
+    ],
+    "reviewSha256": "42d78d9b26700a679a999e04ce669f4b972000b6fcfb131abc79df2bd22b439e",
+    "schema": "pnwf-grpc-review-semantics/v2",
+    "passed": false,
+    "checks": [
+      {
+        "id": "ACCEPTED_HEAD",
+        "passed": true,
+        "evidence": "4639ae44d78e7c1f9f5269876fa333a99bff770f"
+      },
+      {
+        "id": "FLEET_CORRECTION_PATH",
+        "passed": true,
+        "evidence": "updates/2026-11-10/fleet-default-limit.md"
+      },
+      {
+        "id": "OLD_ZERO_AND_OMITTED_EMPTY",
+        "passed": true,
+        "evidence": "| Request form | First-release behavior | Accepted behavior at HEAD |\n| **Supplied limit of zero** (`limit` field present, value `0`) | Empty stream: no Reading frames, followed by `grpc-status: 0`. | The first three available readings in source order, or fewer if the site has fewer; `grpc-status: 0`. |\n| **Absent limit** (`limit` field omitted, decoded as `0`) | Empty stream: no Reading frames, followed by `grpc-status: 0`. | The first three available readings in source order, or fewer if the site has fewer; `grpc-status: 0`. |"
+      },
+      {
+        "id": "NEW_ZERO_AND_OMITTED_FIRST_THREE",
+        "passed": false,
+        "evidence": null,
+        "detail": "State that both forms now return the first three available readings."
+      },
+      {
+        "id": "SOURCE_ORDER",
+        "passed": true,
+        "evidence": "The correction requires the Fleet consumer's zero or omitted StreamReadings limit to request the first three available readings in source order."
+      },
+      {
+        "id": "ONE_READING_PER_FRAME",
+        "passed": true,
+        "evidence": "- One Reading per gRPC message frame: StreamReadings sends each Reading in its own gRPC message frame, each with the five-byte frame header (compression flag plus big-endian message length)."
+      },
+      {
+        "id": "POSITIVE_LIMITS",
+        "passed": true,
+        "evidence": "- Positive limits: A positive limit still selects readings.slice(0, limit)."
+      },
+      {
+        "id": "UNARY_GET_READING",
+        "passed": true,
+        "evidence": "- Unary GetReading: Still accepts exactly one GetReadingRequest frame and returns exactly one Reading frame."
+      },
+      {
+        "id": "UNKNOWN_SITE_NOT_FOUND",
+        "passed": true,
+        "evidence": "- Unknown-site errors: Both GetReading and StreamReadings still return gRPC NOT_FOUND (grpc-status: 5, message unknown_site) for an unknown site."
+      },
+      {
+        "id": "PROTO_FIELD_NUMBERS",
+        "passed": true,
+        "evidence": "- Protobuf field numbers: The committed wire contract remains stable: GetReadingRequest.site_id = 1"
+      },
+      {
+        "id": "REST_COMPATIBILITY",
+        "passed": true,
+        "evidence": "- Source ordering: StreamReadings returns readings in the same source order as the REST list, selecting a prefix of that ordered sequence."
+      },
+      {
+        "id": "PUBLIC_TESTS_PASSED",
+        "passed": true,
+        "evidence": "- node --test — passed: 18 tests, 18 pass, 0 fail, 0 cancelled, 0 skipped (about 365 ms)."
+      }
+    ]
+  },
+  "legacyCrossScore": {
+    "passed": false,
+    "reason": "SOFTWARE_REVIEW_MISSING one Reading per frame"
+  },
+  "checks": {
+    "accepted": true,
+    "naturalExit": true,
+    "persisted": true,
+    "artifactsPresent": true,
+    "onlyReview": true,
+    "noNewWork": true
+  },
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "software-t3-review-743cedf4-1107-4dfb-b2d3-1163f66864eb",
+    "sessionId": "T3",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-grpc-t3-opencode-v2-20261118-152155-a9b1b9\\live\\P\\T3\\stages\\T3\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-grpc-t3-opencode-v2-20261118-152155-a9b1b9\\live\\P\\T3\\runtime-T3",
+    "principalRuntime": "container",
+    "containerId": "1eb3287ec2ca9d506fc0b023d9f8144a6b22cbcb568340ea27651139f05d563c",
+    "qualification": "c6bec4b16d518dd072f86fdc23b6f0b7502df19e8dcb0748d954e728d14f30c8",
+    "startedAt": "2026-11-18T07:27:04.640Z",
+    "endedAt": "2026-11-18T07:29:31.690Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "software-t3-review-743cedf4-1107-4dfb-b2d3-1163f66864eb",
+      "sessionId": "T3",
+      "observedAt": "2026-11-18T07:29:31.690Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 371181,
+      "confirmedTokens": 371181,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 13,
+    "paidModelCalls": 13
+  },
+  "current": "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+  "changedPaths": [
+    "MIGRATION-REVIEW.md"
+  ],
+  "conclusion": "DELIVER",
+  "review": {
+    "commit": "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+    "blob": "1137d4b9a653b636b833fdc041a540e787ea54ea",
+    "sha256": "42d78d9b26700a679a999e04ce669f4b972000b6fcfb131abc79df2bd22b439e"
+  },
+  "deliveryReceipt": {
+    "id": "episode-5b924880aa5fa2dfea4daa7a",
+    "episodeBasis": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "artifacts": [
+      {
+        "path": "MIGRATION-REVIEW.md",
+        "present": true,
+        "tracked": true,
+        "committed": true,
+        "digest": "42d78d9b26700a679a999e04ce669f4b972000b6fcfb131abc79df2bd22b439e",
+        "source": "WORKTREE",
+        "commit": "ccb07d36f14e059d537892fed8c4ed4cd4413cf2",
+        "detail": "committed at HEAD"
+      }
+    ]
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-54199746-c1b9-4c1a-bf40-fcf5d76b64f5",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 13,
+    "knownTokens": 371181,
+    "totalTokens": 371181,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 39634,
+      "cache_read_input_tokens": 325376,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 6171
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 13,
+        "input": 39634,
+        "cacheRead": 325376,
+        "cacheWrite": 0,
+        "output": 6171,
+        "total": 371181
+      }
+    },
+    "traceTotal": 371181,
+    "traceRequests": 13,
+    "workerRequests": 0,
+    "elapsedMs": 147050,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-54199746-c1b9-4c1a-bf40-fcf5d76b64f5",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "d5d5c28c171a7731e7291a602562cbd4cb65876cf83c96d2349877b66821b376",
+        "counts": {
+          "steps": 13,
+          "turns": 1,
+          "toolCalls": 25,
+          "pairedToolResults": 25,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 11
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1794986860124,
+            "messageId": "420d4baf-03c0-433c-ae97-51f98b7a06d6",
+            "usage": {
+              "inputTokens": 10723,
+              "outputTokens": 126,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10849
+            }
+          },
+          {
+            "seq": 24,
+            "at": 1794986868410,
+            "messageId": "e453bdf0-2097-433e-ad63-e4aa296b3c49",
+            "usage": {
+              "inputTokens": 4169,
+              "outputTokens": 219,
+              "cacheReadTokens": 10624,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15012
+            }
+          },
+          {
+            "seq": 38,
+            "at": 1794986873171,
+            "messageId": "313ef75a-1274-43ed-9681-aeb89e8ba33b",
+            "usage": {
+              "inputTokens": 2805,
+              "outputTokens": 246,
+              "cacheReadTokens": 14720,
+              "cacheWriteTokens": 0,
+              "totalTokens": 17771
+            }
+          },
+          {
+            "seq": 52,
+            "at": 1794986880241,
+            "messageId": "14db10d9-853b-487e-aa89-fa222ebf02d1",
+            "usage": {
+              "inputTokens": 4387,
+              "outputTokens": 431,
+              "cacheReadTokens": 17408,
+              "cacheWriteTokens": 0,
+              "totalTokens": 22226
+            }
+          },
+          {
+            "seq": 66,
+            "at": 1794986888132,
+            "messageId": "71010706-2c1f-4a31-acab-06a26380334c",
+            "usage": {
+              "inputTokens": 6631,
+              "outputTokens": 443,
+              "cacheReadTokens": 21760,
+              "cacheWriteTokens": 0,
+              "totalTokens": 28834
+            }
+          },
+          {
+            "seq": 80,
+            "at": 1794986891793,
+            "messageId": "765f7891-2b5c-4d31-8d14-aa3c854b6372",
+            "usage": {
+              "inputTokens": 1545,
+              "outputTokens": 120,
+              "cacheReadTokens": 28288,
+              "cacheWriteTokens": 0,
+              "totalTokens": 29953
+            }
+          },
+          {
+            "seq": 88,
+            "at": 1794986904870,
+            "messageId": "f70d276b-fa74-4198-a10e-a5f061f6948a",
+            "usage": {
+              "inputTokens": 542,
+              "outputTokens": 862,
+              "cacheReadTokens": 29824,
+              "cacheWriteTokens": 0,
+              "totalTokens": 31228
+            }
+          },
+          {
+            "seq": 96,
+            "at": 1794986932373,
+            "messageId": "b8074e0a-a2fa-4c1e-85b9-66f216831535",
+            "usage": {
+              "inputTokens": 961,
+              "outputTokens": 2230,
+              "cacheReadTokens": 30336,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33527
+            }
+          },
+          {
+            "seq": 102,
+            "at": 1794986937112,
+            "messageId": "cc373cf0-fc68-43c5-887b-bafaf3f4ef91",
+            "usage": {
+              "inputTokens": 2338,
+              "outputTokens": 198,
+              "cacheReadTokens": 31232,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33768
+            }
+          },
+          {
+            "seq": 112,
+            "at": 1794986943378,
+            "messageId": "95f404fc-8b0a-4dd0-a4ca-a6b3274165b1",
+            "usage": {
+              "inputTokens": 2044,
+              "outputTokens": 353,
+              "cacheReadTokens": 33536,
+              "cacheWriteTokens": 0,
+              "totalTokens": 35933
+            }
+          },
+          {
+            "seq": 120,
+            "at": 1794986947642,
+            "messageId": "1c35d917-a461-4f96-b37a-39fbb8e17aa5",
+            "usage": {
+              "inputTokens": 587,
+              "outputTokens": 132,
+              "cacheReadTokens": 35456,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36175
+            }
+          },
+          {
+            "seq": 128,
+            "at": 1794986954201,
+            "messageId": "b45f25e1-0a27-47ad-91ee-bfa233c068a9",
+            "usage": {
+              "inputTokens": 347,
+              "outputTokens": 426,
+              "cacheReadTokens": 35968,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36741
+            }
+          },
+          {
+            "seq": 134,
+            "at": 1794986970959,
+            "messageId": "9a87ff27-bbef-4aec-8af6-86c0130240c4",
+            "usage": {
+              "inputTokens": 2555,
+              "outputTokens": 385,
+              "cacheReadTokens": 36224,
+              "cacheWriteTokens": 0,
+              "totalTokens": 39164
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 11,
+          "read": 11,
+          "write": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "streams": [
+      {
+        "id": "session-54199746-c1b9-4c1a-bf40-fcf5d76b64f5",
+        "role": "principal",
+        "digest": "d5d5c28c171a7731e7291a602562cbd4cb65876cf83c96d2349877b66821b376",
+        "counts": {
+          "steps": 13,
+          "turns": 1,
+          "toolCalls": 25,
+          "pairedToolResults": 25,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 11
+        },
+        "failedJobs": [],
+        "pairs": [
+          {
+            "callId": "call_0643cfc9cb664ef2b4ec5ae7",
+            "callSeq": 15,
+            "resultSeq": 16,
+            "tool": "continuity:pulse",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_53d67df397134de7b86a04d9",
+            "callSeq": 17,
+            "resultSeq": 20,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_1f9f787a167a4e00b13ea591",
+            "callSeq": 25,
+            "resultSeq": 28,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_33898988986141ae960185eb",
+            "callSeq": 26,
+            "resultSeq": 29,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_c54218ff13054a7ea6026dbf",
+            "callSeq": 27,
+            "resultSeq": 30,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_b5135724e4204ebc831f1375",
+            "callSeq": 31,
+            "resultSeq": 34,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_970fc1f9bda94bcb967b7151",
+            "callSeq": 39,
+            "resultSeq": 42,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_6e8a7c0439a84f19ba2ce433",
+            "callSeq": 43,
+            "resultSeq": 46,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_94f790623d4d475a99a264e5",
+            "callSeq": 44,
+            "resultSeq": 47,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_1be02bf21a0d4fd09e21ba82",
+            "callSeq": 45,
+            "resultSeq": 48,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_7ee6183baf6e4a16a823107a",
+            "callSeq": 53,
+            "resultSeq": 56,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_d59e895a0d534db39f11cddd",
+            "callSeq": 54,
+            "resultSeq": 57,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_1b279e6ac3f842cf92bc392c",
+            "callSeq": 55,
+            "resultSeq": 58,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_a72d9071c6484a44bfd9bee5",
+            "callSeq": 59,
+            "resultSeq": 62,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_26019c33e28f4f289d7552a7",
+            "callSeq": 67,
+            "resultSeq": 68,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_2dc7cc59a05c4271a1092d3a",
+            "callSeq": 69,
+            "resultSeq": 72,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_9ed120e653e64dfb8e9615c5",
+            "callSeq": 73,
+            "resultSeq": 76,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_3ddee56d4d994cb5b8246622",
+            "callSeq": 81,
+            "resultSeq": 84,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_06f79020aa8c4846be62bd5b",
+            "callSeq": 89,
+            "resultSeq": 92,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_d3462ee17eb3460b9a2602e1",
+            "callSeq": 97,
+            "resultSeq": 98,
+            "tool": "write",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_dbcc627cb7234029bfc829bc",
+            "callSeq": 103,
+            "resultSeq": 104,
+            "tool": "read",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_66a79640d32d42cd806a1c4b",
+            "callSeq": 105,
+            "resultSeq": 108,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_233a7272a91b41bf97336742",
+            "callSeq": 113,
+            "resultSeq": 116,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_2bdd1873e042486c8cab9253",
+            "callSeq": 121,
+            "resultSeq": 124,
+            "tool": "bash",
+            "ok": true,
+            "refusal": null
+          },
+          {
+            "callId": "call_cfca80ef05a54274aa5367a2",
+            "callSeq": 129,
+            "resultSeq": 130,
+            "tool": "work:conclude",
+            "ok": true,
+            "refusal": null
+          }
+        ]
+      }
+    ],
+    "requestLedger": [
+      {
+        "kind": "ADMITTED",
+        "requestId": "e895ad02-1e90-48f2-ae4a-6d0277ce0727",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "e895ad02-1e90-48f2-ae4a-6d0277ce0727",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 10723,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 126
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "3ddf3d3c-5360-4f79-ba36-cc40c2d72ee6",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "3ddf3d3c-5360-4f79-ba36-cc40c2d72ee6",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 4169,
+          "cache_read_input_tokens": 10624,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 219
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "6518f368-6597-4d97-92ce-a8e51efb9e24",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "6518f368-6597-4d97-92ce-a8e51efb9e24",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2805,
+          "cache_read_input_tokens": 14720,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 246
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "52dce618-70d1-476d-9945-adb9ff306e54",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "52dce618-70d1-476d-9945-adb9ff306e54",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 4387,
+          "cache_read_input_tokens": 17408,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 431
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "b4ab093e-1393-40df-81d0-7059ecbce7c0",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "b4ab093e-1393-40df-81d0-7059ecbce7c0",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 6631,
+          "cache_read_input_tokens": 21760,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 443
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "bf240bfa-c58f-4244-b936-a5e719058c0e",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "bf240bfa-c58f-4244-b936-a5e719058c0e",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 1545,
+          "cache_read_input_tokens": 28288,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 120
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "806f93dd-6d85-4067-b9c3-a2675599ed83",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "806f93dd-6d85-4067-b9c3-a2675599ed83",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 542,
+          "cache_read_input_tokens": 29824,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 862
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "a07f586d-c1d5-44ca-b438-7d547d355475",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "a07f586d-c1d5-44ca-b438-7d547d355475",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 961,
+          "cache_read_input_tokens": 30336,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2230
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "31308374-beb8-48b1-89d7-abee6753c415",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "31308374-beb8-48b1-89d7-abee6753c415",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2338,
+          "cache_read_input_tokens": 31232,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 198
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "b937808c-1303-4aae-ae7f-4dddbd0ecb1e",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "b937808c-1303-4aae-ae7f-4dddbd0ecb1e",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2044,
+          "cache_read_input_tokens": 33536,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 353
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "c8737129-493a-472f-b34f-5e8965cb1ae1",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "c8737129-493a-472f-b34f-5e8965cb1ae1",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 587,
+          "cache_read_input_tokens": 35456,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 132
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "22cd4a4f-1753-43e4-b077-58b99fea5c36",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "22cd4a4f-1753-43e4-b077-58b99fea5c36",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 347,
+          "cache_read_input_tokens": 35968,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 426
+        }
+      },
+      {
+        "kind": "ADMITTED",
+        "requestId": "1412d049-7dbc-4e63-89f3-8f70347db33c",
+        "actor": "principal-container"
+      },
+      {
+        "kind": "TERMINAL",
+        "requestId": "1412d049-7dbc-4e63-89f3-8f70347db33c",
+        "actor": "principal-container",
+        "usage": {
+          "input_tokens": 2555,
+          "cache_read_input_tokens": 36224,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 385
+        }
+      }
+    ],
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "requests": 13,
+    "usageByRole": {
+      "principal": {
+        "requests": 13,
+        "input": 39634,
+        "cacheRead": 325376,
+        "cacheWrite": 0,
+        "output": 6171,
+        "total": 371181
+      }
+    },
+    "unresolvedRequests": 0,
+    "elapsedMs": 147050
+  },
+  "responseAttribution": {
+    "arm": "P",
+    "session": "T3",
+    "boundRequests": 13,
+    "totals": {
+      "fresh": 39634,
+      "cacheRead": 325376,
+      "cacheWrite": 0,
+      "output": 6171
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-54199746-c1b9-4c1a-bf40-fcf5d76b64f5",
+        "streamSha256": "d5d5c28c171a7731e7291a602562cbd4cb65876cf83c96d2349877b66821b376",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 28,
+            "toolManifestBytes": 39403,
+            "productTools": 5,
+            "productToolBytes": 20346
+          }
+        ],
+        "systemTextBytes": [
+          2146
+        ],
+        "counts": {
+          "steps": 13,
+          "turns": 1,
+          "toolCalls": 25,
+          "pairedToolResults": 25,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 11
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 11,
+          "read": 11,
+          "write": 1,
+          "work:conclude": 1
+        },
+        "totals": {
+          "fresh": 39634,
+          "cacheRead": 325376,
+          "cacheWrite": 0,
+          "output": 6171
+        },
+        "activity": [
+          {
+            "kind": "pulse",
+            "callId": "call_0643cfc9cb664ef2b4ec5ae7",
+            "callSeq": 15,
+            "resultSeq": 16,
+            "ok": true,
+            "textBytes": 12124
+          },
+          {
+            "kind": "acceptance-read",
+            "callId": "call_1f9f787a167a4e00b13ea591",
+            "callSeq": 25,
+            "resultSeq": 28,
+            "ok": true,
+            "textBytes": 2683
+          },
+          {
+            "kind": "other-patch",
+            "callId": "call_a72d9071c6484a44bfd9bee5",
+            "callSeq": 59,
+            "resultSeq": 62,
+            "ok": true,
+            "textBytes": 7768
+          },
+          {
+            "kind": "conclude",
+            "callId": "call_cfca80ef05a54274aa5367a2",
+            "callSeq": 129,
+            "resultSeq": 130,
+            "ok": true,
+            "textBytes": 7138,
+            "intent": "DELIVER"
+          }
+        ],
+        "failedJobs": [],
+        "toolIssues": [],
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "e895ad02-1e90-48f2-ae4a-6d0277ce0727",
+            "fresh": 10723,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 126,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_58332d5a961e492c8a8548fd8b71e081"
+          },
+          {
+            "step": 2,
+            "seq": 24,
+            "requestId": "3ddf3d3c-5360-4f79-ba36-cc40c2d72ee6",
+            "fresh": 4169,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 219,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_bf5ae4392c7d466caef9fd7b9723f47c"
+          },
+          {
+            "step": 3,
+            "seq": 38,
+            "requestId": "6518f368-6597-4d97-92ce-a8e51efb9e24",
+            "fresh": 2805,
+            "cacheRead": 14720,
+            "cacheWrite": 0,
+            "output": 246,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3d295b085f4b41b89de016ea95d679fc"
+          },
+          {
+            "step": 4,
+            "seq": 52,
+            "requestId": "52dce618-70d1-476d-9945-adb9ff306e54",
+            "fresh": 4387,
+            "cacheRead": 17408,
+            "cacheWrite": 0,
+            "output": 431,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b4052a879caf4120963710e47db1e95e"
+          },
+          {
+            "step": 5,
+            "seq": 66,
+            "requestId": "b4ab093e-1393-40df-81d0-7059ecbce7c0",
+            "fresh": 6631,
+            "cacheRead": 21760,
+            "cacheWrite": 0,
+            "output": 443,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8269a7efa73a458fb4bfa3011be402c4"
+          },
+          {
+            "step": 6,
+            "seq": 80,
+            "requestId": "bf240bfa-c58f-4244-b936-a5e719058c0e",
+            "fresh": 1545,
+            "cacheRead": 28288,
+            "cacheWrite": 0,
+            "output": 120,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_d8db3f8029fb407f9e2ca2a6c84146dd"
+          },
+          {
+            "step": 7,
+            "seq": 88,
+            "requestId": "806f93dd-6d85-4067-b9c3-a2675599ed83",
+            "fresh": 542,
+            "cacheRead": 29824,
+            "cacheWrite": 0,
+            "output": 862,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_702debea38c34354919d6b0b65dedb2f"
+          },
+          {
+            "step": 8,
+            "seq": 96,
+            "requestId": "a07f586d-c1d5-44ca-b438-7d547d355475",
+            "fresh": 961,
+            "cacheRead": 30336,
+            "cacheWrite": 0,
+            "output": 2230,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_63382a33c0934f12a5722216ddebb708"
+          },
+          {
+            "step": 9,
+            "seq": 102,
+            "requestId": "31308374-beb8-48b1-89d7-abee6753c415",
+            "fresh": 2338,
+            "cacheRead": 31232,
+            "cacheWrite": 0,
+            "output": 198,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_34a5c45c2ae2401e93316d0a4c686a77"
+          },
+          {
+            "step": 10,
+            "seq": 112,
+            "requestId": "b937808c-1303-4aae-ae7f-4dddbd0ecb1e",
+            "fresh": 2044,
+            "cacheRead": 33536,
+            "cacheWrite": 0,
+            "output": 353,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_64e5e02e84fb49e6973f27ccd9d51a12"
+          },
+          {
+            "step": 11,
+            "seq": 120,
+            "requestId": "c8737129-493a-472f-b34f-5e8965cb1ae1",
+            "fresh": 587,
+            "cacheRead": 35456,
+            "cacheWrite": 0,
+            "output": 132,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b3cdec50952741b4905d4be6ef0c53c0"
+          },
+          {
+            "step": 12,
+            "seq": 128,
+            "requestId": "22cd4a4f-1753-43e4-b077-58b99fea5c36",
+            "fresh": 347,
+            "cacheRead": 35968,
+            "cacheWrite": 0,
+            "output": 426,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0f8976a619f14db281a2c6af176bccfb"
+          },
+          {
+            "step": 13,
+            "seq": 134,
+            "requestId": "1412d049-7dbc-4e63-89f3-8f70347db33c",
+            "fresh": 2555,
+            "cacheRead": 36224,
+            "cacheWrite": 0,
+            "output": 385,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_509b0563d10f443a9c090458e536d4d7"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "e895ad02-1e90-48f2-ae4a-6d0277ce0727",
+            "fresh": 10723,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 126,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_58332d5a961e492c8a8548fd8b71e081",
+            "precedingResults": [],
+            "precedingTextBytes": 0
+          },
+          {
+            "step": 5,
+            "seq": 66,
+            "requestId": "b4ab093e-1393-40df-81d0-7059ecbce7c0",
+            "fresh": 6631,
+            "cacheRead": 21760,
+            "cacheWrite": 0,
+            "output": 443,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8269a7efa73a458fb4bfa3011be402c4",
+            "precedingResults": [
+              {
+                "kind": "read",
+                "callSeq": 53,
+                "seq": 56,
+                "textBytes": 7892
+              },
+              {
+                "kind": "read",
+                "callSeq": 54,
+                "seq": 57,
+                "textBytes": 3715
+              },
+              {
+                "kind": "read",
+                "callSeq": 55,
+                "seq": 58,
+                "textBytes": 1823
+              },
+              {
+                "kind": "bash",
+                "callSeq": 59,
+                "seq": 62,
+                "textBytes": 7768
+              }
+            ],
+            "precedingTextBytes": 21198
+          },
+          {
+            "step": 4,
+            "seq": 52,
+            "requestId": "52dce618-70d1-476d-9945-adb9ff306e54",
+            "fresh": 4387,
+            "cacheRead": 17408,
+            "cacheWrite": 0,
+            "output": 431,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b4052a879caf4120963710e47db1e95e",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 39,
+                "seq": 42,
+                "textBytes": 437
+              },
+              {
+                "kind": "read",
+                "callSeq": 43,
+                "seq": 46,
+                "textBytes": 6900
+              },
+              {
+                "kind": "read",
+                "callSeq": 44,
+                "seq": 47,
+                "textBytes": 942
+              },
+              {
+                "kind": "read",
+                "callSeq": 45,
+                "seq": 48,
+                "textBytes": 5940
+              }
+            ],
+            "precedingTextBytes": 14219
+          },
+          {
+            "step": 2,
+            "seq": 24,
+            "requestId": "3ddf3d3c-5360-4f79-ba36-cc40c2d72ee6",
+            "fresh": 4169,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 219,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_bf5ae4392c7d466caef9fd7b9723f47c",
+            "precedingResults": [
+              {
+                "kind": "continuity:pulse",
+                "callSeq": 15,
+                "seq": 16,
+                "textBytes": 12124
+              },
+              {
+                "kind": "bash",
+                "callSeq": 17,
+                "seq": 20,
+                "textBytes": 907
+              }
+            ],
+            "precedingTextBytes": 13031
+          }
+        ]
+      }
+    ]
+  },
+  "isolation": {
+    "containerId": "1eb3287ec2ca9d506fc0b023d9f8144a6b22cbcb568340ea27651139f05d563c",
+    "descriptorDigest": "c6bec4b16d518dd072f86fdc23b6f0b7502df19e8dcb0748d954e728d14f30c8",
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "mounts": [
+      {
+        "destination": "/run/stage/world/acceptance.json",
+        "writable": false
+      },
+      {
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "destination": "/product/node_modules",
+        "writable": false
+      },
+      {
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "destination": "/product/runtime",
+        "writable": false
+      },
+      {
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      }
+    ],
+    "checks": [
+      {
+        "name": "principal_uid",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_shell_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "write_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "git_task",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "node_build_fixture",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_version",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "dsh_native_addon",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "native_read_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "native_shell_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_proc_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "indirect_parent_harness",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "rootfs_readonly",
+        "expected": "DENIED",
+        "status": "DENIED"
+      },
+      {
+        "name": "no_docker_socket",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_evaluator",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_owner_credential",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_provider_credential_env",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      },
+      {
+        "name": "no_external_routes",
+        "expected": "ALLOW",
+        "status": "ALLOW"
+      }
+    ],
+    "worlds": {
+      "schema": "pnwf-world-preflight/v1",
+      "status": "QUALIFIED",
+      "head": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+      "worlds": [],
+      "product": {
+        "repositoryHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+        "projectHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+        "relation": "IN_SYNC",
+        "uncommittedPaths": [],
+        "admittedDirectCommit": null
+      }
+    }
+  },
+  "accounting": {
+    "requests": 13,
+    "unresolved": 0,
+    "confirmed": 371181,
+    "state": "OPEN",
+    "reason": null
+  }
+}

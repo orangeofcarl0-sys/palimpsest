@@ -331,3 +331,31 @@ console.log(JSON.stringify({ score: scoreSemanticReview({ repo, basis: result.ba
   attribution: analyzeAttributedStage(stage, "T3", { context: true, result }) }, null, 2));
 '@ | node --input-type=module - $world $stage $archive
 ```
+
+## 语义与归因修复后的真实 OpenCode Go T3
+
+从主线 `77f2d87e4a1226dfe02509d9a181ca56d1f0be70` 启动。用封存 bundle 恢复同一核准 HEAD `4639ae44d78e7c1f9f5269876fa333a99bff770f`，接受树、Promotion 记录和停写的产品状态均经宿主核验。上一轮实验副本的仓库本地 Git 提交身份也恢复到新副本。第一次 Mock 已通过 18 项应用测试，提交时因本地身份未配置退出 128。恢复身份后另开 Mock，4 笔模拟请求全部结算，语义评分 12/12，记录 `DELIVER` 后自然退出。两次 Mock 的付费调用均为 0。[恢复核验](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/accepted-recovery.json) · [Mock 资格](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/qualification.json) · [首次 Mock 失败与恢复](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json)
+
+全新普通 DSH `0.2.1-rc.5` 会话使用独立容器、home、cohort 和 SQLite，沿用 OpenCode Go Messages 路由的 `deepseek-v4.1-flash`。与上一条真实轨迹的接受记录、树、提示摘要、镜像和终止条件一致。每会话最多 64 笔、30 分钟，单请求 240 秒，按终态用量记账，金额和总 token 额度均未设置。复用已结算的工具探针作为准入证据，真实 T3 共发送 13 笔请求。[冻结合同](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/contract.json) · [逐笔账本](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/request-accounting.json)
+
+唯一的提交为 `ccb07d36f14e059d537892fed8c4ed4cd4413cf2`，其父提交为核准 HEAD，只新增 `MIGRATION-REVIEW.md`。模型读取接受记录与更正，核对 proto、实现、测试和兼容文件，运行一次公开测试并通过 18/18。写完后回读摘要，检查暂存范围，再提交和复查干净状态。无新 Attempt 或 Promotion。调用 `129 → 130` 记录 `DELIVER`，返回 `RECORDED`、`mayEnd=true`。交付回执绑定该提交和原稿字节，进程随后以 0 自然退出。[真实结果](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/result.json) · [评审原稿](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/MIGRATION-REVIEW.md) · [Git bundle](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/accepted-and-review.bundle)
+
+**冻结自动验收为 11/12，整体验收保持 `passed:false`。** `OLD_ZERO_AND_OMITTED_EMPTY` 本次通过，唯一失败项为 `NEW_ZERO_AND_OMITTED_FIRST_THREE`。原稿第 26、27 行的「Accepted behavior at HEAD」列分别写明显式零值和缺省值按源顺序返回前三条可用 Reading，第 43 行也明确每条 Reading 单独成帧。v2 的表格识别适用于旧行为列，新行为仍由正文子句匹配，第 26、27 行的新版正确含义因此漏判。对原提交逐项离线复核为 12/12，原公开测试复跑 18/18、独立 HTTP/2 探针 7/7。此次冻结语义评分、旧判分器交叉检查、历轮原判和 402/400 的独立 `UNKNOWN` 均保留。[同一 SHA 复核](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/same-sha-audit.json) · [上一条原判](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/result.json)
+
+本轮原运行已用唯一四元组自动配对全部 13 笔请求，账本无未决用量。原压缩流离线复算与实时归因逐笔一致，gateway、SQLite 与 DSH 的四项用量一致。25 对工具调用和结果按调用 ID 配对，无失败作业、拒绝或工具错误。[轨迹对比](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json) · [请求观察](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/request-observations.jsonl)
+
+| 同一接受 HEAD、同一 OpenCode Go 模型 | 上一条真实 T3 | 本轮真实 T3 | 本轮变化 |
+| --- | ---: | ---: | ---: |
+| 已结算请求 | 14 | 13 | −1 |
+| Fresh input | 46,913 | 39,634 | −7,279 |
+| Cache read | 402,944 | 325,376 | −77,568 |
+| Cache creation | 0 | 0 | 0 |
+| Output | 9,032 | 6,171 | −2,861 |
+| 合计 tokens | 458,889 | 371,181 | −87,708 |
+| 会话耗时（秒） | 194.233 | 147.050 | −47.183 |
+| 已配对工具调用 | 27 | 25 | −2 |
+| 自动配对模型请求 | 0/14，离线 14/14 | 13/13 | 原运行归因通过 |
+
+首笔均为 10,723 fresh、0 cache read，fresh 差额全部出现在后续请求。文件读取从 15 次降到 11 次，Bash 从 9 次增到 11 次，模型运行公开测试从两次减到一次。两轮收到 `DELIVER` 回执后的退出间隔分别为 39.549 和 38.658 秒，47.183 秒的总耗时差中有 46.292 秒发生在收到回执前。缓存读取占输入由 89.57% 变为 89.14%，单次复跑不足以确定改变是由工具路径还是 Provider 服务条件造成。Provider 返回的余额扣款字段两轮均为 0，Go allowance 用量从 0.008199 增至 0.01274861。该字段独立于 token 总量呈现，原始计量记录已保留。[对比数据](../../research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json)
+
+原始压缩流、SQLite、首次 Mock 失败现场和确切提交快照保存在 `%TEMP%/pnwf-grpc-t3-opencode-v2-20261118-152155-a9b1b9`。同一提交和已保存轨迹的复核均在本地完成，新增付费请求仅来自本轮真实 T3 的 13 笔。
