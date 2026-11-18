@@ -68,7 +68,7 @@ const seal = { release, basis, tree: accepted.tree, model: openCodeGoProfile ? O
   promptSha256: digest(GUIDED_T3_PROMPT), scoreSchema: REVIEW_SCORE_SCHEMA, legacyScorerSha256,
   files: Object.fromEntries(["revision/review-t3.mjs", "software/contract.mjs", "software/review-score.mjs", "software/mock.mjs",
     "software/run.mjs", "software/product-entry.mjs", "container_adapter.mjs", "container_runtime.mjs", "bounded_provider.mjs",
-    "execution_budget.mjs", "opencode_go.mjs"].map(file => [file, shaFile(join(repo, "scripts/pnwf", file))])),
+    "execution_budget.mjs", "opencode_go.mjs", "analyze_energy_trajectory.mjs"].map(file => [file, shaFile(join(repo, "scripts/pnwf", file))])),
   originalAcceptanceSha256: shaFile(join(archive, "acceptance.json")), previousResultSha256: shaFile(join(previous, "result.json")) };
 if (paid) {
   const qualification = readJson(resolve(values.qualification));

@@ -1,4 +1,4 @@
-/** Offline Energy attribution by provider response ID; emits no request bodies or transcript text. */
+/** Offline request attribution; emits no request bodies or transcript text. */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -7,6 +7,7 @@ import { basename, dirname, join } from "node:path";
 import { zstdDecompressSync } from "node:zlib";
 import { briefPulse } from "./energy/context-variants.mjs";
 import { BULLETIN, SUMMARY, changed, clean, dataBlock, git, head } from "./energy/contract.mjs";
+import { OPENCODE_GO_MESSAGES } from "./opencode_go.mjs";
 
 const MAGIC = Buffer.from([0x28, 0xb5, 0x2f, 0xfd]);
 const FIELDS = {
@@ -26,6 +27,21 @@ const projectUsage = (usage, source) => Object.fromEntries(Object.entries(FIELDS
   return [key, value];
 }));
 const sum = steps => Object.fromEntries(Object.keys(FIELDS).map(key => [key, steps.reduce((n, step) => n + step[key], 0)]));
+const usageTuple = usage => Object.keys(FIELDS).map(key => usage[key]).join(":");
+
+function indexOpenCodeUsage(observations) {
+  const byUsage = new Map();
+  for (let i = 0; i < observations.length; i += 2) {
+    const [start, end] = [observations[i], observations[i + 1]];
+    assert(start.kind === "ADMITTED" && end.kind === "TERMINAL" && start.requestId && start.requestId === end.requestId &&
+      start.actor === "principal-container" && end.actor === start.actor && typeof end.messageId === "string" && end.messageId,
+      "OpenCode Go tuple fallback requires sequential Principal requests with terminal response IDs");
+    const key = usageTuple(projectUsage(end.usage, 0));
+    assert(!byUsage.has(key), "Ambiguous OpenCode Go usage tuple");
+    byUsage.set(key, end);
+  }
+  return byUsage;
+}
 
 // DSH v4 writes one independent zstd frame per event.
 function readStream(path, digest) {
@@ -150,6 +166,7 @@ export function analyzeAttributedStage(stage, session, {
   const roots = [join(original, `runtime-${session}`, "sessions"), ...result.evidence.workerReceipts.map(receipt =>
     join(out, `worker-${receipt.attemptId}`, "home", "sessions"))];
   const files = roots.filter(path => !context || existsSync(path)).flatMap(streams);
+  const canUseTuples = result.seal?.provider === "opencode-go" && result.seal.route === OPENCODE_GO_MESSAGES;
   const bound = new Set();
   const traces = files.map(file => {
     const id = basename(dirname(file));
@@ -161,12 +178,28 @@ export function analyzeAttributedStage(stage, session, {
     const results = timeline.results.map(row => ({ kind: row.callKind, callSeq: row.callSeq, seq: row.seq,
       textBytes: messageBytes(eventBySeq.get(row.seq)?.data?.message) }));
     let previous = -Infinity;
-    const steps = events.filter(event => event.type === "assistant/message" && event.data?.usage).map((event, i) => {
-      // For this DSH DeepSeek replay format, the provider response ID is recorded as a replay signature.
-      const ids = [...new Set((event.data.message.source?.replayState?.blocks ?? []).map(block => block.signature)
-        .filter(id => terminal.has(id)))];
-      assert.equal(ids.length, 1, "Model step has no unique provider response ID");
-      const observed = terminal.get(ids[0]);
+    const modelSteps = events.filter(event => event.type === "assistant/message" && event.data?.usage).map(event => {
+      const signatures = (event.data.message.source?.replayState?.blocks ?? []).map(block => block.signature)
+        .filter(id => typeof id === "string" && id.length > 0);
+      return { event, signatures, ids: [...new Set(signatures.filter(id => terminal.has(id)))] };
+    });
+    let byUsage;
+    if (canUseTuples && modelSteps.some(step => step.ids.length === 0)) {
+      assert(files.length === 1 && result.evidence.traces.length === 1 && trace.role === "principal" &&
+        ledger.unresolvedRequests === 0 && result.evidence.unresolvedRequests === 0,
+        "OpenCode Go tuple fallback requires a single Principal stream and a settled ledger");
+      byUsage = indexOpenCodeUsage(observations);
+    }
+    const steps = modelSteps.map(({ event, signatures, ids }, i) => {
+      const missingId = ids.length === 0;
+      assert(ids.length === 1 || (missingId && byUsage), "Model step has no unique provider response ID");
+      const replayUsage = projectUsage(event.data.usage, 1);
+      if (missingId) assert(!signatures.some(id => id.startsWith("msg_")),
+        "OpenCode Go replay contains an unmatched provider response ID");
+      const observed = missingId ? byUsage.get(usageTuple(replayUsage)) : terminal.get(ids[0]);
+      assert(observed, "No exact OpenCode Go usage tuple matches the model step");
+      // Order corroborates tuple attribution, including any steps that retained an ID.
+      if (byUsage) assert(observed === observations[2 * i + 1], "OpenCode Go usage tuple match is out of sequence");
       const record = requests.get(observed.requestId);
       const actor = trace.role === "worker" ? "worker" : "principal-container";
       assert.equal(admitted.get(observed.requestId)?.actor, actor);
@@ -176,11 +209,12 @@ export function analyzeAttributedStage(stage, session, {
       bound.add(observed.requestId);
       const usage = projectUsage(observed.usage, 0);
       assert.deepEqual(projectUsage(record.usage, 0), usage);
-      assert.deepEqual(projectUsage(event.data.usage, 1), usage);
+      assert.deepEqual(replayUsage, usage);
       assert.equal(timeline.modelSteps[i]?.seq, event.seq);
       const precedingResults = results.filter(row => row.seq > previous && row.seq < event.seq);
       previous = event.seq;
-      return { step: i + 1, seq: event.seq, requestId: observed.requestId, ...usage, precedingResults };
+      return { step: i + 1, seq: event.seq, requestId: observed.requestId, ...usage,
+        ...(missingId ? { bindingMethod: "unique-usage-tuple", providerResponseId: observed.messageId } : {}), precedingResults };
     });
     assert.equal(steps.length, timeline.modelSteps.length);
     const headers = events.filter(event => event.type === "request/header").map(event => {

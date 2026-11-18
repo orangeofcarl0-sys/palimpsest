@@ -1,0 +1,363 @@
+{
+  "schema": "pnwf-grpc-t3-offline-acceptance/v1",
+  "implementationBase": "33495ed1a06772780f3dba09ec8de7680f49c551",
+  "addedPaidRequests": 0,
+  "originalRun": {
+    "cohortId": "software-t3-review-c05ec844-57e0-4330-8d33-cd1875532127",
+    "passed": false,
+    "scoreSchema": "pnwf-grpc-review-semantics/v1",
+    "passedChecks": 11,
+    "failedChecks": [
+      "OLD_ZERO_AND_OMITTED_EMPTY"
+    ],
+    "attributionFailure": "Model step has no unique provider response ID\n\n0 !== 1\n",
+    "legacyCrossScore": {
+      "passed": false,
+      "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+    },
+    "archive": "opencode-go-tooled-t3-055602",
+    "result.json": "667b308b2f9d7ef2d57497b37168d2b5e7133adb645f36f0cac223399c19ea3b",
+    "request-observations.jsonl": "c23b75b12e68350e2deb782e486b56edc368287c910f5d1a2d928dfa4ab78953",
+    "request-accounting.json": "199e613dbab639d021333bfb11daaaaf79ee99f1b28fc6987db2363f4f4b1b93"
+  },
+  "sameEvidence": {
+    "acceptedHead": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "reviewCommit": "f30c66446f88c99343ffc0fc752fca4463dbedef",
+    "reviewBlob": "53bc09a10ac0d7741df3d8a49fd0541f0fe70fc7",
+    "reviewSha256": "f8bca32d5e7130bd426a476316fad40d13771cc7e2856cf0177570c25ccbec85",
+    "bundleSha256": "65cf2c5340014ef94935fa618f5bc8a91199ab2014d2c2453e12a4c1c8df9d11",
+    "replayRelativePath": "runtime-T3/sessions/--run-stage-world--/session-8bf67bc2-9841-4f78-a7d5-6a217655cdf8/session.v4.jsonl.zstd",
+    "replaySha256": "0dd24b6abd2b39270c280ab5cf13465d95edf920bdf9abe1f79d753f50e719b2",
+    "timelineRelativePath": "out/T3/attribution/0.timeline.json",
+    "timelineSha256": "a4657979c03bb26d9e7033da5950fe8f7e62c91b197c6aa8535916ab3e6b6ea8"
+  },
+  "scripts": {
+    "scripts/pnwf/software/review-score.mjs": "252139f7cadd72dd1b757a762571ebe81f7a9646f29151ceb6493cccf3d91a67",
+    "scripts/pnwf/analyze_energy_trajectory.mjs": "68ef35e9bdace94ba7dd5c39f687688847c3cf773eba5104499e1f827c36f12d"
+  },
+  "offline": {
+    "acceptancePassed": true,
+    "score": {
+      "commit": "f30c66446f88c99343ffc0fc752fca4463dbedef",
+      "tree": "c42599d611608e11fbbc1d5f86ffc3cdf20b3424",
+      "changedPaths": [
+        "MIGRATION-REVIEW.md"
+      ],
+      "reviewSha256": "f8bca32d5e7130bd426a476316fad40d13771cc7e2856cf0177570c25ccbec85",
+      "schema": "pnwf-grpc-review-semantics/v2",
+      "passed": true,
+      "checks": [
+        {
+          "id": "ACCEPTED_HEAD",
+          "passed": true,
+          "evidence": "4639ae44d78e7c1f9f5269876fa333a99bff770f"
+        },
+        {
+          "id": "FLEET_CORRECTION_PATH",
+          "passed": true,
+          "evidence": "updates/2026-11-10/fleet-default-limit.md"
+        },
+        {
+          "id": "OLD_ZERO_AND_OMITTED_EMPTY",
+          "passed": true,
+          "evidence": "| Request form | First-release behaviour (superseded) | Accepted behaviour at the complete accepted HEAD |\n| `limit` absent | Empty stream: no Reading frames, then `grpc-status: 0`. | First three available readings in source order (`readings.slice(0, 3)`), or fewer if the site has fewer, then `grpc-status: 0`. |\n| `limit` explicitly supplied as `0` | Empty stream: no Reading frames, then `grpc-status: 0`. | First three available readings in source order (`readings.slice(0, 3)`), or fewer if the site has fewer, then `grpc-status: 0`. |"
+        },
+        {
+          "id": "NEW_ZERO_AND_OMITTED_FIRST_THREE",
+          "passed": true,
+          "evidence": "Thus an omitted limit and an explicit zero limit now request the Fleet default of the first three available readings in source order."
+        },
+        {
+          "id": "SOURCE_ORDER",
+          "passed": true,
+          "evidence": "Thus an omitted limit and an explicit zero limit now request the Fleet default of the first three available readings in source order."
+        },
+        {
+          "id": "ONE_READING_PER_FRAME",
+          "passed": true,
+          "evidence": "StreamReadings sends each Reading in its own gRPC message frame."
+        },
+        {
+          "id": "POSITIVE_LIMITS",
+          "passed": true,
+          "evidence": "The correction is specifically about the default selected when the request does not supply a positive limit."
+        },
+        {
+          "id": "UNARY_GET_READING",
+          "passed": true,
+          "evidence": "Unary GetReading"
+        },
+        {
+          "id": "UNKNOWN_SITE_NOT_FOUND",
+          "passed": true,
+          "evidence": "Unknown-site NOT_FOUND"
+        },
+        {
+          "id": "PROTO_FIELD_NUMBERS",
+          "passed": true,
+          "evidence": "The committed field numbers are unchanged and remain part of the wire contract:"
+        },
+        {
+          "id": "REST_COMPATIBILITY",
+          "passed": true,
+          "evidence": "The stream therefore consists of one five-byte gRPC frame header plus one protobuf Reading payload per selected reading, in the same order as the source and the REST list."
+        },
+        {
+          "id": "PUBLIC_TESTS_PASSED",
+          "passed": true,
+          "evidence": "- node --test from the repository root: 18 tests passed, 0 failed, 0 cancelled, 0 skipped, 0 todo."
+        }
+      ]
+    },
+    "proseEvidenceWithoutTable": "In the first release, service/grpc_server.js passed the decoded limit directly to readings.slice(0, limit). Because an absent protobuf uint32 limit decodes to the scalar default 0, both the absent and explicit-zero cases selected slice(0, 0) and produced an empty stream.",
+    "conclusion": {
+      "kind": "conclude",
+      "callId": "call_7aebf49e545e4fe287149a4a",
+      "callSeq": 133,
+      "resultSeq": 134,
+      "ok": true,
+      "textBytes": 6910,
+      "intent": "DELIVER"
+    },
+    "exitCode": 0,
+    "naturalExit": true,
+    "elapsedMs": 194233,
+    "checks": {
+      "accepted": true,
+      "naturalExit": true,
+      "persisted": true,
+      "artifactsPresent": true,
+      "onlyReview": true,
+      "noNewWork": true
+    },
+    "attribution": {
+      "method": "unique-usage-tuple",
+      "actor": "principal-container",
+      "sessionId": "session-8bf67bc2-9841-4f78-a7d5-6a217655cdf8",
+      "boundRequests": 14,
+      "totals": {
+        "fresh": 46913,
+        "cacheRead": 402944,
+        "cacheWrite": 0,
+        "output": 9032
+      },
+      "totalTokens": 458889,
+      "toolCounts": {
+        "steps": 14,
+        "turns": 1,
+        "toolCalls": 27,
+        "pairedToolResults": 27,
+        "unpairedToolResults": 0,
+        "toolErrors": 0,
+        "jobFailures": 0,
+        "domainRefusals": 0,
+        "repeatedRefusals": 0,
+        "noProgressToolCalls": 0,
+        "stateQueries": 1,
+        "commits": 0,
+        "jobs": 9
+      },
+      "matchesPriorIndependentRecount": true,
+      "requests": [
+        {
+          "step": 1,
+          "assistantSeq": 14,
+          "requestId": "00af9804-cbdc-46c4-acfd-dd18c11287b6",
+          "providerResponseId": "msg_d5e19aed5e804589b94d49c0afff278e",
+          "usage": {
+            "fresh": 10723,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 118
+          }
+        },
+        {
+          "step": 2,
+          "assistantSeq": 24,
+          "requestId": "a8d97ae6-690a-4ca6-b15b-5217b3910618",
+          "providerResponseId": "msg_39e62a991b144eb281137b2a5dcc07bb",
+          "usage": {
+            "fresh": 4158,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 188
+          }
+        },
+        {
+          "step": 3,
+          "assistantSeq": 36,
+          "requestId": "56a9f7bc-597b-455e-9800-ab8d06bbcd56",
+          "providerResponseId": "msg_5f82b4a04b574b8e96ec06dfb7d2f5be",
+          "usage": {
+            "fresh": 2043,
+            "cacheRead": 14720,
+            "cacheWrite": 0,
+            "output": 231
+          }
+        },
+        {
+          "step": 4,
+          "assistantSeq": 48,
+          "requestId": "1281d0b7-0d8b-4923-82c5-caf536e5a6e8",
+          "providerResponseId": "msg_0db8e0a59b6049719408bd7df4f14304",
+          "usage": {
+            "fresh": 4401,
+            "cacheRead": 16640,
+            "cacheWrite": 0,
+            "output": 177
+          }
+        },
+        {
+          "step": 5,
+          "assistantSeq": 60,
+          "requestId": "7ae57c34-3041-4e2a-a0d2-86631fd6fd56",
+          "providerResponseId": "msg_6783c12a249f4127a4b3e02de7b2a85a",
+          "usage": {
+            "fresh": 6740,
+            "cacheRead": 20992,
+            "cacheWrite": 0,
+            "output": 348
+          }
+        },
+        {
+          "step": 6,
+          "assistantSeq": 72,
+          "requestId": "1e19843a-82ab-4f38-8d35-ba3801c93c96",
+          "providerResponseId": "msg_7a881c9e56504c1aa3f80751e27af256",
+          "usage": {
+            "fresh": 4791,
+            "cacheRead": 27648,
+            "cacheWrite": 0,
+            "output": 1117
+          }
+        },
+        {
+          "step": 7,
+          "assistantSeq": 84,
+          "requestId": "15b57078-7714-4861-aeee-827eeeeb4833",
+          "providerResponseId": "msg_f43a9b51376b4d6db117efb008a27d22",
+          "usage": {
+            "fresh": 1772,
+            "cacheRead": 32384,
+            "cacheWrite": 0,
+            "output": 274
+          }
+        },
+        {
+          "step": 8,
+          "assistantSeq": 92,
+          "requestId": "26ccde8a-0603-4a7e-9836-9c4dba6d2c77",
+          "providerResponseId": "msg_6ead77f2074e44629739ea8465416cf6",
+          "usage": {
+            "fresh": 2265,
+            "cacheRead": 34048,
+            "cacheWrite": 0,
+            "output": 1349
+          }
+        },
+        {
+          "step": 9,
+          "assistantSeq": 98,
+          "requestId": "b1c71712-8b34-4f34-9f09-f673765df675",
+          "providerResponseId": "msg_b7428a756c1e42219d6806a88e2fac17",
+          "usage": {
+            "fresh": 1942,
+            "cacheRead": 36224,
+            "cacheWrite": 0,
+            "output": 3525
+          }
+        },
+        {
+          "step": 10,
+          "assistantSeq": 104,
+          "requestId": "923aa659-bde4-43b6-9c70-a14611dcabb3",
+          "providerResponseId": "msg_978c5d2d0e7e4e0e815412a78bef4162",
+          "usage": {
+            "fresh": 3590,
+            "cacheRead": 38144,
+            "cacheWrite": 0,
+            "output": 361
+          }
+        },
+        {
+          "step": 11,
+          "assistantSeq": 116,
+          "requestId": "b51f2cc9-3670-49f5-9871-d28633e8b65a",
+          "providerResponseId": "msg_6e6aa22eefda490eb6a97d72fbbe0f66",
+          "usage": {
+            "fresh": 1359,
+            "cacheRead": 41728,
+            "cacheWrite": 0,
+            "output": 184
+          }
+        },
+        {
+          "step": 12,
+          "assistantSeq": 124,
+          "requestId": "53942f8d-6571-4e15-8500-d07f0869bcb7",
+          "providerResponseId": "msg_082727b5d2154482ae822d51e3938905",
+          "usage": {
+            "fresh": 308,
+            "cacheRead": 43008,
+            "cacheWrite": 0,
+            "output": 152
+          }
+        },
+        {
+          "step": 13,
+          "assistantSeq": 132,
+          "requestId": "4b49358c-fdd4-4888-a609-7b49799a25aa",
+          "providerResponseId": "msg_b297a10936334207beae76419f65a263",
+          "usage": {
+            "fresh": 346,
+            "cacheRead": 43264,
+            "cacheWrite": 0,
+            "output": 405
+          }
+        },
+        {
+          "step": 14,
+          "assistantSeq": 138,
+          "requestId": "1ed38bbe-c2b6-4c5f-9a64-858f8d19f8ea",
+          "providerResponseId": "msg_0eefdc6192f24ed2ad3ebf12d0bb6252",
+          "usage": {
+            "fresh": 2475,
+            "cacheRead": 43520,
+            "cacheWrite": 0,
+            "output": 603
+          }
+        }
+      ]
+    }
+  },
+  "historicalSources": [
+    {
+      "path": "research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json",
+      "sha256": "048f724f3f9e230cb3ee75e581f10685e08ffaf46cd531a5d56783301ad3d325",
+      "frozenReason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+    },
+    {
+      "path": "research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/result.json",
+      "sha256": "2108321dac0f5883dc49fbb670ab1f0703b6af2b711ab3251cc59135d1f5879b",
+      "frozenReason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+    }
+  ],
+  "separateStops": [
+    {
+      "archive": "review-semantics-035705",
+      "httpStatus": 402,
+      "requestId": "c9ebb54f-1643-46f6-a0b1-271d077c9d3f",
+      "cohortId": "software-t3-review-dc36f2f9-a1a9-4d25-9225-b7b48d7198a1",
+      "state": "UNKNOWN",
+      "usage": null
+    },
+    {
+      "archive": "opencode-go-t3-053356",
+      "httpStatus": 400,
+      "requestId": "1cbc6dfe-efbf-442a-8968-08c487c5e929",
+      "cohortId": "software-t3-review-2be1f0be-569d-41e9-91d5-aef38c4d76f9",
+      "state": "UNKNOWN",
+      "usage": null
+    }
+  ]
+}
