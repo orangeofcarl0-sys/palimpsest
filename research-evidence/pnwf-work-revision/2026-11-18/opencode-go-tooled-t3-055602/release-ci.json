@@ -1,0 +1,323 @@
+{
+  "schema": "pnwf-grpc-t3-opencode-release-ci/v1",
+  "pullRequest": {
+    "number": 269,
+    "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/269",
+    "head": "1612688882ae90e90480988a0f78d309b567715d",
+    "base": "fdda682e1fd03071a3c4770f511d248df027a689",
+    "mergedAt": "2026-11-18T05:19:11Z",
+    "release": "d5a423af7db28a6eb66848ec713f3c02d2dbe858",
+    "tree": "7e0dce96a1347a2ec1e63644d84997396d3693e9",
+    "remoteBranchDeleted": true,
+    "checks": [
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242154283/job/134592384207",
+        "name": "unit",
+        "state": "SUCCESS",
+        "workflow": "ci"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153240/job/134592384872",
+        "name": "inspect",
+        "state": "SUCCESS",
+        "workflow": "commit-attribution"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384663",
+        "name": "gates-host-dependent (gate:d4-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153239/job/134592384156",
+        "name": "host-boundary",
+        "state": "SUCCESS",
+        "workflow": "r1-hr-windows-host-boundary"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242154283/job/134592384496",
+        "name": "e2e",
+        "state": "SUCCESS",
+        "workflow": "ci"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384377",
+        "name": "gates (gate:e3-c-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384679",
+        "name": "gates (gate:e-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384767",
+        "name": "gates (gate:e5-p-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384400",
+        "name": "gates (gate:e4-l-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384654",
+        "name": "gates (gate:e2-i-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384447",
+        "name": "gates-host-dependent (gate:d2-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384405",
+        "name": "gates (gate:e1-k-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384476",
+        "name": "gates-host-dependent (gate:d5-live)",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384640",
+        "name": "d5-reliability",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153341/job/134592384029",
+        "name": "package-smoke",
+        "state": "SUCCESS",
+        "workflow": "r0-gates"
+      },
+      {
+        "bucket": "pass",
+        "link": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44242153240",
+        "name": "commit-attribution",
+        "state": "SUCCESS",
+        "workflow": ""
+      }
+    ]
+  },
+  "rebase": {
+    "verified": [
+      "tree",
+      "author name and email",
+      "author date",
+      "commit message",
+      "linear parent chain"
+    ],
+    "commits": [
+      {
+        "reviewed": "7633e929ae3f8cb4601670ba65857d33fff362ee",
+        "released": "2999fcdeb79728cb32c212318fc15ca3d0a177f2",
+        "tree": "aa58ce158fc1669dd87e370a8475d23f4d23d67f",
+        "subject": "Document the gRPC T3 provider reconciliation"
+      },
+      {
+        "reviewed": "20ade30ca06d7d463886c118398093790f82601f",
+        "released": "7fd47f3291f965457510e4994c180da26fd69e06",
+        "tree": "e25763b049e8911e1d68d245776b0d7c3b83c08e",
+        "subject": "Admit the metered OpenCode Go route for gRPC T3"
+      },
+      {
+        "reviewed": "9fe4bd62e7a6a330282ddcbbddc1de92d1edd490",
+        "released": "92dd887e020cc77ac1817e41b8b9419c6ed5229d",
+        "tree": "ae52965764511d3d804fd141786f24a58d17d1be",
+        "subject": "Record the OpenCode Go T3 stop and normalize its request"
+      },
+      {
+        "reviewed": "1612688882ae90e90480988a0f78d309b567715d",
+        "released": "d5a423af7db28a6eb66848ec713f3c02d2dbe858",
+        "tree": "7e0dce96a1347a2ec1e63644d84997396d3693e9",
+        "subject": "Record the metered OpenCode Go T3 delivery and recount"
+      }
+    ]
+  },
+  "verification": {
+    "linux": 5108,
+    "linuxSkipped": 33,
+    "pnwf": 43,
+    "e2e": 38,
+    "r0ExternalHostStepsSkipped": 4,
+    "windowsHostBoundary": {
+      "attempt": 1,
+      "conclusion": "success",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Install the DSH host the fence binds against"
+        },
+        {
+          "conclusion": "success",
+          "name": "gate:r1-h-conformance (kernel fence + guard)"
+        },
+        {
+          "conclusion": "success",
+          "name": "gate:r1-hr-conformance (host-hardening contract)"
+        },
+        {
+          "conclusion": "success",
+          "name": "gate:r1-hc-conformance (residual closure)"
+        },
+        {
+          "conclusion": "success",
+          "name": "gate:r1-hr-clean-env (dependency closure under isolation)"
+        },
+        {
+          "conclusion": "success",
+          "name": "architecture and public API"
+        },
+        {
+          "conclusion": "success",
+          "name": "Upload the conformance evidence"
+        }
+      ]
+    },
+    "ciReruns": 0,
+    "releasePaidCalls": 0
+  },
+  "evidence": {
+    "archived": [
+      {
+        "path": "MIGRATION-REVIEW.md",
+        "blob": "53bc09a10ac0d7741df3d8a49fd0541f0fe70fc7",
+        "sha256": "f8bca32d5e7130bd426a476316fad40d13771cc7e2856cf0177570c25ccbec85"
+      },
+      {
+        "path": "accepted-and-review.bundle",
+        "blob": "dfc8f2e838266e6cc36fbe83c24183c08e71f84d",
+        "sha256": "65cf2c5340014ef94935fa618f5bc8a91199ab2014d2c2453e12a4c1c8df9d11"
+      },
+      {
+        "path": "opencode-probe.json",
+        "blob": "32c216b1eefa8b9dc995bf82f4fa6d7abbca8b6f",
+        "sha256": "039324da18caf0f9d11c06484eac36c4105ce1d9d29e12140e1284059099074a"
+      },
+      {
+        "path": "prior-stops.json",
+        "blob": "9782f4400b675625b1e211f401a971192021c252",
+        "sha256": "c83e539beea505f426e4cb8757281e796ad988fcd78dc1bf9b54d9163b66c277"
+      },
+      {
+        "path": "qualification.json",
+        "blob": "9c53710bb81e66155b06aed6c6b83b4787eda4f0",
+        "sha256": "4e1c75f1e83a9f2546272f45f226a31cd949d07d36ec4d035e28cc335887b634"
+      },
+      {
+        "path": "contract.json",
+        "blob": "6bf62389fd3b6af22fb262830e146452a14aecb2",
+        "sha256": "9e4baa9c556ee79ebf1f838da1b9cec1ca4fe9b1b68ad8b4b1873e6afd3ba1ab"
+      },
+      {
+        "path": "result.json",
+        "blob": "ae4b328276e6cc95ef7568a210a5555872911f13",
+        "sha256": "667b308b2f9d7ef2d57497b37168d2b5e7133adb645f36f0cac223399c19ea3b"
+      },
+      {
+        "path": "request-accounting.json",
+        "blob": "f45d983a8fe54413e89c139019d199fe45e1f014",
+        "sha256": "199e613dbab639d021333bfb11daaaaf79ee99f1b28fc6987db2363f4f4b1b93"
+      },
+      {
+        "path": "request-observations.jsonl",
+        "blob": "cec2c54e47a32bcedee9e17eef3d4a67bff3be61",
+        "sha256": "c23b75b12e68350e2deb782e486b56edc368287c910f5d1a2d928dfa4ab78953"
+      },
+      {
+        "path": "trajectory-and-review-audit.json",
+        "blob": "9bad8fdaf080e943cfc621c57c66a1f281ef5b27",
+        "sha256": "829aa95c6749096a6864ce0ff2911956aa22bcca715f60a1671c82989051987b"
+      }
+    ],
+    "stops": [
+      {
+        "archive": "review-semantics-035705",
+        "httpStatus": 402,
+        "state": "UNKNOWN",
+        "usage": null
+      },
+      {
+        "archive": "opencode-go-t3-053356",
+        "httpStatus": 400,
+        "state": "UNKNOWN",
+        "usage": null
+      }
+    ],
+    "verdict": false,
+    "score": {
+      "passed": 11,
+      "total": 12,
+      "missing": "OLD_ZERO_AND_OMITTED_EMPTY"
+    },
+    "attributionFailure": "Model step has no unique provider response ID\n\n0 !== 1\n",
+    "offline": {
+      "matchedByTuple": 14,
+      "oldEmptyStreamClaim": true
+    },
+    "requestCount": 14,
+    "confirmed": 458889,
+    "accepted": "4639ae44d78e7c1f9f5269876fa333a99bff770f",
+    "review": "f30c66446f88c99343ffc0fc752fca4463dbedef",
+    "naturalExit": true,
+    "hostRunCommit": "9fe4bd62e7a6a330282ddcbbddc1de92d1edd490",
+    "hostRunMainEquivalent": "92dd887e020cc77ac1817e41b8b9419c6ed5229d",
+    "frozenHistoricalVerdicts": [
+      {
+        "source": "research-evidence/pnwf-software/2026-11-10/scope-rerun-163507/evidence.json",
+        "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+      },
+      {
+        "source": "research-evidence/pnwf-work-revision/2026-11-10/settled-readiness-t3-224632/result.json",
+        "reason": "SOFTWARE_REVIEW_MISSING zero or omitted"
+      }
+    ]
+  },
+  "mainPushRuns": [
+    {
+      "name": "r1-hr-windows-host-boundary",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44243422013",
+      "id": 44243422013
+    },
+    {
+      "name": "r0-gates",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44243422027",
+      "id": 44243422027
+    },
+    {
+      "name": "commit-attribution",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44243421945",
+      "id": 44243421945
+    },
+    {
+      "name": "ci",
+      "url": "https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44243421972",
+      "id": 44243421972
+    }
+  ]
+}
