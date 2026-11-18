@@ -669,6 +669,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-18 | 交接回放成为档案原型首页，七步呈现实际角色、交接物与接续凭据 | [交接原型](docs/product/visualization/prototype/index.html) · [阅读设计](docs/product/visualization/PLAN.md#一份工作如何交到下一位手里) | 支持逐步选择、连续播放、暂停与静态阅读，使用原有封存 |
 | 2026-11-18 | 依 dsh-layerfs 的宿主位置及工作对象重订可视化规划 | [位置与形式](docs/product/visualization/RESEARCH.md#工作视图在宿主里的位置) · [会话内布局和状态样例](docs/product/visualization/PLAN.md#一个时点的布局) | 首个验收改为在 DSH 会话里判断并行与待办。已核对槽位源码和真实归档，本次产物为设计 |
 | 2026-11-18 | 调研组织、世界、格点动作和交叠集合，制作五时点交互样例 | [文献与两组 Git 复算](docs/product/visualization/STRUCTURE-AND-OVERLAP.md) · [格点图与成员表](docs/product/visualization/prototype/structure.html) | 组织与边界四组回归 47/47。下一项资格为 DSH 原生挂载、授权读面和可读性对照 |
+| 2026-11-18 | 会话样例可播放交接、固定观察对象并在当前时点循线回看旧动作 | [回放与查证语义](docs/product/visualization/STRUCTURE-AND-OVERLAP.md#四时间选择和可见范围) · [交互样例](docs/product/visualization/prototype/structure.html) | 窄屏同屏显示人物和两个世界，减少动效时可静态阅读。使用原五个合成时点 |
 
 ---
 

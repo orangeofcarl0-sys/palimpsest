@@ -7,24 +7,28 @@
     <title>台站读数复核 · 协作结构研究</title>
     <style>
       :root {
-        --paper: #f7f8f4;
-        --sheet: #fffefa;
-        --ink: #213631;
-        --quiet: #50625a;
-        --line: #cfd6cb;
-        --green: #27634f;
-        --green-pale: #e4efe4;
-        --purple: #75547d;
-        --purple-pale: #f1e9f3;
-        --rust: #865638;
-        --focus: #126b99;
-        --mono: "Cascadia Mono", Consolas, monospace;
-        font-family: "Instrument Sans", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
-        color: var(--ink);
+        color-scheme: light;
+        --paper: #f5f3eb;
+        --sheet: #fffdf6;
+        --ink: #243a33;
+        --quiet: #52635b;
+        --faint: #a5afa0;
+        --line: #d6d8ca;
+        --moss: #37694f;
+        --moss-light: #e4ecdb;
+        --plum: #745970;
+        --ochre: #9c462c;
+        --focus: #1d6d92;
+        --serif: "Source Han Serif SC", "Noto Serif SC", "STSong", SimSun, Georgia, serif;
+        --sans: "Instrument Sans", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+        --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
         background: var(--paper);
-        font-size: 15px;
+        color: var(--ink);
+        font: 15px/1.5 var(--sans);
       }
-      * {
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
       }
       body {
@@ -32,70 +36,23 @@
         min-width: 290px;
       }
       button,
-      summary,
-      a {
+      summary {
         -webkit-tap-highlight-color: transparent;
       }
       button {
-        cursor: pointer;
-        color: inherit;
         font: inherit;
-      }
-      button:focus-visible,
-      a:focus-visible,
-      summary:focus-visible,
-      [tabindex="0"]:focus-visible {
-        outline: 3px solid var(--focus);
-        outline-offset: 3px;
+        color: inherit;
+        cursor: pointer;
       }
       button:disabled {
         cursor: default;
       }
+      :where(button, summary, a, [tabindex]):focus-visible {
+        outline: 3px solid var(--focus) !important;
+        outline-offset: 3px;
+      }
       [hidden] {
         display: none !important;
-      }
-      .shell {
-        min-height: 49px;
-        padding: 0 clamp(15px, 3.8vw, 65px);
-        background: #243f36;
-        color: #eef4eb;
-        display: flex;
-        align-items: center;
-        gap: 13px;
-        font-size: 13px;
-      }
-      .brand {
-        font-family: var(--mono);
-        font-weight: 700;
-        letter-spacing: 0.08em;
-      }
-      .divider {
-        opacity: 0.5;
-      }
-      .shell .study {
-        margin-left: auto;
-        color: #ceddce;
-      }
-      main {
-        max-width: 1560px;
-        margin: auto;
-        padding: clamp(16px, 2.4vw, 36px) clamp(15px, 3.8vw, 65px) 25px;
-      }
-      header,
-      .toolbar,
-      .legend,
-      .view-switch,
-      .steps,
-      .map-title,
-      .tree-row,
-      .inspector-head {
-        display: flex;
-        align-items: center;
-      }
-      header {
-        justify-content: space-between;
-        gap: 15px;
-        flex-wrap: wrap;
       }
       h1,
       h2,
@@ -103,209 +60,350 @@
       p {
         margin: 0;
       }
-      h1 {
-        font-size: clamp(23px, 2.3vw, 34px);
-        font-weight: 630;
-        letter-spacing: -0.02em;
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
       }
-      h2 {
-        font-size: 19px;
-        font-weight: 620;
+      .shell {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 0 clamp(14px, 3.5vw, 54px);
+        background: #243d35;
+        color: #eef2e8;
+        font-size: 12px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font: 650 15px var(--mono);
+        letter-spacing: 0.07em;
+      }
+      .brand-mark {
+        width: 13px;
+        height: 16px;
+        display: inline-block;
+        transform: skewY(-16deg);
+        border-block: 2px solid #d6dfcc;
+        background: linear-gradient(to bottom, transparent 42%, #d6dfcc 42% 56%, transparent 56%);
+      }
+      .divider {
+        color: #92a599;
+      }
+      .study {
+        margin-left: auto;
+        color: #d7e2d2;
+      }
+      main {
+        max-width: 1530px;
+        margin: auto;
+        padding: clamp(14px, 1.9vw, 28px) clamp(13px, 3.5vw, 54px) 25px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font: 650 clamp(25px, 2.4vw, 35px) / 1.35 var(--serif);
+        letter-spacing: 0.03em;
       }
       .view-switch {
-        border: 1px solid var(--line);
-        border-radius: 7px;
+        display: inline-flex;
         padding: 3px;
-        background: #ecf0e9;
+        background: #e7e9de;
+        border: 1px solid #d0d4c5;
+        border-radius: 8px;
       }
       .view-switch button {
-        background: transparent;
+        padding: 5px 13px;
         border: 0;
-        border-radius: 4px;
-        padding: 6px 16px;
-        font-size: 13px;
-      }
-      .view-switch [aria-pressed="true"] {
-        background: var(--sheet);
-        box-shadow: 0 1px 3px #23382e28;
-        font-weight: 650;
-      }
-      .toolbar {
-        gap: 16px;
-        flex-wrap: wrap;
-        margin: 17px 0 18px;
-      }
-      .muted,
-      .step-label {
+        border-radius: 5px;
+        background: transparent;
         color: var(--quiet);
         font-size: 13px;
       }
-      .steps {
-        flex-wrap: wrap;
-        gap: 3px;
-      }
-      .steps button {
-        border: 1px solid transparent;
-        background: transparent;
-        padding: 5px 11px;
-        font-size: 13px;
-        border-radius: 14px;
-      }
-      .steps button:hover {
-        background: #e7ede5;
-      }
-      .steps [aria-pressed="true"] {
-        border-color: #98ae9c;
-        background: #e4ede3;
-        font-weight: 650;
+      .view-switch button[aria-pressed="true"] {
+        background: var(--sheet);
+        color: var(--ink);
+        font-weight: 640;
+        box-shadow: 0 1px 3px #3e483324;
       }
       .surface {
         display: grid;
-        grid-template-columns: minmax(167px, 18.2%) minmax(0, 1fr);
-        background: var(--sheet);
-        border: 1px solid #bfc9be;
-        border-radius: 10px;
+        grid-template-columns: clamp(166px, 15.5vw, 210px) minmax(0, 1fr);
         overflow: clip;
+        border-radius: 12px;
+        border: 1px solid #c9cebf;
+        background: var(--sheet);
+        box-shadow:
+          0 2px 4px #25392f07,
+          0 12px 34px -24px #263c32a6;
       }
       .rail {
-        background: #f0f3ec;
-        padding: 17px 15px 18px;
+        background: #eeefe5;
         border-right: 1px solid var(--line);
+        padding: 18px 15px;
       }
       .rail summary {
         cursor: pointer;
-        font-size: 14px;
-        font-weight: 650;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 630;
+      }
+      .rail summary::-webkit-details-marker {
+        display: none;
+      }
+      .rail summary::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border: solid #72806f;
+        border-width: 0 1.4px 1.4px 0;
+        transform: rotate(-45deg);
+        margin: 0 4px 1px 1px;
+      }
+      .rail details[open] > summary::before {
+        transform: translateY(-2px) rotate(45deg);
       }
       .rail .directory > summary {
-        font-size: 16px;
-      }
-      .rail .subtree {
-        margin: 10px 0 0 2px;
+        font-size: 15px;
       }
       .rail h3 {
-        margin: 20px 0 6px;
-        color: var(--quiet);
-        font-size: 12px;
-        font-weight: 600;
+        font: 580 11px var(--sans);
+        color: #667263;
+        margin: 23px 0 8px;
+        letter-spacing: 0.09em;
+      }
+      .subtree {
+        margin: 9px 0 0;
+      }
+      .subtree summary .ref {
+        margin-left: auto;
+      }
+      .ref,
+      .count {
+        font: 11px var(--mono);
+        color: #586955;
       }
       .branch {
-        border-left: 1px solid #becbbd;
-        margin: 5px 0 0 6px;
-        padding: 0 0 0 11px;
+        border-left: 1px solid #c6cdbd;
+        margin: 5px 0 0 5px;
+        padding-left: 8px;
       }
       .tree-row {
-        gap: 7px;
         width: 100%;
-        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 4px 6px;
+        min-height: 27px;
         border: 0;
-        border-radius: 3px;
-        padding: 4px 5px;
-        font-size: 13px;
+        border-radius: 4px;
         background: transparent;
+        text-align: left;
+        font-size: 13px;
+      }
+      .tree-row::before {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 5px;
+        flex: 0 0 5px;
+        border: 1px solid #899a86;
+        border-radius: 50%;
+      }
+      .tree-row[data-ref="R0"]::before,
+      .tree-row[data-ref="C1"]::before,
+      .tree-row[data-ref="N1"]::before {
+        border-radius: 1px;
       }
       .tree-row small {
+        margin-left: auto;
         font: 10px var(--mono);
-        color: var(--quiet);
-      }
-      .tree-row[aria-pressed="true"] {
-        background: #d9e6d9;
-        font-weight: 650;
+        color: #62705f;
       }
       .tree-row:hover {
-        text-decoration: underline;
+        background: #e3e7d9;
       }
-      .ref {
-        font: 11px var(--mono);
-        color: var(--quiet);
+      .tree-row[aria-pressed="true"] {
+        background: #dbe5d6;
+        color: #264932;
+        font-weight: 640;
+      }
+      .tree-row[aria-pressed="true"]::before {
+        background: #477057;
+        border-color: #477057;
+      }
+      .rail .muted {
+        font-size: 12px;
       }
       .space {
         min-width: 0;
       }
       .map-title {
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 6px 14px;
-        padding: 17px 20px 7px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 17px 22px 8px;
+      }
+      .moment-count {
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        align-self: flex-start;
+        min-width: 44px;
+        height: 33px;
+        margin-top: 2px;
+        color: var(--ochre);
+        background: #f7eadb;
+        border: 1px solid #e4ceb3;
+        border-radius: 6px;
+        font: 600 12px var(--mono);
+      }
+      .event-copy {
+        min-width: 0;
+      }
+      #event-name {
+        font: 650 clamp(18px, 1.55vw, 23px) / 1.28 var(--serif);
+      }
+      #event-description {
+        color: var(--quiet);
+        font-size: 13px;
+        line-height: 1.55;
+        margin: 4px 0 0;
+      }
+      .repeat {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        flex-shrink: 0;
+        margin: 2px 0 0 auto;
+        padding: 4px 8px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: transparent;
+        font-size: 12px;
+      }
+      .repeat:hover {
+        background: #f0eee3;
+      }
+      .repeat-icon {
+        font: 19px/1 var(--sans);
       }
       .legend {
-        padding: 4px 20px 12px;
+        display: flex;
+        align-items: center;
         flex-wrap: wrap;
-        gap: 7px 13px;
+        gap: 3px 13px;
+        padding: 2px 22px 10px;
       }
       .set-toggle {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        border: 1px solid transparent;
-        border-radius: 5px;
-        padding: 2px 5px 2px 1px;
-        font-size: 13px;
+        gap: 6px;
+        padding: 2px 0;
+        border: 0;
         background: transparent;
+        font-size: 12px;
+      }
+      .set-toggle:hover:not(:disabled) {
+        text-decoration: underline;
+        text-underline-offset: 3px;
       }
       .set-toggle[aria-pressed="false"] {
-        color: #647068;
         text-decoration: line-through;
+        color: #657465;
       }
       .swatch {
         display: inline-block;
-        width: 20px;
-        height: 13px;
-        border-radius: 6px;
+        width: 17px;
+        height: 11px;
+        border-radius: 52% 38% 47% 40%;
       }
       .swatch.a {
-        background: var(--green-pale);
-        border: 2px solid var(--green);
+        border: 1.6px solid #517c60;
+        background: #e0e9d2;
       }
       .swatch.b {
-        background: var(--purple-pale);
-        border: 2px dashed var(--purple);
+        border: 1.6px dashed #806480;
+        background: #efe5ed;
       }
       .intersection {
-        font-size: 13px;
-        font-variant-numeric: tabular-nums;
-        font-weight: 600;
+        font-size: 12px;
+        color: #47594b;
+        border-left: 1px solid var(--line);
+        padding-left: 11px;
       }
       .viewport {
-        overflow-x: auto;
+        overflow: clip;
         border-block: 1px solid var(--line);
       }
       .plane {
         width: 100%;
-        min-width: 680px;
         aspect-ratio: 900/352;
         position: relative;
         isolation: isolate;
         overflow: hidden;
-        background-color: #fcfcf6;
-        background-image: radial-gradient(#b5c0ae 0.7px, transparent 0.9px);
-        background-size: 19px 19px;
+        background-color: #f8f8ef;
+        background-image:
+          radial-gradient(#a3b09670 0.75px, transparent 1px),
+          radial-gradient(ellipse at 25% 52%, #f5f7ec 0%, #faf9f1 54%, #f5f3e8 100%);
+        background-size:
+          17px 17px,
+          100% 100%;
       }
-      .plane canvas {
+      .plane[data-layout="compact"] {
+        aspect-ratio: 360/396;
+      }
+      #drawing {
         position: absolute;
         inset: 0;
-        height: 100%;
         width: 100%;
+        height: 100%;
         pointer-events: none;
       }
       .world-frame {
         position: absolute;
-        pointer-events: none;
-        border: 1px solid #9eac96;
-        border-radius: 7px;
-        background: #f6f7efb0;
         z-index: -1;
+        border: 1px solid #b1bbab;
+        border-radius: 8px;
+        pointer-events: none;
+        background: linear-gradient(120deg, #fdfcf486, #f0f2e67a);
+        box-shadow: inset 0 1px 0 #ffffffa8;
+      }
+      .world-frame::after {
+        content: "";
+        position: absolute;
+        inset: 3px -3px -3px 3px;
+        border-right: 1px solid #c3cbbb;
+        border-bottom: 1px solid #c3cbbb;
+        border-radius: 0 0 8px 0;
       }
       .world-frame span {
         position: absolute;
-        left: 8px;
-        top: 5px;
-        font-size: clamp(10px, 1vw, 13px);
-        color: #495d50;
+        left: 10px;
+        top: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #4f6253;
+        font-size: clamp(10px, 0.86vw, 12px);
       }
       .world-frame b {
         font: 600 11px var(--mono);
-        margin-right: 5px;
+        letter-spacing: 0.03em;
       }
       .world-zero {
         left: 62.2%;
@@ -318,85 +416,220 @@
         top: 45.5%;
         width: 35.2%;
         height: 50%;
-        border-style: dashed;
+        background: linear-gradient(130deg, #fbf6e9b0, #f6f1e65e);
+      }
+      .plane[data-layout="compact"] .world-zero {
+        left: 2.3%;
+        top: 58%;
+        width: 39%;
+        height: 37%;
+      }
+      .plane[data-layout="compact"] .world-one {
+        left: 44%;
+        top: 58%;
+        width: 53%;
+        height: 37%;
       }
       .node {
         position: absolute;
         transform: translate(-50%, -50%);
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: clamp(3px, 0.6vw, 9px);
         width: 15%;
         height: 13%;
-        max-height: 56px;
-        padding: 0 0.8%;
-        text-align: left;
-        border: 1px solid #9eab9b;
-        border-radius: 7px;
-        background: #fffefa;
-        z-index: 1;
-        color: #24382e;
-        box-shadow: 0 1px 2px #24382e0d;
-        font-size: clamp(11px, 1.13vw, 16px);
-        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        gap: 5%;
+        padding: 0 0.65%;
         white-space: nowrap;
+        text-align: left;
+        color: var(--ink);
+        font: 600 clamp(11px, 1.03vw, 15px) / 1.15 var(--sans);
+        border: 1px solid transparent;
+        border-radius: 28px 8px 8px 28px;
+        background: transparent;
+        z-index: 1;
       }
-      .node:hover {
-        border-color: #4e735e;
+      .node:hover,
+      .node:focus-visible {
+        background: #fffdf3c7;
       }
       .node[aria-pressed="true"] {
-        border: 2px solid #275d49;
-        outline: 2px solid #fffefa;
-        box-shadow: 0 0 0 3px #71957c;
+        background: #fffef2e8;
+        border-color: #839782;
+        box-shadow: 0 2px 6px #3e533621;
       }
-      .node:focus-visible {
-        outline: 3px solid var(--focus);
-      }
-      .node .symbol {
-        width: 25%;
-        max-width: 31px;
+      .mark {
+        width: 38px;
+        height: auto;
         aspect-ratio: 1;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        color: #2b5446;
-        background: #e3ebe1;
-        border: 1px solid #bccdbd;
-        font: 600 clamp(10px, 1vw, 14px) var(--mono);
-        flex-shrink: 0;
+        display: block;
+        flex: 0 0 auto;
       }
-      .node .node-text {
+      .node .mark {
+        width: clamp(28px, 3.7vw, 52px);
+        max-width: 37%;
+      }
+      .node-text {
         display: grid;
-        gap: 3px;
-        font-weight: 600;
+        align-content: center;
+        gap: 4px;
       }
       .node .sub {
-        font-size: clamp(9px, 0.82vw, 12px);
-        color: var(--quiet);
-        font-weight: 500;
+        color: #556557;
+        font:
+          500 clamp(9px, 0.71vw, 11px) / 1 var(--mono),
+          var(--sans);
       }
       .node.artifact {
         width: 12.5%;
-        border-radius: 3px;
+        border: 1px solid #c8baa1;
+        border-radius: 5px;
+        background: #fffdf3;
+        box-shadow:
+          0 2px 0 #d9d2c0,
+          0 4px 6px #473e2512;
       }
-      .node.artifact .symbol {
-        border-radius: 2px;
-        background: #f2eadd;
-        border-color: #d5bfa9;
-        color: #754529;
+      .node.artifact .mark {
+        max-width: 32%;
+        opacity: var(--paper-ink, 1);
+      }
+      .node.artifact[data-forming="true"] {
+        border-style: dashed;
+        background-color: #faf5e9;
       }
       .node.artifact[aria-pressed="true"] {
-        border-color: var(--rust);
-        box-shadow: 0 0 0 3px #b18a66;
+        border-color: #a56846;
+        box-shadow:
+          0 2px 0 #bd9979,
+          0 3px 7px #79553423;
       }
-      .graph-note {
-        padding: 7px 20px;
-        color: var(--quiet);
+      .node[data-actor="true"]:not([aria-pressed="true"]):not(.artifact) {
+        background: #fff6e8d9;
+        border-color: #c6ab90;
+      }
+      .node[data-trace-end="true"] {
+        outline: 1px solid #9b7853;
+        outline-offset: 2px;
+      }
+      .node[data-emphasis="source"] .mark,
+      .node[data-emphasis="member"] .mark {
+        filter: drop-shadow(0 0 3px #c58754a8);
+      }
+      .node[data-emphasis="land"] {
+        border-color: #b26a42;
+        box-shadow:
+          0 0 0 2px #ceac8063,
+          0 2px 0 #c8b499;
+      }
+      .plane[data-layout="compact"] .node {
+        width: 29%;
+        height: 10%;
+        padding-inline: 1%;
+        gap: 5%;
+        font-size: clamp(11px, 2.9vw, 14px);
+      }
+      .plane[data-layout="compact"] .node .mark {
+        width: 34%;
+        max-width: 42px;
+      }
+      .plane[data-layout="compact"] .node.artifact {
+        width: 26%;
+        height: 9.2%;
+      }
+      .plane[data-layout="compact"] .sub {
+        font-size: clamp(9px, 2vw, 11px);
+      }
+      .transport {
+        display: flex;
+        align-items: center;
+        gap: clamp(10px, 1.6vw, 23px);
+        padding: 12px 22px;
+      }
+      .play {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        background: #294b3c;
+        color: #fffdf1;
+        border: 1px solid #234335;
+        border-radius: 6px;
+        min-width: 96px;
+        min-height: 34px;
+        padding: 5px 10px;
+        font-size: 13px;
+        font-weight: 610;
+      }
+      .play:hover {
+        background: #365c49;
+      }
+      .play-icon {
+        display: inline-block;
+        width: 11px;
+        height: 11px;
+        background: currentColor;
+        clip-path: polygon(15% 0, 98% 50%, 15% 100%);
+      }
+      .play[data-state="playing"] .play-icon {
+        clip-path: polygon(0 0, 35% 0, 35% 100%, 65% 100%, 65% 0, 100% 0, 100% 100%, 0 100%);
+      }
+      .steps {
+        flex: 1;
+        min-width: 0;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+      .steps button {
+        position: relative;
+        min-width: 0;
+        height: 38px;
+        padding: 14px 1px 0;
+        background: transparent;
+        border: 0;
+        color: #5d695f;
         font-size: 12px;
       }
+      .steps button::before {
+        content: "";
+        position: absolute;
+        left: -50%;
+        top: 6px;
+        width: 100%;
+        border-top: 1px solid #c7cebc;
+      }
+      .steps button:first-child::before {
+        display: none;
+      }
+      .steps button::after {
+        content: "";
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        left: 50%;
+        top: 3px;
+        border-radius: 50%;
+        transform: translateX(-50%);
+        border: 1px solid #9aa791;
+        background: var(--sheet);
+      }
+      .steps button[data-past="true"]::after {
+        background: #869c82;
+      }
+      .steps button[aria-pressed="true"] {
+        color: var(--ochre);
+        font-weight: 650;
+      }
+      .steps button[aria-pressed="true"]::after {
+        width: 9px;
+        height: 9px;
+        top: 2px;
+        background: #a85433;
+        border: 2px solid var(--sheet);
+        box-shadow: 0 0 0 1px #a85433;
+        z-index: 1;
+      }
       .matrix {
-        padding: 13px 20px 18px;
+        padding: 12px 22px;
         border-block: 1px solid var(--line);
       }
       .matrix table {
@@ -406,152 +639,260 @@
       }
       caption {
         text-align: left;
-        font-size: 13px;
+        font-size: 12px;
         color: var(--quiet);
         padding-bottom: 8px;
       }
       th,
       td {
-        padding: 8px 5px;
-        border-bottom: 1px solid #dde2d8;
+        padding: 7px 4px;
+        border-bottom: 1px solid #dfe2d5;
         text-align: center;
-        font-variant-numeric: tabular-nums;
-      }
-      th {
-        font-weight: 600;
       }
       th:first-child {
         text-align: left;
       }
       td[data-member="yes"] {
-        color: var(--green);
+        color: var(--moss);
         font-weight: 650;
       }
       .matrix tr.selected {
-        background: #edf2e9;
+        background: #edf1e6;
       }
-      .matrix .matrix-peer,
+      .matrix-peer,
       .fact-link {
         background: transparent;
         border: 0;
-        padding: 3px 1px;
+        padding: 1px;
         text-align: left;
+        color: #31533e;
         text-decoration: underline;
         text-underline-offset: 3px;
       }
       .inspector {
-        padding: 15px 20px 18px;
         border-top: 1px solid var(--line);
+        padding: 13px 22px 16px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+        gap: 8px 22px;
+        background: linear-gradient(105deg, #f9f9ef, #fffdf6 70%);
       }
       .inspector-head {
-        gap: 10px;
+        display: flex;
+        align-items: center;
         flex-wrap: wrap;
+        gap: 6px 9px;
       }
       .inspector h3 {
-        font-size: 17px;
+        font: 640 18px/1.3 var(--serif);
+      }
+      .inspector .muted {
+        color: var(--quiet);
+        font-size: 11px;
+      }
+      .pin {
+        background: transparent;
+        border: 0;
+        border-bottom: 1px dotted #8b9c86;
+        padding: 1px;
+        color: #49614c;
+        font: 12px var(--sans);
       }
       .inspector p {
-        margin: 7px 0;
-        font-size: 14px;
-        line-height: 1.55;
+        margin-top: 5px;
+        color: #48594c;
+        font-size: 13px;
       }
       .facts {
         margin: 0;
-        padding-left: 18px;
-        color: #48594f;
-        font-size: 13px;
+        padding-left: 13px;
+        border-left: 1px solid #d6daca;
+        list-style: none;
+        color: #536153;
+        font-size: 12px;
         line-height: 1.65;
       }
-      .event-note {
-        margin-top: 12px;
-        color: #40564a;
-        font-size: 13px;
-        line-height: 1.6;
+      .facts li + li {
+        margin-top: 2px;
       }
-      .event-note b {
-        margin-right: 8px;
+      .facts button {
+        font: inherit;
       }
-      @media (max-width: 780px) {
+      .facts .trace {
+        display: inline-block;
+        border: 1px solid #c9d0be;
+        background: transparent;
+        color: #49614c;
+        font-size: 11px;
+        border-radius: 4px;
+        margin-left: 8px;
+        padding: 0 5px;
+        white-space: nowrap;
+      }
+      .facts .trace[aria-pressed="true"] {
+        color: #82432f;
+        background: #f6e6d4;
+        border-color: #d4b193;
+      }
+      #trace-status {
+        font-size: 12px;
+        color: var(--ochre);
+      }
+      @media (max-width: 790px) {
+        main {
+          padding-inline: clamp(10px, 2.4vw, 18px);
+        }
         .surface {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
         .rail {
+          padding: 8px 14px;
           border-right: 0;
           border-bottom: 1px solid var(--line);
-          padding: 9px 14px;
         }
         .rail .directory[open] .rail-content {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 12px;
+          padding: 0 2px 9px;
         }
         .rail h3 {
-          margin-top: 10px;
-        }
-        .toolbar {
-          gap: 5px 9px;
-        }
-        .steps button {
-          padding: 5px 8px;
+          margin: 10px 0 4px;
         }
       }
-      @media (max-width: 540px) {
+      @media (max-width: 620px) {
+        main {
+          padding-top: 12px;
+        }
+        header {
+          margin-bottom: 9px;
+        }
         .shell {
-          gap: 7px;
+          gap: 8px;
+          height: 36px;
           font-size: 11px;
         }
+        h1 {
+          font-size: clamp(22px, 5.8vw, 28px);
+        }
         .view-switch button {
-          padding: 5px 10px;
-        }
-        .map-title,
-        .legend,
-        .graph-note,
-        .inspector,
-        .matrix {
-          padding-inline: 12px;
-        }
-        .steps {
-          gap: 0;
-        }
-        .steps button {
           font-size: 12px;
-        }
-        .toolbar {
-          margin: 12px 0;
+          padding: 4px 8px;
         }
         .map-title {
-          padding-top: 12px;
+          gap: 7px;
+          padding: 11px 11px 5px;
+        }
+        .moment-count {
+          min-width: 34px;
+          height: 26px;
+          font-size: 10px;
+        }
+        #event-description {
+          font-size: 12px;
+        }
+        .repeat {
+          gap: 3px;
+          font-size: 11px;
+          padding: 3px 5px;
+        }
+        .legend {
+          padding: 3px 11px 7px;
+          gap: 3px 8px;
+        }
+        .set-toggle,
+        .intersection {
+          font-size: 11px;
+        }
+        .intersection {
+          padding-left: 7px;
+        }
+        .transport {
+          gap: 8px;
+          padding: 10px;
+          flex-wrap: wrap;
+        }
+        .play {
+          min-width: 76px;
+          min-height: 30px;
+          font-size: 12px;
+        }
+        .steps button {
+          font-size: 10px;
+          height: 34px;
+        }
+        .matrix {
+          padding: 10px;
         }
         th,
         td {
-          padding-inline: 2px;
           font-size: 12px;
+        }
+        .inspector {
+          grid-template-columns: minmax(0, 1fr);
+          padding: 11px;
+        }
+        .facts {
+          border: 0;
+          padding-left: 0;
+        }
+      }
+      @media (max-width: 395px) {
+        .steps {
+          flex-basis: 100%;
+        }
+        .transport {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+        .play {
+          min-width: 30px;
+          width: 32px;
+          height: 32px;
+          padding: 0;
+        }
+        .play-label {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip-path: inset(50%);
+        }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .node,
+        .tree-row,
+        .view-switch button {
+          transition:
+            background-color 140ms,
+            box-shadow 160ms,
+            border-color 160ms;
+        }
+        .node .mark {
+          transform-origin: 50% 80%;
+          transform: translateY(var(--rise, 0px)) rotate(var(--tilt, 0deg));
         }
       }
     </style>
   </head>
   <body>
     <nav class="shell" aria-label="宿主位置">
-      <span class="brand">DSH</span><span class="divider">/</span><span>当前会话</span
-      ><span class="divider">/</span> <strong aria-current="page">协作</strong
-      ><span class="study">合成设计样例</span>
+      <span class="brand"><i aria-hidden="true" class="brand-mark"></i>DSH</span>
+      <span class="divider">/</span><span>当前会话</span><span class="divider">/</span>
+      <strong aria-current="page">协作</strong><span class="study">合成记录回放</span>
     </nav>
-    <main>
+    <main data-screen-label="台站读数复核 · 会话协作">
       <header>
         <h1>台站读数复核</h1>
         <div class="view-switch" role="group" aria-label="显示方式">
-          <button type="button" id="map-mode" aria-pressed="true">格点图</button>
+          <button type="button" id="map-mode" aria-pressed="true">工作图</button>
           <button type="button" id="table-mode" aria-pressed="false">成员表</button>
         </div>
       </header>
-      <div class="toolbar">
-        <span class="step-label">观察时点</span>
-        <div class="steps" id="steps" role="group" aria-label="观察时点"></div>
-      </div>
       <div class="surface">
         <aside class="rail" aria-label="组织和世界目录">
           <details class="directory" id="directory" open>
-            <summary>结构目录</summary>
+            <summary>组织与世界</summary>
             <div class="rail-content">
               <section>
                 <h3>正式组织</h3>
@@ -580,8 +921,14 @@
         </aside>
         <section class="space" aria-label="协作工作面">
           <div class="map-title">
-            <h2 id="view-title">参与者与工件</h2>
-            <span class="muted">4 位参与者 · 2 个工作世界</span>
+            <span class="moment-count" id="moment-count" aria-label="时点"></span>
+            <div class="event-copy" aria-live="polite" aria-atomic="true">
+              <h2 id="event-name"></h2>
+              <p id="event-description"></p>
+            </div>
+            <button type="button" class="repeat" id="replay" title="从本步的开始再次观看">
+              <span class="repeat-icon" aria-hidden="true">↻</span>重演此刻
+            </button>
           </div>
           <div class="legend" aria-label="集合与交集">
             <button type="button" class="set-toggle" id="toggle-a" aria-pressed="true">
@@ -593,8 +940,8 @@
             <span class="intersection" id="intersection" aria-live="polite"></span>
           </div>
           <div id="graph-view">
-            <div class="viewport" tabindex="0" role="region" aria-label="工作图，可横向滚动">
-              <div class="plane" id="plane">
+            <div class="viewport" role="region" aria-label="可选中参与者或工件，查看和追踪记录的动作">
+              <div class="plane" id="plane" data-layout="wide">
                 <div class="world-frame world-zero">
                   <span><b>W0</b>项目基线</span>
                 </div>
@@ -604,12 +951,11 @@
                 <canvas id="drawing" aria-hidden="true"></canvas>
               </div>
             </div>
-            <p class="graph-note">轮廓圈出成员。箭头从执行者或引用方指向工件，选中任一端可读动作。</p>
           </div>
           <div class="matrix" id="table-view" hidden>
             <table>
               <caption>
-                在当前时点逐人核对两个集合，点选姓名查看依据。
+                此刻的成员归属 · 点姓名可查依据
               </caption>
               <thead>
                 <tr>
@@ -622,24 +968,32 @@
               <tbody id="members"></tbody>
             </table>
           </div>
+          <div class="transport" aria-label="回放控制">
+            <button type="button" class="play" id="play" aria-label="播放经过">
+              <span class="play-icon" aria-hidden="true"></span
+              ><span class="play-label" id="play-label">播放经过</span>
+            </button>
+            <div class="steps" id="steps" role="group" aria-label="观察时点"></div>
+          </div>
           <section class="inspector" aria-label="所选对象" aria-live="polite" aria-atomic="true">
-            <div class="inspector-head">
-              <span class="muted">选中</span>
-              <h3 id="selection-name" tabindex="-1"></h3>
-              <span class="ref" id="selection-ref"></span>
+            <div>
+              <div class="inspector-head">
+                <span class="muted" id="selection-label">随时点</span>
+                <h3 id="selection-name" tabindex="-1"></h3>
+                <span class="ref" id="selection-ref"></span
+                ><button type="button" class="pin" id="pin">固定此项</button>
+              </div>
+              <p id="selection-summary"></p>
+              <p id="trace-status" hidden></p>
             </div>
-            <p id="selection-summary"></p>
             <ul class="facts" id="selection-facts"></ul>
           </section>
         </section>
       </div>
-      <p class="event-note" aria-live="polite"><b id="event-name"></b><span id="event-description"></span></p>
-      <noscript>这个交互样例需要 JavaScript 才能切换观察时点。</noscript>
+      <noscript>这个交互样例需要 JavaScript 才能显示动作和成员。</noscript>
     </main>
     <script>
       const $ = (id) => document.getElementById(id);
-      const width = 900,
-        height = 352;
       const peers = ["P1", "P2", "P3", "P4"];
       const quality = ["P3", "P4"];
       const objects = {
@@ -651,9 +1005,19 @@
         C1: { name: "比对表", x: 665, y: 222, world: "W1", born: 1 },
         N1: { name: "复核注记", x: 796, y: 293, world: "W1", born: 2 },
       };
+      const compactPositions = {
+        P1: [76, 75],
+        P2: [246, 75],
+        P3: [76, 161],
+        P4: [246, 161],
+        R0: [79, 308],
+        C1: [226, 284],
+        N1: [291, 345],
+      };
       const stages = [
         {
           name: "取样",
+          focus: "R0",
           org: ["P1", "P2", "P3"],
           review: ["P4"],
           rev: "r1",
@@ -661,6 +1025,7 @@
         },
         {
           name: "加入复核",
+          focus: "C1",
           org: ["P1", "P2", "P3"],
           review: ["P2", "P4"],
           rev: "r1",
@@ -668,6 +1033,7 @@
         },
         {
           name: "留下注记",
+          focus: "C1",
           org: ["P1", "P2", "P3"],
           review: ["P2", "P4"],
           rev: "r1",
@@ -675,6 +1041,7 @@
         },
         {
           name: "退出复核",
+          focus: "P2",
           org: ["P1", "P2", "P3"],
           review: ["P4"],
           rev: "r1",
@@ -682,6 +1049,7 @@
         },
         {
           name: "组织换版",
+          focus: "P3",
           org: ["P1", "P2"],
           review: ["P4"],
           rev: "r2",
@@ -698,6 +1066,8 @@
           verb: "记录",
           curve: [131, 87, 229, 15, 581, 18, 673, 83],
           label: [500, 38],
+          compactCurve: [40, 91, 1, 152, 5, 278, 32, 303],
+          compactLabel: [40, 209],
         },
         {
           from: "P2",
@@ -706,6 +1076,8 @@
           verb: "产出",
           curve: [430, 109, 509, 109, 535, 203, 609, 220],
           label: [523, 155],
+          compactCurve: [298, 77, 350, 84, 355, 250, 273, 280],
+          compactLabel: [327, 204],
         },
         {
           from: "C1",
@@ -714,6 +1086,8 @@
           verb: "引用",
           curve: [697, 200, 747, 166, 750, 146, 731, 113],
           label: [758, 152],
+          compactCurve: [179, 282, 158, 280, 152, 302, 126, 305],
+          compactLabel: [148, 278],
         },
         {
           from: "P4",
@@ -722,6 +1096,8 @@
           verb: "签注",
           curve: [430, 251, 531, 292, 527, 328, 739, 295],
           label: [550, 304],
+          compactCurve: [289, 174, 334, 200, 351, 280, 312, 327],
+          compactLabel: [324, 229],
         },
         {
           from: "N1",
@@ -730,125 +1106,313 @@
           verb: "引用",
           curve: [775, 270, 751, 247, 741, 234, 722, 226],
           label: [774, 249],
+          compactCurve: [277, 327, 271, 314, 249, 310, 243, 302],
+          compactLabel: [264, 312],
         },
       ];
-      let current = 2;
-      let selected = "P2";
-      let tableMode = window.matchMedia("(max-width: 540px)").matches;
-      const visibleSets = { a: true, b: true };
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      const storageKey = "palimpsest.structure.replay.v2";
+      let restored;
+      try {
+        restored = JSON.parse(sessionStorage.getItem(storageKey));
+      } catch {
+        /* optional local history */
+      }
+      let current = Number.isInteger(restored?.step) && stages[restored.step] ? restored.step : 2;
+      let pinned = restored?.pinned === true && Object.hasOwn(objects, restored?.selection);
+      let selected = pinned ? restored.selection : stages[current].focus;
+      let tableMode = false;
+      let compact = false;
+      let hoverRef = null;
+      let tracing = null;
       const hosts = new Map();
+      const visibleSets = { a: true, b: true };
       const ctx = $("drawing").getContext("2d");
-      if (window.matchMedia("(max-width: 780px)").matches) $("directory").open = false;
+      const cueDuration = 2050,
+        stepDuration = 3350;
+      let mode = "idle",
+        elapsed = cueDuration,
+        since = 0,
+        frame = 0,
+        origin = current,
+        paintedLast = false;
+      if (matchMedia("(max-width: 790px)").matches) $("directory").open = false;
 
-      function roundedPolygon(points, radius) {
+      // A and B share fixed peer positions. A contour can change without moving its members.
+      function contour(set, amount) {
         const path = new Path2D();
-        const last = points[points.length - 1],
-          first = points[0];
-        path.moveTo((last[0] + first[0]) / 2, (last[1] + first[1]) / 2);
-        for (let i = 0; i < points.length; i++) {
-          const point = points[i],
-            next = points[(i + 1) % points.length];
-          path.arcTo(point[0], point[1], next[0], next[1], radius);
+        const ay = (y) => (y <= 153 ? y : 153 + (y - 153) * amount);
+        const by = (y) => 302 - (302 - y) * (0.45 + 0.55 * amount);
+        const y = set === "a" ? ay : by;
+        function curve(x1, y1, x2, y2, x3, y3) {
+          path.bezierCurveTo(x1, y(y1), x2, y(y2), x3, y(y3));
+        }
+        if (set === "a") {
+          path.moveTo(96, y(54));
+          curve(141, 50, 172, 75, 215, 72);
+          curve(275, 72, 316, 41, 374, 47);
+          curve(437, 45, 481, 59, 471, 111);
+          curve(465, 155, 416, 164, 368, 161);
+          curve(306, 158, 256, 141, 213, 157);
+          curve(179, 171, 210, 236, 190, 269);
+          curve(168, 307, 58, 313, 24, 279);
+          curve(3, 259, 4, 217, 10, 181);
+          curve(14, 147, -6, 100, 14, 75);
+          curve(29, 55, 62, 55, 96, 54);
+        } else {
+          path.moveTo(368, y(48));
+          curve(421, 42, 467, 63, 466, 102);
+          curve(464, 141, 445, 158, 448, 185);
+          curve(447, 210, 475, 245, 459, 274);
+          curve(445, 302, 396, 307, 354, 299);
+          curve(301, 297, 264, 282, 262, 250);
+          curve(263, 217, 280, 195, 276, 167);
+          curve(271, 136, 253, 104, 270, 78);
+          curve(288, 51, 328, 48, 368, 48);
         }
         path.closePath();
-        return path;
+        if (!compact) return path;
+        const projected = new Path2D();
+        const sx = 170 / 262,
+          sy = 86 / 135;
+        projected.addPath(path, new DOMMatrix([sx, 0, 0, sy, 76 - 101 * sx, 75 - 109 * sy]));
+        return projected;
       }
-
+      function setAmount(set, index) {
+        return Number(set === "a" ? stages[index].org.includes("P3") : stages[index].review.includes("P2"));
+      }
       function contourFor(set, index) {
-        // This finite specimen has four distinct member sets at fixed peer coordinates.
-        const { org, review } = stages[index];
-        if (set === "a") {
-          if (org.includes("P3"))
-            return roundedPolygon(
-              [
-                [18, 65],
-                [452, 65],
-                [452, 153],
-                [192, 153],
-                [192, 289],
-                [18, 289],
-              ],
-              20,
-            );
-          return roundedPolygon(
-            [
-              [18, 65],
-              [452, 65],
-              [452, 153],
-              [18, 153],
-            ],
-            20,
-          );
-        }
-        const top = review.includes("P2") ? 55 : 198;
-        return roundedPolygon(
-          [
-            [273, top],
-            [457, top],
-            [457, 294],
-            [273, 294],
-          ],
-          28,
-        );
+        return contour(set, setAmount(set, index));
       }
-
-      function drawArrow(action, highlighted) {
-        const [x0, y0, x1, y1, x2, y2, x3, y3] = action.curve;
-        const color = highlighted ? "#345d47" : "#788e7e";
+      function smooth(t) {
+        const x = Math.max(0, Math.min(1, t));
+        return x * x * (3 - 2 * x);
+      }
+      function pointOnCurve(c, t) {
+        const s = 1 - t;
+        return [
+          s * s * s * c[0] + 3 * s * s * t * c[2] + 3 * s * t * t * c[4] + t * t * t * c[6],
+          s * s * s * c[1] + 3 * s * s * t * c[3] + 3 * s * t * t * c[5] + t * t * t * c[7],
+        ];
+      }
+      function verbTag(text, x, y, ink, background) {
         ctx.save();
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-        ctx.lineWidth = highlighted ? 2.6 : 1.5;
+        ctx.font = (compact ? "600 10px" : "600 11px") + " 'Microsoft YaHei', sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        const w = ctx.measureText(text).width + 12;
+        ctx.fillStyle = background;
         ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.bezierCurveTo(x1, y1, x2, y2, x3, y3);
-        ctx.stroke();
-        const angle = Math.atan2(y3 - y2, x3 - x2),
-          tip = highlighted ? 9 : 7;
-        ctx.beginPath();
-        ctx.moveTo(x3, y3);
-        ctx.lineTo(x3 - tip * Math.cos(angle - 0.46), y3 - tip * Math.sin(angle - 0.46));
-        ctx.lineTo(x3 - tip * Math.cos(angle + 0.46), y3 - tip * Math.sin(angle + 0.46));
-        ctx.closePath();
+        ctx.roundRect(x - w / 2, y - 8, w, 16, 5);
         ctx.fill();
-        if (highlighted) {
-          const [x, y] = action.label;
-          ctx.font = "600 13px 'Microsoft YaHei', sans-serif";
-          ctx.textAlign = "center";
-          ctx.lineWidth = 5;
-          ctx.strokeStyle = "#fcfcf6";
-          ctx.strokeText(action.verb, x, y);
-          ctx.fillText(action.verb, x, y);
-        }
+        ctx.fillStyle = ink;
+        ctx.fillText(text, x, y + 0.3);
         ctx.restore();
       }
+      function drawArrow(action, focus, progress) {
+        const c = compact ? action.compactCurve : action.curve;
+        const label = compact ? action.compactLabel : action.label;
+        const recent = tracing ? action === tracing : action.since === current,
+          citation = action.verb === "引用";
+        const hot = recent && !citation;
+        const ink = hot ? "#9b4b30" : focus || recent ? (citation ? "#6b657b" : "#47664f") : "#849080";
+        ctx.save();
+        if (tracing && !recent) ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = ink;
+        ctx.fillStyle = ink;
+        ctx.lineCap = "round";
+        ctx.lineWidth = hot ? 2.15 : focus || recent ? 1.55 : 1.1;
+        if (citation) ctx.setLineDash([3.2, 3.1]);
+        ctx.beginPath();
+        ctx.moveTo(c[0], c[1]);
+        ctx.bezierCurveTo(...c.slice(2));
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const angle = Math.atan2(c[7] - c[5], c[6] - c[4]),
+          tip = hot ? 7.5 : 6;
+        ctx.beginPath();
+        ctx.moveTo(c[6], c[7]);
+        ctx.lineTo(c[6] - tip * Math.cos(angle - 0.45), c[7] - tip * Math.sin(angle - 0.45));
+        ctx.lineTo(c[6] - tip * Math.cos(angle + 0.45), c[7] - tip * Math.sin(angle + 0.45));
+        ctx.closePath();
+        ctx.fill();
 
+        // Writing carries the document to its new location. A citation traces back to its source.
+        const phase =
+          tracing === action
+            ? (progress - 0.08) / 0.71
+            : (progress - (citation ? 0.64 : 0.08)) / (citation ? 0.31 : 0.52);
+        if (recent && phase > 0 && phase < 1) {
+          const t = smooth(phase);
+          const [x, y] = pointOnCurve(c, t);
+          ctx.lineWidth = hot ? 3 : 1.8;
+          ctx.beginPath();
+          for (let j = 0; j <= 12; j++) {
+            const u = Math.max(0, t - 0.14 + (0.14 * j) / 12),
+              point = pointOnCurve(c, u);
+            if (j === 0) ctx.moveTo(...point);
+            else ctx.lineTo(...point);
+          }
+          ctx.stroke();
+          if (citation) {
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = "#faf3ed";
+            ctx.fill();
+            ctx.lineWidth = 1.65;
+            ctx.stroke();
+          } else {
+            ctx.translate(x, y);
+            ctx.rotate(-0.18);
+            ctx.fillStyle = "#fff5da";
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.moveTo(-5, -7);
+            ctx.lineTo(2, -7);
+            ctx.lineTo(6, -3);
+            ctx.lineTo(6, 7);
+            ctx.lineTo(-5, 7);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(2, -7);
+            ctx.lineTo(2, -3);
+            ctx.lineTo(6, -3);
+            ctx.moveTo(-2, 1);
+            ctx.lineTo(3, 1);
+            ctx.moveTo(-2, 4);
+            ctx.lineTo(1, 4);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+        if (!hot && (!tracing || recent) && (focus || recent)) verbTag(action.verb, ...label, ink, "#f6f5ec");
+      }
+      function syncLayout() {
+        const plane = $("plane"),
+          w = plane.clientWidth;
+        if (!w) return;
+        const next = w <= 620,
+          name = next ? "compact" : "wide";
+        if (plane.dataset.layout === name && plane.dataset.ready) return;
+        compact = next;
+        plane.dataset.layout = name;
+        plane.dataset.ready = "true";
+        for (const [id, node] of hosts) {
+          const item = objects[id],
+            [x, y] = compact ? compactPositions[id] : [item.x, item.y];
+          node.style.left = (x / (compact ? 360 : 900)) * 100 + "%";
+          node.style.top = (y / (compact ? 396 : 352)) * 100 + "%";
+        }
+      }
+      function markActor(id, text) {
+        const item = objects[id],
+          [x, y] = compact ? compactPositions[id] : [item.x, item.y];
+        const badgeY = y - (compact ? 31 : 38);
+        ctx.save();
+        ctx.strokeStyle = "#b88763";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x - 8, badgeY + 7);
+        ctx.lineTo(x - 14, badgeY + 13);
+        ctx.stroke();
+        ctx.restore();
+        verbTag(text, x + 2, badgeY, "#803f2b", "#f5e2c9");
+      }
+      function updateEmphasis(progress, write, changed) {
+        const writing = write && write.verb !== "引用";
+        for (const [id, node] of hosts) {
+          let emphasis = "";
+          if (write && progress < 0.64 && id === write.from) emphasis = "source";
+          if (writing && progress >= 0.59 && progress < 0.99 && id === write.to) emphasis = "land";
+          if (changed === id) emphasis = "member";
+          if (node.dataset.emphasis !== emphasis) node.dataset.emphasis = emphasis;
+          const actor = String(id === (write?.from || changed));
+          if (node.dataset.actor !== actor) node.dataset.actor = actor;
+          const traceEnd = String(Boolean(tracing && (tracing.from === id || tracing.to === id)));
+          if (node.dataset.traceEnd !== traceEnd) node.dataset.traceEnd = traceEnd;
+          if (objects[id].world) {
+            const formsHere = !tracing && writing && write.to === id && objects[id].born === current;
+            const ink = formsHere ? 0.2 + 0.8 * smooth((progress - 0.45) / 0.25) : 1;
+            const forming = String(ink < 1);
+            if (node.dataset.forming !== forming) node.dataset.forming = forming;
+            const opacity = ink.toFixed(2);
+            if (node.style.getPropertyValue("--paper-ink") !== opacity)
+              node.style.setProperty("--paper-ink", opacity);
+          }
+          const nod =
+            writing && write.from === id && progress < 0.58 ? Math.sin(Math.PI * smooth(progress / 0.58)) : 0;
+          const land =
+            writing && write.to === id && progress > 0.56 && progress < 0.85
+              ? Math.sin(Math.PI * smooth((progress - 0.56) / 0.29))
+              : 0;
+          const tilt = (nod * 6 - land * 4).toFixed(1) + "deg",
+            rise = (-nod * 1.5 - land).toFixed(1) + "px";
+          if (node.style.getPropertyValue("--tilt") !== tilt) {
+            node.style.setProperty("--tilt", tilt);
+            node.style.setProperty("--rise", rise);
+          }
+        }
+      }
       function draw() {
         if (tableMode || !ctx) return;
+        syncLayout();
         const canvas = $("drawing"),
           box = canvas.getBoundingClientRect(),
-          scale = window.devicePixelRatio || 1;
+          dpr = window.devicePixelRatio || 1;
         if (!box.width || !box.height) return;
-        canvas.width = Math.round(box.width * scale);
-        canvas.height = Math.round(box.height * scale);
-        ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+        const w = Math.round(box.width * dpr),
+          h = Math.round(box.height * dpr);
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        const width = compact ? 360 : 900,
+          height = compact ? 396 : 352;
+        ctx.setTransform(w / width, 0, 0, h / height, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+        const p = reducedMotion.matches ? 1 : Math.min(1, position() / cueDuration);
+        const change = smooth(p / 0.76);
         for (const key of ["a", "b"]) {
           if (!visibleSets[key]) continue;
-          const path = contourFor(key, current);
-          ctx.fillStyle = key === "a" ? "rgba(103,164,119,.16)" : "rgba(150,108,157,.13)";
-          ctx.strokeStyle = key === "a" ? "#548768" : "#885e8e";
-          ctx.lineWidth = 1.8;
-          ctx.setLineDash(key === "a" ? [] : [7, 4]);
+          const isA = key === "a",
+            path = contourFor(key, current),
+            before = setAmount(key, origin),
+            after = setAmount(key, current);
+          ctx.save();
+          const tint = ctx.createLinearGradient(0, 0, width * 0.55, height * 0.76);
+          tint.addColorStop(0, isA ? "rgba(130,166,111,.26)" : "rgba(165,132,165,.22)");
+          tint.addColorStop(1, isA ? "rgba(184,193,155,.13)" : "rgba(181,149,169,.13)");
+          ctx.fillStyle = tint;
           ctx.fill(path);
+          ctx.strokeStyle = isA ? "#648569" : "#887088";
+          ctx.lineWidth = 1.3;
+          ctx.setLineDash(isA ? [] : [5, 3.5]);
           ctx.stroke(path);
+          if (change < 1 && before !== after) {
+            ctx.globalAlpha = (1 - change) * 0.52;
+            ctx.lineWidth = 1.1;
+            ctx.setLineDash([2, 3]);
+            ctx.stroke(contour(key, before + (after - before) * change));
+          }
+          ctx.restore();
         }
-        ctx.setLineDash([]);
-        const present = actions.filter((action) => action.since <= current);
-        const concernsSelection = (action) => action.from === selected || action.to === selected;
-        for (const highlighted of [false, true]) {
-          for (const action of present.filter((item) => concernsSelection(item) === highlighted))
-            drawArrow(action, highlighted);
-        }
+        const active = hoverRef || selected,
+          present = actions.filter((a) => a.since <= current);
+        const rank = (a) =>
+          (tracing ? a === tracing : a.since === current && a.verb !== "引用")
+            ? 2
+            : a.from === active || a.to === active
+              ? 1
+              : 0;
+        for (const a of present.sort((a, b) => rank(a) - rank(b)))
+          drawArrow(a, a.from === active || a.to === active, p);
+        const write = tracing || present.find((a) => a.since === current && a.verb !== "引用");
+        const changed = tracing ? null : current === 3 ? "P2" : current === 4 ? "P3" : null;
+        if (write && write.verb !== "引用") markActor(write.from, write.verb + " " + write.to);
+        else if (changed) markActor(changed, current === 3 ? "退出 B" : "退出 A · r2");
+        updateEmphasis(p, write, changed);
       }
 
       function element(tag, className, value) {
@@ -858,7 +1422,14 @@
         return node;
       }
       function choose(id) {
+        if (mode === "playing") pausePlayback();
+        if (tracing) {
+          tracing = null;
+          settle();
+        }
+        pinned = true;
         selected = id;
+        remember();
         render();
       }
       function selectionButton(id, className) {
@@ -881,18 +1452,144 @@
         });
         return button;
       }
+      // Small ink portraits keep a peer recognisable in both directories and across moments.
+      // Paper marks identify the kind of artifact and carry no quantitative data.
+      const portraitStyles = {
+        P1: { wash: "#dce9df", coat: "#689385", skin: "#e8c49d", hair: "#3a524b" },
+        P2: { wash: "#f3dfb8", coat: "#bc8452", skin: "#e9bd91", hair: "#604a3b" },
+        P3: { wash: "#e0e7ed", coat: "#8195a6", skin: "#e6bd9f", hair: "#4d5259" },
+        P4: { wash: "#ede1ea", coat: "#aa8094", skin: "#ecc6ad", hair: "#58454d" },
+      };
+      function illustratedMark(id) {
+        const canvas = element("canvas", "mark");
+        canvas.width = canvas.height = 144;
+        canvas.setAttribute("aria-hidden", "true");
+        const ink = canvas.getContext("2d");
+        if (!ink) return canvas;
+        ink.scale(2.25, 2.25);
+        ink.lineCap = "round";
+        ink.lineJoin = "round";
+        function path(d, fill, stroke, weight = 1.5) {
+          const shape = new Path2D(d);
+          if (fill) {
+            ink.fillStyle = fill;
+            ink.fill(shape);
+          }
+          if (stroke) {
+            ink.strokeStyle = stroke;
+            ink.lineWidth = weight;
+            ink.stroke(shape);
+          }
+        }
+        function disc(x, y, r, fill, stroke, weight = 1) {
+          ink.beginPath();
+          ink.arc(x, y, r, 0, Math.PI * 2);
+          if (fill) {
+            ink.fillStyle = fill;
+            ink.fill();
+          }
+          if (stroke) {
+            ink.strokeStyle = stroke;
+            ink.lineWidth = weight;
+            ink.stroke();
+          }
+        }
+        if (objects[id].world) {
+          path("M12 12 L44 9 53 17 55 53 15 57 Z", "#ded7bf", null);
+          path("M9 10 L40 8 50 17 52 51 12 54 Z", "#fffae8", "#827355", 2);
+          path("M39 9 L40 19 49 18", null, "#9d8e6c", 1.6);
+          if (id === "R0") {
+            path("M17 24 L29 23 M17 44 L44 42", null, "#a79d82", 1.5);
+            path("M16 36 L23 35 26 29 31 39 36 28 40 34 45 33", null, "#587b69", 2.6);
+          } else if (id === "C1") {
+            path("M16 24 L43 22 45 43 18 45 Z", "#e2e7d4", "#77886f");
+            path("M17 31 L43 29 M17.5 37 L44 35 M27 23 L29 44", null, "#77886f");
+          } else {
+            path("M16 26 L31 24 M17 32 L27 31 M17 45 Q23 36 26 41 T38 37", null, "#997b79", 1.8);
+            path("M29 38 L31 32 49 11 54 15 36 36 Z", "#ae7762", "#775747", 1.3);
+            path("M29 38 L35 36 31 32 Z", "#f1dfb6", "#775747", 1);
+          }
+          return canvas;
+        }
+        const s = portraitStyles[id],
+          line = s.hair;
+        disc(32, 32, 30, s.wash, "#a7ac94", 0.8);
+        ink.save();
+        ink.beginPath();
+        ink.arc(32, 32, 29, 0, Math.PI * 2);
+        ink.clip();
+        path("M6 66 Q7 51 17 48 L26 44 40 44 49 48 Q58 54 62 66 Z", s.coat, line, 1.8);
+        path("M25 39 L26 47 32 52 40 45 38 38 Z", s.skin, line, 1.5);
+        if (id === "P4") disc(20, 17, 8, line, line);
+        path(
+          "M17 29 C14 16 23 9 34 10 C46 10 51 18 49 27 L50 31 Q54 35 49 37 L47 38 Q45 48 35 47 Q27 46 24 40 Q18 41 16 35 Q13 30 17 29 Z",
+          s.skin,
+          line,
+          1.7,
+        );
+        if (id === "P1") {
+          path("M16 26 Q14 13 27 11 Q42 8 48 20 L56 24 Q50 27 42 24 L19 26 Z", "#658575", line, 1.6);
+          path("M19 20 Q32 16 46 19 M20 23 L43 22", null, "#c0d3b6", 1.2);
+          path("M18 25 Q11 27 14 36 L20 37 22 26 Z", "#466657", line, 1);
+          path("M20 35 Q19 42 27 43", null, line, 1.1);
+        } else if (id === "P2") {
+          path(
+            "M16 32 C12 23 14 12 26 10 Q31 5 36 9 Q49 7 50 20 Q47 23 42 22 L37 18 Q34 24 26 25 L23 22 L21 33 Z",
+            line,
+            line,
+            1.3,
+          );
+          path("M19 18 Q23 13 29 13 M29 16 Q34 11 37 12", null, "#9d785d", 1.2);
+        } else if (id === "P3") {
+          path("M16 32 Q12 17 24 12 Q34 6 46 13 L51 20 Q42 18 36 18 Q30 24 23 24 L22 34 Z", line, line, 1.4);
+          path("M18 19 Q24 12 34 12 M28 18 Q34 14 40 15", null, "#899593", 1.1);
+          path("M43 31 L50 30", null, line, 1.4);
+        } else {
+          path(
+            "M16 34 Q11 26 16 17 Q23 8 35 10 Q47 10 50 22 Q37 23 31 17 Q26 25 21 27 L21 35 Z",
+            line,
+            line,
+            1.4,
+          );
+          path("M18 23 Q21 16 29 14 M15 15 Q17 12 21 12", null, "#a2888b", 1.1);
+        }
+        if (id === "P2" || id === "P4") {
+          disc(35, 31.5, 4.4, null, line, 1.5);
+          disc(46, 30.5, 3.8, null, line, 1.4);
+          path("M22 29 L30 31 M39.4 31 L42.2 30.7", null, line, 1.4);
+        }
+        disc(36, 32, 1, line);
+        disc(46.6, 31, 1, line);
+        path("M40 32 L42 36 39.5 37 M36 40 Q39 42 43 39", null, line, 1.15);
+        path("M24 46 L30 54 33 51 37 55 43 46 M15 53 L14 60 M47 51 L49 60", null, line, 1.3);
+        if (id === "P3") path("M30 54 L33 57 36 54 35 62 31 63 Z", "#586b79", null);
+        if (id === "P4") path("M12 57 L18 50 22 53 16 59 Z", "#f5dda8", line, 1);
+        ink.restore();
+        return canvas;
+      }
       function addNodes() {
         for (const [id, item] of Object.entries(objects)) {
           const node = selectionButton(id, "node" + (item.world ? " artifact" : ""));
-          node.style.left = (item.x / width) * 100 + "%";
-          node.style.top = (item.y / height) * 100 + "%";
-          const text = element("span", "node-text");
-          text.append(element("span", "", item.name), element("small", "sub"));
-          node.append(element("span", "symbol", id), text);
+          const label = element("span", "node-text");
+          label.append(element("span", "", item.name), element("small", "sub"));
+          node.append(illustratedMark(id), label);
+          node.addEventListener("pointerenter", (event) => {
+            if (event.pointerType === "mouse") {
+              hoverRef = id;
+              draw();
+            }
+          });
+          node.addEventListener("pointerleave", () => {
+            if (hoverRef === id) {
+              hoverRef = null;
+              draw();
+            }
+          });
           $("plane").append(node);
           hosts.set(id, node);
         }
       }
+
       function fillTree(container, ids) {
         const key = ids.join("|");
         if (container.dataset.members === key) return;
@@ -955,17 +1652,43 @@
         }
         for (const a of seen) {
           const row = element("li");
+          const follow = element("button", "trace", "循线");
+          follow.type = "button";
+          follow.dataset.action = a.from + "-" + a.to;
+          follow.setAttribute(
+            "aria-label",
+            "在图中循线 · " + displayName(a.from) + " " + a.verb + " " + displayName(a.to),
+          );
+          follow.setAttribute("aria-pressed", String(tracing === a));
+          follow.addEventListener("click", () => {
+            const release = tracing === a;
+            tracing = release ? null : a;
+            pinned = true;
+            tableMode = false;
+            hoverRef = null;
+            begin(release ? "idle" : "trace", current, current);
+            $("selection-facts")
+              .querySelector('[data-action="' + follow.dataset.action + '"]')
+              .focus({ preventScroll: true });
+          });
           row.append(
             stages[a.since].name + " · ",
             actionEndpoint(a.from),
             " " + a.verb + " ",
             actionEndpoint(a.to),
+            follow,
           );
           facts.push(row);
         }
         if (!seen.length && (!item.world || item.born <= current))
           facts.push(element("li", "", "到此时点未登记与这个对象直接相连的工件动作。"));
         $("selection-summary").textContent = summary;
+        $("selection-label").textContent = pinned ? "已固定" : "随时点";
+        $("pin").textContent = pinned ? "跟随时点" : "固定此项";
+        $("trace-status").hidden = !tracing;
+        if (tracing)
+          $("trace-status").textContent =
+            "循线 ·「" + stages[tracing.since].name + "」记录的" + tracing.verb + "动作";
         $("selection-facts").replaceChildren(...facts);
       }
 
@@ -989,9 +1712,9 @@
           (common.length ? " · " + common.map((id) => objects[id].name).join("、") : "");
         $("event-name").textContent = stage.name;
         $("event-description").textContent = stage.event;
+        $("moment-count").textContent = current + 1 + " / " + stages.length;
         $("graph-view").hidden = tableMode;
         $("table-view").hidden = !tableMode;
-        $("view-title").textContent = tableMode ? "参与者的集合归属" : "参与者与工件";
         $("table-mode").setAttribute("aria-pressed", String(tableMode));
         $("map-mode").setAttribute("aria-pressed", String(!tableMode));
         for (const key of ["a", "b"]) {
@@ -1000,16 +1723,17 @@
           button.title = tableMode ? "成员表显示两组成员" : "显示或隐藏集合 " + key.toUpperCase() + " 的轮廓";
           button.setAttribute("aria-pressed", String(tableMode || visibleSets[key]));
         }
-        Array.from($("steps").children).forEach((button, i) =>
-          button.setAttribute("aria-pressed", String(i === current)),
-        );
+        Array.from($("steps").children).forEach((button, i) => {
+          button.setAttribute("aria-pressed", String(i === current));
+          button.dataset.past = String(i < current);
+        });
         for (const [id, node] of hosts) {
           const item = objects[id],
             a = stage.org.includes(id),
             b = stage.review.includes(id);
           node.hidden = item.born > current;
           node.querySelector(".sub").textContent =
-            item.world || (a && b ? "A ∩ B" : a ? "集合 A" : b ? "集合 B" : "两组之外");
+            id + " · " + (item.world || (a && b ? "A ∩ B" : a ? "A" : b ? "B" : "两组之外"));
         }
         for (const row of $("members").rows) {
           const id = row.dataset.peer,
@@ -1026,44 +1750,165 @@
           button.setAttribute("aria-pressed", String(button.dataset.ref === selected));
         }
         showSelection(stage);
+        syncPlayControls();
         draw();
       }
 
+      function remember() {
+        try {
+          sessionStorage.setItem(storageKey, JSON.stringify({ step: current, selection: selected, pinned }));
+        } catch {
+          /* A private or offline view can still replay. */
+        }
+      }
+      function position(now = performance.now()) {
+        return mode === "cue" || mode === "trace" || mode === "playing"
+          ? elapsed + Math.max(0, now - since)
+          : elapsed;
+      }
+      function syncPlayControls() {
+        const label =
+          mode === "playing"
+            ? "暂停"
+            : mode === "paused"
+              ? "继续播放"
+              : mode === "ended"
+                ? "重新播放"
+                : "播放经过";
+        $("play-label").textContent = label;
+        $("play").setAttribute("aria-label", label);
+        $("play").dataset.state = mode;
+      }
+      function cancelFrame() {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+      }
+      function settle(nextMode = "idle") {
+        cancelFrame();
+        elapsed = cueDuration;
+        mode = nextMode;
+        syncPlayControls();
+        draw();
+      }
+      function pausePlayback() {
+        if (mode !== "playing") return;
+        elapsed = position();
+        mode = "paused";
+        cancelFrame();
+        syncPlayControls();
+        draw();
+      }
+      function tick(now) {
+        frame = 0;
+        const time = position(now);
+        if (mode === "playing" && time >= stepDuration) {
+          if (current === stages.length - 1) settle("ended");
+          else begin("playing", current + 1, current);
+          return;
+        }
+        if ((mode === "cue" || mode === "trace") && time >= cueDuration) {
+          settle();
+          return;
+        }
+        if (!reducedMotion.matches && !tableMode && !paintedLast) {
+          draw();
+          paintedLast = time >= cueDuration;
+        }
+        frame = requestAnimationFrame(tick);
+      }
+      function begin(nextMode, index, from, offset = 0) {
+        cancelFrame();
+        if (nextMode !== "trace") tracing = null;
+        if (!pinned) selected = stages[index].focus;
+        current = index;
+        origin = from;
+        elapsed = offset;
+        since = performance.now();
+        mode = nextMode;
+        paintedLast = false;
+        if ((mode === "cue" || mode === "trace") && (reducedMotion.matches || tableMode)) {
+          mode = "idle";
+          elapsed = cueDuration;
+        }
+        if (mode === "idle") elapsed = cueDuration;
+        remember();
+        render();
+        if (mode === "playing" || mode === "cue" || mode === "trace") frame = requestAnimationFrame(tick);
+      }
+      function seek(index) {
+        if (index === current) begin("cue", index, Math.max(0, index - 1));
+        else if (index === current + 1) begin("cue", index, current);
+        else begin("idle", index, index);
+      }
+      $("play").addEventListener("click", () => {
+        if (mode === "playing") pausePlayback();
+        else if (mode === "paused") begin("playing", current, origin, elapsed);
+        else begin("playing", 0, 0);
+      });
+      $("replay").addEventListener("click", () => {
+        tableMode = false;
+        hoverRef = null;
+        begin("cue", current, Math.max(0, current - 1));
+      });
+      $("pin").addEventListener("click", () => {
+        if (!pinned) {
+          choose(selected);
+          return;
+        }
+        pinned = false;
+        tracing = null;
+        selected = stages[current].focus;
+        if (mode === "trace") settle();
+        remember();
+        render();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) return;
+        if (mode === "playing") pausePlayback();
+        if (mode === "cue" || mode === "trace") settle();
+      });
+      reducedMotion.addEventListener("change", () => {
+        if (reducedMotion.matches && (mode === "cue" || mode === "trace")) settle();
+        else draw();
+      });
       stages.forEach((stage, index) => {
         const button = element("button", "", stage.name);
         button.type = "button";
         button.dataset.step = String(index);
-        button.addEventListener("click", () => {
-          current = index;
-          render();
-        });
+        button.addEventListener("click", () => seek(index));
         button.addEventListener("keydown", (event) => {
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
           event.preventDefault();
-          if (event.key === "Home") current = 0;
-          else if (event.key === "End") current = stages.length - 1;
-          else current = (index + (event.key === "ArrowRight" ? 1 : -1) + stages.length) % stages.length;
-          render();
-          $("steps").children[current].focus();
+          const next =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? stages.length - 1
+                : (index + (event.key === "ArrowRight" ? 1 : -1) + stages.length) % stages.length;
+          seek(next);
+          $("steps").children[next].focus();
         });
         $("steps").append(button);
       });
       for (const key of ["a", "b"])
         $("toggle-" + key).addEventListener("click", () => {
+          if (mode === "playing") pausePlayback();
           visibleSets[key] = !visibleSets[key];
           render();
         });
-      $("map-mode").addEventListener("click", () => {
-        tableMode = false;
+      function changeView(useTable) {
+        if (mode === "playing") pausePlayback();
+        if (mode === "cue" || mode === "trace") settle();
+        if (useTable) tracing = null;
+        tableMode = useTable;
+        hoverRef = null;
         render();
-      });
-      $("table-mode").addEventListener("click", () => {
-        tableMode = true;
-        render();
-      });
+      }
+      $("map-mode").addEventListener("click", () => changeView(false));
+      $("table-mode").addEventListener("click", () => changeView(true));
       addNodes();
       fillTable();
-      render();
+      begin(restored || document.hidden ? "idle" : "cue", current, Math.max(0, current - 1));
       new ResizeObserver(draw).observe($("plane"));
     </script>
   </body>
