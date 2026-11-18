@@ -525,7 +525,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-- 项目历程可视化已在主线快照 `4e291944` 上完成系统盘点、外部调研和只读档案原型。下一步从现有 Workspace 接入离线读面，以 gRPC 的候选、晋升、T3 交付、11/12 原判和同 SHA 复核验证，再用 Energy 的保留证书与新宿主重启验证在线读面。读者对照测试列在规划中。[规划](docs/product/visualization/PLAN.md) · [可操作原型](docs/product/visualization/prototype/index.html)
+- 项目历程已完成系统盘点、外部调研和只读档案原型。首页展示真实 gRPC T2 到 T3 的七次工作交接，可逐步看谁交出什么、谁接手，并核对每步原件。待审登记、所有者核准和新会话主动读取各有独立画面。下一步在 Workspace 接入这个读面，再用 Energy 的保留证书验证非代码场景。真实读者对照测试见规划。[规划](docs/product/visualization/PLAN.md) · [可操作原型](docs/product/visualization/prototype/index.html)
 
 上轮 gRPC 的 `CONTINUE_WORK`、重复完成拒绝和缺等待结论均保留。修复后的真实复跑已走通结算到等待结论。原生 `job_output` 与 Work 作业 ID 的误用在本轮仍出现一次，随后用 `work workers` 恢复。[调用序列](docs/engineering/WORK-REVISION-LIVE-T2.md#结算后-readiness-修复与-grpc-同基线复跑)
 
@@ -665,6 +665,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-18 | 从 `77f2d87e` 复跑同核准提交的真实 OpenCode Go gRPC T3 | [结果](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/result.json) · [对比](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json) | `ccb07d36` 记录 DELIVER 并自然退出，13 笔全结算并归因。原 11/12，新增缺项为新版表格前三条，离线复核 12/12 |
 | 2026-11-18 | 发布 OpenCode Go gRPC T3 复跑证据并同步 handoff | [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json) | 主线发布点 `e4f037b8`，16/16 项首次通过。保留本轮 11/12、同一 SHA 离线复核、历史原判和 402/400 UNKNOWN，本次发布新增付费请求 0 |
 | 2026-11-18 | 盘点 65 个源码目录，调研 dsh-layerfs 与多 Agent 可视化，提出项目历程读面 | [系统与来源](docs/product/visualization/SYSTEMS.md) · [调研](docs/product/visualization/RESEARCH.md) · [规划与离线原型](docs/product/visualization/PLAN.md) | 设计基线 `4e291944`。样本取自既有归档，产品接入与人因验收待实施 |
+| 2026-11-18 | 交接回放成为档案原型首页，七步呈现实际角色、交接物与接续凭据 | [交接原型](docs/product/visualization/prototype/index.html) · [阅读设计](docs/product/visualization/PLAN.md#一份工作如何交到下一位手里) | 支持逐步选择、连续播放、暂停与静态阅读，使用原有封存 |
 
 ---
 
