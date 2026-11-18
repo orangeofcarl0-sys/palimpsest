@@ -1,0 +1,5 @@
+The first export covers the pilot only. Desk B retains edge traces by connection tag, console spans by anonymized panel ID and field notebook pages by shift. Registry aliases changed last month. A device-local time in a notebook is not an export timestamp.
+
+At the shift boundary the release desk archives the initial written assessment and the evidence then available. The next shift can request these read-only materials: inventory (alias crosswalk), ingress (gateway trace), terminal (operator-console trace), field (calibration and ticket amendment), reservation (fallback booking). Anyone working on the case can obtain the same evidence. A missing terminal capture is an instrumentation gap. Field operations owns site actions.
+
+Scheduling can also dry-run a handover proposal against its booking ledger. File a committed handover/proposal.json containing a UTC minute ("startUtc", e.g. "06:10") and "birch" and "cedar" actions. Each action is one of observe, park or overflow. The simulated reply covers scheduling only. Trial and production approval remain separate. A team can revise its proposal and request a new dry run.
