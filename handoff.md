@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 夜班跨班复核已完成。真实自主组从 `4f80c3bd` 主动联系上一班回放维护者；Principal 先发现 P/S 档案差异，原维护者在临时副本实测 S 仍误报，随后直接修改共享工作区，Principal 复核并补交。单人组独立查档。两组自然退出，都修正了底层倒退计数，也都用 S 覆盖 P 并反转了 `--require-anomaly` 语义，冻结验收均为 0/2。[报告](docs/engineering/FLEET-NIGHT-REPLAY-REVIEW.md) · [两个候选与轨迹](research-evidence/pnwf-software/2026-11-19/night-review/live-summary.json)
+
 - Fleet 夜班已接入普通 DSH 的档案查询和按 SHA 试排。四格 Mock 后完成重绘/抑制 × 开放协作/单 Principal 的真实配对。四条均取得可行试排、记录 `DELIVER`、自然退出。两个开放协作的 Principal 均独立完成，真实轨迹中没有同伴反例采纳。四份原回放均成功；翻转最后一个终端事件后，重绘单人组仍误报倒退。[报告与复算](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md)
 
 - 上一轮 gRPC 接续的确切提交 `e3f63313` 已送审 [PR #277](https://github.com/orangeofcarl0-sys/palimpsest/pull/277)，封存保留旧 Episode ID 的 `UNKNOWN`。接续开发位于 `codex/fleet-rollout-synthesis`。新场景从已接受服务衍生四站、两窗口的资源分配。三名 Mock 原生子会话交回各自测量，三项贡献被采纳；真实样本由单一 Principal 合成正确的两轮清单。14 笔请求均已对账，真实候选 `7c5cef3989b394b69191a43104c8fa8cdaa21bf2` 已提交供审。[场景、轨迹与复算](docs/engineering/FLEET-ROLLOUT-SYNTHESIS.md)
@@ -277,6 +279,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+跨班复核的普通 DSH Mock 实际恢复上一班的会话 ID、核对原压缩流字节前缀，并单独结算恢复后的两笔请求。配对的 10 笔合成请求对应两个通过 P/S 判分的提交，付费调用 0。已运行构建与 41 项既有计量、归因和夜班回归。两份 Git bundle、角色轨迹和现场判分的复算命令见[跨班复核报告](docs/engineering/FLEET-NIGHT-REPLAY-REVIEW.md#复算)。
+
 夜班档案和按 SHA 试排的定向回归 3/3、计量与提供方回归 30/30、归因回归 8/8，TypeScript 构建通过。四格普通 DSH Mock 用 54 笔合成请求验证检查点、子会话、越界时序、旧 SHA 及预约冲突恢复，付费调用为零。各组的原始 DSH 流、结算、Git bundle 和以提交为输入的隔离回放可分别复算。[复算入口](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#复算)
 
 自主 gRPC 本地验证包括构建、架构及公共 API 检查、30 项检查器与项目语义单测、15 项归因与摘要回归、4 项 Workspace 浏览器测试和原生侧栏交互回归。封存含逐笔账本、压缩会话流、Git bundle、Work/Journal 快照和两个界面的读回结果。从归档新建本地项目的命令见[复算与恢复](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#离线复算和打开项目)。
@@ -446,6 +450,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-19 夜班回放复核共 97/97 笔、8,642,844 tokens、UNKNOWN 0。自主组 Principal 22 笔、原维护者 31 笔，共 4,211,190 tokens；单人组 44 笔、4,431,654 tokens。原维护者历史用量未重复计入。两组分别提交 `fc6aa6253d9b0c97105c1791fc878909e04fb4c1` 和 `3993ece58bbc484ff6a66916d1bb15313f780ba6`。[分角色核对](research-evidence/pnwf-software/2026-11-19/night-review/live-summary.json)
+
 2026-11-19 夜班四格共 130/130 笔归因，fresh input 306,112、cache read 6,117,760、output 118,409，共 6,542,281 tokens。相加耗时 36 分 25.209 秒。每格使用独立新会话与账本，64 笔、30 分钟、240 秒单笔，金额与总 token 按量。四条试排的最终方案 blob 一致；宿主未签发生产批准。[逐会话用量、调用与版本](research-evidence/pnwf-software/2026-11-19/night-shift-pair/live-comparison.json)
 
 2026-11-19 自主 gRPC 样本沿用 OpenCode Go 和普通 DSH。修订 17 笔、504,260 tokens，接续 5 笔、81,552 tokens，共 22/22 笔归因、585,812 tokens。运行耗时合计 269.315 秒，批准等待与接纳操作另计。Mock 全程 11 笔合成请求，付费调用 0。[分析和复算命令](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md)
@@ -547,7 +553,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-- 夜班的重绘单人回放把被抑制的旧读数也当成一次绘制。相反事件的隔离复算已经留档，候选保留原稿。两条自主组均未发起复核，这组观察还无法回答同伴会不会提出这个反例、接收方会不会修改交付物。[具体失败及其复算](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#重绘现场的单-principal)
+- 上轮[重绘单人原稿](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#重绘现场的单-principal)保留原误报。本轮真实求证暴露了两处边界：档案来自并列模拟现场却有相同标识，维护者在被咨询时能写 Principal 的工作区并记录项目结论。两组均把上一班 S 当作唯一真本。后续修订需能保留两个现场的来源、原始材料及命令对“异常”的定义。单人组轨迹还读到了 Git FETCH_HEAD 源路径里的场景名。[逐项复核](docs/engineering/FLEET-NIGHT-REPLAY-REVIEW.md)
 
 - gRPC 真实样本的贡献和采纳决定均为零。接续者成功查到核验日志，但 `explain` 直接查已重开的 Episode ID 返回 `UNKNOWN`，版本依据也出现在 Pulse 的 open questions 中。该条记录原类为 `REFERENCE_NOTE`，正式接受由 Work 事件 8 证明。[逐项读回](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#真实项目的接受与接续)
 

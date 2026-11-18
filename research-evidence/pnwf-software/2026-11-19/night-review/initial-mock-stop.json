@@ -1,0 +1,24 @@
+{
+  "source": "Initial zero-paid qualification",
+  "mode": "mock",
+  "arm": "auto",
+  "head": "6b37714e8c90e85557f35d9d62927525dfc68e6c",
+  "natural": true,
+  "paidModelCalls": 0,
+  "settled": 6,
+  "unknown": 0,
+  "grade": [
+    {
+      "event": "P",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "event": "S",
+      "passed": true,
+      "exit": 1
+    }
+  ],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ undefined\n- {\n-   cache_creation_input_tokens: 0,\n-   cache_read_input_tokens: 0,\n-   input_tokens: 96239,\n-   output_tokens: 72\n- }\n",
+  "inputSeal": "aa1ae3c895189f6e4a152fc0617277ef7f4efd489aaa7c2d175e08a583eca8c5"
+}

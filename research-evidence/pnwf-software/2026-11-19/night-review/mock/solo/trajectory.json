@@ -1,0 +1,132 @@
+{
+  "bindings": [
+    {
+      "role": "principal",
+      "session": "session-1419f5f4-e3d2-4500-a792-ce90c24624ec",
+      "seq": 14,
+      "id": "88052836-fa7b-46da-9b0a-4c1645cc6fc9",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 79027,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 72
+      }
+    },
+    {
+      "role": "principal",
+      "session": "session-1419f5f4-e3d2-4500-a792-ce90c24624ec",
+      "seq": 20,
+      "id": "4b6c40bb-cbbd-434f-a7a5-3e0e0cb9e2c6",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 44172,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 500
+      }
+    },
+    {
+      "role": "principal",
+      "session": "session-1419f5f4-e3d2-4500-a792-ce90c24624ec",
+      "seq": 28,
+      "id": "4c89a945-08d1-4a82-8357-554477510a16",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 47747,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 628
+      }
+    },
+    {
+      "role": "principal",
+      "session": "session-1419f5f4-e3d2-4500-a792-ce90c24624ec",
+      "seq": 36,
+      "id": "7721c499-343e-4730-9fb6-96a2bdee96de",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 49346,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 92
+      }
+    }
+  ],
+  "traces": [
+    {
+      "role": "principal",
+      "session": "session-1419f5f4-e3d2-4500-a792-ce90c24624ec",
+      "parent": null,
+      "calls": [
+        {
+          "seq": 15,
+          "time": 1795037148864,
+          "callId": "review_0",
+          "tool": "fleet_register",
+          "input": {},
+          "resultSeq": 16,
+          "reply": "{\"session\":\"session-c0f067eb-bcfa-49b2-9128-11ba56331716\",\"shift\":\"Board operations, previous dispatch replay maintainer\",\"commit\":\"584d61c4bd5ae71bcb1fa687e9b3ad053da4f509\",\"ref\":\"refs/remotes/dispatch/previous-shift\",\"files\":[\"handover/HANDOVER.md\",\"handover/replay.mjs\",\"handover/evidence/terminal.tsv\"],\"contactAvailable\":false}"
+        },
+        {
+          "seq": 21,
+          "time": 1795037148946,
+          "callId": "review_1",
+          "tool": "bash",
+          "input": {
+            "command": "d=$(mktemp -d) && git archive HEAD | tar -x -C \"$d\" && git show refs/remotes/dispatch/previous-shift:handover/evidence/terminal.tsv > \"$d/handover/evidence/terminal.tsv\" && cd \"$d\" && node handover/replay.mjs --json --require-anomaly | node -e 'let s=\"\";process.stdin.on(\"data\",x=>s+=x);process.stdin.on(\"end\",()=>console.log(JSON.parse(s).diagnosis.reproduced))'",
+            "description": "Test the submitted dispatch replay"
+          },
+          "resultSeq": 24,
+          "reply": "true\n"
+        },
+        {
+          "seq": 29,
+          "time": 1795037149425,
+          "callId": "review_2",
+          "tool": "bash",
+          "input": {
+            "command": "node --input-type=module -e 'import fs from \"node:fs\"; const f=\"handover/replay.mjs\",s=fs.readFileSync(f,\"utf8\");fs.writeFileSync(f,s.replace(\"if (!terminalByPanel.has(row.panel))\",\"if (row.event !== \\\"P\\\") continue;\\n  if (!terminalByPanel.has(row.panel))\"))' && echo 'Only painted events affect display order. The previous shift suppressed req-a; p23 remains unobserved.' >> handover/HANDOVER.md && git add handover && git commit -qm 'Count only displayed events in the dispatch replay'",
+            "description": "Test the submitted dispatch replay"
+          },
+          "resultSeq": 32,
+          "reply": "(no output)"
+        }
+      ],
+      "answers": [
+        {
+          "seq": 36,
+          "time": 1795037150175,
+          "text": "The corrected dispatch replay and updated handover are committed."
+        }
+      ],
+      "tools": [
+        "bash",
+        "create_goal",
+        "edit",
+        "exit_plan_mode",
+        "fleet_register",
+        "get_goal",
+        "glob",
+        "grep",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "palimpsest_continuity",
+        "palimpsest_contribute",
+        "palimpsest_project",
+        "palimpsest_start",
+        "palimpsest_work",
+        "read",
+        "read_image",
+        "skill",
+        "todo_write",
+        "update_goal",
+        "working_directory",
+        "write"
+      ]
+    }
+  ],
+  "confirmed": 221584,
+  "unknown": 0
+}
