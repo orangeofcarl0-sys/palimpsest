@@ -89,6 +89,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
   const layout = experiment?.layout ?? "recorded";
   try {
     prepareContainerProfile({ home, repository, layout, workerControl: experiment?.createWorker !== undefined });
+    experiment?.configureProfile?.(home);
     if (layout !== "native") {
       const deployment = JSON.parse(readFileSync(prepared.deployment, "utf8"));
       deployment.repository = "/run/stage/world";
@@ -107,7 +108,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
       await startBoundedProxy({ provider, budget, sessionId, sessionKey, onObservation });
     worker = experiment?.createWorker?.({ stage, out, repository, image: runtime.imageId, principalId: runtime.id, gateway: proxy.url, sessionKey,
       stopIsClosed: () => budget.snapshot().state !== "OPEN" });
-    bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey, { dispatchWork: worker?.dispatch });
+    bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey, { dispatchWork: worker?.dispatch, dispatchDesk: experiment?.dispatchDesk });
     const prompt = readFileSync(prepared.promptPath, "utf8");
     outFd = openSync(join(out, "run.log"), "w"); errFd = openSync(join(out, "run.err"), "w");
     // Principal observations must not refresh the index while the Worker broker imports its commit.

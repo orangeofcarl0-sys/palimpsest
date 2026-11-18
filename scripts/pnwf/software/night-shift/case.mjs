@@ -15,9 +15,9 @@ const read=path=>readFileSync(path,"utf8");
 const write=(path,data)=>writeFileSync(path,JSON.stringify(data,null,2)+"\n",{flag:"wx"});
 const accepted="95b83e71ee9a37041b9918b5e8b797eebabf69c9";
 
-export function prepare(root,variant) {
+export function prepare(root,variant,world=join(root,"world")) {
   assert(["redraw","suppressed"].includes(variant));
-  mkdirSync(root);const world=join(root,"world");mkdirSync(world);
+  mkdirSync(root);mkdirSync(world);
   git(world,"init","-q");
   const published=join(repo,"research-evidence/pnwf-software/2026-11-19");
   git(world,"fetch","-q",join(published,"autonomous-continuity/live/fleet.bundle"),"refs/heads/accepted");
@@ -43,8 +43,8 @@ export function prepare(root,variant) {
   return {basis,world};
 }
 
-export function checkpoint(root,commit){
-  const {basis}=JSON.parse(read(join(root,"seal.json"))),world=join(root,"world");
+export function checkpoint(root,commit,world=join(root,"world")){
+  const {basis}=JSON.parse(read(join(root,"seal.json")));
   assert(/^[0-9a-f]{40}$/.test(commit) && git(world,"rev-parse","HEAD")===commit && commit!==basis,"full current draft SHA required");
   assert.equal(git(world,"merge-base",basis,commit),basis);
   const files=git(world,"ls-tree","-r",commit,"--","handover");
@@ -64,8 +64,7 @@ export function request(root,topic){
   return bytes.toString("utf8");
 }
 
-export function rehearse(root,commit){
-  const world=join(root,"world");
+export function rehearse(root,commit,world=join(root,"world")){
   const {commit:draft}=JSON.parse(read(join(root,"checkpoint.json")));
   assert(/^[0-9a-f]{40}$/.test(commit) && git(world,"rev-parse","HEAD")===commit && git(world,"merge-base",draft,commit)===draft,"current proposal SHA required");
   const path="handover/proposal.json";

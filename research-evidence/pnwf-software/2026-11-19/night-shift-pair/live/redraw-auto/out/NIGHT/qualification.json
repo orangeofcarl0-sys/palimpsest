@@ -1,0 +1,186 @@
+{
+  "schema": "pnwf-actual-isolation/v2",
+  "status": "EVALUATION_ISOLATION_QUALIFIED",
+  "containerId": "03417020329ebb8d2451f0184bab8a3b40cd78b8e6e1d0343275550070993647",
+  "descriptor": {
+    "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "user": "1001:1001",
+    "network": "none",
+    "readonlyRootfs": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "adapterFiles": {
+      "container_adapter.mjs": "2e0f26f74666b4e2a521bd0c8185fe2aa792d134060373578172de7eca40df5e",
+      "container_runtime.mjs": "dfe511193a96bec855a5878be75805e043344a9b3c88d482bdd71ab6997b4976",
+      "container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+      "world_preflight.mjs": "5ba8ea46b5b8bf09361e53899537b750be8fe46b70da0ac07625249b79732d10",
+      "bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+      "execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "mock_provider.mjs": "65f82d7656da2d442e665f06f349fb8bba81cfdd787989817eaad5a31686f19d",
+      "run_pnwf_live.mjs": "5fd13204e8e150582bcd1971ff3f91fd238cd396b9debca91f78417d522ce88e"
+    },
+    "mounts": [
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live/runtime/package.json",
+        "destination": "/product/package.json",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live/runtime/runtime",
+        "destination": "/product/runtime",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live/redraw-auto/stages/NIGHT",
+        "destination": "/run/stage",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live\\redraw-auto\\runtime-NIGHT",
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\pnwf\\world_preflight.mjs",
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-qualified-d1353f01-8091-4a45-9376-d91141b8cdad-harness/_data",
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live/runtime/dist",
+        "destination": "/product/dist",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/night-study-a7a4331f-539e-4b44-8f73-04be5b72c368-live/runtime/node_modules",
+        "destination": "/product/node_modules",
+        "writable": false
+      }
+    ]
+  },
+  "descriptorDigest": "e6de278e38973a5e098a5bb594b36edfbc79863382a0ab928d87ff2ef372e627",
+  "harnessPresent": true,
+  "externalScorerRead": true,
+  "checks": [
+    {
+      "name": "principal_uid",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_shell_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "write_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "git_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "node_build_fixture",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_version",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_native_addon",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "native_shell_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_proc_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_parent_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "rootfs_readonly",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "no_docker_socket",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_evaluator",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_owner_credential",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_provider_credential_env",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_routes",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    }
+  ],
+  "worlds": {
+    "schema": "pnwf-world-preflight/v1",
+    "status": "QUALIFIED",
+    "head": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+    "worlds": [],
+    "product": {
+      "repositoryHead": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+      "projectHead": "71643fe7fe7536d4d493e8905c704f767eb67c92",
+      "relation": "IN_SYNC",
+      "uncommittedPaths": [],
+      "admittedDirectCommit": null
+    }
+  },
+  "checkedAt": "2026-11-18T18:29:05.106Z"
+}

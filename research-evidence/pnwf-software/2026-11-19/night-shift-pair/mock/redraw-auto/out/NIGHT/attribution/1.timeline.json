@@ -1,0 +1,860 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-ac5e2b1b-100c-43af-9a33-b50babed5f2f",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-18T18:26:40.670Z",
+      "endedAt": "2026-11-18T18:26:47.188Z",
+      "durationMs": 6518
+    },
+    "counts": {
+      "steps": 12,
+      "turns": 1,
+      "toolCalls": 11,
+      "pairedToolResults": 11,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 0,
+      "commits": 0,
+      "jobs": 4
+    },
+    "byKind": {
+      "fleet_desk": 6,
+      "bash": 4,
+      "subagent": 1
+    },
+    "stateQueries": [],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "shift_0",
+        "offsetMs": 1588,
+        "kind": "fleet_desk",
+        "args": {
+          "action": "request",
+          "topic": "terminal"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "shift_1",
+        "offsetMs": 1690,
+        "kind": "bash mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating global…",
+        "args": {
+          "command": "mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating globally.' > handover/shift.md && git add handover && git commit -qm 'Initial shift assessment' && git rev-parse HEAD",
+          "description": "Night shift rehearsal"
+        }
+      },
+      {
+        "seq": 29,
+        "callId": "shift_2",
+        "offsetMs": 2506,
+        "kind": "fleet_desk",
+        "args": {
+          "action": "checkpoint",
+          "sha": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03"
+        }
+      },
+      {
+        "seq": 35,
+        "callId": "shift_3",
+        "offsetMs": 2840,
+        "kind": "subagent",
+        "args": {
+          "description": "Check terminal replay",
+          "prompt": "Check whether the terminal evidence supports the initial duplicate-delivery diagnosis. Return a reproducible counterexample."
+        }
+      },
+      {
+        "seq": 42,
+        "callId": "shift_4",
+        "offsetMs": 2999,
+        "kind": "bash for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .palimpsest/terminal-meas…",
+        "args": {
+          "command": "for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .palimpsest/terminal-measurement",
+          "description": "Night shift rehearsal"
+        }
+      },
+      {
+        "seq": 53,
+        "callId": "shift_8",
+        "offsetMs": 4108,
+        "kind": "fleet_desk",
+        "args": {
+          "action": "request",
+          "topic": "reservation"
+        }
+      },
+      {
+        "seq": 59,
+        "callId": "shift_9",
+        "offsetMs": 4182,
+        "kind": "bash echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git com…",
+        "args": {
+          "command": "echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git commit -qm 'Try fallback' && git rev-parse HEAD",
+          "description": "Night shift rehearsal"
+        }
+      },
+      {
+        "seq": 67,
+        "callId": "shift_10",
+        "offsetMs": 4894,
+        "kind": "fleet_desk",
+        "args": {
+          "action": "rehearse",
+          "sha": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03"
+        }
+      },
+      {
+        "seq": 73,
+        "callId": "shift_11",
+        "offsetMs": 5029,
+        "kind": "fleet_desk",
+        "args": {
+          "action": "rehearse",
+          "sha": "ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0"
+        }
+      },
+      {
+        "seq": 79,
+        "callId": "shift_12",
+        "offsetMs": 5413,
+        "kind": "bash echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains C…",
+        "args": {
+          "command": "echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains CAP-08. Owner decides.' >> handover/shift.md && echo '{\"startUtc\":\"06:10\",\"birch\":\"park\",\"cedar\":\"overflow\"}' > handover/proposal.json && git add handover && git commit -qm 'Revise handover using terminal and booking evidence' && git rev-parse HEAD",
+          "description": "Night shift rehearsal"
+        }
+      },
+      {
+        "seq": 87,
+        "callId": "shift_13",
+        "offsetMs": 6129,
+        "kind": "fleet_desk",
+        "args": {
+          "action": "rehearse",
+          "sha": "cf78823945f9f7ee3f40c17371488e6fcd824821"
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "shift_0",
+        "callSeq": 15,
+        "offsetMs": 1616,
+        "callKind": "fleet_desk",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "shift_1",
+        "callSeq": 21,
+        "offsetMs": 2434,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 30,
+        "callId": "shift_2",
+        "callSeq": 29,
+        "offsetMs": 2770,
+        "callKind": "fleet_desk",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "commit": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03"
+        }
+      },
+      {
+        "seq": 37,
+        "callId": "shift_3",
+        "callSeq": 35,
+        "offsetMs": 2922,
+        "callKind": "subagent",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 46,
+        "callId": "shift_4",
+        "callSeq": 42,
+        "offsetMs": 4042,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 54,
+        "callId": "shift_8",
+        "callSeq": 53,
+        "offsetMs": 4124,
+        "callKind": "fleet_desk",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 62,
+        "callId": "shift_9",
+        "callSeq": 59,
+        "offsetMs": 4828,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 68,
+        "callId": "shift_10",
+        "callSeq": 67,
+        "offsetMs": 4967,
+        "callKind": "fleet_desk",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 74,
+        "callId": "shift_11",
+        "callSeq": 73,
+        "offsetMs": 5357,
+        "callKind": "fleet_desk",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "commit": "ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0"
+        }
+      },
+      {
+        "seq": 82,
+        "callId": "shift_12",
+        "callSeq": 79,
+        "offsetMs": 6071,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 88,
+        "callId": "shift_13",
+        "callSeq": 87,
+        "offsetMs": 6461,
+        "callKind": "fleet_desk",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "commit": "cf78823945f9f7ee3f40c17371488e6fcd824821"
+        }
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795026402256,
+        "messageId": "740370e7-3883-4712-a665-edfac9de4967",
+        "usage": {
+          "inputTokens": 95984,
+          "outputTokens": 104,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 96088
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795026402359,
+        "messageId": "21827d14-100f-4f87-81f9-c35b6cc1321a",
+        "usage": {
+          "inputTokens": 52588,
+          "outputTokens": 342,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 52930
+        }
+      },
+      {
+        "seq": 28,
+        "at": 1795026403175,
+        "messageId": "aca14dcf-561b-4421-8bc1-c2be93aad608",
+        "usage": {
+          "inputTokens": 55153,
+          "outputTokens": 137,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 55290
+        }
+      },
+      {
+        "seq": 34,
+        "at": 1795026403509,
+        "messageId": "9025eac9-1631-4751-a94f-14bd6b3e7cc3",
+        "usage": {
+          "inputTokens": 53604,
+          "outputTokens": 238,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 53842
+        }
+      },
+      {
+        "seq": 41,
+        "at": 1795026403668,
+        "messageId": "2a8bf5bd-b471-4079-b560-a5d5237142d6",
+        "usage": {
+          "inputTokens": 54657,
+          "outputTokens": 238,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 54895
+        }
+      },
+      {
+        "seq": 52,
+        "at": 1795026404777,
+        "messageId": "358c8353-75af-4c1c-b5b9-dfa48971c80b",
+        "usage": {
+          "inputTokens": 57583,
+          "outputTokens": 107,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 57690
+        }
+      },
+      {
+        "seq": 58,
+        "at": 1795026404851,
+        "messageId": "db932ee1-5c57-427c-baed-686a54addeca",
+        "usage": {
+          "inputTokens": 55633,
+          "outputTokens": 287,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 55920
+        }
+      },
+      {
+        "seq": 66,
+        "at": 1795026405563,
+        "messageId": "78cc413e-2561-47b6-aed1-d607879266ad",
+        "usage": {
+          "inputTokens": 57603,
+          "outputTokens": 136,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 57739
+        }
+      },
+      {
+        "seq": 72,
+        "at": 1795026405698,
+        "messageId": "bd1b95aa-8ef2-40f2-aa45-92d38cf9f2be",
+        "usage": {
+          "inputTokens": 56407,
+          "outputTokens": 136,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 56543
+        }
+      },
+      {
+        "seq": 78,
+        "at": 1795026406083,
+        "messageId": "af3114ea-d1af-4ce8-83cc-088df0709b02",
+        "usage": {
+          "inputTokens": 57094,
+          "outputTokens": 491,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 57585
+        }
+      },
+      {
+        "seq": 86,
+        "at": 1795026406799,
+        "messageId": "532c1c64-61c1-49ea-b742-c00012a5112a",
+        "usage": {
+          "inputTokens": 60518,
+          "outputTokens": 136,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 60654
+        }
+      },
+      {
+        "seq": 92,
+        "at": 1795026407187,
+        "messageId": "d3841c50-4d2a-41ca-bc54-e3657ac06fc9",
+        "usage": {
+          "inputTokens": 58249,
+          "outputTokens": 61,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 58310
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795026402059,
+      "offsetMs": 1389,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. Handle the overnight dispatch handover described in SHIFT.md. Leave the next shift a runnable replay, a committed handover and a dry-run booking receipt for a practical morning…"
+    },
+    {
+      "seq": 9,
+      "at": 1795026402061,
+      "offsetMs": 1391,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795026402258,
+      "offsetMs": 1588,
+      "kind": "CALL",
+      "detail": "fleet_desk",
+      "callId": "shift_0",
+      "tool": "fleet_desk",
+      "args": {
+        "action": "request",
+        "topic": "terminal"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795026402286,
+      "offsetMs": 1616,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":false,\"reason\":\"Archive a committed initial assessment first and use a catalog topic.\"}",
+      "callId": "shift_0",
+      "callSeq": 15,
+      "callKind": "fleet_desk",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795026402360,
+      "offsetMs": 1690,
+      "kind": "CALL",
+      "detail": "bash mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating global…",
+      "callId": "shift_1",
+      "tool": "bash",
+      "args": {
+        "command": "mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider deduplicating globally.' > handover/shift.md && git add handover && git commit -qm 'Initial shift assessment' && git rev-parse HEAD",
+        "description": "Night shift rehearsal"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795026402374,
+      "offsetMs": 1704,
+      "kind": "JOB",
+      "detail": "start bash mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider …"
+    },
+    {
+      "seq": 23,
+      "at": 1795026403101,
+      "offsetMs": 2431,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) mkdir -p handover && echo 'Working hypothesis: repeated requests indicate a display fault; consider …"
+    },
+    {
+      "seq": 24,
+      "at": 1795026403104,
+      "offsetMs": 2434,
+      "kind": "RESULT",
+      "detail": "ok 024dc149cb2aad2865b6e45b6bbcf58d6613ba03",
+      "callId": "shift_1",
+      "callSeq": 21,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 29,
+      "at": 1795026403176,
+      "offsetMs": 2506,
+      "kind": "CALL",
+      "detail": "fleet_desk",
+      "callId": "shift_2",
+      "tool": "fleet_desk",
+      "args": {
+        "action": "checkpoint",
+        "sha": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03"
+      }
+    },
+    {
+      "seq": 30,
+      "at": 1795026403440,
+      "offsetMs": 2770,
+      "kind": "RESULT",
+      "detail": "ok commit=024dc149cb2aad2865b6e45b6bbcf58d6613ba03 {\"ok\":true,\"commit\":\"024dc149cb2aad2865b6e45b6bbcf58d6613ba03\"}",
+      "callId": "shift_2",
+      "callSeq": 29,
+      "callKind": "fleet_desk",
+      "ok": true,
+      "facts": {
+        "commit": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 35,
+      "at": 1795026403510,
+      "offsetMs": 2840,
+      "kind": "CALL",
+      "detail": "subagent",
+      "callId": "shift_3",
+      "tool": "subagent",
+      "args": {
+        "description": "Check terminal replay",
+        "prompt": "Check whether the terminal evidence supports the initial duplicate-delivery diagnosis. Return a reproducible counterexample."
+      }
+    },
+    {
+      "seq": 37,
+      "at": 1795026403592,
+      "offsetMs": 2922,
+      "kind": "RESULT",
+      "detail": "ok started subagent 63229489-90eb-4540-8afa-31449a47fb1b",
+      "callId": "shift_3",
+      "callSeq": 35,
+      "callKind": "subagent",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 42,
+      "at": 1795026403669,
+      "offsetMs": 2999,
+      "kind": "CALL",
+      "detail": "bash for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .palimpsest/terminal-meas…",
+      "callId": "shift_4",
+      "tool": "bash",
+      "args": {
+        "command": "for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .palimpsest/terminal-measurement",
+        "description": "Night shift rehearsal"
+      }
+    },
+    {
+      "seq": 43,
+      "at": 1795026403679,
+      "offsetMs": 3009,
+      "kind": "JOB",
+      "detail": "start bash for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .pali…"
+    },
+    {
+      "seq": 45,
+      "at": 1795026404710,
+      "offsetMs": 4040,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) for n in $(seq 1 25); do test -s .palimpsest/terminal-measurement && break; sleep 1; done; cat .pali…"
+    },
+    {
+      "seq": 46,
+      "at": 1795026404712,
+      "offsetMs": 4042,
+      "kind": "RESULT",
+      "detail": "ok redrawn",
+      "callId": "shift_4",
+      "callSeq": 42,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 50,
+      "at": 1795026404743,
+      "offsetMs": 4073,
+      "kind": "USER",
+      "detail": "Background subagent 63229489-90eb-4540-8afa-31449a47fb1b finished and will do no further work unless you send it more. Its closing message: Two Alder panels legitimately paint the same request. Birch retry was redrawn on p17."
+    },
+    {
+      "seq": 53,
+      "at": 1795026404778,
+      "offsetMs": 4108,
+      "kind": "CALL",
+      "detail": "fleet_desk",
+      "callId": "shift_8",
+      "tool": "fleet_desk",
+      "args": {
+        "action": "request",
+        "topic": "reservation"
+      }
+    },
+    {
+      "seq": 54,
+      "at": 1795026404794,
+      "offsetMs": 4124,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"topic\":\"reservation\",\"body\":\"Ticket CAP-08 / signed 22:19Z. Cedar has the only REST overflow lane from 06:00 to 06:30Z. No second lane has been commissioned. A hold may park an affected pilot without moving t…",
+      "callId": "shift_8",
+      "callSeq": 53,
+      "callKind": "fleet_desk",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 59,
+      "at": 1795026404852,
+      "offsetMs": 4182,
+      "kind": "CALL",
+      "detail": "bash echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git com…",
+      "callId": "shift_9",
+      "tool": "bash",
+      "args": {
+        "command": "echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add handover && git commit -qm 'Try fallback' && git rev-parse HEAD",
+        "description": "Night shift rehearsal"
+      }
+    },
+    {
+      "seq": 60,
+      "at": 1795026404861,
+      "offsetMs": 4191,
+      "kind": "JOB",
+      "detail": "start bash echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add…"
+    },
+    {
+      "seq": 61,
+      "at": 1795026405496,
+      "offsetMs": 4826,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) echo '{\"startUtc\":\"06:10\",\"birch\":\"overflow\",\"cedar\":\"observe\"}' > handover/proposal.json && git add…"
+    },
+    {
+      "seq": 62,
+      "at": 1795026405498,
+      "offsetMs": 4828,
+      "kind": "RESULT",
+      "detail": "ok ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0",
+      "callId": "shift_9",
+      "callSeq": 59,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 67,
+      "at": 1795026405564,
+      "offsetMs": 4894,
+      "kind": "CALL",
+      "detail": "fleet_desk",
+      "callId": "shift_10",
+      "tool": "fleet_desk",
+      "args": {
+        "action": "rehearse",
+        "sha": "024dc149cb2aad2865b6e45b6bbcf58d6613ba03"
+      }
+    },
+    {
+      "seq": 68,
+      "at": 1795026405637,
+      "offsetMs": 4967,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":false,\"reason\":\"Use the current full descendant SHA with a committed valid handover/proposal.json after checkpoint.\"}",
+      "callId": "shift_10",
+      "callSeq": 67,
+      "callKind": "fleet_desk",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 73,
+      "at": 1795026405699,
+      "offsetMs": 5029,
+      "kind": "CALL",
+      "detail": "fleet_desk",
+      "callId": "shift_11",
+      "tool": "fleet_desk",
+      "args": {
+        "action": "rehearse",
+        "sha": "ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0"
+      }
+    },
+    {
+      "seq": 74,
+      "at": 1795026406027,
+      "offsetMs": 5357,
+      "kind": "RESULT",
+      "detail": "ok commit=ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0 {\"ok\":true,\"commit\":\"ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0\",\"proposalBlob\":\"21a12daaf80cf4158bc2c20fe4a872416f97c31a\",\"booking\":\"conflict\",\"reasons\":[\"CAP-08 reserves the lane for Cedar at this time\"],\"productionAppro…",
+      "callId": "shift_11",
+      "callSeq": 73,
+      "callKind": "fleet_desk",
+      "ok": true,
+      "facts": {
+        "commit": "ab2ac1259db9fc0143389b06e5b5cc3d1e9886b0"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 79,
+      "at": 1795026406083,
+      "offsetMs": 5413,
+      "kind": "CALL",
+      "detail": "bash echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains C…",
+      "callId": "shift_12",
+      "tool": "bash",
+      "args": {
+        "command": "echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Birch; Cedar retains CAP-08. Owner decides.' >> handover/shift.md && echo '{\"startUtc\":\"06:10\",\"birch\":\"park\",\"cedar\":\"overflow\"}' > handover/proposal.json && git add handover && git commit -qm 'Revise handover using terminal and booking evidence' && git rev-parse HEAD",
+        "description": "Night shift rehearsal"
+      }
+    },
+    {
+      "seq": 80,
+      "at": 1795026406092,
+      "offsetMs": 5422,
+      "kind": "JOB",
+      "detail": "start bash echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Bi…"
+    },
+    {
+      "seq": 81,
+      "at": 1795026406740,
+      "offsetMs": 6070,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) echo 'p17 retry redrawn; p23 unknown. Global dedup breaks the legitimate Alder p04/p09 pair. Park Bi…"
+    },
+    {
+      "seq": 82,
+      "at": 1795026406741,
+      "offsetMs": 6071,
+      "kind": "RESULT",
+      "detail": "ok cf78823945f9f7ee3f40c17371488e6fcd824821",
+      "callId": "shift_12",
+      "callSeq": 79,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 87,
+      "at": 1795026406799,
+      "offsetMs": 6129,
+      "kind": "CALL",
+      "detail": "fleet_desk",
+      "callId": "shift_13",
+      "tool": "fleet_desk",
+      "args": {
+        "action": "rehearse",
+        "sha": "cf78823945f9f7ee3f40c17371488e6fcd824821"
+      }
+    },
+    {
+      "seq": 88,
+      "at": 1795026407131,
+      "offsetMs": 6461,
+      "kind": "RESULT",
+      "detail": "ok commit=cf78823945f9f7ee3f40c17371488e6fcd824821 {\"ok\":true,\"commit\":\"cf78823945f9f7ee3f40c17371488e6fcd824821\",\"proposalBlob\":\"f6dc59a7aa1f5c72f56718beec220fdf8dc6c619\",\"booking\":\"feasible\",\"reasons\":[],\"productionApproval\":\"unissued\"}",
+      "callId": "shift_13",
+      "callSeq": 87,
+      "callKind": "fleet_desk",
+      "ok": true,
+      "facts": {
+        "commit": "cf78823945f9f7ee3f40c17371488e6fcd824821"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 92,
+      "at": 1795026407187,
+      "offsetMs": 6517,
+      "kind": "DECISION",
+      "detail": "Revised rehearsal ready for owner."
+    },
+    {
+      "seq": 94,
+      "at": 1795026407188,
+      "offsetMs": 6518,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

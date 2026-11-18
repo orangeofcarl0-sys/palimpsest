@@ -1,0 +1,18 @@
+{
+  "redraw-auto": {
+    "terminal": "handover/evidence/terminal.tsv",
+    "command": ["node", "handover/replay.mjs"]
+  },
+  "suppressed-solo": {
+    "terminal": "handover/evidence/terminal.tsv",
+    "command": ["node", "handover/replay.mjs"]
+  },
+  "redraw-solo": {
+    "terminal": "handover/evidence/terminal.tsv",
+    "command": ["node", "handover/replay.mjs", "--json", "--require-anomaly"]
+  },
+  "suppressed-auto": {
+    "terminal": "handover/archive/terminal.tsv",
+    "command": ["node", "handover/replay.mjs"]
+  }
+}
