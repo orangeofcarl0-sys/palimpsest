@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- 从主线 `77f2d87e` 的零费 Mock 通过后，普通 DSH 用 OpenCode Go `deepseek-v4.1-flash` 从 `4639ae44` 复跑真实 gRPC T3。只提交评审 `ccb07d36`，记录 `DELIVER` 后自然退出，13/13 笔请求自动归因、25/25 对工具配对。冻结 v2 为 11/12，唯一漏判新版表格中的前三条规则。同一原稿离线复核 12/12、HTTP/2 7/7、公开测试 18/18。上一条原判及 402/400 `UNKNOWN` 保留。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#语义与归因修复后的真实-opencode-go-t3) · [轨迹与账本](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json)
+- OpenCode Go gRPC T3 复跑证据已由 [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) 发布到主线 `e4f037b8`，16/16 项检查首次通过。证据来自主线 `77f2d87e`、同一核准 HEAD `4639ae44` 的普通 DSH 会话。只提交评审 `ccb07d36`，记录 `DELIVER` 后自然退出，13/13 笔请求自动归因、25/25 对工具配对。冻结 v2 保留 11/12，同一原稿离线复核 12/12、HTTP/2 7/7、公开测试 18/18。历史原判及 402/400 `UNKNOWN` 逐字节保留，本次发布新增付费请求 0。[报告](docs/engineering/SOFTWARE-PROJECT-CONTINUITY.md#语义与归因修复后的真实-opencode-go-t3) · [轨迹与账本](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json)
 
 - 真正的仓库在 **`F:/Codex_Work_Space/Palimpsest/palimpsest-sr1`**。父目录 `F:/Codex_Work_Space/Palimpsest` **不是 Git 仓库**，不要在那里工作。
 - `main` 是唯一常驻分支。日常保留一条工作分支，并行工作上限为三条。分支归并、R3-A2 导入与历史引用恢复入口见 [分支清单](docs/engineering/repository/ACTIVE-BRANCHES.md)。
@@ -79,8 +79,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| `codex/grpc-t3-opencode-v2` | 基于 `77f2d87e4a1226dfe02509d9a181ca56d1f0be70`，保存本轮真实 gRPC T3、同一 SHA 复核及报告。原冻结判分维持 11/12 |
-| `origin/main` | OpenCode Go gRPC T3 的发布点为 `d5a423af7db28a6eb66848ec713f3c02d2dbe858`，当前 tip 用 `git rev-parse origin/main` 核对。本轮真实会话的产品代码基线为 `fdda682e1fd03071a3c4770f511d248df027a689` |
+| `origin/main` | OpenCode Go gRPC T3 复跑证据的发布点为 `e4f037b868c7c36a65aa28396e2f25f8b5fbdf5b`，该真实会话从 `77f2d87e4a1226dfe02509d9a181ca56d1f0be70` 启动。当前 tip 用 `git rev-parse origin/main` 核对 |
+| [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) | `codex/grpc-t3-opencode-v2` 已 rebase 合并，送审 `981891a693ce2e270911cce6128292a341830d18` 对应发布 `e4f037b868c7c36a65aa28396e2f25f8b5fbdf5b`。前后文件树、作者和消息一致，远端工作分支已自动删除。[检查及 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json) |
 | [PR #271](https://github.com/orangeofcarl0-sys/palimpsest/pull/271) | `codex/grpc-t3-offline-acceptance` 已 rebase 合并，基线 `33495ed1a06772780f3dba09ec8de7680f49c551`，送审 `78e473d666bce41aeb265c326f8ad7c3800953cd`，发布 `c9347e24b4bbd6440444cdc763f6bf7f7a85b31c`。合并前后文件树、作者和提交消息相同，远端分支已自动删除。[检查和 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-offline-acceptance-release-ci.json) |
 | [PR #269](https://github.com/orangeofcarl0-sys/palimpsest/pull/269) | `codex/grpc-t3-opencode-go` 已 rebase 合并，送审 `1612688882ae90e90480988a0f78d309b567715d` 的 16/16 项检查通过。四个提交的文件树、作者、提交消息和线性父链逐一核对，远端工作分支已自动删除。探针与真实会话使用的宿主实现 `9fe4bd62` 对应主线 `92dd887e`。[检查与 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/release-ci.json) |
 | [PR #267](https://github.com/orangeofcarl0-sys/palimpsest/pull/267) | `codex/grpc-t3-review-semantics` 已 rebase 合并，送审 `c2ed9dd2649abdef62b6e2da4cbfa3fc13fae7f9` 的 16/16 项检查通过。合并前后文件树、作者和提交消息一致，远端工作分支已自动删除。[检查与 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/review-semantics-035705/release-ci.json) |
@@ -266,6 +266,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 ---
 
 ## 5. 验证命令与当前基线
+
+PR #273 的 15 个 job 和独立的 `commit-attribution` 状态首次全部通过。Linux 单测、浏览器 E2E、包安装和 Windows Host Boundary 均通过。R0 的四个外部 DSH 执行步骤按环境条件跳过。发布时从 Git bundle 独立校验原稿、重新读取冻结评分、从原始 DSH 流复算 13 笔逐步归因。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/273/checks) · [发布提交主线 CI](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44262466177) · [主线 Windows](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/44262465879)
 
 主线 `77f2d87e` 的同基线 Mock 通过 12/12，4 笔全结算，自然退出，付费 0。真实 T3 后从原提交快照独立验证 HTTP/2 7/7、公开测试 18/18，原 DSH 流归因复算与同一 SQLite 逐笔一致。评分与归因脚本的 11 项定向回归通过。[Mock](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/qualification.json) · [同一 SHA 审计](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/same-sha-audit.json)
 
@@ -659,6 +661,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-18 | 修复 T3 旧空流语义及 OpenCode Go 缺 ID 归因 | [离线复算](research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-offline-acceptance.json) | 同一 `f30c6644` 得 12/12，原轨迹 14/14，账本合计 458,889 tokens，新增模型请求 0 |
 | 2026-11-18 | 发布 gRPC T3 离线验收修复并同步 handoff | [PR #271](https://github.com/orangeofcarl0-sys/palimpsest/pull/271) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/grpc-t3-offline-acceptance-release-ci.json) | 16/16 检查首次通过，主线发布点 `c9347e24`。原 11/12、原归因失败、两轮冻结原判和 402/400 UNKNOWN 逐字节保留 |
 | 2026-11-18 | 从 `77f2d87e` 复跑同核准提交的真实 OpenCode Go gRPC T3 | [结果](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/result.json) · [对比](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/trajectory-comparison.json) | `ccb07d36` 记录 DELIVER 并自然退出，13 笔全结算并归因。原 11/12，新增缺项为新版表格前三条，离线复核 12/12 |
+| 2026-11-18 | 发布 OpenCode Go gRPC T3 复跑证据并同步 handoff | [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) · [发布记录](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json) | 主线发布点 `e4f037b8`，16/16 项首次通过。保留本轮 11/12、同一 SHA 离线复核、历史原判和 402/400 UNKNOWN，本次发布新增付费请求 0 |
 
 ---
 
