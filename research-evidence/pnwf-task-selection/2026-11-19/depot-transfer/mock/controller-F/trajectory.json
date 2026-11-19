@@ -1,0 +1,272 @@
+{
+  "requests": 6,
+  "usage": {
+    "input_tokens": 417595,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "output_tokens": 1469
+  },
+  "usageByRole": {
+    "principal": {
+      "requests": 5,
+      "input": 203407,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 1350,
+      "total": 204757
+    },
+    "native-child": {
+      "requests": 1,
+      "input": 214188,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 119,
+      "total": 214307
+    }
+  },
+  "confirmed": 419064,
+  "unknown": 0,
+  "elapsedMs": 21625,
+  "bindings": [
+    {
+      "role": "principal",
+      "session": "session-8d4092d9-9a07-463e-b67d-34ff93f014da",
+      "seq": 14,
+      "id": "59713a46-d7d9-4c2b-b026-3bd86a506b3b",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 54562,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 189
+      },
+      "calls": [
+        15
+      ]
+    },
+    {
+      "role": "principal",
+      "session": "session-8d4092d9-9a07-463e-b67d-34ff93f014da",
+      "seq": 22,
+      "id": "d2095f62-0eae-48ea-b5f2-bf8d8426bc19",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 36461,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 355
+      },
+      "calls": [
+        23
+      ]
+    },
+    {
+      "role": "principal",
+      "session": "session-8d4092d9-9a07-463e-b67d-34ff93f014da",
+      "seq": 30,
+      "id": "fd877e5f-16c9-49ce-8e24-98d4a1e60d1b",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 36329,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 174
+      },
+      "calls": [
+        31
+      ]
+    },
+    {
+      "role": "principal",
+      "session": "session-8d4092d9-9a07-463e-b67d-34ff93f014da",
+      "seq": 36,
+      "id": "40d6ce59-c797-4bc8-bb1b-cfb70624ee63",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 36362,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 572
+      },
+      "calls": [
+        37
+      ]
+    },
+    {
+      "role": "principal",
+      "session": "session-8d4092d9-9a07-463e-b67d-34ff93f014da",
+      "seq": 44,
+      "id": "24c4f88f-7bac-46a8-9528-f105d8c7de87",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 39693,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 60
+      },
+      "calls": []
+    },
+    {
+      "role": "maintainer",
+      "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+      "seq": 180,
+      "id": "74467306-f4c4-44fc-a427-252373369b39",
+      "method": "unique-usage",
+      "usage": {
+        "input_tokens": 214188,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 119
+      },
+      "calls": [
+        181
+      ]
+    }
+  ],
+  "traces": [
+    {
+      "role": "principal",
+      "session": "session-8d4092d9-9a07-463e-b67d-34ff93f014da",
+      "calls": [
+        {
+          "seq": 15,
+          "at": 1795103690843,
+          "callId": "transfer_0",
+          "tool": "bash",
+          "input": {
+            "command": "cat operations/original-receipt.json operations/release-format.md",
+            "description": "Prepare morning vehicle release"
+          },
+          "resultSeq": 18,
+          "ok": true,
+          "refusal": null,
+          "reply": "{\n  \"sha\": \"341e19e288de9f561f85fcb66a7a910ff6f3e143\",\n  \"sheetBlob\": \"909e4162101af570a83237847bf14bd8186a9558\",\n  \"run\": \"DUTY-2340\",\n  \"time\": \"23:40\",\n  \"conditions\": \"冷夜，20 kW 平移生效；明早负荷配置\",\n  \"captureDigest\": \"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\n  \"requested\": [\n    80,\n    40,\n    70,\n    50\n  ],\n  \"limits\": [\n    80,\n    40,\n    50,\n    70\n  ],\n  \"actual\": [\n    80,\n    40,\n    50,\n    50\n  ],\n  \"departureKwh\": [\n    126,\n    121\n  ],\n  \"withinLimits\": false,\n  \"applicability\": \"站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。\",\n  \"auxiliaryMeterB\": {\n    \"startKwh\": 814,\n    \"endKwh\": 814\n  }\n}\n归档的本班原表车辆台架回执见 operations/original-receipt.json，工况与适用范围见单内。调度台名录登记值班维护者，depot_trial 的本席量程为原 21:00 公开采集。\n排班保持现有字段、两车时窗、20 kW 已预约平移和高效工况下最大可用充电量。逐车决定以车辆离场可用净电量为准。修订 shift-plan.json、HANDOVER.md，新建 release.json。\n放行单字段：departureKwh 与 marginKwh 各为 90% 时按 A/B 顺序的数值数组；at90、at85 均为 {\"A\":\"GO 或 HOLD\",\"B\":\"GO 或 HOLD\"}；evidenceSha 为依据记录所指的完整 Git SHA。负余量表示缺口。\n交班稿注明依据、最终两车离场量、余量及分车/低效率处置。原资料须原样保存。如另存新的台架回执，放在 operations/revision-receipt.json。\n"
+        },
+        {
+          "seq": 23,
+          "at": 1795103691039,
+          "callId": "transfer_1",
+          "tool": "bash",
+          "input": {
+            "command": "node -e \"const f=require('fs'),p=require('./shift-plan.json');p.acKw=[80,40,50,70];f.writeFileSync('shift-plan.json',JSON.stringify(p,null,2))\" && git add shift-plan.json && git commit -qm \"Adjust B slots\" && git rev-parse HEAD",
+            "description": "Prepare morning vehicle release"
+          },
+          "resultSeq": 26,
+          "ok": true,
+          "refusal": null,
+          "reply": "0587f09099af87849755864a2dcd8b9fa488e76f\n"
+        },
+        {
+          "seq": 31,
+          "at": 1795103691783,
+          "callId": "transfer_2",
+          "tool": "depot_contact",
+          "input": {
+            "sha": "0587f09099af87849755864a2dcd8b9fa488e76f",
+            "question": "请给出台架本表离场净电量。"
+          },
+          "resultSeq": 32,
+          "ok": true,
+          "refusal": null,
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"0587f09099af87849755864a2dcd8b9fa488e76f\",\"sheetBlob\":\"cc861d4885af15bdf6bd0125a3295ddbc8d355ff\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,50,70],\"limits\":[80,40,50,70],\"actual\":[80,40,50,70],\"departureKwh\":[126,124],\"withinLimits\":true,\"applicability\":\"站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。\",\"auxiliaryMeterB\":{\"startKwh\":814,\"endKwh\":820}}}"
+        },
+        {
+          "seq": 37,
+          "at": 1795103702189,
+          "callId": "transfer_4",
+          "tool": "bash",
+          "input": {
+            "command": "echo '{\"departureKwh\":[126,124],\"marginKwh\":[0,-6],\"at90\":{\"A\":\"GO\",\"B\":\"HOLD\"},\"at85\":{\"A\":\"HOLD\",\"B\":\"HOLD\"},\"evidenceSha\":\"0587f09099af87849755864a2dcd8b9fa488e76f\"}' > release.json && echo 'B 01:00/01:30=50/70 kW。按 0587f09099af87849755864a2dcd8b9fa488e76f，90% A 126余0可放行，B 124余-6 HOLD；85% 两车停发。' > HANDOVER.md && git add release.json HANDOVER.md && git commit -qm 'File vehicle release'",
+            "description": "Prepare morning vehicle release"
+          },
+          "resultSeq": 40,
+          "ok": true,
+          "refusal": null,
+          "reply": "(no output)"
+        }
+      ],
+      "answers": [
+        {
+          "seq": 44,
+          "text": "班表和逐车决定已提交。"
+        }
+      ],
+      "tools": [
+        "bash",
+        "create_goal",
+        "depot_contact",
+        "depot_directory",
+        "depot_trial",
+        "edit",
+        "exit_plan_mode",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "read",
+        "read_image",
+        "send_message",
+        "skill",
+        "subagent",
+        "subagent_fork",
+        "todo_write",
+        "update_goal",
+        "workflow",
+        "working_directory",
+        "write"
+      ]
+    },
+    {
+      "role": "maintainer",
+      "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+      "calls": [
+        {
+          "seq": 181,
+          "at": 1795103701767,
+          "callId": "transfer_3",
+          "tool": "depot_trial",
+          "input": {
+            "sha": "0587f09099af87849755864a2dcd8b9fa488e76f"
+          },
+          "resultSeq": 182,
+          "ok": true,
+          "refusal": null,
+          "reply": "{\"ok\":true,\"receipt\":{\"sha\":\"0587f09099af87849755864a2dcd8b9fa488e76f\",\"sheetBlob\":\"cc861d4885af15bdf6bd0125a3295ddbc8d355ff\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,50,70],\"limits\":[80,40,50,70],\"actual\":[80,40,50,70],\"departureKwh\":[126,124],\"withinLimits\":true,\"applicability\":\"站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。\",\"auxiliaryMeterB\":{\"startKwh\":814,\"endKwh\":820}},\"deliveredSha\":\"0587f09099af87849755864a2dcd8b9fa488e76f\"}"
+        }
+      ],
+      "answers": [],
+      "tools": [
+        "bash",
+        "create_goal",
+        "depot_directory",
+        "depot_shift_log",
+        "depot_trial",
+        "edit",
+        "exit_plan_mode",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "read",
+        "read_image",
+        "send_message",
+        "skill",
+        "subagent",
+        "subagent_fork",
+        "todo_write",
+        "update_goal",
+        "workflow",
+        "working_directory",
+        "write"
+      ]
+    }
+  ]
+}

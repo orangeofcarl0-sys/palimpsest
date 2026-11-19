@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {copyFileSync,existsSync,lstatSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,rmSync,writeFileSync} from "node:fs";
 import {dirname,join,resolve} from "node:path";
 import {tmpdir} from "node:os";
+import {fileURLToPath} from "node:url";
 import {DatabaseSync} from "node:sqlite";
 import {execFileSync} from "node:child_process";
 import {PAID_MODE} from "../bounded_provider.mjs";
@@ -13,11 +14,11 @@ import * as shiftLogCase from "../depot-shift-log/case.mjs";
 import {oldRequest} from "./isolate-unknown.mjs";
 import {buildEvidence,evidencePaths} from "./evidence.mjs";
 
-function copy(src,dest,p){
+export function copy(src,dest,p){
   assert(lstatSync(join(src,p)).isFile());
   mkdirSync(dirname(join(dest,p)),{recursive:true});copyFileSync(join(src,p),join(dest,p));
 }
-function saveReviewerCopies(src,out){
+export function saveReviewerCopies(src,out){
   const dir=join(src,"desk");
   for(const entry of readdirSync(dir,{withFileTypes:true}).filter(d=>d.isDirectory()&&/^\d+$/.test(d.name))){
     const world=join(dir,entry.name,"stage/world");
@@ -35,7 +36,7 @@ function saveReviewerCopies(src,out){
     for(const p of git(world,"ls-files","--others","--exclude-standard","-z").split("\0").filter(Boolean))copy(world,join(dest,"untracked"),p);
   }
 }
-function manifest(dir){
+export function manifest(dir){
   const sums={};
   for(const d of readdirSync(dir,{withFileTypes:true,recursive:true}).filter(d=>d.isFile())){
     const path=join(d.parentPath,d.name),p=path.slice(dir.length+1).replaceAll("\\","/");
@@ -59,9 +60,10 @@ async function verify(dir){
     if(m.seal.materials&&!p.includes("/")&&existsSync(snapshot)){
       const deployed=readFileSync(snapshot);
       assert.equal(digest(deployed),hash,p);
-      assert.equal(deployed.toString().replaceAll("\r\n","\n"),readFileSync(join(here,p),"utf8").replaceAll("\r\n","\n"),p);
-    }else if(splitLogs&&!m.seal.reviewExit&&["desk.mjs","mock.mjs","run.mjs"].includes(p)&&current!==hash){
-      const revision=m.seal.materials?"a4d88df671f4de20feb83a9a44191be86b27bec5":m.seal.delivery?"91dc8787e4500250aefaecf3a809f219bd5e2298":"d70eebc054fcf9f96154cff53d976ce13cd43725";
+      const original=execFileSync("git",["show","889ba56bc4bb656a0e9de81ecd56817af813ff1c:scripts/pnwf/depot-shift-log/"+p],{cwd:here});
+      assert.equal(deployed.toString().replaceAll("\r\n","\n"),original.toString().replaceAll("\r\n","\n"),p);
+    }else if(splitLogs&&["desk.mjs","mock.mjs","run.mjs","product-entry.mjs"].includes(p)&&current!==hash){
+      const revision=m.seal.reviewExit?"889ba56bc4bb656a0e9de81ecd56817af813ff1c":m.seal.materials?"a4d88df671f4de20feb83a9a44191be86b27bec5":m.seal.delivery?"91dc8787e4500250aefaecf3a809f219bd5e2298":"d70eebc054fcf9f96154cff53d976ce13cd43725";
       const frozen=execFileSync("git",["show",revision+":scripts/pnwf/depot-shift-log/"+p],{cwd:here});
       assert.equal(digest(frozen),hash,p);
     }else assert.equal(current,hash,p);
@@ -142,6 +144,7 @@ async function verify(dir){
     console.log("Verified",m.mode,row.arm,row.requests,row.unknown,row.grade.passed);
   }
 }
+async function main(){
 const [source,target]=process.argv.slice(2),dest=resolve(target);
 if(source!=="--verify"){
   const run=resolve(source);mkdirSync(dest);
@@ -171,3 +174,5 @@ if(source!=="--verify"){
   writeJson(join(dest,"manifest.json"),manifest(dest));
 }
 await verify(dest);
+}
+if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))await main();
