@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- R4 签发已覆盖请求超限拒签和合法修订沿用适用原表回执。两组 Mock 均 10/10；真实 P/F 均签发并自然退出，独立评分各 6/10。两者均选 B 车 50/50 kW，三次联系维护者仍未用足最后一格。R7 则在 50/70 的修订实测中取得改变放行依据的 6 kWh 反例。旧 R4 的 2/10 和 UNKNOWN 继续封存。[逐次复核与原稿](docs/engineering/DEPOT-R4-RELEASE-POWER.md)
+- R4 签发契约已合入主线 `b8a7d27b`。两组 Mock 均为 10/10。真实 Palimpsest 和强原生 DSH 均通过签发并自然退出，独立业务评分各 6/10。两组均选 B 车 50/50 kW，三次联系维护者仍未用足最后一格。R7 在 50/70 的修订实测中取得改变放行依据的 6 kWh 反例。旧 R4-P 的 2/10 和第 7 笔 UNKNOWN 继续封存。[PR #283](https://github.com/orangeofcarl0-sys/palimpsest/pull/283) · [逐次复核与原稿](docs/engineering/DEPOT-R4-RELEASE-POWER.md)
 
 - 任务选路试点、夜班复核和 R7 签发契约已随 [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) 合入主线 `f1c1424a`。送审的 16 项检查全部通过。历史 UNKNOWN 和两组 R7 的 6/10 原判保留，本轮 R7 Palimpsest 与强原生 DSH 均为 10/10。发布和复算新增付费请求 0。[两轮逐组对比](research-evidence/pnwf-task-selection/2026-11-20/r7-release-power/comparison.json)
 
@@ -114,7 +114,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ## 2. 当前 Git / 分支状态（2026-11-20，最近同步）
 
-R4 签发与原表回执试点位于 `codex/r4-release-contract`，分支起点为主线 `a819db59`。独立实验项目的 Git SHA 记录在归档，其基线为 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`。[冻结输入与运行窗口](research-evidence/pnwf-task-selection/2026-11-20/r4-release-power/frozen.json)
+R4 发布从主线 `a819db59` 接续。PR #283 送审提交 `14f7e888222279ae249cc303634c6002a8e6b23f` 的 16 项检查全部通过，线性合入主线为 `b8a7d27b9cba0d736f1bf126350afc545d4a1703`。两端完整 Git 树均为 `2ebc7f1b65c81fc069cd9d038ab4ff62f4461182`，涵盖契约、轨迹、账本、Git bundle、报告和实验 handoff。发布时重新离线生成的 R4/R7 对比文件与封存文件逐字节一致，新增付费请求 0。实验项目的基线为 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/283/checks) · [冻结输入与运行窗口](research-evidence/pnwf-task-selection/2026-11-20/r4-release-power/frozen.json)
 
 ### 任务选路试点发布
 
@@ -784,6 +784,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-20 | R4 签发契约与配对证据合入主线 `b8a7d27b` | [PR #283](https://github.com/orangeofcarl0-sys/palimpsest/pull/283) | 16/16 项通过，送审与发布树一致，两组签发、业务各 6/10，旧 2/10 和 UNKNOWN 保留 |
 | 2026-11-20 | R4 签发支持在原窗口内沿用原表回执，完成两组 Mock 和真实配对 | [R4 签发报告](docs/engineering/DEPOT-R4-RELEASE-POWER.md) | Mock 各 10/10，真实各 6/10，57 笔全部结算，旧 2/10 和 UNKNOWN 保留 |
 | 2026-11-20 | R7 请求超限拒签，两份 6/10 回归及双 Mock 通过，同基线真实配对 | [签发报告](docs/engineering/DEPOT-R7-RELEASE-POWER.md) | P/F 均 10/10，主动改表，60 笔全部结算 |
 | 2026-11-20 | 当前账号工具探针对账通过，按原顺序跑完其余三格 | [两批次对比](research-evidence/pnwf-task-selection/2026-11-20/depot-transfer/comparison.json) | R4-F 10/10，R7-F 和 R7-P 各 6/10，134 笔全部结算 |
