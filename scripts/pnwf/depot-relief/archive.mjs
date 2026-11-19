@@ -60,8 +60,8 @@ async function verify(dir){
       const deployed=readFileSync(snapshot);
       assert.equal(digest(deployed),hash,p);
       assert.equal(deployed.toString().replaceAll("\r\n","\n"),readFileSync(join(here,p),"utf8").replaceAll("\r\n","\n"),p);
-    }else if(splitLogs&&!m.seal.materials&&["desk.mjs","mock.mjs","run.mjs"].includes(p)&&current!==hash){
-      const revision=m.seal.delivery?"91dc8787e4500250aefaecf3a809f219bd5e2298":"d70eebc054fcf9f96154cff53d976ce13cd43725";
+    }else if(splitLogs&&!m.seal.reviewExit&&["desk.mjs","mock.mjs","run.mjs"].includes(p)&&current!==hash){
+      const revision=m.seal.materials?"a4d88df671f4de20feb83a9a44191be86b27bec5":m.seal.delivery?"91dc8787e4500250aefaecf3a809f219bd5e2298":"d70eebc054fcf9f96154cff53d976ce13cd43725";
       const frozen=execFileSync("git",["show",revision+":scripts/pnwf/depot-shift-log/"+p],{cwd:here});
       assert.equal(digest(frozen),hash,p);
     }else assert.equal(current,hash,p);
@@ -71,6 +71,10 @@ async function verify(dir){
     assert.equal(readFileSync(join(src,"prompt.txt"),"utf8"),goal);
     const t=buildEvidence(src,m.mode==="mock"?"mock":PAID_MODE);
     assert.deepEqual(JSON.parse(JSON.stringify(t)),readJson(join(src,"trajectory.json")));
+    if(m.seal.reviewExit){
+      const {reviewPhases}=await import("../depot-shift-log/review-phases.mjs");
+      assert.deepEqual(reviewPhases(src),row.reviewPhases);
+    }
     if(m.mode==="live"){
       // SQLite can create WAL sidecars on read. Verify a copy and keep the archive byte-stable.
       const scratch=mkdtempSync(join(tmpdir(),"depot-ledger-"));

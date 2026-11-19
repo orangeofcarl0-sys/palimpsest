@@ -1,0 +1,332 @@
+{
+  "mode": "live",
+  "seal": {
+    "scenario": "depot-shift-log",
+    "delivery": "durable-v1",
+    "reviewExit": "filed-trial/v1",
+    "materials": {
+      "rules": {
+        "schemaVersion": 1,
+        "mayWrite": [
+          "HANDOVER.md",
+          "operations/duty-2340.json",
+          "shift-plan.json"
+        ],
+        "mustChange": [
+          "HANDOVER.md",
+          "operations/duty-2340.json",
+          "shift-plan.json"
+        ],
+        "mustExist": [
+          "HANDOVER.md",
+          "operations/duty-2340.json",
+          "shift-plan.json"
+        ],
+        "mustPreserve": [
+          "README.md",
+          "TASK.md",
+          "model.mjs",
+          "model.test.mjs",
+          "night.json",
+          "operations/cold-cycle.json",
+          "operations/desk.md",
+          "operations/retest.mjs",
+          "package.json"
+        ]
+      },
+      "digest": "7cfd7145e07912e193d1f12be2603bba65c0a291b28c0d6b5776b44ce3a5a30e"
+    },
+    "arms": [
+      "P"
+    ],
+    "base": "a4d88df671f4de20feb83a9a44191be86b27bec5",
+    "publicDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+    "privateDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+    "previous": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+    "maintainer": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+    "history": "d86c7b644bafa8f806281d27319e342a851fe68a4c97cf095627cc602eacdb30",
+    "goal": "请为河湾车队明早两辆车签发一份可执行的冷夜调度交班稿。依据本班可用的运行记录核查现行班表，必要时修订，给出逐格设定、离场余量和低效率时的放行决定，把可执行排班和交班稿一起提交。",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "model": "deepseek-v4.1-flash",
+    "files": {
+      "protocol.md": "cc50c10c1cbe076d90ccdd46035561f1bc9710c83f6644f180f15994326ebe90",
+      "receipt-store.mjs": "5c7e5f62d90d4fb81ae8d4a7d4bf2c7528bdc28eeadc3ec67baa9197cf4ff55c",
+      "receipt-store.test.mjs": "203b598b418113b24c50521b431856df3d89b895b1644684b50ef5707016b258",
+      "case.mjs": "831df70c35cdba2a17fed604ffa724ac34da291c388a7ed4f57081c3c83523ff",
+      "../depot-relief/rig.mjs": "dc86f1e2e053d9be28f2dc6e4ff121945e3e93edf8a493085d3f60a035cf9163",
+      "desk.mjs": "58c81f6713505e8cd31290fd96c430833d4b593c9bf5c8d030553850d8e87c70",
+      "mock.mjs": "ee7c2ae3a38a3f44d94308a087cc8e4326b007d1dd045ba91d71d51df750c5c9",
+      "run.mjs": "f713a1e9b1248cc409a432ebe68f2ab0a846f524fba0fd4a57827808ca5d884e",
+      "../depot-relief/evidence.mjs": "1759990820e9c4adde7f3e3d1c05c4a6f291938b6b7b933523d2e4b2fdf50ed2",
+      "../depot-relief/plugin/index.js": "1f7271b647dc7e48aea4d88c8cc069b48c695afdedbdd1573ae4382b6b21baf2",
+      "../depot-relief/plugin/package.json": "025b3c416e955dd5f485de2dd5638f572cfe77865b92ae613259657048a3ea51",
+      "../depot-relief/isolate-unknown.mjs": "127ec0c99c1f98c9a07ee69a24372ec15acd5deb9c5620357262e60dd20b598b",
+      "../depot-relief/case.mjs": "d6cb564e2f20c8028578bd7cb14fd3bf714247b8962b8b5d9e3d0f1c3346e9f1",
+      "../container_adapter.mjs": "f70f43dd0445e4d9f60a035dca0a183e18ca18691b884c64010da3c8efd75205",
+      "../container_runtime.mjs": "1729cb107b8233cd7eb29fc36439902b3c819652f5fbbdada550ca03f1ed3060",
+      "../container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+      "../task-selection/evidence.mjs": "f682270e6dad479402e3a56d5d40345f12ea4343ed680aff5aa7682d8924505d",
+      "../task-selection/case.mjs": "1e101e15e34907b58fe30872f372aa6eb089cbd7018200a80d0ec1033486890d",
+      "materials.mjs": "a9930b759124606c255009a1d1b3ea446f978ac49c25ca383d988f50ef9cb423",
+      "materials.test.mjs": "8adbd710c0b8bf42e4285f62e8c9a12cd725fa7f5d14b66ff2dd771bc2c54db4",
+      "product-entry.mjs": "67bc3f353b2c69cca10fec0b33249a11cd9831b6748d9c9370ec0ed282b179b5",
+      "../task-selection/product-entry.mjs": "e014ad5bb88d61bd4acd7b2689ae63f7cef58c50011f3da787dfd74096473fa1",
+      "review-entry.mjs": "4beedb0843ceedad2f9e1277b2dc76cabcae67e58d2ea2cc7ba23b156a049e41",
+      "review-trial.mjs": "26b117866e5c273a2a2a558fe1eafd95cd10cb090c8e6d4ceda6f3b137bb1218",
+      "review-phases.mjs": "4ffc3aa7bd1fd894c63d734b6e9537e72a134fb44598cadc5c001c3c9c2ce1de",
+      "review-trial.test.mjs": "f5a03dfdc04d27c8a5f38548fb023da288412d17ccedec770691da82a5955cbb"
+    }
+  },
+  "qualified": false,
+  "arms": [
+    {
+      "arm": "P",
+      "basis": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "cohortId": "b61a129f-2a10-4739-b601-f92d62d35a66",
+      "promptDigest": "d73206df26811ac6eb6cf2a1c6274f6f242b711cf1ab366024bd097d0df65819",
+      "publicTrial": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+        "run": "DESK-21",
+        "time": "21:00",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+        "requested": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "actual": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "departureKwh": [
+          126,
+          130
+        ],
+        "withinLimits": true
+      },
+      "priorGrade": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "paths": [],
+        "checks": {
+          "commit": false,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": false,
+          "fourthSlot": false,
+          "fieldFeasible": false,
+          "lowEfficiency": true,
+          "updatedHandover": false
+        },
+        "passed": false,
+        "observed": {
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+          "run": "DUTY-2340",
+          "time": "23:40",
+          "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+          "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "limits": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "actual": [
+            80,
+            40,
+            50,
+            50
+          ],
+          "departureKwh": [
+            126,
+            121
+          ],
+          "withinLimits": false
+        }
+      },
+      "execution": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "b61a129f-2a10-4739-b601-f92d62d35a66",
+        "sessionId": "REVIEW",
+        "condition": "P",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-review-exit-20261119-222106\\live\\P\\stages\\REVIEW\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-review-exit-20261119-222106\\live\\P\\runtime-REVIEW",
+        "principalRuntime": "container",
+        "containerId": "3348dde7ec175f895b21d9702b67cb5711609501556d3679a84906c3833ea7b7",
+        "qualification": "c27719acae9109299a2aafb1ced302e3214cfb8c5b1f6d242e3aa0e23661634a",
+        "startedAt": "2026-11-19T14:24:22.627Z",
+        "endedAt": "2026-11-19T14:36:46.871Z",
+        "exitCode": 137,
+        "error": null,
+        "killedBy": "usage_unobservable",
+        "stopped": true,
+        "natural": false,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "b61a129f-2a10-4739-b601-f92d62d35a66",
+          "sessionId": "REVIEW",
+          "observedAt": "2026-11-19T14:36:46.871Z",
+          "maxTokens": null,
+          "softCeiling": null,
+          "totalTokens": null,
+          "confirmedTokens": 440879,
+          "reservedTokens": null,
+          "unresolvedRequests": 1,
+          "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+          "state": "STOPPED"
+        },
+        "mode": "paid-usage-only",
+        "paidRequestsAdmitted": 15,
+        "paidModelCalls": null
+      },
+      "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "status": "",
+      "materials": {
+        "ok": false,
+        "files": null,
+        "refusal": {
+          "reason": "RESULT_BASIS_MISMATCH",
+          "detail": "Commit the revision on top of the authorized basis.",
+          "nextAction": "FIX_CANDIDATE",
+          "paths": [],
+          "candidate": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+        }
+      },
+      "grade": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "paths": [],
+        "checks": {
+          "commit": false,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": false,
+          "fourthSlot": false,
+          "fieldFeasible": false,
+          "lowEfficiency": true,
+          "updatedHandover": false
+        },
+        "passed": false,
+        "observed": {
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+          "run": "DUTY-2340",
+          "time": "23:40",
+          "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+          "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "limits": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "actual": [
+            80,
+            40,
+            50,
+            50
+          ],
+          "departureKwh": [
+            126,
+            121
+          ],
+          "withinLimits": false
+        }
+      },
+      "journal": null,
+      "requests": 15,
+      "confirmed": 440879,
+      "unknown": 1,
+      "stop": "PROVIDER_TIMEOUT",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(measured.principalId && measured.traces.length === 1 && !measured.workerRequests)\n\n    at stoppedEvidence (file:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/transit-desk/stopped-evidence.mjs:14:3)\n    at buildEvidence (file:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/depot-relief/evidence.mjs:42:39)\n    at file:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/depot-shift-log/run.mjs:106:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "reviewPhases": {
+        "reviews": [
+          {
+            "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "measured": true,
+            "turn": 2,
+            "call": 217,
+            "result": 218,
+            "turnEnd": 220,
+            "reason": "completed",
+            "exitCode": 0,
+            "before": {
+              "requests": 4,
+              "fresh": 95701,
+              "cacheRead": 94592,
+              "cacheWrite": 0,
+              "output": 1976,
+              "total": 192269
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            },
+            "launchToReturnMs": 102396,
+            "returnToTurnEndMs": 10,
+            "returnToProcessExitMs": 1380,
+            "queuedMs": 61
+          }
+        ],
+        "maintainer": {
+          "requests": 4,
+          "fresh": 95701,
+          "cacheRead": 94592,
+          "cacheWrite": 0,
+          "output": 1976,
+          "total": 192269
+        },
+        "unassigned": {
+          "requests": 0,
+          "fresh": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0,
+          "total": 0
+        }
+      },
+      "offlineAttribution": {
+        "settled": 14,
+        "unknown": 1,
+        "total": null
+      }
+    }
+  ]
+}
