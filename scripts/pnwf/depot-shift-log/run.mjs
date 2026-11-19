@@ -15,6 +15,7 @@ import {digest,readJson,writeJson} from "../energy/contract.mjs";
 import {here,history,previous,maintainer,goal,prepare,grade,measure,profile,publicLog,privateLog} from "./case.mjs";
 import {desk} from "./desk.mjs";
 import {mockReply} from "./mock.mjs";
+import {reviewPhases} from "./review-phases.mjs";
 import {basis as frozenBasis,obligations,receiptPath,inspectDelivery} from "./materials.mjs";
 import {oldRequest} from "../depot-relief/isolate-unknown.mjs";
 
@@ -24,11 +25,12 @@ assert(["mock","live"].includes(mode)&&path);
 const paid=mode==="live",root=resolve(path),id="REVIEW";
 const {image,window,route,model}=previousContract;
 const arms=single?["P"]:["P","F"];
-const seal={scenario:"depot-shift-log",delivery:"durable-v1",materials:obligations,arms,base:"91dc8787e4500250aefaecf3a809f219bd5e2298",publicDigest:digest(JSON.stringify(publicLog)),privateDigest:digest(JSON.stringify(privateLog)),previous,maintainer,history:digest(readFileSync(history)),goal,
+const seal={scenario:"depot-shift-log",delivery:"durable-v1",reviewExit:"filed-trial/v1",materials:obligations,arms,base:"a4d88df671f4de20feb83a9a44191be86b27bec5",publicDigest:digest(JSON.stringify(publicLog)),privateDigest:digest(JSON.stringify(privateLog)),previous,maintainer,history:digest(readFileSync(history)),goal,
   image,window,route,model,files:{}};
 for(const p of ["protocol.md","receipt-store.mjs","receipt-store.test.mjs","case.mjs","../depot-relief/rig.mjs","desk.mjs","mock.mjs","run.mjs","../depot-relief/evidence.mjs","../depot-relief/plugin/index.js","../depot-relief/plugin/package.json","../depot-relief/isolate-unknown.mjs","../depot-relief/case.mjs",
   "../container_adapter.mjs","../container_runtime.mjs","../container_bridge.mjs","../task-selection/evidence.mjs","../task-selection/case.mjs",
-  "materials.mjs","materials.test.mjs","product-entry.mjs","../task-selection/product-entry.mjs"]){
+  "materials.mjs","materials.test.mjs","product-entry.mjs","../task-selection/product-entry.mjs",
+  "review-entry.mjs","review-trial.mjs","review-phases.mjs","review-trial.test.mjs"]){
   seal.files[p]=digest(readFileSync(join(here,p)));
 }
 const qualification=paid?readJson(resolve(qualifiedPath)):null;
@@ -82,7 +84,7 @@ for(const arm of arms){
       experiment:{layout:arm==="P"?"product":"native",openCodeGoProfile:provider,configureProfile:home=>profile(home,null),
         ...(arm==="P"?{createWorker:ports=>makeWorkerBroker({...ports,basis,policy:workerPolicy(projectId)})}:{}),
         createDesk:ports=>{
-          const host=desk({run,world,repository,image,slip,...ports});
+          const host=desk({run,world,repository,image,slip,...ports,wallClockMs:window.wallClockMs});
           return {...host,async dispatch(input){
             if(input?.action==="inspect_delivery"){
               const result=inspectDelivery(world,input.sha,join(run,"desk/receipts.sqlite"));
@@ -102,7 +104,13 @@ for(const arm of arms){
     row.requests=snapshot.requests.length;row.confirmed=snapshot.confirmed;row.unknown=snapshot.unresolvedRequests;row.stop=snapshot.reason;
     const {buildEvidence}=await import("../depot-relief/evidence.mjs");
     const t=buildEvidence(run,paid?PAID_MODE:"mock");writeJson(join(run,"trajectory.json"),t);
+    row.reviewPhases=reviewPhases(run);
     if(!paid){
+      assert.equal(row.reviewPhases.reviews.length,2);
+      assert.equal(row.reviewPhases.unassigned.requests,0);
+      for(const review of row.reviewPhases.reviews){
+        assert(review.before.requests>0&&review.after.requests===0&&review.exitCode===0&&review.reason==="completed");
+      }
       assert(row.execution.natural&&row.grade.passed&&!row.status&&row.execution.paidModelCalls===0);
       const c=t.traces.find(s=>s.role==="principal").calls;
       assert(row.materials.ok);
