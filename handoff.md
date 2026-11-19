@@ -13,7 +13,7 @@
 
 - Fleet 夜班已接入普通 DSH 的档案查询和按 SHA 试排。四格 Mock 后完成重绘/抑制 × 开放协作/单 Principal 的真实配对。四条均取得可行试排、记录 `DELIVER`、自然退出。两个开放协作的 Principal 均独立完成，真实轨迹中没有同伴反例采纳。四份原回放均成功；翻转最后一个终端事件后，重绘单人组仍误报倒退。[报告与复算](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md)
 
-- 上一轮 gRPC 接续的确切提交 `e3f63313` 已送审 [PR #277](https://github.com/orangeofcarl0-sys/palimpsest/pull/277)，封存保留旧 Episode ID 的 `UNKNOWN`。该提交的文件树随 #278 发布到主线 `9bdc8ef5`。新场景从已接受服务衍生四站、两窗口的资源分配。三名 Mock 原生子会话交回各自测量，三项贡献被采纳；真实样本由单一 Principal 合成正确的两轮清单。14 笔请求均已对账，真实候选 `7c5cef3989b394b69191a43104c8fa8cdaa21bf2` 已提交供审。[场景、轨迹与复算](docs/engineering/FLEET-ROLLOUT-SYNTHESIS.md)
+- gRPC 接续已随 [PR #278](https://github.com/orangeofcarl0-sys/palimpsest/pull/278) 发布到主线 `9bdc8ef5`。[PR #277](https://github.com/orangeofcarl0-sys/palimpsest/pull/277) 的唯一提交 `e3f63313` 与该主线提交的完整文件树相同。核对后已关闭 #277，远端分支 `codex/grpc-autonomous-continuity` 已删除。新场景从已接受服务衍生四站、两窗口的资源分配。三名 Mock 原生子会话交回各自测量，三项贡献被采纳；真实样本由单一 Principal 合成正确的两轮清单。14 笔请求均已对账，真实候选 `7c5cef3989b394b69191a43104c8fa8cdaa21bf2` 已提交供审。[场景、轨迹与复算](docs/engineering/FLEET-ROLLOUT-SYNTHESIS.md)
 
 - 路线图第二个里程碑已完成同一 gRPC 案例的首个业务提示样本。Mock 的原生子会话实测反例，Principal 记录采纳并修订；真实模型选择独立完成，HTTP/2 7/7、公开测试 18/18。所有者按完整 SHA 核准 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`，Work 事件 8 记录接受。宿主重启后，全新模型会话、DSH 侧栏及 Workspace 均找到同一版本和核验日志；真实模型的贡献链为空。两会话均自然退出。[报告](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md) · [接受记录](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/acceptance.json)
 
@@ -91,6 +91,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
+| gRPC 接续提交 | 送审 `e3f63313e127c72ce010dff544b0f48c9bab801d` 与主线 `9bdc8ef5c63afb18c9f33de645a2cd0497d5c40c` 的 Git tree 均为 `21c68ad2cf3535c12d75dad9508a1f8df1531128`。截至 `0f28f476`，#277 涉及的源码、测试、报告和 86 个归档路径都与送审版相同；后续有变动的三个路径为 `.gitattributes`、研究合同和本 handoff。 |
 | 当前实验 | 夜班隔离复核发布点为 `b23609505a4f4ce8fa2ee523f500902bdd8cc84d`。两组实验工作区的基线均为 `4f80c3bd`。GitHub 已在合并后删除远端送审分支。 |
 | `origin/main` | 夜班发布送审 HEAD `3c489b3b2a2bf02134494d34567611635a866844`，对应主线 `b2360950`。六个提交的文件树逐一相同。后续交接提交用 `git fetch origin` 和 `git rev-parse origin/main` 核对。 |
 | [PR #275](https://github.com/orangeofcarl0-sys/palimpsest/pull/275) | 从 `4e291944` 送审的 7 个提交经 rebase 合入主线。原生检查器 `e7c6f68a` 对应 `abba2519`，交互与样式的送审 HEAD `311f101e67076f6ed68541216421c1360e6dde19` 对应 `a77513024a0c847a1a7bf5a76aa4a5a38648e827`。逐项核对文件树、作者和提交消息一致，远端 `codex/project-visualization-plan` 已自动删除。[检查结果](https://github.com/orangeofcarl0-sys/palimpsest/pull/275/checks) |
@@ -280,6 +281,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 ---
 
 ## 5. 验证命令与当前基线
+
+gRPC 接续归档在 `0f28f476` 离线复算通过，Mock 清单 43 项、真实清单 40 项。真实所有者核准、Work 事件 8（`PROJECT_REVISED`，`DIRECT_BASIS`）及 Git bundle 的 candidate / accepted 引用指向同一提交 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`。真实 RESUME 压缩原始流的序号 39→40 按 `call_ccfc97275a064338a47c1acb` 配对，查询 `episode:episode-e7050e9ddf64ccebde7f08f6` 返回 `found:false`、`standing:UNKNOWN`。[核准记录](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/acceptance.json) · [调用与结果](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/accepted/out/RESUME/attribution/0.timeline.json) · [复算入口](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#离线复算和打开项目)
 
 [发布 CI](https://github.com/orangeofcarl0-sys/palimpsest/pull/278/checks) 在送审 HEAD 上 16/16 通过。发布复算核对了上轮真实与本轮 Mock、真实两组的轨迹、Git 和 P/S 原判，以及独立副本的原采集与绑定回执。独立副本资格覆盖错 SHA、自报结果、维护者发起 DELIVER、写入隔离及只读 P/S。Mock 共 13 笔合成请求，真实镜像中回算了两笔绑定原候选的 P/S 实测；构建与 44 项定向回归通过。两组归档均含 Git bundle、按调用 ID 配对的结果及独立双现场判分。[复算指令](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md#复算)
 
@@ -716,6 +719,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-19 | 从 `88621e34` 验证 gRPC 自主修订与重启接手 | [报告与离线恢复](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md) · [真实轨迹](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/observations.json) | Mock 有贡献采纳，真实模型独立完成，按完整 SHA 接受后两端读回 |
 | 2026-11-19 | 夜班隔离复核与同基线真实对照 | [报告](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md) | Mock 验证按 SHA 回传；真实两组自行完成，各 2/2，81 笔已对账 |
 | 2026-11-19 | 发布 Fleet 夜班场景、隔离复核与对照证据 | [PR #278](https://github.com/orangeofcarl0-sys/palimpsest/pull/278) · [16 项检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/278/checks) | 送审 `3c489b3b` 对应主线 `b2360950`。上轮两组各 0/2，本轮各 2/2，自主组联系维护者 0 次 |
+| 2026-11-19 | 核对 gRPC 接续提交并关闭重复 PR | [#277](https://github.com/orangeofcarl0-sys/palimpsest/pull/277) · [#278](https://github.com/orangeofcarl0-sys/palimpsest/pull/278) | 完整树一致，核准与旧 Episode 查询原判保留，已删除对应远端分支。新增付费调用 0 |
 
 ---
 
