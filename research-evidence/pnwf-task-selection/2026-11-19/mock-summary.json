@@ -1,0 +1,373 @@
+{
+  "mode": "mock",
+  "rows": [
+    {
+      "domain": "software",
+      "arm": "P",
+      "basis": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+      "accounted": true,
+      "natural": true,
+      "passed": true,
+      "requests": 9,
+      "candidate": "f3d4e3228276b8b6f252464b4250b0f05dec90cb",
+      "commits": [
+        "f3d4e3228276b8b6f252464b4250b0f05dec90cb"
+      ],
+      "checks": {
+        "P": true,
+        "S": true,
+        "preserved": true,
+        "handover": true
+      },
+      "paths": [
+        "handover/HANDOVER.md",
+        "handover/replay.mjs"
+      ],
+      "clean": true,
+      "conclusion": null,
+      "roles": [
+        {
+          "role": "maintainer",
+          "session": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+          "requests": 4,
+          "usage": {
+            "input_tokens": 996381,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1076
+          },
+          "toolCalls": 3,
+          "paired": 3,
+          "actions": [
+            {
+              "seq": 252,
+              "result": 253,
+              "tool": "fleet_measure",
+              "action": null,
+              "refusal": null
+            },
+            {
+              "seq": 258,
+              "result": 259,
+              "tool": "fleet_measure",
+              "action": null,
+              "refusal": null
+            }
+          ]
+        },
+        {
+          "role": "principal",
+          "session": "session-e7f6cec3-4446-402b-9f6e-4a5e071d4422",
+          "requests": 5,
+          "usage": {
+            "input_tokens": 321104,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1254
+          },
+          "toolCalls": 4,
+          "paired": 4,
+          "actions": [
+            {
+              "seq": 21,
+              "result": 22,
+              "tool": "fleet_contact",
+              "action": null,
+              "refusal": null
+            },
+            {
+              "seq": 27,
+              "result": 28,
+              "tool": "fleet_contact",
+              "action": null,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "input_tokens": 1317485,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2330
+      },
+      "confirmed": 1319815,
+      "unknown": 0,
+      "elapsedMs": 66146,
+      "stop": null,
+      "provider": {
+        "cost": null,
+        "listCost": null,
+        "allowance": null
+      }
+    },
+    {
+      "domain": "software",
+      "arm": "F",
+      "basis": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+      "accounted": true,
+      "natural": true,
+      "passed": true,
+      "requests": 9,
+      "candidate": "e1d40600b6f266f86361fa154dbeb314395f532e",
+      "commits": [
+        "e1d40600b6f266f86361fa154dbeb314395f532e"
+      ],
+      "checks": {
+        "P": true,
+        "S": true,
+        "preserved": true,
+        "handover": true
+      },
+      "paths": [
+        "handover/HANDOVER.md",
+        "handover/replay.mjs"
+      ],
+      "clean": true,
+      "conclusion": null,
+      "roles": [
+        {
+          "role": "principal",
+          "session": "session-050642ab-5c20-434e-814a-d99ca03844d0",
+          "requests": 5,
+          "usage": {
+            "input_tokens": 196466,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1254
+          },
+          "toolCalls": 4,
+          "paired": 4,
+          "actions": [
+            {
+              "seq": 21,
+              "result": 22,
+              "tool": "fleet_contact",
+              "action": null,
+              "refusal": null
+            },
+            {
+              "seq": 27,
+              "result": 28,
+              "tool": "fleet_contact",
+              "action": null,
+              "refusal": null
+            }
+          ]
+        },
+        {
+          "role": "maintainer",
+          "session": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+          "requests": 4,
+          "usage": {
+            "input_tokens": 996381,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1076
+          },
+          "toolCalls": 3,
+          "paired": 3,
+          "actions": [
+            {
+              "seq": 252,
+              "result": 253,
+              "tool": "fleet_measure",
+              "action": null,
+              "refusal": null
+            },
+            {
+              "seq": 258,
+              "result": 259,
+              "tool": "fleet_measure",
+              "action": null,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "input_tokens": 1192847,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2330
+      },
+      "confirmed": 1195177,
+      "unknown": 0,
+      "elapsedMs": 25814,
+      "stop": null,
+      "provider": {
+        "cost": null,
+        "listCost": null,
+        "allowance": null
+      }
+    },
+    {
+      "domain": "energy",
+      "arm": "F",
+      "basis": "31723de4147f7ab54c1e71c1813ae84d4f9bf1d3",
+      "accounted": true,
+      "natural": true,
+      "passed": true,
+      "requests": 6,
+      "candidate": "59973cc1a41cfbe7cd4a4069cd687e1480cb5698",
+      "commits": [
+        "59973cc1a41cfbe7cd4a4069cd687e1480cb5698"
+      ],
+      "checks": {
+        "north": true,
+        "harbor": true,
+        "total": true,
+        "recommendation": true,
+        "readerTotal": true,
+        "citation": true,
+        "risk": true,
+        "preserved": true,
+        "sources": true
+      },
+      "paths": [
+        "deliverables/cost-model.json",
+        "deliverables/recommendation.md",
+        "deliverables/risk-review.md"
+      ],
+      "clean": true,
+      "conclusion": null,
+      "roles": [
+        {
+          "role": "native-child",
+          "session": "f73b77cc-e686-4f15-800d-b049a2c24105",
+          "requests": 2,
+          "usage": {
+            "input_tokens": 92783,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 635
+          },
+          "toolCalls": 1,
+          "paired": 1,
+          "actions": []
+        },
+        {
+          "role": "principal",
+          "session": "session-07836940-366a-40ad-b977-f06b514ce2ca",
+          "requests": 4,
+          "usage": {
+            "input_tokens": 164476,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2128
+          },
+          "toolCalls": 3,
+          "paired": 3,
+          "actions": [
+            {
+              "seq": 15,
+              "result": 17,
+              "tool": "subagent",
+              "action": null,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "input_tokens": 257259,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2763
+      },
+      "confirmed": 260022,
+      "unknown": 0,
+      "elapsedMs": 11468,
+      "stop": null,
+      "provider": {
+        "cost": null,
+        "listCost": null,
+        "allowance": null
+      }
+    },
+    {
+      "domain": "energy",
+      "arm": "P",
+      "basis": "31723de4147f7ab54c1e71c1813ae84d4f9bf1d3",
+      "accounted": true,
+      "natural": true,
+      "passed": true,
+      "requests": 6,
+      "candidate": "0ac259e6b90c571cc31592d49c7456d147c06d1d",
+      "commits": [
+        "0ac259e6b90c571cc31592d49c7456d147c06d1d"
+      ],
+      "checks": {
+        "north": true,
+        "harbor": true,
+        "total": true,
+        "recommendation": true,
+        "readerTotal": true,
+        "citation": true,
+        "risk": true,
+        "preserved": true,
+        "sources": true
+      },
+      "paths": [
+        "deliverables/cost-model.json",
+        "deliverables/recommendation.md",
+        "deliverables/risk-review.md"
+      ],
+      "clean": true,
+      "conclusion": null,
+      "roles": [
+        {
+          "role": "native-child",
+          "session": "0e6e00da-19e7-4fc5-9cbc-73d521458d6d",
+          "requests": 2,
+          "usage": {
+            "input_tokens": 154177,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 635
+          },
+          "toolCalls": 1,
+          "paired": 1,
+          "actions": []
+        },
+        {
+          "role": "principal",
+          "session": "session-1fe03053-756b-4c43-9e97-4dff5652857e",
+          "requests": 4,
+          "usage": {
+            "input_tokens": 268334,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2128
+          },
+          "toolCalls": 3,
+          "paired": 3,
+          "actions": [
+            {
+              "seq": 15,
+              "result": 17,
+              "tool": "subagent",
+              "action": null,
+              "refusal": null
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "input_tokens": 422511,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2763
+      },
+      "confirmed": 425274,
+      "unknown": 0,
+      "elapsedMs": 32009,
+      "stop": null,
+      "provider": {
+        "cost": null,
+        "listCost": null,
+        "allowance": null
+      }
+    }
+  ]
+}
