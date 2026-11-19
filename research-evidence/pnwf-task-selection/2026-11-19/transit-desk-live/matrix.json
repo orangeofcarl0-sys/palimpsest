@@ -1,0 +1,153 @@
+{
+  "base": "3c44aba89fc9837619c5d22b2545b1e77a445f2b",
+  "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+  "model": "deepseek-v4.1-flash",
+  "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+  "window": {
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null
+  },
+  "order": [
+    {
+      "task": "public-brief",
+      "arm": "P"
+    },
+    {
+      "task": "public-brief",
+      "arm": "F"
+    },
+    {
+      "task": "departure-board",
+      "arm": "P"
+    },
+    {
+      "task": "departure-board",
+      "arm": "F"
+    },
+    {
+      "task": "depot-charge",
+      "arm": "P"
+    },
+    {
+      "task": "depot-charge",
+      "arm": "F"
+    }
+  ],
+  "started": [
+    {
+      "name": "public-brief-P",
+      "cohortId": "002ec64d-8d9b-426b-8f84-fc7800531e20",
+      "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+      "promptDigest": "eaf50a5d1374a016f38bc5c3a2c449e2a46dc2851bdbb9443afbb471fd0a3133"
+    },
+    {
+      "name": "public-brief-F",
+      "cohortId": "c4b0419b-865c-4d51-b747-5f9160438ba8",
+      "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+      "promptDigest": "eaf50a5d1374a016f38bc5c3a2c449e2a46dc2851bdbb9443afbb471fd0a3133"
+    },
+    {
+      "name": "departure-board-P",
+      "cohortId": "ac803b6a-fbe3-400a-82c1-8fbb9e722748",
+      "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+      "promptDigest": "fdc0c2c3d24a37a8a99424dc274ef0b2713e4c27e9be8f01cf27c5f87a7cf07a"
+    },
+    {
+      "name": "departure-board-F",
+      "cohortId": "58cd5ff5-de49-44e8-b05a-0c1f8bce8c99",
+      "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+      "promptDigest": "fdc0c2c3d24a37a8a99424dc274ef0b2713e4c27e9be8f01cf27c5f87a7cf07a"
+    },
+    {
+      "name": "depot-charge-P",
+      "cohortId": "ff634dea-0ff2-4108-949d-c11000d732b1",
+      "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+      "promptDigest": "8f052f0b925e61c7a8c037c8b512fb823093da8982744e57ba51ac97d1a974d6"
+    },
+    {
+      "name": "depot-charge-F",
+      "cohortId": "edebd9bb-1436-449c-8055-ca9d649ebb96",
+      "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+      "promptDigest": "8f052f0b925e61c7a8c037c8b512fb823093da8982744e57ba51ac97d1a974d6"
+    }
+  ],
+  "completed": [
+    {
+      "name": "public-brief-P",
+      "natural": true,
+      "stop": null,
+      "requests": 13,
+      "confirmed": 282975,
+      "unknown": 0,
+      "workingHead": "e504174d10856dc4ec952aab0875df42181c0b99",
+      "conclusion": {
+        "seq": 2,
+        "eventId": "pjer-0ef9195d881dba69d6611e7e1ef34aa7",
+        "intent": "DELIVER",
+        "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已完成 LAX/Metro Transit Center 开通信息的核查，交付可直接发布的中文旅客说明、短研判与结构化证据。结论：2025-06-06 17:00 新站开通、C/K 两线停靠属实；但截至 2025-07-02 收班，进入航站楼仍需换乘免费接驳巴士，APM 尚未运营，“全程轨道到航站楼”是未来预期而非开通当晚事实。已排除截止日后的 riders-sept12 和开通前的 city-june05。\nArtifacts:\n- brief.md\n- evidence.json\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:e504174d10856dc4ec952aab0875df42181c0b99\nBasis: revision 0, head 35f236320d8e31ad634b23127f10acb529a83b97\nArtifact provenance:\n- brief.md: present=true tracked=true committed=true source=WORKTREE digest=4da3e7d21b33 commit=e504174d1085\n- evidence.json: present=true tracked=true committed=true source=WORKTREE digest=0dd374de4433 commit=e504174d1085\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已完成 LAX/Metro Transit Center 开通信息的核查，交付可直接发布的中文旅客说明、短研判与结构化证据。结论：2025-06-06 17:00 新站开通、C/K 两线停靠属实；但截至 2025-07-02 收班，进入航站楼仍需换乘免费接驳巴士，APM 尚未运营，“全程轨道到航站楼”是未来预期而非开通当晚事实。已排除截止日后的 riders-sept12 和开通前的 city-june05。\",\"artifacts\":[\"brief.md\",\"evidence.json\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:e504174d10856dc4ec952aab0875df42181c0b99\"],\"recordedAt\":\"2026-11-19T10:36:08.281Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"412e10db9374041e27163a691bd1d598c250fd7c3ec5a2928c91982f6a8b157f\",\"headCommit\":\"35f236320d8e31ad634b23127f10acb529a83b97\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"brief.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"4da3e7d21b331994fd69809c4e61aa5b247f519f23625274fd02be7e8d7c5980\",\"source\":\"WORKTREE\",\"commit\":\"e504174d10856dc4ec952aab0875df42181c0b99\",\"detail\":\"committed at HEAD\"},{\"path\":\"evidence.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"0dd374de44338e634019f549be22dbd04ec042eb34583d34178964ece4a38360\",\"source\":\"WORKTREE\",\"commit\":\"e504174d10856dc4ec952aab0875df42181c0b99\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-f189d14ee18aa7cad617825b\"}"
+      }
+    },
+    {
+      "name": "public-brief-F",
+      "natural": true,
+      "stop": null,
+      "requests": 9,
+      "confirmed": 136290,
+      "unknown": 0,
+      "workingHead": "35f236320d8e31ad634b23127f10acb529a83b97",
+      "conclusion": null
+    },
+    {
+      "name": "departure-board-P",
+      "natural": true,
+      "stop": null,
+      "requests": 17,
+      "confirmed": 406606,
+      "unknown": 0,
+      "workingHead": "4b7b9c0c37be230d3184b446eb093f96420163cc",
+      "conclusion": {
+        "seq": 2,
+        "eventId": "pjer-050f8bd6393e35ca1441aa8678e40157",
+        "intent": "DELIVER",
+        "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: DB-17 已修复并提交：站牌查询按服务日展开，周六 00:00 同时返回周五 24:12 的 R7 和周六临时的 X3，且继续遵守 SAT 取消例外；新增 7 项回归测试全部通过，HANDOVER.md 给出复现命令与午夜两侧服务日区分说明。提交 4b7b9c0c37be230d3184b446eb093f96420163cc，feed.json 未改，原接口保持不变。\nArtifacts:\n- board.mjs\n- board.test.mjs\n- HANDOVER.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:4b7b9c0c37be230d3184b446eb093f96420163cc\nBasis: revision 0, head 7669c3f0c7108595fa3dc121098f2536e164de0a\nArtifact provenance:\n- board.mjs: present=true tracked=true committed=true source=WORKTREE digest=90345ac31a06 commit=4b7b9c0c37be\n- board.test.mjs: present=true tracked=true committed=true source=WORKTREE digest=0aede3f797df commit=4b7b9c0c37be\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=8e1aa1c57fd9 commit=4b7b9c0c37be\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"DB-17 已修复并提交：站牌查询按服务日展开，周六 00:00 同时返回周五 24:12 的 R7 和周六临时的 X3，且继续遵守 SAT 取消例外；新增 7 项回归测试全部通过，HANDOVER.md 给出复现命令与午夜两侧服务日区分说明。提交 4b7b9c0c37be230d3184b446eb093f96420163cc，feed.json 未改，原接口保持不变。\",\"artifacts\":[\"board.mjs\",\"board.test.mjs\",\"HANDOVER.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:4b7b9c0c37be230d3184b446eb093f96420163cc\"],\"recordedAt\":\"2026-11-19T10:44:30.069Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"5aa11d9edaa24321a13687b01a1dd4512136a7aba7c542b6843156ec8a44f2d4\",\"headCommit\":\"7669c3f0c7108595fa3dc121098f2536e164de0a\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"board.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"90345ac31a068f5ee721a5c8fc33b668801a2914c4602cc259f3223c65826adb\",\"source\":\"WORKTREE\",\"commit\":\"4b7b9c0c37be230d3184b446eb093f96420163cc\",\"detail\":\"committed at HEAD\"},{\"path\":\"board.test.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"0aede3f797df399d70ab616c1ce6ff09ea3e45d5d2a0afd87e06b013889d9ad3\",\"source\":\"WORKTREE\",\"commit\":\"4b7b9c0c37be230d3184b446eb093f96420163cc\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"8e1aa1c57fd9ff1eec302d2d759a163c5a2ebd5e8957b58d7a16ed016905ae69\",\"source\":\"WORKTREE\",\"commit\":\"4b7b9c0c37be230d3184b446eb093f96420163cc\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-c5e64c523f9d3af2411d71a9\"}"
+      }
+    },
+    {
+      "name": "departure-board-F",
+      "natural": true,
+      "stop": null,
+      "requests": 13,
+      "confirmed": 220696,
+      "unknown": 0,
+      "workingHead": "e46283d9ea8640c525ad1453e0780054483fb8cc",
+      "conclusion": null
+    },
+    {
+      "name": "depot-charge-P",
+      "natural": true,
+      "stop": null,
+      "requests": 22,
+      "confirmed": 789150,
+      "unknown": 0,
+      "workingHead": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+      "conclusion": {
+        "seq": 2,
+        "eventId": "pjer-2e1d564f0c48aa777becdf8a17da2bd6",
+        "intent": "DELIVER",
+        "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已提交可复算模型、测试和一页交接稿：0.90 效率下正常可发车；低温需将 20 kW 楼宇负荷从 00:30–01:00 移至 01:30–02:00，A/B 均恰好达标；未平移时 A 缺 9 kWh；η<0.90 时平移无法同时满足两车，0.85 时即使最均衡平移也各缺 3 kWh。\nArtifacts:\n- model.mjs\n- model.test.mjs\n- HANDOVER.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:20a84d3\nBasis: revision 0, head 4df0e02f5d7992e534d7e613c6764ad82bbbfcc2\nArtifact provenance:\n- model.mjs: present=true tracked=true committed=true source=WORKTREE digest=90a27cf34830 commit=20a84d3084ea\n- model.test.mjs: present=true tracked=true committed=true source=WORKTREE digest=71178b5fdf81 commit=20a84d3084ea\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=11b781342546 commit=20a84d3084ea\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已提交可复算模型、测试和一页交接稿：0.90 效率下正常可发车；低温需将 20 kW 楼宇负荷从 00:30–01:00 移至 01:30–02:00，A/B 均恰好达标；未平移时 A 缺 9 kWh；η<0.90 时平移无法同时满足两车，0.85 时即使最均衡平移也各缺 3 kWh。\",\"artifacts\":[\"model.mjs\",\"model.test.mjs\",\"HANDOVER.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:20a84d3\"],\"recordedAt\":\"2026-11-19T10:56:21.331Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"3036ae6502727fe16dac565bb577423b19821320e31e060b2220ba53bd30e3cb\",\"headCommit\":\"4df0e02f5d7992e534d7e613c6764ad82bbbfcc2\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"model.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"90a27cf348308fed3df9ddb0f36d3d965c9cd0aa2e4f625cdbfad351527bf222\",\"source\":\"WORKTREE\",\"commit\":\"20a84d3084ea70ce5d6167a14cffe15e70bc929d\",\"detail\":\"committed at HEAD\"},{\"path\":\"model.test.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"71178b5fdf81dfec5bdc03a7f478daeb10235231174da1b69de7c6f9a808bd89\",\"source\":\"WORKTREE\",\"commit\":\"20a84d3084ea70ce5d6167a14cffe15e70bc929d\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"11b781342546f892c64661a44f6ecb9e8e67f28349af5943b9dee9290ee4b577\",\"source\":\"WORKTREE\",\"commit\":\"20a84d3084ea70ce5d6167a14cffe15e70bc929d\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-7d327fed11bdb43cbe968a38\"}"
+      }
+    },
+    {
+      "name": "depot-charge-F",
+      "natural": false,
+      "stop": "PROVIDER_TIMEOUT",
+      "requests": 3,
+      "confirmed": 11615,
+      "unknown": 1,
+      "workingHead": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+      "conclusion": null
+    }
+  ]
+}

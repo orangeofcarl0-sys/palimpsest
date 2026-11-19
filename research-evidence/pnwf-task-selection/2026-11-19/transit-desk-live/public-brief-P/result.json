@@ -1,0 +1,47 @@
+{
+  "name": "public-brief-P",
+  "natural": true,
+  "stop": null,
+  "requests": 13,
+  "confirmed": 282975,
+  "unknown": 0,
+  "workingHead": "e504174d10856dc4ec952aab0875df42181c0b99",
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-0ef9195d881dba69d6611e7e1ef34aa7",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已完成 LAX/Metro Transit Center 开通信息的核查，交付可直接发布的中文旅客说明、短研判与结构化证据。结论：2025-06-06 17:00 新站开通、C/K 两线停靠属实；但截至 2025-07-02 收班，进入航站楼仍需换乘免费接驳巴士，APM 尚未运营，“全程轨道到航站楼”是未来预期而非开通当晚事实。已排除截止日后的 riders-sept12 和开通前的 city-june05。\nArtifacts:\n- brief.md\n- evidence.json\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:e504174d10856dc4ec952aab0875df42181c0b99\nBasis: revision 0, head 35f236320d8e31ad634b23127f10acb529a83b97\nArtifact provenance:\n- brief.md: present=true tracked=true committed=true source=WORKTREE digest=4da3e7d21b33 commit=e504174d1085\n- evidence.json: present=true tracked=true committed=true source=WORKTREE digest=0dd374de4433 commit=e504174d1085\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已完成 LAX/Metro Transit Center 开通信息的核查，交付可直接发布的中文旅客说明、短研判与结构化证据。结论：2025-06-06 17:00 新站开通、C/K 两线停靠属实；但截至 2025-07-02 收班，进入航站楼仍需换乘免费接驳巴士，APM 尚未运营，“全程轨道到航站楼”是未来预期而非开通当晚事实。已排除截止日后的 riders-sept12 和开通前的 city-june05。\",\"artifacts\":[\"brief.md\",\"evidence.json\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:e504174d10856dc4ec952aab0875df42181c0b99\"],\"recordedAt\":\"2026-11-19T10:36:08.281Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"412e10db9374041e27163a691bd1d598c250fd7c3ec5a2928c91982f6a8b157f\",\"headCommit\":\"35f236320d8e31ad634b23127f10acb529a83b97\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"brief.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"4da3e7d21b331994fd69809c4e61aa5b247f519f23625274fd02be7e8d7c5980\",\"source\":\"WORKTREE\",\"commit\":\"e504174d10856dc4ec952aab0875df42181c0b99\",\"detail\":\"committed at HEAD\"},{\"path\":\"evidence.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"0dd374de44338e634019f549be22dbd04ec042eb34583d34178964ece4a38360\",\"source\":\"WORKTREE\",\"commit\":\"e504174d10856dc4ec952aab0875df42181c0b99\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-f189d14ee18aa7cad617825b\"}"
+  },
+  "task": "public-brief",
+  "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+  "candidate": "e504174d10856dc4ec952aab0875df42181c0b99",
+  "maximal": [
+    "e504174d10856dc4ec952aab0875df42181c0b99"
+  ],
+  "status": "",
+  "commits": [
+    "e504174d10856dc4ec952aab0875df42181c0b99 Add LAX transit center passenger brief and evidence"
+  ],
+  "changed": [
+    "A\tbrief.md",
+    "A\tevidence.json"
+  ],
+  "grade": {
+    "id": "public-brief",
+    "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+    "sha": "e504174d10856dc4ec952aab0875df42181c0b99",
+    "checks": {
+      "originalInputs": true,
+      "evidence.json": true,
+      "brief.md": true,
+      "cutoff": true,
+      "opening": true,
+      "lines": true,
+      "terminal": true,
+      "future": true,
+      "exclusion": true
+    },
+    "automatedPass": true,
+    "editorialReview": "REQUIRED"
+  }
+}

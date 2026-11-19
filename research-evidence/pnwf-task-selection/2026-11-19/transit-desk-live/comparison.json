@@ -1,0 +1,483 @@
+{
+  "base": "3c44aba89fc9837619c5d22b2545b1e77a445f2b",
+  "window": {
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null
+  },
+  "rows": [
+    {
+      "name": "public-brief-P",
+      "state": "NATURAL",
+      "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+      "candidate": "e504174d10856dc4ec952aab0875df42181c0b99",
+      "checks": {
+        "originalInputs": true,
+        "evidence.json": true,
+        "brief.md": true,
+        "cutoff": true,
+        "opening": true,
+        "lines": true,
+        "terminal": true,
+        "future": true,
+        "exclusion": true
+      },
+      "automatedPass": true,
+      "changes": [
+        "A\tbrief.md",
+        "A\tevidence.json"
+      ],
+      "commits": [
+        "e504174d10856dc4ec952aab0875df42181c0b99 Add LAX transit center passenger brief and evidence"
+      ],
+      "workingDraft": null,
+      "clean": true,
+      "conclusion": "DELIVER",
+      "stop": null,
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-9d6bf496-7ffb-426c-abaa-817397b98f00",
+          "requests": 13,
+          "usage": {
+            "input_tokens": 29697,
+            "cache_read_input_tokens": 239232,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 14046
+          },
+          "tools": 22,
+          "paired": 22,
+          "refusals": [],
+          "coordination": [
+            {
+              "seq": 15,
+              "tool": "palimpsest_continuity",
+              "action": "pulse",
+              "resultSeq": 16
+            },
+            {
+              "seq": 121,
+              "tool": "palimpsest_work",
+              "action": "conclude",
+              "intent": "DELIVER",
+              "resultSeq": 122
+            }
+          ]
+        }
+      ],
+      "workers": [],
+      "admitted": 13,
+      "settled": 13,
+      "unknown": 0,
+      "confirmed": 282975,
+      "total": 282975,
+      "usage": {
+        "input_tokens": 29697,
+        "cache_read_input_tokens": 239232,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 14046
+      },
+      "elapsedMs": 284915,
+      "providerCostForSettled": 0,
+      "providerListCostForSettled": 0.01359985,
+      "billingSources": [
+        "go"
+      ]
+    },
+    {
+      "name": "public-brief-F",
+      "state": "NATURAL",
+      "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+      "candidate": null,
+      "checks": {
+        "originalInputs": true,
+        "evidence.json": false,
+        "brief.md": false,
+        "cutoff": false,
+        "opening": false,
+        "lines": false,
+        "terminal": false,
+        "future": false,
+        "exclusion": false
+      },
+      "automatedPass": false,
+      "changes": [],
+      "commits": [],
+      "workingDraft": {
+        "diagnostic": "6bd314f76abf7c6b4d2ef8fbfcf0bfcf2630a01f",
+        "paths": [
+          "brief.md",
+          "evidence.json"
+        ],
+        "checks": {
+          "originalInputs": true,
+          "evidence.json": true,
+          "brief.md": true,
+          "cutoff": true,
+          "opening": true,
+          "lines": true,
+          "terminal": true,
+          "future": true,
+          "exclusion": true
+        }
+      },
+      "clean": false,
+      "conclusion": null,
+      "stop": null,
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-6b77d262-8ae2-45eb-87a0-3d2374c5f5e9",
+          "requests": 9,
+          "usage": {
+            "input_tokens": 24222,
+            "cache_read_input_tokens": 99456,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 12612
+          },
+          "tools": 22,
+          "paired": 22,
+          "refusals": [],
+          "coordination": []
+        }
+      ],
+      "workers": [],
+      "admitted": 9,
+      "settled": 9,
+      "unknown": 0,
+      "confirmed": 136290,
+      "total": 136290,
+      "usage": {
+        "input_tokens": 24222,
+        "cache_read_input_tokens": 99456,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 12612
+      },
+      "elapsedMs": 219775,
+      "providerCostForSettled": 0,
+      "providerListCostForSettled": 0.011498860000000001,
+      "billingSources": [
+        "go"
+      ]
+    },
+    {
+      "name": "departure-board-P",
+      "state": "NATURAL",
+      "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+      "candidate": "4b7b9c0c37be230d3184b446eb093f96420163cc",
+      "checks": {
+        "originalInputs": false,
+        "HANDOVER.md": true,
+        "complaint": true,
+        "left included, right excluded": true,
+        "query crosses midnight": true,
+        "daytime": true,
+        "other stop": true,
+        "no stop": true,
+        "47-hour clock, year boundary and ASCII ties": true,
+        "testsPass": false,
+        "regressionCatchesOriginal": false
+      },
+      "automatedPass": false,
+      "changes": [
+        "A\tHANDOVER.md",
+        "M\tboard.mjs",
+        "M\tboard.test.mjs"
+      ],
+      "commits": [
+        "4b7b9c0c37be230d3184b446eb093f96420163cc Fix DB-17 midnight service-day board query"
+      ],
+      "workingDraft": null,
+      "clean": true,
+      "conclusion": "DELIVER",
+      "stop": null,
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-6534ab2a-1680-4c27-bd85-87e61b5f2cb6",
+          "requests": 17,
+          "usage": {
+            "input_tokens": 34818,
+            "cache_read_input_tokens": 357120,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 14668
+          },
+          "tools": 22,
+          "paired": 22,
+          "refusals": [],
+          "coordination": [
+            {
+              "seq": 15,
+              "tool": "palimpsest_continuity",
+              "action": "pulse",
+              "resultSeq": 16
+            },
+            {
+              "seq": 133,
+              "tool": "palimpsest_work",
+              "action": "conclude",
+              "intent": "DELIVER",
+              "resultSeq": 134
+            }
+          ]
+        }
+      ],
+      "workers": [],
+      "admitted": 17,
+      "settled": 17,
+      "unknown": 0,
+      "confirmed": 406606,
+      "total": 406606,
+      "usage": {
+        "input_tokens": 34818,
+        "cache_read_input_tokens": 357120,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 14668
+      },
+      "elapsedMs": 273151,
+      "providerCostForSettled": 0,
+      "providerListCostForSettled": 0.015094870000000002,
+      "billingSources": [
+        "go"
+      ]
+    },
+    {
+      "name": "departure-board-F",
+      "state": "NATURAL",
+      "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+      "candidate": "e46283d9ea8640c525ad1453e0780054483fb8cc",
+      "checks": {
+        "originalInputs": false,
+        "HANDOVER.md": true,
+        "complaint": true,
+        "left included, right excluded": true,
+        "query crosses midnight": true,
+        "daytime": true,
+        "other stop": true,
+        "no stop": true,
+        "47-hour clock, year boundary and ASCII ties": true,
+        "testsPass": false,
+        "regressionCatchesOriginal": false
+      },
+      "automatedPass": false,
+      "changes": [
+        "A\tHANDOVER.md",
+        "M\tboard.mjs",
+        "M\tboard.test.mjs"
+      ],
+      "commits": [
+        "e46283d9ea8640c525ad1453e0780054483fb8cc Fix DB-17 departure board service-date expansion"
+      ],
+      "workingDraft": null,
+      "clean": true,
+      "conclusion": null,
+      "stop": null,
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-34aabd2d-a0e1-4fe2-ba47-aea0918b5782",
+          "requests": 13,
+          "usage": {
+            "input_tokens": 25147,
+            "cache_read_input_tokens": 180480,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 15069
+          },
+          "tools": 19,
+          "paired": 19,
+          "refusals": [],
+          "coordination": []
+        }
+      ],
+      "workers": [],
+      "admitted": 13,
+      "settled": 13,
+      "unknown": 0,
+      "confirmed": 220696,
+      "total": 220696,
+      "usage": {
+        "input_tokens": 25147,
+        "cache_read_input_tokens": 180480,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 15069
+      },
+      "elapsedMs": 246903,
+      "providerCostForSettled": 0,
+      "providerListCostForSettled": 0.01335489,
+      "billingSources": [
+        "go"
+      ]
+    },
+    {
+      "name": "depot-charge-P",
+      "state": "NATURAL",
+      "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+      "candidate": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+      "checks": {
+        "originalInputs": true,
+        "HANDOVER.md": true,
+        "rated": true,
+        "lower efficiency": true,
+        "higher efficiency": true,
+        "transfer capped": true,
+        "no cold increment": true,
+        "binding charger": true
+      },
+      "automatedPass": true,
+      "changes": [
+        "A\tHANDOVER.md",
+        "A\tmodel.mjs",
+        "A\tmodel.test.mjs"
+      ],
+      "commits": [
+        "20a84d3084ea70ce5d6167a14cffe15e70bc929d Add depot charging model and night-shift handover"
+      ],
+      "workingDraft": null,
+      "clean": true,
+      "conclusion": "DELIVER",
+      "stop": null,
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "requests": 22,
+          "usage": {
+            "input_tokens": 50785,
+            "cache_read_input_tokens": 707200,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 31165
+          },
+          "tools": 24,
+          "paired": 24,
+          "refusals": [],
+          "coordination": [
+            {
+              "seq": 15,
+              "tool": "palimpsest_continuity",
+              "action": "pulse",
+              "resultSeq": 16
+            },
+            {
+              "seq": 162,
+              "tool": "palimpsest_work",
+              "action": "conclude",
+              "intent": "DELIVER",
+              "resultSeq": 163
+            }
+          ]
+        }
+      ],
+      "workers": [],
+      "admitted": 22,
+      "settled": 22,
+      "unknown": 0,
+      "confirmed": 789150,
+      "total": 789150,
+      "usage": {
+        "input_tokens": 50785,
+        "cache_read_input_tokens": 707200,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 31165
+      },
+      "elapsedMs": 462210,
+      "providerCostForSettled": 0,
+      "providerListCostForSettled": 0.02843837,
+      "billingSources": [
+        "go"
+      ]
+    },
+    {
+      "name": "depot-charge-F",
+      "state": "STOPPED",
+      "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+      "candidate": null,
+      "checks": {
+        "originalInputs": true,
+        "HANDOVER.md": false,
+        "rated": false,
+        "lower efficiency": false,
+        "higher efficiency": false,
+        "transfer capped": false,
+        "no cold increment": false,
+        "binding charger": false
+      },
+      "automatedPass": false,
+      "changes": [],
+      "commits": [],
+      "workingDraft": null,
+      "clean": true,
+      "conclusion": null,
+      "stop": "PROVIDER_TIMEOUT",
+      "roles": [
+        {
+          "role": "principal",
+          "id": "session-d0fe39a7-1f5b-489e-b57e-4b29c3cc2c9c",
+          "requests": 2,
+          "usage": {
+            "input_tokens": 5864,
+            "cache_read_input_tokens": 5504,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 247
+          },
+          "tools": 5,
+          "paired": 5,
+          "refusals": [],
+          "coordination": []
+        }
+      ],
+      "workers": [],
+      "admitted": 3,
+      "settled": 2,
+      "unknown": 1,
+      "confirmed": 11615,
+      "total": null,
+      "usage": {
+        "input_tokens": 5864,
+        "cache_read_input_tokens": 5504,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 247
+      },
+      "elapsedMs": 255543,
+      "providerCostForSettled": 0,
+      "providerListCostForSettled": 0.00104431,
+      "billingSources": [
+        "go"
+      ]
+    }
+  ],
+  "totalsByArm": {
+    "P": {
+      "started": 3,
+      "admitted": 52,
+      "settled": 52,
+      "unknown": 0,
+      "confirmed": 1478731,
+      "total": 1478731,
+      "usage": {
+        "input_tokens": 115300,
+        "cache_read_input_tokens": 1303552,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 59879
+      },
+      "elapsedMs": 1020276,
+      "pairedTools": 68
+    },
+    "F": {
+      "started": 3,
+      "admitted": 25,
+      "settled": 24,
+      "unknown": 1,
+      "confirmed": 368601,
+      "total": null,
+      "usage": {
+        "input_tokens": 55233,
+        "cache_read_input_tokens": 285440,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 27928
+      },
+      "elapsedMs": 722221,
+      "pairedTools": 46
+    }
+  }
+}

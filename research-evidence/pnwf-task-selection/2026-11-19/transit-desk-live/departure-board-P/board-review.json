@@ -1,0 +1,39 @@
+{
+  "sha": "4b7b9c0c37be230d3184b446eb093f96420163cc",
+  "source": "commit",
+  "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+  "image": "node@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d",
+  "suites": [
+    "board.test.mjs"
+  ],
+  "originalTestOnCandidate": {
+    "exit": 0,
+    "cases": [
+      "ok 1 - weekday noon departure"
+    ]
+  },
+  "submittedTestsOnCandidate": {
+    "exit": 0,
+    "cases": [
+      "ok 1 - weekday noon departure",
+      "ok 2 - Saturday 00:00 shows Friday's last bus and Saturday's extra",
+      "ok 3 - Saturday's own extra service is not moved to Friday",
+      "ok 4 - Friday evening window still sees the post-midnight last bus",
+      "ok 5 - cancelled service on its own service date stays hidden",
+      "ok 6 - late-night expansion also applies to other stops",
+      "ok 7 - window is left-closed and right-open"
+    ]
+  },
+  "submittedTestsOnBasis": {
+    "exit": 1,
+    "cases": [
+      "ok 1 - weekday noon departure",
+      "not ok 2 - Saturday 00:00 shows Friday's last bus and Saturday's extra",
+      "ok 3 - Saturday's own extra service is not moved to Friday",
+      "not ok 4 - Friday evening window still sees the post-midnight last bus",
+      "ok 5 - cancelled service on its own service date stays hidden",
+      "not ok 6 - late-night expansion also applies to other stops",
+      "not ok 7 - window is left-closed and right-open"
+    ]
+  }
+}
