@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {execFileSync} from "node:child_process";
 import {randomUUID} from "node:crypto";
-import {copyFileSync,existsSync,mkdirSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from "node:fs";
+import {copyFileSync,existsSync,mkdirSync,mkdtempSync,readFileSync,renameSync,rmSync,writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {resolve,join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -23,9 +23,12 @@ import {copy,manifest,saveReviewerCopies} from "../depot-relief/archive.mjs";
 import {bench,goal,prepare,obligations,inspect,originalSha,tickets} from "./case.mjs";
 import {mockReply} from "./mock.mjs";
 import {analyze} from "./analyze.mjs";
+import {inspectRelease,measuredBench,measurement} from "./release-power.mjs";
+import {releaseMock} from "./release-mock.mjs";
 
-const [mode,path,work]=process.argv.slice(2),root=resolve(path),here=fileURLToPath(new URL("./",import.meta.url));
-const cells=[["envelope","P"],["envelope","F"],["controller","F"],["controller","P"]];
+const [action,path,work]=process.argv.slice(2),root=resolve(path),here=fileURLToPath(new URL("./",import.meta.url));
+const powerGate=action.startsWith("r7-"),mode=powerGate?action.slice(3):action;
+const cells=powerGate?[["controller","P"],["controller","F"]]:[["envelope","P"],["envelope","F"],["controller","F"],["controller","P"]];
 const {image,window,route,model}=previousContract;
 function seal(){
   const files={};
@@ -34,6 +37,9 @@ function seal(){
     "../depot-relief/plugin/index.js","../depot-relief/evidence.mjs","../depot-relief/rig.mjs","../depot-relief/archive.mjs","../task-selection/case.mjs","../task-selection/product-entry.mjs",
     "../container_bridge.mjs","../container_adapter.mjs","../container_runtime.mjs","../depot-shift-log/review-phases.mjs","../depot-relief/case.mjs",
     "../task-selection/evidence.mjs","../transit-desk/stopped-evidence.mjs"])files[p]=digest(readFileSync(join(here,p)));
+  if(powerGate)for(const p of ["release-power.mjs","release-mock.mjs","release-plugin.mjs","release-power.test.mjs","release-protocol.md"]){
+    files[p]=digest(readFileSync(join(here,p)));
+  }
   const scratch=mkdtempSync(join(tmpdir(),"depot-basis-"));
   try{
     const basis=Object.fromEntries(tickets.map(ticket=>[ticket,prepare(ticket,join(scratch,ticket))]));
@@ -44,7 +50,7 @@ function seal(){
       git(w,"add","shift-plan.json");git(w,"commit","-qm","Qualification vector");
       assert.deepEqual(bench(ticket,w,git(w,"rev-parse","HEAD").trim()).departureKwh,[126,ticket==="controller"?124:130]);
     }
-    return {productBase:"889ba56bc4bb656a0e9de81ecd56817af813ff1c",goal,basis,originalSha,cells,
+    return {productBase:powerGate?"705d1be2":"889ba56bc4bb656a0e9de81ecd56817af813ff1c",goal,basis,originalSha,cells,
       image,model,route,window,obligations:obligations.digest,history:digest(readFileSync(history)),files};
   }finally{rmSync(scratch,{recursive:true,force:true});}
 }
@@ -60,7 +66,12 @@ async function verifyCell(dir,mode){
     }
     const t=buildEvidence(dir,mode==="mock"?"mock":PAID_MODE);
     assert.deepEqual(JSON.parse(JSON.stringify(t)),readJson(join(dir,"trajectory.json")));
-    assert.deepEqual(analyze(dir,tmp,row),readJson(join(dir,"observation.json")));
+    assert.deepEqual(analyze(dir,tmp,row,powerGate?measuredBench:bench),readJson(join(dir,"observation.json")));
+    if(powerGate&&!row.status){
+      git(tmp,"checkout","-q","--detach",row.head);
+      assert.deepEqual(inspectRelease(tmp,row.basis,row.head),row.release.check);
+      assert.equal(row.release.filed,row.release.check.ok&&row.execution.natural&&(row.arm==="F"||row.conclusion?.intent==="DELIVER"));
+    }
     assert.equal(readFileSync(join(dir,"prompt.txt"),"utf8"),goal);
     copyFileSync(join(dir,"request-ledger.sqlite"),join(tmp,"check.sqlite"));
     const ledger=new DatabaseSync(join(tmp,"check.sqlite"),{readOnly:true});
@@ -79,7 +90,7 @@ async function run(mode,frozen,continuation){
   const paid=mode==="live";
   if(paid&&!continuation){
     const mock=await verifyMode("mock",frozen);
-    assert(mock.qualified&&mock.rows.length===4);
+    assert(mock.qualified&&mock.rows.length===cells.length);
   }
   const scratch=resolve(work),out=join(continuation?.archive??root,mode);
   mkdirSync(out);mkdirSync(scratch);
@@ -88,7 +99,8 @@ async function run(mode,frozen,continuation){
   copyFileSync(join(runtimeDir,"product-entry.mjs"),join(runtimeDir,"base-entry.mjs"));
   copyFileSync(join(here,"../depot-shift-log/product-entry.mjs"),join(runtimeDir,"product-entry.mjs"));
   writeJson(join(runtimeDir,"materials.json"),{rules:obligations.rules,filing:" File scope and release fields: operations/release-format.md."});
-  const provider=paid?(continuation?.profileId??requireOpenCodeGoProbe(readJson(join(repo,"research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json")))):undefined;
+  const probeFile=powerGate?"research-evidence/pnwf-task-selection/2026-11-20/depot-transfer/probe/probe.json":"research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json";
+  const provider=paid?(continuation?.profileId??requireOpenCodeGoProbe(readJson(join(repo,probeFile)))):undefined;
   for(const [ticket,arm] of continuation?.remaining??cells){
     const id=ticket+"-"+arm,run=join(scratch,id),stage=join(run,"stages/REVIEW"),state=join(stage,"state"),world=join(stage,"world");
     mkdirSync(state,{recursive:true});
@@ -102,24 +114,48 @@ async function run(mode,frozen,continuation){
     writeJson(join(run,"cohort.json"),{schema:paid?PAID_COHORT_SCHEMA:"mock",cohortId,stages:[{id:"REVIEW"}],...window});
     const ledger=ExecutionBudget.initialize(budgetPath,{schema:paid?USAGE_ONLY_SCHEMA:"pnwf-request-budget/v1",cohortId,aggregateCeiling:budget,
       sessions:[{id:"REVIEW",ceiling:budget,softCeiling:budget,maxRequests:window.maxRequests}]});
-    const fake=paid?null:await startMockProvider({reply:mockReply(arm,ticket)});
+    const fake=paid?null:await startMockProvider({reply:(powerGate?releaseMock:mockReply)(arm,ticket)});
+    const checks=[];
     const row={id,ticket,arm,basis,cohortId};console.log("Starting",mode,id,basis);
     try{
       ledger.startSession("REVIEW");
       row.execution=await runContainerSession({run,sessionId:"REVIEW",budgetPath,repository,image,mode:paid?PAID_MODE:"mock",provider:fake?.config,
-        experiment:{layout:arm==="P"?"product":"native",openCodeGoProfile:provider,configureProfile:home=>profile(home,null),
+        experiment:{layout:arm==="P"?"product":"native",openCodeGoProfile:provider,configureProfile:home=>{
+          profile(home,null);
+          if(powerGate){
+            const plugin=join(home,"profiles/node_modules/depot-shift-desk");
+            renameSync(join(plugin,"index.js"),join(plugin,"desk.js"));
+            copyFileSync(join(here,"release-plugin.mjs"),join(plugin,"index.js"));
+          }
+        },
           ...(arm==="P"?{createWorker:ports=>makeWorkerBroker({...ports,basis,policy:workerPolicy(projectId)})}:{}),
           createDesk:ports=>{
-            const host=desk({run,world,repository,image,slip:bench(ticket,world,basis),...ports,wallClockMs:window.wallClockMs,
-              peerMeasure:(w,sha)=>bench(ticket,w,sha)});
-            return {...host,dispatch(input){
-              if(input?.action!=="inspect_delivery")return host.dispatch(input);
+            const measure=powerGate?measuredBench:bench;
+            const host=desk({run,world,repository,image,slip:measure(ticket,world,basis),...ports,wallClockMs:window.wallClockMs,
+              peerMeasure:(w,sha)=>measure(ticket,w,sha)});
+            return {...host,async dispatch(input){
+              if(powerGate&&["inspect_delivery","release_check"].includes(input?.action)){
+                const result=inspectRelease(world,basis,input.sha);
+                checks.push({action:input.action,sha:input.sha,result});
+                return result;
+              }
+              if(input?.action!=="inspect_delivery"){
+                const result=await host.dispatch(input);
+                if(powerGate&&input.action==="trial"&&result.ok){
+                  return {...result,receipt:measurement(result.receipt),scope:"21:00 local replay only; filing uses the applicable duty limits."};
+                }
+                return result;
+              }
               const r=inspect(world,basis,input.sha);return {ok:r.ok,refusal:r.refusal};
             }};
           }}});
     }finally{ledger.close();await fake?.close();}
     row.head=git(world,"rev-parse","HEAD").trim();row.status=git(world,"status","--porcelain","--untracked-files=all");
     row.conclusion=arm==="P"?conclusion(state):null;
+    if(powerGate){
+      const check=inspectRelease(world,basis,row.head);
+      row.release={check,filed:check.ok&&row.execution.natural&&(arm==="F"||row.conclusion?.intent==="DELIVER"),checks};
+    }
     git(world,"bundle","create",join(run,"world.bundle"),"HEAD","--branches");
     const dir=join(out,id);mkdirSync(dir);writeJson(join(dir,"row.json"),row);
     for(const p of [...evidencePaths(run),"desk/receipts.sqlite","request-ledger.sqlite"])copy(run,dir,p);
@@ -133,7 +169,7 @@ async function run(mode,frozen,continuation){
     }
     if(row.status)writeFileSync(join(dir,"working-copy.patch"),git(world,"diff","--binary","HEAD"));
     const t=buildEvidence(dir,paid?PAID_MODE:"mock");writeJson(join(dir,"trajectory.json"),t);
-    const observation=analyze(dir,world,row);writeJson(join(dir,"observation.json"),observation);
+    const observation=analyze(dir,world,row,powerGate?measuredBench:bench);writeJson(join(dir,"observation.json"),observation);
     writeJson(join(dir,"manifest.json"),manifest(dir));
     batch.rows.push({id,basis,head:row.head,requests:observation.requests,unknown:observation.unknown,score:observation.observed.score});save();
     await verifyCell(dir,mode);
@@ -142,23 +178,29 @@ async function run(mode,frozen,continuation){
       assert.equal(observation.reviews.length,ticket==="envelope"?0:1);
       for(const r of observation.reviewPhases.reviews)assert(r.reason==="completed"&&r.exitCode===0&&r.after.requests===0);
       if(arm==="P")assert.equal(row.conclusion?.intent,"DELIVER");
+      if(powerGate)assert(row.release.filed&&checks.some(c=>c.result.refusal?.reason==="REQUEST_POWER_EXCEEDS_LIMIT"));
     }
     console.log("Ended",mode,id,observation.observed.score,observation.requests,observation.unknown);
     if(observation.unknown){batch.stop={id,reason:"UNKNOWN_USAGE"};break;}
   }
-  batch.qualified=!paid&&batch.rows.length===4&&!batch.stop;save();
+  batch.qualified=!paid&&batch.rows.length===cells.length&&!batch.stop;save();
+}
+function verifySeal(current,frozen){
+  if(powerGate||!["verify","verify-resume","resume"].includes(mode)){assert.deepEqual(current,frozen);return;}
+  // Replay the pre-gate releases against the version that froze their runner and analyzer.
+  const refs={"12412261d4911e1e85875a424ca733414de06a5bbb762b8f5578521e57ae5c1b":"1577b2c2",
+    "362fc7e8ad5a8285ec7bffd1f5ace439fba5cd891ba3ac13b897e3c219245bd4":"705d1be2"};
+  const ref=refs[frozen.files["run.mjs"]],files={...current.files};
+  if(ref)for(const p of ["run.mjs","analyze.mjs"]){
+    files[p]=digest(execFileSync("git",["show",ref+":scripts/pnwf/depot-transfer/"+p],{cwd:repo}));
+  }
+  assert.deepEqual({...current,files},frozen);
 }
 if(mode==="freeze"){
   mkdirSync(root);writeJson(join(root,"frozen.json"),seal());
 }else{
   const frozen=readJson(join(root,"frozen.json")),current=seal();
-  const originalRunner="12412261d4911e1e85875a424ca733414de06a5bbb762b8f5578521e57ae5c1b";
-  if(["resume","verify-resume","verify"].includes(mode)&&frozen.files["run.mjs"]===originalRunner){
-    // The November 19 archive predates continuation admission. All other frozen inputs must match.
-    const source=execFileSync("git",["show","1577b2c25b9ff8529ac39767e281b3eb304e758c:scripts/pnwf/depot-transfer/run.mjs"],{cwd:repo});
-    assert.equal(digest(source),originalRunner);
-    assert.deepEqual({...current,files:{...current.files,"run.mjs":originalRunner}},frozen);
-  }else assert.deepEqual(current,frozen);
+  verifySeal(current,frozen);
   if(mode==="resume"||mode==="verify-resume"){
     const archive=resolve(mode==="resume"?process.argv[5]:work);
     const mock=await verifyMode("mock",frozen),prior=await verifyMode("live",frozen);
@@ -183,8 +225,8 @@ if(mode==="freeze"){
       writeJson(join(archive,"frozen.json"),current);
       await run("live",current,{archive,remaining,profileId,admission});
     }else{
-      assert.deepEqual(readJson(join(archive,"frozen.json")),current);
-      const batch=await verifyMode("live",current,archive);
+      const archived=readJson(join(archive,"frozen.json"));verifySeal(current,archived);
+      const batch=await verifyMode("live",archived,archive);
       assert.deepEqual(batch.admission,admission);
       assert.deepEqual(batch.rows.map(r=>r.id),remaining.slice(0,batch.rows.length).map(pair=>pair.join("-")));
       const stopped=batch.rows.find(r=>r.unknown);
