@@ -83,6 +83,13 @@ for(const arm of matrix.arms){
       delivered:contactFacts.find(c=>c.index===e.n)?.delivered??false}))}:{}),
     natural:arm.execution.natural,conclusion:arm.journal?.intent??null,elapsedMs:t.elapsedMs,
     requests:ledger.requests.length,confirmed:ledger.confirmed,unknown:ledger.unresolvedRequests,total:ledger.unresolvedRequests?null:ledger.confirmed,
+    ...(matrix.seal.materials?{materials:{
+      receiptId:arm.materials.files?.receiptId??null,measuredSha:arm.materials.measuredSha??null,
+      protectedFiles:arm.materials.files?.checks.filter(c=>c.kind==="MUST_PRESERVE")??[],
+      refusal:arm.materials.refusal??null,
+      deliveryCalls:p.calls.filter(c=>c.tool==="palimpsest_work"&&c.input.action==="conclude").map(c=>({
+        callId:c.callId,callSeq:c.seq,resultSeq:c.resultSeq,intent:c.input.intent,reply:c.reply})),
+    }}:{}),
     actors,captureAudit:captureAudit(dir,arm),contacts:contactFacts,attempts:contacts.map(c=>({callId:c.callId,seq:c.seq,resultSeq:c.resultSeq,
       accepted:usedContacts.has(c.callId),question:c.input.question,reply:c.reply})),
     visibility:{firstPrivateSeq:firstPrivate?.seq??null,firstPrivateType:firstPrivate?.type??null,firstReturnSeq:returned?.resultSeq??null,

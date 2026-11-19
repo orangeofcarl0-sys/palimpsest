@@ -47,7 +47,7 @@ function manifest(dir){
   }
   return sums;
 }
-function verify(dir){
+async function verify(dir){
   const m=readJson(join(dir,"matrix.json"));
   const splitLogs=m.seal.scenario==="depot-shift-log";
   const {grade,measure,here,goal}=splitLogs?shiftLogCase:reliefCase;
@@ -55,9 +55,14 @@ function verify(dir){
   assert.deepEqual(manifest(dir),readJson(join(dir,"manifest.json")));
   for(const [p,hash] of Object.entries(m.seal.files)){
     const current=digest(readFileSync(join(here,p)));
-    // These two files shipped with the original split-log experiment before durable delivery.
-    if(splitLogs&&!m.seal.delivery&&["desk.mjs","run.mjs"].includes(p)&&current!==hash){
-      const frozen=execFileSync("git",["show","d70eebc054fcf9f96154cff53d976ce13cd43725:scripts/pnwf/depot-shift-log/"+p],{cwd:here});
+    const snapshot=join(dir,"frozen-sources",p);
+    if(m.seal.materials&&!p.includes("/")&&existsSync(snapshot)){
+      const deployed=readFileSync(snapshot);
+      assert.equal(digest(deployed),hash,p);
+      assert.equal(deployed.toString().replaceAll("\r\n","\n"),readFileSync(join(here,p),"utf8").replaceAll("\r\n","\n"),p);
+    }else if(splitLogs&&!m.seal.materials&&["desk.mjs","mock.mjs","run.mjs"].includes(p)&&current!==hash){
+      const revision=m.seal.delivery?"91dc8787e4500250aefaecf3a809f219bd5e2298":"d70eebc054fcf9f96154cff53d976ce13cd43725";
+      const frozen=execFileSync("git",["show",revision+":scripts/pnwf/depot-shift-log/"+p],{cwd:here});
       assert.equal(digest(frozen),hash,p);
     }else assert.equal(current,hash,p);
   }
@@ -83,6 +88,12 @@ function verify(dir){
       git(db,"init","-q");git(db,"fetch","-q",join(src,"world.bundle"),"HEAD","+refs/heads/*:refs/heads/*");
       assert.deepEqual(measure(db,row.basis),readJson(join(src,"previous-shift-slip.json")));
       assert.deepEqual(grade(db,row.basis,row.head),row.grade);
+      if(m.seal.materials){
+        const {obligations,inspectDelivery}=await import("../depot-shift-log/materials.mjs");
+        assert.deepEqual(m.seal.materials,obligations);
+        git(db,"checkout","-q","--detach",row.head);
+        if(!row.status)assert.deepEqual(inspectDelivery(db,row.head,join(src,"desk/receipts.sqlite")),row.materials);
+      }
       const facts=readJson(join(src,"desk/journal.json"));
       if(m.seal.delivery){
         // An amended candidate may only be reachable from its reviewer's pinned bundle.
@@ -120,7 +131,7 @@ function verify(dir){
         assert.equal(git(db,"rev-parse","FETCH_HEAD").trim(),snapshot.head);
         git(db,"merge-base","--is-ancestor",snapshot.base,snapshot.head);
       }
-      for(const p of ["HANDOVER.md","shift-plan.json"])if(existsSync(join(src,"submitted",p))){
+      for(const p of ["HANDOVER.md","shift-plan.json",...(m.seal.materials?["operations/duty-2340.json"]:[])])if(existsSync(join(src,"submitted",p))){
         assert.equal(readFileSync(join(src,"submitted",p),"utf8"),git(db,"show",row.head+":"+p));
       }
     }finally{rmSync(db,{recursive:true,force:true});}
@@ -131,6 +142,14 @@ const [source,target]=process.argv.slice(2),dest=resolve(target);
 if(source!=="--verify"){
   const run=resolve(source);mkdirSync(dest);
   for(const p of ["matrix.json","previous-unknown.json"])copy(run,dest,p);
+  const {seal}=readJson(join(run,"matrix.json"));
+  if(seal.materials){
+    // Keep the actual deployment bytes when a source's line endings differ from Git's LF checkout.
+    for(const [p,hash] of Object.entries(seal.files).filter(([name])=>!name.includes("/"))){
+      const raw=readFileSync(join(shiftLogCase.here,p));
+      if(raw.includes("\r\n")&&digest(raw)===hash)copy(shiftLogCase.here,join(dest,"frozen-sources"),p);
+    }
+  }
   for(const row of readJson(join(run,"matrix.json")).arms){
     const src=join(run,row.arm),out=join(dest,row.arm),world=join(src,"stages/REVIEW/world");
     for(const p of [...evidencePaths(src),"trajectory.json"])copy(src,out,p);
@@ -138,13 +157,13 @@ if(source!=="--verify"){
     if(existsSync(join(src,"desk/receipts.sqlite")))copy(src,out,"desk/receipts.sqlite");
     saveReviewerCopies(src,out);
     if(row.unknown||readJson(join(run,"matrix.json")).mode==="live")copy(src,out,"request-ledger.sqlite");
-    for(const p of ["HANDOVER.md","shift-plan.json"]){
+    for(const p of ["HANDOVER.md","shift-plan.json",...(row.materials?["operations/duty-2340.json"]:[])]){
       if(row.head!==row.basis&&git(world,"ls-tree",row.head,"--",p).startsWith("100")){
-        mkdirSync(join(out,"submitted"),{recursive:true});writeFileSync(join(out,"submitted",p),git(world,"show",row.head+":"+p));
+        mkdirSync(dirname(join(out,"submitted",p)),{recursive:true});writeFileSync(join(out,"submitted",p),git(world,"show",row.head+":"+p));
       }
       if(row.status&&existsSync(join(world,p)))copy(world,join(out,"working-copy"),p);
     }
   }
   writeJson(join(dest,"manifest.json"),manifest(dest));
 }
-verify(dest);
+await verify(dest);

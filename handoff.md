@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 夜班调度真实 P 从同一基线接到两次 SHA 绑定回执，将 B 01:00/01:30 从 70/50 改为 50/70 kW。最终 `d5ae2d3395dc0380e4df65be0b9c8cf819247f86` 记录 DELIVER 并自然退出。冻结业务 10/10，共用文件义务 18/18，九份旧材料和原始采集完整，晚班实测另存。两份历史 9/10 保留。[轨迹、保护文件和维护者用量](docs/engineering/DEPOT-MATERIAL-OBLIGATIONS.md)
+
 - Palimpsest 已在同一夜班基线接到维护者独有的 9 kWh 反例，并把 B 车 01:00/01:30 从 70/50 改为 50/70 kW。同一原 SHA 的第二问复用持久化回执，未再启动维护者。最终提交 `e9353b6928fa93554905b960588177c39271aae5` 取得 126/130 kWh 的晚班回执，记录 DELIVER 并自然退出。冻结 9/10：原始采集保留，旧操作说明和复测程序被修改。[回执修复、三条轨迹与用量](docs/engineering/DEPOT-RECEIPT-DELIVERY.md)
 
 - 21:00 的车队记录允许旧表放行，维护者独有的 23:40 记录揭示 B 车少 9 kWh。真实两组均主动联系维护者。P 的联系超时、重试遇忙，未收到测量，保留旧表并记录 DELIVER，冻结 7/10。强原生收到回执，将 B 01:00 从 70 改 50、01:30 从 50 改 70，修正首稿中未经观测的电表读数，冻结 9/10（仍改了旧说明和复算程序）。均自然退出，里程碑二继续开放。[报告与 Git 复算](docs/engineering/DEPOT-SHIFT-LOG.md)
@@ -99,6 +101,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-19，最近同步）
+
+本地工作分支 `codex/task-selection-pilot` 从产品提交 `91dc8787` 接续。夜班材料保护复跑沿用实验 Git 基线 `341e19e288de9f561f85fcb66a7a910ff6f3e143`；历史两份 9/10 均保存在原归档。[独立证据目录](research-evidence/pnwf-task-selection/2026-11-19/depot-material-obligations/)
 
 回执投递修复从本地 `codex/task-selection-pilot` 的 `d70eebc0` 接续，实验仓库基线仍是 `341e19e288de9f561f85fcb66a7a910ff6f3e143`。两组历史对照封存在原目录。本轮使用单独的[回执投递证据目录](research-evidence/pnwf-task-selection/2026-11-19/depot-receipt-delivery/)。
 
@@ -305,6 +309,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+运行 `node --test scripts/pnwf/depot-shift-log/materials.test.mjs scripts/pnwf/depot-shift-log/receipt-store.test.mjs` 可从历史 P/F 的完整提交复现操作资料变化，并检验超时重试。新归档还核对九份材料的 Git 模式和 blob、另存 JSON 与实测数据库，以及 Principal 的实际工具结果。[完整复算命令](docs/engineering/DEPOT-MATERIAL-OBLIGATIONS.md#离线复算)
+
 运行 `node --test scripts/pnwf/depot-shift-log/receipt-store.test.mjs` 可复放上轮超时/遇忙重试的完整 SHA。普通 DSH Mock 还注入首次响应丢失，检查重试时实际启动次数和回执内容。归档复算见[本轮报告](docs/engineering/DEPOT-RECEIPT-DELIVERY.md)。
 
 晚班私有实测单沿用归档复算入口 `node scripts/pnwf/depot-relief/archive.mjs --verify <archive>`，按新场景区分公开试排与维护者试排。逐角色用量及回执可用 `node scripts/pnwf/depot-shift-log/observe.mjs <archive> <output.json>` 重算。[报告及复算目录](docs/engineering/DEPOT-SHIFT-LOG.md)
@@ -492,6 +498,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+旧材料保护复跑一条真实 P，55/55 笔、2,914,705 tokens、11 分 16.154 秒，新增 UNKNOWN 0。其中 Principal 25 笔、910,138 tokens；维护者 30 笔、2,004,567 tokens。合格 Mock 17 笔模拟请求。强原生比较沿用既有封存。[本轮逐笔证据](research-evidence/pnwf-task-selection/2026-11-19/depot-material-obligations/live-observation.json)
+
 回执投递复跑仅开一格真实 P：60/60 笔、3,228,221 tokens，UNKNOWN 0。Principal 37 笔、1,767,613；维护者 23 笔、1,460,608。耗时 15 分 59.221 秒。强原生比较使用上轮封存。14 笔 Mock 为零付费。[逐角色与逐次回执](research-evidence/pnwf-task-selection/2026-11-19/depot-receipt-delivery/live-observations.json)
 
 晚班私有记录实验共 99/99 笔、5,046,278 tokens，新增 UNKNOWN 0。P 的 Principal 18 笔、560,445 tokens，维护者 26 笔、1,736,211；F 的 Principal 37 笔、1,544,875，维护者 18 笔、1,204,747。此前各笔 UNKNOWN 保持原封存。[逐角色用量和回传](research-evidence/pnwf-task-selection/2026-11-19/depot-shift-log/live-observations.json)
@@ -607,7 +615,9 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-本轮已观察到 P 收到私有反例并据此修订的实证。上轮首次调用超时和重试遇忙的失败记录继续保留。当前遗留是旧材料保护：修复后 P 与上轮强原生均修改了 `operations/desk.md` 和 `operations/retest.mjs`。成功投递来自单工单复跑，里程碑二保持开放。[三轨对照](docs/engineering/DEPOT-RECEIPT-DELIVERY.md)
+夜班旧材料保护在本次 P 复跑中通过。仍需区分维护者实测和其隔离副本内的额外工作：两次有效实测发布后的 26 笔回复合计 1,787,759 tokens。交班稿对楼宇负荷具体转移时段的表述超出返回回执直接证明的内容。里程碑二继续开放。[报告](docs/engineering/DEPOT-MATERIAL-OBLIGATIONS.md)
+
+本轮已观察到 P 收到私有反例并据此修订的实证。上轮首次调用超时和重试遇忙的失败记录继续保留。该轮留下的旧材料保护问题是：当时的 P 与此前强原生均修改了 `operations/desk.md` 和 `operations/retest.mjs`。成功投递来自单工单复跑，里程碑二保持开放。[三轨对照](docs/engineering/DEPOT-RECEIPT-DELIVERY.md)
 
 上一轮有一条维护者独有反例改变实际交付的强原生轨迹。旧版 Palimpsest 发问时的完整 SHA 正确，首次有效实测在约 78 秒生成，Principal 调用约 300 秒时失败，宿主约 518 秒后记 RETURN。判断采纳须按调用结果与工作区写入核对。强原生虽恢复原始采集，仍修改受保护文件。[两条原始轨迹与评分](docs/engineering/DEPOT-SHIFT-LOG.md)
 
@@ -709,6 +719,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-19 | 夜班调度复用文件义务，实测回执独立归档；原 P/F 两份 9/10 进入回归 | [报告与复算](docs/engineering/DEPOT-MATERIAL-OBLIGATIONS.md) | Mock 通过，真实 P 10/10，自然退出，55 笔全部对账 |
 | 2026-11-07 | PR #227 merged：PNWF-CQ action coherence、UNOBSERVED liveness、plan invalidation、journal 投影、isolation gate、评分修正、operator basis admission | `1766a79` | CI 全绿 |
 | 2026-11-07 | 容器 cohort 执行 | `research-evidence/pnwf-cq/live/2026-11-07/` | **INVALID / +190,778 over budget**；禁止继续付费 |
 | 2026-11-07 | 新增本 handoff；PR #228 merged | `7658527` | 活文档 |
