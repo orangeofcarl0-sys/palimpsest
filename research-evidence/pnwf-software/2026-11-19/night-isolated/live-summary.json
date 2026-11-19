@@ -1,0 +1,126 @@
+{
+  "cases": [
+    {
+      "arm": "auto",
+      "head": "848f8e63dd95dacdd19ebaca9b5e158009b8e980",
+      "changed": [
+        "handover/HANDOVER.md",
+        "handover/REPLAY.md",
+        "handover/evidence/P.tsv",
+        "handover/evidence/S.tsv",
+        "handover/evidence/terminal-P.tsv",
+        "handover/evidence/terminal-S.tsv",
+        "handover/replay.mjs",
+        "handover/replay.sh"
+      ],
+      "clean": true,
+      "elapsedMs": 570860,
+      "natural": true,
+      "stop": null,
+      "requests": 44,
+      "confirmed": 2805802,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 44,
+          "fresh": 102258,
+          "cacheRead": 2665088,
+          "cacheWrite": 0,
+          "output": 38456
+        }
+      },
+      "roles": [
+        {
+          "session": "session-ea4453f9-4775-4bbe-993b-b79bc907afaf",
+          "role": "principal",
+          "paired": 59,
+          "tools": 59,
+          "directory": [],
+          "contacts": [],
+          "conclusions": [
+            {
+              "seq": 387,
+              "intent": "DELIVER",
+              "result": "{\n  \"state\": \"RECORDED\",\n  \"conclusion\": {\n    \"schema\": \"pc1-episode-conclusion/v1\",\n    \"intent\": \"DELIVER\",\n    \"statement\": \"The replay now treats"
+            }
+          ]
+        }
+      ],
+      "originalTerminalPreserved": true,
+      "checks": [
+        {
+          "input": "P",
+          "exit": 0,
+          "passed": true
+        },
+        {
+          "input": "S",
+          "exit": 1,
+          "passed": true
+        }
+      ],
+      "qualifiedCandidate": true
+    },
+    {
+      "arm": "solo",
+      "head": "7d6b8bf1176e3b6843c0e732146ff9dec21a5c3e",
+      "changed": [
+        "handover/HANDOVER.md",
+        "handover/REPLAY.md",
+        "handover/evidence/captures/P.tsv",
+        "handover/evidence/captures/README.md",
+        "handover/evidence/captures/S.tsv",
+        "handover/replay.mjs",
+        "handover/replay.sh",
+        "test/replay.test.js"
+      ],
+      "clean": true,
+      "elapsedMs": 688434,
+      "natural": true,
+      "stop": null,
+      "requests": 37,
+      "confirmed": 2335223,
+      "unknown": 0,
+      "usage": {
+        "principal": {
+          "requests": 37,
+          "fresh": 97055,
+          "cacheRead": 2195200,
+          "cacheWrite": 0,
+          "output": 42968
+        }
+      },
+      "roles": [
+        {
+          "session": "session-42b0c863-6b60-4b47-94ff-ab7b3281c9d8",
+          "role": "principal",
+          "paired": 63,
+          "tools": 63,
+          "directory": [],
+          "contacts": [],
+          "conclusions": [
+            {
+              "seq": 363,
+              "intent": "DELIVER",
+              "result": "{\n  \"state\": \"RECORDED\",\n  \"conclusion\": {\n    \"schema\": \"pc1-episode-conclusion/v1\",\n    \"intent\": \"DELIVER\",\n    \"statement\": \"The replay candidate "
+            }
+          ]
+        }
+      ],
+      "originalTerminalPreserved": true,
+      "checks": [
+        {
+          "input": "P",
+          "exit": 0,
+          "passed": true
+        },
+        {
+          "input": "S",
+          "exit": 1,
+          "passed": true
+        }
+      ],
+      "qualifiedCandidate": true
+    }
+  ]
+}

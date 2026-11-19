@@ -66,7 +66,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
   const budget = new ExecutionBudget(budgetPath);
   try {
   if (budget.usageOnly !== paid) throw new Error("ACCOUNTING_MODE_MISMATCH");
-  let runtime, proxy, bridge, child, timeout, monitor, worker;
+  let runtime, proxy, bridge, child, timeout, monitor, worker, desk;
   let outFd, errFd, killedBy = null, exitCode = 1, failure = null, isolation = null;
   const startedAt = new Date().toISOString();
   const core = JSON.parse(readFileSync(join(run, "core.json"), "utf8"));
@@ -97,7 +97,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
       for (const key of Object.keys(deployment.databases)) deployment.databases[key] = "/run/stage/state/" + String(deployment.databases[key]).split(/[\\/]/u).pop();
       write(join(stage, "deployment-linux.json"), deployment);
     }
-    runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs"), layout, acceptance: experiment?.acceptance });
+    runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs"), layout, acceptance: experiment?.acceptance, records: experiment?.records });
     isolation = qualifyPrincipal(runtime, prepared.expectedHead);
     write(join(out, "qualification.json"), isolation);
 
@@ -108,7 +108,8 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
       await startBoundedProxy({ provider, budget, sessionId, sessionKey, onObservation });
     worker = experiment?.createWorker?.({ stage, out, repository, image: runtime.imageId, principalId: runtime.id, gateway: proxy.url, sessionKey,
       stopIsClosed: () => budget.snapshot().state !== "OPEN" });
-    bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey, { dispatchWork: worker?.dispatch, dispatchDesk: experiment?.dispatchDesk });
+    desk = experiment?.createDesk?.({ gateway: proxy.url, sessionKey, principalId: runtime.id });
+    bridge = await startContainerBridge(runtime.id, proxy.url, sessionKey, { dispatchWork: worker?.dispatch, dispatchDesk: desk?.dispatch ?? experiment?.dispatchDesk });
     const prompt = readFileSync(prepared.promptPath, "utf8");
     outFd = openSync(join(out, "run.log"), "w"); errFd = openSync(join(out, "run.err"), "w");
     // Principal observations must not refresh the index while the Worker broker imports its commit.
@@ -139,7 +140,7 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
     try { budget.stop(failure); } catch { failure = "UNOBSERVABLE_USAGE"; }
   } finally {
     clearTimeout(timeout); clearInterval(monitor);
-    for (const cleanup of [() => worker?.close(), () => bridge?.close(), () => proxy?.close(), () => runtime?.cleanup()]) {
+    for (const cleanup of [() => desk?.close(), () => worker?.close(), () => bridge?.close(), () => proxy?.close(), () => runtime?.cleanup()]) {
       try { await cleanup(); } catch (error) { failure ??= "CLEANUP_FAILED: " + error.message; }
     }
     if (outFd !== undefined) closeSync(outFd);
