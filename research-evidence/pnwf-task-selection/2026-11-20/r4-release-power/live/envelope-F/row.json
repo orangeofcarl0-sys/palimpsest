@@ -1,0 +1,254 @@
+{
+  "id": "envelope-F",
+  "ticket": "envelope",
+  "arm": "F",
+  "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+  "cohortId": "d08ad4e8-3060-479b-8c5f-2ea26ed06ed4",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "d08ad4e8-3060-479b-8c5f-2ea26ed06ed4",
+    "sessionId": "REVIEW",
+    "condition": "F",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-sign-live-01\\envelope-F\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-sign-live-01\\envelope-F\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "1cb588c7b4cac5abe1fcc2a56499a5c2900dc456c9d326eaac197e7447944ca5",
+    "qualification": "6ecd601cf212ed41d306bab1dce337d31047cf5f7d1e175ebe642debe1eaf7bd",
+    "startedAt": "2026-11-19T18:24:20.646Z",
+    "endedAt": "2026-11-19T18:29:37.802Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "d08ad4e8-3060-479b-8c5f-2ea26ed06ed4",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-19T18:29:37.802Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 823305,
+      "confirmedTokens": 823305,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 23,
+    "paidModelCalls": 23
+  },
+  "head": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+  "status": "",
+  "conclusion": null,
+  "release": {
+    "check": {
+      "ok": true,
+      "candidate": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+      "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+      "power": {
+        "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    },
+    "filed": true,
+    "checks": [
+      {
+        "action": "release_check",
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+          },
+          "power": {
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "UNCOMMITTED_WORK",
+            "detail": "Commit or revert uncommitted changes before submitting.",
+            "nextAction": "FIX_CANDIDATE",
+            "paths": [],
+            "candidate": "137a5347f5c709a2b671e9581c73923c4369ae4d"
+          },
+          "power": {
+            "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+        "result": {
+          "ok": true,
+          "candidate": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        }
+      }
+    ]
+  }
+}

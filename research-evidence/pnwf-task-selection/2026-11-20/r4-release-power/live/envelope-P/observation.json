@@ -1,0 +1,666 @@
+{
+  "ticket": "envelope",
+  "arm": "P",
+  "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+  "head": "900856f6ad17038d2c7338d073c6336b4d21312a",
+  "observed": {
+    "head": "900856f6ad17038d2c7338d073c6336b4d21312a",
+    "paths": [
+      "HANDOVER.md",
+      "operations/revision-receipt.json",
+      "release.json",
+      "shift-plan.json"
+    ],
+    "plan": {
+      "slotStart": [
+        "00:00",
+        "00:30",
+        "01:00",
+        "01:30"
+      ],
+      "bus": [
+        "A",
+        "A",
+        "B",
+        "B"
+      ],
+      "acKw": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "loadShiftKw": 20,
+      "dispatchAt85": false
+    },
+    "release": {
+      "departureKwh": [
+        126,
+        121
+      ],
+      "marginKwh": [
+        0,
+        -9
+      ],
+      "at90": {
+        "A": "GO",
+        "B": "HOLD"
+      },
+      "at85": {
+        "A": "HOLD",
+        "B": "HOLD"
+      },
+      "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+    },
+    "checks": {
+      "committed": true,
+      "handoverUpdated": true,
+      "preserved": true,
+      "scope": true,
+      "sheet": false,
+      "net": false,
+      "margin": false,
+      "aRelease": true,
+      "bRelease": false,
+      "lowEfficiency": true
+    },
+    "protectedFiles": [
+      {
+        "path": "README.md",
+        "before": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "after": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "preserved": true
+      },
+      {
+        "path": "TASK.md",
+        "before": "100644 blob 042de25556dc31215e896d2a9416b01fb4dc3ae4",
+        "after": "100644 blob 042de25556dc31215e896d2a9416b01fb4dc3ae4",
+        "preserved": true
+      },
+      {
+        "path": "model.mjs",
+        "before": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "after": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "preserved": true
+      },
+      {
+        "path": "model.test.mjs",
+        "before": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "after": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "preserved": true
+      },
+      {
+        "path": "night.json",
+        "before": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "after": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "preserved": true
+      },
+      {
+        "path": "package.json",
+        "before": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "after": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "preserved": true
+      },
+      {
+        "path": "operations/desk.md",
+        "before": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "after": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "preserved": true
+      },
+      {
+        "path": "operations/retest.mjs",
+        "before": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "after": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "preserved": true
+      },
+      {
+        "path": "operations/cold-cycle.json",
+        "before": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "after": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "preserved": true
+      },
+      {
+        "path": "operations/original-receipt.json",
+        "before": "100644 blob d5c158bf2386c1f612cef6d2020b38d9384dbb16",
+        "after": "100644 blob d5c158bf2386c1f612cef6d2020b38d9384dbb16",
+        "preserved": true
+      },
+      {
+        "path": "operations/release-format.md",
+        "before": "100644 blob 3edbe29b21fc11405abe119849f2283fd1d01fe7",
+        "after": "100644 blob 3edbe29b21fc11405abe119849f2283fd1d01fe7",
+        "preserved": true
+      }
+    ],
+    "score": 6,
+    "passed": false
+  },
+  "validSupport": true,
+  "commits": [
+    {
+      "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+      "paths": [
+        "HANDOVER.md",
+        "release.json",
+        "shift-plan.json"
+      ],
+      "plan": {
+        "slotStart": [
+          "00:00",
+          "00:30",
+          "01:00",
+          "01:30"
+        ],
+        "bus": [
+          "A",
+          "A",
+          "B",
+          "B"
+        ],
+        "acKw": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "loadShiftKw": 20,
+        "dispatchAt85": false
+      },
+      "release": {
+        "departureKwh": [
+          126,
+          121
+        ],
+        "marginKwh": [
+          0,
+          -9
+        ],
+        "at90": {
+          "A": "GO",
+          "B": "HOLD"
+        },
+        "at85": {
+          "A": "HOLD",
+          "B": "HOLD"
+        },
+        "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+      }
+    },
+    {
+      "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+      "paths": [
+        "HANDOVER.md",
+        "operations/revision-receipt.json"
+      ],
+      "plan": {
+        "slotStart": [
+          "00:00",
+          "00:30",
+          "01:00",
+          "01:30"
+        ],
+        "bus": [
+          "A",
+          "A",
+          "B",
+          "B"
+        ],
+        "acKw": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "loadShiftKw": 20,
+        "dispatchAt85": false
+      },
+      "release": {
+        "departureKwh": [
+          126,
+          121
+        ],
+        "marginKwh": [
+          0,
+          -9
+        ],
+        "at90": {
+          "A": "GO",
+          "B": "HOLD"
+        },
+        "at85": {
+          "A": "HOLD",
+          "B": "HOLD"
+        },
+        "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "call": 109,
+      "result": 110,
+      "question": "请按本班适用记录核对：21:00 DESK-21 采集与 23:40 DUTY-2340 台架回执的时段上限哪一份对明早冷夜班次生效？现行原表 [80,40,70,50] 在适用上限下两车 90% 离场电量与余量各是多少？修订班表应取什么逐格 AC 设定？",
+      "delivered": true,
+      "receipt": {
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+        "run": "DUTY-2340",
+        "time": "23:40",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "requested": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "actual": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "departureKwh": [
+          126,
+          121
+        ],
+        "withinLimits": false,
+        "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+        "auxiliaryMeterB": {
+          "startKwh": 814,
+          "endKwh": 814
+        },
+        "power": {
+          "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "slots": [
+            {
+              "time": "00:00",
+              "requestedKw": 80,
+              "limitKw": 80,
+              "actualKw": 80,
+              "excessKw": 0
+            },
+            {
+              "time": "00:30",
+              "requestedKw": 40,
+              "limitKw": 40,
+              "actualKw": 40,
+              "excessKw": 0
+            },
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            },
+            {
+              "time": "01:30",
+              "requestedKw": 50,
+              "limitKw": 70,
+              "actualKw": 50,
+              "excessKw": 0
+            }
+          ],
+          "withinLimits": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+          }
+        }
+      },
+      "sheetAtContact": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "cached": false
+    },
+    {
+      "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+      "call": 231,
+      "result": 232,
+      "question": "修订后的四格班表 [80,40,50,50] 在 DUTY-2340 适用上限下是否合规？两车 90% 离场电量、余量与放行结论是什么？85% 时应如何处置？",
+      "delivered": true,
+      "receipt": {
+        "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+        "sheetBlob": "a574e299d3776a69eac83b2e64041086a4ea847c",
+        "run": "DUTY-2340",
+        "time": "23:40",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "requested": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "actual": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "departureKwh": [
+          126,
+          121
+        ],
+        "withinLimits": true,
+        "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+        "auxiliaryMeterB": {
+          "startKwh": 814,
+          "endKwh": 814
+        },
+        "power": {
+          "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+          "slots": [
+            {
+              "time": "00:00",
+              "requestedKw": 80,
+              "limitKw": 80,
+              "actualKw": 80,
+              "excessKw": 0
+            },
+            {
+              "time": "00:30",
+              "requestedKw": 40,
+              "limitKw": 40,
+              "actualKw": 40,
+              "excessKw": 0
+            },
+            {
+              "time": "01:00",
+              "requestedKw": 50,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 0
+            },
+            {
+              "time": "01:30",
+              "requestedKw": 50,
+              "limitKw": 70,
+              "actualKw": 50,
+              "excessKw": 0
+            }
+          ],
+          "withinLimits": true,
+          "refusal": null
+        }
+      },
+      "sheetAtContact": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "cached": false
+    },
+    {
+      "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+      "call": 261,
+      "result": 262,
+      "question": "最终提交 900856f 的班表与修订回执是否合规？请复核 A/B 两车 90% 离场电量、余量、放行决定及 85% 处置。",
+      "delivered": true,
+      "receipt": {
+        "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+        "sheetBlob": "a574e299d3776a69eac83b2e64041086a4ea847c",
+        "run": "DUTY-2340",
+        "time": "23:40",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "requested": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "actual": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "departureKwh": [
+          126,
+          121
+        ],
+        "withinLimits": true,
+        "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+        "auxiliaryMeterB": {
+          "startKwh": 814,
+          "endKwh": 814
+        },
+        "power": {
+          "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+          "slots": [
+            {
+              "time": "00:00",
+              "requestedKw": 80,
+              "limitKw": 80,
+              "actualKw": 80,
+              "excessKw": 0
+            },
+            {
+              "time": "00:30",
+              "requestedKw": 40,
+              "limitKw": 40,
+              "actualKw": 40,
+              "excessKw": 0
+            },
+            {
+              "time": "01:00",
+              "requestedKw": 50,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 0
+            },
+            {
+              "time": "01:30",
+              "requestedKw": 50,
+              "limitKw": 70,
+              "actualKw": 50,
+              "excessKw": 0
+            }
+          ],
+          "withinLimits": true,
+          "refusal": null
+        }
+      },
+      "sheetAtContact": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "cached": false
+    }
+  ],
+  "reviewPhases": {
+    "reviews": [
+      {
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "measured": true,
+        "turn": 2,
+        "call": 189,
+        "result": 190,
+        "turnEnd": 192,
+        "reason": "completed",
+        "exitCode": 0,
+        "before": {
+          "requests": 1,
+          "fresh": 46033,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 365,
+          "total": 46398
+        },
+        "after": {
+          "requests": 0,
+          "fresh": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0,
+          "total": 0
+        },
+        "launchToReturnMs": 23995,
+        "returnToTurnEndMs": 12,
+        "returnToProcessExitMs": 260,
+        "queuedMs": 57
+      },
+      {
+        "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+        "measured": true,
+        "turn": 3,
+        "call": 206,
+        "result": 207,
+        "turnEnd": 211,
+        "reason": "completed",
+        "exitCode": 0,
+        "before": {
+          "requests": 1,
+          "fresh": 2052,
+          "cacheRead": 45952,
+          "cacheWrite": 0,
+          "output": 364,
+          "total": 48368
+        },
+        "after": {
+          "requests": 0,
+          "fresh": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0,
+          "total": 0
+        },
+        "launchToReturnMs": 20162,
+        "returnToTurnEndMs": 35,
+        "returnToProcessExitMs": 406,
+        "queuedMs": 150
+      },
+      {
+        "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+        "measured": true,
+        "turn": 4,
+        "call": 225,
+        "result": 226,
+        "turnEnd": 230,
+        "reason": "completed",
+        "exitCode": 0,
+        "before": {
+          "requests": 1,
+          "fresh": 1765,
+          "cacheRead": 48000,
+          "cacheWrite": 0,
+          "output": 263,
+          "total": 50028
+        },
+        "after": {
+          "requests": 0,
+          "fresh": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0,
+          "total": 0
+        },
+        "launchToReturnMs": 16752,
+        "returnToTurnEndMs": 27,
+        "returnToProcessExitMs": 284,
+        "queuedMs": 82
+      }
+    ],
+    "maintainer": {
+      "requests": 3,
+      "fresh": 49850,
+      "cacheRead": 93952,
+      "cacheWrite": 0,
+      "output": 992,
+      "total": 144794
+    },
+    "unassigned": {
+      "requests": 0,
+      "fresh": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 0,
+      "total": 0
+    }
+  },
+  "actors": {
+    "principal": {
+      "requests": 31,
+      "fresh": 75411,
+      "cacheRead": 1287936,
+      "cacheWrite": 0,
+      "output": 38127,
+      "total": 1401474
+    },
+    "maintainer": {
+      "requests": 3,
+      "fresh": 49850,
+      "cacheRead": 93952,
+      "cacheWrite": 0,
+      "output": 992,
+      "total": 144794
+    }
+  },
+  "requests": 34,
+  "unknown": 0,
+  "confirmed": 1546268,
+  "total": 1546268,
+  "elapsedMs": 728479,
+  "natural": true,
+  "conclusion": "DELIVER",
+  "tools": [
+    {
+      "role": "principal",
+      "calls": 55,
+      "paired": 55
+    },
+    {
+      "role": "maintainer",
+      "calls": 10,
+      "paired": 10
+    }
+  ],
+  "extraContacts": [
+    {
+      "call": 103,
+      "reply": "{\"ok\":false,\"reason\":\"Current full candidate SHA required\"}"
+    },
+    {
+      "call": 213,
+      "reply": "{\"ok\":false,\"reason\":\"Current full candidate SHA required\"}"
+    }
+  ],
+  "delegations": []
+}

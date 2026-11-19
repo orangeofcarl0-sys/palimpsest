@@ -1,0 +1,210 @@
+{
+  "id": "envelope-P",
+  "ticket": "envelope",
+  "arm": "P",
+  "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+  "cohortId": "d10a48f5-471d-4ce4-882e-402f713bfd61",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "d10a48f5-471d-4ce4-882e-402f713bfd61",
+    "sessionId": "REVIEW",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-sign-mock-01\\envelope-P\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-sign-mock-01\\envelope-P\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "f2eafd573e53d65e8e3f4be7f6d31032c33622efb2fce20e300b324fe840e920",
+    "qualification": "9f6d9b45a9472c812a9d95e247c7cc07e381c02b53baf91e845f9212bc53fa6e",
+    "startedAt": "2026-11-19T18:09:25.746Z",
+    "endedAt": "2026-11-19T18:10:34.927Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "d10a48f5-471d-4ce4-882e-402f713bfd61",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-19T18:10:34.927Z",
+      "maxTokens": 12000000,
+      "softCeiling": 12000000,
+      "totalTokens": 463455,
+      "confirmedTokens": 463455,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "head": "382e384d0798dc3b3897168a62bd74310f8377ac",
+  "status": "",
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-705969b6ddf55797a9d410128acab45b",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已核对本班车辆放行依据并提交可执行班表、放行单和交班稿。\nArtifacts:\n- shift-plan.json\n- release.json\n- HANDOVER.md\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head 234b5326c1c94595a23407ada5f92fa5b8c9ca52\nArtifact provenance:\n- shift-plan.json: present=true tracked=true committed=true source=WORKTREE digest=18f4e8183a2b commit=382e384d0798\n- release.json: present=true tracked=true committed=true source=WORKTREE digest=5feca174e64d commit=382e384d0798\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=be08234615dd commit=382e384d0798\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已核对本班车辆放行依据并提交可执行班表、放行单和交班稿。\",\"artifacts\":[\"shift-plan.json\",\"release.json\",\"HANDOVER.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-19T18:10:29.821Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"98c163396267791e19959d7116aac998ae7cfdcb36c7598c616c4f2580138eda\",\"headCommit\":\"234b5326c1c94595a23407ada5f92fa5b8c9ca52\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"shift-plan.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"18f4e8183a2b174dbd602316e872d7e2d9b462b80f13b42063a0bfb8538355cf\",\"source\":\"WORKTREE\",\"commit\":\"382e384d0798dc3b3897168a62bd74310f8377ac\",\"detail\":\"committed at HEAD\"},{\"path\":\"release.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"5feca174e64d2438bdbc1ada203be68e7aded3d90de989bfe36391a3f9d3ed36\",\"source\":\"WORKTREE\",\"commit\":\"382e384d0798dc3b3897168a62bd74310f8377ac\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"be08234615ddd6aee635852c7524bfe6801b5197d4919fae80ac30b7c5118e22\",\"source\":\"WORKTREE\",\"commit\":\"382e384d0798dc3b3897168a62bd74310f8377ac\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-f84f4a8f5ec1b3d8ec5c0188\"}"
+  },
+  "release": {
+    "check": {
+      "ok": true,
+      "candidate": "382e384d0798dc3b3897168a62bd74310f8377ac",
+      "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+      "power": {
+        "sha": "382e384d0798dc3b3897168a62bd74310f8377ac",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    },
+    "filed": true,
+    "checks": [
+      {
+        "action": "inspect_delivery",
+        "sha": "bed19d80a0d6a7db6d53de4c660b164a103274a2",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "bed19d80a0d6a7db6d53de4c660b164a103274a2",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+          },
+          "power": {
+            "sha": "bed19d80a0d6a7db6d53de4c660b164a103274a2",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "bed19d80a0d6a7db6d53de4c660b164a103274a2",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          }
+        }
+      },
+      {
+        "action": "inspect_delivery",
+        "sha": "382e384d0798dc3b3897168a62bd74310f8377ac",
+        "result": {
+          "ok": true,
+          "candidate": "382e384d0798dc3b3897168a62bd74310f8377ac",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "382e384d0798dc3b3897168a62bd74310f8377ac",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        }
+      }
+    ]
+  }
+}

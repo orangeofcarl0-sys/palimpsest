@@ -1,0 +1,160 @@
+{
+  "id": "envelope-F",
+  "ticket": "envelope",
+  "arm": "F",
+  "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+  "cohortId": "f418bf18-42cf-4f4e-86a4-3fa1a42abbb3",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "f418bf18-42cf-4f4e-86a4-3fa1a42abbb3",
+    "sessionId": "REVIEW",
+    "condition": "F",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-sign-mock-01\\envelope-F\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-sign-mock-01\\envelope-F\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "e40ce51f76c46e0e3c7c02682c34f8d950d135c81c82dff0b41f45c528cdeb83",
+    "qualification": "9c09b77f7d4064d17637f848d1f36cc23f6841cc67bb7c6a86d19e964bb74405",
+    "startedAt": "2026-11-19T18:10:51.048Z",
+    "endedAt": "2026-11-19T18:11:04.723Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "f418bf18-42cf-4f4e-86a4-3fa1a42abbb3",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-19T18:11:04.723Z",
+      "maxTokens": 12000000,
+      "softCeiling": 12000000,
+      "totalTokens": 245158,
+      "confirmedTokens": 245158,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "head": "3ba2f8f3e6f76f3b3f06b848308e3faf85d47817",
+  "status": "",
+  "conclusion": null,
+  "release": {
+    "check": {
+      "ok": true,
+      "candidate": "3ba2f8f3e6f76f3b3f06b848308e3faf85d47817",
+      "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+      "power": {
+        "sha": "3ba2f8f3e6f76f3b3f06b848308e3faf85d47817",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    },
+    "filed": true,
+    "checks": [
+      {
+        "action": "release_check",
+        "sha": "f43e2ac566f48be571c7bd12dd232c7ad967f360",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "f43e2ac566f48be571c7bd12dd232c7ad967f360",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+          },
+          "power": {
+            "sha": "f43e2ac566f48be571c7bd12dd232c7ad967f360",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "f43e2ac566f48be571c7bd12dd232c7ad967f360",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          }
+        }
+      }
+    ]
+  }
+}
