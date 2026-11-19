@@ -1,0 +1,90 @@
+[
+  {
+    "at": "2026-11-19T18:09:55.809Z",
+    "kind": "OPEN",
+    "slip": {
+      "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false,
+      "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 70,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 20
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": false,
+        "refusal": {
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+        }
+      }
+    }
+  }
+]

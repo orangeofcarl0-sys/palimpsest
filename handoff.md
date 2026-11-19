@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- R4 签发已覆盖请求超限拒签和合法修订沿用适用原表回执。两组 Mock 均 10/10；真实 P/F 均签发并自然退出，独立评分各 6/10。两者均选 B 车 50/50 kW，三次联系维护者仍未用足最后一格。R7 则在 50/70 的修订实测中取得改变放行依据的 6 kWh 反例。旧 R4 的 2/10 和 UNKNOWN 继续封存。[逐次复核与原稿](docs/engineering/DEPOT-R4-RELEASE-POWER.md)
+
 - 任务选路试点、夜班复核和 R7 签发契约已随 [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) 合入主线 `f1c1424a`。送审的 16 项检查全部通过。历史 UNKNOWN 和两组 R7 的 6/10 原判保留，本轮 R7 Palimpsest 与强原生 DSH 均为 10/10。发布和复算新增付费请求 0。[两轮逐组对比](research-evidence/pnwf-task-selection/2026-11-20/r7-release-power/comparison.json)
 
 - R7 签发按各时段的请求功率判定，明确给出限幅后的实际 kW 和超限幅度。两份旧 6/10 原稿均被拒。新 P/F 各自遇到 01:00 超限 20 kW 的拒绝，提交 B 车 50/70 kW，实测 B 缺 6 kWh，签发 A GO、B HOLD，均为 10/10 并自然退出。P 记录 DELIVER。60 笔全部结算。[拒绝、交付与复核成本](docs/engineering/DEPOT-R7-RELEASE-POWER.md)
@@ -111,6 +113,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-20，最近同步）
+
+R4 签发与原表回执试点位于 `codex/r4-release-contract`，分支起点为主线 `a819db59`。独立实验项目的 Git SHA 记录在归档，其基线为 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`。[冻结输入与运行窗口](research-evidence/pnwf-task-selection/2026-11-20/r4-release-power/frozen.json)
 
 ### 任务选路试点发布
 
@@ -337,6 +341,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+R4 签发定向测试合计 5 项。两组 Mock 经实际签发入口验证超限拒签、引用原回执通过，均为 10/10。历史 R7 的对比 JSON 重算后字节摘要一致，旧 R4 的停止批次与恢复批次可分别复算。[构建、回归和离线复算命令](docs/engineering/DEPOT-R4-RELEASE-POWER.md#离线复算)
+
 在项目根运行 `node --test scripts/pnwf/depot-transfer/{case,release-power}.test.mjs`（PowerShell 中分别列出两条文件路径）。两组历史 6/10 原提交均触发 01:00 超限 20 kW 拒绝。零付费 Mock 分别 9 / 8 笔、各 10/10；完整离线复算见 [签发报告](docs/engineering/DEPOT-R7-RELEASE-POWER.md)。
 
 恢复批次用 `run.mjs verify-resume <原归档> <新归档>` 核对探针与 SQLite、旧四格 Mock、两批次真实归档和候选 Git。合并对比逐次核对联系的调用 ID、回执和拒绝，可离线复算。[完整命令](docs/engineering/DEPOT-TRANSFERABILITY.md#离线复算)
@@ -536,6 +542,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+R4 签发配对从同一基线新开两场，OpenCode Go `deepseek-v4.1-flash`，原 64 笔 / 30 分钟 / 单笔 240 秒合同，金额不限。P 34 笔、1,546,268 tokens，F 23 笔、823,305 tokens；共 57 笔全部结算。维护者分别 3 笔、144,794 与 3 笔、146,907 tokens，六次送达后均零请求。旧 R4-P 第 7 笔未知用量未并入。[两场账本和归因](research-evidence/pnwf-task-selection/2026-11-20/r4-release-power/comparison.json)
+
 R7 签发修复真实配对共 60 笔、2,451,154 tokens，全部对账。P 为 29 笔，维护者占 5 笔、246,585 tokens；F 为 31 笔，维护者占 7 笔、339,855 tokens。P/F 终态 HEAD 分别为 `3f757537`、`af47bfbf`，均从同一 R7 基线启动。[修复前后逐组对比](research-evidence/pnwf-task-selection/2026-11-20/r7-release-power/comparison.json)
 
 11 月 20 日 OpenCode Go 工具探针 1 笔、339 tokens、2.538 秒。恢复的 R4-F、R7-F、R7-P 共 134 笔全部结算，6,262,611 tokens，新增 UNKNOWN 为零。探针单列，旧 R4-P 第 7 笔仍无终态。[探针及三格对账](research-evidence/pnwf-task-selection/2026-11-20/depot-transfer/comparison.json)
@@ -663,6 +671,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+R4 的 50/50 合法但使 B 少充 9 kWh。两组都把旧楼宇负荷模型与晚班已生效的逐格上限叠用，复核已选班表未发现漏用容量。当前按 SHA 签发验证请求合法性，服务质量由独立验收记录；里程碑二保持开放。本轮不能支持“模型会按证据适用范围决定是否再测”的判断。[R4 与 R7 的放行决定](docs/engineering/DEPOT-R4-RELEASE-POWER.md#复核成本与决策收益)
+
 R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主动处理拒绝、采纳受限新班表的车端实测并交付 10/10。本轮表明该契约能引导两种执行方式正确签发，此样本未显示 Palimpsest 相对强原生的质量优势。R4-P 的原超时仍限制固定上限场景的比较，里程碑二保持开放。
 
 本轮真实 P 完成了“原表一次求证、Principal 自算修订并交付”的路径。修复版本中，两份实测回执都送达且两次复核回传后都零请求的组合已在 Mock 验证，在真实样本中仍待观察。
@@ -774,6 +784,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-20 | R4 签发支持在原窗口内沿用原表回执，完成两组 Mock 和真实配对 | [R4 签发报告](docs/engineering/DEPOT-R4-RELEASE-POWER.md) | Mock 各 10/10，真实各 6/10，57 笔全部结算，旧 2/10 和 UNKNOWN 保留 |
 | 2026-11-20 | R7 请求超限拒签，两份 6/10 回归及双 Mock 通过，同基线真实配对 | [签发报告](docs/engineering/DEPOT-R7-RELEASE-POWER.md) | P/F 均 10/10，主动改表，60 笔全部结算 |
 | 2026-11-20 | 当前账号工具探针对账通过，按原顺序跑完其余三格 | [两批次对比](research-evidence/pnwf-task-selection/2026-11-20/depot-transfer/comparison.json) | R4-F 10/10，R7-F 和 R7-P 各 6/10，134 笔全部结算 |
 | 2026-11-20 | 夜班 R4/R7 可外推与序列相关两种工单冻结，完成四格 Mock | [报告](docs/engineering/DEPOT-TRANSFERABILITY.md) | 真实首格第 7 笔 UNKNOWN，2/10，当时其余三格未启动 |

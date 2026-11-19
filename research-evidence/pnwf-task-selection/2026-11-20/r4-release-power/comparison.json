@@ -1,0 +1,3347 @@
+{
+  "previous": {
+    "P": {
+      "arm": "P",
+      "basis": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "head": "3f7575373992a5efb9f8df59a9f8c64611d24678",
+      "quality": 10,
+      "checks": {
+        "committed": true,
+        "handoverUpdated": true,
+        "preserved": true,
+        "scope": true,
+        "sheet": true,
+        "net": true,
+        "margin": true,
+        "aRelease": true,
+        "bRelease": true,
+        "lowEfficiency": true
+      },
+      "sheet": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "release": {
+        "departureKwh": [
+          126,
+          124
+        ],
+        "marginKwh": [
+          0,
+          -6
+        ],
+        "at90": {
+          "A": "GO",
+          "B": "HOLD"
+        },
+        "at85": {
+          "A": "HOLD",
+          "B": "HOLD"
+        },
+        "evidenceSha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0"
+      },
+      "protected": true,
+      "filed": true,
+      "natural": true,
+      "conclusion": "DELIVER",
+      "requests": 29,
+      "confirmed": 1161303,
+      "unknown": 0,
+      "total": 1161303,
+      "actors": {
+        "principal": {
+          "requests": 24,
+          "fresh": 67135,
+          "cacheRead": 810240,
+          "cacheWrite": 0,
+          "output": 37343,
+          "total": 914718
+        },
+        "maintainer": {
+          "requests": 5,
+          "fresh": 52069,
+          "cacheRead": 191872,
+          "cacheWrite": 0,
+          "output": 2644,
+          "total": 246585
+        }
+      },
+      "elapsedMs": 490874,
+      "commits": [
+        {
+          "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+          "paths": [
+            "shift-plan.json"
+          ],
+          "plan": {
+            "slotStart": [
+              "00:00",
+              "00:30",
+              "01:00",
+              "01:30"
+            ],
+            "bus": [
+              "A",
+              "A",
+              "B",
+              "B"
+            ],
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "loadShiftKw": 20,
+            "dispatchAt85": false
+          },
+          "release": null
+        },
+        {
+          "sha": "3f7575373992a5efb9f8df59a9f8c64611d24678",
+          "paths": [
+            "HANDOVER.md",
+            "operations/revision-receipt.json",
+            "release.json"
+          ],
+          "plan": {
+            "slotStart": [
+              "00:00",
+              "00:30",
+              "01:00",
+              "01:30"
+            ],
+            "bus": [
+              "A",
+              "A",
+              "B",
+              "B"
+            ],
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "loadShiftKw": 20,
+            "dispatchAt85": false
+          },
+          "release": {
+            "departureKwh": [
+              126,
+              124
+            ],
+            "marginKwh": [
+              0,
+              -6
+            ],
+            "at90": {
+              "A": "GO",
+              "B": "HOLD"
+            },
+            "at85": {
+              "A": "HOLD",
+              "B": "HOLD"
+            },
+            "evidenceSha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "call": 73,
+          "result": 74,
+          "callId": "call_1e5bd79eaf574f8086b4ffd2",
+          "tool": "depot_trial",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            130
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 75,
+          "result": 76,
+          "callId": "call_3f30341668ff44d89c520a61",
+          "tool": "depot_release_check",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "source": null,
+          "received": false,
+          "withinLimits": false,
+          "requested": null,
+          "departure": null,
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 105,
+          "result": 106,
+          "callId": "call_b9a918f129b5435c9307283e",
+          "tool": "depot_contact",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 137,
+          "result": 138,
+          "callId": "call_e5a127140dab4d08bab0d347",
+          "tool": "depot_release_check",
+          "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+          "source": null,
+          "received": false,
+          "withinLimits": true,
+          "requested": null,
+          "departure": null,
+          "reason": "REQUIRED_FILE_MISSING",
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 139,
+          "result": 140,
+          "callId": "call_51a055f310524504a413c447",
+          "tool": "depot_trial",
+          "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:30",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 141,
+          "result": 142,
+          "callId": "call_9ef34c8527674b97999b91d1",
+          "tool": "depot_contact",
+          "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 169,
+          "result": 170,
+          "callId": "call_4dd80b7dd0204db290623fa6",
+          "tool": "depot_release_check",
+          "sha": "3f7575373992a5efb9f8df59a9f8c64611d24678",
+          "source": null,
+          "received": false,
+          "withinLimits": true,
+          "requested": null,
+          "departure": null,
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 171,
+          "result": 172,
+          "callId": "call_49de29c1a99c488a97240b09",
+          "tool": "depot_trial",
+          "sha": "3f7575373992a5efb9f8df59a9f8c64611d24678",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:30",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 215,
+          "result": 216,
+          "callId": "call_9ca2943614c44b5baabbe46b",
+          "tool": "palimpsest_work",
+          "sha": null,
+          "source": null,
+          "received": false,
+          "withinLimits": null,
+          "requested": null,
+          "departure": null,
+          "reason": null,
+          "violations": [],
+          "state": "RECORDED"
+        }
+      ],
+      "finalCheck": {
+        "ok": true,
+        "candidate": "3f7575373992a5efb9f8df59a9f8c64611d24678",
+        "evidenceSha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+        "power": {
+          "sha": "3f7575373992a5efb9f8df59a9f8c64611d24678",
+          "slots": [
+            {
+              "time": "00:00",
+              "requestedKw": 80,
+              "limitKw": 80,
+              "actualKw": 80,
+              "excessKw": 0
+            },
+            {
+              "time": "00:30",
+              "requestedKw": 40,
+              "limitKw": 40,
+              "actualKw": 40,
+              "excessKw": 0
+            },
+            {
+              "time": "01:00",
+              "requestedKw": 50,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 0
+            },
+            {
+              "time": "01:30",
+              "requestedKw": 70,
+              "limitKw": 70,
+              "actualKw": 70,
+              "excessKw": 0
+            }
+          ],
+          "withinLimits": true,
+          "refusal": null
+        }
+      },
+      "reviewTurns": [
+        {
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "reason": "completed",
+          "before": {
+            "requests": 4,
+            "fresh": 50411,
+            "cacheRead": 141696,
+            "cacheWrite": 0,
+            "output": 2240,
+            "total": 194347
+          },
+          "after": {
+            "requests": 0,
+            "fresh": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0,
+            "total": 0
+          }
+        },
+        {
+          "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+          "reason": "completed",
+          "before": {
+            "requests": 1,
+            "fresh": 1658,
+            "cacheRead": 50176,
+            "cacheWrite": 0,
+            "output": 404,
+            "total": 52238
+          },
+          "after": {
+            "requests": 0,
+            "fresh": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0,
+            "total": 0
+          }
+        }
+      ],
+      "validSupport": true,
+      "delegations": [],
+      "reviewUsage": {
+        "requests": 5,
+        "fresh": 52069,
+        "cacheRead": 191872,
+        "cacheWrite": 0,
+        "output": 2644,
+        "total": 246585
+      },
+      "releaseWrites": [
+        {
+          "call": 149,
+          "result": 150,
+          "callId": "call_5cace11df93142e5a3768bc2",
+          "at90": {
+            "A": "GO",
+            "B": "HOLD"
+          },
+          "departureKwh": [
+            126,
+            124
+          ]
+        }
+      ],
+      "reviews": [
+        {
+          "call": 105,
+          "result": 106,
+          "callId": "call_b9a918f129b5435c9307283e",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "cached": false,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "principalHead": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "decisionAtContact": null
+        },
+        {
+          "call": 141,
+          "result": 142,
+          "callId": "call_9ef34c8527674b97999b91d1",
+          "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+          "cached": false,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "principalHead": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+          "decisionAtContact": null
+        }
+      ]
+    },
+    "F": {
+      "arm": "F",
+      "basis": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "head": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+      "quality": 10,
+      "checks": {
+        "committed": true,
+        "handoverUpdated": true,
+        "preserved": true,
+        "scope": true,
+        "sheet": true,
+        "net": true,
+        "margin": true,
+        "aRelease": true,
+        "bRelease": true,
+        "lowEfficiency": true
+      },
+      "sheet": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "release": {
+        "departureKwh": [
+          126,
+          124
+        ],
+        "marginKwh": [
+          0,
+          -6
+        ],
+        "at90": {
+          "A": "GO",
+          "B": "HOLD"
+        },
+        "at85": {
+          "A": "HOLD",
+          "B": "HOLD"
+        },
+        "evidenceSha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3"
+      },
+      "protected": true,
+      "filed": true,
+      "natural": true,
+      "conclusion": null,
+      "requests": 31,
+      "confirmed": 1289851,
+      "unknown": 0,
+      "total": 1289851,
+      "actors": {
+        "principal": {
+          "requests": 24,
+          "fresh": 67561,
+          "cacheRead": 838528,
+          "cacheWrite": 0,
+          "output": 43907,
+          "total": 949996
+        },
+        "maintainer": {
+          "requests": 7,
+          "fresh": 52119,
+          "cacheRead": 285952,
+          "cacheWrite": 0,
+          "output": 1784,
+          "total": 339855
+        }
+      },
+      "elapsedMs": 496294,
+      "commits": [
+        {
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "paths": [
+            "shift-plan.json"
+          ],
+          "plan": {
+            "slotStart": [
+              "00:00",
+              "00:30",
+              "01:00",
+              "01:30"
+            ],
+            "bus": [
+              "A",
+              "A",
+              "B",
+              "B"
+            ],
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "loadShiftKw": 20,
+            "dispatchAt85": false
+          },
+          "release": null
+        },
+        {
+          "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "paths": [
+            "HANDOVER.md",
+            "operations/revision-receipt.json",
+            "release.json"
+          ],
+          "plan": {
+            "slotStart": [
+              "00:00",
+              "00:30",
+              "01:00",
+              "01:30"
+            ],
+            "bus": [
+              "A",
+              "A",
+              "B",
+              "B"
+            ],
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "loadShiftKw": 20,
+            "dispatchAt85": false
+          },
+          "release": {
+            "departureKwh": [
+              126,
+              124
+            ],
+            "marginKwh": [
+              0,
+              -6
+            ],
+            "at90": {
+              "A": "GO",
+              "B": "HOLD"
+            },
+            "at85": {
+              "A": "HOLD",
+              "B": "HOLD"
+            },
+            "evidenceSha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "call": 71,
+          "result": 72,
+          "callId": "call_526e5494d7244d0f87d30ca4",
+          "tool": "depot_trial",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "source": null,
+          "received": false,
+          "withinLimits": null,
+          "requested": null,
+          "departure": null,
+          "reason": "Current full candidate SHA required",
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 73,
+          "result": 74,
+          "callId": "call_d29df6857488462b9737a794",
+          "tool": "depot_release_check",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "source": null,
+          "received": false,
+          "withinLimits": null,
+          "requested": null,
+          "departure": null,
+          "reason": "RESULT_DRIFT",
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 75,
+          "result": 76,
+          "callId": "call_efe7a4faec974e69af6ec104",
+          "tool": "depot_trial",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            130
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 77,
+          "result": 78,
+          "callId": "call_1d430459e56841f98350114a",
+          "tool": "depot_release_check",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "source": null,
+          "received": false,
+          "withinLimits": false,
+          "requested": null,
+          "departure": null,
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 83,
+          "result": 84,
+          "callId": "call_4d3aacbee68549c4865b97b6",
+          "tool": "depot_contact",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 85,
+          "result": 86,
+          "callId": "call_4ff51dbd90874161843432a2",
+          "tool": "depot_contact",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "source": null,
+          "received": false,
+          "withinLimits": null,
+          "requested": null,
+          "departure": null,
+          "reason": "Current full candidate SHA required",
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 125,
+          "result": 126,
+          "callId": "call_35a1fb390c54431bbe1fc751",
+          "tool": "depot_contact",
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 127,
+          "result": 128,
+          "callId": "call_be5e2df96b624492bebee8bf",
+          "tool": "depot_release_check",
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "source": null,
+          "received": false,
+          "withinLimits": true,
+          "requested": null,
+          "departure": null,
+          "reason": "REQUIRED_FILE_MISSING",
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 129,
+          "result": 130,
+          "callId": "call_a7fc6cef6a874f5e86f8020c",
+          "tool": "depot_trial",
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:30",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 135,
+          "result": 136,
+          "callId": "call_1e4ba74cdd594cd781e80a34",
+          "tool": "depot_contact",
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 195,
+          "result": 196,
+          "callId": "call_2a3feaca1d264dd286e8a96e",
+          "tool": "depot_release_check",
+          "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "source": null,
+          "received": false,
+          "withinLimits": true,
+          "requested": null,
+          "departure": null,
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 197,
+          "result": 198,
+          "callId": "call_cc7cee07169244238fdfa5bb",
+          "tool": "depot_trial",
+          "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "violations": [
+            {
+              "time": "01:30",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "state": null
+        },
+        {
+          "call": 199,
+          "result": 200,
+          "callId": "call_4ca0b2912e4d4d83b3b581dd",
+          "tool": "depot_contact",
+          "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        }
+      ],
+      "finalCheck": {
+        "ok": true,
+        "candidate": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+        "evidenceSha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+        "power": {
+          "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "slots": [
+            {
+              "time": "00:00",
+              "requestedKw": 80,
+              "limitKw": 80,
+              "actualKw": 80,
+              "excessKw": 0
+            },
+            {
+              "time": "00:30",
+              "requestedKw": 40,
+              "limitKw": 40,
+              "actualKw": 40,
+              "excessKw": 0
+            },
+            {
+              "time": "01:00",
+              "requestedKw": 50,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 0
+            },
+            {
+              "time": "01:30",
+              "requestedKw": 70,
+              "limitKw": 70,
+              "actualKw": 70,
+              "excessKw": 0
+            }
+          ],
+          "withinLimits": true,
+          "refusal": null
+        }
+      },
+      "reviewTurns": [
+        {
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "reason": "completed",
+          "before": {
+            "requests": 4,
+            "fresh": 47333,
+            "cacheRead": 140160,
+            "cacheWrite": 0,
+            "output": 884,
+            "total": 188377
+          },
+          "after": {
+            "requests": 0,
+            "fresh": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0,
+            "total": 0
+          }
+        },
+        {
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "reason": "completed",
+          "before": {
+            "requests": 2,
+            "fresh": 3011,
+            "cacheRead": 95744,
+            "cacheWrite": 0,
+            "output": 652,
+            "total": 99407
+          },
+          "after": {
+            "requests": 0,
+            "fresh": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0,
+            "total": 0
+          }
+        },
+        {
+          "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "reason": "completed",
+          "before": {
+            "requests": 1,
+            "fresh": 1775,
+            "cacheRead": 50048,
+            "cacheWrite": 0,
+            "output": 248,
+            "total": 52071
+          },
+          "after": {
+            "requests": 0,
+            "fresh": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0,
+            "total": 0
+          }
+        }
+      ],
+      "validSupport": true,
+      "delegations": [],
+      "reviewUsage": {
+        "requests": 7,
+        "fresh": 52119,
+        "cacheRead": 285952,
+        "cacheWrite": 0,
+        "output": 1784,
+        "total": 339855
+      },
+      "releaseWrites": [
+        {
+          "call": 175,
+          "result": 176,
+          "callId": "call_404d615ed8af42808fe620d5",
+          "at90": {
+            "A": "GO",
+            "B": "HOLD"
+          },
+          "departureKwh": [
+            126,
+            124
+          ]
+        }
+      ],
+      "reviews": [
+        {
+          "call": 83,
+          "result": 84,
+          "callId": "call_4d3aacbee68549c4865b97b6",
+          "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "cached": false,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "principalHead": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "decisionAtContact": null
+        },
+        {
+          "call": 125,
+          "result": 126,
+          "callId": "call_35a1fb390c54431bbe1fc751",
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "cached": false,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "principalHead": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "decisionAtContact": null
+        },
+        {
+          "call": 135,
+          "result": 136,
+          "callId": "call_1e4ba74cdd594cd781e80a34",
+          "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "cached": true,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "principalHead": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "decisionAtContact": null
+        },
+        {
+          "call": 199,
+          "result": 200,
+          "callId": "call_4ca0b2912e4d4d83b3b581dd",
+          "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "cached": false,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            124
+          ],
+          "principalHead": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "decisionAtContact": {
+            "A": "GO",
+            "B": "HOLD"
+          }
+        }
+      ]
+    }
+  },
+  "mock": {
+    "stop": null,
+    "rows": [
+      {
+        "arm": "P",
+        "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "head": "382e384d0798dc3b3897168a62bd74310f8377ac",
+        "quality": 10,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": true,
+          "net": true,
+          "margin": true,
+          "aRelease": true,
+          "bRelease": true,
+          "lowEfficiency": true
+        },
+        "sheet": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "release": {
+          "departureKwh": [
+            126,
+            130
+          ],
+          "marginKwh": [
+            0,
+            0
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "GO"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+        },
+        "protected": true,
+        "filed": true,
+        "natural": true,
+        "conclusion": "DELIVER",
+        "requests": 7,
+        "confirmed": 463455,
+        "unknown": 0,
+        "total": 463455,
+        "actors": {
+          "principal": {
+            "requests": 7,
+            "fresh": 461408,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 2047,
+            "total": 463455
+          }
+        },
+        "elapsedMs": 69181,
+        "commits": [
+          {
+            "sha": "bed19d80a0d6a7db6d53de4c660b164a103274a2",
+            "paths": [
+              "HANDOVER.md",
+              "release.json",
+              "shift-plan.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                70,
+                70
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {}
+          },
+          {
+            "sha": "d32807a7183e1c9ccb9366920c65c6345bce6e8b",
+            "paths": [
+              "shift-plan.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                70
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {}
+          },
+          {
+            "sha": "382e384d0798dc3b3897168a62bd74310f8377ac",
+            "paths": [
+              "HANDOVER.md",
+              "release.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                70
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {
+              "departureKwh": [
+                126,
+                130
+              ],
+              "marginKwh": [
+                0,
+                0
+              ],
+              "at90": {
+                "A": "GO",
+                "B": "GO"
+              },
+              "at85": {
+                "A": "HOLD",
+                "B": "HOLD"
+              },
+              "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+            }
+          }
+        ],
+        "responses": [
+          {
+            "call": 23,
+            "result": 24,
+            "callId": "filing_1",
+            "tool": "palimpsest_work",
+            "sha": "bed19d80a0d6a7db6d53de4c660b164a103274a2",
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "state": "NOT_READY"
+          },
+          {
+            "call": 53,
+            "result": 54,
+            "callId": "transfer_5",
+            "tool": "palimpsest_work",
+            "sha": null,
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": null,
+            "violations": [],
+            "state": "RECORDED"
+          }
+        ],
+        "finalCheck": {
+          "ok": true,
+          "candidate": "382e384d0798dc3b3897168a62bd74310f8377ac",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "382e384d0798dc3b3897168a62bd74310f8377ac",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        },
+        "reviewTurns": [],
+        "validSupport": true,
+        "delegations": [],
+        "reviewUsage": {
+          "requests": 0,
+          "fresh": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0,
+          "total": 0
+        },
+        "releaseWrites": [],
+        "reviews": []
+      },
+      {
+        "arm": "F",
+        "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "head": "3ba2f8f3e6f76f3b3f06b848308e3faf85d47817",
+        "quality": 10,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": true,
+          "net": true,
+          "margin": true,
+          "aRelease": true,
+          "bRelease": true,
+          "lowEfficiency": true
+        },
+        "sheet": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "release": {
+          "departureKwh": [
+            126,
+            130
+          ],
+          "marginKwh": [
+            0,
+            0
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "GO"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+        },
+        "protected": true,
+        "filed": true,
+        "natural": true,
+        "conclusion": null,
+        "requests": 6,
+        "confirmed": 245158,
+        "unknown": 0,
+        "total": 245158,
+        "actors": {
+          "principal": {
+            "requests": 6,
+            "fresh": 243479,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1679,
+            "total": 245158
+          }
+        },
+        "elapsedMs": 13675,
+        "commits": [
+          {
+            "sha": "f43e2ac566f48be571c7bd12dd232c7ad967f360",
+            "paths": [
+              "HANDOVER.md",
+              "release.json",
+              "shift-plan.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                70,
+                70
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {}
+          },
+          {
+            "sha": "257901db91680f762b0e333724798fae0a4a332b",
+            "paths": [
+              "shift-plan.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                70
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {}
+          },
+          {
+            "sha": "3ba2f8f3e6f76f3b3f06b848308e3faf85d47817",
+            "paths": [
+              "HANDOVER.md",
+              "release.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                70
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {
+              "departureKwh": [
+                126,
+                130
+              ],
+              "marginKwh": [
+                0,
+                0
+              ],
+              "at90": {
+                "A": "GO",
+                "B": "GO"
+              },
+              "at85": {
+                "A": "HOLD",
+                "B": "HOLD"
+              },
+              "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+            }
+          }
+        ],
+        "responses": [
+          {
+            "call": 23,
+            "result": 24,
+            "callId": "filing_1",
+            "tool": "depot_release_check",
+            "sha": "f43e2ac566f48be571c7bd12dd232c7ad967f360",
+            "source": null,
+            "received": false,
+            "withinLimits": false,
+            "requested": null,
+            "departure": null,
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "state": null
+          }
+        ],
+        "finalCheck": {
+          "ok": true,
+          "candidate": "3ba2f8f3e6f76f3b3f06b848308e3faf85d47817",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "3ba2f8f3e6f76f3b3f06b848308e3faf85d47817",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        },
+        "reviewTurns": [],
+        "validSupport": true,
+        "delegations": [],
+        "reviewUsage": {
+          "requests": 0,
+          "fresh": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0,
+          "total": 0
+        },
+        "releaseWrites": [],
+        "reviews": []
+      }
+    ]
+  },
+  "live": {
+    "stop": null,
+    "rows": [
+      {
+        "arm": "P",
+        "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "head": "900856f6ad17038d2c7338d073c6336b4d21312a",
+        "quality": 6,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": false,
+          "net": false,
+          "margin": false,
+          "aRelease": true,
+          "bRelease": false,
+          "lowEfficiency": true
+        },
+        "sheet": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "release": {
+          "departureKwh": [
+            126,
+            121
+          ],
+          "marginKwh": [
+            0,
+            -9
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "HOLD"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+        },
+        "protected": true,
+        "filed": true,
+        "natural": true,
+        "conclusion": "DELIVER",
+        "requests": 34,
+        "confirmed": 1546268,
+        "unknown": 0,
+        "total": 1546268,
+        "actors": {
+          "principal": {
+            "requests": 31,
+            "fresh": 75411,
+            "cacheRead": 1287936,
+            "cacheWrite": 0,
+            "output": 38127,
+            "total": 1401474
+          },
+          "maintainer": {
+            "requests": 3,
+            "fresh": 49850,
+            "cacheRead": 93952,
+            "cacheWrite": 0,
+            "output": 992,
+            "total": 144794
+          }
+        },
+        "elapsedMs": 728479,
+        "commits": [
+          {
+            "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+            "paths": [
+              "HANDOVER.md",
+              "release.json",
+              "shift-plan.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                50
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {
+              "departureKwh": [
+                126,
+                121
+              ],
+              "marginKwh": [
+                0,
+                -9
+              ],
+              "at90": {
+                "A": "GO",
+                "B": "HOLD"
+              },
+              "at85": {
+                "A": "HOLD",
+                "B": "HOLD"
+              },
+              "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+            }
+          },
+          {
+            "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "paths": [
+              "HANDOVER.md",
+              "operations/revision-receipt.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                50
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {
+              "departureKwh": [
+                126,
+                121
+              ],
+              "marginKwh": [
+                0,
+                -9
+              ],
+              "at90": {
+                "A": "GO",
+                "B": "HOLD"
+              },
+              "at85": {
+                "A": "HOLD",
+                "B": "HOLD"
+              },
+              "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+            }
+          }
+        ],
+        "responses": [
+          {
+            "call": 91,
+            "result": 92,
+            "callId": "call_8158dea0c33c402ba828a154",
+            "tool": "depot_release_check",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "source": null,
+            "received": false,
+            "withinLimits": false,
+            "requested": null,
+            "departure": null,
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "state": null
+          },
+          {
+            "call": 93,
+            "result": 94,
+            "callId": "call_d7077e479fa9444799046b6d",
+            "tool": "depot_trial",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "source": "DESK-21",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "departure": [
+              126,
+              130
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 95,
+            "result": 96,
+            "callId": "call_271a42b0883147769328b245",
+            "tool": "depot_trial",
+            "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": "Current full candidate SHA required",
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 97,
+            "result": 98,
+            "callId": "call_fb1dbb77b42647d791cd0819",
+            "tool": "depot_release_check",
+            "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": "RESULT_DRIFT",
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 103,
+            "result": 104,
+            "callId": "call_90dc338c0a1d4ac8a43d744a",
+            "tool": "depot_contact",
+            "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": "Current full candidate SHA required",
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 109,
+            "result": 110,
+            "callId": "call_460275104e40409b84d5d529",
+            "tool": "depot_contact",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "source": "DUTY-2340",
+            "received": true,
+            "withinLimits": false,
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "state": null
+          },
+          {
+            "call": 209,
+            "result": 210,
+            "callId": "call_b3cbeb61e3a4497f86758a32",
+            "tool": "depot_release_check",
+            "sha": "98ce215",
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": "RESULT_DRIFT",
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 211,
+            "result": 212,
+            "callId": "call_11dce1fa7fae4889bac17cfb",
+            "tool": "depot_trial",
+            "sha": "98ce215",
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": "Current full candidate SHA required",
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 213,
+            "result": 214,
+            "callId": "call_67ef7070ec9a4726a3b14491",
+            "tool": "depot_contact",
+            "sha": "98ce215",
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": "Current full candidate SHA required",
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 227,
+            "result": 228,
+            "callId": "call_197fcddf317248c883d7a445",
+            "tool": "depot_release_check",
+            "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+            "source": null,
+            "received": false,
+            "withinLimits": true,
+            "requested": null,
+            "departure": null,
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 229,
+            "result": 230,
+            "callId": "call_b8e99030f9964b559a58f37d",
+            "tool": "depot_trial",
+            "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+            "source": "DESK-21",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 231,
+            "result": 232,
+            "callId": "call_b11f70cf3ae34655a75c0e69",
+            "tool": "depot_contact",
+            "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+            "source": "DUTY-2340",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 257,
+            "result": 258,
+            "callId": "call_725214127c58427bbaf7b065",
+            "tool": "depot_release_check",
+            "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "source": null,
+            "received": false,
+            "withinLimits": true,
+            "requested": null,
+            "departure": null,
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 259,
+            "result": 260,
+            "callId": "call_dd8ccb6fc2814fe7a691355a",
+            "tool": "depot_trial",
+            "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "source": "DESK-21",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 261,
+            "result": 262,
+            "callId": "call_76169beead4b4c0cbd836881",
+            "tool": "depot_contact",
+            "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "source": "DUTY-2340",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 277,
+            "result": 278,
+            "callId": "call_d372e9a723d74be292d55d7c",
+            "tool": "palimpsest_work",
+            "sha": null,
+            "source": null,
+            "received": false,
+            "withinLimits": null,
+            "requested": null,
+            "departure": null,
+            "reason": null,
+            "violations": [],
+            "state": "RECORDED"
+          }
+        ],
+        "finalCheck": {
+          "ok": true,
+          "candidate": "900856f6ad17038d2c7338d073c6336b4d21312a",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        },
+        "reviewTurns": [
+          {
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "reason": "completed",
+            "before": {
+              "requests": 1,
+              "fresh": 46033,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 365,
+              "total": 46398
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          },
+          {
+            "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+            "reason": "completed",
+            "before": {
+              "requests": 1,
+              "fresh": 2052,
+              "cacheRead": 45952,
+              "cacheWrite": 0,
+              "output": 364,
+              "total": 48368
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          },
+          {
+            "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "reason": "completed",
+            "before": {
+              "requests": 1,
+              "fresh": 1765,
+              "cacheRead": 48000,
+              "cacheWrite": 0,
+              "output": 263,
+              "total": 50028
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          }
+        ],
+        "validSupport": true,
+        "delegations": [],
+        "reviewUsage": {
+          "requests": 3,
+          "fresh": 49850,
+          "cacheRead": 93952,
+          "cacheWrite": 0,
+          "output": 992,
+          "total": 144794
+        },
+        "releaseWrites": [
+          {
+            "call": 183,
+            "result": 184,
+            "callId": "call_0b47baa39ddc428a92fb2425",
+            "at90": {
+              "A": "GO",
+              "B": "HOLD"
+            },
+            "departureKwh": [
+              126,
+              121
+            ]
+          }
+        ],
+        "reviews": [
+          {
+            "call": 109,
+            "result": 110,
+            "callId": "call_460275104e40409b84d5d529",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "cached": false,
+            "delivered": true,
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "principalHead": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "decisionAtContact": null
+          },
+          {
+            "call": 231,
+            "result": 232,
+            "callId": "call_b11f70cf3ae34655a75c0e69",
+            "sha": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+            "cached": false,
+            "delivered": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "principalHead": "98ce21507762ed3d446c4a82382dbf431ddd24bf",
+            "decisionAtContact": {
+              "A": "GO",
+              "B": "HOLD"
+            }
+          },
+          {
+            "call": 261,
+            "result": 262,
+            "callId": "call_76169beead4b4c0cbd836881",
+            "sha": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "cached": false,
+            "delivered": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "principalHead": "900856f6ad17038d2c7338d073c6336b4d21312a",
+            "decisionAtContact": {
+              "A": "GO",
+              "B": "HOLD"
+            }
+          }
+        ]
+      },
+      {
+        "arm": "F",
+        "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "head": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+        "quality": 6,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": false,
+          "net": false,
+          "margin": false,
+          "aRelease": true,
+          "bRelease": false,
+          "lowEfficiency": true
+        },
+        "sheet": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "release": {
+          "departureKwh": [
+            126,
+            121
+          ],
+          "marginKwh": [
+            0,
+            -9
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "HOLD"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+        },
+        "protected": true,
+        "filed": true,
+        "natural": true,
+        "conclusion": null,
+        "requests": 23,
+        "confirmed": 823305,
+        "unknown": 0,
+        "total": 823305,
+        "actors": {
+          "principal": {
+            "requests": 20,
+            "fresh": 48588,
+            "cacheRead": 601216,
+            "cacheWrite": 0,
+            "output": 26594,
+            "total": 676398
+          },
+          "maintainer": {
+            "requests": 3,
+            "fresh": 50665,
+            "cacheRead": 94464,
+            "cacheWrite": 0,
+            "output": 1778,
+            "total": 146907
+          }
+        },
+        "elapsedMs": 317156,
+        "commits": [
+          {
+            "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "paths": [
+              "shift-plan.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                50
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": null
+          },
+          {
+            "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "paths": [
+              "HANDOVER.md",
+              "release.json"
+            ],
+            "plan": {
+              "slotStart": [
+                "00:00",
+                "00:30",
+                "01:00",
+                "01:30"
+              ],
+              "bus": [
+                "A",
+                "A",
+                "B",
+                "B"
+              ],
+              "acKw": [
+                80,
+                40,
+                50,
+                50
+              ],
+              "loadShiftKw": 20,
+              "dispatchAt85": false
+            },
+            "release": {
+              "departureKwh": [
+                126,
+                121
+              ],
+              "marginKwh": [
+                0,
+                -9
+              ],
+              "at90": {
+                "A": "GO",
+                "B": "HOLD"
+              },
+              "at85": {
+                "A": "HOLD",
+                "B": "HOLD"
+              },
+              "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+            }
+          }
+        ],
+        "responses": [
+          {
+            "call": 77,
+            "result": 78,
+            "callId": "call_ede64f6fe2e3400097143338",
+            "tool": "depot_release_check",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "source": null,
+            "received": false,
+            "withinLimits": false,
+            "requested": null,
+            "departure": null,
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "state": null
+          },
+          {
+            "call": 79,
+            "result": 80,
+            "callId": "call_2781137516ac4883a47b4cda",
+            "tool": "depot_trial",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "source": "DESK-21",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "departure": [
+              126,
+              130
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 81,
+            "result": 82,
+            "callId": "call_2bdc967360224bd3a2e32d14",
+            "tool": "depot_contact",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "source": "DUTY-2340",
+            "received": true,
+            "withinLimits": false,
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "state": null
+          },
+          {
+            "call": 145,
+            "result": 146,
+            "callId": "call_e4369fce588d46b899d08f70",
+            "tool": "depot_release_check",
+            "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "source": null,
+            "received": false,
+            "withinLimits": true,
+            "requested": null,
+            "departure": null,
+            "reason": "UNCOMMITTED_WORK",
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 147,
+            "result": 148,
+            "callId": "call_1e9ef40463714fbead3cc705",
+            "tool": "depot_trial",
+            "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "source": "DESK-21",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 149,
+            "result": 150,
+            "callId": "call_029d6594aa8440ce97e32a8e",
+            "tool": "depot_contact",
+            "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "source": "DUTY-2340",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 163,
+            "result": 164,
+            "callId": "call_ee279058fb3d457aa11f1f8b",
+            "tool": "depot_release_check",
+            "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "source": null,
+            "received": false,
+            "withinLimits": true,
+            "requested": null,
+            "departure": null,
+            "reason": null,
+            "violations": [],
+            "state": null
+          },
+          {
+            "call": 165,
+            "result": 166,
+            "callId": "call_d129c320f5d54424a605ce71",
+            "tool": "depot_contact",
+            "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "source": "DUTY-2340",
+            "received": true,
+            "withinLimits": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "reason": null,
+            "violations": [],
+            "state": null
+          }
+        ],
+        "finalCheck": {
+          "ok": true,
+          "candidate": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        },
+        "reviewTurns": [
+          {
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "reason": "completed",
+            "before": {
+              "requests": 1,
+              "fresh": 46038,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 886,
+              "total": 46924
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          },
+          {
+            "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "reason": "completed",
+            "before": {
+              "requests": 1,
+              "fresh": 2576,
+              "cacheRead": 45952,
+              "cacheWrite": 0,
+              "output": 576,
+              "total": 49104
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          },
+          {
+            "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "reason": "completed",
+            "before": {
+              "requests": 1,
+              "fresh": 2051,
+              "cacheRead": 48512,
+              "cacheWrite": 0,
+              "output": 316,
+              "total": 50879
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          }
+        ],
+        "validSupport": true,
+        "delegations": [],
+        "reviewUsage": {
+          "requests": 3,
+          "fresh": 50665,
+          "cacheRead": 94464,
+          "cacheWrite": 0,
+          "output": 1778,
+          "total": 146907
+        },
+        "releaseWrites": [
+          {
+            "call": 131,
+            "result": 132,
+            "callId": "call_546d5eb03c2a427ca42b8f1e",
+            "at90": {
+              "A": "GO",
+              "B": "HOLD"
+            },
+            "departureKwh": [
+              126,
+              121
+            ]
+          }
+        ],
+        "reviews": [
+          {
+            "call": 81,
+            "result": 82,
+            "callId": "call_2bdc967360224bd3a2e32d14",
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "cached": false,
+            "delivered": true,
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "principalHead": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "decisionAtContact": null
+          },
+          {
+            "call": 149,
+            "result": 150,
+            "callId": "call_029d6594aa8440ce97e32a8e",
+            "sha": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "cached": false,
+            "delivered": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "principalHead": "137a5347f5c709a2b671e9581c73923c4369ae4d",
+            "decisionAtContact": null
+          },
+          {
+            "call": 165,
+            "result": 166,
+            "callId": "call_d129c320f5d54424a605ce71",
+            "sha": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "cached": false,
+            "delivered": true,
+            "requested": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departure": [
+              126,
+              121
+            ],
+            "principalHead": "70ade1b83e2b01ed0cd01dea9dd7f1644f9e459b",
+            "decisionAtContact": {
+              "A": "GO",
+              "B": "HOLD"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "originalR4": {
+    "P": {
+      "arm": "P",
+      "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "head": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "quality": 2,
+      "checks": {
+        "committed": false,
+        "handoverUpdated": false,
+        "preserved": true,
+        "scope": true,
+        "sheet": false,
+        "net": false,
+        "margin": false,
+        "aRelease": false,
+        "bRelease": false,
+        "lowEfficiency": false
+      },
+      "sheet": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "release": {},
+      "protected": true,
+      "filed": null,
+      "natural": false,
+      "conclusion": null,
+      "requests": 7,
+      "confirmed": 97161,
+      "unknown": 1,
+      "total": null,
+      "actors": {
+        "principal": {
+          "requests": 6,
+          "fresh": 24413,
+          "cacheRead": 68992,
+          "cacheWrite": 0,
+          "output": 3756,
+          "total": 97161
+        }
+      },
+      "elapsedMs": 421165,
+      "commits": [],
+      "responses": [
+        {
+          "call": 75,
+          "result": 76,
+          "callId": "call_e71c556a7d384d41811feb78",
+          "tool": "depot_trial",
+          "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            130
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        }
+      ],
+      "finalCheck": null,
+      "reviewTurns": [],
+      "validSupport": false,
+      "delegations": [],
+      "reviewUsage": {
+        "requests": 0,
+        "fresh": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 0,
+        "total": 0
+      },
+      "releaseWrites": [],
+      "reviews": []
+    },
+    "F": {
+      "arm": "F",
+      "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "head": "2c5d25cc31ea1414bc233b993a267196b875b09c",
+      "quality": 10,
+      "checks": {
+        "committed": true,
+        "handoverUpdated": true,
+        "preserved": true,
+        "scope": true,
+        "sheet": true,
+        "net": true,
+        "margin": true,
+        "aRelease": true,
+        "bRelease": true,
+        "lowEfficiency": true
+      },
+      "sheet": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "release": {
+        "departureKwh": [
+          126,
+          130
+        ],
+        "marginKwh": [
+          0,
+          0
+        ],
+        "at90": {
+          "A": "GO",
+          "B": "GO"
+        },
+        "at85": {
+          "A": "HOLD",
+          "B": "HOLD"
+        },
+        "evidenceSha": "193c52cca9a57cdc51db114084323cea2107968c"
+      },
+      "protected": true,
+      "filed": null,
+      "natural": true,
+      "conclusion": null,
+      "requests": 33,
+      "confirmed": 1258159,
+      "unknown": 0,
+      "total": 1258159,
+      "actors": {
+        "principal": {
+          "requests": 26,
+          "fresh": 61261,
+          "cacheRead": 806144,
+          "cacheWrite": 0,
+          "output": 40369,
+          "total": 907774
+        },
+        "maintainer": {
+          "requests": 7,
+          "fresh": 52936,
+          "cacheRead": 294784,
+          "cacheWrite": 0,
+          "output": 2665,
+          "total": 350385
+        }
+      },
+      "elapsedMs": 491767,
+      "commits": [
+        {
+          "sha": "193c52cca9a57cdc51db114084323cea2107968c",
+          "paths": [
+            "shift-plan.json"
+          ],
+          "plan": {
+            "slotStart": [
+              "00:00",
+              "00:30",
+              "01:00",
+              "01:30"
+            ],
+            "bus": [
+              "A",
+              "A",
+              "B",
+              "B"
+            ],
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "loadShiftKw": 20,
+            "dispatchAt85": false
+          },
+          "release": null
+        },
+        {
+          "sha": "2c5d25cc31ea1414bc233b993a267196b875b09c",
+          "paths": [
+            "HANDOVER.md",
+            "operations/revision-receipt.json",
+            "release.json"
+          ],
+          "plan": {
+            "slotStart": [
+              "00:00",
+              "00:30",
+              "01:00",
+              "01:30"
+            ],
+            "bus": [
+              "A",
+              "A",
+              "B",
+              "B"
+            ],
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "loadShiftKw": 20,
+            "dispatchAt85": false
+          },
+          "release": {
+            "departureKwh": [
+              126,
+              130
+            ],
+            "marginKwh": [
+              0,
+              0
+            ],
+            "at90": {
+              "A": "GO",
+              "B": "GO"
+            },
+            "at85": {
+              "A": "HOLD",
+              "B": "HOLD"
+            },
+            "evidenceSha": "193c52cca9a57cdc51db114084323cea2107968c"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "call": 95,
+          "result": 96,
+          "callId": "call_97e4f6595ff344f096126028",
+          "tool": "depot_trial",
+          "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            130
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 97,
+          "result": 98,
+          "callId": "call_ebd630ffc1e943e6aa3e667a",
+          "tool": "depot_trial",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "source": null,
+          "received": false,
+          "withinLimits": null,
+          "requested": null,
+          "departure": null,
+          "reason": "Current full candidate SHA required",
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 99,
+          "result": 100,
+          "callId": "call_6b99a90ad7a746c58d296467",
+          "tool": "depot_contact",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "source": null,
+          "received": false,
+          "withinLimits": null,
+          "requested": null,
+          "departure": null,
+          "reason": "Current full candidate SHA required",
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 145,
+          "result": 146,
+          "callId": "call_a2ae5393f95e449383e2bd12",
+          "tool": "depot_contact",
+          "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 181,
+          "result": 182,
+          "callId": "call_6ce52a6399fa420688cce3b7",
+          "tool": "depot_contact",
+          "sha": "193c52cca9a57cdc51db114084323cea2107968c",
+          "source": "DUTY-2340",
+          "received": true,
+          "withinLimits": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            130
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        },
+        {
+          "call": 183,
+          "result": 184,
+          "callId": "call_6446877f485f4182ad878ada",
+          "tool": "depot_trial",
+          "sha": "193c52cca9a57cdc51db114084323cea2107968c",
+          "source": "DESK-21",
+          "received": true,
+          "withinLimits": false,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "reason": null,
+          "violations": [],
+          "state": null
+        }
+      ],
+      "finalCheck": null,
+      "reviewTurns": [
+        {
+          "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "reason": "completed",
+          "before": {
+            "requests": 4,
+            "fresh": 50616,
+            "cacheRead": 140800,
+            "cacheWrite": 0,
+            "output": 2027,
+            "total": 193443
+          },
+          "after": {
+            "requests": 0,
+            "fresh": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0,
+            "total": 0
+          }
+        },
+        {
+          "sha": "193c52cca9a57cdc51db114084323cea2107968c",
+          "reason": "completed",
+          "before": {
+            "requests": 3,
+            "fresh": 2320,
+            "cacheRead": 153984,
+            "cacheWrite": 0,
+            "output": 638,
+            "total": 156942
+          },
+          "after": {
+            "requests": 0,
+            "fresh": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 0,
+            "total": 0
+          }
+        }
+      ],
+      "validSupport": true,
+      "delegations": [],
+      "reviewUsage": {
+        "requests": 7,
+        "fresh": 52936,
+        "cacheRead": 294784,
+        "cacheWrite": 0,
+        "output": 2665,
+        "total": 350385
+      },
+      "releaseWrites": [
+        {
+          "call": 195,
+          "result": 196,
+          "callId": "call_4e31e3cd2b9f4388b29acb88",
+          "at90": {
+            "A": "GO",
+            "B": "GO"
+          },
+          "departureKwh": [
+            126,
+            130
+          ]
+        }
+      ],
+      "reviews": [
+        {
+          "call": 145,
+          "result": 146,
+          "callId": "call_a2ae5393f95e449383e2bd12",
+          "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "cached": false,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "departure": [
+            126,
+            121
+          ],
+          "principalHead": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "decisionAtContact": null
+        },
+        {
+          "call": 181,
+          "result": 182,
+          "callId": "call_6ce52a6399fa420688cce3b7",
+          "sha": "193c52cca9a57cdc51db114084323cea2107968c",
+          "cached": false,
+          "delivered": true,
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departure": [
+            126,
+            130
+          ],
+          "principalHead": "193c52cca9a57cdc51db114084323cea2107968c",
+          "decisionAtContact": null
+        }
+      ]
+    }
+  }
+}

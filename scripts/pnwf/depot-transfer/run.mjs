@@ -27,8 +27,9 @@ import {inspectRelease,measuredBench,measurement} from "./release-power.mjs";
 import {releaseMock} from "./release-mock.mjs";
 
 const [action,path,work]=process.argv.slice(2),root=resolve(path),here=fileURLToPath(new URL("./",import.meta.url));
-const powerGate=action.startsWith("r7-"),mode=powerGate?action.slice(3):action;
-const cells=powerGate?[["controller","P"],["controller","F"]]:[["envelope","P"],["envelope","F"],["controller","F"],["controller","P"]];
+const r4=action.startsWith("r4-"),powerGate=r4||action.startsWith("r7-"),mode=powerGate?action.slice(3):action;
+const ticket=r4?"envelope":"controller";
+const cells=powerGate?[[ticket,"P"],[ticket,"F"]]:[["envelope","P"],["envelope","F"],["controller","F"],["controller","P"]];
 const {image,window,route,model}=previousContract;
 function seal(){
   const files={};
@@ -40,6 +41,7 @@ function seal(){
   if(powerGate)for(const p of ["release-power.mjs","release-mock.mjs","release-plugin.mjs","release-power.test.mjs","release-protocol.md"]){
     files[p]=digest(readFileSync(join(here,p)));
   }
+  if(r4)for(const p of ["r4-release.test.mjs","r4-protocol.md"])files[p]=digest(readFileSync(join(here,p)));
   const scratch=mkdtempSync(join(tmpdir(),"depot-basis-"));
   try{
     const basis=Object.fromEntries(tickets.map(ticket=>[ticket,prepare(ticket,join(scratch,ticket))]));
@@ -50,7 +52,7 @@ function seal(){
       git(w,"add","shift-plan.json");git(w,"commit","-qm","Qualification vector");
       assert.deepEqual(bench(ticket,w,git(w,"rev-parse","HEAD").trim()).departureKwh,[126,ticket==="controller"?124:130]);
     }
-    return {productBase:powerGate?"705d1be2":"889ba56bc4bb656a0e9de81ecd56817af813ff1c",goal,basis,originalSha,cells,
+    return {productBase:r4?"a819db596e2297f7e7b0f9bc946cb1b2cc8eb477":powerGate?"705d1be2":"889ba56bc4bb656a0e9de81ecd56817af813ff1c",goal,basis,originalSha,cells,
       image,model,route,window,obligations:obligations.digest,history:digest(readFileSync(history)),files};
   }finally{rmSync(scratch,{recursive:true,force:true});}
 }
@@ -179,6 +181,7 @@ async function run(mode,frozen,continuation){
       for(const r of observation.reviewPhases.reviews)assert(r.reason==="completed"&&r.exitCode===0&&r.after.requests===0);
       if(arm==="P")assert.equal(row.conclusion?.intent,"DELIVER");
       if(powerGate)assert(row.release.filed&&checks.some(c=>c.result.refusal?.reason==="REQUEST_POWER_EXCEEDS_LIMIT"));
+      if(r4)assert.equal(row.release.check.evidenceMode,"ORIGINAL_RECEIPT_REUSED");
     }
     console.log("Ended",mode,id,observation.observed.score,observation.requests,observation.unknown);
     if(observation.unknown){batch.stop={id,reason:"UNKNOWN_USAGE"};break;}
@@ -186,6 +189,13 @@ async function run(mode,frozen,continuation){
   batch.qualified=!paid&&batch.rows.length===cells.length&&!batch.stop;save();
 }
 function verifySeal(current,frozen){
+  if(action==="r7-verify"&&frozen.files["run.mjs"]==="a74552a7cda20651826ac2f6ce6cc666cd86977d2e9402f1b359534419d67c8e"){
+    const files={...current.files};
+    for(const p of ["run.mjs","release-power.mjs"]){
+      files[p]=digest(execFileSync("git",["show","a819db59:scripts/pnwf/depot-transfer/"+p],{cwd:repo}));
+    }
+    assert.deepEqual({...current,files},frozen);return;
+  }
   if(powerGate||!["verify","verify-resume","resume"].includes(mode)){assert.deepEqual(current,frozen);return;}
   // Replay the pre-gate releases against the version that froze their runner and analyzer.
   const refs={"12412261d4911e1e85875a424ca733414de06a5bbb762b8f5578521e57ae5c1b":"1577b2c2",
