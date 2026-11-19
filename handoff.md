@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 任务选路试点、夜班复核和 R7 签发契约已随 [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) 合入主线 `f1c1424a`。送审的 16 项检查全部通过。历史 UNKNOWN 和两组 R7 的 6/10 原判保留，本轮 R7 Palimpsest 与强原生 DSH 均为 10/10。发布和复算新增付费请求 0。[两轮逐组对比](research-evidence/pnwf-task-selection/2026-11-20/r7-release-power/comparison.json)
+
 - R7 签发按各时段的请求功率判定，明确给出限幅后的实际 kW 和超限幅度。两份旧 6/10 原稿均被拒。新 P/F 各自遇到 01:00 超限 20 kW 的拒绝，提交 B 车 50/70 kW，实测 B 缺 6 kWh，签发 A GO、B HOLD，均为 10/10 并自然退出。P 记录 DELIVER。60 笔全部结算。[拒绝、交付与复核成本](docs/engineering/DEPOT-R7-RELEASE-POWER.md)
 
 - 夜班真实矩阵已运行四格。原 R4-P 在第 7 笔超时，保留 UNKNOWN、2/10。当前账号工具探针 339 tokens 对账通过后，余下三格自然退出、134 笔全部结算。R4 强原生 10/10。R7 两组都主动取得 B 车少 6 kWh 的反例，随后提交了依赖限幅的 70/70 kW 设定，因超过请求上限均为 6/10。P 记录 DELIVER。[轨迹、独立评分和用量](docs/engineering/DEPOT-TRANSFERABILITY.md)
@@ -109,6 +111,14 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-20，最近同步）
+
+### 任务选路试点发布
+
+PR #281 从 `6d8f90c10ef3511c444cfeca36ed5d61287de16a` 线性合入 12 个提交。送审 HEAD 为 `cc01483b1dd31e25fcbcb7862a405ceeb96eeeae`，发布 HEAD 为 `f1c1424aab2f56fe53779678410a091e8e793309`。逐提交核对了文件树、作者身份和时间、提交说明及线性父链。两端最终树均为 `c1556ca2f98f99f0371cedbe5c4db9e9dabca3d5`，覆盖脚本、Mock 与真实轨迹、Git bundles、账本、报告和实验 handoff。远端工作分支已在合并后自动删除。[合并记录](https://github.com/orangeofcarl0-sys/palimpsest/pull/281)
+
+早期复算脚本按送审时的 SHA 读取封存源码。完整克隆若未获取证据标签，运行 `git fetch origin tag evidence/task-selection-pilot-cc01483b`，即可解析原始 12 个提交。下列实验记录继续使用运行当时的 SHA。隔离项目的候选 SHA 可从各自归档的 Git bundle 读取。[证据标签](https://github.com/orangeofcarl0-sys/palimpsest/tree/evidence/task-selection-pilot-cc01483b) · [离线复算命令](docs/engineering/DEPOT-R7-RELEASE-POWER.md#零付费复算)
+
+### 试点运行时的分支与基线
 
 R7 功率签发修复从本地 `codex/task-selection-pilot` 的 `705d1be2` 接续。两席仍使用完整实验基线 `d221aafd3e597dde63f951d65c1005ec2a7c90fa`。[本轮封印](research-evidence/pnwf-task-selection/2026-11-20/r7-release-power/frozen.json)
 
@@ -748,6 +758,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 ```markdown
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-20 | 任务选路试点与 R7 签发契约发布到主线 `f1c1424a` | [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) | 16/16 项检查通过，12 对提交文件树一致，历史 UNKNOWN 与 R7 两份 6/10 保留，本轮两组均 10/10 |
 | 2026-11-07 | PR #227 merged: PNWF-CQ + basis admission | 1766a79 | 容器 cohort INVALID/over budget |
 ```
 
