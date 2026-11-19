@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import {execFileSync} from "node:child_process";
 import {randomUUID} from "node:crypto";
 import {copyFileSync,existsSync,mkdirSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
@@ -69,26 +70,26 @@ async function verifyCell(dir,mode){
     }finally{ledger.close();}
   }finally{rmSync(tmp,{recursive:true,force:true});}
 }
-async function verifyMode(mode,frozen){
-  const batch=readJson(join(root,mode,"matrix.json"));assert.deepEqual(batch.seal,frozen);
-  for(const row of batch.rows)await verifyCell(join(root,mode,row.id),mode);
+async function verifyMode(mode,frozen,archive=root){
+  const batch=readJson(join(archive,mode,"matrix.json"));assert.deepEqual(batch.seal,frozen);
+  for(const row of batch.rows)await verifyCell(join(archive,mode,row.id),mode);
   return batch;
 }
-async function run(mode,frozen){
+async function run(mode,frozen,continuation){
   const paid=mode==="live";
-  if(paid){
+  if(paid&&!continuation){
     const mock=await verifyMode("mock",frozen);
     assert(mock.qualified&&mock.rows.length===4);
   }
-  const scratch=resolve(work),out=join(root,mode);
+  const scratch=resolve(work),out=join(continuation?.archive??root,mode);
   mkdirSync(out);mkdirSync(scratch);
-  const batch={mode,seal:frozen,qualified:false,rows:[]};const save=()=>writeJson(join(out,"matrix.json"),batch);save();
+  const batch={mode,seal:frozen,qualified:false,rows:[],...(continuation?{admission:continuation.admission}:{})};const save=()=>writeJson(join(out,"matrix.json"),batch);save();
   const repository=runtime(scratch),runtimeDir=join(repository,"runtime");
   copyFileSync(join(runtimeDir,"product-entry.mjs"),join(runtimeDir,"base-entry.mjs"));
   copyFileSync(join(here,"../depot-shift-log/product-entry.mjs"),join(runtimeDir,"product-entry.mjs"));
   writeJson(join(runtimeDir,"materials.json"),{rules:obligations.rules,filing:" File scope and release fields: operations/release-format.md."});
-  const provider=paid?requireOpenCodeGoProbe(readJson(join(repo,"research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json"))):undefined;
-  for(const [ticket,arm] of cells){
+  const provider=paid?(continuation?.profileId??requireOpenCodeGoProbe(readJson(join(repo,"research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json")))):undefined;
+  for(const [ticket,arm] of continuation?.remaining??cells){
     const id=ticket+"-"+arm,run=join(scratch,id),stage=join(run,"stages/REVIEW"),state=join(stage,"state"),world=join(stage,"world");
     mkdirSync(state,{recursive:true});
     const basis=prepare(ticket,world);assert.equal(basis,frozen.basis[ticket]);
@@ -150,7 +151,47 @@ async function run(mode,frozen){
 if(mode==="freeze"){
   mkdirSync(root);writeJson(join(root,"frozen.json"),seal());
 }else{
-  const frozen=readJson(join(root,"frozen.json"));assert.deepEqual(seal(),frozen);
-  if(mode==="verify"){for(const m of ["mock","live"])if(existsSync(join(root,m)))await verifyMode(m,frozen);}
+  const frozen=readJson(join(root,"frozen.json")),current=seal();
+  const originalRunner="12412261d4911e1e85875a424ca733414de06a5bbb762b8f5578521e57ae5c1b";
+  if(["resume","verify-resume","verify"].includes(mode)&&frozen.files["run.mjs"]===originalRunner){
+    // The November 19 archive predates continuation admission. All other frozen inputs must match.
+    const source=execFileSync("git",["show","1577b2c25b9ff8529ac39767e281b3eb304e758c:scripts/pnwf/depot-transfer/run.mjs"],{cwd:repo});
+    assert.equal(digest(source),originalRunner);
+    assert.deepEqual({...current,files:{...current.files,"run.mjs":originalRunner}},frozen);
+  }else assert.deepEqual(current,frozen);
+  if(mode==="resume"||mode==="verify-resume"){
+    const archive=resolve(mode==="resume"?process.argv[5]:work);
+    const mock=await verifyMode("mock",frozen),prior=await verifyMode("live",frozen);
+    assert(mock.qualified&&mock.rows.length===cells.length);
+    assert.deepEqual(prior.rows.map(r=>r.id),["envelope-P"]);
+    assert.deepEqual(prior.stop,{id:"envelope-P",reason:"UNKNOWN_USAGE"});
+    const oldLedger=readJson(join(root,"live/envelope-P/out/REVIEW/request-accounting.json"));
+    const unknown=oldLedger.requests.filter(r=>r.state==="UNKNOWN");
+    assert.equal(unknown.length,1);
+    const probePath=join(archive,"probe/probe.json"),probe=readJson(probePath);
+    const profileId=requireOpenCodeGoProbe(probe);
+    assert.equal(probe.tool.call.name,"record_probe");
+    assert.deepEqual(probe.tool.call.input,{value:7});
+    assert.deepEqual(probe.tool.result,{type:"tool_result",tool_use_id:probe.tool.call.id,content:'{"result":8}'});
+    const probeLedger=new ExecutionBudget(join(archive,"probe/requests.sqlite"));
+    try{assert.deepEqual(JSON.parse(JSON.stringify(probeLedger.snapshot())),probe.accounting);}finally{probeLedger.close();}
+    const admission={previousMatrix:digest(readFileSync(join(root,"live/matrix.json"))),priorUnknown:unknown[0].id,
+      probeDigest:digest(readFileSync(probePath)),probeRequestId:probe.requestId};
+    const remaining=cells.slice(prior.rows.length);
+    if(mode==="resume"){
+      assert(!existsSync(join(archive,"live"))&&!existsSync(join(archive,"frozen.json")));
+      writeJson(join(archive,"frozen.json"),current);
+      await run("live",current,{archive,remaining,profileId,admission});
+    }else{
+      assert.deepEqual(readJson(join(archive,"frozen.json")),current);
+      const batch=await verifyMode("live",current,archive);
+      assert.deepEqual(batch.admission,admission);
+      assert.deepEqual(batch.rows.map(r=>r.id),remaining.slice(0,batch.rows.length).map(pair=>pair.join("-")));
+      const stopped=batch.rows.find(r=>r.unknown);
+      if(stopped){
+        assert.equal(stopped,batch.rows.at(-1));assert.deepEqual(batch.stop,{id:stopped.id,reason:"UNKNOWN_USAGE"});
+      }else assert.equal(batch.rows.length,remaining.length);
+    }
+  }else if(mode==="verify"){for(const m of ["mock","live"])if(existsSync(join(root,m)))await verifyMode(m,frozen);}
   else{assert(["mock","live"].includes(mode)&&work);await run(mode,frozen);}
 }
