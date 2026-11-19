@@ -1,0 +1,82 @@
+{
+  "asOf": "2025-07-02",
+  "queries": [
+    "LAX Metro Transit Center opened June 6 2025 5 p.m. June 22 service Metro shuttle",
+    "site:lawa.org July fourth 2025 LAX Metro Transit Center free shuttle automated people mover July 2",
+    "LADOT Weekly Update June 5 2025 LAX Metro Transit Center 100 days September Metro"
+  ],
+  "sources": [
+    {
+      "id": "city",
+      "issuer": "LADOT",
+      "title": "Weekly Update: June 05, 2025",
+      "published": "2025-06-05",
+      "url": "https://ladot.lacity.gov/dotnews/weekly-update-june-05-2025",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": "metro",
+      "issuer": "LA Metro",
+      "title": "Now Boarding: LAX/Metro Transit Center Station Officially Opens",
+      "published": "2025-06-06",
+      "url": "https://www.metro.net/about/media-relations/now-boarding-metros-lax-metro-transit-center-station-officially-opens-connecting-communities-bringing-faster-easier-travel-for-angelenos-visitors/",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": "service",
+      "issuer": "LA Metro / The Source",
+      "title": "Metro bus service changes beginning Sunday, June 22",
+      "published": "2025-06-13",
+      "url": "https://thesource.metro.net/metro-bus-service-changes-to-reduce-wait-times-and-improve-transit-connections-begin-sunday-june-22/",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": "airport",
+      "issuer": "Los Angeles World Airports",
+      "title": "Break Free From Travel Stress at LAX: July Fourth Journey",
+      "published": "2025-07-02",
+      "url": "https://www.lawa.org/news-releases/2025/break-free-travel-stress-lax-enhanced-technology-and-pro-tips-smooth-july-fourth",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": "later",
+      "issuer": "LA Metro / The Source",
+      "title": "Rider stories from the first 100 days at LAX/Metro Transit Center Station",
+      "published": "2025-09-12",
+      "url": "https://thesource.metro.net/rider-stories-from-the-first-100-days-at-lax-metro-transit-center-station/",
+      "accessed": "2026-11-19"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "换乘站于当地 6 月 6 日 17:00 向公众开放。",
+      "sources": [
+        "service"
+      ]
+    },
+    {
+      "claim": "当晚可经 C/K 线到站，航站楼段乘机场巴士，截至截稿日机场确认接驳免费。",
+      "sources": [
+        "metro",
+        "airport"
+      ]
+    },
+    {
+      "claim": "当时自动捷运仍属计划中的连接。",
+      "sources": [
+        "metro",
+        "airport"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "id": "city",
+      "reason": "转述 Metro 预告，不用作独立的开通实证。"
+    },
+    {
+      "id": "later",
+      "reason": "9 月回顾超出当时证据截止日。"
+    }
+  ]
+}
