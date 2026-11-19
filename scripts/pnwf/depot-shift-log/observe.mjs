@@ -60,6 +60,7 @@ for(const arm of matrix.arms){
     usedContacts.add(call.callId);
     const tested=journal.find(r=>r.n===e.n&&r.kind==="PEER_TRIAL");
     const delivered=!!ret&&call.reply.includes(ret.receipt.captureDigest);
+    if(matrix.seal.delivery&&delivered)assert.deepEqual(JSON.parse(call.reply).receipt,ret.receipt);
     return {index:e.n,at:e.at,sha:e.sha,question:e.question,callId:call.callId,callSeq:call.seq,resultSeq:call.resultSeq,
       before:e.principal,measuredAt:tested?.at??null,hostReturnAt:ret?.at??null,onHostReturn:ret?.principal??null,
       delivered,reply:call.reply,receipt:delivered?ret.receipt:null};
@@ -76,6 +77,10 @@ for(const arm of matrix.arms){
   const firstReviewerEvidence=reviewer?.calls.find(c=>c.reply.includes(arm.priorGrade.observed.run)&&
     (c.tool==="depot_shift_log"||c.tool==="depot_trial"));
   result.arms[arm.arm]={head:arm.head,clean:arm.status==="",grade:arm.grade,publicBasis:arm.publicTrial,privateBasis:arm.priorGrade.observed,
+    ...(matrix.seal.delivery?{delivery:journal.filter(e=>e.kind==="CONTACT").map(e=>({
+      n:e.n,sha:e.sha,cacheHit:e.cached,launched:journal.some(s=>s.kind==="START_REVIEW"&&s.n===e.n),
+      measuredAt:journal.find(s=>s.kind==="PEER_TRIAL"&&s.receipt.sha===e.sha)?.at??null,
+      delivered:contactFacts.find(c=>c.index===e.n)?.delivered??false}))}:{}),
     natural:arm.execution.natural,conclusion:arm.journal?.intent??null,elapsedMs:t.elapsedMs,
     requests:ledger.requests.length,confirmed:ledger.confirmed,unknown:ledger.unresolvedRequests,total:ledger.unresolvedRequests?null:ledger.confirmed,
     actors,captureAudit:captureAudit(dir,arm),contacts:contactFacts,attempts:contacts.map(c=>({callId:c.callId,seq:c.seq,resultSeq:c.resultSeq,
