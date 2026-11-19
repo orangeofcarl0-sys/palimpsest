@@ -11,7 +11,7 @@ export function containerRepositoryPath(repository) {
   const path = resolve(repository).replaceAll("\\", "/");
   return /^[A-Za-z]:/u.test(path) ? "/" + path[0].toLowerCase() + path.slice(2) : "/product";
 }
-export function createPrincipal({ repository, stage, home, image, preflight, layout = "recorded", acceptance }) {
+export function createPrincipal({ repository, stage, home, image, preflight, layout = "recorded", acceptance, records }) {
   const imageId = docker(["image", "inspect", image, "--format", "{{.Id}}"]);
   const name = `pnwf-qualified-${randomUUID()}`;
   const harness = `${name}-harness`;
@@ -23,6 +23,10 @@ export function createPrincipal({ repository, stage, home, image, preflight, lay
     { source: resolve(stage), target: "/run/stage", readOnly: false },
     { source: resolve(home), target: "/home/principal/.dsh", readOnly: false },
     { source: resolve(preflight), target: "/qualification/world_preflight.mjs", readOnly: true },
+    ...(records ? [
+      { source: resolve(records), target: "/run/dispatch-records", readOnly: true },
+      { source: resolve(records, "P.tsv"), target: "/run/stage/world/handover/evidence/terminal.tsv", readOnly: true },
+    ] : []),
     ...(acceptance === undefined ? [] : [{ source: resolve(acceptance), target: "/run/stage/world/acceptance.json", readOnly: true }]),
   ];
   if (layout === "recorded" && /^[A-Za-z]:/u.test(resolve(repository))) mounts.push({ source: resolve(repository, "node_modules"), target: `/mnt/host${repoPath}/node_modules`, readOnly: true });

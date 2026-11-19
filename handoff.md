@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 夜班隔离复核完成。上一班维护者在独立副本工作，只能向 Principal 返回绑定候选 SHA 的宿主实测回执。Mock 两组通过，真实自主组没有联系维护者，两位 Principal 均自行修订、记录 `DELIVER` 并自然退出。两个真实交付各通过 P/S 2/2；上一轮两个 0/2 原判保留。[轨迹对比与复算](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md) · [真实证据](research-evidence/pnwf-software/2026-11-19/night-isolated/live-summary.json)
+
 - 夜班跨班复核已完成。真实自主组从 `4f80c3bd` 主动联系上一班回放维护者；Principal 先发现 P/S 档案差异，原维护者在临时副本实测 S 仍误报，随后直接修改共享工作区，Principal 复核并补交。单人组独立查档。两组自然退出，都修正了底层倒退计数，也都用 S 覆盖 P 并反转了 `--require-anomaly` 语义，冻结验收均为 0/2。[报告](docs/engineering/FLEET-NIGHT-REPLAY-REVIEW.md) · [两个候选与轨迹](research-evidence/pnwf-software/2026-11-19/night-review/live-summary.json)
 
 - Fleet 夜班已接入普通 DSH 的档案查询和按 SHA 试排。四格 Mock 后完成重绘/抑制 × 开放协作/单 Principal 的真实配对。四条均取得可行试排、记录 `DELIVER`、自然退出。两个开放协作的 Principal 均独立完成，真实轨迹中没有同伴反例采纳。四份原回放均成功；翻转最后一个终端事件后，重绘单人组仍误报倒退。[报告与复算](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md)
@@ -89,7 +91,7 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 | 项 | 值 |
 |---|---|
 | 仓库 | `F:/Codex_Work_Space/Palimpsest/palimpsest-sr1` |
-| 当前实验 | 本地工作分支 `codex/grpc-autonomous-continuity` 起点为 `88621e34dbb707766d1f16c565d9631c314dc94e`。实验内的 Fleet 接受版本独立于本仓库的主线 Git 状态。 |
+| 当前实验 | 本地工作分支 `codex/fleet-rollout-synthesis`。隔离复核从仓库提交 `1a8939c6` 接续，两组实验工作区另从待复核候选 `4f80c3bd` 启动。 |
 | `origin/main` | DSH 侧栏检查器的主线发布点为 `a77513024a0c847a1a7bf5a76aa4a5a38648e827`。后续包括交接文档提交，当前 tip 用 `git fetch origin` 和 `git rev-parse origin/main` 核对 |
 | [PR #275](https://github.com/orangeofcarl0-sys/palimpsest/pull/275) | 从 `4e291944` 送审的 7 个提交经 rebase 合入主线。原生检查器 `e7c6f68a` 对应 `abba2519`，交互与样式的送审 HEAD `311f101e67076f6ed68541216421c1360e6dde19` 对应 `a77513024a0c847a1a7bf5a76aa4a5a38648e827`。逐项核对文件树、作者和提交消息一致，远端 `codex/project-visualization-plan` 已自动删除。[检查结果](https://github.com/orangeofcarl0-sys/palimpsest/pull/275/checks) |
 | [PR #273](https://github.com/orangeofcarl0-sys/palimpsest/pull/273) | `codex/grpc-t3-opencode-v2` 已 rebase 合并，送审 `981891a693ce2e270911cce6128292a341830d18` 对应发布 `e4f037b868c7c36a65aa28396e2f25f8b5fbdf5b`。前后文件树、作者和消息一致，远端工作分支已自动删除。[检查及 SHA 对照](research-evidence/pnwf-work-revision/2026-11-18/opencode-go-v2-t3-152704/release-ci.json) |
@@ -279,6 +281,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+独立副本资格覆盖错 SHA、自报结果、维护者发起 DELIVER、写入隔离及只读 P/S。Mock 共 13 笔合成请求，真实镜像中回算了两笔绑定原候选的 P/S 实测；构建与 44 项定向回归通过。两组归档均含 Git bundle、按调用 ID 配对的结果及独立双现场判分。[复算指令](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md#复算)
+
 跨班复核的普通 DSH Mock 实际恢复上一班的会话 ID、核对原压缩流字节前缀，并单独结算恢复后的两笔请求。配对的 10 笔合成请求对应两个通过 P/S 判分的提交，付费调用 0。已运行构建与 41 项既有计量、归因和夜班回归。两份 Git bundle、角色轨迹和现场判分的复算命令见[跨班复核报告](docs/engineering/FLEET-NIGHT-REPLAY-REVIEW.md#复算)。
 
 夜班档案和按 SHA 试排的定向回归 3/3、计量与提供方回归 30/30、归因回归 8/8，TypeScript 构建通过。四格普通 DSH Mock 用 54 笔合成请求验证检查点、子会话、越界时序、旧 SHA 及预约冲突恢复，付费调用为零。各组的原始 DSH 流、结算、Git bundle 和以提交为输入的隔离回放可分别复算。[复算入口](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#复算)
@@ -450,6 +454,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+夜班隔离配对按既有 64 笔、30 分钟、单请求 240 秒运行，金额和总 tokens 无上限。真实自主组候选 `848f8e63dd95dacdd19ebaca9b5e158009b8e980`，44 笔、2,805,802 tokens；单人组 `7d6b8bf1176e3b6843c0e732146ff9dec21a5c3e`，37 笔、2,335,223 tokens。81 笔全部结算，UNKNOWN 0。[逐会话汇总](research-evidence/pnwf-software/2026-11-19/night-isolated/live-summary.json)
+
 2026-11-19 夜班回放复核共 97/97 笔、8,642,844 tokens、UNKNOWN 0。自主组 Principal 22 笔、原维护者 31 笔，共 4,211,190 tokens；单人组 44 笔、4,431,654 tokens。原维护者历史用量未重复计入。两组分别提交 `fc6aa6253d9b0c97105c1791fc878909e04fb4c1` 和 `3993ece58bbc484ff6a66916d1bb15313f780ba6`。[分角色核对](research-evidence/pnwf-software/2026-11-19/night-review/live-summary.json)
 
 2026-11-19 夜班四格共 130/130 笔归因，fresh input 306,112、cache read 6,117,760、output 118,409，共 6,542,281 tokens。相加耗时 36 分 25.209 秒。每格使用独立新会话与账本，64 笔、30 分钟、240 秒单笔，金额与总 token 按量。四条试排的最终方案 blob 一致；宿主未签发生产批准。[逐会话用量、调用与版本](research-evidence/pnwf-software/2026-11-19/night-shift-pair/live-comparison.json)
@@ -553,7 +559,9 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-- 上轮[重绘单人原稿](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#重绘现场的单-principal)保留原误报。本轮真实求证暴露了两处边界：档案来自并列模拟现场却有相同标识，维护者在被咨询时能写 Principal 的工作区并记录项目结论。两组均把上一班 S 当作唯一真本。后续修订需能保留两个现场的来源、原始材料及命令对“异常”的定义。单人组轨迹还读到了 Git FETCH_HEAD 源路径里的场景名。[逐项复核](docs/engineering/FLEET-NIGHT-REPLAY-REVIEW.md)
+- 隔离复核回执驱动采纳已有脚本化 Mock 证据。真实自主组本次选择自行查档，独立识别并修正问题；本次没有同伴回执被真实 Principal 采纳。两组修改前都没有在原 SHA 上跑出 S 的误报，原缺陷由宿主独立验证。[发现与采纳的归属](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md)
+
+- 上轮[重绘单人原稿](docs/engineering/FLEET-NIGHT-SHIFT-PAIR.md#重绘现场的单-principal)保留原误报。此前共享工作区的真实求证暴露了两处边界：档案来自并列模拟现场却有相同标识，维护者在被咨询时能写 Principal 的工作区并记录项目结论。两组均把上一班 S 当作唯一真本。本次独立副本实验已冻结两个来源、原始材料及命令对“异常”的定义。单人组轨迹还读到了 Git FETCH_HEAD 源路径里的场景名。[逐项复核](docs/engineering/FLEET-NIGHT-REPLAY-REVIEW.md)
 
 - gRPC 真实样本的贡献和采纳决定均为零。接续者成功查到核验日志，但 `explain` 直接查已重开的 Episode ID 返回 `UNKNOWN`，版本依据也出现在 Pulse 的 open questions 中。该条记录原类为 `REFERENCE_NOTE`，正式接受由 Work 事件 8 证明。[逐项读回](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md#真实项目的接受与接续)
 
@@ -706,6 +714,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-19 | 打磨原生关系图、局部聚焦、时间线和对象检查 | [操作](docs/user-guide.md#dsh-侧栏工作检查器) · [实机回归与截图入口](scripts/inspector/dsh-web.mjs) | 真实 DSH 检查深浅主题、390 像素双列、键盘搜索与完整 ID，核对回溯和筛选后的连线数与当前投影一致 |
 | 2026-11-19 | 发布可视化设计、DSH 侧栏工作检查器和交互回归 | [PR #275](https://github.com/orangeofcarl0-sys/palimpsest/pull/275) · [CI](https://github.com/orangeofcarl0-sys/palimpsest/pull/275/checks) | 送审 `311f101e` 的 16/16 项检查首次通过，主线发布点 `a7751302`。7 个提交的内容和归因均已核对 |
 | 2026-11-19 | 从 `88621e34` 验证 gRPC 自主修订与重启接手 | [报告与离线恢复](docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md) · [真实轨迹](research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/observations.json) | Mock 有贡献采纳，真实模型独立完成，按完整 SHA 接受后两端读回 |
+| 2026-11-19 | 夜班隔离复核与同基线真实对照 | [报告](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md) | Mock 验证按 SHA 回传；真实两组自行完成，各 2/2，81 笔已对账 |
 
 ---
 

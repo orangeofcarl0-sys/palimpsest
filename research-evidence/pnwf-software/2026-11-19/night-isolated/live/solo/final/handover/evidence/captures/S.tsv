@@ -1,0 +1,9 @@
+utc	panel	feed	sequence	req	event
+22:02:58	p17	B	40	req-a	P
+22:03:12	p17	B	41	req-b	P
+22:03:14	p04	A	86	req-c	P
+22:03:14	p09	A	86	req-c	P
+22:03:16	p71	B	39	req-d	P
+22:03:17	p17	B	40	req-a	S
+
+P means a paint committed to that panel. S means a transport delivery suppressed by that panel. The trace is sampled by panel, not by request. Sequence is monotonic within a live feed and board for this exercise. Two boards may legitimately paint the same reading. Display freshness cannot be inferred from a successful RPC. Wall clocks do not order the event stream.
