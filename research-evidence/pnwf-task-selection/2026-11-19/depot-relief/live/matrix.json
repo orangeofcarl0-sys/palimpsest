@@ -1,0 +1,330 @@
+{
+  "mode": "live",
+  "seal": {
+    "base": "ee8b2fb5f3c9b60d533aebe5951fac2df90a18d3",
+    "previous": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+    "maintainer": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+    "history": "d86c7b644bafa8f806281d27319e342a851fe68a4c97cf095627cc602eacdb30",
+    "goal": "请为河湾车队明早两辆车签发一份可执行的冷夜调度交班稿。依据本班可用的运行记录核查现行班表，必要时修订，给出逐格设定、离场余量和低效率时的放行决定，把可执行排班和交班稿一起提交。",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "model": "deepseek-v4.1-flash",
+    "files": {
+      "protocol.md": "f3e0e09b72b70a055fd4c24416b1f6af6f04794409f4b2ec417a9b1bf08860f0",
+      "case.mjs": "d6cb564e2f20c8028578bd7cb14fd3bf714247b8962b8b5d9e3d0f1c3346e9f1",
+      "rig.mjs": "dc86f1e2e053d9be28f2dc6e4ff121945e3e93edf8a493085d3f60a035cf9163",
+      "desk.mjs": "82261f79d02e2ccc7eab531179e47b43d1063a67aeee6ca1f5a474de48ae477e",
+      "mock.mjs": "ea183fa3b0bda390fdc7cb17f2bed4c41c6ae1281f124367df1526558e2281e4",
+      "run.mjs": "2b96e283362e29496d2a52fe27c69aced83f6c505cec748f2a5c3b4ebf387b4b",
+      "evidence.mjs": "1759990820e9c4adde7f3e3d1c05c4a6f291938b6b7b933523d2e4b2fdf50ed2",
+      "plugin/index.js": "1f7271b647dc7e48aea4d88c8cc069b48c695afdedbdd1573ae4382b6b21baf2",
+      "plugin/package.json": "025b3c416e955dd5f485de2dd5638f572cfe77865b92ae613259657048a3ea51",
+      "isolate-unknown.mjs": "127ec0c99c1f98c9a07ee69a24372ec15acd5deb9c5620357262e60dd20b598b",
+      "../container_adapter.mjs": "f70f43dd0445e4d9f60a035dca0a183e18ca18691b884c64010da3c8efd75205",
+      "../container_runtime.mjs": "1729cb107b8233cd7eb29fc36439902b3c819652f5fbbdada550ca03f1ed3060",
+      "../container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+      "../task-selection/evidence.mjs": "f682270e6dad479402e3a56d5d40345f12ea4343ed680aff5aa7682d8924505d",
+      "../task-selection/case.mjs": "1e101e15e34907b58fe30872f372aa6eb089cbd7018200a80d0ec1033486890d"
+    }
+  },
+  "qualified": false,
+  "arms": [
+    {
+      "arm": "P",
+      "basis": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+      "cohortId": "09452b4f-3c73-4243-8ad5-58e785b70b96",
+      "promptDigest": "d73206df26811ac6eb6cf2a1c6274f6f242b711cf1ab366024bd097d0df65819",
+      "priorGrade": {
+        "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+        "paths": [],
+        "checks": {
+          "commit": false,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": false,
+          "fourthSlot": false,
+          "fieldFeasible": false,
+          "lowEfficiency": true,
+          "updatedHandover": false
+        },
+        "passed": false,
+        "observed": {
+          "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+          "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+          "run": "COLD-17",
+          "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "limits": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "actual": [
+            80,
+            40,
+            60,
+            50
+          ],
+          "departureKwh": [
+            126,
+            125.5
+          ],
+          "withinLimits": false
+        }
+      },
+      "execution": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "09452b4f-3c73-4243-8ad5-58e785b70b96",
+        "sessionId": "REVIEW",
+        "condition": "P",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-relief-live-1795088828178\\P\\stages\\REVIEW\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-relief-live-1795088828178\\P\\runtime-REVIEW",
+        "principalRuntime": "container",
+        "containerId": "65e6638d85836c2c16be02bb18ff07dbd4c32012396471c4ee50e3684f473e4b",
+        "qualification": "33835b7d2405a66d09dd80965ff54933a18c85279ace71eb1a37f58d4c17f1b1",
+        "startedAt": "2026-11-19T11:47:20.427Z",
+        "endedAt": "2026-11-19T11:56:58.192Z",
+        "exitCode": 0,
+        "error": null,
+        "killedBy": null,
+        "stopped": false,
+        "natural": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "09452b4f-3c73-4243-8ad5-58e785b70b96",
+          "sessionId": "REVIEW",
+          "observedAt": "2026-11-19T11:56:58.192Z",
+          "maxTokens": null,
+          "softCeiling": null,
+          "totalTokens": 2774616,
+          "confirmedTokens": 2774616,
+          "reservedTokens": null,
+          "unresolvedRequests": 0,
+          "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+          "state": "ENDED"
+        },
+        "mode": "paid-usage-only",
+        "paidRequestsAdmitted": 54,
+        "paidModelCalls": 54
+      },
+      "head": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+      "status": "",
+      "grade": {
+        "sha": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+        "paths": [
+          "HANDOVER.md",
+          "shift-plan.json"
+        ],
+        "checks": {
+          "commit": true,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": true,
+          "fourthSlot": true,
+          "fieldFeasible": true,
+          "lowEfficiency": true,
+          "updatedHandover": true
+        },
+        "passed": true,
+        "observed": {
+          "sha": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+          "sheetBlob": "b548489c88efb1517855be27f0abe61846c9ad37",
+          "run": "COLD-17",
+          "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+          "requested": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "limits": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "actual": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "departureKwh": [
+            126,
+            130
+          ],
+          "withinLimits": true
+        }
+      },
+      "journal": {
+        "seq": 2,
+        "eventId": "pjer-0feec13e91c983a9068726798e0c3adb",
+        "intent": "DELIVER",
+        "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已按 COLD-17 实测采集复核并修订冷夜班表：现行 [80,40,70,50] 在 01:00–01:30 超过 60 kW 实测上限，B 离场仅 125.5 kWh、缺 4.5 kWh；修订为 [80,40,60,60] 后两车分别到 126/130 kWh，均在限内但余量为 0。交班稿明确 20 kW 最小平移、逐格设定、离场余量及 85% 时两车各缺 3 kWh、不得放行的决定。提交后 depot_trial 复核 withinLimits=true、离场 [126,130]。\nArtifacts:\n- /run/stage/world/shift-plan.json\n- /run/stage/world/HANDOVER.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:e4e60a4e01151e8f250e3d53f713fee18fc7e84c, operations/cold-cycle.json, depot_trial:e4e60a4e01151e8f250e3d53f713fee18fc7e84c\nBasis: revision 0, head 21255b96b6d8fa2dde97a53a1f7b743465f48726\nArtifact provenance:\n- /run/stage/world/shift-plan.json: present=true tracked=true committed=true source=WORKTREE digest=beec7f59303c commit=e4e60a4e0115\n- /run/stage/world/HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=e7368b7d00d0 commit=e4e60a4e0115\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已按 COLD-17 实测采集复核并修订冷夜班表：现行 [80,40,70,50] 在 01:00–01:30 超过 60 kW 实测上限，B 离场仅 125.5 kWh、缺 4.5 kWh；修订为 [80,40,60,60] 后两车分别到 126/130 kWh，均在限内但余量为 0。交班稿明确 20 kW 最小平移、逐格设定、离场余量及 85% 时两车各缺 3 kWh、不得放行的决定。提交后 depot_trial 复核 withinLimits=true、离场 [126,130]。\",\"artifacts\":[\"/run/stage/world/shift-plan.json\",\"/run/stage/world/HANDOVER.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:e4e60a4e01151e8f250e3d53f713fee18fc7e84c\",\"operations/cold-cycle.json\",\"depot_trial:e4e60a4e01151e8f250e3d53f713fee18fc7e84c\"],\"recordedAt\":\"2026-11-19T11:56:43.786Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"963d2242facaf400158a84bc712fe53ec45fee5e7cbd6f17960e8e0e7d85cd2e\",\"headCommit\":\"21255b96b6d8fa2dde97a53a1f7b743465f48726\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"/run/stage/world/shift-plan.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"beec7f59303c8fa7a8a6085615421995f374a8b7f04056cee5b7f308dab6c857\",\"source\":\"WORKTREE\",\"commit\":\"e4e60a4e01151e8f250e3d53f713fee18fc7e84c\",\"detail\":\"committed at HEAD\"},{\"path\":\"/run/stage/world/HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"e7368b7d00d0ba0e14b441cd93d3ea3b87dbb6959488fd4a4e8c1c6de45654e2\",\"source\":\"WORKTREE\",\"commit\":\"e4e60a4e01151e8f250e3d53f713fee18fc7e84c\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-be9be959576f19b07e876a26\"}"
+      },
+      "requests": 54,
+      "confirmed": 2774616,
+      "unknown": 0,
+      "stop": null
+    },
+    {
+      "arm": "F",
+      "basis": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+      "cohortId": "7237574f-f4c7-4f2e-b796-9b57b5d547bb",
+      "promptDigest": "d73206df26811ac6eb6cf2a1c6274f6f242b711cf1ab366024bd097d0df65819",
+      "priorGrade": {
+        "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+        "paths": [],
+        "checks": {
+          "commit": false,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": false,
+          "fourthSlot": false,
+          "fieldFeasible": false,
+          "lowEfficiency": true,
+          "updatedHandover": false
+        },
+        "passed": false,
+        "observed": {
+          "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+          "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+          "run": "COLD-17",
+          "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "limits": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "actual": [
+            80,
+            40,
+            60,
+            50
+          ],
+          "departureKwh": [
+            126,
+            125.5
+          ],
+          "withinLimits": false
+        }
+      },
+      "execution": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "7237574f-f4c7-4f2e-b796-9b57b5d547bb",
+        "sessionId": "REVIEW",
+        "condition": "F",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-relief-live-1795088828178\\F\\stages\\REVIEW\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-relief-live-1795088828178\\F\\runtime-REVIEW",
+        "principalRuntime": "container",
+        "containerId": "05dadc35166bb5bc97f0819679fbd4c6c5d79566b86e610377a8a6f8bcdafa7e",
+        "qualification": "779e63c726cb1c3b4c2fd61f2d338f99e613eb1bfe59287b23bd728d5349b37b",
+        "startedAt": "2026-11-19T11:57:01.131Z",
+        "endedAt": "2026-11-19T12:03:33.005Z",
+        "exitCode": 0,
+        "error": null,
+        "killedBy": null,
+        "stopped": false,
+        "natural": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "7237574f-f4c7-4f2e-b796-9b57b5d547bb",
+          "sessionId": "REVIEW",
+          "observedAt": "2026-11-19T12:03:33.005Z",
+          "maxTokens": null,
+          "softCeiling": null,
+          "totalTokens": 993509,
+          "confirmedTokens": 993509,
+          "reservedTokens": null,
+          "unresolvedRequests": 0,
+          "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+          "state": "ENDED"
+        },
+        "mode": "paid-usage-only",
+        "paidRequestsAdmitted": 29,
+        "paidModelCalls": 29
+      },
+      "head": "084039104cee30ec16f72175107de4440651d00d",
+      "status": "",
+      "grade": {
+        "sha": "084039104cee30ec16f72175107de4440651d00d",
+        "paths": [
+          "HANDOVER.md",
+          "shift-plan.json"
+        ],
+        "checks": {
+          "commit": true,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": true,
+          "fourthSlot": true,
+          "fieldFeasible": true,
+          "lowEfficiency": true,
+          "updatedHandover": true
+        },
+        "passed": true,
+        "observed": {
+          "sha": "084039104cee30ec16f72175107de4440651d00d",
+          "sheetBlob": "b548489c88efb1517855be27f0abe61846c9ad37",
+          "run": "COLD-17",
+          "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+          "requested": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "limits": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "actual": [
+            80,
+            40,
+            60,
+            60
+          ],
+          "departureKwh": [
+            126,
+            130
+          ],
+          "withinLimits": true
+        }
+      },
+      "journal": null,
+      "requests": 29,
+      "confirmed": 993509,
+      "unknown": 0,
+      "stop": null
+    }
+  ]
+}

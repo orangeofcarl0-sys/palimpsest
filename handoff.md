@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 冷夜调度两组都先自行复现旧表 B 车缺 4.5 kWh，再主动找上一班维护者复核原表与修订表。两位 Principal 各自把 B 车 01:00 的 70 kW 和 01:30 的 50 kW 都改为 60 kW，提交、通过 10/10 并自然退出。P 维护者另做了一份私有提交，宿主回传测量回执。83 笔全部结算。里程碑二继续开放。[轨迹、同伴贡献及阶段用量](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md)
+
 - 三张冻结工单的 P/F 真实对照从 `3c44aba8` 启动，6 格实际运行，5 格自然退出，4 格有模型提交。编辑稿两边内容均可用，F 留在工作区；站牌两边行为 7/7、冻结原判各 8/11；调度 P 为 8/8，F 第三笔超时。六格均由单一 Principal 执行。77 笔准入、76 笔结算，确认 1,847,332 tokens，整轮总量未知。上轮软件第 15 笔已独立归档。[真实轨迹、质量与用量](docs/engineering/TRANSIT-DESK-LIVE.md)
 
 - 里程碑三新增三张用户工单，分别面向旅客编辑、站牌维护者和车队调度员。三题 × 普通 Palimpsest DSH / 强原生 DSH 共六条脚本化 Mock 自然退出，35 笔模拟请求、29 对工具调用与结果。编辑题另有从一条来信自行上网找来源的入口，本轮完成取材与宿主验证。里程碑二继续开放。[任务、原稿与复算](docs/engineering/TRANSIT-DESK-USER-TASKS.md)
@@ -93,6 +95,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-19，最近同步）
+
+冷夜调度复核沿用 `codex/task-selection-pilot`，从产品提交 `ee8b2fb5` 接续。本地 `origin/main` 引用为 `6d8f90c1`。实验项目从同一个 `21255b96` 运行，隔离仓库的提交及私有复核记录见[本轮报告](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md)。
 
 真实三工单配对沿用 `codex/task-selection-pilot`，运行起点为 `3c44aba89fc9837619c5d22b2545b1e77a445f2b`。实验项目的候选与产品分支分别记录，完整候选 SHA 见[六格证据](research-evidence/pnwf-task-selection/2026-11-19/transit-desk-live/comparison.json)。
 
@@ -293,6 +297,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+冷夜交班复核的零付费复算入口为 `node scripts/pnwf/depot-relief/archive.mjs --verify research-evidence/pnwf-task-selection/2026-11-19/depot-relief/mock`，将末尾改为 `live` 可重验已封存的真实轨迹、Git 评分与回执。逐笔阶段归因命令见[报告](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md)。
+
 - 六个真实会话的 Git、冻结评分、逐笔用量和工具调用由 `scripts/pnwf/transit-desk/live-evidence.mjs --verify` 离线核对，两个站牌提交另以旧实现复验新增测试。[命令与证据](docs/engineering/TRANSIT-DESK-LIVE.md#零付费复算)
 
 - `node scripts/pnwf/transit-desk/qualify.mjs` 从新建 Git 项目复算四个输入版本的基线、参考交付与反例。六条 DSH Mock 另可从 bundle、请求账本和原始会话离线复验。[复算命令](docs/engineering/TRANSIT-DESK-USER-TASKS.md#交给执行者与复算)
@@ -474,6 +480,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+冷夜调度新 cohort 共确认 3,768,125 tokens，UNKNOWN 0。P 54 笔、2,774,616 tokens；F 29 笔、993,509 tokens。上轮调度 F 第 3 笔按原始 SQLite 单列 UNKNOWN，不纳入新账本。运行合同、角色与有效返工、收尾用量见[逐笔复算](research-evidence/pnwf-task-selection/2026-11-19/depot-relief/phases.json)及[旧笔封存](research-evidence/pnwf-task-selection/2026-11-19/depot-relief/prior-unknown.json)。
+
 三工单沿用原 64 笔、30 分钟、单笔 240 秒的按量合同。P 52/52 已结算，1,478,731 tokens；F 25 笔准入、24 笔确认 368,601 tokens。调度 F 第 3 笔 `0fd80c27-fbfb-443b-900c-ecd0836986ab` 无终态，总量未知，已按原条件停止。上轮软件第 15 笔是不同 cohort、不同请求，未计入本轮。[新账本](research-evidence/pnwf-task-selection/2026-11-19/transit-desk-live/depot-charge-F/request-ledger.sqlite) · [旧笔独立归档](research-evidence/pnwf-task-selection/2026-11-19/transit-desk-live/prior-unknown.json)
 
 选路首轮第 1 格已停止：15 笔准入，14 笔结算 448,610 tokens；第 15 笔 `6b2e3e74-b670-4e60-9094-9e5559c878c4` 为 `UNKNOWN / PROVIDER_TIMEOUT`。全会话总量未知。窗口仍为 64 笔、30 分钟、单请求 240 秒，无金额或总 token 上限。剩余三格没有消耗，原 cohort 关闭。[原账本与逐笔请求](research-evidence/pnwf-task-selection/2026-11-19/live/software-P/request-ledger.sqlite)
@@ -582,6 +590,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 ---
 
 ## 7. 已知未解决问题 / 建议下一步
+
+冷夜调度已经观察到双方自发寻求同伴确认。两位 Principal 在同伴回答前都自行观察到了决定性缺口，尚缺同伴揭示新反例后改变最终交付的证据。P 维护者私有测试与提交未进入交付；F 交班稿中关于可延负荷实际落点及效率的表述超出电表可证明的范围，见[逐项复核](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md)。
 
 - 三张工单的真实轨迹尚无同伴贡献链，里程碑二继续开放。编辑 F 的工作稿未提交，站牌两组的冻结布局拒绝和业务复验并存，调度 F 在数值产出前中断。该域的两组完整交付与成本差值尚不可估。[样本边界](docs/engineering/TRANSIT-DESK-LIVE.md#交付与用量对照)
 
@@ -750,6 +760,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-19 | 开始按任务选用能力首轮配对 | [冻结判据](scripts/pnwf/task-selection/protocol.md) · [报告](docs/engineering/TASK-SELECTION-PILOT.md) | 四个 Mock 通过，首个真实会话因 UNKNOWN 停止；保留自测反例和零提交现场 |
 | 2026-11-19 | 扩展旅客查证、站牌与车队调度工单；另备开放检索入口 | [报告](docs/engineering/TRANSIT-DESK-USER-TASKS.md) | 六条 DSH Mock；新增付费请求 0 |
 | 2026-11-19 | 从三张冻结工单运行六个真实会话 | [报告](docs/engineering/TRANSIT-DESK-LIVE.md) | 5 格自然退出，4 格提交，114 对工具调用结果；调度 F 有 1 笔 UNKNOWN |
+| 2026-11-19 | 冷夜调度：上一班实测反例与两组真实自主求证 | [报告与用量复算](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md) | 两个 Mock、两个真实交付通过。真实两组均两次联系维护者，83/83 笔对账，旧调度 F 第 3 笔独立封存 |
 
 ---
 

@@ -1,0 +1,72 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "3b51cb67-55af-4404-8a95-5ab6d57985a0",
+  "configDigest": "17122682cc4b087458b253fd51b3945f5b8de80539bd04ace1f820711764326e",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 192185,
+  "reserved": 0,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": 12000000,
+  "sessions": [
+    {
+      "id": "REVIEW",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": 12000000,
+      "softCeiling": 12000000,
+      "requestCount": 5,
+      "unresolvedRequests": 0,
+      "confirmed": 192185,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "cc59dbd3-1b2e-4409-98a6-0450a53b791b",
+      "session": "REVIEW",
+      "digest": "78d9735df5445764d29deab44f12a44e6071f84e5b15bf376f8b50d89ba863b2",
+      "reserved": 310823,
+      "actual": 54896,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "ce3160ac-c8c5-49da-8b9b-70c218de534a",
+      "session": "REVIEW",
+      "digest": "6338eadbe1ad7ec6f273387d519551532ad6958e7ed0a20b6ea054954e5c364b",
+      "reserved": 288198,
+      "actual": 32315,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "42f80785-0247-4dd6-b234-6264eec06b95",
+      "session": "REVIEW",
+      "digest": "0d09ad188cf7d64e666651405d551cc1665cc70ec66bfca5ce4fa5e64ffc7358",
+      "reserved": 288500,
+      "actual": 32651,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "c0b257f2-79bc-4846-bf6b-c85272953956",
+      "session": "REVIEW",
+      "digest": "7a791e43fdaca5ab879ae3e21b83f6681cfd26ca051c231378aca6a046808ef8",
+      "reserved": 289881,
+      "actual": 34517,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "7a4e4e30-70f2-48f4-91e6-beaec7583283",
+      "session": "REVIEW",
+      "digest": "dcb2be48c3ddb0703a471f9267a89c7cb4a1ee3161fe7a1cbf521493c5f393de",
+      "reserved": 293749,
+      "actual": 37806,
+      "state": "SETTLED",
+      "reason": null
+    }
+  ],
+  "refusals": []
+}

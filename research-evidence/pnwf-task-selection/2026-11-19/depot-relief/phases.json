@@ -1,0 +1,2455 @@
+{
+  "arms": {
+    "P": {
+      "admitted": 54,
+      "confirmed": 2774616,
+      "unknown": 0,
+      "total": 2774616,
+      "roles": {
+        "principal": {
+          "requests": 25,
+          "fresh": 82315,
+          "cacheRead": 867968,
+          "cacheWrite": 0,
+          "output": 26294,
+          "total": 976577
+        },
+        "maintainer": {
+          "requests": 29,
+          "fresh": 74998,
+          "cacheRead": 1705600,
+          "cacheWrite": 0,
+          "output": 17441,
+          "total": 1798039
+        }
+      },
+      "totals": {
+        "discovery": {
+          "requests": 14,
+          "fresh": 98413,
+          "cacheRead": 357120,
+          "cacheWrite": 0,
+          "output": 19865,
+          "total": 475398
+        },
+        "mixed": {
+          "requests": 1,
+          "fresh": 5412,
+          "cacheRead": 14848,
+          "cacheWrite": 0,
+          "output": 1504,
+          "total": 21764
+        },
+        "privateRework": {
+          "requests": 4,
+          "fresh": 6596,
+          "cacheRead": 231680,
+          "cacheWrite": 0,
+          "output": 4709,
+          "total": 242985
+        },
+        "unproductive": {
+          "requests": 3,
+          "fresh": 13817,
+          "cacheRead": 146176,
+          "cacheWrite": 0,
+          "output": 1664,
+          "total": 161657
+        },
+        "privateValidation": {
+          "requests": 6,
+          "fresh": 5227,
+          "cacheRead": 367360,
+          "cacheWrite": 0,
+          "output": 730,
+          "total": 373317
+        },
+        "privateClosing": {
+          "requests": 9,
+          "fresh": 5858,
+          "cacheRead": 607104,
+          "cacheWrite": 0,
+          "output": 3840,
+          "total": 616802
+        },
+        "effectiveRework": {
+          "requests": 6,
+          "fresh": 8708,
+          "cacheRead": 263168,
+          "cacheWrite": 0,
+          "output": 7365,
+          "total": 279241
+        },
+        "validation": {
+          "requests": 7,
+          "fresh": 8844,
+          "cacheRead": 373376,
+          "cacheWrite": 0,
+          "output": 1938,
+          "total": 384158
+        },
+        "closing": {
+          "requests": 4,
+          "fresh": 4438,
+          "cacheRead": 212736,
+          "cacheWrite": 0,
+          "output": 2120,
+          "total": 219294
+        }
+      },
+      "entries": [
+        {
+          "n": 1,
+          "id": "401268c6-4dc6-4245-b1f4-f56d8dd3c37b",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 14,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 15,
+              "tool": "palimpsest_continuity",
+              "callId": "call_66b2a7635eb34c1cb7a8d8af",
+              "resultSeq": 16
+            }
+          ],
+          "usage": {
+            "input_tokens": 10809,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 56
+          },
+          "tokens": 10865,
+          "category": "discovery",
+          "reason": "读取当前工作状态"
+        },
+        {
+          "n": 2,
+          "id": "995dc4b8-27a8-412c-931a-2147938a36b3",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 20,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 21,
+              "tool": "bash",
+              "callId": "call_9bb4ac407b4f44dfbfb4be19",
+              "resultSeq": 24
+            },
+            {
+              "seq": 25,
+              "tool": "depot_directory",
+              "callId": "call_d996c758ec1b4b12beefeef2",
+              "resultSeq": 26
+            }
+          ],
+          "usage": {
+            "input_tokens": 1216,
+            "cache_read_input_tokens": 10752,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 115
+          },
+          "tokens": 12083,
+          "category": "discovery",
+          "reason": "检查项目与登记联系人"
+        },
+        {
+          "n": 3,
+          "id": "4cac180f-c5db-4960-ba6f-e92ca38c00f8",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 30,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 31,
+              "tool": "read",
+              "callId": "call_7cb1feb1a13d48478595b808",
+              "resultSeq": 34
+            },
+            {
+              "seq": 32,
+              "tool": "read",
+              "callId": "call_2f9e5814df0c45e59d088065",
+              "resultSeq": 35
+            },
+            {
+              "seq": 33,
+              "tool": "read",
+              "callId": "call_ee4f98ad921643758cab1768",
+              "resultSeq": 36
+            },
+            {
+              "seq": 37,
+              "tool": "bash",
+              "callId": "call_a5913861f18448538ffb55a3",
+              "resultSeq": 40
+            }
+          ],
+          "usage": {
+            "input_tokens": 630,
+            "cache_read_input_tokens": 11904,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 193
+          },
+          "tokens": 12727,
+          "category": "discovery",
+          "reason": "读工单、原交班稿与运营入口"
+        },
+        {
+          "n": 4,
+          "id": "d123a4e6-976a-415b-87d8-62932a6e9226",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 44,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 45,
+              "tool": "read",
+              "callId": "call_19fccc045d1c47e3b44ef467",
+              "resultSeq": 47
+            },
+            {
+              "seq": 46,
+              "tool": "read",
+              "callId": "call_e733ec29196f4083bcd6a5b9",
+              "resultSeq": 48
+            },
+            {
+              "seq": 49,
+              "tool": "bash",
+              "callId": "call_8b07fe06012e4b3dad7915ed",
+              "resultSeq": 52
+            }
+          ],
+          "usage": {
+            "input_tokens": 2535,
+            "cache_read_input_tokens": 12416,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 178
+          },
+          "tokens": 15129,
+          "category": "discovery",
+          "reason": "对照名义程序、测试和 COLD-17 采集"
+        },
+        {
+          "n": 5,
+          "id": "acc48519-3108-41c1-978a-788037ceb278",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 56,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 57,
+              "tool": "depot_trial",
+              "callId": "call_6783ca0d72294b1eb163abec",
+              "resultSeq": 58
+            },
+            {
+              "seq": 59,
+              "tool": "depot_trial",
+              "callId": "call_5107d885df254f4fa49b0a48",
+              "resultSeq": 60
+            },
+            {
+              "seq": 61,
+              "tool": "bash",
+              "callId": "call_23fceb215495416295f76f9c",
+              "resultSeq": 64
+            }
+          ],
+          "usage": {
+            "input_tokens": 5412,
+            "cache_read_input_tokens": 14848,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1504
+          },
+          "tokens": 21764,
+          "category": "mixed",
+          "reason": "取得原表有效回执并本地重放，同批对父 SHA 的试排被拒"
+        },
+        {
+          "n": 6,
+          "id": "ed29c43e-d369-4384-aa16-287b39a3d9ac",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 68,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 69,
+              "tool": "depot_contact",
+              "callId": "call_313de72ead9447e79af3ec91",
+              "resultSeq": 70
+            }
+          ],
+          "usage": {
+            "input_tokens": 1966,
+            "cache_read_input_tokens": 20224,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1478
+          },
+          "tokens": 23668,
+          "category": "discovery",
+          "reason": "主动向原维护者询问原表缺口及效率证据"
+        },
+        {
+          "n": 7,
+          "id": "5e1bbb9a-cfe2-4b34-b79f-987ab456cfa1",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 180,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 181,
+              "tool": "depot_directory",
+              "callId": "call_c00bbdd1776c465e8d3f1d2c",
+              "resultSeq": 182
+            },
+            {
+              "seq": 183,
+              "tool": "depot_shift_log",
+              "callId": "call_a0ef969de4084896971e9153",
+              "resultSeq": 184
+            },
+            {
+              "seq": 185,
+              "tool": "depot_trial",
+              "callId": "call_2538f25d9fc149f694e3911e",
+              "resultSeq": 186
+            }
+          ],
+          "usage": {
+            "input_tokens": 46003,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 444
+          },
+          "tokens": 46447,
+          "category": "discovery",
+          "reason": "读上一班实测单并对原 SHA 实测，生成可返回的反例"
+        },
+        {
+          "n": 8,
+          "id": "493225c9-7f77-4cbd-93c9-fcd807a40f30",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 190,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 191,
+              "tool": "bash",
+              "callId": "call_af16256cc7e641ae9381cd15",
+              "resultSeq": 194
+            }
+          ],
+          "usage": {
+            "input_tokens": 924,
+            "cache_read_input_tokens": 45952,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 400
+          },
+          "tokens": 47276,
+          "category": "discovery",
+          "reason": "定位站控采集与重放工具"
+        },
+        {
+          "n": 9,
+          "id": "0a2e341e-3c8f-4533-827e-811289f2ab12",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 198,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 199,
+              "tool": "read",
+              "callId": "call_e85e05e5b63f4c7b8d9d8c05",
+              "resultSeq": 205
+            },
+            {
+              "seq": 200,
+              "tool": "read",
+              "callId": "call_6e4ad4ae226c421cbf444885",
+              "resultSeq": 206
+            },
+            {
+              "seq": 201,
+              "tool": "read",
+              "callId": "call_bc24e3d4737e4a9888c9c8fd",
+              "resultSeq": 207
+            },
+            {
+              "seq": 202,
+              "tool": "read",
+              "callId": "call_b50a50a10c85433c9d2eaab0",
+              "resultSeq": 208
+            },
+            {
+              "seq": 203,
+              "tool": "read",
+              "callId": "call_d6cc5ca134fa4ddab760f67a",
+              "resultSeq": 209
+            },
+            {
+              "seq": 204,
+              "tool": "read",
+              "callId": "call_df5a6aabb71841cf80b18deb",
+              "resultSeq": 210
+            }
+          ],
+          "usage": {
+            "input_tokens": 784,
+            "cache_read_input_tokens": 46848,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 257
+          },
+          "tokens": 47889,
+          "category": "discovery",
+          "reason": "对照原表、采集和重放算法"
+        },
+        {
+          "n": 10,
+          "id": "db5f67ee-1c20-431b-aca9-bd59ca14df20",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 214,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 215,
+              "tool": "bash",
+              "callId": "call_7c1571708ad34c47a80d2db9",
+              "resultSeq": 218
+            }
+          ],
+          "usage": {
+            "input_tokens": 1810,
+            "cache_read_input_tokens": 47616,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2449
+          },
+          "tokens": 51875,
+          "category": "discovery",
+          "reason": "核对复核副本的版本与候选历史"
+        },
+        {
+          "n": 11,
+          "id": "8bffda9b-f10d-4198-9279-404d51a366b8",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 222,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 223,
+              "tool": "bash",
+              "callId": "call_5a758f72e4684e35a33bca88",
+              "resultSeq": 226
+            }
+          ],
+          "usage": {
+            "input_tokens": 2569,
+            "cache_read_input_tokens": 49408,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 691
+          },
+          "tokens": 52668,
+          "category": "discovery",
+          "reason": "在复核副本用本地程序再现旧表缺口"
+        },
+        {
+          "n": 12,
+          "id": "c1552fb8-7dcf-4024-89c0-2f5050bb31f9",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 230,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 231,
+              "tool": "bash",
+              "callId": "call_c692badfac6a4ee3ac010df2",
+              "resultSeq": 234
+            }
+          ],
+          "usage": {
+            "input_tokens": 763,
+            "cache_read_input_tokens": 51968,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1824
+          },
+          "tokens": 54555,
+          "category": "discovery",
+          "reason": "读取本地测试入口"
+        },
+        {
+          "n": 13,
+          "id": "f134c9bc-787f-47ba-b969-a237ebe16fba",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 238,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 239,
+              "tool": "edit",
+              "callId": "call_a46d9a4fe8b84b999e228d6c",
+              "resultSeq": 240
+            }
+          ],
+          "usage": {
+            "input_tokens": 1983,
+            "cache_read_input_tokens": 52608,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1766
+          },
+          "tokens": 56357,
+          "category": "privateRework",
+          "reason": "改隔离副本的两格排班"
+        },
+        {
+          "n": 14,
+          "id": "7039db9f-fda8-4c96-a8e5-fbf6603ef556",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 244,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 245,
+              "tool": "write",
+              "callId": "call_fdec0c87d89a43f4a640a089",
+              "resultSeq": 246
+            }
+          ],
+          "usage": {
+            "input_tokens": 1855,
+            "cache_read_input_tokens": 54528,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1173
+          },
+          "tokens": 57556,
+          "category": "unproductive",
+          "reason": "写隔离交班稿被拒，须先读文件"
+        },
+        {
+          "n": 15,
+          "id": "01fe3401-2995-445d-9c5c-357a92273718",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 250,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 251,
+              "tool": "read",
+              "callId": "call_6c0bcd09675549bfb1fcc857",
+              "resultSeq": 252
+            }
+          ],
+          "usage": {
+            "input_tokens": 1280,
+            "cache_read_input_tokens": 56320,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 116
+          },
+          "tokens": 57716,
+          "category": "privateValidation",
+          "reason": "回读隔离原稿以解除编辑拒绝"
+        },
+        {
+          "n": 16,
+          "id": "a1f32941-bbe2-43f8-a984-cab38bf3a04f",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 256,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 257,
+              "tool": "write",
+              "callId": "call_6fe720718a5b44f686c59d6a",
+              "resultSeq": 258
+            }
+          ],
+          "usage": {
+            "input_tokens": 1453,
+            "cache_read_input_tokens": 57472,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1161
+          },
+          "tokens": 60086,
+          "category": "privateRework",
+          "reason": "重写隔离交班稿"
+        },
+        {
+          "n": 17,
+          "id": "430c5b06-48fd-404d-8840-2c0e5394d1be",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 262,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 263,
+              "tool": "bash",
+              "callId": "call_8b101071934e40cdbf762026",
+              "resultSeq": 266
+            }
+          ],
+          "usage": {
+            "input_tokens": 1246,
+            "cache_read_input_tokens": 58880,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 139
+          },
+          "tokens": 60265,
+          "category": "privateValidation",
+          "reason": "试排隔离修订并跑名义回归"
+        },
+        {
+          "n": 18,
+          "id": "636ffa93-56cd-4bb2-a581-9829b6fc7237",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 270,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 271,
+              "tool": "write",
+              "callId": "call_88a57908ebc94e9ca0ba3249",
+              "resultSeq": 272
+            }
+          ],
+          "usage": {
+            "input_tokens": 473,
+            "cache_read_input_tokens": 60032,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 782
+          },
+          "tokens": 61287,
+          "category": "privateRework",
+          "reason": "增加仅在隔离副本出现的回归测试"
+        },
+        {
+          "n": 19,
+          "id": "86f5441b-9aa9-4b3a-abe1-e366b3e9ec65",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 276,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 277,
+              "tool": "bash",
+              "callId": "call_257d409415d040cc94987b18",
+              "resultSeq": 280
+            }
+          ],
+          "usage": {
+            "input_tokens": 914,
+            "cache_read_input_tokens": 60416,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 66
+          },
+          "tokens": 61396,
+          "category": "privateValidation",
+          "reason": "运行隔离副本新旧测试"
+        },
+        {
+          "n": 20,
+          "id": "9fdf2518-78ef-4dca-a412-2f1fe05695da",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 284,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 285,
+              "tool": "bash",
+              "callId": "call_68a7fcd0be0e47649ccfa721",
+              "resultSeq": 288
+            }
+          ],
+          "usage": {
+            "input_tokens": 339,
+            "cache_read_input_tokens": 61312,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 213
+          },
+          "tokens": 61864,
+          "category": "privateValidation",
+          "reason": "审阅隔离副本的差异"
+        },
+        {
+          "n": 21,
+          "id": "913ee7d3-a063-455b-9d52-7fde249e5481",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 292,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 293,
+              "tool": "edit",
+              "callId": "call_5bb39251e0d844f192990e89",
+              "resultSeq": 294
+            }
+          ],
+          "usage": {
+            "input_tokens": 2687,
+            "cache_read_input_tokens": 61568,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1000
+          },
+          "tokens": 65255,
+          "category": "privateRework",
+          "reason": "调整隔离副本的复测程序"
+        },
+        {
+          "n": 22,
+          "id": "60d43605-41bc-41d9-b346-4f9e488963e6",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 298,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 299,
+              "tool": "bash",
+              "callId": "call_7856a7b5dd724bf8a936bd65",
+              "resultSeq": 302
+            }
+          ],
+          "usage": {
+            "input_tokens": 1156,
+            "cache_read_input_tokens": 64128,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 72
+          },
+          "tokens": 65356,
+          "category": "privateValidation",
+          "reason": "核对隔离副本复测输出、测试"
+        },
+        {
+          "n": 23,
+          "id": "8906773f-5568-4c8e-97fc-3d8f2683bea0",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 306,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 307,
+              "tool": "bash",
+              "callId": "call_795279f7b12e4acf9bb12895",
+              "resultSeq": 310
+            }
+          ],
+          "usage": {
+            "input_tokens": 403,
+            "cache_read_input_tokens": 65280,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 362
+          },
+          "tokens": 66045,
+          "category": "unproductive",
+          "reason": "私有提交缺 Git 身份，提交失败"
+        },
+        {
+          "n": 24,
+          "id": "fa80ed0d-a971-40cf-8e72-93c0581a98a6",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 314,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 315,
+              "tool": "bash",
+              "callId": "call_d48651bd6c56440fb9bee682",
+              "resultSeq": 318
+            }
+          ],
+          "usage": {
+            "input_tokens": 486,
+            "cache_read_input_tokens": 65664,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 165
+          },
+          "tokens": 66315,
+          "category": "privateClosing",
+          "reason": "调查隔离副本 Git 身份"
+        },
+        {
+          "n": 25,
+          "id": "c9eae4e8-53dc-402e-8e6d-73c5f34cdfb1",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 322,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 323,
+              "tool": "bash",
+              "callId": "call_6df113c7a99d4db8a8d5416f",
+              "resultSeq": 326
+            }
+          ],
+          "usage": {
+            "input_tokens": 309,
+            "cache_read_input_tokens": 66048,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 126
+          },
+          "tokens": 66483,
+          "category": "privateClosing",
+          "reason": "配置副本身份并提交隔离成果"
+        },
+        {
+          "n": 26,
+          "id": "b8fcbaa1-6a72-4bb4-9ef2-7fd24da11c2b",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 330,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 331,
+              "tool": "bash",
+              "callId": "call_0676bcfa616247e081f5254d",
+              "resultSeq": 334
+            }
+          ],
+          "usage": {
+            "input_tokens": 292,
+            "cache_read_input_tokens": 66304,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 124
+          },
+          "tokens": 66720,
+          "category": "privateValidation",
+          "reason": "核对私有提交后测试和工作区"
+        },
+        {
+          "n": 27,
+          "id": "29bb3da9-81f9-422f-9601-fe482a3e9d29",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 338,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 339,
+              "tool": "bash",
+              "callId": "call_4fca9111642647ffb4b14511",
+              "resultSeq": 342
+            }
+          ],
+          "usage": {
+            "input_tokens": 500,
+            "cache_read_input_tokens": 66560,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 599
+          },
+          "tokens": 67659,
+          "category": "privateClosing",
+          "reason": "核对私有提交所含文件"
+        },
+        {
+          "n": 28,
+          "id": "fdf44487-2f4d-4fd2-b855-f08a1bc437d0",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 346,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 347,
+              "tool": "todo_write",
+              "callId": "call_685d95425fdb4d74aa23c9f5",
+              "resultSeq": 349
+            }
+          ],
+          "usage": {
+            "input_tokens": 818,
+            "cache_read_input_tokens": 66944,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 126
+          },
+          "tokens": 67888,
+          "category": "privateClosing",
+          "reason": "整理维护者待办状态"
+        },
+        {
+          "n": 29,
+          "id": "b7d7419d-b55d-44fa-8da0-23ddde04879e",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 353,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 354,
+              "tool": "bash",
+              "callId": "call_e8d21fec006c4942b7e1ce2e",
+              "resultSeq": 357
+            }
+          ],
+          "usage": {
+            "input_tokens": 203,
+            "cache_read_input_tokens": 67712,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 79
+          },
+          "tokens": 67994,
+          "category": "privateClosing",
+          "reason": "查私有 SHA 和工作区状态"
+        },
+        {
+          "n": 30,
+          "id": "8597c07d-5a13-4fb4-96fc-0aba54b39168",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 361,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 362,
+              "tool": "bash",
+              "callId": "call_8eccd04248c641d28c7af851",
+              "resultSeq": 365
+            }
+          ],
+          "usage": {
+            "input_tokens": 188,
+            "cache_read_input_tokens": 67840,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 82
+          },
+          "tokens": 68110,
+          "category": "privateClosing",
+          "reason": "查看副本内产品命令是否存在"
+        },
+        {
+          "n": 31,
+          "id": "bc467baa-a7db-46d9-a87d-31fe98dd19e8",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 369,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 370,
+              "tool": "get_goal",
+              "callId": "call_1fc9baa350134b7fa579d610",
+              "resultSeq": 371
+            }
+          ],
+          "usage": {
+            "input_tokens": 155,
+            "cache_read_input_tokens": 67968,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 96
+          },
+          "tokens": 68219,
+          "category": "privateClosing",
+          "reason": "检查维护者会话目标"
+        },
+        {
+          "n": 32,
+          "id": "d728a36d-3120-47d5-93bf-34739196c586",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 375,
+          "method": "unique-usage",
+          "calls": [],
+          "usage": {
+            "input_tokens": 138,
+            "cache_read_input_tokens": 68096,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1312
+          },
+          "tokens": 69546,
+          "category": "privateClosing",
+          "reason": "结束首次复核，宿主仅转发 SHA 实测回执"
+        },
+        {
+          "n": 33,
+          "id": "2d0ac827-90e7-4832-adb1-833e5c236987",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 74,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 75,
+              "tool": "bash",
+              "callId": "call_d1ff4364465c42a0916c5ccc",
+              "resultSeq": 78
+            },
+            {
+              "seq": 79,
+              "tool": "bash",
+              "callId": "call_499c6293b8af4bd58c0044a8",
+              "resultSeq": 82
+            }
+          ],
+          "usage": {
+            "input_tokens": 1718,
+            "cache_read_input_tokens": 22144,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 293
+          },
+          "tokens": 24155,
+          "category": "discovery",
+          "reason": "查上一版 Git 内容与转录历史"
+        },
+        {
+          "n": 34,
+          "id": "6787c33e-5277-4dfa-a016-5edf47a572b9",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 86,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 87,
+              "tool": "todo_write",
+              "callId": "call_1e107392f9164b4cbe3b8ef6",
+              "resultSeq": 89
+            }
+          ],
+          "usage": {
+            "input_tokens": 26475,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 11426
+          },
+          "tokens": 37901,
+          "category": "discovery",
+          "reason": "规划修订和复核步骤"
+        },
+        {
+          "n": 35,
+          "id": "df4bc945-6e18-4fc8-b232-78834dea7540",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 93,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 94,
+              "tool": "edit",
+              "callId": "call_a531f2c8c3034995be9afef7",
+              "resultSeq": 95
+            }
+          ],
+          "usage": {
+            "input_tokens": 11559,
+            "cache_read_input_tokens": 26368,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 129
+          },
+          "tokens": 38056,
+          "category": "unproductive",
+          "reason": "编辑被拒，未先用编辑工具认可的方式读取排班"
+        },
+        {
+          "n": 36,
+          "id": "f7f70506-d1fd-4a3e-b9a0-b165495b56d9",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 99,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 100,
+              "tool": "read",
+              "callId": "call_d12e98493a4344e9b09d3c83",
+              "resultSeq": 101
+            }
+          ],
+          "usage": {
+            "input_tokens": 211,
+            "cache_read_input_tokens": 37888,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 61
+          },
+          "tokens": 38160,
+          "category": "discovery",
+          "reason": "读取待编辑排班"
+        },
+        {
+          "n": 37,
+          "id": "54cbd5d6-d97e-4266-9e45-08a3ac587e62",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 105,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 106,
+              "tool": "edit",
+              "callId": "call_6b9bf05430ed435b85eae8db",
+              "resultSeq": 107
+            }
+          ],
+          "usage": {
+            "input_tokens": 329,
+            "cache_read_input_tokens": 38016,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 120
+          },
+          "tokens": 38465,
+          "category": "effectiveRework",
+          "reason": "将两格 B 的真实发车设定改成 60、60"
+        },
+        {
+          "n": 38,
+          "id": "b72a224e-803d-4a17-a0fe-f47f59a9810c",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 111,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 112,
+              "tool": "write",
+              "callId": "call_ec7098df356e48c28fe64da9",
+              "resultSeq": 113
+            }
+          ],
+          "usage": {
+            "input_tokens": 219,
+            "cache_read_input_tokens": 38272,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 3128
+          },
+          "tokens": 41619,
+          "category": "effectiveRework",
+          "reason": "写入 Principal 的交班稿"
+        },
+        {
+          "n": 39,
+          "id": "8350f3c4-dfdb-465a-b508-ea8e346f7e73",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 117,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 118,
+              "tool": "bash",
+              "callId": "call_fcf7d4a2b6ec4bdea8272fd2",
+              "resultSeq": 121
+            }
+          ],
+          "usage": {
+            "input_tokens": 3259,
+            "cache_read_input_tokens": 38400,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 105
+          },
+          "tokens": 41764,
+          "category": "validation",
+          "reason": "重放已修改工作表并运行回归"
+        },
+        {
+          "n": 40,
+          "id": "b1213300-f6d7-4cb4-a833-0aef8e540a7b",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 125,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 126,
+              "tool": "edit",
+              "callId": "call_57b1a7390a454fafbeaa580a",
+              "resultSeq": 127
+            }
+          ],
+          "usage": {
+            "input_tokens": 3521,
+            "cache_read_input_tokens": 41600,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1567
+          },
+          "tokens": 46688,
+          "category": "effectiveRework",
+          "reason": "修正无平移算例多乘的半小时因子"
+        },
+        {
+          "n": 41,
+          "id": "cd319567-6135-43b0-a49a-60618e405973",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 131,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 132,
+              "tool": "bash",
+              "callId": "call_39507a2942c94e76b6fc1351",
+              "resultSeq": 135
+            }
+          ],
+          "usage": {
+            "input_tokens": 1658,
+            "cache_read_input_tokens": 45056,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 803
+          },
+          "tokens": 47517,
+          "category": "validation",
+          "reason": "复算冷夜离场余量和低效率情形"
+        },
+        {
+          "n": 42,
+          "id": "39caa835-7525-43d2-a7c3-e951faf41b4a",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 139,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 140,
+              "tool": "edit",
+              "callId": "call_db17209bd0594977ba293a00",
+              "resultSeq": 141
+            }
+          ],
+          "usage": {
+            "input_tokens": 1109,
+            "cache_read_input_tokens": 46592,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 628
+          },
+          "tokens": 48329,
+          "category": "effectiveRework",
+          "reason": "区分本地复算和宿主回执能证明的字段"
+        },
+        {
+          "n": 43,
+          "id": "0b8f61cb-3dc2-4254-a6f5-8c54eebbe6a8",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 145,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 146,
+              "tool": "read",
+              "callId": "call_4bc8edbb03df4657b750d14a",
+              "resultSeq": 147
+            }
+          ],
+          "usage": {
+            "input_tokens": 739,
+            "cache_read_input_tokens": 47616,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 61
+          },
+          "tokens": 48416,
+          "category": "validation",
+          "reason": "复读交班稿"
+        },
+        {
+          "n": 44,
+          "id": "5d857bc9-f7ed-4acd-bc72-9b419fdddd44",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 151,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 152,
+              "tool": "edit",
+              "callId": "call_ca4e97a2b0df44c48ae649c8",
+              "resultSeq": 153
+            }
+          ],
+          "usage": {
+            "input_tokens": 2216,
+            "cache_read_input_tokens": 48256,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1248
+          },
+          "tokens": 51720,
+          "category": "effectiveRework",
+          "reason": "标明最低楼宇负荷平移量"
+        },
+        {
+          "n": 45,
+          "id": "bfbaff43-797b-4ce5-ba50-ea7359d1ee4b",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 157,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 158,
+              "tool": "edit",
+              "callId": "call_0e0dce7678b7462996a442ee",
+              "resultSeq": 159
+            }
+          ],
+          "usage": {
+            "input_tokens": 1314,
+            "cache_read_input_tokens": 50432,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 674
+          },
+          "tokens": 52420,
+          "category": "effectiveRework",
+          "reason": "新增按车和工况的缺口对照"
+        },
+        {
+          "n": 46,
+          "id": "6504b652-c495-4a3f-b87b-c93bb868181d",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 163,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 164,
+              "tool": "bash",
+              "callId": "call_e373ac28e9914cd98f294783",
+              "resultSeq": 167
+            }
+          ],
+          "usage": {
+            "input_tokens": 734,
+            "cache_read_input_tokens": 51712,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 181
+          },
+          "tokens": 52627,
+          "category": "validation",
+          "reason": "检查最终差异、复测结果和测试"
+        },
+        {
+          "n": 47,
+          "id": "b53f7873-a91d-4ed8-b5c8-15f4a556c976",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 171,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 172,
+              "tool": "bash",
+              "callId": "call_011649d9fc6d428c9d5b29d4",
+              "resultSeq": 175
+            }
+          ],
+          "usage": {
+            "input_tokens": 422,
+            "cache_read_input_tokens": 52352,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 123
+          },
+          "tokens": 52897,
+          "category": "closing",
+          "reason": "提交自己的排班与交班稿"
+        },
+        {
+          "n": 48,
+          "id": "c8031f60-69eb-4a2d-bedb-1d16004dceeb",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 179,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 180,
+              "tool": "depot_trial",
+              "callId": "call_4bb3bdf5dd49421cb0d4619b",
+              "resultSeq": 181
+            },
+            {
+              "seq": 182,
+              "tool": "depot_contact",
+              "callId": "call_3bc2c9d0b9b540d8a0a115c6",
+              "resultSeq": 183
+            }
+          ],
+          "usage": {
+            "input_tokens": 248,
+            "cache_read_input_tokens": 52736,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 226
+          },
+          "tokens": 53210,
+          "category": "validation",
+          "reason": "按新提交自行试排并再次请原维护者复核"
+        },
+        {
+          "n": 49,
+          "id": "52f1ceb8-9b1f-4872-95c2-31c4c1b8ce6e",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 386,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 387,
+              "tool": "depot_shift_log",
+              "callId": "call_9b108c1e10544d3cb90222c3",
+              "resultSeq": 388
+            },
+            {
+              "seq": 389,
+              "tool": "depot_trial",
+              "callId": "call_4eb24340b6c044f484dee225",
+              "resultSeq": 390
+            },
+            {
+              "seq": 391,
+              "tool": "bash",
+              "callId": "call_5003e7e81355412db19cf517",
+              "resultSeq": 394
+            }
+          ],
+          "usage": {
+            "input_tokens": 1446,
+            "cache_read_input_tokens": 68224,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 260
+          },
+          "tokens": 69930,
+          "category": "validation",
+          "reason": "比对原始实测单，对 Principal 新提交复测并核对版本"
+        },
+        {
+          "n": 50,
+          "id": "805d2419-06e5-459a-9548-1c48559ddb74",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 398,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 399,
+              "tool": "read",
+              "callId": "call_cf885a2be2ad4b0b8765dda4",
+              "resultSeq": 401
+            },
+            {
+              "seq": 400,
+              "tool": "read",
+              "callId": "call_c1084d9ac5344d2fb5105389",
+              "resultSeq": 402
+            },
+            {
+              "seq": 403,
+              "tool": "bash",
+              "callId": "call_8019e1c75c964f119eca57fe",
+              "resultSeq": 406
+            }
+          ],
+          "usage": {
+            "input_tokens": 760,
+            "cache_read_input_tokens": 69632,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 302
+          },
+          "tokens": 70694,
+          "category": "validation",
+          "reason": "回读修订表与交班稿，重放最终候选并跑测试"
+        },
+        {
+          "n": 51,
+          "id": "1f953249-9943-4d8c-9df4-112022a04755",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 410,
+          "method": "unique-usage",
+          "calls": [],
+          "usage": {
+            "input_tokens": 3061,
+            "cache_read_input_tokens": 70272,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1255
+          },
+          "tokens": 74588,
+          "category": "privateClosing",
+          "reason": "结束第二次复核，宿主返还候选实测回执"
+        },
+        {
+          "n": 52,
+          "id": "cbb001b1-06d5-4a3c-bed2-5b4f7f4f9f3a",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 187,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 188,
+              "tool": "todo_write",
+              "callId": "call_a02e14cecc8f48b188ecf309",
+              "resultSeq": 190
+            }
+          ],
+          "usage": {
+            "input_tokens": 704,
+            "cache_read_input_tokens": 52864,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 437
+          },
+          "tokens": 54005,
+          "category": "closing",
+          "reason": "结束 Principal 待办列表"
+        },
+        {
+          "n": 53,
+          "id": "46ad716f-aa12-4447-bc3c-de5b5e5dc8a9",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 194,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 195,
+              "tool": "palimpsest_work",
+              "callId": "call_420bb1a4be4d42b0ac70b614",
+              "resultSeq": 196
+            }
+          ],
+          "usage": {
+            "input_tokens": 528,
+            "cache_read_input_tokens": 53504,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 446
+          },
+          "tokens": 54478,
+          "category": "closing",
+          "reason": "记录产品 DELIVER 及其工件"
+        },
+        {
+          "n": 54,
+          "id": "a12e6f3d-3554-4f33-b209-0b3c43d09c7d",
+          "role": "principal",
+          "session": "session-072e0e76-472d-4829-a606-b1ad32ba45f1",
+          "seq": 200,
+          "method": "unique-usage",
+          "calls": [],
+          "usage": {
+            "input_tokens": 2784,
+            "cache_read_input_tokens": 54016,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1114
+          },
+          "tokens": 57914,
+          "category": "closing",
+          "reason": "向调度台交付最终结果"
+        }
+      ]
+    },
+    "F": {
+      "admitted": 29,
+      "confirmed": 993509,
+      "unknown": 0,
+      "total": 993509,
+      "roles": {
+        "principal": {
+          "requests": 19,
+          "fresh": 64363,
+          "cacheRead": 413696,
+          "cacheWrite": 0,
+          "output": 20882,
+          "total": 498941
+        },
+        "maintainer": {
+          "requests": 10,
+          "fresh": 99475,
+          "cacheRead": 390016,
+          "cacheWrite": 0,
+          "output": 5077,
+          "total": 494568
+        }
+      },
+      "totals": {
+        "discovery": {
+          "requests": 15,
+          "fresh": 98016,
+          "cacheRead": 289920,
+          "cacheWrite": 0,
+          "output": 16998,
+          "total": 404934
+        },
+        "unproductive": {
+          "requests": 1,
+          "fresh": 45960,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 307,
+          "total": 46267
+        },
+        "privateClosing": {
+          "requests": 2,
+          "fresh": 1588,
+          "cacheRead": 101248,
+          "cacheWrite": 0,
+          "output": 2782,
+          "total": 105618
+        },
+        "effectiveRework": {
+          "requests": 2,
+          "fresh": 6330,
+          "cacheRead": 55424,
+          "cacheWrite": 0,
+          "output": 3119,
+          "total": 64873
+        },
+        "validation": {
+          "requests": 4,
+          "fresh": 6144,
+          "cacheRead": 170240,
+          "cacheWrite": 0,
+          "output": 916,
+          "total": 177300
+        },
+        "closing": {
+          "requests": 4,
+          "fresh": 5095,
+          "cacheRead": 148992,
+          "cacheWrite": 0,
+          "output": 1405,
+          "total": 155492
+        },
+        "mixed": {
+          "requests": 1,
+          "fresh": 705,
+          "cacheRead": 37888,
+          "cacheWrite": 0,
+          "output": 432,
+          "total": 39025
+        }
+      },
+      "entries": [
+        {
+          "n": 1,
+          "id": "3403c71f-26ae-4c79-9954-4cf7d9016ded",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 14,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 15,
+              "tool": "bash",
+              "callId": "call_2989ed108e6a4d53a86fc22a",
+              "resultSeq": 18
+            },
+            {
+              "seq": 19,
+              "tool": "depot_directory",
+              "callId": "call_eb9e1926ad384a6dbbce4d79",
+              "resultSeq": 20
+            }
+          ],
+          "usage": {
+            "input_tokens": 5690,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 135
+          },
+          "tokens": 5825,
+          "category": "discovery",
+          "reason": "查看工作区和上一班联系人"
+        },
+        {
+          "n": 2,
+          "id": "3978121b-c117-48df-8cf8-153547c0bc7f",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 24,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 25,
+              "tool": "read",
+              "callId": "call_a8b53943f2dd412abcb95e96",
+              "resultSeq": 31
+            },
+            {
+              "seq": 26,
+              "tool": "read",
+              "callId": "call_a623c0a8432b4dae85e5236f",
+              "resultSeq": 32
+            },
+            {
+              "seq": 27,
+              "tool": "read",
+              "callId": "call_e97531c1c3b748dbbc006382",
+              "resultSeq": 33
+            },
+            {
+              "seq": 28,
+              "tool": "read",
+              "callId": "call_4703ea1ef4e54e68a609ed4d",
+              "resultSeq": 34
+            },
+            {
+              "seq": 29,
+              "tool": "read",
+              "callId": "call_de7cd86d9a8140f0a3b49a99",
+              "resultSeq": 35
+            },
+            {
+              "seq": 30,
+              "tool": "read",
+              "callId": "call_bae09c54f1da40c1a7bb1fbe",
+              "resultSeq": 36
+            }
+          ],
+          "usage": {
+            "input_tokens": 597,
+            "cache_read_input_tokens": 5632,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 235
+          },
+          "tokens": 6464,
+          "category": "discovery",
+          "reason": "读取业务目标、旧交班稿、名义参数和现行排班"
+        },
+        {
+          "n": 3,
+          "id": "241f7e8d-3e41-48f9-9526-f2a3c49ff78e",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 40,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 41,
+              "tool": "bash",
+              "callId": "call_dce40a86c0b14edc8d7fbffe",
+              "resultSeq": 44
+            },
+            {
+              "seq": 45,
+              "tool": "read",
+              "callId": "call_ac05b1f5d6044599b9be74b7",
+              "resultSeq": 47
+            },
+            {
+              "seq": 46,
+              "tool": "read",
+              "callId": "call_40516c5b62f64530ac5346d5",
+              "resultSeq": 48
+            }
+          ],
+          "usage": {
+            "input_tokens": 2694,
+            "cache_read_input_tokens": 6144,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 155
+          },
+          "tokens": 8993,
+          "category": "discovery",
+          "reason": "查运营目录、版本历史和名义模型测试"
+        },
+        {
+          "n": 4,
+          "id": "14f09e62-96ae-4ea0-955f-c38b8f4b6874",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 52,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 53,
+              "tool": "read",
+              "callId": "call_1aa7e3e42bc2484b893220a5",
+              "resultSeq": 56
+            },
+            {
+              "seq": 54,
+              "tool": "read",
+              "callId": "call_a51da64516394de1970e4e32",
+              "resultSeq": 57
+            },
+            {
+              "seq": 55,
+              "tool": "read",
+              "callId": "call_2e4aa854efe644aaa205544b",
+              "resultSeq": 58
+            }
+          ],
+          "usage": {
+            "input_tokens": 4846,
+            "cache_read_input_tokens": 8832,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 245
+          },
+          "tokens": 13923,
+          "category": "discovery",
+          "reason": "阅读原始电表采集与重放程序"
+        },
+        {
+          "n": 5,
+          "id": "a74c2ec3-6bbb-476a-8b30-7376d637a404",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 62,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 63,
+              "tool": "bash",
+              "callId": "call_f0ed20547c164c9484332285",
+              "resultSeq": 66
+            },
+            {
+              "seq": 67,
+              "tool": "bash",
+              "callId": "call_b8b4d03663044b299d91e15a",
+              "resultSeq": 70
+            }
+          ],
+          "usage": {
+            "input_tokens": 1207,
+            "cache_read_input_tokens": 13568,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2135
+          },
+          "tokens": 16910,
+          "category": "discovery",
+          "reason": "本地重放旧表，检查名义测试与历史提交"
+        },
+        {
+          "n": 6,
+          "id": "5be68cd0-4cfc-4862-b32c-0bb38e27d9f2",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 74,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 75,
+              "tool": "depot_trial",
+              "callId": "call_32fcf91182eb405b88481c70",
+              "resultSeq": 76
+            }
+          ],
+          "usage": {
+            "input_tokens": 2732,
+            "cache_read_input_tokens": 14720,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 372
+          },
+          "tokens": 17824,
+          "category": "discovery",
+          "reason": "取得绑定 SHA 的旧表宿主试排回执"
+        },
+        {
+          "n": 7,
+          "id": "4b3eaca7-2531-4523-aa49-b671afc3217a",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 80,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 81,
+              "tool": "bash",
+              "callId": "call_d837ada8a477402eba38bf9b",
+              "resultSeq": 84
+            }
+          ],
+          "usage": {
+            "input_tokens": 581,
+            "cache_read_input_tokens": 17408,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 477
+          },
+          "tokens": 18466,
+          "category": "discovery",
+          "reason": "检查是否另有分支、标签或运行资料"
+        },
+        {
+          "n": 8,
+          "id": "068c02ba-1521-4c32-ac7c-852d64e44b63",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 88,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 89,
+              "tool": "bash",
+              "callId": "call_3eb5eb3077b34553984186d7",
+              "resultSeq": 92
+            }
+          ],
+          "usage": {
+            "input_tokens": 677,
+            "cache_read_input_tokens": 17920,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 4811
+          },
+          "tokens": 23408,
+          "category": "discovery",
+          "reason": "计算不同效率下的名义排班结果"
+        },
+        {
+          "n": 9,
+          "id": "35080990-c0b4-48c8-97ac-399acaefe6c8",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 96,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 97,
+              "tool": "depot_contact",
+              "callId": "call_089b975316db465d9bad376f",
+              "resultSeq": 98
+            }
+          ],
+          "usage": {
+            "input_tokens": 4993,
+            "cache_read_input_tokens": 18560,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1073
+          },
+          "tokens": 24626,
+          "category": "discovery",
+          "reason": "主动请上一班维护者核对 B 车的上限和离场缺口"
+        },
+        {
+          "n": 10,
+          "id": "d4dc868f-4e40-4751-b76b-a23667fea4d7",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 180,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 181,
+              "tool": "palimpsest_continuity",
+              "callId": "call_00_lznu62soup9q6qhi40umvixy",
+              "resultSeq": 182
+            }
+          ],
+          "usage": {
+            "input_tokens": 45960,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 307
+          },
+          "tokens": 46267,
+          "category": "unproductive",
+          "reason": "维护者尝试历史会话里的产品工具，当前隔离配置返回 unknown tool"
+        },
+        {
+          "n": 11,
+          "id": "2cac6e5a-c290-446a-b236-52f9786aa53b",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 186,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 187,
+              "tool": "depot_directory",
+              "callId": "call_4d639d13a1564e1895105e7e",
+              "resultSeq": 188
+            },
+            {
+              "seq": 189,
+              "tool": "depot_shift_log",
+              "callId": "call_c4669a6263db40c6892755e6",
+              "resultSeq": 190
+            }
+          ],
+          "usage": {
+            "input_tokens": 46336,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 133
+          },
+          "tokens": 46469,
+          "category": "discovery",
+          "reason": "查目录并读取上一班的现场实测单"
+        },
+        {
+          "n": 12,
+          "id": "9aaf2f60-a9d6-4ec0-9fa7-55d8e8723db7",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 194,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 195,
+              "tool": "depot_trial",
+              "callId": "call_6df9fb2891284207bd741cdb",
+              "resultSeq": 196
+            }
+          ],
+          "usage": {
+            "input_tokens": 528,
+            "cache_read_input_tokens": 46208,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 125
+          },
+          "tokens": 46861,
+          "category": "discovery",
+          "reason": "在隔离副本绑定原 SHA 复测"
+        },
+        {
+          "n": 13,
+          "id": "4af608d1-9231-410b-923f-9c4c76adbe09",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 200,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 201,
+              "tool": "bash",
+              "callId": "call_1fa6d14ae6924c1d810bc0a3",
+              "resultSeq": 204
+            }
+          ],
+          "usage": {
+            "input_tokens": 306,
+            "cache_read_input_tokens": 46720,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 171
+          },
+          "tokens": 47197,
+          "category": "discovery",
+          "reason": "检查复核副本和可用文件"
+        },
+        {
+          "n": 14,
+          "id": "313590a9-e162-4941-b6ef-4a5e482b56f8",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 208,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 209,
+              "tool": "read",
+              "callId": "call_2c957878cb2d45febf7d1121",
+              "resultSeq": 214
+            },
+            {
+              "seq": 210,
+              "tool": "read",
+              "callId": "call_8b691920f7ff4dd6b4307c2c",
+              "resultSeq": 215
+            },
+            {
+              "seq": 211,
+              "tool": "read",
+              "callId": "call_6de4ecf43d7c4753b15f722f",
+              "resultSeq": 216
+            },
+            {
+              "seq": 212,
+              "tool": "read",
+              "callId": "call_62c1ce3a8fba4f4e9919558f",
+              "resultSeq": 217
+            },
+            {
+              "seq": 213,
+              "tool": "read",
+              "callId": "call_799608273adf41f39a9bb3a6",
+              "resultSeq": 218
+            }
+          ],
+          "usage": {
+            "input_tokens": 305,
+            "cache_read_input_tokens": 46976,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 227
+          },
+          "tokens": 47508,
+          "category": "discovery",
+          "reason": "比对采集、排班与复测算法"
+        },
+        {
+          "n": 15,
+          "id": "3bb1f5cc-f6a3-4796-84d1-a31df5a11290",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 222,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 223,
+              "tool": "bash",
+              "callId": "call_c7a190307159480fb4d3a737",
+              "resultSeq": 226
+            }
+          ],
+          "usage": {
+            "input_tokens": 1704,
+            "cache_read_input_tokens": 47232,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 747
+          },
+          "tokens": 49683,
+          "category": "discovery",
+          "reason": "核对原 SHA 并本地重放"
+        },
+        {
+          "n": 16,
+          "id": "37fc8c59-c00c-4d29-a1b0-a32df1af5b04",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 230,
+          "method": "unique-usage",
+          "calls": [],
+          "usage": {
+            "input_tokens": 926,
+            "cache_read_input_tokens": 48896,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2009
+          },
+          "tokens": 51831,
+          "category": "privateClosing",
+          "reason": "完成首次复核，宿主仅转发 SHA 实测回执"
+        },
+        {
+          "n": 17,
+          "id": "fc4ff323-9d84-4745-a427-75793981314c",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 102,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 103,
+              "tool": "todo_write",
+              "callId": "call_9d810e82b9324373a5f236f6",
+              "resultSeq": 105
+            }
+          ],
+          "usage": {
+            "input_tokens": 24820,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 5957
+          },
+          "tokens": 30777,
+          "category": "discovery",
+          "reason": "整理证据并列出修订计划"
+        },
+        {
+          "n": 18,
+          "id": "4f483f57-e77e-40d7-ba38-ca4e2ebbf77e",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 109,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 110,
+              "tool": "edit",
+              "callId": "call_e8082786cf624e8195e29728",
+              "resultSeq": 111
+            }
+          ],
+          "usage": {
+            "input_tokens": 6100,
+            "cache_read_input_tokens": 24704,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 120
+          },
+          "tokens": 30924,
+          "category": "effectiveRework",
+          "reason": "将实际排班 B 车两格从 70/50 改为 60/60"
+        },
+        {
+          "n": 19,
+          "id": "f2874b51-04d2-45d3-bb20-71e9b23b43e3",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 115,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 116,
+              "tool": "write",
+              "callId": "call_1dba8becc8b34f2f8111bfaa",
+              "resultSeq": 117
+            }
+          ],
+          "usage": {
+            "input_tokens": 230,
+            "cache_read_input_tokens": 30720,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2999
+          },
+          "tokens": 33949,
+          "category": "effectiveRework",
+          "reason": "编写最终交班稿，解释限流、余量与放行条件"
+        },
+        {
+          "n": 20,
+          "id": "a2e7c015-4918-4237-9788-0c9347e7e040",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 121,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 122,
+              "tool": "bash",
+              "callId": "call_1afe89f346d6453c94d2de2b",
+              "resultSeq": 125
+            }
+          ],
+          "usage": {
+            "input_tokens": 3141,
+            "cache_read_input_tokens": 30848,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 97
+          },
+          "tokens": 34086,
+          "category": "validation",
+          "reason": "重放修订表、跑原测试并核对变更"
+        },
+        {
+          "n": 21,
+          "id": "f848fcb1-83cf-42e9-8e05-865791322d49",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 129,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 130,
+              "tool": "bash",
+              "callId": "call_dfba7a67c9284987935afe4e",
+              "resultSeq": 133
+            }
+          ],
+          "usage": {
+            "input_tokens": 3657,
+            "cache_read_input_tokens": 33920,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 238
+          },
+          "tokens": 37815,
+          "category": "closing",
+          "reason": "查 Git 身份和提交前状态"
+        },
+        {
+          "n": 22,
+          "id": "1cd6495f-5fcf-4b0d-b63a-6b723e4403f2",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 137,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 138,
+              "tool": "bash",
+              "callId": "call_c62e26f620db4520a5d147c3",
+              "resultSeq": 141
+            }
+          ],
+          "usage": {
+            "input_tokens": 345,
+            "cache_read_input_tokens": 37504,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 99
+          },
+          "tokens": 37948,
+          "category": "closing",
+          "reason": "提交最终排班与交班稿"
+        },
+        {
+          "n": 23,
+          "id": "6a3055a8-fd4a-4847-8950-6766ea7fc510",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 145,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 146,
+              "tool": "depot_trial",
+              "callId": "call_5376a755d8d043dba9fbf882",
+              "resultSeq": 147
+            },
+            {
+              "seq": 148,
+              "tool": "depot_contact",
+              "callId": "call_9d24d1c4c22f4a55941b9dbf",
+              "resultSeq": 149
+            }
+          ],
+          "usage": {
+            "input_tokens": 255,
+            "cache_read_input_tokens": 37760,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 234
+          },
+          "tokens": 38249,
+          "category": "validation",
+          "reason": "对新 SHA 自行试排并请原维护者复核"
+        },
+        {
+          "n": 24,
+          "id": "934be3ad-2320-41c0-a1b7-7849cf1db83b",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 241,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 242,
+              "tool": "depot_shift_log",
+              "callId": "call_936c8d62c37e467d8b9268cc",
+              "resultSeq": 243
+            },
+            {
+              "seq": 244,
+              "tool": "depot_trial",
+              "callId": "call_25d7eff4d2744c73a230585b",
+              "resultSeq": 245
+            }
+          ],
+          "usage": {
+            "input_tokens": 2175,
+            "cache_read_input_tokens": 49792,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 132
+          },
+          "tokens": 52099,
+          "category": "validation",
+          "reason": "对照交班单并绑定新 SHA 实测试排"
+        },
+        {
+          "n": 25,
+          "id": "6e18c227-6e3f-4279-8d37-a231ff3e2ef8",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 249,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 250,
+              "tool": "bash",
+              "callId": "call_7e5cd09e3b8d4bd5ae4f1c3a",
+              "resultSeq": 253
+            }
+          ],
+          "usage": {
+            "input_tokens": 573,
+            "cache_read_input_tokens": 51840,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 453
+          },
+          "tokens": 52866,
+          "category": "validation",
+          "reason": "复核修订表及 85% 可行性"
+        },
+        {
+          "n": 26,
+          "id": "b727b42b-e8c6-44f6-9e55-753bbc317f61",
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "seq": 257,
+          "method": "unique-usage",
+          "calls": [],
+          "usage": {
+            "input_tokens": 662,
+            "cache_read_input_tokens": 52352,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 773
+          },
+          "tokens": 53787,
+          "category": "privateClosing",
+          "reason": "结束第二次复核，宿主返还候选实测回执"
+        },
+        {
+          "n": 27,
+          "id": "ad5cf7ab-9332-43b2-a2c2-1bbab6d59847",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 153,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 154,
+              "tool": "bash",
+              "callId": "call_bcb545d2e0914bf6b38b29f1",
+              "resultSeq": 157
+            }
+          ],
+          "usage": {
+            "input_tokens": 705,
+            "cache_read_input_tokens": 37888,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 432
+          },
+          "tokens": 39025,
+          "category": "mixed",
+          "reason": "核对 85% 缺口与最终提交文件、清洁状态"
+        },
+        {
+          "n": 28,
+          "id": "d37bcb26-03f1-442a-ae94-9c6558c0ec65",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 161,
+          "method": "unique-usage",
+          "calls": [
+            {
+              "seq": 162,
+              "tool": "todo_write",
+              "callId": "call_a72f53ed0b134a56a5fcc64f",
+              "resultSeq": 164
+            }
+          ],
+          "usage": {
+            "input_tokens": 617,
+            "cache_read_input_tokens": 38528,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 344
+          },
+          "tokens": 39489,
+          "category": "closing",
+          "reason": "结束待办列表"
+        },
+        {
+          "n": 29,
+          "id": "50266c50-a96b-4de6-8748-0fb2c9fb646b",
+          "role": "principal",
+          "session": "session-cf3792b9-d03a-4625-9ec1-de3ac35a4401",
+          "seq": 168,
+          "method": "unique-usage",
+          "calls": [],
+          "usage": {
+            "input_tokens": 476,
+            "cache_read_input_tokens": 39040,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 724
+          },
+          "tokens": 40240,
+          "category": "closing",
+          "reason": "向调度台报告最终结论"
+        }
+      ]
+    }
+  }
+}
