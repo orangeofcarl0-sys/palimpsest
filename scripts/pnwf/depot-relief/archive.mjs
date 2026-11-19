@@ -7,7 +7,8 @@ import {PAID_MODE} from "../bounded_provider.mjs";
 import {digest,readJson,writeJson} from "../energy/contract.mjs";
 import {readStream} from "../analyze_energy_trajectory.mjs";
 import {git} from "../transit-desk/run.mjs";
-import {grade,measure,here,goal} from "./case.mjs";
+import * as reliefCase from "./case.mjs";
+import * as shiftLogCase from "../depot-shift-log/case.mjs";
 import {oldRequest} from "./isolate-unknown.mjs";
 import {buildEvidence,evidencePaths} from "./evidence.mjs";
 
@@ -47,6 +48,8 @@ function manifest(dir){
 }
 function verify(dir){
   const m=readJson(join(dir,"matrix.json"));
+  const splitLogs=m.seal.scenario==="depot-shift-log";
+  const {grade,measure,here,goal}=splitLogs?shiftLogCase:reliefCase;
   assert.deepEqual(readJson(join(dir,"previous-unknown.json")),oldRequest());
   assert.deepEqual(manifest(dir),readJson(join(dir,"manifest.json")));
   for(const [p,hash] of Object.entries(m.seal.files))assert.equal(digest(readFileSync(join(here,p))),hash,p);
@@ -73,7 +76,16 @@ function verify(dir){
       assert.deepEqual(measure(db,row.basis),readJson(join(src,"previous-shift-slip.json")));
       assert.deepEqual(grade(db,row.basis,row.head),row.grade);
       const facts=readJson(join(src,"desk/journal.json"));
-      for(const f of facts.filter(f=>f.receipt))assert.deepEqual(measure(db,f.receipt.sha),f.receipt);
+      if(splitLogs){
+        assert.deepEqual(readJson(join(src,"private-capture.json")),shiftLogCase.privateLog);
+        assert.deepEqual(JSON.parse(git(db,"show",row.basis+":operations/cold-cycle.json")),shiftLogCase.publicLog);
+        assert.deepEqual(measure(db,row.basis,shiftLogCase.publicLog),row.publicTrial);
+        assert.equal(digest(JSON.stringify(shiftLogCase.privateLog)),m.seal.privateDigest);
+      }
+      for(const f of facts.filter(f=>f.receipt)){
+        const record=splitLogs&&f.kind==="SELF_TRIAL"?shiftLogCase.publicLog:undefined;
+        assert.deepEqual(measure(db,f.receipt.sha,record),f.receipt);
+      }
       for(const f of facts.filter(f=>f.kind==="CONTACT")){
         const priv=join(src,"desk",String(f.n),"private");
         if(!existsSync(priv))continue;
@@ -97,6 +109,7 @@ if(source!=="--verify"){
   for(const row of readJson(join(run,"matrix.json")).arms){
     const src=join(run,row.arm),out=join(dest,row.arm),world=join(src,"stages/REVIEW/world");
     for(const p of [...evidencePaths(src),"trajectory.json"])copy(src,out,p);
+    if(existsSync(join(src,"private-capture.json")))copy(src,out,"private-capture.json");
     saveReviewerCopies(src,out);
     if(row.unknown||readJson(join(run,"matrix.json")).mode==="live")copy(src,out,"request-ledger.sqlite");
     for(const p of ["HANDOVER.md","shift-plan.json"]){

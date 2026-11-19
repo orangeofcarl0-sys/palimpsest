@@ -1,0 +1,1141 @@
+{
+  "mode": "live",
+  "basis": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+  "arms": {
+    "P": {
+      "head": "e155e2899ebb4844738cee198b6ca58d2e1d25ed",
+      "clean": true,
+      "grade": {
+        "sha": "e155e2899ebb4844738cee198b6ca58d2e1d25ed",
+        "paths": [
+          "HANDOVER.md"
+        ],
+        "checks": {
+          "commit": true,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": false,
+          "fourthSlot": false,
+          "fieldFeasible": false,
+          "lowEfficiency": true,
+          "updatedHandover": true
+        },
+        "passed": false,
+        "observed": {
+          "sha": "e155e2899ebb4844738cee198b6ca58d2e1d25ed",
+          "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+          "run": "DUTY-2340",
+          "time": "23:40",
+          "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+          "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "limits": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "actual": [
+            80,
+            40,
+            50,
+            50
+          ],
+          "departureKwh": [
+            126,
+            121
+          ],
+          "withinLimits": false
+        }
+      },
+      "publicBasis": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+        "run": "DESK-21",
+        "time": "21:00",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+        "requested": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "actual": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "departureKwh": [
+          126,
+          130
+        ],
+        "withinLimits": true
+      },
+      "privateBasis": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+        "run": "DUTY-2340",
+        "time": "23:40",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "requested": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "actual": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "departureKwh": [
+          126,
+          121
+        ],
+        "withinLimits": false
+      },
+      "natural": true,
+      "conclusion": "DELIVER",
+      "elapsedMs": 728431,
+      "requests": 44,
+      "confirmed": 2296656,
+      "unknown": 0,
+      "total": 2296656,
+      "actors": {
+        "principal": {
+          "requests": 18,
+          "fresh": 52201,
+          "cacheRead": 484992,
+          "cacheWrite": 0,
+          "output": 23252,
+          "total": 560445
+        },
+        "maintainer": {
+          "requests": 26,
+          "fresh": 83022,
+          "cacheRead": 1625728,
+          "cacheWrite": 0,
+          "output": 27461,
+          "total": 1736211
+        }
+      },
+      "captureAudit": {
+        "record": "DESK-21",
+        "basisCaptureBlob": "33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "committedCaptureBlob": "33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "otherPathsWithOriginalBytes": [],
+        "claimedLimits": null,
+        "candidateRegisters": [
+          [
+            6000,
+            6040
+          ],
+          [
+            6040,
+            6060
+          ],
+          [
+            6060,
+            6095
+          ],
+          [
+            6095,
+            6120
+          ]
+        ],
+        "candidateMeterLimits": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "lateRegisters": [
+          [
+            8100,
+            8140
+          ],
+          [
+            8140,
+            8160
+          ],
+          [
+            8160,
+            8185
+          ],
+          [
+            8185,
+            8220
+          ]
+        ],
+        "lateMeterLimits": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "claimedCaptureDigest": null,
+        "lateDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "sameRawSamples": false,
+        "revisions": [
+          {
+            "sha": "e155e2899ebb4844738cee198b6ca58d2e1d25ed",
+            "capture": "DESK-21",
+            "registers": [
+              [
+                6000,
+                6040
+              ],
+              [
+                6040,
+                6060
+              ],
+              [
+                6060,
+                6095
+              ],
+              [
+                6095,
+                6120
+              ]
+            ],
+            "meterLimits": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "claimedLimits": null,
+            "archivedLateReceipt": null,
+            "plan": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "paths": [
+              "HANDOVER.md"
+            ]
+          }
+        ]
+      },
+      "contacts": [
+        {
+          "index": 1,
+          "at": "2026-11-19T12:13:12.972Z",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "question": "请核查现行班表 shift-plan.json 在 DESK-21（21:00 采集，冷夜、20 kW 平移生效、明早负荷配置）下的实际逐格可用功率、两车离场电量和余量，并说明是否有需要修订之处。",
+          "callId": "call_ef155b86bf14436bb04ed20b",
+          "callSeq": 75,
+          "resultSeq": 76,
+          "before": {
+            "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+            "acKw": [
+              80,
+              40,
+              70,
+              50
+            ]
+          },
+          "measuredAt": "2026-11-19T12:14:31.413Z",
+          "hostReturnAt": "2026-11-19T12:21:50.753Z",
+          "onHostReturn": {
+            "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+            "acKw": [
+              80,
+              40,
+              70,
+              50
+            ]
+          },
+          "delivered": false,
+          "reply": "Error: fetch failed",
+          "receipt": null
+        }
+      ],
+      "attempts": [
+        {
+          "callId": "call_ef155b86bf14436bb04ed20b",
+          "seq": 75,
+          "resultSeq": 76,
+          "accepted": true,
+          "question": "请核查现行班表 shift-plan.json 在 DESK-21（21:00 采集，冷夜、20 kW 平移生效、明早负荷配置）下的实际逐格可用功率、两车离场电量和余量，并说明是否有需要修订之处。",
+          "reply": "Error: fetch failed"
+        },
+        {
+          "callId": "call_8fde33e3ba9a4f169169fc35",
+          "seq": 81,
+          "resultSeq": 82,
+          "accepted": false,
+          "question": "现行班表在 DESK-21 下复算为 actual [80,40,70,50]、离场 [126,130]，请确认是否可作为明早两车放行依据；85% 效率时两车是否均缺 3 kWh？",
+          "reply": "{\"ok\":false,\"reason\":\"Invalid or busy contact\"}"
+        }
+      ],
+      "visibility": {
+        "firstPrivateSeq": null,
+        "firstPrivateType": null,
+        "firstReturnSeq": null,
+        "privateMarkerBeforeReturn": false,
+        "reviewerFirstPrivateResult": {
+          "call": 187,
+          "result": 188,
+          "tool": "depot_shift_log"
+        }
+      },
+      "actions": [
+        {
+          "role": "principal",
+          "session": "session-8296dd5c-f79a-4572-92ca-8b9f3c06bd8b",
+          "calls": 30,
+          "pairs": 30,
+          "fieldTools": [
+            {
+              "seq": 25,
+              "tool": "depot_directory",
+              "result": 26
+            },
+            {
+              "seq": 73,
+              "tool": "depot_trial",
+              "result": 74
+            },
+            {
+              "seq": 75,
+              "tool": "depot_contact",
+              "result": 76
+            },
+            {
+              "seq": 81,
+              "tool": "depot_contact",
+              "result": 82
+            },
+            {
+              "seq": 149,
+              "tool": "depot_trial",
+              "result": 150
+            }
+          ]
+        },
+        {
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "calls": 32,
+          "pairs": 32,
+          "fieldTools": [
+            {
+              "seq": 185,
+              "tool": "depot_directory",
+              "result": 186
+            },
+            {
+              "seq": 187,
+              "tool": "depot_shift_log",
+              "result": 188
+            },
+            {
+              "seq": 227,
+              "tool": "depot_trial",
+              "result": 228
+            },
+            {
+              "seq": 343,
+              "tool": "depot_trial",
+              "result": 344
+            }
+          ]
+        }
+      ]
+    },
+    "F": {
+      "head": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+      "clean": true,
+      "grade": {
+        "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+        "paths": [
+          "HANDOVER.md",
+          "operations/desk.md",
+          "operations/duty-2340.json",
+          "operations/retest.mjs",
+          "shift-plan.json"
+        ],
+        "checks": {
+          "commit": true,
+          "originalInputs": false,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": true,
+          "fourthSlot": true,
+          "fieldFeasible": true,
+          "lowEfficiency": true,
+          "updatedHandover": true
+        },
+        "passed": false,
+        "observed": {
+          "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+          "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+          "run": "DUTY-2340",
+          "time": "23:40",
+          "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+          "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "limits": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "actual": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departureKwh": [
+            126,
+            130
+          ],
+          "withinLimits": true
+        }
+      },
+      "publicBasis": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+        "run": "DESK-21",
+        "time": "21:00",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+        "requested": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "actual": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "departureKwh": [
+          126,
+          130
+        ],
+        "withinLimits": true
+      },
+      "privateBasis": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+        "run": "DUTY-2340",
+        "time": "23:40",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "requested": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "actual": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "departureKwh": [
+          126,
+          121
+        ],
+        "withinLimits": false
+      },
+      "natural": true,
+      "conclusion": null,
+      "elapsedMs": 937437,
+      "requests": 55,
+      "confirmed": 2749622,
+      "unknown": 0,
+      "total": 2749622,
+      "actors": {
+        "principal": {
+          "requests": 37,
+          "fresh": 74443,
+          "cacheRead": 1427712,
+          "cacheWrite": 0,
+          "output": 42720,
+          "total": 1544875
+        },
+        "maintainer": {
+          "requests": 18,
+          "fresh": 214123,
+          "cacheRead": 961152,
+          "cacheWrite": 0,
+          "output": 29472,
+          "total": 1204747
+        }
+      },
+      "captureAudit": {
+        "record": "DESK-21",
+        "basisCaptureBlob": "33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "committedCaptureBlob": "33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "otherPathsWithOriginalBytes": [],
+        "claimedLimits": null,
+        "candidateRegisters": [
+          [
+            6000,
+            6040
+          ],
+          [
+            6040,
+            6060
+          ],
+          [
+            6060,
+            6095
+          ],
+          [
+            6095,
+            6120
+          ]
+        ],
+        "candidateMeterLimits": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "lateRegisters": [
+          [
+            8100,
+            8140
+          ],
+          [
+            8140,
+            8160
+          ],
+          [
+            8160,
+            8185
+          ],
+          [
+            8185,
+            8220
+          ]
+        ],
+        "lateMeterLimits": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "claimedCaptureDigest": null,
+        "lateDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "sameRawSamples": false,
+        "revisions": [
+          {
+            "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+            "capture": "DUTY-2340",
+            "registers": [
+              [
+                6100,
+                6140
+              ],
+              [
+                6140,
+                6160
+              ],
+              [
+                6160,
+                6185
+              ],
+              [
+                6185,
+                6210
+              ]
+            ],
+            "meterLimits": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "claimedLimits": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "archivedLateReceipt": null,
+            "plan": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "paths": [
+              "HANDOVER.md",
+              "operations/cold-cycle.json",
+              "operations/desk-21.json",
+              "operations/desk.md",
+              "operations/retest.mjs",
+              "shift-plan.json"
+            ]
+          },
+          {
+            "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+            "capture": "DESK-21",
+            "registers": [
+              [
+                6000,
+                6040
+              ],
+              [
+                6040,
+                6060
+              ],
+              [
+                6060,
+                6095
+              ],
+              [
+                6095,
+                6120
+              ]
+            ],
+            "meterLimits": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "claimedLimits": null,
+            "archivedLateReceipt": {
+              "run": "DUTY-2340",
+              "time": "23:40",
+              "device": "RIVER-SIM-1",
+              "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+              "source": "depot_contact receipt",
+              "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+              "limitsKw": [
+                80,
+                40,
+                50,
+                70
+              ],
+              "requestedKw": [
+                80,
+                40,
+                70,
+                50
+              ],
+              "actualKw": [
+                80,
+                40,
+                50,
+                50
+              ],
+              "departureKwh": [
+                126,
+                121
+              ]
+            },
+            "plan": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "paths": [
+              "HANDOVER.md",
+              "operations/desk.md",
+              "operations/duty-2340.json",
+              "operations/retest.mjs",
+              "shift-plan.json"
+            ]
+          }
+        ]
+      },
+      "contacts": [
+        {
+          "index": 1,
+          "at": "2026-11-19T12:25:44.556Z",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "question": "现行班表 acKw=[80,40,70,50]、loadShiftKw=20、dispatchAt85=false 是否与 DESK-21 采集及明早两车离场要求一致？请给出实测各格可用功率、两车离场电量和缺口，并说明 85% 时应如何放行。",
+          "callId": "call_4ad4adfb4c9945aca40a6401",
+          "callSeq": 119,
+          "resultSeq": 120,
+          "before": {
+            "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+            "acKw": [
+              80,
+              40,
+              70,
+              50
+            ]
+          },
+          "measuredAt": "2026-11-19T12:26:05.102Z",
+          "hostReturnAt": "2026-11-19T12:30:24.379Z",
+          "onHostReturn": {
+            "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+            "acKw": [
+              80,
+              40,
+              70,
+              50
+            ]
+          },
+          "delivered": true,
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"341e19e288de9f561f85fcb66a7a910ff6f3e143\",\"sheetBlob\":\"909e4162101af570a83237847bf14bd8186a9558\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,70,50],\"limits\":[80,40,50,70],\"actual\":[80,40,50,50],\"departureKwh\":[126,121],\"withinLimits\":false}}",
+          "receipt": {
+            "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+            "run": "DUTY-2340",
+            "time": "23:40",
+            "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "limits": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "actual": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departureKwh": [
+              126,
+              121
+            ],
+            "withinLimits": false
+          }
+        },
+        {
+          "index": 2,
+          "at": "2026-11-19T12:30:53.433Z",
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "question": "请给出 DUTY-2340 完整采集：各格时间、minutes、requestedKw、facilityKw、acMeterStart/EndKwh，以及它相对 DESK-21 的适用时间说明。为何 limits 是 [80,40,50,70]？按 90% 效率，现行班表两车分别能到多少、各缺多少？",
+          "callId": "call_9a774985e7eb4774a0bf936f",
+          "callSeq": 141,
+          "resultSeq": 142,
+          "before": {
+            "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+            "acKw": [
+              80,
+              40,
+              70,
+              50
+            ]
+          },
+          "measuredAt": "2026-11-19T12:31:14.408Z",
+          "hostReturnAt": "2026-11-19T12:31:57.908Z",
+          "onHostReturn": {
+            "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+            "acKw": [
+              80,
+              40,
+              70,
+              50
+            ]
+          },
+          "delivered": true,
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"341e19e288de9f561f85fcb66a7a910ff6f3e143\",\"sheetBlob\":\"909e4162101af570a83237847bf14bd8186a9558\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,70,50],\"limits\":[80,40,50,70],\"actual\":[80,40,50,50],\"departureKwh\":[126,121],\"withinLimits\":false}}",
+          "receipt": {
+            "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+            "run": "DUTY-2340",
+            "time": "23:40",
+            "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "requested": [
+              80,
+              40,
+              70,
+              50
+            ],
+            "limits": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "actual": [
+              80,
+              40,
+              50,
+              50
+            ],
+            "departureKwh": [
+              126,
+              121
+            ],
+            "withinLimits": false
+          }
+        },
+        {
+          "index": 3,
+          "at": "2026-11-19T12:36:07.195Z",
+          "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+          "question": "请复核修订后的班表：acKw=[80,40,50,70]、loadShiftKw=20、dispatchAt85=false。给出实测各格可用功率、两车离场电量与余量，并确认 85% 时是否放行。",
+          "callId": "call_e0012560083a4d968f5fca5e",
+          "callSeq": 265,
+          "resultSeq": 266,
+          "before": {
+            "head": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+            "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ]
+          },
+          "measuredAt": "2026-11-19T12:36:18.488Z",
+          "hostReturnAt": "2026-11-19T12:37:01.508Z",
+          "onHostReturn": {
+            "head": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+            "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ]
+          },
+          "delivered": true,
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"e768d81dd01a3a41f51707c1d4d4c708c845b4c0\",\"sheetBlob\":\"7e136dd9f9597aeb94e5353e03c287e7089bb197\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,50,70],\"limits\":[80,40,50,70],\"actual\":[80,40,50,70],\"departureKwh\":[126,130],\"withinLimits\":true}}",
+          "receipt": {
+            "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+            "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+            "run": "DUTY-2340",
+            "time": "23:40",
+            "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "requested": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "limits": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "actual": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "departureKwh": [
+              126,
+              130
+            ],
+            "withinLimits": true
+          }
+        },
+        {
+          "index": 4,
+          "at": "2026-11-19T12:38:35.900Z",
+          "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+          "question": "请对最终交班稿复核：acKw=[80,40,50,70]、loadShiftKw=20、dispatchAt85=false，两车离场余量及 85% 放行决定是否与 DUTY-2340 一致？",
+          "callId": "call_5b030b986e844631823e1a05",
+          "callSeq": 329,
+          "resultSeq": 330,
+          "before": {
+            "head": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+            "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ]
+          },
+          "measuredAt": "2026-11-19T12:38:46.618Z",
+          "hostReturnAt": "2026-11-19T12:39:28.585Z",
+          "onHostReturn": {
+            "head": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+            "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+            "acKw": [
+              80,
+              40,
+              50,
+              70
+            ]
+          },
+          "delivered": true,
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"1542584d87561fd46f3b29a0dd2a5a3c17327064\",\"sheetBlob\":\"7e136dd9f9597aeb94e5353e03c287e7089bb197\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,50,70],\"limits\":[80,40,50,70],\"actual\":[80,40,50,70],\"departureKwh\":[126,130],\"withinLimits\":true}}",
+          "receipt": {
+            "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+            "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+            "run": "DUTY-2340",
+            "time": "23:40",
+            "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "requested": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "limits": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "actual": [
+              80,
+              40,
+              50,
+              70
+            ],
+            "departureKwh": [
+              126,
+              130
+            ],
+            "withinLimits": true
+          }
+        }
+      ],
+      "attempts": [
+        {
+          "callId": "call_4ad4adfb4c9945aca40a6401",
+          "seq": 119,
+          "resultSeq": 120,
+          "accepted": true,
+          "question": "现行班表 acKw=[80,40,70,50]、loadShiftKw=20、dispatchAt85=false 是否与 DESK-21 采集及明早两车离场要求一致？请给出实测各格可用功率、两车离场电量和缺口，并说明 85% 时应如何放行。",
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"341e19e288de9f561f85fcb66a7a910ff6f3e143\",\"sheetBlob\":\"909e4162101af570a83237847bf14bd8186a9558\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,70,50],\"limits\":[80,40,50,70],\"actual\":[80,40,50,50],\"departureKwh\":[126,121],\"withinLimits\":false}}"
+        },
+        {
+          "callId": "call_9a774985e7eb4774a0bf936f",
+          "seq": 141,
+          "resultSeq": 142,
+          "accepted": true,
+          "question": "请给出 DUTY-2340 完整采集：各格时间、minutes、requestedKw、facilityKw、acMeterStart/EndKwh，以及它相对 DESK-21 的适用时间说明。为何 limits 是 [80,40,50,70]？按 90% 效率，现行班表两车分别能到多少、各缺多少？",
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"341e19e288de9f561f85fcb66a7a910ff6f3e143\",\"sheetBlob\":\"909e4162101af570a83237847bf14bd8186a9558\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,70,50],\"limits\":[80,40,50,70],\"actual\":[80,40,50,50],\"departureKwh\":[126,121],\"withinLimits\":false}}"
+        },
+        {
+          "callId": "call_e0012560083a4d968f5fca5e",
+          "seq": 265,
+          "resultSeq": 266,
+          "accepted": true,
+          "question": "请复核修订后的班表：acKw=[80,40,50,70]、loadShiftKw=20、dispatchAt85=false。给出实测各格可用功率、两车离场电量与余量，并确认 85% 时是否放行。",
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"e768d81dd01a3a41f51707c1d4d4c708c845b4c0\",\"sheetBlob\":\"7e136dd9f9597aeb94e5353e03c287e7089bb197\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,50,70],\"limits\":[80,40,50,70],\"actual\":[80,40,50,70],\"departureKwh\":[126,130],\"withinLimits\":true}}"
+        },
+        {
+          "callId": "call_5b030b986e844631823e1a05",
+          "seq": 329,
+          "resultSeq": 330,
+          "accepted": true,
+          "question": "请对最终交班稿复核：acKw=[80,40,50,70]、loadShiftKw=20、dispatchAt85=false，两车离场余量及 85% 放行决定是否与 DUTY-2340 一致？",
+          "reply": "{\"ok\":true,\"from\":\"session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df\",\"receipt\":{\"sha\":\"1542584d87561fd46f3b29a0dd2a5a3c17327064\",\"sheetBlob\":\"7e136dd9f9597aeb94e5353e03c287e7089bb197\",\"run\":\"DUTY-2340\",\"time\":\"23:40\",\"conditions\":\"冷夜，20 kW 平移生效；明早负荷配置\",\"captureDigest\":\"4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542\",\"requested\":[80,40,50,70],\"limits\":[80,40,50,70],\"actual\":[80,40,50,70],\"departureKwh\":[126,130],\"withinLimits\":true}}"
+        }
+      ],
+      "visibility": {
+        "firstPrivateSeq": 120,
+        "firstPrivateType": "tool/result",
+        "firstReturnSeq": 120,
+        "privateMarkerBeforeReturn": false,
+        "reviewerFirstPrivateResult": {
+          "call": 185,
+          "result": 186,
+          "tool": "depot_shift_log"
+        }
+      },
+      "actions": [
+        {
+          "role": "principal",
+          "session": "session-a410045d-aa66-4107-b32e-ea44c8b2f9a0",
+          "calls": 57,
+          "pairs": 57,
+          "fieldTools": [
+            {
+              "seq": 19,
+              "tool": "depot_directory",
+              "result": 20
+            },
+            {
+              "seq": 65,
+              "tool": "depot_trial",
+              "result": 66
+            },
+            {
+              "seq": 119,
+              "tool": "depot_contact",
+              "result": 120
+            },
+            {
+              "seq": 129,
+              "tool": "depot_directory",
+              "result": 130
+            },
+            {
+              "seq": 135,
+              "tool": "depot_trial",
+              "result": 136
+            },
+            {
+              "seq": 141,
+              "tool": "depot_contact",
+              "result": 142
+            },
+            {
+              "seq": 263,
+              "tool": "depot_trial",
+              "result": 264
+            },
+            {
+              "seq": 265,
+              "tool": "depot_contact",
+              "result": 266
+            },
+            {
+              "seq": 329,
+              "tool": "depot_contact",
+              "result": 330
+            },
+            {
+              "seq": 335,
+              "tool": "depot_trial",
+              "result": 336
+            }
+          ]
+        },
+        {
+          "role": "maintainer",
+          "session": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+          "calls": 33,
+          "pairs": 33,
+          "fieldTools": [
+            {
+              "seq": 185,
+              "tool": "depot_shift_log",
+              "result": 186
+            },
+            {
+              "seq": 187,
+              "tool": "depot_directory",
+              "result": 188
+            },
+            {
+              "seq": 189,
+              "tool": "depot_trial",
+              "result": 190
+            },
+            {
+              "seq": 231,
+              "tool": "depot_shift_log",
+              "result": 232
+            },
+            {
+              "seq": 233,
+              "tool": "depot_trial",
+              "result": 234
+            },
+            {
+              "seq": 235,
+              "tool": "depot_directory",
+              "result": 236
+            },
+            {
+              "seq": 274,
+              "tool": "depot_shift_log",
+              "result": 275
+            },
+            {
+              "seq": 276,
+              "tool": "depot_trial",
+              "result": 277
+            },
+            {
+              "seq": 301,
+              "tool": "depot_shift_log",
+              "result": 302
+            },
+            {
+              "seq": 303,
+              "tool": "depot_trial",
+              "result": 304
+            },
+            {
+              "seq": 305,
+              "tool": "depot_directory",
+              "result": 306
+            },
+            {
+              "seq": 334,
+              "tool": "depot_shift_log",
+              "result": 335
+            },
+            {
+              "seq": 336,
+              "tool": "depot_trial",
+              "result": 337
+            },
+            {
+              "seq": 338,
+              "tool": "depot_directory",
+              "result": 339
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
