@@ -1,0 +1,235 @@
+{
+  "schema": "transit-desk-controls/v1",
+  "image": "node@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d",
+  "providerRequests": 0,
+  "cases": [
+    {
+      "id": "public-brief",
+      "baseline": {
+        "id": "public-brief",
+        "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+        "sha": "35f236320d8e31ad634b23127f10acb529a83b97",
+        "checks": {
+          "originalInputs": true,
+          "evidence.json": false,
+          "brief.md": false,
+          "cutoff": false,
+          "opening": false,
+          "lines": false,
+          "terminal": false,
+          "future": false,
+          "exclusion": false
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      },
+      "reference": {
+        "id": "public-brief",
+        "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+        "sha": "fec096f96fe25094438ef4cf2d59ee3113250c16",
+        "checks": {
+          "originalInputs": true,
+          "evidence.json": true,
+          "brief.md": true,
+          "cutoff": true,
+          "opening": true,
+          "lines": true,
+          "terminal": true,
+          "future": true,
+          "exclusion": true
+        },
+        "automatedPass": true,
+        "editorialReview": "REQUIRED"
+      },
+      "counterexample": {
+        "id": "public-brief",
+        "basis": "35f236320d8e31ad634b23127f10acb529a83b97",
+        "sha": "802bcf1fcf766496cdc63edbc1c6969c44ca81a1",
+        "checks": {
+          "originalInputs": true,
+          "evidence.json": true,
+          "brief.md": true,
+          "cutoff": true,
+          "opening": true,
+          "lines": true,
+          "terminal": false,
+          "future": true,
+          "exclusion": true
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      }
+    },
+    {
+      "id": "departure-board",
+      "baseline": {
+        "id": "departure-board",
+        "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+        "sha": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+        "checks": {
+          "originalInputs": true,
+          "HANDOVER.md": false,
+          "complaint": false,
+          "left included, right excluded": false,
+          "query crosses midnight": false,
+          "daytime": true,
+          "other stop": false,
+          "no stop": true,
+          "47-hour clock, year boundary and ASCII ties": false,
+          "testsPass": false,
+          "regressionCatchesOriginal": false
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      },
+      "reference": {
+        "id": "departure-board",
+        "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+        "sha": "1beb082b994f534569fbdf785261ea81bc6a1bae",
+        "checks": {
+          "originalInputs": true,
+          "HANDOVER.md": true,
+          "complaint": true,
+          "left included, right excluded": true,
+          "query crosses midnight": true,
+          "daytime": true,
+          "other stop": true,
+          "no stop": true,
+          "47-hour clock, year boundary and ASCII ties": true,
+          "testsPass": true,
+          "regressionCatchesOriginal": true
+        },
+        "automatedPass": true,
+        "editorialReview": "REQUIRED"
+      },
+      "counterexample": {
+        "id": "departure-board",
+        "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+        "sha": "ac78fd75dc76a7dd8b558c2ce7426ce82809c641",
+        "checks": {
+          "originalInputs": true,
+          "HANDOVER.md": true,
+          "complaint": true,
+          "left included, right excluded": false,
+          "query crosses midnight": true,
+          "daytime": true,
+          "other stop": true,
+          "no stop": true,
+          "47-hour clock, year boundary and ASCII ties": true,
+          "testsPass": true,
+          "regressionCatchesOriginal": true
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      }
+    },
+    {
+      "id": "depot-charge",
+      "baseline": {
+        "id": "depot-charge",
+        "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+        "sha": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+        "checks": {
+          "originalInputs": true,
+          "HANDOVER.md": false,
+          "rated": false,
+          "lower efficiency": false,
+          "higher efficiency": false,
+          "transfer capped": false,
+          "no cold increment": false,
+          "binding charger": false
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      },
+      "reference": {
+        "id": "depot-charge",
+        "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+        "sha": "aaa68f48c2cf7b96e35a047e29ed96995d1e8d46",
+        "checks": {
+          "originalInputs": true,
+          "HANDOVER.md": true,
+          "rated": true,
+          "lower efficiency": true,
+          "higher efficiency": true,
+          "transfer capped": true,
+          "no cold increment": true,
+          "binding charger": true
+        },
+        "automatedPass": true,
+        "editorialReview": "REQUIRED"
+      },
+      "counterexample": {
+        "id": "depot-charge",
+        "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+        "sha": "1fcbaccce6b9e4f1d80843a7270e949c987666ed",
+        "checks": {
+          "originalInputs": true,
+          "HANDOVER.md": true,
+          "rated": false,
+          "lower efficiency": true,
+          "higher efficiency": false,
+          "transfer capped": true,
+          "no cold increment": true,
+          "binding charger": true
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      }
+    },
+    {
+      "id": "public-discovery",
+      "baseline": {
+        "id": "public-discovery",
+        "basis": "aead15dd170590b7324e414a394c0f9c33dea98f",
+        "sha": "aead15dd170590b7324e414a394c0f9c33dea98f",
+        "checks": {
+          "originalInputs": true,
+          "evidence.json": false,
+          "brief.md": false,
+          "cutoff": false,
+          "search": false,
+          "register": false,
+          "claimReferences": false,
+          "exclusions": false
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      },
+      "reference": {
+        "id": "public-discovery",
+        "basis": "aead15dd170590b7324e414a394c0f9c33dea98f",
+        "sha": "fe95dc099cc84bf238f8668f490d7d6ba0bb77d2",
+        "checks": {
+          "originalInputs": true,
+          "evidence.json": true,
+          "brief.md": true,
+          "cutoff": true,
+          "search": true,
+          "register": true,
+          "claimReferences": true,
+          "exclusions": true
+        },
+        "automatedPass": true,
+        "editorialReview": "REQUIRED"
+      },
+      "counterexample": {
+        "id": "public-discovery",
+        "basis": "aead15dd170590b7324e414a394c0f9c33dea98f",
+        "sha": "ebb481d5e6fbc18a274b830110c0b5ba7385024e",
+        "checks": {
+          "originalInputs": true,
+          "evidence.json": true,
+          "brief.md": true,
+          "cutoff": true,
+          "search": true,
+          "register": true,
+          "claimReferences": false,
+          "exclusions": true
+        },
+        "automatedPass": false,
+        "editorialReview": "REQUIRED"
+      }
+    }
+  ]
+}

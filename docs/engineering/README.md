@@ -4,6 +4,8 @@
 
 ## Bench 树
 
+按任务选用能力的用户工单入口覆盖公开线索查证（冻结档案或开放检索）、午夜站牌缺陷和车队低温调度。每题给出业务来件、交付格式、复算命令及失败反例。[三张工单与零付费验证](TRANSIT-DESK-USER-TASKS.md)
+
 按主线提交 `63bf522` 的 Git 追踪内容盘点。`research-evidence/` 下有 87 个一级阶段目录，`scripts/` 下有 93 个一级目录，包含运行器、复现脚本和维护工具。先按要回答的问题选分支，再沿同一阶段找输入、执行和判定。[盘点文件树](https://github.com/orangeofcarl0-sys/palimpsest/tree/63bf5229f7526915b9c620924135c5b23b9ed8ec)
 
 ```text

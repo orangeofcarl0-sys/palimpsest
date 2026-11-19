@@ -1,0 +1,46 @@
+{
+  "slotHours": 0.5,
+  "slotStart": [
+    "00:00",
+    "00:30",
+    "01:00",
+    "01:30"
+  ],
+  "siteLimitKw": 120,
+  "chargerKw": 80,
+  "buildingKw": [
+    40,
+    80,
+    50,
+    50
+  ],
+  "coldExtraKw": [
+    0,
+    20,
+    0,
+    0
+  ],
+  "shiftFromSlot": 1,
+  "shiftToSlot": 3,
+  "maxShiftKw": 40,
+  "efficiency": 0.9,
+  "lowerEfficiency": 0.85,
+  "buses": [
+    {
+      "id": "A",
+      "fromSlot": 0,
+      "untilSlot": 2,
+      "capacityKwh": 180,
+      "startKwh": 72,
+      "requiredKwh": 126
+    },
+    {
+      "id": "B",
+      "fromSlot": 2,
+      "untilSlot": 4,
+      "capacityKwh": 200,
+      "startKwh": 76,
+      "requiredKwh": 130
+    }
+  ]
+}

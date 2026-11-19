@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 里程碑三新增三张用户工单，分别面向旅客编辑、站牌维护者和车队调度员。三题 × 普通 Palimpsest DSH / 强原生 DSH 共六条脚本化 Mock 自然退出，35 笔模拟请求、29 对工具调用与结果。编辑题另有从一条来信自行上网找来源的入口，本轮完成取材与宿主验证。里程碑二继续开放。[任务、原稿与复算](docs/engineering/TRANSIT-DESK-USER-TASKS.md)
+
 - 里程碑二保持开放，三的首轮试点已从主线 `6d8f90c1` 启动。夜班回放与 Energy 单站运费修订的四个 Mock 均通过；真实软件 Palimpsest 的 Principal 自己在副本复现了 S 误报，未委派、未提交。第 15 笔请求超时且用量 UNKNOWN，按合同停在首格。强原生软件和 Energy 两格均未启动，尚无真实配对结论。[报告](docs/engineering/TASK-SELECTION-PILOT.md) · [分格记录](research-evidence/pnwf-task-selection/2026-11-19/live-summary.json)
 
 - 夜班实验已由 [PR #278](https://github.com/orangeofcarl0-sys/palimpsest/pull/278) 合并到主线 `b2360950`。上一班维护者在独立副本工作，只能向 Principal 返回绑定候选 SHA 的宿主实测回执。Mock 两组通过，真实自主组没有联系维护者，两位 Principal 均自行修订、记录 `DELIVER` 并自然退出。两个真实交付各通过 P/S 2/2；上一轮两个 0/2 原判保留。[轨迹对比与复算](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md) · [真实证据](research-evidence/pnwf-software/2026-11-19/night-isolated/live-summary.json)
@@ -89,6 +91,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-19，最近同步）
+
+用户工单扩展沿用本地 `codex/task-selection-pilot`，接续试点提交 `ace35d39`；旧试点付费现场与其冻结协议可按原提交复算。
 
 | 项 | 值 |
 |---|---|
@@ -284,6 +288,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 ---
 
 ## 5. 验证命令与当前基线
+
+- `node scripts/pnwf/transit-desk/qualify.mjs` 从新建 Git 项目复算四个输入版本的基线、参考交付与反例。六条 DSH Mock 另可从 bundle、请求账本和原始会话离线复验。[复算命令](docs/engineering/TRANSIT-DESK-USER-TASKS.md#交给执行者与复算)
 
 两域各一对零付费 Mock：软件使用原 P/S 命令及独立复核回执，Energy 复用已接受方案并追加 Harbor Flats 每批 USD 7,500 的承运通告，原生子任务可自行查档。四份 Mock 交付全部通过，30 笔合成请求全部对账。真实停止样本以 SQLite、原始 DSH 流和容器退出状态独立复算。[冻结判据](scripts/pnwf/task-selection/protocol.md) · [复算入口](docs/engineering/TASK-SELECTION-PILOT.md#复算)
 
@@ -569,6 +575,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+- 三张新工单已具备真实选路对照的业务材料。本轮六条 Mock 的交付路径由脚本指定，开放网络检索版本只验证了参考交付。实际的选路、谁找到反例及其是否改变交付，均需真实轨迹与候选差异。上一轮 UNKNOWN 仍按原合同停留在软件首格。
+
 - 选路试点未形成两域的真实配对；当前资源合同在终态用量未知时停止后继会话。原宿主另报 `write EPIPE`，未写常规最终回执；账本已停止，独立核对保留会话行 RUNNING 的现场。真实模型有亲自实测的反例，未观察到采纳或交付。[停止现场与归因](docs/engineering/TASK-SELECTION-PILOT.md)
 
 - 隔离复核回执驱动采纳已有脚本化 Mock 证据。真实自主组本次选择自行查档，独立识别并修正问题；本次没有同伴回执被真实 Principal 采纳。两组修改前都没有在原 SHA 上跑出 S 的误报，原缺陷由宿主独立验证。[发现与采纳的归属](docs/engineering/FLEET-ISOLATED-REPLAY-REVIEW.md)
@@ -730,6 +738,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-19 | 发布 Fleet 夜班场景、隔离复核与对照证据 | [PR #278](https://github.com/orangeofcarl0-sys/palimpsest/pull/278) · [16 项检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/278/checks) | 送审 `3c489b3b` 对应主线 `b2360950`。上轮两组各 0/2，本轮各 2/2，自主组联系维护者 0 次 |
 | 2026-11-19 | 核对 gRPC 接续提交并关闭重复 PR | [#277](https://github.com/orangeofcarl0-sys/palimpsest/pull/277) · [#278](https://github.com/orangeofcarl0-sys/palimpsest/pull/278) | 完整树一致，核准与旧 Episode 查询原判保留，已删除对应远端分支。新增付费调用 0 |
 | 2026-11-19 | 开始按任务选用能力首轮配对 | [冻结判据](scripts/pnwf/task-selection/protocol.md) · [报告](docs/engineering/TASK-SELECTION-PILOT.md) | 四个 Mock 通过，首个真实会话因 UNKNOWN 停止；保留自测反例和零提交现场 |
+| 2026-11-19 | 扩展旅客查证、站牌与车队调度工单；另备开放检索入口 | [报告](docs/engineering/TRANSIT-DESK-USER-TASKS.md) | 六条 DSH Mock；新增付费请求 0 |
 
 ---
 
