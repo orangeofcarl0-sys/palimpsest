@@ -1,0 +1,391 @@
+{
+  "mock": {
+    "rows": [
+      {
+        "id": "envelope-P",
+        "head": "ba0d37eac0882fa0ece33a848a6d86a85ef9daf1",
+        "committed": true,
+        "quality": 10,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": true,
+          "net": true,
+          "margin": true,
+          "aRelease": true,
+          "bRelease": true,
+          "lowEfficiency": true
+        },
+        "release": {
+          "departureKwh": [
+            126,
+            130
+          ],
+          "marginKwh": [
+            0,
+            0
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "GO"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+        },
+        "supported": true,
+        "contacts": 0,
+        "revisedMeasurements": 0,
+        "delegations": [],
+        "returnedCounterexample": null,
+        "natural": true,
+        "conclusion": "DELIVER",
+        "actors": {
+          "principal": {
+            "requests": 5,
+            "fresh": 342407,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1443,
+            "total": 343850
+          }
+        },
+        "reviewTurns": [],
+        "requests": 5,
+        "confirmed": 343850,
+        "unknown": 0,
+        "total": 343850,
+        "elapsedMs": 60081
+      },
+      {
+        "id": "envelope-F",
+        "head": "a59c3b4157d05db6539f60176b963e608cbd33cf",
+        "committed": true,
+        "quality": 10,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": true,
+          "net": true,
+          "margin": true,
+          "aRelease": true,
+          "bRelease": true,
+          "lowEfficiency": true
+        },
+        "release": {
+          "departureKwh": [
+            126,
+            130
+          ],
+          "marginKwh": [
+            0,
+            0
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "GO"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+        },
+        "supported": true,
+        "contacts": 0,
+        "revisedMeasurements": 0,
+        "delegations": [],
+        "returnedCounterexample": null,
+        "natural": true,
+        "conclusion": null,
+        "actors": {
+          "principal": {
+            "requests": 4,
+            "fresh": 165834,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1170,
+            "total": 167004
+          }
+        },
+        "reviewTurns": [],
+        "requests": 4,
+        "confirmed": 167004,
+        "unknown": 0,
+        "total": 167004,
+        "elapsedMs": 11011
+      },
+      {
+        "id": "controller-F",
+        "head": "3d5bb5c36dc3a653a9bb7c0cd0c8970c2f8e246b",
+        "committed": true,
+        "quality": 10,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": true,
+          "net": true,
+          "margin": true,
+          "aRelease": true,
+          "bRelease": true,
+          "lowEfficiency": true
+        },
+        "release": {
+          "departureKwh": [
+            126,
+            124
+          ],
+          "marginKwh": [
+            0,
+            -6
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "HOLD"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "0587f09099af87849755864a2dcd8b9fa488e76f"
+        },
+        "supported": true,
+        "contacts": 1,
+        "revisedMeasurements": 1,
+        "delegations": [],
+        "returnedCounterexample": {
+          "call": 31,
+          "result": 32,
+          "sha": "0587f09099af87849755864a2dcd8b9fa488e76f",
+          "beforeFiledDecision": null,
+          "measured": [
+            126,
+            124
+          ],
+          "subsequentCommitCalls": [
+            {
+              "call": 37,
+              "result": 40
+            }
+          ]
+        },
+        "natural": true,
+        "conclusion": null,
+        "actors": {
+          "principal": {
+            "requests": 5,
+            "fresh": 203407,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1350,
+            "total": 204757
+          },
+          "maintainer": {
+            "requests": 1,
+            "fresh": 214188,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 119,
+            "total": 214307
+          }
+        },
+        "reviewTurns": [
+          {
+            "sha": "0587f09099af87849755864a2dcd8b9fa488e76f",
+            "completed": true,
+            "before": {
+              "requests": 1,
+              "fresh": 214188,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 119,
+              "total": 214307
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          }
+        ],
+        "requests": 6,
+        "confirmed": 419064,
+        "unknown": 0,
+        "total": 419064,
+        "elapsedMs": 21625
+      },
+      {
+        "id": "controller-P",
+        "head": "6e31576339517d8c100125d5300dd4fd6b17516e",
+        "committed": true,
+        "quality": 10,
+        "checks": {
+          "committed": true,
+          "handoverUpdated": true,
+          "preserved": true,
+          "scope": true,
+          "sheet": true,
+          "net": true,
+          "margin": true,
+          "aRelease": true,
+          "bRelease": true,
+          "lowEfficiency": true
+        },
+        "release": {
+          "departureKwh": [
+            126,
+            124
+          ],
+          "marginKwh": [
+            0,
+            -6
+          ],
+          "at90": {
+            "A": "GO",
+            "B": "HOLD"
+          },
+          "at85": {
+            "A": "HOLD",
+            "B": "HOLD"
+          },
+          "evidenceSha": "c9c72c65992f9030f0543e377d7b45fca609bc26"
+        },
+        "supported": true,
+        "contacts": 1,
+        "revisedMeasurements": 1,
+        "delegations": [],
+        "returnedCounterexample": {
+          "call": 31,
+          "result": 32,
+          "sha": "c9c72c65992f9030f0543e377d7b45fca609bc26",
+          "beforeFiledDecision": null,
+          "measured": [
+            126,
+            124
+          ],
+          "subsequentCommitCalls": [
+            {
+              "call": 37,
+              "result": 40
+            }
+          ]
+        },
+        "natural": true,
+        "conclusion": "DELIVER",
+        "actors": {
+          "principal": {
+            "requests": 6,
+            "fresh": 401984,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 1623,
+            "total": 403607
+          },
+          "maintainer": {
+            "requests": 1,
+            "fresh": 214188,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 119,
+            "total": 214307
+          }
+        },
+        "reviewTurns": [
+          {
+            "sha": "c9c72c65992f9030f0543e377d7b45fca609bc26",
+            "completed": true,
+            "before": {
+              "requests": 1,
+              "fresh": 214188,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 119,
+              "total": 214307
+            },
+            "after": {
+              "requests": 0,
+              "fresh": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "output": 0,
+              "total": 0
+            }
+          }
+        ],
+        "requests": 7,
+        "confirmed": 617914,
+        "unknown": 0,
+        "total": 617914,
+        "elapsedMs": 50927
+      }
+    ],
+    "stop": null,
+    "unrun": []
+  },
+  "live": {
+    "rows": [
+      {
+        "id": "envelope-P",
+        "head": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "committed": false,
+        "quality": 2,
+        "checks": {
+          "committed": false,
+          "handoverUpdated": false,
+          "preserved": true,
+          "scope": true,
+          "sheet": false,
+          "net": false,
+          "margin": false,
+          "aRelease": false,
+          "bRelease": false,
+          "lowEfficiency": false
+        },
+        "release": {},
+        "supported": false,
+        "contacts": 0,
+        "revisedMeasurements": 0,
+        "delegations": [],
+        "returnedCounterexample": null,
+        "natural": false,
+        "conclusion": null,
+        "actors": {
+          "principal": {
+            "requests": 6,
+            "fresh": 24413,
+            "cacheRead": 68992,
+            "cacheWrite": 0,
+            "output": 3756,
+            "total": 97161
+          }
+        },
+        "reviewTurns": [],
+        "requests": 7,
+        "confirmed": 97161,
+        "unknown": 1,
+        "total": null,
+        "elapsedMs": 421165
+      }
+    ],
+    "stop": {
+      "id": "envelope-P",
+      "reason": "UNKNOWN_USAGE"
+    },
+    "unrun": [
+      "envelope-F",
+      "controller-F",
+      "controller-P"
+    ]
+  }
+}

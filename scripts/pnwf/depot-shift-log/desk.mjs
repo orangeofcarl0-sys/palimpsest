@@ -11,7 +11,7 @@ import {ReceiptStore} from "./receipt-store.mjs";
 import {here,history,streamPath,maintainer,profile,measure,publicLog,privateLog,snapshot} from "./case.mjs";
 
 const exec=promisify(execFile);
-export function desk({run,world,repository,image,slip,gateway,sessionKey,wallClockMs}) {
+export function desk({run,world,repository,image,slip,gateway,sessionKey,wallClockMs,peerMeasure=measure}) {
   const dir=join(run,"desk");
   mkdirSync(dir,{recursive:true});
   const journalPath=join(dir,"journal.json"),latest=join(dir,"latest.zstd");
@@ -57,7 +57,7 @@ export function desk({run,world,repository,image,slip,gateway,sessionKey,wallClo
           bridge=await startContainerBridge(current.id,gateway,sessionKey,{dispatchDesk:async input=>{
             if(closed||input?.action!=="trial"||input.sha!==sha||Object.keys(input).length!==2)return {ok:false,reason:"Pinned measurements only"};
             // Read the Principal's immutable Git object. The reviewer may experiment only in its isolated copy.
-            const receipt=publish(measure(world,sha));
+            const receipt=publish(peerMeasure(world,sha));
             log({kind:"PEER_TRIAL",n,receipt});
             const deliveredSha=await handoff.promise;
             if(deliveredSha===sha)draining??=Promise.withResolvers();

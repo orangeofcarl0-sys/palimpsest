@@ -1,0 +1,50 @@
+{
+  "id": "controller-P",
+  "ticket": "controller",
+  "arm": "P",
+  "basis": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+  "cohortId": "41423e4c-9457-48af-92e9-d67059ffc4bd",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "41423e4c-9457-48af-92e9-d67059ffc4bd",
+    "sessionId": "REVIEW",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-depot-transfer-20261119-235251\\mock\\controller-P\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-depot-transfer-20261119-235251\\mock\\controller-P\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "88af0945c1f8a42bcbbd726b4898db187258c1d2de803191edb2a44573f44ceb",
+    "qualification": "75ad0312093e3bbe433aefc63d4cc21695656a9f74439da56cfe605a14172083",
+    "startedAt": "2026-11-19T15:55:13.408Z",
+    "endedAt": "2026-11-19T15:56:04.335Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "41423e4c-9457-48af-92e9-d67059ffc4bd",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-19T15:56:04.335Z",
+      "maxTokens": 12000000,
+      "softCeiling": 12000000,
+      "totalTokens": 617914,
+      "confirmedTokens": 617914,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "head": "6e31576339517d8c100125d5300dd4fd6b17516e",
+  "status": "",
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-01fc69e503844014ffce79e094ca21f9",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已核对本班车辆放行依据并提交可执行班表、放行单和交班稿。\nArtifacts:\n- shift-plan.json\n- release.json\n- HANDOVER.md\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head d221aafd3e597dde63f951d65c1005ec2a7c90fa\nArtifact provenance:\n- shift-plan.json: present=true tracked=true committed=true source=WORKTREE digest=18f4e8183a2b commit=6e3157633951\n- release.json: present=true tracked=true committed=true source=WORKTREE digest=403997b1ebd4 commit=6e3157633951\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=68d8a1ea3f71 commit=6e3157633951\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已核对本班车辆放行依据并提交可执行班表、放行单和交班稿。\",\"artifacts\":[\"shift-plan.json\",\"release.json\",\"HANDOVER.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-19T15:55:59.991Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"bc87caaf738b28352f1403d0a047bd9d5ec601cf0d67dede3f8f255440f81a10\",\"headCommit\":\"d221aafd3e597dde63f951d65c1005ec2a7c90fa\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"shift-plan.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"18f4e8183a2b174dbd602316e872d7e2d9b462b80f13b42063a0bfb8538355cf\",\"source\":\"WORKTREE\",\"commit\":\"6e31576339517d8c100125d5300dd4fd6b17516e\",\"detail\":\"committed at HEAD\"},{\"path\":\"release.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"403997b1ebd4a46b40f350d8719534c914f73e01f7f121f10b458bc747da34a8\",\"source\":\"WORKTREE\",\"commit\":\"6e31576339517d8c100125d5300dd4fd6b17516e\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"68d8a1ea3f713fc4411fea670c2202566d78bcb1b98ef8d614750227e013ee14\",\"source\":\"WORKTREE\",\"commit\":\"6e31576339517d8c100125d5300dd4fd6b17516e\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-a8ddf4292a1ec41a66212a13\"}"
+  }
+}
