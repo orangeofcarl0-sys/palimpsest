@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
-import {existsSync,mkdirSync,readFileSync,writeFileSync} from "node:fs";
+import {copyFileSync,mkdirSync,readFileSync,writeFileSync} from "node:fs";
 import {join,resolve} from "node:path";
 import {ExecutionBudget,USAGE_ONLY_SCHEMA} from "../execution_budget.mjs";
 import {PAID_MODE,PAID_COHORT_SCHEMA} from "../bounded_provider.mjs";
@@ -15,6 +15,7 @@ import {digest,readJson,writeJson} from "../energy/contract.mjs";
 import {here,history,previous,maintainer,goal,prepare,grade,measure,profile,publicLog,privateLog} from "./case.mjs";
 import {desk} from "./desk.mjs";
 import {mockReply} from "./mock.mjs";
+import {basis as frozenBasis,obligations,receiptPath,inspectDelivery} from "./materials.mjs";
 import {oldRequest} from "../depot-relief/isolate-unknown.mjs";
 
 const args=process.argv.slice(2),single=args.includes("--palimpsest-only");
@@ -23,10 +24,11 @@ assert(["mock","live"].includes(mode)&&path);
 const paid=mode==="live",root=resolve(path),id="REVIEW";
 const {image,window,route,model}=previousContract;
 const arms=single?["P"]:["P","F"];
-const seal={scenario:"depot-shift-log",delivery:"durable-v1",arms,base:"d70eebc054fcf9f96154cff53d976ce13cd43725",publicDigest:digest(JSON.stringify(publicLog)),privateDigest:digest(JSON.stringify(privateLog)),previous,maintainer,history:digest(readFileSync(history)),goal,
+const seal={scenario:"depot-shift-log",delivery:"durable-v1",materials:obligations,arms,base:"91dc8787e4500250aefaecf3a809f219bd5e2298",publicDigest:digest(JSON.stringify(publicLog)),privateDigest:digest(JSON.stringify(privateLog)),previous,maintainer,history:digest(readFileSync(history)),goal,
   image,window,route,model,files:{}};
 for(const p of ["protocol.md","receipt-store.mjs","receipt-store.test.mjs","case.mjs","../depot-relief/rig.mjs","desk.mjs","mock.mjs","run.mjs","../depot-relief/evidence.mjs","../depot-relief/plugin/index.js","../depot-relief/plugin/package.json","../depot-relief/isolate-unknown.mjs","../depot-relief/case.mjs",
-  "../container_adapter.mjs","../container_runtime.mjs","../container_bridge.mjs","../task-selection/evidence.mjs","../task-selection/case.mjs"]){
+  "../container_adapter.mjs","../container_runtime.mjs","../container_bridge.mjs","../task-selection/evidence.mjs","../task-selection/case.mjs",
+  "materials.mjs","materials.test.mjs","product-entry.mjs","../task-selection/product-entry.mjs"]){
   seal.files[p]=digest(readFileSync(join(here,p)));
 }
 const qualification=paid?readJson(resolve(qualifiedPath)):null;
@@ -38,10 +40,15 @@ const summary={mode,seal,qualified:false,arms:[]};
 const save=()=>writeJson(join(root,"matrix.json"),summary);
 save();
 const repository=runtime(root);
+const runtimeDir=join(repository,"runtime");
+copyFileSync(join(runtimeDir,"product-entry.mjs"),join(runtimeDir,"base-entry.mjs"));
+copyFileSync(join(here,"product-entry.mjs"),join(runtimeDir,"product-entry.mjs"));
+writeJson(join(runtimeDir,"materials.json"),{rules:obligations.rules,receiptPath});
 for(const arm of arms){
   const run=join(root,arm),stage=join(run,"stages",id),state=join(stage,"state"),world=join(stage,"world");
   mkdirSync(state,{recursive:true});
   const basis=prepare(world),slip=measure(world,basis);
+  assert.equal(basis,frozenBasis);
   assert.deepEqual(slip.actual,[80,40,50,50]);assert.deepEqual(slip.departureKwh,[126,121]);
   const publicTrial=measure(world,basis,publicLog);assert(publicTrial.withinLimits);assert.deepEqual(publicTrial.departureKwh,[126,130]);
   writeJson(join(run,"private-capture.json"),privateLog);
@@ -76,14 +83,19 @@ for(const arm of arms){
         ...(arm==="P"?{createWorker:ports=>makeWorkerBroker({...ports,basis,policy:workerPolicy(projectId)})}:{}),
         createDesk:ports=>{
           const host=desk({run,world,repository,image,slip,...ports});
-          if(paid)return host;
           return {...host,async dispatch(input){
+            if(input?.action==="inspect_delivery"){
+              const result=inspectDelivery(world,input.sha,join(run,"desk/receipts.sqlite"));
+              return {ok:result.ok,refusal:result.refusal,receiptId:result.files?.receiptId};
+            }
             const result=await host.dispatch(input);
             if(dropFirst&&input.action==="contact"&&result.ok){dropFirst=false;throw Error("MOCK_RESPONSE_LOST");}
-            return result;
+            return result.ok&&input.action==="contact" ?
+              {...result,filing:{path:receiptPath,save:"Write the complete receipt object unchanged as JSON."}} : result;
           }};
         }}});
     row.head=git(world,"rev-parse","HEAD").trim();row.status=git(world,"status","--porcelain","--untracked-files=all");
+    row.materials=inspectDelivery(world,row.head,join(run,"desk/receipts.sqlite"));
     row.grade=grade(world,basis,row.head);row.journal=arm==="P"?conclusion(state):null;
     git(world,"bundle","create",join(run,"world.bundle"),"HEAD","--branches");
     const snapshot=ledger.snapshot();
@@ -93,6 +105,13 @@ for(const arm of arms){
     if(!paid){
       assert(row.execution.natural&&row.grade.passed&&!row.status&&row.execution.paidModelCalls===0);
       const c=t.traces.find(s=>s.role==="principal").calls;
+      assert(row.materials.ok);
+      if(arm==="P"){
+        const decisions=c.filter(x=>x.tool==="palimpsest_work"&&x.input.action==="conclude");
+        assert.equal(decisions.length,2);
+        assert(decisions[0].reply.includes("PROTECTED_FILE_CHANGED"));
+        assert.equal(row.journal?.intent,"DELIVER");
+      }
       assert(c.some(x=>x.tool==="depot_trial"&&x.reply.includes("Current full candidate")));
       const calls=c.filter(x=>x.tool==="depot_contact");
       assert.equal(calls.length,3);
