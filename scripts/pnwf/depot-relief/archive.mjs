@@ -3,6 +3,7 @@ import {copyFileSync,existsSync,lstatSync,mkdirSync,mkdtempSync,readFileSync,rea
 import {dirname,join,resolve} from "node:path";
 import {tmpdir} from "node:os";
 import {DatabaseSync} from "node:sqlite";
+import {execFileSync} from "node:child_process";
 import {PAID_MODE} from "../bounded_provider.mjs";
 import {digest,readJson,writeJson} from "../energy/contract.mjs";
 import {readStream} from "../analyze_energy_trajectory.mjs";
@@ -52,7 +53,14 @@ function verify(dir){
   const {grade,measure,here,goal}=splitLogs?shiftLogCase:reliefCase;
   assert.deepEqual(readJson(join(dir,"previous-unknown.json")),oldRequest());
   assert.deepEqual(manifest(dir),readJson(join(dir,"manifest.json")));
-  for(const [p,hash] of Object.entries(m.seal.files))assert.equal(digest(readFileSync(join(here,p))),hash,p);
+  for(const [p,hash] of Object.entries(m.seal.files)){
+    const current=digest(readFileSync(join(here,p)));
+    // These two files shipped with the original split-log experiment before durable delivery.
+    if(splitLogs&&!m.seal.delivery&&["desk.mjs","run.mjs"].includes(p)&&current!==hash){
+      const frozen=execFileSync("git",["show","d70eebc054fcf9f96154cff53d976ce13cd43725:scripts/pnwf/depot-shift-log/"+p],{cwd:here});
+      assert.equal(digest(frozen),hash,p);
+    }else assert.equal(current,hash,p);
+  }
   for(const row of m.arms){
     const src=join(dir,row.arm);
     assert.equal(readFileSync(join(src,"prompt.txt"),"utf8"),goal);
@@ -76,6 +84,23 @@ function verify(dir){
       assert.deepEqual(measure(db,row.basis),readJson(join(src,"previous-shift-slip.json")));
       assert.deepEqual(grade(db,row.basis,row.head),row.grade);
       const facts=readJson(join(src,"desk/journal.json"));
+      if(m.seal.delivery){
+        // An amended candidate may only be reachable from its reviewer's pinned bundle.
+        for(const e of facts.filter(e=>e.kind==="START_REVIEW")){
+          git(db,"fetch","-q",join(src,"desk",String(e.n),"pinned.bundle"),"HEAD");
+          assert.equal(git(db,"rev-parse","FETCH_HEAD").trim(),e.sha);
+        }
+        const dbFile=new DatabaseSync(join(src,"desk/receipts.sqlite"),{readOnly:true});
+        try{
+          const saved=dbFile.prepare("SELECT sha,source,receipt FROM receipts ORDER BY sha").all();
+          const measured=facts.filter(e=>e.kind==="PEER_TRIAL").map(e=>e.receipt);
+          assert.deepEqual(saved.map(r=>r.sha),[...new Set(measured.map(r=>r.sha))].sort());
+          for(const r of saved){
+            assert.equal(r.source,m.seal.privateDigest);
+            assert.deepEqual(JSON.parse(r.receipt),measure(db,r.sha));
+          }
+        }finally{dbFile.close();}
+      }
       if(splitLogs){
         assert.deepEqual(readJson(join(src,"private-capture.json")),shiftLogCase.privateLog);
         assert.deepEqual(JSON.parse(git(db,"show",row.basis+":operations/cold-cycle.json")),shiftLogCase.publicLog);
@@ -110,6 +135,7 @@ if(source!=="--verify"){
     const src=join(run,row.arm),out=join(dest,row.arm),world=join(src,"stages/REVIEW/world");
     for(const p of [...evidencePaths(src),"trajectory.json"])copy(src,out,p);
     if(existsSync(join(src,"private-capture.json")))copy(src,out,"private-capture.json");
+    if(existsSync(join(src,"desk/receipts.sqlite")))copy(src,out,"desk/receipts.sqlite");
     saveReviewerCopies(src,out);
     if(row.unknown||readJson(join(run,"matrix.json")).mode==="live")copy(src,out,"request-ledger.sqlite");
     for(const p of ["HANDOVER.md","shift-plan.json"]){

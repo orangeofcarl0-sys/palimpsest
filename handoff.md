@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- Palimpsest 已在同一夜班基线接到维护者独有的 9 kWh 反例，并把 B 车 01:00/01:30 从 70/50 改为 50/70 kW。同一原 SHA 的第二问复用持久化回执，未再启动维护者。最终提交 `e9353b6928fa93554905b960588177c39271aae5` 取得 126/130 kWh 的晚班回执，记录 DELIVER 并自然退出。冻结 9/10：原始采集保留，旧操作说明和复测程序被修改。[回执修复、三条轨迹与用量](docs/engineering/DEPOT-RECEIPT-DELIVERY.md)
+
 - 21:00 的车队记录允许旧表放行，维护者独有的 23:40 记录揭示 B 车少 9 kWh。真实两组均主动联系维护者。P 的联系超时、重试遇忙，未收到测量，保留旧表并记录 DELIVER，冻结 7/10。强原生收到回执，将 B 01:00 从 70 改 50、01:30 从 50 改 70，修正首稿中未经观测的电表读数，冻结 9/10（仍改了旧说明和复算程序）。均自然退出，里程碑二继续开放。[报告与 Git 复算](docs/engineering/DEPOT-SHIFT-LOG.md)
 
 - 冷夜调度两组都先自行复现旧表 B 车缺 4.5 kWh，再主动找上一班维护者复核原表与修订表。两位 Principal 各自把 B 车 01:00 的 70 kW 和 01:30 的 50 kW 都改为 60 kW，提交、通过 10/10 并自然退出。P 维护者另做了一份私有提交，宿主回传测量回执。83 笔全部结算。里程碑二继续开放。[轨迹、同伴贡献及阶段用量](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md)
@@ -97,6 +99,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-19，最近同步）
+
+回执投递修复从本地 `codex/task-selection-pilot` 的 `d70eebc0` 接续，实验仓库基线仍是 `341e19e288de9f561f85fcb66a7a910ff6f3e143`。两组历史对照封存在原目录。本轮使用单独的[回执投递证据目录](research-evidence/pnwf-task-selection/2026-11-19/depot-receipt-delivery/)。
 
 调度晚班私有实测单实验沿用本地 `codex/task-selection-pilot`，从产品提交 `072d4231` 接续。两组实验项目起点均为 `341e19e288de9f561f85fcb66a7a910ff6f3e143`。本地记录的 `origin/main` 为 `6d8f90c1`。[判据与数据来源](scripts/pnwf/depot-shift-log/protocol.md)
 
@@ -301,6 +305,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+运行 `node --test scripts/pnwf/depot-shift-log/receipt-store.test.mjs` 可复放上轮超时/遇忙重试的完整 SHA。普通 DSH Mock 还注入首次响应丢失，检查重试时实际启动次数和回执内容。归档复算见[本轮报告](docs/engineering/DEPOT-RECEIPT-DELIVERY.md)。
+
 晚班私有实测单沿用归档复算入口 `node scripts/pnwf/depot-relief/archive.mjs --verify <archive>`，按新场景区分公开试排与维护者试排。逐角色用量及回执可用 `node scripts/pnwf/depot-shift-log/observe.mjs <archive> <output.json>` 重算。[报告及复算目录](docs/engineering/DEPOT-SHIFT-LOG.md)
 
 冷夜交班复核的零付费复算入口为 `node scripts/pnwf/depot-relief/archive.mjs --verify research-evidence/pnwf-task-selection/2026-11-19/depot-relief/mock`，将末尾改为 `live` 可重验已封存的真实轨迹、Git 评分与回执。逐笔阶段归因命令见[报告](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md)。
@@ -486,6 +492,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+回执投递复跑仅开一格真实 P：60/60 笔、3,228,221 tokens，UNKNOWN 0。Principal 37 笔、1,767,613；维护者 23 笔、1,460,608。耗时 15 分 59.221 秒。强原生比较使用上轮封存。14 笔 Mock 为零付费。[逐角色与逐次回执](research-evidence/pnwf-task-selection/2026-11-19/depot-receipt-delivery/live-observations.json)
+
 晚班私有记录实验共 99/99 笔、5,046,278 tokens，新增 UNKNOWN 0。P 的 Principal 18 笔、560,445 tokens，维护者 26 笔、1,736,211；F 的 Principal 37 笔、1,544,875，维护者 18 笔、1,204,747。此前各笔 UNKNOWN 保持原封存。[逐角色用量和回传](research-evidence/pnwf-task-selection/2026-11-19/depot-shift-log/live-observations.json)
 
 冷夜调度新 cohort 共确认 3,768,125 tokens，UNKNOWN 0。P 54 笔、2,774,616 tokens；F 29 笔、993,509 tokens。上轮调度 F 第 3 笔按原始 SQLite 单列 UNKNOWN，不纳入新账本。运行合同、角色与有效返工、收尾用量见[逐笔复算](research-evidence/pnwf-task-selection/2026-11-19/depot-relief/phases.json)及[旧笔封存](research-evidence/pnwf-task-selection/2026-11-19/depot-relief/prior-unknown.json)。
@@ -599,7 +607,9 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-本轮有一条维护者独有反例改变实际交付的强原生轨迹。Palimpsest 发问时的完整 SHA 正确，首次有效实测在约 78 秒生成，Principal 调用约 300 秒时失败，宿主约 518 秒后记 RETURN，缺少可靠投递。判断采纳须按调用结果与工作区写入核对。强原生虽恢复原始采集，仍修改受保护文件。一次配对不足以关闭里程碑二。[两条轨迹与评分](docs/engineering/DEPOT-SHIFT-LOG.md)
+本轮已观察到 P 收到私有反例并据此修订的实证。上轮首次调用超时和重试遇忙的失败记录继续保留。当前遗留是旧材料保护：修复后 P 与上轮强原生均修改了 `operations/desk.md` 和 `operations/retest.mjs`。成功投递来自单工单复跑，里程碑二保持开放。[三轨对照](docs/engineering/DEPOT-RECEIPT-DELIVERY.md)
+
+上一轮有一条维护者独有反例改变实际交付的强原生轨迹。旧版 Palimpsest 发问时的完整 SHA 正确，首次有效实测在约 78 秒生成，Principal 调用约 300 秒时失败，宿主约 518 秒后记 RETURN。判断采纳须按调用结果与工作区写入核对。强原生虽恢复原始采集，仍修改受保护文件。[两条原始轨迹与评分](docs/engineering/DEPOT-SHIFT-LOG.md)
 
 此前共享采集的冷夜调度观察到双方自发寻求同伴确认。该轮两位 Principal 在同伴回答前都自行观察到了决定性缺口。P 维护者私有测试与提交未进入交付；F 交班稿中关于可延负荷实际落点及效率的表述超出电表可证明的范围，见[逐项复核](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md)。
 
@@ -772,6 +782,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 | 2026-11-19 | 从三张冻结工单运行六个真实会话 | [报告](docs/engineering/TRANSIT-DESK-LIVE.md) | 5 格自然退出，4 格提交，114 对工具调用结果；调度 F 有 1 笔 UNKNOWN |
 | 2026-11-19 | 冷夜调度：上一班实测反例与两组真实自主求证 | [报告与用量复算](docs/engineering/DEPOT-RELIEF-COUNTEREXAMPLE.md) | 两个 Mock、两个真实交付通过。真实两组均两次联系维护者，83/83 笔对账，旧调度 F 第 3 笔独立封存 |
 | 2026-11-19 | 晚班私有实测反转公开放行 | [报告](docs/engineering/DEPOT-SHIFT-LOG.md) | 两个 Mock 通过。真实 P 回执未送达、保留原表 7/10，F 收到后调整 B 两格 9/10；99 笔用量均确认 |
+| 2026-11-19 | 实测即持久化并按 SHA 投递；模拟丢包、真实 P 复跑 | [报告与复算](docs/engineering/DEPOT-RECEIPT-DELIVERY.md) | 同 SHA 重试只启动一位维护者。真实 P 修对两格，9/10、自然退出，60 笔已对账 |
 
 ---
 

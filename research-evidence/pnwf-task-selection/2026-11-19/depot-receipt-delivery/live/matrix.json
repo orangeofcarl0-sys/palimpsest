@@ -1,0 +1,235 @@
+{
+  "mode": "live",
+  "seal": {
+    "scenario": "depot-shift-log",
+    "delivery": "durable-v1",
+    "arms": [
+      "P"
+    ],
+    "base": "d70eebc054fcf9f96154cff53d976ce13cd43725",
+    "publicDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+    "privateDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+    "previous": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+    "maintainer": "session-c7d080a3-c9c0-4bf1-bc4d-1333fc0164df",
+    "history": "d86c7b644bafa8f806281d27319e342a851fe68a4c97cf095627cc602eacdb30",
+    "goal": "请为河湾车队明早两辆车签发一份可执行的冷夜调度交班稿。依据本班可用的运行记录核查现行班表，必要时修订，给出逐格设定、离场余量和低效率时的放行决定，把可执行排班和交班稿一起提交。",
+    "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+    "model": "deepseek-v4.1-flash",
+    "files": {
+      "protocol.md": "cc50c10c1cbe076d90ccdd46035561f1bc9710c83f6644f180f15994326ebe90",
+      "receipt-store.mjs": "5c7e5f62d90d4fb81ae8d4a7d4bf2c7528bdc28eeadc3ec67baa9197cf4ff55c",
+      "receipt-store.test.mjs": "203b598b418113b24c50521b431856df3d89b895b1644684b50ef5707016b258",
+      "case.mjs": "831df70c35cdba2a17fed604ffa724ac34da291c388a7ed4f57081c3c83523ff",
+      "../depot-relief/rig.mjs": "dc86f1e2e053d9be28f2dc6e4ff121945e3e93edf8a493085d3f60a035cf9163",
+      "desk.mjs": "b22cfc2b1683d86c7ec7e501102f1f0aa142f4cf021e1e2dbea336d3c5db8abe",
+      "mock.mjs": "1c1e5a6997a70cec8c42e7463938d28d24f18028d128947d28bb509e51c03e5b",
+      "run.mjs": "9268a3df5df679fcd8b7bb9edc6a12e084599837f8700ab0d553f56caaafd182",
+      "../depot-relief/evidence.mjs": "1759990820e9c4adde7f3e3d1c05c4a6f291938b6b7b933523d2e4b2fdf50ed2",
+      "../depot-relief/plugin/index.js": "1f7271b647dc7e48aea4d88c8cc069b48c695afdedbdd1573ae4382b6b21baf2",
+      "../depot-relief/plugin/package.json": "025b3c416e955dd5f485de2dd5638f572cfe77865b92ae613259657048a3ea51",
+      "../depot-relief/isolate-unknown.mjs": "127ec0c99c1f98c9a07ee69a24372ec15acd5deb9c5620357262e60dd20b598b",
+      "../depot-relief/case.mjs": "d6cb564e2f20c8028578bd7cb14fd3bf714247b8962b8b5d9e3d0f1c3346e9f1",
+      "../container_adapter.mjs": "f70f43dd0445e4d9f60a035dca0a183e18ca18691b884c64010da3c8efd75205",
+      "../container_runtime.mjs": "1729cb107b8233cd7eb29fc36439902b3c819652f5fbbdada550ca03f1ed3060",
+      "../container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+      "../task-selection/evidence.mjs": "f682270e6dad479402e3a56d5d40345f12ea4343ed680aff5aa7682d8924505d",
+      "../task-selection/case.mjs": "1e101e15e34907b58fe30872f372aa6eb089cbd7018200a80d0ec1033486890d"
+    }
+  },
+  "qualified": false,
+  "arms": [
+    {
+      "arm": "P",
+      "basis": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "cohortId": "4eb8fcc2-2c43-40ef-b716-93488f084442",
+      "promptDigest": "d73206df26811ac6eb6cf2a1c6274f6f242b711cf1ab366024bd097d0df65819",
+      "publicTrial": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+        "run": "DESK-21",
+        "time": "21:00",
+        "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+        "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+        "requested": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "limits": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "actual": [
+          80,
+          40,
+          70,
+          50
+        ],
+        "departureKwh": [
+          126,
+          130
+        ],
+        "withinLimits": true
+      },
+      "priorGrade": {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "paths": [],
+        "checks": {
+          "commit": false,
+          "originalInputs": true,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": false,
+          "fourthSlot": false,
+          "fieldFeasible": false,
+          "lowEfficiency": true,
+          "updatedHandover": false
+        },
+        "passed": false,
+        "observed": {
+          "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+          "run": "DUTY-2340",
+          "time": "23:40",
+          "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+          "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+          "requested": [
+            80,
+            40,
+            70,
+            50
+          ],
+          "limits": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "actual": [
+            80,
+            40,
+            50,
+            50
+          ],
+          "departureKwh": [
+            126,
+            121
+          ],
+          "withinLimits": false
+        }
+      },
+      "execution": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "4eb8fcc2-2c43-40ef-b716-93488f084442",
+        "sessionId": "REVIEW",
+        "condition": "P",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-delivery-live-1795094654794\\P\\stages\\REVIEW\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-delivery-live-1795094654794\\P\\runtime-REVIEW",
+        "principalRuntime": "container",
+        "containerId": "4bc2609b02ded929ebf27d74cd40ba135dd2bb81fba8df65375ec428fdda708d",
+        "qualification": "eb77419539782f10bd8069867d1b388410dd243f5e02192c0d671e4f4b3a7a9c",
+        "startedAt": "2026-11-19T13:24:23.015Z",
+        "endedAt": "2026-11-19T13:40:22.236Z",
+        "exitCode": 0,
+        "error": null,
+        "killedBy": null,
+        "stopped": false,
+        "natural": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "4eb8fcc2-2c43-40ef-b716-93488f084442",
+          "sessionId": "REVIEW",
+          "observedAt": "2026-11-19T13:40:22.236Z",
+          "maxTokens": null,
+          "softCeiling": null,
+          "totalTokens": 3228221,
+          "confirmedTokens": 3228221,
+          "reservedTokens": null,
+          "unresolvedRequests": 0,
+          "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+          "state": "ENDED"
+        },
+        "mode": "paid-usage-only",
+        "paidRequestsAdmitted": 60,
+        "paidModelCalls": 60
+      },
+      "head": "e9353b6928fa93554905b960588177c39271aae5",
+      "status": "",
+      "grade": {
+        "sha": "e9353b6928fa93554905b960588177c39271aae5",
+        "paths": [
+          "HANDOVER.md",
+          "operations/desk.md",
+          "operations/duty-2340.json",
+          "operations/retest.mjs",
+          "shift-plan.json"
+        ],
+        "checks": {
+          "commit": true,
+          "originalInputs": false,
+          "transfer": true,
+          "assignment": true,
+          "firstBus": true,
+          "thirdSlot": true,
+          "fourthSlot": true,
+          "fieldFeasible": true,
+          "lowEfficiency": true,
+          "updatedHandover": true
+        },
+        "passed": false,
+        "observed": {
+          "sha": "e9353b6928fa93554905b960588177c39271aae5",
+          "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+          "run": "DUTY-2340",
+          "time": "23:40",
+          "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+          "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+          "requested": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "limits": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "actual": [
+            80,
+            40,
+            50,
+            70
+          ],
+          "departureKwh": [
+            126,
+            130
+          ],
+          "withinLimits": true
+        }
+      },
+      "journal": {
+        "seq": 3,
+        "eventId": "pjer-746765dbff6b1716fb05282ed9f2063f",
+        "intent": "DELIVER",
+        "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已按更晚的 DUTY-2340 23:40 实测逐格上限 [80,40,50,70] 修订班表：旧表会被截到 B 121 kWh（缺 9），新表 A 126、B 130，均恰好达标、余量 0；85% 时两车各缺 3 kWh，dispatchAt85=false。班表、交接稿、23:40 记录摘要和复算脚本已提交到 e9353b6，DUTY-2340 回执复核 withinLimits=true、departureKwh=[126,130]。\nArtifacts:\n- shift-plan.json\n- HANDOVER.md\n- operations/duty-2340.json\n- operations/retest.mjs\n- operations/desk.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:e9353b6928fa93554905b960588177c39271aae5, exploration:pje-91f9747dbdf3c4608433702cff62531a\nBasis: revision 0, head 341e19e288de9f561f85fcb66a7a910ff6f3e143\nArtifact provenance:\n- shift-plan.json: present=true tracked=true committed=true source=WORKTREE digest=4b5d506edc2d commit=e9353b6928fa\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=90f08859e731 commit=e9353b6928fa\n- operations/duty-2340.json: present=true tracked=true committed=true source=WORKTREE digest=d24c0c25ab95 commit=e9353b6928fa\n- operations/retest.mjs: present=true tracked=true committed=true source=WORKTREE digest=76f3475b58d7 commit=e9353b6928fa\n- operations/desk.md: present=true tracked=true committed=true source=WORKTREE digest=4f93f3664ec1 commit=e9353b6928fa\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已按更晚的 DUTY-2340 23:40 实测逐格上限 [80,40,50,70] 修订班表：旧表会被截到 B 121 kWh（缺 9），新表 A 126、B 130，均恰好达标、余量 0；85% 时两车各缺 3 kWh，dispatchAt85=false。班表、交接稿、23:40 记录摘要和复算脚本已提交到 e9353b6，DUTY-2340 回执复核 withinLimits=true、departureKwh=[126,130]。\",\"artifacts\":[\"shift-plan.json\",\"HANDOVER.md\",\"operations/duty-2340.json\",\"operations/retest.mjs\",\"operations/desk.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:e9353b6928fa93554905b960588177c39271aae5\",\"exploration:pje-91f9747dbdf3c4608433702cff62531a\"],\"recordedAt\":\"2026-11-19T13:39:25.585Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"d91841f9aa7f1cf5d3d8ca01bbd1601ce096f32318cd531c9891d90055532227\",\"headCommit\":\"341e19e288de9f561f85fcb66a7a910ff6f3e143\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[\"journal:pje-91f9747dbdf3c4608433702cff62531a\"],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"shift-plan.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5\",\"source\":\"WORKTREE\",\"commit\":\"e9353b6928fa93554905b960588177c39271aae5\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"90f08859e731a7990eb0445a4c3d0159c9e827be8993499b77c9657867d5a4ad\",\"source\":\"WORKTREE\",\"commit\":\"e9353b6928fa93554905b960588177c39271aae5\",\"detail\":\"committed at HEAD\"},{\"path\":\"operations/duty-2340.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"d24c0c25ab951221dc2e830e10507a3d261165737f34bcda82ed5f8f9bb6fa7b\",\"source\":\"WORKTREE\",\"commit\":\"e9353b6928fa93554905b960588177c39271aae5\",\"detail\":\"committed at HEAD\"},{\"path\":\"operations/retest.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"76f3475b58d71ba76097aa4d970fdc701ca278b5106e086fcf978367379155e9\",\"source\":\"WORKTREE\",\"commit\":\"e9353b6928fa93554905b960588177c39271aae5\",\"detail\":\"committed at HEAD\"},{\"path\":\"operations/desk.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"4f93f3664ec113dba5e9dac3ba6f458dd01dbca2a9be8e62f97df32fdee93dab\",\"source\":\"WORKTREE\",\"commit\":\"e9353b6928fa93554905b960588177c39271aae5\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-912c8e7b9886aa9d30eab310\"}"
+      },
+      "requests": 60,
+      "confirmed": 3228221,
+      "unknown": 0,
+      "stop": null
+    }
+  ]
+}
