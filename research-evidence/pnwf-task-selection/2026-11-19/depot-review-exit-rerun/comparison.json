@@ -1,0 +1,323 @@
+{
+  "previous": {
+    "basis": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "head": "d5ae2d3395dc0380e4df65be0b9c8cf819247f86",
+    "promptDigest": "d73206df26811ac6eb6cf2a1c6274f6f242b711cf1ab366024bd097d0df65819",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "model": "deepseek-v4.1-flash",
+    "materialsDigest": "7cfd7145e07912e193d1f12be2603bba65c0a291b28c0d6b5776b44ce3a5a30e",
+    "requests": 55,
+    "confirmed": 2914705,
+    "unknown": 0,
+    "natural": true,
+    "conclusion": "DELIVER",
+    "checks": {
+      "commit": true,
+      "originalInputs": true,
+      "transfer": true,
+      "assignment": true,
+      "firstBus": true,
+      "thirdSlot": true,
+      "fourthSlot": true,
+      "fieldFeasible": true,
+      "lowEfficiency": true,
+      "updatedHandover": true
+    },
+    "protectedFiles": [
+      {
+        "path": "README.md",
+        "before": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "after": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "preserved": true
+      },
+      {
+        "path": "TASK.md",
+        "before": "100644 blob 5f3f36530c05fb8c25d3769a7737cccda65032c5",
+        "after": "100644 blob 5f3f36530c05fb8c25d3769a7737cccda65032c5",
+        "preserved": true
+      },
+      {
+        "path": "model.mjs",
+        "before": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "after": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "preserved": true
+      },
+      {
+        "path": "model.test.mjs",
+        "before": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "after": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "preserved": true
+      },
+      {
+        "path": "night.json",
+        "before": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "after": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "preserved": true
+      },
+      {
+        "path": "operations/cold-cycle.json",
+        "before": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "after": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "preserved": true
+      },
+      {
+        "path": "operations/desk.md",
+        "before": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "after": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "preserved": true
+      },
+      {
+        "path": "operations/retest.mjs",
+        "before": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "after": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "preserved": true
+      },
+      {
+        "path": "package.json",
+        "before": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "after": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "preserved": true
+      }
+    ],
+    "before": {
+      "requests": 4,
+      "tokens": 216808,
+      "elapsedMs": 50822
+    },
+    "after": {
+      "requests": 26,
+      "tokens": 1787759,
+      "elapsedMs": 375989
+    },
+    "reviews": [
+      {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "measured": true,
+        "turn": 2,
+        "call": 207,
+        "result": 208,
+        "turnEnd": 338,
+        "reason": "completed",
+        "exitCode": null,
+        "before": {
+          "requests": 3,
+          "fresh": 50362,
+          "cacheRead": 91392,
+          "cacheWrite": 0,
+          "output": 2127,
+          "total": 143881
+        },
+        "after": {
+          "requests": 16,
+          "fresh": 23618,
+          "cacheRead": 961920,
+          "cacheWrite": 0,
+          "output": 17556,
+          "total": 1003094
+        },
+        "launchToReturnMs": 49590,
+        "returnToProcessExitMs": null,
+        "queuedMs": 50,
+        "turnToResultMs": 41505,
+        "resultToTurnEndMs": 292112
+      },
+      {
+        "sha": "8fcf289c04b72ef467d988a15cec2543c5d1dd30",
+        "measured": true,
+        "turn": 3,
+        "call": 354,
+        "result": 355,
+        "turnEnd": 429,
+        "reason": "completed",
+        "exitCode": null,
+        "before": {
+          "requests": 1,
+          "fresh": 1442,
+          "cacheRead": 71168,
+          "cacheWrite": 0,
+          "output": 317,
+          "total": 72927
+        },
+        "after": {
+          "requests": 10,
+          "fresh": 8312,
+          "cacheRead": 771840,
+          "cacheWrite": 0,
+          "output": 4513,
+          "total": 784665
+        },
+        "launchToReturnMs": 17532,
+        "returnToProcessExitMs": null,
+        "queuedMs": 117392,
+        "turnToResultMs": 9317,
+        "resultToTurnEndMs": 83877
+      }
+    ],
+    "maintainer": {
+      "requests": 30,
+      "fresh": 83734,
+      "cacheRead": 1896320,
+      "cacheWrite": 0,
+      "output": 24513,
+      "total": 2004567
+    },
+    "unassigned": {
+      "requests": 0,
+      "fresh": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 0,
+      "total": 0
+    }
+  },
+  "current": {
+    "basis": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "head": "621f341f2caa3e8837742df969efa39f3d808a09",
+    "promptDigest": "d73206df26811ac6eb6cf2a1c6274f6f242b711cf1ab366024bd097d0df65819",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "model": "deepseek-v4.1-flash",
+    "materialsDigest": "7cfd7145e07912e193d1f12be2603bba65c0a291b28c0d6b5776b44ce3a5a30e",
+    "requests": 23,
+    "confirmed": 834217,
+    "unknown": 0,
+    "natural": true,
+    "conclusion": "DELIVER",
+    "checks": {
+      "commit": true,
+      "originalInputs": true,
+      "transfer": true,
+      "assignment": true,
+      "firstBus": true,
+      "thirdSlot": true,
+      "fourthSlot": true,
+      "fieldFeasible": true,
+      "lowEfficiency": true,
+      "updatedHandover": true
+    },
+    "protectedFiles": [
+      {
+        "path": "README.md",
+        "before": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "after": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "preserved": true
+      },
+      {
+        "path": "TASK.md",
+        "before": "100644 blob 5f3f36530c05fb8c25d3769a7737cccda65032c5",
+        "after": "100644 blob 5f3f36530c05fb8c25d3769a7737cccda65032c5",
+        "preserved": true
+      },
+      {
+        "path": "model.mjs",
+        "before": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "after": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "preserved": true
+      },
+      {
+        "path": "model.test.mjs",
+        "before": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "after": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "preserved": true
+      },
+      {
+        "path": "night.json",
+        "before": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "after": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "preserved": true
+      },
+      {
+        "path": "operations/cold-cycle.json",
+        "before": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "after": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "preserved": true
+      },
+      {
+        "path": "operations/desk.md",
+        "before": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "after": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "preserved": true
+      },
+      {
+        "path": "operations/retest.mjs",
+        "before": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "after": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "preserved": true
+      },
+      {
+        "path": "package.json",
+        "before": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "after": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "preserved": true
+      }
+    ],
+    "before": {
+      "requests": 2,
+      "tokens": 93636,
+      "elapsedMs": 44179
+    },
+    "after": {
+      "requests": 0,
+      "tokens": 0,
+      "elapsedMs": 3
+    },
+    "reviews": [
+      {
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "measured": true,
+        "turn": 2,
+        "call": 189,
+        "result": 190,
+        "turnEnd": 192,
+        "reason": "completed",
+        "exitCode": 0,
+        "before": {
+          "requests": 2,
+          "fresh": 47058,
+          "cacheRead": 45952,
+          "cacheWrite": 0,
+          "output": 626,
+          "total": 93636
+        },
+        "after": {
+          "requests": 0,
+          "fresh": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "output": 0,
+          "total": 0
+        },
+        "launchToReturnMs": 57049,
+        "returnToProcessExitMs": 265,
+        "queuedMs": 69,
+        "turnToResultMs": 44179,
+        "resultToTurnEndMs": 3
+      }
+    ],
+    "maintainer": {
+      "requests": 2,
+      "fresh": 47058,
+      "cacheRead": 45952,
+      "cacheWrite": 0,
+      "output": 626,
+      "total": 93636
+    },
+    "unassigned": {
+      "requests": 0,
+      "fresh": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 0,
+      "total": 0
+    }
+  }
+}

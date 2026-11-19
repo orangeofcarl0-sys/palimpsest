@@ -33,6 +33,29 @@ Principal 有 10 笔已结算、248,610 tokens（fresh input 39,786，cache read
 
 停机后的首次归因因原分析器只接受一条 DSH 流而失败。已保留该异常与原矩阵，离线按会话、调用 ID 和唯一终态用量配对，同一笔只计一次；Principal 的 23 次、维护者的 11 次工具调用均配到结果。未知请求未补值。所有复算均使用这次运行的既有数据。[初次归因失败现场](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit/original-live-matrix.json) · [离线双流归因](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit/live/P/trajectory.json)
 
+## 同一基线再跑一次：一次维护者复核后完成交付
+
+本次真实 P 提交 `621f341f2caa3e8837742df969efa39f3d808a09`，业务验收 10/10，文件义务 18/18，工作树干净。Principal 记录 DELIVER 并自然退出。维护者只收到一张复核单；修订表沿用已返回的晚班上限，由 Principal 自行核算。由此可以验证原表回传后的退出，以及最终交付；两次维护者分别实测、回传后都零请求的组合在本轮真实运行中没有出现。[冻结评分、结论与请求账本摘要](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/live/matrix.json)
+
+| 核对项 | 同一轮的证据 |
+| --- | --- |
+| 原表回执送达 | Principal 公开试排 103→104 得到 126/130 kWh，又在 105→106 向维护者取得绑定 `341e19e2` 的晚班回执。接收时 B 仍为 70/50 kW；旧表在较晚采集下实际 50/50，离场 121 kWh，缺 9 kWh。 |
+| 维护者自然退出 | 独立流 189→190 生成第一份有效实测，191 为 step/end，192 为 completed。进程退出码 0。回传之前 2 笔、93,636 tokens、44.179 秒；回传之后 0 笔、0 tokens，3 毫秒结束 turn。宿主 RETURN 到进程退出 265 毫秒。 |
+| 修订表复核 | 只有 1 次联系、1 次启动、1 次回传。Principal 在 115→118 自算新设定，提交后又在 173→176 核对电量、功率与低效率条件；宿主另外对最终 Git 对象独立判分。修订 SHA 没有维护者实测回执。 |
+| 修订提交及交班稿 | 131→132 将原表回执原样另存；137→138 改两格、143→144 写交班稿、157→160 将三项一起提交。A 仍为 80/40，B 的 01:00 为 50、01:30 为 70 kW。稿件注明等效楼宇负荷为反推值，90% 时两车各零余量，85% 时各缺 3 kWh、暂停双车放行。 |
+| 材料与结论 | 九份旧材料的 Git 模式与 blob 均保留，包括操作说明、原复测程序和 21:00 原始采集。唯一 DELIVER 调用为 181→182，记录成功。Principal 的 33 次和维护者的 3 次工具调用均配到结果。 |
+
+[逐次调用与回执](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/live-observation.json) · [交班稿](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/live/P/submitted/HANDOVER.md) · [原表晚班回执](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/live/P/submitted/operations/duty-2340.json)
+
+| 完整交付 | Principal 笔 / tokens | 维护者笔 / tokens | 总请求 / tokens | 宿主耗时 |
+| --- | ---: | ---: | ---: | ---: |
+| 前次 10/10，两份维护者回执 | 25 / 910,138 | 30 / 2,004,567 | 55 / 2,914,705 | 11:16.154 |
+| 本次 10/10，一份维护者回执 | 21 / 740,581 | 2 / 93,636 | 23 / 834,217 | 16:17.669 |
+
+本次 23/23 笔全部结算，新增 UNKNOWN 0。Principal 的 fresh input / cache read / output 为 113,700 / 590,976 / 35,905；维护者为 47,058 / 45,952 / 626，两者 cache write 都为零。对照前次完整交付，少 **32 笔、2,080,488 tokens**，其中维护者少 1,910,931 tokens。前次原表复核回传后另有 16 笔、1,003,094 tokens；本次同一原表为零。前次的另一笔修订表复核在本次没有发起，因此总差额包含协作路径的差别。
+
+总耗时多 **5 分 1.515 秒**。在两条 Principal 原始 DSH 流中，按同一 turn 和 step 将 step/start 配到带终态用量的 assistant/message，这段耗时累计从 437.858 秒增至 849.082 秒。本次三个最长的单步分别为 170.422、133.735、120.019 秒。这些时段包括请求准备、响应等待和输出生成，现有证据无法把增量全部归因于服务端。上轮中断样本另行保留 5/10，本表只使用两次实际完成的交付。[按角色与 SHA 的同口径对照](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/comparison.json) · [新轨迹及逐笔绑定](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/live/P/trajectory.json)
+
 ## 如何复算
 
 下列命令只读取本地档案。对比使用完整 DSH 工具调用 ID、回执所指 SHA 和独立账本绑定。发起有效试排的那一笔计入回传前。耗时的前段从 DSH 的 turn/start 到实测 tool/result，后段从该结果到 turn/end，两端均使用同一 DSH 时钟。宿主的启动、排队、RETURN 和进程退出另列。运行原矩阵的 `returnToTurnEndMs` 跨时钟相减，Mock 中有一项为 −57 毫秒。对比文件从同一 DSH 流重算 `resultToTurnEndMs`，表中采用该值。终态账本统计 fresh input、cache read、cache write 和 output。历史归档未记录进程退出的宿主时间，该列为 null。
@@ -48,4 +71,24 @@ node scripts/pnwf/depot-relief/archive.mjs --verify "$new/live"
 $recount = Join-Path $env:TEMP 'depot-review-recount.json'
 node scripts/pnwf/depot-shift-log/compare-reviews.mjs $old "$new/live" $recount
 (Get-FileHash $recount).Hash -eq (Get-FileHash "$new/comparison.json").Hash
+```
+
+### 第 15 笔独立封存与新会话的复算
+
+原请求 `4ea77f94-216f-42ae-ab53-1423dcb9fce1` 在 SQLite 中为 `UNKNOWN / PROVIDER_TIMEOUT`，actual 和 usage 均为空。网关只有 ADMITTED；此前 14 笔共确认 440,879 tokens，原轮总量未知。原 cohort `b61a129f-2a10-4739-b601-f92d62d35a66` 的冻结判分仍为 5/10。本次复跑从 `4503598d` 使用原 Mock 矩阵，普通 DSH 业务提示、基线、镜像、义务与计量窗口相同，新 cohort 为 `d4e216bd-740c-4d6b-bdce-74623cc00d6d`。完整交付对照取自此前 10/10 的 `d5ae2d3395dc0380e4df65be0b9c8cf819247f86`。[独立封存](../../research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/prior-unknown-15.json) · [完整交付基准](DEPOT-MATERIAL-OBLIGATIONS.md)
+
+```powershell
+$root = 'research-evidence/pnwf-task-selection/2026-11-19'
+$rerun = "$root/depot-review-exit-rerun"
+$timeout = Join-Path $env:TEMP 'depot-unknown-15.json'
+node scripts/pnwf/depot-shift-log/archive-review-timeout.mjs "$root/depot-review-exit/live" $timeout
+(Get-FileHash $timeout).Hash -eq (Get-FileHash "$rerun/prior-unknown-15.json").Hash
+node scripts/pnwf/depot-relief/archive.mjs --verify "$root/depot-review-exit/mock"
+node scripts/pnwf/depot-relief/archive.mjs --verify "$rerun/live"
+$observation = Join-Path $env:TEMP 'depot-rerun-observation.json'
+node scripts/pnwf/depot-shift-log/observe.mjs "$rerun/live" $observation
+(Get-FileHash $observation).Hash -eq (Get-FileHash "$rerun/live-observation.json").Hash
+$comparison = Join-Path $env:TEMP 'depot-rerun-comparison.json'
+node scripts/pnwf/depot-shift-log/compare-reviews.mjs "$root/depot-material-obligations/live" "$rerun/live" $comparison
+(Get-FileHash $comparison).Hash -eq (Get-FileHash "$rerun/comparison.json").Hash
 ```

@@ -1,0 +1,186 @@
+[
+  {
+    "at": "2026-11-19T14:44:23.084Z",
+    "kind": "OPEN",
+    "slip": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T14:47:37.730Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T14:47:37.903Z",
+    "kind": "CONTACT",
+    "n": 1,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "question": "DESK-21 21:00 的交流电表采集是否支持现行四格班表（A 80/40，B 70/50，20 kW 平移）？请给出按该采集复算的四格可用功率、离场电量和任何缺口。",
+    "cached": false,
+    "principal": {
+      "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    }
+  },
+  {
+    "at": "2026-11-19T14:47:37.972Z",
+    "kind": "START_REVIEW",
+    "n": 1,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+  },
+  {
+    "at": "2026-11-19T14:48:34.891Z",
+    "kind": "PEER_TRIAL",
+    "n": 1,
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T14:48:35.021Z",
+    "kind": "RETURN",
+    "n": 1,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "principal": {
+      "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    },
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T14:48:35.286Z",
+    "kind": "REVIEW_EXIT",
+    "n": 1,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "exitCode": 0
+  }
+]
