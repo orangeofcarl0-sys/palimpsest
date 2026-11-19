@@ -1,0 +1,338 @@
+{
+  "P": {
+    "401268c6-4dc6-4245-b1f4-f56d8dd3c37b": [
+      "discovery",
+      "读取当前工作状态"
+    ],
+    "995dc4b8-27a8-412c-931a-2147938a36b3": [
+      "discovery",
+      "检查项目与登记联系人"
+    ],
+    "4cac180f-c5db-4960-ba6f-e92ca38c00f8": [
+      "discovery",
+      "读工单、原交班稿与运营入口"
+    ],
+    "d123a4e6-976a-415b-87d8-62932a6e9226": [
+      "discovery",
+      "对照名义程序、测试和 COLD-17 采集"
+    ],
+    "acc48519-3108-41c1-978a-788037ceb278": [
+      "mixed",
+      "取得原表有效回执并本地重放，同批对父 SHA 的试排被拒"
+    ],
+    "ed29c43e-d369-4384-aa16-287b39a3d9ac": [
+      "discovery",
+      "主动向原维护者询问原表缺口及效率证据"
+    ],
+    "2d0ac827-90e7-4832-adb1-833e5c236987": [
+      "discovery",
+      "查上一版 Git 内容与转录历史"
+    ],
+    "6787c33e-5277-4dfa-a016-5edf47a572b9": [
+      "discovery",
+      "规划修订和复核步骤"
+    ],
+    "df4bc945-6e18-4fc8-b232-78834dea7540": [
+      "unproductive",
+      "编辑被拒，未先用编辑工具认可的方式读取排班"
+    ],
+    "f7f70506-d1fd-4a3e-b9a0-b165495b56d9": [
+      "discovery",
+      "读取待编辑排班"
+    ],
+    "54cbd5d6-d97e-4266-9e45-08a3ac587e62": [
+      "effectiveRework",
+      "将两格 B 的真实发车设定改成 60、60"
+    ],
+    "b72a224e-803d-4a17-a0fe-f47f59a9810c": [
+      "effectiveRework",
+      "写入 Principal 的交班稿"
+    ],
+    "8350f3c4-dfdb-465a-b508-ea8e346f7e73": [
+      "validation",
+      "重放已修改工作表并运行回归"
+    ],
+    "b1213300-f6d7-4cb4-a833-0aef8e540a7b": [
+      "effectiveRework",
+      "修正无平移算例多乘的半小时因子"
+    ],
+    "cd319567-6135-43b0-a49a-60618e405973": [
+      "validation",
+      "复算冷夜离场余量和低效率情形"
+    ],
+    "39caa835-7525-43d2-a7c3-e951faf41b4a": [
+      "effectiveRework",
+      "区分本地复算和宿主回执能证明的字段"
+    ],
+    "0b8f61cb-3dc2-4254-a6f5-8c54eebbe6a8": [
+      "validation",
+      "复读交班稿"
+    ],
+    "5d857bc9-f7ed-4acd-bc72-9b419fdddd44": [
+      "effectiveRework",
+      "标明最低楼宇负荷平移量"
+    ],
+    "bfbaff43-797b-4ce5-ba50-ea7359d1ee4b": [
+      "effectiveRework",
+      "新增按车和工况的缺口对照"
+    ],
+    "6504b652-c495-4a3f-b87b-c93bb868181d": [
+      "validation",
+      "检查最终差异、复测结果和测试"
+    ],
+    "b53f7873-a91d-4ed8-b5c8-15f4a556c976": [
+      "closing",
+      "提交自己的排班与交班稿"
+    ],
+    "c8031f60-69eb-4a2d-bedb-1d16004dceeb": [
+      "validation",
+      "按新提交自行试排并再次请原维护者复核"
+    ],
+    "cbb001b1-06d5-4a3c-bed2-5b4f7f4f9f3a": [
+      "closing",
+      "结束 Principal 待办列表"
+    ],
+    "46ad716f-aa12-4447-bc3c-de5b5e5dc8a9": [
+      "closing",
+      "记录产品 DELIVER 及其工件"
+    ],
+    "a12e6f3d-3554-4f33-b209-0b3c43d09c7d": [
+      "closing",
+      "向调度台交付最终结果"
+    ],
+    "5e1bbb9a-cfe2-4b34-b79f-987ab456cfa1": [
+      "discovery",
+      "读上一班实测单并对原 SHA 实测，生成可返回的反例"
+    ],
+    "493225c9-7f77-4cbd-93c9-fcd807a40f30": [
+      "discovery",
+      "定位站控采集与重放工具"
+    ],
+    "0a2e341e-3c8f-4533-827e-811289f2ab12": [
+      "discovery",
+      "对照原表、采集和重放算法"
+    ],
+    "db5f67ee-1c20-431b-aca9-bd59ca14df20": [
+      "discovery",
+      "核对复核副本的版本与候选历史"
+    ],
+    "8bffda9b-f10d-4198-9279-404d51a366b8": [
+      "discovery",
+      "在复核副本用本地程序再现旧表缺口"
+    ],
+    "c1552fb8-7dcf-4024-89c0-2f5050bb31f9": [
+      "discovery",
+      "读取本地测试入口"
+    ],
+    "f134c9bc-787f-47ba-b969-a237ebe16fba": [
+      "privateRework",
+      "改隔离副本的两格排班"
+    ],
+    "7039db9f-fda8-4c96-a8e5-fbf6603ef556": [
+      "unproductive",
+      "写隔离交班稿被拒，须先读文件"
+    ],
+    "01fe3401-2995-445d-9c5c-357a92273718": [
+      "privateValidation",
+      "回读隔离原稿以解除编辑拒绝"
+    ],
+    "a1f32941-bbe2-43f8-a984-cab38bf3a04f": [
+      "privateRework",
+      "重写隔离交班稿"
+    ],
+    "430c5b06-48fd-404d-8840-2c0e5394d1be": [
+      "privateValidation",
+      "试排隔离修订并跑名义回归"
+    ],
+    "636ffa93-56cd-4bb2-a581-9829b6fc7237": [
+      "privateRework",
+      "增加仅在隔离副本出现的回归测试"
+    ],
+    "86f5441b-9aa9-4b3a-abe1-e366b3e9ec65": [
+      "privateValidation",
+      "运行隔离副本新旧测试"
+    ],
+    "9fdf2518-78ef-4dca-a412-2f1fe05695da": [
+      "privateValidation",
+      "审阅隔离副本的差异"
+    ],
+    "913ee7d3-a063-455b-9d52-7fde249e5481": [
+      "privateRework",
+      "调整隔离副本的复测程序"
+    ],
+    "60d43605-41bc-41d9-b346-4f9e488963e6": [
+      "privateValidation",
+      "核对隔离副本复测输出、测试"
+    ],
+    "8906773f-5568-4c8e-97fc-3d8f2683bea0": [
+      "unproductive",
+      "私有提交缺 Git 身份，提交失败"
+    ],
+    "fa80ed0d-a971-40cf-8e72-93c0581a98a6": [
+      "privateClosing",
+      "调查隔离副本 Git 身份"
+    ],
+    "c9eae4e8-53dc-402e-8e6d-73c5f34cdfb1": [
+      "privateClosing",
+      "配置副本身份并提交隔离成果"
+    ],
+    "b8fcbaa1-6a72-4bb4-9ef2-7fd24da11c2b": [
+      "privateValidation",
+      "核对私有提交后测试和工作区"
+    ],
+    "29bb3da9-81f9-422f-9601-fe482a3e9d29": [
+      "privateClosing",
+      "核对私有提交所含文件"
+    ],
+    "fdf44487-2f4d-4fd2-b855-f08a1bc437d0": [
+      "privateClosing",
+      "整理维护者待办状态"
+    ],
+    "b7d7419d-b55d-44fa-8da0-23ddde04879e": [
+      "privateClosing",
+      "查私有 SHA 和工作区状态"
+    ],
+    "8597c07d-5a13-4fb4-96fc-0aba54b39168": [
+      "privateClosing",
+      "查看副本内产品命令是否存在"
+    ],
+    "bc467baa-a7db-46d9-a87d-31fe98dd19e8": [
+      "privateClosing",
+      "检查维护者会话目标"
+    ],
+    "d728a36d-3120-47d5-93bf-34739196c586": [
+      "privateClosing",
+      "结束首次复核，宿主仅转发 SHA 实测回执"
+    ],
+    "52f1ceb8-9b1f-4872-95c2-31c4c1b8ce6e": [
+      "validation",
+      "比对原始实测单，对 Principal 新提交复测并核对版本"
+    ],
+    "805d2419-06e5-459a-9548-1c48559ddb74": [
+      "validation",
+      "回读修订表与交班稿，重放最终候选并跑测试"
+    ],
+    "1f953249-9943-4d8c-9df4-112022a04755": [
+      "privateClosing",
+      "结束第二次复核，宿主返还候选实测回执"
+    ]
+  },
+  "F": {
+    "d4dc868f-4e40-4751-b76b-a23667fea4d7": [
+      "unproductive",
+      "维护者尝试历史会话里的产品工具，当前隔离配置返回 unknown tool"
+    ],
+    "2cac6e5a-c290-446a-b236-52f9786aa53b": [
+      "discovery",
+      "查目录并读取上一班的现场实测单"
+    ],
+    "9aaf2f60-a9d6-4ec0-9fa7-55d8e8723db7": [
+      "discovery",
+      "在隔离副本绑定原 SHA 复测"
+    ],
+    "4af608d1-9231-410b-923f-9c4c76adbe09": [
+      "discovery",
+      "检查复核副本和可用文件"
+    ],
+    "313590a9-e162-4941-b6ef-4a5e482b56f8": [
+      "discovery",
+      "比对采集、排班与复测算法"
+    ],
+    "3bb1f5cc-f6a3-4796-84d1-a31df5a11290": [
+      "discovery",
+      "核对原 SHA 并本地重放"
+    ],
+    "37fc8c59-c00c-4d29-a1b0-a32df1af5b04": [
+      "privateClosing",
+      "完成首次复核，宿主仅转发 SHA 实测回执"
+    ],
+    "934be3ad-2320-41c0-a1b7-7849cf1db83b": [
+      "validation",
+      "对照交班单并绑定新 SHA 实测试排"
+    ],
+    "6e18c227-6e3f-4279-8d37-a231ff3e2ef8": [
+      "validation",
+      "复核修订表及 85% 可行性"
+    ],
+    "b727b42b-e8c6-44f6-9e55-753bbc317f61": [
+      "privateClosing",
+      "结束第二次复核，宿主返还候选实测回执"
+    ],
+    "3403c71f-26ae-4c79-9954-4cf7d9016ded": [
+      "discovery",
+      "查看工作区和上一班联系人"
+    ],
+    "3978121b-c117-48df-8cf8-153547c0bc7f": [
+      "discovery",
+      "读取业务目标、旧交班稿、名义参数和现行排班"
+    ],
+    "241f7e8d-3e41-48f9-9526-f2a3c49ff78e": [
+      "discovery",
+      "查运营目录、版本历史和名义模型测试"
+    ],
+    "14f09e62-96ae-4ea0-955f-c38b8f4b6874": [
+      "discovery",
+      "阅读原始电表采集与重放程序"
+    ],
+    "a74c2ec3-6bbb-476a-8b30-7376d637a404": [
+      "discovery",
+      "本地重放旧表，检查名义测试与历史提交"
+    ],
+    "5be68cd0-4cfc-4862-b32c-0bb38e27d9f2": [
+      "discovery",
+      "取得绑定 SHA 的旧表宿主试排回执"
+    ],
+    "4b3eaca7-2531-4523-aa49-b671afc3217a": [
+      "discovery",
+      "检查是否另有分支、标签或运行资料"
+    ],
+    "068c02ba-1521-4c32-ac7c-852d64e44b63": [
+      "discovery",
+      "计算不同效率下的名义排班结果"
+    ],
+    "35080990-c0b4-48c8-97ac-399acaefe6c8": [
+      "discovery",
+      "主动请上一班维护者核对 B 车的上限和离场缺口"
+    ],
+    "fc4ff323-9d84-4745-a427-75793981314c": [
+      "discovery",
+      "整理证据并列出修订计划"
+    ],
+    "4f483f57-e77e-40d7-ba38-ca4e2ebbf77e": [
+      "effectiveRework",
+      "将实际排班 B 车两格从 70/50 改为 60/60"
+    ],
+    "f2874b51-04d2-45d3-bb20-71e9b23b43e3": [
+      "effectiveRework",
+      "编写最终交班稿，解释限流、余量与放行条件"
+    ],
+    "a2e7c015-4918-4237-9788-0c9347e7e040": [
+      "validation",
+      "重放修订表、跑原测试并核对变更"
+    ],
+    "f848fcb1-83cf-42e9-8e05-865791322d49": [
+      "closing",
+      "查 Git 身份和提交前状态"
+    ],
+    "1cd6495f-5fcf-4b0d-b63a-6b723e4403f2": [
+      "closing",
+      "提交最终排班与交班稿"
+    ],
+    "6a3055a8-fd4a-4847-8950-6766ea7fc510": [
+      "validation",
+      "对新 SHA 自行试排并请原维护者复核"
+    ],
+    "ad5cf7ab-9332-43b2-a2c2-1bbab6d59847": [
+      "mixed",
+      "核对 85% 缺口与最终提交文件、清洁状态"
+    ],
+    "d37bcb26-03f1-442a-ae94-9c6558c0ec65": [
+      "closing",
+      "结束待办列表"
+    ],
+    "50266c50-a96b-4de6-8748-0fb2c9fb646b": [
+      "closing",
+      "向调度台报告最终结论"
+    ]
+  }
+}

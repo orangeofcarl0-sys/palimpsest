@@ -1,0 +1,253 @@
+[
+  {
+    "at": "2026-11-19T11:47:43.578Z",
+    "kind": "OPEN",
+    "slip": {
+      "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "COLD-17",
+      "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "actual": [
+        80,
+        40,
+        60,
+        50
+      ],
+      "departureKwh": [
+        126,
+        125.5
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T11:48:56.602Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "COLD-17",
+      "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "actual": [
+        80,
+        40,
+        60,
+        50
+      ],
+      "departureKwh": [
+        126,
+        125.5
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T11:49:22.345Z",
+    "kind": "CONTACT",
+    "n": 1,
+    "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+    "question": "请核对本班提交的四格工作表在 COLD-17 采集下的实际执行结果：每格实际可用的 AC 功率、两车离场电量与缺口，以及该采集能否支持 0.90 的综合效率假设。现行表 requested A/A/B/B = [80,40,70,50] kW，是否可直接签发？"
+  },
+  {
+    "at": "2026-11-19T11:49:44.816Z",
+    "kind": "PEER_TRIAL",
+    "n": 1,
+    "receipt": {
+      "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "COLD-17",
+      "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "actual": [
+        80,
+        40,
+        60,
+        50
+      ],
+      "departureKwh": [
+        126,
+        125.5
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T11:52:38.338Z",
+    "kind": "RETURN",
+    "n": 1,
+    "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+    "receipt": {
+      "sha": "21255b96b6d8fa2dde97a53a1f7b743465f48726",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "COLD-17",
+      "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "actual": [
+        80,
+        40,
+        60,
+        50
+      ],
+      "departureKwh": [
+        126,
+        125.5
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T11:55:57.749Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+      "sheetBlob": "b548489c88efb1517855be27f0abe61846c9ad37",
+      "run": "COLD-17",
+      "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+      "requested": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "limits": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "actual": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T11:55:57.818Z",
+    "kind": "CONTACT",
+    "n": 2,
+    "sha": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+    "question": "请复核修订后的四格工作表：A/A/B/B = [80,40,60,60] kW，20 kW 平移保持。按 COLD-17 采集，是否所有请求都在实测上限内？两车离场电量和缺口各是多少？"
+  },
+  {
+    "at": "2026-11-19T11:56:12.437Z",
+    "kind": "PEER_TRIAL",
+    "n": 2,
+    "receipt": {
+      "sha": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+      "sheetBlob": "b548489c88efb1517855be27f0abe61846c9ad37",
+      "run": "COLD-17",
+      "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+      "requested": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "limits": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "actual": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T11:56:29.479Z",
+    "kind": "RETURN",
+    "n": 2,
+    "sha": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+    "receipt": {
+      "sha": "e4e60a4e01151e8f250e3d53f713fee18fc7e84c",
+      "sheetBlob": "b548489c88efb1517855be27f0abe61846c9ad37",
+      "run": "COLD-17",
+      "captureDigest": "f3bc1027406209593ad5e5436152d779f38493d3129dfec75ac22981cbd2a379",
+      "requested": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "limits": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "actual": [
+        80,
+        40,
+        60,
+        60
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  }
+]
