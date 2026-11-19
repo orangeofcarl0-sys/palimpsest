@@ -1,0 +1,156 @@
+{
+  "domain": "energy",
+  "arm": "F",
+  "basis": "31723de4147f7ab54c1e71c1813ae84d4f9bf1d3",
+  "promptDigest": "6e434e697d5927082096cc7085a3ba8d17aab5b346b60e62fc6412d01470bbfc",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "f79557ba-7f69-4e6b-b274-8a21ed84311c",
+    "sessionId": "REVIEW",
+    "condition": "F",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\m3-routing-5f9be4a6\\mock-01\\energy-F\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\m3-routing-5f9be4a6\\mock-01\\energy-F\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "cf46ef9a51618af127ac8d82d4136eeafd0ddea24c8e91d82bb5899481b50b08",
+    "qualification": "c2a9f721b9d956fbeec350f85bb7128d8fa7fae8786a9a4e2c8fca5adc0be4a5",
+    "startedAt": "2026-11-19T08:54:28.530Z",
+    "endedAt": "2026-11-19T08:54:39.998Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "f79557ba-7f69-4e6b-b274-8a21ed84311c",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-19T08:54:39.998Z",
+      "maxTokens": 12000000,
+      "softCeiling": 12000000,
+      "totalTokens": 260022,
+      "confirmedTokens": 260022,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "submission": {
+    "workingHead": "59973cc1a41cfbe7cd4a4069cd687e1480cb5698",
+    "cleanWorld": true,
+    "basis": "31723de4147f7ab54c1e71c1813ae84d4f9bf1d3",
+    "selected": "59973cc1a41cfbe7cd4a4069cd687e1480cb5698",
+    "maximal": [
+      "59973cc1a41cfbe7cd4a4069cd687e1480cb5698"
+    ],
+    "commits": [
+      "59973cc1a41cfbe7cd4a4069cd687e1480cb5698"
+    ],
+    "grade": {
+      "checks": {
+        "north": true,
+        "harbor": true,
+        "total": true,
+        "recommendation": true,
+        "readerTotal": true,
+        "citation": true,
+        "risk": true,
+        "preserved": true,
+        "sources": true
+      },
+      "passed": true,
+      "paths": [
+        "deliverables/cost-model.json",
+        "deliverables/recommendation.md",
+        "deliverables/risk-review.md"
+      ]
+    },
+    "delivered": true
+  },
+  "accounted": true,
+  "ledger": {
+    "schema": "pnwf-spend-snapshot/v1",
+    "cohortId": "f79557ba-7f69-4e6b-b274-8a21ed84311c",
+    "configDigest": "ffd91a5f035380d19aa0e5af60dc7dac00031980c8870561822b0c8ca36a7d90",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 260022,
+    "reserved": 0,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": 12000000,
+    "sessions": [
+      {
+        "id": "REVIEW",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": 12000000,
+        "softCeiling": 12000000,
+        "requestCount": 6,
+        "unresolvedRequests": 0,
+        "confirmed": 260022,
+        "reserved": 0
+      }
+    ],
+    "requests": [
+      {
+        "id": "77699e62-3390-47a5-b970-9d1e8d2e9796",
+        "session": "REVIEW",
+        "digest": "290a4b7cfe4a2349a46adb60d58689874e0b7b2c5c5044ddca7b1753c4212651",
+        "reserved": 309668,
+        "actual": 53910,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "d6685aa4-0022-4d2c-85f2-a590ac4867d9",
+        "session": "REVIEW",
+        "digest": "6b801a07ccc7ba0a93f9ad8bc9bdde620edec9af27e07b4cd6c4bb15928942a2",
+        "reserved": 288114,
+        "actual": 32347,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "59068b4e-f36f-46f1-a226-08777dd1fc1c",
+        "session": "REVIEW",
+        "digest": "fc96552f5bf414ced6c56a17c69fc186b3ec8670410486a0597a6ddde1535b9d",
+        "reserved": 312858,
+        "actual": 57398,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "f34eb8e5-ff67-4ddf-a209-03cc76112294",
+        "session": "REVIEW",
+        "digest": "c33da0317ed2a8254e6a45d26efd846ed1e4e3bce347f9ea14b09babdddd865c",
+        "reserved": 291925,
+        "actual": 36020,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "bf524fd1-fcc3-42b2-9aaa-4e79e6c46f9a",
+        "session": "REVIEW",
+        "digest": "4a78aac5219e16faf555b5638c0d7c74a53e79630b23ed47807ca2c38e2abf22",
+        "reserved": 290996,
+        "actual": 36557,
+        "state": "SETTLED",
+        "reason": null
+      },
+      {
+        "id": "9f5d6a79-3290-4831-a546-71171d0c9e83",
+        "session": "REVIEW",
+        "digest": "755ba4d290bcaf4917ab08de418d2eaad6e7d764b4829f91f67326b269385474",
+        "reserved": 299698,
+        "actual": 43790,
+        "state": "SETTLED",
+        "reason": null
+      }
+    ],
+    "refusals": []
+  },
+  "mockFailures": []
+}

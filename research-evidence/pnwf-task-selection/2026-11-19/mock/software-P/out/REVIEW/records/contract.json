@@ -1,0 +1,15 @@
+{
+  "contract": "Dispatch replay contract. P and S are separate recorded field cases. Preserve both captures. A matching timestamp or request ID across cases does not make either a correction of the other. In each case, --require-anomaly requires an actual live display inversion: exit 0 and report diagnosis.reproduced=true if reproduced, otherwise exit 1 and report false. diagnosis.liveInversions lists the observed live inversions. Keep the existing --json interface. The working checkout contains the P capture.",
+  "captures": {
+    "P": {
+      "path": "/run/dispatch-records/P.tsv",
+      "sha256": "c76bb857f8877413ffa91cbd9d736a09053c09ba94afb3ed1fe7bd500b8bc68a",
+      "source": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2"
+    },
+    "S": {
+      "path": "/run/dispatch-records/S.tsv",
+      "sha256": "77f6d9a53429c6c081d51aef62b5bfd68fd23bfac5df1ff9208997812d5caa5e",
+      "source": "584d61c4bd5ae71bcb1fa687e9b3ad053da4f509"
+    }
+  }
+}

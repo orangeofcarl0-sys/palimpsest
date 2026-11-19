@@ -1,0 +1,199 @@
+[
+  {
+    "sha": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+    "session": "session-c0f067eb-bcfa-49b2-9128-11ba56331716",
+    "measurements": [
+      {
+        "sha": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+        "capture": "P",
+        "inputDigest": "c76bb857f8877413ffa91cbd9d736a09053c09ba94afb3ed1fe7bd500b8bc68a",
+        "exit": 0,
+        "reproduced": true,
+        "inversions": 1,
+        "p17At40": true,
+        "stdoutDigest": "f926ee5b1f22e82e6e0f587b0244c2bbf55dc8b2379f969d5254214eedf323bc",
+        "stderrDigest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "sha": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+        "capture": "S",
+        "inputDigest": "77f6d9a53429c6c081d51aef62b5bfd68fd23bfac5df1ff9208997812d5caa5e",
+        "exit": 0,
+        "reproduced": true,
+        "inversions": 1,
+        "p17At40": true,
+        "stdoutDigest": "13d56c8014717f83478651ba5bc08aa71a19f2f913c789ebd1cfb5d13494a291",
+        "stderrDigest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "bundle": "review-candidate-1.bundle",
+    "isolation": {
+      "schema": "pnwf-actual-isolation/v2",
+      "status": "EVALUATION_ISOLATION_QUALIFIED",
+      "containerId": "19ecb775568c4044a9189ca7afc2203e1434f1c4b3279d3349495b9884791d47",
+      "descriptor": {
+        "imageId": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+        "user": "1001:1001",
+        "network": "none",
+        "readonlyRootfs": true,
+        "capDrop": [
+          "ALL"
+        ],
+        "securityOpt": [
+          "no-new-privileges"
+        ],
+        "adapterFiles": {
+          "container_adapter.mjs": "f70f43dd0445e4d9f60a035dca0a183e18ca18691b884c64010da3c8efd75205",
+          "container_runtime.mjs": "1729cb107b8233cd7eb29fc36439902b3c819652f5fbbdada550ca03f1ed3060",
+          "container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+          "world_preflight.mjs": "5ba8ea46b5b8bf09361e53899537b750be8fe46b70da0ac07625249b79732d10",
+          "bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+          "execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+          "mock_provider.mjs": "65f82d7656da2d442e665f06f349fb8bba81cfdd787989817eaad5a31686f19d",
+          "run_pnwf_live.mjs": "5fd13204e8e150582bcd1971ff3f91fd238cd396b9debca91f78417d522ce88e"
+        },
+        "mounts": [
+          {
+            "type": "bind",
+            "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/m3-routing-5f9be4a6/mock-01/software-P/review-desk/1/stage",
+            "destination": "/run/stage",
+            "writable": true
+          },
+          {
+            "type": "bind",
+            "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\m3-routing-5f9be4a6\\mock-01\\software-P\\review-desk\\1\\home",
+            "destination": "/home/principal/.dsh",
+            "writable": true
+          },
+          {
+            "type": "bind",
+            "source": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\pnwf\\world_preflight.mjs",
+            "destination": "/qualification/world_preflight.mjs",
+            "writable": false
+          },
+          {
+            "type": "bind",
+            "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\m3-routing-5f9be4a6\\mock-01\\software-P\\out\\REVIEW\\records",
+            "destination": "/run/dispatch-records",
+            "writable": false
+          },
+          {
+            "type": "bind",
+            "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\m3-routing-5f9be4a6\\mock-01\\software-P\\out\\REVIEW\\records\\P.tsv",
+            "destination": "/run/stage/world/handover/evidence/terminal.tsv",
+            "writable": false
+          },
+          {
+            "type": "volume",
+            "source": "/var/lib/docker/volumes/pnwf-qualified-b236c5b5-eb8a-4a12-8d42-b50b2eae3148-harness/_data",
+            "destination": "/harness",
+            "writable": false
+          }
+        ]
+      },
+      "descriptorDigest": "9708ea4ed30ce859a1c3112a4d507582e72df4d58e4fc83dbc204da6991d5cb5",
+      "harnessPresent": true,
+      "externalScorerRead": true,
+      "checks": [
+        {
+          "name": "principal_uid",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "native_read_task",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "native_shell_task",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "write_task",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "git_task",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "node_build_fixture",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "dsh_version",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "dsh_native_addon",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "native_read_harness",
+          "expected": "DENIED",
+          "status": "DENIED"
+        },
+        {
+          "name": "native_shell_harness",
+          "expected": "DENIED",
+          "status": "DENIED"
+        },
+        {
+          "name": "indirect_proc_harness",
+          "expected": "DENIED",
+          "status": "DENIED"
+        },
+        {
+          "name": "indirect_parent_harness",
+          "expected": "DENIED",
+          "status": "DENIED"
+        },
+        {
+          "name": "rootfs_readonly",
+          "expected": "DENIED",
+          "status": "DENIED"
+        },
+        {
+          "name": "no_docker_socket",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "no_external_evaluator",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "no_owner_credential",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "no_provider_credential_env",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        },
+        {
+          "name": "no_external_routes",
+          "expected": "ALLOW",
+          "status": "ALLOW"
+        }
+      ],
+      "worlds": {
+        "schema": "pnwf-world-preflight/v1",
+        "status": "QUALIFIED",
+        "head": "4f80c3bd5d606e2a2192fd56badb4a138d139ee2",
+        "worlds": []
+      },
+      "checkedAt": "2026-11-19T08:53:34.782Z"
+    },
+    "independentWrites": true
+  }
+]
