@@ -7,7 +7,7 @@ import {git} from "../transit-desk/run.mjs";
 import {bench,grade,originalSha} from "./case.mjs";
 import {reviewPhases} from "../depot-shift-log/review-phases.mjs";
 
-export function analyze(dir,world,row){
+export function analyze(dir,world,row,measuredBench=bench){
   const t=readJson(join(dir,"trajectory.json")),l=readJson(join(dir,"out/REVIEW/request-accounting.json"));
   const p=t.traces.find(s=>s.role==="principal");
   const journal=readJson(join(dir,"desk/journal.json"));
@@ -29,12 +29,13 @@ export function analyze(dir,world,row){
   const db=new DatabaseSync(join(dir,"desk/receipts.sqlite"),{readOnly:true});
   try{
     for(const event of journal.filter(e=>e.kind==="CONTACT")){
-      const c=p.calls.find(c=>!used.has(c.callId)&&c.tool==="depot_contact"&&c.input.sha===event.sha&&c.input.question===event.question);
-      assert(c);used.add(c.callId);
       const returned=journal.find(e=>e.kind==="RETURN"&&e.n===event.n);
+      const c=p.calls.find(c=>!used.has(c.callId)&&c.tool==="depot_contact"&&c.input.sha===event.sha&&c.input.question===event.question&&
+        (measuredBench===bench||!returned||parseReply(c)?.ok===true));
+      assert(c);used.add(c.callId);
       let parsed;try{parsed=JSON.parse(c.reply);}catch{}
       if(returned){
-        assert.deepEqual(returned.receipt,bench(row.ticket,world,event.sha));
+        assert.deepEqual(returned.receipt,measuredBench(row.ticket,world,event.sha));
         const stored=db.prepare("SELECT receipt FROM receipts WHERE sha=?").get(event.sha);
         assert.deepEqual(JSON.parse(stored.receipt),returned.receipt);
       }
@@ -57,6 +58,7 @@ export function analyze(dir,world,row){
     extraContacts:p.calls.filter(c=>c.tool==="depot_contact"&&!used.has(c.callId)).map(c=>({call:c.seq,reply:c.reply})),
     delegations:p.calls.filter(c=>["subagent","workflow"].includes(c.tool)||c.tool==="palimpsest_work"&&c.input.action==="delegate").map(c=>({tool:c.tool,call:c.seq,result:c.resultSeq}))};
 }
+function parseReply(call){try{return JSON.parse(call.reply);}catch{return null;}}
 function readJsonFromGit(world,sha,path){
   if(!git(world,"ls-tree",sha,"--",path).trim())return null;
   try{return JSON.parse(git(world,"show",sha+":"+path));}catch{return null;}

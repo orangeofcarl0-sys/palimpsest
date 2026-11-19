@@ -1,0 +1,266 @@
+{
+  "id": "controller-F",
+  "ticket": "controller",
+  "arm": "F",
+  "basis": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+  "cohortId": "e440dd26-5d2b-4f09-8a9b-aa86d0cb0445",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "e440dd26-5d2b-4f09-8a9b-aa86d0cb0445",
+    "sessionId": "REVIEW",
+    "condition": "F",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r7-power-live-01\\controller-F\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r7-power-live-01\\controller-F\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "e82781c308e29565abd4fc24f3538fda5d3748079731d2883b9e632905df792e",
+    "qualification": "44ad2ecf51b60394ca041ab789e576f525e06b5ca1b5143205f22ac9627bf5f8",
+    "startedAt": "2026-11-19T17:12:57.405Z",
+    "endedAt": "2026-11-19T17:21:13.699Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "e440dd26-5d2b-4f09-8a9b-aa86d0cb0445",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-19T17:21:13.699Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 1289851,
+      "confirmedTokens": 1289851,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 31,
+    "paidModelCalls": 31
+  },
+  "head": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+  "status": "",
+  "conclusion": null,
+  "release": {
+    "check": {
+      "ok": true,
+      "candidate": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+      "evidenceSha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+      "power": {
+        "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    },
+    "filed": true,
+    "checks": [
+      {
+        "action": "release_check",
+        "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "RESULT_DRIFT",
+            "nextAction": "Read the current full HEAD and retry."
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+          },
+          "power": {
+            "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUIRED_FILE_MISSING",
+            "detail": "Correct the failed candidate checks and commit again.",
+            "nextAction": "FIX_CANDIDATE",
+            "paths": [
+              "HANDOVER.md",
+              "release.json"
+            ],
+            "candidate": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3"
+          },
+          "power": {
+            "sha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+        "result": {
+          "ok": true,
+          "candidate": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+          "evidenceSha": "6c6999a0aa4249a8de92fd0a37866302b7d3f3d3",
+          "power": {
+            "sha": "af47bfbf81ab93813f9350223118ee2c513b6ddd",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        }
+      }
+    ]
+  }
+}

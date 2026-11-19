@@ -1,0 +1,609 @@
+[
+  {
+    "at": "2026-11-19T17:04:53.378Z",
+    "kind": "OPEN",
+    "slip": {
+      "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false,
+      "applicability": "站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 70,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 20
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": false,
+        "refusal": {
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "candidate": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+        }
+      }
+    }
+  },
+  {
+    "at": "2026-11-19T17:05:43.826Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T17:06:33.117Z",
+    "kind": "CONTACT",
+    "n": 1,
+    "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+    "question": "请按本班适用工况（23:40 DUTY-2340 回执所指的交流上限序列）复核当前已提交的四格班表：A、B 两车离场净电量各是多少？若把 B 的 01:00/01:30 请求序列从 70/50 改为 50/70，在 B 车端调节器有序列记忆的前提下，实测两车离场净电量会是多少？",
+    "cached": false,
+    "principal": {
+      "head": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    }
+  },
+  {
+    "at": "2026-11-19T17:06:33.183Z",
+    "kind": "START_REVIEW",
+    "n": 1,
+    "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa"
+  },
+  {
+    "at": "2026-11-19T17:07:21.929Z",
+    "kind": "PEER_TRIAL",
+    "n": 1,
+    "receipt": {
+      "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false,
+      "applicability": "站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 70,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 20
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": false,
+        "refusal": {
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "candidate": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+        }
+      }
+    }
+  },
+  {
+    "at": "2026-11-19T17:07:22.037Z",
+    "kind": "RETURN",
+    "n": 1,
+    "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+    "principal": {
+      "head": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    },
+    "receipt": {
+      "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false,
+      "applicability": "站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 70,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 20
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": false,
+        "refusal": {
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "candidate": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+        }
+      }
+    }
+  },
+  {
+    "at": "2026-11-19T17:07:22.217Z",
+    "kind": "REVIEW_EXIT",
+    "n": 1,
+    "sha": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-19T17:07:53.557Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T17:07:53.699Z",
+    "kind": "CONTACT",
+    "n": 2,
+    "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+    "question": "请按本班适用工况（23:40 DUTY-2340 回执所指的交流上限序列）复核这份已提交修订班表：A、B 两车离场净电量各是多少？B 的 01:00/01:30 请求已由 70/50 改为 50/70，在其车端调节器有序列记忆的前提下，实测净增量是否仍为 54 kWh、能否达到 130 kWh？",
+    "cached": false,
+    "principal": {
+      "head": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    }
+  },
+  {
+    "at": "2026-11-19T17:07:53.759Z",
+    "kind": "START_REVIEW",
+    "n": 2,
+    "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0"
+  },
+  {
+    "at": "2026-11-19T17:08:10.047Z",
+    "kind": "PEER_TRIAL",
+    "n": 2,
+    "receipt": {
+      "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        124
+      ],
+      "withinLimits": true,
+      "applicability": "站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 820
+      },
+      "power": {
+        "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    }
+  },
+  {
+    "at": "2026-11-19T17:08:10.151Z",
+    "kind": "RETURN",
+    "n": 2,
+    "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+    "principal": {
+      "head": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    },
+    "receipt": {
+      "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        124
+      ],
+      "withinLimits": true,
+      "applicability": "站型 R7。交流上限按时段固定。B 的车端调节器有序列记忆；本单车端净增量只对应所列交流请求序列。台架接受不可变 Git 版本作为试件，本地模型只含名义换算。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 820
+      },
+      "power": {
+        "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    }
+  },
+  {
+    "at": "2026-11-19T17:08:10.391Z",
+    "kind": "REVIEW_EXIT",
+    "n": 2,
+    "sha": "4802b23c35f2493d1a2a7d38228ad3dfbd5692b0",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-19T17:11:01.131Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "3f7575373992a5efb9f8df59a9f8c64611d24678",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  }
+]
