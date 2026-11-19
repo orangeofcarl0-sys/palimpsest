@@ -1,0 +1,613 @@
+[
+  {
+    "at": "2026-11-19T12:24:11.171Z",
+    "kind": "OPEN",
+    "slip": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T12:24:40.060Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T12:25:44.556Z",
+    "kind": "CONTACT",
+    "n": 1,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "question": "现行班表 acKw=[80,40,70,50]、loadShiftKw=20、dispatchAt85=false 是否与 DESK-21 采集及明早两车离场要求一致？请给出实测各格可用功率、两车离场电量和缺口，并说明 85% 时应如何放行。",
+    "principal": {
+      "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    }
+  },
+  {
+    "at": "2026-11-19T12:26:05.102Z",
+    "kind": "PEER_TRIAL",
+    "n": 1,
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T12:28:52.754Z",
+    "kind": "PEER_TRIAL",
+    "n": 1,
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T12:30:24.379Z",
+    "kind": "RETURN",
+    "n": 1,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "principal": {
+      "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    },
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T12:30:49.397Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T12:30:53.433Z",
+    "kind": "CONTACT",
+    "n": 2,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "question": "请给出 DUTY-2340 完整采集：各格时间、minutes、requestedKw、facilityKw、acMeterStart/EndKwh，以及它相对 DESK-21 的适用时间说明。为何 limits 是 [80,40,50,70]？按 90% 效率，现行班表两车分别能到多少、各缺多少？",
+    "principal": {
+      "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    }
+  },
+  {
+    "at": "2026-11-19T12:31:14.408Z",
+    "kind": "PEER_TRIAL",
+    "n": 2,
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T12:31:57.908Z",
+    "kind": "RETURN",
+    "n": 2,
+    "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+    "principal": {
+      "head": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    },
+    "receipt": {
+      "sha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T12:36:07.125Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  },
+  {
+    "at": "2026-11-19T12:36:07.195Z",
+    "kind": "CONTACT",
+    "n": 3,
+    "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+    "question": "请复核修订后的班表：acKw=[80,40,50,70]、loadShiftKw=20、dispatchAt85=false。给出实测各格可用功率、两车离场电量与余量，并确认 85% 时是否放行。",
+    "principal": {
+      "head": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    }
+  },
+  {
+    "at": "2026-11-19T12:36:18.488Z",
+    "kind": "PEER_TRIAL",
+    "n": 3,
+    "receipt": {
+      "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T12:37:01.508Z",
+    "kind": "RETURN",
+    "n": 3,
+    "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+    "principal": {
+      "head": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    },
+    "receipt": {
+      "sha": "e768d81dd01a3a41f51707c1d4d4c708c845b4c0",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T12:38:35.900Z",
+    "kind": "CONTACT",
+    "n": 4,
+    "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+    "question": "请对最终交班稿复核：acKw=[80,40,50,70]、loadShiftKw=20、dispatchAt85=false，两车离场余量及 85% 放行决定是否与 DUTY-2340 一致？",
+    "principal": {
+      "head": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    }
+  },
+  {
+    "at": "2026-11-19T12:38:46.618Z",
+    "kind": "PEER_TRIAL",
+    "n": 4,
+    "receipt": {
+      "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T12:39:28.585Z",
+    "kind": "RETURN",
+    "n": 4,
+    "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+    "principal": {
+      "head": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    },
+    "receipt": {
+      "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-19T12:39:32.880Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "1542584d87561fd46f3b29a0dd2a5a3c17327064",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  }
+]
