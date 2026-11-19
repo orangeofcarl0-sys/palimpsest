@@ -1,0 +1,138 @@
+{
+  "schema": "pnwf-opencode-go-probe/v1",
+  "model": "deepseek-v4.1-flash",
+  "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+  "profileId": "5c7f8d75-e85e-4de5-9b27-e2b59eab1c7a",
+  "observations": [
+    {
+      "kind": "ADMITTED",
+      "requestId": "9c8d1788-f9ff-4045-924a-4e3e81c0f116",
+      "actor": "principal-container"
+    },
+    {
+      "kind": "TERMINAL",
+      "requestId": "9c8d1788-f9ff-4045-924a-4e3e81c0f116",
+      "actor": "principal-container",
+      "messageId": "msg_d029d73ca16746778857111e8890c986",
+      "usage": {
+        "input_tokens": 299,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 40
+      },
+      "providerBilling": {
+        "billingSource": "go",
+        "cost": 0,
+        "allowance": 0.00004131,
+        "listCost": 0.00006885,
+        "reasoning": 0
+      }
+    }
+  ],
+  "passed": true,
+  "startedAt": "2026-11-19T16:14:31.620Z",
+  "elapsedMs": 2538,
+  "gatewayHttpStatus": 200,
+  "tool": {
+    "call": {
+      "id": "call_ba93964f5dca43caa45b502d",
+      "name": "record_probe",
+      "input": {
+        "value": 7
+      }
+    },
+    "result": {
+      "type": "tool_result",
+      "tool_use_id": "call_ba93964f5dca43caa45b502d",
+      "content": "{\"result\":8}"
+    },
+    "resultReturnedToProvider": false
+  },
+  "stream": {
+    "model": "deepseek-v4.1-flash",
+    "types": [
+      "message_start",
+      "content_block_start",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_delta",
+      "content_block_stop",
+      "message_delta",
+      "message_stop"
+    ],
+    "stopReason": "tool_use",
+    "finalUsage": {
+      "input_tokens": 299,
+      "output_tokens": 40,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cost": 0,
+      "opencode": {
+        "billing_source": "go",
+        "list_cost": 0.00006885,
+        "allowance": 0.00004131,
+        "tokens": {
+          "input": 299,
+          "output": 40,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write_5m": 0,
+          "cache_write_1h": 0
+        }
+      }
+    }
+  },
+  "requestId": "9c8d1788-f9ff-4045-924a-4e3e81c0f116",
+  "providerResponseId": "msg_d029d73ca16746778857111e8890c986",
+  "terminalUsage": {
+    "input_tokens": 299,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "output_tokens": 40
+  },
+  "httpStatus": 200,
+  "accounting": {
+    "schema": "pnwf-usage-snapshot/v1",
+    "cohortId": "ea9417b7-bf0d-4005-90c9-d5ba1cf3cc9d",
+    "configDigest": "f37858f5f848cd366365ebcb2f8cf7f336f0245bb9f0d4b6cd1e8a67c79a576a",
+    "state": "OPEN",
+    "reason": null,
+    "confirmed": 339,
+    "reserved": null,
+    "unresolvedRequests": 0,
+    "aggregateCeiling": null,
+    "sessions": [
+      {
+        "id": "probe",
+        "ordinal": 0,
+        "state": "ENDED",
+        "ceiling": null,
+        "softCeiling": null,
+        "maxRequests": 1,
+        "requestCount": 1,
+        "unresolvedRequests": 0,
+        "confirmed": 339,
+        "reserved": null
+      }
+    ],
+    "requests": [
+      {
+        "id": "9c8d1788-f9ff-4045-924a-4e3e81c0f116",
+        "session": "probe",
+        "digest": "5e02f287a1dbd292bed916d1b3956a7e00057dba2c76ccc75568b091abc9f074",
+        "reserved": null,
+        "actual": 339,
+        "state": "SETTLED",
+        "reason": null,
+        "usage": {
+          "input_tokens": 299,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 40
+        }
+      }
+    ],
+    "refusals": []
+  },
+  "endedAt": "2026-11-19T16:14:34.174Z"
+}

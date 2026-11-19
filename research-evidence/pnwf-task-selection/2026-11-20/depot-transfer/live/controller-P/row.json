@@ -1,0 +1,50 @@
+{
+  "id": "controller-P",
+  "ticket": "controller",
+  "arm": "P",
+  "basis": "d221aafd3e597dde63f951d65c1005ec2a7c90fa",
+  "cohortId": "987f18b1-469e-48e4-ae14-aa66c9b3cb42",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "987f18b1-469e-48e4-ae14-aa66c9b3cb42",
+    "sessionId": "REVIEW",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-transfer-resume-9c8d1788\\controller-P\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\depot-transfer-resume-9c8d1788\\controller-P\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "c0bfdac87f1dd77a4a3a7181d34c1abc0a672056167e7dde53a754cb65591732",
+    "qualification": "a0829ccd0ee460c2bb147666664e9969972557001a54144935b8dc1ff38a74b8",
+    "startedAt": "2026-11-19T16:36:19.628Z",
+    "endedAt": "2026-11-19T16:52:59.066Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "987f18b1-469e-48e4-ae14-aa66c9b3cb42",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-19T16:52:59.066Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 2619300,
+      "confirmedTokens": 2619300,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 53,
+    "paidModelCalls": 53
+  },
+  "head": "5de198ab34f91693475688d9490a066fa61c1f44",
+  "status": "",
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-9bfdeec00f68ca14f423be4c22dc5bb2",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已签发河湾车队明早冷夜班次工单：四格班表 acKw=[80,40,70,70]（20 kW 平移保留，dispatchAt85=false），逐车放行单显示 90% 下 A/B 离场 126/130 kWh、余量 0/0，均 GO；85% 下两车均 HOLD（各缺 3 kWh，总缺 6 kWh 电池）。关键处置是 B 两格恒定请求 70 kW，避开其车端调节器序列记忆导致的 6 kWh 辅助损耗；R7 台架实测 actual=[80,40,50,70]，withinLimits=false 仅为请求超 01:00 固定上限、实际交付未超限。原资料未改动，新台架回执见 operations/revision-receipt.json，依据 SHA 为 72116e8。\nArtifacts:\n- shift-plan.json\n- release.json\n- HANDOVER.md\n- operations/revision-receipt.json\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:72116e8f0cdfdc501749eb794c46e6f65132471f, commit:5de198ab34f91693475688d9490a066fa61c1f44\nBasis: revision 0, head d221aafd3e597dde63f951d65c1005ec2a7c90fa\nArtifact provenance:\n- shift-plan.json: present=true tracked=true committed=true source=WORKTREE digest=b0ecd271512e commit=5de198ab34f9\n- release.json: present=true tracked=true committed=true source=WORKTREE digest=42ff5655ad0b commit=5de198ab34f9\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=4590e2f386b4 commit=5de198ab34f9\n- operations/revision-receipt.json: present=true tracked=true committed=true source=WORKTREE digest=efe82b156fb4 commit=5de198ab34f9\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已签发河湾车队明早冷夜班次工单：四格班表 acKw=[80,40,70,70]（20 kW 平移保留，dispatchAt85=false），逐车放行单显示 90% 下 A/B 离场 126/130 kWh、余量 0/0，均 GO；85% 下两车均 HOLD（各缺 3 kWh，总缺 6 kWh 电池）。关键处置是 B 两格恒定请求 70 kW，避开其车端调节器序列记忆导致的 6 kWh 辅助损耗；R7 台架实测 actual=[80,40,50,70]，withinLimits=false 仅为请求超 01:00 固定上限、实际交付未超限。原资料未改动，新台架回执见 operations/revision-receipt.json，依据 SHA 为 72116e8。\",\"artifacts\":[\"shift-plan.json\",\"release.json\",\"HANDOVER.md\",\"operations/revision-receipt.json\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:72116e8f0cdfdc501749eb794c46e6f65132471f\",\"commit:5de198ab34f91693475688d9490a066fa61c1f44\"],\"recordedAt\":\"2026-11-19T16:52:31.879Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"7e2e5d6d5b329e93c62beb571567945ebfe88889cd069664d7803acb4bf6b690\",\"headCommit\":\"d221aafd3e597dde63f951d65c1005ec2a7c90fa\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"shift-plan.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"b0ecd271512eb884835a8debfc107f6ef34ce88ceda66610d09cf4324b9f5f0c\",\"source\":\"WORKTREE\",\"commit\":\"5de198ab34f91693475688d9490a066fa61c1f44\",\"detail\":\"committed at HEAD\"},{\"path\":\"release.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"42ff5655ad0b53a2f3f657c2f1595484e1c41894396c024a2b75724fe280d85b\",\"source\":\"WORKTREE\",\"commit\":\"5de198ab34f91693475688d9490a066fa61c1f44\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"4590e2f386b4a20ec52bb9486e9988e9e43326d033ccda6ceb5df6120e67da59\",\"source\":\"WORKTREE\",\"commit\":\"5de198ab34f91693475688d9490a066fa61c1f44\",\"detail\":\"committed at HEAD\"},{\"path\":\"operations/revision-receipt.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"efe82b156fb4d0a86f482dc7a350ca12be8df5fd82f9ddecf4dd2cbff787fb22\",\"source\":\"WORKTREE\",\"commit\":\"5de198ab34f91693475688d9490a066fa61c1f44\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-4ca6a340505c5b3ca46c7777\"}"
+  }
+}

@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- 新夜班工单区分“固定上限可外推”和“车端净量与提交的功率序列有关”。四格零付费 Mock 均 10/10，R7 对修订 SHA 取得 B 车 124 kWh 的反例并签发停发。首格真实 R4 Palimpsest 读回原回执，查询目录并自行试排，第 7 笔 PROVIDER_TIMEOUT / UNKNOWN，未提交、冻结 2/10。其余三格按合同未启动。[工单、轨迹和用量](docs/engineering/DEPOT-TRANSFERABILITY.md)
+- 夜班真实矩阵已运行四格。原 R4-P 在第 7 笔超时，保留 UNKNOWN、2/10。当前账号工具探针 339 tokens 对账通过后，余下三格自然退出、134 笔全部结算。R4 强原生 10/10。R7 两组都主动取得 B 车少 6 kWh 的反例，随后提交了依赖限幅的 70/70 kW 设定，因超过请求上限均为 6/10。P 记录 DELIVER。[轨迹、独立评分和用量](docs/engineering/DEPOT-TRANSFERABILITY.md)
 
 - 夜班同基线真实复跑提交 `621f341f2caa3e8837742df969efa39f3d808a09`，10/10、文件义务 18/18，DELIVER 后自然退出。原表晚班回执已送达，维护者回传后 0 请求；Principal 自算并提交 B 车 50/70 kW，未请求修订表回执。九份旧材料完整。旧第 15 笔 UNKNOWN 已独立封存，原 5/10 保留。[两次完整交付对比](docs/engineering/DEPOT-REVIEW-EXIT.md#同一基线再跑一次一次维护者复核后完成交付)
 
@@ -106,7 +106,9 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-19，最近同步）
+## 2. 当前 Git / 分支状态（2026-11-20，最近同步）
+
+矩阵恢复工作在本地 `codex/task-selection-pilot` 从 `1577b2c2` 接续。本地 `origin/main` 引用为 `6d8f90c1`。新批次使用原工单基线、提示、评分器、镜像与终止条件，只对尚未运行的三格开放准入。[续跑封印与准入记录](research-evidence/pnwf-task-selection/2026-11-20/depot-transfer/live/matrix.json)
 
 两种回执适用范围试点在 `codex/task-selection-pilot` 从 `889ba56b` 接续。R4 的双方实验基线均为 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`，R7 均为 `d221aafd3e597dde63f951d65c1005ec2a7c90fa`。两条基线的旧表和原始量测相同。[运行前封印](research-evidence/pnwf-task-selection/2026-11-19/depot-transfer/frozen.json)
 
@@ -321,6 +323,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+恢复批次用 `run.mjs verify-resume <原归档> <新归档>` 核对探针与 SQLite、旧四格 Mock、两批次真实归档和候选 Git。合并对比逐次核对联系的调用 ID、回执和拒绝，可离线复算。[完整命令](docs/engineering/DEPOT-TRANSFERABILITY.md#离线复算)
+
 回执适用性工单可用 `node --test scripts/pnwf/depot-transfer/case.test.mjs` 检查原表、仅改文档和修订班表三个反事实。四格 Mock 全部 10/10、自然退出，22 笔模拟请求。矩阵复算入口为 `node scripts/pnwf/depot-transfer/run.mjs verify research-evidence/pnwf-task-selection/2026-11-19/depot-transfer`。[判据与证据](docs/engineering/DEPOT-TRANSFERABILITY.md)
 
 旧第 15 笔可从 SQLite 和网关日志独立复算。新档案复算包含按调用 ID 配对、Git 保护项、回执、维护者退出及逐角色用量。[离线命令](docs/engineering/DEPOT-REVIEW-EXIT.md#第-15-笔独立封存与新会话的复算)
@@ -516,6 +520,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+11 月 20 日 OpenCode Go 工具探针 1 笔、339 tokens、2.538 秒。恢复的 R4-F、R7-F、R7-P 共 134 笔全部结算，6,262,611 tokens，新增 UNKNOWN 为零。探针单列，旧 R4-P 第 7 笔仍无终态。[探针及三格对账](research-evidence/pnwf-task-selection/2026-11-20/depot-transfer/comparison.json)
+
 回执适用性试点真实首格 R4-P 准入 7 笔，6 笔确认 97,161 tokens，另 1 笔 UNKNOWN，总量未知。维护者 0 笔，耗时 7:01.165。[账本与原始证据](research-evidence/pnwf-task-selection/2026-11-19/depot-transfer/live/envelope-P/)
 
 新 cohort 23/23 笔，834,217 tokens，16:17.669；Principal 21 笔、740,581，维护者 2 笔、93,636。前次完整交付为 55 笔、2,914,705 tokens、11:16.154。上一次中断的第 15 笔单独保持 UNKNOWN，原轮总量仍未知。[独立未知用量记录](research-evidence/pnwf-task-selection/2026-11-19/depot-review-exit-rerun/prior-unknown-15.json)
@@ -639,7 +645,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-R4/R7 的求证选路已完成脚本化资格验证。真实 R4-P 在形成签发结论前停止；R4-F、R7-F、R7-P 尚无实测。观察未覆盖 R7 上维护者反例能否改变真实模型的提交，里程碑二保持开放。
+R7 的两条真实轨迹均表明维护者反例改变了 Principal 的提交，但两组都把台架限幅后可达的电量用于签发超限班表。R4-P 原超时限制了固定上限场景的成本比较。交付质量的协作收益尚未得到本轮支持，里程碑二保持开放。
 
 本轮真实 P 完成了“原表一次求证、Principal 自算修订并交付”的路径。修复版本中，两份实测回执都送达且两次复核回传后都零请求的组合已在 Mock 验证，在真实样本中仍待观察。
 
@@ -749,7 +755,8 @@ R4/R7 的求证选路已完成脚本化资格验证。真实 R4-P 在形成签�
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
-| 2026-11-20 | 夜班 R4/R7 可外推与序列相关两种工单冻结，完成四格 Mock | [报告](docs/engineering/DEPOT-TRANSFERABILITY.md) | 真实首格第 7 笔 UNKNOWN，2/10，其余三格未启动 |
+| 2026-11-20 | 当前账号工具探针对账通过，按原顺序跑完其余三格 | [两批次对比](research-evidence/pnwf-task-selection/2026-11-20/depot-transfer/comparison.json) | R4-F 10/10，R7-F 和 R7-P 各 6/10，134 笔全部结算 |
+| 2026-11-20 | 夜班 R4/R7 可外推与序列相关两种工单冻结，完成四格 Mock | [报告](docs/engineering/DEPOT-TRANSFERABILITY.md) | 真实首格第 7 笔 UNKNOWN，2/10，当时其余三格未启动 |
 | 2026-11-19 | 单独封存上次夜班第 15 笔 UNKNOWN，普通 DSH 同基线真实复跑完成 | [报告与复算](docs/engineering/DEPOT-REVIEW-EXIT.md) | 10/10，1 份维护者回执，DELIVER，自然退出，23 笔全结算 |
 | 2026-11-19 | 维护者有效实测回传后自然结束；停止归因支持双会话 | [证据与报告](docs/engineering/DEPOT-REVIEW-EXIT.md) | 原表回传后 0 请求，真实第 15 笔 UNKNOWN，冻结 5/10 |
 | 2026-11-19 | 夜班调度复用文件义务，实测回执独立归档；原 P/F 两份 9/10 进入回归 | [报告与复算](docs/engineering/DEPOT-MATERIAL-OBLIGATIONS.md) | Mock 通过，真实 P 10/10，自然退出，55 笔全部对账 |
