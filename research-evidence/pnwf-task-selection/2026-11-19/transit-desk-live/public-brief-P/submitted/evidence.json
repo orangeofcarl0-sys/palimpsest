@@ -1,0 +1,28 @@
+{
+  "asOf": "2025-07-02",
+  "opening": {
+    "date": "2025-06-06",
+    "time": "17:00",
+    "sources": ["service-june13", "metro-june06"]
+  },
+  "lines": ["C", "K"],
+  "terminalLeg": {
+    "mode": "shuttle",
+    "fareUsd": 0,
+    "sources": ["airport-july02", "metro-june06"]
+  },
+  "apm": {
+    "status": "planned",
+    "sources": ["metro-june06", "airport-july02"]
+  },
+  "excluded": [
+    {
+      "id": "riders-sept12",
+      "reason": "发布于 2025-09-12，晚于 2025-07-02 证据截止点；属于事后回顾，不能用于证明开通当晚或截止日前的运营状态。"
+    },
+    {
+      "id": "city-june05",
+      "reason": "发布于 2025-06-05，早于新站开通；是开通前的预告/转述，其中“直接连接”是宣传性表述，不能证明 6 月 6 日的实际运营方式。"
+    }
+  ]
+}

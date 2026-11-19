@@ -1,0 +1,31 @@
+{
+  "sha": "e46283d9ea8640c525ad1453e0780054483fb8cc",
+  "source": "commit",
+  "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+  "image": "node@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d",
+  "suites": [
+    "board.test.mjs"
+  ],
+  "originalTestOnCandidate": {
+    "exit": 0,
+    "cases": [
+      "ok 1 - weekday noon departure"
+    ]
+  },
+  "submittedTestsOnCandidate": {
+    "exit": 0,
+    "cases": [
+      "ok 1 - weekday noon departure",
+      "ok 2 - Saturday 00:00 board keeps Friday's last bus and Saturday's extra",
+      "ok 3 - a window crossing midnight expands both service dates"
+    ]
+  },
+  "submittedTestsOnBasis": {
+    "exit": 1,
+    "cases": [
+      "ok 1 - weekday noon departure",
+      "not ok 2 - Saturday 00:00 board keeps Friday's last bus and Saturday's extra",
+      "not ok 3 - a window crossing midnight expands both service dates"
+    ]
+  }
+}

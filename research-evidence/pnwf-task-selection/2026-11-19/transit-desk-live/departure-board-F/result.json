@@ -1,0 +1,45 @@
+{
+  "name": "departure-board-F",
+  "natural": true,
+  "stop": null,
+  "requests": 13,
+  "confirmed": 220696,
+  "unknown": 0,
+  "workingHead": "e46283d9ea8640c525ad1453e0780054483fb8cc",
+  "conclusion": null,
+  "task": "departure-board",
+  "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+  "candidate": "e46283d9ea8640c525ad1453e0780054483fb8cc",
+  "maximal": [
+    "e46283d9ea8640c525ad1453e0780054483fb8cc"
+  ],
+  "status": "",
+  "commits": [
+    "e46283d9ea8640c525ad1453e0780054483fb8cc Fix DB-17 departure board service-date expansion"
+  ],
+  "changed": [
+    "A\tHANDOVER.md",
+    "M\tboard.mjs",
+    "M\tboard.test.mjs"
+  ],
+  "grade": {
+    "id": "departure-board",
+    "basis": "7669c3f0c7108595fa3dc121098f2536e164de0a",
+    "sha": "e46283d9ea8640c525ad1453e0780054483fb8cc",
+    "checks": {
+      "originalInputs": false,
+      "HANDOVER.md": true,
+      "complaint": true,
+      "left included, right excluded": true,
+      "query crosses midnight": true,
+      "daytime": true,
+      "other stop": true,
+      "no stop": true,
+      "47-hour clock, year boundary and ASCII ties": true,
+      "testsPass": false,
+      "regressionCatchesOriginal": false
+    },
+    "automatedPass": false,
+    "editorialReview": "REQUIRED"
+  }
+}

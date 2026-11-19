@@ -1,0 +1,47 @@
+{
+  "name": "depot-charge-P",
+  "natural": true,
+  "stop": null,
+  "requests": 22,
+  "confirmed": 789150,
+  "unknown": 0,
+  "workingHead": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-2e1d564f0c48aa777becdf8a17da2bd6",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已提交可复算模型、测试和一页交接稿：0.90 效率下正常可发车；低温需将 20 kW 楼宇负荷从 00:30–01:00 移至 01:30–02:00，A/B 均恰好达标；未平移时 A 缺 9 kWh；η<0.90 时平移无法同时满足两车，0.85 时即使最均衡平移也各缺 3 kWh。\nArtifacts:\n- model.mjs\n- model.test.mjs\n- HANDOVER.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:20a84d3\nBasis: revision 0, head 4df0e02f5d7992e534d7e613c6764ad82bbbfcc2\nArtifact provenance:\n- model.mjs: present=true tracked=true committed=true source=WORKTREE digest=90a27cf34830 commit=20a84d3084ea\n- model.test.mjs: present=true tracked=true committed=true source=WORKTREE digest=71178b5fdf81 commit=20a84d3084ea\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=11b781342546 commit=20a84d3084ea\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已提交可复算模型、测试和一页交接稿：0.90 效率下正常可发车；低温需将 20 kW 楼宇负荷从 00:30–01:00 移至 01:30–02:00，A/B 均恰好达标；未平移时 A 缺 9 kWh；η<0.90 时平移无法同时满足两车，0.85 时即使最均衡平移也各缺 3 kWh。\",\"artifacts\":[\"model.mjs\",\"model.test.mjs\",\"HANDOVER.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:20a84d3\"],\"recordedAt\":\"2026-11-19T10:56:21.331Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"3036ae6502727fe16dac565bb577423b19821320e31e060b2220ba53bd30e3cb\",\"headCommit\":\"4df0e02f5d7992e534d7e613c6764ad82bbbfcc2\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"model.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"90a27cf348308fed3df9ddb0f36d3d965c9cd0aa2e4f625cdbfad351527bf222\",\"source\":\"WORKTREE\",\"commit\":\"20a84d3084ea70ce5d6167a14cffe15e70bc929d\",\"detail\":\"committed at HEAD\"},{\"path\":\"model.test.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"71178b5fdf81dfec5bdc03a7f478daeb10235231174da1b69de7c6f9a808bd89\",\"source\":\"WORKTREE\",\"commit\":\"20a84d3084ea70ce5d6167a14cffe15e70bc929d\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"11b781342546f892c64661a44f6ecb9e8e67f28349af5943b9dee9290ee4b577\",\"source\":\"WORKTREE\",\"commit\":\"20a84d3084ea70ce5d6167a14cffe15e70bc929d\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-7d327fed11bdb43cbe968a38\"}"
+  },
+  "task": "depot-charge",
+  "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+  "candidate": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+  "maximal": [
+    "20a84d3084ea70ce5d6167a14cffe15e70bc929d"
+  ],
+  "status": "",
+  "commits": [
+    "20a84d3084ea70ce5d6167a14cffe15e70bc929d Add depot charging model and night-shift handover"
+  ],
+  "changed": [
+    "A\tHANDOVER.md",
+    "A\tmodel.mjs",
+    "A\tmodel.test.mjs"
+  ],
+  "grade": {
+    "id": "depot-charge",
+    "basis": "4df0e02f5d7992e534d7e613c6764ad82bbbfcc2",
+    "sha": "20a84d3084ea70ce5d6167a14cffe15e70bc929d",
+    "checks": {
+      "originalInputs": true,
+      "HANDOVER.md": true,
+      "rated": true,
+      "lower efficiency": true,
+      "higher efficiency": true,
+      "transfer capped": true,
+      "no cold increment": true,
+      "binding charger": true
+    },
+    "automatedPass": true,
+    "editorialReview": "REQUIRED"
+  }
+}
