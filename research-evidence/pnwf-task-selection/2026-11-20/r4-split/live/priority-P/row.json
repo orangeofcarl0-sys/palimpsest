@@ -1,0 +1,577 @@
+{
+  "id": "priority-P",
+  "ticket": "envelope",
+  "arm": "P",
+  "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+  "cohortId": "7b6b323c-d9ad-4f12-b7af-48f415ec24c1",
+  "condition": "priority",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "7b6b323c-d9ad-4f12-b7af-48f415ec24c1",
+    "sessionId": "REVIEW",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-split-live-01\\priority-P\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-split-live-01\\priority-P\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "14238f40a663350ac33cccd4fc8ca609ab8ec8f445c4163aff8fbf50fdd7b8dc",
+    "qualification": "ed55847a3fa46addf98f721e4a197b850cf90582e7cb0d0a09e2f195f2ed3961",
+    "startedAt": "2026-11-20T03:41:43.815Z",
+    "endedAt": "2026-11-20T03:48:46.435Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "7b6b323c-d9ad-4f12-b7af-48f415ec24c1",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-20T03:48:46.435Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 1173446,
+      "confirmedTokens": 1173446,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 31,
+    "paidModelCalls": 31
+  },
+  "head": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+  "status": "",
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-3b0d9e4975b03364634cb2ec78aafa1d",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已按 23:40 DUTY-2340 实测逐格上限 80/40/50/70 kW 修订四格班表，A/B 在 η=0.90 下离场 126/130 kWh、余量均为 0，逐车放行为 A GO、B GO；η=0.85 时各缺 3 kWh，A/B 均 HOLD，并在交班稿记录依据、余量和低效率处置。原资料未改动，depot_release_check 已通过。\nArtifacts:\n- shift-plan.json\n- release.json\n- HANDOVER.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:c2a884fd6e73d9814c977d47ba6615bb18543564, operations/original-receipt.json, depot_release_check:c2a884fd6e73d9814c977d47ba6615bb18543564\nBasis: revision 0, head 234b5326c1c94595a23407ada5f92fa5b8c9ca52\nArtifact provenance:\n- shift-plan.json: present=true tracked=true committed=true source=WORKTREE digest=4b5d506edc2d commit=c2a884fd6e73\n- release.json: present=true tracked=true committed=true source=WORKTREE digest=8a763d1e92d1 commit=c2a884fd6e73\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=552781473074 commit=c2a884fd6e73\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已按 23:40 DUTY-2340 实测逐格上限 80/40/50/70 kW 修订四格班表，A/B 在 η=0.90 下离场 126/130 kWh、余量均为 0，逐车放行为 A GO、B GO；η=0.85 时各缺 3 kWh，A/B 均 HOLD，并在交班稿记录依据、余量和低效率处置。原资料未改动，depot_release_check 已通过。\",\"artifacts\":[\"shift-plan.json\",\"release.json\",\"HANDOVER.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:c2a884fd6e73d9814c977d47ba6615bb18543564\",\"operations/original-receipt.json\",\"depot_release_check:c2a884fd6e73d9814c977d47ba6615bb18543564\"],\"recordedAt\":\"2026-11-20T03:48:26.946Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"ad387d68902e0984070270d422a514602d1433cc23efb0a4b02346f7eba1025e\",\"headCommit\":\"234b5326c1c94595a23407ada5f92fa5b8c9ca52\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"shift-plan.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5\",\"source\":\"WORKTREE\",\"commit\":\"c2a884fd6e73d9814c977d47ba6615bb18543564\",\"detail\":\"committed at HEAD\"},{\"path\":\"release.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"8a763d1e92d1b48261b47482f4443f1ae33e75d91eb4b8554ea7375b6ed016c0\",\"source\":\"WORKTREE\",\"commit\":\"c2a884fd6e73d9814c977d47ba6615bb18543564\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"552781473074a8ce4a0ffb48ffc59146dbc4ca88b4f5f391bec005e29a0047b5\",\"source\":\"WORKTREE\",\"commit\":\"c2a884fd6e73d9814c977d47ba6615bb18543564\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-4912bf7e719fd5f57db46524\"}"
+  },
+  "release": {
+    "check": {
+      "ok": true,
+      "candidate": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+      "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+      "power": {
+        "sha": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      },
+      "window": {
+        "source": "DUTY-2340",
+        "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+        "unused": []
+      }
+    },
+    "filed": true,
+    "checks": [
+      {
+        "action": "release_check",
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release.",
+            "window": {
+              "source": "DUTY-2340",
+              "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+              "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+              "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+              "unused": [
+                {
+                  "time": "01:30",
+                  "bus": "B",
+                  "requestedKw": 50,
+                  "availableKw": 70,
+                  "unusedKw": 20
+                }
+              ]
+            }
+          },
+          "power": {
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": [
+              {
+                "time": "01:30",
+                "bus": "B",
+                "requestedKw": 50,
+                "availableKw": 70,
+                "unusedKw": 20
+              }
+            ]
+          }
+        },
+        "visible": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release.",
+            "window": {
+              "source": "DUTY-2340",
+              "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+              "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+              "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。"
+            }
+          },
+          "power": {
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。"
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "a5823d8cec12fac9f66cf27605a64e6304ec43df",
+        "result": {
+          "ok": true,
+          "candidate": "a5823d8cec12fac9f66cf27605a64e6304ec43df",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "a5823d8cec12fac9f66cf27605a64e6304ec43df",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": []
+          }
+        },
+        "visible": {
+          "ok": true,
+          "candidate": "a5823d8cec12fac9f66cf27605a64e6304ec43df",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "a5823d8cec12fac9f66cf27605a64e6304ec43df",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。"
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+        "result": {
+          "ok": true,
+          "candidate": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": []
+          }
+        },
+        "visible": {
+          "ok": true,
+          "candidate": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。"
+          }
+        }
+      },
+      {
+        "action": "inspect_delivery",
+        "sha": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+        "result": {
+          "ok": true,
+          "candidate": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": []
+          }
+        },
+        "visible": {
+          "ok": true,
+          "candidate": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "c2a884fd6e73d9814c977d47ba6615bb18543564",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。"
+          }
+        }
+      }
+    ]
+  }
+}

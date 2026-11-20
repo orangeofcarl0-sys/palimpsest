@@ -1,0 +1,80 @@
+{
+  "productBase": "e639e549f7cf94c5eb12b4fe3bf8a4933188983b",
+  "goal": "请为河湾车队明早的冷夜班次签发现行调度工单：提交可执行的四格班表、逐车放行单和交班稿，说明离场电量、余量和低效率处置。",
+  "basis": {
+    "envelope": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+    "controller": "d221aafd3e597dde63f951d65c1005ec2a7c90fa"
+  },
+  "originalSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+  "cells": [
+    [
+      "envelope",
+      "P",
+      "priority"
+    ],
+    [
+      "envelope",
+      "F",
+      "priority"
+    ],
+    [
+      "envelope",
+      "F",
+      "hint"
+    ],
+    [
+      "envelope",
+      "P",
+      "hint"
+    ]
+  ],
+  "image": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+  "model": "deepseek-v4.1-flash",
+  "route": "https://opencode.ai/inference/go/anthropic/v1/messages",
+  "window": {
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null
+  },
+  "obligations": "7340db4a37283ac7f109dd8a3e396344f4fc64ef172bf71ddb8da9003c209cc6",
+  "history": "d86c7b644bafa8f806281d27319e342a851fe68a4c97cf095627cc602eacdb30",
+  "files": {
+    "run.mjs": "e6d0e6f2444de0af7971e17fdfaa391ada93717a9a8a6a3377a6c859d7f31d81",
+    "case.mjs": "e2c57464b3f64907fe60101d61e113c97e1ce9d334ca04b9f4889d979a1fd738",
+    "protocol.md": "72ab0753385d8cc788aeaddc60422ceb037ce056813963cff425bb7ea9dfc8cf",
+    "mock.mjs": "c3894f6bc630f3c0a2942cd7bd84df4f4f86fcb4dc3d21a70f5bf2b6e0a94977",
+    "analyze.mjs": "71f322a999fb2e0d42e7508c9fc56b889ec1d3139995a56d5a7757380dd4027c",
+    "../depot-shift-log/desk.mjs": "66dd44a848b447ce6784688e5922c3b710f5bde9dfc2ef06a6dc961fc5691ae0",
+    "../depot-shift-log/case.mjs": "831df70c35cdba2a17fed604ffa724ac34da291c388a7ed4f57081c3c83523ff",
+    "../depot-shift-log/product-entry.mjs": "1c41b6d0bb25b695520cce3b455b54b34d449df17442b316a782682f92e28961",
+    "../depot-shift-log/review-entry.mjs": "4beedb0843ceedad2f9e1277b2dc76cabcae67e58d2ea2cc7ba23b156a049e41",
+    "../depot-shift-log/review-trial.mjs": "26b117866e5c273a2a2a558fe1eafd95cd10cb090c8e6d4ceda6f3b137bb1218",
+    "../depot-shift-log/receipt-store.mjs": "5c7e5f62d90d4fb81ae8d4a7d4bf2c7528bdc28eeadc3ec67baa9197cf4ff55c",
+    "../depot-relief/plugin/index.js": "1f7271b647dc7e48aea4d88c8cc069b48c695afdedbdd1573ae4382b6b21baf2",
+    "../depot-relief/evidence.mjs": "1759990820e9c4adde7f3e3d1c05c4a6f291938b6b7b933523d2e4b2fdf50ed2",
+    "../depot-relief/rig.mjs": "dc86f1e2e053d9be28f2dc6e4ff121945e3e93edf8a493085d3f60a035cf9163",
+    "../depot-relief/archive.mjs": "d2f4733dced322070dd4fa8ce45f65aac38f5652a2c5ce9c327e0966827262ba",
+    "../task-selection/case.mjs": "1e101e15e34907b58fe30872f372aa6eb089cbd7018200a80d0ec1033486890d",
+    "../task-selection/product-entry.mjs": "e014ad5bb88d61bd4acd7b2689ae63f7cef58c50011f3da787dfd74096473fa1",
+    "../container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+    "../container_adapter.mjs": "f70f43dd0445e4d9f60a035dca0a183e18ca18691b884c64010da3c8efd75205",
+    "../container_runtime.mjs": "1729cb107b8233cd7eb29fc36439902b3c819652f5fbbdada550ca03f1ed3060",
+    "../depot-shift-log/review-phases.mjs": "4ffc3aa7bd1fd894c63d734b6e9537e72a134fb44598cadc5c001c3c9c2ce1de",
+    "../depot-relief/case.mjs": "d6cb564e2f20c8028578bd7cb14fd3bf714247b8962b8b5d9e3d0f1c3346e9f1",
+    "../task-selection/evidence.mjs": "f682270e6dad479402e3a56d5d40345f12ea4343ed680aff5aa7682d8924505d",
+    "../transit-desk/stopped-evidence.mjs": "b14b43d9d16ed5ebc766abb5c1acbe268c9ecfcc25f09adfd6bd0f1c0900cf1f",
+    "release-power.mjs": "9d204e4af2d2fc6ae4e0a1b10eeb2602f118fb32c06fd07bb59535ccabbfe3c9",
+    "release-mock.mjs": "2e470e5c9f8910a9772f878f36e6d4d36f1635a7be814a132b3165dba9fb0173",
+    "release-plugin.mjs": "3dcf6570cf626ee2a63da4b804f69318c2ae29a0e43c0046d450bfe912221eb1",
+    "release-power.test.mjs": "16517fe9d78955e2a8d3e7f1cd847e23d639902c94370f926c0ac1884831db40",
+    "release-protocol.md": "7c0f4ebbba872ca0aa34e28ec39113cb17dd3ae5fb1324ba3995be75431b5efe",
+    "r4-release.test.mjs": "52fae9ff450da53cc8eb37127256701660a7406ec51947059ee7f141f4e51012",
+    "r4-protocol.md": "3f7a5f1e1720c2968af55bc5ac3817b7c5f82b61a7994db8a7c348f96fc7dec5",
+    "window.test.mjs": "ad16ccec3c9f3f640ad27a6b40ac432c3e56e83d1a6c5caa60765dda00c00e59",
+    "window-protocol.md": "788e84c545210488d08bc87d70a782b990ea92f20bd6643b00b58b4945087bc0",
+    "guidance.mjs": "1d9c115861553c9f14ce23e609c1162d5b6ce4eca2d625af303bb8e32489fbcd",
+    "guidance.test.mjs": "eaaf64abfc49f935800a8027b5b983e19acb0d537183c750ee547be0124aa15d",
+    "split-protocol.md": "090de255d41fe3f10ebf4f9cab16cbc9120874b554bf840244c3cb150ce39811"
+  }
+}

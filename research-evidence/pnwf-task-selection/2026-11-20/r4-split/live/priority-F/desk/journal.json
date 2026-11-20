@@ -1,0 +1,574 @@
+[
+  {
+    "at": "2026-11-20T03:56:52.488Z",
+    "kind": "OPEN",
+    "slip": {
+      "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false,
+      "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 70,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 20
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": false,
+        "refusal": {
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+        }
+      }
+    }
+  },
+  {
+    "at": "2026-11-20T03:57:43.825Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true
+    }
+  },
+  {
+    "at": "2026-11-20T03:58:02.615Z",
+    "kind": "CONTACT",
+    "n": 1,
+    "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+    "question": "请复核 DUTY-2340（23:40）在 20 kW 平移生效、同一冷夜工况下的逐格实测上限，以及按适用窗口最大化可用充电量时 A、B 两车的离场电量和余量。",
+    "cached": false,
+    "principal": {
+      "head": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    }
+  },
+  {
+    "at": "2026-11-20T03:58:02.670Z",
+    "kind": "START_REVIEW",
+    "n": 1,
+    "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52"
+  },
+  {
+    "at": "2026-11-20T03:59:21.963Z",
+    "kind": "PEER_TRIAL",
+    "n": 1,
+    "receipt": {
+      "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false,
+      "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 70,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 20
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": false,
+        "refusal": {
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+        }
+      }
+    }
+  },
+  {
+    "at": "2026-11-20T03:59:22.079Z",
+    "kind": "RETURN",
+    "n": 1,
+    "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+    "principal": {
+      "head": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "sheetDigest": "3f84811a4a0cd5311c014208ea422345686da9d3fe43889f69f1d2cc29ccaff9",
+      "acKw": [
+        80,
+        40,
+        70,
+        50
+      ]
+    },
+    "receipt": {
+      "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+      "sheetBlob": "909e4162101af570a83237847bf14bd8186a9558",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false,
+      "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 70,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 20
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 50,
+            "limitKw": 70,
+            "actualKw": 50,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": false,
+        "refusal": {
+          "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+          "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+          "violations": [
+            {
+              "time": "01:00",
+              "requestedKw": 70,
+              "limitKw": 50,
+              "actualKw": 50,
+              "excessKw": 20
+            }
+          ],
+          "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+        }
+      }
+    }
+  },
+  {
+    "at": "2026-11-20T03:59:22.263Z",
+    "kind": "REVIEW_EXIT",
+    "n": 1,
+    "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-20T04:01:52.632Z",
+    "kind": "CONTACT",
+    "n": 2,
+    "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+    "question": "请复核本班修订班表 [80,40,50,70] kW 在 DUTY-2340（23:40）实测上限和 20 kW 平移生效下的执行结果：A、B 两车离场电量、余量，以及 85% 效率时是否可放行。",
+    "cached": false,
+    "principal": {
+      "head": "dc79f4117835639200c62c61542bf649b35baa27",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    }
+  },
+  {
+    "at": "2026-11-20T04:01:52.691Z",
+    "kind": "START_REVIEW",
+    "n": 2,
+    "sha": "dc79f4117835639200c62c61542bf649b35baa27"
+  },
+  {
+    "at": "2026-11-20T04:02:21.042Z",
+    "kind": "PEER_TRIAL",
+    "n": 2,
+    "receipt": {
+      "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true,
+      "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    }
+  },
+  {
+    "at": "2026-11-20T04:02:21.151Z",
+    "kind": "RETURN",
+    "n": 2,
+    "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+    "principal": {
+      "head": "dc79f4117835639200c62c61542bf649b35baa27",
+      "sheetDigest": "4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5",
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ]
+    },
+    "receipt": {
+      "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DUTY-2340",
+      "time": "23:40",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "departureKwh": [
+        126,
+        130
+      ],
+      "withinLimits": true,
+      "applicability": "站型 R4。站控交流上限按时段固定；四格半小时、两车窗口、20 kW 平移不变时，可将该上限用于窗口内的新设定。90% 工况的车端净增量等于实际交流电量乘 0.90。",
+      "auxiliaryMeterB": {
+        "startKwh": 814,
+        "endKwh": 814
+      },
+      "power": {
+        "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      }
+    }
+  },
+  {
+    "at": "2026-11-20T04:02:21.389Z",
+    "kind": "REVIEW_EXIT",
+    "n": 2,
+    "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-20T04:02:40.424Z",
+    "kind": "SELF_TRIAL",
+    "receipt": {
+      "sha": "dc79f4117835639200c62c61542bf649b35baa27",
+      "sheetBlob": "7e136dd9f9597aeb94e5353e03c287e7089bb197",
+      "run": "DESK-21",
+      "time": "21:00",
+      "conditions": "冷夜，20 kW 平移生效；明早负荷配置",
+      "captureDigest": "3fc0f1afb5d838875e6982651cf22204e02456cc5a7cba8d36d22080847112a6",
+      "requested": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "limits": [
+        80,
+        40,
+        70,
+        50
+      ],
+      "actual": [
+        80,
+        40,
+        50,
+        50
+      ],
+      "departureKwh": [
+        126,
+        121
+      ],
+      "withinLimits": false
+    }
+  }
+]

@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- R4 拆分对照的四条真实会话均签发、10/10、自然退出。只增加证据优先级说明时，两位 Principal 均在求证原表后自行识别末格少排 20 kW；只增加签发提示时，两条轨迹都是预检先点名。三格在修订表复测前已写出 B GO，提示组强原生在收到复测后才首次写出 GO。135 笔全数结算。[报告与逐次求证](docs/engineering/DEPOT-R4-GUIDANCE.md)
+
 - R4 窗口利用率修复已合入主线 `55eeaa3b`。两组真实会话均通过签发，业务评分各 10/10，并自然退出。P 记录 DELIVER。两位 Principal 都主动预检，签发预检首先明确指出 B 车 01:30 少排 20 kW。两组均改用 50/70 kW，并在收到修订表实测回执前提交 B GO，复核确认了已有决定。两份旧 6/10、更早的 2/10 与第 7 笔 UNKNOWN 均保留。[PR #285](https://github.com/orangeofcarl0-sys/palimpsest/pull/285) · [调用顺序与用量](docs/engineering/DEPOT-R4-WINDOW.md)
 
 - R4 签发契约已合入主线 `b8a7d27b`。两组 Mock 均为 10/10。真实 Palimpsest 和强原生 DSH 均通过签发并自然退出，独立业务评分各 6/10。两组均选 B 车 50/50 kW，三次联系维护者仍未用足最后一格。R7 在 50/70 的修订实测中取得改变放行依据的 6 kWh 反例。旧 R4-P 的 2/10 和第 7 笔 UNKNOWN 继续封存。[PR #283](https://github.com/orangeofcarl0-sys/palimpsest/pull/283) · [逐次复核与原稿](docs/engineering/DEPOT-R4-RELEASE-POWER.md)
@@ -115,6 +117,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-20，最近同步）
+
+R4 说明与提示拆分对照从主线 `e639e549` 开始，工作分支 `codex/r4-guidance-ablation`，四格使用同一实验基线 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`。[冻结条件](research-evidence/pnwf-task-selection/2026-11-20/r4-split/frozen.json)
 
 R4 窗口利用率发布从主线 `dda9cde8` 接续。PR #285 送审提交 `9438cc68f7d3eec511c50b2e254fcc1acbe619c1` 的 16 项检查全部通过，线性合入主线为 `55eeaa3bab12a891548b0e3408aaf9be51d11d66`。两端完整 Git 树均为 `0de2d14700edd71f89aee445508984b94eb3a5f0`，包含 101 份 R4 窗口实验归档文件。发布时以归档的 Git、轨迹和账本离线复算两组 Mock 和两条真实轨迹，重新生成的对比 JSON 与封存文件逐字节一致。实验基线为 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`，本次发布新增付费请求 0。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/285/checks) · [合同与源码封印](research-evidence/pnwf-task-selection/2026-11-20/r4-window/frozen.json)
 
@@ -345,6 +349,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+R4 拆分对照的九项定向回归和四格 Mock 通过。对相同草案的宿主拒绝决定一致，说明组隐藏少排诊断，提示组隐藏新增的优先级说明；已同时核对工具描述及两种签发入口的可见响应。四格各 10/10，P 每格 9 笔、F 每格 8 笔模拟请求，维护者均为零。[复算命令](docs/engineering/DEPOT-R4-GUIDANCE.md#离线复算)
+
 R4 窗口定向回归 7 项通过。旧两份 6/10 的完整 SHA 均能复现 01:30 少排 20 kW。两组 Mock 分别走 DELIVER 或签发预检，均经历超限拒签、少排拒签、最终签发，10/10 自然退出。P/F 各用 9/8 笔模拟请求，维护者均为零。[离线复算](docs/engineering/DEPOT-R4-WINDOW.md#离线复算)
 
 R4 签发定向测试合计 5 项。两组 Mock 经实际签发入口验证超限拒签、引用原回执通过，均为 10/10。历史 R7 的对比 JSON 重算后字节摘要一致，旧 R4 的停止批次与恢复批次可分别复算。[构建、回归和离线复算命令](docs/engineering/DEPOT-R4-RELEASE-POWER.md#离线复算)
@@ -548,6 +554,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+R4 同基线拆分对照已结束。说明组 P/F 分别 31/30 笔，提示组 P/F 分别 34/40 笔；合计 5,482,302 tokens，其中维护者 27 笔、1,363,997 tokens。本轮新增 UNKNOWN 为 0。首条真实会话完成后遇到维护者副本归档故障，已在离线副本恢复，重新通过四格零付费资格后仅启动其余三格。[归档恢复与账本](docs/engineering/DEPOT-R4-GUIDANCE.md#资格与归档恢复)
+
 R4 窗口复跑沿用 OpenCode Go `deepseek-v4.1-flash`、每组 64 笔 / 30 分钟 / 单笔 240 秒，按量、无金额上限。P 26 笔、886,298 tokens；F 33 笔、1,173,376 tokens，共 59 笔全部结算。两组各发起两次维护者复核，分别消耗 2 笔、95,490 tokens 与 6 笔、314,524 tokens，四次回传后均为零请求。[真实配对与前后对照](research-evidence/pnwf-task-selection/2026-11-20/r4-window/comparison.json)
 
 R4 签发配对从同一基线新开两场，OpenCode Go `deepseek-v4.1-flash`，原 64 笔 / 30 分钟 / 单笔 240 秒合同，金额不限。P 34 笔、1,546,268 tokens，F 23 笔、823,305 tokens；共 57 笔全部结算。维护者分别 3 笔、144,794 与 3 笔、146,907 tokens，六次送达后均零请求。旧 R4-P 第 7 笔未知用量未并入。[两场账本和归因](research-evidence/pnwf-task-selection/2026-11-20/r4-release-power/comparison.json)
@@ -679,6 +687,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+R4 证明了在原数值、原表实测与证据优先级说明均可见时，两位 Principal 能在没有少排提示的情况下修正末格。四格都主动求证了原表和修订表，仍未观察到单凭说明跳过求证的行为。每格一次，历史对照的签发门禁亦有变化，不能估计两项干预各自的平均收益。[对照边界](docs/engineering/DEPOT-R4-GUIDANCE.md)
+
 窗口修复已把可确定的来源选择与少排检查纳入签发。两组都采纳了预检指出的缺额；本轮没有观察到维护者首次提出反例并改变 B 的放行决定。里程碑二保持开放。本例支持把数据适用性和目标验收视作可复用的契约问题；模型是否能在工具未点名缺额时自行提出有价值的替代方案，仍需独立证据。[归因边界](docs/engineering/DEPOT-R4-WINDOW.md#如何区分契约缺口任务特例和模型能力)
 
 R4 的 50/50 合法但使 B 少充 9 kWh。两组都把旧楼宇负荷模型与晚班已生效的逐格上限叠用，复核已选班表未发现漏用容量。当前按 SHA 签发验证请求合法性，服务质量由独立验收记录；里程碑二保持开放。本轮不能支持“模型会按证据适用范围决定是否再测”的判断。[R4 与 R7 的放行决定](docs/engineering/DEPOT-R4-RELEASE-POWER.md#复核成本与决策收益)
@@ -794,6 +804,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-20 | 同一 R4 工单拆分证据优先级说明与签发少排提示 | [四格逐笔对比](research-evidence/pnwf-task-selection/2026-11-20/r4-split/comparison.json) | 四份交付各 10/10；11 次复核，从未推翻已有 B GO |
 | 2026-11-20 | R4 窗口利用率修复与配对证据合入主线 `55eeaa3b` | [PR #285](https://github.com/orangeofcarl0-sys/palimpsest/pull/285) | 16/16 项通过，送审与落地树相同，两组均 10/10，旧判分与 UNKNOWN 保留 |
 | 2026-11-20 | R4 签发核对晚班实测适用范围及窗口内未用功率 | [窗口复跑](docs/engineering/DEPOT-R4-WINDOW.md) | 两份 6/10 补回归，双 Mock 与真实各 10/10；真实 59 笔全部结算，旧 UNKNOWN 保留 |
 | 2026-11-20 | R4 签发契约与配对证据合入主线 `b8a7d27b` | [PR #283](https://github.com/orangeofcarl0-sys/palimpsest/pull/283) | 16/16 项通过，送审与发布树一致，两组签发、业务各 6/10，旧 2/10 和 UNKNOWN 保留 |

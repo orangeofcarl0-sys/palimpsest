@@ -1,0 +1,691 @@
+{
+  "id": "hint-P",
+  "ticket": "envelope",
+  "arm": "P",
+  "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+  "cohortId": "7aa0d1b6-29bc-4cd9-96b3-79f73d498fdb",
+  "condition": "hint",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "7aa0d1b6-29bc-4cd9-96b3-79f73d498fdb",
+    "sessionId": "REVIEW",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-split-live-02\\hint-P\\stages\\REVIEW\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-r4-split-live-02\\hint-P\\runtime-REVIEW",
+    "principalRuntime": "container",
+    "containerId": "64e1054e11b4a1d48696ab93714d06e78dd1bed110cecb89f2acc8476ac0b65e",
+    "qualification": "ce948bcfda3de4e966d00779e607203532fddf59a520b7a858151a04f3657713",
+    "startedAt": "2026-11-20T04:15:33.310Z",
+    "endedAt": "2026-11-20T04:25:21.833Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "7aa0d1b6-29bc-4cd9-96b3-79f73d498fdb",
+      "sessionId": "REVIEW",
+      "observedAt": "2026-11-20T04:25:21.833Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 1432685,
+      "confirmedTokens": 1432685,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 34,
+    "paidModelCalls": 34
+  },
+  "head": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+  "status": "",
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-fc3d70b0a8ba85aac1c59969203462ea",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: 已签发明早冷夜班次工单：按 23:40 DUTY-2340 适用记录的上限 [80,40,50,70] 修订四格班表，release.json 记录两车 90% 离场电量 126/130 kWh、余量 0/0、GO/GO，85% 时 123/127 kWh、余量 −3/−3、均 HOLD；HANDOVER.md 说明依据、现行性、低温未平移的 9 kWh 缺口及低效率处置；修订后回执另存 operations/revision-receipt.json。depot_release_check 在最终 SHA 通过，原资料未改。\nArtifacts:\n- shift-plan.json\n- release.json\n- HANDOVER.md\n- operations/revision-receipt.json\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:4ea89210b800746fdbc8fea7fdcfaf8d823c3880, commit:8c1e818cd5e6e554937cf236b484b16bf67dd94c, commit:341e19e288de9f561f85fcb66a7a910ff6f3e143\nBasis: revision 0, head 234b5326c1c94595a23407ada5f92fa5b8c9ca52\nArtifact provenance:\n- shift-plan.json: present=true tracked=true committed=true source=WORKTREE digest=4b5d506edc2d commit=4ea89210b800\n- release.json: present=true tracked=true committed=true source=WORKTREE digest=8a763d1e92d1 commit=4ea89210b800\n- HANDOVER.md: present=true tracked=true committed=true source=WORKTREE digest=8c9493a7dedd commit=4ea89210b800\n- operations/revision-receipt.json: present=true tracked=true committed=true source=WORKTREE digest=b34a85b57483 commit=4ea89210b800\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"已签发明早冷夜班次工单：按 23:40 DUTY-2340 适用记录的上限 [80,40,50,70] 修订四格班表，release.json 记录两车 90% 离场电量 126/130 kWh、余量 0/0、GO/GO，85% 时 123/127 kWh、余量 −3/−3、均 HOLD；HANDOVER.md 说明依据、现行性、低温未平移的 9 kWh 缺口及低效率处置；修订后回执另存 operations/revision-receipt.json。depot_release_check 在最终 SHA 通过，原资料未改。\",\"artifacts\":[\"shift-plan.json\",\"release.json\",\"HANDOVER.md\",\"operations/revision-receipt.json\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:4ea89210b800746fdbc8fea7fdcfaf8d823c3880\",\"commit:8c1e818cd5e6e554937cf236b484b16bf67dd94c\",\"commit:341e19e288de9f561f85fcb66a7a910ff6f3e143\"],\"recordedAt\":\"2026-11-20T04:24:59.778Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"b1618de03d8af121832657a7f24852bab9fe1d77b1039965d2f4049dcfd4afc2\",\"headCommit\":\"234b5326c1c94595a23407ada5f92fa5b8c9ca52\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"shift-plan.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"4b5d506edc2d3ce915752b07bbc2e73b9f236e08dacff1fde3d5294c05d340f5\",\"source\":\"WORKTREE\",\"commit\":\"4ea89210b800746fdbc8fea7fdcfaf8d823c3880\",\"detail\":\"committed at HEAD\"},{\"path\":\"release.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"8a763d1e92d1b48261b47482f4443f1ae33e75d91eb4b8554ea7375b6ed016c0\",\"source\":\"WORKTREE\",\"commit\":\"4ea89210b800746fdbc8fea7fdcfaf8d823c3880\",\"detail\":\"committed at HEAD\"},{\"path\":\"HANDOVER.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"8c9493a7deddf34aaa23dc62732854cbd69797fa631ba7403a00f0bc12a1861d\",\"source\":\"WORKTREE\",\"commit\":\"4ea89210b800746fdbc8fea7fdcfaf8d823c3880\",\"detail\":\"committed at HEAD\"},{\"path\":\"operations/revision-receipt.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"b34a85b574837a86e024fe415ec2473728f06d4a02557cf71ae1c43d17c259f1\",\"source\":\"WORKTREE\",\"commit\":\"4ea89210b800746fdbc8fea7fdcfaf8d823c3880\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-b46e4c53b04653a84469c2d7\"}"
+  },
+  "release": {
+    "check": {
+      "ok": true,
+      "candidate": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+      "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+      "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+      "power": {
+        "sha": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+        "slots": [
+          {
+            "time": "00:00",
+            "requestedKw": 80,
+            "limitKw": 80,
+            "actualKw": 80,
+            "excessKw": 0
+          },
+          {
+            "time": "00:30",
+            "requestedKw": 40,
+            "limitKw": 40,
+            "actualKw": 40,
+            "excessKw": 0
+          },
+          {
+            "time": "01:00",
+            "requestedKw": 50,
+            "limitKw": 50,
+            "actualKw": 50,
+            "excessKw": 0
+          },
+          {
+            "time": "01:30",
+            "requestedKw": 70,
+            "limitKw": 70,
+            "actualKw": 70,
+            "excessKw": 0
+          }
+        ],
+        "withinLimits": true,
+        "refusal": null
+      },
+      "window": {
+        "source": "DUTY-2340",
+        "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+        "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+        "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+        "unused": []
+      }
+    },
+    "filed": true,
+    "checks": [
+      {
+        "action": "release_check",
+        "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release.",
+            "window": {
+              "source": "DUTY-2340",
+              "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+              "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+              "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+              "unused": [
+                {
+                  "time": "01:30",
+                  "bus": "B",
+                  "requestedKw": 50,
+                  "availableKw": 70,
+                  "unusedKw": 20
+                }
+              ]
+            }
+          },
+          "power": {
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": [
+              {
+                "time": "01:30",
+                "bus": "B",
+                "requestedKw": 50,
+                "availableKw": 70,
+                "unusedKw": 20
+              }
+            ]
+          }
+        },
+        "visible": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+            "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "violations": [
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              }
+            ],
+            "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release.",
+            "window": {
+              "source": "DUTY-2340",
+              "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+              "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+              "unused": [
+                {
+                  "time": "01:30",
+                  "bus": "B",
+                  "requestedKw": 50,
+                  "availableKw": 70,
+                  "unusedKw": 20
+                }
+              ]
+            }
+          },
+          "power": {
+            "sha": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 70,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 20
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 50,
+                "limitKw": 70,
+                "actualKw": 50,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": false,
+            "refusal": {
+              "reason": "REQUEST_POWER_EXCEEDS_LIMIT",
+              "candidate": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+              "violations": [
+                {
+                  "time": "01:00",
+                  "requestedKw": 70,
+                  "limitKw": 50,
+                  "actualKw": 50,
+                  "excessKw": 20
+                }
+              ],
+              "nextAction": "Reduce each listed requested setpoint to the allowed range, commit the revised sheet, and reassess the release."
+            }
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "unused": [
+              {
+                "time": "01:30",
+                "bus": "B",
+                "requestedKw": 50,
+                "availableKw": 70,
+                "unusedKw": 20
+              }
+            ]
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "8c1e818cd5e6e554937cf236b484b16bf67dd94c",
+        "result": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUIRED_FILE_MISSING",
+            "detail": "Correct the failed candidate checks and commit again.",
+            "nextAction": "FIX_CANDIDATE",
+            "paths": [
+              "release.json"
+            ],
+            "candidate": "8c1e818cd5e6e554937cf236b484b16bf67dd94c"
+          },
+          "power": {
+            "sha": "8c1e818cd5e6e554937cf236b484b16bf67dd94c",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        },
+        "visible": {
+          "ok": false,
+          "refusal": {
+            "reason": "REQUIRED_FILE_MISSING",
+            "detail": "Correct the failed candidate checks and commit again.",
+            "nextAction": "FIX_CANDIDATE",
+            "paths": [
+              "release.json"
+            ],
+            "candidate": "8c1e818cd5e6e554937cf236b484b16bf67dd94c"
+          },
+          "power": {
+            "sha": "8c1e818cd5e6e554937cf236b484b16bf67dd94c",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "361a91469b54d264c00ee143368a5f6420cff4a4",
+        "result": {
+          "ok": true,
+          "candidate": "361a91469b54d264c00ee143368a5f6420cff4a4",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "361a91469b54d264c00ee143368a5f6420cff4a4",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": []
+          }
+        },
+        "visible": {
+          "ok": true,
+          "candidate": "361a91469b54d264c00ee143368a5f6420cff4a4",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "361a91469b54d264c00ee143368a5f6420cff4a4",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "unused": []
+          }
+        }
+      },
+      {
+        "action": "release_check",
+        "sha": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+        "result": {
+          "ok": true,
+          "candidate": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": []
+          }
+        },
+        "visible": {
+          "ok": true,
+          "candidate": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "unused": []
+          }
+        }
+      },
+      {
+        "action": "inspect_delivery",
+        "sha": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+        "result": {
+          "ok": true,
+          "candidate": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "authority": "R4 本班在原四格半小时、车辆窗口、20 kW 预约平移及同一冷夜工况下，23:40 DUTY-2340 的逐格实测上限已计入当班负荷，取代 21:00 采集和旧楼宇负荷推算。按适用实测窗口最大化可用充电量；工况或窗口变化须另核依据。",
+            "unused": []
+          }
+        },
+        "visible": {
+          "ok": true,
+          "candidate": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+          "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+          "evidenceMode": "ORIGINAL_RECEIPT_REUSED",
+          "power": {
+            "sha": "4ea89210b800746fdbc8fea7fdcfaf8d823c3880",
+            "slots": [
+              {
+                "time": "00:00",
+                "requestedKw": 80,
+                "limitKw": 80,
+                "actualKw": 80,
+                "excessKw": 0
+              },
+              {
+                "time": "00:30",
+                "requestedKw": 40,
+                "limitKw": 40,
+                "actualKw": 40,
+                "excessKw": 0
+              },
+              {
+                "time": "01:00",
+                "requestedKw": 50,
+                "limitKw": 50,
+                "actualKw": 50,
+                "excessKw": 0
+              },
+              {
+                "time": "01:30",
+                "requestedKw": 70,
+                "limitKw": 70,
+                "actualKw": 70,
+                "excessKw": 0
+              }
+            ],
+            "withinLimits": true,
+            "refusal": null
+          },
+          "window": {
+            "source": "DUTY-2340",
+            "measuredSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143",
+            "captureDigest": "4a372a81b8f6fa55fa9581b024c1f97cfc7d45c34e86947ba8edfac989415542",
+            "unused": []
+          }
+        }
+      }
+    ]
+  }
+}
