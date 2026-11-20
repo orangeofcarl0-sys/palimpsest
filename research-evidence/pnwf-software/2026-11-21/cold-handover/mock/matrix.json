@@ -1,0 +1,615 @@
+{
+  "seal": {
+    "basis": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+    "prompt": "4a95a02573745114dbc834bd228aaff676a54208cb0e5806e35170710da24d21",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "files": {
+      "cold-handover-run.mjs": "71bfa2e9a41095a31d0b13ce6e79fa92ba7efc7cef4a96bb3070fe32c82253a6",
+      "cold-handover-check.mjs": "46d434e8808e4f955c95cf1eec5c742be091aed0bc971670c65ef0e068e663a0",
+      "../container_adapter.mjs": "b0bae4d3ace56aa8464baaa6c3bdf30e67293a2e878ff80d8d11637bb60dcad6",
+      "../container_runtime.mjs": "e025675791d894e372c40065385480d410be0500c87346145e7dc9e7bd54a36a",
+      "../bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+      "../execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a"
+    }
+  },
+  "baseline": {
+    "pass": false,
+    "checks": [
+      {
+        "name": "aliases-1",
+        "pass": false
+      },
+      {
+        "name": "historical-basis-1",
+        "pass": false
+      },
+      {
+        "name": "original-artifacts-1",
+        "pass": false
+      },
+      {
+        "name": "accepted-work-1",
+        "pass": false
+      },
+      {
+        "name": "record-vs-question-1",
+        "pass": false
+      },
+      {
+        "name": "unknown-id-1",
+        "pass": true
+      },
+      {
+        "name": "aliases-2",
+        "pass": false
+      },
+      {
+        "name": "historical-basis-2",
+        "pass": false
+      },
+      {
+        "name": "original-artifacts-2",
+        "pass": false
+      },
+      {
+        "name": "accepted-work-2",
+        "pass": false
+      },
+      {
+        "name": "record-vs-question-2",
+        "pass": false
+      },
+      {
+        "name": "unknown-id-2",
+        "pass": true
+      },
+      {
+        "name": "original-events",
+        "pass": true
+      },
+      {
+        "name": "original-project_journal_events",
+        "pass": true
+      },
+      {
+        "name": "original-checkout",
+        "pass": true
+      }
+    ]
+  },
+  "rows": [
+    {
+      "arm": "P",
+      "basis": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+      "head": "0f4420fdbb506982355de91698bdf620bdfecc2d",
+      "status": "",
+      "volume": "pnwf-cold-world-577daab9-c726-432a-b778-efdf9490b36d",
+      "execution": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "cold-handover-dcfd2379-e4da-4092-a349-e0ed30fe6389",
+        "sessionId": "REPAIR",
+        "condition": "P",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-volume-mock-c0fc478\\P\\stages\\REPAIR\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-volume-mock-c0fc478\\P\\runtime-REPAIR",
+        "principalRuntime": "container",
+        "containerId": "bc4dd991689a69a601bf0ffaa7c01dcf2da92e634dc67813a9e64005357a45be",
+        "qualification": "58edc8d7f813890a9cde830b50478d45270b27603415394bff2a623e934ccb8e",
+        "startedAt": "2026-11-20T16:28:35.258Z",
+        "endedAt": "2026-11-20T16:29:17.534Z",
+        "exitCode": 0,
+        "error": null,
+        "killedBy": null,
+        "stopped": false,
+        "natural": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "cold-handover-dcfd2379-e4da-4092-a349-e0ed30fe6389",
+          "sessionId": "REPAIR",
+          "observedAt": "2026-11-20T16:29:17.534Z",
+          "maxTokens": 12000000,
+          "softCeiling": 12000000,
+          "totalTokens": 714913,
+          "confirmedTokens": 714913,
+          "reservedTokens": 0,
+          "unresolvedRequests": 0,
+          "source": "REQUEST_ADMISSION_LEDGER",
+          "state": "ENDED"
+        },
+        "mode": "mock",
+        "paidRequestsAdmitted": 0,
+        "paidModelCalls": 0
+      },
+      "verification": true,
+      "conclusion": null,
+      "accounting": {
+        "admitted": 6,
+        "confirmed": 714913,
+        "unresolved": 0
+      },
+      "evidence": {
+        "valid": true,
+        "principalId": "session-4f90eda7-991a-425c-af3e-39ad3099fcff",
+        "usageQualified": true,
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "mode": "mock",
+        "requests": 6,
+        "knownTokens": 714913,
+        "totalTokens": 714913,
+        "unresolvedRequests": 0,
+        "usage": {
+          "input_tokens": 681586,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 33327
+        },
+        "usageByRole": {
+          "principal": {
+            "requests": 6,
+            "input": 681586,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 33327,
+            "total": 714913
+          }
+        },
+        "traceTotal": 714913,
+        "traceRequests": 6,
+        "workerRequests": 0,
+        "elapsedMs": 42276,
+        "natural": true,
+        "stop": null,
+        "error": null,
+        "workerReceipts": [],
+        "traces": [
+          {
+            "id": "session-4f90eda7-991a-425c-af3e-39ad3099fcff",
+            "cwd": "/run/stage/world",
+            "role": "principal",
+            "digest": "93dfc47f9089e7bb2695a14d90e1b95d2db50fa40f618ad06273988e8f47a250",
+            "counts": {
+              "steps": 6,
+              "turns": 1,
+              "toolCalls": 5,
+              "pairedToolResults": 5,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 5
+            },
+            "refs": [],
+            "failedJobs": [],
+            "modelSteps": [
+              {
+                "seq": 14,
+                "at": 1795192155920,
+                "messageId": "2cf22e60-c177-400e-9101-24a83aa61a5c",
+                "usage": {
+                  "inputTokens": 95876,
+                  "outputTokens": 9655,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 105531
+                }
+              },
+              {
+                "seq": 22,
+                "at": 1795192156107,
+                "messageId": "19b36023-7c20-442a-857e-0527111eac14",
+                "usage": {
+                  "inputTokens": 119629,
+                  "outputTokens": 9656,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 129285
+                }
+              },
+              {
+                "seq": 30,
+                "at": 1795192156228,
+                "messageId": "d24583d5-45c3-433a-b35d-b425f2569cea",
+                "usage": {
+                  "inputTokens": 129465,
+                  "outputTokens": 9656,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 139121
+                }
+              },
+              {
+                "seq": 38,
+                "at": 1795192156343,
+                "messageId": "d6503793-8117-4917-9286-0ed2f9d7a53b",
+                "usage": {
+                  "inputTokens": 139293,
+                  "outputTokens": 4032,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 143325
+                }
+              },
+              {
+                "seq": 46,
+                "at": 1795192156442,
+                "messageId": "4dcd857f-fc5e-4a8f-981c-986ac0ba3adc",
+                "usage": {
+                  "inputTokens": 109753,
+                  "outputTokens": 235,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 109988
+                }
+              },
+              {
+                "seq": 54,
+                "at": 1795192156698,
+                "messageId": "abb84610-f217-4832-a273-86825e6849fa",
+                "usage": {
+                  "inputTokens": 87570,
+                  "outputTokens": 93,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 87663
+                }
+              }
+            ],
+            "byKind": {
+              "bash": 5
+            }
+          }
+        ]
+      },
+      "changed": [
+        "src/adapters/dsh/continuity.ts",
+        "src/composition/continuity.ts",
+        "src/install.ts",
+        "src/project_continuity/episode.ts",
+        "src/project_continuity/service.ts",
+        "src/project_continuity/types.ts",
+        "src/project_pulse/service.ts",
+        "src/work/plan_revision.ts",
+        "test/alhs_episode_convergence.test.ts",
+        "test/pnwf_cq_basis_admission.test.ts"
+      ],
+      "grade": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "aliases-1",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-1",
+            "pass": true
+          },
+          {
+            "name": "original-artifacts-1",
+            "pass": true
+          },
+          {
+            "name": "accepted-work-1",
+            "pass": true
+          },
+          {
+            "name": "record-vs-question-1",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-1",
+            "pass": true
+          },
+          {
+            "name": "aliases-2",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-2",
+            "pass": true
+          },
+          {
+            "name": "original-artifacts-2",
+            "pass": true
+          },
+          {
+            "name": "accepted-work-2",
+            "pass": true
+          },
+          {
+            "name": "record-vs-question-2",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-2",
+            "pass": true
+          },
+          {
+            "name": "original-events",
+            "pass": true
+          },
+          {
+            "name": "original-project_journal_events",
+            "pass": true
+          },
+          {
+            "name": "original-checkout",
+            "pass": true
+          }
+        ]
+      }
+    },
+    {
+      "arm": "F",
+      "basis": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+      "head": "9a9121d9a00c21b65f71ba67876d46c9ccba8866",
+      "status": "",
+      "volume": "pnwf-cold-world-d6ab659f-95b6-48b2-9e47-c75d6be2abab",
+      "execution": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "cold-handover-361f4830-d156-4b27-9b4d-28b1cf051d09",
+        "sessionId": "REPAIR",
+        "condition": "F",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-volume-mock-c0fc478\\F\\stages\\REPAIR\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-volume-mock-c0fc478\\F\\runtime-REPAIR",
+        "principalRuntime": "container",
+        "containerId": "fc7897056705fe87f73d136951ed4d85ce5dc781169d393ae3c376b650d3b3cc",
+        "qualification": "cd9e9ddfb35b548cb27f4cf69bb6212e9c078c67ccbdd3e7851a6ccd4f0923e8",
+        "startedAt": "2026-11-20T16:30:45.942Z",
+        "endedAt": "2026-11-20T16:30:57.834Z",
+        "exitCode": 0,
+        "error": null,
+        "killedBy": null,
+        "stopped": false,
+        "natural": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "cold-handover-361f4830-d156-4b27-9b4d-28b1cf051d09",
+          "sessionId": "REPAIR",
+          "observedAt": "2026-11-20T16:30:57.834Z",
+          "maxTokens": 12000000,
+          "softCeiling": 12000000,
+          "totalTokens": 569495,
+          "confirmedTokens": 569495,
+          "reservedTokens": 0,
+          "unresolvedRequests": 0,
+          "source": "REQUEST_ADMISSION_LEDGER",
+          "state": "ENDED"
+        },
+        "mode": "mock",
+        "paidRequestsAdmitted": 0,
+        "paidModelCalls": 0
+      },
+      "verification": true,
+      "accounting": {
+        "admitted": 6,
+        "confirmed": 569495,
+        "unresolved": 0
+      },
+      "evidence": {
+        "valid": true,
+        "principalId": "session-fb8ec554-38d7-4ef5-9bed-baca00f8a9be",
+        "usageQualified": true,
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "mode": "mock",
+        "requests": 6,
+        "knownTokens": 569495,
+        "totalTokens": 569495,
+        "unresolvedRequests": 0,
+        "usage": {
+          "input_tokens": 536168,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 33327
+        },
+        "usageByRole": {
+          "principal": {
+            "requests": 6,
+            "input": 536168,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 33327,
+            "total": 569495
+          }
+        },
+        "traceTotal": 569495,
+        "traceRequests": 6,
+        "workerRequests": 0,
+        "elapsedMs": 11892,
+        "natural": true,
+        "stop": null,
+        "error": null,
+        "workerReceipts": [],
+        "traces": [
+          {
+            "id": "session-fb8ec554-38d7-4ef5-9bed-baca00f8a9be",
+            "cwd": "/run/stage/world",
+            "role": "principal",
+            "digest": "d3452537cafed17186b1c9d968a80cc449b13081be8a47167bb5b3e31cbdcf68",
+            "counts": {
+              "steps": 6,
+              "turns": 1,
+              "toolCalls": 5,
+              "pairedToolResults": 5,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 5
+            },
+            "refs": [],
+            "failedJobs": [],
+            "modelSteps": [
+              {
+                "seq": 14,
+                "at": 1795192256381,
+                "messageId": "56b3895c-dde7-44c1-81f5-738301d4cfa1",
+                "usage": {
+                  "inputTokens": 54366,
+                  "outputTokens": 9655,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 64021
+                }
+              },
+              {
+                "seq": 22,
+                "at": 1795192256577,
+                "messageId": "5c7c4be2-9c59-4d43-826c-cec720841674",
+                "usage": {
+                  "inputTokens": 98847,
+                  "outputTokens": 9656,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 108503
+                }
+              },
+              {
+                "seq": 30,
+                "at": 1795192256682,
+                "messageId": "eb0fc727-a929-4ade-8abb-3c8f2d36383e",
+                "usage": {
+                  "inputTokens": 108683,
+                  "outputTokens": 9656,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 118339
+                }
+              },
+              {
+                "seq": 38,
+                "at": 1795192256786,
+                "messageId": "006e4827-f812-4f1d-95e8-6eefe815f18d",
+                "usage": {
+                  "inputTokens": 118513,
+                  "outputTokens": 4032,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 122545
+                }
+              },
+              {
+                "seq": 46,
+                "at": 1795192256890,
+                "messageId": "54addec3-7927-4bbe-bf63-1c61c7171e76",
+                "usage": {
+                  "inputTokens": 88973,
+                  "outputTokens": 235,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 89208
+                }
+              },
+              {
+                "seq": 54,
+                "at": 1795192257133,
+                "messageId": "8b4194a7-f618-45e4-a01e-0dea4f3221ce",
+                "usage": {
+                  "inputTokens": 66786,
+                  "outputTokens": 93,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 66879
+                }
+              }
+            ],
+            "byKind": {
+              "bash": 5
+            }
+          }
+        ]
+      },
+      "changed": [
+        "src/adapters/dsh/continuity.ts",
+        "src/composition/continuity.ts",
+        "src/install.ts",
+        "src/project_continuity/episode.ts",
+        "src/project_continuity/service.ts",
+        "src/project_continuity/types.ts",
+        "src/project_pulse/service.ts",
+        "src/work/plan_revision.ts",
+        "test/alhs_episode_convergence.test.ts",
+        "test/pnwf_cq_basis_admission.test.ts"
+      ],
+      "grade": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "aliases-1",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-1",
+            "pass": true
+          },
+          {
+            "name": "original-artifacts-1",
+            "pass": true
+          },
+          {
+            "name": "accepted-work-1",
+            "pass": true
+          },
+          {
+            "name": "record-vs-question-1",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-1",
+            "pass": true
+          },
+          {
+            "name": "aliases-2",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-2",
+            "pass": true
+          },
+          {
+            "name": "original-artifacts-2",
+            "pass": true
+          },
+          {
+            "name": "accepted-work-2",
+            "pass": true
+          },
+          {
+            "name": "record-vs-question-2",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-2",
+            "pass": true
+          },
+          {
+            "name": "original-events",
+            "pass": true
+          },
+          {
+            "name": "original-project_journal_events",
+            "pass": true
+          },
+          {
+            "name": "original-checkout",
+            "pass": true
+          }
+        ]
+      }
+    }
+  ]
+}

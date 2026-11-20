@@ -1,0 +1,161 @@
+{
+  "schema": "pnwf-actual-isolation/v2",
+  "status": "EVALUATION_ISOLATION_QUALIFIED",
+  "containerId": "fc7897056705fe87f73d136951ed4d85ce5dc781169d393ae3c376b650d3b3cc",
+  "descriptor": {
+    "imageId": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "user": "1001:1001",
+    "network": "none",
+    "readonlyRootfs": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "adapterFiles": {
+      "container_adapter.mjs": "b0bae4d3ace56aa8464baaa6c3bdf30e67293a2e878ff80d8d11637bb60dcad6",
+      "container_runtime.mjs": "e025675791d894e372c40065385480d410be0500c87346145e7dc9e7bd54a36a",
+      "container_bridge.mjs": "4214d9ba2d94dca2f6c46320905a5ae3289d91d7208dcb2e326780d8c163d821",
+      "world_preflight.mjs": "5ba8ea46b5b8bf09361e53899537b750be8fe46b70da0ac07625249b79732d10",
+      "bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+      "execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a",
+      "mock_provider.mjs": "65f82d7656da2d442e665f06f349fb8bba81cfdd787989817eaad5a31686f19d",
+      "run_pnwf_live.mjs": "5fd13204e8e150582bcd1971ff3f91fd238cd396b9debca91f78417d522ce88e"
+    },
+    "mounts": [
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-cold-world-d6ab659f-95b6-48b2-9e47-c75d6be2abab/_data",
+        "destination": "/run/stage/world",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/c/Users/66494/AppData/Local/Temp/fleet-volume-mock-c0fc478/F/runtime-REPAIR",
+        "destination": "/home/principal/.dsh",
+        "writable": true
+      },
+      {
+        "type": "bind",
+        "source": "/run/desktop/mnt/host/f/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/world_preflight.mjs",
+        "destination": "/qualification/world_preflight.mjs",
+        "writable": false
+      },
+      {
+        "type": "volume",
+        "source": "/var/lib/docker/volumes/pnwf-qualified-89cec95f-fc7b-42c9-8fba-a05814aa4367-harness/_data",
+        "destination": "/harness",
+        "writable": false
+      },
+      {
+        "type": "bind",
+        "source": "C:\\Users\\66494\\AppData\\Local\\Temp\\fleet-volume-mock-c0fc478\\F\\stages\\REPAIR",
+        "destination": "/run/stage",
+        "writable": true
+      }
+    ]
+  },
+  "descriptorDigest": "cd9e9ddfb35b548cb27f4cf69bb6212e9c078c67ccbdd3e7851a6ccd4f0923e8",
+  "harnessPresent": true,
+  "externalScorerRead": true,
+  "checks": [
+    {
+      "name": "principal_uid",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_shell_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "write_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "git_task",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "node_build_fixture",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_version",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "dsh_native_addon",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "native_read_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "native_shell_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_proc_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "indirect_parent_harness",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "rootfs_readonly",
+      "expected": "DENIED",
+      "status": "DENIED"
+    },
+    {
+      "name": "no_docker_socket",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_evaluator",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_owner_credential",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_provider_credential_env",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    },
+    {
+      "name": "no_external_routes",
+      "expected": "ALLOW",
+      "status": "ALLOW"
+    }
+  ],
+  "worlds": {
+    "schema": "pnwf-world-preflight/v1",
+    "status": "QUALIFIED",
+    "head": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+    "worlds": []
+  },
+  "checkedAt": "2026-11-20T16:30:51.317Z"
+}

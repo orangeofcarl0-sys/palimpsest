@@ -1,0 +1,33 @@
+{
+  "kind": "OFFLINE_STOP_RECOUNT",
+  "condition": "F",
+  "containerId": "8fd5bf32d031779eb12d9f2c88b7e508f337efee9d198e85e170fb587ba74e3c",
+  "startedAt": "2026-11-20T16:46:16.728451427Z",
+  "endedAt": "2026-11-20T17:03:38.142501309Z",
+  "exitCode": 137,
+  "sessionId": "REPAIR",
+  "cohortId": "cold-handover-7ac05012-3e03-43d9-a2ed-4f339ca0d2a5",
+  "natural": false,
+  "killedBy": "request_limit",
+  "error": "HOST_BRIDGE_EPIPE",
+  "head": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+  "status": "M docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md\n M host/dsh/lib/inspector/graph.js\n M host/dsh/lib/inspector/observe.js\n M src/project_continuity/episode.ts\n M src/project_continuity/service.ts\n M src/project_continuity/types.ts\n M src/project_pulse/service.ts\n M src/project_pulse/types.ts\n M test/dsh_inspector.test.ts\n?? test/pnwf_cq_handoff_trace.test.ts",
+  "originalTerminalFilesAbsent": true,
+  "ledgerSession": {
+    "id": "REPAIR",
+    "ordinal": 0,
+    "state": "RUNNING",
+    "ceiling": null,
+    "softCeiling": null,
+    "maxRequests": 64,
+    "requestCount": 64,
+    "unresolvedRequests": 0,
+    "confirmed": 11687736,
+    "reserved": null
+  },
+  "accounting": {
+    "admitted": 64,
+    "confirmed": 11687736,
+    "unresolved": 0
+  }
+}

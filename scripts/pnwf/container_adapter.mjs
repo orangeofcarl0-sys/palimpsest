@@ -97,7 +97,8 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
       for (const key of Object.keys(deployment.databases)) deployment.databases[key] = "/run/stage/state/" + String(deployment.databases[key]).split(/[\\/]/u).pop();
       write(join(stage, "deployment-linux.json"), deployment);
     }
-    runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs"), layout, acceptance: experiment?.acceptance, records: experiment?.records });
+    runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs"), layout,
+      acceptance: experiment?.acceptance, records: experiment?.records, worldVolume: experiment?.worldVolume });
     isolation = qualifyPrincipal(runtime, prepared.expectedHead);
     write(join(out, "qualification.json"), isolation);
 
