@@ -5,7 +5,9 @@ import {digest,readJson,writeJson} from "../energy/contract.mjs";
 import {readStream} from "../analyze_energy_trajectory.mjs";
 
 const [archive,previous,output]=process.argv.slice(2).map(p=>resolve(p));
-const r4=readJson(join(archive,"frozen.json")).cells.every(([ticket])=>ticket==="envelope");
+const frozen=readJson(join(archive,"frozen.json"));
+const r4=frozen.cells.every(([ticket])=>ticket==="envelope");
+const fullWindow=Object.hasOwn(frozen.files,"window-protocol.md");
 function summarize(folder){
   const o=readJson(join(folder,"observation.json")),row=readJson(join(folder,"row.json"));
   const contacts=r4?readJson(join(folder,"desk/journal.json")).filter(e=>e.kind==="CONTACT"):[];
@@ -24,7 +26,8 @@ function summarize(folder){
       source:reply?.receipt?.run??null,received:!!reply?.receipt,withinLimits:power?.withinLimits??reply?.receipt?.withinLimits??null,
       requested:reply?.receipt?.requested??null,departure:reply?.receipt?.departureKwh??null,
       reason:reply?.refusal?.reason??reply?.reason??power?.refusal?.reason??null,
-      violations:reply?.refusal?.violations??reply?.violations??power?.refusal?.violations??[],state:reply?.state??null});
+      violations:reply?.refusal?.violations??reply?.violations??power?.refusal?.violations??[],state:reply?.state??null,
+      ...(fullWindow?{unused:reply?.window?.unused??reply?.refusal?.unused??reply?.unused??null}:{})});
   }
   return {arm:row.arm,basis:o.basis,head:o.head,quality:o.observed.score,checks:o.observed.checks,
     sheet:o.observed.plan.acKw,release:o.observed.release,protected:o.observed.protectedFiles.every(f=>f.preserved),
@@ -48,7 +51,8 @@ function summarize(folder){
 }
 const result={previous:{},mock:{},live:{}};
 for(const arm of ["P","F"]){
-  const old=summarize(join(previous,"live","controller-"+arm));assert.equal(old.quality,r4?10:6);
+  const old=summarize(join(previous,"live",(fullWindow?"envelope-":"controller-")+arm));
+  assert.equal(old.quality,r4&&!fullWindow?10:6);
   result.previous[arm]=old;
 }
 if(r4){

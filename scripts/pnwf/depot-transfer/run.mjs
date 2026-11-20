@@ -23,11 +23,13 @@ import {copy,manifest,saveReviewerCopies} from "../depot-relief/archive.mjs";
 import {bench,goal,prepare,obligations,inspect,originalSha,tickets} from "./case.mjs";
 import {mockReply} from "./mock.mjs";
 import {analyze} from "./analyze.mjs";
-import {inspectRelease,measuredBench,measurement} from "./release-power.mjs";
+import {inspectRelease,measuredBench,measurement,r4Authority} from "./release-power.mjs";
 import {releaseMock} from "./release-mock.mjs";
 
 const [action,path,work]=process.argv.slice(2),root=resolve(path),here=fileURLToPath(new URL("./",import.meta.url));
-const r4=action.startsWith("r4-"),powerGate=r4||action.startsWith("r7-"),mode=powerGate?action.slice(3):action;
+const fullWindow=action.startsWith("r4-window-"),r4=action.startsWith("r4-"),powerGate=r4||action.startsWith("r7-");
+const mode=fullWindow?action.slice("r4-window-".length):powerGate?action.slice(3):action;
+const checkRelease=(world,basis,sha)=>inspectRelease(world,basis,sha,{requireFullWindow:fullWindow});
 const ticket=r4?"envelope":"controller";
 const cells=powerGate?[[ticket,"P"],[ticket,"F"]]:[["envelope","P"],["envelope","F"],["controller","F"],["controller","P"]];
 const {image,window,route,model}=previousContract;
@@ -42,6 +44,7 @@ function seal(){
     files[p]=digest(readFileSync(join(here,p)));
   }
   if(r4)for(const p of ["r4-release.test.mjs","r4-protocol.md"])files[p]=digest(readFileSync(join(here,p)));
+  if(fullWindow)for(const p of ["window.test.mjs","window-protocol.md"])files[p]=digest(readFileSync(join(here,p)));
   const scratch=mkdtempSync(join(tmpdir(),"depot-basis-"));
   try{
     const basis=Object.fromEntries(tickets.map(ticket=>[ticket,prepare(ticket,join(scratch,ticket))]));
@@ -52,7 +55,7 @@ function seal(){
       git(w,"add","shift-plan.json");git(w,"commit","-qm","Qualification vector");
       assert.deepEqual(bench(ticket,w,git(w,"rev-parse","HEAD").trim()).departureKwh,[126,ticket==="controller"?124:130]);
     }
-    return {productBase:r4?"a819db596e2297f7e7b0f9bc946cb1b2cc8eb477":powerGate?"705d1be2":"889ba56bc4bb656a0e9de81ecd56817af813ff1c",goal,basis,originalSha,cells,
+    return {productBase:fullWindow?"dda9cde829440f8b58495cea367e4a68a18e8745":r4?"a819db596e2297f7e7b0f9bc946cb1b2cc8eb477":powerGate?"705d1be2":"889ba56bc4bb656a0e9de81ecd56817af813ff1c",goal,basis,originalSha,cells,
       image,model,route,window,obligations:obligations.digest,history:digest(readFileSync(history)),files};
   }finally{rmSync(scratch,{recursive:true,force:true});}
 }
@@ -71,7 +74,7 @@ async function verifyCell(dir,mode){
     assert.deepEqual(analyze(dir,tmp,row,powerGate?measuredBench:bench),readJson(join(dir,"observation.json")));
     if(powerGate&&!row.status){
       git(tmp,"checkout","-q","--detach",row.head);
-      assert.deepEqual(inspectRelease(tmp,row.basis,row.head),row.release.check);
+      assert.deepEqual(checkRelease(tmp,row.basis,row.head),row.release.check);
       assert.equal(row.release.filed,row.release.check.ok&&row.execution.natural&&(row.arm==="F"||row.conclusion?.intent==="DELIVER"));
     }
     assert.equal(readFileSync(join(dir,"prompt.txt"),"utf8"),goal);
@@ -116,7 +119,7 @@ async function run(mode,frozen,continuation){
     writeJson(join(run,"cohort.json"),{schema:paid?PAID_COHORT_SCHEMA:"mock",cohortId,stages:[{id:"REVIEW"}],...window});
     const ledger=ExecutionBudget.initialize(budgetPath,{schema:paid?USAGE_ONLY_SCHEMA:"pnwf-request-budget/v1",cohortId,aggregateCeiling:budget,
       sessions:[{id:"REVIEW",ceiling:budget,softCeiling:budget,maxRequests:window.maxRequests}]});
-    const fake=paid?null:await startMockProvider({reply:(powerGate?releaseMock:mockReply)(arm,ticket)});
+    const fake=paid?null:await startMockProvider({reply:(powerGate?releaseMock:mockReply)(arm,ticket,fullWindow)});
     const checks=[];
     const row={id,ticket,arm,basis,cohortId};console.log("Starting",mode,id,basis);
     try{
@@ -128,6 +131,7 @@ async function run(mode,frozen,continuation){
             const plugin=join(home,"profiles/node_modules/depot-shift-desk");
             renameSync(join(plugin,"index.js"),join(plugin,"desk.js"));
             copyFileSync(join(here,"release-plugin.mjs"),join(plugin,"index.js"));
+            if(fullWindow)writeJson(join(plugin,"filing.json"),{authority:r4Authority});
           }
         },
           ...(arm==="P"?{createWorker:ports=>makeWorkerBroker({...ports,basis,policy:workerPolicy(projectId)})}:{}),
@@ -137,14 +141,14 @@ async function run(mode,frozen,continuation){
               peerMeasure:(w,sha)=>measure(ticket,w,sha)});
             return {...host,async dispatch(input){
               if(powerGate&&["inspect_delivery","release_check"].includes(input?.action)){
-                const result=inspectRelease(world,basis,input.sha);
+                const result=checkRelease(world,basis,input.sha);
                 checks.push({action:input.action,sha:input.sha,result});
                 return result;
               }
               if(input?.action!=="inspect_delivery"){
                 const result=await host.dispatch(input);
                 if(powerGate&&input.action==="trial"&&result.ok){
-                  return {...result,receipt:measurement(result.receipt),scope:"21:00 local replay only; filing uses the applicable duty limits."};
+                  return {...result,receipt:measurement(result.receipt),scope:fullWindow?r4Authority:"21:00 local replay only; filing uses the applicable duty limits."};
                 }
                 return result;
               }
@@ -155,7 +159,7 @@ async function run(mode,frozen,continuation){
     row.head=git(world,"rev-parse","HEAD").trim();row.status=git(world,"status","--porcelain","--untracked-files=all");
     row.conclusion=arm==="P"?conclusion(state):null;
     if(powerGate){
-      const check=inspectRelease(world,basis,row.head);
+      const check=checkRelease(world,basis,row.head);
       row.release={check,filed:check.ok&&row.execution.natural&&(arm==="F"||row.conclusion?.intent==="DELIVER"),checks};
     }
     git(world,"bundle","create",join(run,"world.bundle"),"HEAD","--branches");
@@ -182,6 +186,7 @@ async function run(mode,frozen,continuation){
       if(arm==="P")assert.equal(row.conclusion?.intent,"DELIVER");
       if(powerGate)assert(row.release.filed&&checks.some(c=>c.result.refusal?.reason==="REQUEST_POWER_EXCEEDS_LIMIT"));
       if(r4)assert.equal(row.release.check.evidenceMode,"ORIGINAL_RECEIPT_REUSED");
+      if(fullWindow)assert(checks.some(c=>c.result.refusal?.reason==="UNUSED_WINDOW_POWER"));
     }
     console.log("Ended",mode,id,observation.observed.score,observation.requests,observation.unknown);
     if(observation.unknown){batch.stop={id,reason:"UNKNOWN_USAGE"};break;}
@@ -189,10 +194,12 @@ async function run(mode,frozen,continuation){
   batch.qualified=!paid&&batch.rows.length===cells.length&&!batch.stop;save();
 }
 function verifySeal(current,frozen){
-  if(action==="r7-verify"&&frozen.files["run.mjs"]==="a74552a7cda20651826ac2f6ce6cc666cd86977d2e9402f1b359534419d67c8e"){
+  const oldR7=action==="r7-verify"&&frozen.files["run.mjs"]==="a74552a7cda20651826ac2f6ce6cc666cd86977d2e9402f1b359534419d67c8e";
+  const oldR4=action==="r4-verify"&&frozen.files["run.mjs"]==="2a0ba893cc0b07a0d9bceefd8b6e2aae6089f2bb675d5a28f53a893bf0d6205b";
+  if(oldR7||oldR4){
     const files={...current.files};
-    for(const p of ["run.mjs","release-power.mjs"]){
-      files[p]=digest(execFileSync("git",["show","a819db59:scripts/pnwf/depot-transfer/"+p],{cwd:repo}));
+    for(const p of ["run.mjs","release-power.mjs","release-mock.mjs","release-plugin.mjs"]){
+      files[p]=digest(execFileSync("git",["show",(oldR7?"a819db59":"dda9cde8")+":scripts/pnwf/depot-transfer/"+p],{cwd:repo}));
     }
     assert.deepEqual({...current,files},frozen);return;
   }
