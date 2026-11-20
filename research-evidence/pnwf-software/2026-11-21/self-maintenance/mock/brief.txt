@@ -1,0 +1,1 @@
+上次 Palimpsest 的重启交接维护会话在依赖目录只读的运行环境里无法启动定向测试，影响了提交。请在同一仓库提供稳定的 node --run test:focused -- <测试路径> 入口，让维护者在该环境中仍能运行指定测试并收到真实成败。此工单只允许在 package.json 增加这个入口，保留现有配置、测试、CI 和其他脚本。验证后提交候选。原现场见 docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md。

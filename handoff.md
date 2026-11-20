@@ -7,6 +7,10 @@
 
 ## 0. 30 秒版本
 
+- 自维护真实试点从 `02a5160c` 开始。Palimpsest 和强原生 DSH 均由 Principal 自己复现 Vitest 只读故障并写出定向入口。Palimpsest 18/18 笔已结算，独立复验 20/20、失败断言退出 1，记录 `DELIVER` 后自然退出。所有者核准完整 SHA `072ff2e6defdb4ff3b1f08be340bd3c931ab7ae9`。强原生第 12 笔 240 秒超时，保留未提交原稿、非自然退出及 `UNKNOWN`，11 笔已确认 233,067 tokens。所有者另外批准独立封存该笔并用新 cohort 对照旧版与接受版，第二张工单聚焦无任务直接交付的 readiness。[自维护报告](docs/engineering/PALIMPSEST-SELF-MAINTENANCE.md#真实自维护配对) · [独立 UNKNOWN](research-evidence/pnwf-software/2026-11-21/self-maintenance/live/prior-unknown-F-12.json)
+
+- 新会话中旧版 `02a5160c` 与接受版 `072ff2e6` 都提交了无任务直接交付的 readiness 修复，独立判据均 6/6。旧版 52 笔、5,012,151 tokens、635.731 秒，自然退出但缺 `DELIVER`。接受版 35 笔、2,195,469 tokens、489.568 秒，记录 `DELIVER` 后自然退出。两边各有一次测试启动重试。接受版从 `pnpm exec` 失败恢复到直接调用 Vitest，未调用新增 `test:focused`，因此总用量差额无法归因到该入口。两组新账本全部结算，候选留在隔离成果。[复用对照](docs/engineering/PALIMPSEST-SELF-MAINTENANCE.md#复用与用量对照) · [机器对比](research-evidence/pnwf-software/2026-11-21/self-maintenance/followup/comparison.json)
+
 - 重启交接追溯修复与真实对照已合入主线 `ec80486a`。两条真实会话均触及 64 笔上限，未提交、未自然退出，各由一个 Principal 完成。离线复验保留 Palimpsest 11/15、强原生 9/15。128 笔全部结算，新增 UNKNOWN 为零。强原生桥接 `EPIPE` 和离线对账均留档。[PR #289](https://github.com/orangeofcarl0-sys/palimpsest/pull/289) · [轨迹、原稿与复验](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#真实模型配对)
 
 - 已在维护分支修复重启后的交接追溯。同一 gRPC 档案可按旧 Episode ID 读取原结论、工件与重开原因，并从 Work 追到当前核准。发布核验仍可查询，真正待办继续出现在 Pulse 和 readiness。历史轨迹保留旧 `UNKNOWN`。[工单与复验](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md)

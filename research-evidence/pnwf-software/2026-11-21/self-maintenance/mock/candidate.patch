@@ -1,0 +1,14 @@
+diff --git a/package.json b/package.json
+index fd5d35a7..a1a54532 100644
+--- a/package.json
++++ b/package.json
+@@ -89,7 +89,8 @@
+     "pc1:prepare:sablewick": "node scripts/pc1/prepare_sablewick.mjs",
+     "pc1:prepare:field-study": "node scripts/pc1/prepare_field_study.mjs",
+     "pc1:analyze": "node scripts/pc1/analyze.mjs",
+-    "pc1:rc": "node scripts/pc1/make_rc.mjs"
++    "pc1:rc": "node scripts/pc1/make_rc.mjs",
++    "test:focused": "vitest run --configLoader runner --no-cache"
+   },
+   "dependencies": {
+     "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz",

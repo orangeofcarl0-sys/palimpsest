@@ -1,0 +1,142 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/work[39m
+
+ [32m✓[39m test/alhs_episode_convergence.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 8264[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses DELIVER while a planned task is still open, naming the contradiction [33m 363[2mms[22m[39m
+     [33m[2m✓[22m[39m records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance [33m 1143[2mms[22m[39m
+     [33m[2m✓[22m[39m delivers a lightweight project with no formal tasks, then reopens after a new project fact [33m 603[2mms[22m[39m
+     [33m[2m✓[22m[39m guides a no-task project to deliver its existing direct commit, then points at the recorded conclusion [33m 926[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps unchanged and uncommitted no-task projects out of direct delivery [33m 801[2mms[22m[39m
+     [33m[2m✓[22m[39m reports a committed artifact without a provenance warning [33m 501[2mms[22m[39m
+     [33m[2m✓[22m[39m reads an older conclusion and separates verification records from open questions after restart [33m 1371[2mms[22m[39m
+     [33m[2m✓[22m[39m binds each DELIVER to the bytes of its current Git commit on the same Host [33m 1909[2mms[22m[39m
+     [33m[2m✓[22m[39m CONTINUE requires a next step and does not pretend the episode ended [33m 397[2mms[22m[39m
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "INITIALIZED",
+  "profileFile": "/tmp/palimpsest-pnwf-cq-basis-cli-si3vTc/product-profile.json",
+  "summary": {
+    "schema": "pc1-project-summary/v1",
+    "projectId": "pnwf-cq-basis",
+    "goal": "direct outcome then governed continuation",
+    "basis": {
+      "projectRevision": 0,
+      "projectDigest": "53604760558a2eae2fe11117df96aef633388c9d6ce187398cb89e4ab069c6d2",
+      "headCommit": "4a69beb72d80858ad0eb09a2f7ce0ae53854f6a6",
+      "observedAt": "2026-11-20T20:39:44.593Z"
+    },
+    "coverage": {
+      "complete": true,
+      "omitted": [],
+      "unavailable": []
+    },
+    "requirements": [],
+    "decisions": [],
+    "acceptedResults": [],
+    "candidates": [
+      {
+        "id": "loop:READY_WORK:task:governed-next",
+        "standing": "CANDIDATE",
+        "title": "Work awaiting a legal next step",
+        "detail": "task governed-next is ready: continue from the direct outcome",
+        "sourceRefs": [
+          "task:governed-next"
+        ],
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "53604760558a2eae2fe11117df96aef633388c9d6ce187398cb89e4ab069c6d2",
+          "headCommit": "4a69beb72d80858ad0eb09a2f7ce0ae53854f6a6",
+          "observedAt": "2026-11-20T20:39:44.593Z"
+        },
+        "applicability": "open loop in the derived workspace",
+        "reopenConditions": [
+          "the subject is resolved, rejected or superseded"
+        ]
+      }
+    ],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "recentChanges": [],
+    "tasks": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "pendingWork": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "blocked": [],
+    "authorizationBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "nextActions": [
+      "agent: palimpsest_work action=next"
+    ],
+    "digest": "705cc07df8e2ba533222bd30b323cbf0acb77540070cd6537c023115ec311caf"
+  }
+}
+
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "ADMITTED",
+  "fromHead": "4a69beb72d80858ad0eb09a2f7ce0ae53854f6a6",
+  "toHead": "718a2cc6ad3c2e1510779d5717d4724cb2712a5c",
+  "commit": "718a2cc6ad3c2e1510779d5717d4724cb2712a5c",
+  "operator": "operator:alice",
+  "revision": 1,
+  "basisId": "basis-5b2f5c67d1d8b240e9fba3b7a59554cf",
+  "note": "The direct commit is admitted as a BASIS. No ATTEMPT_COMPLETED or PROMOTION_COMMITTED was written, and the commit was not relabelled as a governed result."
+}
+
+ [32m✓[39m test/pnwf_cq_basis_admission.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 5191[2mms[22m[39m
+     [33m[2m✓[22m[39m admits the checked-out direct commit, reauthorizes the task, and writes no promotion [33m 444[2mms[22m[39m
+     [33m[2m✓[22m[39m exposes an actual worker host refusal through the model-facing workers action [33m 623[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a real child worker from the admitted basis through settlement, promotion and dependent continuation [33m 2241[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a dirty canonical worktree, a non-ancestor commit and a task-graph change [33m 350[2mms[22m[39m
+     [33m[2m✓[22m[39m admits through the signed-operator CLI, and refuses without the credential [33m 342[2mms[22m[39m
+ [32m✓[39m test/pnwf_cq_direct_governed.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 514[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the head relation, refuses a worker on the stale basis, and writes no promotion [33m 504[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m23 passed[39m[22m[90m (23)[39m
+[2m   Start at [22m 20:39:23
+[2m   Duration [22m 24.30s[2m (transform 6.70s, setup 0ms, import 9.64s, tests 13.97s, environment 0ms)[22m
+
+From /tmp/palimpsest-pnwf-cq-basis-vertical-5RBTRL/repo/.palimpsest/worlds/attempt-a81f1e25e67445d85f73caeee58ea2bd
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-5RBTRL/repo/.palimpsest/worlds/attempt-a81f1e25e67445d85f73caeee58ea2bd
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-5RBTRL/repo/.palimpsest/worlds/attempt-e9dd07d5900a7bc2e8038958a185c3a1
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-5RBTRL/repo/.palimpsest/worlds/attempt-e9dd07d5900a7bc2e8038958a185c3a1
+ * branch            HEAD       -> FETCH_HEAD
+Switched to a new branch 'other'
+Note: switching to '718a2cc6ad3c2e1510779d5717d4724cb2712a5c'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 718a2cc direct

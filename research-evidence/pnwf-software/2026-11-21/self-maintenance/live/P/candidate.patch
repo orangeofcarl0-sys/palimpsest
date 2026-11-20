@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index fd5d35a7..3146b8ec 100644
+--- a/package.json
++++ b/package.json
+@@ -41,6 +41,7 @@
+     "clean": "tsc -b --clean",
+     "test": "pnpm run build && vitest run",
+     "test:watch": "vitest",
++    "test:focused": "vitest run --configLoader runner --no-cache",
+     "check": "pnpm run test",
+     "build:web": "vite build --config web/vite.config.ts",
+     "pretest:e2e": "pnpm run build && pnpm run build:web",

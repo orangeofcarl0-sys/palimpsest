@@ -1,0 +1,260 @@
+{
+  "arm": "F",
+  "basis": "02a5160c2361bb70a2127574a76ea6e571b296a8",
+  "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+  "briefSha256": "e53401836dafefbec560a88a2c7068022d7e6265a54e309056448151b7357cab",
+  "runnerSha256": "37bc0c68345324b9c3ec1e19322bf14ae164d5c1cf229fde2e8b11a69fa9b75e",
+  "mode": "paid-usage-only",
+  "paidRequests": 12,
+  "baseline": {
+    "exit": 1,
+    "loaderError": "ENOENT",
+    "reproduced": true
+  },
+  "session": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "self-maintenance-966fd283-b2c6-4bf7-8638-fa0a7ea85c1c",
+    "sessionId": "MAINTAIN",
+    "condition": "F",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-self-maintenance-live-20261121-041326\\F\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-self-maintenance-live-20261121-041326\\F\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "75e36bb384195a95d626b8ee50029d193729db217ecc6ca197ef2ca6868503a9",
+    "qualification": "e569c1b16afaff2203754c897d6beb1ea8cbfe1138e131704df26eb8406c59d4",
+    "startedAt": "2026-11-20T20:19:37.798Z",
+    "endedAt": "2026-11-20T20:25:32.929Z",
+    "exitCode": 1,
+    "error": null,
+    "killedBy": "usage_unobservable",
+    "stopped": true,
+    "natural": false,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "self-maintenance-966fd283-b2c6-4bf7-8638-fa0a7ea85c1c",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-20T20:25:32.929Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": null,
+      "confirmedTokens": 233067,
+      "reservedTokens": null,
+      "unresolvedRequests": 1,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "STOPPED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 12,
+    "paidModelCalls": null
+  },
+  "accounting": {
+    "admitted": 12,
+    "confirmed": 233067,
+    "unresolved": 1
+  },
+  "attribution": {
+    "valid": false,
+    "principalId": "session-ff63686f-ca8b-4ccf-b2dc-90cc29556e01",
+    "usageQualified": false,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 12,
+    "knownTokens": 233067,
+    "totalTokens": null,
+    "unresolvedRequests": 1,
+    "usage": {
+      "input_tokens": 26589,
+      "cache_read_input_tokens": 202240,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 4238
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 11,
+        "input": 26589,
+        "cacheRead": 202240,
+        "cacheWrite": 0,
+        "output": 4238,
+        "total": 233067
+      }
+    },
+    "traceTotal": 233067,
+    "traceRequests": 11,
+    "workerRequests": 0,
+    "elapsedMs": 355131,
+    "natural": false,
+    "stop": "usage_unobservable",
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-ff63686f-ca8b-4ccf-b2dc-90cc29556e01",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "64eca099cbf8d1e1146c169f66ba838eb66a748bef8c86b1058ed43df5605858",
+        "counts": {
+          "steps": 12,
+          "turns": 1,
+          "toolCalls": 18,
+          "pairedToolResults": 18,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 0,
+          "commits": 0,
+          "jobs": 13
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795205993709,
+            "messageId": "9ed4bde5-3850-4de0-981d-ae0d20b27c8b",
+            "usage": {
+              "inputTokens": 5545,
+              "outputTokens": 177,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 5722
+            }
+          },
+          {
+            "seq": 26,
+            "at": 1795206004142,
+            "messageId": "18b79f78-c1e6-408a-b5a6-74957da77290",
+            "usage": {
+              "inputTokens": 7390,
+              "outputTokens": 631,
+              "cacheReadTokens": 5504,
+              "cacheWriteTokens": 0,
+              "totalTokens": 13525
+            }
+          },
+          {
+            "seq": 40,
+            "at": 1795206012464,
+            "messageId": "ba7d2279-569d-4bb2-81b8-b3ad18b88277",
+            "usage": {
+              "inputTokens": 4293,
+              "outputTokens": 447,
+              "cacheReadTokens": 12800,
+              "cacheWriteTokens": 0,
+              "totalTokens": 17540
+            }
+          },
+          {
+            "seq": 56,
+            "at": 1795206022747,
+            "messageId": "87f4026e-2183-4565-9791-592fc5901b18",
+            "usage": {
+              "inputTokens": 4399,
+              "outputTokens": 637,
+              "cacheReadTokens": 17024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 22060
+            }
+          },
+          {
+            "seq": 68,
+            "at": 1795206026553,
+            "messageId": "6934c259-4fd7-4707-a785-744d172a02b3",
+            "usage": {
+              "inputTokens": 1159,
+              "outputTokens": 209,
+              "cacheReadTokens": 21376,
+              "cacheWriteTokens": 0,
+              "totalTokens": 22744
+            }
+          },
+          {
+            "seq": 76,
+            "at": 1795206031572,
+            "messageId": "e1376c65-0442-464a-b870-25032b32af40",
+            "usage": {
+              "inputTokens": 1095,
+              "outputTokens": 298,
+              "cacheReadTokens": 22528,
+              "cacheWriteTokens": 0,
+              "totalTokens": 23921
+            }
+          },
+          {
+            "seq": 84,
+            "at": 1795206053733,
+            "messageId": "a072dc52-85d1-4a6a-bf1c-110049faa155",
+            "usage": {
+              "inputTokens": 630,
+              "outputTokens": 518,
+              "cacheReadTokens": 23552,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24700
+            }
+          },
+          {
+            "seq": 90,
+            "at": 1795206058356,
+            "messageId": "5ae02d9c-db21-4c26-bd60-274666f6525a",
+            "usage": {
+              "inputTokens": 661,
+              "outputTokens": 299,
+              "cacheReadTokens": 24064,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25024
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1795206077793,
+            "messageId": "1881a75e-2595-4734-84b8-94f426c19d71",
+            "usage": {
+              "inputTokens": 581,
+              "outputTokens": 183,
+              "cacheReadTokens": 24704,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25468
+            }
+          },
+          {
+            "seq": 104,
+            "at": 1795206080704,
+            "messageId": "45185745-cc91-40db-93c5-70b056d53df4",
+            "usage": {
+              "inputTokens": 299,
+              "outputTokens": 165,
+              "cacheReadTokens": 25216,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25680
+            }
+          },
+          {
+            "seq": 112,
+            "at": 1795206091820,
+            "messageId": "1cb0bbe6-addf-4315-95b8-91a3f173bc72",
+            "usage": {
+              "inputTokens": 537,
+              "outputTokens": 674,
+              "cacheReadTokens": 25472,
+              "cacheWriteTokens": 0,
+              "totalTokens": 26683
+            }
+          }
+        ],
+        "byKind": {
+          "bash": 13,
+          "read": 3,
+          "edit": 1,
+          "write": 1
+        }
+      }
+    ]
+  },
+  "conclusion": null,
+  "candidate": "02a5160c2361bb70a2127574a76ea6e571b296a8",
+  "status": "M package.json",
+  "result": "FAIL",
+  "reason": "No candidate commit"
+}
