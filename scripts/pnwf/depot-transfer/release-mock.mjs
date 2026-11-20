@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import {mockReply} from "./mock.mjs";
 
-export function releaseMock(arm,ticket,requireFullWindow=false){
+export function releaseMock(arm,ticket,requireFullWindow=false,condition){
   const recover=mockReply(arm,ticket);
   let step=0;
   return (req,n)=>{
+    if(condition&&step===0){
+      const def=req.tools.find(t=>t.name==="depot_release_check");assert(def);
+      assert.equal(def.description.includes("取代 21:00"),condition==="priority");
+    }
     if(step>=(requireFullWindow?5:3))return recover(req,n);
     const tool=(name,input)=>[{type:"tool_use",name,input,id:"filing_"+n}];
     const block=req.messages.at(-1).content;
@@ -21,7 +25,9 @@ export function releaseMock(arm,ticket,requireFullWindow=false){
           `node -e "const fs=require('fs'),p=require('./shift-plan.json');p.acKw=[80,40,50,50];fs.writeFileSync('shift-plan.json',JSON.stringify(p))" && git add shift-plan.json && git commit -qm 'Use conservative last slot' && git rev-parse HEAD`});
         return recover(req,n);
       default:
-        assert(text.includes("UNUSED_WINDOW_POWER")&&text.includes("01:30")&&/"unusedKw"\s*:\s*20/.test(text));
+        if(condition==="priority")assert(text.includes("FILING_REVIEW_REQUIRED")&&!text.includes("unusedKw")&&!text.includes("UNUSED_WINDOW_POWER"));
+        else assert(text.includes("UNUSED_WINDOW_POWER")&&text.includes("01:30")&&/"unusedKw"\s*:\s*20/.test(text));
+        if(condition==="hint")assert(!text.includes("取代 21:00"));
         return recover(req,n);
     }
   };

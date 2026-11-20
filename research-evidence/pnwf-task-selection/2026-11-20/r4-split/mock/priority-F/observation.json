@@ -1,0 +1,323 @@
+{
+  "ticket": "envelope",
+  "arm": "F",
+  "basis": "234b5326c1c94595a23407ada5f92fa5b8c9ca52",
+  "head": "2344c554d151165d460043074c51b77f52e148aa",
+  "observed": {
+    "head": "2344c554d151165d460043074c51b77f52e148aa",
+    "paths": [
+      "HANDOVER.md",
+      "release.json",
+      "shift-plan.json"
+    ],
+    "plan": {
+      "slotStart": [
+        "00:00",
+        "00:30",
+        "01:00",
+        "01:30"
+      ],
+      "bus": [
+        "A",
+        "A",
+        "B",
+        "B"
+      ],
+      "acKw": [
+        80,
+        40,
+        50,
+        70
+      ],
+      "loadShiftKw": 20,
+      "dispatchAt85": false
+    },
+    "release": {
+      "departureKwh": [
+        126,
+        130
+      ],
+      "marginKwh": [
+        0,
+        0
+      ],
+      "at90": {
+        "A": "GO",
+        "B": "GO"
+      },
+      "at85": {
+        "A": "HOLD",
+        "B": "HOLD"
+      },
+      "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+    },
+    "checks": {
+      "committed": true,
+      "handoverUpdated": true,
+      "preserved": true,
+      "scope": true,
+      "sheet": true,
+      "net": true,
+      "margin": true,
+      "aRelease": true,
+      "bRelease": true,
+      "lowEfficiency": true
+    },
+    "protectedFiles": [
+      {
+        "path": "README.md",
+        "before": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "after": "100644 blob 1420412dea039ed78b92e7e172b88a44cb403e24",
+        "preserved": true
+      },
+      {
+        "path": "TASK.md",
+        "before": "100644 blob 042de25556dc31215e896d2a9416b01fb4dc3ae4",
+        "after": "100644 blob 042de25556dc31215e896d2a9416b01fb4dc3ae4",
+        "preserved": true
+      },
+      {
+        "path": "model.mjs",
+        "before": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "after": "100644 blob d385c106efa5810a90a6dea4f90e73b9f6031095",
+        "preserved": true
+      },
+      {
+        "path": "model.test.mjs",
+        "before": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "after": "100644 blob a1492dcddfb4be66b0906b105f8b6bf89251a9b1",
+        "preserved": true
+      },
+      {
+        "path": "night.json",
+        "before": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "after": "100644 blob 36c4aab6e85fc3403e0a282cda3e4aaf303276f3",
+        "preserved": true
+      },
+      {
+        "path": "package.json",
+        "before": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "after": "100644 blob c98616cf9c754cd619542c11dd21b145defad571",
+        "preserved": true
+      },
+      {
+        "path": "operations/desk.md",
+        "before": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "after": "100644 blob 9f01488fa2203313c065e622a7b354559fc08706",
+        "preserved": true
+      },
+      {
+        "path": "operations/retest.mjs",
+        "before": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "after": "100644 blob bbf16f84c150ba6592d784c778392fec77bc0b77",
+        "preserved": true
+      },
+      {
+        "path": "operations/cold-cycle.json",
+        "before": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "after": "100644 blob 33b0baed7bca0d9221fae7cfecc0b1857009aa76",
+        "preserved": true
+      },
+      {
+        "path": "operations/original-receipt.json",
+        "before": "100644 blob d5c158bf2386c1f612cef6d2020b38d9384dbb16",
+        "after": "100644 blob d5c158bf2386c1f612cef6d2020b38d9384dbb16",
+        "preserved": true
+      },
+      {
+        "path": "operations/release-format.md",
+        "before": "100644 blob 3edbe29b21fc11405abe119849f2283fd1d01fe7",
+        "after": "100644 blob 3edbe29b21fc11405abe119849f2283fd1d01fe7",
+        "preserved": true
+      }
+    ],
+    "score": 10,
+    "passed": true
+  },
+  "validSupport": true,
+  "commits": [
+    {
+      "sha": "bb473904f51d345ef72bbe5414da9b57b43a7e9c",
+      "paths": [
+        "HANDOVER.md",
+        "release.json",
+        "shift-plan.json"
+      ],
+      "plan": {
+        "slotStart": [
+          "00:00",
+          "00:30",
+          "01:00",
+          "01:30"
+        ],
+        "bus": [
+          "A",
+          "A",
+          "B",
+          "B"
+        ],
+        "acKw": [
+          80,
+          40,
+          70,
+          70
+        ],
+        "loadShiftKw": 20,
+        "dispatchAt85": false
+      },
+      "release": {}
+    },
+    {
+      "sha": "667b5d6558db4c2e01e56b849b3146638a8c46fd",
+      "paths": [
+        "shift-plan.json"
+      ],
+      "plan": {
+        "slotStart": [
+          "00:00",
+          "00:30",
+          "01:00",
+          "01:30"
+        ],
+        "bus": [
+          "A",
+          "A",
+          "B",
+          "B"
+        ],
+        "acKw": [
+          80,
+          40,
+          50,
+          50
+        ],
+        "loadShiftKw": 20,
+        "dispatchAt85": false
+      },
+      "release": {}
+    },
+    {
+      "sha": "91c81bb7c35ac1eb1ba87b0f8077e98594bb8e48",
+      "paths": [
+        "shift-plan.json"
+      ],
+      "plan": {
+        "slotStart": [
+          "00:00",
+          "00:30",
+          "01:00",
+          "01:30"
+        ],
+        "bus": [
+          "A",
+          "A",
+          "B",
+          "B"
+        ],
+        "acKw": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "loadShiftKw": 20,
+        "dispatchAt85": false
+      },
+      "release": {}
+    },
+    {
+      "sha": "2344c554d151165d460043074c51b77f52e148aa",
+      "paths": [
+        "HANDOVER.md",
+        "release.json"
+      ],
+      "plan": {
+        "slotStart": [
+          "00:00",
+          "00:30",
+          "01:00",
+          "01:30"
+        ],
+        "bus": [
+          "A",
+          "A",
+          "B",
+          "B"
+        ],
+        "acKw": [
+          80,
+          40,
+          50,
+          70
+        ],
+        "loadShiftKw": 20,
+        "dispatchAt85": false
+      },
+      "release": {
+        "departureKwh": [
+          126,
+          130
+        ],
+        "marginKwh": [
+          0,
+          0
+        ],
+        "at90": {
+          "A": "GO",
+          "B": "GO"
+        },
+        "at85": {
+          "A": "HOLD",
+          "B": "HOLD"
+        },
+        "evidenceSha": "341e19e288de9f561f85fcb66a7a910ff6f3e143"
+      }
+    }
+  ],
+  "reviews": [],
+  "reviewPhases": {
+    "reviews": [],
+    "maintainer": {
+      "requests": 0,
+      "fresh": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 0,
+      "total": 0
+    },
+    "unassigned": {
+      "requests": 0,
+      "fresh": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 0,
+      "total": 0
+    }
+  },
+  "actors": {
+    "principal": {
+      "requests": 8,
+      "fresh": 334150,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "output": 2161,
+      "total": 336311
+    }
+  },
+  "requests": 8,
+  "unknown": 0,
+  "confirmed": 336311,
+  "total": 336311,
+  "elapsedMs": 13302,
+  "natural": true,
+  "conclusion": null,
+  "tools": [
+    {
+      "role": "principal",
+      "calls": 7,
+      "paired": 7
+    }
+  ],
+  "extraContacts": [],
+  "delegations": []
+}
