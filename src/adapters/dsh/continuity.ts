@@ -21,7 +21,7 @@ export function defineContinuityTool(application: PalimpsestApplicationSurface):
       mode: "read-only",
       actions: ["pulse", "summary", "explain", "context_capsule"],
       extraProperties: {
-        subject: { type: "string", description: "for explain: a projection id or source ref" },
+        subject: { type: "string", description: "for explain: a projection ID, Episode conclusion ID, or source ref" },
         maxBytes: { type: "number", description: "for context_capsule: hard UTF-8 byte budget (default 8192)" },
       },
       run: async (action, object) => {

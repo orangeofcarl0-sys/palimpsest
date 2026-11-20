@@ -20,6 +20,7 @@ import {
   evaluateEpisodeReadiness,
   validateEpisodeConclusion,
   type EpisodeReadiness,
+  type ProjectExplanation,
 } from "../src/project_continuity/index.js";
 
 const gitObservation = vi.hoisted(() => ({ afterBlob: null as ((args: readonly string[]) => void) | null }));
@@ -292,6 +293,61 @@ describe("ALHS-A episode conclusion", () => {
       tracked: true,
       committed: true,
     });
+  });
+
+  it("reads an older conclusion and separates verification records from open questions after restart", async () => {
+    const { repo, head, stateDir } = workspace("cold-handover");
+    const installed = install(repo, stateDir);
+    await start(installed, head, []);
+    const conclude = async (statement: string) => (await call(installed, "palimpsest_work", {
+      action: "conclude", intent: "DELIVER", statement, artifacts: ["README.md"],
+    })) as unknown as Conclude;
+    const first = (await conclude("The first release is complete.")).conclusion!;
+    expect(first.check?.artifacts?.[0]?.commit).toBe(head);
+    const second = (await conclude("The second release check is complete.")).conclusion!;
+    expect(second.conclusionId).not.toBe(first.conclusionId);
+
+    const workspaceService = installed.application.projectWorkspace!;
+    const verification = await workspaceService.recordJournalEntry({
+      kind: "REFERENCE_NOTE", title: "Release verification", body: "The released artifact passed.",
+      provenance: "release check", relatedRefs: [{ kind: "git_commit", id: head }],
+    });
+    const question = await workspaceService.recordJournalEntry({
+      kind: "OPEN_QUESTION", title: "Is a new check required?", body: "The rollout date is still unknown.",
+      provenance: "handover", relatedRefs: [{ kind: "git_commit", id: head }],
+    });
+    const plainNote = await workspaceService.recordJournalEntry({
+      kind: "REFERENCE_NOTE", title: "An unconfirmed observation", body: "There may be a second site.",
+      provenance: "handover", relatedRefs: [{ kind: "git_commit", id: "unverified" }],
+    });
+    await installed.dispose();
+
+    const restarted = install(repo, stateDir);
+    const explain = async (subject: string) => (await call(restarted, "palimpsest_continuity", {
+      action: "explain", subject,
+    })) as unknown as ProjectExplanation;
+    const pulse = await restarted.application.projectWorkspace!.pulse();
+    expect(pulse.episode.conclusion?.conclusionId).toBe(second.conclusionId);
+    expect(pulse.episode.readiness.unresolvedQuestions).toEqual([
+      `journal:${question.entryId}`, `journal:${plainNote.entryId}`,
+    ]);
+    const earlier = await explain(first.conclusionId);
+    const byRef = await explain(`episode:${first.conclusionId}`);
+    expect(earlier.episode).toEqual(byRef.episode);
+    expect(earlier).toMatchObject({
+      found: true, standing: "AGENT_INTERPRETATION", headAcceptance: null,
+      basis: { headCommit: head },
+      episode: { state: "REOPENED", current: false, conclusion: first },
+    });
+    expect(earlier.episode?.changedSince).toContainEqual(expect.stringContaining("Episode conclusion"));
+    expect(earlier.episode?.journalRef).toMatch(/^journal:/u);
+    expect(earlier.item?.sourceRefs).toContain(earlier.episode?.journalRef);
+    expect(await explain(`journal:${verification.entryId}`)).toMatchObject({
+      found: true, standing: "OBSERVED_SOURCE", item: {
+        detail: verification.body, sourceRefs: expect.arrayContaining([`git_commit:${head}`]),
+      },
+    });
+    expect(await explain("episode:episode-missing")).toMatchObject({ found: false, standing: "UNKNOWN" });
   });
 
   it("binds each DELIVER to the bytes of its current Git commit on the same Host", async () => {

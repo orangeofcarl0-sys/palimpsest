@@ -81,7 +81,9 @@ function recordedReference(entry: ProjectJournalViewEntry): boolean {
   if (entry.entry.kind !== "REFERENCE_NOTE") return false;
   const provenance = entry.entry.provenance;
   if (provenance.startsWith("episode:") || provenance.startsWith("relay:")) return true;
-  return entry.entry.relatedRefs.some((ref) => ref.kind === "commit");
+  return entry.entry.relatedRefs.some((ref) =>
+    ref.kind === "commit" || (ref.kind === "git_commit" && /^[0-9a-f]{40}$/u.test(ref.id)),
+  );
 }
 
 function stableBasis(ir: ProjectIr, status: ReturnType<ContinuityInput["work"]["status"]>, now: string): ContinuityBasis {
@@ -96,7 +98,7 @@ function stableBasis(ir: ProjectIr, status: ReturnType<ContinuityInput["work"]["
 export function makeProjectContinuityService(input: ContinuityInput): ProjectContinuityService {
   const now = (): string => (input.clock ?? (() => new Date().toISOString()))();
 
-  const build = async (): Promise<ProjectSummary> => {
+  const readSummary = async (): Promise<{ summary: ProjectSummary; entries: readonly ProjectJournalViewEntry[] }> => {
     const ir = input.work.project();
     const status = input.work.status();
     const basis = stableBasis(ir, status, now());
@@ -357,7 +359,7 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
       authorizationBoundaries,
       nextActions,
     };
-    return Object.freeze({ ...base, digest: canonicalDigest(base) });
+    return { summary: Object.freeze({ ...base, digest: canonicalDigest(base) }), entries };
   };
 
   const allItems = (summary: ProjectSummary): readonly ContinuityItem[] =>
@@ -372,16 +374,64 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
     ]);
 
   return Object.freeze({
-    summary: build,
+    async summary() {
+      return (await readSummary()).summary;
+    },
     async explain(subject: string): Promise<ProjectExplanation> {
-      const summary = await build();
+      const episodeId = subject.startsWith("episode:") ? subject.slice("episode:".length) : subject;
+      if (episodeId.startsWith("episode-")) {
+        const view = await input.episode?.(episodeId);
+        if (view !== undefined && view.episode.conclusion?.conclusionId === episodeId) {
+          const { state, conclusion, current, changedSince, detail, journalRef } = view.episode;
+          const id = `episode:${episodeId}`;
+          return {
+            schema: "pc1-project-explain/v1",
+            subject,
+            found: true,
+            standing: "AGENT_INTERPRETATION",
+            item: item({
+              id,
+              standing: "AGENT_INTERPRETATION",
+              title: `Episode conclusion: ${conclusion.intent}`,
+              detail: conclusion.statement,
+              sourceRefs: journalRef === undefined ? [id] : [id, journalRef],
+              basis: { ...conclusion.basis, observedAt: conclusion.recordedAt },
+              applicability: detail,
+            }),
+            episode: { state, conclusion, current, changedSince, detail, ...(journalRef === undefined ? {} : { journalRef }) },
+            headAcceptance: input.headAcceptance?.(view.basis.headCommit) ?? null,
+            basis: view.basis,
+            availableRefs: [id],
+            detail,
+          };
+        }
+      }
+
+      const { summary, entries } = await readSummary();
       const items = allItems(summary);
-      const found = items.find(
+      const projected = items.find(
         (candidate) =>
           candidate.id === subject ||
           candidate.sourceRefs.includes(subject) ||
           candidate.sourceRefs.some((ref) => ref.split(":").slice(-1)[0] === subject),
       );
+      // Reference records stay directly addressable even when they are absent from the work list.
+      const record = projected === undefined ? entries.find(({ entry }) =>
+        entry.kind === "REFERENCE_NOTE" && (entry.entryId === subject || `journal:${entry.entryId}` === subject),
+      ) : undefined;
+      const found = projected ?? (record === undefined ? undefined : item({
+        id: `journal:${record.entry.entryId}`,
+        standing: "OBSERVED_SOURCE",
+        title: record.entry.title,
+        detail: record.entry.body,
+        sourceRefs: [
+          `journal:${record.entry.entryId}`,
+          ...record.entry.relatedRefs.map(({ kind, id }) => `${kind}:${id}`),
+          ...(record.entry.provenance === "" ? [] : [record.entry.provenance]),
+        ],
+        basis: summary.basis,
+        applicability: "journal record with its recorded provenance",
+      }));
       const availableRefs = items.map((candidate) => candidate.id);
       if (found === undefined) {
         return {
@@ -406,7 +456,7 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
       };
     },
     async contextCapsule(options?: { readonly maxBytes?: number | undefined }): Promise<ContextCapsule> {
-      const summary = await build();
+      const { summary } = await readSummary();
       const requested = options?.maxBytes ?? DEFAULT_CAPSULE_BYTES;
       const budgetBytes = Math.max(MIN_CAPSULE_BYTES, Math.trunc(requested));
       const omitted: string[] = [];

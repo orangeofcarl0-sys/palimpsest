@@ -30,11 +30,20 @@
 
 ## 离线复现命令
 
+候选复验两次冷启动均通过，四份工件的 `git cat-file` 字节摘要与旧结论一致。恢复副本的 Work、Journal 事件与档案逐行一致，Git 保持核准提交且工作树干净。原生 DSH 侧栏和 Workspace 均显示同一接受 SHA 和发布核验记录。复验用本地宿主和浏览器，模型请求为零。
+
+TypeScript、Web 构建、架构与公共 API 检查通过。Episode、Basis Admission、Worker 回传、状态引导、约束和检查器六个测试文件共 55 项通过。本地 Windows 串行执行回归，浏览器复验使用单独的恢复目录。
+
+同一条命令可用于基线和候选。修复后，裸 ID 与 `episode:` 引用均返回历史结论、原基线、可取回的工件记录、重开原因及原 Journal 引用。当前基线在响应顶层的 `basis`，有可核对的 Work 记录时，`headAcceptance` 提供接受出处。本档案用 `DIRECT_BASIS` 的事件 8 和批准事件 7。只有初始 HEAD 的项目返回 `headAcceptance: null`。
+
+提交绑定的核验日志仍可按 Journal ID 查到，标为 `OBSERVED_SOURCE`，即观测到日志及其来源。日志本身不产生核准。真实 `OPEN_QUESTION` 和缺少结构化依据的普通笔记继续进入待调查列表。兼容既有 `commit` 引用和写入归档时使用的 `git_commit` 完整 SHA；历史项目可直接读取原库。
+
 ```powershell
 node node_modules/typescript/bin/tsc -b
 $evidence = 'research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live'
-$restored = Join-Path $env:TEMP ('palimpsest-handover-' + [guid]::NewGuid())
+$restored = Join-Path $env:TEMP ('fleet-cold-read-' + [guid]::NewGuid())
 node scripts/pnwf/software/autonomy-archive.mjs --verify=$evidence --restore=$restored
+if ($LASTEXITCODE) { throw 'Archive restore failed' }
 $env:PALIMPSEST_DOGFOOD_PROFILE = Join-Path $restored 'profile.json'
 @'
 import { launchDeployment, loadDeploymentProfile } from "./dist/src/advanced.js";
@@ -54,8 +63,8 @@ try {
   const note = "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1";
   const results = [];
   for (const subject of [id, "episode:" + id, note, "episode:nonexistent-handover"]) {
-    const { found, standing } = await read({ action: "explain", subject });
-    results.push({ subject, found, standing });
+    const { found, standing, episode, headAcceptance } = await read({ action: "explain", subject });
+    results.push({ subject, found, standing, episode, headAcceptance });
   }
   console.log(JSON.stringify({
     head: pulse.basis.headCommit, state: pulse.episode.state,
@@ -67,4 +76,10 @@ try {
   await deployment.close();
 }
 '@ | node --input-type=module
+```
+
+复验侧栏和 Workspace 的版本入口时，在上一步的恢复目录运行以下命令。普通工具的回归另覆盖找不到的 ID、另一轮结论之后的旧 ID、真正待办与缺乏依据的笔记。[工具回归](../../test/alhs_episode_convergence.test.ts) · [核准来源回归](../../test/pnwf_cq_basis_admission.test.ts)
+
+```powershell
+node scripts/inspector/dsh-web.mjs --deployment="$restored/profile.json" --readback="$evidence/acceptance.json" --result="$restored/ui.json"
 ```

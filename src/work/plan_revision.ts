@@ -1,7 +1,7 @@
 /** Plan revision preparation. Reads the Work projection, computes closure and builds receipt IDs;
  * it does not append events. The controller's existing atomic batch remains the only writer. */
 import type { DatabaseSync } from "node:sqlite";
-import type { ProjectIr } from "../schema/index.js";
+import type { ProjectIr, SchedulerEvent } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
 import { actionKey, stableEntityId } from "../domain/idempotency.js";
 import { computeInvalidationSet, type ChangeClass, type DependencyEdge } from "../evidence/invalidation.js";
@@ -64,6 +64,44 @@ export function directBasisReceipt(input: {
     correlationId: `basis:${input.commit}`,
     idempotencyKey: actionKey("direct-basis-admission-v1", input),
   };
+}
+
+/** Read the recorded acceptance behind a canonical head, from ascending project events. */
+export function recordedHeadAcceptance(events: readonly SchedulerEvent[], commit: string) {
+  let head: string | undefined;
+  let advance: SchedulerEvent | undefined;
+  for (const event of events) {
+    if (event.event_type !== "PROJECT_CREATED" && event.event_type !== "PROJECT_REVISED") continue;
+    const revision = event.payload.project_ir as ProjectIr;
+    if (revision.head_commit === head) continue;
+    head = revision.head_commit;
+    advance = event.event_type === "PROJECT_REVISED" ? event : undefined;
+  }
+  if (advance === undefined || head !== commit) return null;
+  const revision = (advance.payload.project_ir as ProjectIr).revision;
+  if (advance.correlation_id === `basis:${commit}`) {
+    const approval = events.findLast((event) =>
+      event.event_type === "MANUAL_APPROVAL_RECORDED" &&
+      event.event_id < advance.event_id &&
+      event.expected_project_revision === advance.expected_project_revision &&
+      event.correlation_id === advance.correlation_id &&
+      event.payload.subject_type === "commit" &&
+      event.payload.subject_id === commit,
+    );
+    if (approval === undefined || typeof approval.payload.approver !== "string") return null;
+    const receipt = directBasisReceipt({
+      projectId: advance.project_id, revision, commit, operator: approval.payload.approver,
+    });
+    return advance.payload.promotion_id !== receipt.promotionId ? null : {
+      kind: "DIRECT_BASIS" as const, commit, eventId: advance.event_id, approvalEventId: approval.event_id,
+    };
+  }
+  const promotion = events.findLast((event) =>
+    event.event_type === "PROMOTION_COMMITTED" &&
+    event.event_id < advance.event_id &&
+    event.payload.resulting_head_commit === commit,
+  );
+  return promotion === undefined ? null : { kind: "PROMOTION" as const, commit, eventId: promotion.event_id };
 }
 
 /** A direct basis admission is head-only; a task graph change belongs to a separate revision. */

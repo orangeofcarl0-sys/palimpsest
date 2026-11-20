@@ -19,6 +19,7 @@ import type { ProjectStandard } from "../src/domain/standard.js";
 import { signOperatorToken } from "../src/project_review/index.js";
 import { runProductCommand } from "../src/cli_product.js";
 import type { OperatorAuthorityPort } from "../src/project_review/types.js";
+import { recordedHeadAcceptance } from "../src/work/plan_revision.js";
 
 const cleanups: Array<() => void> = [];
 afterAll(() => {
@@ -209,6 +210,14 @@ describe("PNWF-CQ-H — operator-mediated direct basis admission", () => {
     expect(names).not.toContain("PROMOTION_COMMITTED");
     expect(installed.controller.status().promotions).toEqual([]);
     expect(installed.controller.status().nextAction.semantic?.question).toMatch(/direct outcome/iu);
+    const events = installed.controller.store.listEvents("pnwf-cq-basis");
+    expect(recordedHeadAcceptance(events, direct)).toEqual({
+      kind: "DIRECT_BASIS", commit: direct,
+      eventId: events.find((event) => event.event_type === "PROJECT_REVISED")!.event_id,
+      approvalEventId: events.find((event) => event.event_type === "MANUAL_APPROVAL_RECORDED")!.event_id,
+    });
+    expect(recordedHeadAcceptance(events.filter((event) => event.event_type !== "MANUAL_APPROVAL_RECORDED"), direct)).toBeNull();
+    expect(recordedHeadAcceptance(events, head)).toBeNull();
 
     // The governed worker can now start at the admitted basis.
     const prepared = await installed.controller.prepareMutatingWork({ expectedTaskId: "governed-next" });
@@ -313,6 +322,10 @@ describe("PNWF-CQ-H — operator-mediated direct basis admission", () => {
     expect(events.filter(e => e.event_type === "MANUAL_APPROVAL_RECORDED")).toHaveLength(1);
     expect(events.filter(e => e.event_type === "ATTEMPT_COMPLETED")).toHaveLength(2);
     expect(events.filter(e => e.event_type === "PROMOTION_COMMITTED")).toHaveLength(1);
+    expect(recordedHeadAcceptance(events, promotedHead)).toEqual({
+      kind: "PROMOTION", commit: promotedHead,
+      eventId: events.find((event) => event.event_type === "PROMOTION_COMMITTED")!.event_id,
+    });
     if (process.env.PNWF_VERTICAL_EVIDENCE) writeFileSync(process.env.PNWF_VERTICAL_EVIDENCE, JSON.stringify({
       schema: "pnwf-basis-vertical/v1", passed: true, paidModelCalls: 0, initialHead: head, direct, promotedHead,
       attemptId, nextAttemptId, workers, events: events.map(e => ({ eventId: e.event_id, type: e.event_type })),

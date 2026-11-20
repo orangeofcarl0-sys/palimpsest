@@ -526,6 +526,7 @@ export function installPalimpsest(
       status: () => controller.status(),
       plan: (input) => controller.plan(input),
       promotionFacts: () => controller.promotions.promotionFactsSync(),
+      projectEvents: () => controller.store.listEvents(options.projectId),
       /**
        * LHAPE-B: the canonical ProjectIR revisions, ascending. The ProjectIR itself is carried in the
        * `PROJECT_REVISED` payload, so this is a READ over the ONE event log — not a second history.

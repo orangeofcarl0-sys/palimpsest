@@ -367,6 +367,7 @@ export function parseEpisodeConclusion(body: string): EpisodeConclusion | null {
 export interface PulseEpisode {
   readonly state: EpisodeState;
   readonly conclusion: EpisodeConclusion | null;
+  readonly journalRef?: string;
   /** False when the project revised, moved its head, or recorded any journal fact after the conclusion. */
   readonly current: boolean;
   readonly changedSince: readonly string[];
@@ -397,6 +398,7 @@ export interface JournalFact {
  */
 export function buildPulseEpisode(input: {
   readonly entries: readonly JournalFact[];
+  readonly conclusionId?: string;
   readonly readiness: EpisodeReadiness;
   readonly basis: { readonly projectRevision: number; readonly projectDigest: string; readonly headCommit: string };
   /**
@@ -418,7 +420,7 @@ export function buildPulseEpisode(input: {
   let conclusion: EpisodeConclusion | null = null;
   for (let index = 0; index < input.entries.length; index += 1) {
     const parsed = parseEpisodeConclusion(input.entries[index]!.body);
-    if (parsed !== null) {
+    if (parsed !== null && (input.conclusionId === undefined || parsed.conclusionId === input.conclusionId)) {
       lastIndex = index;
       conclusion = parsed;
     }
@@ -470,6 +472,7 @@ export function buildPulseEpisode(input: {
   return Object.freeze({
     state: current ? INTENT_STATE[conclusion.intent] : "REOPENED",
     conclusion,
+    ...(input.conclusionId === undefined ? {} : { journalRef: `journal:${input.entries[lastIndex]!.entryId}` }),
     current,
     changedSince: Object.freeze(changedSince),
     readiness: input.readiness,
