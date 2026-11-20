@@ -7,7 +7,7 @@
 
 ## 0. 30 秒版本
 
-- 重启交接工单完成两条真实模型对照。两条均触及 64 笔上限并留下原稿，HEAD 仍为起点。Palimpsest 原稿离线 11/15，强原生 9/15，均修通旧 ID 和核验日志分类。128 笔全部结算，零 UNKNOWN。强原生停止时桥接 `EPIPE`，通过容器和 SQLite 离线复核。两条都由单 Principal 实作。[轨迹、Git 原稿与复验](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#真实模型配对)
+- 重启交接追溯修复与真实对照已合入主线 `ec80486a`。两条真实会话均触及 64 笔上限，未提交、未自然退出，各由一个 Principal 完成。离线复验保留 Palimpsest 11/15、强原生 9/15。128 笔全部结算，新增 UNKNOWN 为零。强原生桥接 `EPIPE` 和离线对账均留档。[PR #289](https://github.com/orangeofcarl0-sys/palimpsest/pull/289) · [轨迹、原稿与复验](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#真实模型配对)
 
 - 已在维护分支修复重启后的交接追溯。同一 gRPC 档案可按旧 Episode ID 读取原结论、工件与重开原因，并从 Work 追到当前核准。发布核验仍可查询，真正待办继续出现在 Pulse 和 readiness。历史轨迹保留旧 `UNKNOWN`。[工单与复验](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md)
 
@@ -120,11 +120,9 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-20，最近同步）
+## 2. 当前 Git / 分支状态（2026-11-21，最近同步）
 
-2026-11-21 的真实对照从 `6bf50e90` 各自复制。模型原稿通过工作区差异与新增测试保存，参考产品修复仍为同工作分支上的 `1aa69f60`。对照归档与代码分离。[机器对比](research-evidence/pnwf-software/2026-11-21/cold-handover/live/comparison.json)
-
-交接追溯修复在 `codex/continuity-handover-dogfood`，从主线 `6bf50e90dfad78c4eff668f369d5dd0c5d84564e` 起步。基线与候选均用历史 gRPC 接续归档复验，本轮零模型请求。[工单](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md)
+主线 `6bf50e90` 上开展的冷启动交接修复通过 PR #289 发布。送审 head `7fed1d273c74ac30d71212b3ef9ebefa119ecd08` 的 16 项 CI 均通过，合入点为 `ec80486ab1542027e22c26a978e7984212d4b9b0`，两端完整 Git 树均为 `26f46e04494ec8a4ec9966b14cabf65c7363aa7a`。工单、参考修复与实跑归档三笔提交分别对应 `6cc98a6e`、`c8f2d521`、`ec80486a`，逐笔核对文件树与提交标题。50 份归档文件通过摘要核验，两条轨迹从原流和账本重算一致。本次发布新增付费请求为零。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/289/checks) · [机器对比](research-evidence/pnwf-software/2026-11-21/cold-handover/live/comparison.json)
 
 R4 说明与提示拆分对照从主线 `e639e549` 开始，实验基线为 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`。PR #287 的送审提交 `f65a7fa47a87f9641e84645263cecf68b0c8b427` 通过全部 16 项检查，线性合入主线为 `2c29e90c22ab0161eefaeda9c296d324cd0ee6db`。两端完整 Git 树同为 `294beab5861ff7394c883e8497ab9c5fbbf86e8f`。312 份新增归档包含两轮 Mock、四条真实轨迹、Git 证据、归档中断和恢复记录。发布核验通过九项定向回归，离线重算的对比 JSON 与封存件逐字节一致，新增付费请求 0。旧 6/10、2/10 与第 7 笔 UNKNOWN 均保留。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/287/checks) · [冻结条件](research-evidence/pnwf-task-selection/2026-11-20/r4-split/frozen.json) · [恢复封印](research-evidence/pnwf-task-selection/2026-11-20/r4-split/recovery/seal.json)
 
@@ -703,7 +701,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 真实交接样本显示长期调查和测试环境开销可以耗完整个请求窗口，P/F 首次改源码分别已用到第 44/36 笔。两组初次启动 Vitest 都遇到只读依赖目录的配置缓存写入。F 找到 runner 加载器，P 在排查中耗尽。另有原生容器停止后桥接 `EPIPE` 导致常规终态文件缺失。原稿与停止现场独立封存，均未形成已提交的可发布候选。[原稿与停止点](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#用量选路与停止现场)
 
-交接追溯工单已交付本地候选。结论解释中的当前版本只依据 Work 的已有接受事件，保留历史交付判断及其原基线。早期没有记录工件摘要或 Work 核准的项目按现有证据读回。当年的轨迹与本轮回归可并列核对。[验收与复算](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#交付验收)
+交接追溯修复已发布。结论解释中的当前版本依据 Work 的已有接受事件，同时保留历史交付判断及其原基线。早期没有记录工件摘要或 Work 核准的项目按现有证据读回。原始轨迹与回归可并列核对。[验收与复算](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#交付验收)
 
 R4 证明了在原数值、原表实测与证据优先级说明均可见时，两位 Principal 能在没有少排提示的情况下修正末格。四格都主动求证了原表和修订表，仍未观察到单凭说明跳过求证的行为。每格一次，历史对照的签发门禁亦有变化，不能估计两项干预各自的平均收益。[对照边界](docs/engineering/DEPOT-R4-GUIDANCE.md)
 
@@ -823,6 +821,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
 | 2026-11-21 | 在真实交接维护工单上配对实跑 | [报告](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#真实模型配对) | 各 64 笔均结算，两个工作区原稿各 11/15、9/15 |
+| 2026-11-21 | 交接追溯修复与实跑档案发布到主线 `ec80486a` | [PR #289](https://github.com/orangeofcarl0-sys/palimpsest/pull/289) | 16/16 项 CI，送审与落地的三笔提交文件树逐笔一致 |
 | 2026-11-20 | 修复 Palimpsest 重启后的交接追溯 | [工单与复验](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md) | 旧 Episode 可查，绑定 Work 核准，日志仍可查，零模型请求 |
 | 2026-11-20 | 同一 R4 工单拆分证据优先级说明与签发少排提示 | [四格逐笔对比](research-evidence/pnwf-task-selection/2026-11-20/r4-split/comparison.json) | 四份交付各 10/10；11 次复核，从未推翻已有 B GO |
 | 2026-11-20 | R4 拆分对照及恢复记录合入主线 `2c29e90c` | [PR #287](https://github.com/orangeofcarl0-sys/palimpsest/pull/287) | 16/16 项通过，核验送审与主线完整树相同 |
