@@ -1,0 +1,199 @@
+diff --git a/src/application/work_outcome.ts b/src/application/work_outcome.ts
+index 75ad82aa..88f338cd 100644
+--- a/src/application/work_outcome.ts
++++ b/src/application/work_outcome.ts
+@@ -105,6 +105,80 @@ async function retiredDelivery(
+   };
+ }
+ 
++/**
++ * PNWF-D — a project with NO formal task is a legitimate shape.
++ *
++ * A direct commit is a real repository outcome, but it is not a governed result. When the worktree is
++ * clean, the commit is ahead of the canonical head, and the episode has no delivery blocker, the
++ * honest next step is the principal's judgement on that EXISTING commit — not "plan or begin work".
++ * The same read after DELIVER must point at the recorded conclusion instead of restarting planning.
++ *
++ * Initial IN_SYNC (no commit beyond the canonical basis), uncommitted paths, open attempts and a
++ * current project/journal change all keep the ordinary guidance: equality of heads alone proves no
++ * direct outcome, and a dirty tree is unsettled work. This helper never accepts, promotes or advances
++ * the canonical head; it only chooses the semantic guidance class and its next calls.
++ */
++async function directDelivery(
++  deps: WorkRuntimeDeps,
++  status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
++  requested: string | null,
++): Promise<{ reasons: string[]; next: string[] } | null> {
++  const { controller, deliveryPulse } = deps;
++  const direct = status.directOutcome;
++  const repository = controller.effects.git.repository;
++  if (
++    requested !== null || deliveryPulse === undefined || repository === undefined ||
++    direct === null || direct === undefined || status.tasks.length > 0 ||
++    status.attempts.some(
++      (attempt) =>
++        attempt.orphaned === true || attempt.state === "CREATED" || attempt.state === "LEASED" || attempt.state === "RUNNING",
++    )
++  ) return null;
++
++  const pulse = await deliveryPulse.pulse().catch(() => null);
++  if (
++    pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||
++    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||
++    pulse.execution.jobs.some((job) => job.phase === "QUEUED" || job.phase === "RUNNING")
++  ) return null;
++
++  // Re-observe Git after the asynchronous episode read: a moved or unobservable tree is not the
++  // position the pulse described. A current conclusion is reported even over uncommitted bytes; it
++  // is an advisory episode judgement, never evidence that those bytes were committed or accepted.
++  const basis = observeCanonicalBasis(repository);
++  if (basis?.head !== direct.repositoryHead) return null;
++
++  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;
++  if (conclusion !== null) {
++    const uncommitted = basis.uncommittedPaths ?? [];
++    return {
++      reasons: [
++        `this episode has a current recorded ${conclusion.intent} conclusion (${conclusion.conclusionId}) at repository HEAD ${basis.head}`,
++        uncommitted.length > 0
++          ? `the worktree still has uncommitted paths (${uncommitted.join(", ")}); the conclusion remains the current episode judgement and does not accept those bytes`
++          : "the worktree is clean; the conclusion is advisory and did not accept the artifact, promote a result or advance the canonical head",
++      ],
++      next: ["reply using the recorded conclusion"],
++    };
++  }
++
++  // No current conclusion: only a clean tree with a real commit beyond the canonical basis is
++  // direct delivery work. Uncommitted or unchanged state keeps the ordinary guidance.
++  if (basis.uncommittedPaths?.length !== 0) return null;
++  if (direct.relation !== "DIRECT_AHEAD" || basis.head === direct.projectHead) return null;
++  return {
++    reasons: [
++      `repository HEAD ${basis.head} is a direct commit ahead of the canonical ProjectIR head ${direct.projectHead}, and the working tree is clean`,
++      "no formal task is declared, so this commit is a repository outcome rather than a governed result; this readiness does not accept or promote it",
++      "assess whether the committed outcome satisfies the user's goal",
++    ],
++    next: [
++      "inspect the paths committed by the direct commit",
++      "if they satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the committed artifact paths",
++    ],
++  };
++}
++
+ /**
+  * Derive the current outcome facts. `acknowledgeInputs` is the principal's semantic declaration; it
+  * changes only the classification (a fact it has confronted), never the underlying observation.
+@@ -242,7 +316,7 @@ async function snapshot(
+   const acknowledged =
+     input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
+   const delivery = (task === null && requested === null) || task?.state === "STALE"
+-    ? await retiredDelivery(deps, status, requested)
++    ? (await retiredDelivery(deps, status, requested)) ?? (await directDelivery(deps, status, requested))
+     : null;
+   let action: OutcomeAction;
+   let settledNext: string[] | undefined;
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index f31ca22f..9085c256 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -270,6 +270,100 @@ describe("ALHS-A episode conclusion", () => {
+     expect(after.decisionQueue.some((item) => item.kind === "EPISODE_REOPENED")).toBe(true);
+   });
+ 
++  it("guides a no-task project to deliver its existing direct commit, then points at the recorded conclusion", async () => {
++    const { repo, head, stateDir } = workspace("direct-delivery");
++    const installed = install(repo, stateDir);
++    await start(installed, head, []);
++    mkdirSync(join(repo, "deliverables"), { recursive: true });
++    writeFileSync(join(repo, "deliverables", "package.md"), "# Package\n\nA directly committed deployment package.\n");
++    execFileSync("git", ["add", "-A"], { cwd: repo });
++    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "package"], { cwd: repo });
++    const direct = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
++
++    const before = (await call(installed, "palimpsest_work", { action: "readiness" })) as unknown as {
++      action: string;
++      reasons: string[];
++      next: string[];
++      task: unknown;
++      directOutcome: { relation: string; repositoryHead: string | null; uncommittedPaths: string[] };
++    };
++    expect(before.action).toBe("SEMANTIC_JUDGEMENT");
++    expect(before.task).toBeNull();
++    expect(before.directOutcome).toMatchObject({ relation: "DIRECT_AHEAD", repositoryHead: direct, uncommittedPaths: [] });
++    expect(before.reasons.join(" ")).toContain(direct);
++    expect(before.reasons.join(" ")).toMatch(/direct commit|repository outcome/iu);
++    expect(before.next.join(" ")).toContain("palimpsest_work action=conclude intent=DELIVER");
++    expect(installed.controller.status().promotions).toEqual([]);
++
++    const delivered = (await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The directly committed package is the deliverable for this episode.",
++      artifacts: ["deliverables/package.md"],
++    })) as unknown as Conclude;
++    expect(delivered.state).toBe("RECORDED");
++    expect(delivered.session.mayEnd).toBe(true);
++
++    // Re-reading the same position must point at the current conclusion, not restart planning.
++    const after = (await call(installed, "palimpsest_work", { action: "readiness" })) as unknown as {
++      action: string;
++      reasons: string[];
++      next: string[];
++    };
++    expect(after.action).toBe("SEMANTIC_JUDGEMENT");
++    expect(after.next).toEqual(["reply using the recorded conclusion"]);
++    expect(after.reasons.join(" ")).toMatch(/current recorded DELIVER conclusion/iu);
++    expect(after.reasons.join(" ")).toContain(delivered.conclusion!.conclusionId);
++    expect(installed.controller.status()).toMatchObject({ tasks: [], attempts: [], promotions: [] });
++  });
++
++  it("keeps unchanged and uncommitted no-task projects out of direct delivery", async () => {
++    const { repo, head, stateDir } = workspace("direct-protection");
++    const installed = install(repo, stateDir);
++    await start(installed, head, []);
++
++    const unchanged = (await call(installed, "palimpsest_work", { action: "readiness" })) as unknown as {
++      action: string;
++      reasons: string[];
++      next: string[];
++      directOutcome: { relation: string; uncommittedPaths: string[] };
++    };
++    expect(unchanged.action).toBe("CONTINUE_WORK");
++    expect(unchanged.directOutcome).toMatchObject({ relation: "IN_SYNC", uncommittedPaths: [] });
++    expect(unchanged.next.join(" ")).not.toContain("intent=DELIVER");
++
++    mkdirSync(join(repo, "deliverables"), { recursive: true });
++    writeFileSync(join(repo, "deliverables", "draft.md"), "# Draft\n\nNot committed yet.\n");
++    const uncommitted = (await call(installed, "palimpsest_work", { action: "readiness" })) as unknown as {
++      action: string;
++      reasons: string[];
++      next: string[];
++      directOutcome: { relation: string; uncommittedPaths: string[] };
++    };
++    expect(uncommitted.action).toBe("CONTINUE_WORK");
++    expect(uncommitted.directOutcome.relation).toBe("IN_SYNC");
++    expect(uncommitted.directOutcome.uncommittedPaths.some((path) => path.startsWith("deliverables"))).toBe(true);
++    expect(uncommitted.next.join(" ")).not.toContain("intent=DELIVER");
++
++    // A current conclusion is still the answer over uncommitted bytes; it never claims they are committed.
++    const delivered = (await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The uncommitted draft is the deliverable for this episode.",
++      artifacts: ["deliverables/draft.md"],
++    })) as unknown as Conclude;
++    expect(delivered.state).toBe("RECORDED");
++    const recorded = (await call(installed, "palimpsest_work", { action: "readiness" })) as unknown as {
++      action: string;
++      reasons: string[];
++      next: string[];
++    };
++    expect(recorded.action).toBe("SEMANTIC_JUDGEMENT");
++    expect(recorded.next).toEqual(["reply using the recorded conclusion"]);
++    expect(recorded.reasons.join(" ")).toMatch(/current recorded DELIVER conclusion/iu);
++    expect(recorded.reasons.join(" ")).toMatch(/uncommitted paths/iu);
++  });
++
+   it("reports a committed artifact without a provenance warning", async () => {
+     const { repo, head, stateDir } = workspace("committed");
+     const installed = install(repo, stateDir);

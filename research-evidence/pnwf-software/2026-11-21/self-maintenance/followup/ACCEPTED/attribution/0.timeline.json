@@ -1,0 +1,3103 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-5cc717c8-5e24-447d-b695-23716f85b87e",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-20T20:41:19.921Z",
+      "endedAt": "2026-11-20T20:48:58.825Z",
+      "durationMs": 458904
+    },
+    "counts": {
+      "steps": 35,
+      "turns": 1,
+      "toolCalls": 40,
+      "pairedToolResults": 40,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 1,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 1,
+      "stateQueries": 1,
+      "commits": 0,
+      "jobs": 35
+    },
+    "byKind": {
+      "continuity:pulse": 1,
+      "bash": 35,
+      "read": 2,
+      "edit": 1,
+      "work:conclude": 1
+    },
+    "stateQueries": [
+      "8128ms continuity:pulse"
+    ],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "call_9f3711fccc674a568200ea96",
+        "offsetMs": 8128,
+        "kind": "continuity:pulse",
+        "args": {
+          "action": "pulse"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "call_f0ce7c88c456466f9db0f015",
+        "offsetMs": 12577,
+        "kind": "bash git status --short && git log --oneline -5 && ls",
+        "args": {
+          "command": "git status --short && git log --oneline -5 && ls",
+          "description": "Inspect repository status and recent history"
+        }
+      },
+      {
+        "seq": 25,
+        "callId": "call_f486371213364e60a16835da",
+        "offsetMs": 12743,
+        "kind": "read /run/stage/world/src/application/work_outcome.ts",
+        "args": {
+          "file_path": "/run/stage/world/src/application/work_outcome.ts"
+        }
+      },
+      {
+        "seq": 31,
+        "callId": "call_548071094ec34cd1b89550d6",
+        "offsetMs": 19767,
+        "kind": "bash wc -l test/alhs_episode_convergence.test.ts && grep -n \"retired\\|DELIVER\\|DIRECT_AHEAD\\|IN_SYNC\\|readiness\\|no task\\|del…",
+        "args": {
+          "command": "wc -l test/alhs_episode_convergence.test.ts && grep -n \"retired\\|DELIVER\\|DIRECT_AHEAD\\|IN_SYNC\\|readiness\\|no task\\|delivery\" test/alhs_episode_convergence.test.ts | head -100",
+          "description": "Locate relevant test sections"
+        }
+      },
+      {
+        "seq": 35,
+        "callId": "call_f94e250be1cf4641a40db606",
+        "offsetMs": 19800,
+        "kind": "bash git show --stat --oneline HEAD && grep -rn \"directOutcome\\|retiredDelivery\\|episode.state.*DELIVERED\\|current.*DELIVERED…",
+        "args": {
+          "command": "git show --stat --oneline HEAD && grep -rn \"directOutcome\\|retiredDelivery\\|episode.state.*DELIVERED\\|current.*DELIVERED\" src/application test/alhs_episode_convergence.test.ts | head -100",
+          "description": "Find direct outcome and episode conclusion handling"
+        }
+      },
+      {
+        "seq": 43,
+        "callId": "call_e1a4db303d6b47a887e2388f",
+        "offsetMs": 23092,
+        "kind": "read /run/stage/world/test/alhs_episode_convergence.test.ts",
+        "args": {
+          "file_path": "/run/stage/world/test/alhs_episode_convergence.test.ts"
+        }
+      },
+      {
+        "seq": 49,
+        "callId": "call_15c97f6d7a984eb0bd342e77",
+        "offsetMs": 32668,
+        "kind": "bash sed -n '130,230p' src/application/work_contract.ts && grep -rn \"outcomeReadiness\\|deriveOutcomeReadiness\\|retired plan\\|…",
+        "args": {
+          "command": "sed -n '130,230p' src/application/work_contract.ts && grep -rn \"outcomeReadiness\\|deriveOutcomeReadiness\\|retired plan\\|no task is currently addressable\\|deliveryBlockers\\|DIRECT_AHEAD\" test src | head -200",
+          "description": "Inspect contract and usages of direct outcome readiness"
+        }
+      },
+      {
+        "seq": 53,
+        "callId": "call_6836e14764bc4416920233f9",
+        "offsetMs": 32801,
+        "kind": "bash grep -rn \"directOutcome\" src | head -100 && grep -rn \"deliveryPulse\" src | head -50",
+        "args": {
+          "command": "grep -rn \"directOutcome\" src | head -100 && grep -rn \"deliveryPulse\" src | head -50",
+          "description": "Trace directOutcome and deliveryPulse implementation"
+        }
+      },
+      {
+        "seq": 61,
+        "callId": "call_ee8d2f91fc3147c4a86aacd2",
+        "offsetMs": 36985,
+        "kind": "bash sed -n '130,290p' test/pnwf_product.test.ts && sed -n '540,610p' test/pnwf_product.test.ts",
+        "args": {
+          "command": "sed -n '130,290p' test/pnwf_product.test.ts && sed -n '540,610p' test/pnwf_product.test.ts",
+          "description": "Read retired delivery tests"
+        }
+      },
+      {
+        "seq": 65,
+        "callId": "call_f7ab1f27081b45338629e875",
+        "offsetMs": 37020,
+        "kind": "bash sed -n '300,490p' src/domain/work_state.ts",
+        "args": {
+          "command": "sed -n '300,490p' src/domain/work_state.ts",
+          "description": "Read work state direct outcome behavior"
+        }
+      },
+      {
+        "seq": 73,
+        "callId": "call_5d91354b5ab5469f96736a79",
+        "offsetMs": 40053,
+        "kind": "bash sed -n '290,460p' test/pnwf_product.test.ts",
+        "args": {
+          "command": "sed -n '290,460p' test/pnwf_product.test.ts",
+          "description": "Read no-task direct outcome tests"
+        }
+      },
+      {
+        "seq": 81,
+        "callId": "call_c04ed382451148bea0dfc21e",
+        "offsetMs": 45444,
+        "kind": "bash sed -n '230,330p' src/application/normal_work.ts && sed -n '4300,4420p' src/tools/controller.ts && sed -n '300,420p' src…",
+        "args": {
+          "command": "sed -n '230,330p' src/application/normal_work.ts && sed -n '4300,4420p' src/tools/controller.ts && sed -n '300,420p' src/work/read_model.ts",
+          "description": "Inspect readiness entry and direct outcome status"
+        }
+      },
+      {
+        "seq": 85,
+        "callId": "call_4372b1c2d2d54f5d911c091e",
+        "offsetMs": 45485,
+        "kind": "bash sed -n '40,310p' src/project_continuity/episode.ts",
+        "args": {
+          "command": "sed -n '40,310p' src/project_continuity/episode.ts",
+          "description": "Inspect episode readiness and state derivation"
+        }
+      },
+      {
+        "seq": 93,
+        "callId": "call_b81d6b50613d4cb1a90b8986",
+        "offsetMs": 65360,
+        "kind": "bash grep -n \"interface ProjectPulse\\|type ProjectPulse\\|episode:\" -n src/project_continuity/types.ts | head -40 && sed -n '1…",
+        "args": {
+          "command": "grep -n \"interface ProjectPulse\\|type ProjectPulse\\|episode:\" -n src/project_continuity/types.ts | head -40 && sed -n '130,220p' src/project_continuity/types.ts && grep -n \"conclusion\" src/project_continuity/types.ts | head -60",
+          "description": "Inspect ProjectPulse episode type"
+        }
+      },
+      {
+        "seq": 97,
+        "callId": "call_fc01aed74d8943bb95627ea5",
+        "offsetMs": 65403,
+        "kind": "bash grep -n \"retiredDelivery\\|deliveryPulse\\|ProjectPulse\" -n src/application/work_contract.ts src/application/factory.ts sr…",
+        "args": {
+          "command": "grep -n \"retiredDelivery\\|deliveryPulse\\|ProjectPulse\" -n src/application/work_contract.ts src/application/factory.ts src/application/surfaces/work.ts && grep -rn \"episode.current.*DELIVERED\\|state === \\\"DELIVERED\\\"\" src | head -40",
+          "description": "Trace pulse current conclusion availability"
+        }
+      },
+      {
+        "seq": 105,
+        "callId": "call_6946280e11fe41f7af6d8935",
+        "offsetMs": 69082,
+        "kind": "bash grep -n \"interface ProjectPulse\\|type ProjectPulse\\|interface PulseEpisode\\|conclusion\" src/project_pulse/types.ts | hea…",
+        "args": {
+          "command": "grep -n \"interface ProjectPulse\\|type ProjectPulse\\|interface PulseEpisode\\|conclusion\" src/project_pulse/types.ts | head -80 && sed -n '1,220p' src/project_pulse/types.ts",
+          "description": "Read ProjectPulse types"
+        }
+      },
+      {
+        "seq": 113,
+        "callId": "call_aa3721872f974b009bbbd9ef",
+        "offsetMs": 71967,
+        "kind": "bash grep -n \"interface PulseEpisode\\|type PulseEpisode\" src/project_continuity/types.ts src/project_continuity/*.ts && grep …",
+        "args": {
+          "command": "grep -n \"interface PulseEpisode\\|type PulseEpisode\" src/project_continuity/types.ts src/project_continuity/*.ts && grep -n \"PulseEpisode\" src/project_continuity/types.ts | head -20 && sed -n '1,140p' src/project_continuity/types.ts",
+          "description": "Find PulseEpisode definition"
+        }
+      },
+      {
+        "seq": 121,
+        "callId": "call_e63870f998984082b1d6fd92",
+        "offsetMs": 75053,
+        "kind": "bash sed -n '350,430p' src/project_continuity/episode.ts && sed -n '100,145p' src/project_continuity/types.ts",
+        "args": {
+          "command": "sed -n '350,430p' src/project_continuity/episode.ts && sed -n '100,145p' src/project_continuity/types.ts",
+          "description": "Read PulseEpisode shape"
+        }
+      },
+      {
+        "seq": 129,
+        "callId": "call_bf11f993871347c988fc4355",
+        "offsetMs": 120041,
+        "kind": "bash grep -n \"export function gitTextRunner\\|function gitTextRunner\\|gitTextRunner\" src/work/path_reuse.ts | head -20 && sed …",
+        "args": {
+          "command": "grep -n \"export function gitTextRunner\\|function gitTextRunner\\|gitTextRunner\" src/work/path_reuse.ts | head -20 && sed -n '1,100p' src/work/path_reuse.ts && grep -n \"canonicalWorktreeChanges\\|observeCanonicalBasis\" src/work/unseen_inputs.ts | head -20",
+          "description": "Inspect git runner helpers"
+        }
+      },
+      {
+        "seq": 137,
+        "callId": "call_584de23384844d6e812940d4",
+        "offsetMs": 124986,
+        "kind": "bash cat package.json | sed -n '1,120p' && sed -n '380,430p' src/work/unseen_inputs.ts",
+        "args": {
+          "command": "cat package.json | sed -n '1,120p' && sed -n '380,430p' src/work/unseen_inputs.ts",
+          "description": "Read test scripts and basis observation"
+        }
+      },
+      {
+        "seq": 145,
+        "callId": "call_d00d29da164a4af59c4d8d12",
+        "offsetMs": 130173,
+        "kind": "bash sed -n '430,620p' src/project_continuity/episode.ts",
+        "args": {
+          "command": "sed -n '430,620p' src/project_continuity/episode.ts",
+          "description": "Read episode current-state derivation"
+        }
+      },
+      {
+        "seq": 153,
+        "callId": "call_f6477bf588074fc98c27ae8d",
+        "offsetMs": 158067,
+        "kind": "bash grep -rn \"action: \\\"readiness\\\"\\|outcomeReadiness\" test | cat",
+        "args": {
+          "command": "grep -rn \"action: \\\"readiness\\\"\\|outcomeReadiness\" test | cat",
+          "description": "List all readiness tests"
+        }
+      },
+      {
+        "seq": 161,
+        "callId": "call_72ce728fe8bd410e834bdf52",
+        "offsetMs": 161143,
+        "kind": "bash sed -n '120,205p' test/pnwf_cq_action_coherence.test.ts && sed -n '140,200p' test/work_revision.test.ts",
+        "args": {
+          "command": "sed -n '120,205p' test/pnwf_cq_action_coherence.test.ts && sed -n '140,200p' test/work_revision.test.ts",
+          "description": "Read readiness action coherence tests"
+        }
+      },
+      {
+        "seq": 169,
+        "callId": "call_547eb0d4b1954de8bbad581d",
+        "offsetMs": 240695,
+        "kind": "edit /run/stage/world/src/application/work_outcome.ts",
+        "args": {
+          "file_path": "/run/stage/world/src/application/work_outcome.ts",
+          "old_string": "/** A clean HEAD alone is ordinary project state. Use the retired plan's declared artifacts. */\nasync function retiredDelivery(\n  deps: WorkRuntimeDeps,\n  status: ReturnType<WorkRuntimeDeps[\"controller\"][\"status\"]>,\n  requested: string | null,\n): Promise<{ reasons: string[]; next: string[] } | null> {\n  const { controller, deliveryPulse } = deps;\n  const direct = status.directOutcome;\n  const head = direct?.repositoryHead;\n  const repository = controller.effects.git.repository;\n  if (\n    deliveryPulse === undefined || repository === undefined || !head ||\n    (direct.relation !== \"IN_SYNC\" && direct.relation !== \"DIRECT_AHEAD\") ||\n    status.attempts.some((attempt) => attempt.orphaned === true)\n  ) return null;\n\n  const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));\n  const retired = status.tasks.filter((task) => task.state === \"STALE\" && !plannedIds.has(task.task_id));\n  if (retired.length === 0 || (requested !== null && !retired.some((task) => task.task_id === requested))) return null;\n  const artifacts = new Set<string>();\n  for (const task of retired) {\n    const envelope = controller.taskEnvelopeOrNull(task.task_id);\n    if (envelope === null) return null;\n    for (const path of envelope.required_artifacts) artifacts.add(path);\n  }\n  if (artifacts.size === 0) return null;\n\n  const pulse = await deliveryPulse.pulse().catch(() => null);\n  if (\n    pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||\n    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||\n    pulse.execution.jobs.some((job) => job.phase === \"QUEUED\" || job.phase === \"RUNNING\")\n  ) return null;\n\n  // Re-observe Git after the asynchronous episode read. An unobservable worktree cannot prove a clean basis.\n  const basis = observeCanonicalBasis(repository);\n  if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;\n  const git = gitTextRunner(repository);\n  const paths = [...artifacts];\n  try {\n    if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n      git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n  } catch {\n    return null;\n  }\n\n  const reason = `the retired plan's declared artifacts (${paths.join(\", \")}) are committed at repository HEAD ${head}`;\n  if (pulse.episode.current && pulse.episode.state === \"DELIVERED\") {\n    return { reasons: [reason, \"this episode has a current recorded DELIVER conclusion\"], next: [\"reply using the recorded conclusion\"] };\n  }\n  return {\n    reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n    next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n  };\n}",
+          "new_string": "/**\n * A clean HEAD alone is ordinary project state. When there is no formal task to settle, the ordinary\n * admission is the repository outcome: the retired plan's declared artifacts, or a direct commit in\n * a task-free project. A recorded current conclusion takes precedence over re-deriving that prompt.\n */\nasync function deliveryGuidance(\n  deps: WorkRuntimeDeps,\n  status: ReturnType<WorkRuntimeDeps[\"controller\"][\"status\"]>,\n  requested: string | null,\n): Promise<{ reasons: string[]; next: string[] } | null> {\n  const { controller, deliveryPulse } = deps;\n  const direct = status.directOutcome;\n  const head = direct?.repositoryHead;\n  const repository = controller.effects.git.repository;\n  if (\n    deliveryPulse === undefined || repository === undefined || !head ||\n    (direct.relation !== \"IN_SYNC\" && direct.relation !== \"DIRECT_AHEAD\") ||\n    status.attempts.some((attempt) => attempt.orphaned === true)\n  ) return null;\n\n  const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));\n  const retired = status.tasks.filter((task) => task.state === \"STALE\" && !plannedIds.has(task.task_id));\n  const noFormalTasks = status.tasks.length === 0 && plannedIds.size === 0;\n  if (\n    (retired.length === 0 && !noFormalTasks) ||\n    (requested !== null && !retired.some((task) => task.task_id === requested))\n  ) return null;\n\n  let artifacts: string[] = [];\n  let reason: string;\n  if (retired.length > 0) {\n    const declared = new Set<string>();\n    for (const task of retired) {\n      const envelope = controller.taskEnvelopeOrNull(task.task_id);\n      if (envelope === null) return null;\n      for (const path of envelope.required_artifacts) declared.add(path);\n    }\n    if (declared.size === 0) return null;\n    artifacts = [...declared];\n    reason = `the retired plan's declared artifacts (${artifacts.join(\", \")}) are committed at repository HEAD ${head}`;\n  } else {\n    reason =\n      direct.relation === \"DIRECT_AHEAD\"\n        ? `a direct commit exists at repository HEAD ${head} ahead of the canonical head ${direct.projectHead.slice(0, 12)}; it is a repository outcome, not a governed result and this readiness does not accept it`\n        : `the repository and the canonical head agree at ${head}; the existing outcome is in the basis, not a new governed delta`;\n  }\n\n  const pulse = await deliveryPulse.pulse().catch(() => null);\n  if (\n    pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||\n    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||\n    pulse.execution.jobs.some((job) => job.phase === \"QUEUED\" || job.phase === \"RUNNING\")\n  ) return null;\n\n  // Re-observe Git after the asynchronous episode read. An unobservable worktree cannot prove a clean basis.\n  const basis = observeCanonicalBasis(repository);\n  if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;\n  const git = gitTextRunner(repository);\n\n  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;\n  if (conclusion !== null) {\n    return {\n      reasons: [reason, `this episode has a current recorded ${conclusion.intent} conclusion`],\n      next: [\"reply using the recorded conclusion\"],\n    };\n  }\n\n  if (retired.length > 0) {\n    try {\n      if (!artifacts.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n        git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n    } catch {\n      return null;\n    }\n    return {\n      reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n      next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n    };\n  }\n\n  // A task-free project has no declared artifacts. The changed blobs in the direct commit are the\n  // only committed paths this entry can name; an unchanged or uncommitted project has no delivery.\n  if (direct.relation !== \"DIRECT_AHEAD\") return null;\n  const changed = git([\"diff\", \"--name-only\", \"--no-renames\", direct.projectHead, head]);\n  if (changed === null) return null;\n  const committedPaths = changed\n    .split(/\\r?\\n/u)\n    .map((path) => path.trim())\n    .filter((path) => path !== \"\" && git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\");\n  if (committedPaths.length === 0) return null;\n  return {\n    reasons: [\n      `a direct commit at repository HEAD ${head} changes ${committedPaths.join(\", \")}; it is a repository outcome, not a governed result and this readiness does not accept it`,\n      \"the project has no formal task and no uncommitted work; decide whether the committed change satisfies the user's goal\",\n    ],\n    next: [\n      `if the committed change satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths (${committedPaths.join(\", \")})`,\n    ],\n  };\n}"
+        }
+      },
+      {
+        "seq": 175,
+        "callId": "call_f66b9653c50a41769c38651f",
+        "offsetMs": 244497,
+        "kind": "bash grep -n \"retiredDelivery\\|delivery =\\|task === null\" src/application/work_outcome.ts | head -20 && sed -n '270,310p' src…",
+        "args": {
+          "command": "grep -n \"retiredDelivery\\|delivery =\\|task === null\" src/application/work_outcome.ts | head -20 && sed -n '270,310p' src/application/work_outcome.ts",
+          "description": "Locate delivery call and no-task branch"
+        }
+      },
+      {
+        "seq": 183,
+        "callId": "call_0c34a7fb848e4b8ba68d48f2",
+        "offsetMs": 254877,
+        "kind": "bash python3 - <<'PY' from pathlib import Path p=Path('src/application/work_outcome.ts') s=p.read_text() s=s.replace(''' cons…",
+        "args": {
+          "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\ns=s.replace('''  const delivery = (task === null && requested === null) || task?.state === \"STALE\"\n    ? await retiredDelivery(deps, status, requested)\n    : null;''','''  const delivery = (task === null && requested === null) || task?.state === \"STALE\"\n    ? await deliveryGuidance(deps, status, requested)\n    : null;''')\ns=s.replace('''  } else if (task === null) {\n    action = \"CONTINUE_WORK\";\n    reasons.push(\"no task is currently addressable; plan or begin work before a finalization can be considered\");\n  } else if (runningForThisTask.length > 1) {''','''  } else if (task === null) {\n    action = \"CONTINUE_WORK\";\n    const uncommitted = directOutcome?.uncommittedPaths ?? [];\n    if (status.tasks.length === 0) {\n      if (uncommitted.length > 0) {\n        reasons.push(\n          `the project has no formal task and the repository has uncommitted changes (${uncommitted.join(\", \")}); commit or discard them before treating a direct commit as the deliverable`,\n        );\n      } else if (directOutcome?.relation === \"DIRECT_AHEAD\") {\n        reasons.push(\n          `a direct commit exists at ${directOutcome.repositoryHead?.slice(0, 12) ?? \"unknown\"} but no task-free delivery guidance could be derived from the current facts; inspect the commit and the episode before planning new work`,\n        );\n      } else {\n        reasons.push(\n          \"the project has no formal task and no commit beyond the canonical head to hand over; plan or begin work, or commit the outcome you intend to deliver\",\n        );\n      }\n    } else {\n      reasons.push(\"no task is currently addressable; plan or begin work before a finalization can be considered\");\n    }\n  } else if (runningForThisTask.length > 1) {''')\np.write_text(s)\nPY\ngrep -n \"retiredDelivery\\|deliveryGuidance\\|no formal task\" src/application/work_outcome.ts | head -20",
+          "description": "Update delivery call and no-task guidance"
+        }
+      },
+      {
+        "seq": 191,
+        "callId": "call_3a773573b170421584849605",
+        "offsetMs": 270980,
+        "kind": "bash python3 - <<'PY' from pathlib import Path p=Path('test/alhs_episode_convergence.test.ts') s=p.read_text() marker=''' it(…",
+        "args": {
+          "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('test/alhs_episode_convergence.test.ts')\ns=p.read_text()\nmarker='''  it(\"reports a committed artifact without a provenance warning\", async () => {'''\naddition='''  it(\"guides a task-free project to its direct commit, then to the current conclusion\", async () => {\n    const { repo, head, stateDir } = workspace(\"direct-delivery\");\n    const installed = install(repo, stateDir);\n    await start(installed, head, []);\n\n    type Readiness = {\n      action: string;\n      reasons: string[];\n      next: string[];\n      directOutcome: { relation: string; repositoryHead: string | null } | null;\n    };\n    const readiness = async () => (await call(installed, \"palimpsest_work\", { action: \"readiness\" })) as unknown as Readiness;\n\n    // An unchanged clean repository is not a new delivery.\n    const unchanged = await readiness();\n    expect(unchanged.action).toBe(\"CONTINUE_WORK\");\n    expect(unchanged.next.join(\" \")).not.toContain(\"intent=DELIVER\");\n\n    // An uncommitted draft is real work, but it is not a committed delivery either.\n    mkdirSync(join(repo, \"deliverables\"), { recursive: true });\n    writeFileSync(join(repo, \"deliverables\", \"package.md\"), \"# Package\\\\n\\\\nCommitted outside Work.\\\\n\");\n    const uncommitted = await readiness();\n    expect(uncommitted.action).toBe(\"CONTINUE_WORK\");\n    expect(uncommitted.reasons.join(\" \")).toMatch(/uncommitted changes/iu);\n    expect(uncommitted.next.join(\" \")).not.toContain(\"intent=DELIVER\");\n\n    execFileSync(\"git\", [\"add\", \"-A\"], { cwd: repo });\n    execFileSync(\"git\", [\"-c\", \"user.email=t@t.t\", \"-c\", \"user.name=t\", \"commit\", \"-qm\", \"direct delivery\"], { cwd: repo });\n    const direct = execFileSync(\"git\", [\"rev-parse\", \"HEAD\"], { cwd: repo, encoding: \"utf8\" }).trim();\n    expect(direct).not.toBe(head);\n\n    const committed = await readiness();\n    expect(committed.action).toBe(\"SEMANTIC_JUDGEMENT\");\n    expect(committed.directOutcome).toMatchObject({ relation: \"DIRECT_AHEAD\", repositoryHead: direct });\n    expect(committed.reasons.join(\" \")).toContain(direct);\n    expect(committed.reasons.join(\" \")).toContain(\"deliverables/package.md\");\n    expect(committed.next.join(\" \")).toContain(\"intent=DELIVER\");\n\n    const delivered = (await call(installed, \"palimpsest_work\", {\n      action: \"conclude\",\n      intent: \"DELIVER\",\n      statement: \"The direct commit is the deliverable; no formal Work was invented for it.\",\n      artifacts: [\"deliverables/package.md\"],\n    })) as unknown as Conclude;\n    expect(delivered.state).toBe(\"RECORDED\");\n\n    // Re-reading the same state points at the recorded judgement instead of asking for a plan again.\n    const recorded = await readiness();\n    expect(recorded.action).toBe(\"SEMANTIC_JUDGEMENT\");\n    expect(recorded.reasons.join(\" \")).toMatch(/current recorded DELIVER conclusion/iu);\n    expect(recorded.next).toEqual([\"reply using the recorded conclusion\"]);\n\n    // The guidance is advisory: no task, attempt or promotion was invented or accepted.\n    const status = installed.controller.status();\n    expect(status.tasks).toEqual([]);\n    expect(status.attempts).toEqual([]);\n    expect(status.promotions).toEqual([]);\n    expect(status.headCommit).toBe(head);\n  });\n\n'''\nif marker not in s:\n    raise SystemExit('marker not found')\ns=s.replace(marker, addition+marker, 1)\np.write_text(s)\nPY\nsed -n '270,350p' test/alhs_episode_convergence.test.ts",
+          "description": "Add direct-delivery regression test"
+        }
+      },
+      {
+        "seq": 199,
+        "callId": "call_933c251dabf14141885435a2",
+        "offsetMs": 276454,
+        "kind": "bash pnpm exec vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts te…",
+        "args": {
+          "command": "pnpm exec vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/pnwf_cq_action_coherence.test.ts",
+          "description": "Run focused regression and related tests",
+          "timeoutMs": 600000
+        }
+      },
+      {
+        "seq": 207,
+        "callId": "call_73e982a63ef945a28672756a",
+        "offsetMs": 282147,
+        "kind": "bash ls node_modules/.bin/vitest node_modules/.bin/tsc 2>/dev/null; which vitest || true; node_modules/.bin/vitest --version …",
+        "args": {
+          "command": "ls node_modules/.bin/vitest node_modules/.bin/tsc 2>/dev/null; which vitest || true; node_modules/.bin/vitest --version 2>/dev/null || true",
+          "description": "Locate local vitest binary"
+        }
+      },
+      {
+        "seq": 215,
+        "callId": "call_58d07660528d4789be6ddcb0",
+        "offsetMs": 284596,
+        "kind": "bash node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.te…",
+        "args": {
+          "command": "node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/pnwf_cq_action_coherence.test.ts",
+          "description": "Run focused regression and related tests",
+          "timeoutMs": 600000
+        }
+      },
+      {
+        "seq": 223,
+        "callId": "call_61304c4aca7e4edbaddc22dd",
+        "offsetMs": 323102,
+        "kind": "bash git status --short && git diff --stat && git diff -- src/application/work_outcome.ts | sed -n '1,220p'",
+        "args": {
+          "command": "git status --short && git diff --stat && git diff -- src/application/work_outcome.ts | sed -n '1,220p'",
+          "description": "Review working tree diff"
+        }
+      },
+      {
+        "seq": 231,
+        "callId": "call_c32de04d12c04ebb8979a800",
+        "offsetMs": 326944,
+        "kind": "bash cat tsconfig.json | sed -n '1,160p' && git check-ignore dist/src/application/work_outcome.js || true",
+        "args": {
+          "command": "cat tsconfig.json | sed -n '1,160p' && git check-ignore dist/src/application/work_outcome.js || true",
+          "description": "Inspect TypeScript configuration"
+        }
+      },
+      {
+        "seq": 239,
+        "callId": "call_2c580c6ebec841708503d229",
+        "offsetMs": 329554,
+        "kind": "bash node_modules/.bin/tsc -b --pretty false",
+        "args": {
+          "command": "node_modules/.bin/tsc -b --pretty false",
+          "description": "Typecheck the project",
+          "timeoutMs": 600000
+        }
+      },
+      {
+        "seq": 247,
+        "callId": "call_f271e1845f5c49fe8d9d3474",
+        "offsetMs": 369999,
+        "kind": "bash python3 - <<'PY' from pathlib import Path p=Path('src/application/work_outcome.ts') s=p.read_text() old=''' const git = …",
+        "args": {
+          "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\nold='''  const git = gitTextRunner(repository);\n\n  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;\n  if (conclusion !== null) {\n    return {\n      reasons: [reason, `this episode has a current recorded ${conclusion.intent} conclusion`],\n      next: [\"reply using the recorded conclusion\"],\n    };\n  }\n\n  if (retired.length > 0) {\n    try {\n      if (!artifacts.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n        git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n    } catch {\n      return null;\n    }\n    return {\n      reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n      next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n    };\n  }\n'''\nnew='''  const git = gitTextRunner(repository);\n\n  if (retired.length > 0) {\n    try {\n      if (!artifacts.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n        git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n    } catch {\n      return null;\n    }\n  }\n\n  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;\n  if (conclusion !== null) {\n    return {\n      reasons: [reason, `this episode has a current recorded ${conclusion.intent} conclusion`],\n      next: [\"reply using the recorded conclusion\"],\n    };\n  }\n\n  if (retired.length > 0) {\n    return {\n      reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n      next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n    };\n  }\n'''\nif old not in s:\n    raise SystemExit('old not found')\ns=s.replace(old,new,1)\np.write_text(s)\nPY\nnode_modules/.bin/tsc -b --pretty false",
+          "description": "Preserve retired artifact validation and typecheck",
+          "timeoutMs": 600000
+        }
+      },
+      {
+        "seq": 255,
+        "callId": "call_135ca9267eb54af489442331",
+        "offsetMs": 375619,
+        "kind": "bash node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.te…",
+        "args": {
+          "command": "node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts",
+          "description": "Re-run direct delivery tests after validation move",
+          "timeoutMs": 600000
+        }
+      },
+      {
+        "seq": 263,
+        "callId": "call_35a79e2be722469abfb05d86",
+        "offsetMs": 398503,
+        "kind": "bash find test -maxdepth 1 -name '*.test.ts' | wc -l",
+        "args": {
+          "command": "find test -maxdepth 1 -name '*.test.ts' | wc -l",
+          "description": "Count test files"
+        }
+      },
+      {
+        "seq": 271,
+        "callId": "call_7250c549009f4ed9ac15f32d",
+        "offsetMs": 402332,
+        "kind": "bash node_modules/.bin/vitest run --configLoader runner --no-cache test/odpe_outcome.test.ts test/psvr_hotspots.test.ts test/…",
+        "args": {
+          "command": "node_modules/.bin/vitest run --configLoader runner --no-cache test/odpe_outcome.test.ts test/psvr_hotspots.test.ts test/work_revision.test.ts test/pnwf_cq_direct_governed.test.ts test/pnwf_cq_action_coherence.test.ts test/pwrs_relay.test.ts",
+          "description": "Run readiness and work outcome related suites",
+          "timeoutMs": 600000
+        }
+      },
+      {
+        "seq": 279,
+        "callId": "call_38c8867e0b43476b8236f345",
+        "offsetMs": 422009,
+        "kind": "bash git diff --check && git status --short && git log -1 --format='%an <%ae>'",
+        "args": {
+          "command": "git diff --check && git status --short && git log -1 --format='%an <%ae>'",
+          "description": "Check diff hygiene and author"
+        }
+      },
+      {
+        "seq": 287,
+        "callId": "call_993c101c1ca34eb8acaf3002",
+        "offsetMs": 425406,
+        "kind": "bash git add src/application/work_outcome.ts test/alhs_episode_convergence.test.ts && git commit -m \"Guide task-free direct d…",
+        "args": {
+          "command": "git add src/application/work_outcome.ts test/alhs_episode_convergence.test.ts && git commit -m \"Guide task-free direct deliveries to the existing commit\" && git status --short && git log -1 --oneline",
+          "description": "Commit the candidate fix and regression test"
+        }
+      },
+      {
+        "seq": 295,
+        "callId": "call_fceb85926dc043e885847cdb",
+        "offsetMs": 446114,
+        "kind": "work:conclude",
+        "args": {
+          "action": "conclude",
+          "intent": "DELIVER",
+          "statement": "The ordinary Work readiness entry now guides a task-free project from a clean direct commit to an explicit delivery judgement, points to the current episode conclusion on repeated reads, and keeps unchanged or uncommitted states on continue work without inventing a task or accepting the result. The targeted regression and related readiness suites pass.",
+          "artifacts": [
+            "src/application/work_outcome.ts",
+            "test/alhs_episode_convergence.test.ts"
+          ],
+          "evidenceRefs": [
+            "commit:35165a35"
+          ]
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "call_9f3711fccc674a568200ea96",
+        "callSeq": 15,
+        "offsetMs": 8646,
+        "callKind": "continuity:pulse",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "call_f0ce7c88c456466f9db0f015",
+        "callSeq": 21,
+        "offsetMs": 12742,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 26,
+        "callId": "call_f486371213364e60a16835da",
+        "callSeq": 25,
+        "offsetMs": 12780,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 34,
+        "callId": "call_548071094ec34cd1b89550d6",
+        "callSeq": 31,
+        "offsetMs": 19800,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 38,
+        "callId": "call_f94e250be1cf4641a40db606",
+        "callSeq": 35,
+        "offsetMs": 19837,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 44,
+        "callId": "call_e1a4db303d6b47a887e2388f",
+        "callSeq": 43,
+        "offsetMs": 23123,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 52,
+        "callId": "call_15c97f6d7a984eb0bd342e77",
+        "callSeq": 49,
+        "offsetMs": 32800,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 56,
+        "callId": "call_6836e14764bc4416920233f9",
+        "callSeq": 53,
+        "offsetMs": 32878,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 64,
+        "callId": "call_ee8d2f91fc3147c4a86aacd2",
+        "callSeq": 61,
+        "offsetMs": 37019,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 68,
+        "callId": "call_f7ab1f27081b45338629e875",
+        "callSeq": 65,
+        "offsetMs": 37048,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 76,
+        "callId": "call_5d91354b5ab5469f96736a79",
+        "callSeq": 73,
+        "offsetMs": 40085,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 84,
+        "callId": "call_c04ed382451148bea0dfc21e",
+        "callSeq": 81,
+        "offsetMs": 45484,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 88,
+        "callId": "call_4372b1c2d2d54f5d911c091e",
+        "callSeq": 85,
+        "offsetMs": 45514,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 96,
+        "callId": "call_b81d6b50613d4cb1a90b8986",
+        "callSeq": 93,
+        "offsetMs": 65403,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 100,
+        "callId": "call_fc01aed74d8943bb95627ea5",
+        "callSeq": 97,
+        "offsetMs": 65454,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 108,
+        "callId": "call_6946280e11fe41f7af6d8935",
+        "callSeq": 105,
+        "offsetMs": 69130,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 116,
+        "callId": "call_aa3721872f974b009bbbd9ef",
+        "callSeq": 113,
+        "offsetMs": 71997,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 124,
+        "callId": "call_e63870f998984082b1d6fd92",
+        "callSeq": 121,
+        "offsetMs": 75081,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 132,
+        "callId": "call_bf11f993871347c988fc4355",
+        "callSeq": 129,
+        "offsetMs": 120079,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 140,
+        "callId": "call_584de23384844d6e812940d4",
+        "callSeq": 137,
+        "offsetMs": 125018,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 148,
+        "callId": "call_d00d29da164a4af59c4d8d12",
+        "callSeq": 145,
+        "offsetMs": 130200,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 156,
+        "callId": "call_f6477bf588074fc98c27ae8d",
+        "callSeq": 153,
+        "offsetMs": 158127,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 164,
+        "callId": "call_72ce728fe8bd410e834bdf52",
+        "callSeq": 161,
+        "offsetMs": 161171,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 170,
+        "callId": "call_547eb0d4b1954de8bbad581d",
+        "callSeq": 169,
+        "offsetMs": 240730,
+        "callKind": "edit",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 178,
+        "callId": "call_f66b9653c50a41769c38651f",
+        "callSeq": 175,
+        "offsetMs": 244525,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 186,
+        "callId": "call_0c34a7fb848e4b8ba68d48f2",
+        "callSeq": 183,
+        "offsetMs": 254991,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 194,
+        "callId": "call_3a773573b170421584849605",
+        "callSeq": 191,
+        "offsetMs": 271043,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 202,
+        "callId": "call_933c251dabf14141885435a2",
+        "callSeq": 199,
+        "offsetMs": 279075,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 210,
+        "callId": "call_73e982a63ef945a28672756a",
+        "callSeq": 207,
+        "offsetMs": 282290,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 218,
+        "callId": "call_58d07660528d4789be6ddcb0",
+        "callSeq": 215,
+        "offsetMs": 303291,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 226,
+        "callId": "call_61304c4aca7e4edbaddc22dd",
+        "callSeq": 223,
+        "offsetMs": 323274,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 234,
+        "callId": "call_c32de04d12c04ebb8979a800",
+        "callSeq": 231,
+        "offsetMs": 326981,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 242,
+        "callId": "call_2c580c6ebec841708503d229",
+        "callSeq": 239,
+        "offsetMs": 334170,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 250,
+        "callId": "call_f271e1845f5c49fe8d9d3474",
+        "callSeq": 247,
+        "offsetMs": 371022,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 258,
+        "callId": "call_135ca9267eb54af489442331",
+        "callSeq": 255,
+        "offsetMs": 394902,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 266,
+        "callId": "call_35a79e2be722469abfb05d86",
+        "callSeq": 263,
+        "offsetMs": 398553,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 274,
+        "callId": "call_7250c549009f4ed9ac15f32d",
+        "callSeq": 271,
+        "offsetMs": 417502,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 282,
+        "callId": "call_38c8867e0b43476b8236f345",
+        "callSeq": 279,
+        "offsetMs": 422174,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 290,
+        "callId": "call_993c101c1ca34eb8acaf3002",
+        "callSeq": 287,
+        "offsetMs": 425579,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 296,
+        "callId": "call_fceb85926dc043e885847cdb",
+        "callSeq": 295,
+        "offsetMs": 447708,
+        "callKind": "work:conclude",
+        "ok": true,
+        "state": "RECORDED",
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "state": "RECORDED"
+        }
+      }
+    ],
+    "failedJobs": [
+      {
+        "jobId": "bash-daed477a1cf14e58",
+        "status": "completed",
+        "reason": "NONZERO_EXIT",
+        "callId": "call_933c251dabf14141885435a2",
+        "callSeq": 199,
+        "callKind": "bash",
+        "resultSeq": null,
+        "settledSeq": 201,
+        "durationMs": 2609
+      }
+    ],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795207288046,
+        "messageId": "ab5a9d2e-35e3-4a40-b312-e2b15caea696",
+        "usage": {
+          "inputTokens": 10679,
+          "outputTokens": 54,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 10733
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795207292496,
+        "messageId": "67a913c7-d605-4fe4-b046-2444d9aaf228",
+        "usage": {
+          "inputTokens": 1269,
+          "outputTokens": 129,
+          "cacheReadTokens": 10624,
+          "cacheWriteTokens": 0,
+          "totalTokens": 12022
+        }
+      },
+      {
+        "seq": 30,
+        "at": 1795207299687,
+        "messageId": "e8dd633f-0aac-4d3b-9547-f0cceba4687a",
+        "usage": {
+          "inputTokens": 8402,
+          "outputTokens": 228,
+          "cacheReadTokens": 11776,
+          "cacheWriteTokens": 0,
+          "totalTokens": 20406
+        }
+      },
+      {
+        "seq": 42,
+        "at": 1795207303012,
+        "messageId": "07a7be75-357d-4a6c-b66f-1d4ad61fc5b8",
+        "usage": {
+          "inputTokens": 1278,
+          "outputTokens": 114,
+          "cacheReadTokens": 20096,
+          "cacheWriteTokens": 0,
+          "totalTokens": 21488
+        }
+      },
+      {
+        "seq": 48,
+        "at": 1795207312586,
+        "messageId": "ce1bcf54-7f2b-4e19-8018-86ee52901bed",
+        "usage": {
+          "inputTokens": 6383,
+          "outputTokens": 592,
+          "cacheReadTokens": 21248,
+          "cacheWriteTokens": 0,
+          "totalTokens": 28223
+        }
+      },
+      {
+        "seq": 60,
+        "at": 1795207316905,
+        "messageId": "c20c5bf9-5737-4270-9f07-0e77492ae377",
+        "usage": {
+          "inputTokens": 4634,
+          "outputTokens": 173,
+          "cacheReadTokens": 27520,
+          "cacheWriteTokens": 0,
+          "totalTokens": 32327
+        }
+      },
+      {
+        "seq": 72,
+        "at": 1795207319973,
+        "messageId": "21a6cef5-2077-4ec8-a0aa-41a0e104e893",
+        "usage": {
+          "inputTokens": 5466,
+          "outputTokens": 100,
+          "cacheReadTokens": 32128,
+          "cacheWriteTokens": 0,
+          "totalTokens": 37694
+        }
+      },
+      {
+        "seq": 80,
+        "at": 1795207325362,
+        "messageId": "896e4284-d526-488a-ab7d-a448a39976fc",
+        "usage": {
+          "inputTokens": 2404,
+          "outputTokens": 214,
+          "cacheReadTokens": 37504,
+          "cacheWriteTokens": 0,
+          "totalTokens": 40122
+        }
+      },
+      {
+        "seq": 92,
+        "at": 1795207345280,
+        "messageId": "1db50304-8c5c-4a00-90eb-1c4d3a325ebd",
+        "usage": {
+          "inputTokens": 6980,
+          "outputTokens": 1193,
+          "cacheReadTokens": 39808,
+          "cacheWriteTokens": 0,
+          "totalTokens": 47981
+        }
+      },
+      {
+        "seq": 104,
+        "at": 1795207349002,
+        "messageId": "4eb3d921-0ee1-4ac7-a042-d58a61318c28",
+        "usage": {
+          "inputTokens": 2134,
+          "outputTokens": 122,
+          "cacheReadTokens": 46720,
+          "cacheWriteTokens": 0,
+          "totalTokens": 48976
+        }
+      },
+      {
+        "seq": 112,
+        "at": 1795207351886,
+        "messageId": "4372301a-a476-4479-aed0-a85cb41fc379",
+        "usage": {
+          "inputTokens": 1248,
+          "outputTokens": 131,
+          "cacheReadTokens": 48768,
+          "cacheWriteTokens": 0,
+          "totalTokens": 50147
+        }
+      },
+      {
+        "seq": 120,
+        "at": 1795207354973,
+        "messageId": "9bdf0936-2a57-451a-a31c-417c8835c88a",
+        "usage": {
+          "inputTokens": 1638,
+          "outputTokens": 92,
+          "cacheReadTokens": 49920,
+          "cacheWriteTokens": 0,
+          "totalTokens": 51650
+        }
+      },
+      {
+        "seq": 128,
+        "at": 1795207399958,
+        "messageId": "83ad3d09-e0c4-42f5-864e-c18082f2d8e1",
+        "usage": {
+          "inputTokens": 1441,
+          "outputTokens": 2903,
+          "cacheReadTokens": 51456,
+          "cacheWriteTokens": 0,
+          "totalTokens": 55800
+        }
+      },
+      {
+        "seq": 136,
+        "at": 1795207404906,
+        "messageId": "f8ef73ab-bb17-435d-8334-2d5ca4b18816",
+        "usage": {
+          "inputTokens": 4058,
+          "outputTokens": 192,
+          "cacheReadTokens": 52864,
+          "cacheWriteTokens": 0,
+          "totalTokens": 57114
+        }
+      },
+      {
+        "seq": 144,
+        "at": 1795207410093,
+        "messageId": "49c6c2b7-9c8a-4a4f-a757-579441e6c97a",
+        "usage": {
+          "inputTokens": 2824,
+          "outputTokens": 219,
+          "cacheReadTokens": 56832,
+          "cacheWriteTokens": 0,
+          "totalTokens": 59875
+        }
+      },
+      {
+        "seq": 152,
+        "at": 1795207437986,
+        "messageId": "366f8f36-ebd8-46bc-9272-9bed2f1186e3",
+        "usage": {
+          "inputTokens": 1332,
+          "outputTokens": 1939,
+          "cacheReadTokens": 59648,
+          "cacheWriteTokens": 0,
+          "totalTokens": 62919
+        }
+      },
+      {
+        "seq": 160,
+        "at": 1795207441063,
+        "messageId": "770e4e01-c76b-4214-826d-8020f050f933",
+        "usage": {
+          "inputTokens": 2974,
+          "outputTokens": 108,
+          "cacheReadTokens": 60928,
+          "cacheWriteTokens": 0,
+          "totalTokens": 64010
+        }
+      },
+      {
+        "seq": 168,
+        "at": 1795207520614,
+        "messageId": "3ec56451-c211-4f87-b1e9-c115932e49b4",
+        "usage": {
+          "inputTokens": 2462,
+          "outputTokens": 6786,
+          "cacheReadTokens": 63872,
+          "cacheWriteTokens": 0,
+          "totalTokens": 73120
+        }
+      },
+      {
+        "seq": 174,
+        "at": 1795207524417,
+        "messageId": "b19f8b43-f781-4f25-b6fd-951c31988271",
+        "usage": {
+          "inputTokens": 6845,
+          "outputTokens": 127,
+          "cacheReadTokens": 66304,
+          "cacheWriteTokens": 0,
+          "totalTokens": 73276
+        }
+      },
+      {
+        "seq": 182,
+        "at": 1795207534797,
+        "messageId": "75c3c568-b418-4122-8707-d5dc20f72d14",
+        "usage": {
+          "inputTokens": 856,
+          "outputTokens": 869,
+          "cacheReadTokens": 73088,
+          "cacheWriteTokens": 0,
+          "totalTokens": 74813
+        }
+      },
+      {
+        "seq": 190,
+        "at": 1795207550899,
+        "messageId": "aafa744d-62f6-45e7-b0b1-80d5e2469f09",
+        "usage": {
+          "inputTokens": 1120,
+          "outputTokens": 1320,
+          "cacheReadTokens": 73856,
+          "cacheWriteTokens": 0,
+          "totalTokens": 76296
+        }
+      },
+      {
+        "seq": 198,
+        "at": 1795207556374,
+        "messageId": "25579625-7375-4936-b2af-f81d97b46b8f",
+        "usage": {
+          "inputTokens": 2513,
+          "outputTokens": 162,
+          "cacheReadTokens": 74880,
+          "cacheWriteTokens": 0,
+          "totalTokens": 77555
+        }
+      },
+      {
+        "seq": 206,
+        "at": 1795207562067,
+        "messageId": "b2d803f6-edc2-401f-a6f1-ad847ab36631",
+        "usage": {
+          "inputTokens": 815,
+          "outputTokens": 124,
+          "cacheReadTokens": 77312,
+          "cacheWriteTokens": 0,
+          "totalTokens": 78251
+        }
+      },
+      {
+        "seq": 214,
+        "at": 1795207564516,
+        "messageId": "910a23a9-7212-46c1-807e-246bd1bfd893",
+        "usage": {
+          "inputTokens": 217,
+          "outputTokens": 125,
+          "cacheReadTokens": 78080,
+          "cacheWriteTokens": 0,
+          "totalTokens": 78422
+        }
+      },
+      {
+        "seq": 222,
+        "at": 1795207603019,
+        "messageId": "747c2d18-e189-441d-9dce-35ae26056b98",
+        "usage": {
+          "inputTokens": 1553,
+          "outputTokens": 1164,
+          "cacheReadTokens": 78208,
+          "cacheWriteTokens": 0,
+          "totalTokens": 80925
+        }
+      },
+      {
+        "seq": 230,
+        "at": 1795207606863,
+        "messageId": "420239a9-da35-45e5-9ee4-adc0dea141a5",
+        "usage": {
+          "inputTokens": 3374,
+          "outputTokens": 184,
+          "cacheReadTokens": 79744,
+          "cacheWriteTokens": 0,
+          "totalTokens": 83302
+        }
+      },
+      {
+        "seq": 238,
+        "at": 1795207609475,
+        "messageId": "55db4aad-dc11-4cf2-8b56-b1da8049880c",
+        "usage": {
+          "inputTokens": 424,
+          "outputTokens": 108,
+          "cacheReadTokens": 83072,
+          "cacheWriteTokens": 0,
+          "totalTokens": 83604
+        }
+      },
+      {
+        "seq": 246,
+        "at": 1795207649915,
+        "messageId": "597deb7f-b258-47bd-8631-485a75134bbf",
+        "usage": {
+          "inputTokens": 161,
+          "outputTokens": 2607,
+          "cacheReadTokens": 83456,
+          "cacheWriteTokens": 0,
+          "totalTokens": 86224
+        }
+      },
+      {
+        "seq": 254,
+        "at": 1795207655539,
+        "messageId": "88b9c2e3-d4c7-4a06-b960-4a119705ab7e",
+        "usage": {
+          "inputTokens": 2653,
+          "outputTokens": 127,
+          "cacheReadTokens": 83584,
+          "cacheWriteTokens": 0,
+          "totalTokens": 86364
+        }
+      },
+      {
+        "seq": 262,
+        "at": 1795207678423,
+        "messageId": "7bf99243-864a-4820-b012-08a0a49e1591",
+        "usage": {
+          "inputTokens": 967,
+          "outputTokens": 93,
+          "cacheReadTokens": 86144,
+          "cacheWriteTokens": 0,
+          "totalTokens": 87204
+        }
+      },
+      {
+        "seq": 270,
+        "at": 1795207682253,
+        "messageId": "1c4957ce-878c-4495-9d61-896e2d9cd6e5",
+        "usage": {
+          "inputTokens": 177,
+          "outputTokens": 227,
+          "cacheReadTokens": 87040,
+          "cacheWriteTokens": 0,
+          "totalTokens": 87444
+        }
+      },
+      {
+        "seq": 278,
+        "at": 1795207701929,
+        "messageId": "794479cf-12ef-4019-bd61-f75a3de7866c",
+        "usage": {
+          "inputTokens": 3081,
+          "outputTokens": 143,
+          "cacheReadTokens": 87168,
+          "cacheWriteTokens": 0,
+          "totalTokens": 90392
+        }
+      },
+      {
+        "seq": 286,
+        "at": 1795207705326,
+        "messageId": "16b622ee-df52-41ee-84f1-c807e3fe6921",
+        "usage": {
+          "inputTokens": 198,
+          "outputTokens": 110,
+          "cacheReadTokens": 90240,
+          "cacheWriteTokens": 0,
+          "totalTokens": 90548
+        }
+      },
+      {
+        "seq": 294,
+        "at": 1795207726032,
+        "messageId": "23dbaaf9-105c-426d-86d3-2a11d3415bb7",
+        "usage": {
+          "inputTokens": 239,
+          "outputTokens": 1229,
+          "cacheReadTokens": 90368,
+          "cacheWriteTokens": 0,
+          "totalTokens": 91836
+        }
+      },
+      {
+        "seq": 300,
+        "at": 1795207738823,
+        "messageId": "66b2e060-4578-4533-bcb6-11cfd17eb14a",
+        "usage": {
+          "inputTokens": 3308,
+          "outputTokens": 602,
+          "cacheReadTokens": 90496,
+          "cacheWriteTokens": 0,
+          "totalTokens": 94406
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795207281125,
+      "offsetMs": 1204,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. 维护者给没有正式任务的项目交付直接完成的 Git 修订时，readiness 在工作树干净且已有新提交的情况下仍让人继续规划。记录 DELIVER 后重复检查也给出同样的引导。请修好普通 Work 入口的这两种引导：先帮助使用者判断并交付已有提交，已有当前结论时指向该结论。保护未提交和未改动的状态，保留正式任务、晋升和接受语义。仅修改 src/app…"
+    },
+    {
+      "seq": 9,
+      "at": 1795207281127,
+      "offsetMs": 1206,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795207288049,
+      "offsetMs": 8128,
+      "kind": "CALL",
+      "detail": "continuity:pulse",
+      "callId": "call_9f3711fccc674a568200ea96",
+      "tool": "palimpsest_continuity",
+      "args": {
+        "action": "pulse"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795207288567,
+      "offsetMs": 8646,
+      "kind": "RESULT",
+      "detail": "ok { \"schema\": \"pc1-project-pulse/v1\", \"projectId\": \"palimpsest-self-maintenance\", \"goal\": \"维护者给没有正式任务的项目交付直接完成的 Git 修订时，readiness 在工作树干净且已有新提交的情况下仍让人继续规划。记录 DELIVER 后重复检查也给出同样的引导。请修好普通 Work 入口的这两种引导：先帮助使用者判断并交付已有提交，已有当前结论时…",
+      "callId": "call_9f3711fccc674a568200ea96",
+      "callSeq": 15,
+      "callKind": "continuity:pulse",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795207292498,
+      "offsetMs": 12577,
+      "kind": "CALL",
+      "detail": "bash git status --short && git log --oneline -5 && ls",
+      "callId": "call_f0ce7c88c456466f9db0f015",
+      "tool": "bash",
+      "args": {
+        "command": "git status --short && git log --oneline -5 && ls",
+        "description": "Inspect repository status and recent history"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795207292512,
+      "offsetMs": 12591,
+      "kind": "JOB",
+      "detail": "start bash git status --short && git log --oneline -5 && ls"
+    },
+    {
+      "seq": 23,
+      "at": 1795207292660,
+      "offsetMs": 12739,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git status --short && git log --oneline -5 && ls"
+    },
+    {
+      "seq": 24,
+      "at": 1795207292663,
+      "offsetMs": 12742,
+      "kind": "RESULT",
+      "detail": "ok 072ff2e6 Add a read-only-safe focused test entry 02a5160c Record the cold handover release in handoff ec80486a Record paired model runs on the cold handover maintenance task c8f2d521 Restore episode and acceptance proven…",
+      "callId": "call_f0ce7c88c456466f9db0f015",
+      "callSeq": 21,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 25,
+      "at": 1795207292664,
+      "offsetMs": 12743,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/src/application/work_outcome.ts",
+      "callId": "call_f486371213364e60a16835da",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/src/application/work_outcome.ts"
+      }
+    },
+    {
+      "seq": 26,
+      "at": 1795207292701,
+      "offsetMs": 12780,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/src/application/work_outcome.ts</path> <type>file</type> <content> 1: /** 2: * ODPE-B — OUTCOME READINESS and the bounded mechanical finalization. 3: * 4: * Two real-model failures motivated this m…",
+      "callId": "call_f486371213364e60a16835da",
+      "callSeq": 25,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 31,
+      "at": 1795207299688,
+      "offsetMs": 19767,
+      "kind": "CALL",
+      "detail": "bash wc -l test/alhs_episode_convergence.test.ts && grep -n \"retired\\|DELIVER\\|DIRECT_AHEAD\\|IN_SYNC\\|readiness\\|no task\\|del…",
+      "callId": "call_548071094ec34cd1b89550d6",
+      "tool": "bash",
+      "args": {
+        "command": "wc -l test/alhs_episode_convergence.test.ts && grep -n \"retired\\|DELIVER\\|DIRECT_AHEAD\\|IN_SYNC\\|readiness\\|no task\\|delivery\" test/alhs_episode_convergence.test.ts | head -100",
+        "description": "Locate relevant test sections"
+      }
+    },
+    {
+      "seq": 32,
+      "at": 1795207299698,
+      "offsetMs": 19777,
+      "kind": "JOB",
+      "detail": "start bash wc -l test/alhs_episode_convergence.test.ts && grep -n \"retired\\|DELIVER\\|DIRECT_AHEAD\\|IN_SYNC\\|rea…"
+    },
+    {
+      "seq": 33,
+      "at": 1795207299719,
+      "offsetMs": 19798,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) wc -l test/alhs_episode_convergence.test.ts && grep -n \"retired\\|DELIVER\\|DIRECT_AHEAD\\|IN_SYNC\\|rea…"
+    },
+    {
+      "seq": 34,
+      "at": 1795207299721,
+      "offsetMs": 19800,
+      "kind": "RESULT",
+      "detail": "ok 444 test/alhs_episode_convergence.test.ts 144: readiness: { deliveryBlockers: string[]; awaitingOperator: string[]; mechanicalActions: string[] }; 152: it(\"refuses DELIVER while a planned task is still open, naming the c…",
+      "callId": "call_548071094ec34cd1b89550d6",
+      "callSeq": 31,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 35,
+      "at": 1795207299721,
+      "offsetMs": 19800,
+      "kind": "CALL",
+      "detail": "bash git show --stat --oneline HEAD && grep -rn \"directOutcome\\|retiredDelivery\\|episode.state.*DELIVERED\\|current.*DELIVERED…",
+      "callId": "call_f94e250be1cf4641a40db606",
+      "tool": "bash",
+      "args": {
+        "command": "git show --stat --oneline HEAD && grep -rn \"directOutcome\\|retiredDelivery\\|episode.state.*DELIVERED\\|current.*DELIVERED\" src/application test/alhs_episode_convergence.test.ts | head -100",
+        "description": "Find direct outcome and episode conclusion handling"
+      }
+    },
+    {
+      "seq": 36,
+      "at": 1795207299733,
+      "offsetMs": 19812,
+      "kind": "JOB",
+      "detail": "start bash git show --stat --oneline HEAD && grep -rn \"directOutcome\\|retiredDelivery\\|episode.state.*DELIVERED…"
+    },
+    {
+      "seq": 37,
+      "at": 1795207299756,
+      "offsetMs": 19835,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git show --stat --oneline HEAD && grep -rn \"directOutcome\\|retiredDelivery\\|episode.state.*DELIVERED…"
+    },
+    {
+      "seq": 38,
+      "at": 1795207299758,
+      "offsetMs": 19837,
+      "kind": "RESULT",
+      "detail": "ok 072ff2e6 Add a read-only-safe focused test entry package.json | 1 + 1 file changed, 1 insertion(+) src/application/work_contract.ts:189: readonly directOutcome: { src/application/work_outcome.ts:53:async function retired…",
+      "callId": "call_f94e250be1cf4641a40db606",
+      "callSeq": 35,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 43,
+      "at": 1795207303013,
+      "offsetMs": 23092,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/test/alhs_episode_convergence.test.ts",
+      "callId": "call_e1a4db303d6b47a887e2388f",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/test/alhs_episode_convergence.test.ts"
+      }
+    },
+    {
+      "seq": 44,
+      "at": 1795207303044,
+      "offsetMs": 23123,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/test/alhs_episode_convergence.test.ts</path> <type>file</type> <content> 1: /** 2: * ALHS-A — episode-level convergence over the existing project facts. 3: * 4: * These are deterministic qualificat…",
+      "callId": "call_e1a4db303d6b47a887e2388f",
+      "callSeq": 43,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 49,
+      "at": 1795207312589,
+      "offsetMs": 32668,
+      "kind": "CALL",
+      "detail": "bash sed -n '130,230p' src/application/work_contract.ts && grep -rn \"outcomeReadiness\\|deriveOutcomeReadiness\\|retired plan\\|…",
+      "callId": "call_15c97f6d7a984eb0bd342e77",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '130,230p' src/application/work_contract.ts && grep -rn \"outcomeReadiness\\|deriveOutcomeReadiness\\|retired plan\\|no task is currently addressable\\|deliveryBlockers\\|DIRECT_AHEAD\" test src | head -200",
+        "description": "Inspect contract and usages of direct outcome readiness"
+      }
+    },
+    {
+      "seq": 50,
+      "at": 1795207312609,
+      "offsetMs": 32688,
+      "kind": "JOB",
+      "detail": "start bash sed -n '130,230p' src/application/work_contract.ts && grep -rn \"outcomeReadiness\\|deriveOutcomeReadi…"
+    },
+    {
+      "seq": 51,
+      "at": 1795207312717,
+      "offsetMs": 32796,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '130,230p' src/application/work_contract.ts && grep -rn \"outcomeReadiness\\|deriveOutcomeReadi…"
+    },
+    {
+      "seq": 52,
+      "at": 1795207312721,
+      "offsetMs": 32800,
+      "kind": "RESULT",
+      "detail": "ok /** * ODPE-B — the three action classes a principal must be able to tell apart. * * CONTINUE_WORK: the candidate is not there yet (or a writer is still observed). Keep working. * SEMANTIC_JUDGEMENT: a fact or a contract …",
+      "callId": "call_15c97f6d7a984eb0bd342e77",
+      "callSeq": 49,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 53,
+      "at": 1795207312722,
+      "offsetMs": 32801,
+      "kind": "CALL",
+      "detail": "bash grep -rn \"directOutcome\" src | head -100 && grep -rn \"deliveryPulse\" src | head -50",
+      "callId": "call_6836e14764bc4416920233f9",
+      "tool": "bash",
+      "args": {
+        "command": "grep -rn \"directOutcome\" src | head -100 && grep -rn \"deliveryPulse\" src | head -50",
+        "description": "Trace directOutcome and deliveryPulse implementation"
+      }
+    },
+    {
+      "seq": 54,
+      "at": 1795207312736,
+      "offsetMs": 32815,
+      "kind": "JOB",
+      "detail": "start bash grep -rn \"directOutcome\" src | head -100 && grep -rn \"deliveryPulse\" src | head -50"
+    },
+    {
+      "seq": 55,
+      "at": 1795207312796,
+      "offsetMs": 32875,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -rn \"directOutcome\" src | head -100 && grep -rn \"deliveryPulse\" src | head -50"
+    },
+    {
+      "seq": 56,
+      "at": 1795207312799,
+      "offsetMs": 32878,
+      "kind": "RESULT",
+      "detail": "ok src/adapters/dsh/common.ts:144: directOutcome?: { src/adapters/dsh/common.ts:229: const directOutcome = src/adapters/dsh/common.ts:230: view.directOutcome === undefined src/adapters/dsh/common.ts:234: typeof view.directO…",
+      "callId": "call_6836e14764bc4416920233f9",
+      "callSeq": 53,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 61,
+      "at": 1795207316906,
+      "offsetMs": 36985,
+      "kind": "CALL",
+      "detail": "bash sed -n '130,290p' test/pnwf_product.test.ts && sed -n '540,610p' test/pnwf_product.test.ts",
+      "callId": "call_ee8d2f91fc3147c4a86aacd2",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '130,290p' test/pnwf_product.test.ts && sed -n '540,610p' test/pnwf_product.test.ts",
+        "description": "Read retired delivery tests"
+      }
+    },
+    {
+      "seq": 62,
+      "at": 1795207316918,
+      "offsetMs": 36997,
+      "kind": "JOB",
+      "detail": "start bash sed -n '130,290p' test/pnwf_product.test.ts && sed -n '540,610p' test/pnwf_product.test.ts"
+    },
+    {
+      "seq": 63,
+      "at": 1795207316936,
+      "offsetMs": 37015,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '130,290p' test/pnwf_product.test.ts && sed -n '540,610p' test/pnwf_product.test.ts"
+    },
+    {
+      "seq": 64,
+      "at": 1795207316940,
+      "offsetMs": 37019,
+      "kind": "RESULT",
+      "detail": "ok session?: { mayEnd: boolean; detail: string }; }; type Pulse = { episode: { state: string; current: boolean; changedSince: string[]; conclusion: { intent: string } | null }; }; const paidContinuationPlans = [ { stage: \"s…",
+      "callId": "call_ee8d2f91fc3147c4a86aacd2",
+      "callSeq": 61,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 65,
+      "at": 1795207316941,
+      "offsetMs": 37020,
+      "kind": "CALL",
+      "detail": "bash sed -n '300,490p' src/domain/work_state.ts",
+      "callId": "call_f7ab1f27081b45338629e875",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '300,490p' src/domain/work_state.ts",
+        "description": "Read work state direct outcome behavior"
+      }
+    },
+    {
+      "seq": 66,
+      "at": 1795207316952,
+      "offsetMs": 37031,
+      "kind": "JOB",
+      "detail": "start bash sed -n '300,490p' src/domain/work_state.ts"
+    },
+    {
+      "seq": 67,
+      "at": 1795207316967,
+      "offsetMs": 37046,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '300,490p' src/domain/work_state.ts"
+    },
+    {
+      "seq": 68,
+      "at": 1795207316969,
+      "offsetMs": 37048,
+      "kind": "RESULT",
+      "detail": "ok \"WAIT_ACTIVE_WORK\", false, null, \"a worker is still observed writing this attempt's world; `complete` will refuse WORKER_ACTIVE. Observe it with `workers`, or request `stop` and wait for the host to observe the exit — do…",
+      "callId": "call_f7ab1f27081b45338629e875",
+      "callSeq": 65,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 73,
+      "at": 1795207319974,
+      "offsetMs": 40053,
+      "kind": "CALL",
+      "detail": "bash sed -n '290,460p' test/pnwf_product.test.ts",
+      "callId": "call_5d91354b5ab5469f96736a79",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '290,460p' test/pnwf_product.test.ts",
+        "description": "Read no-task direct outcome tests"
+      }
+    },
+    {
+      "seq": 74,
+      "at": 1795207319986,
+      "offsetMs": 40065,
+      "kind": "JOB",
+      "detail": "start bash sed -n '290,460p' test/pnwf_product.test.ts"
+    },
+    {
+      "seq": 75,
+      "at": 1795207320002,
+      "offsetMs": 40081,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '290,460p' test/pnwf_product.test.ts"
+    },
+    {
+      "seq": 76,
+      "at": 1795207320006,
+      "offsetMs": 40085,
+      "kind": "RESULT",
+      "detail": "ok const installed = install(repo, stateDir); await start(installed, head, []); const status = (await call(installed, \"palimpsest_work\", { action: \"status\" })) as unknown as Status; expect(status.nextAction.kind).toBe(\"NO_F…",
+      "callId": "call_5d91354b5ab5469f96736a79",
+      "callSeq": 73,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 81,
+      "at": 1795207325365,
+      "offsetMs": 45444,
+      "kind": "CALL",
+      "detail": "bash sed -n '230,330p' src/application/normal_work.ts && sed -n '4300,4420p' src/tools/controller.ts && sed -n '300,420p' src…",
+      "callId": "call_c04ed382451148bea0dfc21e",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '230,330p' src/application/normal_work.ts && sed -n '4300,4420p' src/tools/controller.ts && sed -n '300,420p' src/work/read_model.ts",
+        "description": "Inspect readiness entry and direct outcome status"
+      }
+    },
+    {
+      "seq": 82,
+      "at": 1795207325380,
+      "offsetMs": 45459,
+      "kind": "JOB",
+      "detail": "start bash sed -n '230,330p' src/application/normal_work.ts && sed -n '4300,4420p' src/tools/controller.ts && s…"
+    },
+    {
+      "seq": 83,
+      "at": 1795207325404,
+      "offsetMs": 45483,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '230,330p' src/application/normal_work.ts && sed -n '4300,4420p' src/tools/controller.ts && s…"
+    },
+    {
+      "seq": 84,
+      "at": 1795207325405,
+      "offsetMs": 45484,
+      "kind": "RESULT",
+      "detail": "ok }); } catch { explorations.push({ explorationRef: entry.entry.entryId, parseError: true }); } } return { explorations, note: \"exploratory standing only; none of these is accepted project truth or Work evidence\" }; } cons…",
+      "callId": "call_c04ed382451148bea0dfc21e",
+      "callSeq": 81,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 85,
+      "at": 1795207325406,
+      "offsetMs": 45485,
+      "kind": "CALL",
+      "detail": "bash sed -n '40,310p' src/project_continuity/episode.ts",
+      "callId": "call_4372b1c2d2d54f5d911c091e",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '40,310p' src/project_continuity/episode.ts",
+        "description": "Inspect episode readiness and state derivation"
+      }
+    },
+    {
+      "seq": 86,
+      "at": 1795207325418,
+      "offsetMs": 45497,
+      "kind": "JOB",
+      "detail": "start bash sed -n '40,310p' src/project_continuity/episode.ts"
+    },
+    {
+      "seq": 87,
+      "at": 1795207325433,
+      "offsetMs": 45512,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '40,310p' src/project_continuity/episode.ts"
+    },
+    {
+      "seq": 88,
+      "at": 1795207325435,
+      "offsetMs": 45514,
+      "kind": "RESULT",
+      "detail": "ok \"OPEN\", \"DELIVERED\", \"AWAITING_OPERATOR\", \"AWAITING_EXTERNAL_EVENT\", \"REPLANNING\", \"CHECKPOINT\", \"CONTINUING\", \"REOPENED\", ] as const; export type EpisodeState = (typeof EPISODE_STATES)[number]; export interface EpisodeR…",
+      "callId": "call_4372b1c2d2d54f5d911c091e",
+      "callSeq": 85,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 93,
+      "at": 1795207345281,
+      "offsetMs": 65360,
+      "kind": "CALL",
+      "detail": "bash grep -n \"interface ProjectPulse\\|type ProjectPulse\\|episode:\" -n src/project_continuity/types.ts | head -40 && sed -n '1…",
+      "callId": "call_b81d6b50613d4cb1a90b8986",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n \"interface ProjectPulse\\|type ProjectPulse\\|episode:\" -n src/project_continuity/types.ts | head -40 && sed -n '130,220p' src/project_continuity/types.ts && grep -n \"conclusion\" src/project_continuity/types.ts | head -60",
+        "description": "Inspect ProjectPulse episode type"
+      }
+    },
+    {
+      "seq": 94,
+      "at": 1795207345301,
+      "offsetMs": 65380,
+      "kind": "JOB",
+      "detail": "start bash grep -n \"interface ProjectPulse\\|type ProjectPulse\\|episode:\" -n src/project_continuity/types.ts | h…"
+    },
+    {
+      "seq": 95,
+      "at": 1795207345322,
+      "offsetMs": 65401,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n \"interface ProjectPulse\\|type ProjectPulse\\|episode:\" -n src/project_continuity/types.ts | h…"
+    },
+    {
+      "seq": 96,
+      "at": 1795207345324,
+      "offsetMs": 65403,
+      "kind": "RESULT",
+      "detail": "ok 129: readonly episode?: ((id: string) => Promise<{ basis: ContinuityBasis; episode: PulseEpisode } | undefined>) | undefined; readonly headAcceptance?: ((headCommit: string) => HeadAcceptance | null) | undefined; readonl…",
+      "callId": "call_b81d6b50613d4cb1a90b8986",
+      "callSeq": 93,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 97,
+      "at": 1795207345324,
+      "offsetMs": 65403,
+      "kind": "CALL",
+      "detail": "bash grep -n \"retiredDelivery\\|deliveryPulse\\|ProjectPulse\" -n src/application/work_contract.ts src/application/factory.ts sr…",
+      "callId": "call_fc01aed74d8943bb95627ea5",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n \"retiredDelivery\\|deliveryPulse\\|ProjectPulse\" -n src/application/work_contract.ts src/application/factory.ts src/application/surfaces/work.ts && grep -rn \"episode.current.*DELIVERED\\|state === \\\"DELIVERED\\\"\" src | head -40",
+        "description": "Trace pulse current conclusion availability"
+      }
+    },
+    {
+      "seq": 98,
+      "at": 1795207345336,
+      "offsetMs": 65415,
+      "kind": "JOB",
+      "detail": "start bash grep -n \"retiredDelivery\\|deliveryPulse\\|ProjectPulse\" -n src/application/work_contract.ts src/appli…"
+    },
+    {
+      "seq": 99,
+      "at": 1795207345374,
+      "offsetMs": 65453,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n \"retiredDelivery\\|deliveryPulse\\|ProjectPulse\" -n src/application/work_contract.ts src/appli…"
+    },
+    {
+      "seq": 100,
+      "at": 1795207345375,
+      "offsetMs": 65454,
+      "kind": "RESULT",
+      "detail": "ok src/application/work_contract.ts:15:import type { ProjectPulse } from \"../project_pulse/types.js\"; src/application/work_contract.ts:127: readonly deliveryPulse?: { pulse(): Promise<Pick<ProjectPulse, \"basis\" | \"episode\" …",
+      "callId": "call_fc01aed74d8943bb95627ea5",
+      "callSeq": 97,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 105,
+      "at": 1795207349003,
+      "offsetMs": 69082,
+      "kind": "CALL",
+      "detail": "bash grep -n \"interface ProjectPulse\\|type ProjectPulse\\|interface PulseEpisode\\|conclusion\" src/project_pulse/types.ts | hea…",
+      "callId": "call_6946280e11fe41f7af6d8935",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n \"interface ProjectPulse\\|type ProjectPulse\\|interface PulseEpisode\\|conclusion\" src/project_pulse/types.ts | head -80 && sed -n '1,220p' src/project_pulse/types.ts",
+        "description": "Read ProjectPulse types"
+      }
+    },
+    {
+      "seq": 106,
+      "at": 1795207349031,
+      "offsetMs": 69110,
+      "kind": "JOB",
+      "detail": "start bash grep -n \"interface ProjectPulse\\|type ProjectPulse\\|interface PulseEpisode\\|conclusion\" src/project_…"
+    },
+    {
+      "seq": 107,
+      "at": 1795207349049,
+      "offsetMs": 69128,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n \"interface ProjectPulse\\|type ProjectPulse\\|interface PulseEpisode\\|conclusion\" src/project_…"
+    },
+    {
+      "seq": 108,
+      "at": 1795207349051,
+      "offsetMs": 69130,
+      "kind": "RESULT",
+      "detail": "ok 77:export interface ProjectPulse { /** * APS-A — ProjectPulse: the decision-oriented, derived continuation view. * * It is NOT a second project database. Every field is either a reference to an existing owner's * project…",
+      "callId": "call_6946280e11fe41f7af6d8935",
+      "callSeq": 105,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 113,
+      "at": 1795207351888,
+      "offsetMs": 71967,
+      "kind": "CALL",
+      "detail": "bash grep -n \"interface PulseEpisode\\|type PulseEpisode\" src/project_continuity/types.ts src/project_continuity/*.ts && grep …",
+      "callId": "call_aa3721872f974b009bbbd9ef",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n \"interface PulseEpisode\\|type PulseEpisode\" src/project_continuity/types.ts src/project_continuity/*.ts && grep -n \"PulseEpisode\" src/project_continuity/types.ts | head -20 && sed -n '1,140p' src/project_continuity/types.ts",
+        "description": "Find PulseEpisode definition"
+      }
+    },
+    {
+      "seq": 114,
+      "at": 1795207351897,
+      "offsetMs": 71976,
+      "kind": "JOB",
+      "detail": "start bash grep -n \"interface PulseEpisode\\|type PulseEpisode\" src/project_continuity/types.ts src/project_cont…"
+    },
+    {
+      "seq": 115,
+      "at": 1795207351917,
+      "offsetMs": 71996,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n \"interface PulseEpisode\\|type PulseEpisode\" src/project_continuity/types.ts src/project_cont…"
+    },
+    {
+      "seq": 116,
+      "at": 1795207351918,
+      "offsetMs": 71997,
+      "kind": "RESULT",
+      "detail": "ok src/project_continuity/episode.ts:367:export interface PulseEpisode { 18:import type { PulseEpisode } from \"./episode.js\"; 100: readonly episode?: Omit<PulseEpisode, \"readiness\"> | undefined; 129: readonly episode?: ((id…",
+      "callId": "call_aa3721872f974b009bbbd9ef",
+      "callSeq": 113,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 121,
+      "at": 1795207354974,
+      "offsetMs": 75053,
+      "kind": "CALL",
+      "detail": "bash sed -n '350,430p' src/project_continuity/episode.ts && sed -n '100,145p' src/project_continuity/types.ts",
+      "callId": "call_e63870f998984082b1d6fd92",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '350,430p' src/project_continuity/episode.ts && sed -n '100,145p' src/project_continuity/types.ts",
+        "description": "Read PulseEpisode shape"
+      }
+    },
+    {
+      "seq": 122,
+      "at": 1795207354983,
+      "offsetMs": 75062,
+      "kind": "JOB",
+      "detail": "start bash sed -n '350,430p' src/project_continuity/episode.ts && sed -n '100,145p' src/project_continuity/type…"
+    },
+    {
+      "seq": 123,
+      "at": 1795207355001,
+      "offsetMs": 75080,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '350,430p' src/project_continuity/episode.ts && sed -n '100,145p' src/project_continuity/type…"
+    },
+    {
+      "seq": 124,
+      "at": 1795207355002,
+      "offsetMs": 75081,
+      "kind": "RESULT",
+      "detail": "ok return Object.freeze(reasons); } /** Parse a recorded conclusion from an ordinary journal entry, ignoring anything else. */ export function parseEpisodeConclusion(body: string): EpisodeConclusion | null { const at = body…",
+      "callId": "call_e63870f998984082b1d6fd92",
+      "callSeq": 121,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 129,
+      "at": 1795207399962,
+      "offsetMs": 120041,
+      "kind": "CALL",
+      "detail": "bash grep -n \"export function gitTextRunner\\|function gitTextRunner\\|gitTextRunner\" src/work/path_reuse.ts | head -20 && sed …",
+      "callId": "call_bf11f993871347c988fc4355",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n \"export function gitTextRunner\\|function gitTextRunner\\|gitTextRunner\" src/work/path_reuse.ts | head -20 && sed -n '1,100p' src/work/path_reuse.ts && grep -n \"canonicalWorktreeChanges\\|observeCanonicalBasis\" src/work/unseen_inputs.ts | head -20",
+        "description": "Inspect git runner helpers"
+      }
+    },
+    {
+      "seq": 130,
+      "at": 1795207399975,
+      "offsetMs": 120054,
+      "kind": "JOB",
+      "detail": "start bash grep -n \"export function gitTextRunner\\|function gitTextRunner\\|gitTextRunner\" src/work/path_reuse.t…"
+    },
+    {
+      "seq": 131,
+      "at": 1795207399998,
+      "offsetMs": 120077,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n \"export function gitTextRunner\\|function gitTextRunner\\|gitTextRunner\" src/work/path_reuse.t…"
+    },
+    {
+      "seq": 132,
+      "at": 1795207400000,
+      "offsetMs": 120079,
+      "kind": "RESULT",
+      "detail": "ok 32:export function gitTextRunner(repository: string): (args: readonly string[]) => string | null { /** * PWRS-B — PATH-LEVEL REUSE FACTS, as ONE computation. * * ALHS-B introduced `unaffected` / `conflicted` / `already-p…",
+      "callId": "call_bf11f993871347c988fc4355",
+      "callSeq": 129,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 137,
+      "at": 1795207404907,
+      "offsetMs": 124986,
+      "kind": "CALL",
+      "detail": "bash cat package.json | sed -n '1,120p' && sed -n '380,430p' src/work/unseen_inputs.ts",
+      "callId": "call_584de23384844d6e812940d4",
+      "tool": "bash",
+      "args": {
+        "command": "cat package.json | sed -n '1,120p' && sed -n '380,430p' src/work/unseen_inputs.ts",
+        "description": "Read test scripts and basis observation"
+      }
+    },
+    {
+      "seq": 138,
+      "at": 1795207404918,
+      "offsetMs": 124997,
+      "kind": "JOB",
+      "detail": "start bash cat package.json | sed -n '1,120p' && sed -n '380,430p' src/work/unseen_inputs.ts"
+    },
+    {
+      "seq": 139,
+      "at": 1795207404937,
+      "offsetMs": 125016,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) cat package.json | sed -n '1,120p' && sed -n '380,430p' src/work/unseen_inputs.ts"
+    },
+    {
+      "seq": 140,
+      "at": 1795207404939,
+      "offsetMs": 125018,
+      "kind": "RESULT",
+      "detail": "ok { \"name\": \"palimpsest-dsh\", \"version\": \"0.2.0-pc1.1\", \"description\": \"Palimpsest is an operating environment for persistent AI workers to coordinate work, shared boundaries, commitments, runtime organization, and long-ho…",
+      "callId": "call_584de23384844d6e812940d4",
+      "callSeq": 137,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 145,
+      "at": 1795207410094,
+      "offsetMs": 130173,
+      "kind": "CALL",
+      "detail": "bash sed -n '430,620p' src/project_continuity/episode.ts",
+      "callId": "call_d00d29da164a4af59c4d8d12",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '430,620p' src/project_continuity/episode.ts",
+        "description": "Read episode current-state derivation"
+      }
+    },
+    {
+      "seq": 146,
+      "at": 1795207410106,
+      "offsetMs": 130185,
+      "kind": "JOB",
+      "detail": "start bash sed -n '430,620p' src/project_continuity/episode.ts"
+    },
+    {
+      "seq": 147,
+      "at": 1795207410120,
+      "offsetMs": 130199,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '430,620p' src/project_continuity/episode.ts"
+    },
+    {
+      "seq": 148,
+      "at": 1795207410121,
+      "offsetMs": 130200,
+      "kind": "RESULT",
+      "detail": "ok state: \"OPEN\", conclusion: null, current: true, changedSince: Object.freeze([]), readiness: input.readiness, detail: \"no episode conclusion is recorded; this episode is OPEN. Continue the work, or record a conclusion whe…",
+      "callId": "call_d00d29da164a4af59c4d8d12",
+      "callSeq": 145,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 153,
+      "at": 1795207437988,
+      "offsetMs": 158067,
+      "kind": "CALL",
+      "detail": "bash grep -rn \"action: \\\"readiness\\\"\\|outcomeReadiness\" test | cat",
+      "callId": "call_f6477bf588074fc98c27ae8d",
+      "tool": "bash",
+      "args": {
+        "command": "grep -rn \"action: \\\"readiness\\\"\\|outcomeReadiness\" test | cat",
+        "description": "List all readiness tests"
+      }
+    },
+    {
+      "seq": 154,
+      "at": 1795207438003,
+      "offsetMs": 158082,
+      "kind": "JOB",
+      "detail": "start bash grep -rn \"action: \\\"readiness\\\"\\|outcomeReadiness\" test | cat"
+    },
+    {
+      "seq": 155,
+      "at": 1795207438046,
+      "offsetMs": 158125,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -rn \"action: \\\"readiness\\\"\\|outcomeReadiness\" test | cat"
+    },
+    {
+      "seq": 156,
+      "at": 1795207438048,
+      "offsetMs": 158127,
+      "kind": "RESULT",
+      "detail": "ok test/pnwf_cq_action_coherence.test.ts:150: action: \"readiness\", test/pnwf_cq_action_coherence.test.ts:178: action: \"readiness\", test/psvr_hotspots.test.ts:134: const readiness = (await call(installed, \"palimpsest_work\", …",
+      "callId": "call_f6477bf588074fc98c27ae8d",
+      "callSeq": 153,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 161,
+      "at": 1795207441064,
+      "offsetMs": 161143,
+      "kind": "CALL",
+      "detail": "bash sed -n '120,205p' test/pnwf_cq_action_coherence.test.ts && sed -n '140,200p' test/work_revision.test.ts",
+      "callId": "call_72ce728fe8bd410e834bdf52",
+      "tool": "bash",
+      "args": {
+        "command": "sed -n '120,205p' test/pnwf_cq_action_coherence.test.ts && sed -n '140,200p' test/work_revision.test.ts",
+        "description": "Read readiness action coherence tests"
+      }
+    },
+    {
+      "seq": 162,
+      "at": 1795207441073,
+      "offsetMs": 161152,
+      "kind": "JOB",
+      "detail": "start bash sed -n '120,205p' test/pnwf_cq_action_coherence.test.ts && sed -n '140,200p' test/work_revision.test…"
+    },
+    {
+      "seq": 163,
+      "at": 1795207441090,
+      "offsetMs": 161169,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) sed -n '120,205p' test/pnwf_cq_action_coherence.test.ts && sed -n '140,200p' test/work_revision.test…"
+    },
+    {
+      "seq": 164,
+      "at": 1795207441092,
+      "offsetMs": 161171,
+      "kind": "RESULT",
+      "detail": "ok }; type Readiness = { action: string; reasons: string[]; execution: { liveness: string } | null; directOutcome: { relation: string; repositoryHead: string | null } | null; }; describe(\"PNWF-CQ-A — status and readiness de…",
+      "callId": "call_72ce728fe8bd410e834bdf52",
+      "callSeq": 161,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 169,
+      "at": 1795207520616,
+      "offsetMs": 240695,
+      "kind": "CALL",
+      "detail": "edit /run/stage/world/src/application/work_outcome.ts",
+      "callId": "call_547eb0d4b1954de8bbad581d",
+      "tool": "edit",
+      "args": {
+        "file_path": "/run/stage/world/src/application/work_outcome.ts",
+        "old_string": "/** A clean HEAD alone is ordinary project state. Use the retired plan's declared artifacts. */\nasync function retiredDelivery(\n  deps: WorkRuntimeDeps,\n  status: ReturnType<WorkRuntimeDeps[\"controller\"][\"status\"]>,\n  requested: string | null,\n): Promise<{ reasons: string[]; next: string[] } | null> {\n  const { controller, deliveryPulse } = deps;\n  const direct = status.directOutcome;\n  const head = direct?.repositoryHead;\n  const repository = controller.effects.git.repository;\n  if (\n    deliveryPulse === undefined || repository === undefined || !head ||\n    (direct.relation !== \"IN_SYNC\" && direct.relation !== \"DIRECT_AHEAD\") ||\n    status.attempts.some((attempt) => attempt.orphaned === true)\n  ) return null;\n\n  const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));\n  const retired = status.tasks.filter((task) => task.state === \"STALE\" && !plannedIds.has(task.task_id));\n  if (retired.length === 0 || (requested !== null && !retired.some((task) => task.task_id === requested))) return null;\n  const artifacts = new Set<string>();\n  for (const task of retired) {\n    const envelope = controller.taskEnvelopeOrNull(task.task_id);\n    if (envelope === null) return null;\n    for (const path of envelope.required_artifacts) artifacts.add(path);\n  }\n  if (artifacts.size === 0) return null;\n\n  const pulse = await deliveryPulse.pulse().catch(() => null);\n  if (\n    pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||\n    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||\n    pulse.execution.jobs.some((job) => job.phase === \"QUEUED\" || job.phase === \"RUNNING\")\n  ) return null;\n\n  // Re-observe Git after the asynchronous episode read. An unobservable worktree cannot prove a clean basis.\n  const basis = observeCanonicalBasis(repository);\n  if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;\n  const git = gitTextRunner(repository);\n  const paths = [...artifacts];\n  try {\n    if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n      git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n  } catch {\n    return null;\n  }\n\n  const reason = `the retired plan's declared artifacts (${paths.join(\", \")}) are committed at repository HEAD ${head}`;\n  if (pulse.episode.current && pulse.episode.state === \"DELIVERED\") {\n    return { reasons: [reason, \"this episode has a current recorded DELIVER conclusion\"], next: [\"reply using the recorded conclusion\"] };\n  }\n  return {\n    reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n    next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n  };\n}",
+        "new_string": "/**\n * A clean HEAD alone is ordinary project state. When there is no formal task to settle, the ordinary\n * admission is the repository outcome: the retired plan's declared artifacts, or a direct commit in\n * a task-free project. A recorded current conclusion takes precedence over re-deriving that prompt.\n */\nasync function deliveryGuidance(\n  deps: WorkRuntimeDeps,\n  status: ReturnType<WorkRuntimeDeps[\"controller\"][\"status\"]>,\n  requested: string | null,\n): Promise<{ reasons: string[]; next: string[] } | null> {\n  const { controller, deliveryPulse } = deps;\n  const direct = status.directOutcome;\n  const head = direct?.repositoryHead;\n  const repository = controller.effects.git.repository;\n  if (\n    deliveryPulse === undefined || repository === undefined || !head ||\n    (direct.relation !== \"IN_SYNC\" && direct.relation !== \"DIRECT_AHEAD\") ||\n    status.attempts.some((attempt) => attempt.orphaned === true)\n  ) return null;\n\n  const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));\n  const retired = status.tasks.filter((task) => task.state === \"STALE\" && !plannedIds.has(task.task_id));\n  const noFormalTasks = status.tasks.length === 0 && plannedIds.size === 0;\n  if (\n    (retired.length === 0 && !noFormalTasks) ||\n    (requested !== null && !retired.some((task) => task.task_id === requested))\n  ) return null;\n\n  let artifacts: string[] = [];\n  let reason: string;\n  if (retired.length > 0) {\n    const declared = new Set<string>();\n    for (const task of retired) {\n      const envelope = controller.taskEnvelopeOrNull(task.task_id);\n      if (envelope === null) return null;\n      for (const path of envelope.required_artifacts) declared.add(path);\n    }\n    if (declared.size === 0) return null;\n    artifacts = [...declared];\n    reason = `the retired plan's declared artifacts (${artifacts.join(\", \")}) are committed at repository HEAD ${head}`;\n  } else {\n    reason =\n      direct.relation === \"DIRECT_AHEAD\"\n        ? `a direct commit exists at repository HEAD ${head} ahead of the canonical head ${direct.projectHead.slice(0, 12)}; it is a repository outcome, not a governed result and this readiness does not accept it`\n        : `the repository and the canonical head agree at ${head}; the existing outcome is in the basis, not a new governed delta`;\n  }\n\n  const pulse = await deliveryPulse.pulse().catch(() => null);\n  if (\n    pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||\n    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||\n    pulse.execution.jobs.some((job) => job.phase === \"QUEUED\" || job.phase === \"RUNNING\")\n  ) return null;\n\n  // Re-observe Git after the asynchronous episode read. An unobservable worktree cannot prove a clean basis.\n  const basis = observeCanonicalBasis(repository);\n  if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;\n  const git = gitTextRunner(repository);\n\n  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;\n  if (conclusion !== null) {\n    return {\n      reasons: [reason, `this episode has a current recorded ${conclusion.intent} conclusion`],\n      next: [\"reply using the recorded conclusion\"],\n    };\n  }\n\n  if (retired.length > 0) {\n    try {\n      if (!artifacts.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n        git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n    } catch {\n      return null;\n    }\n    return {\n      reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n      next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n    };\n  }\n\n  // A task-free project has no declared artifacts. The changed blobs in the direct commit are the\n  // only committed paths this entry can name; an unchanged or uncommitted project has no delivery.\n  if (direct.relation !== \"DIRECT_AHEAD\") return null;\n  const changed = git([\"diff\", \"--name-only\", \"--no-renames\", direct.projectHead, head]);\n  if (changed === null) return null;\n  const committedPaths = changed\n    .split(/\\r?\\n/u)\n    .map((path) => path.trim())\n    .filter((path) => path !== \"\" && git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\");\n  if (committedPaths.length === 0) return null;\n  return {\n    reasons: [\n      `a direct commit at repository HEAD ${head} changes ${committedPaths.join(\", \")}; it is a repository outcome, not a governed result and this readiness does not accept it`,\n      \"the project has no formal task and no uncommitted work; decide whether the committed change satisfies the user's goal\",\n    ],\n    next: [\n      `if the committed change satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths (${committedPaths.join(\", \")})`,\n    ],\n  };\n}"
+      }
+    },
+    {
+      "seq": 170,
+      "at": 1795207520651,
+      "offsetMs": 240730,
+      "kind": "RESULT",
+      "detail": "ok The file /run/stage/world/src/application/work_outcome.ts has been updated successfully.",
+      "callId": "call_547eb0d4b1954de8bbad581d",
+      "callSeq": 169,
+      "callKind": "edit",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 175,
+      "at": 1795207524418,
+      "offsetMs": 244497,
+      "kind": "CALL",
+      "detail": "bash grep -n \"retiredDelivery\\|delivery =\\|task === null\" src/application/work_outcome.ts | head -20 && sed -n '270,310p' src…",
+      "callId": "call_f66b9653c50a41769c38651f",
+      "tool": "bash",
+      "args": {
+        "command": "grep -n \"retiredDelivery\\|delivery =\\|task === null\" src/application/work_outcome.ts | head -20 && sed -n '270,310p' src/application/work_outcome.ts",
+        "description": "Locate delivery call and no-task branch"
+      }
+    },
+    {
+      "seq": 176,
+      "at": 1795207524427,
+      "offsetMs": 244506,
+      "kind": "JOB",
+      "detail": "start bash grep -n \"retiredDelivery\\|delivery =\\|task === null\" src/application/work_outcome.ts | head -20 && s…"
+    },
+    {
+      "seq": 177,
+      "at": 1795207524444,
+      "offsetMs": 244523,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) grep -n \"retiredDelivery\\|delivery =\\|task === null\" src/application/work_outcome.ts | head -20 && s…"
+    },
+    {
+      "seq": 178,
+      "at": 1795207524446,
+      "offsetMs": 244525,
+      "kind": "RESULT",
+      "detail": "ok 289: const delivery = (task === null && requested === null) || task?.state === \"STALE\" 290: ? await retiredDelivery(deps, status, requested) 297: } else if (task === null) { 458: task: task === null ? null : Object.freez…",
+      "callId": "call_f66b9653c50a41769c38651f",
+      "callSeq": 175,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 183,
+      "at": 1795207534798,
+      "offsetMs": 254877,
+      "kind": "CALL",
+      "detail": "bash python3 - <<'PY' from pathlib import Path p=Path('src/application/work_outcome.ts') s=p.read_text() s=s.replace(''' cons…",
+      "callId": "call_0c34a7fb848e4b8ba68d48f2",
+      "tool": "bash",
+      "args": {
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\ns=s.replace('''  const delivery = (task === null && requested === null) || task?.state === \"STALE\"\n    ? await retiredDelivery(deps, status, requested)\n    : null;''','''  const delivery = (task === null && requested === null) || task?.state === \"STALE\"\n    ? await deliveryGuidance(deps, status, requested)\n    : null;''')\ns=s.replace('''  } else if (task === null) {\n    action = \"CONTINUE_WORK\";\n    reasons.push(\"no task is currently addressable; plan or begin work before a finalization can be considered\");\n  } else if (runningForThisTask.length > 1) {''','''  } else if (task === null) {\n    action = \"CONTINUE_WORK\";\n    const uncommitted = directOutcome?.uncommittedPaths ?? [];\n    if (status.tasks.length === 0) {\n      if (uncommitted.length > 0) {\n        reasons.push(\n          `the project has no formal task and the repository has uncommitted changes (${uncommitted.join(\", \")}); commit or discard them before treating a direct commit as the deliverable`,\n        );\n      } else if (directOutcome?.relation === \"DIRECT_AHEAD\") {\n        reasons.push(\n          `a direct commit exists at ${directOutcome.repositoryHead?.slice(0, 12) ?? \"unknown\"} but no task-free delivery guidance could be derived from the current facts; inspect the commit and the episode before planning new work`,\n        );\n      } else {\n        reasons.push(\n          \"the project has no formal task and no commit beyond the canonical head to hand over; plan or begin work, or commit the outcome you intend to deliver\",\n        );\n      }\n    } else {\n      reasons.push(\"no task is currently addressable; plan or begin work before a finalization can be considered\");\n    }\n  } else if (runningForThisTask.length > 1) {''')\np.write_text(s)\nPY\ngrep -n \"retiredDelivery\\|deliveryGuidance\\|no formal task\" src/application/work_outcome.ts | head -20",
+        "description": "Update delivery call and no-task guidance"
+      }
+    },
+    {
+      "seq": 184,
+      "at": 1795207534810,
+      "offsetMs": 254889,
+      "kind": "JOB",
+      "detail": "start bash python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\n…"
+    },
+    {
+      "seq": 185,
+      "at": 1795207534910,
+      "offsetMs": 254989,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\n…"
+    },
+    {
+      "seq": 186,
+      "at": 1795207534912,
+      "offsetMs": 254991,
+      "kind": "RESULT",
+      "detail": "ok 53: * A clean HEAD alone is ordinary project state. When there is no formal task to settle, the ordinary 57:async function deliveryGuidance( 145: \"the project has no formal task and no uncommitted work; decide whether th…",
+      "callId": "call_0c34a7fb848e4b8ba68d48f2",
+      "callSeq": 183,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 191,
+      "at": 1795207550901,
+      "offsetMs": 270980,
+      "kind": "CALL",
+      "detail": "bash python3 - <<'PY' from pathlib import Path p=Path('test/alhs_episode_convergence.test.ts') s=p.read_text() marker=''' it(…",
+      "callId": "call_3a773573b170421584849605",
+      "tool": "bash",
+      "args": {
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('test/alhs_episode_convergence.test.ts')\ns=p.read_text()\nmarker='''  it(\"reports a committed artifact without a provenance warning\", async () => {'''\naddition='''  it(\"guides a task-free project to its direct commit, then to the current conclusion\", async () => {\n    const { repo, head, stateDir } = workspace(\"direct-delivery\");\n    const installed = install(repo, stateDir);\n    await start(installed, head, []);\n\n    type Readiness = {\n      action: string;\n      reasons: string[];\n      next: string[];\n      directOutcome: { relation: string; repositoryHead: string | null } | null;\n    };\n    const readiness = async () => (await call(installed, \"palimpsest_work\", { action: \"readiness\" })) as unknown as Readiness;\n\n    // An unchanged clean repository is not a new delivery.\n    const unchanged = await readiness();\n    expect(unchanged.action).toBe(\"CONTINUE_WORK\");\n    expect(unchanged.next.join(\" \")).not.toContain(\"intent=DELIVER\");\n\n    // An uncommitted draft is real work, but it is not a committed delivery either.\n    mkdirSync(join(repo, \"deliverables\"), { recursive: true });\n    writeFileSync(join(repo, \"deliverables\", \"package.md\"), \"# Package\\\\n\\\\nCommitted outside Work.\\\\n\");\n    const uncommitted = await readiness();\n    expect(uncommitted.action).toBe(\"CONTINUE_WORK\");\n    expect(uncommitted.reasons.join(\" \")).toMatch(/uncommitted changes/iu);\n    expect(uncommitted.next.join(\" \")).not.toContain(\"intent=DELIVER\");\n\n    execFileSync(\"git\", [\"add\", \"-A\"], { cwd: repo });\n    execFileSync(\"git\", [\"-c\", \"user.email=t@t.t\", \"-c\", \"user.name=t\", \"commit\", \"-qm\", \"direct delivery\"], { cwd: repo });\n    const direct = execFileSync(\"git\", [\"rev-parse\", \"HEAD\"], { cwd: repo, encoding: \"utf8\" }).trim();\n    expect(direct).not.toBe(head);\n\n    const committed = await readiness();\n    expect(committed.action).toBe(\"SEMANTIC_JUDGEMENT\");\n    expect(committed.directOutcome).toMatchObject({ relation: \"DIRECT_AHEAD\", repositoryHead: direct });\n    expect(committed.reasons.join(\" \")).toContain(direct);\n    expect(committed.reasons.join(\" \")).toContain(\"deliverables/package.md\");\n    expect(committed.next.join(\" \")).toContain(\"intent=DELIVER\");\n\n    const delivered = (await call(installed, \"palimpsest_work\", {\n      action: \"conclude\",\n      intent: \"DELIVER\",\n      statement: \"The direct commit is the deliverable; no formal Work was invented for it.\",\n      artifacts: [\"deliverables/package.md\"],\n    })) as unknown as Conclude;\n    expect(delivered.state).toBe(\"RECORDED\");\n\n    // Re-reading the same state points at the recorded judgement instead of asking for a plan again.\n    const recorded = await readiness();\n    expect(recorded.action).toBe(\"SEMANTIC_JUDGEMENT\");\n    expect(recorded.reasons.join(\" \")).toMatch(/current recorded DELIVER conclusion/iu);\n    expect(recorded.next).toEqual([\"reply using the recorded conclusion\"]);\n\n    // The guidance is advisory: no task, attempt or promotion was invented or accepted.\n    const status = installed.controller.status();\n    expect(status.tasks).toEqual([]);\n    expect(status.attempts).toEqual([]);\n    expect(status.promotions).toEqual([]);\n    expect(status.headCommit).toBe(head);\n  });\n\n'''\nif marker not in s:\n    raise SystemExit('marker not found')\ns=s.replace(marker, addition+marker, 1)\np.write_text(s)\nPY\nsed -n '270,350p' test/alhs_episode_convergence.test.ts",
+        "description": "Add direct-delivery regression test"
+      }
+    },
+    {
+      "seq": 192,
+      "at": 1795207550911,
+      "offsetMs": 270990,
+      "kind": "JOB",
+      "detail": "start bash python3 - <<'PY'\nfrom pathlib import Path\np=Path('test/alhs_episode_convergence.test.ts')\ns=p.read_t…"
+    },
+    {
+      "seq": 193,
+      "at": 1795207550962,
+      "offsetMs": 271041,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) python3 - <<'PY'\nfrom pathlib import Path\np=Path('test/alhs_episode_convergence.test.ts')\ns=p.read_t…"
+    },
+    {
+      "seq": 194,
+      "at": 1795207550964,
+      "offsetMs": 271043,
+      "kind": "RESULT",
+      "detail": "ok expect(after.decisionQueue.some((item) => item.kind === \"EPISODE_REOPENED\")).toBe(true); }); it(\"guides a task-free project to its direct commit, then to the current conclusion\", async () => { const { repo, head, stateDi…",
+      "callId": "call_3a773573b170421584849605",
+      "callSeq": 191,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 199,
+      "at": 1795207556375,
+      "offsetMs": 276454,
+      "kind": "CALL",
+      "detail": "bash pnpm exec vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts te…",
+      "callId": "call_933c251dabf14141885435a2",
+      "tool": "bash",
+      "args": {
+        "command": "pnpm exec vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/pnwf_cq_action_coherence.test.ts",
+        "description": "Run focused regression and related tests",
+        "timeoutMs": 600000
+      }
+    },
+    {
+      "seq": 200,
+      "at": 1795207556385,
+      "offsetMs": 276464,
+      "kind": "JOB",
+      "detail": "start bash pnpm exec vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnw…"
+    },
+    {
+      "seq": 201,
+      "at": 1795207558994,
+      "offsetMs": 279073,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 1) pnpm exec vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnw… [JOB_FAILED: NONZERO_EXIT]"
+    },
+    {
+      "seq": 202,
+      "at": 1795207558996,
+      "offsetMs": 279075,
+      "kind": "RESULT",
+      "detail": "ok [EACCES] EACCES: permission denied, mkdir '/home/principal/.local' pnpm: EACCES: permission denied, mkdir '/home/principal/.local' at async Object.mkdir (node:internal/fs/promises:1564:10) at async createNewStoreControll…",
+      "callId": "call_933c251dabf14141885435a2",
+      "callSeq": 199,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 207,
+      "at": 1795207562068,
+      "offsetMs": 282147,
+      "kind": "CALL",
+      "detail": "bash ls node_modules/.bin/vitest node_modules/.bin/tsc 2>/dev/null; which vitest || true; node_modules/.bin/vitest --version …",
+      "callId": "call_73e982a63ef945a28672756a",
+      "tool": "bash",
+      "args": {
+        "command": "ls node_modules/.bin/vitest node_modules/.bin/tsc 2>/dev/null; which vitest || true; node_modules/.bin/vitest --version 2>/dev/null || true",
+        "description": "Locate local vitest binary"
+      }
+    },
+    {
+      "seq": 208,
+      "at": 1795207562079,
+      "offsetMs": 282158,
+      "kind": "JOB",
+      "detail": "start bash ls node_modules/.bin/vitest node_modules/.bin/tsc 2>/dev/null; which vitest || true; node_modules/.b…"
+    },
+    {
+      "seq": 209,
+      "at": 1795207562210,
+      "offsetMs": 282289,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) ls node_modules/.bin/vitest node_modules/.bin/tsc 2>/dev/null; which vitest || true; node_modules/.b…"
+    },
+    {
+      "seq": 210,
+      "at": 1795207562211,
+      "offsetMs": 282290,
+      "kind": "RESULT",
+      "detail": "ok node_modules/.bin/tsc node_modules/.bin/vitest vitest/4.1.10 linux-x64 node-v24.21.0",
+      "callId": "call_73e982a63ef945a28672756a",
+      "callSeq": 207,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 215,
+      "at": 1795207564517,
+      "offsetMs": 284596,
+      "kind": "CALL",
+      "detail": "bash node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.te…",
+      "callId": "call_58d07660528d4789be6ddcb0",
+      "tool": "bash",
+      "args": {
+        "command": "node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/pnwf_cq_action_coherence.test.ts",
+        "description": "Run focused regression and related tests",
+        "timeoutMs": 600000
+      }
+    },
+    {
+      "seq": 216,
+      "at": 1795207564527,
+      "offsetMs": 284606,
+      "kind": "JOB",
+      "detail": "start bash node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts …"
+    },
+    {
+      "seq": 217,
+      "at": 1795207583206,
+      "offsetMs": 303285,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts …"
+    },
+    {
+      "seq": 218,
+      "at": 1795207583212,
+      "offsetMs": 303291,
+      "kind": "RESULT",
+      "detail": "ok RUN v4.1.10 /run/stage/world ✓ test/pnwf_cq_action_coherence.test.ts (9 tests) 3074ms ✓ a zero-delta world reports no settleable delta, not that the user's work is outstanding 660ms ✓ a world at base with uncommitted edi…",
+      "callId": "call_58d07660528d4789be6ddcb0",
+      "callSeq": 215,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 223,
+      "at": 1795207603023,
+      "offsetMs": 323102,
+      "kind": "CALL",
+      "detail": "bash git status --short && git diff --stat && git diff -- src/application/work_outcome.ts | sed -n '1,220p'",
+      "callId": "call_61304c4aca7e4edbaddc22dd",
+      "tool": "bash",
+      "args": {
+        "command": "git status --short && git diff --stat && git diff -- src/application/work_outcome.ts | sed -n '1,220p'",
+        "description": "Review working tree diff"
+      }
+    },
+    {
+      "seq": 224,
+      "at": 1795207603039,
+      "offsetMs": 323118,
+      "kind": "JOB",
+      "detail": "start bash git status --short && git diff --stat && git diff -- src/application/work_outcome.ts | sed -n '1,220…"
+    },
+    {
+      "seq": 225,
+      "at": 1795207603193,
+      "offsetMs": 323272,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git status --short && git diff --stat && git diff -- src/application/work_outcome.ts | sed -n '1,220…"
+    },
+    {
+      "seq": 226,
+      "at": 1795207603195,
+      "offsetMs": 323274,
+      "kind": "RESULT",
+      "detail": "ok M src/application/work_outcome.ts M test/alhs_episode_convergence.test.ts src/application/work_outcome.ts | 106 +++++++++++++++++++++++++++------- test/alhs_episode_convergence.test.ts | 60 +++++++++++++++++++ 2 files ch…",
+      "callId": "call_61304c4aca7e4edbaddc22dd",
+      "callSeq": 223,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 231,
+      "at": 1795207606865,
+      "offsetMs": 326944,
+      "kind": "CALL",
+      "detail": "bash cat tsconfig.json | sed -n '1,160p' && git check-ignore dist/src/application/work_outcome.js || true",
+      "callId": "call_c32de04d12c04ebb8979a800",
+      "tool": "bash",
+      "args": {
+        "command": "cat tsconfig.json | sed -n '1,160p' && git check-ignore dist/src/application/work_outcome.js || true",
+        "description": "Inspect TypeScript configuration"
+      }
+    },
+    {
+      "seq": 232,
+      "at": 1795207606874,
+      "offsetMs": 326953,
+      "kind": "JOB",
+      "detail": "start bash cat tsconfig.json | sed -n '1,160p' && git check-ignore dist/src/application/work_outcome.js || true"
+    },
+    {
+      "seq": 233,
+      "at": 1795207606900,
+      "offsetMs": 326979,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) cat tsconfig.json | sed -n '1,160p' && git check-ignore dist/src/application/work_outcome.js || true"
+    },
+    {
+      "seq": 234,
+      "at": 1795207606902,
+      "offsetMs": 326981,
+      "kind": "RESULT",
+      "detail": "ok { \"compilerOptions\": { \"target\": \"ES2023\", \"lib\": [\"ES2023\"], \"module\": \"NodeNext\", \"moduleResolution\": \"NodeNext\", \"types\": [\"node\"], \"strict\": true, \"exactOptionalPropertyTypes\": true, \"noUncheckedIndexedAccess\": true,…",
+      "callId": "call_c32de04d12c04ebb8979a800",
+      "callSeq": 231,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 239,
+      "at": 1795207609475,
+      "offsetMs": 329554,
+      "kind": "CALL",
+      "detail": "bash node_modules/.bin/tsc -b --pretty false",
+      "callId": "call_2c580c6ebec841708503d229",
+      "tool": "bash",
+      "args": {
+        "command": "node_modules/.bin/tsc -b --pretty false",
+        "description": "Typecheck the project",
+        "timeoutMs": 600000
+      }
+    },
+    {
+      "seq": 240,
+      "at": 1795207609486,
+      "offsetMs": 329565,
+      "kind": "JOB",
+      "detail": "start bash node_modules/.bin/tsc -b --pretty false"
+    },
+    {
+      "seq": 241,
+      "at": 1795207614084,
+      "offsetMs": 334163,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) node_modules/.bin/tsc -b --pretty false"
+    },
+    {
+      "seq": 242,
+      "at": 1795207614091,
+      "offsetMs": 334170,
+      "kind": "RESULT",
+      "detail": "ok (no output)",
+      "callId": "call_2c580c6ebec841708503d229",
+      "callSeq": 239,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 247,
+      "at": 1795207649920,
+      "offsetMs": 369999,
+      "kind": "CALL",
+      "detail": "bash python3 - <<'PY' from pathlib import Path p=Path('src/application/work_outcome.ts') s=p.read_text() old=''' const git = …",
+      "callId": "call_f271e1845f5c49fe8d9d3474",
+      "tool": "bash",
+      "args": {
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\nold='''  const git = gitTextRunner(repository);\n\n  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;\n  if (conclusion !== null) {\n    return {\n      reasons: [reason, `this episode has a current recorded ${conclusion.intent} conclusion`],\n      next: [\"reply using the recorded conclusion\"],\n    };\n  }\n\n  if (retired.length > 0) {\n    try {\n      if (!artifacts.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n        git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n    } catch {\n      return null;\n    }\n    return {\n      reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n      next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n    };\n  }\n'''\nnew='''  const git = gitTextRunner(repository);\n\n  if (retired.length > 0) {\n    try {\n      if (!artifacts.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&\n        git([\"cat-file\", \"-t\", `${head}:${path}`])?.trim() === \"blob\")) return null;\n    } catch {\n      return null;\n    }\n  }\n\n  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;\n  if (conclusion !== null) {\n    return {\n      reasons: [reason, `this episode has a current recorded ${conclusion.intent} conclusion`],\n      next: [\"reply using the recorded conclusion\"],\n    };\n  }\n\n  if (retired.length > 0) {\n    return {\n      reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n      next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n    };\n  }\n'''\nif old not in s:\n    raise SystemExit('old not found')\ns=s.replace(old,new,1)\np.write_text(s)\nPY\nnode_modules/.bin/tsc -b --pretty false",
+        "description": "Preserve retired artifact validation and typecheck",
+        "timeoutMs": 600000
+      }
+    },
+    {
+      "seq": 248,
+      "at": 1795207649937,
+      "offsetMs": 370016,
+      "kind": "JOB",
+      "detail": "start bash python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\n…"
+    },
+    {
+      "seq": 249,
+      "at": 1795207650940,
+      "offsetMs": 371019,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/application/work_outcome.ts')\ns=p.read_text()\n…"
+    },
+    {
+      "seq": 250,
+      "at": 1795207650943,
+      "offsetMs": 371022,
+      "kind": "RESULT",
+      "detail": "ok (no output)",
+      "callId": "call_f271e1845f5c49fe8d9d3474",
+      "callSeq": 247,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 255,
+      "at": 1795207655540,
+      "offsetMs": 375619,
+      "kind": "CALL",
+      "detail": "bash node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.te…",
+      "callId": "call_135ca9267eb54af489442331",
+      "tool": "bash",
+      "args": {
+        "command": "node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts",
+        "description": "Re-run direct delivery tests after validation move",
+        "timeoutMs": 600000
+      }
+    },
+    {
+      "seq": 256,
+      "at": 1795207655549,
+      "offsetMs": 375628,
+      "kind": "JOB",
+      "detail": "start bash node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts …"
+    },
+    {
+      "seq": 257,
+      "at": 1795207674818,
+      "offsetMs": 394897,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts …"
+    },
+    {
+      "seq": 258,
+      "at": 1795207674823,
+      "offsetMs": 394902,
+      "kind": "RESULT",
+      "detail": "ok RUN v4.1.10 /run/stage/world ✓ test/alhs_episode_convergence.test.ts (10 tests) 8645ms ✓ refuses DELIVER while a planned task is still open, naming the contradiction 381ms ✓ refuses DELIVER when the named artifact does n…",
+      "callId": "call_135ca9267eb54af489442331",
+      "callSeq": 255,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 263,
+      "at": 1795207678424,
+      "offsetMs": 398503,
+      "kind": "CALL",
+      "detail": "bash find test -maxdepth 1 -name '*.test.ts' | wc -l",
+      "callId": "call_35a79e2be722469abfb05d86",
+      "tool": "bash",
+      "args": {
+        "command": "find test -maxdepth 1 -name '*.test.ts' | wc -l",
+        "description": "Count test files"
+      }
+    },
+    {
+      "seq": 264,
+      "at": 1795207678451,
+      "offsetMs": 398530,
+      "kind": "JOB",
+      "detail": "start bash find test -maxdepth 1 -name '*.test.ts' | wc -l"
+    },
+    {
+      "seq": 265,
+      "at": 1795207678471,
+      "offsetMs": 398550,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) find test -maxdepth 1 -name '*.test.ts' | wc -l"
+    },
+    {
+      "seq": 266,
+      "at": 1795207678474,
+      "offsetMs": 398553,
+      "kind": "RESULT",
+      "detail": "ok 442",
+      "callId": "call_35a79e2be722469abfb05d86",
+      "callSeq": 263,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 271,
+      "at": 1795207682253,
+      "offsetMs": 402332,
+      "kind": "CALL",
+      "detail": "bash node_modules/.bin/vitest run --configLoader runner --no-cache test/odpe_outcome.test.ts test/psvr_hotspots.test.ts test/…",
+      "callId": "call_7250c549009f4ed9ac15f32d",
+      "tool": "bash",
+      "args": {
+        "command": "node_modules/.bin/vitest run --configLoader runner --no-cache test/odpe_outcome.test.ts test/psvr_hotspots.test.ts test/work_revision.test.ts test/pnwf_cq_direct_governed.test.ts test/pnwf_cq_action_coherence.test.ts test/pwrs_relay.test.ts",
+        "description": "Run readiness and work outcome related suites",
+        "timeoutMs": 600000
+      }
+    },
+    {
+      "seq": 272,
+      "at": 1795207682264,
+      "offsetMs": 402343,
+      "kind": "JOB",
+      "detail": "start bash node_modules/.bin/vitest run --configLoader runner --no-cache test/odpe_outcome.test.ts test/psvr_ho…"
+    },
+    {
+      "seq": 273,
+      "at": 1795207697418,
+      "offsetMs": 417497,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) node_modules/.bin/vitest run --configLoader runner --no-cache test/odpe_outcome.test.ts test/psvr_ho…"
+    },
+    {
+      "seq": 274,
+      "at": 1795207697423,
+      "offsetMs": 417502,
+      "kind": "RESULT",
+      "detail": "ok RUN v4.1.10 /run/stage/world ✓ test/pnwf_cq_direct_governed.test.ts (1 test) 681ms ✓ shows the head relation, refuses a worker on the stale basis, and writes no promotion 666ms ✓ test/pnwf_cq_action_coherence.test.ts (9 …",
+      "callId": "call_7250c549009f4ed9ac15f32d",
+      "callSeq": 271,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 279,
+      "at": 1795207701930,
+      "offsetMs": 422009,
+      "kind": "CALL",
+      "detail": "bash git diff --check && git status --short && git log -1 --format='%an <%ae>'",
+      "callId": "call_38c8867e0b43476b8236f345",
+      "tool": "bash",
+      "args": {
+        "command": "git diff --check && git status --short && git log -1 --format='%an <%ae>'",
+        "description": "Check diff hygiene and author"
+      }
+    },
+    {
+      "seq": 280,
+      "at": 1795207701958,
+      "offsetMs": 422037,
+      "kind": "JOB",
+      "detail": "start bash git diff --check && git status --short && git log -1 --format='%an <%ae>'"
+    },
+    {
+      "seq": 281,
+      "at": 1795207702094,
+      "offsetMs": 422173,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git diff --check && git status --short && git log -1 --format='%an <%ae>'"
+    },
+    {
+      "seq": 282,
+      "at": 1795207702095,
+      "offsetMs": 422174,
+      "kind": "RESULT",
+      "detail": "ok M src/application/work_outcome.ts M test/alhs_episode_convergence.test.ts Self-maintenance experiment <self-maintenance@example.invalid>",
+      "callId": "call_38c8867e0b43476b8236f345",
+      "callSeq": 279,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 287,
+      "at": 1795207705327,
+      "offsetMs": 425406,
+      "kind": "CALL",
+      "detail": "bash git add src/application/work_outcome.ts test/alhs_episode_convergence.test.ts && git commit -m \"Guide task-free direct d…",
+      "callId": "call_993c101c1ca34eb8acaf3002",
+      "tool": "bash",
+      "args": {
+        "command": "git add src/application/work_outcome.ts test/alhs_episode_convergence.test.ts && git commit -m \"Guide task-free direct deliveries to the existing commit\" && git status --short && git log -1 --oneline",
+        "description": "Commit the candidate fix and regression test"
+      }
+    },
+    {
+      "seq": 288,
+      "at": 1795207705338,
+      "offsetMs": 425417,
+      "kind": "JOB",
+      "detail": "start bash git add src/application/work_outcome.ts test/alhs_episode_convergence.test.ts && git commit -m \"Guid…"
+    },
+    {
+      "seq": 289,
+      "at": 1795207705499,
+      "offsetMs": 425578,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git add src/application/work_outcome.ts test/alhs_episode_convergence.test.ts && git commit -m \"Guid…"
+    },
+    {
+      "seq": 290,
+      "at": 1795207705500,
+      "offsetMs": 425579,
+      "kind": "RESULT",
+      "detail": "ok [repair 35165a35] Guide task-free direct deliveries to the existing commit 2 files changed, 147 insertions(+), 22 deletions(-) 35165a35 Guide task-free direct deliveries to the existing commit",
+      "callId": "call_993c101c1ca34eb8acaf3002",
+      "callSeq": 287,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 295,
+      "at": 1795207726035,
+      "offsetMs": 446114,
+      "kind": "CALL",
+      "detail": "work:conclude",
+      "callId": "call_fceb85926dc043e885847cdb",
+      "tool": "palimpsest_work",
+      "args": {
+        "action": "conclude",
+        "intent": "DELIVER",
+        "statement": "The ordinary Work readiness entry now guides a task-free project from a clean direct commit to an explicit delivery judgement, points to the current episode conclusion on repeated reads, and keeps unchanged or uncommitted states on continue work without inventing a task or accepting the result. The targeted regression and related readiness suites pass.",
+        "artifacts": [
+          "src/application/work_outcome.ts",
+          "test/alhs_episode_convergence.test.ts"
+        ],
+        "evidenceRefs": [
+          "commit:35165a35"
+        ]
+      }
+    },
+    {
+      "seq": 296,
+      "at": 1795207727629,
+      "offsetMs": 447708,
+      "kind": "RESULT",
+      "detail": "ok state=RECORDED { \"state\": \"RECORDED\", \"conclusion\": { \"schema\": \"pc1-episode-conclusion/v1\", \"intent\": \"DELIVER\", \"statement\": \"The ordinary Work readiness entry now guides a task-free project from a clean direct commit to an explicit …",
+      "callId": "call_fceb85926dc043e885847cdb",
+      "callSeq": 295,
+      "callKind": "work:conclude",
+      "ok": true,
+      "facts": {
+        "state": "RECORDED"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 300,
+      "at": 1795207738823,
+      "offsetMs": 458902,
+      "kind": "DECISION",
+      "detail": "已修复并提交候选。 **变更** - `src/application/work_outcome.ts` - 无正式任务的项目存在干净、已提交的 `DIRECT_AHEAD` 修订时，`readiness` 现在返回 `SEMANTIC_JUDGEMENT`，列出来自该提交的已提交路径，并引导用 `intent=DELIVER` 做判断。 - 已有当前结论时，直接指向该结论（`reply using the recorded conclusion`），不再重复要求规划。 - 未提交或未改动状态仍保持 `CONTINUE_WORK`，不会把草稿或基准提交误报为可交付。 - 未创建任务、尝试或晋升，也未改变接受语义。 - `test/alhs_episode_convergence.test.ts` - 新增定向回归，覆盖：未改动、未提交、直接提交后的交付引导、记录 `DELIVER` 后重复…"
+    },
+    {
+      "seq": 302,
+      "at": 1795207738825,
+      "offsetMs": 458904,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

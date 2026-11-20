@@ -1,0 +1,169 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/work[39m
+
+From /tmp/palimpsest-pnwf-cq-basis-vertical-MsRDVD/repo/.palimpsest/worlds/attempt-0a35236f2d48ad473984194d3f2f9300
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-MsRDVD/repo/.palimpsest/worlds/attempt-0a35236f2d48ad473984194d3f2f9300
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-MsRDVD/repo/.palimpsest/worlds/attempt-b5cce40098d785303b177203503a39fb
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-MsRDVD/repo/.palimpsest/worlds/attempt-b5cce40098d785303b177203503a39fb
+ * branch            HEAD       -> FETCH_HEAD
+Switched to a new branch 'other'
+Note: switching to 'e278080e0dda718b20b7c29deff394f58df266c5'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at e278080 direct
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "INITIALIZED",
+  "profileFile": "/tmp/palimpsest-pnwf-cq-basis-cli-vda7tn/product-profile.json",
+  "summary": {
+    "schema": "pc1-project-summary/v1",
+    "projectId": "pnwf-cq-basis",
+    "goal": "direct outcome then governed continuation",
+    "basis": {
+      "projectRevision": 0,
+      "projectDigest": "52821794d670191602bbaa8e49ffaeb7de48f225308d5dea131537713b942bb1",
+      "headCommit": "5624416ead46d6cd7ad15690f7eaf3ee064d3da8",
+      "observedAt": "2026-11-20T20:29:24.772Z"
+    },
+    "coverage": {
+      "complete": true,
+      "omitted": [],
+      "unavailable": []
+    },
+    "requirements": [],
+    "decisions": [],
+    "acceptedResults": [],
+    "candidates": [
+      {
+        "id": "loop:READY_WORK:task:governed-next",
+        "standing": "CANDIDATE",
+        "title": "Work awaiting a legal next step",
+        "detail": "task governed-next is ready: continue from the direct outcome",
+        "sourceRefs": [
+          "task:governed-next"
+        ],
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "52821794d670191602bbaa8e49ffaeb7de48f225308d5dea131537713b942bb1",
+          "headCommit": "5624416ead46d6cd7ad15690f7eaf3ee064d3da8",
+          "observedAt": "2026-11-20T20:29:24.772Z"
+        },
+        "applicability": "open loop in the derived workspace",
+        "reopenConditions": [
+          "the subject is resolved, rejected or superseded"
+        ]
+      }
+    ],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "recentChanges": [],
+    "tasks": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "pendingWork": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "blocked": [],
+    "authorizationBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "nextActions": [
+      "agent: palimpsest_work action=next"
+    ],
+    "digest": "f6132f723108e8e8eb5f379f5e5c4fd97ca2632f46ec15019e1c8e564d266c4a"
+  }
+}
+
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "ADMITTED",
+  "fromHead": "5624416ead46d6cd7ad15690f7eaf3ee064d3da8",
+  "toHead": "e278080e0dda718b20b7c29deff394f58df266c5",
+  "commit": "e278080e0dda718b20b7c29deff394f58df266c5",
+  "operator": "operator:alice",
+  "revision": 1,
+  "basisId": "basis-28cc50469bbdc9838035f773a3d029d3",
+  "note": "The direct commit is admitted as a BASIS. No ATTEMPT_COMPLETED or PROMOTION_COMMITTED was written, and the commit was not relabelled as a governed result."
+}
+
+ [32m✓[39m test/pnwf_cq_basis_admission.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 5775[2mms[22m[39m
+     [33m[2m✓[22m[39m admits the checked-out direct commit, reauthorizes the task, and writes no promotion [33m 509[2mms[22m[39m
+     [33m[2m✓[22m[39m exposes an actual worker host refusal through the model-facing workers action [33m 723[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a real child worker from the admitted basis through settlement, promotion and dependent continuation [33m 2349[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a dirty canonical worktree, a non-ancestor commit and a task-graph change [33m 369[2mms[22m[39m
+     [33m[2m✓[22m[39m admits through the signed-operator CLI, and refuses without the credential [33m 380[2mms[22m[39m
+ [32m✓[39m test/alhs_episode_convergence.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 6986[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses DELIVER while a planned task is still open, naming the contradiction [33m 377[2mms[22m[39m
+     [33m[2m✓[22m[39m records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance [33m 1360[2mms[22m[39m
+     [33m[2m✓[22m[39m delivers a lightweight project with no formal tasks, then reopens after a new project fact [33m 596[2mms[22m[39m
+     [33m[2m✓[22m[39m reports a committed artifact without a provenance warning [33m 507[2mms[22m[39m
+     [33m[2m✓[22m[39m reads an older conclusion and separates verification records from open questions after restart [33m 1490[2mms[22m[39m
+     [33m[2m✓[22m[39m binds each DELIVER to the bytes of its current Git commit on the same Host [33m 1963[2mms[22m[39m
+     [33m[2m✓[22m[39m CONTINUE requires a next step and does not pretend the episode ended [33m 387[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 20:29:12
+[2m   Duration [22m 21.14s[2m (transform 5.74s, setup 0ms, import 7.82s, tests 12.76s, environment 0ms)[22m
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/work[39m
+
+ [31m❯[39m test/host-offline-witness.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 13[2mms[22m[39m
+[31m   [31m×[31m host failure witness[39m[32m 11[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/host-offline-witness.test.ts[2m > [22mhost failure witness
+[31m[1mAssertionError[22m: expected 1 to be 2 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 2[39m
+[31m+ 1[39m
+
+[36m [2m❯[22m test/host-offline-witness.test.ts:[2m1:74[22m[39m
+    [90m  1|[39m import {it,expect} from 'vitest';it('host failure witness',()=>expect(…
+    [90m   |[39m                                                                          [31m^[39m
+    [90m  2|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 20:29:34
+[2m   Duration [22m 341ms[2m (transform 15ms, setup 0ms, import 32ms, tests 13ms, environment 0ms)[22m
+
+WORKING_TREE_OFFLINE_PASS

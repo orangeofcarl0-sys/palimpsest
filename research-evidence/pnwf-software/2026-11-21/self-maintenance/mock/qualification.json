@@ -1,0 +1,180 @@
+{
+  "basis": "02a5160c2361bb70a2127574a76ea6e571b296a8",
+  "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+  "briefSha256": "e53401836dafefbec560a88a2c7068022d7e6265a54e309056448151b7357cab",
+  "runnerSha256": "4ce0f957676a041ec9175b821dc2c1cc50755d6d26c7979db2aa510836effb32",
+  "mode": "mock",
+  "paidRequests": 0,
+  "baseline": {
+    "exit": 1,
+    "loaderError": "ENOENT",
+    "reproduced": true
+  },
+  "session": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "self-maintenance-72f87b4d-4a7b-4e63-8276-f0a2049a2258",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-self-maintenance-20261121-034815\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-self-maintenance-20261121-034815\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "86f482e465d6ba02a07f20469715a1ed95674deed79be6b6ad99711a81524f2c",
+    "qualification": "b406ac929f06087ca67be44e2ece17cc08879c0a6dca1fed7588d2d7eecae649",
+    "startedAt": "2026-11-20T19:49:33.295Z",
+    "endedAt": "2026-11-20T19:50:31.480Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "self-maintenance-72f87b4d-4a7b-4e63-8276-f0a2049a2258",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-20T19:50:31.480Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 310820,
+      "confirmedTokens": 310820,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "attribution": {
+    "valid": true,
+    "principalId": "session-5ac72f72-ba5f-43de-97c2-7f8016c2cabf",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 4,
+    "knownTokens": 310820,
+    "totalTokens": 310820,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 309687,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 1133
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 4,
+        "input": 309687,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 1133,
+        "total": 310820
+      }
+    },
+    "traceTotal": 310820,
+    "traceRequests": 4,
+    "workerRequests": 0,
+    "elapsedMs": 58185,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-5ac72f72-ba5f-43de-97c2-7f8016c2cabf",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "55f839bd7b6a3d6335ef62f144af731d86df906da5732d2aa1a247fded389108",
+        "counts": {
+          "steps": 4,
+          "turns": 1,
+          "toolCalls": 3,
+          "pairedToolResults": 3,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795204208046,
+            "messageId": "6ff24d63-7c1c-49fe-ac7b-172248902863",
+            "usage": {
+              "inputTokens": 95498,
+              "outputTokens": 100,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 95598
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795204208670,
+            "messageId": "29554869-ee37-4071-b08f-40dd216b7ea7",
+            "usage": {
+              "inputTokens": 61642,
+              "outputTokens": 692,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 62334
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1795204229279,
+            "messageId": "323d3b94-60da-4c50-94da-911b7471d0bf",
+            "usage": {
+              "inputTokens": 75202,
+              "outputTokens": 237,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 75439
+            }
+          },
+          {
+            "seq": 34,
+            "at": 1795204230664,
+            "messageId": "5a88f9a1-fece-4853-a373-ffc3ac6d5c85",
+            "usage": {
+              "inputTokens": 77345,
+              "outputTokens": 104,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 77449
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-b31dc5a23905a92b217a5afdb008abb0",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: The focused verification entry is committed and ready for independent review.\nArtifacts:\n- package.json\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head 02a5160c2361bb70a2127574a76ea6e571b296a8\nArtifact provenance:\n- package.json: present=true tracked=true committed=true source=WORKTREE digest=e24c31abab0c commit=fd5467806207\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"The focused verification entry is committed and ready for independent review.\",\"artifacts\":[\"package.json\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-20T19:50:29.941Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"2cf52d3f1044eb002dc0304ebe020aa7dec80850edbe99221b662807c8b5ee39\",\"headCommit\":\"02a5160c2361bb70a2127574a76ea6e571b296a8\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"package.json\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"e24c31abab0cac4ca291702a11006ab3df1b8fb98533bc6ec92ec3497490f5af\",\"source\":\"WORKTREE\",\"commit\":\"fd5467806207cbca3508446a787f8deb58547487\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-57278ffb74ac5f15b2d97a06\"}"
+  },
+  "candidate": "fd5467806207cbca3508446a787f8deb58547487",
+  "verification": {
+    "files": 2,
+    "tests": 20,
+    "deliberateFailurePropagated": true,
+    "onlyAddedScript": true,
+    "exactSha": "fd5467806207cbca3508446a787f8deb58547487",
+    "manifestDigest": "e24c31abab0cac4ca291702a11006ab3df1b8fb98533bc6ec92ec3497490f5af"
+  },
+  "result": "PASS"
+}

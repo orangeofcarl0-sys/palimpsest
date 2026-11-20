@@ -1,0 +1,191 @@
+{
+  "schema": "palimpsest-self-maintenance-comparison/v1",
+  "approved": "072ff2e6defdb4ff3b1f08be340bd3c931ab7ae9",
+  "pair": [
+    {
+      "arm": "OLD",
+      "basis": "02a5160c2361bb70a2127574a76ea6e571b296a8",
+      "candidate": "6621ab47652c3ba74edda740709fe83d95e74504",
+      "firstTestPassRequest": 37,
+      "launchRetryReason": "VITEST_CONFIG_TEMP_DIRECTORY",
+      "launchFailures": 1,
+      "compileFailures": 1,
+      "assertionFailures": 1,
+      "testLaunchCalls": [
+        321,
+        337,
+        351,
+        359,
+        379,
+        401,
+        449
+      ],
+      "focusedInvocations": 0,
+      "calls": {
+        "compileError": [
+          251,
+          254
+        ],
+        "launchFailure": [
+          321,
+          324
+        ],
+        "launchRecovery": [
+          337,
+          340
+        ],
+        "assertionFailure": [
+          337,
+          340
+        ],
+        "firstPass": [
+          351,
+          354
+        ],
+        "commit": [
+          441,
+          444
+        ],
+        "delivery": null
+      },
+      "firstRequestUsage": {
+        "inputTokens": 10679,
+        "outputTokens": 55,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "totalTokens": 10734
+      },
+      "throughFirstPass": {
+        "inputTokens": 123283,
+        "cacheReadTokens": 2888832,
+        "cacheWriteTokens": 0,
+        "outputTokens": 18085,
+        "totalTokens": 3030200
+      },
+      "afterFirstPass": {
+        "inputTokens": 19011,
+        "cacheReadTokens": 1954176,
+        "cacheWriteTokens": 0,
+        "outputTokens": 8764,
+        "totalTokens": 1981951
+      },
+      "requests": 52,
+      "usage": {
+        "input_tokens": 142294,
+        "cache_read_input_tokens": 4843008,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 26849
+      },
+      "totalTokens": 5012151,
+      "elapsedMs": 635731,
+      "result": "INCOMPLETE_SESSION",
+      "deliver": false,
+      "natural": true,
+      "verifiedTests": 23,
+      "readinessChecks": {
+        "initialHasNoDeliveryAdvice": true,
+        "dirtyHasNoDeliveryAdvice": true,
+        "cleanCommitSuggestsDelivery": true,
+        "recordedDeliveryCanClose": true,
+        "afterDeliveryAvoidsRepeatedConclusion": true,
+        "operatorBasisPreserved": true
+      }
+    },
+    {
+      "arm": "ACCEPTED",
+      "basis": "072ff2e6defdb4ff3b1f08be340bd3c931ab7ae9",
+      "candidate": "35165a35a526a7fe01ca87d24aa535aba6094d18",
+      "firstTestPassRequest": 24,
+      "launchRetryReason": "PNPM_DATA_DIRECTORY",
+      "launchFailures": 1,
+      "compileFailures": 0,
+      "assertionFailures": 0,
+      "testLaunchCalls": [
+        199,
+        215,
+        255,
+        271
+      ],
+      "focusedInvocations": 0,
+      "calls": {
+        "compileError": null,
+        "launchFailure": [
+          199,
+          202
+        ],
+        "launchRecovery": [
+          215,
+          218
+        ],
+        "assertionFailure": null,
+        "firstPass": [
+          215,
+          218
+        ],
+        "commit": [
+          287,
+          290
+        ],
+        "delivery": [
+          295,
+          296
+        ]
+      },
+      "firstRequestUsage": {
+        "inputTokens": 10679,
+        "outputTokens": 54,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "totalTokens": 10733
+      },
+      "throughFirstPass": {
+        "inputTokens": 79972,
+        "cacheReadTokens": 1135232,
+        "cacheWriteTokens": 0,
+        "outputTokens": 18016,
+        "totalTokens": 1233220
+      },
+      "afterFirstPass": {
+        "inputTokens": 16135,
+        "cacheReadTokens": 939520,
+        "cacheWriteTokens": 0,
+        "outputTokens": 6594,
+        "totalTokens": 962249
+      },
+      "requests": 35,
+      "usage": {
+        "input_tokens": 96107,
+        "cache_read_input_tokens": 2074752,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 24610
+      },
+      "totalTokens": 2195469,
+      "elapsedMs": 489568,
+      "result": "PASS",
+      "deliver": true,
+      "natural": true,
+      "verifiedTests": 22,
+      "readinessChecks": {
+        "initialHasNoDeliveryAdvice": true,
+        "dirtyHasNoDeliveryAdvice": true,
+        "cleanCommitSuggestsDelivery": true,
+        "recordedDeliveryCanClose": true,
+        "afterDeliveryAvoidsRepeatedConclusion": true,
+        "operatorBasisPreserved": true
+      }
+    }
+  ],
+  "initialUnknown": {
+    "arm": "F",
+    "requestId": "1f16bdf0-ebcf-4083-aea5-8879e5ea5bda",
+    "requestOrdinal": 12,
+    "confirmedTokens": 233067
+  },
+  "reduction": {
+    "requests": 17,
+    "totalTokens": 2816682,
+    "freshInput": 46187,
+    "cacheRead": 2768256,
+    "elapsedMs": 146163
+  }
+}

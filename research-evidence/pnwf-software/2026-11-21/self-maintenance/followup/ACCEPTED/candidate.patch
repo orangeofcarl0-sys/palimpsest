@@ -1,0 +1,224 @@
+diff --git a/src/application/work_outcome.ts b/src/application/work_outcome.ts
+index 75ad82aa..1e264d93 100644
+--- a/src/application/work_outcome.ts
++++ b/src/application/work_outcome.ts
+@@ -49,8 +49,12 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s
+   return tasks.find((task) => task.task_id === taskId) ?? null;
+ }
+ 
+-/** A clean HEAD alone is ordinary project state. Use the retired plan's declared artifacts. */
+-async function retiredDelivery(
++/**
++ * A clean HEAD alone is ordinary project state. When there is no formal task to settle, the ordinary
++ * admission is the repository outcome: the retired plan's declared artifacts, or a direct commit in
++ * a task-free project. A recorded current conclusion takes precedence over re-deriving that prompt.
++ */
++async function deliveryGuidance(
+   deps: WorkRuntimeDeps,
+   status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
+   requested: string | null,
+@@ -67,14 +71,30 @@ async function retiredDelivery(
+ 
+   const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));
+   const retired = status.tasks.filter((task) => task.state === "STALE" && !plannedIds.has(task.task_id));
+-  if (retired.length === 0 || (requested !== null && !retired.some((task) => task.task_id === requested))) return null;
+-  const artifacts = new Set<string>();
+-  for (const task of retired) {
+-    const envelope = controller.taskEnvelopeOrNull(task.task_id);
+-    if (envelope === null) return null;
+-    for (const path of envelope.required_artifacts) artifacts.add(path);
++  const noFormalTasks = status.tasks.length === 0 && plannedIds.size === 0;
++  if (
++    (retired.length === 0 && !noFormalTasks) ||
++    (requested !== null && !retired.some((task) => task.task_id === requested))
++  ) return null;
++
++  let artifacts: string[] = [];
++  let reason: string;
++  if (retired.length > 0) {
++    const declared = new Set<string>();
++    for (const task of retired) {
++      const envelope = controller.taskEnvelopeOrNull(task.task_id);
++      if (envelope === null) return null;
++      for (const path of envelope.required_artifacts) declared.add(path);
++    }
++    if (declared.size === 0) return null;
++    artifacts = [...declared];
++    reason = `the retired plan's declared artifacts (${artifacts.join(", ")}) are committed at repository HEAD ${head}`;
++  } else {
++    reason =
++      direct.relation === "DIRECT_AHEAD"
++        ? `a direct commit exists at repository HEAD ${head} ahead of the canonical head ${direct.projectHead.slice(0, 12)}; it is a repository outcome, not a governed result and this readiness does not accept it`
++        : `the repository and the canonical head agree at ${head}; the existing outcome is in the basis, not a new governed delta`;
+   }
+-  if (artifacts.size === 0) return null;
+ 
+   const pulse = await deliveryPulse.pulse().catch(() => null);
+   if (
+@@ -87,21 +107,49 @@ async function retiredDelivery(
+   const basis = observeCanonicalBasis(repository);
+   if (basis?.head !== head || basis.uncommittedPaths?.length !== 0) return null;
+   const git = gitTextRunner(repository);
+-  const paths = [...artifacts];
+-  try {
+-    if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
+-      git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
+-  } catch {
+-    return null;
++
++  if (retired.length > 0) {
++    try {
++      if (!artifacts.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
++        git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
++    } catch {
++      return null;
++    }
+   }
+ 
+-  const reason = `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
+-  if (pulse.episode.current && pulse.episode.state === "DELIVERED") {
+-    return { reasons: [reason, "this episode has a current recorded DELIVER conclusion"], next: ["reply using the recorded conclusion"] };
++  const conclusion = pulse.episode.current ? pulse.episode.conclusion : null;
++  if (conclusion !== null) {
++    return {
++      reasons: [reason, `this episode has a current recorded ${conclusion.intent} conclusion`],
++      next: ["reply using the recorded conclusion"],
++    };
+   }
++
++  if (retired.length > 0) {
++    return {
++      reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"],
++      next: ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
++    };
++  }
++
++  // A task-free project has no declared artifacts. The changed blobs in the direct commit are the
++  // only committed paths this entry can name; an unchanged or uncommitted project has no delivery.
++  if (direct.relation !== "DIRECT_AHEAD") return null;
++  const changed = git(["diff", "--name-only", "--no-renames", direct.projectHead, head]);
++  if (changed === null) return null;
++  const committedPaths = changed
++    .split(/\r?\n/u)
++    .map((path) => path.trim())
++    .filter((path) => path !== "" && git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob");
++  if (committedPaths.length === 0) return null;
+   return {
+-    reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"],
+-    next: ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
++    reasons: [
++      `a direct commit at repository HEAD ${head} changes ${committedPaths.join(", ")}; it is a repository outcome, not a governed result and this readiness does not accept it`,
++      "the project has no formal task and no uncommitted work; decide whether the committed change satisfies the user's goal",
++    ],
++    next: [
++      `if the committed change satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths (${committedPaths.join(", ")})`,
++    ],
+   };
+ }
+ 
+@@ -242,7 +290,7 @@ async function snapshot(
+   const acknowledged =
+     input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
+   const delivery = (task === null && requested === null) || task?.state === "STALE"
+-    ? await retiredDelivery(deps, status, requested)
++    ? await deliveryGuidance(deps, status, requested)
+     : null;
+   let action: OutcomeAction;
+   let settledNext: string[] | undefined;
+@@ -251,7 +299,24 @@ async function snapshot(
+     reasons.push(...delivery.reasons);
+   } else if (task === null) {
+     action = "CONTINUE_WORK";
+-    reasons.push("no task is currently addressable; plan or begin work before a finalization can be considered");
++    const uncommitted = directOutcome?.uncommittedPaths ?? [];
++    if (status.tasks.length === 0) {
++      if (uncommitted.length > 0) {
++        reasons.push(
++          `the project has no formal task and the repository has uncommitted changes (${uncommitted.join(", ")}); commit or discard them before treating a direct commit as the deliverable`,
++        );
++      } else if (directOutcome?.relation === "DIRECT_AHEAD") {
++        reasons.push(
++          `a direct commit exists at ${directOutcome.repositoryHead?.slice(0, 12) ?? "unknown"} but no task-free delivery guidance could be derived from the current facts; inspect the commit and the episode before planning new work`,
++        );
++      } else {
++        reasons.push(
++          "the project has no formal task and no commit beyond the canonical head to hand over; plan or begin work, or commit the outcome you intend to deliver",
++        );
++      }
++    } else {
++      reasons.push("no task is currently addressable; plan or begin work before a finalization can be considered");
++    }
+   } else if (runningForThisTask.length > 1) {
+     action = "CONTINUE_WORK";
+     reasons.push(`${String(runningForThisTask.length)} attempts are RUNNING for this task; pass the taskId the decision is about`);
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index f31ca22f..15c903b2 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -270,6 +270,66 @@ describe("ALHS-A episode conclusion", () => {
+     expect(after.decisionQueue.some((item) => item.kind === "EPISODE_REOPENED")).toBe(true);
+   });
+ 
++  it("guides a task-free project to its direct commit, then to the current conclusion", async () => {
++    const { repo, head, stateDir } = workspace("direct-delivery");
++    const installed = install(repo, stateDir);
++    await start(installed, head, []);
++
++    type Readiness = {
++      action: string;
++      reasons: string[];
++      next: string[];
++      directOutcome: { relation: string; repositoryHead: string | null } | null;
++    };
++    const readiness = async () => (await call(installed, "palimpsest_work", { action: "readiness" })) as unknown as Readiness;
++
++    // An unchanged clean repository is not a new delivery.
++    const unchanged = await readiness();
++    expect(unchanged.action).toBe("CONTINUE_WORK");
++    expect(unchanged.next.join(" ")).not.toContain("intent=DELIVER");
++
++    // An uncommitted draft is real work, but it is not a committed delivery either.
++    mkdirSync(join(repo, "deliverables"), { recursive: true });
++    writeFileSync(join(repo, "deliverables", "package.md"), "# Package\n\nCommitted outside Work.\n");
++    const uncommitted = await readiness();
++    expect(uncommitted.action).toBe("CONTINUE_WORK");
++    expect(uncommitted.reasons.join(" ")).toMatch(/uncommitted changes/iu);
++    expect(uncommitted.next.join(" ")).not.toContain("intent=DELIVER");
++
++    execFileSync("git", ["add", "-A"], { cwd: repo });
++    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "direct delivery"], { cwd: repo });
++    const direct = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
++    expect(direct).not.toBe(head);
++
++    const committed = await readiness();
++    expect(committed.action).toBe("SEMANTIC_JUDGEMENT");
++    expect(committed.directOutcome).toMatchObject({ relation: "DIRECT_AHEAD", repositoryHead: direct });
++    expect(committed.reasons.join(" ")).toContain(direct);
++    expect(committed.reasons.join(" ")).toContain("deliverables/package.md");
++    expect(committed.next.join(" ")).toContain("intent=DELIVER");
++
++    const delivered = (await call(installed, "palimpsest_work", {
++      action: "conclude",
++      intent: "DELIVER",
++      statement: "The direct commit is the deliverable; no formal Work was invented for it.",
++      artifacts: ["deliverables/package.md"],
++    })) as unknown as Conclude;
++    expect(delivered.state).toBe("RECORDED");
++
++    // Re-reading the same state points at the recorded judgement instead of asking for a plan again.
++    const recorded = await readiness();
++    expect(recorded.action).toBe("SEMANTIC_JUDGEMENT");
++    expect(recorded.reasons.join(" ")).toMatch(/current recorded DELIVER conclusion/iu);
++    expect(recorded.next).toEqual(["reply using the recorded conclusion"]);
++
++    // The guidance is advisory: no task, attempt or promotion was invented or accepted.
++    const status = installed.controller.status();
++    expect(status.tasks).toEqual([]);
++    expect(status.attempts).toEqual([]);
++    expect(status.promotions).toEqual([]);
++    expect(status.headCommit).toBe(head);
++  });
++
+   it("reports a committed artifact without a provenance warning", async () => {
+     const { repo, head, stateDir } = workspace("committed");
+     const installed = install(repo, stateDir);
