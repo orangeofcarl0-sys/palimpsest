@@ -1,0 +1,372 @@
+diff --git a/src/project_continuity/episode.ts b/src/project_continuity/episode.ts
+index 89c101c8..89ce613e 100644
+--- a/src/project_continuity/episode.ts
++++ b/src/project_continuity/episode.ts
+@@ -367,6 +367,8 @@ export function parseEpisodeConclusion(body: string): EpisodeConclusion | null {
+ export interface PulseEpisode {
+   readonly state: EpisodeState;
+   readonly conclusion: EpisodeConclusion | null;
++  /** The journal record that carries the conclusion; null when no conclusion is recorded. */
++  readonly journalEntryId: string | null;
+   /** False when the project revised, moved its head, or recorded any journal fact after the conclusion. */
+   readonly current: boolean;
+   readonly changedSince: readonly string[];
+@@ -427,6 +429,7 @@ export function buildPulseEpisode(input: {
+     return Object.freeze({
+       state: "OPEN",
+       conclusion: null,
++      journalEntryId: null,
+       current: true,
+       changedSince: Object.freeze([]),
+       readiness: input.readiness,
+@@ -470,6 +473,7 @@ export function buildPulseEpisode(input: {
+   return Object.freeze({
+     state: current ? INTENT_STATE[conclusion.intent] : "REOPENED",
+     conclusion,
++    journalEntryId: input.entries[lastIndex]?.entryId ?? null,
+     current,
+     changedSince: Object.freeze(changedSince),
+     readiness: input.readiness,
+diff --git a/src/project_continuity/service.ts b/src/project_continuity/service.ts
+index d33cb913..70a8a293 100644
+--- a/src/project_continuity/service.ts
++++ b/src/project_continuity/service.ts
+@@ -5,6 +5,7 @@ import { canonicalDigest } from "../schema/canonical.js";
+ import type { ProjectIr } from "../schema/models.js";
+ import type { ProjectJournalViewEntry } from "../project_workspace/journal.js";
+ import type { OpenLoop } from "../project_workspace/view.js";
++import { parseEpisodeConclusion } from "./episode.js";
+ import type {
+   ContextCapsule,
+   ContinuityBasis,
+@@ -77,11 +78,175 @@ function journalOpen(entry: ProjectJournalViewEntry): boolean {
+  * no such identity stays conservative and remains an open question; a genuine question should be
+  * recorded as OPEN_QUESTION and is never filtered here.
+  */
++const COMMIT_REFERENCE_KINDS = new Set(["commit", "git_commit"]);
++
++/**
++ * The journal writes commit links as either `commit` or `git_commit`. Both are the same structured
++ * identity; reading only one spelling made a verified version basis look like an open question.
++ */
++function commitReferenceId(ref: { readonly kind: string; readonly id: string }): string | null {
++  return COMMIT_REFERENCE_KINDS.has(ref.kind) ? ref.id : null;
++}
++
++function commitReferencesOf(entry: ProjectJournalViewEntry): readonly string[] {
++  return Object.freeze(
++    [...new Set(entry.entry.relatedRefs.map(commitReferenceId).filter((id): id is string => id !== null))],
++  );
++}
++
++function uniqueRefs(refs: readonly (string | null | undefined)[]): readonly string[] {
++  return Object.freeze([...new Set(refs.filter((ref): ref is string => typeof ref === "string" && ref !== ""))]);
++}
++
++/** Preserve the owner's ref spelling and add a normalised commit alias for `explain`. */
++function relatedSourceRefs(entry: ProjectJournalViewEntry): readonly string[] {
++  return Object.freeze(
++    entry.entry.relatedRefs.flatMap((ref) => {
++      const commit = commitReferenceId(ref);
++      return commit === null ? [`${ref.kind}:${ref.id}`] : [`${ref.kind}:${ref.id}`, `commit:${commit}`];
++    }),
++  );
++}
++
++function journalSourceRefs(entry: ProjectJournalViewEntry): readonly string[] {
++  return uniqueRefs([
++    `journal:${entry.entry.entryId}`,
++    entry.entry.provenance,
++    ...relatedSourceRefs(entry),
++  ]);
++}
++
+ function recordedReference(entry: ProjectJournalViewEntry): boolean {
+   if (entry.entry.kind !== "REFERENCE_NOTE") return false;
+   const provenance = entry.entry.provenance;
+   if (provenance.startsWith("episode:") || provenance.startsWith("relay:")) return true;
+-  return entry.entry.relatedRefs.some((ref) => ref.kind === "commit");
++  return commitReferencesOf(entry).length > 0;
++}
++
++/**
++ * An episode conclusion is a first-class journal record. It must stay explainable after the pulse
++ * moves on, and its artifact provenance is the bridge from the old judgement to the bytes/commits it
++ * actually delivered. This projects that record; it does not turn the judgement into acceptance.
++ */
++function episodeConclusionItems(
++  entries: readonly ProjectJournalViewEntry[],
++  basis: ContinuityBasis,
++): readonly ContinuityItem[] {
++  const items: ContinuityItem[] = [];
++  for (const entry of entries) {
++    const conclusion = parseEpisodeConclusion(entry.entry.body);
++    if (conclusion === null) continue;
++    const artifacts = conclusion.check.artifacts ?? [];
++    const artifactLines =
++      artifacts.length === 0
++        ? "(no artifact provenance recorded)"
++        : artifacts
++            .map(
++              (state) =>
++                `- ${state.path}: ${state.commit === null || state.commit === undefined ? "no commit recorded" : `commit ${state.commit}`}` +
++                ` (${state.source ?? "source unrecorded"}; ${state.detail})`,
++            )
++            .join("\n");
++    const deliveredCommits = artifacts
++      .map((state) => state.commit)
++      .filter((commit): commit is string => typeof commit === "string" && commit !== "");
++    items.push(
++      item({
++        id: `episode:${conclusion.conclusionId}`,
++        standing: "AGENT_INTERPRETATION",
++        title: `Episode conclusion: ${conclusion.intent}`,
++        detail:
++          `${conclusion.statement}\n\n` +
++          `Recorded ${conclusion.recordedAt} at project revision ${String(conclusion.basis.projectRevision)}, ` +
++          `head ${conclusion.basis.headCommit}.\n` +
++          `Journal entry: journal:${entry.entry.entryId}\n` +
++          `Delivered artifact versions:\n${artifactLines}\n\n` +
++          "This is an advisory episode judgement, not acceptance or a promotion.",
++        sourceRefs: uniqueRefs([
++          `episode:${conclusion.conclusionId}`,
++          ...journalSourceRefs(entry),
++          ...deliveredCommits.map((commit) => `commit:${commit}`),
++          ...conclusion.evidenceRefs,
++        ]),
++        basis,
++        applicability: "a recorded judgement at its stated basis; it accepts nothing by itself",
++        adoptionBasis: "recorded in the project journal as an episode conclusion",
++        reopenConditions: [
++          "a later project revision, head move, or basis-bearing journal record",
++          "operator acceptance, rejection, or a superseding conclusion",
++        ],
++      }),
++    );
++  }
++  return Object.freeze(items);
++}
++
++/**
++ * A commit-linked REFERENCE_NOTE is a recorded observation, not an unresolved question. Keeping it
++ * separately explainable preserves the verifier's source while removing it from the to-do list.
++ */
++function referenceItems(
++  entries: readonly ProjectJournalViewEntry[],
++  basis: ContinuityBasis,
++): readonly ContinuityItem[] {
++  const items: ContinuityItem[] = [];
++  for (const entry of entries) {
++    if (entry.entry.kind !== "REFERENCE_NOTE") continue;
++    if (parseEpisodeConclusion(entry.entry.body) !== null) continue;
++    const commits = commitReferencesOf(entry);
++    if (commits.length === 0) continue;
++    const namesCurrentHead = commits.includes(basis.headCommit);
++    items.push(
++      item({
++        id: `journal:${entry.entry.entryId}`,
++        standing: "OBSERVED_SOURCE",
++        title: entry.entry.title,
++        detail: entry.entry.body,
++        sourceRefs: journalSourceRefs(entry),
++        basis,
++        applicability: "a recorded reference note; it does not accept a result or advance the project head",
++        adoptionBasis: "recorded in the project journal against the named commit(s)",
++        currentApplicability: namesCurrentHead ? "APPLICABLE" : "UNKNOWN",
++        applicabilityBasis: namesCurrentHead
++          ? `the reference names the current canonical head ${basis.headCommit}`
++          : `the reference names ${commits.map((commit) => commit.slice(0, 12)).join(", ")}; its current applicability is not established by the note alone`,
++        reopenConditions: ["new evidence, a later accepted revision, or an operator decision"],
++      }),
++    );
++  }
++  return Object.freeze(items);
++}
++
++/** The current canonical version, including a direct-basis advance that has no promotion fact. */
++function acceptedVersionItem(
++  ir: ProjectIr,
++  status: ReturnType<ContinuityInput["work"]["status"]>,
++  basis: ContinuityBasis,
++  entries: readonly ProjectJournalViewEntry[],
++): ContinuityItem {
++  const references = entries.filter((entry) => commitReferencesOf(entry).includes(status.headCommit));
++  return item({
++    id: `version:${status.headCommit}`,
++    standing: "ACCEPTED_FOR_PURPOSE",
++    title: `Current accepted project version ${status.headCommit.slice(0, 12)}`,
++    detail:
++      `The canonical ProjectIR revision ${String(ir.revision)} holds head ${status.headCommit}. ` +
++      (references.length === 0
++        ? "No journal reference names this head; the canonical ProjectIR head is the source."
++        : `Journal references naming this head: ${references.map((entry) => `journal:${entry.entry.entryId}`).join(", ")}.`) +
++      " This projection is a read of the head owned by Work; it creates no promotion.",
++    sourceRefs: uniqueRefs([
++      `commit:${status.headCommit}`,
++      `revision:${String(ir.revision)}`,
++      ...references.map((entry) => `journal:${entry.entry.entryId}`),
++    ]),
++    basis,
++    applicability: "the version the project currently stands on",
++    adoptionBasis: "the current canonical ProjectIR head owned by Work",
++    currentApplicability: "APPLICABLE",
++    applicabilityBasis: `the canonical head at project revision ${String(ir.revision)}`,
++    reopenConditions: ["a later accepted revision that moves the canonical head"],
++  });
+ }
+ 
+ function stableBasis(ir: ProjectIr, status: ReturnType<ContinuityInput["work"]["status"]>, now: string): ContinuityBasis {
+@@ -107,6 +272,10 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+     if (input.workspace === undefined) unavailable.push("project journal / open loops (not composed)");
+     if (input.authority === undefined) unavailable.push("authority composition facts");
+ 
++    const acceptedVersions = Object.freeze([acceptedVersionItem(ir, status, basis, entries)]);
++    const references = referenceItems(entries, basis);
++    const episodeConclusions = episodeConclusionItems(entries, basis);
++
+     const requirements = ir.requirements.map((requirement) =>
+       item({
+         id: `requirement:${requirement.requirement_id}`,
+@@ -343,6 +512,9 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+       requirements,
+       decisions,
+       acceptedResults,
++      acceptedVersions,
++      references,
++      episodeConclusions,
+       candidates,
+       negativeFindings,
+       openQuestions,
+@@ -365,6 +537,9 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+       ...summary.requirements,
+       ...summary.decisions,
+       ...summary.acceptedResults,
++      ...summary.acceptedVersions,
++      ...summary.references,
++      ...summary.episodeConclusions,
+       ...summary.candidates,
+       ...summary.negativeFindings,
+       ...summary.openQuestions,
+@@ -376,12 +551,18 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+     async explain(subject: string): Promise<ProjectExplanation> {
+       const summary = await build();
+       const items = allItems(summary);
+-      const found = items.find(
+-        (candidate) =>
+-          candidate.id === subject ||
+-          candidate.sourceRefs.includes(subject) ||
+-          candidate.sourceRefs.some((ref) => ref.split(":").slice(-1)[0] === subject),
+-      );
++      /**
++       * An exact projection id wins over a source-ref match. Several items can legitimately point at
++       * the same journal record (the current version names its verifier note); returning the first
++       * source-ref match made `explain journal:…` describe the version instead of the note itself.
++       */
++      const found =
++        items.find((candidate) => candidate.id === subject) ??
++        items.find(
++          (candidate) =>
++            candidate.sourceRefs.includes(subject) ||
++            candidate.sourceRefs.some((ref) => ref.split(":").slice(-1)[0] === subject),
++        );
+       const availableRefs = items.map((candidate) => candidate.id);
+       if (found === undefined) {
+         return {
+@@ -419,6 +600,11 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+        */
+       const sections: Array<{ readonly name: string; readonly text: string; readonly refs: readonly string[] }> = [
+         { name: "goal", text: `# Project ${summary.projectId}\n\nGoal: ${summary.goal}\nBasis: revision ${summary.basis.projectRevision}, head ${summary.basis.headCommit.slice(0, 12)}, observed ${summary.basis.observedAt}\n`, refs: [] },
++        {
++          name: "acceptedVersion",
++          text: `## Current accepted version\n\n${summary.acceptedVersions.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
++          refs: summary.acceptedVersions.flatMap((entry) => entry.sourceRefs),
++        },
+         {
+           name: "requirements",
+           text: `## Binding requirements / hard constraints\n\n${summary.requirements.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
+@@ -429,6 +615,11 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+           text: `## Recent material changes\n\n${(summary.recentChanges ?? []).length === 0 ? "(none)" : (summary.recentChanges ?? []).map((entry) => `- ${entry.kind}: ${entry.title} (${entry.id})`).join("\n")}\n`,
+           refs: (summary.recentChanges ?? []).map((entry) => entry.id),
+         },
++        {
++          name: "episodeConclusions",
++          text: `## Recorded episode conclusions and delivered versions\n\n${summary.episodeConclusions.length === 0 ? "(none)" : summary.episodeConclusions.map((entry) => `- ${entry.title} (${entry.id})\n${entry.detail}`).join("\n")}\n`,
++          refs: summary.episodeConclusions.flatMap((entry) => entry.sourceRefs),
++        },
+         {
+           name: "blocked",
+           text: `## Current blocking / uncertain effects\n\n${summary.blocked.length === 0 ? "(none)" : summary.blocked.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
+@@ -444,6 +635,11 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+           text: `## Unresolved assumptions / interpretations\n\n${summary.openQuestions.length === 0 ? "(none)" : summary.openQuestions.map((entry) => `- ${entry.title}: ${entry.detail}`).join("\n")}\n`,
+           refs: summary.openQuestions.flatMap((entry) => entry.sourceRefs),
+         },
++        {
++          name: "recordedReferences",
++          text: `## Recorded references (verified sources, not open questions)\n\n${summary.references.length === 0 ? "(none)" : summary.references.map((entry) => `- ${entry.title} (${entry.id}): ${entry.detail}`).join("\n")}\n`,
++          refs: summary.references.flatMap((entry) => entry.sourceRefs),
++        },
+         {
+           name: "nextActions",
+           text: `## Permissible next actions\n\n${summary.nextActions.map((line) => `- ${line}`).join("\n")}\n`,
+diff --git a/src/project_continuity/types.ts b/src/project_continuity/types.ts
+index 9424b125..be1e9bdf 100644
+--- a/src/project_continuity/types.ts
++++ b/src/project_continuity/types.ts
+@@ -77,6 +77,16 @@ export interface ProjectSummary {
+   readonly requirements: readonly ContinuityItem[];
+   readonly decisions: readonly ContinuityItem[];
+   readonly acceptedResults: readonly ContinuityItem[];
++  /**
++   * The canonical version the project currently stands on. This is the ProjectIR head owned by
++   * Work, not a second promotion record: a direct-basis advance is visible here even though it
++   * produces no `promotion:*` fact. Historical promotion facts remain in `acceptedResults`.
++   */
++  readonly acceptedVersions: readonly ContinuityItem[];
++  /** Commit-linked journal reference notes (for example a release verifier's version basis). */
++  readonly references: readonly ContinuityItem[];
++  /** Every recorded episode conclusion, newest last, with the artifact commits it delivered. */
++  readonly episodeConclusions: readonly ContinuityItem[];
+   readonly candidates: readonly ContinuityItem[];
+   readonly negativeFindings: readonly ContinuityItem[];
+   readonly openQuestions: readonly ContinuityItem[];
+diff --git a/src/project_pulse/service.ts b/src/project_pulse/service.ts
+index 2521bf46..09cbc092 100644
+--- a/src/project_pulse/service.ts
++++ b/src/project_pulse/service.ts
+@@ -350,6 +350,9 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+       ...summary.requirements,
+       ...summary.decisions,
+       ...summary.acceptedResults,
++      ...summary.acceptedVersions,
++      ...summary.references,
++      ...summary.episodeConclusions,
+       ...summary.candidates,
+       ...summary.negativeFindings,
+       ...openQuestions,
+@@ -382,6 +385,9 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+       basis: summary.basis,
+       requirements: summary.requirements,
+       acceptedAssets: summary.acceptedResults,
++      acceptedVersions: summary.acceptedVersions,
++      references: summary.references,
++      episodeConclusions: summary.episodeConclusions,
+       candidates: summary.candidates,
+       negativeFindings: summary.negativeFindings,
+       openQuestions,
+diff --git a/src/project_pulse/types.ts b/src/project_pulse/types.ts
+index 516d8fe0..f7a8c1ac 100644
+--- a/src/project_pulse/types.ts
++++ b/src/project_pulse/types.ts
+@@ -81,6 +81,12 @@ export interface ProjectPulse {
+   readonly basis: ContinuityBasis;
+   readonly requirements: readonly ContinuityItem[];
+   readonly acceptedAssets: readonly ContinuityItem[];
++  /** The canonical ProjectIR version currently accepted, including a direct-basis advance. */
++  readonly acceptedVersions: readonly ContinuityItem[];
++  /** Commit-linked journal reference notes, kept as sources rather than open questions. */
++  readonly references: readonly ContinuityItem[];
++  /** Recorded episode conclusions with the artifact commits each one delivered. */
++  readonly episodeConclusions: readonly ContinuityItem[];
+   readonly candidates: readonly ContinuityItem[];
+   readonly negativeFindings: readonly ContinuityItem[];
+   readonly openQuestions: readonly ContinuityItem[];

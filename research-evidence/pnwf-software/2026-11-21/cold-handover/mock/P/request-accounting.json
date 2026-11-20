@@ -1,0 +1,81 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "cold-handover-dcfd2379-e4da-4092-a349-e0ed30fe6389",
+  "configDigest": "ee172536d5fb365709e6fcb121952678543963a99cc83541b9c65cde3fc9dc79",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 714913,
+  "reserved": 0,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": 12000000,
+  "sessions": [
+    {
+      "id": "REPAIR",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": 12000000,
+      "softCeiling": 12000000,
+      "requestCount": 6,
+      "unresolvedRequests": 0,
+      "confirmed": 714913,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "9fc70319-95be-4fe1-92ae-9b87f1346c30",
+      "session": "REPAIR",
+      "digest": "f8546e0d1e3374c3b897995bab6dfc91d6f326d43057caa34a5c87ec700d622e",
+      "reserved": 351876,
+      "actual": 105531,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "1762df0c-aa70-4e58-bbd2-718473980437",
+      "session": "REPAIR",
+      "digest": "35478da82908eaacf3989a72f9096bfc842eff2d327a12ee239c3c6a805edb5d",
+      "reserved": 375629,
+      "actual": 129285,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "7c307e7e-2f0d-4642-a5c5-53a3f86bea78",
+      "session": "REPAIR",
+      "digest": "1317e16780c29854f02acc67f84632baf80ebe64482934737a3c2a61804c33e6",
+      "reserved": 385465,
+      "actual": 139121,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "a6a9560a-f91d-4ef7-8dff-38c1fd5d8c65",
+      "session": "REPAIR",
+      "digest": "71a07612dd96bc1faadc6840c73e30a2a46e9ea81762f675a46bdf9c08432c8b",
+      "reserved": 395293,
+      "actual": 143325,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "457124b0-0bab-44ce-b6e1-9b863ba6ef02",
+      "session": "REPAIR",
+      "digest": "08dada44643cec611ad4a9d325a5e8ba8e8dc30f2fbccdb85ae3c00d454fa983",
+      "reserved": 365753,
+      "actual": 109988,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "85e438cc-e357-46fa-afd7-9677231becd4",
+      "session": "REPAIR",
+      "digest": "c5b770d3bb8e963bc1dbed7efa75a60b06bc48e4acb53f484dc350ae4ce4af5e",
+      "reserved": 343570,
+      "actual": 87663,
+      "state": "SETTLED",
+      "reason": null
+    }
+  ],
+  "refusals": []
+}

@@ -1,0 +1,451 @@
+{
+  "seal": {
+    "basis": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+    "prompt": "4a95a02573745114dbc834bd228aaff676a54208cb0e5806e35170710da24d21",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "window": {
+      "maxRequests": 64,
+      "wallClockMs": 1800000,
+      "requestTimeoutMs": 240000,
+      "billingCeiling": null
+    },
+    "files": {
+      "cold-handover-run.mjs": "71bfa2e9a41095a31d0b13ce6e79fa92ba7efc7cef4a96bb3070fe32c82253a6",
+      "cold-handover-check.mjs": "46d434e8808e4f955c95cf1eec5c742be091aed0bc971670c65ef0e068e663a0",
+      "../container_adapter.mjs": "b0bae4d3ace56aa8464baaa6c3bdf30e67293a2e878ff80d8d11637bb60dcad6",
+      "../container_runtime.mjs": "e025675791d894e372c40065385480d410be0500c87346145e7dc9e7bd54a36a",
+      "../bounded_provider.mjs": "d18d9f4f6a25dc30a2e2bc71cf09cc54693c6ce0b1f07faca00a19338edef380",
+      "../execution_budget.mjs": "f9bc20dd34afdd9396a04fc6dff929f5338085cb4b88a406fe81b5d9b2662a4a"
+    }
+  },
+  "baseline": [
+    {
+      "name": "aliases-1",
+      "pass": false
+    },
+    {
+      "name": "historical-basis-1",
+      "pass": false
+    },
+    {
+      "name": "original-artifacts-1",
+      "pass": false
+    },
+    {
+      "name": "accepted-work-1",
+      "pass": false
+    },
+    {
+      "name": "record-vs-question-1",
+      "pass": false
+    },
+    {
+      "name": "unknown-id-1",
+      "pass": true
+    },
+    {
+      "name": "aliases-2",
+      "pass": false
+    },
+    {
+      "name": "historical-basis-2",
+      "pass": false
+    },
+    {
+      "name": "original-artifacts-2",
+      "pass": false
+    },
+    {
+      "name": "accepted-work-2",
+      "pass": false
+    },
+    {
+      "name": "record-vs-question-2",
+      "pass": false
+    },
+    {
+      "name": "unknown-id-2",
+      "pass": true
+    },
+    {
+      "name": "original-events",
+      "pass": true
+    },
+    {
+      "name": "original-project_journal_events",
+      "pass": true
+    },
+    {
+      "name": "original-checkout",
+      "pass": true
+    }
+  ],
+  "qualification": [
+    {
+      "arm": "P",
+      "checks": [
+        {
+          "name": "aliases-1",
+          "pass": true
+        },
+        {
+          "name": "historical-basis-1",
+          "pass": true
+        },
+        {
+          "name": "original-artifacts-1",
+          "pass": true
+        },
+        {
+          "name": "accepted-work-1",
+          "pass": true
+        },
+        {
+          "name": "record-vs-question-1",
+          "pass": true
+        },
+        {
+          "name": "unknown-id-1",
+          "pass": true
+        },
+        {
+          "name": "aliases-2",
+          "pass": true
+        },
+        {
+          "name": "historical-basis-2",
+          "pass": true
+        },
+        {
+          "name": "original-artifacts-2",
+          "pass": true
+        },
+        {
+          "name": "accepted-work-2",
+          "pass": true
+        },
+        {
+          "name": "record-vs-question-2",
+          "pass": true
+        },
+        {
+          "name": "unknown-id-2",
+          "pass": true
+        },
+        {
+          "name": "original-events",
+          "pass": true
+        },
+        {
+          "name": "original-project_journal_events",
+          "pass": true
+        },
+        {
+          "name": "original-checkout",
+          "pass": true
+        }
+      ],
+      "requests": 6,
+      "natural": true
+    },
+    {
+      "arm": "F",
+      "checks": [
+        {
+          "name": "aliases-1",
+          "pass": true
+        },
+        {
+          "name": "historical-basis-1",
+          "pass": true
+        },
+        {
+          "name": "original-artifacts-1",
+          "pass": true
+        },
+        {
+          "name": "accepted-work-1",
+          "pass": true
+        },
+        {
+          "name": "record-vs-question-1",
+          "pass": true
+        },
+        {
+          "name": "unknown-id-1",
+          "pass": true
+        },
+        {
+          "name": "aliases-2",
+          "pass": true
+        },
+        {
+          "name": "historical-basis-2",
+          "pass": true
+        },
+        {
+          "name": "original-artifacts-2",
+          "pass": true
+        },
+        {
+          "name": "accepted-work-2",
+          "pass": true
+        },
+        {
+          "name": "record-vs-question-2",
+          "pass": true
+        },
+        {
+          "name": "unknown-id-2",
+          "pass": true
+        },
+        {
+          "name": "original-events",
+          "pass": true
+        },
+        {
+          "name": "original-project_journal_events",
+          "pass": true
+        },
+        {
+          "name": "original-checkout",
+          "pass": true
+        }
+      ],
+      "requests": 6,
+      "natural": true
+    }
+  ],
+  "rows": [
+    {
+      "arm": "P",
+      "head": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+      "status": "M src/project_continuity/episode.ts\n M src/project_continuity/service.ts\n M src/project_continuity/types.ts\n M src/project_pulse/service.ts\n M src/project_pulse/types.ts\n?? test/pc1_handover_continuity.test.ts",
+      "natural": false,
+      "stop": "request_limit",
+      "error": null,
+      "elapsedMs": 768114,
+      "elapsedSource": "adapter",
+      "settled": 64,
+      "confirmed": 8652014,
+      "unknown": 0,
+      "usage": {
+        "input_tokens": 203256,
+        "cache_read_input_tokens": 8414976,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 33782
+      },
+      "usageByRole": {
+        "principal": {
+          "requests": 64,
+          "input": 203256,
+          "cacheRead": 8414976,
+          "cacheWrite": 0,
+          "output": 33782,
+          "total": 8652014
+        }
+      },
+      "requestAttribution": {
+        "matched": 64,
+        "methods": [
+          "unique-usage"
+        ]
+      },
+      "byRole": [
+        {
+          "role": "principal",
+          "session": "session-f2507a8f-183d-4113-bf9c-8198330140a6",
+          "calls": 85,
+          "paired": 85,
+          "childCalls": 0
+        }
+      ],
+      "firstWrite": 441,
+      "requestsThroughFirstWrite": 44,
+      "committed": false,
+      "deliveryRecorded": false,
+      "offlineDraft": {
+        "passed": 11,
+        "total": 15,
+        "checks": [
+          {
+            "name": "aliases-1",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-1",
+            "pass": false
+          },
+          {
+            "name": "original-artifacts-1",
+            "pass": true
+          },
+          {
+            "name": "accepted-work-1",
+            "pass": false
+          },
+          {
+            "name": "record-vs-question-1",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-1",
+            "pass": true
+          },
+          {
+            "name": "aliases-2",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-2",
+            "pass": false
+          },
+          {
+            "name": "original-artifacts-2",
+            "pass": true
+          },
+          {
+            "name": "accepted-work-2",
+            "pass": false
+          },
+          {
+            "name": "record-vs-question-2",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-2",
+            "pass": true
+          },
+          {
+            "name": "original-events",
+            "pass": true
+          },
+          {
+            "name": "original-project_journal_events",
+            "pass": true
+          },
+          {
+            "name": "original-checkout",
+            "pass": true
+          }
+        ],
+        "tests": 21
+      }
+    },
+    {
+      "arm": "F",
+      "head": "6bf50e90dfad78c4eff668f369d5dd0c5d84564e",
+      "status": "M docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md\n M host/dsh/lib/inspector/graph.js\n M host/dsh/lib/inspector/observe.js\n M src/project_continuity/episode.ts\n M src/project_continuity/service.ts\n M src/project_continuity/types.ts\n M src/project_pulse/service.ts\n M src/project_pulse/types.ts\n M test/dsh_inspector.test.ts\n?? test/pnwf_cq_handoff_trace.test.ts",
+      "natural": false,
+      "stop": "request_limit",
+      "error": "HOST_BRIDGE_EPIPE",
+      "elapsedMs": 1041414,
+      "elapsedSource": "docker-container-lifecycle",
+      "settled": 64,
+      "confirmed": 11687736,
+      "unknown": 0,
+      "usage": {
+        "input_tokens": 272496,
+        "cache_read_input_tokens": 11362304,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 52936
+      },
+      "usageByRole": {
+        "principal": {
+          "requests": 64,
+          "input": 272496,
+          "cacheRead": 11362304,
+          "cacheWrite": 0,
+          "output": 52936,
+          "total": 11687736
+        }
+      },
+      "requestAttribution": {
+        "matched": 64,
+        "methods": [
+          "unique-usage"
+        ]
+      },
+      "byRole": [
+        {
+          "role": "principal",
+          "session": "session-ef5ff346-1522-49a5-8269-96030aa85d93",
+          "calls": 94,
+          "paired": 94,
+          "childCalls": 0
+        }
+      ],
+      "firstWrite": 415,
+      "requestsThroughFirstWrite": 36,
+      "committed": false,
+      "deliveryRecorded": null,
+      "offlineDraft": {
+        "passed": 9,
+        "total": 15,
+        "checks": [
+          {
+            "name": "aliases-1",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-1",
+            "pass": false
+          },
+          {
+            "name": "original-artifacts-1",
+            "pass": false
+          },
+          {
+            "name": "accepted-work-1",
+            "pass": false
+          },
+          {
+            "name": "record-vs-question-1",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-1",
+            "pass": true
+          },
+          {
+            "name": "aliases-2",
+            "pass": true
+          },
+          {
+            "name": "historical-basis-2",
+            "pass": false
+          },
+          {
+            "name": "original-artifacts-2",
+            "pass": false
+          },
+          {
+            "name": "accepted-work-2",
+            "pass": false
+          },
+          {
+            "name": "record-vs-question-2",
+            "pass": true
+          },
+          {
+            "name": "unknown-id-2",
+            "pass": true
+          },
+          {
+            "name": "original-events",
+            "pass": true
+          },
+          {
+            "name": "original-project_journal_events",
+            "pass": true
+          },
+          {
+            "name": "original-checkout",
+            "pass": true
+          }
+        ],
+        "tests": 27
+      }
+    }
+  ]
+}

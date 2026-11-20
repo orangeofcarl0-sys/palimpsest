@@ -11,7 +11,7 @@ export function containerRepositoryPath(repository) {
   const path = resolve(repository).replaceAll("\\", "/");
   return /^[A-Za-z]:/u.test(path) ? "/" + path[0].toLowerCase() + path.slice(2) : "/product";
 }
-export function createPrincipal({ repository, stage, home, image, preflight, layout = "recorded", acceptance, records }) {
+export function createPrincipal({ repository, stage, home, image, preflight, layout = "recorded", acceptance, records, worldVolume }) {
   const imageId = docker(["image", "inspect", image, "--format", "{{.Id}}"]);
   const name = `pnwf-qualified-${randomUUID()}`;
   const harness = `${name}-harness`;
@@ -21,6 +21,7 @@ export function createPrincipal({ repository, stage, home, image, preflight, lay
   const mounts = [
     ...runtimeParts.map(part => ({ source: resolve(repository, part), target: `${repoPath}/${part}`, readOnly: true })),
     { source: resolve(stage), target: "/run/stage", readOnly: false },
+    ...(worldVolume === undefined ? [] : [{ source: worldVolume, target: "/run/stage/world", readOnly: false }]),
     { source: resolve(home), target: "/home/principal/.dsh", readOnly: false },
     { source: resolve(preflight), target: "/qualification/world_preflight.mjs", readOnly: true },
     ...(records ? [
@@ -105,7 +106,10 @@ export function qualifyPrincipal(runtime, expectedHead) {
   if (inspected.Mounts.length !== destinations.length || inspected.Mounts.some(m => !destinations.includes(m.Destination))) throw new Error("UNEXPECTED_CONTAINER_MOUNT");
   for (const mount of runtime.mounts) {
     const actual = inspected.Mounts.find(m => m.Destination === mount.target);
-    if (!actual || actual.RW === mount.readOnly) throw new Error("MOUNT_ACCESS_MISMATCH");
+    if (!actual || actual.RW === mount.readOnly ||
+      (mount.target === "/run/stage/world" && (actual.Type !== "volume" || actual.Name !== mount.source))) {
+      throw new Error("MOUNT_ACCESS_MISMATCH");
+    }
   }
   const harnessPresent = docker(["exec", "--user", "0:0", runtime.id, "node", "-e", "process.stdout.write(require('fs').readFileSync('/harness/private-canary','utf8'))"]) === "PNWF_PRIVATE";
   const checks = JSON.parse(docker(["exec", "--user", "1001:1001", runtime.id, "node", "-e", `(${canary.toString()})()`]));

@@ -1,0 +1,620 @@
+diff --git a/docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md b/docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md
+index 645dc84a..21d43805 100644
+--- a/docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md
++++ b/docs/engineering/GRPC-AUTONOMOUS-CONTINUITY.md
+@@ -56,6 +56,36 @@ Mock 的 Principal 调用原生 `subagent`。实际启动的子会话用仓库
+ 
+ 22 笔均按唯一用量四元组和逐笔终态对账，未决请求为 0。两个会话的 Provider cost 字段合计 0，Go allowance 合计 0.01141566，listCost 合计 0.01902612。上表的运行时间不含核准和离线复算。[汇总与两个宿主观察周期](../../research-evidence/pnwf-software/2026-11-19/autonomous-continuity/comparison.json) · [修订账本](../../research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/out/CHANGE/request-observations.jsonl) · [接续账本](../../research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live/accepted/out/RESUME/request-observations.jsonl)
+ 
++## 交接追溯修复（2026-11-20）
++
++真实接续暴露的三个症状是同一个交接缺口：Episode 结论只被 Pulse 解析，没有进入 `summary`/`explain` 的主体；Journal 的提交引用同时存在 `commit` 和 `git_commit` 两种 kind，核验说明因此被当成未决问题；`DIRECT_BASIS` 接受只推进了 ProjectIR HEAD，没有以“接受版本”的身份出现在接续投影里。
++
++修复保持既有 owner 和权限不变，只调整派生读：
++
++- **引用身份统一**：`REFERENCE_NOTE` 的提交引用同时接受 `commit` 与 `git_commit`。核验记录作为 `OBSERVED_SOURCE` 出现在 `recordedObservations`，不再进入 `openQuestions`；真正的 `OPEN_QUESTION`、`IDEA`、`OPPORTUNITY` 和无来源说明的笔记仍保持保守。
++- **旧结论可追**：`episodeConclusions` 保存每个 Episode 结论，`explain` 优先解析精确 id，因此旧的 `episode-…`、`episode:episode-…` 以及对应 Journal `pje-…` 都能读回。每条结论带原 Journal 来源、记录时的 revision/HEAD、当时交付的完整提交；若交付版本就是当前接受版本，还带上接受记录和核验日志。
++- **当前接受版本有来源**：`DIRECT_BASIS` 接受的 HEAD 以 `accepted-version:<sha>` 进入 `acceptedResults`/Pulse 的 `acceptedAssets`，并列出 `commit:<sha>`、`revision:<n>` 与匹配的核验 Journal 记录。Promotion 结果仍沿用原有接受项，不新增第二套接受账本。
++- **不再误报重开**：只有“结论记录的交付版本正是当前接受的版本”且没有其他后续事实时才确认结论；Pulse 保持 `DELIVERED`/`current:true`，不再产生 `EPISODE_REOPENED`。其他计划变更、真实新问题或字节变化仍会重开。
++- **可追溯字段**：Pulse 的 Episode 增加 `deliveredVersion` 与 `acceptedVersion`；DSH 检查器从旧结论连到“当时交付版本”和“当前接受版本”。
++
++**回归**：`test/pnwf_cq_handoff_trace.test.ts` 直接恢复本次归档的 Git bundle、Work 和 Journal SQLite，检查旧项目的结论、交付 SHA、接受 SHA、核验日志及剩余问题；第二个用例通过正常产品路径新建项目、记录核验、执行 `DIRECT_BASIS` 接受并重启，确认新项目得到同一形状，同时真正的 `OPEN_QUESTION` 仍可见。相关既有套件（Episode、Pulse、Continuity、PWRS、DSH 检查器）继续通过。
++
++**维护验证**：
++
++```powershell
++# 旧项目：恢复真实归档后读回。失败前该查询返回 found:false / UNKNOWN。
++$evidence = 'research-evidence/pnwf-software/2026-11-19/autonomous-continuity/live'
++$restored = Join-Path $env:TEMP ('fleet-readback-' + [guid]::NewGuid())
++node scripts/pnwf/software/autonomy-archive.mjs --verify=$evidence --restore=$restored
++node scripts/inspector/dsh-web.mjs --deployment="$restored/profile.json" --readback="$evidence/acceptance.json" --result="$restored/ui.json"
++
++# 新旧两条路径的机器回归（无需模型或网络）。
++pnpm run build
++pnpm exec vitest run test/pnwf_cq_handoff_trace.test.ts
++```
++
++在旧项目读回时应看到：`episode-e7050e9ddf64ccebde7f08f6` 可解析，`deliveredVersion` 与 `acceptedVersion` 都是 `95b83e71…`，核验记录 `pje-d0c977…` 出现在 `recordedObservations` 而不是 `openQuestions`。在新项目中，把同一流程的 `git_commit` 换成 `commit` 也应得到相同结果；之后再记一条真正的 `OPEN_QUESTION`，它必须继续出现在 `openQuestions` 和 `decisionQueue` 中。
++
+ ## 离线复算和打开项目
+ 
+ 用 Node 24 在已构建的仓库根目录执行以下命令。归档工具校验每个文件的 SHA-256，并从原始多帧 DSH 流和逐请求账本重算真实样本已记录的请求绑定。指定一个全新目录可以恢复 Git、Work 和项目日志，宿主会在本地生成新的访问凭据。下面使用真实接受版本。把目录末尾改成 `mock` 可查看有贡献决定的正例。安装本项目依赖、DSH Web 和 Playwright Chromium 后，这些命令均可离线执行。[归档与复算](../../scripts/pnwf/software/autonomy-archive.mjs)
+diff --git a/host/dsh/lib/inspector/graph.js b/host/dsh/lib/inspector/graph.js
+index eb93ac95..d9df905c 100644
+--- a/host/dsh/lib/inspector/graph.js
++++ b/host/dsh/lib/inspector/graph.js
+@@ -17,7 +17,8 @@ export function drawing() {
+     const sort = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+     return { nodes: [...nodes.values()].sort(sort), edges: [...edges.values()].filter(e => nodes.has(e.from) && nodes.has(e.to)).sort(sort), coverage };
+   }
+-  return { node, edge, coverage, finish };
++  const has = id => nodes.has(id);
++  return { node, edge, has, coverage, finish };
+ }
+ 
+ export function drawWork(d, graph, headCommit) {
+@@ -71,8 +72,16 @@ export function drawPulse(d, pulse) {
+   if (ep.conclusion) {
+     const c = ep.conclusion;
+     const n = d.node(key('episode', c.conclusionId), 3, '会话结论', c.intent, ep.state, '项目接续', c.conclusionId,
+-      { 陈述: c.statement, 等待: c.waitingOn, 仍适用: ep.current, 时间: c.recordedAt });
++      { 陈述: c.statement, 等待: c.waitingOn, 仍适用: ep.current, 交付版本: ep.deliveredVersion ?? null,
++        当前接受版本: ep.acceptedVersion ?? null, 时间: c.recordedAt });
+     d.edge(root, n, '记录结论', '项目接续');
++    // The episode names the exact committed bytes it judged. Draw the delivered version even when a
++    // later acceptance moved the project head, so an old conclusion remains traversable.
++    for (const sha of [ep.deliveredVersion, ep.acceptedVersion]) {
++      if (typeof sha !== 'string' || sha === '') continue;
++      if (!d.has(key('commit', sha))) d.node(key('commit', sha), 3, '交付版本', sha.slice(0, 12), null, '项目接续', sha);
++      d.edge(n, key('commit', sha), sha === ep.acceptedVersion ? '当前接受版本' : '当时交付版本', '项目接续', sha);
++    }
+   }
+   for (const item of pulse.delegations) {
+     const n = d.node(key('delegation', item.delegationRef), 2, '委派', item.task, item.state, '项目接续', item.delegationRef,
+diff --git a/host/dsh/lib/inspector/observe.js b/host/dsh/lib/inspector/observe.js
+index ec4e83cc..d4a1a5fe 100644
+--- a/host/dsh/lib/inspector/observe.js
++++ b/host/dsh/lib/inspector/observe.js
+@@ -43,7 +43,7 @@ export function createInspector(host, { clock = Date.now, retention = 90, interv
+     await read('版本引用', head && app.projectWorkspace, async () => {
+       for (const { entry } of await app.projectWorkspace.journal()) {
+         if (entry.projectId !== projectId || entry.kind !== 'REFERENCE_NOTE' ||
+-            !entry.relatedRefs.some(r => r.kind === 'git_commit' && r.id === head)) continue;
++            !entry.relatedRefs.some(r => (r.kind === 'git_commit' || r.kind === 'commit') && r.id === head)) continue;
+         const note = d.node(key('journal', entry.entryId), 3, '版本依据', entry.title, null, '项目日志',
+           entry.entryId, { 依据: entry.body, 记录来源: entry.provenance, 版本: head });
+         d.edge(key('commit', head), note, '关联记录', '项目日志', entry.entryId);
+diff --git a/src/project_continuity/episode.ts b/src/project_continuity/episode.ts
+index 89c101c8..e9d1e505 100644
+--- a/src/project_continuity/episode.ts
++++ b/src/project_continuity/episode.ts
+@@ -372,6 +372,46 @@ export interface PulseEpisode {
+   readonly changedSince: readonly string[];
+   readonly readiness: EpisodeReadiness;
+   readonly detail: string;
++  /**
++   * The version the conclusion itself named (the full commit from recorded artifact provenance, or
++   * the commit evidence when no artifact was observed). This is the DELIVERED version, not an
++   * acceptance claim.
++   */
++  readonly deliveredVersion?: string | null | undefined;
++  /**
++   * The currently accepted version, but ONLY when this conclusion's recorded delivery is that exact
++   * version. A later accepted version that does not contain this delivery is a genuine supersession,
++   * not a confirmation, and is left to `changedSince`/the current basis.
++   */
++  readonly acceptedVersion?: string | null | undefined;
++}
++
++/**
++ * The exact commits a conclusion recorded for the bytes it delivered. Artifact provenance is the
++ * strongest source (it names the full commit actually read); evidence refs are the fallback and may
++ * be abbreviated. A short evidence commit is expanded only when a recorded artifact commit starts
++ * with it, so no prefix is silently treated as a different version.
++ */
++export function episodeDeliveredCommits(conclusion: EpisodeConclusion): readonly string[] {
++  const commits = new Set<string>();
++  for (const artifact of conclusion.check.artifacts ?? []) {
++    if (typeof artifact.commit === "string" && artifact.commit !== "") commits.add(artifact.commit);
++  }
++  for (const ref of conclusion.evidenceRefs) {
++    if (!ref.startsWith("commit:")) continue;
++    const value = ref.slice("commit:".length).trim();
++    if (value === "") continue;
++    const full = [...commits].find((commit) => commit.startsWith(value));
++    commits.add(full ?? value);
++  }
++  return Object.freeze([...commits]);
++}
++
++/** Compare a recorded commit (possibly abbreviated) with an accepted full commit. */
++export function commitReferenceMatches(recorded: string, accepted: string): boolean {
++  if (recorded === accepted) return true;
++  if (recorded.length < 7 || accepted.length < 7) return false;
++  return accepted.startsWith(recorded) || recorded.startsWith(accepted);
+ }
+ 
+ const INTENT_STATE: Readonly<Record<EpisodeIntent, EpisodeState>> = Object.freeze({
+@@ -413,6 +453,12 @@ export function buildPulseEpisode(input: {
+    * unrelated plain note no longer reopens every delivery for no reason.
+    */
+   readonly basisRelevant?: ((entry: JournalFact) => boolean) | undefined;
++  /**
++   * The currently accepted canonical version, when the caller can observe it. When the conclusion's
++   * recorded delivery IS that version, the acceptance confirms the conclusion rather than reopening
++   * it: the old episode becomes historical evidence, not an open task.
++   */
++  readonly acceptedVersion?: string | null | undefined;
+ }): PulseEpisode {
+   let lastIndex = -1;
+   let conclusion: EpisodeConclusion | null = null;
+@@ -430,22 +476,38 @@ export function buildPulseEpisode(input: {
+       current: true,
+       changedSince: Object.freeze([]),
+       readiness: input.readiness,
++      deliveredVersion: null,
++      acceptedVersion: null,
+       detail:
+         "no episode conclusion is recorded; this episode is OPEN. Continue the work, or record a conclusion when the goal has been handled, acceptance is pending, an external fact is awaited, or a checkpoint is the honest next state",
+     });
+   }
+ 
+-  const changedSince: string[] = [];
++  const deliveredCommits = episodeDeliveredCommits(conclusion);
++  const acceptedVersion = input.acceptedVersion ?? null;
++  /**
++   * A later acceptance that lands exactly on the recorded delivery confirms the judgement. The basis
++   * moved, but not in a way that contradicts the delivered bytes. Any OTHER later fact still counts:
++   * only basis movement is ignored, and only for this exact match. Weaker evidence is never enough to
++   * claim acceptance (a different or later accepted version stays a real supersession).
++   */
++  const acceptedDelivery =
++    acceptedVersion !== null &&
++    acceptedVersion !== "" &&
++    deliveredCommits.some((commit) => commitReferenceMatches(commit, acceptedVersion));
++
++  const basisChanges: string[] = [];
+   if (conclusion.basis.projectRevision !== input.basis.projectRevision) {
+-    changedSince.push(`project revision moved from ${String(conclusion.basis.projectRevision)} to ${String(input.basis.projectRevision)}`);
++    basisChanges.push(`project revision moved from ${String(conclusion.basis.projectRevision)} to ${String(input.basis.projectRevision)}`);
+   }
+   if (conclusion.basis.headCommit !== input.basis.headCommit) {
+-    changedSince.push(`repository head moved from ${conclusion.basis.headCommit.slice(0, 12)} to ${input.basis.headCommit.slice(0, 12)}`);
++    basisChanges.push(`repository head moved from ${conclusion.basis.headCommit.slice(0, 12)} to ${input.basis.headCommit.slice(0, 12)}`);
+   }
++  const laterChanges: string[] = [];
+   const relevant = input.basisRelevant;
+   for (const entry of input.entries.slice(lastIndex + 1)) {
+     if (relevant !== undefined && !relevant(entry)) continue;
+-    changedSince.push(`journal ${entry.entryId} (${entry.kind}) "${entry.title}" was recorded after the conclusion`);
++    laterChanges.push(`journal ${entry.entryId} (${entry.kind}) "${entry.title}" was recorded after the conclusion`);
+   }
+   /**
+    * PWRS-C artifact currentness. Compared only when BOTH sides carry a digest: an old conclusion
+@@ -453,7 +515,7 @@ export function buildPulseEpisode(input: {
+    * otherwise would manufacture a change.
+    */
+   if (input.artifactStatesNow !== undefined) {
+-    changedSince.push(...artifactChangeReasons(conclusion.check.artifacts ?? [], input.artifactStatesNow));
++    laterChanges.push(...artifactChangeReasons(conclusion.check.artifacts ?? [], input.artifactStatesNow));
+   }
+   /** A pending operator acceptance that was resolved is a real change, not a stale judgement. */
+   if (input.taskStates !== undefined) {
+@@ -461,10 +523,12 @@ export function buildPulseEpisode(input: {
+       const taskId = ref.startsWith("task:") ? ref.slice("task:".length) : ref;
+       const state = input.taskStates.get(taskId);
+       if (state === "SATISFIED") {
+-        changedSince.push(`the operator accepted task ${taskId}; the pending acceptance the conclusion named is resolved`);
++        laterChanges.push(`the operator accepted task ${taskId}; the pending acceptance the conclusion named is resolved`);
+       }
+     }
+   }
++  const confirmedByAcceptance = acceptedDelivery && laterChanges.length === 0;
++  const changedSince = confirmedByAcceptance ? [] : [...basisChanges, ...laterChanges];
+   const current = changedSince.length === 0;
+ 
+   return Object.freeze({
+@@ -473,9 +537,13 @@ export function buildPulseEpisode(input: {
+     current,
+     changedSince: Object.freeze(changedSince),
+     readiness: input.readiness,
+-    detail: current
+-      ? `the principal recorded ${conclusion.intent} at revision ${String(conclusion.basis.projectRevision)}; this is a judgement, not acceptance, and the operator retains authority`
+-      : `the conclusion is REOPENED: ${changedSince.join("; ")}. Re-read the current state before relying on the earlier judgement`,
++    deliveredVersion: deliveredCommits[0] ?? null,
++    acceptedVersion: acceptedDelivery ? acceptedVersion : null,
++    detail: confirmedByAcceptance
++      ? `the conclusion recorded delivery of ${deliveredCommits[0] ?? "the named artifacts"} and that exact version is now accepted at revision ${String(input.basis.projectRevision)}; the judgement is historical evidence, not an open task, and the operator still holds acceptance authority`
++      : current
++        ? `the principal recorded ${conclusion.intent} at revision ${String(conclusion.basis.projectRevision)}; this is a judgement, not acceptance, and the operator retains authority`
++        : `the conclusion is REOPENED: ${changedSince.join("; ")}. Re-read the current state before relying on the earlier judgement`,
+   });
+ }
+ 
+diff --git a/src/project_continuity/service.ts b/src/project_continuity/service.ts
+index d33cb913..ad4e26f4 100644
+--- a/src/project_continuity/service.ts
++++ b/src/project_continuity/service.ts
+@@ -3,6 +3,11 @@
+  */
+ import { canonicalDigest } from "../schema/canonical.js";
+ import type { ProjectIr } from "../schema/models.js";
++import {
++  commitReferenceMatches,
++  episodeDeliveredCommits,
++  parseEpisodeConclusion,
++} from "./episode.js";
+ import type { ProjectJournalViewEntry } from "../project_workspace/journal.js";
+ import type { OpenLoop } from "../project_workspace/view.js";
+ import type {
+@@ -77,11 +82,25 @@ function journalOpen(entry: ProjectJournalViewEntry): boolean {
+  * no such identity stays conservative and remains an open question; a genuine question should be
+  * recorded as OPEN_QUESTION and is never filtered here.
+  */
++function isCommitRef(kind: string): boolean {
++  /**
++   * The journal's ref kind is intentionally open (`kind/id`), and the SHIPPED verifier and the DSH
++   * inspector both write `git_commit` while older manual/tests write `commit`. Both name the same
++   * Git object; treating only one as a source identity made the archived verification note look like
++   * an open question. Keep the alias here, beside the note-classification rule that depends on it.
++   */
++  return kind === "commit" || kind === "git_commit";
++}
++
++function relatedCommitIds(entry: ProjectJournalViewEntry): readonly string[] {
++  return entry.entry.relatedRefs.filter((ref) => isCommitRef(ref.kind)).map((ref) => ref.id);
++}
++
+ function recordedReference(entry: ProjectJournalViewEntry): boolean {
+   if (entry.entry.kind !== "REFERENCE_NOTE") return false;
+   const provenance = entry.entry.provenance;
+   if (provenance.startsWith("episode:") || provenance.startsWith("relay:")) return true;
+-  return entry.entry.relatedRefs.some((ref) => ref.kind === "commit");
++  return entry.entry.relatedRefs.some((ref) => isCommitRef(ref.kind));
+ }
+ 
+ function stableBasis(ir: ProjectIr, status: ReturnType<ContinuityInput["work"]["status"]>, now: string): ContinuityBasis {
+@@ -151,7 +170,7 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+       const taskId = taskByAttempt.get(fact.attemptId);
+       if (taskId !== undefined && taskId !== null) lastPromotionByTask.set(taskId, fact.promotionId);
+     }
+-    const acceptedResults = promotionFacts.map((fact) => {
++    const acceptedResults: ContinuityItem[] = promotionFacts.map((fact) => {
+       const taskId = taskByAttempt.get(fact.attemptId) ?? null;
+       const superseded = taskId !== null && lastPromotionByTask.get(taskId) !== fact.promotionId;
+       return item({
+@@ -221,6 +240,125 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+         }),
+       );
+ 
++    /**
++     * HANDOFF TRACE: an episode conclusion is itself a journal record, so `explain` must be able to
++     * resolve its conclusion id. Keep it separate from open questions and candidate work: it is an
++     * advisory judgement at a recorded basis, and its source refs name the journal entry, the exact
++     * delivered commit(s), and (when the delivery is now accepted) the acceptance record.
++     */
++    const episodeRecords = entries.flatMap((view) => {
++      const conclusion = parseEpisodeConclusion(view.entry.body);
++      return conclusion === null ? [] : [{ view, conclusion }];
++    });
++    const recordedReferenceEntries = entries.filter(
++      (view) => view.entry.kind === "REFERENCE_NOTE" && recordedReference(view) && parseEpisodeConclusion(view.entry.body) === null,
++    );
++    const noteIdsForCommit = (commit: string): readonly string[] =>
++      recordedReferenceEntries
++        .filter((view) => relatedCommitIds(view).some((id) => commitReferenceMatches(id, commit)))
++        .map((view) => `journal:${view.entry.entryId}`);
++    const admittedDirectVersion = status.directOutcome?.admittedDirectCommit ?? null;
++
++    const episodeConclusions: ContinuityItem[] = episodeRecords.map(({ view, conclusion }) => {
++      const delivered = episodeDeliveredCommits(conclusion);
++      const matchesAccepted =
++        admittedDirectVersion !== null && delivered.some((commit) => commitReferenceMatches(commit, admittedDirectVersion));
++      const refs = new Set<string>([`episode:${conclusion.conclusionId}`, `journal:${view.entry.entryId}`]);
++      if (view.entry.provenance !== "") refs.add(view.entry.provenance);
++      for (const commit of delivered) {
++        refs.add(`commit:${commit}`);
++        if (matchesAccepted) for (const noteRef of noteIdsForCommit(commit)) refs.add(noteRef);
++      }
++      if (matchesAccepted) refs.add(`commit:${admittedDirectVersion}`);
++      const deliveredText =
++        delivered.length === 0 ? "no committed version was recorded for its artifacts" : `delivered version ${delivered.join(", ")}`;
++      const acceptedText =
++        admittedDirectVersion === null
++          ? "no operator-mediated accepted version is visible in this read"
++          : matchesAccepted
++            ? `that is also the currently accepted project version ${admittedDirectVersion}`
++            : `the currently accepted project version is ${admittedDirectVersion}, which is not the version this conclusion delivered`;
++      return item({
++        id: `episode:${conclusion.conclusionId}`,
++        standing: "AGENT_INTERPRETATION",
++        title: view.entry.title === "" ? `Episode conclusion: ${conclusion.intent}` : view.entry.title,
++        detail:
++          `${conclusion.intent}: ${conclusion.statement} Recorded at revision ${String(conclusion.basis.projectRevision)} ` +
++          `(head ${conclusion.basis.headCommit}); ${deliveredText}; ${acceptedText}.`,
++        sourceRefs: [...refs],
++        basis: {
++          projectRevision: conclusion.basis.projectRevision,
++          projectDigest: conclusion.basis.projectDigest,
++          headCommit: conclusion.basis.headCommit,
++          observedAt: view.entry.createdAt,
++        },
++        applicability: "a historical episode judgement recorded in the journal; it accepts no artifact and is not current Work",
++        adoptionBasis: "recorded by the principal as a REFERENCE_NOTE in the project journal",
++        reopenConditions: [
++          "a later journal fact that contradicts the recorded delivery",
++          "a changed artifact whose digest differs from the recorded provenance",
++        ],
++        currentApplicability:
++          matchesAccepted ? "APPLICABLE" : admittedDirectVersion !== null && delivered.length > 0 ? "SUPERSEDED" : "UNKNOWN",
++        applicabilityBasis: matchesAccepted
++          ? "the exact delivered commit is the currently accepted canonical head"
++          : admittedDirectVersion !== null && delivered.length > 0
++            ? "the current accepted head is a different version; the conclusion remains historical"
++            : "no acceptance or compatibility assessment ties this conclusion to the current head",
++      });
++    });
++
++    const recordedObservations: ContinuityItem[] = recordedReferenceEntries.map((view) => {
++      const refs = new Set<string>([`journal:${view.entry.entryId}`]);
++      if (view.entry.provenance !== "") refs.add(view.entry.provenance);
++      for (const ref of view.entry.relatedRefs) {
++        refs.add(isCommitRef(ref.kind) ? `commit:${ref.id}` : `${ref.kind}:${ref.id}`);
++      }
++      return item({
++        id: `journal:${view.entry.entryId}`,
++        standing: "OBSERVED_SOURCE",
++        title: view.entry.title,
++        detail: view.entry.body,
++        sourceRefs: [...refs],
++        basis,
++        applicability: "a recorded observation with structured provenance; it is not an open question",
++        adoptionBasis: "recorded in the project journal with a source or commit reference",
++        reopenConditions: ["a genuinely new accepted source that contradicts the observation"],
++      });
++    });
++
++    if (
++      admittedDirectVersion !== null &&
++      !acceptedResults.some((entry) => entry.sourceRefs.includes(`commit:${admittedDirectVersion}`))
++    ) {
++      acceptedResults.push(
++        item({
++          id: `accepted-version:${admittedDirectVersion}`,
++          standing: "ACCEPTED_FOR_PURPOSE",
++          title: `Accepted project version ${admittedDirectVersion.slice(0, 12)}`,
++          detail:
++            `the operator accepted commit ${admittedDirectVersion} as the canonical ProjectIR head at revision ` +
++            `${String(ir.revision)} through the DIRECT_BASIS path; this is an acceptance record, not a promotion effect`,
++          sourceRefs: [
++            `accepted-version:${admittedDirectVersion}`,
++            `commit:${admittedDirectVersion}`,
++            `revision:${ir.revision}`,
++            ...noteIdsForCommit(admittedDirectVersion),
++          ],
++          basis,
++          applicability: "the canonical ProjectIR head currently used as the project basis",
++          adoptionBasis: "operator-mediated DIRECT_BASIS admission recorded by the Work head owner",
++          reopenConditions: ["a later accepted project revision that supersedes this head"],
++          historicalAcceptance: "ACCEPTED",
++          currentApplicability: admittedDirectVersion === status.headCommit ? "APPLICABLE" : "SUPERSEDED",
++          applicabilityBasis:
++            admittedDirectVersion === status.headCommit
++              ? "this commit is the current canonical ProjectIR head"
++              : "a later canonical ProjectIR head exists",
++        }),
++      );
++    }
++
+     const openQuestions = entries
+       .filter(
+         (entry) =>
+@@ -346,6 +484,8 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+       candidates,
+       negativeFindings,
+       openQuestions,
++      episodeConclusions,
++      recordedObservations,
+       recentChanges: entries.slice(-6).map((entry) => ({
+         id: `journal:${entry.entry.entryId}`,
+         kind: entry.entry.kind,
+@@ -368,6 +508,8 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+       ...summary.candidates,
+       ...summary.negativeFindings,
+       ...summary.openQuestions,
++      ...summary.episodeConclusions,
++      ...summary.recordedObservations,
+       ...summary.blocked,
+     ]);
+ 
+@@ -376,12 +518,16 @@ export function makeProjectContinuityService(input: ContinuityInput): ProjectCon
+     async explain(subject: string): Promise<ProjectExplanation> {
+       const summary = await build();
+       const items = allItems(summary);
+-      const found = items.find(
+-        (candidate) =>
+-          candidate.id === subject ||
+-          candidate.sourceRefs.includes(subject) ||
+-          candidate.sourceRefs.some((ref) => ref.split(":").slice(-1)[0] === subject),
+-      );
++      /**
++       * Resolve the strongest identity first. A source ref may legitimately appear on more than one
++       * projection item (the accepting version and the verification note both name the same journal
++       * entry); an exact `journal:...` request must still return the record itself, not whichever
++       * item happened to be listed first. Bare ids remain the final, weakest match.
++       */
++      const found =
++        items.find((candidate) => candidate.id === subject) ??
++        items.find((candidate) => candidate.sourceRefs.includes(subject)) ??
++        items.find((candidate) => candidate.sourceRefs.some((ref) => ref.split(":").slice(-1)[0] === subject));
+       const availableRefs = items.map((candidate) => candidate.id);
+       if (found === undefined) {
+         return {
+diff --git a/src/project_continuity/types.ts b/src/project_continuity/types.ts
+index 9424b125..1b1e76d0 100644
+--- a/src/project_continuity/types.ts
++++ b/src/project_continuity/types.ts
+@@ -80,6 +80,18 @@ export interface ProjectSummary {
+   readonly candidates: readonly ContinuityItem[];
+   readonly negativeFindings: readonly ContinuityItem[];
+   readonly openQuestions: readonly ContinuityItem[];
++  /**
++   * HANDOFF TRACE: the recorded episode conclusions, including ones whose basis has moved. A later
++   * session can resolve a conclusion id without replaying a transcript, and each item carries the
++   * journal source plus the exact delivered commit(s) it recorded.
++   */
++  readonly episodeConclusions: readonly ContinuityItem[];
++  /**
++   * Structured REFERENCE_NOTEs that are records (a commit/source identity), not questions. Keeping
++   * them as a separate projection makes a verified version note explainable as OBSERVED_SOURCE
++   * instead of either disappearing or appearing as an open question.
++   */
++  readonly recordedObservations: readonly ContinuityItem[];
+   /** PC1-V1 R7: the latest bounded journal changes, for a decision-oriented capsule. */
+   readonly recentChanges?: readonly { readonly id: string; readonly kind: string; readonly title: string }[];
+   readonly tasks: readonly ContinuityTask[];
+@@ -147,6 +159,8 @@ export interface ContinuityInput {
+         readonly projectHead: string;
+         readonly relation: string;
+         readonly uncommittedPaths: readonly string[];
++        /** The exact commit admitted through DIRECT_BASIS, or null for an ordinary head. */
++        readonly admittedDirectCommit?: string | null | undefined;
+       };
+     };
+     promotionFacts(): readonly {
+diff --git a/src/project_pulse/service.ts b/src/project_pulse/service.ts
+index 2521bf46..372e7f47 100644
+--- a/src/project_pulse/service.ts
++++ b/src/project_pulse/service.ts
+@@ -6,6 +6,7 @@ import {
+   type EpisodeReadiness,
+   type ProjectSummary,
+ } from "../project_continuity/index.js";
++import { commitReferenceMatches, parseEpisodeConclusion } from "../project_continuity/episode.js";
+ import type { ProjectJournalViewEntry } from "../project_workspace/index.js";
+ import {
+   CONTRIBUTION_DECISION_MARKER,
+@@ -92,10 +93,30 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+      * contribution DECISION, a new delegation, a settlement record and a new episode conclusion are
+      * facts and do reopen.
+      */
+-    const basisRelevant = (entry: { readonly body: string }): boolean =>
+-      !entry.body.includes(CONTRIBUTION_MARKER) ||
+-      entry.body.includes(CONTRIBUTION_DECISION_MARKER) ||
+-      entry.body.includes(DELEGATION_START_MARKER);
++    /**
++     * HANDOFF TRACE: a version-verification note names the commit it was written against. When that
++     * commit is the CURRENT accepted head, the note records the acceptance rather than a new fact,
++     * so it must not reopen the preceding conclusion. Plain notes stay conservative (the ALHS
++     * measured-fact case), and a note naming any other commit still counts.
++     */
++    const viewById = new Map(entries.map((view) => [view.entry.entryId, view]));
++    const isCommitRef = (kind: string): boolean => kind === "commit" || kind === "git_commit";
++    const isCurrentVersionRecord = (entryId: string): boolean => {
++      const view = viewById.get(entryId);
++      if (view === undefined || view.entry.kind !== "REFERENCE_NOTE") return false;
++      if (parseEpisodeConclusion(view.entry.body) !== null) return false;
++      return view.entry.relatedRefs.some(
++        (ref) => isCommitRef(ref.kind) && commitReferenceMatches(ref.id, summary.basis.headCommit),
++      );
++    };
++    const basisRelevant = (entry: { readonly entryId: string; readonly body: string }): boolean => {
++      if (isCurrentVersionRecord(entry.entryId)) return false;
++      return (
++        !entry.body.includes(CONTRIBUTION_MARKER) ||
++        entry.body.includes(CONTRIBUTION_DECISION_MARKER) ||
++        entry.body.includes(DELEGATION_START_MARKER)
++      );
++    };
+     const openQuestions = summary.openQuestions.filter((item) => !structuredJournalIds.has(item.id));
+ 
+     const delegations: DelegationPulseEntry[] = [];
+@@ -163,6 +184,17 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+       negativeFindingRefs: summary.negativeFindings.map((finding) => finding.id),
+       mechanicalActions: summary.nextActions,
+     });
++    /**
++     * Only an acceptance record may confirm a delivered version. Merely observing a repository HEAD
++     * is not enough: an unaccepted direct commit, or a plan revision at the same head, must still be
++     * able to reopen the judgement.
++     */
++    const acceptedVersion =
++      summary.acceptedResults
++        .filter((item) => item.currentApplicability === "APPLICABLE")
++        .flatMap((item) => item.sourceRefs)
++        .find((ref) => ref.startsWith("commit:") && commitReferenceMatches(ref.slice("commit:".length), summary.basis.headCommit))
++        ?.slice("commit:".length) ?? null;
+     const episode = buildPulseEpisode({
+       entries: entries.map((view) => ({
+         entryId: view.entry.entryId,
+@@ -174,6 +206,7 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+       basis: summary.basis,
+       taskStates: new Map(summary.tasks.map((task) => [task.taskId, task.state])),
+       basisRelevant,
++      acceptedVersion,
+     });
+     /**
+      * PWRS-A: the durable settlement attributions, keyed by task. This is what lets a NEW session see
+@@ -353,6 +386,8 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+       ...summary.candidates,
+       ...summary.negativeFindings,
+       ...openQuestions,
++      ...summary.episodeConclusions,
++      ...summary.recordedObservations,
+       ...summary.blocked,
+     ]) {
+       for (const ref of item.sourceRefs) sources.add(ref);
+@@ -385,6 +420,8 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
+       candidates: summary.candidates,
+       negativeFindings: summary.negativeFindings,
+       openQuestions,
++      episodeConclusions: summary.episodeConclusions,
++      recordedObservations: summary.recordedObservations,
+       recentChanges: summary.recentChanges ?? [],
+       pendingWork: summary.pendingWork,
+       blocked: summary.blocked,
+diff --git a/src/project_pulse/types.ts b/src/project_pulse/types.ts
+index 516d8fe0..f5ffe4c5 100644
+--- a/src/project_pulse/types.ts
++++ b/src/project_pulse/types.ts
+@@ -84,6 +84,10 @@ export interface ProjectPulse {
+   readonly candidates: readonly ContinuityItem[];
+   readonly negativeFindings: readonly ContinuityItem[];
+   readonly openQuestions: readonly ContinuityItem[];
++  /** Recorded episode conclusions, including historical ones whose basis has moved. */
++  readonly episodeConclusions: readonly ContinuityItem[];
++  /** Structured notes that are records (e.g. a verification at an exact commit), not questions. */
++  readonly recordedObservations: readonly ContinuityItem[];
+   readonly recentChanges: readonly { readonly id: string; readonly kind: string; readonly title: string }[];
+   readonly pendingWork: readonly ContinuityTask[];
+   readonly blocked: readonly ContinuityItem[];
+diff --git a/test/dsh_inspector.test.ts b/test/dsh_inspector.test.ts
+index bf648078..8dc2c0a6 100644
+--- a/test/dsh_inspector.test.ts
++++ b/test/dsh_inspector.test.ts
+@@ -41,6 +41,25 @@ describe("DSH project inspector", () => {
+     expect(view.edges).toContainEqual(expect.objectContaining({ kind: "评估发现", ref: "entry" }));
+   });
+ 
++  it("keeps an old episode traversable to both its delivered and its accepted version", () => {
++    const d = drawing();
++    const delivered = "a".repeat(40), accepted = "b".repeat(40);
++    drawPulse(d, { projectId: "p", delegations: [], decisionQueue: [], acceptedAssets: [], candidates: [],
++      contributions: [], execution: { attempts: [] }, episode: {
++        state: "DELIVERED", current: true, conclusion: { conclusionId: "episode-old", intent: "DELIVER",
++          statement: "delivered", waitingOn: null, recordedAt: "2026-11-18T00:00:00Z" },
++        deliveredVersion: delivered, acceptedVersion: accepted } });
++    const { nodes, edges } = d.finish();
++    expect(nodes).toEqual(expect.arrayContaining([
++      expect.objectContaining({ ref: delivered, kind: "交付版本" }),
++      expect.objectContaining({ ref: accepted, kind: "交付版本" }),
++    ]));
++    expect(edges).toContainEqual(expect.objectContaining({
++      from: key("episode", "episode-old"), to: key("commit", delivered), kind: "当时交付版本" }));
++    expect(edges).toContainEqual(expect.objectContaining({
++      from: key("episode", "episode-old"), to: key("commit", accepted), kind: "当前接受版本" }));
++  });
++
+   it("only shows journal references explicitly linked to the current project and exact version", async () => {
+     const current = "a".repeat(40), old = "b".repeat(40);
+     const entry = { projectId: "p", kind: "REFERENCE_NOTE", entryId: "good", title: "Measured behavior", body: "three frames", provenance: "verifier",

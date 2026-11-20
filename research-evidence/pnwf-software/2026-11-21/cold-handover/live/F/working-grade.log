@@ -1,0 +1,146 @@
+Verified 40 evidence files
+Restored project /tmp/fleet-restored/profile.json
+COLD_HANDOVER [{"name":"aliases-1","pass":true},{"name":"historical-basis-1","pass":false},{"name":"original-artifacts-1","pass":false},{"name":"accepted-work-1","pass":false},{"name":"record-vs-question-1","pass":true},{"name":"unknown-id-1","pass":true},{"name":"aliases-2","pass":true},{"name":"historical-basis-2","pass":false},{"name":"original-artifacts-2","pass":false},{"name":"accepted-work-2","pass":false},{"name":"record-vs-question-2","pass":true},{"name":"unknown-id-2","pass":true},{"name":"original-events","pass":true},{"name":"original-project_journal_events","pass":true},{"name":"original-checkout","pass":true}]
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/tmp/checkout[39m
+
+From /tmp/palimpsest-pnwf-cq-basis-vertical-QRmThp/repo/.palimpsest/worlds/attempt-bdf61fd6c48fe167b61d999097c16e00
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-QRmThp/repo/.palimpsest/worlds/attempt-bdf61fd6c48fe167b61d999097c16e00
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-QRmThp/repo/.palimpsest/worlds/attempt-d2d8a76ecbae40a7b6e18f0121702e1b
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-QRmThp/repo/.palimpsest/worlds/attempt-d2d8a76ecbae40a7b6e18f0121702e1b
+ * branch            HEAD       -> FETCH_HEAD
+Switched to a new branch 'other'
+Note: switching to '94a403f8f50fa90710f87d71f7c1d1d21dd90465'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 94a403f direct
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "INITIALIZED",
+  "profileFile": "/tmp/palimpsest-pnwf-cq-basis-cli-JOuZhw/product-profile.json",
+  "summary": {
+    "schema": "pc1-project-summary/v1",
+    "projectId": "pnwf-cq-basis",
+    "goal": "direct outcome then governed continuation",
+    "basis": {
+      "projectRevision": 0,
+      "projectDigest": "3cfd275b186e1c1aa9dbd082ffbf8158f4e1de414f094afd0defbb5ca739f8d5",
+      "headCommit": "c8f75889c797bbaa9fabf714600749dfe87dc8ca",
+      "observedAt": "2026-11-20T17:05:01.485Z"
+    },
+    "coverage": {
+      "complete": true,
+      "omitted": [],
+      "unavailable": []
+    },
+    "requirements": [],
+    "decisions": [],
+    "acceptedResults": [],
+    "candidates": [
+      {
+        "id": "loop:READY_WORK:task:governed-next",
+        "standing": "CANDIDATE",
+        "title": "Work awaiting a legal next step",
+        "detail": "task governed-next is ready: continue from the direct outcome",
+        "sourceRefs": [
+          "task:governed-next"
+        ],
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "3cfd275b186e1c1aa9dbd082ffbf8158f4e1de414f094afd0defbb5ca739f8d5",
+          "headCommit": "c8f75889c797bbaa9fabf714600749dfe87dc8ca",
+          "observedAt": "2026-11-20T17:05:01.485Z"
+        },
+        "applicability": "open loop in the derived workspace",
+        "reopenConditions": [
+          "the subject is resolved, rejected or superseded"
+        ]
+      }
+    ],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "episodeConclusions": [],
+    "recordedObservations": [],
+    "recentChanges": [],
+    "tasks": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "pendingWork": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "blocked": [],
+    "authorizationBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "nextActions": [
+      "agent: palimpsest_work action=next"
+    ],
+    "digest": "bb94420dc47197a4b72e6902043e0d0eab4e58dcabdd403c90bf16358f0bc082"
+  }
+}
+
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "ADMITTED",
+  "fromHead": "c8f75889c797bbaa9fabf714600749dfe87dc8ca",
+  "toHead": "94a403f8f50fa90710f87d71f7c1d1d21dd90465",
+  "commit": "94a403f8f50fa90710f87d71f7c1d1d21dd90465",
+  "operator": "operator:alice",
+  "revision": 1,
+  "basisId": "basis-b89d36a066fed5b9ded5c6ae5b8b52c2",
+  "note": "The direct commit is admitted as a BASIS. No ATTEMPT_COMPLETED or PROMOTION_COMMITTED was written, and the commit was not relabelled as a governed result."
+}
+
+ [32m✓[39m test/pnwf_cq_basis_admission.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 5741[2mms[22m[39m
+     [33m[2m✓[22m[39m admits the checked-out direct commit, reauthorizes the task, and writes no promotion [33m 521[2mms[22m[39m
+     [33m[2m✓[22m[39m exposes an actual worker host refusal through the model-facing workers action [33m 844[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a real child worker from the admitted basis through settlement, promotion and dependent continuation [33m 2487[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a dirty canonical worktree, a non-ancestor commit and a task-graph change [33m 328[2mms[22m[39m
+     [33m[2m✓[22m[39m admits through the signed-operator CLI, and refuses without the credential [33m 338[2mms[22m[39m
+ [32m✓[39m test/alhs_episode_convergence.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 5186[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses DELIVER while a planned task is still open, naming the contradiction [33m 301[2mms[22m[39m
+     [33m[2m✓[22m[39m records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance [33m 1233[2mms[22m[39m
+     [33m[2m✓[22m[39m delivers a lightweight project with no formal tasks, then reopens after a new project fact [33m 545[2mms[22m[39m
+     [33m[2m✓[22m[39m reports a committed artifact without a provenance warning [33m 467[2mms[22m[39m
+     [33m[2m✓[22m[39m binds each DELIVER to the bytes of its current Git commit on the same Host [33m 1960[2mms[22m[39m
+     [33m[2m✓[22m[39m CONTINUE requires a next step and does not pretend the episode ended [33m 431[2mms[22m[39m
+ [32m✓[39m test/pnwf_cq_handoff_trace.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1602[2mms[22m[39m
+     [33m[2m✓[22m[39m resolves the old conclusion, its delivered commit, the current accepted commit and the version note [33m 722[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a genuine open question visible while the accepted delivery remains traversable [33m 867[2mms[22m[39m
+ [32m✓[39m test/dsh_inspector.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[32m27 passed[39m[22m[90m (27)[39m
+[2m   Start at [22m 17:04:49
+[2m   Duration [22m 22.37s[2m (transform 5.84s, setup 0ms, import 8.85s, tests 12.55s, environment 1ms)[22m
+

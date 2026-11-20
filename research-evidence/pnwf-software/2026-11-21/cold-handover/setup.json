@@ -1,0 +1,17 @@
+{
+  "sourceBaseImage": "sha256:ebf870ae77228fa819a332add9d0ba9f1aefc404c0088ea3f6bb28030a0adef0",
+  "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+  "lockAssets": "Official Ordarium v1.3.1 release assets fetched via GitHub API and checked against the original lockfile SHA-512. Temporary build context relinked those identical assets as file:assets entries. Model checkout lockfile stays at the basis.",
+  "beforeQualification": {
+    "reason": "ETIMEDOUT while observing git status over Windows bind",
+    "admitted": 0,
+    "remedy": "per-session Linux Git volume"
+  },
+  "nativeStop": {
+    "type": "HOST_BRIDGE_EPIPE",
+    "message": "Unhandled error event: Error: write EPIPE",
+    "origin": "scripts/pnwf/container_bridge.mjs:40:69",
+    "triggeredAfter": "REQUEST_LIMIT",
+    "originalRunJson": false
+  }
+}

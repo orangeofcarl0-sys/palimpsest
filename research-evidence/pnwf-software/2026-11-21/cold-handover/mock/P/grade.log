@@ -1,0 +1,116 @@
+Verified 40 evidence files
+Restored project /tmp/fleet-restored/profile.json
+COLD_HANDOVER [{"name":"aliases-1","pass":true},{"name":"historical-basis-1","pass":true},{"name":"original-artifacts-1","pass":true},{"name":"accepted-work-1","pass":true},{"name":"record-vs-question-1","pass":true},{"name":"unknown-id-1","pass":true},{"name":"aliases-2","pass":true},{"name":"historical-basis-2","pass":true},{"name":"original-artifacts-2","pass":true},{"name":"accepted-work-2","pass":true},{"name":"record-vs-question-2","pass":true},{"name":"unknown-id-2","pass":true},{"name":"original-events","pass":true},{"name":"original-project_journal_events","pass":true},{"name":"original-checkout","pass":true}]
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/work[39m
+
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "INITIALIZED",
+  "profileFile": "/tmp/palimpsest-pnwf-cq-basis-cli-ZvMUoM/product-profile.json",
+  "summary": {
+    "schema": "pc1-project-summary/v1",
+    "projectId": "pnwf-cq-basis",
+    "goal": "direct outcome then governed continuation",
+    "basis": {
+      "projectRevision": 0,
+      "projectDigest": "b86e61a64664fd1677a85ec215a4a028fdeea0f3d7415b4fb804a60b254e936f",
+      "headCommit": "ece9d241ddf6f4a7103a9708cc160c766d6a2e65",
+      "observedAt": "2026-11-20T16:30:08.992Z"
+    },
+    "coverage": {
+      "complete": true,
+      "omitted": [],
+      "unavailable": []
+    },
+    "requirements": [],
+    "decisions": [],
+    "acceptedResults": [],
+    "candidates": [
+      {
+        "id": "loop:READY_WORK:task:governed-next",
+        "standing": "CANDIDATE",
+        "title": "Work awaiting a legal next step",
+        "detail": "task governed-next is ready: continue from the direct outcome",
+        "sourceRefs": [
+          "task:governed-next"
+        ],
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "b86e61a64664fd1677a85ec215a4a028fdeea0f3d7415b4fb804a60b254e936f",
+          "headCommit": "ece9d241ddf6f4a7103a9708cc160c766d6a2e65",
+          "observedAt": "2026-11-20T16:30:08.992Z"
+        },
+        "applicability": "open loop in the derived workspace",
+        "reopenConditions": [
+          "the subject is resolved, rejected or superseded"
+        ]
+      }
+    ],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "recentChanges": [],
+    "tasks": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "pendingWork": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "blocked": [],
+    "authorizationBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "nextActions": [
+      "agent: palimpsest_work action=next"
+    ],
+    "digest": "fddde63f61c48de5283585913bd5c613428dce5f447da534585b48f3c5fe6e7a"
+  }
+}
+
+[90mstdout[2m | test/pnwf_cq_basis_admission.test.ts[2m > [22m[2mPNWF-CQ-H — operator-mediated direct basis admission[2m > [22m[2madmits through the signed-operator CLI, and refuses without the credential
+[22m[39m{
+  "state": "ADMITTED",
+  "fromHead": "ece9d241ddf6f4a7103a9708cc160c766d6a2e65",
+  "toHead": "33dad5fada700e85ee5d86d4e102e421ee51b7e0",
+  "commit": "33dad5fada700e85ee5d86d4e102e421ee51b7e0",
+  "operator": "operator:alice",
+  "revision": 1,
+  "basisId": "basis-6ff90919e3d29c3da9b986dce0f4868d",
+  "note": "The direct commit is admitted as a BASIS. No ATTEMPT_COMPLETED or PROMOTION_COMMITTED was written, and the commit was not relabelled as a governed result."
+}
+
+ [32m✓[39m test/pnwf_cq_basis_admission.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 5944[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects arbitrary operator strings without deployment authority, and an agent-role decision [33m 360[2mms[22m[39m
+     [33m[2m✓[22m[39m admits the checked-out direct commit, reauthorizes the task, and writes no promotion [33m 541[2mms[22m[39m
+     [33m[2m✓[22m[39m exposes an actual worker host refusal through the model-facing workers action [33m 843[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a real child worker from the admitted basis through settlement, promotion and dependent continuation [33m 2298[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a dirty canonical worktree, a non-ancestor commit and a task-graph change [33m 359[2mms[22m[39m
+     [33m[2m✓[22m[39m admits through the signed-operator CLI, and refuses without the credential [33m 380[2mms[22m[39m
+ [32m✓[39m test/alhs_episode_convergence.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 6979[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses DELIVER while a planned task is still open, naming the contradiction [33m 400[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses DELIVER when the named artifact does not exist [33m 325[2mms[22m[39m
+     [33m[2m✓[22m[39m records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance [33m 1514[2mms[22m[39m
+     [33m[2m✓[22m[39m delivers a lightweight project with no formal tasks, then reopens after a new project fact [33m 623[2mms[22m[39m
+     [33m[2m✓[22m[39m reports a committed artifact without a provenance warning [33m 448[2mms[22m[39m
+     [33m[2m✓[22m[39m reads an older conclusion and separates verification records from open questions after restart [33m 1468[2mms[22m[39m
+     [33m[2m✓[22m[39m binds each DELIVER to the bytes of its current Git commit on the same Host [33m 1793[2mms[22m[39m
+     [33m[2m✓[22m[39m CONTINUE requires a next step and does not pretend the episode ended [33m 372[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 16:29:55
+[2m   Duration [22m 22.41s[2m (transform 6.53s, setup 0ms, import 8.96s, tests 12.92s, environment 0ms)[22m
+
