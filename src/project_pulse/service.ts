@@ -43,7 +43,7 @@ export interface ProjectPulseDeps {
 }
 
 export interface ProjectPulseService {
-  pulse(): Promise<ProjectPulse>;
+  pulse(conclusionId?: string): Promise<ProjectPulse>;
 }
 
 function terminal(state: string): boolean {
@@ -51,7 +51,7 @@ function terminal(state: string): boolean {
 }
 
 export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseService {
-  async function pulse(): Promise<ProjectPulse> {
+  async function pulse(conclusionId?: string): Promise<ProjectPulse> {
     const summary = await deps.continuity.summary();
     const contributions = await deps.contributions.list();
     const entries = await deps.workspace.journal(deps.projectId);
@@ -164,6 +164,7 @@ export function makeProjectPulseService(deps: ProjectPulseDeps): ProjectPulseSer
       mechanicalActions: summary.nextActions,
     });
     const episode = buildPulseEpisode({
+      ...(conclusionId === undefined ? {} : { conclusionId }),
       entries: entries.map((view) => ({
         entryId: view.entry.entryId,
         kind: view.entry.kind,

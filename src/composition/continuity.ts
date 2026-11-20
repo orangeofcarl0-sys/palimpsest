@@ -40,7 +40,8 @@ import {
   makeExecutionRelayRecord,
   type ExecutionAttribution,
 } from "../work/execution_relay.js";
-import type { Decision, ProjectIr, Requirement, TaskSpec } from "../schema/models.js";
+import type { Decision, ProjectIr, Requirement, SchedulerEvent, TaskSpec } from "../schema/models.js";
+import { recordedHeadAcceptance } from "../work/plan_revision.js";
 /** The canonical project revision this composition projects; re-exported for the install root. */
 export type { ProjectIr } from "../schema/models.js";
 
@@ -80,6 +81,7 @@ interface ContinuityWorkOwner {
   }[];
   /** LHAPE-B: the canonical ProjectIR revisions in ascending order, for crash reconciliation. */
   revisionHistory?(): readonly ProjectIr[];
+  projectEvents?(): readonly SchedulerEvent[];
   /**
    * PWRS-C: the result commit recorded for a COMPLETED attempt, or null when it has none. The
    * canonical object database can read it because settlement exported it; reading it here is how a
@@ -393,6 +395,7 @@ function makeEpisodeService(input: {
 
 export function composeContinuityCapability(input: ContinuityCompositionInput): ContinuityComposition {
   const workspace = input.projectWorkspace;
+  let observedPulse: ProjectPulseService | undefined;
   const domainOutcome =
     workspace === undefined
       ? undefined
@@ -406,6 +409,10 @@ export function composeContinuityCapability(input: ContinuityCompositionInput): 
         });
 
   const continuity = makeProjectContinuityService({
+    episode: async (id) => observedPulse?.pulse(id),
+    ...(input.controller.projectEvents === undefined
+      ? {}
+      : { headAcceptance: (commit: string) => recordedHeadAcceptance(input.controller.projectEvents!(), commit) }),
     work: {
       project: () => input.controller.project(),
       status: () => input.controller.status(),
@@ -559,12 +566,12 @@ export function composeContinuityCapability(input: ContinuityCompositionInput): 
    * the project revision and HEAD stayed put. It never invents a change: unrecorded digests are not
    * compared.
    */
-  const observedPulse: ProjectPulseService | undefined =
+  observedPulse =
     pulse === undefined
       ? undefined
       : Object.freeze({
-          async pulse() {
-            const base = await pulse.pulse();
+          async pulse(conclusionId?: string) {
+            const base = await pulse.pulse(conclusionId);
             if (input.repository === undefined || base.episode.conclusion === null) return base;
             const recorded = base.episode.conclusion.check.artifacts ?? [];
             if (recorded.length === 0) return base;

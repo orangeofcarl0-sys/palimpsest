@@ -15,6 +15,7 @@ import { canonicalDigest } from "../schema/canonical.js";
 import type { ProjectIr } from "../schema/models.js";
 import type { ProjectJournalViewEntry } from "../project_workspace/journal.js";
 import type { OpenLoop } from "../project_workspace/view.js";
+import type { PulseEpisode } from "./episode.js";
 
 export const FACT_STANDINGS = [
   "OBSERVED_SOURCE",
@@ -96,9 +97,19 @@ export interface ProjectExplanation {
   readonly found: boolean;
   readonly standing: FactStanding;
   readonly item?: ContinuityItem | undefined;
+  readonly episode?: Omit<PulseEpisode, "readiness"> | undefined;
+  /** The Work event that advanced the current head, when directly backed by a recorded acceptance. */
+  readonly headAcceptance?: HeadAcceptance | null | undefined;
   readonly basis: ContinuityBasis;
   readonly availableRefs: readonly string[];
   readonly detail: string;
+}
+
+export interface HeadAcceptance {
+  readonly kind: "DIRECT_BASIS" | "PROMOTION";
+  readonly commit: string;
+  readonly eventId: number;
+  readonly approvalEventId?: number;
 }
 
 export interface ContextCapsule {
@@ -115,6 +126,8 @@ export interface ContextCapsule {
 }
 
 export interface ContinuityInput {
+  readonly episode?: ((id: string) => Promise<{ basis: ContinuityBasis; episode: PulseEpisode } | undefined>) | undefined;
+  readonly headAcceptance?: ((headCommit: string) => HeadAcceptance | null) | undefined;
   readonly work: {
     project(): ProjectIr;
     status(): {
