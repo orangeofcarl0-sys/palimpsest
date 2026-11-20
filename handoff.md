@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 下一轮转为真实的产品维护工单，从主线 `6bf50e90` 处理重启交接追溯。已用接续归档和正常注册的 DSH 工具复现旧结论查询返回 `UNKNOWN`，以及发布核验记录进入待调查问题。交付为产品修复、旧状态回归和维护说明。[工单与复现](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md)
+
 - R4 拆分对照已合入主线 `2c29e90c`。四条真实会话均签发、10/10、自然退出。说明组两位 Principal 均在求证原表后自行识别 B 车 01:30 少排 20 kW。提示组两条轨迹都是预检先点名。三格在修订表复测前已写出 B GO。提示组强原生在收到 130 kWh 的修订表实测后首次写出 GO。135 笔全数结算。[PR #287](https://github.com/orangeofcarl0-sys/palimpsest/pull/287) · [逐次求证及原稿](docs/engineering/DEPOT-R4-GUIDANCE.md)
 
 - R4 窗口利用率修复已合入主线 `55eeaa3b`。两组真实会话均通过签发，业务评分各 10/10，并自然退出。P 记录 DELIVER。两位 Principal 都主动预检，签发预检首先明确指出 B 车 01:30 少排 20 kW。两组均改用 50/70 kW，并在收到修订表实测回执前提交 B GO，复核确认了已有决定。两份旧 6/10、更早的 2/10 与第 7 笔 UNKNOWN 均保留。[PR #285](https://github.com/orangeofcarl0-sys/palimpsest/pull/285) · [调用顺序与用量](docs/engineering/DEPOT-R4-WINDOW.md)
@@ -117,6 +119,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-20，最近同步）
+
+交接追溯工单从主线 `6bf50e90dfad78c4eff668f369d5dd0c5d84564e` 起步，准备工作分支为 `codex/continuity-handover-dogfood`。实际复现使用历史 gRPC 接续归档，本轮零模型请求。[工单](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md)
 
 R4 说明与提示拆分对照从主线 `e639e549` 开始，实验基线为 `234b5326c1c94595a23407ada5f92fa5b8c9ca52`。PR #287 的送审提交 `f65a7fa47a87f9641e84645263cecf68b0c8b427` 通过全部 16 项检查，线性合入主线为 `2c29e90c22ab0161eefaeda9c296d324cd0ee6db`。两端完整 Git 树同为 `294beab5861ff7394c883e8497ab9c5fbbf86e8f`。312 份新增归档包含两轮 Mock、四条真实轨迹、Git 证据、归档中断和恢复记录。发布核验通过九项定向回归，离线重算的对比 JSON 与封存件逐字节一致，新增付费请求 0。旧 6/10、2/10 与第 7 笔 UNKNOWN 均保留。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/287/checks) · [冻结条件](research-evidence/pnwf-task-selection/2026-11-20/r4-split/frozen.json) · [恢复封印](research-evidence/pnwf-task-selection/2026-11-20/r4-split/recovery/seal.json)
 
@@ -687,6 +691,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+优先修复已复现的交接追溯问题。验收读取旧 Episode 及其工件、Work 接受事件和 Journal 核验记录，并确认真正的待办仍显示。恢复归档时使用独立目录，保留当时的查询结果。[验收与复算](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#交付验收)
+
 R4 证明了在原数值、原表实测与证据优先级说明均可见时，两位 Principal 能在没有少排提示的情况下修正末格。四格都主动求证了原表和修订表，仍未观察到单凭说明跳过求证的行为。每格一次，历史对照的签发门禁亦有变化，不能估计两项干预各自的平均收益。[对照边界](docs/engineering/DEPOT-R4-GUIDANCE.md)
 
 窗口修复已把可确定的来源选择与少排检查纳入签发。两组都采纳了预检指出的缺额；本轮没有观察到维护者首次提出反例并改变 B 的放行决定。里程碑二保持开放。本例支持把数据适用性和目标验收视作可复用的契约问题；模型是否能在工具未点名缺额时自行提出有价值的替代方案，仍需独立证据。[归因边界](docs/engineering/DEPOT-R4-WINDOW.md#如何区分契约缺口任务特例和模型能力)
@@ -788,6 +794,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 ```markdown
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-20 | 将下一轮换为 Palimpsest 重启交接追溯的维护工单 | [工单](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md) | 历史状态恢复并复现，零模型请求 |
 | 2026-11-20 | 任务选路试点与 R7 签发契约发布到主线 `f1c1424a` | [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) | 16/16 项检查通过，12 对提交文件树一致，历史 UNKNOWN 与 R7 两份 6/10 保留，本轮两组均 10/10 |
 | 2026-11-07 | PR #227 merged: PNWF-CQ + basis admission | 1766a79 | 容器 cohort INVALID/over budget |
 ```
