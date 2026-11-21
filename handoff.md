@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 自改进目标已推进到 Palimpsest 自主维护和稳定版接班。旧版应从运行档案自行立工单、提出并执行测试、分析结果、管理分支和送审。核验后的安装物接过同一维护项目，继续下一张工单。下一轮先做零付费的证据唤醒与版本切换资格，再以冷交接原档验收自主发现。方案已记录，接班链尚待实现。里程碑二保持开放。[自主维护与版本接班](docs/product/PALIMPSEST-SELF-EVOLUTION.md)
+
 - 冷交接收尾修复从主线 `07ab5aad` 开始。原两组提交后直接回复，未调用 Work `readiness` 或 `conclude`。普通 DSH 一次性会话会在干净的新直接提交且无交付阻塞时提示一次，Work `readiness` 对同类无计划现场提示模型判断并记录 `DELIVER`。真实复跑两组均在第 5 笔主动取得并采纳同一独立冷重放回执，第 12 笔记录绑定候选的 `DELIVER`，第 13 笔自然退出。内容冻结判分为 6/7、5/7，历史 7/7、5/7 和缺结论保留。本轮 26 笔全对账，里程碑二继续开放。[复跑报告](docs/engineering/CONTINUITY-REUSE-METHOD.md#提交后的收尾引导与同基线复跑)
 
 - 两轮受控自改进的实现、路线图、Mock、真实轨迹及评审原稿已随 [PR #293](https://github.com/orangeofcarl0-sys/palimpsest/pull/293) 合入主线 `1b476032`。首轮 CI 发现部署配置引入 Procedure 实现，已改为只校验引用字段。修复后的送审 `008c55b3` 通过 16/16 项检查，合入后三个提交的文件树逐一一致。两份离线复算与原归档逐字节一致，普通 DSH 与打包 SDK 补验通过，新增付费请求 0。冷交接仍为 7/7 与 5/7，两组缺新评审 `DELIVER`，里程碑二继续开放。[发布检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/293/checks) · [定向测试方法](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md) · [冷交接对照](docs/engineering/CONTINUITY-REUSE-METHOD.md)
@@ -137,6 +139,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
+
+自主维护规划沿用当前 `codex/cold-handover-closeout`。规划以 `07ab5aad` 为首轮隔离运行基线，已有人工诊断与修复 `e47b7c10` 供可信宿主验收参照。自主验收从原始证据和受控源码树开工，修复和已经整理的诊断留在模型可见范围之外。[首张验收工单](docs/product/PALIMPSEST-SELF-EVOLUTION.md#第一张验收工单--冷交接运行质量)
 
 本轮工作分支 `codex/cold-handover-closeout` 从主线 `07ab5aad7f77a2fd67f426c80e5215cf3f2bc6de` 接续。真实配对保持同一评审基线 `1444de6ce289197a1d12b0b04d2caa36c1d79355` 和已接受版本 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`。两组候选 `091996b1703790dc28fd6a8e16467d78ed3667f0`、`008a480efed94d6400a9240498a9d9148072ceaf` 都只改一份评审，各自保存 Git bundle 与正式结论工件摘要。[归档](research-evidence/pnwf-software/2026-11-22/cold-closeout)
 
@@ -729,6 +733,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+已有 Procedure 复用、隔离候选和按 SHA 接受的实际证据。当前缺口是运行封存结果到自主维护调度，以及独立合格构建到维护位置实际接班。先验证一次封存触发、独占写入权、状态读回和失败恢复，再做冷交接盲测。验收记录自主产生的诊断、测试、送审和接班后第一项工作，单列人工核准。连续两次切换并实际工作后评估长期自维护。[实施顺序](docs/product/PALIMPSEST-SELF-EVOLUTION.md#实施顺序)
+
 冷交接原配对保留缺 `DELIVER` 的 7/7 与 5/7。本次两组均主动求证、引用独立实测并提交修订，随后正式交付并自然退出。无提示组 6/7 是授权边界跨行触发的判分缺项，带方法组 5/7 仍有当前来源路径与保留区约束两项缺失。复核证据由宿主预先冷重放，同伴模型的自主发现和反馈闭环仍待验证。每格一次，方法提示对选路和用量的收益仍不明确，里程碑二继续开放。[真实配对结论](docs/engineering/CONTINUITY-REUSE-METHOD.md#冻结判分和用量对照)
 
 真实交接样本显示长期调查和测试环境开销可以耗完整个请求窗口，P/F 首次改源码分别已用到第 44/36 笔。两组初次启动 Vitest 都遇到只读依赖目录的配置缓存写入。F 找到 runner 加载器，P 在排查中耗尽。另有原生容器停止后桥接 `EPIPE` 导致常规终态文件缺失。原稿与停止现场独立封存，均未形成已提交的可发布候选。[原稿与停止点](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#用量选路与停止现场)
@@ -836,7 +842,6 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 ```markdown
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
-| 2026-11-22 | 修复冷交接提交后的 DSH 收尾与直接交付 readiness | [报告](docs/engineering/CONTINUITY-REUSE-METHOD.md#提交后的收尾引导与同基线复跑) | 两条原轨迹回归，两轮零付费 Mock。真实复跑均主动取得并采纳回执、第 12 笔记录 `DELIVER`、第 13 笔自然退出，6/7 和 5/7，26 笔全对账 |
 | 2026-11-20 | 任务选路试点与 R7 签发契约发布到主线 `f1c1424a` | [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) | 16/16 项检查通过，12 对提交文件树一致，历史 UNKNOWN 与 R7 两份 6/10 保留，本轮两组均 10/10 |
 | 2026-11-07 | PR #227 merged: PNWF-CQ + basis admission | 1766a79 | 容器 cohort INVALID/over budget |
 ```
@@ -853,6 +858,8 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 将自改进目标推进到 Palimpsest 自主维护与稳定版接班 | [规划](docs/product/PALIMPSEST-SELF-EVOLUTION.md) | 冷交接原档作为首个自主验收，连续接班尚待验证 |
+| 2026-11-22 | 修复冷交接提交后的 DSH 收尾与直接交付 readiness | [报告](docs/engineering/CONTINUITY-REUSE-METHOD.md#提交后的收尾引导与同基线复跑) | 两条原轨迹回归，两轮零付费 Mock。真实复跑均主动取得并采纳回执、第 12 笔记录 `DELIVER`、第 13 笔自然退出，6/7 和 5/7，26 笔全对账 |
 | 2026-11-22 | 发布两轮受控自改进实现、路线图和归档到主线 `1b476032` | [PR #293](https://github.com/orangeofcarl0-sys/palimpsest/pull/293) | 16/16 项检查通过，三个提交的树逐一一致，原判与缺新 `DELIVER` 保留，发布新增付费请求为零 |
 | 2026-11-22 | 从真实 gRPC 冷交接工单验证核准方法与自主求证 | [报告](docs/engineering/CONTINUITY-REUSE-METHOD.md) | Mock 7/7、7/7，真实 7/7、5/7，两组均缺新评审 DELIVER，27 笔全对账 |
 | 2026-11-21 | 在真实交接维护工单上配对实跑 | [报告](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#真实模型配对) | 各 64 笔均结算，两个工作区原稿各 11/15、9/15 |
