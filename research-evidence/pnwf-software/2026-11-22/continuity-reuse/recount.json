@@ -1,0 +1,127 @@
+{
+  "receiptId": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4",
+  "unknownPrior": "UNKNOWN",
+  "newPaidRequests": 0,
+  "rows": [
+    {
+      "phase": "mock",
+      "name": "WITHOUT",
+      "candidate": "f24415945da6876d44af9fb919cba42ceed24d16",
+      "grade": 7,
+      "natural": true,
+      "delivery": true,
+      "observed": {
+        "offered": false,
+        "firstVerify": {
+          "id": "handover_1",
+          "call": 21,
+          "result": 22,
+          "request": 2,
+          "kind": "continuity:explain",
+          "ok": true,
+          "action": "inspect-record",
+          "subject": "episode:episode-e7050e9ddf64ccebde7f08f6",
+          "found": true,
+          "episode": "REOPENED",
+          "acceptance": 8
+        },
+        "requestedReceipts": 0,
+        "receivedReceipts": 0
+      },
+      "boundRequests": null,
+      "requests": 6,
+      "confirmed": 488994,
+      "unresolved": 0
+    },
+    {
+      "phase": "mock",
+      "name": "WITH",
+      "candidate": "0afd9c1af08a2edb3cb53bb0e7a2c731b5b61f66",
+      "grade": 7,
+      "natural": true,
+      "delivery": true,
+      "observed": {
+        "offered": true,
+        "firstVerify": {
+          "id": "handover_2",
+          "call": 27,
+          "result": 28,
+          "request": 3,
+          "kind": "handover_readback",
+          "ok": true,
+          "action": "request-independent-made-measurement",
+          "sha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+          "question": "Is the historic handover blocker still reproducible?",
+          "receipt": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4",
+          "reason": null
+        },
+        "requestedReceipts": 2,
+        "receivedReceipts": 1
+      },
+      "boundRequests": null,
+      "requests": 6,
+      "confirmed": 459179,
+      "unresolved": 0
+    },
+    {
+      "phase": "live",
+      "name": "WITHOUT",
+      "candidate": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+      "grade": 7,
+      "natural": true,
+      "delivery": false,
+      "observed": {
+        "offered": false,
+        "firstVerify": {
+          "id": "call_eabdfa3198e44555bc36be4e",
+          "call": 57,
+          "result": 58,
+          "request": 5,
+          "kind": "handover_readback",
+          "ok": true,
+          "action": "request-independent-made-measurement",
+          "sha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+          "question": "For the cold-handover maintenance review of the gRPC migration: is the accepted revision usable for continuation, and what is the relationship between the old Episode episode-e7050e9ddf64ccebde7f08f6 and the current accepted tree? Verify the Fleet default-limit correction and its verification records at this exact SHA.",
+          "receipt": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4",
+          "reason": null
+        },
+        "requestedReceipts": 1,
+        "receivedReceipts": 1
+      },
+      "boundRequests": 10,
+      "requests": 10,
+      "confirmed": 219126,
+      "unresolved": 0
+    },
+    {
+      "phase": "live",
+      "name": "WITH",
+      "candidate": "b5835cd22955dd33a96975c634dba4fba01246af",
+      "grade": 5,
+      "natural": true,
+      "delivery": false,
+      "observed": {
+        "offered": true,
+        "firstVerify": {
+          "id": "call_e77f3b5238a54431a0c9034f",
+          "call": 71,
+          "result": 72,
+          "request": 5,
+          "kind": "continuity:explain",
+          "ok": true,
+          "action": "inspect-record",
+          "subject": "episode:episode-e7050e9ddf64ccebde7f08f6",
+          "found": true,
+          "episode": "REOPENED",
+          "acceptance": 8
+        },
+        "requestedReceipts": 0,
+        "receivedReceipts": 0
+      },
+      "boundRequests": 17,
+      "requests": 17,
+      "confirmed": 533765,
+      "unresolved": 0
+    }
+  ]
+}

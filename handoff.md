@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 自改进回到里程碑二。两条真实普通 DSH 会话从同一 gRPC 冷交接评审基线 `1444de6c` 把 HOLD 改为 READY。无提示组第 5 笔主动取同一接受 SHA 的独立冷重放回执并直接查档，在提交中引用回执，冻结 7/7。带方法组第 5 笔自行查档，全程未索取回执，冻结 5/7。两组只改一份评审并自然退出，原工件、接受事件及旧 Episode `UNKNOWN` 保留，两组都缺新评审的 `DELIVER`。27 笔全对账，新用量 UNKNOWN 为零。里程碑二继续开放。[路线图](docs/product/PROJECT-ROADMAP.md#自改进回到真实项目) · [原稿与复算](docs/engineering/CONTINUITY-REUSE-METHOD.md)
+
 - 首轮受控自改进从 `8e1e3098` 完成。对四条原始轨迹按调用 ID 重算后，宿主核准只读依赖环境下的定向 Vitest Procedure `prc-1966931f7a21b77663b7cff1c4129b76@0`，摘要 `f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e`。普通 DSH 在首条业务消息前选择，打包 `/product` 消费者通过同一读取入口取到 argv 并执行 9/9。撤回、错摘要、清单变化和不适用环境均拒绝提供。两组 Mock 通过，8 笔模拟、0 付费。[核准、反例和复算入口](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md)
 
 - 新 `DELIVER` 出处提示维护工单用同一主线、两个全新普通 DSH 会话做有无方法对照。带方法组第 18 笔按核准命令首次运行即通过，启动失败 0 次。无提示组遇到 `.local`、`.vite-temp` 两次失败，改用可写依赖入口，也在第 18 笔首次通过。首次通过用量为 674,722 对 888,913 tokens，耗时为 126.934 对 97.686 秒。完整会话 33 对 50 笔，1,616,104 对 3,823,791 tokens，均独立验收 5/5、提交、记录 `DELIVER` 并自然退出。83 笔全部对账，新 `UNKNOWN` 为零。两个候选及历史原判均保存。[真实轨迹与对比](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md#真实配对轨迹)
@@ -130,7 +132,9 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 
 ---
 
-## 2. 当前 Git / 分支状态（2026-11-21，最近同步）
+## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
+
+冷交接自改进配对沿用本地 `codex/self-improvement-method` 的宿主 `3883ae73`。两组实验项目从评审基线 `1444de6ce289197a1d12b0b04d2caa36c1d79355` 启动，原 Work 接受版本仍为 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`。评审候选留在归档 Git bundle，产品主线引用 `origin/main` 为 `8e1e3098`。[冻结合同](docs/engineering/CONTINUITY-REUSE-METHOD.md#冻结的任务与验收)
 
 主线 `6bf50e90` 上开展的冷启动交接修复通过 PR #289 发布。送审 head `7fed1d273c74ac30d71212b3ef9ebefa119ecd08` 的 16 项 CI 均通过，合入点为 `ec80486ab1542027e22c26a978e7984212d4b9b0`，两端完整 Git 树均为 `26f46e04494ec8a4ec9966b14cabf65c7363aa7a`。工单、参考修复与实跑归档三笔提交分别对应 `6cc98a6e`、`c8f2d521`、`ec80486a`，逐笔核对文件树与提交标题。50 份归档文件通过摘要核验，两条轨迹从原流和账本重算一致。本次发布新增付费请求为零。[PR 检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/289/checks) · [机器对比](research-evidence/pnwf-software/2026-11-21/cold-handover/live/comparison.json)
 
@@ -365,6 +369,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+冷交接放行复核从同一原归档实测 `UNKNOWN` 反例及修复后的读回。四个工件摘要一致，公开测试 18/18。两组零付费 Mock 各 7/7、共 12 笔，分别覆盖直接查档及错 SHA 拒绝后从独立维护者取回执。离线复算从原始流配对工具调用、从 Git bundle 读评审、逐行核对 Work 与 Journal。[资格与证据](docs/engineering/CONTINUITY-REUSE-METHOD.md#零付费资格)
+
 交接实跑资格两组均通过 15/15，基线只通过 5/15，显示验收能复现两处已知产品症状。原稿独立构建通过，定向测试 P 21 项、F 27 项。宿主资格与归因 34 项通过。[资格](research-evidence/pnwf-software/2026-11-21/cold-handover/mock/matrix.json)
 
 重启交接追溯在同一真实 gRPC 档案上通过两次冷启动。原生 DSH 侧栏与 Workspace 均读回当前版本和核验记录。四份原工件按 Git blob 核对摘要，Work 和 Journal 原始事件逐行核对。[离线命令](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#离线复现命令)
@@ -574,6 +580,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-22 冷交接方法配对沿用 OpenCode Go `deepseek-v4.1-flash`，每会话 64 笔、30 分钟，单请求 240 秒，按量且无金额和总 token 上限。无提示 10 笔、219,126 tokens，带方法 17 笔、533,765 tokens。27 笔全部重绑终态。独立维护者为宿主冷重放，额外模型请求 0。[账本与归因](research-evidence/pnwf-software/2026-11-22/continuity-reuse/recount.json)
+
 2026-11-21 交接工单使用 OpenCode Go `deepseek-v4.1-flash`，每组 64 笔 / 30 分钟 / 单笔 240 秒，按量。P/F 各结算 64 笔，分别 8,652,014 和 11,687,736 tokens，无子任务与未知用量。F 的 `REQUEST_LIMIT` 与终态 usage 由停止容器和原账本离线证明。[对账与用量](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#用量选路与停止现场)
 
 R4 同基线拆分对照已结束。说明组 P/F 分别 31/30 笔，提示组 P/F 分别 34/40 笔；合计 5,482,302 tokens，其中维护者 27 笔、1,363,997 tokens。本轮新增 UNKNOWN 为 0。首条真实会话完成后遇到维护者副本归档故障，已在离线副本恢复，重新通过四格零付费资格后仅启动其余三格。[归档恢复与账本](docs/engineering/DEPOT-R4-GUIDANCE.md#资格与归档恢复)
@@ -709,6 +717,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+冷交接方法配对已观察到无提示 Principal 主动求证、引用独立实测并提交修订，同时直接核对项目档案。带方法组由 Principal 自行复验，本样本无方法提示收益。两组均缺新评审 `DELIVER`，里程碑二继续开放。结论保留宿主预先实测与模型现场发现的角色区别。[真实配对结论](docs/engineering/CONTINUITY-REUSE-METHOD.md#对照结论)
+
 真实交接样本显示长期调查和测试环境开销可以耗完整个请求窗口，P/F 首次改源码分别已用到第 44/36 笔。两组初次启动 Vitest 都遇到只读依赖目录的配置缓存写入。F 找到 runner 加载器，P 在排查中耗尽。另有原生容器停止后桥接 `EPIPE` 导致常规终态文件缺失。原稿与停止现场独立封存，均未形成已提交的可发布候选。[原稿与停止点](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#用量选路与停止现场)
 
 交接追溯修复已发布。结论解释中的当前版本依据 Work 的已有接受事件，同时保留历史交付判断及其原基线。早期没有记录工件摘要或 Work 核准的项目按现有证据读回。原始轨迹与回归可并列核对。[验收与复算](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#交付验收)
@@ -830,6 +840,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 从真实 gRPC 冷交接工单验证核准方法与自主求证 | [报告](docs/engineering/CONTINUITY-REUSE-METHOD.md) | Mock 7/7、7/7，真实 7/7、5/7，两组均缺新评审 DELIVER，27 笔全对账 |
 | 2026-11-21 | 在真实交接维护工单上配对实跑 | [报告](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#真实模型配对) | 各 64 笔均结算，两个工作区原稿各 11/15、9/15 |
 | 2026-11-21 | 交接追溯修复与实跑档案发布到主线 `ec80486a` | [PR #289](https://github.com/orangeofcarl0-sys/palimpsest/pull/289) | 16/16 项 CI，送审与落地的三笔提交文件树逐笔一致 |
 | 2026-11-20 | 修复 Palimpsest 重启后的交接追溯 | [工单与复验](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md) | 旧 Episode 可查，绑定 Work 核准，日志仍可查，零模型请求 |

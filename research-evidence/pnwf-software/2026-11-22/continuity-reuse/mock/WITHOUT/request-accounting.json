@@ -1,0 +1,81 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "continuity-reuse-a4af7523-bc3c-4155-a915-88e0566df3ae",
+  "configDigest": "2378734c5db8ab5cb61da5bdd98df201a003771e3309fe74377c11b958b2b0b7",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 488994,
+  "reserved": 0,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": 2000000,
+  "sessions": [
+    {
+      "id": "RESUME",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": 2000000,
+      "softCeiling": 2000000,
+      "requestCount": 6,
+      "unresolvedRequests": 0,
+      "confirmed": 488994,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "fc47929e-845b-4fa0-8272-9a1230b130a8",
+      "session": "RESUME",
+      "digest": "41232ce74c5e4e806dac64b6929046e9963bbd938d6933c350c6991acbd996be",
+      "reserved": 352175,
+      "actual": 96272,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "88e122b0-1827-4cf0-b3e0-423e0e666f67",
+      "session": "RESUME",
+      "digest": "6365249c4830d27bc9aa79f14389947d684cdbbbb9e523e4b2b17040bdeaf91c",
+      "reserved": 327441,
+      "actual": 71593,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "487be2e9-4907-4aaa-ba0f-9def86a21fc3",
+      "session": "RESUME",
+      "digest": "685c73bbbc4074725000fa0dabde4b61bad02eadb3b5f97dabb5f176ad388d89",
+      "reserved": 332270,
+      "actual": 76426,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "a069c078-2c12-4d15-b898-23927406dcb2",
+      "session": "RESUME",
+      "digest": "6ca21e3554b718867cedb1db48940b7ff53ae53423ede435192e8914241b1000",
+      "reserved": 329252,
+      "actual": 74928,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "9c2852a4-4b87-46c2-861e-98f008302ee6",
+      "session": "RESUME",
+      "digest": "8d08c3ff7cf11a31b264dbe2bdfb74f553f33f07beb3f8205eae29d4f884f6d2",
+      "reserved": 339427,
+      "actual": 83638,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "3f19b027-694c-4208-b087-4d749526fcce",
+      "session": "RESUME",
+      "digest": "cbcfbdf446ae444ce525a9b6441504e9633201da105d3842a36c13d4d52bf764",
+      "reserved": 342067,
+      "actual": 86137,
+      "state": "SETTLED",
+      "reason": null
+    }
+  ],
+  "refusals": []
+}

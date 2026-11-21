@@ -1,0 +1,134 @@
+{
+  "ref": {
+    "procedureId": "prc-f5714dc42fa2d6503a1abac25de9d40a",
+    "revision": 0,
+    "digest": "1bf0ea42319d1a4caf133ebb685171d415361cb17f44c521fc9b3bf603eb337c"
+  },
+  "revision": {
+    "schemaVersion": 1,
+    "procedureId": "prc-f5714dc42fa2d6503a1abac25de9d40a",
+    "revision": 0,
+    "candidateId": "prc-f5714dc42fa2d6503a1abac25de9d40a",
+    "candidateDigest": "f5714dc42fa2d6503a1abac25de9d40a73d1db5df80bb3cccedeb1a029420c6b",
+    "content": {
+      "schemaVersion": 1,
+      "title": "Revalidate an inherited handover decision",
+      "purpose": "Separate the historical finding from current admissibility",
+      "applicability": [
+        "A resumed handover with a recorded owner-accepted version and an inherited blocker"
+      ],
+      "preconditions": [
+        "Archived outcome and accepted SHA can be checked"
+      ],
+      "steps": [
+        {
+          "instruction": "For a resumed handover, compare the previous decision at its recorded basis with the owner's accepted revision. Where a historical blocker may be stale, verify it against current evidence bound to the accepted SHA. Preserve the old outcome and still-valid artifacts when revising the active decision."
+        }
+      ],
+      "checks": [
+        "Current sources are pinned to the accepted revision",
+        "Old finding retained"
+      ],
+      "expectedOutputs": [
+        "A maintenance review"
+      ],
+      "limitations": [
+        "No operator release authority",
+        "Unknown or unreadable source remains unresolved"
+      ],
+      "capabilityHints": [],
+      "recommendedRecipeRefs": []
+    },
+    "empiricalGrounds": [
+      {
+        "kind": "RUN_RESULT",
+        "ref": "archived-readback",
+        "digest": "4b129c6a81749a3946adf117e4ef32fa8119395f08e2a35615bc568a7566e598"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "current-cold-replay",
+        "digest": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4"
+      }
+    ],
+    "provenance": {
+      "authoringOrigin": "archive-maintainer",
+      "projectId": "cold-handover-method",
+      "projectRevision": 1,
+      "projectDigest": "4b129c6a81749a3946adf117e4ef32fa8119395f08e2a35615bc568a7566e598"
+    },
+    "admission": {
+      "decision": "PUBLISH",
+      "candidateDigest": "f5714dc42fa2d6503a1abac25de9d40a73d1db5df80bb3cccedeb1a029420c6b",
+      "policyRef": {
+        "policyId": "continuity-reuse-scoped-pilot",
+        "version": "1"
+      },
+      "rationale": "Scoped cold handover method grounded in the original refusal and a verified same-SHA replay.",
+      "admissionNote": "contextual_reusable_project_procedure_not_universal_optimum",
+      "scope": [
+        "A resumed handover with a recorded owner-accepted version and an inherited blocker"
+      ],
+      "limitations": [
+        "No operator release authority",
+        "Unknown or unreadable source remains unresolved"
+      ],
+      "provenanceDigest": "0b34c119d68af1ed4e838d2d67808a2e3e8ca750241c73c16cd855f381214a8b"
+    },
+    "publishedAt": "2026-11-22T00:00:00.000000Z",
+    "digest": "1bf0ea42319d1a4caf133ebb685171d415361cb17f44c521fc9b3bf603eb337c"
+  },
+  "candidate": {
+    "schemaVersion": 1,
+    "content": {
+      "schemaVersion": 1,
+      "title": "Revalidate an inherited handover decision",
+      "purpose": "Separate the historical finding from current admissibility",
+      "applicability": [
+        "A resumed handover with a recorded owner-accepted version and an inherited blocker"
+      ],
+      "preconditions": [
+        "Archived outcome and accepted SHA can be checked"
+      ],
+      "steps": [
+        {
+          "instruction": "For a resumed handover, compare the previous decision at its recorded basis with the owner's accepted revision. Where a historical blocker may be stale, verify it against current evidence bound to the accepted SHA. Preserve the old outcome and still-valid artifacts when revising the active decision."
+        }
+      ],
+      "checks": [
+        "Current sources are pinned to the accepted revision",
+        "Old finding retained"
+      ],
+      "expectedOutputs": [
+        "A maintenance review"
+      ],
+      "limitations": [
+        "No operator release authority",
+        "Unknown or unreadable source remains unresolved"
+      ],
+      "capabilityHints": [],
+      "recommendedRecipeRefs": []
+    },
+    "empiricalGrounds": [
+      {
+        "kind": "RUN_RESULT",
+        "ref": "archived-readback",
+        "digest": "4b129c6a81749a3946adf117e4ef32fa8119395f08e2a35615bc568a7566e598"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "current-cold-replay",
+        "digest": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4"
+      }
+    ],
+    "provenance": {
+      "authoringOrigin": "archive-maintainer",
+      "projectId": "cold-handover-method",
+      "projectRevision": 1,
+      "projectDigest": "4b129c6a81749a3946adf117e4ef32fa8119395f08e2a35615bc568a7566e598"
+    },
+    "candidateId": "prc-f5714dc42fa2d6503a1abac25de9d40a",
+    "digest": "f5714dc42fa2d6503a1abac25de9d40a73d1db5df80bb3cccedeb1a029420c6b"
+  },
+  "unapprovedRejected": true
+}

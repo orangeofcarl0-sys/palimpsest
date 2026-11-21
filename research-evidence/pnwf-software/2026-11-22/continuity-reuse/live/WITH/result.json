@@ -1,0 +1,918 @@
+{
+  "name": "WITH",
+  "basis": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+  "accepted": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+  "mode": "paid-usage-only",
+  "passed": false,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "continuity-reuse-18cd4c60-5909-4232-a0ab-a11b90ca5243",
+    "sessionId": "RESUME",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-continuity-reuse-live-20261122-002556\\WITH\\stages\\RESUME\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-continuity-reuse-live-20261122-002556\\WITH\\runtime-RESUME",
+    "principalRuntime": "container",
+    "containerId": "b7b149961ed75c45345dc497d482c6d4a11899d06f3bac5dced3079d04571c21",
+    "qualification": "40ca08b9152ff7b8d15c95b31769dfec5e0764b5d9330ccef9813b8bf46c2903",
+    "startedAt": "2026-11-21T16:28:26.582Z",
+    "endedAt": "2026-11-21T16:31:18.838Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "continuity-reuse-18cd4c60-5909-4232-a0ab-a11b90ca5243",
+      "sessionId": "RESUME",
+      "observedAt": "2026-11-21T16:31:18.838Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 533765,
+      "confirmedTokens": 533765,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 17,
+    "paidModelCalls": 17
+  },
+  "accounting": {
+    "requests": 17,
+    "confirmed": 533765,
+    "unresolved": 0
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-e5868ead-fc6f-4526-8979-8207bd1e3d5c",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 17,
+    "knownTokens": 533765,
+    "totalTokens": 533765,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 44106,
+      "cache_read_input_tokens": 477952,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 11707
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 17,
+        "input": 44106,
+        "cacheRead": 477952,
+        "cacheWrite": 0,
+        "output": 11707,
+        "total": 533765
+      }
+    },
+    "traceTotal": 533765,
+    "traceRequests": 17,
+    "workerRequests": 0,
+    "elapsedMs": 172256,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-e5868ead-fc6f-4526-8979-8207bd1e3d5c",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "36b670418a5fe25ebaffd56d82afe1cd4b64cc89ff05d63829499f6176d4c8ba",
+        "counts": {
+          "steps": 17,
+          "turns": 1,
+          "toolCalls": 28,
+          "pairedToolResults": 28,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 19
+        },
+        "refs": [
+          {
+            "callId": "call_c66e877c8dd9469392a0c4dc",
+            "seq": 112,
+            "kind": "write",
+            "state": null,
+            "reason": null,
+            "detail": null
+          }
+        ],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795278539380,
+            "messageId": "3ddd22ba-1406-4ae9-b4d7-4d41cde4c760",
+            "usage": {
+              "inputTokens": 10815,
+              "outputTokens": 76,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10891
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795278548078,
+            "messageId": "e4be35aa-b8db-44b7-a509-e80fa0605e98",
+            "usage": {
+              "inputTokens": 2686,
+              "outputTokens": 427,
+              "cacheReadTokens": 10752,
+              "cacheWriteTokens": 0,
+              "totalTokens": 13865
+            }
+          },
+          {
+            "seq": 36,
+            "at": 1795278553273,
+            "messageId": "ba27fddf-2908-487e-8040-497278c1f75d",
+            "usage": {
+              "inputTokens": 1060,
+              "outputTokens": 452,
+              "cacheReadTokens": 13312,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14824
+            }
+          },
+          {
+            "seq": 52,
+            "at": 1795278563011,
+            "messageId": "bf0731f1-d88e-4673-9c9f-aae12bf2d302",
+            "usage": {
+              "inputTokens": 4409,
+              "outputTokens": 967,
+              "cacheReadTokens": 14336,
+              "cacheWriteTokens": 0,
+              "totalTokens": 19712
+            }
+          },
+          {
+            "seq": 68,
+            "at": 1795278568714,
+            "messageId": "ea7cd9f5-0266-4965-9a75-91c76d185e50",
+            "usage": {
+              "inputTokens": 2000,
+              "outputTokens": 300,
+              "cacheReadTokens": 18688,
+              "cacheWriteTokens": 0,
+              "totalTokens": 20988
+            }
+          },
+          {
+            "seq": 78,
+            "at": 1795278588896,
+            "messageId": "e9b3ebeb-e9c8-48bb-82f7-ab17573bd1c9",
+            "usage": {
+              "inputTokens": 3715,
+              "outputTokens": 1436,
+              "cacheReadTokens": 20608,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25759
+            }
+          },
+          {
+            "seq": 94,
+            "at": 1795278595846,
+            "messageId": "799de879-dc4e-4d7d-a10f-84e71ceae3d9",
+            "usage": {
+              "inputTokens": 7972,
+              "outputTokens": 478,
+              "cacheReadTokens": 24320,
+              "cacheWriteTokens": 0,
+              "totalTokens": 32770
+            }
+          },
+          {
+            "seq": 102,
+            "at": 1795278612525,
+            "messageId": "2478c432-2fb5-4dac-971a-421e89899f93",
+            "usage": {
+              "inputTokens": 974,
+              "outputTokens": 1597,
+              "cacheReadTokens": 32256,
+              "cacheWriteTokens": 0,
+              "totalTokens": 34827
+            }
+          },
+          {
+            "seq": 110,
+            "at": 1795278629340,
+            "messageId": "46ac05eb-0ad8-4023-b51c-dc4f23979321",
+            "usage": {
+              "inputTokens": 1700,
+              "outputTokens": 1784,
+              "cacheReadTokens": 33152,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36636
+            }
+          },
+          {
+            "seq": 116,
+            "at": 1795278631175,
+            "messageId": "e75793e9-8c72-4977-b80b-86845745b30c",
+            "usage": {
+              "inputTokens": 1868,
+              "outputTokens": 73,
+              "cacheReadTokens": 34816,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36757
+            }
+          },
+          {
+            "seq": 122,
+            "at": 1795278639067,
+            "messageId": "a2dbef44-be54-4dce-80b5-571b4765527c",
+            "usage": {
+              "inputTokens": 456,
+              "outputTokens": 1017,
+              "cacheReadTokens": 36608,
+              "cacheWriteTokens": 0,
+              "totalTokens": 38081
+            }
+          },
+          {
+            "seq": 128,
+            "at": 1795278643761,
+            "messageId": "18a17780-f51f-454b-92d6-971060886439",
+            "usage": {
+              "inputTokens": 1134,
+              "outputTokens": 355,
+              "cacheReadTokens": 36992,
+              "cacheWriteTokens": 0,
+              "totalTokens": 38481
+            }
+          },
+          {
+            "seq": 138,
+            "at": 1795278650771,
+            "messageId": "009809b2-eac4-4a6d-8ee8-fd5615325a38",
+            "usage": {
+              "inputTokens": 1642,
+              "outputTokens": 770,
+              "cacheReadTokens": 38016,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40428
+            }
+          },
+          {
+            "seq": 144,
+            "at": 1795278658081,
+            "messageId": "f9e046d8-1b24-43ed-a8c2-91ff8cd81a00",
+            "usage": {
+              "inputTokens": 907,
+              "outputTokens": 533,
+              "cacheReadTokens": 39552,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40992
+            }
+          },
+          {
+            "seq": 152,
+            "at": 1795278661392,
+            "messageId": "296991cd-797c-40d1-b792-33961c2d6067",
+            "usage": {
+              "inputTokens": 1524,
+              "outputTokens": 162,
+              "cacheReadTokens": 40448,
+              "cacheWriteTokens": 0,
+              "totalTokens": 42134
+            }
+          },
+          {
+            "seq": 160,
+            "at": 1795278669481,
+            "messageId": "59d1385e-0cb3-43e6-8d0b-7630a5b4ec27",
+            "usage": {
+              "inputTokens": 386,
+              "outputTokens": 696,
+              "cacheReadTokens": 41856,
+              "cacheWriteTokens": 0,
+              "totalTokens": 42938
+            }
+          },
+          {
+            "seq": 172,
+            "at": 1795278677395,
+            "messageId": "7c6145e5-464d-4a9e-8401-9fba87ff54e6",
+            "usage": {
+              "inputTokens": 858,
+              "outputTokens": 584,
+              "cacheReadTokens": 42240,
+              "cacheWriteTokens": 0,
+              "totalTokens": 43682
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 19,
+          "continuity:explain": 2,
+          "continuity:summary": 1,
+          "write": 2,
+          "read": 2,
+          "edit": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "offer": {
+      "procedureId": "prc-f5714dc42fa2d6503a1abac25de9d40a",
+      "revision": 0,
+      "digest": "1bf0ea42319d1a4caf133ebb685171d415361cb17f44c521fc9b3bf603eb337c"
+    },
+    "methodInReplay": true,
+    "firstVerify": {
+      "id": "call_e77f3b5238a54431a0c9034f",
+      "call": 71,
+      "result": 72,
+      "request": 5,
+      "kind": "continuity:explain",
+      "ok": true,
+      "action": "inspect-record",
+      "subject": "episode:episode-e7050e9ddf64ccebde7f08f6",
+      "found": true,
+      "episode": "REOPENED",
+      "acceptance": 8
+    },
+    "independentReceiptCount": 0,
+    "stream": "--run-stage-world--/session-e5868ead-fc6f-4526-8979-8207bd1e3d5c/session.v4.jsonl.zstd",
+    "significant": [
+      {
+        "id": "call_a6c55330c30b4ed892efa86d",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "kind": "continuity:pulse",
+        "ok": true,
+        "action": "pulse",
+        "reachedAccepted": true,
+        "containsReopen": true
+      },
+      {
+        "id": "call_98baa23d0c414cee817bc6f5",
+        "call": 29,
+        "result": 32,
+        "request": 2,
+        "kind": "bash",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "command": "if [ -f MAINTENANCE-REVIEW.md ]; then sed -n '1,260p' MAINTENANCE-REVIEW.md; else echo 'NO MAINTENANCE-REVIEW.md'; fi",
+          "description": "Read maintenance review if present",
+          "workdir": "/run/stage/world"
+        }
+      },
+      {
+        "id": "call_63cc208efd304d6cb84e00ba",
+        "call": 69,
+        "result": 70,
+        "request": 5,
+        "kind": "continuity:explain",
+        "ok": true,
+        "action": "inspect-record",
+        "subject": "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1",
+        "found": true,
+        "episode": null,
+        "acceptance": null
+      },
+      {
+        "id": "call_e77f3b5238a54431a0c9034f",
+        "call": 71,
+        "result": 72,
+        "request": 5,
+        "kind": "continuity:explain",
+        "ok": true,
+        "action": "inspect-record",
+        "subject": "episode:episode-e7050e9ddf64ccebde7f08f6",
+        "found": true,
+        "episode": "REOPENED",
+        "acceptance": 8
+      },
+      {
+        "id": "call_2bcff6d766284bdf81d3738d",
+        "call": 87,
+        "result": 90,
+        "request": 6,
+        "kind": "bash",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "command": "printf 'accepted commit: '; git rev-parse 95b83e71ee9a37041b9918b5e8b797eebabf69c9; printf 'accepted tree:   '; git rev-parse '95b83e71ee9a37041b9918b5e8b797eebabf69c9^{tree}'; printf 'review commit:   '; git rev-parse HEAD; printf 'review tree:     '; git rev-parse 'HEAD^{tree}'; printf '\\nNon-review diff vs accepted (empty means identical):\\n'; git diff --name-status 95b83e7..HEAD -- . ':(exclude)MAINTENANCE-REVIEW.md'; printf '\\nReview-only diff names:\\n'; git diff --name-only 95b83e7..HEAD",
+          "description": "Confirm accepted tree and review-only delta",
+          "workdir": "/run/stage/world"
+        }
+      },
+      {
+        "id": "call_c66e877c8dd9469392a0c4dc",
+        "call": 111,
+        "result": 112,
+        "request": 9,
+        "kind": "write",
+        "ok": false,
+        "action": "revise-review",
+        "input": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md",
+          "content": "# Cold handover maintenance review\n\nReadback decision: READY\n\nReviewed 2026-11-21 against the owner-accepted revision\n`95b83e71ee9a37041b9918b5e8b797eebabf69c9`.\n\n## Decision\n\nREADY for maintenance-handover continuation on the accepted revision. The previous decision was\nHOLD, retained at review commit `1444de6ce289197a1d12b0b04d2caa36c1d79355`; it recorded an\ninconclusive cold-session lookup rather than a code defect. Revalidation against the accepted\nrevision now succeeds.\n\nThe old cold-session lookup returned UNKNOWN for Episode\n`episode-e7050e9ddf64ccebde7f08f6`. That Episode is now marked REOPENED because the project and\nrepository basis moved after its conclusion. Its conclusion was recorded at project revision 1 and\nrepository head `fbeb8958f4405688b13f37dbdec330157a660ab0`; it is a historical, advisory judgement,\nnot the current acceptance of the tree. The UNKNOWN result must therefore not be carried forward as\nan active blocker.\n\n## Accepted revision and current review tree\n\n- Owner-accepted revision: `95b83e71ee9a37041b9918b5e8b797eebabf69c9` (tree\n  `8d247378a016a4ae77caca3229062b7d85082709`), Work `DIRECT_BASIS` event 8 at project revision 2.\n- Review-branch head `1444de6ce289197a1d12b0b04d2caa36c1d79355` adds only this review.\n  `git diff --name-status 95b83e7..1444de6 -- . ':(exclude)MAINTENANCE-REVIEW.md'` is empty, so the\n  service, proto, tests, and REST baseline are unchanged from the accepted revision.\n- The review commit and this updated review are maintenance records only; neither advances the\n  accepted revision.\n\n## Verification record status\n\n- `pje-d0c977aae7bb8bfeca9159f76e14a7d1` (\"Fleet rollout verification\") has standing\n  `OBSERVED_SOURCE`. It records the independent release verifier's observation that, before the\n  change, explicit-zero and omitted limits returned zero frames, while the accepted tree returns\n  three readings in source order for both forms. The reviewed candidate and the accepted project\n  version are both `95b83e71ee9a37041b9918b5e8b797eebabf69c9`.\n- That record was written after the old Episode conclusion, which is why the Episode is REOPENED.\n  The reopening flags the old conclusion as stale; it does not contradict the accepted behaviour.\n  The record is an observed source journal entry, not a contributor decision or release approval.\n- Fresh verification was run from a `git archive` extraction of the accepted commit:\n  `node --test` passed 18 of 18 tests with 0 failures. Coverage includes explicit-zero and omitted\n  limits returning the first three readings in source order, positive limits and ordering, unary\n  `GetReading`, unknown-site NOT_FOUND, wire framing and trailers, and the preserved REST baseline.\n\n## Scope\n\nThis READY decision is for maintenance-handover continuation. It is not release authorization,\noperator acceptance, promotion, or a canonical-head advance. Release approval remains with the owner.\n\n## Retained evidence\n\n- Archived cold-session lookup: episode-e7050e9ddf64ccebde7f08f6, UNKNOWN, call call_ccfc97275a064338a47c1acb.\n- Owner-accepted tree: 95b83e71ee9a37041b9918b5e8b797eebabf69c9, Work DIRECT_BASIS event 8.\n- Original release verification reference: pje-d0c977aae7bb8bfeca9159f76e14a7d1.\n- Fleet source: updates/2026-11-10/fleet-default-limit.md.\n- Retained verification: zero or omitted limit returns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.\n"
+        }
+      },
+      {
+        "id": "call_32b178c7e6a34f66a1927467",
+        "call": 117,
+        "result": 118,
+        "request": 10,
+        "kind": "read",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md"
+        }
+      },
+      {
+        "id": "call_1db843c2a3124b3682e4d818",
+        "call": 123,
+        "result": 124,
+        "request": 11,
+        "kind": "write",
+        "ok": true,
+        "action": "revise-review",
+        "input": {
+          "content": "# Cold handover maintenance review\n\nReadback decision: READY\n\nReviewed 2026-11-21 against the owner-accepted revision\n`95b83e71ee9a37041b9918b5e8b797eebabf69c9`.\n\n## Decision\n\nREADY for maintenance-handover continuation on the accepted revision. The previous decision was\nHOLD, retained at review commit `1444de6ce289197a1d12b0b04d2caa36c1d79355`; it recorded an\ninconclusive cold-session lookup rather than a code defect. Revalidation against the accepted\nrevision now succeeds.\n\nThe old cold-session lookup returned UNKNOWN for Episode\n`episode-e7050e9ddf64ccebde7f08f6`. That Episode is now marked REOPENED because the project and\nrepository basis moved after its conclusion. Its conclusion was recorded at project revision 1 and\nrepository head `fbeb8958f4405688b13f37dbdec330157a660ab0`; it is a historical, advisory judgement,\nnot the current acceptance of the tree. The UNKNOWN result must therefore not be carried forward as\nan active blocker.\n\n## Accepted revision and current review tree\n\n- Owner-accepted revision: `95b83e71ee9a37041b9918b5e8b797eebabf69c9` (tree\n  `8d247378a016a4ae77caca3229062b7d85082709`), Work `DIRECT_BASIS` event 8 at project revision 2.\n- Review-branch head `1444de6ce289197a1d12b0b04d2caa36c1d79355` adds only this review.\n  `git diff --name-status 95b83e7..1444de6 -- . ':(exclude)MAINTENANCE-REVIEW.md'` is empty, so the\n  service, proto, tests, and REST baseline are unchanged from the accepted revision.\n- The review commit and this updated review are maintenance records only; neither advances the\n  accepted revision.\n\n## Verification record status\n\n- `pje-d0c977aae7bb8bfeca9159f76e14a7d1` (\"Fleet rollout verification\") has standing\n  `OBSERVED_SOURCE`. It records the independent release verifier's observation that, before the\n  change, explicit-zero and omitted limits returned zero frames, while the accepted tree returns\n  three readings in source order for both forms. The reviewed candidate and the accepted project\n  version are both `95b83e71ee9a37041b9918b5e8b797eebabf69c9`.\n- That record was written after the old Episode conclusion, which is why the Episode is REOPENED.\n  The reopening flags the old conclusion as stale; it does not contradict the accepted behaviour.\n  The record is an observed source journal entry, not a contributor decision or release approval.\n- Fresh verification was run from a `git archive` extraction of the accepted commit:\n  `node --test` passed 18 of 18 tests with 0 failures. Coverage includes explicit-zero and omitted\n  limits returning the first three readings in source order, positive limits and ordering, unary\n  `GetReading`, unknown-site NOT_FOUND, wire framing and trailers, and the preserved REST baseline.\n\n## Scope\n\nThis READY decision is for maintenance-handover continuation. It is not release authorization,\noperator acceptance, promotion, or a canonical-head advance. Release approval remains with the owner.\n\n## Retained evidence\n\n- Archived cold-session lookup: episode-e7050e9ddf64ccebde7f08f6, UNKNOWN, call call_ccfc97275a064338a47c1acb.\n- Owner-accepted tree: 95b83e71ee9a37041b9918b5e8b797eebabf69c9, Work DIRECT_BASIS event 8.\n- Original release verification reference: pje-d0c977aae7bb8bfeca9159f76e14a7d1.\n- Fleet source: updates/2026-11-10/fleet-default-limit.md.\n- Retained verification: zero or omitted limit returns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.\n",
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md"
+        }
+      },
+      {
+        "id": "call_abcc68ef751e4144ab35ac8d",
+        "call": 129,
+        "result": 130,
+        "request": 12,
+        "kind": "read",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md"
+        }
+      },
+      {
+        "id": "call_c13589c2b07043388b0af085",
+        "call": 139,
+        "result": 140,
+        "request": 13,
+        "kind": "edit",
+        "ok": true,
+        "action": "revise-review",
+        "input": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md",
+          "old_string": "## Accepted revision and current review tree\n\n- Owner-accepted revision: `95b83e71ee9a37041b9918b5e8b797eebabf69c9` (tree\n  `8d247378a016a4ae77caca3229062b7d85082709`), Work `DIRECT_BASIS` event 8 at project revision 2.\n- Review-branch head `1444de6ce289197a1d12b0b04d2caa36c1d79355` adds only this review.\n  `git diff --name-status 95b83e7..1444de6 -- . ':(exclude)MAINTENANCE-REVIEW.md'` is empty, so the\n  service, proto, tests, and REST baseline are unchanged from the accepted revision.\n- The review commit and this updated review are maintenance records only; neither advances the\n  accepted revision.",
+          "new_string": "## Accepted revision and review delta\n\n- Owner-accepted revision: `95b83e71ee9a37041b9918b5e8b797eebabf69c9` (tree\n  `8d247378a016a4ae77caca3229062b7d85082709`), Work `DIRECT_BASIS` event 8 at project revision 2.\n- The carry-forward commit `1444de6ce289197a1d12b0b04d2caa36c1d79355` adds only the prior HOLD\n  review. `git diff --name-status 95b83e7..1444de6 -- . ':(exclude)MAINTENANCE-REVIEW.md'` is empty,\n  so the service, proto, tests, and REST baseline are unchanged from the accepted revision. This\n  review revision likewise changes only `MAINTENANCE-REVIEW.md`.\n- The review commit and this updated review are maintenance records only; neither advances the\n  accepted revision."
+        }
+      },
+      {
+        "id": "call_51a7ff3431fc4603ab6fe0ed",
+        "call": 145,
+        "result": 148,
+        "request": 14,
+        "kind": "bash",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "command": "git diff --check && git diff -- MAINTENANCE-REVIEW.md && git status --short",
+          "description": "Review final diff before commit",
+          "workdir": "/run/stage/world"
+        }
+      },
+      {
+        "id": "call_30663cae6f374762884fe326",
+        "call": 153,
+        "result": 156,
+        "request": 15,
+        "kind": "bash",
+        "ok": true,
+        "action": "commit-review",
+        "input": {
+          "command": "git add -- MAINTENANCE-REVIEW.md && git commit -m \"Mark cold-handover review ready\" && printf '\\n--- status ---\\n' && git status --short --branch && printf '\\n--- commit ---\\n' && git show --stat --oneline --decorate --no-renames HEAD",
+          "description": "Commit the maintenance review update",
+          "workdir": "/run/stage/world"
+        }
+      },
+      {
+        "id": "call_16fb27faa691488c85a8ea82",
+        "call": 161,
+        "result": 164,
+        "request": 16,
+        "kind": "bash",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "command": "printf '%s\\n' '--- commit file list ---'; git show --format='%H%n%s' --name-only HEAD; printf '%s\\n' '--- diff vs accepted (all paths) ---'; git diff --name-status 95b83e7..HEAD; printf '%s\\n' '--- non-review diff vs accepted ---'; git diff --name-status 95b83e7..HEAD -- . ':(exclude)MAINTENANCE-REVIEW.md'; printf '%s\\n' '--- retained block unchanged ---'; diff -u <(git show 1444de6:MAINTENANCE-REVIEW.md | sed -n '/^## Retained evidence/,$p') <(git show HEAD:MAINTENANCE-REVIEW.md | sed -n '/^## Retained evidence/,$p') && echo 'Retained evidence block matches prior version'; printf '%s\\n' '--- decision ---'; grep -n '^Readback decision:' MAINTENANCE-REVIEW.md",
+          "description": "Verify commit scope and preserved evidence block",
+          "workdir": "/run/stage/world"
+        }
+      }
+    ]
+  },
+  "requestBinding": {
+    "arm": "WITH",
+    "session": "RESUME",
+    "boundRequests": 17,
+    "totals": {
+      "fresh": 44106,
+      "cacheRead": 477952,
+      "cacheWrite": 0,
+      "output": 11707
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-e5868ead-fc6f-4526-8979-8207bd1e3d5c",
+        "streamSha256": "36b670418a5fe25ebaffd56d82afe1cd4b64cc89ff05d63829499f6176d4c8ba",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 29,
+            "toolManifestBytes": 39786,
+            "productTools": 5,
+            "productToolBytes": 20370
+          }
+        ],
+        "systemTextBytes": [
+          2146
+        ],
+        "counts": {
+          "steps": 17,
+          "turns": 1,
+          "toolCalls": 28,
+          "pairedToolResults": 28,
+          "unpairedToolResults": 0,
+          "toolErrors": 1,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 19
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 19,
+          "continuity:explain": 2,
+          "continuity:summary": 1,
+          "write": 2,
+          "read": 2,
+          "edit": 1
+        },
+        "totals": {
+          "fresh": 44106,
+          "cacheRead": 477952,
+          "cacheWrite": 0,
+          "output": 11707
+        },
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "b80e4563-2a3c-46fc-89eb-e42f094f82d5",
+            "fresh": 10815,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 76,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_10172ff2982745eb800eb542d789e8cb"
+          },
+          {
+            "step": 2,
+            "seq": 20,
+            "requestId": "da561618-10f0-453e-9ff1-3fca8fb1ed7e",
+            "fresh": 2686,
+            "cacheRead": 10752,
+            "cacheWrite": 0,
+            "output": 427,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_819f611437ae441891e3130d24288121"
+          },
+          {
+            "step": 3,
+            "seq": 36,
+            "requestId": "c66e709c-2a5b-4053-9af4-18f5c68e4578",
+            "fresh": 1060,
+            "cacheRead": 13312,
+            "cacheWrite": 0,
+            "output": 452,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c6a4e93b9f8d44cd96d28199c76d1c97"
+          },
+          {
+            "step": 4,
+            "seq": 52,
+            "requestId": "70369248-c033-491d-9d09-41cdadf9ae93",
+            "fresh": 4409,
+            "cacheRead": 14336,
+            "cacheWrite": 0,
+            "output": 967,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_6f3f0f37595d4c98bedeccada6646ef1"
+          },
+          {
+            "step": 5,
+            "seq": 68,
+            "requestId": "e2e5ca99-20d0-480c-94f6-02d36b3b0b7a",
+            "fresh": 2000,
+            "cacheRead": 18688,
+            "cacheWrite": 0,
+            "output": 300,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f2abb7ed963d49c1974ef9aeda098fd1"
+          },
+          {
+            "step": 6,
+            "seq": 78,
+            "requestId": "e31b714e-2183-4584-863e-23fcea3dc1f9",
+            "fresh": 3715,
+            "cacheRead": 20608,
+            "cacheWrite": 0,
+            "output": 1436,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_91c0150deaff429d86ab0853161f97a9"
+          },
+          {
+            "step": 7,
+            "seq": 94,
+            "requestId": "1dfbc0d9-f969-439a-8597-3db073e723cd",
+            "fresh": 7972,
+            "cacheRead": 24320,
+            "cacheWrite": 0,
+            "output": 478,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ed50cc313b524cadba2ce3254690a145"
+          },
+          {
+            "step": 8,
+            "seq": 102,
+            "requestId": "65620c5a-cbb3-497b-b8f0-c1509b6d00ab",
+            "fresh": 974,
+            "cacheRead": 32256,
+            "cacheWrite": 0,
+            "output": 1597,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_756dad29f96f4df2bc72003a97b075fe"
+          },
+          {
+            "step": 9,
+            "seq": 110,
+            "requestId": "7fbbecc1-9c08-497f-89ea-426f56334d45",
+            "fresh": 1700,
+            "cacheRead": 33152,
+            "cacheWrite": 0,
+            "output": 1784,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b3bb2bb76f0f47938f36382159f6810b"
+          },
+          {
+            "step": 10,
+            "seq": 116,
+            "requestId": "d5e3f74c-bce2-4089-aee8-e674eba699eb",
+            "fresh": 1868,
+            "cacheRead": 34816,
+            "cacheWrite": 0,
+            "output": 73,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_aa954bbaf7a247a985b895ee6be8c86a"
+          },
+          {
+            "step": 11,
+            "seq": 122,
+            "requestId": "52ebc58b-75b3-484c-84d3-991e0eb60d68",
+            "fresh": 456,
+            "cacheRead": 36608,
+            "cacheWrite": 0,
+            "output": 1017,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_bd259351b6914d9391de83e7ad62ca99"
+          },
+          {
+            "step": 12,
+            "seq": 128,
+            "requestId": "ed58df00-a734-4b28-8eb1-eb062fb3849a",
+            "fresh": 1134,
+            "cacheRead": 36992,
+            "cacheWrite": 0,
+            "output": 355,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_cda3c49d1def4365b5de4899a06d12ab"
+          },
+          {
+            "step": 13,
+            "seq": 138,
+            "requestId": "c5bfaa40-9a6a-4f92-80b3-659adb4547f1",
+            "fresh": 1642,
+            "cacheRead": 38016,
+            "cacheWrite": 0,
+            "output": 770,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3c2edde52898461eb666345443b043ba"
+          },
+          {
+            "step": 14,
+            "seq": 144,
+            "requestId": "c76f243f-381e-4476-a515-880c4540c071",
+            "fresh": 907,
+            "cacheRead": 39552,
+            "cacheWrite": 0,
+            "output": 533,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_62adb2508e3c48beaf016592a074b28f"
+          },
+          {
+            "step": 15,
+            "seq": 152,
+            "requestId": "0b208008-d678-4cf2-8566-bd0589960f51",
+            "fresh": 1524,
+            "cacheRead": 40448,
+            "cacheWrite": 0,
+            "output": 162,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_770e91e7523a4726baf3e7c794488422"
+          },
+          {
+            "step": 16,
+            "seq": 160,
+            "requestId": "c5ec25d2-b7eb-48ff-8562-b09d807648e7",
+            "fresh": 386,
+            "cacheRead": 41856,
+            "cacheWrite": 0,
+            "output": 696,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_885f85d734e84cecb4cdc1faf8c30244"
+          },
+          {
+            "step": 17,
+            "seq": 172,
+            "requestId": "9f542c39-ccc7-4ec8-b347-8f0809ea4a6b",
+            "fresh": 858,
+            "cacheRead": 42240,
+            "cacheWrite": 0,
+            "output": 584,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_25a68ff802e34182b6388eaff8acb133"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "b80e4563-2a3c-46fc-89eb-e42f094f82d5",
+            "fresh": 10815,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 76,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_10172ff2982745eb800eb542d789e8cb",
+            "precedingResults": [],
+            "precedingTextBytes": 0
+          },
+          {
+            "step": 7,
+            "seq": 94,
+            "requestId": "1dfbc0d9-f969-439a-8597-3db073e723cd",
+            "fresh": 7972,
+            "cacheRead": 24320,
+            "cacheWrite": 0,
+            "output": 478,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ed50cc313b524cadba2ce3254690a145",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 79,
+                "seq": 82,
+                "textBytes": 11994
+              },
+              {
+                "kind": "bash",
+                "callSeq": 83,
+                "seq": 86,
+                "textBytes": 11593
+              },
+              {
+                "kind": "bash",
+                "callSeq": 87,
+                "seq": 90,
+                "textBytes": 333
+              }
+            ],
+            "precedingTextBytes": 23920
+          },
+          {
+            "step": 4,
+            "seq": 52,
+            "requestId": "70369248-c033-491d-9d09-41cdadf9ae93",
+            "fresh": 4409,
+            "cacheRead": 14336,
+            "cacheWrite": 0,
+            "output": 967,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_6f3f0f37595d4c98bedeccada6646ef1",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 37,
+                "seq": 40,
+                "textBytes": 4552
+              },
+              {
+                "kind": "bash",
+                "callSeq": 41,
+                "seq": 44,
+                "textBytes": 9274
+              },
+              {
+                "kind": "bash",
+                "callSeq": 45,
+                "seq": 48,
+                "textBytes": 1317
+              }
+            ],
+            "precedingTextBytes": 15143
+          },
+          {
+            "step": 6,
+            "seq": 78,
+            "requestId": "e31b714e-2183-4584-863e-23fcea3dc1f9",
+            "fresh": 3715,
+            "cacheRead": 20608,
+            "cacheWrite": 0,
+            "output": 1436,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_91c0150deaff429d86ab0853161f97a9",
+            "precedingResults": [
+              {
+                "kind": "continuity:explain",
+                "callSeq": 69,
+                "seq": 70,
+                "textBytes": 1659
+              },
+              {
+                "kind": "continuity:explain",
+                "callSeq": 71,
+                "seq": 72,
+                "textBytes": 6478
+              },
+              {
+                "kind": "continuity:summary",
+                "callSeq": 73,
+                "seq": 74,
+                "textBytes": 2375
+              }
+            ],
+            "precedingTextBytes": 10512
+          }
+        ]
+      }
+    ]
+  },
+  "candidate": "b5835cd22955dd33a96975c634dba4fba01246af",
+  "status": "",
+  "paths": [
+    "MAINTENANCE-REVIEW.md"
+  ],
+  "grade": {
+    "checks": {
+      "revisedDecision": true,
+      "preciseAcceptedBasis": true,
+      "oldEpisodeTraceable": true,
+      "oldUnknownPreserved": true,
+      "verificationTraceable": false,
+      "issueResolved": false,
+      "releaseScope": true
+    },
+    "passed": 5,
+    "expected": 7
+  },
+  "owners": {
+    "workPreserved": true,
+    "journalPrefixPreserved": true,
+    "journalAppends": 0
+  },
+  "conclusion": {
+    "seq": 2,
+    "eventId": "pjer-616c32a6fdca525b484deaba82e0a190",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Delivered the Fleet correction as direct committed revision 95b83e7: a zero or omitted StreamReadings limit now returns the first three available readings in source order, while positive limits, GetReading, unknown-site errors, field numbers and REST behavior are unchanged. MIGRATION.md records the correction and explains that the released proto comment is stale and intentionally untouched; the protocol, codec, client and REST test files are byte-for-byte unchanged. The committed revision passes the full node --test suite (18/18). This is an advisory direct deliverable, not a governed result, canonical-head advance, or release acceptance; release approval belongs to the owner.\nArtifacts:\n- service/grpc_server.js\n- test/integration.test.js\n- test/server.test.js\n- MIGRATION.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:95b83e7\nBasis: revision 1, head fbeb8958f4405688b13f37dbdec330157a660ab0\nArtifact provenance:\n- service/grpc_server.js: present=true tracked=true committed=true source=WORKTREE digest=c97e5fdfd725 commit=95b83e71ee9a\n- test/integration.test.js: present=true tracked=true committed=true source=WORKTREE digest=ab27a39846ae commit=95b83e71ee9a\n- test/server.test.js: present=true tracked=true committed=true source=WORKTREE digest=056777719a07 commit=95b83e71ee9a\n- MIGRATION.md: present=true tracked=true committed=true source=WORKTREE digest=62d76ebf8898 commit=95b83e71ee9a\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Delivered the Fleet correction as direct committed revision 95b83e7: a zero or omitted StreamReadings limit now returns the first three available readings in source order, while positive limits, GetReading, unknown-site errors, field numbers and REST behavior are unchanged. MIGRATION.md records the correction and explains that the released proto comment is stale and intentionally untouched; the protocol, codec, client and REST test files are byte-for-byte unchanged. The committed revision passes the full node --test suite (18/18). This is an advisory direct deliverable, not a governed result, canonical-head advance, or release acceptance; release approval belongs to the owner.\",\"artifacts\":[\"service/grpc_server.js\",\"test/integration.test.js\",\"test/server.test.js\",\"MIGRATION.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:95b83e7\"],\"recordedAt\":\"2026-11-18T17:25:03.507Z\",\"basis\":{\"projectRevision\":1,\"projectDigest\":\"44189ef9dbf36278fcb0d52d444dda2ff29a44c893c8deba6fff307d5fcacefe\",\"headCommit\":\"fbeb8958f4405688b13f37dbdec330157a660ab0\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"service/grpc_server.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"c97e5fdfd725113f4364f37a428f2e112971e3e58c36cc7ad9fa01c7001464da\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/integration.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"ab27a39846aef3ca2f14d256f7177be0876cb1610955acca3bd75a57093863ff\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/server.test.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"056777719a0795aff17c9306ca007b3b86671069587cad9b4a35ed450a1f2856\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"},{\"path\":\"MIGRATION.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"62d76ebf8898a304db9ec8f0b679c956efdbbcf920b6c3680384a445b281f800\",\"source\":\"WORKTREE\",\"commit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-e7050e9ddf64ccebde7f08f6\"}"
+  },
+  "delivery": false
+}
