@@ -7,6 +7,10 @@
 
 ## 0. 30 秒版本
 
+- 首轮受控自改进从 `8e1e3098` 完成。对四条原始轨迹按调用 ID 重算后，宿主核准只读依赖环境下的定向 Vitest Procedure `prc-1966931f7a21b77663b7cff1c4129b76@0`，摘要 `f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e`。普通 DSH 在首条业务消息前选择，打包 `/product` 消费者通过同一读取入口取到 argv 并执行 9/9。撤回、错摘要、清单变化和不适用环境均拒绝提供。两组 Mock 通过，8 笔模拟、0 付费。[核准、反例和复算入口](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md)
+
+- 新 `DELIVER` 出处提示维护工单用同一主线、两个全新普通 DSH 会话做有无方法对照。带方法组第 18 笔按核准命令首次运行即通过，启动失败 0 次。无提示组遇到 `.local`、`.vite-temp` 两次失败，改用可写依赖入口，也在第 18 笔首次通过。首次通过用量为 674,722 对 888,913 tokens，耗时为 126.934 对 97.686 秒。完整会话 33 对 50 笔，1,616,104 对 3,823,791 tokens，均独立验收 5/5、提交、记录 `DELIVER` 并自然退出。83 笔全部对账，新 `UNKNOWN` 为零。两个候选及历史原判均保存。[真实轨迹与对比](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md#真实配对轨迹)
+
 - 自维护运行脚本、两轮真实轨迹、核准记录与对比报告已随 [PR #291](https://github.com/orangeofcarl0-sys/palimpsest/pull/291) 合入主线 `cb7effd4`。送审 `494973cc` 的 16 项检查全部通过，合入文件树与送审版本一致。发布时离线复算四条轨迹并核对账本，新增付费请求 0。[发布检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/291/checks) · [报告与复算](docs/engineering/PALIMPSEST-SELF-MAINTENANCE.md)
 
 - 自维护真实试点从 `02a5160c` 开始。Palimpsest 和强原生 DSH 均由 Principal 自己复现 Vitest 只读故障并写出定向入口。Palimpsest 18/18 笔已结算，独立复验 20/20、失败断言退出 1，记录 `DELIVER` 后自然退出。所有者核准完整 SHA `072ff2e6defdb4ff3b1f08be340bd3c931ab7ae9`。强原生第 12 笔 240 秒超时，保留未提交原稿、非自然退出及 `UNKNOWN`，11 笔已确认 233,067 tokens。所有者另外批准独立封存该笔并用新 cohort 对照旧版与接受版，第二张工单聚焦无任务直接交付的 readiness。[自维护报告](docs/engineering/PALIMPSEST-SELF-MAINTENANCE.md#真实自维护配对) · [独立 UNKNOWN](research-evidence/pnwf-software/2026-11-21/self-maintenance/live/prior-unknown-F-12.json)

@@ -1,0 +1,113 @@
+diff --git a/src/project_continuity/episode.ts b/src/project_continuity/episode.ts
+index 7250c382..2c5a498c 100644
+--- a/src/project_continuity/episode.ts
++++ b/src/project_continuity/episode.ts
+@@ -315,7 +315,21 @@ export function episodeArtifactWarnings(states: readonly EpisodeArtifactState[])
+     } else if (!state.tracked) {
+       warnings.push(`artifact ${state.path} is not tracked by Git; the final bytes exist only in the working tree`);
+     } else if (!state.committed) {
+-      warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);
++      /**
++       * "Not committed" is not the same fact as "uncommitted changes". The observer also reports a
++       * HEAD that moved during the read, an unverifiable HEAD and an unreadable Git blob as
++       * not-committed; repeating the dirty-worktree wording for those would name a change nobody saw.
++       */
++      const detail = state.detail.trim();
++      if (/uncommitted changes/iu.test(detail)) {
++        warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);
++      } else {
++        warnings.push(
++          `artifact ${state.path} is tracked but its Git provenance could not be confirmed: ${
++            detail === "" ? "the observation recorded no detail" : detail
++          }`,
++        );
++      }
+     }
+   }
+   return Object.freeze(warnings);
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index f31ca22f..ef40bc8e 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -17,6 +17,7 @@ import { installProduct } from "../src/product.js";
+ import type { ProjectStandard } from "../src/domain/standard.js";
+ import type { DshToolDefinition, DshToolRunContext } from "../src/tools/dsh_types.js";
+ import {
++  episodeArtifactWarnings,
+   evaluateEpisodeReadiness,
+   validateEpisodeConclusion,
+   type EpisodeReadiness,
+@@ -295,6 +296,46 @@ describe("ALHS-A episode conclusion", () => {
+     });
+   });
+ 
++  it("reports an unconfirmed Git observation without inventing uncommitted changes", () => {
++    const state = (
++      detail: string,
++      overrides: Partial<{
++        present: boolean;
++        tracked: boolean;
++        committed: boolean;
++        source: "WORKTREE" | "RESULT_COMMIT" | "ABSENT";
++      }> = {},
++    ) => ({ path: "deliverables/package.md", present: true, tracked: true, committed: false, source: "WORKTREE" as const, detail, ...overrides });
++    const hint = (detail: string, overrides: Parameters<typeof state>[1] = {}) =>
++      episodeArtifactWarnings([state(detail, overrides)]).join(" ");
++
++    // A genuinely dirty tracked file keeps its exact meaning.
++    expect(hint("tracked with uncommitted changes")).toMatch(/has uncommitted changes/iu);
++
++    // An observation problem is described as such, not as a working-tree change.
++    for (const detail of [
++      "HEAD changed during artifact observation",
++      "HEAD could not be verified",
++      "artifact blob could not be read at observed HEAD",
++    ]) {
++      const warning = hint(detail);
++      expect(warning).toContain(detail);
++      expect(warning).toMatch(/Git provenance could not be confirmed/iu);
++      expect(warning).not.toMatch(/uncommitted changes/iu);
++    }
++
++    // The existing meanings of committed, missing, untracked and candidate artifacts are unchanged.
++    expect(hint("committed at HEAD", { committed: true })).toBe("");
++    expect(hint("not found in the worktree", { present: false, tracked: false })).toMatch(/was not found/iu);
++    expect(hint("not tracked by Git", { tracked: false })).toMatch(/not tracked by Git/iu);
++    expect(
++      hint("present in the result commit of attempt a1 — a governed candidate, not an accepted project asset", {
++        committed: true,
++        source: "RESULT_COMMIT",
++      }),
++    ).toBe("");
++  });
++
+   it("reads an older conclusion and separates verification records from open questions after restart", async () => {
+     const { repo, head, stateDir } = workspace("cold-handover");
+     const installed = install(repo, stateDir);
+@@ -370,7 +411,10 @@ describe("ALHS-A episode conclusion", () => {
+       if (command[1] === repo && command[4] === `${revised}:README.md`) throw new Error("Git object read failed");
+     };
+     try {
+-      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++      const unreadable = await deliver();
++      expect(unreadable.conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++      expect(unreadable.warnings?.join(" ")).toMatch(/artifact blob could not be read at observed HEAD/iu);
++      expect(unreadable.warnings?.join(" ")).not.toMatch(/uncommitted changes/iu);
+     } finally {
+       gitObservation.afterBlob = null;
+     }
+@@ -382,9 +426,12 @@ describe("ALHS-A episode conclusion", () => {
+       }
+     };
+     try {
+-      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ commit: null, committed: false });
++      const moved = await deliver();
++      expect(moved.conclusion?.check?.artifacts?.[0]).toMatchObject({ commit: null, committed: false });
+       expect(execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()).toBe(head);
+-      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++      const dirty = await deliver();
++      expect(dirty.conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++      expect(dirty.warnings?.join(" ")).toMatch(/has uncommitted changes/iu);
+     } finally {
+       gitObservation.afterBlob = null;
+     }

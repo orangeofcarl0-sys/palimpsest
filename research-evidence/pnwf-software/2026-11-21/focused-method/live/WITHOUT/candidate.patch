@@ -1,0 +1,160 @@
+diff --git a/src/project_continuity/episode.ts b/src/project_continuity/episode.ts
+index 7250c382..1c3b3bd0 100644
+--- a/src/project_continuity/episode.ts
++++ b/src/project_continuity/episode.ts
+@@ -306,6 +306,26 @@ export function makeEpisodeConclusion(input: {
+   return Object.freeze({ ...body, conclusionId: `episode-${canonicalDigest(body).slice(0, 24)}` });
+ }
+ 
++/**
++ * The observer records why a tracked file could not be confirmed at HEAD in `detail`. Those reasons
++ * are NOT evidence of a dirty file: HEAD can move while the blob is read, HEAD can be unverifiable,
++ * or the Git object can be unreadable. Only the observer's explicit dirty result is an uncommitted
++ * change, so classify the observation before choosing the provenance warning.
++ */
++function artifactObservationIssue(detail: string): string | null {
++  const normalized = detail.trim().toLowerCase();
++  if (normalized.includes("head changed") || normalized.includes("head moved")) {
++    return "HEAD changed during artifact observation";
++  }
++  if (normalized.includes("head could not be verified") || normalized.includes("head could not be confirmed")) {
++    return "HEAD could not be verified";
++  }
++  if (normalized.includes("blob could not be read") || normalized.includes("artifact could not be read")) {
++    return `the Git blob could not be read (${detail.trim()})`;
++  }
++  return null;
++}
++
+ /** Provenance facts are reported, never turned into an acceptance or a refusal by themselves. */
+ export function episodeArtifactWarnings(states: readonly EpisodeArtifactState[]): readonly string[] {
+   const warnings: string[] = [];
+@@ -315,7 +335,14 @@ export function episodeArtifactWarnings(states: readonly EpisodeArtifactState[])
+     } else if (!state.tracked) {
+       warnings.push(`artifact ${state.path} is not tracked by Git; the final bytes exist only in the working tree`);
+     } else if (!state.committed) {
+-      warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);
++      const observationIssue = artifactObservationIssue(state.detail);
++      if (observationIssue !== null) {
++        warnings.push(
++          `artifact ${state.path} is tracked, but its commit state could not be confirmed: ${observationIssue}; this is an observation problem, not a working-tree change`,
++        );
++      } else {
++        warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);
++      }
+     }
+   }
+   return Object.freeze(warnings);
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index f31ca22f..48a4ee91 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -17,8 +17,10 @@ import { installProduct } from "../src/product.js";
+ import type { ProjectStandard } from "../src/domain/standard.js";
+ import type { DshToolDefinition, DshToolRunContext } from "../src/tools/dsh_types.js";
+ import {
++  episodeArtifactWarnings,
+   evaluateEpisodeReadiness,
+   validateEpisodeConclusion,
++  type EpisodeArtifactState,
+   type EpisodeReadiness,
+   type ProjectExplanation,
+ } from "../src/project_continuity/index.js";
+@@ -295,6 +297,39 @@ describe("ALHS-A episode conclusion", () => {
+     });
+   });
+ 
++  it("distinguishes an uncommitted artifact from an inconclusive Git observation", () => {
++    const state = (overrides: Partial<EpisodeArtifactState> = {}): EpisodeArtifactState => ({
++      path: "deliverables/package.md",
++      present: true,
++      tracked: true,
++      committed: false,
++      digest: "a".repeat(64),
++      source: "WORKTREE",
++      commit: null,
++      detail: "tracked with uncommitted changes",
++      ...overrides,
++    });
++    const warningFor = (overrides: Partial<EpisodeArtifactState> = {}) =>
++      episodeArtifactWarnings([state(overrides)]).join(" ");
++
++    expect(warningFor({})).toMatch(/uncommitted changes/iu);
++
++    for (const detail of [
++      "HEAD changed during artifact observation",
++      "HEAD could not be verified",
++      "artifact blob could not be read at observed HEAD",
++    ]) {
++      const warning = warningFor({ detail });
++      expect(warning).toContain(detail);
++      expect(warning).toMatch(/observation problem/iu);
++      expect(warning).not.toMatch(/uncommitted/iu);
++    }
++
++    expect(warningFor({ present: false, tracked: false, source: "ABSENT", digest: null, detail: "not found" })).toMatch(/was not found/iu);
++    expect(warningFor({ tracked: false, detail: "not tracked by Git" })).toMatch(/not tracked by Git/iu);
++    expect(warningFor({ committed: true, source: "RESULT_COMMIT", commit: "b".repeat(40) })).toBe("");
++  });
++
+   it("reads an older conclusion and separates verification records from open questions after restart", async () => {
+     const { repo, head, stateDir } = workspace("cold-handover");
+     const installed = install(repo, stateDir);
+@@ -356,35 +391,51 @@ describe("ALHS-A episode conclusion", () => {
+     await start(installed, head, []);
+     const args = { action: "conclude", intent: "DELIVER", statement: "Deliver the current project artifacts.", artifacts: ["README.md"] };
+     const deliver = async () => (await call(installed, "palimpsest_work", args)) as unknown as Conclude;
+-    expect((await deliver()).conclusion?.check?.artifacts?.[0]?.commit).toBe(head);
++    const initial = await deliver();
++    expect(initial.conclusion?.check?.artifacts?.[0]?.commit).toBe(head);
++    expect(initial.warnings ?? []).toEqual([]);
+ 
+     writeFileSync(join(repo, "README.md"), "# Revised package\n");
+     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qam", "revise"], { cwd: repo });
+     const revised = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
+     const bytes = execFileSync("git", ["cat-file", "blob", `${revised}:README.md`], { cwd: repo });
+-    expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({
++    const committed = await deliver();
++    expect(committed.conclusion?.check?.artifacts?.[0]).toMatchObject({
+       commit: revised, committed: true, digest: createHash("sha256").update(bytes).digest("hex"),
+     });
++    expect(committed.warnings ?? []).toEqual([]);
+ 
+     gitObservation.afterBlob = (command) => {
+       if (command[1] === repo && command[4] === `${revised}:README.md`) throw new Error("Git object read failed");
+     };
+     try {
+-      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++      const unreadable = await deliver();
++      expect(unreadable.conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++      expect(unreadable.warnings?.join(" ")).toMatch(/blob could not be read/iu);
++      expect(unreadable.warnings?.join(" ")).not.toMatch(/uncommitted/iu);
+     } finally {
+       gitObservation.afterBlob = null;
+     }
+ 
++    // The pulse and existence check read the blob before the conclusion's provenance observation.
++    // Move HEAD only on that third read, so the change happens while the artifact is being observed.
++    let movedBlobReads = 0;
+     gitObservation.afterBlob = (command) => {
+-      if (command[1] === repo && command[4] === `${revised}:README.md`) {
++      if (command[1] === repo && command[4] === `${revised}:README.md` && ++movedBlobReads === 3) {
+         gitObservation.afterBlob = null;
+         execFileSync("git", ["update-ref", "HEAD", head, revised], { cwd: repo });
+       }
+     };
+     try {
+-      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ commit: null, committed: false });
++      const moved = await deliver();
++      expect(moved.conclusion?.check?.artifacts?.[0]).toMatchObject({ commit: null, committed: false });
++      expect(moved.warnings?.join(" ")).toMatch(/HEAD changed during artifact observation/iu);
++      expect(moved.warnings?.join(" ")).not.toMatch(/uncommitted/iu);
+       expect(execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()).toBe(head);
+-      expect((await deliver()).conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++
++      const dirty = await deliver();
++      expect(dirty.conclusion?.check?.artifacts?.[0]).toMatchObject({ tracked: true, commit: null, committed: false });
++      expect(dirty.warnings?.join(" ")).toMatch(/uncommitted changes/iu);
+     } finally {
+       gitObservation.afterBlob = null;
+     }

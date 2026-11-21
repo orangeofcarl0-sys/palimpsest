@@ -1,0 +1,75 @@
+
+ RUN  v4.1.10 /work
+
+ ❯ test/host-focused-oracle.test.ts (5 tests | 3 failed) 16ms
+   ✓ names known dirty bytes 3ms
+   × names HEAD drift without blaming dirty bytes 7ms
+   × names Git read failure without blaming dirty bytes 2ms
+   × names an unverifiable HEAD without blaming dirty bytes 1ms
+   ✓ keeps committed, missing and untracked outcomes 1ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  10:10:59
+   Duration  387ms (transform 66ms, setup 0ms, import 95ms, tests 16ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/host-focused-oracle.test.ts > names HEAD drift without blaming dirty bytes
+AssertionError: expected 'artifact review.md is tracked but has…' to match /HEAD.*(?:changed|drift|moved)/i
+
+- Expected:
+/HEAD.*(?:changed|drift|moved)/i
+
++ Received:
+"artifact review.md is tracked but has uncommitted changes; HEAD does not contain the final bytes"
+
+ ❯ test/host-focused-oracle.test.ts:12:18
+     10| it("names HEAD drift without blaming dirty bytes", () => {
+     11|   const report = warning("HEAD changed during artifact observation");
+     12|   expect(report).toMatch(/HEAD.*(?:changed|drift|moved)/i);
+       |                  ^
+     13|   expect(report).not.toMatch(/uncommitted changes/i);
+     14| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/host-focused-oracle.test.ts > names Git read failure without blaming dirty bytes
+AssertionError: expected 'artifact review.md is tracked but has…' to match /(?:blob|read|object|unavailable)/i
+
+- Expected:
+/(?:blob|read|object|unavailable)/i
+
++ Received:
+"artifact review.md is tracked but has uncommitted changes; HEAD does not contain the final bytes"
+
+ ❯ test/host-focused-oracle.test.ts:17:18
+     15| it("names Git read failure without blaming dirty bytes", () => {
+     16|   const report = warning("artifact blob could not be read at observed …
+     17|   expect(report).toMatch(/(?:blob|read|object|unavailable)/i);
+       |                  ^
+     18|   expect(report).not.toMatch(/uncommitted changes/i);
+     19| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/host-focused-oracle.test.ts > names an unverifiable HEAD without blaming dirty bytes
+AssertionError: expected 'artifact review.md is tracked but has…' to match /HEAD.*(?:verif|confirm|unavailable)/i
+
+- Expected:
+/HEAD.*(?:verif|confirm|unavailable)/i
+
++ Received:
+"artifact review.md is tracked but has uncommitted changes; HEAD does not contain the final bytes"
+
+ ❯ test/host-focused-oracle.test.ts:22:18
+     20| it("names an unverifiable HEAD without blaming dirty bytes", () => {
+     21|   const report = warning("HEAD could not be verified");
+     22|   expect(report).toMatch(/HEAD.*(?:verif|confirm|unavailable)/i);
+       |                  ^
+     23|   expect(report).not.toMatch(/uncommitted changes/i);
+     24| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

@@ -1,0 +1,491 @@
+{
+  "method": {
+    "procedureId": "prc-1966931f7a21b77663b7cff1c4129b76",
+    "revision": 0,
+    "digest": "f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e"
+  },
+  "history": 4,
+  "newPaidRequests": 0,
+  "evidence": [
+    {
+      "phase": "mock",
+      "arm": "WITH",
+      "offered": true,
+      "firstPass": "focused_first",
+      "beforeFirstPass": 1,
+      "usage": {
+        "inputTokens": 96563,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "outputTokens": 294,
+        "totalTokens": 96857
+      },
+      "startupFailures": 0,
+      "result": "PASS",
+      "reconciled": true,
+      "unresolved": 0
+    },
+    {
+      "phase": "mock",
+      "arm": "WITHOUT",
+      "offered": false,
+      "firstPass": "focused_patch",
+      "beforeFirstPass": 2,
+      "usage": {
+        "inputTokens": 153689,
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "outputTokens": 2251,
+        "totalTokens": 155940
+      },
+      "startupFailures": 1,
+      "result": "PASS",
+      "reconciled": true,
+      "unresolved": 0
+    },
+    {
+      "phase": "live",
+      "arm": "WITH",
+      "offered": true,
+      "firstPass": "call_1f78df89801a4522b526ae84",
+      "beforeFirstPass": 18,
+      "usage": {
+        "inputTokens": 53831,
+        "cacheReadTokens": 612480,
+        "cacheWriteTokens": 0,
+        "outputTokens": 8411,
+        "totalTokens": 674722
+      },
+      "startupFailures": 0,
+      "result": "PASS",
+      "reconciled": true,
+      "unresolved": 0,
+      "requestBinding": {
+        "boundRequests": 33,
+        "firstPassRequests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "2ab87fa5-46b6-4443-8c78-b48084ca1238",
+            "fresh": 10743,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 54,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_23f40dc0c53942c9834173e183fe6e6e"
+          },
+          {
+            "step": 2,
+            "seq": 20,
+            "requestId": "f8b3bb7f-4ed2-40f4-872a-9cd2cdfac336",
+            "fresh": 1324,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 193,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7424210b1ab940ef9ac4b103a47d2d29"
+          },
+          {
+            "step": 3,
+            "seq": 30,
+            "requestId": "b5889edf-4c66-401d-9be0-1aa68abaf741",
+            "fresh": 1419,
+            "cacheRead": 11904,
+            "cacheWrite": 0,
+            "output": 161,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c842b9553d7b433cacbc277dfdde7997"
+          },
+          {
+            "step": 4,
+            "seq": 40,
+            "requestId": "379faa93-1763-4f2d-9f7b-72c5dcf79e60",
+            "fresh": 7856,
+            "cacheRead": 13312,
+            "cacheWrite": 0,
+            "output": 195,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_9563862fd24a4d3a8ec57b59a6124f2d"
+          },
+          {
+            "step": 5,
+            "seq": 50,
+            "requestId": "914ccc66-bfb6-4f29-975a-26a1b479b68e",
+            "fresh": 3492,
+            "cacheRead": 21120,
+            "cacheWrite": 0,
+            "output": 220,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_66d48b18fa814d009c01078dc986261b"
+          },
+          {
+            "step": 6,
+            "seq": 58,
+            "requestId": "04f365e6-65c9-4b58-b5e0-8d7f837eac9f",
+            "fresh": 7493,
+            "cacheRead": 24576,
+            "cacheWrite": 0,
+            "output": 417,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_89fb6d161ae84159b21ffbd973c64340"
+          },
+          {
+            "step": 7,
+            "seq": 70,
+            "requestId": "483f1700-6e05-4a4e-a439-ea262d839b9d",
+            "fresh": 3401,
+            "cacheRead": 32000,
+            "cacheWrite": 0,
+            "output": 688,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_265302674e9141dd8f7864e0e0e7348a"
+          },
+          {
+            "step": 8,
+            "seq": 82,
+            "requestId": "1b375d91-824f-416b-934e-0379a624e884",
+            "fresh": 1648,
+            "cacheRead": 35328,
+            "cacheWrite": 0,
+            "output": 1490,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_560c5214c59e4c2a82761a02c83c7639"
+          },
+          {
+            "step": 9,
+            "seq": 94,
+            "requestId": "dd0030e7-b7db-4a85-8ed0-88413be1684f",
+            "fresh": 5011,
+            "cacheRead": 36864,
+            "cacheWrite": 0,
+            "output": 185,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0ea8e335f69a4d81b8f846a7d9d9d73e"
+          },
+          {
+            "step": 10,
+            "seq": 102,
+            "requestId": "2ba4a881-25e0-4b98-992f-d6b1bbb092de",
+            "fresh": 1771,
+            "cacheRead": 41856,
+            "cacheWrite": 0,
+            "output": 922,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_462a5173ecf440e5b6f8e107452e6796"
+          },
+          {
+            "step": 11,
+            "seq": 110,
+            "requestId": "67950c6e-014a-44fb-a412-36d95929b15d",
+            "fresh": 1359,
+            "cacheRead": 43520,
+            "cacheWrite": 0,
+            "output": 104,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_45727e1fad784c4f8c225cab2053061f"
+          },
+          {
+            "step": 12,
+            "seq": 118,
+            "requestId": "aa60efb8-48fb-433c-9d5e-38666c9e186c",
+            "fresh": 1040,
+            "cacheRead": 44800,
+            "cacheWrite": 0,
+            "output": 1110,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_9e14f04c7ef74746896ce5a9de9bb56a"
+          },
+          {
+            "step": 13,
+            "seq": 126,
+            "requestId": "430cf5da-ec9d-45f4-9280-8d0ae4a6a7e2",
+            "fresh": 1309,
+            "cacheRead": 45824,
+            "cacheWrite": 0,
+            "output": 430,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f2d00eb1ecb0418d8642f3551ac0a293"
+          },
+          {
+            "step": 14,
+            "seq": 138,
+            "requestId": "18323761-2c8a-4df0-864d-1c9901787120",
+            "fresh": 2734,
+            "cacheRead": 47104,
+            "cacheWrite": 0,
+            "output": 809,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_1d988a219c47462b932ab846e60ee2af"
+          },
+          {
+            "step": 15,
+            "seq": 146,
+            "requestId": "59c3a513-0858-4551-a79c-62eb436b39f1",
+            "fresh": 914,
+            "cacheRead": 49792,
+            "cacheWrite": 0,
+            "output": 176,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b827105dc1924ffbbe2e280d82751487"
+          },
+          {
+            "step": 16,
+            "seq": 154,
+            "requestId": "57cbe5fd-d5a9-442a-b1ad-91b1280a7009",
+            "fresh": 239,
+            "cacheRead": 50688,
+            "cacheWrite": 0,
+            "output": 757,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_6b0b373a20a0499d9d13b434a33f39c7"
+          },
+          {
+            "step": 17,
+            "seq": 162,
+            "requestId": "26430b14-0fea-49a6-a487-c0dcfc3dc7f5",
+            "fresh": 1625,
+            "cacheRead": 50816,
+            "cacheWrite": 0,
+            "output": 337,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b6211ddf77f743719178bd394bde02fb"
+          },
+          {
+            "step": 18,
+            "seq": 169,
+            "requestId": "224c4ab7-614e-4809-8c12-25f6b599a7b9",
+            "fresh": 453,
+            "cacheRead": 52352,
+            "cacheWrite": 0,
+            "output": 163,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a78ff7ce133340dba8fdcc2c38a73197"
+          }
+        ],
+        "tupleMatches": 33
+      }
+    },
+    {
+      "phase": "live",
+      "arm": "WITHOUT",
+      "offered": false,
+      "firstPass": "call_91bb76f4dc0c44eb9f20303f",
+      "beforeFirstPass": 18,
+      "usage": {
+        "inputTokens": 73401,
+        "cacheReadTokens": 809600,
+        "cacheWriteTokens": 0,
+        "outputTokens": 5912,
+        "totalTokens": 888913
+      },
+      "startupFailures": 2,
+      "result": "PASS",
+      "reconciled": true,
+      "unresolved": 0,
+      "requestBinding": {
+        "boundRequests": 50,
+        "firstPassRequests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "3c99f74b-d124-49f0-bbfb-9e197eda33c2",
+            "fresh": 10669,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 60,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_31c4dacc04004490a8566ba4e3639199"
+          },
+          {
+            "step": 2,
+            "seq": 20,
+            "requestId": "1f1494b4-d841-43c6-a209-b05daa70ae62",
+            "fresh": 1263,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 174,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_e9217823190f401e97908a3fbe6cf687"
+          },
+          {
+            "step": 3,
+            "seq": 32,
+            "requestId": "ccc827c5-c812-4e45-aae1-046455c622ec",
+            "fresh": 419,
+            "cacheRead": 11776,
+            "cacheWrite": 0,
+            "output": 139,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2e2359c9f0c8411da97e862525a57ba2"
+          },
+          {
+            "step": 4,
+            "seq": 42,
+            "requestId": "b8d6221f-73c1-4d8d-8240-e57975ba9266",
+            "fresh": 8916,
+            "cacheRead": 12160,
+            "cacheWrite": 0,
+            "output": 161,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2a76027c203d4b34a8b57bd1845bafc9"
+          },
+          {
+            "step": 5,
+            "seq": 50,
+            "requestId": "9632d679-55cd-4d3a-afc2-dd748cbeeccd",
+            "fresh": 7917,
+            "cacheRead": 20992,
+            "cacheWrite": 0,
+            "output": 146,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_be826922c4b14024a1cffefded696acd"
+          },
+          {
+            "step": 6,
+            "seq": 56,
+            "requestId": "830ad7de-85b2-4051-a588-12ff73b9efda",
+            "fresh": 3217,
+            "cacheRead": 28800,
+            "cacheWrite": 0,
+            "output": 654,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0fc2e1a6f67b46b983e3647cd2b924bb"
+          },
+          {
+            "step": 7,
+            "seq": 70,
+            "requestId": "3ed20468-1d79-4361-9850-8b271c60d7a9",
+            "fresh": 4547,
+            "cacheRead": 32000,
+            "cacheWrite": 0,
+            "output": 1219,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5b1a57f3d6444055824c39cdd24ec2c8"
+          },
+          {
+            "step": 8,
+            "seq": 82,
+            "requestId": "bc960450-ebd3-42d0-921b-4fcff7d28b2a",
+            "fresh": 7952,
+            "cacheRead": 36480,
+            "cacheWrite": 0,
+            "output": 118,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a3ac8c67b9064e2c8b6976fa533bea76"
+          },
+          {
+            "step": 9,
+            "seq": 90,
+            "requestId": "b1494e39-c9ce-47ff-8c1f-3684daf92d19",
+            "fresh": 19754,
+            "cacheRead": 44416,
+            "cacheWrite": 0,
+            "output": 783,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_e91b4cb99fc642c0b9a5978188223ba9"
+          },
+          {
+            "step": 10,
+            "seq": 98,
+            "requestId": "1b977365-2dc1-42e2-99f4-3b3c1130422e",
+            "fresh": 1049,
+            "cacheRead": 64128,
+            "cacheWrite": 0,
+            "output": 127,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_13998dc89420450c92844a358fad7be5"
+          },
+          {
+            "step": 11,
+            "seq": 106,
+            "requestId": "8bcb3850-da67-43f5-a06d-c9aa04f674ac",
+            "fresh": 1427,
+            "cacheRead": 65152,
+            "cacheWrite": 0,
+            "output": 183,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_e46dc37c87704eecac71d8112083dcdb"
+          },
+          {
+            "step": 12,
+            "seq": 114,
+            "requestId": "cad82fe3-4df1-4535-bf22-b94a5a704d8f",
+            "fresh": 774,
+            "cacheRead": 66560,
+            "cacheWrite": 0,
+            "output": 129,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8b16e0e66334462686c125ae8552eddf"
+          },
+          {
+            "step": 13,
+            "seq": 122,
+            "requestId": "636eab87-6064-4fab-a41c-f921b22ab793",
+            "fresh": 244,
+            "cacheRead": 67328,
+            "cacheWrite": 0,
+            "output": 117,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5ab0e7253c064e9ea2ff598a2a733bac"
+          },
+          {
+            "step": 14,
+            "seq": 130,
+            "requestId": "90ff23c5-ad29-4643-8cd9-245d0a571b2e",
+            "fresh": 1116,
+            "cacheRead": 67456,
+            "cacheWrite": 0,
+            "output": 574,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_42f629808f5a428fa092442f6c1e3059"
+          },
+          {
+            "step": 15,
+            "seq": 138,
+            "requestId": "dd23c5ed-79d2-4fc6-a2a5-42a0ea8be433",
+            "fresh": 2083,
+            "cacheRead": 68480,
+            "cacheWrite": 0,
+            "output": 133,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f827b8916e5845299b81565a651c4aad"
+          },
+          {
+            "step": 16,
+            "seq": 146,
+            "requestId": "d3617dc3-da4c-417b-b2b2-dcb04eab44d7",
+            "fresh": 716,
+            "cacheRead": 70528,
+            "cacheWrite": 0,
+            "output": 233,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7d5bf7dd6d514ba5bde2924e5b6ca45c"
+          },
+          {
+            "step": 17,
+            "seq": 154,
+            "requestId": "cada9d42-920d-4cc2-b3b4-7e368de2fe46",
+            "fresh": 400,
+            "cacheRead": 71168,
+            "cacheWrite": 0,
+            "output": 850,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c1d3cd14f7a648dab763fb42b5c111ff"
+          },
+          {
+            "step": 18,
+            "seq": 162,
+            "requestId": "b55a422e-32a8-4861-aa7e-6b25d4946fec",
+            "fresh": 938,
+            "cacheRead": 71552,
+            "cacheWrite": 0,
+            "output": 112,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_cf6d78e7a0d64bacaf5a58b48c6a3b78"
+          }
+        ],
+        "tupleMatches": 50
+      }
+    }
+  ]
+}

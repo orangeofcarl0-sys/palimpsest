@@ -14,6 +14,8 @@
  */
 
 import { isStableIdentifier } from "../schema/identifier.js";
+import { parseProcedureRef } from "../procedures/index.js";
+import type { FocusedTestingSelection } from "../composition/focused_testing.js";
 
 export const DEPLOYMENT_PROFILE_SCHEMA_VERSION = 1;
 
@@ -228,6 +230,7 @@ export interface ProjectAgentDeploymentProfile {
    * about reasoning changes (never a stub).
    */
   readonly reasoning?: DeploymentReasoningConfig | undefined;
+  readonly focusedTesting?: FocusedTestingSelection | undefined;
   /**
    * Trajectory-P2-D2 §10 (additive): the EXPERIMENTAL, DEFAULT-OFF model-visible Trajectory delivery.
    * Present (even `{}`) composes the capability; `mode` selects the arm. Absent ⇒ nothing changes.
@@ -497,6 +500,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "directory",
       "projectDirectory",
       "reasoning",
+      "focusedTesting",
       "trajectory",
       "attention",
       "boundaryHomeId",
@@ -525,6 +529,8 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
   const transportObject = asObject(object.transport, `${what}.transport`);
   exactKeys(transportObject, ["namespace", "databasePath"], `${what}.transport`);
   const databasesObject = asObject(object.databases, `${what}.databases`);
+  const focusedTesting = object.focusedTesting === undefined ? undefined : asObject(object.focusedTesting, `${what}.focusedTesting`);
+  if (focusedTesting !== undefined) exactKeys(focusedTesting, ["storePath", "procedure"], `${what}.focusedTesting`);
   exactKeys(
     databasesObject,
     ["orchestration", "ordarium", "coordination", "transportCursors", "boundaryMemory", "runtimeScope", "attentionMarks", "projectAssociations", "projectJournal", "management"],
@@ -574,6 +580,10 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       ? {}
       : { projectDirectory: parseProjectDirectory(object.projectDirectory, `${what}.projectDirectory`) }),
     ...(object.reasoning === undefined ? {} : { reasoning: parseReasoning(object.reasoning, `${what}.reasoning`) }),
+    ...(focusedTesting === undefined ? {} : { focusedTesting: Object.freeze({
+      storePath: requiredString(focusedTesting, "storePath", `${what}.focusedTesting`),
+      procedure: parseProcedureRef(focusedTesting.procedure, `${what}.focusedTesting.procedure`),
+    }) }),
     ...(object.trajectory === undefined ? {} : { trajectory: parseTrajectory(object.trajectory, `${what}.trajectory`) }),
     ...(object.attention === undefined ? {} : { attention: parseAttention(object.attention, `${what}.attention`) }),
     ...(optionalStableId(object, "boundaryHomeId", what) === undefined ? {} : { boundaryHomeId: optionalStableId(object, "boundaryHomeId", what)! }),

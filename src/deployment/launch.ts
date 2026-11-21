@@ -67,6 +67,7 @@ import type { RemoteSubmissionPort } from "../application/surface.js";
 import { deploymentReasoningStorePath, firstPartyExploratoryAdmissionPolicy, firstPartyExploratoryVerificationPolicy } from "./reasoning_bundle.js";
 import { deriveHostCollaborationReadiness, type HostCollaborationReadiness } from "./readiness.js";
 import type { ProjectAgentDeploymentProfile } from "./profile.js";
+import { makeFocusedTesting } from "../composition/focused_testing.js";
 
 /** Optional host services; the profile selects the KIND, the host supplies the instance. */
 export interface DeploymentHostServices {
@@ -142,6 +143,7 @@ export interface Deployment {
    * when THIS deployment created and therefore closes the ReasoningCell store.
    */
   readonly reasoning: DeploymentReasoningStatus;
+  readonly focusedTesting: ReturnType<typeof makeFocusedTesting>;
   /** Drain the mailbox, then derive + (optionally) activate attention. Safe to repeat. */
   pumpAndActivate(input?: { readonly fromStart?: boolean }): Promise<DeploymentPumpReport>;
   /**
@@ -672,6 +674,7 @@ export function launchDeployment(
     transport,
     pump,
     submitRemoteCommitmentDecision,
+    focusedTesting: makeFocusedTesting(profile.repository, profile.focusedTesting),
     reasoning: Object.freeze({
       storeConfigured: reasoningStore !== undefined,
       storeOwned: reasoningStore !== undefined,

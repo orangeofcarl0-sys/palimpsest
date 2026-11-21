@@ -11,6 +11,7 @@
  */
 import { WorkRevisionError, type TaskObligations, type WorkRevisionApproval, type WorkRevisionReceiptQuery } from "./schema/work_revision.js";
 import { inspectWorkRevision } from "./work/revision.js";
+import { makeFocusedTesting, type FocusedTestingSelection } from "./composition/focused_testing.js";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -48,6 +49,7 @@ export interface InstallProductOptions {
   /** Defaults to `normal`. `expert` is available for debugging/migration. */
   readonly toolProfile?: "normal" | "expert" | undefined;
   readonly git?: GitPort | undefined;
+  readonly focusedTesting?: FocusedTestingSelection | undefined;
   /**
    * Host-verified operator identity for proposal decisions and Direct basis admission. Absent means
    * those mutations refuse; a proposal can still be created and previewed.
@@ -60,6 +62,7 @@ export interface InstallProductOptions {
 }
 
 export interface InstalledProduct extends InstalledPalimpsest {
+  readonly focusedTesting: ReturnType<typeof makeFocusedTesting>;
   readonly revision: {
     readReceipt(query: WorkRevisionReceiptQuery): import("./schema/work_revision.js").WorkRevisionReceipt;
     accept(request: WorkRevisionApproval & { readonly attemptId: string }): Promise<import("./effects/promotion.js").PromoteResult>;
@@ -161,6 +164,7 @@ export function installProduct(context: DshPluginContext, options: InstallProduc
   const dispose = installed.dispose;
   return {
     ...installed,
+    focusedTesting: makeFocusedTesting(options.repository, options.focusedTesting),
     revision: {
       readReceipt: query => installed.controller.readRevisionReceipt(query),
       accept: async ({ attemptId, ...revisionApproval }) => {

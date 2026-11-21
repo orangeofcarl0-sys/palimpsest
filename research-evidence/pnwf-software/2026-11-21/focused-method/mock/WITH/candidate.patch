@@ -1,0 +1,34 @@
+diff --git a/src/project_continuity/episode.ts b/src/project_continuity/episode.ts
+index 7250c382..d449a9b7 100644
+--- a/src/project_continuity/episode.ts
++++ b/src/project_continuity/episode.ts
+@@ -315,7 +315,8 @@ export function episodeArtifactWarnings(states: readonly EpisodeArtifactState[])
+     } else if (!state.tracked) {
+       warnings.push(`artifact ${state.path} is not tracked by Git; the final bytes exist only in the working tree`);
+     } else if (!state.committed) {
+-      warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);
++      if (state.detail === "tracked with uncommitted changes") warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);
++      else warnings.push(`artifact ${state.path} is tracked but commit provenance could not be confirmed: ${state.detail}`);
+     }
+   }
+   return Object.freeze(warnings);
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index f31ca22f..f2ad2b32 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -1,3 +1,4 @@
++import { episodeArtifactWarnings } from "../src/project_continuity/episode.js";
+ /**
+  * ALHS-A — episode-level convergence over the existing project facts.
+  *
+@@ -442,3 +443,10 @@ describe("ALHS-A episode conclusion", () => {
+     expect(withEvidence.ok).toBe(true);
+   });
+ });
++
++
++it("reports dirty artifact bytes without confusing an observation failure", () => {
++  const state = { path: "review.md", present: true, tracked: true, committed: false, commit: null, source: "WORKTREE" as const, digest: null };
++  expect(episodeArtifactWarnings([{ ...state, detail: "HEAD changed during artifact observation" }]).join(" ")).toMatch(/HEAD changed/);
++  expect(episodeArtifactWarnings([{ ...state, detail: "tracked with uncommitted changes" }]).join(" ")).toMatch(/uncommitted changes/);
++});

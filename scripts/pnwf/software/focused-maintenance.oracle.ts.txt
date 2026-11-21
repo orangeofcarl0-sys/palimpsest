@@ -1,0 +1,29 @@
+import { expect, it } from "vitest";
+import { episodeArtifactWarnings } from "../src/project_continuity/episode.js";
+
+const state = { path: "review.md", present: true, tracked: true, committed: false, commit: null, source: "WORKTREE" as const, digest: "a".repeat(64) };
+const warning = (detail: string) => episodeArtifactWarnings([{ ...state, detail }]).join(" ");
+
+it("names known dirty bytes", () => {
+  expect(warning("tracked with uncommitted changes")).toMatch(/uncommitted changes/i);
+});
+it("names HEAD drift without blaming dirty bytes", () => {
+  const report = warning("HEAD changed during artifact observation");
+  expect(report).toMatch(/HEAD.*(?:changed|drift|moved)/i);
+  expect(report).not.toMatch(/uncommitted changes/i);
+});
+it("names Git read failure without blaming dirty bytes", () => {
+  const report = warning("artifact blob could not be read at observed HEAD");
+  expect(report).toMatch(/(?:blob|read|object|unavailable)/i);
+  expect(report).not.toMatch(/uncommitted changes/i);
+});
+it("names an unverifiable HEAD without blaming dirty bytes", () => {
+  const report = warning("HEAD could not be verified");
+  expect(report).toMatch(/HEAD.*(?:verif|confirm|unavailable)/i);
+  expect(report).not.toMatch(/uncommitted changes/i);
+});
+it("keeps committed, missing and untracked outcomes", () => {
+  expect(episodeArtifactWarnings([{ ...state, detail: "committed", commit: "b".repeat(40), committed: true }])).toEqual([]);
+  expect(episodeArtifactWarnings([{ ...state, detail: "missing", present: false }]).join(" ")).toMatch(/not found/i);
+  expect(episodeArtifactWarnings([{ ...state, detail: "untracked", tracked: false }]).join(" ")).toMatch(/not tracked/i);
+});

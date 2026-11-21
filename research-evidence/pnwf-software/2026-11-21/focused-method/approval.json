@@ -1,0 +1,417 @@
+{
+  "runs": [
+    {
+      "slot": "live/P",
+      "basis": "02a5160c2361bb70a2127574a76ea6e571b296a8",
+      "sessionId": "session-f7b6a38c-d822-4d6f-a4f9-272f58dedec1",
+      "streamSha256": "262a6beba9cdc120319b3bb6355ddac85eb5bdb04fd5833dade903a40d98eee1",
+      "timelineSha256": "e190a7a3fdba06e7d31574eaa491cd343511f01f7cf68e0744d38296be91f285",
+      "firstStep": 1795205701319,
+      "lastStep": 1795205900753,
+      "originalResult": "PASS",
+      "unresolvedRequests": 0,
+      "witnesses": [
+        {
+          "callId": "call_83441560c5cf4d93ae213409",
+          "callSeq": 83,
+          "resultSeq": 86,
+          "step": 6,
+          "offsetMs": 55119,
+          "command": "node node_modules/vitest/vitest.mjs run test/alhs_episode_convergence.test.ts 2>&1 | tail -80; printf '\\nEXIT:%s\\n' \"${PIPESTATUS[0]}\"",
+          "state": "STARTUP_FAILURE",
+          "testsPassed": 0,
+          "startupError": "Error: ENOENT: no such file or directory, mkdir '/run/stage/world/node_modules/.vite-temp'",
+          "method": null
+        },
+        {
+          "callId": "call_1d9dfebd3b964d72a6bac1f3",
+          "callSeq": 91,
+          "resultSeq": 94,
+          "step": 7,
+          "offsetMs": 73772,
+          "command": "node node_modules/vitest/vitest.mjs run --configLoader runner test/alhs_episode_convergence.test.ts 2>&1 | tail -100; printf '\\nEXIT:%s\\n' \"${PIPESTATUS[0]}\"",
+          "state": "PASS",
+          "testsPassed": 9,
+          "startupError": null,
+          "method": "RUNNER_LOADER"
+        },
+        {
+          "callId": "call_5452649a40e0454dafbda0ec",
+          "callSeq": 121,
+          "resultSeq": 124,
+          "step": 10,
+          "offsetMs": 127922,
+          "command": "node --run test:focused -- test/alhs_episode_convergence.test.ts 2>&1 | tail -60; printf '\\nEXIT:%s\\n' \"${PIPESTATUS[0]}\"",
+          "state": "PASS",
+          "testsPassed": 9,
+          "startupError": null,
+          "method": "PACKAGE_SCRIPT"
+        },
+        {
+          "callId": "call_ee51ba9899c942f9b9a780df",
+          "callSeq": 129,
+          "resultSeq": 132,
+          "step": 11,
+          "offsetMs": 138888,
+          "command": "tmp=test/__focused_entry_failure.test.ts\nprintf '%s\\n' 'import { expect, test } from \"vitest\";' '' 'test(\"focused entry propagates an assertion failure\", () => {' '  expect(1).toBe(2);' '});' > \"$tmp\"\ntrap 'rm -f \"$tmp\"' EXIT\nset +e\nnode --run test:focused -- \"$tmp\" > /tmp/focused-failure.log 2>&1\nstatus=$?\nset -e\ntail -35 /tmp/focused-failure.log\nprintf '\\nEXIT:%s (expected non-zero)\\n' \"$status\"\ntest \"$status\" -ne 0",
+          "state": "ASSERTION_FAILURE",
+          "testsPassed": 0,
+          "startupError": null,
+          "method": "PACKAGE_SCRIPT"
+        }
+      ],
+      "runRef": "run-067426933243b4c70157d9f5d2a16085",
+      "runDigest": "51bf6f19c7fcca9ad849b6d7063c172eeca45d8f2de8518820c1d64dd82dd303"
+    },
+    {
+      "slot": "live/F",
+      "basis": "02a5160c2361bb70a2127574a76ea6e571b296a8",
+      "sessionId": "session-ff63686f-ca8b-4ccf-b2dc-90cc29556e01",
+      "streamSha256": "64eca099cbf8d1e1146c169f66ba838eb66a748bef8c86b1058ed43df5605858",
+      "timelineSha256": "0878baa681e9ecc5ceeed071d4789eb16a8b7a92be6d4408aae88c69902b4961",
+      "firstStep": 1795205993709,
+      "lastStep": 1795206091820,
+      "originalResult": "FAIL",
+      "unresolvedRequests": 1,
+      "witnesses": [
+        {
+          "callId": "call_596226abd51543c08d4d0180",
+          "callSeq": 69,
+          "resultSeq": 72,
+          "step": 5,
+          "offsetMs": 38059,
+          "command": "node node_modules/vitest/vitest.mjs run --maxWorkers 1 test/alhs_episode_convergence.test.ts 2>&1 | tail -60; printf '\\nEXIT=%s\\n' \"${PIPESTATUS[0]}\"",
+          "state": "STARTUP_FAILURE",
+          "testsPassed": 0,
+          "startupError": "Error: ENOENT: no such file or directory, mkdir '/run/stage/world/node_modules/.vite-temp'",
+          "method": null
+        },
+        {
+          "callId": "call_90ed42adce5744b6b9c46483",
+          "callSeq": 77,
+          "resultSeq": 80,
+          "step": 6,
+          "offsetMs": 56695,
+          "command": "node node_modules/vitest/vitest.mjs run --configLoader runner --no-cache --maxWorkers 1 test/alhs_episode_convergence.test.ts 2>&1 | tail -60; printf '\\nEXIT=%s\\n' \"${PIPESTATUS[0]}\"",
+          "state": "PASS",
+          "testsPassed": 9,
+          "startupError": null,
+          "method": "EXACT"
+        },
+        {
+          "callId": "call_efb238bdf69d427ba83d1b1d",
+          "callSeq": 91,
+          "resultSeq": 94,
+          "step": 8,
+          "offsetMs": 83841,
+          "command": "set -o pipefail\nnode --run test:focused -- test/alhs_episode_convergence.test.ts 2>&1 | tail -40\nstatus=${PIPESTATUS[0]}\nprintf '\\nEXIT=%s\\n' \"$status\"\nexit \"$status\"",
+          "state": "PASS",
+          "testsPassed": 9,
+          "startupError": null,
+          "method": "PACKAGE_SCRIPT"
+        },
+        {
+          "callId": "call_dcb9e9b3e254490bab95b039",
+          "callSeq": 105,
+          "resultSeq": 108,
+          "step": 10,
+          "offsetMs": 92700,
+          "command": "set -o pipefail\nnode --run test:focused -- test/zz_focused_entry_smoke.test.ts 2>&1 | tail -50\nstatus=${PIPESTATUS[0]}\nprintf '\\nEXIT=%s\\n' \"$status\"\nif [ \"$status\" -eq 0 ]; then echo 'ERROR: failing test reported success' >&2; exit 1; fi\nexit 0",
+          "state": "ASSERTION_FAILURE",
+          "testsPassed": 0,
+          "startupError": null,
+          "method": "PACKAGE_SCRIPT"
+        }
+      ],
+      "runRef": "run-1bb2eec9bfb0e3f7f2aaa98586978a69",
+      "runDigest": "4f8ba141495ffd83c1addf0b02d629b94bbbb03121ceb60d6d255a861fb539b4"
+    },
+    {
+      "slot": "followup/OLD",
+      "basis": "02a5160c2361bb70a2127574a76ea6e571b296a8",
+      "sessionId": "session-17278899-e2fd-4488-ba56-4eea4d7b7371",
+      "streamSha256": "6335bc265a9e33219d5f0d5fd7eebb047da7fb3e08e0bbb939f8a5b8ed755dd3",
+      "timelineSha256": "41f21cc7eb75a222b3b296f045fbe7365f7df4a5acb64823614b41c8181db171",
+      "firstStep": 1795206536464,
+      "lastStep": 1795207131995,
+      "originalResult": "INCOMPLETE_SESSION",
+      "unresolvedRequests": 0,
+      "witnesses": [
+        {
+          "callId": "call_0ab89984dc1a498c8d67bde7",
+          "callSeq": 251,
+          "resultSeq": 254,
+          "step": 24,
+          "offsetMs": 291563,
+          "command": "node node_modules/typescript/bin/tsc -b && node node_modules/vitest/vitest.mjs run test/alhs_episode_convergence.test.ts",
+          "state": "BUILD_FAILURE",
+          "testsPassed": 0,
+          "startupError": null,
+          "method": null
+        },
+        {
+          "callId": "call_868d861cb37b44adb59b30d4",
+          "callSeq": 321,
+          "resultSeq": 324,
+          "step": 33,
+          "offsetMs": 328181,
+          "command": "node node_modules/typescript/bin/tsc -b && node node_modules/vitest/vitest.mjs run test/alhs_episode_convergence.test.ts",
+          "state": "STARTUP_FAILURE",
+          "testsPassed": 0,
+          "startupError": "Error: ENOENT: no such file or directory, mkdir '/run/stage/world/node_modules/.vite-temp'",
+          "method": null
+        },
+        {
+          "callId": "call_3992522e0ae04424a53b7772",
+          "callSeq": 337,
+          "resultSeq": 340,
+          "step": 35,
+          "offsetMs": 354425,
+          "command": "node node_modules/vitest/vitest.mjs run --configLoader runner test/alhs_episode_convergence.test.ts",
+          "state": "ASSERTION_FAILURE",
+          "testsPassed": 0,
+          "startupError": null,
+          "method": "RUNNER_LOADER"
+        },
+        {
+          "callId": "call_3c318c4211df44e7ac784858",
+          "callSeq": 351,
+          "resultSeq": 354,
+          "step": 37,
+          "offsetMs": 379470,
+          "command": "node node_modules/vitest/vitest.mjs run --configLoader runner test/alhs_episode_convergence.test.ts",
+          "state": "PASS",
+          "testsPassed": 11,
+          "startupError": null,
+          "method": "RUNNER_LOADER"
+        }
+      ],
+      "runRef": "run-cfa9e6614fe8f4fd616e74f7f91ddbff",
+      "runDigest": "c880c7d6c2a0e1b21c9e111fae159458a9728732bd05b74630fb3cd610c88025"
+    },
+    {
+      "slot": "followup/ACCEPTED",
+      "basis": "072ff2e6defdb4ff3b1f08be340bd3c931ab7ae9",
+      "sessionId": "session-5cc717c8-5e24-447d-b695-23716f85b87e",
+      "streamSha256": "27707eb155a9c28271056dedfab2a8b5db623c86e2430c62b5f6dd6c47022a23",
+      "timelineSha256": "a879445384a1cd8df8f3959bc16958f1c2528067515d42ed2b094e2ee222d99d",
+      "firstStep": 1795207288046,
+      "lastStep": 1795207738823,
+      "originalResult": "PASS",
+      "unresolvedRequests": 0,
+      "witnesses": [
+        {
+          "callId": "call_933c251dabf14141885435a2",
+          "callSeq": 199,
+          "resultSeq": 202,
+          "step": 22,
+          "offsetMs": 279075,
+          "command": "pnpm exec vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/pnwf_cq_action_coherence.test.ts",
+          "state": "STARTUP_FAILURE",
+          "testsPassed": 0,
+          "startupError": "[EACCES] EACCES: permission denied, mkdir '/home/principal/.local'",
+          "method": "EQUIVALENT"
+        },
+        {
+          "callId": "call_58d07660528d4789be6ddcb0",
+          "callSeq": 215,
+          "resultSeq": 218,
+          "step": 24,
+          "offsetMs": 303291,
+          "command": "node_modules/.bin/vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/pnwf_cq_action_coherence.test.ts",
+          "state": "PASS",
+          "testsPassed": 34,
+          "startupError": null,
+          "method": "EQUIVALENT"
+        }
+      ],
+      "runRef": "run-c5769fa2d5cfc356483bd5d581254f07",
+      "runDigest": "5be86574bf402c9480d34e326211e10be84acdcacf730d2ad6db986eac7977ad"
+    }
+  ],
+  "candidate": {
+    "schemaVersion": 1,
+    "content": {
+      "schemaVersion": 1,
+      "title": "Focused Vitest checks with read-only dependencies",
+      "purpose": "Start a targeted test in a constrained Palimpsest checkout and preserve the real exit outcome",
+      "applicability": [
+        "Palimpsest focused Vitest checks on Linux with read-only dependencies"
+      ],
+      "preconditions": [
+        "Node 24 or newer",
+        "Pinned local Vitest 4.1.10 and tracked project configuration are readable"
+      ],
+      "steps": [
+        {
+          "instruction": "Use the local Vitest entry with the runner configuration loader and disable the test cache. Provide the intended test paths."
+        },
+        {
+          "instruction": "Observe the runner exit status and the named assertions."
+        }
+      ],
+      "checks": [
+        "A deliberately failing assertion exits nonzero",
+        "The requested suite actually ran"
+      ],
+      "expectedOutputs": [
+        "Named focused suite outcome"
+      ],
+      "limitations": [
+        "A real test failure is distinct from a startup fault",
+        "Does not provide full CI coverage",
+        "The prior learned package script is absent from the common baseline"
+      ],
+      "capabilityHints": [
+        "palimpsest.focused-vitest-readonly/v1"
+      ],
+      "recommendedRecipeRefs": []
+    },
+    "empiricalGrounds": [
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-cfa9e6614fe8f4fd616e74f7f91ddbff",
+        "digest": "c880c7d6c2a0e1b21c9e111fae159458a9728732bd05b74630fb3cd610c88025",
+        "experimentRef": "readonly-focused-vitest-archive"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-1bb2eec9bfb0e3f7f2aaa98586978a69",
+        "digest": "4f8ba141495ffd83c1addf0b02d629b94bbbb03121ceb60d6d255a861fb539b4",
+        "experimentRef": "readonly-focused-vitest-archive"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-c5769fa2d5cfc356483bd5d581254f07",
+        "digest": "5be86574bf402c9480d34e326211e10be84acdcacf730d2ad6db986eac7977ad",
+        "experimentRef": "readonly-focused-vitest-archive"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-067426933243b4c70157d9f5d2a16085",
+        "digest": "51bf6f19c7fcca9ad849b6d7063c172eeca45d8f2de8518820c1d64dd82dd303",
+        "experimentRef": "readonly-focused-vitest-archive"
+      }
+    ],
+    "provenance": {
+      "authoringOrigin": "host-reviewed-archive-recount",
+      "projectId": "focused-testing-maintenance",
+      "projectRevision": 1,
+      "projectDigest": "ccd531007210ebdf97c5632f4148b3eb51893c9cb62da603696c61b1b0e3b916"
+    },
+    "candidateId": "prc-1966931f7a21b77663b7cff1c4129b76",
+    "digest": "1966931f7a21b77663b7cff1c4129b76b06de04970f6815e96f5119995217c81"
+  },
+  "revision": {
+    "schemaVersion": 1,
+    "procedureId": "prc-1966931f7a21b77663b7cff1c4129b76",
+    "revision": 0,
+    "candidateId": "prc-1966931f7a21b77663b7cff1c4129b76",
+    "candidateDigest": "1966931f7a21b77663b7cff1c4129b76b06de04970f6815e96f5119995217c81",
+    "content": {
+      "schemaVersion": 1,
+      "title": "Focused Vitest checks with read-only dependencies",
+      "purpose": "Start a targeted test in a constrained Palimpsest checkout and preserve the real exit outcome",
+      "applicability": [
+        "Palimpsest focused Vitest checks on Linux with read-only dependencies"
+      ],
+      "preconditions": [
+        "Node 24 or newer",
+        "Pinned local Vitest 4.1.10 and tracked project configuration are readable"
+      ],
+      "steps": [
+        {
+          "instruction": "Use the local Vitest entry with the runner configuration loader and disable the test cache. Provide the intended test paths."
+        },
+        {
+          "instruction": "Observe the runner exit status and the named assertions."
+        }
+      ],
+      "checks": [
+        "A deliberately failing assertion exits nonzero",
+        "The requested suite actually ran"
+      ],
+      "expectedOutputs": [
+        "Named focused suite outcome"
+      ],
+      "limitations": [
+        "A real test failure is distinct from a startup fault",
+        "Does not provide full CI coverage",
+        "The prior learned package script is absent from the common baseline"
+      ],
+      "capabilityHints": [
+        "palimpsest.focused-vitest-readonly/v1"
+      ],
+      "recommendedRecipeRefs": []
+    },
+    "empiricalGrounds": [
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-cfa9e6614fe8f4fd616e74f7f91ddbff",
+        "digest": "c880c7d6c2a0e1b21c9e111fae159458a9728732bd05b74630fb3cd610c88025",
+        "experimentRef": "readonly-focused-vitest-archive"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-1bb2eec9bfb0e3f7f2aaa98586978a69",
+        "digest": "4f8ba141495ffd83c1addf0b02d629b94bbbb03121ceb60d6d255a861fb539b4",
+        "experimentRef": "readonly-focused-vitest-archive"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-c5769fa2d5cfc356483bd5d581254f07",
+        "digest": "5be86574bf402c9480d34e326211e10be84acdcacf730d2ad6db986eac7977ad",
+        "experimentRef": "readonly-focused-vitest-archive"
+      },
+      {
+        "kind": "RUN_RESULT",
+        "ref": "run-067426933243b4c70157d9f5d2a16085",
+        "digest": "51bf6f19c7fcca9ad849b6d7063c172eeca45d8f2de8518820c1d64dd82dd303",
+        "experimentRef": "readonly-focused-vitest-archive"
+      }
+    ],
+    "provenance": {
+      "authoringOrigin": "host-reviewed-archive-recount",
+      "projectId": "focused-testing-maintenance",
+      "projectRevision": 1,
+      "projectDigest": "ccd531007210ebdf97c5632f4148b3eb51893c9cb62da603696c61b1b0e3b916"
+    },
+    "admission": {
+      "decision": "PUBLISH",
+      "candidateDigest": "1966931f7a21b77663b7cff1c4129b76b06de04970f6815e96f5119995217c81",
+      "policyRef": {
+        "policyId": "focused-setup-verification",
+        "version": "1"
+      },
+      "rationale": "Exact candidate, four archived runs, observed startup fault, focused success and nonzero assertion failure verified by host.",
+      "admissionNote": "contextual_reusable_project_procedure_not_universal_optimum",
+      "scope": [
+        "Palimpsest focused Vitest checks on Linux with read-only dependencies"
+      ],
+      "limitations": [
+        "A real test failure is distinct from a startup fault",
+        "Does not provide full CI coverage",
+        "The prior learned package script is absent from the common baseline"
+      ],
+      "provenanceDigest": "490eb90a1d841242fa5dab94bd8addfb282fe794751f869cc823896d838d584f"
+    },
+    "publishedAt": "2026-11-21T00:00:00.000000Z",
+    "digest": "f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e"
+  },
+  "ref": {
+    "procedureId": "prc-1966931f7a21b77663b7cff1c4129b76",
+    "revision": 0,
+    "digest": "f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e"
+  },
+  "verification": {
+    "standardStartupFailed": true,
+    "focusedPassed": true,
+    "assertionExit": 1,
+    "baseline": {
+      "exit": 1,
+      "passed": 2,
+      "expected": 5
+    }
+  },
+  "unapprovedRejected": true
+}
