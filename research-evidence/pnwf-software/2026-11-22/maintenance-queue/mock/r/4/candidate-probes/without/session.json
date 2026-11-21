@@ -1,0 +1,229 @@
+{
+  "mode": "mock",
+  "basis": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-e9b84dfc-5d51-4f3b-84ec-cd638824edc2",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-m-1122-062901\\r\\4\\candidate-probes\\WITHOUT-clean\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-m-1122-062901\\r\\4\\candidate-probes\\WITHOUT-clean\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "a4b16a5416a83f0f0db9d79be082da2939e7c06580d97a95a48bb2d1b364f537",
+    "qualification": "999aaf62933e030b5c327e0f4918d2aa45e2d9a2208b08572c99a757ec6ec51f",
+    "startedAt": "2026-11-21T22:36:41.041Z",
+    "endedAt": "2026-11-21T22:37:14.652Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-e9b84dfc-5d51-4f3b-84ec-cd638824edc2",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-21T22:37:14.652Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 366896,
+      "confirmedTokens": 366896,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "accounting": {
+    "requests": 5,
+    "unresolved": 0,
+    "confirmed": 366896
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-355c9bf9-cf8a-417a-a016-913fd4ce74d1",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 5,
+    "knownTokens": 366896,
+    "totalTokens": 366896,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 366171,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 725
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 5,
+        "input": 366171,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 725,
+        "total": 366896
+      }
+    },
+    "traceTotal": 366896,
+    "traceRequests": 5,
+    "workerRequests": 0,
+    "elapsedMs": 33611,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-355c9bf9-cf8a-417a-a016-913fd4ce74d1",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "7e80ad9130cb589f4587ee58fe643789491050caa000424365c0600e859f3882",
+        "counts": {
+          "steps": 5,
+          "turns": 2,
+          "toolCalls": 3,
+          "pairedToolResults": 3,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795300631105,
+            "messageId": "7e92b33a-f119-427c-9c68-4f334d684abc",
+            "usage": {
+              "inputTokens": 94202,
+              "outputTokens": 100,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94302
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795300631726,
+            "messageId": "f3deb685-c314-4877-a3f7-fd4239b232d4",
+            "usage": {
+              "inputTokens": 70658,
+              "outputTokens": 273,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 70931
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1795300631907,
+            "messageId": "9c560e79-4b25-436f-88a6-73df6d4fdde8",
+            "usage": {
+              "inputTokens": 63297,
+              "outputTokens": 52,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 63349
+            }
+          },
+          {
+            "seq": 37,
+            "at": 1795300632733,
+            "messageId": "ef0493ba-c0a0-498f-a289-f00beedf0c29",
+            "usage": {
+              "inputTokens": 62842,
+              "outputTokens": 235,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 63077
+            }
+          },
+          {
+            "seq": 43,
+            "at": 1795300633906,
+            "messageId": "715c2e17-b31e-4119-8c88-3f0347c7b9ee",
+            "usage": {
+              "inputTokens": 75172,
+              "outputTokens": 65,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 75237
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-355c9bf9-cf8a-417a-a016-913fd4ce74d1/session.v4.jsonl.zstd",
+    "sha256": "7e80ad9130cb589f4587ee58fe643789491050caa000424365c0600e859f3882",
+    "calls": [
+      {
+        "callId": "maintenance_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"grpc-migration-continuation\",\n  \"goal\": \"Deliver and maintain a compatible migration of the site readings service.\",\n  \"basis\": {\n    \"projectRevision\": 2,\n    \"projectDigest\": \"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\n    \"headCommit\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n    \"observedAt\": \"2026-11-21T22:37:11.189Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [],\n  \"openQuestions\": [],\n  \"recentChanges\": [\n    {\n      \"id\": \"journal:pje-ee0141283028401089832410680085bb\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Episode conclusion: DELIVER\"\n    },\n    {\n      \"id\": \"journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Fleet rollout verification\"\n    }\n  ],\n  \"pendingWork\": [],\n  \"blocked\": [],\n  \"contributions\": [],\n  \"delegations\": [],\n  \"execution\": {\n    \"placement\": \"worktree\",\n    \"attempts\": [],\n    \"jobs\": [],\n    \"detail\": \"host jobs are local to THIS process; a canonical attempt with no active",
+        "wakeRefs": []
+      },
+      {
+        "callId": "maintenance_1",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d && echo ORIGINAL_COMMIT_PRESENT",
+        "description": "Reproduce original committed state",
+        "testCommand": false,
+        "output": "ORIGINAL_COMMIT_PRESENT\n"
+      },
+      {
+        "callId": "maintenance_3",
+        "call": 38,
+        "result": 39,
+        "request": 4,
+        "tool": "palimpsest_work",
+        "action": "conclude",
+        "ok": true,
+        "intent": "DELIVER",
+        "artifacts": [
+          "MAINTENANCE-REVIEW.md"
+        ],
+        "recorded": true
+      }
+    ],
+    "modelRequests": 5,
+    "lastReply": 43
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 4,
+    "eventId": "pjer-bf8e014411682ce6cb8f5e2b0182f693",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: The committed cold-handover review is the result for this session.\nArtifacts:\n- MAINTENANCE-REVIEW.md\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 2, head 95b83e71ee9a37041b9918b5e8b797eebabf69c9\nArtifact provenance:\n- MAINTENANCE-REVIEW.md: present=true tracked=true committed=true source=WORKTREE digest=dba580be26a6 commit=d6e5558d8c08\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"The committed cold-handover review is the result for this session.\",\"artifacts\":[\"MAINTENANCE-REVIEW.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T22:37:13.391Z\",\"basis\":{\"projectRevision\":2,\"projectDigest\":\"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\"headCommit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"MAINTENANCE-REVIEW.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"dba580be26a6985cc3c5af162016c3101f8106cfd67f30e67d400d0a9c852439\",\"source\":\"WORKTREE\",\"commit\":\"d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-7efebcc70fdd697bb4a598d4\"}"
+  }
+}

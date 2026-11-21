@@ -1,0 +1,106 @@
+[
+  {
+    "sequence": 3,
+    "id": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+    "seal": "f64a7ccb174ae6058264550545c5639ce12949b72f689737cd155cbd5ffc5ef0",
+    "status": "DONE",
+    "result": "{\"reconciled\":true,\"natural\":true,\"requests\":66}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "f64a7ccb174ae6058264550545c5639ce12949b72f689737cd155cbd5ffc5ef0",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-21T22:42:40.621Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-draft-live-20261122-044607",
+      "archived": true,
+      "proof": "9ee6e0213bf88a0352a4e825b894dd1d839931acebd55503257129a335f8f46f"
+    },
+    "digest": "c2e76c2e5e9055552e0c6058250da8aa419a87680c84327b8941cc06a1904ce4",
+    "outcome": {
+      "state": "REJECTED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231\\r\\3",
+      "next": "campaign-wake-4a915479954985f4cf77630ec53eea9c"
+    }
+  },
+  {
+    "sequence": 4,
+    "id": "campaign-wake-4a915479954985f4cf77630ec53eea9c",
+    "seal": "efa021c92262b883cf3c23af3aca9e458d1dad22498f6c0e6e6252b372e4f776",
+    "status": "DONE",
+    "result": "{\"reconciled\":true,\"natural\":true,\"requests\":68}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-4a915479954985f4cf77630ec53eea9c",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "efa021c92262b883cf3c23af3aca9e458d1dad22498f6c0e6e6252b372e4f776",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-21T22:56:22.092Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231\\r\\3",
+      "archived": false,
+      "proof": "0a89e584c88d2631b10dcbb5c0706707610f83fa73eac10e4a6e9873e76975a7"
+    },
+    "digest": "5e61b003b4ce0ec1f00d9d9b74f082be39fe7384c3db998483f64cd87cb0bfe5",
+    "outcome": {
+      "state": "REJECTED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231\\r\\4",
+      "next": "campaign-wake-9108ae411345eb96c914bbe17c140c9f"
+    }
+  },
+  {
+    "sequence": 5,
+    "id": "campaign-wake-9108ae411345eb96c914bbe17c140c9f",
+    "seal": "05a226dbd19002fadbc2637ff2f0c5e7da6af6cd1cbf9058275a430120add02b",
+    "status": "STOPPED",
+    "result": "{\"reconciled\":false,\"natural\":false,\"requests\":71}",
+    "signal": {
+      "schemaVersion": 1,
+      "signalId": "campaign-wake-9108ae411345eb96c914bbe17c140c9f",
+      "projectId": "palimpsest-maintenance",
+      "campaignId": "palimpsest-maintenance-maintenance",
+      "wakeCycleId": "reject-campaign-wake-4a915479954985f4cf77630ec53eea9c",
+      "cause": {
+        "kind": "manual",
+        "signalId": "reject-campaign-wake-4a915479954985f4cf77630ec53eea9c"
+      },
+      "phase": "RECONCILIATION_READY",
+      "reconciliationDigest": "05a226dbd19002fadbc2637ff2f0c5e7da6af6cd1cbf9058275a430120add02b",
+      "blockerCode": null,
+      "detail": "A sealed project run is ready to read.",
+      "createdAt": "2026-11-21T23:09:42.038Z"
+    },
+    "input": {
+      "kind": "rejection",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231\\r\\4",
+      "archived": false,
+      "proof": "db45de99f008fa7c70a69e9454d5289d3bfac7b0563f57fa31fbf102b5e05d40"
+    },
+    "digest": "81bae5c4f83fd626042f68c8ef8f7f189188b88c56998f7493ddcb10ddcded0d",
+    "outcome": {
+      "state": "STOPPED",
+      "directory": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-l-1122-064231\\r\\5"
+    }
+  }
+]

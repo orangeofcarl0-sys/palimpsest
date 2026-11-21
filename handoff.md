@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 持久队列自动派发从 `817070da` 落地。13 条零付费 Mock、49 笔模拟验证两轮续作、重启去重、核准换版与接班。真实前两轮 `e0881101`、`cd6ef14d` 各 0/2，各自的失败回执均自动启动下一轮。第三轮第 71 笔为新 `UNKNOWN`，留下原稿，运行位已停止后续准入。旧首笔 UNKNOWN 独立保留，原安装物仍为 `07ab5aad`。[队列报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#持久队列自动派发)
+
 - 拒绝回执接续从 `c7509663` 落地。两份原现场失败回执绑定 `91b5bc0c`，由原维护位置一次投递。7 条普通 DSH Mock、29 笔、实际付费 0，验证了重复投递、恢复、独立 2/2 和 Mock 接班。真实用 `07ab5aad` 从被拒候选启动，第 1 笔 `UNKNOWN / UPSTREAM_UNCERTAIN` 停止，桥接另报 `EPIPE`。Git 未推进，原运行位阻断后续准入。原 64 笔、43 笔和 0/2 分别保留。[接续报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#验收拒绝回执触发同项目接续)
 
 - 原稿接续从 `1c0807c3` 落地。最终 7 条普通 DSH Mock、29 笔模拟，实际付费 0，验证了前代 16 个项目库、原稿、重复唤醒、独立验收和 Mock 接班。真实用 `07ab5aad` 新会话接续，43/256 笔，提交 `91b5bc0c` 并记录 `DELIVER` 后自然退出。相对原稿只有一处注释差异。手动 readiness 6/6，两份原现场重放仍缺新 `DELIVER`，冻结门禁未过，未进入核准或启动下一张真实工单。原 64 笔原判和账本未变。[续作报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#从请求上限停点接续原稿)
@@ -143,6 +145,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
+
+队列实跑沿用 `codex/cold-handover-closeout`，起点 `817070da`。新账本从 `91b5bc0c` 开工，经过两次拒绝自动派发，末轮 HEAD 为 `cd6ef14d`，九个已跟踪文件与一份新探针尚未提交。新旧 UNKNOWN 各有自己的账本和运行位。当前真实运行位没有写者，阻断为 `USAGE_UNCONFIRMED`。[运行队列](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/queue.json) · [工作原稿](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/working.patch)
 
 拒绝回执接续仍在 `codex/cold-handover-closeout`，父基线 `c7509663`。真实接续工作头为 `91b5bc0ca6690d673118af3d753056b26a7ab460`，稳定安装物仍由 `07ab5aad` 构建，维护项目基线为 `082f77a9a4602d1eb5a2d9be1260186fa41c4a61`。已验证退出并离线封存，运行位持久化 `USAGE_UNCONFIRMED`。本轮未产生可送审的 Git 提交。[入队记录](research-evidence/pnwf-software/2026-11-22/rejection-retry/live/incoming.json) · [当前运行位](research-evidence/pnwf-software/2026-11-22/rejection-retry/live/slot.json)
 
@@ -389,6 +393,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+`self-evolution/run.mjs loop-qualify` 运行两轮和 Mock 接班，`loop-live` 消费真实队列，`loop-resume` 重开同一队列并核对消费租约。独立验收通过才送 `loop-approve`，批准的完整 SHA 和构建摘要与下一张工单一起在运行位事务生效。验证了摘要绑定、不同输入去重拒绝、并发消费者拒绝、原状态目录重开，以及后继工单入队失败时的换版事务回滚。55 项本地 Node 回归、架构和公共 API 检查通过。[最终 Mock 资格](research-evidence/pnwf-software/2026-11-22/maintenance-queue/mock/qualification.json) · [重启证据](research-evidence/pnwf-software/2026-11-22/maintenance-queue/mock/cold-restart.json)
+
 `self-evolution/run.mjs reject-qualify` 从原档和运行位核对候选、两份失败回执及 16 个项目库，可传经核验的旧运行位副本作零付费复验。`reject` 在资格一致后用原安装物触发同项目工作。桥接处理竞争写入错误并让适配器写终态，55 项 CI 中的 Node 测试与桥接修复后的 7 条 Mock、29 笔均通过。旧桥接的实跑保留未写常规终态的事实，可用 `self-evolution/interruption.mjs` 校验停止观察、释放失效写租约和封存 `USAGE_UNCONFIRMED`。[最终零付费资格](research-evidence/pnwf-software/2026-11-22/rejection-retry/mock-fix/qualification.json) · [离线复算](research-evidence/pnwf-software/2026-11-22/rejection-retry/recount.json)
 
 `self-evolution/run.mjs resume-qualify` 和 `resume` 使用已结算的旧停点。续作资格从停点 SQLite 副本读回、精确恢复原稿并拒绝用量未知、错停止原因、改动历史上限和旧请求数错配。独立账本测试确认第 257 笔拒绝。真实候选 22 项定向回归、6 项 readiness 和 15 项 `pnwf_product` 通过，原冷交接正例 0/2。[恢复证据](research-evidence/pnwf-software/2026-11-22/draft-resume/live/draft-restoration.json) · [离线复算](research-evidence/pnwf-software/2026-11-22/draft-resume/recount.json)
@@ -608,6 +614,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-22 通用队列实跑沿用 OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5`、每会话 256 笔及 30 分钟、单笔 240 秒，按量且无金额或总 token 上限。两次自然退出分别 66 笔确认 9,750,002、68 笔确认 12,914,238 tokens。第三轮 71 笔准入、70 笔确认 16,734,447 tokens，第 71 笔 `4bcfa3c8-b6c5-4faa-acca-9bc26b7f7a39` 为 `UNKNOWN / UPSTREAM_UNCERTAIN`。合计 205 笔准入，204 笔确认 39,398,687 tokens，实际总量未知。上次首笔 UNKNOWN 单独封存，不计入本轮。[新停点账本](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/r/5/first/out/MAINTAIN/request-accounting.json) · [旧 UNKNOWN](research-evidence/pnwf-software/2026-11-22/maintenance-queue/live/prior-unknown.json)
+
 2026-11-22 拒绝回执接续沿用 OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5` 和 `paid-usage-only`，窗口为 256 笔、30 分钟、单笔 240 秒，金额与总 token 无上限。第 1 笔 `2a6bec23-e478-40f2-b6dd-214e3a27613b` 是唯一准入请求，无终态用量，状态为 `UNKNOWN / UPSTREAM_UNCERTAIN`。Docker 启动到退出为 26.434 秒，退出码 137，外层写管道 `EPIPE` 后退出 1。原 SQLite、WAL 和压缩轨迹原样留档，独立记录总量未知。[停止观察](research-evidence/pnwf-software/2026-11-22/rejection-retry/live/interruption.json)
 
 2026-11-22 原稿续作用 OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5` 和原按量记账。新会话 256 笔、30 分钟、单笔 240 秒，金额和总 token 无上限。43 笔全部对账，fresh 98,176、cache read 2,693,376、cache write 0、output 17,472，总量 2,809,024 tokens，容器耗时 301.332 秒，`UNKNOWN` 为零。原 64 笔账本和停止原判保持不变。[续作账本](research-evidence/pnwf-software/2026-11-22/draft-resume/live/first/out/MAINTAIN/request-accounting.json)
@@ -753,6 +761,8 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
+真实持久队列已验证两次从候选拒绝到自动启动下一轮。前两轮的模型修订分别为手动 pulse 引导及结构化交付状态，原两份现场提交后直接回复的问题仍为 0/2。第三轮原稿在用量未知时停止，尚无经过两份独立复验的真实候选，没有核准、换版或下一张真实工单的结果。[实跑](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#新账本真实续作)
+
 真实拒绝回执接续确认了同项目投递、稳定安装物、被拒候选和新 DSH 的启动。首笔 UNKNOWN 截断了模型诊断，未观察到模型回复、工具调用、候选、核准或换版。两份原现场的 0/2 仍属于前一次续作。真实版本接班和里程碑二保持开放。[停止现场与复算](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#真实接续与-unknown-停点)
 
 原稿接续实跑已走到读前代记录、复验、提交、`DELIVER` 和自然退出。两个端到端正例仍未通过。模型围绕已经有结论的 case-3 验证 handoff，把首轮的手动 readiness 修复作为交付，本轮相对原稿只新增注释。原来两条会话提交后没有再查 readiness，普通一次性宿主没有给出新结论机会。真实接班保持条件式准入，里程碑二继续开放。[独立验收](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#独立验收与发布决定)
@@ -866,6 +876,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 ```markdown
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 同项目持久队列消费和自动派发 | [报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#持久队列自动派发) | Mock 两轮及接班通过，真实自动派发两次，第三轮 71 笔遇新 UNKNOWN 并留原稿 |
 | 2026-11-22 | 由验收拒绝回执唤醒同一维护项目 | [报告](docs/engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#验收拒绝回执触发同项目接续) | Mock 接班通过，真实首笔 UNKNOWN，桥接断管原样保留，运行位阻断后续准入 |
 | 2026-11-20 | 任务选路试点与 R7 签发契约发布到主线 `f1c1424a` | [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) | 16/16 项检查通过，12 对提交文件树一致，历史 UNKNOWN 与 R7 两份 6/10 保留，本轮两组均 10/10 |
 | 2026-11-07 | PR #227 merged: PNWF-CQ + basis admission | 1766a79 | 容器 cohort INVALID/over budget |

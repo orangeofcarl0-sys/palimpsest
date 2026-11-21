@@ -31,12 +31,12 @@ function verifyRun(run) {
     boundRequests: row.requestBinding?.boundRequests ?? null, source: row.trajectory?.sha256 ?? null });
 }
 
-function verifyRejection(phase, stem, proof, status) {
+function verifyRejection(phase, stem, proof, status, slotDirectory = phase) {
   const wake = readJson(join(phase, stem + "-wake.json"));
   const seal = digest(JSON.stringify(proof));
   assert.deepEqual(readJson(join(phase, stem + ".json")), proof);
   assert.equal(wake.reconciliationDigest, seal);
-  const slot = readJson(join(phase, "slot.json"));
+  const slot = readJson(join(slotDirectory, "slot.json"));
   const event = slot.events.find(entry => entry.type === "REJECTION_PUBLISHED" && entry.detail.id === wake.signalId);
   assert.equal(event.detail.prior, proof.signalId);
   assert.equal(event.detail.candidate, proof.candidate);
@@ -48,13 +48,13 @@ function verifyRejection(phase, stem, proof, status) {
   return wake.signalId;
 }
 
-function verifyReceiptIntake(phase, prior, status) {
+function verifyReceiptIntake(phase, prior, status, loop) {
   const { rejection } = prior;
   assert.deepEqual(prior, readJson(join(phase, "prior-rejection.json")));
-  const checkpoint = manifest(join(root, "checkpoint/owners"));
+  const checkpoint = manifest(loop?.checkpoint ?? join(root, "checkpoint/owners"));
   assert.deepEqual(checkpoint, prior.states);
   assert.equal(digest(JSON.stringify(checkpoint)), prior.checkpoint);
-  const wakeId = verifyRejection(phase, "incoming", rejection, status);
+  const wakeId = verifyRejection(phase, "incoming", rejection, status, loop?.slot);
   const intake = readJson(join(phase, "first/intake.json"));
   assert.equal(intake.basis, rejection.basis);
   assert.equal(intake.head, rejection.candidate);
@@ -71,14 +71,14 @@ function verifyReceiptIntake(phase, prior, status) {
   return wakeId;
 }
 
-function verifyRework(phase, row) {
+function verifyRework(phase, row, loop) {
   const prior = row.rework.prior;
   const { rejection } = prior;
   assert.equal(row.predecessor.candidate, rejection.basis);
   assert.equal(row.predecessor.buildSha256, rejection.installation);
   assert.equal(row.submission.basis, rejection.candidate);
   assert.notEqual(row.session.cohortId, rejection.cohortId);
-  assert.equal(verifyReceiptIntake(phase, prior, null), row.signalId);
+  assert.equal(verifyReceiptIntake(phase, prior, null, loop), row.signalId);
   if (row.mode === "paid-usage-only") {
     const cohort = readJson(join(phase, "first/cohort.json"));
     assert.equal(cohort.cohortId, row.session.cohortId);
@@ -105,7 +105,7 @@ function verifyInterruptedRun(phase, file) {
     recorded: [], source: observation.trajectory.sha256, interrupted: true, boundRequests: observation.usage.settled };
 }
 
-function verifyCandidate(phase) {
+function verifyCandidate(phase, loop) {
   const file = join(phase, "candidate.json");
   if (!existsSync(file)) {
     const interrupted = join(phase, "interruption.json");
@@ -113,7 +113,7 @@ function verifyCandidate(phase) {
     return;
   }
   const row = readJson(file);
-  if (row.rework) verifyRework(phase, row);
+  if (row.rework) verifyRework(phase, row, loop);
   if (row.resume) {
     const { prior, restoration } = row.resume;
     assert.deepEqual(prior, readJson(join(phase, "prior-stop.json")));
@@ -179,7 +179,7 @@ function verifyCandidate(phase) {
       assert.equal(proof.checkpoint, row.stateCheckpoint);
       for (const receipt of proof.receipts) assert(row.verification.probes.rows.some(probe =>
         JSON.stringify(probe) === JSON.stringify(receipt.observation)));
-      verifyRejection(phase, "rejection", proof, "PENDING");
+      verifyRejection(phase, "rejection", proof, loop ? null : "PENDING", loop?.slot);
     }
     const draft = join(phase, "offline/offline-recheck.json");
     if (existsSync(draft)) {
@@ -209,15 +209,56 @@ function verifyCandidate(phase) {
   if (row.mode === "paid-usage-only") assert.deepEqual(readJson(join(phase, "owner-approval.json")).approval, active.approval);
 }
 
+function verifyLoop(phase) {
+  const campaign = readJson(join(phase, "campaign.json"));
+  const stop = readJson(join(phase, "prior-unknown.json"));
+  assert.deepEqual(stop, campaign.origin.stop);
+  const slot = readJson(join(phase, "slot.json"));
+  const jobs = readJson(join(phase, "queue.json"));
+  let checkpoint = join(root, "checkpoint/owners");
+  let previous;
+  const cohorts = new Set([stop.cohort]);
+  for (const job of jobs) {
+    assert.equal(job.digest, digest(JSON.stringify(job.input)));
+    const inbox = slot.inbox.find(entry => entry.id === job.id);
+    assert(inbox && inbox.status === job.status && inbox.seal === job.seal && inbox.result === job.result);
+    assert.equal(slot.events.filter(entry => entry.type === "WAKE_DISPATCHED" && entry.detail.id === job.id).length,
+      job.status === "PENDING" ? 0 : 1);
+    if (job.outcome) assert.deepEqual(slot.events.find(entry => entry.type === "WORK_REVIEWED" &&
+      entry.detail.id === job.id)?.detail.outcome, job.outcome);
+    if (job.input.kind === "successor") {
+      assert(previous?.passed && previous.release.candidate === job.input.release.candidate);
+      assert(slot.events.some(event => event.type === "INSTALLATION_ACTIVATED" &&
+        event.detail.approval.release.buildSha256 === job.input.release.buildSha256));
+      const run = slot.events.find(event => event.type === "WAKE_DISPATCHED" && event.detail.id === job.id);
+      if (run) assert.deepEqual(run.detail.installation, job.input.release);
+      continue;
+    }
+    const round = join(phase, "r", String(job.sequence));
+    if (!existsSync(join(round, "candidate.json"))) continue;
+    const row = readJson(join(round, "candidate.json"));
+    assert.equal(row.signalId, job.id);
+    assert.equal(digest(JSON.stringify(row.rework.prior)), job.input.proof);
+    assert(!cohorts.has(row.session.cohortId), "LOOP_REUSED_LEDGER");
+    cohorts.add(row.session.cohortId);
+    verifyCandidate(round, { checkpoint, slot: phase });
+    if (previous) assert.equal(row.submission.basis, previous.submission.candidate);
+    if (job.outcome?.state === "REJECTED") assert(jobs.some(next => next.id === job.outcome.next));
+    if (job.outcome?.state === "AWAIT_OWNER") assert(row.passed && row.release.buildSha256 === job.outcome.buildSha256);
+    previous = row;
+    checkpoint = join(round, "first/stages/MAINTAIN/state");
+  }
+}
+
 for (const phase of ["mock", "live", "mock-fix"]) {
   const folder = join(root, phase);
   if (!existsSync(folder)) continue;
   const sessions = readdirSync(folder, { recursive: true }).filter(file =>
-    basename(file) === "session.json" && file.split(/[\\/]/u)[0] !== "receipts").sort();
+    basename(file) === "session.json" && !file.split(/[\\/]/u).includes("receipts")).sort();
   for (const file of sessions) {
     verifyRun(join(folder, file, ".."));
   }
-  verifyCandidate(folder);
+  if (existsSync(join(folder, "campaign.json"))) verifyLoop(folder); else verifyCandidate(folder);
 }
 assert(rows.length > 0, "NO_ARCHIVED_RUNS");
 console.log(JSON.stringify(rows, null, 2));

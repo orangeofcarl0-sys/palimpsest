@@ -17,13 +17,18 @@ import { deployment, offline, projectId, quote, success } from "./workspace.mjs"
 export const window = { maxRequests: 64, wallClockMs: 30 * 60_000, requestTimeoutMs: 240_000, billingCeiling: null };
 const sessionId = "MAINTAIN";
 
-export function prepare(run, id = projectId) {
+export function prepare(run, id = projectId, { reopen = false } = {}) {
   const stage = join(run, "stages", sessionId);
   const world = join(stage, "world"), state = join(stage, "state");
-  mkdirSync(world, { recursive: true });
-  mkdirSync(state);
-  const deploymentPath = deployment(join(run, "profile.json"), world, state, id);
-  return { run, world, state, deployment: deploymentPath, out: join(run, "out", sessionId) };
+  const profile = join(run, "profile.json");
+  if (reopen) {
+    assert(existsSync(world) && existsSync(state) && existsSync(profile), "PREPARED_SESSION_MISSING");
+  } else {
+    mkdirSync(world, { recursive: true });
+    mkdirSync(state);
+    deployment(profile, world, state, id);
+  }
+  return { run, world, state, deployment: profile, out: join(run, "out", sessionId) };
 }
 
 export async function session(prepared, { world, runtime, basis, brief, input, provider, reply, requestWindow = window }) {

@@ -1,0 +1,222 @@
+{
+  "mode": "mock",
+  "basis": "91b5bc0ca6690d673118af3d753056b26a7ab460",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-fe663fe4-ee19-46c5-9e73-03aad304abe6",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-m-1122-062901\\r\\3\\first\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-loop-m-1122-062901\\r\\3\\first\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "2200732b3d2e2faab678ae6d249c4c615786f66d72998cb7dac53ad82076f2be",
+    "qualification": "5a343ed23aac769f95a07006b847b4aef65bfbda7dc0a995fb829cf4cfa86d27",
+    "startedAt": "2026-11-21T22:29:54.519Z",
+    "endedAt": "2026-11-21T22:30:23.512Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-fe663fe4-ee19-46c5-9e73-03aad304abe6",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-21T22:30:23.512Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 317429,
+      "confirmedTokens": 317429,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "accounting": {
+    "requests": 4,
+    "unresolved": 0,
+    "confirmed": 317429
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-ca41b0a4-4cbd-4141-b986-0dba5111daf3",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 4,
+    "knownTokens": 317429,
+    "totalTokens": 317429,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 315513,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 1916
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 4,
+        "input": 315513,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 1916,
+        "total": 317429
+      }
+    },
+    "traceTotal": 317429,
+    "traceRequests": 4,
+    "workerRequests": 0,
+    "elapsedMs": 28993,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-ca41b0a4-4cbd-4141-b986-0dba5111daf3",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "e890f7664a4396a24a4e5caaab316585ff84aff9f3ddacf73af0556979b22bec",
+        "counts": {
+          "steps": 4,
+          "turns": 1,
+          "toolCalls": 3,
+          "pairedToolResults": 3,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795300220989,
+            "messageId": "e6f4e040-4789-4e57-b9c6-6760cdf7912d",
+            "usage": {
+              "inputTokens": 94655,
+              "outputTokens": 107,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94762
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795300221092,
+            "messageId": "5fe6f86a-440c-4174-adbc-69cf9e7873d6",
+            "usage": {
+              "inputTokens": 70320,
+              "outputTokens": 1489,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 71809
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1795300221559,
+            "messageId": "41f3dfcb-245e-4f7f-b564-c0aea9498f43",
+            "usage": {
+              "inputTokens": 72239,
+              "outputTokens": 262,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 72501
+            }
+          },
+          {
+            "seq": 34,
+            "at": 1795300222775,
+            "messageId": "686d1e75-3301-4c69-9403-0396ba5f6576",
+            "usage": {
+              "inputTokens": 78299,
+              "outputTokens": 58,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 78357
+            }
+          }
+        ],
+        "byKind": {
+          "project:journal_entries": 1,
+          "bash": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-ca41b0a4-4cbd-4141-b986-0dba5111daf3/session.v4.jsonl.zstd",
+    "sha256": "e890f7664a4396a24a4e5caaab316585ff84aff9f3ddacf73af0556979b22bec",
+    "calls": [
+      {
+        "callId": "maintenance_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_project",
+        "action": "journal_entries",
+        "ok": true,
+        "query": {
+          "action": "journal_entries"
+        },
+        "observed": "[\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3.\",\n      \"provenance\": \"Maintenance evidence intake\",\n      \"relatedRefs\": [\n        {\n          \"kind\": \"sealed_run\",\n          \"id\": \"campaign-wake-4b0cad805e26bd80c98bb2288e95e701\"\n        },\n        {\n          \"kind\": \"git_commit\",\n          \"id\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"\n        }\n      ],\n      \"createdAt\": \"2026-11-21T19:52:39.943000Z\",\n      \"entryId\": \"pje-bc04fc309a82b461e4f0f039a0906955\",\n      \"digest\": \"4bb8287ac305727694101d049a2c125f812fa2192a8703b0271716d6e14e73d2\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 0223da49a3a2f0dbff68220033d134f",
+        "wakeRefs": [
+          "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+          "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+          "campaign-wake-c4b3e6011498935a1c1514b8a13ae1d1"
+        ]
+      },
+      {
+        "callId": "maintenance_1",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl && printf '\\n// First Mock revision preserves the independently failing behavior.\\n' >> host/dsh/lib/runner.js && mkdir -p maintenance && printf %s 'aW1wb3J0IGFzc2VydCBmcm9tICdub2RlOmFzc2VydC9zdHJpY3QnOwppbXBvcnQge3JlYWRGaWxlU3luY30gZnJvbSAnbm9kZTpmcyc7CmltcG9ydCB0ZXN0IGZyb20gJ25vZGU6dGVzdCc7CnRlc3QoJ2JvdGggcmVqZWN0ZWQgcmVwbGF5IHJlY2VpcHRzIGFyZSBhdmFpbGFibGUnLCAoKSA9PiB7CiAgY29uc3QgZXhwZWN0ZWQgPSBbIm1haW50ZW5hbmNlLXJlamVjdGlvbi0yOGQwZjVlYjY5ZGYzOGZiZjcyZWZmZjFjNDM5YjlhNjlhNTRhODRhNmU0NTE2ODMwYzY0YmY5YzEwOTAzYzMyIiwibWFpbnRlbmFuY2UtcmVqZWN0aW9uLTE3MDIxYzhhZDRkMjdjYmRmZjI1ZjMyMjY1NDMyZTc1NTcwNjVmZTc2YjdmZGJjMTUxY2ExYjdmNjhjZTVkZjIiXTsKICBjb25zdCBsb2FkID0gYXJtID0+IEpTT04ucGFyc2UocmVhZEZpbGVTeW5jKCdldmlkZW5jZS9yZWplY3Rpb24vJyArIGFybSArICcvcmVjZWlwdC5qc29uJykpOwogIGFzc2VydC5kZWVwRXF1YWwoWyd3aXRob3V0JywgJ3dpdGgnXS5tYXAoYXJtID0+IGxvYWQoYXJtKS5pZCksIGV4cGVjdGVkKTsKfSk7Cg==' | base64 -d > maintenance/initial-rework.test.mjs && node --test maintenance/initial-rework.test.mjs && git add -A && git commit -qm 'Submit the scripted rejection continuation' && echo REWORK_SUBMITTED",
+        "description": "Verify receipt intake and submit the Mock candidate",
+        "testCommand": true,
+        "output": "✔ both rejected replay receipts are available (24.140015ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 136.215721\nREWORK_SUBMITTED\n[stderr]\ntouch: cannot touch 'evidence/rejection/.write-probe': Read-only file system\n"
+      },
+      {
+        "callId": "maintenance_2",
+        "call": 29,
+        "result": 30,
+        "request": 3,
+        "tool": "palimpsest_work",
+        "action": "conclude",
+        "ok": true,
+        "intent": "DELIVER",
+        "artifacts": [
+          "maintenance/initial-rework.test.mjs",
+          "host/dsh/lib/runner.js"
+        ],
+        "recorded": true
+      }
+    ],
+    "modelRequests": 4,
+    "lastReply": 34
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 7,
+    "eventId": "pjer-bc69ce6d9bd078e27486332033152e8f",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Submit the Mock revision for independent verification.\nArtifacts:\n- maintenance/initial-rework.test.mjs\n- host/dsh/lib/runner.js\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head 082f77a9a4602d1eb5a2d9be1260186fa41c4a61\nArtifact provenance:\n- maintenance/initial-rework.test.mjs: present=true tracked=true committed=true source=WORKTREE digest=fe49a08cca17 commit=b452247b4f0a\n- host/dsh/lib/runner.js: present=true tracked=true committed=true source=WORKTREE digest=7fcbab4c988d commit=b452247b4f0a\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Submit the Mock revision for independent verification.\",\"artifacts\":[\"maintenance/initial-rework.test.mjs\",\"host/dsh/lib/runner.js\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T22:30:22.257Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\"headCommit\":\"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"maintenance/initial-rework.test.mjs\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"fe49a08cca175a9c85d69d3ab685ca1afb3a25ab7fd0a3f2b2d439cdde48a7d3\",\"source\":\"WORKTREE\",\"commit\":\"b452247b4f0a8d4539ca4951dd05afa3e377a0e2\",\"detail\":\"committed at HEAD\"},{\"path\":\"host/dsh/lib/runner.js\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"7fcbab4c988d926c8c7d0488141a1a1e7f14bf702d2097dfac24474a13ba240e\",\"source\":\"WORKTREE\",\"commit\":\"b452247b4f0a8d4539ca4951dd05afa3e377a0e2\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-f9a21a44511fd4da01473470\"}"
+  }
+}

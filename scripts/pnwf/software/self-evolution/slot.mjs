@@ -21,6 +21,9 @@ export class MaintenanceSlot {
       CREATE TABLE IF NOT EXISTS slot (id INTEGER PRIMARY KEY CHECK(id=1), project TEXT NOT NULL, mode TEXT NOT NULL,
         active TEXT NOT NULL, transition TEXT, writer TEXT, blocked TEXT);
       CREATE TABLE IF NOT EXISTS inbox (id TEXT PRIMARY KEY, seal TEXT NOT NULL, status TEXT NOT NULL, result TEXT);
+      CREATE TABLE IF NOT EXISTS work (id TEXT PRIMARY KEY REFERENCES inbox(id), signal TEXT NOT NULL,
+        input TEXT NOT NULL, digest TEXT NOT NULL, outcome TEXT);
+      CREATE TABLE IF NOT EXISTS consumer (id INTEGER PRIMARY KEY CHECK(id=1), pid INTEGER NOT NULL, token TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, type TEXT NOT NULL, detail TEXT NOT NULL);`);
     try {
       this.transaction(() => {
@@ -72,7 +75,7 @@ export class MaintenanceSlot {
     });
   }
 
-  publishRejection(proof, release) {
+  publishRejection(proof, release, input) {
     assert(proof.schema === "palimpsest-maintenance-rejection/v1" && /^campaign-wake-[a-f0-9]{32}$/u.test(proof.signalId) &&
       proof.unresolved === 0 && Number.isSafeInteger(proof.requests) && proof.requests > 0 && sha(proof.candidate) &&
       hex(proof.buildSha256) && hex(proof.checkpoint) && hex(proof.qualification) && proof.receipts.length > 0 &&
@@ -98,23 +101,71 @@ export class MaintenanceSlot {
       this.record("REJECTION_PUBLISHED", { id: signal.signalId, prior: proof.signalId, candidate: proof.candidate,
         buildSha256: proof.buildSha256, receipts: proof.receipts.map(receipt => receipt.id), cohort: proof.cohortId,
         checkpoint: proof.checkpoint, proof: seal });
-    });
+    }, input);
   }
 
-  #publish(name, seal, validate) {
+  #publish(name, seal, validate, input) {
     assert(/^[\w-]+$/u.test(name) && hex(seal), "INVALID_EVIDENCE_SEAL");
-    return this.transaction(() => {
+    return this.transaction(() => this.#insert(name, seal, validate, input));
+  }
+
+  #insert(name, seal, validate, input) {
       const slot = this.current();
       const { project } = slot;
       const signal = buildCampaignWakeActivationSignal({ projectId: project, campaignId: `${project}-maintenance`,
         wakeCycleId: name, cause: { kind: "manual", signalId: name }, phase: "RECONCILIATION_READY",
         reconciliationDigest: seal, detail: "A sealed project run is ready to read.", createdAt: now() });
       const existing = this.db.prepare("SELECT seal FROM inbox WHERE id=?").get(signal.signalId);
-      if (existing) { assert.equal(existing.seal, seal, "EVIDENCE_CHANGED_ON_REPLAY"); return { signal, inserted: false }; }
+      if (existing) {
+        assert.equal(existing.seal, seal, "EVIDENCE_CHANGED_ON_REPLAY");
+        if (input) assert.equal(this.db.prepare("SELECT digest FROM work WHERE id=?").get(signal.signalId)?.digest,
+          digest(json(input)), "WORK_INPUT_CHANGED_ON_REPLAY");
+        return { signal, inserted: false };
+      }
       validate?.(slot, signal);
       this.db.prepare("INSERT INTO inbox (id, seal, status) VALUES (?, ?, 'PENDING')").run(signal.signalId, seal);
+      if (input) this.db.prepare("INSERT INTO work (id, signal, input, digest) VALUES (?, ?, ?, ?)")
+        .run(signal.signalId, json(signal), json(input), digest(json(input)));
       this.record("EVIDENCE_READY", signal);
       return { signal, inserted: true };
+  }
+
+  queued() {
+    return this.db.prepare("SELECT inbox.rowid AS sequence, inbox.*, work.signal, work.input, work.digest, work.outcome FROM work JOIN inbox USING(id) ORDER BY inbox.rowid")
+      .all().map(row => {
+        assert.equal(digest(row.input), row.digest, "QUEUED_INPUT_CHANGED");
+        const signal = JSON.parse(row.signal);
+        assert(signal.signalId === row.id && signal.reconciliationDigest === row.seal && signal.projectId === this.current().project,
+          "QUEUED_SIGNAL_CHANGED");
+        return { ...row, signal, input: JSON.parse(row.input), outcome: row.outcome && JSON.parse(row.outcome) };
+      });
+  }
+
+  claimConsumer() {
+    return this.transaction(() => {
+      const prior = this.db.prepare("SELECT pid FROM consumer WHERE id=1").get();
+      if (prior) {
+        try { process.kill(prior.pid, 0); }
+        catch (error) { if (error.code !== "ESRCH") throw error; this.db.exec("DELETE FROM consumer"); }
+      }
+      assert(!this.db.prepare("SELECT 1 FROM consumer").get(), "QUEUE_CONSUMER_ACTIVE");
+      const token = randomUUID();
+      this.db.prepare("INSERT INTO consumer (id,pid,token) VALUES (1,?,?)").run(process.pid, token);
+      return token;
+    });
+  }
+
+  releaseConsumer(token) {
+    assert.equal(this.db.prepare("DELETE FROM consumer WHERE id=1 AND token=?").run(token).changes, 1, "QUEUE_CONSUMER_MOVED");
+  }
+
+  completeWork(id, outcome) {
+    this.transaction(() => {
+      const job = this.db.prepare("SELECT status, outcome FROM inbox JOIN work USING(id) WHERE id=?").get(id);
+      assert(job && ["DONE", "STOPPED"].includes(job.status), "WORK_NOT_TERMINAL");
+      if (job.outcome) return assert.equal(job.outcome, json(outcome), "WORK_OUTCOME_CHANGED");
+      this.db.prepare("UPDATE work SET outcome=? WHERE id=?").run(json(outcome), id);
+      this.record("WORK_REVIEWED", { id, outcome });
     });
   }
 
@@ -193,7 +244,7 @@ export class MaintenanceSlot {
     });
   }
 
-  activate({ switchId, observedRelease, checkpoint, readback }) {
+  activate({ switchId, observedRelease, checkpoint, readback, next }) {
     return this.transaction(() => {
       const { transition, writer } = this.current();
       assert(transition?.phase === "PREPARED" && transition.id === switchId && !writer && readback === true, "SWITCH_NOT_READY");
@@ -202,6 +253,7 @@ export class MaintenanceSlot {
       const active = { ...transition, phase: "ACTIVE", activatedAt: now() };
       this.db.prepare("UPDATE slot SET active=?, transition=? WHERE id=1").run(json(active.approval.release), json(active));
       this.record("INSTALLATION_ACTIVATED", active);
+      if (next) this.#insert(next.name, next.seal, undefined, next.input);
       return active;
     });
   }

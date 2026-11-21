@@ -1,0 +1,301 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-ca41b0a4-4cbd-4141-b986-0dba5111daf3",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-21T22:30:19.932Z",
+      "endedAt": "2026-11-21T22:30:22.776Z",
+      "durationMs": 2844
+    },
+    "counts": {
+      "steps": 4,
+      "turns": 1,
+      "toolCalls": 3,
+      "pairedToolResults": 3,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 1,
+      "commits": 0,
+      "jobs": 1
+    },
+    "byKind": {
+      "project:journal_entries": 1,
+      "bash": 1,
+      "work:conclude": 1
+    },
+    "stateQueries": [
+      "1059ms project:journal_entries"
+    ],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "maintenance_0",
+        "offsetMs": 1059,
+        "kind": "project:journal_entries",
+        "args": {
+          "action": "journal_entries"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "maintenance_1",
+        "offsetMs": 1161,
+        "kind": "bash test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touc…",
+        "args": {
+          "description": "Verify receipt intake and submit the Mock candidate",
+          "command": "test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl && printf '\\n// First Mock revision preserves the independently failing behavior.\\n' >> host/dsh/lib/runner.js && mkdir -p maintenance && printf %s 'aW1wb3J0IGFzc2VydCBmcm9tICdub2RlOmFzc2VydC9zdHJpY3QnOwppbXBvcnQge3JlYWRGaWxlU3luY30gZnJvbSAnbm9kZTpmcyc7CmltcG9ydCB0ZXN0IGZyb20gJ25vZGU6dGVzdCc7CnRlc3QoJ2JvdGggcmVqZWN0ZWQgcmVwbGF5IHJlY2VpcHRzIGFyZSBhdmFpbGFibGUnLCAoKSA9PiB7CiAgY29uc3QgZXhwZWN0ZWQgPSBbIm1haW50ZW5hbmNlLXJlamVjdGlvbi0yOGQwZjVlYjY5ZGYzOGZiZjcyZWZmZjFjNDM5YjlhNjlhNTRhODRhNmU0NTE2ODMwYzY0YmY5YzEwOTAzYzMyIiwibWFpbnRlbmFuY2UtcmVqZWN0aW9uLTE3MDIxYzhhZDRkMjdjYmRmZjI1ZjMyMjY1NDMyZTc1NTcwNjVmZTc2YjdmZGJjMTUxY2ExYjdmNjhjZTVkZjIiXTsKICBjb25zdCBsb2FkID0gYXJtID0+IEpTT04ucGFyc2UocmVhZEZpbGVTeW5jKCdldmlkZW5jZS9yZWplY3Rpb24vJyArIGFybSArICcvcmVjZWlwdC5qc29uJykpOwogIGFzc2VydC5kZWVwRXF1YWwoWyd3aXRob3V0JywgJ3dpdGgnXS5tYXAoYXJtID0+IGxvYWQoYXJtKS5pZCksIGV4cGVjdGVkKTsKfSk7Cg==' | base64 -d > maintenance/initial-rework.test.mjs && node --test maintenance/initial-rework.test.mjs && git add -A && git commit -qm 'Submit the scripted rejection continuation' && echo REWORK_SUBMITTED"
+        }
+      },
+      {
+        "seq": 29,
+        "callId": "maintenance_2",
+        "offsetMs": 1627,
+        "kind": "work:conclude",
+        "args": {
+          "action": "conclude",
+          "intent": "DELIVER",
+          "artifacts": [
+            "maintenance/initial-rework.test.mjs",
+            "host/dsh/lib/runner.js"
+          ],
+          "statement": "Submit the Mock revision for independent verification."
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "maintenance_0",
+        "callSeq": 15,
+        "offsetMs": 1079,
+        "callKind": "project:journal_entries",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "maintenance_1",
+        "callSeq": 21,
+        "offsetMs": 1558,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 30,
+        "callId": "maintenance_2",
+        "callSeq": 29,
+        "offsetMs": 2777,
+        "callKind": "work:conclude",
+        "ok": true,
+        "state": "RECORDED",
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "state": "RECORDED"
+        }
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795300220989,
+        "messageId": "e6f4e040-4789-4e57-b9c6-6760cdf7912d",
+        "usage": {
+          "inputTokens": 94655,
+          "outputTokens": 107,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 94762
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795300221092,
+        "messageId": "5fe6f86a-440c-4174-adbc-69cf9e7873d6",
+        "usage": {
+          "inputTokens": 70320,
+          "outputTokens": 1489,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 71809
+        }
+      },
+      {
+        "seq": 28,
+        "at": 1795300221559,
+        "messageId": "41f3dfcb-245e-4f7f-b564-c0aea9498f43",
+        "usage": {
+          "inputTokens": 72239,
+          "outputTokens": 262,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 72501
+        }
+      },
+      {
+        "seq": 34,
+        "at": 1795300222775,
+        "messageId": "686d1e75-3301-4c69-9403-0396ba5f6576",
+        "usage": {
+          "inputTokens": 78299,
+          "outputTokens": 58,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 78357
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795300220810,
+      "offsetMs": 878,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. 接续 Palimpsest 维护项目。根据封存的工作成果和复验记录，复现仍会影响下一位工作的缺口，设计并运行验证，提交可复核的改进。原始资料在 evidence/。"
+    },
+    {
+      "seq": 9,
+      "at": 1795300220812,
+      "offsetMs": 880,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795300220991,
+      "offsetMs": 1059,
+      "kind": "CALL",
+      "detail": "project:journal_entries",
+      "callId": "maintenance_0",
+      "tool": "palimpsest_project",
+      "args": {
+        "action": "journal_entries"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795300221011,
+      "offsetMs": 1079,
+      "kind": "RESULT",
+      "detail": "ok [ { \"entry\": { \"schemaVersion\": 1, \"projectId\": \"palimpsest-maintenance\", \"kind\": \"REFERENCE_NOTE\", \"title\": \"Sealed maintenance input\", \"body\": \"The newly sealed material is available under evidence/. Digest 273c7674fd0…",
+      "callId": "maintenance_0",
+      "callSeq": 15,
+      "callKind": "project:journal_entries",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795300221093,
+      "offsetMs": 1161,
+      "kind": "CALL",
+      "detail": "bash test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touc…",
+      "callId": "maintenance_1",
+      "tool": "bash",
+      "args": {
+        "description": "Verify receipt intake and submit the Mock candidate",
+        "command": "test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --porcelain)\" && ! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl && printf '\\n// First Mock revision preserves the independently failing behavior.\\n' >> host/dsh/lib/runner.js && mkdir -p maintenance && printf %s 'aW1wb3J0IGFzc2VydCBmcm9tICdub2RlOmFzc2VydC9zdHJpY3QnOwppbXBvcnQge3JlYWRGaWxlU3luY30gZnJvbSAnbm9kZTpmcyc7CmltcG9ydCB0ZXN0IGZyb20gJ25vZGU6dGVzdCc7CnRlc3QoJ2JvdGggcmVqZWN0ZWQgcmVwbGF5IHJlY2VpcHRzIGFyZSBhdmFpbGFibGUnLCAoKSA9PiB7CiAgY29uc3QgZXhwZWN0ZWQgPSBbIm1haW50ZW5hbmNlLXJlamVjdGlvbi0yOGQwZjVlYjY5ZGYzOGZiZjcyZWZmZjFjNDM5YjlhNjlhNTRhODRhNmU0NTE2ODMwYzY0YmY5YzEwOTAzYzMyIiwibWFpbnRlbmFuY2UtcmVqZWN0aW9uLTE3MDIxYzhhZDRkMjdjYmRmZjI1ZjMyMjY1NDMyZTc1NTcwNjVmZTc2YjdmZGJjMTUxY2ExYjdmNjhjZTVkZjIiXTsKICBjb25zdCBsb2FkID0gYXJtID0+IEpTT04ucGFyc2UocmVhZEZpbGVTeW5jKCdldmlkZW5jZS9yZWplY3Rpb24vJyArIGFybSArICcvcmVjZWlwdC5qc29uJykpOwogIGFzc2VydC5kZWVwRXF1YWwoWyd3aXRob3V0JywgJ3dpdGgnXS5tYXAoYXJtID0+IGxvYWQoYXJtKS5pZCksIGV4cGVjdGVkKTsKfSk7Cg==' | base64 -d > maintenance/initial-rework.test.mjs && node --test maintenance/initial-rework.test.mjs && git add -A && git commit -qm 'Submit the scripted rejection continuation' && echo REWORK_SUBMITTED"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795300221124,
+      "offsetMs": 1192,
+      "kind": "JOB",
+      "detail": "start bash test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --p…"
+    },
+    {
+      "seq": 23,
+      "at": 1795300221487,
+      "offsetMs": 1555,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) test \"$(git rev-parse HEAD)\" = 91b5bc0ca6690d673118af3d753056b26a7ab460 && test -z \"$(git status --p…"
+    },
+    {
+      "seq": 24,
+      "at": 1795300221490,
+      "offsetMs": 1558,
+      "kind": "RESULT",
+      "detail": "ok ✔ both rejected replay receipts are available (24.140015ms) ℹ tests 1 ℹ suites 0 ℹ pass 1 ℹ fail 0 ℹ cancelled 0 ℹ skipped 0 ℹ todo 0 ℹ duration_ms 136.215721 REWORK_SUBMITTED [stderr] touch: cannot touch 'evidence/rejec…",
+      "callId": "maintenance_1",
+      "callSeq": 21,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 29,
+      "at": 1795300221559,
+      "offsetMs": 1627,
+      "kind": "CALL",
+      "detail": "work:conclude",
+      "callId": "maintenance_2",
+      "tool": "palimpsest_work",
+      "args": {
+        "action": "conclude",
+        "intent": "DELIVER",
+        "artifacts": [
+          "maintenance/initial-rework.test.mjs",
+          "host/dsh/lib/runner.js"
+        ],
+        "statement": "Submit the Mock revision for independent verification."
+      }
+    },
+    {
+      "seq": 30,
+      "at": 1795300222709,
+      "offsetMs": 2777,
+      "kind": "RESULT",
+      "detail": "ok state=RECORDED { \"state\": \"RECORDED\", \"conclusion\": { \"schema\": \"pc1-episode-conclusion/v1\", \"intent\": \"DELIVER\", \"statement\": \"Submit the Mock revision for independent verification.\", \"artifacts\": [ \"maintenance/initial-rework.test.mj…",
+      "callId": "maintenance_2",
+      "callSeq": 29,
+      "callKind": "work:conclude",
+      "ok": true,
+      "facts": {
+        "state": "RECORDED"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 34,
+      "at": 1795300222775,
+      "offsetMs": 2843,
+      "kind": "DECISION",
+      "detail": "The Mock revision is submitted."
+    },
+    {
+      "seq": 36,
+      "at": 1795300222776,
+      "offsetMs": 2844,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

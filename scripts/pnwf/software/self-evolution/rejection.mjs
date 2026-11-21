@@ -1,6 +1,6 @@
 /** Transport independently observed closeout failures back to the maintenance project. */
 import assert from "node:assert/strict";
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { readStream } from "../../analyze_energy_trajectory.mjs";
 import { PAID_MODE } from "../../bounded_provider.mjs";
@@ -114,6 +114,25 @@ function retainReplay(directory, target, session) {
   for (const name of ["session.json", `${out}/run.json`, `${out}/request-accounting.json`]) cpSync(join(directory, name), join(target, name.split("/").at(-1)));
 }
 
+export function queuedRejection(directory) {
+  const row = read(directory, "candidate.json");
+  const session = read(directory, "first/session.json");
+  assert.deepEqual(row.session, session.execution);
+  assert.deepEqual(row.accounting, session.accounting);
+  assert(row.frozen.projectId === projectId && session.reconciled && session.execution.natural &&
+    !session.accounting.unresolved, "QUEUE_REJECTION_NOT_RECONCILED");
+  const rejection = rejectionOf(row, directory);
+  assert(rejection, "QUEUE_REQUIRES_INDEPENDENT_REJECTION");
+  assert.equal(fileDigest(directory, "first/candidate.bundle"), row.submission.bundleSha256);
+  const states = manifest(join(directory, previousState));
+  assert.equal(sealOf(states.filter(([name]) => name.endsWith(".sqlite"))), row.stateCheckpoint);
+  assert.deepEqual(conclusion(join(directory, previousState)), session.conclusion);
+  const files = Object.fromEntries(["candidate.json", "first/session.json", "first/candidate.patch",
+    "first/candidate.bundle", "first/" + tracePath(session), "first/" + out + "/request-accounting.json"]
+    .map(name => [name, fileDigest(directory, name)]));
+  return { directory, row, session, rejection, proof: { files, states, checkpoint: row.stateCheckpoint, rejection } };
+}
+
 export function prepareRejectionInputs(prior, root) {
   const { directory, row, session, rejection } = prior;
   const info = read(directory, "source.json");
@@ -126,6 +145,13 @@ export function prepareRejectionInputs(prior, root) {
   cpSync(join(directory, "input-first"), inputs, { recursive: true });
   assert.deepEqual(manifest(inputs), row.evidence.entries, "PARENT_SEALED_INPUT_CHANGED");
   const packet = join(inputs, "rejection");
+  if (existsSync(packet)) {
+    const earlier = read(packet, "index.json");
+    assert(sha(earlier.candidate));
+    const history = join(inputs, "rejection-history");
+    mkdirSync(history, { recursive: true });
+    renameSync(packet, join(history, earlier.candidate));
+  }
   mkdirSync(packet);
   writeJson(join(packet, "index.json"), rejection);
   const previous = join(packet, "previous-session");

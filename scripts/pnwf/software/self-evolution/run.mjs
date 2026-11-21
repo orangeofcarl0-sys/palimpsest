@@ -1,6 +1,6 @@
 /** Qualify, run, or continue the maintenance pilot under the host-owned installation slot. */
 import assert from "node:assert/strict";
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { docker } from "../../container_runtime.mjs";
@@ -12,21 +12,26 @@ import { answer, closeoutChecks, regression, scoreReview, tool } from "./judge.m
 import { prepare, retainCandidate, session, window } from "./session.mjs";
 import { MaintenanceSlot, sealOf } from "./slot.mjs";
 import { checkStopRefusals, prepareDraftInputs, restoreDraft, resumeGoal, resumeWindow, stoppedDraft } from "./draft-resume.mjs";
-import { archivedRejection, prepareRejectionInputs, rejectionGoal, rejectionOf, verifyRejectionSlot } from "./rejection.mjs";
+import { archivedRejection, prepareRejectionInputs, queuedRejection, rejectionGoal, rejectionOf, verifyRejectionSlot } from "./rejection.mjs";
+import { verifyInterrupted } from "./interruption.mjs";
 import { buildCommand, copyDatabases, firstGoal, inspectedSource, makeEvidence, makeSource, makeVolume, manifest, offline, pack,
-  projectId, quote, referencePatch, repo, secondGoal, seedSource, source, stateProbe, success, verifyInstallation } from "./workspace.mjs";
+  projectId, quote, referencePatch, repo, secondGoal, seedSource, source, stateProbe, success, verifiedArchiveDigest, verifyInstallation } from "./workspace.mjs";
 
 const [action, directory, prerequisite, previousRun] = process.argv.slice(2);
+const isLoop = ["loop-qualify", "loop-live", "loop-approve", "loop-resume"].includes(action);
 assert(directory && (["qualify", "recover"].includes(action) || (["live", "continue", "resume-qualify", "reject-qualify"].includes(action) && prerequisite) ||
-  (["resume", "reject"].includes(action) && prerequisite && previousRun)),
+  (["resume", "reject", "loop-live"].includes(action) && prerequisite && previousRun) ||
+  (isLoop && action !== "loop-live" && (prerequisite || action === "loop-resume"))),
   "Usage: self-evolution/run.mjs qualify <new-dir> | live <new-dir> <qualified-dir> | resume-qualify <new-dir> <stopped-dir> | " +
   "resume <new-dir> <qualified-dir> <stopped-dir> | reject-qualify <new-dir> <rejected-dir> [prior-slot-snapshot] | reject <new-dir> <qualified-dir> <rejected-dir> | " +
-  "continue <live-dir> <owner-approval.json> | recover <live-dir>");
+  "continue <live-dir> <owner-approval.json> | recover <live-dir> | loop-qualify <dir> <archived-parent> | " +
+  "loop-live <dir> <qualified-dir> <archived-parent> | loop-resume <dir> | loop-approve <dir> <owner-approval.json>");
 assert(inspectedSource());
-const root = resolve(directory);
+const campaignRoot = resolve(directory);
+let root = campaignRoot;
 const originFile = join(root, "resume-origin.json");
 const origin = ["continue", "recover"].includes(action) && existsSync(originFile) ? readJson(originFile) : null;
-const isRework = ["reject", "reject-qualify"].includes(action) || origin?.kind === "rejection";
+const isRework = isLoop || ["reject", "reject-qualify"].includes(action) || origin?.kind === "rejection";
 const isResume = ["resume", "resume-qualify"].includes(action) || (origin !== null && !isRework);
 const requestWindow = isResume || isRework ? resumeWindow : window;
 const goal = isRework ? rejectionGoal : isResume ? resumeGoal : firstGoal;
@@ -38,12 +43,19 @@ const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs"
 const frozen = { source, projectId, image, window: requestWindow, firstGoalSha256: digest(goal), secondGoalSha256: digest(secondGoal),
   code: Object.fromEntries(code.map(file => [file, digest(readFileSync(join(here, file)))])) };
 const installId = ({ candidate, buildSha256, image }) => ({ candidate, buildSha256, image });
-const resultFile = join(root, "candidate.json");
+let resultFile = join(root, "candidate.json");
 const slotPath = origin ? join(origin.slotDirectory ?? origin.previousRun, "slot.sqlite") : join(root, "slot.sqlite");
-const sourceBundle = join(root, "source.bundle");
+let sourceBundle = join(root, "source.bundle");
 const heap = [];
 const volume = () => { const world = makeVolume(image); heap.push(world); return world; };
 let slot;
+let consumer;
+
+function useRound(directory) {
+  root = directory;
+  resultFile = join(root, "candidate.json");
+  sourceBundle = join(root, "source.bundle");
+}
 
 function providerConfig() {
   const profile = requireOpenCodeGoProbe(readJson(join(repo, "research-evidence/pnwf-work-revision/2026-11-18/opencode-go-tooled-t3-055602/opencode-probe.json")));
@@ -186,7 +198,7 @@ async function successor(row, approval, mode) {
   const nextInput = join(root, "input-next");
   const seal = existsSync(nextInput) ? { entries: manifest(nextInput), sha256: sealOf(manifest(nextInput)) } : makeEvidence(nextInput, "next");
   assert.deepEqual(seal, row.nextEvidence, "SUCCESSOR_EVIDENCE_DRIFT");
-  const provider = mode === PAID_MODE ? providerConfig() : undefined;
+  const provider = mode === PAID_MODE && !isLoop ? providerConfig() : undefined;
   const firstState = join(root, "first/stages/MAINTAIN/state");
   checkpoint(firstState);
   const before = checkpointDigest(firstState);
@@ -220,27 +232,39 @@ async function successor(row, approval, mode) {
     assert(accepted.basis === head && accepted.head === head && accepted.project === old.project &&
       old.journal.every(entry => accepted.journal.some(other => other.id === entry.id)), "ACCEPTED_STATE_NOT_RECONCILED");
     checkpoint(prepared.state);
-    activation = { old, readByNew, accepted, basisAdmission, checkpoint: before,
-      active: slot.activate({ switchId, observedRelease: row.release, checkpoint: before, readback: true }) };
+    const readback = { old, readByNew, accepted, basisAdmission, checkpoint: before };
+    const next = isLoop ? { name: "next-" + row.signalId, seal: seal.sha256,
+      input: { kind: "successor", directory: root, attempt, state: checkpointDigest(prepared.state), release: installId(row.release), readback } } : undefined;
+    activation = { ...readback, active: slot.activate({ switchId, observedRelease: row.release, checkpoint: before, readback: true, next }) };
     writeJson(join(root, "activation.json"), activation);
   } catch (error) {
     const transition = slot.current().transition;
     if (transition?.phase === "PREPARED" && transition.id === switchId) slot.recover(switchId, checkpointDigest(firstState), error.message);
     throw error;
   }
+  if (isLoop) return;
   const { signal } = slot.publish("next-maintenance", seal.sha256);
+  return runSuccessor({ row, mode, attempt, prepared, world, head, runtime, signal, nextInput, seal, provider, successorCheck, activation, sourceInfo });
+}
+
+async function runSuccessor({ row, mode, attempt, prepared, world, head, runtime, signal, nextInput, seal, provider, successorCheck, activation, sourceInfo }) {
   let execution;
   await slot.dispatch(signal, row.release, async () => {
     writeJson(join(prepared.run, "intake.json"), putEvidence(world, runtime, prepared, signal, head, false));
     execution = await session(prepared, { world, runtime, basis: head, brief: secondGoal,
       input: nextInput, provider, reply: provider ? undefined : nextMock(row.signalId), requestWindow });
+    if (isLoop) writeJson(join(prepared.run, "submission.json"), retainCandidate(prepared, world, head, "next"));
     return { reconciled: execution.reconciled, natural: execution.execution.natural, requests: execution.accounting.requests };
   });
   assert(execution, "SUCCESSOR_SESSION_NOT_DISPATCHED");
-  const submission = retainCandidate(prepared, world, head, "next");
+  return finishSuccessor({ row, mode, attempt, prepared, world, head, signal, nextInput, seal, provider, successorCheck, activation, sourceInfo, execution });
+}
+
+function finishSuccessor({ row, mode, attempt, prepared, head, signal, nextInput, seal, provider, successorCheck, activation, sourceInfo, execution, world }) {
+  const submission = isLoop ? readJson(join(prepared.run, "submission.json")) : retainCandidate(prepared, world, head, "next");
   const priorRead = execution.trajectory?.calls.some(call => call.wakeRefs?.includes(row.signalId)) ?? false;
   let quality = null;
-  if (provider && submission.valid) {
+  if (mode === PAID_MODE && submission.valid) {
     const checkWorld = volume();
     const rebuilt = seedSource(checkWorld, root, sourceInfo, join(root, "first/candidate.bundle"));
     assert.equal(rebuilt.head, head);
@@ -355,8 +379,10 @@ async function evaluateSubmission({ row, execution, prepared, info, priorRuntime
     Object.assign(row, { release, verification, qualification: digest(JSON.stringify(verification)),
       stateCheckpoint: checkpointDigest(prepared.state), passed: pass });
     writeJson(resultFile, row);
-    const rejection = rejectionOf(row, root);
-    if (rejection) enqueueRejection(rejection, row.predecessor);
+    if (!isLoop) {
+      const rejection = rejectionOf(row, root);
+      if (rejection) enqueueRejection(rejection, row.predecessor);
+    }
   } catch (error) {
     writeJson(join(root, "verification-error.json"), { error: error.message });
     throw error;
@@ -450,11 +476,11 @@ async function resumeFirst(prior, qualified) {
   return row;
 }
 
-function rejectionMock(rejection) {
+function rejectionMock(rejection, reject = false) {
   const file = join(root, "mock-source.patch");
   referencePatch(file, true);
   const patch = readFileSync(file).toString("base64");
-  const testPath = "maintenance/rejection-intake.test.mjs";
+  const testPath = reject ? "maintenance/initial-rework.test.mjs" : "maintenance/rejection-intake.test.mjs";
   const testSource = [
     "import assert from 'node:assert/strict';",
     "import {readFileSync} from 'node:fs';",
@@ -473,7 +499,8 @@ function rejectionMock(rejection) {
       return tool(ordinal, "bash", { description: "Verify receipt intake and submit the Mock candidate", command: [
         `test "$(git rev-parse HEAD)" = ${rejection.candidate} && test -z "$(git status --porcelain)"`,
         "! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl",
-        `printf %s ${quote(patch)} | base64 -d | git apply`,
+        reject ? "printf '\\n// First Mock revision preserves the independently failing behavior.\\n' >> host/dsh/lib/runner.js" :
+          `printf %s ${quote(patch)} | base64 -d | git apply`,
         `mkdir -p maintenance && printf %s ${quote(Buffer.from(testSource).toString("base64"))} | base64 -d > ${testPath}`,
         `node --test ${testPath}`,
         "git add -A && git commit -qm 'Submit the scripted rejection continuation' && echo REWORK_SUBMITTED",
@@ -590,8 +617,295 @@ async function resumeRejected(prior, qualified) {
   return row;
 }
 
+function historicStop(prior) {
+  const history = "817070da5709e0da0729e163582acd8a7c3dcc30";
+  const archive = "research-evidence/pnwf-software/2026-11-22/rejection-retry/live";
+  const previous = join(repo, archive);
+  const observation = verifyInterrupted(previous, readJson(join(previous, "interruption.json")));
+  for (const file of ["interruption.json", "incoming.json", "slot.json", "first/cohort.json", ...Object.keys(observation.files)]) {
+    verifiedArchiveDigest(previous, history, archive, file);
+  }
+  const stopped = readJson(join(previous, "slot.json"));
+  assert(!stopped.slot.writer && stopped.slot.blocked === "USAGE_UNCONFIRMED");
+  assert.deepEqual(readJson(join(previous, "incoming.json")), prior.rejection);
+  return { history, archive, observation: sealOf(observation), cohort: observation.usage.cohortId,
+    unknown: observation.usage.requests.filter(request => request.state === "UNKNOWN").map(request => request.id) };
+}
+
+function enqueueLoop(prior, archived = false) {
+  return slot.publishRejection(prior.rejection, prior.row.predecessor, {
+    kind: "rejection", directory: prior.directory, archived, proof: sealOf(prior.proof),
+  });
+}
+
+async function startLoop(prior, mode, qualified) {
+  const stop = historicStop(prior);
+  if (qualified) assert.deepEqual({ prior: sealOf(prior.proof), stop }, qualified.origin, "LOOP_QUALIFIED_INPUT_CHANGED");
+  mkdirSync(campaignRoot);
+  writeJson(join(campaignRoot, "campaign.json"), { mode, frozen, origin: { prior: sealOf(prior.proof), stop } });
+  writeJson(join(campaignRoot, "prior-unknown.json"), stop);
+  slot = new MaintenanceSlot(slotPath, { projectId, mode, initial: prior.row.predecessor });
+  // Import sealed completed observations into the new accounting scope. The original slot remains blocked.
+  const completed = [
+    slot.publish("first-maintenance", prior.draft.oldRecord.evidence.sha256).signal,
+  ];
+  const release = prior.row.predecessor;
+  assert.equal(completed[0].signalId, prior.draft.proof.signalId);
+  await slot.dispatch(completed[0], release, () => ({ reconciled: true, natural: false, requests: prior.draft.proof.requests }));
+  const parent = slot.publishDraft(prior.draft.proof, prior.row.evidence.sha256, release).signal;
+  assert.equal(parent.signalId, prior.rejection.signalId);
+  await slot.dispatch(parent, release, () => ({ reconciled: true, natural: true, requests: prior.rejection.requests }));
+  enqueueLoop(prior, true);
+}
+
+function openLoop() {
+  assert(existsSync(slotPath), "MAINTENANCE_SLOT_MISSING");
+  const campaign = readJson(join(campaignRoot, "campaign.json"));
+  assert.deepEqual(campaign.frozen, frozen, "LOOP_RUNNER_CHANGED");
+  slot = new MaintenanceSlot(slotPath);
+  assert(slot.current().project === projectId && slot.current().mode === campaign.mode);
+  return campaign;
+}
+
+function restartMockInbox() {
+  const before = slot.queued();
+  slot.close();
+  slot = new MaintenanceSlot(slotPath);
+  assert.deepEqual(slot.queued(), before, "QUEUE_RESTART_CHANGED");
+}
+
+async function runQueuedRejection(job, mode) {
+  const { signal, input } = job;
+  const prior = input.archived ? archivedRejection(input.directory) : queuedRejection(input.directory);
+  assert.equal(input.proof, sealOf(prior.proof), "QUEUED_PREDECESSOR_CHANGED");
+  const { rejection, row: previous } = prior;
+  assert.equal(signal.reconciliationDigest, sealOf(rejection), "QUEUED_REJECTION_CHANGED");
+  const predecessor = previous.predecessor;
+  const provider = mode === PAID_MODE ? providerConfig() : undefined;
+  await slot.dispatch(signal, predecessor, async () => {
+    mkdirSync(root, { recursive: true });
+    const sealed = prepareRejectionInputs(prior, root);
+    const prepared = prepare(join(root, "first"));
+    const inputs = join(root, "input-first");
+    const world = volume();
+    assert.deepEqual(seedSource(world, root, sealed.source, join(prior.directory, "first/candidate.bundle")),
+      { basis: rejection.basis, head: rejection.candidate });
+    copyDatabases(join(prior.directory, "first/stages/MAINTAIN/state"), prepared.state);
+    assert.deepEqual(manifest(prepared.state), prior.proof.states, "REJECTED_CHECKPOINT_COPY_CHANGED");
+    writeJson(join(root, "prior-rejection.json"), prior.proof);
+    writeJson(join(root, "incoming.json"), rejection);
+    writeJson(join(root, "incoming-wake.json"), signal);
+    const runtime = verifyInstallation(join(root, "initial-build"), predecessor);
+    const intake = putEvidence(world, runtime, prepared, signal, rejection.candidate, false, rejection);
+    const entry = intake.journal.find(item => item.refs?.some(ref => ref.id === signal.signalId));
+    assert(intake.basis === rejection.basis && intake.head === rejection.candidate &&
+      previous.verification.old.journal.every(item => intake.journal.some(current => current.id === item.id)) &&
+      rejection.receipts.every(receipt => entry?.refs.some(ref => ref.id === receipt.id)), "REJECTION_NOT_IN_SAME_PROJECT");
+    assert.deepEqual(conclusion(prepared.state), prior.session.conclusion, "PREDECESSOR_DELIVERY_NOT_RETAINED");
+    writeJson(join(prepared.run, "intake.json"), intake);
+    const execution = await session(prepared, { world, runtime, basis: rejection.candidate, brief: rejectionGoal, input: inputs,
+      provider, reply: provider ? undefined : rejectionMock(rejection, input.archived), requestWindow });
+    assert.notEqual(execution.execution.cohortId, rejection.cohortId, "REUSED_REJECTED_COHORT");
+    assert.notEqual(execution.execution.home, prior.session.execution.home, "REUSED_REJECTED_DSH_HOME");
+    assert.deepEqual(manifest(inputs), sealed.evidence.entries, "SEALED_INPUT_CHANGED");
+    const submission = retainCandidate(prepared, world, rejection.candidate, "first", { bundleBasis: rejection.basis });
+    const read = execution.trajectory?.calls.some(call => call.wakeRefs?.includes(signal.signalId)) ?? false;
+    writeJson(resultFile, { mode, frozen, predecessor, submission, evidence: sealed.evidence, nextEvidence: sealed.nextEvidence,
+      signalId: signal.signalId, rework: { prior: prior.proof, read }, reconciled: execution.reconciled,
+      session: execution.execution, accounting: execution.accounting, passed: false });
+    return { reconciled: execution.reconciled, natural: execution.execution.natural, requests: execution.accounting.requests };
+  });
+}
+
+function settlement(job, execution) {
+  assert.deepEqual(JSON.parse(job.result), { reconciled: execution.reconciled, natural: execution.execution.natural,
+    requests: execution.accounting.requests }, "QUEUED_SETTLEMENT_CHANGED");
+}
+
+function retainPartialReview() {
+  const names = ["accepted-build", "candidate-probes", "candidate-regression.log", "readback-old", "readback-new", "verification-error.json"]
+    .filter(name => existsSync(join(root, name)));
+  if (!names.length) return;
+  let version = 1;
+  while (existsSync(join(root, "partial-review-" + version))) version += 1;
+  const saved = join(root, "partial-review-" + version);
+  mkdirSync(saved);
+  for (const name of names) renameSync(join(root, name), join(saved, name));
+}
+
+async function reviewQueuedRejection(job) {
+  const prepared = { state: join(root, "first/stages/MAINTAIN/state"), deployment: join(root, "first/profile.json") };
+  const execution = readJson(join(root, "first/session.json"));
+  const row = readJson(resultFile);
+  settlement(job, execution);
+  assert.deepEqual(row.session, execution.execution);
+  assert.equal(row.signalId, job.id);
+  if (!row.verification) {
+    retainPartialReview();
+    const priorRuntime = verifyInstallation(join(root, "initial-build"), row.predecessor);
+    await evaluateSubmission({ row, execution, prepared, info: readJson(join(root, "source.json")), priorRuntime });
+  }
+  if (row.passed) {
+    verifyRecord(row);
+    requestApproval(row);
+    return { state: "AWAIT_OWNER", candidate: row.release.candidate, buildSha256: row.release.buildSha256, directory: root };
+  }
+  const rejection = row.verification && rejectionOf(row, root);
+  if (!rejection) return { state: "STOPPED", directory: root };
+  const prior = queuedRejection(root);
+  const { signal } = enqueueLoop(prior);
+  // The immutable work payload and the event already exist if the host restarts before this summary is written.
+  writeJson(join(root, "rejection.json"), rejection);
+  writeJson(join(root, "rejection-wake.json"), signal);
+  return { state: "REJECTED", directory: root, next: signal.signalId };
+}
+
+async function consumeSuccessor(job, mode) {
+  useRound(job.input.directory);
+  const row = readJson(resultFile);
+  verifyRecord(row);
+  const active = slot.current();
+  assert.deepEqual(active.active, job.input.release);
+  assert.deepEqual(active.transition?.approval, approvalFor(row, mode));
+  const activation = { ...job.input.readback, active: active.transition };
+  const { attempt } = job.input;
+  const run = join(root, attempt === 1 ? "next" : `next-${attempt}`);
+  const nextInput = join(root, "input-next");
+  const seal = { entries: manifest(nextInput), sha256: job.seal };
+  assert.equal(sealOf(seal.entries), job.seal);
+  assert.deepEqual(seal, row.nextEvidence);
+  const sourceInfo = readJson(join(root, "source.json"));
+  const successorCheck = mode === "mock" ? readJson(join(root, "faults.json")).checks : [];
+  const common = { row, mode, attempt, head: row.release.candidate, signal: job.signal, nextInput, seal,
+    successorCheck, activation, sourceInfo };
+  if (job.status === "DONE" || job.status === "STOPPED") {
+    if (!existsSync(join(run, "submission.json"))) return { state: "STOPPED", directory: root };
+    const execution = readJson(join(run, "session.json"));
+    settlement(job, execution);
+    finishSuccessor({ ...common, prepared: { run }, execution });
+  } else {
+    assert.equal(checkpointDigest(join(run, "stages/MAINTAIN/state")), job.input.state, "QUEUED_ACTIVATION_STATE_DRIFT");
+    const prepared = prepare(run, projectId, { reopen: true });
+    const world = volume();
+    assert.equal(seedSource(world, root, sourceInfo, join(root, "first/candidate.bundle")).head, row.release.candidate);
+    const runtime = verifyInstallation(join(root, "accepted-build"), row.release);
+    await runSuccessor({ ...common, prepared, world, runtime, provider: mode === PAID_MODE ? providerConfig() : undefined });
+  }
+  const next = readJson(join(root, "successor.json"));
+  return { state: next.reconciliation && next.natural && next.submission.valid ? "DELIVERED_NEXT" : "STOPPED", directory: root };
+}
+
+async function drainLoop(mode) {
+  while (true) {
+    const jobs = slot.queued();
+    assert(!jobs.some(job => job.status === "RUNNING"), "IN_FLIGHT_WORK_REQUIRES_OBSERVED_EXIT");
+    // Review the producer before consuming its child, including after a crash between enqueue and review.
+    const job = jobs.find(item => !item.outcome && item.status !== "PENDING") ??
+      jobs.find(item => !item.outcome && item.status === "PENDING");
+    if (!job) return jobs.at(-1)?.outcome;
+    const start = heap.length;
+    try {
+      if (job.input.kind === "successor") {
+        const outcome = await consumeSuccessor(job, mode);
+        slot.completeWork(job.id, outcome);
+        return outcome;
+      }
+      assert.equal(job.input.kind, "rejection");
+      useRound(join(campaignRoot, "r", String(job.sequence)));
+      if (job.status === "PENDING") { await runQueuedRejection(job, mode); continue; }
+      const outcome = job.status === "DONE" ? await reviewQueuedRejection(job) : { state: "STOPPED", directory: root };
+      slot.completeWork(job.id, outcome);
+      if (outcome.state !== "REJECTED") return outcome;
+      if (mode === "mock") restartMockInbox();
+    } finally {
+      for (const world of heap.splice(start).reverse()) world.close();
+    }
+  }
+}
+
+async function activateDecision(row, decision, mode) {
+  assert(decision.actor === "owner" && decision.decision === "APPROVE" && typeof decision.recordedAt === "string", "OWNER_DECISION_REQUIRED");
+  assert.deepEqual(decision.approval, approvalFor(row, mode), "OWNER_DECISION_WRONG_BUILD");
+  const state = slot.current();
+  if (state.active.candidate === row.release.candidate) {
+    assert.deepEqual(state.transition?.approval, decision.approval);
+    return;
+  }
+  if (state.transition?.phase === "PREPARED") {
+    assert.deepEqual(state.transition.approval, decision.approval);
+    assert(slot.recover(state.transition.id, checkpointDigest(join(root, "first/stages/MAINTAIN/state")),
+      "Retry approved activation after interrupted readback"));
+  }
+  await successor(row, decision.approval, mode);
+}
+
+async function maintenanceLoop() {
+  const qualifying = action === "loop-qualify";
+  if (qualifying || action === "loop-live") {
+    const qualified = qualifying ? null : readJson(join(resolve(prerequisite), "qualification.json"));
+    if (qualified) {
+      assert(qualified.pass && qualified.mockPaidRequests === 0);
+      assert.deepEqual(qualified.frozen, frozen, "QUALIFIED_RUNNER_CHANGED");
+    }
+    await startLoop(archivedRejection(resolve(qualifying ? prerequisite : previousRun)), qualifying ? "mock" : PAID_MODE, qualified);
+    if (qualifying) restartMockInbox();
+  } else openLoop();
+  consumer = slot.claimConsumer();
+  const { mode, origin: seal } = readJson(join(campaignRoot, "campaign.json"));
+
+  if (action === "loop-approve") {
+    const job = slot.queued().find(item => item.outcome?.state === "AWAIT_OWNER");
+    assert(job && mode === PAID_MODE, "NO_REAL_CANDIDATE_AWAITING_OWNER");
+    useRound(job.outcome.directory);
+    const row = readJson(resultFile);
+    const decision = readJson(resolve(prerequisite));
+    assert(decision.actor === "owner" && decision.decision === "APPROVE" && typeof decision.recordedAt === "string", "OWNER_DECISION_REQUIRED");
+    assert.deepEqual(decision.approval, approvalFor(row, mode), "OWNER_DECISION_WRONG_BUILD");
+    writeJson(join(root, "owner-approval.json"), decision);
+  }
+  const waiting = slot.queued().find(item => item.outcome?.state === "AWAIT_OWNER");
+  if (waiting) {
+    useRound(waiting.outcome.directory);
+    const ownerPath = join(root, "owner-approval.json");
+    if (existsSync(ownerPath)) await activateDecision(readJson(resultFile), readJson(ownerPath), mode);
+  }
+  const result = await drainLoop(mode);
+  if (qualifying) {
+    assert.equal(result?.state, "AWAIT_OWNER");
+    const work = slot.queued();
+    assert.deepEqual(work.map(item => item.outcome?.state), ["REJECTED", "AWAIT_OWNER"]);
+    const first = readJson(join(work[0].outcome.directory, "candidate.json"));
+    useRound(result.directory);
+    const row = readJson(resultFile);
+    assert(first.rework.read && row.rework.read && first.submission.candidate === row.submission.basis &&
+      first.session.cohortId !== row.session.cohortId && first.session.home !== row.session.home, "MOCK_REWORK_NOT_CONTINUOUS");
+    const approval = approvalFor(row, mode);
+    await assert.rejects(successor(row, { ...approval, release: { ...approval.release, buildSha256: "0".repeat(64) } }, mode),
+      /OWNER_APPROVAL_MISMATCH/u);
+    assert.deepEqual(slot.current().active, installId(row.predecessor));
+    const decision = { actor: "owner", decision: "APPROVE", recordedAt: new Date().toISOString(), approval };
+    writeJson(join(root, "owner-approval.json"), decision);
+    await activateDecision(row, decision, mode);
+    restartMockInbox();
+    const next = await drainLoop(mode);
+    assert.equal(next?.state, "DELIVERED_NEXT");
+    const delivered = readJson(join(root, "successor.json"));
+    assert(delivered.priorRead && delivered.paidRequests === 0 && first.session.paidRequestsAdmitted === 0 && row.session.paidRequestsAdmitted === 0);
+    assert.equal(slot.view().events.filter(event => event.type === "WAKE_DISPATCHED" && work.some(job => job.id === event.detail.id)).length, 2);
+    const before = sealOf(slot.view());
+    restartMockInbox();
+    assert.deepEqual(await drainLoop(mode), next);
+    assert.equal(sealOf(slot.view()), before, "DUPLICATE_WORK_AFTER_RESTART");
+    writeJson(join(campaignRoot, "qualification.json"), { pass: true, frozen, origin: seal, mockPaidRequests: 0,
+      work: slot.queued().map(item => ({ id: item.id, outcome: item.outcome })), prior: installId(row.predecessor), accepted: installId(row.release) });
+    console.log("QUALIFIED_LOOP", campaignRoot);
+  } else console.log("LOOP_RESULT", JSON.stringify(result));
+}
+
 try {
-  if (action === "recover") {
+  if (isLoop) {
+    await maintenanceLoop();
+  } else if (action === "recover") {
     assert(existsSync(slotPath), "MAINTENANCE_SLOT_MISSING");
     slot = new MaintenanceSlot(slotPath);
     const transition = slot.current().transition;
@@ -635,6 +949,14 @@ try {
     if (!row.passed) { console.log("STOPPED_WITHOUT_APPROVAL_ADMISSION", root); process.exitCode = 1; }
   }
 } finally {
-  if (slot) { writeJson(join(root, "slot.json"), slot.view()); slot.close(); }
+  if (slot) {
+    try {
+      if (!isLoop || consumer) writeJson(join(isLoop ? campaignRoot : root, "slot.json"), slot.view());
+      if (isLoop && consumer) writeJson(join(campaignRoot, "queue.json"), slot.queued());
+    } finally {
+      if (consumer) slot.releaseConsumer(consumer);
+      slot.close();
+    }
+  }
   for (const world of heap.reverse()) world.close();
 }
