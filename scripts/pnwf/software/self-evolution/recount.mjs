@@ -7,6 +7,7 @@ import { analyzeAttributedStage } from "../../analyze_energy_trajectory.mjs";
 import { OPENCODE_GO_MESSAGES } from "../../opencode_go.mjs";
 import { digest, readJson } from "../../energy/contract.mjs";
 import { trajectory } from "./session.mjs";
+import { manifest } from "./workspace.mjs";
 
 const [directory] = process.argv.slice(2);
 assert(directory, "Usage: self-evolution/recount.mjs <archive>");
@@ -33,11 +34,60 @@ function verifyCandidate(phase) {
   const file = join(phase, "candidate.json");
   if (!existsSync(file)) return;
   const row = readJson(file);
+  if (row.resume) {
+    const { prior, restoration } = row.resume;
+    assert.deepEqual(prior, readJson(join(phase, "prior-stop.json")));
+    assert.deepEqual(restoration, readJson(join(phase, "draft-restoration.json")));
+    assert(prior.reason === "REQUEST_LIMIT" && prior.requests === 64 && prior.unresolved === 0);
+    assert.equal(restoration.patchSha256, prior.files["first/working.patch"]);
+    assert.equal(restoration.checkpoint, prior.checkpoint);
+    const checkpoint = manifest(join(root, "checkpoint/owners"));
+    assert.deepEqual(checkpoint, prior.stateFiles);
+    assert.equal(digest(JSON.stringify(checkpoint)), prior.checkpoint);
+    assert.equal(row.submission.basis, prior.basis);
+    assert.notEqual(row.session.cohortId, prior.cohortId);
+    if (row.mode === "paid-usage-only") {
+      const cohort = readJson(join(phase, "first/cohort.json"));
+      assert.equal(cohort.cohortId, row.session.cohortId);
+      for (const [key, value] of Object.entries(row.frozen.window)) assert.equal(cohort[key], value);
+    }
+  }
   if (row.submission.bundleSha256) {
     const bundle = join(phase, "first/candidate.bundle");
     assert.equal(digest(readFileSync(bundle)), row.submission.bundleSha256);
     const heads = execFileSync("git", ["bundle", "list-heads", bundle], { encoding: "utf8", timeout: 5000 });
     assert(heads.includes(`${row.submission.candidate} HEAD`));
+  }
+  if (row.release) {
+    assert.equal(digest(JSON.stringify(row.verification)), row.qualification);
+    const build = readJson(join(phase, "accepted-build/build.json"));
+    assert.deepEqual(build, row.release);
+    assert.equal(build.candidate, row.submission.candidate);
+    assert.equal(build.buildSha256, row.verification.buildSha256);
+    const artifact = join(phase, "accepted-build/runtime.tar.gz");
+    if (existsSync(artifact)) assert.equal(digest(readFileSync(artifact)), build.tarSha256);
+    assert.equal(digest(JSON.stringify({ tarSha256: build.tarSha256, files: build.files })), build.buildSha256);
+    if (row.resume) assert.deepEqual(readJson(join(phase, "candidate-probes/checks.json")), row.verification.probes);
+  }
+  const supplemental = join(phase, "candidate-extra");
+  if (existsSync(supplemental)) {
+    const checks = readJson(join(supplemental, "results.json"));
+    assert.equal(checks.candidate, row.submission.candidate);
+    assert.equal(checks.basis, row.submission.basis);
+    assert.equal(checks.inheritedPatchSha256, row.resume.restoration.patchSha256);
+    assert.equal(checks.changeSha256, digest(readFileSync(join(supplemental, "from-draft.patch"))));
+    assert.equal(checks.paidRequests, 0);
+    const delivery = readJson(join(supplemental, "delivery-binding.json"));
+    const conclusion = readJson(join(phase, "first/session.json")).conclusion;
+    const receipt = JSON.parse(conclusion.body.split("<!-- pc1-episode-conclusion:v1 -->\n").at(-1));
+    assert.equal(delivery.candidate, row.submission.candidate);
+    assert.equal(delivery.journalEvent, conclusion.eventId);
+    assert.equal(delivery.intent, receipt.intent);
+    const artifacts = receipt.check.artifacts.map(({ commit, committed, path, digest }) => {
+      assert(commit === delivery.candidate && committed);
+      return { path, digest };
+    });
+    assert.deepEqual(delivery.artifacts, artifacts);
   }
   if (!row.passed) {
     const draft = join(phase, "offline/offline-recheck.json");
@@ -55,12 +105,7 @@ function verifyCandidate(phase) {
     assert(!existsSync(join(phase, "activation.json")) && !existsSync(join(phase, "successor.json")));
     return;
   }
-  assert.equal(digest(JSON.stringify(row.verification)), row.qualification);
-  const build = readJson(join(phase, "accepted-build/build.json"));
-  assert.deepEqual(build, row.release);
-  const artifact = join(phase, "accepted-build/runtime.tar.gz");
-  if (existsSync(artifact)) assert.equal(digest(readFileSync(artifact)), build.tarSha256);
-  assert.equal(digest(JSON.stringify({ tarSha256: build.tarSha256, files: build.files })), build.buildSha256);
+  const build = row.release;
   const path = join(phase, "activation.json");
   if (!existsSync(path)) return;
   const { active, old, readByNew, accepted } = readJson(path);
@@ -69,6 +114,7 @@ function verifyCandidate(phase) {
   assert.equal(active.approval.release.candidate, build.candidate);
   assert.equal(active.approval.release.buildSha256, build.buildSha256);
   assert.equal(active.approval.qualification, row.qualification);
+  if (row.resume) assert(old.journal.some(entry => entry.refs?.some(ref => ref.id === row.resume.prior.signalId)));
   if (row.mode === "paid-usage-only") assert.deepEqual(readJson(join(phase, "owner-approval.json")).approval, active.approval);
 }
 

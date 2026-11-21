@@ -1,0 +1,222 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-e2258f92-0f80-4e12-a6e9-4f2090977c0c",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-21T21:00:25.202Z",
+      "endedAt": "2026-11-21T21:00:27.149Z",
+      "durationMs": 1947
+    },
+    "counts": {
+      "steps": 3,
+      "turns": 1,
+      "toolCalls": 2,
+      "pairedToolResults": 2,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 1,
+      "commits": 0,
+      "jobs": 1
+    },
+    "byKind": {
+      "continuity:pulse": 1,
+      "bash": 1
+    },
+    "stateQueries": [
+      "1203ms continuity:pulse"
+    ],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "maintenance_0",
+        "offsetMs": 1203,
+        "kind": "continuity:pulse",
+        "args": {
+          "action": "pulse"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "maintenance_1",
+        "offsetMs": 1774,
+        "kind": "bash git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = b5835cd22955dd33a96975c634dba4fba01246af && echo OR…",
+        "args": {
+          "description": "Reproduce original committed state",
+          "command": "git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = b5835cd22955dd33a96975c634dba4fba01246af && echo ORIGINAL_COMMIT_PRESENT"
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "maintenance_0",
+        "callSeq": 15,
+        "offsetMs": 1680,
+        "callKind": "continuity:pulse",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "maintenance_1",
+        "callSeq": 21,
+        "offsetMs": 1880,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795294826403,
+        "messageId": "cbb97a9a-133c-4db7-9547-8b44c8d12b9e",
+        "usage": {
+          "inputTokens": 94202,
+          "outputTokens": 100,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 94302
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795294826975,
+        "messageId": "76417911-a53a-4e2b-80ff-fa4629fc3641",
+        "usage": {
+          "inputTokens": 70658,
+          "outputTokens": 273,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 70931
+        }
+      },
+      {
+        "seq": 28,
+        "at": 1795294827147,
+        "messageId": "78c78718-1081-4128-ba5f-4ebb75d3d11d",
+        "usage": {
+          "inputTokens": 63297,
+          "outputTokens": 52,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 63349
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795294826241,
+      "offsetMs": 1039,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. 留存本次 gRPC 冷交接评审的工作成果。"
+    },
+    {
+      "seq": 9,
+      "at": 1795294826242,
+      "offsetMs": 1040,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 15,
+      "at": 1795294826405,
+      "offsetMs": 1203,
+      "kind": "CALL",
+      "detail": "continuity:pulse",
+      "callId": "maintenance_0",
+      "tool": "palimpsest_continuity",
+      "args": {
+        "action": "pulse"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795294826882,
+      "offsetMs": 1680,
+      "kind": "RESULT",
+      "detail": "ok { \"schema\": \"pc1-project-pulse/v1\", \"projectId\": \"grpc-migration-continuation\", \"goal\": \"Deliver and maintain a compatible migration of the site readings service.\", \"basis\": { \"projectRevision\": 2, \"projectDigest\": \"f370…",
+      "callId": "maintenance_0",
+      "callSeq": 15,
+      "callKind": "continuity:pulse",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795294826976,
+      "offsetMs": 1774,
+      "kind": "CALL",
+      "detail": "bash git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = b5835cd22955dd33a96975c634dba4fba01246af && echo OR…",
+      "callId": "maintenance_1",
+      "tool": "bash",
+      "args": {
+        "description": "Reproduce original committed state",
+        "command": "git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = b5835cd22955dd33a96975c634dba4fba01246af && echo ORIGINAL_COMMIT_PRESENT"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795294826990,
+      "offsetMs": 1788,
+      "kind": "JOB",
+      "detail": "start bash git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = b5835cd22955dd33a96975c634dba4f…"
+    },
+    {
+      "seq": 23,
+      "at": 1795294827078,
+      "offsetMs": 1876,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git merge --quiet --ff-only replay && test \"$(git rev-parse HEAD)\" = b5835cd22955dd33a96975c634dba4f…"
+    },
+    {
+      "seq": 24,
+      "at": 1795294827082,
+      "offsetMs": 1880,
+      "kind": "RESULT",
+      "detail": "ok ORIGINAL_COMMIT_PRESENT",
+      "callId": "maintenance_1",
+      "callSeq": 21,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 28,
+      "at": 1795294827147,
+      "offsetMs": 1945,
+      "kind": "DECISION",
+      "detail": "The review was committed."
+    },
+    {
+      "seq": 30,
+      "at": 1795294827149,
+      "offsetMs": 1947,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

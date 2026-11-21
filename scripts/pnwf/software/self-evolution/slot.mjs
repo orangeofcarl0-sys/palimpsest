@@ -52,14 +52,38 @@ export class MaintenanceSlot {
   }
 
   publish(name, seal) {
+    return this.#publish(name, seal, null);
+  }
+
+  publishDraft(proof, seal, release) {
+    assert(/^campaign-wake-[a-f0-9]{32}$/u.test(proof.signalId) && proof.reason === "REQUEST_LIMIT" &&
+      proof.unresolved === 0 && proof.requests > 0 && hex(proof.checkpoint), "INVALID_DRAFT_STOP_PROOF");
+    const installation = identity(release);
+    assert(installation.candidate === proof.basis && installation.buildSha256 === proof.installation, "DRAFT_INSTALLATION_MISMATCH");
+    return this.#publish("resume-" + proof.signalId, seal, { proof, installation });
+  }
+
+  #publish(name, seal, resume) {
     assert(/^[\w-]+$/u.test(name) && hex(seal), "INVALID_EVIDENCE_SEAL");
     return this.transaction(() => {
-      const { project } = this.current();
+      const slot = this.current();
+      const { project } = slot;
       const signal = buildCampaignWakeActivationSignal({ projectId: project, campaignId: `${project}-maintenance`,
         wakeCycleId: name, cause: { kind: "manual", signalId: name }, phase: "RECONCILIATION_READY",
         reconciliationDigest: seal, detail: "A sealed project run is ready to read.", createdAt: now() });
       const existing = this.db.prepare("SELECT seal FROM inbox WHERE id=?").get(signal.signalId);
       if (existing) { assert.equal(existing.seal, seal, "EVIDENCE_CHANGED_ON_REPLAY"); return { signal, inserted: false }; }
+      if (resume) {
+        const { proof, installation } = resume;
+        const predecessor = this.db.prepare("SELECT * FROM inbox WHERE id=?").get(proof.signalId);
+        assert(project === proof.projectId && !slot.writer && !slot.blocked && slot.transition === null, "DRAFT_REQUIRES_QUIESCENT_PREDECESSOR");
+        assert.deepEqual(slot.active, installation, "DRAFT_ACTIVE_INSTALLATION_MOVED");
+        assert(predecessor?.status === "DONE", "DRAFT_PREDECESSOR_NOT_COMPLETED");
+        const result = JSON.parse(predecessor.result);
+        assert(result.reconciled && !result.natural && result.requests === proof.requests, "DRAFT_PREDECESSOR_STOP_MISMATCH");
+        this.record("DRAFT_RESUME_PUBLISHED", { id: signal.signalId, prior: proof.signalId,
+          cohort: proof.cohortId, checkpoint: proof.checkpoint, proof: digest(json(proof)) });
+      }
       this.db.prepare("INSERT INTO inbox (id, seal, status) VALUES (?, ?, 'PENDING')").run(signal.signalId, seal);
       this.record("EVIDENCE_READY", signal);
       return { signal, inserted: true };
@@ -149,7 +173,7 @@ export class MaintenanceSlot {
 
   view() {
     const slot = this.current();
-    return { slot: { ...slot, writer: Boolean(slot.writer) }, inbox: this.db.prepare("SELECT * FROM inbox ORDER BY rowid").all(),
+    return { slot: { ...slot, writer: Boolean(slot.writer) }, inbox: this.db.prepare("SELECT * FROM inbox ORDER BY rowid").all().map(row => ({ ...row })),
       events: this.db.prepare("SELECT * FROM events ORDER BY seq").all().map(row => ({ ...row, detail: JSON.parse(row.detail) })) };
   }
 

@@ -26,7 +26,7 @@ export function prepare(run, id = projectId) {
   return { run, world, state, deployment: deploymentPath, out: join(run, "out", sessionId) };
 }
 
-export async function session(prepared, { world, runtime, basis, brief, input, provider, reply }) {
+export async function session(prepared, { world, runtime, basis, brief, input, provider, reply, requestWindow = window }) {
   const { run, out } = prepared;
   const paid = provider !== undefined;
   assert(paid !== (reply !== undefined));
@@ -36,11 +36,11 @@ export async function session(prepared, { world, runtime, basis, brief, input, p
   const cohortId = `maintenance-${randomUUID()}`;
   const ceiling = paid ? null : 2_000_000;
   const budgetPath = join(run, "request-ledger.sqlite");
-  if (paid) writeJson(join(run, "cohort.json"), { schema: PAID_COHORT_SCHEMA, cohortId, stages: [{ id: sessionId }], ...window });
+  if (paid) writeJson(join(run, "cohort.json"), { schema: PAID_COHORT_SCHEMA, cohortId, stages: [{ id: sessionId }], ...requestWindow });
   writeJson(join(run, "core.json"), { cohortId, budget: ceiling, sessions: [{ id: sessionId, condition: "P", world: prepared.world,
-    state: prepared.state, deployment: prepared.deployment, expectedHead: basis, promptPath, killAfterMs: paid ? window.wallClockMs : 300_000 }] });
+    state: prepared.state, deployment: prepared.deployment, expectedHead: basis, promptPath, killAfterMs: paid ? requestWindow.wallClockMs : 300_000 }] });
   const budget = ExecutionBudget.initialize(budgetPath, { schema: paid ? USAGE_ONLY_SCHEMA : "pnwf-request-budget/v1", cohortId,
-    aggregateCeiling: ceiling, sessions: [{ id: sessionId, ceiling, softCeiling: ceiling, maxRequests: paid ? window.maxRequests : 20 }] });
+    aggregateCeiling: ceiling, sessions: [{ id: sessionId, ceiling, softCeiling: ceiling, maxRequests: paid ? requestWindow.maxRequests : 20 }] });
   const mock = paid ? null : await startMockProvider({ reply });
   let execution;
   try {

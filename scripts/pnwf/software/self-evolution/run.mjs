@@ -1,6 +1,6 @@
 /** Qualify, run, or continue the maintenance pilot under the host-owned installation slot. */
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { docker } from "../../container_runtime.mjs";
@@ -11,24 +11,31 @@ import { admitBasis, checkpoint } from "../../energy/product.mjs";
 import { answer, closeoutChecks, regression, scoreReview, tool } from "./judge.mjs";
 import { prepare, retainCandidate, session, window } from "./session.mjs";
 import { MaintenanceSlot, sealOf } from "./slot.mjs";
+import { checkStopRefusals, prepareDraftInputs, restoreDraft, resumeGoal, resumeWindow, stoppedDraft } from "./draft-resume.mjs";
 import { buildCommand, copyDatabases, firstGoal, inspectedSource, makeEvidence, makeSource, makeVolume, manifest, offline, pack,
   projectId, quote, referencePatch, repo, secondGoal, seedSource, source, stateProbe, success, verifyInstallation } from "./workspace.mjs";
 
-const [action, directory, prerequisite] = process.argv.slice(2);
-assert(directory && (["qualify", "recover"].includes(action) || (["live", "continue"].includes(action) && prerequisite)),
-  "Usage: self-evolution/run.mjs qualify <new-dir> | live <new-dir> <qualified-dir> | continue <live-dir> <owner-approval.json> | recover <live-dir>");
+const [action, directory, prerequisite, previousRun] = process.argv.slice(2);
+assert(directory && (["qualify", "recover"].includes(action) || (["live", "continue", "resume-qualify"].includes(action) && prerequisite) ||
+  (action === "resume" && prerequisite && previousRun)),
+  "Usage: self-evolution/run.mjs qualify <new-dir> | live <new-dir> <qualified-dir> | resume-qualify <new-dir> <stopped-dir> | " +
+  "resume <new-dir> <qualified-dir> <stopped-dir> | continue <live-dir> <owner-approval.json> | recover <live-dir>");
 assert(inspectedSource());
 const root = resolve(directory);
+const originFile = join(root, "resume-origin.json");
+const origin = ["continue", "recover"].includes(action) && existsSync(originFile) ? readJson(originFile) : null;
+const isResume = action === "resume" || action === "resume-qualify" || origin !== null;
+const requestWindow = isResume ? resumeWindow : window;
 const image = docker(["image", "inspect", "palimpsest-cold-handover:local", "--format", "{{.Id}}"]);
 const here = fileURLToPath(new URL(".", import.meta.url));
-const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs", "../../container_adapter.mjs",
+const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs", "draft-resume.mjs", "../../container_adapter.mjs",
   "../../container_runtime.mjs", "../../world_preflight.mjs", "../../mock_provider.mjs", "../../bounded_provider.mjs",
   "../../execution_budget.mjs", "../../opencode_go.mjs", "../../energy/product.mjs", "../../energy/evidence.mjs", "../../analyze_energy_trajectory.mjs"];
-const frozen = { source, projectId, image, window, firstGoalSha256: digest(firstGoal), secondGoalSha256: digest(secondGoal),
+const frozen = { source, projectId, image, window: requestWindow, firstGoalSha256: digest(isResume ? resumeGoal : firstGoal), secondGoalSha256: digest(secondGoal),
   code: Object.fromEntries(code.map(file => [file, digest(readFileSync(join(here, file)))])) };
 const installId = ({ candidate, buildSha256, image }) => ({ candidate, buildSha256, image });
 const resultFile = join(root, "candidate.json");
-const slotPath = join(root, "slot.sqlite");
+const slotPath = origin ? join(origin.previousRun, "slot.sqlite") : join(root, "slot.sqlite");
 const sourceBundle = join(root, "source.bundle");
 const heap = [];
 const volume = () => { const world = makeVolume(image); heap.push(world); return world; };
@@ -53,18 +60,24 @@ function putEvidence(world, runtime, prepared, signal, basis, start) {
   return info;
 }
 
-function firstMock() {
+function firstMock(prior = null) {
   const file = join(root, "mock-source.patch");
-  referencePatch(file);
+  referencePatch(file, prior !== null);
   const patch = readFileSync(file).toString("base64");
   const note = "# Maintenance investigation\n\nScripted qualification exercises the retained source and a candidate commit.\n";
   return (request, ordinal) => {
-    if (ordinal === 0) return tool(ordinal, "palimpsest_continuity", { action: "pulse" });
+    if (ordinal === 0) return prior
+      ? tool(ordinal, "palimpsest_project", { action: "journal_entries" })
+      : tool(ordinal, "palimpsest_continuity", { action: "pulse" });
     if (ordinal === 1) {
       assert(JSON.stringify(request.messages).includes("Sealed maintenance input"), "MOCK_WAKE_ENTRY_NOT_OBSERVED");
+      if (prior) assert(JSON.stringify(request.messages).includes(prior.proof.signalId), "MOCK_PRIOR_JOURNAL_ENTRY_MISSING");
+      const restored = prior
+        ? `test -r evidence/prior-run/session.jsonl && test "$(git diff --binary | sha256sum | cut -d ' ' -f 1)" = ${prior.proof.files[prior.patch]} &&\n`
+        : "";
       return tool(ordinal, "bash", { description: "Exercise isolated candidate creation", command:
         `test -r evidence/case-1/session.jsonl && ! touch evidence/.integrity-probe && test ! -e docs/engineering/CONTINUITY-REUSE-METHOD.md && ! git cat-file -e e47b7c10 2>/dev/null &&\n` +
-        `printf %s ${quote(patch)} | base64 -d | git apply && mkdir -p maintenance && printf %s ${quote(note)} > maintenance/review.md && git add -A && git commit -qm 'Submit the scripted maintenance candidate' && echo SUBMITTED` });
+        restored + `printf %s ${quote(patch)} | base64 -d | git apply && mkdir -p maintenance && printf %s ${quote(note)} > maintenance/review.md && git add -A && git commit -qm 'Submit the scripted maintenance candidate' && echo SUBMITTED` });
     }
     if (ordinal === 2) {
       assert(JSON.stringify(request.messages).includes("SUBMITTED"), "MOCK_CANDIDATE_NOT_COMMITTED");
@@ -206,7 +219,7 @@ async function successor(row, approval, mode) {
   await slot.dispatch(signal, row.release, async () => {
     writeJson(join(prepared.run, "intake.json"), putEvidence(world, runtime, prepared, signal, head, false));
     execution = await session(prepared, { world, runtime, basis: head, brief: secondGoal,
-      input: nextInput, provider, reply: provider ? undefined : nextMock(row.signalId) });
+      input: nextInput, provider, reply: provider ? undefined : nextMock(row.signalId), requestWindow });
     return { reconciled: execution.reconciled, natural: execution.execution.natural, requests: execution.accounting.requests };
   });
   assert(execution, "SUCCESSOR_SESSION_NOT_DISPATCHED");
@@ -275,8 +288,27 @@ async function first(qualified) {
   const submission = retainCandidate(prepared, world, basis, "first");
   const row = { mode, frozen, predecessor, submission, evidence, nextEvidence, signalId: wake.signal.signalId,
     reconciled: execution.reconciled, session: execution.execution, accounting: execution.accounting, passed: false };
+  await evaluateSubmission({ row, execution, prepared, info, priorRuntime });
+  if (!row.passed) return row;
+  if (qualified) requestApproval(row);
+  else {
+    assert(concurrentWriterDenied);
+    const next = await successor(row, approvalFor(row, mode), mode);
+    const pass = next.reconciliation && next.natural && next.submission.valid && next.paidRequests === 0 && next.successorCheck.length >= 8;
+    writeJson(join(root, "qualification.json"), { pass, frozen, initial: installId(predecessor), inputs: { source: info, evidence, nextEvidence },
+      control, first: installId(row.release), next: installId(next.loadedRelease), concurrentWriterDenied, mockPaidRequests: 0,
+      firstWakeId: wake.signal.signalId, nextWakeId: next.signalId });
+    assert(pass, "MOCK_SUCCESSION_FAILED");
+    console.log("QUALIFIED", root);
+  }
+  return row;
+}
+
+async function evaluateSubmission({ row, execution, prepared, info, priorRuntime }) {
+  const { submission } = row;
+  const { basis } = submission;
   writeJson(resultFile, row);
-  if (!execution.reconciled || !execution.execution.natural || !submission.valid || execution.mockErrors.length) return row;
+  if (!execution.reconciled || !execution.execution.natural || !submission.valid || execution.mockErrors.length) return;
 
   try {
     const candidateWorld = volume();
@@ -300,30 +332,95 @@ async function first(qualified) {
       automatedTestObservation: Boolean(execution.trajectory?.calls.some(call => call.testCommand && call.result !== null &&
         /\b(?:pass(?:ed)?|fail(?:ed)?|tests?|assertion|not ok|ok \d)\b/iu.test(call.output))) };
     const independent = probes.pass && tests.exit === 0 && tests.passed > 0 && readback;
-    const pass = independent && sourceChanged && authoredTest && maintainerEvidence.report && (!qualified || maintainerEvidence.automatedTestObservation);
+    const pass = independent && sourceChanged && authoredTest && (row.resume || maintainerEvidence.report) &&
+      (row.mode !== PAID_MODE || maintainerEvidence.automatedTestObservation);
     const verification = { pass, exactSha: submission.candidate, buildSha256: release.buildSha256, tests, probes,
       readback, old, readByNew, maintainerEvidence };
     Object.assign(row, { release, verification, qualification: digest(JSON.stringify(verification)),
       stateCheckpoint: checkpointDigest(prepared.state), passed: pass });
     writeJson(resultFile, row);
-    if (!pass) return row;
-    if (qualified) {
-      const request = { approval: approvalFor(row, mode) };
-      writeJson(join(root, "approval-request.json"), request);
-      console.log("AWAIT_OWNER", JSON.stringify({ candidate: release.candidate, buildSha256: release.buildSha256, qualification: row.qualification }));
-    } else {
-      assert(concurrentWriterDenied);
-      const next = await successor(row, approvalFor(row, mode), mode);
-      const pass = next.reconciliation && next.natural && next.submission.valid && next.paidRequests === 0 && next.successorCheck.length >= 8;
-      writeJson(join(root, "qualification.json"), { pass, frozen, initial: installId(predecessor), inputs: { source: info, evidence, nextEvidence },
-        control, first: installId(release), next: installId(next.loadedRelease), concurrentWriterDenied, mockPaidRequests: 0,
-        firstWakeId: wake.signal.signalId, nextWakeId: next.signalId });
-      assert(pass, "MOCK_SUCCESSION_FAILED");
-      console.log("QUALIFIED", root);
-    }
   } catch (error) {
     writeJson(join(root, "verification-error.json"), { error: error.message });
     throw error;
+  }
+}
+
+function requestApproval(row) {
+  writeJson(join(root, "approval-request.json"), { approval: approvalFor(row, row.mode) });
+  console.log("AWAIT_OWNER", JSON.stringify({ candidate: row.release.candidate, buildSha256: row.release.buildSha256, qualification: row.qualification }));
+}
+
+async function resumeFirst(prior, qualified) {
+  const mode = qualified ? PAID_MODE : "mock";
+  const inputs = join(root, "input-first");
+  const sealed = prepareDraftInputs(prior, root, inputs, join(root, "next-seal"));
+  if (qualified) assert.deepEqual(sealed, qualified.inputs, "RESUME_QUALIFIED_INPUT_CHANGED");
+  const { source: info, evidence, nextEvidence } = sealed;
+  const { predecessor } = prior.oldRecord;
+  const { basis } = prior.proof;
+  assert.equal(image, predecessor.image, "PREDECESSOR_IMAGE_CHANGED");
+  const priorRuntime = verifyInstallation(join(root, "initial-build"), predecessor);
+  const world = volume();
+  assert.deepEqual(seedSource(world, root, info), { basis, head: basis });
+  const prepared = prepare(join(root, "first"));
+  const restoration = restoreDraft(prior, world, prepared);
+  writeJson(join(root, "draft-restoration.json"), restoration);
+  const stopChecks = qualified ? qualified.stopChecks : checkStopRefusals(prior);
+
+  const previousSlotPath = join(prior.directory, "slot.sqlite");
+  const previousSlot = readJson(join(prior.directory, "slot.json"));
+  assert(existsSync(previousSlotPath), "ORIGINAL_MAINTENANCE_SLOT_MISSING");
+  const activeSlotPath = qualified ? previousSlotPath : slotPath;
+  slot = new MaintenanceSlot(activeSlotPath, { projectId, mode, initial: predecessor });
+  if (qualified) {
+    assert.deepEqual(slot.view(), previousSlot, "PREDECESSOR_SLOT_CHANGED");
+    writeJson(originFile, { previousRun: prior.directory, stopProof: digest(JSON.stringify(prior.proof)) });
+  } else {
+    const snapshot = join(root, "predecessor-slot.sqlite");
+    copyFileSync(previousSlotPath, snapshot);
+    const reopened = new MaintenanceSlot(snapshot);
+    try { assert.deepEqual(reopened.view(), previousSlot, "PREDECESSOR_SLOT_CHANGED"); }
+    finally { reopened.close(); }
+    const { signal } = slot.publish("first-maintenance", prior.oldRecord.evidence.sha256);
+    assert.equal(signal.signalId, prior.proof.signalId);
+    await slot.dispatch(signal, predecessor, () => ({ reconciled: true, natural: false, requests: prior.proof.requests }));
+    assert.throws(() => slot.publishDraft({ ...prior.proof, unresolved: 1 }, evidence.sha256, predecessor), /INVALID_DRAFT_STOP_PROOF/u);
+    assert.throws(() => slot.publishDraft({ ...prior.proof, requests: 63 }, evidence.sha256, predecessor), /DRAFT_PREDECESSOR_STOP_MISMATCH/u);
+    stopChecks.push("persisted slot matches its archive", "slot with unresolved use", "slot with different prior request count");
+  }
+  const provider = qualified ? providerConfig() : undefined;
+  const wake = slot.publishDraft(prior.proof, evidence.sha256, predecessor);
+  assert(wake.inserted && !slot.publishDraft(prior.proof, evidence.sha256, predecessor).inserted);
+  let execution;
+  await slot.dispatch(wake.signal, predecessor, async () => {
+    const intake = putEvidence(world, priorRuntime, prepared, wake.signal, basis, false);
+    assert(intake.basis === basis && intake.head === basis &&
+      intake.journal.some(item => item.refs?.some(ref => ref.id === prior.proof.signalId)), "ORIGINAL_PROJECT_NOT_READ_BACK");
+    writeJson(join(prepared.run, "intake.json"), intake);
+    execution = await session(prepared, { world, runtime: priorRuntime, basis, brief: resumeGoal, input: inputs, provider,
+      reply: provider ? undefined : firstMock(prior), requestWindow });
+    assert.notEqual(execution.execution.cohortId, prior.proof.cohortId, "REUSED_STOPPED_COHORT");
+    assert.notEqual(execution.execution.home, prior.session.execution.home, "REUSED_STOPPED_DSH_HOME");
+    return { reconciled: execution.reconciled, natural: execution.execution.natural, requests: execution.accounting.requests };
+  });
+  assert.equal(await slot.dispatch(wake.signal, predecessor, () => { throw Error("duplicate draft wake ran"); }), null);
+  assert.deepEqual(manifest(inputs), evidence.entries, "SEALED_INPUT_CHANGED");
+  const submission = retainCandidate(prepared, world, basis, "first");
+  const row = { mode, frozen, predecessor, submission, evidence, nextEvidence, signalId: wake.signal.signalId,
+    resume: { prior: prior.proof, restoration, priorRead: execution.trajectory?.calls.some(call => call.wakeRefs?.includes(prior.proof.signalId)) ?? false },
+    reconciled: execution.reconciled, session: execution.execution, accounting: execution.accounting, passed: false };
+  await evaluateSubmission({ row, execution, prepared, info, priorRuntime });
+  if (!row.passed) return row;
+  if (qualified) requestApproval(row);
+  else {
+    assert(row.resume.priorRead, "MOCK_DRAFT_HISTORY_NOT_READ");
+    const next = await successor(row, approvalFor(row, mode), mode);
+    const pass = next.priorRead && next.reconciliation && next.natural && next.submission.valid && next.paidRequests === 0;
+    writeJson(join(root, "qualification.json"), { pass, frozen, initial: installId(predecessor), inputs: sealed,
+      first: installId(row.release), next: installId(next.loadedRelease), mockPaidRequests: 0,
+      firstWakeId: wake.signal.signalId, nextWakeId: next.signalId, stopChecks });
+    assert(pass, "MOCK_DRAFT_SUCCESSION_FAILED");
+    console.log("QUALIFIED", root);
   }
   return row;
 }
@@ -341,6 +438,11 @@ try {
     const row = readJson(resultFile);
     assert.equal(row.mode, PAID_MODE);
     assert.deepEqual(frozen, row.frozen, "APPROVAL_RUNNER_CHANGED");
+    if (row.resume) {
+      assert(origin && existsSync(slotPath), "ORIGINAL_MAINTENANCE_SLOT_MISSING");
+      assert.equal(origin.stopProof, digest(JSON.stringify(row.resume.prior)), "APPROVED_RESUME_ORIGIN_CHANGED");
+      assert.deepEqual(stoppedDraft(origin.previousRun).proof, row.resume.prior, "SEALED_PREDECESSOR_DRIFT");
+    }
     const decision = readJson(resolve(prerequisite));
     assert(decision.actor === "owner" && decision.decision === "APPROVE" && typeof decision.recordedAt === "string", "OWNER_DECISION_REQUIRED");
     assert.deepEqual(decision.approval, approvalFor(row, PAID_MODE), "OWNER_DECISION_WRONG_BUILD");
@@ -348,13 +450,13 @@ try {
     writeJson(join(root, "owner-approval.json"), decision);
     await successor(row, decision.approval, PAID_MODE);
   } else {
-    const qualified = action === "live" ? readJson(join(resolve(prerequisite), "qualification.json")) : null;
+    const qualified = ["live", "resume"].includes(action) ? readJson(join(resolve(prerequisite), "qualification.json")) : null;
     if (qualified) {
       assert(qualified.pass && qualified.mockPaidRequests === 0, "REQUIRE_ZERO_PAID_MOCK");
       assert.deepEqual(qualified.frozen, frozen, "QUALIFIED_RUNNER_CHANGED");
     }
     mkdirSync(root);
-    const row = await first(qualified);
+    const row = isResume ? await resumeFirst(stoppedDraft(resolve(qualified ? previousRun : prerequisite)), qualified) : await first(qualified);
     if (!row.passed) { console.log("STOPPED_WITHOUT_APPROVAL_ADMISSION", root); process.exitCode = 1; }
   }
 } finally {

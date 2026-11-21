@@ -1,0 +1,16 @@
+diff --git b/src/application/work_outcome.ts a/src/application/work_outcome.ts
+index 7da24d2..e07b5d7 100644
+--- b/src/application/work_outcome.ts
++++ a/src/application/work_outcome.ts
+@@ -52,8 +52,9 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s
+ /**
+  * A clean HEAD alone is ordinary project state. Two cases can still have a reviewable delivery:
+  * the committed artifacts of a retired plan, or a direct commit in a project that never had formal
+- * Work. The second case is deliberately narrower: the commit must be AHEAD of the canonical basis,
+- * so an unchanged project is never told to deliver itself.
++ * Work. A taskless project is only pointed at delivery when the repository has moved beyond the
++ * canonical basis, or when a current DELIVER conclusion already exists; an unchanged project is
++ * never told to deliver itself.
+  */
+ async function directDelivery(
+   deps: WorkRuntimeDeps,

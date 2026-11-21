@@ -39,7 +39,7 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 
 ## 下一轮实施顺序
 
-自主维护试点的封存唤醒、状态读回和安装物接班已通过零付费资格。真实首轮可自行定位、测试和修订 Work readiness，64 笔内未提交。原轨迹中的宿主收尾仍可复现。形成独立验收通过的真实候选并由接受版推进新工单，仍是这条路线的验收条件。[自主维护与版本接班](PALIMPSEST-SELF-EVOLUTION.md) · [首轮报告](../engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md)
+自主维护试点的封存唤醒、状态读回、原稿接续和安装物接班已通过零付费资格。真实首轮在 64 笔上限时留下原稿，续作从同一项目在 43 笔内验证、提交并记录 `DELIVER`。候选通过手动 readiness 检查，两份原现场仍复现宿主收尾缺口。独立验收通过的真实候选接班并推进新工单，仍是这条路线的验收条件。[自主维护与版本接班](PALIMPSEST-SELF-EVOLUTION.md) · [原稿接续报告](../engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md#从请求上限停点接续原稿)
 
 ### 已完成试点的实施记录
 

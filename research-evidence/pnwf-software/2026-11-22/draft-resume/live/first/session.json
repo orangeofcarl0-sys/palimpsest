@@ -1,0 +1,1894 @@
+{
+  "mode": "paid-usage-only",
+  "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-cc9b7bd0-249f-462d-a625-99738401e2ca",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-draft-live-20261122-044607\\first\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-draft-live-20261122-044607\\first\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "fa41d26e34e2934393a604bd9ef5849e0ded9196d192aca3af0d8657c1e47400",
+    "qualification": "9f010be436e15d6e5edf358c2e0d70b4a576dbcbb309d4a379bedd05b23c6df7",
+    "startedAt": "2026-11-21T20:53:38.016Z",
+    "endedAt": "2026-11-21T20:58:39.348Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-cc9b7bd0-249f-462d-a625-99738401e2ca",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-21T20:58:39.348Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 2809024,
+      "confirmedTokens": 2809024,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 43,
+    "paidModelCalls": 43
+  },
+  "accounting": {
+    "requests": 43,
+    "unresolved": 0,
+    "confirmed": 2809024
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-6fc45654-c9d9-4722-a8e0-58be55bf6152",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 43,
+    "knownTokens": 2809024,
+    "totalTokens": 2809024,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 98176,
+      "cache_read_input_tokens": 2693376,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 17472
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 43,
+        "input": 98176,
+        "cacheRead": 2693376,
+        "cacheWrite": 0,
+        "output": 17472,
+        "total": 2809024
+      }
+    },
+    "traceTotal": 2809024,
+    "traceRequests": 43,
+    "workerRequests": 0,
+    "elapsedMs": 301332,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-6fc45654-c9d9-4722-a8e0-58be55bf6152",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "85d56d2cdef19da3c640b0c48123f5f492202e4a7443faf40c9ceb631216b377",
+        "counts": {
+          "steps": 43,
+          "turns": 1,
+          "toolCalls": 46,
+          "pairedToolResults": 46,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 4,
+          "commits": 0,
+          "jobs": 38
+        },
+        "refs": [],
+        "failedJobs": [
+          {
+            "jobId": "bash-0f54d6b2a1794b3c",
+            "status": "completed",
+            "reason": "NONZERO_EXIT",
+            "callId": "call_2fa00cd500c24299b9541b02",
+            "callSeq": 161,
+            "callKind": "bash",
+            "resultSeq": null,
+            "settledSeq": 163,
+            "durationMs": 1657
+          }
+        ],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795294445561,
+            "messageId": "dcf9c947-9eab-452a-8587-7656f94506b6",
+            "usage": {
+              "inputTokens": 238,
+              "outputTokens": 52,
+              "cacheReadTokens": 10368,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10658
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795294447620,
+            "messageId": "d8df39da-4891-4ff6-a749-2b64fcc30e16",
+            "usage": {
+              "inputTokens": 1342,
+              "outputTokens": 126,
+              "cacheReadTokens": 10496,
+              "cacheWriteTokens": 0,
+              "totalTokens": 11964
+            }
+          },
+          {
+            "seq": 30,
+            "at": 1795294449614,
+            "messageId": "1f497493-1a78-4711-9cc1-6013b2c72369",
+            "usage": {
+              "inputTokens": 1385,
+              "outputTokens": 130,
+              "cacheReadTokens": 11776,
+              "cacheWriteTokens": 0,
+              "totalTokens": 13291
+            }
+          },
+          {
+            "seq": 38,
+            "at": 1795294453087,
+            "messageId": "12f46e00-496d-4ed6-800e-39d645778156",
+            "usage": {
+              "inputTokens": 3210,
+              "outputTokens": 295,
+              "cacheReadTokens": 13056,
+              "cacheWriteTokens": 0,
+              "totalTokens": 16561
+            }
+          },
+          {
+            "seq": 46,
+            "at": 1795294455577,
+            "messageId": "e9b113f1-b2bb-4635-b05c-9ef9094fce25",
+            "usage": {
+              "inputTokens": 3943,
+              "outputTokens": 177,
+              "cacheReadTokens": 16256,
+              "cacheWriteTokens": 0,
+              "totalTokens": 20376
+            }
+          },
+          {
+            "seq": 54,
+            "at": 1795294459461,
+            "messageId": "26dc3d4d-100a-4c3a-a3e8-15b0e2bf95df",
+            "usage": {
+              "inputTokens": 4994,
+              "outputTokens": 393,
+              "cacheReadTokens": 20096,
+              "cacheWriteTokens": 0,
+              "totalTokens": 25483
+            }
+          },
+          {
+            "seq": 66,
+            "at": 1795294462641,
+            "messageId": "8d862e92-1ebf-47d4-af83-c397c51ec332",
+            "usage": {
+              "inputTokens": 3182,
+              "outputTokens": 209,
+              "cacheReadTokens": 25088,
+              "cacheWriteTokens": 0,
+              "totalTokens": 28479
+            }
+          },
+          {
+            "seq": 74,
+            "at": 1795294466399,
+            "messageId": "ec38436d-bf7c-4e2d-b230-d3fd02a7da8a",
+            "usage": {
+              "inputTokens": 8955,
+              "outputTokens": 319,
+              "cacheReadTokens": 28160,
+              "cacheWriteTokens": 0,
+              "totalTokens": 37434
+            }
+          },
+          {
+            "seq": 82,
+            "at": 1795294468588,
+            "messageId": "d0f87881-6a59-4d0d-99c6-822da56ae1af",
+            "usage": {
+              "inputTokens": 461,
+              "outputTokens": 122,
+              "cacheReadTokens": 36992,
+              "cacheWriteTokens": 0,
+              "totalTokens": 37575
+            }
+          },
+          {
+            "seq": 90,
+            "at": 1795294470791,
+            "messageId": "f43d843d-f3a2-4691-a9f3-e708e4e7ce74",
+            "usage": {
+              "inputTokens": 395,
+              "outputTokens": 134,
+              "cacheReadTokens": 37376,
+              "cacheWriteTokens": 0,
+              "totalTokens": 37905
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1795294473337,
+            "messageId": "3e87d633-0f7c-4e85-a6c8-f97b7e6eda13",
+            "usage": {
+              "inputTokens": 1077,
+              "outputTokens": 272,
+              "cacheReadTokens": 37760,
+              "cacheWriteTokens": 0,
+              "totalTokens": 39109
+            }
+          },
+          {
+            "seq": 106,
+            "at": 1795294475639,
+            "messageId": "36f8c734-ff08-486f-9032-5870715da020",
+            "usage": {
+              "inputTokens": 9554,
+              "outputTokens": 74,
+              "cacheReadTokens": 38784,
+              "cacheWriteTokens": 0,
+              "totalTokens": 48412
+            }
+          },
+          {
+            "seq": 114,
+            "at": 1795294477615,
+            "messageId": "20f73d17-22e2-4337-84c4-c4e1d61a1ad8",
+            "usage": {
+              "inputTokens": 4496,
+              "outputTokens": 73,
+              "cacheReadTokens": 48256,
+              "cacheWriteTokens": 0,
+              "totalTokens": 52825
+            }
+          },
+          {
+            "seq": 122,
+            "at": 1795294480767,
+            "messageId": "eb315b25-f7b3-4109-a7b1-525583594fe8",
+            "usage": {
+              "inputTokens": 3399,
+              "outputTokens": 263,
+              "cacheReadTokens": 52736,
+              "cacheWriteTokens": 0,
+              "totalTokens": 56398
+            }
+          },
+          {
+            "seq": 132,
+            "at": 1795294484151,
+            "messageId": "3342dba4-04ab-4ebe-ac49-211a8210bfb2",
+            "usage": {
+              "inputTokens": 3257,
+              "outputTokens": 269,
+              "cacheReadTokens": 56064,
+              "cacheWriteTokens": 0,
+              "totalTokens": 59590
+            }
+          },
+          {
+            "seq": 144,
+            "at": 1795294486940,
+            "messageId": "855858cd-d0b0-4fed-b195-717b72d81a32",
+            "usage": {
+              "inputTokens": 3802,
+              "outputTokens": 207,
+              "cacheReadTokens": 59264,
+              "cacheWriteTokens": 0,
+              "totalTokens": 63273
+            }
+          },
+          {
+            "seq": 152,
+            "at": 1795294493192,
+            "messageId": "6055a0bd-50e5-4d15-b5aa-1950921080d0",
+            "usage": {
+              "inputTokens": 315,
+              "outputTokens": 122,
+              "cacheReadTokens": 62976,
+              "cacheWriteTokens": 0,
+              "totalTokens": 63413
+            }
+          },
+          {
+            "seq": 160,
+            "at": 1795294514002,
+            "messageId": "d570f47c-bbb3-48fd-b109-6ad13b5fa60c",
+            "usage": {
+              "inputTokens": 445,
+              "outputTokens": 210,
+              "cacheReadTokens": 63232,
+              "cacheWriteTokens": 0,
+              "totalTokens": 63887
+            }
+          },
+          {
+            "seq": 168,
+            "at": 1795294518431,
+            "messageId": "33f765f9-c2db-445e-8724-c276bc54e0cd",
+            "usage": {
+              "inputTokens": 480,
+              "outputTokens": 114,
+              "cacheReadTokens": 63616,
+              "cacheWriteTokens": 0,
+              "totalTokens": 64210
+            }
+          },
+          {
+            "seq": 176,
+            "at": 1795294521344,
+            "messageId": "d466754a-fd2d-4e05-9b74-5ec8a8e8944c",
+            "usage": {
+              "inputTokens": 2571,
+              "outputTokens": 221,
+              "cacheReadTokens": 64000,
+              "cacheWriteTokens": 0,
+              "totalTokens": 66792
+            }
+          },
+          {
+            "seq": 184,
+            "at": 1795294550985,
+            "messageId": "87687f06-84ff-4bd8-b1c7-edea825e3207",
+            "usage": {
+              "inputTokens": 2584,
+              "outputTokens": 842,
+              "cacheReadTokens": 66560,
+              "cacheWriteTokens": 0,
+              "totalTokens": 69986
+            }
+          },
+          {
+            "seq": 192,
+            "at": 1795294553535,
+            "messageId": "4abc1ca5-b035-49d0-b0a8-1bd6e4ff8996",
+            "usage": {
+              "inputTokens": 1181,
+              "outputTokens": 109,
+              "cacheReadTokens": 69120,
+              "cacheWriteTokens": 0,
+              "totalTokens": 70410
+            }
+          },
+          {
+            "seq": 200,
+            "at": 1795294558217,
+            "messageId": "34139bbb-f961-425f-b042-4ef4c41e5192",
+            "usage": {
+              "inputTokens": 2877,
+              "outputTokens": 392,
+              "cacheReadTokens": 70272,
+              "cacheWriteTokens": 0,
+              "totalTokens": 73541
+            }
+          },
+          {
+            "seq": 208,
+            "at": 1795294562422,
+            "messageId": "9bbbbaea-7685-433a-8a0d-6d1903626dc9",
+            "usage": {
+              "inputTokens": 3648,
+              "outputTokens": 310,
+              "cacheReadTokens": 73088,
+              "cacheWriteTokens": 0,
+              "totalTokens": 77046
+            }
+          },
+          {
+            "seq": 216,
+            "at": 1795294565949,
+            "messageId": "a8ae5c8d-0cc3-4f4f-bcf5-9e5361b056de",
+            "usage": {
+              "inputTokens": 497,
+              "outputTokens": 155,
+              "cacheReadTokens": 76672,
+              "cacheWriteTokens": 0,
+              "totalTokens": 77324
+            }
+          },
+          {
+            "seq": 224,
+            "at": 1795294571965,
+            "messageId": "60ffc147-e983-464c-bfb7-e789f42edfb8",
+            "usage": {
+              "inputTokens": 281,
+              "outputTokens": 853,
+              "cacheReadTokens": 77056,
+              "cacheWriteTokens": 0,
+              "totalTokens": 78190
+            }
+          },
+          {
+            "seq": 232,
+            "at": 1795294577827,
+            "messageId": "ecb505d3-c1e1-46ca-a1ee-43ce13e0fda8",
+            "usage": {
+              "inputTokens": 1335,
+              "outputTokens": 457,
+              "cacheReadTokens": 77312,
+              "cacheWriteTokens": 0,
+              "totalTokens": 79104
+            }
+          },
+          {
+            "seq": 238,
+            "at": 1795294581284,
+            "messageId": "2c787aec-703d-4550-9ddf-1b4b3c1cad12",
+            "usage": {
+              "inputTokens": 541,
+              "outputTokens": 228,
+              "cacheReadTokens": 78592,
+              "cacheWriteTokens": 0,
+              "totalTokens": 79361
+            }
+          },
+          {
+            "seq": 246,
+            "at": 1795294583628,
+            "messageId": "551354de-5844-4340-ba8a-8e76b3cdd68a",
+            "usage": {
+              "inputTokens": 270,
+              "outputTokens": 85,
+              "cacheReadTokens": 79104,
+              "cacheWriteTokens": 0,
+              "totalTokens": 79459
+            }
+          },
+          {
+            "seq": 254,
+            "at": 1795294597413,
+            "messageId": "9c72634a-d092-4f30-b2dd-1dc2356a7632",
+            "usage": {
+              "inputTokens": 2542,
+              "outputTokens": 1611,
+              "cacheReadTokens": 79360,
+              "cacheWriteTokens": 0,
+              "totalTokens": 83513
+            }
+          },
+          {
+            "seq": 262,
+            "at": 1795294600862,
+            "messageId": "384b10b4-8881-49f7-a26b-0aa3fe72f53e",
+            "usage": {
+              "inputTokens": 1785,
+              "outputTokens": 332,
+              "cacheReadTokens": 81792,
+              "cacheWriteTokens": 0,
+              "totalTokens": 83909
+            }
+          },
+          {
+            "seq": 270,
+            "at": 1795294603696,
+            "messageId": "0f1f2bb7-05b8-4e93-ad27-3e28afc7a61f",
+            "usage": {
+              "inputTokens": 765,
+              "outputTokens": 265,
+              "cacheReadTokens": 83456,
+              "cacheWriteTokens": 0,
+              "totalTokens": 84486
+            }
+          },
+          {
+            "seq": 278,
+            "at": 1795294620894,
+            "messageId": "49b40419-0932-43a0-a9ea-6ebdeb057842",
+            "usage": {
+              "inputTokens": 1834,
+              "outputTokens": 255,
+              "cacheReadTokens": 84096,
+              "cacheWriteTokens": 0,
+              "totalTokens": 86185
+            }
+          },
+          {
+            "seq": 286,
+            "at": 1795294624777,
+            "messageId": "18d9ce34-e0eb-4224-8ac6-068c8ada3164",
+            "usage": {
+              "inputTokens": 1856,
+              "outputTokens": 248,
+              "cacheReadTokens": 85888,
+              "cacheWriteTokens": 0,
+              "totalTokens": 87992
+            }
+          },
+          {
+            "seq": 294,
+            "at": 1795294631489,
+            "messageId": "4f1704dc-787a-4fc7-9525-1494da85d58a",
+            "usage": {
+              "inputTokens": 430,
+              "outputTokens": 663,
+              "cacheReadTokens": 87680,
+              "cacheWriteTokens": 0,
+              "totalTokens": 88773
+            }
+          },
+          {
+            "seq": 300,
+            "at": 1795294635597,
+            "messageId": "3a45656a-9240-4536-87fc-fd941cc48c6a",
+            "usage": {
+              "inputTokens": 1065,
+              "outputTokens": 292,
+              "cacheReadTokens": 88064,
+              "cacheWriteTokens": 0,
+              "totalTokens": 89421
+            }
+          },
+          {
+            "seq": 306,
+            "at": 1795294643445,
+            "messageId": "1409d86c-21f5-48ed-b091-28d3651a6041",
+            "usage": {
+              "inputTokens": 1576,
+              "outputTokens": 791,
+              "cacheReadTokens": 89088,
+              "cacheWriteTokens": 0,
+              "totalTokens": 91455
+            }
+          },
+          {
+            "seq": 314,
+            "at": 1795294648982,
+            "messageId": "912a3b12-b431-405d-8d48-b2a0b898d9c9",
+            "usage": {
+              "inputTokens": 6495,
+              "outputTokens": 603,
+              "cacheReadTokens": 90624,
+              "cacheWriteTokens": 0,
+              "totalTokens": 97722
+            }
+          },
+          {
+            "seq": 322,
+            "at": 1795294668624,
+            "messageId": "a8bb9d81-7fff-4aa9-8c21-ea146b7b9483",
+            "usage": {
+              "inputTokens": 1788,
+              "outputTokens": 152,
+              "cacheReadTokens": 97024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 98964
+            }
+          },
+          {
+            "seq": 330,
+            "at": 1795294672323,
+            "messageId": "f3ade357-5343-44b3-b74a-b9d05ecd491f",
+            "usage": {
+              "inputTokens": 1248,
+              "outputTokens": 209,
+              "cacheReadTokens": 98688,
+              "cacheWriteTokens": 0,
+              "totalTokens": 100145
+            }
+          },
+          {
+            "seq": 338,
+            "at": 1795294694685,
+            "messageId": "b84406c9-50a1-40b7-9aaa-db7a0457d882",
+            "usage": {
+              "inputTokens": 511,
+              "outputTokens": 2430,
+              "cacheReadTokens": 99840,
+              "cacheWriteTokens": 0,
+              "totalTokens": 102781
+            }
+          },
+          {
+            "seq": 344,
+            "at": 1795294698499,
+            "messageId": "a7fd44ca-5a0f-4ab2-b657-baed6065ed53",
+            "usage": {
+              "inputTokens": 3238,
+              "outputTokens": 270,
+              "cacheReadTokens": 100224,
+              "cacheWriteTokens": 0,
+              "totalTokens": 103732
+            }
+          },
+          {
+            "seq": 350,
+            "at": 1795294717707,
+            "messageId": "0a6b3af4-4d4e-43cd-860d-9bca9abc6e7f",
+            "usage": {
+              "inputTokens": 2328,
+              "outputTokens": 2138,
+              "cacheReadTokens": 103424,
+              "cacheWriteTokens": 0,
+              "totalTokens": 107890
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 2,
+          "bash": 38,
+          "project:journal_entries": 1,
+          "read": 1,
+          "edit": 1,
+          "work:readiness": 1,
+          "project:journal": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "requestBinding": {
+    "arm": "P",
+    "session": "MAINTAIN",
+    "boundRequests": 43,
+    "totals": {
+      "fresh": 98176,
+      "cacheRead": 2693376,
+      "cacheWrite": 0,
+      "output": 17472
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-6fc45654-c9d9-4722-a8e0-58be55bf6152",
+        "streamSha256": "85d56d2cdef19da3c640b0c48123f5f492202e4a7443faf40c9ceb631216b377",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 28,
+            "toolManifestBytes": 39427,
+            "productTools": 5,
+            "productToolBytes": 20370
+          }
+        ],
+        "systemTextBytes": [
+          2146
+        ],
+        "counts": {
+          "steps": 43,
+          "turns": 1,
+          "toolCalls": 46,
+          "pairedToolResults": 46,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 1,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 1,
+          "stateQueries": 4,
+          "commits": 0,
+          "jobs": 38
+        },
+        "byKind": {
+          "continuity:pulse": 2,
+          "bash": 38,
+          "project:journal_entries": 1,
+          "read": 1,
+          "edit": 1,
+          "work:readiness": 1,
+          "project:journal": 1,
+          "work:conclude": 1
+        },
+        "totals": {
+          "fresh": 98176,
+          "cacheRead": 2693376,
+          "cacheWrite": 0,
+          "output": 17472
+        },
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "0705cb3a-04b4-4939-9cde-75f2abb8ea0a",
+            "fresh": 238,
+            "cacheRead": 10368,
+            "cacheWrite": 0,
+            "output": 52,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f1c2a092e23942c3afe96027b550e9d9"
+          },
+          {
+            "step": 2,
+            "seq": 20,
+            "requestId": "9bc05b0f-23a7-4edf-bba7-6d08a001e19a",
+            "fresh": 1342,
+            "cacheRead": 10496,
+            "cacheWrite": 0,
+            "output": 126,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7a333f9d50ea49ddbc3c22092ff9860a"
+          },
+          {
+            "step": 3,
+            "seq": 30,
+            "requestId": "ddf2cbfb-4a37-49e3-acf0-d9cc5cf9f13d",
+            "fresh": 1385,
+            "cacheRead": 11776,
+            "cacheWrite": 0,
+            "output": 130,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_39cac6a149a6415db0a04f5338b52741"
+          },
+          {
+            "step": 4,
+            "seq": 38,
+            "requestId": "794b2fd4-a17a-438a-90d3-e721eba439b2",
+            "fresh": 3210,
+            "cacheRead": 13056,
+            "cacheWrite": 0,
+            "output": 295,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b03e002d5eeb4976839c2baea788810f"
+          },
+          {
+            "step": 5,
+            "seq": 46,
+            "requestId": "f2b910ad-126b-44a3-a0f4-ed93a06bb31d",
+            "fresh": 3943,
+            "cacheRead": 16256,
+            "cacheWrite": 0,
+            "output": 177,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_25d2a659f8024f91845d9e3a8f9a599c"
+          },
+          {
+            "step": 6,
+            "seq": 54,
+            "requestId": "b90d1ceb-1993-4276-a497-760fa159b7ed",
+            "fresh": 4994,
+            "cacheRead": 20096,
+            "cacheWrite": 0,
+            "output": 393,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8da0fb4f9aa74d059de0f9128485e3b0"
+          },
+          {
+            "step": 7,
+            "seq": 66,
+            "requestId": "1d02dadb-6dbc-42ba-b5b0-c69a238b8367",
+            "fresh": 3182,
+            "cacheRead": 25088,
+            "cacheWrite": 0,
+            "output": 209,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f9704f6d374f45f1921e71844e374175"
+          },
+          {
+            "step": 8,
+            "seq": 74,
+            "requestId": "0aba3cb1-9049-49c3-b4e7-b393c9d541a0",
+            "fresh": 8955,
+            "cacheRead": 28160,
+            "cacheWrite": 0,
+            "output": 319,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8d4c3c49e5874603876800fe54b444fa"
+          },
+          {
+            "step": 9,
+            "seq": 82,
+            "requestId": "3603903e-2ae4-48e1-8ee4-c26607a668c4",
+            "fresh": 461,
+            "cacheRead": 36992,
+            "cacheWrite": 0,
+            "output": 122,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3c8509ce80b0461c80c4979494c72ce2"
+          },
+          {
+            "step": 10,
+            "seq": 90,
+            "requestId": "f2fa91a8-c751-4bef-9af9-33d0afa19636",
+            "fresh": 395,
+            "cacheRead": 37376,
+            "cacheWrite": 0,
+            "output": 134,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_280d71c18db8461ca6bb3e58d6934840"
+          },
+          {
+            "step": 11,
+            "seq": 98,
+            "requestId": "a3de997b-f0bd-4367-8f72-9e78da92ced8",
+            "fresh": 1077,
+            "cacheRead": 37760,
+            "cacheWrite": 0,
+            "output": 272,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_28bf92043b1240b79972c7736787dad6"
+          },
+          {
+            "step": 12,
+            "seq": 106,
+            "requestId": "6ac4c664-bc0d-455d-9af0-efd127df11bd",
+            "fresh": 9554,
+            "cacheRead": 38784,
+            "cacheWrite": 0,
+            "output": 74,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0063cb1ecd0341e3853fefa0ab3899e5"
+          },
+          {
+            "step": 13,
+            "seq": 114,
+            "requestId": "1c81b1a9-5ed6-45c7-94f8-ec3307e6d45d",
+            "fresh": 4496,
+            "cacheRead": 48256,
+            "cacheWrite": 0,
+            "output": 73,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_43744fd203824329b591b9629a187af1"
+          },
+          {
+            "step": 14,
+            "seq": 122,
+            "requestId": "da1d0085-dd75-4d32-ba0f-29dd97846258",
+            "fresh": 3399,
+            "cacheRead": 52736,
+            "cacheWrite": 0,
+            "output": 263,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_4830ea29b6324733a658d5bbefe75176"
+          },
+          {
+            "step": 15,
+            "seq": 132,
+            "requestId": "96a144e6-0a40-43e8-be84-2e1dc8e49383",
+            "fresh": 3257,
+            "cacheRead": 56064,
+            "cacheWrite": 0,
+            "output": 269,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_d3db9f83b7b24c4d941643d35cf24bd7"
+          },
+          {
+            "step": 16,
+            "seq": 144,
+            "requestId": "9c072e90-7849-4567-bcdd-318f744d3b22",
+            "fresh": 3802,
+            "cacheRead": 59264,
+            "cacheWrite": 0,
+            "output": 207,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7db4e472701a49c0a45fe750b85e5476"
+          },
+          {
+            "step": 17,
+            "seq": 152,
+            "requestId": "cb1e3268-34ef-419b-9603-410ff39d0025",
+            "fresh": 315,
+            "cacheRead": 62976,
+            "cacheWrite": 0,
+            "output": 122,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_acb06ba02f764512ae8be717686deb73"
+          },
+          {
+            "step": 18,
+            "seq": 160,
+            "requestId": "4b86620a-2708-40a2-92be-579c227bd5d4",
+            "fresh": 445,
+            "cacheRead": 63232,
+            "cacheWrite": 0,
+            "output": 210,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_394cb00c716340029de98c7b107f8287"
+          },
+          {
+            "step": 19,
+            "seq": 168,
+            "requestId": "7bcd233b-2e84-46bf-9c01-953ead589fb8",
+            "fresh": 480,
+            "cacheRead": 63616,
+            "cacheWrite": 0,
+            "output": 114,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a4640ad4f659449dadfd33ef2f42db39"
+          },
+          {
+            "step": 20,
+            "seq": 176,
+            "requestId": "5fb11538-9e14-4138-83ab-32a523e1a3bf",
+            "fresh": 2571,
+            "cacheRead": 64000,
+            "cacheWrite": 0,
+            "output": 221,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_e9087d4cb87047bf90b7fdabec54c6cf"
+          },
+          {
+            "step": 21,
+            "seq": 184,
+            "requestId": "f4d7b3fa-c4a2-4459-9742-ae7dc7e5e99b",
+            "fresh": 2584,
+            "cacheRead": 66560,
+            "cacheWrite": 0,
+            "output": 842,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_08ac69baddba468aa35780789f05831c"
+          },
+          {
+            "step": 22,
+            "seq": 192,
+            "requestId": "32c3605a-47be-4e00-9ee0-1ef1ccbc648a",
+            "fresh": 1181,
+            "cacheRead": 69120,
+            "cacheWrite": 0,
+            "output": 109,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_9d04b741ea504079a2050e619ad39cfb"
+          },
+          {
+            "step": 23,
+            "seq": 200,
+            "requestId": "3ca7742a-e33b-4ea8-b4f8-2bf8149319bc",
+            "fresh": 2877,
+            "cacheRead": 70272,
+            "cacheWrite": 0,
+            "output": 392,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_723d58fa9e724d69adbbcc10d3fc4a88"
+          },
+          {
+            "step": 24,
+            "seq": 208,
+            "requestId": "7b1ccbcf-9922-40b4-9c01-24a58e22a057",
+            "fresh": 3648,
+            "cacheRead": 73088,
+            "cacheWrite": 0,
+            "output": 310,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_23bd98d4af83400ba70e7df46aec7424"
+          },
+          {
+            "step": 25,
+            "seq": 216,
+            "requestId": "5eb7bb3d-9843-4a18-8be8-aad1bbf60e62",
+            "fresh": 497,
+            "cacheRead": 76672,
+            "cacheWrite": 0,
+            "output": 155,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_86fc939364ab4638a0826ac9fbcd3619"
+          },
+          {
+            "step": 26,
+            "seq": 224,
+            "requestId": "80b3e672-5ee6-46b6-b85d-6704b58eebfc",
+            "fresh": 281,
+            "cacheRead": 77056,
+            "cacheWrite": 0,
+            "output": 853,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_33a71a2e676c49e4899353aab5320c5f"
+          },
+          {
+            "step": 27,
+            "seq": 232,
+            "requestId": "51118062-df2f-4f0a-af5c-a3718c18aa63",
+            "fresh": 1335,
+            "cacheRead": 77312,
+            "cacheWrite": 0,
+            "output": 457,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_95f8c9af179b4b13a9d1259cbef19bda"
+          },
+          {
+            "step": 28,
+            "seq": 238,
+            "requestId": "57fd410a-c713-4208-b732-275ba6220041",
+            "fresh": 541,
+            "cacheRead": 78592,
+            "cacheWrite": 0,
+            "output": 228,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_fbf1d1c782bf4779a6dbbbc88479e297"
+          },
+          {
+            "step": 29,
+            "seq": 246,
+            "requestId": "ebee42f6-eef6-4402-ae6b-fe2d3886b750",
+            "fresh": 270,
+            "cacheRead": 79104,
+            "cacheWrite": 0,
+            "output": 85,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_5ec6d7c50e794bb2888035f3b1b9c36d"
+          },
+          {
+            "step": 30,
+            "seq": 254,
+            "requestId": "65d20a7a-5098-4033-a5ab-357bafcff0af",
+            "fresh": 2542,
+            "cacheRead": 79360,
+            "cacheWrite": 0,
+            "output": 1611,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c9c50c7dd4184846961391840a58d3bb"
+          },
+          {
+            "step": 31,
+            "seq": 262,
+            "requestId": "1a728f04-2ec3-4382-a482-16812a9ee6cd",
+            "fresh": 1785,
+            "cacheRead": 81792,
+            "cacheWrite": 0,
+            "output": 332,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_83fcb12a7ea14b45bfee1e2ba39e0fc9"
+          },
+          {
+            "step": 32,
+            "seq": 270,
+            "requestId": "6c9d36a0-ff5c-4e6d-97e5-e6c501b290c1",
+            "fresh": 765,
+            "cacheRead": 83456,
+            "cacheWrite": 0,
+            "output": 265,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_3be1f32fc7e84a638c4ba910ddd329a2"
+          },
+          {
+            "step": 33,
+            "seq": 278,
+            "requestId": "c286513f-232e-420d-be6c-5249e2b15b62",
+            "fresh": 1834,
+            "cacheRead": 84096,
+            "cacheWrite": 0,
+            "output": 255,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8ff2c289e8e9460885d8226db2d815ac"
+          },
+          {
+            "step": 34,
+            "seq": 286,
+            "requestId": "3412c5c8-8173-4f96-bd44-2ec6cfc54ca0",
+            "fresh": 1856,
+            "cacheRead": 85888,
+            "cacheWrite": 0,
+            "output": 248,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_cfeb981f47c54287a4cd73007fdcd909"
+          },
+          {
+            "step": 35,
+            "seq": 294,
+            "requestId": "5f9b253e-24ff-49f3-838b-efcd077c443e",
+            "fresh": 430,
+            "cacheRead": 87680,
+            "cacheWrite": 0,
+            "output": 663,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_f85e8793932d4082ba1f38c400f50c5d"
+          },
+          {
+            "step": 36,
+            "seq": 300,
+            "requestId": "848b2807-34bc-4abb-b58d-5e37a9114033",
+            "fresh": 1065,
+            "cacheRead": 88064,
+            "cacheWrite": 0,
+            "output": 292,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ba3c1c78fb20409cada69c0b2ee9f4e2"
+          },
+          {
+            "step": 37,
+            "seq": 306,
+            "requestId": "1d5ca19f-e437-4a98-bd02-cd5047cfaf82",
+            "fresh": 1576,
+            "cacheRead": 89088,
+            "cacheWrite": 0,
+            "output": 791,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c91a584d23f54bd4a2512f9a3fe3a5c6"
+          },
+          {
+            "step": 38,
+            "seq": 314,
+            "requestId": "e5c7e1f2-c12a-4ae7-9a1e-b27913257f05",
+            "fresh": 6495,
+            "cacheRead": 90624,
+            "cacheWrite": 0,
+            "output": 603,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8b489504e1524eda84358d46c689c32d"
+          },
+          {
+            "step": 39,
+            "seq": 322,
+            "requestId": "07d4d187-7789-4414-9abb-d8285b26d057",
+            "fresh": 1788,
+            "cacheRead": 97024,
+            "cacheWrite": 0,
+            "output": 152,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_67b73c3a88e94fd9a004795326dae399"
+          },
+          {
+            "step": 40,
+            "seq": 330,
+            "requestId": "8228dde3-ceb4-4a56-a82d-24b297b1e117",
+            "fresh": 1248,
+            "cacheRead": 98688,
+            "cacheWrite": 0,
+            "output": 209,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_fb40a6ca95ea4512b54c416b1b6aaf50"
+          },
+          {
+            "step": 41,
+            "seq": 338,
+            "requestId": "3506b774-67ae-420e-bee3-bef16dbd4b31",
+            "fresh": 511,
+            "cacheRead": 99840,
+            "cacheWrite": 0,
+            "output": 2430,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_317b47862d9746aba3e243c7e2cd3f44"
+          },
+          {
+            "step": 42,
+            "seq": 344,
+            "requestId": "ddb3e185-34a8-4be4-9a02-f9198cfbf2ad",
+            "fresh": 3238,
+            "cacheRead": 100224,
+            "cacheWrite": 0,
+            "output": 270,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_e541b9720af949b0b7e767503719f263"
+          },
+          {
+            "step": 43,
+            "seq": 350,
+            "requestId": "82340fb0-c5c7-40cf-b267-33784282db2c",
+            "fresh": 2328,
+            "cacheRead": 103424,
+            "cacheWrite": 0,
+            "output": 2138,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_14728f51e44e4792b05d444a38b1684e"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 12,
+            "seq": 106,
+            "requestId": "6ac4c664-bc0d-455d-9af0-efd127df11bd",
+            "fresh": 9554,
+            "cacheRead": 38784,
+            "cacheWrite": 0,
+            "output": 74,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0063cb1ecd0341e3853fefa0ab3899e5",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 99,
+                "seq": 102,
+                "textBytes": 38932
+              }
+            ],
+            "precedingTextBytes": 38932
+          },
+          {
+            "step": 8,
+            "seq": 74,
+            "requestId": "0aba3cb1-9049-49c3-b4e7-b393c9d541a0",
+            "fresh": 8955,
+            "cacheRead": 28160,
+            "cacheWrite": 0,
+            "output": 319,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8d4c3c49e5874603876800fe54b444fa",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 67,
+                "seq": 70,
+                "textBytes": 23543
+              }
+            ],
+            "precedingTextBytes": 23543
+          },
+          {
+            "step": 38,
+            "seq": 314,
+            "requestId": "e5c7e1f2-c12a-4ae7-9a1e-b27913257f05",
+            "fresh": 6495,
+            "cacheRead": 90624,
+            "cacheWrite": 0,
+            "output": 603,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8b489504e1524eda84358d46c689c32d",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 307,
+                "seq": 310,
+                "textBytes": 21220
+              }
+            ],
+            "precedingTextBytes": 21220
+          },
+          {
+            "step": 6,
+            "seq": 54,
+            "requestId": "b90d1ceb-1993-4276-a497-760fa159b7ed",
+            "fresh": 4994,
+            "cacheRead": 20096,
+            "cacheWrite": 0,
+            "output": 393,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_8da0fb4f9aa74d059de0f9128485e3b0",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 47,
+                "seq": 50,
+                "textBytes": 14889
+              }
+            ],
+            "precedingTextBytes": 14889
+          }
+        ]
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-6fc45654-c9d9-4722-a8e0-58be55bf6152/session.v4.jsonl.zstd",
+    "sha256": "85d56d2cdef19da3c640b0c48123f5f492202e4a7443faf40c9ceb631216b377",
+    "calls": [
+      {
+        "callId": "call_fdaeb80de49144dc9032e6a6",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"palimpsest-maintenance\",\n  \"goal\": \"Maintain Palimpsest from observable project results and keep its decisions and tests available for the next session.\",\n  \"basis\": {\n    \"projectRevision\": 0,\n    \"projectDigest\": \"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\n    \"headCommit\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n    \"observedAt\": \"2026-11-21T20:54:05.656Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [],\n  \"openQuestions\": [],\n  \"recentChanges\": [\n    {\n      \"id\": \"journal:pje-bc04fc309a82b461e4f0f039a0906955\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\"\n    },\n    {\n      \"id\": \"journal:pje-7c3501d75fc7786bd1938bbf3c36fe89\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\"\n    }\n  ],\n  \"pendingWork\": [],\n  \"blocked\": [],\n  \"contributions\": [],\n  \"delegations\": [],\n  \"execution\": {\n    \"placement\": \"worktree\",\n    \"attempts\": [],\n    \"jobs\": [],\n    \"detail\": \"host jobs are local to THIS process; a",
+        "wakeRefs": []
+      },
+      {
+        "callId": "call_adbf87be8fcd40a18d941109",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "pwd; ls -la; echo ---; git log --oneline -15; echo ---; git status --short",
+        "description": "Inspect workspace and git state",
+        "testCommand": false,
+        "output": "/run/stage/world\ntotal 180\ndrwxr-xr-x 13 principal principal  4096 Nov 21 20:53 .\ndrwxrwxrwx  1 root      root       4096 Nov 21 20:53 ..\ndrwxr-xr-x  8 principal principal  4096 Nov 21 20:54 .git\n-rw-rw-r--  1 principal principal   680 Nov 21 17:27 .gitignore\n-rw-rw-r--  1 principal principal  1080 Nov 21 17:27 LICENSE\n-rw-rw-r--  1 principal principal 13161 Nov 21 17:27 README.md\ndrwxrwxr-x  2 principal principal  4096 Nov 21 17:27 architecture\ndrwxrwxrwx  1 root      root       4096 Nov 21 20:53 evidence\ndrwxrwxr-x  7 principal principal  4096 Nov 21 17:27 fixtures\ndrwxrwxr-x  4 principal principal  4096 Nov 21 17:27 host\nlrwxrwxrwx  1 principal principal    32 Nov 21 20:53 node_modules -> /opt/palimpsest-dev/node_modules\n-rw-rw-r--  1 principal principal  5571 Nov 21 17:27 package.json\n-rw-rw-r--  1 principal principal 68605 Nov 21 17:27 pnpm-lock.yaml\n-rw-rw-r--  1 principal principal   969 Nov 21 17:27 pnpm-workspace.yaml\ndrwxrwxr-x  3 principal principal  4096 Nov 21 17:27 research-evidence\ndrwxrwxr-x 97 principal principal  4096 Nov 21 17:27 scripts\ndrwxrwxr-x 67 principal principal  4096 Nov 21 17:27 src\ndrwxrwxr-x  7 principal principal 28672 Nov 21 20:53 test\ndrwxrwxr-x  3 principal principal  4096 Nov 21 17:27 tools\n-rw-rw-r--  1 principal principal   577 Nov 21 17:27 tsconfig.json\n-rw-rw-r--  1 principal principal  3403 Nov 21 17:27 vitest.config.ts\ndrwxrwxr-x  3 principal principal  4096 Nov 21 17:27 web\n---\n082f77a Seed isolated maintenance source\n---\n M src/application/work_outcome.ts\n M test/alhs_episode_convergence.test.ts\n"
+      },
+      {
+        "callId": "call_8b827ba0d597445996ecac32",
+        "call": 25,
+        "result": 26,
+        "request": 2,
+        "tool": "palimpsest_project",
+        "action": "journal_entries",
+        "ok": true,
+        "query": {
+          "action": "journal_entries"
+        },
+        "observed": "[\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3.\",\n      \"provenance\": \"Maintenance evidence intake\",\n      \"relatedRefs\": [\n        {\n          \"kind\": \"sealed_run\",\n          \"id\": \"campaign-wake-4b0cad805e26bd80c98bb2288e95e701\"\n        },\n        {\n          \"kind\": \"git_commit\",\n          \"id\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"\n        }\n      ],\n      \"createdAt\": \"2026-11-21T19:52:39.943000Z\",\n      \"entryId\": \"pje-bc04fc309a82b461e4f0f039a0906955\",\n      \"digest\": \"4bb8287ac305727694101d049a2c125f812fa2192a8703b0271716d6e14e73d2\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 0223da49a3a2f0dbff68220033d134f",
+        "wakeRefs": [
+          "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+          "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d"
+        ]
+      },
+      {
+        "callId": "call_36aa455624ef4c1a8a7586b1",
+        "call": 31,
+        "result": 34,
+        "request": 3,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "find evidence -maxdepth 3 -type f | head -100; echo ---; du -sh evidence; echo ---; git diff --stat; echo ---; git diff",
+        "description": "List evidence and show working diff",
+        "testCommand": false,
+        "output": "evidence/basis.bundle\nevidence/case-1/candidate.bundle\nevidence/case-1/owners/journal.sqlite\nevidence/case-1/owners/palimpsest.sqlite\nevidence/case-1/request-accounting.json\nevidence/case-1/review-committed.md\nevidence/case-1/run.json\nevidence/case-1/session.jsonl\nevidence/case-1/session.jsonl.zstd\nevidence/case-2/candidate.bundle\nevidence/case-2/owners/journal.sqlite\nevidence/case-2/owners/palimp\n...\nintent=DELIVER\");\n+\n+    const delivered = (await call(installed, \"palimpsest_work\", {\n+      action: \"conclude\",\n+      intent: \"DELIVER\",\n+      statement: \"The direct commit is the reviewable result.\",\n+      artifacts: [\"docs/result.md\"],\n+    })) as unknown as Conclude;\n+    expect(delivered.state).toBe(\"RECORDED\");\n+    expect(delivered.session.mayEnd).toBe(true);\n+\n+    const after = await read();\n+    expect(after.action).toBe(\"SEMANTIC_JUDGEMENT\");\n+    expect(after.next).toEqual([\"reply using the recorded conclusion\"]);\n+    expect(offersDeliver(after)).toBe(false);\n+\n+    // A later uncommitted edit is not hidden by the recorded conclusion.\n+    writeFileSync(join(repo, \"docs\", \"result.md\"), \"# An uncommitted revision\\n\");\n+    const dirtyAfter = await read();\n+    expect(dirtyAfter.action).toBe(\"CONTINUE_WORK\");\n+    expect(offersDeliver(dirtyAfter)).toBe(false);\n+\n+    expect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });\n+  });\n+\n   it(\"reports a committed artifact without a provenance warning\", async () => {\n     const { repo, head, stateDir } = workspace(\"committed\");\n     const installed = install(repo, stateDir);\n"
+      },
+      {
+        "callId": "call_afac9c7fa1c34c06850bca6c",
+        "call": 39,
+        "result": 42,
+        "request": 4,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "ls -la evidence evidence/case-* evidence/prior-run; echo ===; for f in evidence/case-*/review-committed.md; do echo \"### $f\"; cat \"$f\"; echo; done",
+        "description": "List evidence and read review notes",
+        "testCommand": false,
+        "output": "evidence:\ntotal 24\ndrwxrwxrwx  1 root      root       4096 Nov 21 20:53 .\ndrwxr-xr-x 13 principal principal  4096 Nov 21 20:53 ..\n-rwxrwxrwx  1 root      root      20213 Nov 21 16:24 basis.bundle\ndrwxrwxrwx  1 root      root       4096 Nov 21 20:53 case-1\ndrwxrwxrwx  1 root      root       4096 Nov 21 20:53 case-2\ndrwxrwxrwx  1 root      root       4096 Nov 21 20:53 case-3\ndrwxrwxrwx  1 root      \n...\nns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.\n\n### evidence/case-3/review-committed.md\n# Cold handover maintenance review\n\nReadback decision: READY\n\nThe previous UNKNOWN for episode-e7050e9ddf64ccebde7f08f6 is historical. A same-SHA cold readback finds that Episode REOPENED. The owner accepted 95b83e71ee9a37041b9918b5e8b797eebabf69c9 in DIRECT_BASIS event 8. Verification note pje-d0c977aae7bb8bfeca9159f76e14a7d1 follows updates/2026-11-10/fleet-default-limit.md; no open questions remain. This is for maintenance handover only, with release approval retained by the owner.\n\n## Retained evidence\n\n- Archived cold-session lookup: episode-e7050e9ddf64ccebde7f08f6, UNKNOWN, call call_ccfc97275a064338a47c1acb.\n- Owner-accepted tree: 95b83e71ee9a37041b9918b5e8b797eebabf69c9, Work DIRECT_BASIS event 8.\n- Original release verification reference: pje-d0c977aae7bb8bfeca9159f76e14a7d1.\n- Fleet source: updates/2026-11-10/fleet-default-limit.md.\n- Retained verification: zero or omitted limit returns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.\n\n"
+      },
+      {
+        "callId": "call_e0d24692927f4559b97ab85e",
+        "call": 47,
+        "result": 50,
+        "request": 5,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "for f in evidence/case-*/run.json evidence/prior-run/run.json; do echo \"### $f\"; cat \"$f\"; echo; done; echo \"### working.patch\"; cat evidence/prior-run/working.patch",
+        "description": "Read sealed run metadata and prior patch",
+        "testCommand": false,
+        "output": "### evidence/case-1/run.json\n{\n  \"schema\": \"alhs-core-session-run/v1\",\n  \"cohortId\": \"continuity-reuse-fde39dc7-90d4-4bfc-9aee-31886a1efe51\",\n  \"sessionId\": \"RESUME\",\n  \"condition\": \"P\",\n  \"world\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\pnwf-continuity-reuse-live-20261122-002556\\\\WITHOUT\\\\stages\\\\RESUME\\\\world\",\n  \"home\": \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\pnwf-continuity-reuse-live-202611\n...\nintent=DELIVER\");\n+\n+    const delivered = (await call(installed, \"palimpsest_work\", {\n+      action: \"conclude\",\n+      intent: \"DELIVER\",\n+      statement: \"The direct commit is the reviewable result.\",\n+      artifacts: [\"docs/result.md\"],\n+    })) as unknown as Conclude;\n+    expect(delivered.state).toBe(\"RECORDED\");\n+    expect(delivered.session.mayEnd).toBe(true);\n+\n+    const after = await read();\n+    expect(after.action).toBe(\"SEMANTIC_JUDGEMENT\");\n+    expect(after.next).toEqual([\"reply using the recorded conclusion\"]);\n+    expect(offersDeliver(after)).toBe(false);\n+\n+    // A later uncommitted edit is not hidden by the recorded conclusion.\n+    writeFileSync(join(repo, \"docs\", \"result.md\"), \"# An uncommitted revision\\n\");\n+    const dirtyAfter = await read();\n+    expect(dirtyAfter.action).toBe(\"CONTINUE_WORK\");\n+    expect(offersDeliver(dirtyAfter)).toBe(false);\n+\n+    expect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });\n+  });\n+\n   it(\"reports a committed artifact without a provenance warning\", async () => {\n     const { repo, head, stateDir } = workspace(\"committed\");\n     const installed = install(repo, stateDir);\n"
+      },
+      {
+        "callId": "call_5c79c3d1d26444f79e303400",
+        "call": 55,
+        "result": 58,
+        "request": 6,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "head -3 evidence/prior-run/session.jsonl; echo ---; tail -5 evidence/prior-run/session.jsonl | cut -c1-1000; echo ---; python3 - <<'PY'\nimport json\np='evidence/prior-run/session.jsonl'\nfor i,l in enumerate(open(p)):\n    try: o=json.loads(l)\n    except: continue\n    if i<3: print(i, list(o.keys()), o.get('type'))\nPY",
+        "description": "Inspect prior-run session structure",
+        "testCommand": false,
+        "output": "{\"type\":\"session\",\"version\":4,\"id\":\"session-fd4cf557-3d9b-4507-8cae-576b053d04bc\",\"createdAt\":1795290788674,\"cwd\":\"/run/stage/world\",\"isSeeded\":false,\"delegationDepth\":0}\n{\"type\":\"permission/preset\",\"seq\":0,\"time\":1795290789121,\"data\":{\"preset\":\"workspace-write\"}}\n{\"type\":\"sandbox/mode\",\"seq\":1,\"time\":1795290789124,\"data\":{\"mode\":\"workspace-write\"}}\n---\n{\"type\":\"tool/result\",\"seq\":552,\"time\":17952\n...\nexit code: 0]\"}],\"isError\":false,\"id\":\"463f4a4a-58b5-4887-906e-9555567ad663\"}},\"sourceEventSeqs\":[550],\"surfaceOp\":\"append\"}\n{\"type\":\"step/end\",\"seq\":553,\"time\":1795291304755,\"data\":{\"turn\":1,\"step\":64}}\n{\"type\":\"step/start\",\"seq\":554,\"time\":1795291304782,\"data\":{\"turn\":1,\"step\":65}}\n{\"type\":\"assistant/attempt\",\"seq\":555,\"time\":1795291305060,\"data\":{\"turn\":1,\"step\":65,\"stream\":[{\"type\":\"chunk\",\"time\":1795291305059,\"chunk\":{\"type\":\"finish\",\"reason\":{\"kind\":\"error\",\"failure\":{\"message\":\"DeepSeek Messages request failed (429)\",\"code\":\"RATE_LIMIT\",\"status\":429}}}}]}}\n{\"type\":\"llm/retry\",\"seq\":556,\"time\":1795291305063,\"data\":{\"retryId\":\"e1c049a7-7950-4981-bcaa-508e734d7525\",\"turn\":1,\"step\":65,\"provider\":\"deepseek-official\",\"mode\":\"normal\",\"policyKey\":\"[\\\"normal\\\",5,[\\\"EMPTY_RESPONSE\\\",\\\"RATE_LIMIT\\\",\\\"SERVER\\\",\\\"TIMEOUT\\\",\\\"TRANSPORT\\\"],500,10000,0.1]\",\"retry\":1,\"maxRetries\":5,\"delayMs\":546.100355637849,\"failure\":{\"message\":\"DeepSeek Messages request failed (429)\",\"code\":\"RATE_LIMIT\",\"status\":429}}}\n---\n0 ['type', 'version', 'id', 'createdAt', 'cwd', 'isSeeded', 'delegationDepth'] session\n1 ['type', 'seq', 'time', 'data'] permission/preset\n2 ['type', 'seq', 'time', 'data'] sandbox/mode\n"
+      },
+      {
+        "callId": "call_f5a2039aa1854779bdf2d9e1",
+        "call": 59,
+        "result": 62,
+        "request": 6,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\np='evidence/case-4/request-accounting.json'\no=json.load(open(p))\nprint(json.dumps(o,indent=1)[:5000])\nPY",
+        "description": "Inspect case-4 accounting",
+        "testCommand": false,
+        "output": "{\n \"schema\": \"pnwf-usage-snapshot/v1\",\n \"cohortId\": \"work-revision-live-grpc-8ef7dcbd-1a07-41f3-8098-16ff51965fbb\",\n \"configDigest\": \"3c294d7b72b1823a18d878dbca2532a80d8ced62c4e743d80f1007171f3736f4\",\n \"state\": \"OPEN\",\n \"reason\": null,\n \"confirmed\": 1492257,\n \"reserved\": null,\n \"unresolvedRequests\": 0,\n \"aggregateCeiling\": null,\n \"sessions\": [\n  {\n   \"id\": \"T2\",\n   \"ordinal\": 0,\n   \"state\": \"ENDED\n...\n3ca81204206ad90e9639a2439a7c54d80a5\",\n   \"reserved\": null,\n   \"actual\": 33410,\n   \"state\": \"SETTLED\",\n   \"reason\": null,\n   \"usage\": {\n    \"input_tokens\": 574,\n    \"cache_read_input_tokens\": 32768,\n    \"cache_creation_input_tokens\": 0,\n    \"output_tokens\": 68\n   }\n  },\n  {\n   \"id\": \"74f65ff8-315e-4d5e-b552-f5afa673370c\",\n   \"session\": \"T2\",\n   \"digest\": \"eab6527e2a5d39fab70be86841f816a3b89b058eb105b64dacc8111cc120a444\",\n   \"reserved\": null,\n   \"actual\": 34199,\n   \"state\": \"SETTLED\",\n   \"reason\": null,\n   \"usage\": {\n    \"input_tokens\": 431,\n    \"cache_read_input_tokens\": 33408,\n    \"cache_creation_input_tokens\": 0,\n    \"output_tokens\": 360\n   }\n  },\n  {\n   \"id\": \"2d52010a-2bfd-438d-bce2-b08ae8483752\",\n   \"session\": \"T2\",\n   \"digest\": \"42f89a690b5f28a4b6adc7ac37bd344f9697ce89240a12cd7805ab02ba230877\",\n   \"reserved\": null,\n   \"actual\": 34885,\n   \"state\": \"SETTLED\",\n   \"reason\": null,\n   \"usage\": {\n    \"input_tokens\": 601,\n    \"cache_read_input_tokens\": 34176,\n    \"cache_creation_input_tokens\": 0,\n    \"output_tokens\": 108\n   }\n  },\n  {\n   \"id\": \"e8223f90-891a-44f4-8f0e-ef3096dd0e3d\",\n   \"session\": \"T2\",\n   \"digest\": \"f39328579a200824b2c0fe943bfcc64a9af3d80e22de70dffd995431e99de98f\",\n \n"
+      },
+      {
+        "callId": "call_f741cc3e95924abcad73640a",
+        "call": 67,
+        "result": 70,
+        "request": 7,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\np='evidence/prior-run/session.jsonl'\nfor i,l in enumerate(open(p)):\n    o=json.loads(l)\n    if o.get('type')=='tool/call':\n        d=o['data']; msg=d.get('message',{})\n        src=msg.get('source',{})\n        print(i, o['seq'], 'CALL', src.get('callId'), src.get('toolName') or msg.get('toolName') or msg.get('name'), json.dumps(d)[:300])\nPY",
+        "description": "Extract prior-run tool calls",
+        "testCommand": false,
+        "output": "16 15 CALL None None {\"turn\": 1, \"step\": 1, \"callId\": \"call_9a86f9e10cf942df87c23f30\", \"name\": \"palimpsest_continuity\", \"arguments\": \"{\\\"action\\\":\\\"pulse\\\"}\"}\n22 21 CALL None None {\"turn\": 1, \"step\": 2, \"callId\": \"call_fbee1b0a24c347b6875e1722\", \"name\": \"bash\", \"arguments\": \"{\\\"command\\\":\\\"pwd && ls -la && git log --oneline -10 && git status --short\\\",\\\"description\\\":\\\"Inspect workspace and git st\n...\nb249\", \"name\": \"bash\", \"arguments\": \"{\\\"command\\\":\\\"node node_modules/typescript/bin/tsc -b 2>&1 | tail -30; echo BUILD_EXIT:${PIPESTATUS[0]}; npx vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_p\n529 528 CALL None None {\"turn\": 1, \"step\": 61, \"callId\": \"call_a966efe68ae1490093ba8ef5\", \"name\": \"bash\", \"arguments\": \"{\\\"command\\\":\\\"node scripts/pnwf/software/self-maintenance-readiness.mjs > /tmp/readiness-fixed2.json 2>/tmp/readiness-fixed2.err; code=$?; echo ORACLE_EXIT:$code; python3 - <<'PY'\\\\nimport json\\\\nline=o\n537 536 CALL None None {\"turn\": 1, \"step\": 62, \"callId\": \"call_d0d22d2ec6b74d40a60d0ab4\", \"name\": \"job_list\", \"arguments\": \"{}\"}\n543 542 CALL None None {\"turn\": 1, \"step\": 63, \"callId\": \"call_3854faaa4520452bb013d4b4\", \"name\": \"bash\", \"arguments\": \"{\\\"command\\\":\\\"tail -40 /tmp/full-vitest.log; echo '---'; grep -c '^ \\u2713\\\\\\\\|^ \\u276f\\\\\\\\|^ \\u00d7' /tmp/full-vitest.log || true\\\",\\\"description\\\":\\\"Check full suite progress\\\"}\"}\n551 550 CALL None None {\"turn\": 1, \"step\": 64, \"callId\": \"call_dea053770ebf48a6bdf756cf\", \"name\": \"job_output\", \"arguments\": \"{\\\"job_id\\\":\\\"bash-f58972a92c534180\\\",\\\"wait\\\":true,\\\"timeout_ms\\\":300000}\"}\n"
+      },
+      {
+        "callId": "call_198fbfab2a01418aa445830c",
+        "call": 75,
+        "result": 78,
+        "request": 8,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - > /tmp/prior_text.txt <<'PY'\nimport json\np='evidence/prior-run/session.jsonl'\nfor i,l in enumerate(open(p,encoding='utf-8')):\n    o=json.loads(l)\n    if o.get('type')=='assistant/message':\n        d=o['data']; msg=d.get('message',{})\n        content=msg.get('content',[])\n        texts=[c.get('text','') for c in content if c.get('type')=='text']\n        if texts:\n            print(f'\\n===== event {i} seq {o.get(\"seq\")} step {d.get(\"step\")}')\n            print('\\n'.join(texts))\nPY\nwc -l /tmp/prior_text.txt; sed -n '1,240p' /tmp/prior_text.txt",
+        "description": "Extract prior assistant reasoning text",
+        "testCommand": false,
+        "output": "0 /tmp/prior_text.txt\n"
+      },
+      {
+        "callId": "call_60fc1332f1a842efb3fcdd59",
+        "call": 83,
+        "result": 86,
+        "request": 9,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json,collections\nc=collections.Counter()\nfor l in open('evidence/prior-run/session.jsonl'):\n o=json.loads(l); c[o.get('type')]+=1\nprint(c)\nPY",
+        "description": "Count session event types",
+        "testCommand": false,
+        "output": "Counter({'tool/call': 79, 'tool/result': 79, 'step/start': 65, 'session-log-deepseek/delivery-accepted': 64, 'assistant/message': 64, 'step/end': 64, 'job/registered': 64, 'job/settled': 64, 'agent/inbox/spliced': 2, 'user/message': 2, 'session': 1, 'permission/preset': 1, 'sandbox/mode': 1, 'approval/policy': 1, 'turn/start': 1, 'system/message': 1, 'request/header': 1, 'request/context': 1, 'session/title': 1, 'assistant/attempt': 1, 'llm/retry': 1})\n"
+      },
+      {
+        "callId": "call_71b72326ecfd46adb00676a3",
+        "call": 91,
+        "result": 94,
+        "request": 10,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\nfor i,l in enumerate(open('evidence/prior-run/session.jsonl')):\n o=json.loads(l)\n if o.get('type')=='assistant/message':\n  print(i, json.dumps(o)[:3000]); break\nPY",
+        "description": "Inspect assistant message shape",
+        "testCommand": false,
+        "output": "15 {\"type\": \"assistant/message\", \"seq\": 14, \"time\": 1795290792014, \"data\": {\"turn\": 1, \"step\": 1, \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"reasoning\", \"text\": \"Let me start by reading the project pulse.\"}, {\"type\": \"tool-call\", \"id\": \"call_9a86f9e10cf942df87c23f30\", \"name\": \"palimpsest_continuity\", \"arguments\": \"{\\\"action\\\":\\\"pulse\\\"}\"}], \"source\": {\"kind\": \"model\", \"provider\": \"deep\n...\nproject pulse.\"}}}, {\"type\": \"chunk\", \"time\": 1795290791832, \"chunk\": {\"type\": \"block-start\", \"index\": 1, \"blockType\": \"tool-call\"}}, {\"type\": \"tool-call-chunks\", \"time0\": 1795290791832, \"index\": 1, \"dt\": [], \"id\": \"call_9a86f9e10cf942df87c23f30\", \"name\": \"palimpsest_continuity\", \"args\": [\"\"]}, {\"type\": \"tool-call-chunks\", \"time0\": 1795290791890, \"index\": 1, \"dt\": [1, 18, 0, 39], \"id\": \"call_9a86f9e10cf942df87c23f30\", \"args\": [\"{\\\"action\\\":\\\"\", \"p\", \"ulse\", \"\\\"\", \"}\"]}, {\"type\": \"chunk\", \"time\": 1795290791979, \"chunk\": {\"type\": \"block-end\", \"index\": 1, \"block\": {\"type\": \"tool-call\", \"id\": \"call_9a86f9e10cf942df87c23f30\", \"name\": \"palimpsest_continuity\", \"arguments\": \"{\\\"action\\\":\\\"pulse\\\"}\"}}}, {\"type\": \"chunk\", \"time\": 1795290792006, \"chunk\": {\"type\": \"usage\", \"usage\": {\"inputTokens\": 10609, \"outputTokens\": 53, \"cacheReadTokens\": 0, \"cacheWriteTokens\": 0, \"totalTokens\": 10662}}}, {\"type\": \"chunk\", \"time\": 1795290792006, \"chunk\": {\"type\": \"finish\", \"reason\": {\"kind\": \"tool-calls\"}, \"replayState\": {\"response\": {\"kind\": \"deepseek-messages\", \"version\": 1, \"model\": \"deepseek-flash\"}, \"blocks\": [{\"type\": \"reasoning\", \"signature\": \"\"}, {\"type\": \"tool-call\"}]}}}]}, \"surfaceOp\": \"append\"}\n"
+      },
+      {
+        "callId": "call_728f5008aa3e4e688a5b5a09",
+        "call": 99,
+        "result": 102,
+        "request": 11,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - > /tmp/prior_text.txt <<'PY'\nimport json\np='evidence/prior-run/session.jsonl'\nfor i,l in enumerate(open(p,encoding='utf-8')):\n    o=json.loads(l)\n    if o.get('type')=='assistant/message':\n        d=o['data']; content=d.get('message',{}).get('content',[])\n        parts=[]\n        for c in content:\n            if c.get('type')=='reasoning': parts.append('[reasoning] '+c.get('text',''))\n            elif c.get('type')=='text': parts.append('[text] '+c.get('text',''))\n        if parts:\n            print(f'\\n===== event {i} seq {o.get(\"seq\")} step {d.get(\"step\")}')\n            print('\\n'.join(parts))\nPY\nwc -l /tmp/prior_text.txt; sed -n '1,260p' /tmp/prior_text.txt",
+        "description": "Extract prior reasoning and text",
+        "testCommand": false,
+        "output": "629 /tmp/prior_text.txt\n\n===== event 15 seq 14 step 1\n[reasoning] Let me start by reading the project pulse.\n\n===== event 21 seq 20 step 2\n[reasoning] Let me explore the workspace.\n\n===== event 33 seq 32 step 3\n[reasoning] Let's inspect evidence files, README, and package.json.\n\n===== event 45 seq 44 step 4\n[reasoning] The task: maintain Palimpsest. Inspect recent handover runs, prioritize reprodu\n...\nhs.every(...)) return null;\n  } catch return null;\n\n  const reason = taskless\n    ? `the repository has a direct commit at HEAD ${head}, ahead of the canonical head ${direct.projectHead}; no formal Work is open`\n    : `the retired plan's declared artifacts (...) are committed at repository HEAD ${head}`;\n  if (pulse.episode.current && pulse.episode.state === \"DELIVERED\") {\n    return {reasons:[reason, \"this episode has a current recorded DELIVER conclusion\"], next:[\"reply using the recorded conclusion\"]};\n  }\n  return {reasons:[reason, \"the episode has no mechanical delivery blockers; decide...\"], next:[...]}\n}\n```\n\nBut for taskless direct, `directOutcome.relation` might be IN_SYNC if the project head is the same as repository head (e.g., initial state). We must not suggest delivery for unchanged state. The oracle initial has IN_SYNC; no advice. So taskless should require `DIRECT_AHEAD` (new commit beyond basis) OR perhaps a current DELIVERED conclusion with IN_SYNC? The follow-up says \"已有新提交\" (already has a new commit), so require DIRECT_AHEAD. After delivery, still DIRECT_AHEAD. Good. For retired plan, existing code allows IN_SYNC because artifacts committed at basis; preserve.\n\n"
+      },
+      {
+        "callId": "call_3fbf1e5e55924c70955e2971",
+        "call": 107,
+        "result": 110,
+        "request": 12,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "sed -n '260,520p' /tmp/prior_text.txt",
+        "description": "Read further prior reasoning",
+        "testCommand": false,
+        "output": "\nSo:\n```\nif (!head || (direct.relation !== \"DIRECT_AHEAD\" && !(retiredMode && direct.relation === \"IN_SYNC\"))) return null;\n```\nActually existing code allows IN_SYNC for retired. For taskless require DIRECT_AHEAD. Also `uncommittedPaths` must be empty, since relation can be DIRECT_AHEAD with uncommitted changes. Existing code doesn't check direct.uncommittedPaths! It re-observes basis and checks `\n...\n\n===== event 411 seq 410 step 46\n[reasoning] Now add test. Need read relevant test file section to edit. We already read via `sed` not read tool. Use read around end of ALHS describe / before. We'll insert after \"delivers a lightweight...\" or before \"reports a committed artifact\". Use read.\n\n===== event 417 seq 416 step 47\n[reasoning] Add a Readiness type near Conclude. Use read around types.\n\n===== event 423 seq 422 step 48\n[reasoning] Add type after Pulse. Then test after lightweight. Let's edit.\n\n===== event 435 seq 434 step 50\n[reasoning] Now build and run test + oracle.\n\n===== event 455 seq 454 step 52\n[reasoning] Great oracle passes. Fix test expectation; canonicalWorktreeChanges normalizes untracked dir to \"docs/\". We can expect \"docs/\" or just length >0 and no delivery. Oracle dirty check only no advice. Adjust to `.length` >0 and maybe JSON contains. Use `expect(dirty.directOutcome?.uncommittedPaths.length).toBeGreaterThan(0)`. Then rerun.\n\n===== event 469 seq 468 step 54\n[reasoning] Now run broader related tests to ensure no regression: pnwf_product, odpe_outcome, pnwf_cq_action_coherence, pc1_continuity, maybe full suite. First targeted.\n\n===== event 477 seq 476 step 55\n"
+      },
+      {
+        "callId": "call_f4abf8d1b9be44088aa3f095",
+        "call": 115,
+        "result": 118,
+        "request": 13,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "sed -n '520,700p' /tmp/prior_text.txt",
+        "description": "Read final prior reasoning",
+        "testCommand": false,
+        "output": "===== event 477 seq 476 step 55\n[reasoning] Great. Now need maybe run full test suite. It could be long, but we can run `npx vitest run --configLoader runner --no-cache` maybe 3000 tests. Use background job. But before, inspect git diff. Also maybe test the actual case-3 handover state with readiness to show real repro. Let's do that; it would strengthen. We need not commit extra. We can create a \n...\nced pulse call before artifact check for retired; existing tests pass. Need rerun build/test/oracle.\n\n===== event 536 seq 535 step 62\n[reasoning] The failure is EAGAIN due resource exhaustion, not logic. Full suite running in background likely competing and consuming process slots. Need check background job. We started full vitest; it may be running many processes. That caused EAGAIN. We should wait/kill? Let's check job.\n\n===== event 542 seq 541 step 63\n[reasoning] Full suite still running. The focused run failed due EAGAIN likely because full suite uses many workers. Wait for full suite to finish; then rerun focused. We should monitor job output/log without busy poll. Use job_output wait. But full suite might take long, maybe 10+ min. We can inspect log progress. Also need consider killing full suite to avoid resource contention? It's doing useful validation. Let it run. Meanwhile inspect test failure source: EAGAIN spawnSync git, environmental. We can rerun that test after full suite. We should not count as code failure.\n\nLet's see full suite log tail.\n\n===== event 550 seq 549 step 64\n[reasoning] Full suite progressing. Wait for it to complete. Use job_output wait maybe 300000.\n"
+      },
+      {
+        "callId": "call_befe4e52f2594c878bfe1965",
+        "call": 123,
+        "result": 124,
+        "request": 14,
+        "tool": "read",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/application/work_outcome.ts"
+      },
+      {
+        "callId": "call_6aa0952706b44698b9d5c8de",
+        "call": 125,
+        "result": 128,
+        "request": 14,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git status --short; echo ---; tail -60 /tmp/full-vitest.log 2>/dev/null; echo ---; ps aux | grep -E 'vitest|node' | grep -v grep | head -20",
+        "description": "Check workspace, prior test log, processes",
+        "testCommand": true,
+        "output": " M src/application/work_outcome.ts\n M test/alhs_episode_convergence.test.ts\n---\n---\nprincip+       1  0.2  0.5 1275088 42820 ?       Ssl  20:53   0:00 node -e setInterval(()=>{},1000000)\nprincip+      94  0.9  0.7 1412412 59516 ?       Ssl  20:53   0:00 node -e  const http = require('node:http'); const readline = require('node:readline'); const pending = new Map(); let serial = 0; const emit = val\n...\nnd(); pending.delete(message.id); }     if (message.error) { res.destroy(); pending.delete(message.id); }   } catch { process.exit(2); } }).on('close',()=>process.exit(0)); http.createServer(async(req,res)=>{   const work=req.url==='/pnwf/work' && process.argv.includes('worker-control');   const desk=req.url==='/pnwf/desk' && process.argv.includes('desk-control');   if(req.method!=='POST' || (!work && !desk && !['/v1/messages','/messages'].includes(req.url))) {res.writeHead(403);res.end();return;}   const chunks=[];let bytes=0;   for await(const chunk of req){bytes+=chunk.length;if(bytes>2097152){res.writeHead(413);res.end();return;}chunks.push(chunk);}   const id=++serial;pending.set(id,res);   emit({id,work,desk,body:Buffer.concat(chunks).toString('base64')}); }).listen(18080,'127.0.0.1',()=>emit({ready:true})); \nprincip+     106 17.4  2.8 10228072 232196 ?     Ssl  20:53   0:08 node /usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js --profile alhs-core --once ?????? Palimpsest ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? evidence/???\n"
+      },
+      {
+        "callId": "call_0d5d05bfbe4e4c4cbbcee3ff",
+        "call": 133,
+        "result": 136,
+        "request": 15,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node -e \"const p=require('./package.json'); console.log(p.scripts)\"; echo ---; ls scripts/pnwf/software/self-maintenance-*.mjs; echo ---; git diff --check",
+        "description": "Inspect test scripts and diff whitespace",
+        "testCommand": false,
+        "output": "{\n  build: 'tsc -b',\n  clean: 'tsc -b --clean',\n  test: 'pnpm run build && vitest run',\n  'test:watch': 'vitest',\n  check: 'pnpm run test',\n  'build:web': 'vite build --config web/vite.config.ts',\n  'pretest:e2e': 'pnpm run build && pnpm run build:web',\n  'test:e2e': 'playwright test',\n  'test:e2e:headed': 'playwright test --headed',\n  'test:e2e:debug': 'playwright test --debug',\n  'dogfood:live':\n...\n-conformance': 'node scripts/r1hr/conformance.mjs',\n  'gate:r1-hr-clean-env': 'node scripts/r1hr/clean-env.mjs',\n  'gate:r1-hc-conformance': 'node scripts/r1hc/conformance.mjs',\n  'gate:r1-hc-live': 'node scripts/gates/r1hc-live-gate.mjs',\n  'r2u:slot-preflight': 'node scripts/r2u/slot-preflight.mjs',\n  'r2u:isolation': 'node scripts/r2u/isolation.mjs',\n  'r2u:gate-a': 'node scripts/r2u/gate-a.mjs',\n  'r2u:calibrate': 'node scripts/r2u/calibrate.mjs',\n  'r2u:matrix': 'node scripts/r2u/matrix.mjs',\n  'r2u:analyse': 'node scripts/r2u/analyse.mjs',\n  'r2u:evidence': 'node scripts/r2u/evidence.mjs',\n  'r2e:gate-a': 'node scripts/r2e/gate-a.mjs',\n  'r2e:matrix': 'node scripts/r2e/matrix.mjs',\n  'r2e:analyse': 'node scripts/r2e/analyse.mjs',\n  'r2e:evidence': 'node scripts/r2e/evidence.mjs',\n  'pc1:acceptance': 'node scripts/pc1/acceptance.mjs',\n  'pc1:prepare:sablewick': 'node scripts/pc1/prepare_sablewick.mjs',\n  'pc1:prepare:field-study': 'node scripts/pc1/prepare_field_study.mjs',\n  'pc1:analyze': 'node scripts/pc1/analyze.mjs',\n  'pc1:rc': 'node scripts/pc1/make_rc.mjs'\n}\n---\nscripts/pnwf/software/self-maintenance-qualify.mjs\nscripts/pnwf/software/self-maintenance-readiness.mjs\n---\n"
+      },
+      {
+        "callId": "call_46dea9bdc3c54b598b28994b",
+        "call": 137,
+        "result": 140,
+        "request": 15,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "sed -n '130,220p' test/alhs_episode_convergence.test.ts; echo '--- new test'; sed -n '260,360p' test/alhs_episode_convergence.test.ts",
+        "description": "Inspect test helpers and added test",
+        "testCommand": false,
+        "output": "    intent: string;\n    conclusionId: string;\n    check?: { artifacts?: Array<{ path: string; present: boolean; tracked: boolean; committed: boolean; commit?: string | null; digest?: string }> };\n  } | null;\n  episode: { state: string; current: boolean; changedSince: string[]; conclusion: { intent: string } | null } | null;\n  session: { mayEnd: boolean; detail: string };\n};\n\ntype Pulse = {\n  episo\n...\npect(installed.controller.status()).toMatchObject({ headCommit: head, attempts: [], promotions: [] });\n  });\n\n  it(\"reports a committed artifact without a provenance warning\", async () => {\n    const { repo, head, stateDir } = workspace(\"committed\");\n    const installed = install(repo, stateDir);\n    await start(installed, head, []);\n    mkdirSync(join(repo, \"deliverables\"), { recursive: true });\n    writeFileSync(join(repo, \"deliverables\", \"package.md\"), \"# Package\\n\\nA committed deployment package.\\n\");\n    execFileSync(\"git\", [\"add\", \"-A\"], { cwd: repo });\n    execFileSync(\"git\", [\"-c\", \"user.email=t@t.t\", \"-c\", \"user.name=t\", \"commit\", \"-qm\", \"package\"], { cwd: repo });\n\n    const delivered = (await call(installed, \"palimpsest_work\", {\n      action: \"conclude\",\n      intent: \"DELIVER\",\n      statement: \"The committed package is complete for this episode.\",\n      artifacts: [\"deliverables/package.md\"],\n    })) as unknown as Conclude;\n    expect(delivered.state).toBe(\"RECORDED\");\n    expect(delivered.warnings ?? []).toEqual([]);\n    expect(delivered.conclusion?.check?.artifacts?.[0]).toMatchObject({\n      path: \"deliverables/package.md\",\n      present: true,\n      tracked: true,\n"
+      },
+      {
+        "callId": "call_f17c04907f8e4e7f93b08556",
+        "call": 145,
+        "result": 148,
+        "request": 16,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node node_modules/typescript/bin/tsc -b 2>&1 | tail -30; echo BUILD_EXIT:${PIPESTATUS[0]}",
+        "description": "Build TypeScript project",
+        "testCommand": false,
+        "output": "BUILD_EXIT:0\n"
+      },
+      {
+        "callId": "call_81937837f9e1410a8a921506",
+        "call": 153,
+        "result": 156,
+        "request": 17,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts 2>&1 | tail -80; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Run episode convergence regression tests",
+        "testCommand": true,
+        "output": "\n RUN  v4.1.10 /run/stage/world\n\n ✓ test/alhs_episode_convergence.test.ts (10 tests) 8727ms\n     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1552ms\n     ✓ delivers a lightweight project with no formal tasks, then reopens after a new project fact  733ms\n     ✓ points a taskless project at its direct commit, then at the recorded conclusion  1517ms\n     ✓ reports a committed artifact without a provenance warning  536ms\n     ✓ reads an older conclusion and separates verification records from open questions after restart  1440ms\n     ✓ binds each DELIVER to the bytes of its current Git commit on the same Host  1976ms\n     ✓ CONTINUE requires a next step and does not pretend the episode ended  398ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  20:54:54\n   Duration  15.48s (transform 5.43s, setup 0ms, import 6.48s, tests 8.73s, environment 0ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_2fa00cd500c24299b9541b02",
+        "call": 161,
+        "result": 164,
+        "request": 18,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "node scripts/pnwf/software/self-maintenance-readiness.mjs > /tmp/readiness-current.json 2>/tmp/readiness-current.err; code=$?; echo ORACLE_EXIT:$code; cat /tmp/readiness-current.err; python3 - <<'PY'\nimport json\nline=open('/tmp/readiness-current.json').read().strip().splitlines()[-1]\no=json.loads(line)\nprint(json.dumps(o, indent=2)[:12000])\nPY",
+        "description": "Run maintenance readiness oracle",
+        "testCommand": false,
+        "output": "ORACLE_EXIT:0\n[stderr]\nTraceback (most recent call last):\n  File \"<stdin>\", line 3, in <module>\n  File \"/usr/lib/python3.11/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.11/json/decoder.py\", line 337, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.11/json/decoder.py\", line 355, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n[exit code: 1]"
+      },
+      {
+        "callId": "call_54f3688649ae4ffcb10cf8bf",
+        "call": 169,
+        "result": 172,
+        "request": 19,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "wc -c /tmp/readiness-current.json /tmp/readiness-current.err; head -c 2000 /tmp/readiness-current.json; echo; tail -20 /tmp/readiness-current.json",
+        "description": "Inspect oracle output files",
+        "testCommand": false,
+        "output": "5101 /tmp/readiness-current.json\n   0 /tmp/readiness-current.err\n5101 total\nDIRECT_READINESS {\"basis\":\"f9c0d4634f54f3d74552175ff5f2bbc6faf64238\",\"candidate\":\"6ce54f3ab670fe0f0a2a790981b98c71c9f24799\",\"checks\":{\"initialHasNoDeliveryAdvice\":true,\"dirtyHasNoDeliveryAdvice\":true,\"cleanCommitSuggestsDelivery\":true,\"recordedDeliveryCanClose\":true,\"afterDeliveryAvoidsRepeatedConclusion\":true,\"operatorBas\n...\nLE\",\"paths\":[],\"unreadable\":[],\"relevance\":\"NONE_OBSERVED\",\"detail\":\"current inputs could not be observed\"},\"completion\":{\"mechanicalChecksEvaluable\":false,\"readinessState\":null,\"blockers\":[],\"verificationRequired\":false,\"verificationSatisfiable\":false},\"next\":[\"reply using the recorded conclusion\"]},\"dirtyAfterDelivery\":{\"schema\":\"odpe-outcome-readiness/v1\",\"action\":\"CONTINUE_WORK\",\"reasons\":[\"no task is currently addressable; plan or begin work before a finalization can be considered\"],\"observationDigest\":\"571961da7bf7de354302a0f5122af3d928c2e301ab8c4f1f6c4c919fb8b00936\",\"task\":null,\"attempt\":null,\"execution\":null,\"directOutcome\":{\"repositoryHead\":\"6ce54f3ab670fe0f0a2a790981b98c71c9f24799\",\"projectHead\":\"f9c0d4634f54f3d74552175ff5f2bbc6faf64238\",\"relation\":\"DIRECT_AHEAD\",\"uncommittedPaths\":[\"maintenance.md\"]},\"artifacts\":[],\"inputs\":{\"state\":\"UNAVAILABLE\",\"paths\":[],\"unreadable\":[],\"relevance\":\"NONE_OBSERVED\",\"detail\":\"current inputs could not be observed\"},\"completion\":{\"mechanicalChecksEvaluable\":false,\"readinessState\":null,\"blockers\":[],\"verificationRequired\":false,\"verificationSatisfiable\":false},\"next\":[\"continue the actual work\",\"re-read readiness after the world moves\"]}}\n"
+      },
+      {
+        "callId": "call_d4e2c35116854690bc0c4a82",
+        "call": 177,
+        "result": 180,
+        "request": 20,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache test/pnwf_product.test.ts test/odpe_outcome.test.ts test/pnwf_cq_action_coherence.test.ts test/pc1_continuity.test.ts test/psvr_hotspots.test.ts 2>&1 | tail -100; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Run related work/continuity regression suites",
+        "testCommand": true,
+        "output": "\nwarning: adding embedded git repository: .palimpsest/worlds/attempt-30c9561079cb7b1fb92c4ec86810b568\nhint: You've added another git repository inside your current repository.\nhint: Clones of the outer repository will not contain the contents of\nhint: the embedded repository and will not know how to obtain it.\nhint: If you meant to add a submodule, use:\nhint: \nhint: \tgit submodule add <url> .palim\n...\nSS_FILESYSTEM not set).\n ✓ test/pnwf_product.test.ts (15 tests) 12516ms\n     ✓ 'software' points to DELIVER for the committed artifacts of the retired plan  3437ms\n     ✓ 'energy' points to DELIVER for the committed artifacts of the retired plan  2630ms\n     ✓ requires committed artifacts from the retired plan before suggesting DELIVER  603ms\n     ✓ does not suggest DELIVER while an open task remains after retirement  340ms\n     ✓ Case 1: a no-task project delivers a direct commit without inventing Work  1012ms\n     ✓ Case 2: an uncommitted direct draft is reported, never claimed as committed  440ms\n     ✓ Case 7: a direct DELIVER is advisory — no promotion, no worker attribution, no acceptance  592ms\n     ✓ Case 3 + Case 5: a zero-delta RUNNING attempt is not offered as a completion; an active worker never is  1500ms\n     ✓ Case 4: a committed world delta settles through the ordinary path and stops at VERIFYING  653ms\n     ✓ a recorded artifact that moves is reopened, not silently rewritten  616ms\n\n Test Files  5 passed (5)\n      Tests  43 passed (43)\n   Start at  20:55:22\n   Duration  19.38s (transform 26.33s, setup 0ms, import 32.83s, tests 30.31s, environment 1ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_8d5a01c7a3aa4f4996df927b",
+        "call": 185,
+        "result": 188,
+        "request": 21,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -R \"mechanicalActions\\|deliveryBlockers\\|deriveOutcomeReadiness\\|directDelivery\" -n src | head -80",
+        "description": "Trace readiness into continuity pulse",
+        "testCommand": false,
+        "output": "src/application/work_outcome.ts:58:async function directDelivery(\nsrc/application/work_outcome.ts:82:    pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||\nsrc/application/work_outcome.ts:133:export function deriveOutcomeReadiness(\nsrc/application/work_outcome.ts:266:    ? await directDelivery(deps, status, requested)\nsrc/project_continuity/episode.ts:66:  readonly mechanicalActions: readonly string[];\nsrc/project_continuity/episode.ts:83:  readonly mechanicalActions: readonly string[];\nsrc/project_continuity/episode.ts:85:  readonly deliveryBlockers: readonly string[];\nsrc/project_continuity/episode.ts:129:    mechanicalActions: Object.freeze([...facts.mechanicalActions]),\nsrc/project_continuity/episode.ts:130:    deliveryBlockers: Object.freeze(blockers),\nsrc/project_continuity/episode.ts:170:    readonly deliveryBlockers: readonly string[];\nsrc/project_continuity/episode.ts:253:    blockers.push(...readiness.deliveryBlockers);\nsrc/project_continuity/episode.ts:293:      deliveryBlockers: Object.freeze([...input.readiness.deliveryBlockers]),\nsrc/project_pulse/service.ts:164:      mechanicalActions: summary.nextActions,\n"
+      },
+      {
+        "callId": "call_a03e06f1c576428586d2b20c",
+        "call": 193,
+        "result": 196,
+        "request": 22,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "sed -n '150,320p' src/project_continuity/episode.ts; echo ====; sed -n '120,220p' src/project_pulse/service.ts",
+        "description": "Read episode readiness derivation",
+        "testCommand": false,
+        "output": "  readonly commit?: string | null | undefined;\n  readonly detail: string;\n}\n\nexport interface EpisodeConclusion {\n  readonly schema: \"pc1-episode-conclusion/v1\";\n  readonly conclusionId: string;\n  readonly intent: EpisodeIntent;\n  readonly statement: string;\n  readonly artifacts: readonly string[];\n  readonly waitingOn: string | null;\n  readonly nextStep: string | null;\n  readonly evidenceRefs: re\n...\nxecution.attempts.map((attempt) =>\n          Object.freeze({\n            ...attempt,\n            relay:\n              attempt.taskId === null || !relayByTask.has(attempt.taskId)\n                ? null\n                : (() => {\n                    const record = relayByTask.get(attempt.taskId)!;\n                    return {\n                      attribution: record.attribution.attribution,\n                      executor: record.attribution.executor,\n                      settledBy: record.attribution.settledBy,\n                      resultCommit: record.resultCommit,\n                      independenceEligible: record.attribution.independenceEligible,\n                      detail: record.attribution.detail,\n                    };\n                  })(),\n          }),\n        ),\n      ),\n    });\n\n    const decisionQueue: PulseDecisionItem[] = [];\n    const seen = new Set<string>();\n    const queue = (item: PulseDecisionItem): void => {\n      const key = `${item.kind}\\u0000${item.ref}`;\n      if (seen.has(key)) return;\n      seen.add(key);\n      decisionQueue.push(Object.freeze(item));\n    };\n\n    for (const entry of contributions) {\n      if (entry.status !== \"UNASSESSED\") continue;\n"
+      },
+      {
+        "callId": "call_361a3f7cc9c941cb9546abcc",
+        "call": 201,
+        "result": 204,
+        "request": 23,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "python3 - <<'PY'\nimport json\np='evidence/prior-run/session.jsonl'\nfor i,l in enumerate(open(p)):\n o=json.loads(l)\n if o.get('type')=='tool/call' and 480<=i<=505:\n  print('\\n### CALL',i); print(o['data'].get('arguments','')[:5000])\n if o.get('type')=='tool/result' and 480<=i<=505:\n  print('\\n### RESULT',i); print(str(o['data'].get('message',{}).get('content',''))[:5000])\nPY",
+        "description": "Recover prior case-3 reproduction commands",
+        "testCommand": false,
+        "output": "\n### RESULT 481\n[{'type': 'text', 'text': '19:export function profileFor({ world, state, path, projectId = PROJECT, localPeer = \"energy-project-principal\",\\n/** Trusted host operations, used only after the preceding model container has stopped. */\\nimport { generateKeyPairSync, randomUUID } from \"node:crypto\";\\nimport { DatabaseSync } from \"node:sqlite\";\\nimport { existsSync, readdirSync } from \"n\n...\n: {\\n    \"repositoryHead\": \"f24415945da6876d44af9fb919cba42ceed24d16\",\\n    \"projectHead\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\\n    \"relation\": \"DIRECT_AHEAD\",\\n    \"uncommittedPaths\": [],\\n    \"admittedDirectCommit\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\"\\n  },\\n  \"readiness\": {\\n    \"action\": \"SEMANTIC_JUDGEMENT\",\\n    \"reasons\": [\\n      \"the repository has a direct commit at HEAD f24415945da6876d44af9fb919cba42ceed24d16, ahead of the canonical head 95b83e71ee9a37041b9918b5e8b797eebabf69c9; no formal Work is open\",\\n      \"this episode has a current recorded DELIVER conclusion\"\\n    ],\\n    \"next\": [\\n      \"reply using the recorded conclusion\"\\n    ]\\n  }\\n}\\n'}]\n\n### CALL 502\n{\"command\":\"npx vitest run --configLoader runner --no-cache > /tmp/full-vitest.log 2>&1; echo EXIT:$? >> /tmp/full-vitest.log\",\"description\":\"Run full test suite in background\",\"run_in_background\":true}\n\n### RESULT 504\n[{'type': 'text', 'text': 'started background job bash-f58972a92c534180'}]\n\n### CALL 505\n{\"command\":\"git diff --stat; git diff -- src/application/work_outcome.ts test/alhs_episode_convergence.test.ts | sed -n '1,260p'; git status --short\",\"description\":\"Review diff and status\"}\n"
+      },
+      {
+        "callId": "call_1c0d50d4b10b4506bde9cdfb",
+        "call": 209,
+        "result": 212,
+        "request": 24,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git bundle list-heads evidence/basis.bundle; echo ---; git bundle list-heads evidence/case-3/candidate.bundle; echo ---; git bundle list-heads evidence/case-4/candidate-and-accepted.bundle | head -20",
+        "description": "List bundle refs for reproduction",
+        "testCommand": false,
+        "output": "1444de6ce289197a1d12b0b04d2caa36c1d79355 HEAD\n---\nf24415945da6876d44af9fb919cba42ceed24d16 HEAD\n---\nbe05447e061a23157ed04e3ee4b27ec7f571e94e refs/heads/candidate\n4639ae44d78e7c1f9f5269876fa333a99bff770f refs/heads/accepted\n"
+      },
+      {
+        "callId": "call_9f1497b0bd6f40eb9b80327d",
+        "call": 217,
+        "result": 220,
+        "request": 25,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "ls -la /tmp/repro /tmp/inspect/basedup 2>/dev/null || true",
+        "description": "Check prior reproduction directories",
+        "testCommand": false,
+        "output": "(no output)"
+      },
+      {
+        "callId": "call_6f4416b8eba642088182ac7e",
+        "call": 225,
+        "result": 228,
+        "request": 26,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "set -e\nrm -rf /tmp/repro-case3 && mkdir -p /tmp/repro-case3/state\ngit clone -q /run/stage/world/evidence/basis.bundle /tmp/repro-case3/basis\ngit -C /tmp/repro-case3/basis fetch -q /run/stage/world/evidence/case-3/candidate.bundle 'HEAD:refs/heads/c3'\ngit -C /tmp/repro-case3/basis worktree add -q --detach /tmp/repro-case3/world c3\ncp /run/stage/world/evidence/case-3/owners/*.sqlite /tmp/repro-case3/state/\ncat > /tmp/repro-case3/profile.json <<'JSON'\n{\n  \"schemaVersion\": 1,\n  \"profileId\": \"grpc-migration-continuation\",\n  \"projectId\": \"grpc-migration-continuation\",\n  \"localPeer\": \"principal\",\n  \"repository\": \"/tmp/repro-case3/world\",\n  \"execution\": \"in-place\",\n  \"concurrency\": 1,\n  \"toolProfile\": \"normal\",\n  \"policy\": { \"allowed_commands\": [{ \"executable\": \"node\", \"argv_prefix\": [\"--test\"] }] },\n  \"standard\": { \"statement\": \"maintenance\" },\n  \"transport\": { \"namespace\": \"grpc-migration-continuation\", \"databasePath\": \"/tmp/repro-case3/state/transport.sqlite\" },\n  \"databases\": {\n    \"orchestration\": \"/tmp/repro-case3/state/palimpsest.sqlite\",\n    \"ordarium\": \"/tmp/repro-case3/state/ordarium.sqlite\",\n    \"coordination\": \"/tmp/repro-case3/state/coordination.sqlite\",\n    \"transportCursors\": \"/tmp/repro-case3/state/transport-cursors.sqlite\",\n    \"projectJournal\": \"/tmp/repro-case3/state/journal.sqlite\",\n    \"projectAssociations\": \"/tmp/repro-case3/state/associations.sqlite\",\n    \"management\": \"/tmp/repro-case3/state/management.sqlite\"\n  }\n}\nJSON\nnode --input-type=module -e '\nimport {launchDeployment,loadDeploymentProfile} from \"/run/stage/world/dist/src/advanced.js\";\nconst d=launchDeployment(loadDeploymentProfile(\"/tmp/repro-case3/profile.json\"));\ntry {\n const s=d.installed.controller.status();\n const tool=d.installed.tools.find(t=>t.name===\"palimpsest_work\");\n const ctx={callId:\"repro\",rootCallId:\"repro\",arguments:{action:\"readiness\"},name:\"palimpsest_work\",signal:new AbortController().signal};\n const r=await tool.execute({action:\"readiness\"},ctx);\n console.log(JSON.stringify({head:s.headCommit,tasks:s.tasks.length,attempts:s.attempts.length,directOutcome:s.directOutcome,readiness:{action:r.action,reasons:r.reasons,next:r.next}},null,2));\n} finally { await d.close(); }\n' 2>&1 | tail -120",
+        "description": "Reproduce readiness on sealed case-3 handover state",
+        "testCommand": false,
+        "output": "{\n  \"head\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n  \"tasks\": 0,\n  \"attempts\": 0,\n  \"directOutcome\": {\n    \"repositoryHead\": \"f24415945da6876d44af9fb919cba42ceed24d16\",\n    \"projectHead\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\n    \"relation\": \"DIRECT_AHEAD\",\n    \"uncommittedPaths\": [],\n    \"admittedDirectCommit\": \"95b83e71ee9a37041b9918b5e8b797eebabf69c9\"\n  },\n  \"readiness\": {\n    \"action\": \"SEMANTIC_JUDGEMENT\",\n    \"reasons\": [\n      \"the repository has a direct commit at HEAD f24415945da6876d44af9fb919cba42ceed24d16, ahead of the canonical head 95b83e71ee9a37041b9918b5e8b797eebabf69c9; no formal Work is open\",\n      \"this episode has a current recorded DELIVER conclusion\"\n    ],\n    \"next\": [\n      \"reply using the recorded conclusion\"\n    ]\n  }\n}\n[stderr]\nNote: switching to '1444de6ce289197a1d12b0b04d2caa36c1d79355'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\n"
+      },
+      {
+        "callId": "call_cbabb4d32e044960a48eb0c1",
+        "call": 233,
+        "result": 234,
+        "request": 27,
+        "tool": "edit",
+        "action": null,
+        "ok": true,
+        "path": "/run/stage/world/src/application/work_outcome.ts"
+      },
+      {
+        "callId": "call_ae941803c59a4e44a6d9a6fc",
+        "call": 239,
+        "result": 242,
+        "request": 28,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -R \"headAdvance\\|planReconciled\\|advance.*head\\|headCommit.*direct\" -n test/alhs_episode_convergence.test.ts test/pnwf_product.test.ts test/odpe_outcome.test.ts | head -60",
+        "description": "Find test patterns for advancing canonical head",
+        "testCommand": false,
+        "output": "(no output)"
+      },
+      {
+        "callId": "call_aa6ac9266a0a4e19b7f678bb",
+        "call": 247,
+        "result": 250,
+        "request": 29,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -R \"planReconciled\\|headAdvance\" -n test src | head -80",
+        "description": "Locate canonical head advance APIs",
+        "testCommand": false,
+        "output": "test/aa_adversarial.test.ts:648:        r.controller.planReconciled({\ntest/aa_adversarial.test.ts:858:      controller.planReconciled({\ntest/pnwf_cq_action_coherence.test.ts:316:      installed.controller.planReconciled({\ntest/pnwf_cq_action_coherence.test.ts:327:    installed.controller.planReconciled({\ntest/w_adversarial.test.ts:163:      r.controller.planReconciled({ tasks: [taskSpec(\"task-a\")]\n...\nr.controller.planReconciled({\ntest/z_promotion_authority.test.ts:421:        r.controller.planReconciled({\ntest/z_promotion_authority.test.ts:448:      const blocker = planError(() => r.controller.planReconciled({ tasks: [] }));\ntest/z_promotion_authority.test.ts:468:        r.controller.planReconciled({\ntest/z_promotion_authority.test.ts:481:      const outcome = r.controller.planReconciled({\ntest/z_promotion_authority.test.ts:503:        r.controller.planReconciled({ tasks: [taskSpec(\"task-a\"), taskSpec(\"task-b\")] }),\ntest/z_promotion_authority.test.ts:512:        r.controller.planReconciled({ tasks: [taskSpec(\"task-a\"), taskSpec(\"task-b\")] }).result.revision,\ntest/z_promotion_authority.test.ts:525:      const blocker = planError(() => r.controller.planReconciled({ tasks: [changed] }));\ntest/z_promotion_authority.test.ts:552:      const outcome = controller.planReconciled({\ntest/z_promotion_authority.test.ts:612:      // G10-AA hardening: Z's fence lived only in `planReconciled`, so the\ntest/z_promotion_authority.test.ts:624:            r.controller.planReconciled({\ntest/z_promotion_authority.test.ts:630:        [\"task removal\", () => r.controller.planReconciled({ tasks: [] })],\n"
+      },
+      {
+        "callId": "call_f25e9a7779e041d59e9ea9f1",
+        "call": 255,
+        "result": 258,
+        "request": 30,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -n \"maxWorkers\\|minWorkers\\|pool\\|fileParallelism\\|sequence\\|testTimeout\\|hookTimeout\" vitest.config.ts | head -40; echo ---; find test -name '*.test.ts' | wc -l",
+        "description": "Check vitest concurrency and test count",
+        "testCommand": true,
+        "output": "58:    testTimeout: 30_000,\n63:     * exactly what a test does — but vitest's hook default is 10s regardless of `testTimeout`. Under\n69:    hookTimeout: 30_000,\n---\n463\n"
+      },
+      {
+        "callId": "call_ca51abbbe2634322b51983a2",
+        "call": 263,
+        "result": 266,
+        "request": 31,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "grep -l \"readiness\\|retired plan\\|direct outcome\\|directOutcome\" test/*.test.ts | sed 's#test/##' | sort",
+        "description": "List readiness-related test files",
+        "testCommand": false,
+        "output": "ac_monitor_runtime.test.ts\nac_r_product.test.ts\nad_verification_integration.test.ts\nalhs_episode_convergence.test.ts\nci1_dependency_staleness.test.ts\nlean_completion_contract.test.ts\nlean_d2_live_composition.test.ts\nlean_d5c1_head_sync_composition.test.ts\nodpe_outcome.test.ts\npc1v1_completion_release.test.ts\npnwf_cq_action_coherence.test.ts\npnwf_cq_basis_admission.test.ts\npnwf_cq_direct_governed.test.ts\npnwf_product.test.ts\npsvr_hotspots.test.ts\npwrs_relay.test.ts\nr3a2_portfolio.test.ts\nr3a2_result.test.ts\nr3l0ciar_qualification.test.ts\nr3l0ciarlcf_controls.test.ts\nr3l0ciarlcf_gates.test.ts\nr3l0ciarlcfsh_controls.test.ts\nr3l0ciarlcfsh_gates.test.ts\nr3wr2_lifetime_recovery.test.ts\nr3wr3_world_identity.test.ts\nr3wr_object_store.test.ts\ns_recipes.test.ts\ntrajectory_p2d1_source_contract.test.ts\ntrajectory_p2e1rg_capacity_atomicity.test.ts\nuxc_host_runtime.test.ts\n"
+      },
+      {
+        "callId": "call_eb3ed6efe9cd4735b1278bef",
+        "call": 271,
+        "result": 274,
+        "request": 32,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache test/pnwf_cq_basis_admission.test.ts test/pnwf_cq_direct_governed.test.ts test/lean_completion_contract.test.ts test/lean_d5c1_head_sync_composition.test.ts test/ci1_dependency_staleness.test.ts test/pc1v1_completion_release.test.ts 2>&1 | tail -120; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Run broader readiness/governed-work suites",
+        "testCommand": true,
+        "output": " * branch            HEAD       -> FETCH_HEAD\nSwitched to a new branch 'other'\nNote: switching to 'b5a6036553a1cc3576612c0bde06d7331a738ffd'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to ret\n...\n\": \"ADMITTED\",\n  \"fromHead\": \"f625b1d611c267f0065cd3fe2f5e9308d752cfaf\",\n  \"toHead\": \"b5a6036553a1cc3576612c0bde06d7331a738ffd\",\n  \"commit\": \"b5a6036553a1cc3576612c0bde06d7331a738ffd\",\n  \"operator\": \"operator:alice\",\n  \"revision\": 1,\n  \"basisId\": \"basis-da491d13753bec369f6a28455310db8c\",\n  \"note\": \"The direct commit is admitted as a BASIS. No ATTEMPT_COMPLETED or PROMOTION_COMMITTED was written, and the commit was not relabelled as a governed result.\"\n}\n\n ✓ test/pnwf_cq_basis_admission.test.ts (11 tests) 5839ms\n     ✓ admits the checked-out direct commit, reauthorizes the task, and writes no promotion  479ms\n     ✓ exposes an actual worker host refusal through the model-facing workers action  739ms\n     ✓ runs a real child worker from the admitted basis through settlement, promotion and dependent continuation  2537ms\n     ✓ refuses a dirty canonical worktree, a non-ancestor commit and a task-graph change  354ms\n     ✓ admits through the signed-operator CLI, and refuses without the credential  360ms\n\n Test Files  5 passed (5)\n      Tests  51 passed (51)\n   Start at  20:56:44\n   Duration  11.96s (transform 20.09s, setup 0ms, import 26.59s, tests 11.52s, environment 1ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_3f0c935f58224f4d8370b1b5",
+        "call": 279,
+        "result": 282,
+        "request": 33,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git status --short; echo ---; git diff --stat; echo ---; git diff --check; echo ---; git diff -- src/application/work_outcome.ts | sed -n '1,220p'",
+        "description": "Review final diff and workspace state",
+        "testCommand": false,
+        "output": " M src/application/work_outcome.ts\n M test/alhs_episode_convergence.test.ts\n---\n src/application/work_outcome.ts       | 54 +++++++++++++++++++---------\n test/alhs_episode_convergence.test.ts | 67 +++++++++++++++++++++++++++++++++++\n 2 files changed, 105 insertions(+), 16 deletions(-)\n---\n---\ndiff --git a/src/application/work_outcome.ts b/src/application/work_outcome.ts\nindex 75ad82a..e07b5d7 1006\n...\nason, \"the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal\"],\n-    next: [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n+    reasons: [reason, \"the episode has no mechanical delivery blockers; decide whether the committed result satisfies the user's goal\"],\n+    next: tasklessMode\n+      ? [\"if the committed result satisfies the goal, call palimpsest_work action=conclude intent=DELIVER with your statement\"]\n+      : [\"if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths\"],\n   };\n }\n \n@@ -242,7 +264,7 @@ async function snapshot(\n   const acknowledged =\n     input.acknowledgeInputs === true && inputState === \"OBSERVED\" && (inputPaths.length > 0 || unreadable.length > 0);\n   const delivery = (task === null && requested === null) || task?.state === \"STALE\"\n-    ? await retiredDelivery(deps, status, requested)\n+    ? await directDelivery(deps, status, requested)\n     : null;\n   let action: OutcomeAction;\n   let settledNext: string[] | undefined;\n"
+      },
+      {
+        "callId": "call_7ee2262c6f3849dfafd4b98d",
+        "call": 287,
+        "result": 290,
+        "request": 34,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git add src/application/work_outcome.ts test/alhs_episode_convergence.test.ts && git -c user.email=maintainer@palimpsest.local -c user.name='Palimpsest Maintainer' commit -m \"Point taskless readiness at a direct commit or recorded conclusion\" && git log -1 --stat --oneline",
+        "description": "Commit readiness fix and regression test",
+        "testCommand": false,
+        "output": "[maintenance 91b5bc0] Point taskless readiness at a direct commit or recorded conclusion\n 2 files changed, 105 insertions(+), 16 deletions(-)\n91b5bc0 Point taskless readiness at a direct commit or recorded conclusion\n src/application/work_outcome.ts       | 54 +++++++++++++++++++---------\n test/alhs_episode_convergence.test.ts | 67 +++++++++++++++++++++++++++++++++++\n 2 files changed, 105 insertions(+), 16 deletions(-)\n"
+      },
+      {
+        "callId": "call_264f5bfd293f4f308959b94e",
+        "call": 295,
+        "result": 296,
+        "request": 35,
+        "tool": "palimpsest_work",
+        "action": "readiness",
+        "ok": true
+      },
+      {
+        "callId": "call_6b385b09f68c4f79b4bc5933",
+        "call": 301,
+        "result": 302,
+        "request": 36,
+        "tool": "palimpsest_continuity",
+        "action": "pulse",
+        "ok": true,
+        "query": {
+          "action": "pulse"
+        },
+        "observed": "{\n  \"schema\": \"pc1-project-pulse/v1\",\n  \"projectId\": \"palimpsest-maintenance\",\n  \"goal\": \"Maintain Palimpsest from observable project results and keep its decisions and tests available for the next session.\",\n  \"basis\": {\n    \"projectRevision\": 0,\n    \"projectDigest\": \"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\n    \"headCommit\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\",\n    \"observedAt\": \"2026-11-21T20:57:15.684Z\"\n  },\n  \"requirements\": [],\n  \"acceptedAssets\": [],\n  \"candidates\": [],\n  \"negativeFindings\": [],\n  \"openQuestions\": [],\n  \"recentChanges\": [\n    {\n      \"id\": \"journal:pje-bc04fc309a82b461e4f0f039a0906955\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\"\n    },\n    {\n      \"id\": \"journal:pje-7c3501d75fc7786bd1938bbf3c36fe89\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\"\n    }\n  ],\n  \"pendingWork\": [],\n  \"blocked\": [],\n  \"contributions\": [],\n  \"delegations\": [],\n  \"execution\": {\n    \"placement\": \"worktree\",\n    \"attempts\": [],\n    \"jobs\": [],\n    \"detail\": \"host jobs are local to THIS process; a",
+        "wakeRefs": []
+      },
+      {
+        "callId": "call_d2d79c15e88445ef820d451a",
+        "call": 307,
+        "result": 310,
+        "request": 37,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "sed -n '1,260p' scripts/pnwf/software/self-maintenance-qualify.mjs",
+        "description": "Inspect maintenance qualification script",
+        "testCommand": false,
+        "output": "/** Qualification, real pair and approved follow-up for Palimpsest maintenance. */\nimport assert from \"node:assert/strict\";\nimport { execFileSync, spawnSync } from \"node:child_process\";\nimport { randomUUID } from \"node:crypto\";\nimport { cpSync, mkdirSync, readFileSync, writeFileSync } from \"node:fs\";\nimport { basename, join, resolve } from \"node:path\";\nimport { fileURLToPath } from \"node:url\";\nimp\n...\nscripts[\"test:focused\"];\n      assert.deepEqual(after, before);\n      const positive = offline(evaluation, `${build} && node --run test:focused -- ${tests}`);\n      writeFileSync(join(run, \"candidate-positive.log\"), positive.stdout + positive.stderr);\n      const positiveOutput = stripVTControlCharacters(succeed(positive));\n      const files = Number(positiveOutput.match(/Test Files\\s+(\\d+) passed/u)?.[1]);\n      const passed = Number(positiveOutput.match(/Tests\\s+(\\d+) passed/u)?.[1]);\n      assert(files === 2 && passed === 20, \"The candidate did not run both expected suites\");\n      const failureCase = `import {it, expect} from 'vitest';it('host failure witness',()=>expect(1).toBe(2));`;\n      const negative = offline(evaluation, `printf '%s\\\\n' ${quote(failureCase)} > test/self-maintenance-witness.test.ts && node --run test:focused -- --maxWorkers 1 test/self-maintenance-witness.test.ts`);\n      writeFileSync(join(run, \"candidate-negative.log\"), negative.stdout + negative.stderr);\n      assert(negative.status === 1 && /host failure witness/u.test(negative.stdout + negative.stderr) && /AssertionError/u.test(negative.stderr), \"Candidate suppressed or did not run a failing test\");\n"
+      },
+      {
+        "callId": "call_79d8dd253acd48d6b54cd538",
+        "call": 315,
+        "result": 318,
+        "request": 38,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "npx vitest run --configLoader runner --no-cache test/alhs_episode_convergence.test.ts test/pnwf_cq_basis_admission.test.ts test/pnwf_cq_direct_governed.test.ts 2>&1 | tail -80; echo TEST_EXIT:${PIPESTATUS[0]}",
+        "description": "Run exact follow-up regression suites",
+        "testCommand": true,
+        "output": "          \"task:governed-next\"\n        ],\n        \"basis\": {\n          \"projectRevision\": 0,\n          \"projectDigest\": \"ec5a037fd1c8222d40a70e617931bf6a97307189cc54898526d00dea97c1f251\",\n          \"headCommit\": \"cbc7627115f2d50533d3c08af5caa00b616c5095\",\n          \"observedAt\": \"2026-11-21T20:57:41.857Z\"\n        },\n        \"applicability\": \"open loop in the derived workspace\",\n        \"reopenCond\n...\nnt continuation  2541ms\n     ✓ refuses a dirty canonical worktree, a non-ancestor commit and a task-graph change  393ms\n     ✓ admits through the signed-operator CLI, and refuses without the credential  353ms\n ✓ test/alhs_episode_convergence.test.ts (10 tests) 8108ms\n     ✓ refuses DELIVER while a planned task is still open, naming the contradiction  311ms\n     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1268ms\n     ✓ delivers a lightweight project with no formal tasks, then reopens after a new project fact  623ms\n     ✓ points a taskless project at its direct commit, then at the recorded conclusion  1490ms\n     ✓ reports a committed artifact without a provenance warning  490ms\n     ✓ reads an older conclusion and separates verification records from open questions after restart  1420ms\n     ✓ binds each DELIVER to the bytes of its current Git commit on the same Host  1879ms\n     ✓ CONTINUE requires a next step and does not pretend the episode ended  377ms\n\n Test Files  3 passed (3)\n      Tests  22 passed (22)\n   Start at  20:57:30\n   Duration  14.34s (transform 14.78s, setup 0ms, import 17.92s, tests 14.48s, environment 0ms)\n\nTEST_EXIT:0\n"
+      },
+      {
+        "callId": "call_461b975c54f54d45bebc08e1",
+        "call": 323,
+        "result": 326,
+        "request": 39,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "sed -n '1,80p' scripts/pnwf/software/self-maintenance-readiness.mjs",
+        "description": "Inspect readiness oracle build/run flow",
+        "testCommand": false,
+        "output": "/** Independent ordinary-tool replay for the direct-work readiness maintenance ticket. */\nimport { execFileSync } from \"node:child_process\";\nimport { mkdtempSync, writeFileSync } from \"node:fs\";\nimport { tmpdir } from \"node:os\";\nimport { join } from \"node:path\";\nimport { pathToFileURL } from \"node:url\";\n\nconst candidateRoot = process.cwd();\nconst { installProduct } = await import(pathToFileURL(joi\n...\ntted and reviewable.\" });\n  const afterDelivery = await ready();\n  writeFileSync(artifact, \"Maintenance result with uncommitted changes\\n\");\n  const dirtyAfterDelivery = await ready();\n  const status = deployment.controller.status();\n  const checks = {\n    initialHasNoDeliveryAdvice: !recommendsDeliver(initial),\n    dirtyHasNoDeliveryAdvice: !recommendsDeliver(dirty) && !recommendsDeliver(dirtyAfterDelivery),\n    cleanCommitSuggestsDelivery: committed.action === \"SEMANTIC_JUDGEMENT\" && recommendsDeliver(committed),\n    recordedDeliveryCanClose: delivered.state === \"RECORDED\" && delivered.session.mayEnd,\n    afterDeliveryAvoidsRepeatedConclusion: afterDelivery.action === \"SEMANTIC_JUDGEMENT\" && !recommendsDeliver(afterDelivery) &&\n      /\\breply\\b|\\brecorded\\b|\\bconclusion\\b/i.test(advice(afterDelivery)),\n    operatorBasisPreserved: status.headCommit === basis && status.attempts.length === 0 && status.promotions.length === 0,\n  };\n  console.log(\"DIRECT_READINESS \" + JSON.stringify({ basis, candidate, checks, initial, dirty, committed, afterDelivery, dirtyAfterDelivery }));\n  process.exitCode = Object.values(checks).every(Boolean) ? 0 : 1;\n} finally {\n  await deployment.dispose();\n}\n"
+      },
+      {
+        "callId": "call_e2fca2506c8144d5a12ae6d5",
+        "call": 331,
+        "result": 334,
+        "request": 40,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "git status --short; git log --oneline -3; echo ---; node scripts/pnwf/software/self-maintenance-readiness.mjs | sed -n '1p' | cut -c1-500; echo ORACLE_EXIT:${PIPESTATUS[0]}",
+        "description": "Confirm clean tree and oracle result post-commit",
+        "testCommand": false,
+        "output": "91b5bc0 Point taskless readiness at a direct commit or recorded conclusion\n082f77a Seed isolated maintenance source\n---\nDIRECT_READINESS {\"basis\":\"cc9aeffed967dc1e955382aa72be13d3e0b53ffa\",\"candidate\":\"db8ae8f0611554d2d9e5f4d2368318ae85177c74\",\"checks\":{\"initialHasNoDeliveryAdvice\":true,\"dirtyHasNoDeliveryAdvice\":true,\"cleanCommitSuggestsDelivery\":true,\"recordedDeliveryCanClose\":true,\"afterDeliveryAvoidsRepeatedConclusion\":true,\"operatorBasisPreserved\":true},\"initial\":{\"schema\":\"odpe-outcome-readiness/v1\",\"action\":\"CONTINUE_WORK\",\"reasons\":[\"no task is currently addressable; plan or begin work before a finalizati\nORACLE_EXIT:0\n"
+      },
+      {
+        "callId": "call_beb2bc896713460cb15515f0",
+        "call": 339,
+        "result": 340,
+        "request": 41,
+        "tool": "palimpsest_project",
+        "action": "journal",
+        "ok": true,
+        "query": {
+          "action": "journal",
+          "kind": "REFERENCE_NOTE",
+          "title": "Taskless direct-work readiness gap reproduced and fixed",
+          "body": "The sealed case-3 handover ends in a taskless project: repository f244159 (review commit), canonical head 95b83e7, current DELIVER conclusion. Replaying `palimpsest_work action=readiness` on the sealed owner databases reproduced a gap: the ordinary Work entry still said \"no task is currently addressable; plan or begin work\" instead of pointing at the recorded conclusion. The same gap occurred before any conclusion when a clean direct commit was ahead of the canonical basis.\n\nRoot cause: the readiness helper only handled committed artifacts of a retired plan. It had no taskless direct-delivery path. Fix in `src/application/work_outcome.ts`: a clean taskless project with a direct commit ahead of the canonical basis is now offered `conclude intent=DELIVER`; when the episode already has a current DELIVER conclusion, readiness points to that conclusion instead of asking for another one. Unchanged and uncommitted states still receive no delivery advice, and retired-plan, task, promotion and acceptance semantics are unchanged.\n\nVerification: `node scripts/pnwf/software/self-maintenance-readiness.mjs` returns all six checks true. The focused suites (`test/alhs_episode_convergence.test.ts`, `test/pnwf_cq_basis_admission.test.ts`, `test/pnwf_cq_direct_governed.test.ts`) pass 22/22. Related work/continuity suites pass 43/43. The fixed readiness was replayed against the sealed case-3 owner state and returned SEMANTIC_JUDGEMENT with \"reply using the recorded conclusion\".\n\nCandidate commit: 91b5bc0ca6690d673118af3d753056b26a7ab460. Raw evidence remains at evidence/case-3/session.jsonl, evidence/case-3/owners/, and evidence/prior-run/working.patch.",
+          "provenance": "Palimpsest maintenance continuation from sealed handover evidence",
+          "relatedRefs": [
+            {
+              "kind": "git_commit",
+              "id": "91b5bc0ca6690d673118af3d753056b26a7ab460"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/case-3"
+            },
+            {
+              "kind": "sealed_input",
+              "id": "evidence/prior-run"
+            }
+          ]
+        },
+        "observed": "{\n  \"schemaVersion\": 1,\n  \"projectId\": \"palimpsest-maintenance\",\n  \"kind\": \"REFERENCE_NOTE\",\n  \"title\": \"Taskless direct-work readiness gap reproduced and fixed\",\n  \"body\": \"The sealed case-3 handover ends in a taskless project: repository f244159 (review commit), canonical head 95b83e7, current DELIVER conclusion. Replaying `palimpsest_work action=readiness` on the sealed owner databases reproduced a gap: the ordinary Work entry still said \\\"no task is currently addressable; plan or begin work\\\" instead of pointing at the recorded conclusion. The same gap occurred before any conclusion when a clean direct commit was ahead of the canonical basis.\\n\\nRoot cause: the readiness helper only handled committed artifacts of a retired plan. It had no taskless direct-delivery path. Fix in `src/application/work_outcome.ts`: a clean taskless project with a direct commit ahead of the canonical basis is now offered `conclude intent=DELIVER`; when the episode already has a current DELIVER conclusion, readiness points to that conclusion instead of asking for another one. Unchanged and uncommitted s",
+        "wakeRefs": []
+      },
+      {
+        "callId": "call_da5e1f0406324ed191f680d6",
+        "call": 345,
+        "result": 346,
+        "request": 42,
+        "tool": "palimpsest_work",
+        "action": "conclude",
+        "ok": true,
+        "intent": "DELIVER",
+        "artifacts": [
+          "src/application/work_outcome.ts",
+          "test/alhs_episode_convergence.test.ts"
+        ],
+        "recorded": true
+      }
+    ],
+    "modelRequests": 43,
+    "lastReply": 350
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 5,
+    "eventId": "pjer-0b1d312af83e99a99b64f8a5f4a87165",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: The taskless direct-work readiness gap from the sealed handover is fixed in commit 91b5bc0, with a targeted regression test and independent readiness replay passing all six checks.\nArtifacts:\n- src/application/work_outcome.ts\n- test/alhs_episode_convergence.test.ts\nWaiting on: (none)\nNext step: (none)\nEvidence: journal:pje-2038d294e7be5ea63fc476691d65007a, git:91b5bc0ca6690d673118af3d753056b26a7ab460\nBasis: revision 0, head 082f77a9a4602d1eb5a2d9be1260186fa41c4a61\nArtifact provenance:\n- src/application/work_outcome.ts: present=true tracked=true committed=true source=WORKTREE digest=19d192c3460b commit=91b5bc0ca669\n- test/alhs_episode_convergence.test.ts: present=true tracked=true committed=true source=WORKTREE digest=e2dd526b9ec4 commit=91b5bc0ca669\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"The taskless direct-work readiness gap from the sealed handover is fixed in commit 91b5bc0, with a targeted regression test and independent readiness replay passing all six checks.\",\"artifacts\":[\"src/application/work_outcome.ts\",\"test/alhs_episode_convergence.test.ts\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"journal:pje-2038d294e7be5ea63fc476691d65007a\",\"git:91b5bc0ca6690d673118af3d753056b26a7ab460\"],\"recordedAt\":\"2026-11-21T20:58:19.093Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"5db35f67c7c6a11ce56a22ae94462b7569df339601df4971c0ed4ecb3f4a9cc1\",\"headCommit\":\"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"src/application/work_outcome.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"19d192c3460ba76c0dd8c70eb9a9d659bc83302115d6012260aaaa87b575a369\",\"source\":\"WORKTREE\",\"commit\":\"91b5bc0ca6690d673118af3d753056b26a7ab460\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/alhs_episode_convergence.test.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"e2dd526b9ec4e99bdc40e8c9251dc2cab439cc3a9ea85eac37cff5f23764532f\",\"source\":\"WORKTREE\",\"commit\":\"91b5bc0ca6690d673118af3d753056b26a7ab460\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-daaf9ea9dc90f8460a51fc12\"}"
+  }
+}
