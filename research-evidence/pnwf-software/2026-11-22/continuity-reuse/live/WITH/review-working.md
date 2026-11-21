@@ -1,0 +1,59 @@
+# Cold handover maintenance review
+
+Readback decision: READY
+
+Reviewed 2026-11-21 against the owner-accepted revision
+`95b83e71ee9a37041b9918b5e8b797eebabf69c9`.
+
+## Decision
+
+READY for maintenance-handover continuation on the accepted revision. The previous decision was
+HOLD, retained at review commit `1444de6ce289197a1d12b0b04d2caa36c1d79355`; it recorded an
+inconclusive cold-session lookup rather than a code defect. Revalidation against the accepted
+revision now succeeds.
+
+The old cold-session lookup returned UNKNOWN for Episode
+`episode-e7050e9ddf64ccebde7f08f6`. That Episode is now marked REOPENED because the project and
+repository basis moved after its conclusion. Its conclusion was recorded at project revision 1 and
+repository head `fbeb8958f4405688b13f37dbdec330157a660ab0`; it is a historical, advisory judgement,
+not the current acceptance of the tree. The UNKNOWN result must therefore not be carried forward as
+an active blocker.
+
+## Accepted revision and review delta
+
+- Owner-accepted revision: `95b83e71ee9a37041b9918b5e8b797eebabf69c9` (tree
+  `8d247378a016a4ae77caca3229062b7d85082709`), Work `DIRECT_BASIS` event 8 at project revision 2.
+- The carry-forward commit `1444de6ce289197a1d12b0b04d2caa36c1d79355` adds only the prior HOLD
+  review. `git diff --name-status 95b83e7..1444de6 -- . ':(exclude)MAINTENANCE-REVIEW.md'` is empty,
+  so the service, proto, tests, and REST baseline are unchanged from the accepted revision. This
+  review revision likewise changes only `MAINTENANCE-REVIEW.md`.
+- The review commit and this updated review are maintenance records only; neither advances the
+  accepted revision.
+
+## Verification record status
+
+- `pje-d0c977aae7bb8bfeca9159f76e14a7d1` ("Fleet rollout verification") has standing
+  `OBSERVED_SOURCE`. It records the independent release verifier's observation that, before the
+  change, explicit-zero and omitted limits returned zero frames, while the accepted tree returns
+  three readings in source order for both forms. The reviewed candidate and the accepted project
+  version are both `95b83e71ee9a37041b9918b5e8b797eebabf69c9`.
+- That record was written after the old Episode conclusion, which is why the Episode is REOPENED.
+  The reopening flags the old conclusion as stale; it does not contradict the accepted behaviour.
+  The record is an observed source journal entry, not a contributor decision or release approval.
+- Fresh verification was run from a `git archive` extraction of the accepted commit:
+  `node --test` passed 18 of 18 tests with 0 failures. Coverage includes explicit-zero and omitted
+  limits returning the first three readings in source order, positive limits and ordering, unary
+  `GetReading`, unknown-site NOT_FOUND, wire framing and trailers, and the preserved REST baseline.
+
+## Scope
+
+This READY decision is for maintenance-handover continuation. It is not release authorization,
+operator acceptance, promotion, or a canonical-head advance. Release approval remains with the owner.
+
+## Retained evidence
+
+- Archived cold-session lookup: episode-e7050e9ddf64ccebde7f08f6, UNKNOWN, call call_ccfc97275a064338a47c1acb.
+- Owner-accepted tree: 95b83e71ee9a37041b9918b5e8b797eebabf69c9, Work DIRECT_BASIS event 8.
+- Original release verification reference: pje-d0c977aae7bb8bfeca9159f76e14a7d1.
+- Fleet source: updates/2026-11-10/fleet-default-limit.md.
+- Retained verification: zero or omitted limit returns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.

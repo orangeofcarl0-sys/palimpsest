@@ -1,0 +1,306 @@
+{
+  "name": "WITHOUT",
+  "basis": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+  "accepted": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+  "mode": "mock",
+  "passed": true,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "continuity-reuse-a4af7523-bc3c-4155-a915-88e0566df3ae",
+    "sessionId": "RESUME",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-continuity-reuse-mock-20261122-002342\\WITHOUT\\stages\\RESUME\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-continuity-reuse-mock-20261122-002342\\WITHOUT\\runtime-RESUME",
+    "principalRuntime": "container",
+    "containerId": "656a1c1bfa859ec804581511d55c3bd72d802c7994ba350d43c29b758ff52b53",
+    "qualification": "49b971d93e696a2bf22c586c05f7244488363dc8d048a322e2425bb82816b09d",
+    "startedAt": "2026-11-21T16:24:08.308Z",
+    "endedAt": "2026-11-21T16:25:11.529Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "continuity-reuse-a4af7523-bc3c-4155-a915-88e0566df3ae",
+      "sessionId": "RESUME",
+      "observedAt": "2026-11-21T16:25:11.529Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 488994,
+      "confirmedTokens": 488994,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "accounting": {
+    "requests": 6,
+    "confirmed": 488994,
+    "unresolved": 0
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-a895769e-673b-4250-83d2-cd30f6273636",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 6,
+    "knownTokens": 488994,
+    "totalTokens": 488994,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 486632,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 2362
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 6,
+        "input": 486632,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 2362,
+        "total": 488994
+      }
+    },
+    "traceTotal": 488994,
+    "traceRequests": 6,
+    "workerRequests": 0,
+    "elapsedMs": 63221,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-a895769e-673b-4250-83d2-cd30f6273636",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "a0c1d9731d4f58ced79bbabddd9f23eb34ee4b7ab245d2c2a084921f9e1c596b",
+        "counts": {
+          "steps": 6,
+          "turns": 1,
+          "toolCalls": 5,
+          "pairedToolResults": 5,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795278293219,
+            "messageId": "c000ef36-c4fc-44ab-8e70-d015321058b5",
+            "usage": {
+              "inputTokens": 96175,
+              "outputTokens": 97,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 96272
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795278297469,
+            "messageId": "2159e99d-3966-42ec-a712-4a7ceb4ff259",
+            "usage": {
+              "inputTokens": 71441,
+              "outputTokens": 152,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 71593
+            }
+          },
+          {
+            "seq": 26,
+            "at": 1795278301516,
+            "messageId": "9ed65b2b-c586-4972-ad1f-04f9435e9391",
+            "usage": {
+              "inputTokens": 76270,
+              "outputTokens": 156,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 76426
+            }
+          },
+          {
+            "seq": 32,
+            "at": 1795278302510,
+            "messageId": "b368439f-4b64-43dd-8f60-2eec8c47f46a",
+            "usage": {
+              "inputTokens": 73252,
+              "outputTokens": 1676,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 74928
+            }
+          },
+          {
+            "seq": 40,
+            "at": 1795278303269,
+            "messageId": "c871c2be-6e8b-4d7b-bd92-7c1d94d1c5a1",
+            "usage": {
+              "inputTokens": 83427,
+              "outputTokens": 211,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 83638
+            }
+          },
+          {
+            "seq": 46,
+            "at": 1795278310794,
+            "messageId": "271bb4ed-5a7b-43b1-945d-b996e1e50e20",
+            "usage": {
+              "inputTokens": 86067,
+              "outputTokens": 70,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 86137
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "continuity:explain": 2,
+          "bash": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "offer": null,
+    "methodInReplay": false,
+    "firstVerify": {
+      "id": "handover_1",
+      "call": 21,
+      "result": 22,
+      "request": 2,
+      "kind": "continuity:explain",
+      "ok": true,
+      "action": "inspect-record",
+      "subject": "episode:episode-e7050e9ddf64ccebde7f08f6",
+      "found": true,
+      "episode": "REOPENED",
+      "acceptance": 8
+    },
+    "independentReceiptCount": 0,
+    "stream": "--run-stage-world--/session-a895769e-673b-4250-83d2-cd30f6273636/session.v4.jsonl.zstd",
+    "significant": [
+      {
+        "id": "handover_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "kind": "continuity:pulse",
+        "ok": true,
+        "action": "pulse",
+        "reachedAccepted": true,
+        "containsReopen": true
+      },
+      {
+        "id": "handover_1",
+        "call": 21,
+        "result": 22,
+        "request": 2,
+        "kind": "continuity:explain",
+        "ok": true,
+        "action": "inspect-record",
+        "subject": "episode:episode-e7050e9ddf64ccebde7f08f6",
+        "found": true,
+        "episode": "REOPENED",
+        "acceptance": 8
+      },
+      {
+        "id": "handover_2",
+        "call": 27,
+        "result": 28,
+        "request": 3,
+        "kind": "continuity:explain",
+        "ok": true,
+        "action": "inspect-record",
+        "subject": "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1",
+        "found": true,
+        "episode": null,
+        "acceptance": null
+      },
+      {
+        "id": "handover_3",
+        "call": 33,
+        "result": 36,
+        "request": 4,
+        "kind": "bash",
+        "ok": true,
+        "action": "commit-review",
+        "input": {
+          "command": "printf %s 'IyBDb2xkIGhhbmRvdmVyIG1haW50ZW5hbmNlIHJldmlldwoKUmVhZGJhY2sgZGVjaXNpb246IFJFQURZCgpUaGUgcHJldmlvdXMgVU5LTk9XTiBmb3IgZXBpc29kZS1lNzA1MGU5ZGRmNjRjY2ViZGU3ZjA4ZjYgaXMgaGlzdG9yaWNhbC4gQSBzYW1lLVNIQSBjb2xkIHJlYWRiYWNrIGZpbmRzIHRoYXQgRXBpc29kZSBSRU9QRU5FRC4gVGhlIG93bmVyIGFjY2VwdGVkIDk1YjgzZTcxZWU5YTM3MDQxYjk5MThiNWU4Yjc5N2VlYmFiZjY5YzkgaW4gRElSRUNUX0JBU0lTIGV2ZW50IDguIFZlcmlmaWNhdGlvbiBub3RlIHBqZS1kMGM5NzdhYWU3YmI4YmZlY2E5MTU5Zjc2ZTE0YTdkMSBmb2xsb3dzIHVwZGF0ZXMvMjAyNi0xMS0xMC9mbGVldC1kZWZhdWx0LWxpbWl0Lm1kOyBubyBvcGVuIHF1ZXN0aW9ucyByZW1haW4uIFRoaXMgaXMgZm9yIG1haW50ZW5hbmNlIGhhbmRvdmVyIG9ubHksIHdpdGggcmVsZWFzZSBhcHByb3ZhbCByZXRhaW5lZCBieSB0aGUgb3duZXIuCgojIyBSZXRhaW5lZCBldmlkZW5jZQoKLSBBcmNoaXZlZCBjb2xkLXNlc3Npb24gbG9va3VwOiBlcGlzb2RlLWU3MDUwZTlkZGY2NGNjZWJkZTdmMDhmNiwgVU5LTk9XTiwgY2FsbCBjYWxsX2NjZmM5NzI3NWEwNjQzMzhhNDdjMWFjYi4KLSBPd25lci1hY2NlcHRlZCB0cmVlOiA5NWI4M2U3MWVlOWEzNzA0MWI5OTE4YjVlOGI3OTdlZWJhYmY2OWM5LCBXb3JrIERJUkVDVF9CQVNJUyBldmVudCA4LgotIE9yaWdpbmFsIHJlbGVhc2UgdmVyaWZpY2F0aW9uIHJlZmVyZW5jZTogcGplLWQwYzk3N2FhZTdiYjhiZmVjYTkxNTlmNzZlMTRhN2QxLgotIEZsZWV0IHNvdXJjZTogdXBkYXRlcy8yMDI2LTExLTEwL2ZsZWV0LWRlZmF1bHQtbGltaXQubWQuCi0gUmV0YWluZWQgdmVyaWZpY2F0aW9uOiB6ZXJvIG9yIG9taXR0ZWQgbGltaXQgcmV0dXJucyB0aGUgZmlyc3QgdGhyZWUgYXZhaWxhYmxlIHJlYWRpbmdzLiBQb3NpdGl2ZSBsaW1pdHMsIHVuYXJ5LCB3aXJlIGNvbXBhdGliaWxpdHkgYW5kIFJFU1QgcmVtYWluIGluIHNjb3BlIGZvciBwcmVzZXJ2YXRpb24uCg==' | base64 -d > MAINTENANCE-REVIEW.md && git add -- MAINTENANCE-REVIEW.md && git commit -m 'Revalidate retained gRPC handover' && echo HANDOVER_COMMITTED",
+          "description": "Submit the qualified maintenance review"
+        }
+      },
+      {
+        "id": "handover_4",
+        "call": 41,
+        "result": 42,
+        "request": 5,
+        "kind": "work:conclude",
+        "ok": true,
+        "action": "work:conclude",
+        "input": {
+          "action": "conclude",
+          "intent": "DELIVER",
+          "artifacts": [
+            "MAINTENANCE-REVIEW.md"
+          ],
+          "statement": "Deliver the revalidated cold-handover review."
+        }
+      }
+    ]
+  },
+  "candidate": "f24415945da6876d44af9fb919cba42ceed24d16",
+  "status": "",
+  "paths": [
+    "MAINTENANCE-REVIEW.md"
+  ],
+  "grade": {
+    "checks": {
+      "revisedDecision": true,
+      "preciseAcceptedBasis": true,
+      "oldEpisodeTraceable": true,
+      "oldUnknownPreserved": true,
+      "verificationTraceable": true,
+      "issueResolved": true,
+      "releaseScope": true
+    },
+    "passed": 7,
+    "expected": 7
+  },
+  "owners": {
+    "workPreserved": true,
+    "journalPrefixPreserved": true,
+    "journalAppends": 1
+  },
+  "conclusion": {
+    "seq": 4,
+    "eventId": "pjer-2fc135cc1482febcf9ce50891b45ac6d",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Deliver the revalidated cold-handover review.\nArtifacts:\n- MAINTENANCE-REVIEW.md\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 2, head 95b83e71ee9a37041b9918b5e8b797eebabf69c9\nArtifact provenance:\n- MAINTENANCE-REVIEW.md: present=true tracked=true committed=true source=WORKTREE digest=69718b2e8715 commit=f24415945da6\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Deliver the revalidated cold-handover review.\",\"artifacts\":[\"MAINTENANCE-REVIEW.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T16:25:08.246Z\",\"basis\":{\"projectRevision\":2,\"projectDigest\":\"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\"headCommit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"MAINTENANCE-REVIEW.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"69718b2e8715ceb32878befc9ef40acc1fd1d0fe39f4dffffeee7b012851f34e\",\"source\":\"WORKTREE\",\"commit\":\"f24415945da6876d44af9fb919cba42ceed24d16\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-fec63f662e038d4fdd84195d\"}"
+  },
+  "delivery": true
+}
