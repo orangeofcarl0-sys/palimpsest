@@ -1,0 +1,139 @@
+
+ RUN  v4.1.10 /work
+
+stdout | test/pnwf_cq_basis_admission.test.ts > PNWF-CQ-H — operator-mediated direct basis admission > admits through the signed-operator CLI, and refuses without the credential
+{
+  "state": "INITIALIZED",
+  "profileFile": "/tmp/palimpsest-pnwf-cq-basis-cli-tS1fCj/product-profile.json",
+  "summary": {
+    "schema": "pc1-project-summary/v1",
+    "projectId": "pnwf-cq-basis",
+    "goal": "direct outcome then governed continuation",
+    "basis": {
+      "projectRevision": 0,
+      "projectDigest": "208e5d1c9f66f284580f167d0e199a84c76cac8a41b12585dd8332bcd137c6a2",
+      "headCommit": "1ce1648214a3f828ea6855fd3f3245ad875115f4",
+      "observedAt": "2026-11-21T19:49:16.809Z"
+    },
+    "coverage": {
+      "complete": true,
+      "omitted": [],
+      "unavailable": []
+    },
+    "requirements": [],
+    "decisions": [],
+    "acceptedResults": [],
+    "candidates": [
+      {
+        "id": "loop:READY_WORK:task:governed-next",
+        "standing": "CANDIDATE",
+        "title": "Work awaiting a legal next step",
+        "detail": "task governed-next is ready: continue from the direct outcome",
+        "sourceRefs": [
+          "task:governed-next"
+        ],
+        "basis": {
+          "projectRevision": 0,
+          "projectDigest": "208e5d1c9f66f284580f167d0e199a84c76cac8a41b12585dd8332bcd137c6a2",
+          "headCommit": "1ce1648214a3f828ea6855fd3f3245ad875115f4",
+          "observedAt": "2026-11-21T19:49:16.809Z"
+        },
+        "applicability": "open loop in the derived workspace",
+        "reopenConditions": [
+          "the subject is resolved, rejected or superseded"
+        ]
+      }
+    ],
+    "negativeFindings": [],
+    "openQuestions": [],
+    "recentChanges": [],
+    "tasks": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "pendingWork": [
+      {
+        "taskId": "governed-next",
+        "state": "READY",
+        "objective": "continue from the direct outcome",
+        "workAcceptance": "UNKNOWN"
+      }
+    ],
+    "blocked": [],
+    "authorizationBoundaries": [
+      "The agent may investigate, propose and write only within its Work scope. It may not accept a source, approve its own proposal, promote a result, or change the goal or a binding requirement.",
+      "Accepting a result is an operator action through the existing promotion path.",
+      "Source intake: only an independent operator can accept external source bytes.",
+      "Operator intent admission: not composed; an intent apply will refuse rather than self-authorize."
+    ],
+    "nextActions": [
+      "agent: palimpsest_work action=next"
+    ],
+    "digest": "178d03c9f2076fc35e3957a6f9c4c797a1fde7a74595d2ae2abcdd7414bc0961"
+  }
+}
+
+stdout | test/pnwf_cq_basis_admission.test.ts > PNWF-CQ-H — operator-mediated direct basis admission > admits through the signed-operator CLI, and refuses without the credential
+{
+  "state": "ADMITTED",
+  "fromHead": "1ce1648214a3f828ea6855fd3f3245ad875115f4",
+  "toHead": "f28ba261201d26fa6626b94ba33da8ace90a29f8",
+  "commit": "f28ba261201d26fa6626b94ba33da8ace90a29f8",
+  "operator": "operator:alice",
+  "revision": 1,
+  "basisId": "basis-6b81322d4664056f05b9fa2be3fe2877",
+  "note": "The direct commit is admitted as a BASIS. No ATTEMPT_COMPLETED or PROMOTION_COMMITTED was written, and the commit was not relabelled as a governed result."
+}
+
+ ✓ test/pnwf_cq_basis_admission.test.ts (11 tests) 5631ms
+     ✓ admits the checked-out direct commit, reauthorizes the task, and writes no promotion  497ms
+     ✓ exposes an actual worker host refusal through the model-facing workers action  716ms
+     ✓ runs a real child worker from the admitted basis through settlement, promotion and dependent continuation  2453ms
+     ✓ refuses a dirty canonical worktree, a non-ancestor commit and a task-graph change  350ms
+     ✓ admits through the signed-operator CLI, and refuses without the credential  346ms
+ ✓ test/alhs_episode_convergence.test.ts (9 tests) 6298ms
+     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1135ms
+     ✓ delivers a lightweight project with no formal tasks, then reopens after a new project fact  533ms
+     ✓ reports a committed artifact without a provenance warning  834ms
+     ✓ reads an older conclusion and separates verification records from open questions after restart  1283ms
+     ✓ binds each DELIVER to the bytes of its current Git commit on the same Host  1706ms
+     ✓ CONTINUE requires a next step and does not pretend the episode ended  315ms
+ ✓ test/pnwf_cq_direct_governed.test.ts (1 test) 504ms
+     ✓ shows the head relation, refuses a worker on the stale basis, and writes no promotion  496ms
+
+ Test Files  3 passed (3)
+      Tests  21 passed (21)
+   Start at  19:49:05
+   Duration  21.10s (transform 5.23s, setup 0ms, import 7.91s, tests 12.43s, environment 1ms)
+
+From /tmp/palimpsest-pnwf-cq-basis-vertical-jjQfxo/repo/.palimpsest/worlds/attempt-06c658b31a313d0ae70072d7a327b832
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-jjQfxo/repo/.palimpsest/worlds/attempt-06c658b31a313d0ae70072d7a327b832
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-jjQfxo/repo/.palimpsest/worlds/attempt-db309213152d69cf00e28119348197de
+ * branch            HEAD       -> FETCH_HEAD
+From /tmp/palimpsest-pnwf-cq-basis-vertical-jjQfxo/repo/.palimpsest/worlds/attempt-db309213152d69cf00e28119348197de
+ * branch            HEAD       -> FETCH_HEAD
+Switched to a new branch 'other'
+Note: switching to 'f28ba261201d26fa6626b94ba33da8ace90a29f8'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at f28ba26 direct

@@ -1,0 +1,214 @@
+diff --git a/host/dsh/lib/direct_closeout.js b/host/dsh/lib/direct_closeout.js
+new file mode 100644
+index 0000000..7cdb875
+--- /dev/null
++++ b/host/dsh/lib/direct_closeout.js
+@@ -0,0 +1,60 @@
++import { execFileSync } from 'node:child_process';
++
++function git(repository, args) {
++  return execFileSync('git', args, { cwd: repository, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 5_000 });
++}
++
++function headOf(repository) {
++  const head = git(repository, ['rev-parse', '--verify', 'HEAD^{commit}']).trim();
++  return /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/u.test(head) ? head : null;
++}
++
++function cleanAt(repository, head) {
++  return git(repository, ['status', '--porcelain=v1', '--untracked-files=all']) === '' && headOf(repository) === head;
++}
++
++/** Capture the checkout and the prior conclusion before delivering the business turn. */
++export async function captureDirectCloseout(repository, workspace) {
++  if (!repository || typeof workspace?.pulse !== 'function') return null;
++  try {
++    const head = headOf(repository);
++    if (!head) return null;
++    const pulse = await workspace.pulse();
++    if (!pulse?.episode || headOf(repository) !== head) return null;
++    return { head, conclusionId: pulse.episode.conclusion?.conclusionId ?? null };
++  } catch {
++    return null;
++  }
++}
++
++/** Advise once at a clean direct-work boundary, leaving all episode decisions to the principal. */
++export async function directCloseoutAdvice(repository, initial, workspace, controller) {
++  if (!initial || !repository || typeof workspace?.pulse !== 'function' || typeof controller?.status !== 'function') return null;
++  try {
++    const head = headOf(repository);
++    if (!head || head === initial.head || !cleanAt(repository, head)) return null;
++    git(repository, ['merge-base', '--is-ancestor', initial.head, head]);
++    if (!git(repository, ['diff', '--name-only', '-z', initial.head, head, '--'])) return null;
++
++    const pulse = await workspace.pulse();
++    const episode = pulse.episode;
++    const conclusionId = episode.conclusion?.conclusionId ?? null;
++    if ((conclusionId !== null && (episode.current || conclusionId !== initial.conclusionId)) ||
++      episode.readiness.deliveryBlockers.length > 0 || episode.readiness.failedOrBlockedTasks.length > 0 ||
++      episode.readiness.unresolvedQuestions.length > 0 ||
++      pulse.execution.jobs.some(job => job.phase === 'QUEUED' || job.phase === 'RUNNING')) return null;
++
++    const status = controller.status();
++    if (status.directOutcome?.relation !== 'DIRECT_AHEAD' || status.directOutcome.repositoryHead !== head ||
++      status.revision !== pulse.basis.projectRevision || status.headCommit !== pulse.basis.headCommit ||
++      status.attempts.some(attempt => attempt.orphaned === true) || !cleanAt(repository, head)) return null;
++
++    return {
++      initialHead: initial.head, head, reason: 'DIRECT_DELIVERY_UNRECORDED',
++      message: `[Project closeout] This turn left a clean committed change at ${head} and no new episode conclusion. ` +
++        'If the committed work satisfies the current request, call palimpsest_work action=conclude intent=DELIVER with your statement and the committed artifact paths, then reply and end the session. If a blocker remains, report it or choose the applicable conclusion.',
++    };
++  } catch {
++    return null;
++  }
++}
+diff --git a/host/dsh/lib/runner.js b/host/dsh/lib/runner.js
+index 881ad81..d324617 100644
+--- a/host/dsh/lib/runner.js
++++ b/host/dsh/lib/runner.js
+@@ -33,6 +33,7 @@ import { installModelSelection } from '@deepseek-ai/dsh-agent';
+ import { createUserMessage } from '@deepseek-ai/dsh-llm';
+ 
+ import { composeLaunchMessage } from './project_hint.js';
++import { captureDirectCloseout, directCloseoutAdvice } from './direct_closeout.js';
+ 
+ /**
+  * R2-U §7: the EXPERIMENTAL presentation seam. Loaded statically because it has no imports of its own and
+@@ -1410,16 +1411,25 @@ async function run(ctx, deps) {
+     // COG-2 §15: a cold principal is told that recorded project work exists, in one sentence and
+     // without any entry content. Measured: without it, a later principal discovered nothing; with
+     // it, it read the journal and used it. Absence/empty/failure composes the message unchanged.
+-    const launchMessage = await composeLaunchMessage(
+-      host.deployment?.installed?.application?.projectWorkspace,
+-      startup.message,
+-    );
++    const installed = host.deployment?.installed;
++    const workspace = installed?.application?.projectWorkspace;
++    const repository = host.profile?.repository;
++    const initial = startup.once === true && host.toolNames?.includes('palimpsest_work')
++      ? await captureDirectCloseout(repository, workspace)
++      : null;
++    const launchMessage = await composeLaunchMessage(workspace, startup.message);
+     const method = await host.deployment?.focusedTesting?.read();
+     if (method) process.stdout.write(`PALIMPSEST_FOCUSED_TEST_OFFER ${JSON.stringify(method)}\n`);
+     const testHint = method
+       ? `\n\n[Project verification method] In this read-only dependency environment, for targeted Vitest checks run \`${method.argv.join(' ')} --maxWorkers 1 <test paths>\` from the repository root. Read the test assertions and use the actual exit status. This is optional advice for selecting a test command.`
+       : '';
+     await deliver(launchMessage + testHint);
++    const closeout = await directCloseoutAdvice(repository, initial, workspace, installed?.controller);
++    if (closeout) {
++      const { message, ...facts } = closeout;
++      process.stdout.write(`PALIMPSEST_CLOSEOUT_OFFER ${JSON.stringify(facts)}\n`);
++      await deliver(message);
++    }
+   }
+ 
+   if (startup.once === true) {
+diff --git a/maintenance/review.md b/maintenance/review.md
+new file mode 100644
+index 0000000..50ff5a4
+--- /dev/null
++++ b/maintenance/review.md
+@@ -0,0 +1,3 @@
++# Maintenance investigation
++
++Scripted qualification exercises the retained source and a candidate commit.
+diff --git a/src/application/work_outcome.ts b/src/application/work_outcome.ts
+index 75ad82a..7b94488 100644
+--- a/src/application/work_outcome.ts
++++ b/src/application/work_outcome.ts
+@@ -49,8 +49,8 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s
+   return tasks.find((task) => task.task_id === taskId) ?? null;
+ }
+ 
+-/** A clean HEAD alone is ordinary project state. Use the retired plan's declared artifacts. */
+-async function retiredDelivery(
++/** A retired plan names its artifacts. Direct work without a plan must show a net Git change. */
++async function directDeliveryGuidance(
+   deps: WorkRuntimeDeps,
+   status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
+   requested: string | null,
+@@ -67,19 +67,22 @@ async function retiredDelivery(
+ 
+   const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));
+   const retired = status.tasks.filter((task) => task.state === "STALE" && !plannedIds.has(task.task_id));
+-  if (retired.length === 0 || (requested !== null && !retired.some((task) => task.task_id === requested))) return null;
++  if (requested !== null && !retired.some((task) => task.task_id === requested)) return null;
++  const withoutPlan = retired.length === 0;
++  if (withoutPlan && (plannedIds.size !== 0 || direct.relation !== "DIRECT_AHEAD")) return null;
+   const artifacts = new Set<string>();
+   for (const task of retired) {
+     const envelope = controller.taskEnvelopeOrNull(task.task_id);
+     if (envelope === null) return null;
+     for (const path of envelope.required_artifacts) artifacts.add(path);
+   }
+-  if (artifacts.size === 0) return null;
++  if (!withoutPlan && artifacts.size === 0) return null;
+ 
+   const pulse = await deliveryPulse.pulse().catch(() => null);
+   if (
+     pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||
+     pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||
++    (withoutPlan && pulse.episode.readiness.unresolvedQuestions.length > 0) ||
+     pulse.execution.jobs.some((job) => job.phase === "QUEUED" || job.phase === "RUNNING")
+   ) return null;
+ 
+@@ -89,16 +92,19 @@ async function retiredDelivery(
+   const git = gitTextRunner(repository);
+   const paths = [...artifacts];
+   try {
++    if (withoutPlan && !git(["diff", "--name-only", "-z", status.headCommit, head, "--"])) return null;
+     if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
+       git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
+   } catch {
+     return null;
+   }
+ 
+-  const reason = `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
++  const reason = withoutPlan ? `direct work is committed at repository HEAD ${head}, ahead of the project basis ${status.headCommit}`
++    : `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
+   if (pulse.episode.current && pulse.episode.state === "DELIVERED") {
+     return { reasons: [reason, "this episode has a current recorded DELIVER conclusion"], next: ["reply using the recorded conclusion"] };
+   }
++  if (withoutPlan && pulse.episode.current && pulse.episode.conclusion !== null) return null;
+   return {
+     reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"],
+     next: ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
+@@ -242,7 +248,7 @@ async function snapshot(
+   const acknowledged =
+     input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
+   const delivery = (task === null && requested === null) || task?.state === "STALE"
+-    ? await retiredDelivery(deps, status, requested)
++    ? await directDeliveryGuidance(deps, status, requested)
+     : null;
+   let action: OutcomeAction;
+   let settledNext: string[] | undefined;
+diff --git a/test/alhs_episode_convergence.test.ts b/test/alhs_episode_convergence.test.ts
+index f31ca22..567cc34 100644
+--- a/test/alhs_episode_convergence.test.ts
++++ b/test/alhs_episode_convergence.test.ts
+@@ -274,10 +274,14 @@ describe("ALHS-A episode conclusion", () => {
+     const { repo, head, stateDir } = workspace("committed");
+     const installed = install(repo, stateDir);
+     await start(installed, head, []);
++    const readiness = () => installed.application.work.outcomeReadiness();
++    expect((await readiness()).next.join(" ")).not.toContain("intent=DELIVER");
+     mkdirSync(join(repo, "deliverables"), { recursive: true });
+     writeFileSync(join(repo, "deliverables", "package.md"), "# Package\n\nA committed deployment package.\n");
++    expect((await readiness()).next.join(" ")).not.toContain("intent=DELIVER");
+     execFileSync("git", ["add", "-A"], { cwd: repo });
+     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "package"], { cwd: repo });
++    expect(await readiness()).toMatchObject({ action: "SEMANTIC_JUDGEMENT", next: [expect.stringContaining("intent=DELIVER")] });
+ 
+     const delivered = (await call(installed, "palimpsest_work", {
+       action: "conclude",
+@@ -293,6 +297,7 @@ describe("ALHS-A episode conclusion", () => {
+       tracked: true,
+       committed: true,
+     });
++    expect((await readiness()).next).toEqual(["reply using the recorded conclusion"]);
+   });
+ 
+   it("reads an older conclusion and separates verification records from open questions after restart", async () => {

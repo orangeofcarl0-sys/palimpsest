@@ -98,7 +98,8 @@ export async function runContainerSession({ run, sessionId, budgetPath, provider
       write(join(stage, "deployment-linux.json"), deployment);
     }
     runtime = createPrincipal({ repository, stage, home, image, preflight: join(HERE, "world_preflight.mjs"), layout,
-      acceptance: experiment?.acceptance, records: experiment?.records, worldVolume: experiment?.worldVolume });
+      acceptance: experiment?.acceptance, records: experiment?.records, worldVolume: experiment?.worldVolume,
+      sealedEvidence: experiment?.sealedEvidence });
     isolation = qualifyPrincipal(runtime, prepared.expectedHead);
     write(join(out, "qualification.json"), isolation);
 

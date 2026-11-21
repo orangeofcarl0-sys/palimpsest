@@ -1,0 +1,71 @@
+{
+  "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+  "patchSha256": "aaf61bf24bc5738693bc8a896a584c17f4ea7e2eee53b9b2c4182a3c626fdac5",
+  "status": "M src/application/work_outcome.ts\n M test/alhs_episode_convergence.test.ts",
+  "baseline": {
+    "exit": 1,
+    "checks": {
+      "initialHasNoDeliveryAdvice": true,
+      "dirtyHasNoDeliveryAdvice": true,
+      "cleanCommitSuggestsDelivery": false,
+      "recordedDeliveryCanClose": true,
+      "afterDeliveryAvoidsRepeatedConclusion": false,
+      "operatorBasisPreserved": true
+    }
+  },
+  "draft": {
+    "exit": 0,
+    "checks": {
+      "initialHasNoDeliveryAdvice": true,
+      "dirtyHasNoDeliveryAdvice": true,
+      "cleanCommitSuggestsDelivery": true,
+      "recordedDeliveryCanClose": true,
+      "afterDeliveryAvoidsRepeatedConclusion": true,
+      "operatorBasisPreserved": true
+    }
+  },
+  "tests": {
+    "exit": 0,
+    "suites": [
+      "test/alhs_episode_convergence.test.ts",
+      "test/pnwf_cq_direct_governed.test.ts",
+      "test/pnwf_cq_basis_admission.test.ts"
+    ],
+    "passed": 22
+  },
+  "unchangedHostBehavior": {
+    "pass": true,
+    "rows": [
+      {
+        "arm": "WITHOUT",
+        "condition": "clean",
+        "sourceGrade": 7,
+        "head": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+        "natural": true,
+        "reconciled": true,
+        "delivered": false,
+        "recorded": [],
+        "offers": 0,
+        "mockErrors": [],
+        "paidRequests": 0,
+        "requests": 3
+      },
+      {
+        "arm": "WITH",
+        "condition": "clean",
+        "sourceGrade": 5,
+        "head": "b5835cd22955dd33a96975c634dba4fba01246af",
+        "natural": true,
+        "reconciled": true,
+        "delivered": false,
+        "recorded": [],
+        "offers": 0,
+        "mockErrors": [],
+        "paidRequests": 0,
+        "requests": 3
+      }
+    ],
+    "errors": []
+  },
+  "paidRequests": 0
+}

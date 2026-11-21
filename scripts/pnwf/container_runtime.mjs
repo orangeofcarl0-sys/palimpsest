@@ -11,7 +11,7 @@ export function containerRepositoryPath(repository) {
   const path = resolve(repository).replaceAll("\\", "/");
   return /^[A-Za-z]:/u.test(path) ? "/" + path[0].toLowerCase() + path.slice(2) : "/product";
 }
-export function createPrincipal({ repository, stage, home, image, preflight, layout = "recorded", acceptance, records, worldVolume }) {
+export function createPrincipal({ repository, stage, home, image, preflight, layout = "recorded", acceptance, records, worldVolume, sealedEvidence }) {
   const imageId = docker(["image", "inspect", image, "--format", "{{.Id}}"]);
   const name = `pnwf-qualified-${randomUUID()}`;
   const harness = `${name}-harness`;
@@ -22,7 +22,10 @@ export function createPrincipal({ repository, stage, home, image, preflight, lay
     ...runtimeParts.map(part => ({ source: resolve(repository, part), target: `${repoPath}/${part}`, readOnly: true })),
     { source: resolve(stage), target: "/run/stage", readOnly: false },
     ...(worldVolume === undefined ? [] : [{ source: worldVolume, target: "/run/stage/world", readOnly: false }]),
+    ...(sealedEvidence === undefined ? [] : [{ source: resolve(sealedEvidence), target: "/run/stage/world/evidence", readOnly: true }]),
     { source: resolve(home), target: "/home/principal/.dsh", readOnly: false },
+    ...(sealedEvidence === undefined ? [] : [{ source: resolve(repository, "host/dsh"),
+      target: "/home/principal/.dsh/profiles/node_modules/palimpsest-dsh-host", readOnly: true }]),
     { source: resolve(preflight), target: "/qualification/world_preflight.mjs", readOnly: true },
     ...(records ? [
       { source: resolve(records), target: "/run/dispatch-records", readOnly: true },

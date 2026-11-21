@@ -39,7 +39,7 @@ Palimpsest 面向会跨越多个 Session、持续变化的项目。用户表达�
 
 ## 下一轮实施顺序
 
-下一轮把 Palimpsest 的自维护做成由它自己运行的项目。先做零付费资格，验证封存结果能唤醒维护会话，经核验的安装物能接过同一维护位置。首轮真实工单仅给维护目标，观察 Palimpsest 能否自行从冷交接原档找出问题、设计测试、提交候选，再由接受版推进一张新工单。[自主维护与版本接班](PALIMPSEST-SELF-EVOLUTION.md)
+自主维护试点的封存唤醒、状态读回和安装物接班已通过零付费资格。真实首轮可自行定位、测试和修订 Work readiness，64 笔内未提交。原轨迹中的宿主收尾仍可复现。形成独立验收通过的真实候选并由接受版推进新工单，仍是这条路线的验收条件。[自主维护与版本接班](PALIMPSEST-SELF-EVOLUTION.md) · [首轮报告](../engineering/PALIMPSEST-SELF-EVOLUTION-PILOT.md)
 
 ### 已完成试点的实施记录
 

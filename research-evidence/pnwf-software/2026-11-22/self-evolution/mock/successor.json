@@ -1,0 +1,178 @@
+{
+  "mode": "mock",
+  "attempt": 1,
+  "previousRelease": {
+    "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+    "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "loadedRelease": {
+    "candidate": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+    "buildSha256": "b93680e61b4158e1ea01e85083c5294b71f6426110fe5ae447c2edf4c636a503",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+  },
+  "activation": {
+    "old": {
+      "project": "palimpsest-maintenance",
+      "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+      "revision": 0,
+      "tasks": [],
+      "head": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+      "episode": "episode-35c395b2e46aff2c3de41957",
+      "journal": [
+        {
+          "id": "pje-ab7245e83f34aae01fdc1443efb68cf8",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-4d2a7df0827728483738d3c9339d5c1e",
+          "refs": []
+        }
+      ],
+      "questions": []
+    },
+    "readByNew": {
+      "project": "palimpsest-maintenance",
+      "basis": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+      "revision": 0,
+      "tasks": [],
+      "head": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+      "episode": "episode-35c395b2e46aff2c3de41957",
+      "journal": [
+        {
+          "id": "pje-ab7245e83f34aae01fdc1443efb68cf8",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-4d2a7df0827728483738d3c9339d5c1e",
+          "refs": []
+        }
+      ],
+      "questions": []
+    },
+    "accepted": {
+      "project": "palimpsest-maintenance",
+      "basis": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+      "revision": 1,
+      "tasks": [],
+      "head": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+      "episode": "episode-35c395b2e46aff2c3de41957",
+      "journal": [
+        {
+          "id": "pje-ab7245e83f34aae01fdc1443efb68cf8",
+          "refs": [
+            {
+              "kind": "sealed_run",
+              "id": "campaign-wake-4b0cad805e26bd80c98bb2288e95e701"
+            },
+            {
+              "kind": "git_commit",
+              "id": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61"
+            }
+          ]
+        },
+        {
+          "id": "pje-4d2a7df0827728483738d3c9339d5c1e",
+          "refs": []
+        }
+      ],
+      "questions": []
+    },
+    "basisAdmission": {
+      "actor": "operator:maintenance-installation-mock-operator",
+      "priorHead": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+      "approved": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+      "eventId": 6,
+      "recordedAt": "2026-11-21T19:50:31.898Z"
+    },
+    "checkpoint": "f645c4d1a0df04483b43c08069a61bae7163c69f8bc4c05bd588360acbf35553",
+    "active": {
+      "id": "85a1deb8-6de7-425f-80b3-f257cb4254f4",
+      "phase": "ACTIVE",
+      "approval": {
+        "mode": "mock",
+        "predecessor": {
+          "candidate": "082f77a9a4602d1eb5a2d9be1260186fa41c4a61",
+          "buildSha256": "d1d7a5bfc6688370d72c21a675cb5af31d84ca24356b1af38321341654dd9a8b",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "release": {
+          "candidate": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+          "buildSha256": "b93680e61b4158e1ea01e85083c5294b71f6426110fe5ae447c2edf4c636a503",
+          "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa"
+        },
+        "qualification": "273db5b30022eb19e91b09e515d9d6eaefc11f2df09f284eed52ca9154ccacbf"
+      },
+      "checkpoint": "f645c4d1a0df04483b43c08069a61bae7163c69f8bc4c05bd588360acbf35553",
+      "preparedAt": "2026-11-21T19:50:00.115Z",
+      "activatedAt": "2026-11-21T19:50:44.912Z"
+    }
+  },
+  "signalId": "campaign-wake-c9b026192da0fef2e0835c75568ffa64",
+  "latestInput": {
+    "entries": [
+      [
+        "candidate.bundle",
+        "6eed2393c9aa586b69d2d3e295f7b8f18b70d5e9a6a6368b7fc8548def7afc48"
+      ],
+      [
+        "frozen-checks.json",
+        "cfe4e4a681efabc7f55fb7aab5b7d272efa5b4f331fae3ddd9c57172067ab083"
+      ],
+      [
+        "request-accounting.json",
+        "d6944f4445e1596e29a6a7eb5c772241bd027de2b9e33e422fb535ee018904e6"
+      ],
+      [
+        "review-committed.md",
+        "cf29d43f851da291fd7dbd261e1c3fe93139dfb4e2de9b455731995727716145"
+      ]
+    ],
+    "sha256": "c90a36631a98b12628fe42ce7fc5bcfd9ecb29f62726a38d8d88f2bab9b16522"
+  },
+  "successorCheck": [
+    "wrong candidate",
+    "wrong buildSha256",
+    "restart with a prepared switch",
+    "unloadable installation",
+    "old role restored",
+    "stale transition cannot activate",
+    "duplicate activation",
+    "rollback before writes",
+    "rollback blocked after writes"
+  ],
+  "submission": {
+    "candidate": "14a7a128de2e2054093c541962cb43e5ae3e9309",
+    "basis": "5d5e7396e7155c6ab978bc312c295c67a6cb497c",
+    "status": "",
+    "changed": [
+      "maintenance/next.md"
+    ],
+    "valid": true,
+    "bundleSha256": "f491c9dc43462fc634d8ace1b70832d46b68bfbb166a4dff541c3a2710de6c26"
+  },
+  "priorRead": true,
+  "quality": null,
+  "delivery": "DELIVER",
+  "reconciliation": true,
+  "paidRequests": 0,
+  "natural": true
+}
