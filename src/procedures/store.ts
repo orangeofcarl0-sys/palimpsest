@@ -212,11 +212,11 @@ export class SqliteProcedureStore implements ProcedureStore {
   readonly #insertEvent: Statement;
   readonly #parsers: ProcedureEventParsers;
 
-  constructor(databasePath: string, options?: { readonly busyTimeoutMs?: number }) {
-    if (databasePath !== ":memory:") mkdirSync(dirname(databasePath), { recursive: true });
-    this.#database = new DatabaseSync(databasePath === ":memory:" ? ":memory:" : join(databasePath));
+  constructor(databasePath: string, options?: { readonly busyTimeoutMs?: number; readonly readOnly?: boolean }) {
+    if (!options?.readOnly && databasePath !== ":memory:") mkdirSync(dirname(databasePath), { recursive: true });
+    this.#database = new DatabaseSync(databasePath === ":memory:" ? ":memory:" : join(databasePath), { readOnly: options?.readOnly ?? false });
     this.#database.exec(`PRAGMA busy_timeout = ${options?.busyTimeoutMs ?? 5000}`);
-    this.#database.exec(
+    if (!options?.readOnly) this.#database.exec(
       "CREATE TABLE IF NOT EXISTS procedure_events (" +
         "scope_id TEXT NOT NULL, seq INTEGER NOT NULL, event_id TEXT NOT NULL UNIQUE, type TEXT NOT NULL, " +
         "payload_json TEXT NOT NULL, chain_digest TEXT NOT NULL, PRIMARY KEY (scope_id, seq))",

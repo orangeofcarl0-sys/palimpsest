@@ -1,0 +1,16 @@
+
+ RUN  v4.1.10 /work
+
+ ✓ test/alhs_episode_convergence.test.ts (10 tests) 6074ms
+     ✓ records WAIT_FOR_OPERATOR after delivery, and DELIVER stays refused until acceptance  1272ms
+     ✓ delivers a lightweight project with no formal tasks, then reopens after a new project fact  524ms
+     ✓ reports a committed artifact without a provenance warning  449ms
+     ✓ reads an older conclusion and separates verification records from open questions after restart  1255ms
+     ✓ binds each DELIVER to the bytes of its current Git commit on the same Host  1755ms
+     ✓ CONTINUE requires a next step and does not pretend the episode ended  303ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  10:26:03
+   Duration  12.29s (transform 4.94s, setup 0ms, import 5.97s, tests 6.07s, environment 0ms)
+

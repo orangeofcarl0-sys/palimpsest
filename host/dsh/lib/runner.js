@@ -1414,7 +1414,12 @@ async function run(ctx, deps) {
       host.deployment?.installed?.application?.projectWorkspace,
       startup.message,
     );
-    await deliver(launchMessage);
+    const method = await host.deployment?.focusedTesting?.read();
+    if (method) process.stdout.write(`PALIMPSEST_FOCUSED_TEST_OFFER ${JSON.stringify(method)}\n`);
+    const testHint = method
+      ? `\n\n[Project verification method] In this read-only dependency environment, for targeted Vitest checks run \`${method.argv.join(' ')} --maxWorkers 1 <test paths>\` from the repository root. Read the test assertions and use the actual exit status. This is optional advice for selecting a test command.`
+      : '';
+    await deliver(launchMessage + testHint);
   }
 
   if (startup.once === true) {

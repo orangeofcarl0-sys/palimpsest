@@ -1,0 +1,564 @@
+{
+  "result": "PASS",
+  "inputs": {
+    "basis": "8e1e3098328a8d75758f50b884599206f4b547b7",
+    "image": "sha256:702da68f6115eaddcf2e9b69bc6093d663f3d5d4e5cddcf2c7fb4c44664a67aa",
+    "briefSha256": "2df80ca134b0a741a39baddf52a5eaf726bc755c85043426418a29123a7b3140",
+    "oracleSha256": "5c0a5807fe34e56ceddaf3b293cffc19c4c804dfbbcf4d5d5b3c48ac6dc51c58",
+    "runtimeSha256": "a332123cfd735ec9bd027bf2ff7d01cde53f97b2e683c66411c7fff1b5685537"
+  },
+  "procedure": {
+    "procedureId": "prc-1966931f7a21b77663b7cff1c4129b76",
+    "revision": 0,
+    "digest": "f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e"
+  },
+  "window": {
+    "maxRequests": 64,
+    "wallClockMs": 1800000,
+    "requestTimeoutMs": 240000,
+    "billingCeiling": null
+  },
+  "sdk": {
+    "packageSha256": "902529f18e6c2cee675046e47c83334753f92ff1aa5669dbabcd953f4270aa25",
+    "method": {
+      "procedure": {
+        "procedureId": "prc-1966931f7a21b77663b7cff1c4129b76",
+        "revision": 0,
+        "digest": "f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e"
+      },
+      "head": "8e1e3098328a8d75758f50b884599206f4b547b7",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--configLoader",
+        "runner",
+        "--no-cache"
+      ]
+    },
+    "actualInvocation": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--configLoader",
+      "runner",
+      "--no-cache",
+      "--maxWorkers",
+      "1",
+      "test/alhs_episode_convergence.test.ts"
+    ],
+    "exit": 0,
+    "packageEntry": "file:///tmp/sdk/node_modules/palimpsest-dsh/dist/src/product.js",
+    "refused": [
+      "missing store",
+      "wrong reference digest",
+      "retired reference",
+      "dirty package manifest",
+      "missing dependencies",
+      "writable dependencies"
+    ]
+  },
+  "rows": [
+    {
+      "arm": "WITH",
+      "mode": "mock",
+      "basis": "8e1e3098328a8d75758f50b884599206f4b547b7",
+      "paidRequests": 0,
+      "session": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "focused-maintenance-6c076c50-c6d0-46df-ae66-d18539ea8318",
+        "sessionId": "MAINTAIN",
+        "condition": "P",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-focused-method-mock-20261121-180442\\WITH\\stages\\MAINTAIN\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-focused-method-mock-20261121-180442\\WITH\\runtime-MAINTAIN",
+        "principalRuntime": "container",
+        "containerId": "f8f1332b11384f133c19452304b9ad5e46330d8c827e244834cc0ab33b15654a",
+        "qualification": "a55843703924f641a4a08f077ca52e2dea3ed0b6b0aad1f4cb76c8d3720db0f2",
+        "startedAt": "2026-11-21T10:06:43.024Z",
+        "endedAt": "2026-11-21T10:07:39.338Z",
+        "exitCode": 0,
+        "error": null,
+        "killedBy": null,
+        "stopped": false,
+        "natural": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "focused-maintenance-6c076c50-c6d0-46df-ae66-d18539ea8318",
+          "sessionId": "MAINTAIN",
+          "observedAt": "2026-11-21T10:07:39.338Z",
+          "maxTokens": 2000000,
+          "softCeiling": 2000000,
+          "totalTokens": 297044,
+          "confirmedTokens": 297044,
+          "reservedTokens": 0,
+          "unresolvedRequests": 0,
+          "source": "REQUEST_ADMISSION_LEDGER",
+          "state": "ENDED"
+        },
+        "mode": "mock",
+        "paidRequestsAdmitted": 0,
+        "paidModelCalls": 0
+      },
+      "accounting": {
+        "admitted": 4,
+        "confirmed": 297044,
+        "unresolved": 0
+      },
+      "attribution": {
+        "valid": true,
+        "principalId": "session-dd4e0f47-24ff-475f-8a24-149fb69ed01a",
+        "usageQualified": true,
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "mode": "mock",
+        "requests": 4,
+        "knownTokens": 297044,
+        "totalTokens": 297044,
+        "unresolvedRequests": 0,
+        "usage": {
+          "input_tokens": 294402,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2642
+        },
+        "usageByRole": {
+          "principal": {
+            "requests": 4,
+            "input": 294402,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 2642,
+            "total": 297044
+          }
+        },
+        "traceTotal": 297044,
+        "traceRequests": 4,
+        "workerRequests": 0,
+        "elapsedMs": 56314,
+        "natural": true,
+        "stop": null,
+        "error": null,
+        "workerReceipts": [],
+        "traces": [
+          {
+            "id": "session-dd4e0f47-24ff-475f-8a24-149fb69ed01a",
+            "cwd": "/run/stage/world",
+            "role": "principal",
+            "digest": "1a31d3928b4e1cbe0ca08d411724c734f127c1e29347abda2f051d47e4b31353",
+            "counts": {
+              "steps": 4,
+              "turns": 1,
+              "toolCalls": 3,
+              "pairedToolResults": 3,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 0,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 0,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 2
+            },
+            "refs": [],
+            "failedJobs": [],
+            "modelSteps": [
+              {
+                "seq": 14,
+                "at": 1795255630874,
+                "messageId": "0458117c-e868-49ce-9c6e-58e0d9d9e18b",
+                "usage": {
+                  "inputTokens": 96563,
+                  "outputTokens": 294,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 96857
+                }
+              },
+              {
+                "seq": 22,
+                "at": 1795255644256,
+                "messageId": "f9ea79fa-2dd2-4e86-9907-e79fefdc9c0c",
+                "usage": {
+                  "inputTokens": 55979,
+                  "outputTokens": 1990,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 57969
+                }
+              },
+              {
+                "seq": 30,
+                "at": 1795255657209,
+                "messageId": "2c7affa1-8dd0-49bf-8513-cfd54ff23878",
+                "usage": {
+                  "inputTokens": 69967,
+                  "outputTokens": 285,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 70252
+                }
+              },
+              {
+                "seq": 36,
+                "at": 1795255658714,
+                "messageId": "02cd46a1-a475-45de-95d7-3c71d201899a",
+                "usage": {
+                  "inputTokens": 71893,
+                  "outputTokens": 73,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 71966
+                }
+              }
+            ],
+            "byKind": {
+              "bash": 2,
+              "work:conclude": 1
+            }
+          }
+        ]
+      },
+      "testSelection": {
+        "offer": {
+          "procedure": {
+            "procedureId": "prc-1966931f7a21b77663b7cff1c4129b76",
+            "revision": 0,
+            "digest": "f76d9724545e81b6867f9f9b155f56d485a363a8ab07cd8146bf3d9879ad014e"
+          },
+          "head": "8e1e3098328a8d75758f50b884599206f4b547b7",
+          "argv": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--configLoader",
+            "runner",
+            "--no-cache"
+          ]
+        },
+        "stream": "--run-stage-world--/session-dd4e0f47-24ff-475f-8a24-149fb69ed01a/session.v4.jsonl.zstd",
+        "activity": [
+          {
+            "callId": "focused_first",
+            "callSeq": 15,
+            "resultSeq": 18,
+            "step": 1,
+            "offsetMs": 14597,
+            "command": "node node_modules/vitest/vitest.mjs run --configLoader runner --no-cache --maxWorkers 1 test/alhs_episode_convergence.test.ts",
+            "state": "PASS",
+            "testsPassed": 9,
+            "startupError": null,
+            "method": "EXACT"
+          },
+          {
+            "callId": "focused_patch",
+            "callSeq": 23,
+            "resultSeq": 26,
+            "step": 2,
+            "offsetMs": 27566,
+            "command": "node -e 'const f=require('\\''node:fs'\\'');const p='\\''src/project_continuity/episode.ts'\\'';const before=f.readFileSync(p,'\\''utf8'\\'');const from=\"warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);\";if(!before.includes(from))process.exit(1);f.writeFileSync(p,before.replace(from,\"if (state.detail === \\\"tracked with uncommitted changes\\\") warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);\\n      else warnings.push(`artifact ${state.path} is tracked but commit provenance could not be confirmed: ${state.detail}`);\"));' && node -e 'const f=require('\\''node:fs'\\'');const p='\\''test/alhs_episode_convergence.test.ts'\\'';const before=f.readFileSync(p,'\\''utf8'\\'');f.writeFileSync(p,'\\''import { episodeArtifactWarnings } from \"../src/project_continuity/episode.js\";\\n'\\''+before+\"\\n\\nit(\\\"reports dirty artifact bytes without confusing an observation failure\\\", () => {\\n  const state = { path: \\\"review.md\\\", present: true, tracked: true, committed: false, commit: null, source: \\\"WORKTREE\\\" as const, digest: null };\\n  expect(episodeArtifactWarnings([{ ...state, detail: \\\"HEAD changed during artifact observation\\\" }]).join(\\\" \\\")).toMatch(/HEAD changed/);\\n  expect(episodeArtifactWarnings([{ ...state, detail: \\\"tracked with uncommitted changes\\\" }]).join(\\\" \\\")).toMatch(/uncommitted changes/);\\n});\\n\");' && node node_modules/vitest/vitest.mjs run --configLoader runner --no-cache --maxWorkers 1 test/alhs_episode_convergence.test.ts && git add -- src/project_continuity/episode.ts test/alhs_episode_convergence.test.ts && git commit -m 'Report the observed artifact provenance failure' && echo FOCUSED_MOCK_COMMITTED",
+            "state": "PASS",
+            "testsPassed": 10,
+            "startupError": null,
+            "method": "EXACT"
+          }
+        ],
+        "firstPass": {
+          "callId": "focused_first",
+          "callSeq": 15,
+          "resultSeq": 18,
+          "step": 1,
+          "offsetMs": 14597,
+          "command": "node node_modules/vitest/vitest.mjs run --configLoader runner --no-cache --maxWorkers 1 test/alhs_episode_convergence.test.ts",
+          "state": "PASS",
+          "testsPassed": 9,
+          "startupError": null,
+          "method": "EXACT"
+        },
+        "requestsToFirstPass": 1,
+        "usageToFirstPass": {
+          "inputTokens": 96563,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "outputTokens": 294,
+          "totalTokens": 96857
+        },
+        "startupFailures": 0,
+        "exactInvocations": 2
+      },
+      "conclusion": {
+        "seq": 2,
+        "eventId": "pjer-f64a8af3d989def9d57f15e0cdd749e1",
+        "intent": "DELIVER",
+        "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Submit the corrected provenance warnings and their regression.\nArtifacts:\n- src/project_continuity/episode.ts\n- test/alhs_episode_convergence.test.ts\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head 8e1e3098328a8d75758f50b884599206f4b547b7\nArtifact provenance:\n- src/project_continuity/episode.ts: present=true tracked=true committed=true source=WORKTREE digest=ec23bb1d77fc commit=5d0e974ec12b\n- test/alhs_episode_convergence.test.ts: present=true tracked=true committed=true source=WORKTREE digest=e98efc0ad5af commit=5d0e974ec12b\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Submit the corrected provenance warnings and their regression.\",\"artifacts\":[\"src/project_continuity/episode.ts\",\"test/alhs_episode_convergence.test.ts\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T10:07:37.977Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"62d33d09c268f85a6121cd0f6732940ccf8d35ee2146eb3a6e1ac78da4c47659\",\"headCommit\":\"8e1e3098328a8d75758f50b884599206f4b547b7\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"src/project_continuity/episode.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"ec23bb1d77fc9a5f9bc76c2034f3273b73d871e52285436adb5b490d8aeb3834\",\"source\":\"WORKTREE\",\"commit\":\"5d0e974ec12b753df1a5f371b92ed31820d11d8e\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/alhs_episode_convergence.test.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"e98efc0ad5af41d59cff05d9c742e25f01eff22fdaa80fc55145f66efdcd01e6\",\"source\":\"WORKTREE\",\"commit\":\"5d0e974ec12b753df1a5f371b92ed31820d11d8e\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-ef4524204a43d2bc498941cd\"}"
+      },
+      "candidate": "5d0e974ec12b753df1a5f371b92ed31820d11d8e",
+      "status": "",
+      "paths": [
+        "src/project_continuity/episode.ts",
+        "test/alhs_episode_convergence.test.ts"
+      ],
+      "quality": {
+        "exit": 0,
+        "passed": 5,
+        "expected": 5,
+        "publicTests": {
+          "exit": 0,
+          "passed": 10
+        },
+        "typecheck": 0
+      },
+      "delivery": true,
+      "result": "PASS"
+    },
+    {
+      "arm": "WITHOUT",
+      "mode": "mock",
+      "basis": "8e1e3098328a8d75758f50b884599206f4b547b7",
+      "paidRequests": 0,
+      "session": {
+        "schema": "alhs-core-session-run/v1",
+        "cohortId": "focused-maintenance-5ae8d696-7ae7-4e31-bab5-89dd74ae2796",
+        "sessionId": "MAINTAIN",
+        "condition": "P",
+        "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-focused-method-mock-20261121-180442\\WITHOUT\\stages\\MAINTAIN\\world",
+        "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-focused-method-mock-20261121-180442\\WITHOUT\\runtime-MAINTAIN",
+        "principalRuntime": "container",
+        "containerId": "4f2e798698beeb87f9a31dd9d9284906f5836a9799537585c80e4a9fdeda6b87",
+        "qualification": "b0472fb2ab8a211ff4f81d92e486b858d0fb3f1e61a558f9fe6d149697f4726c",
+        "startedAt": "2026-11-21T10:08:50.669Z",
+        "endedAt": "2026-11-21T10:09:34.105Z",
+        "exitCode": 0,
+        "error": null,
+        "killedBy": null,
+        "stopped": false,
+        "natural": true,
+        "usage": {
+          "schema": "aps-budget-ledger/v1",
+          "cohortId": "focused-maintenance-5ae8d696-7ae7-4e31-bab5-89dd74ae2796",
+          "sessionId": "MAINTAIN",
+          "observedAt": "2026-11-21T10:09:34.105Z",
+          "maxTokens": 2000000,
+          "softCeiling": 2000000,
+          "totalTokens": 300162,
+          "confirmedTokens": 300162,
+          "reservedTokens": 0,
+          "unresolvedRequests": 0,
+          "source": "REQUEST_ADMISSION_LEDGER",
+          "state": "ENDED"
+        },
+        "mode": "mock",
+        "paidRequestsAdmitted": 0,
+        "paidModelCalls": 0
+      },
+      "accounting": {
+        "admitted": 4,
+        "confirmed": 300162,
+        "unresolved": 0
+      },
+      "attribution": {
+        "valid": true,
+        "principalId": "session-df47093c-df40-4e5a-861b-421055d137af",
+        "usageQualified": true,
+        "requestIdsBound": true,
+        "tupleMatch": true,
+        "mode": "mock",
+        "requests": 4,
+        "knownTokens": 300162,
+        "totalTokens": 300162,
+        "unresolvedRequests": 0,
+        "usage": {
+          "input_tokens": 297553,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 2609
+        },
+        "usageByRole": {
+          "principal": {
+            "requests": 4,
+            "input": 297553,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 2609,
+            "total": 300162
+          }
+        },
+        "traceTotal": 300162,
+        "traceRequests": 4,
+        "workerRequests": 0,
+        "elapsedMs": 43436,
+        "natural": true,
+        "stop": null,
+        "error": null,
+        "workerReceipts": [],
+        "traces": [
+          {
+            "id": "session-df47093c-df40-4e5a-861b-421055d137af",
+            "cwd": "/run/stage/world",
+            "role": "principal",
+            "digest": "d19fdac6210fe658a8ecf71706d62394d4a08bed80011c4e3c16c7a886ae7e61",
+            "counts": {
+              "steps": 4,
+              "turns": 1,
+              "toolCalls": 3,
+              "pairedToolResults": 3,
+              "unpairedToolResults": 0,
+              "toolErrors": 0,
+              "jobFailures": 1,
+              "domainRefusals": 0,
+              "repeatedRefusals": 0,
+              "noProgressToolCalls": 1,
+              "stateQueries": 0,
+              "commits": 0,
+              "jobs": 2
+            },
+            "refs": [],
+            "failedJobs": [
+              {
+                "jobId": "bash-26211af64c054860",
+                "status": "completed",
+                "reason": "NONZERO_EXIT",
+                "callId": "focused_first",
+                "callSeq": 15,
+                "callKind": "bash",
+                "resultSeq": 18,
+                "settledSeq": 17,
+                "durationMs": 522
+              }
+            ],
+            "modelSteps": [
+              {
+                "seq": 14,
+                "at": 1795255757847,
+                "messageId": "a5125548-5ffc-456d-9e7a-651ea9be6eab",
+                "usage": {
+                  "inputTokens": 95525,
+                  "outputTokens": 261,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 95786
+                }
+              },
+              {
+                "seq": 22,
+                "at": 1795255758475,
+                "messageId": "a28e2cd0-89ec-4034-a46c-db3f34743a95",
+                "usage": {
+                  "inputTokens": 58164,
+                  "outputTokens": 1990,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 60154
+                }
+              },
+              {
+                "seq": 30,
+                "at": 1795255771883,
+                "messageId": "78669a00-1284-4f88-86a6-b322b9a128f2",
+                "usage": {
+                  "inputTokens": 70969,
+                  "outputTokens": 285,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 71254
+                }
+              },
+              {
+                "seq": 36,
+                "at": 1795255773480,
+                "messageId": "9f4c9702-c607-43d9-b7cf-d7e30ba3567a",
+                "usage": {
+                  "inputTokens": 72895,
+                  "outputTokens": 73,
+                  "cacheReadTokens": 0,
+                  "cacheWriteTokens": 0,
+                  "totalTokens": 72968
+                }
+              }
+            ],
+            "byKind": {
+              "bash": 2,
+              "work:conclude": 1
+            }
+          }
+        ]
+      },
+      "testSelection": {
+        "offer": null,
+        "stream": "--run-stage-world--/session-df47093c-df40-4e5a-861b-421055d137af/session.v4.jsonl.zstd",
+        "activity": [
+          {
+            "callId": "focused_first",
+            "callSeq": 15,
+            "resultSeq": 18,
+            "step": 1,
+            "offsetMs": 1789,
+            "command": "node node_modules/vitest/vitest.mjs run --maxWorkers 1 test/alhs_episode_convergence.test.ts",
+            "state": "STARTUP_FAILURE",
+            "testsPassed": 0,
+            "startupError": "Error: ENOENT: no such file or directory, mkdir '/run/stage/world/node_modules/.vite-temp'",
+            "method": null
+          },
+          {
+            "callId": "focused_patch",
+            "callSeq": 23,
+            "resultSeq": 26,
+            "step": 2,
+            "offsetMs": 15198,
+            "command": "node -e 'const f=require('\\''node:fs'\\'');const p='\\''src/project_continuity/episode.ts'\\'';const before=f.readFileSync(p,'\\''utf8'\\'');const from=\"warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);\";if(!before.includes(from))process.exit(1);f.writeFileSync(p,before.replace(from,\"if (state.detail === \\\"tracked with uncommitted changes\\\") warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);\\n      else warnings.push(`artifact ${state.path} is tracked but commit provenance could not be confirmed: ${state.detail}`);\"));' && node -e 'const f=require('\\''node:fs'\\'');const p='\\''test/alhs_episode_convergence.test.ts'\\'';const before=f.readFileSync(p,'\\''utf8'\\'');f.writeFileSync(p,'\\''import { episodeArtifactWarnings } from \"../src/project_continuity/episode.js\";\\n'\\''+before+\"\\n\\nit(\\\"reports dirty artifact bytes without confusing an observation failure\\\", () => {\\n  const state = { path: \\\"review.md\\\", present: true, tracked: true, committed: false, commit: null, source: \\\"WORKTREE\\\" as const, digest: null };\\n  expect(episodeArtifactWarnings([{ ...state, detail: \\\"HEAD changed during artifact observation\\\" }]).join(\\\" \\\")).toMatch(/HEAD changed/);\\n  expect(episodeArtifactWarnings([{ ...state, detail: \\\"tracked with uncommitted changes\\\" }]).join(\\\" \\\")).toMatch(/uncommitted changes/);\\n});\\n\");' && node node_modules/vitest/vitest.mjs run --configLoader runner --no-cache --maxWorkers 1 test/alhs_episode_convergence.test.ts && git add -- src/project_continuity/episode.ts test/alhs_episode_convergence.test.ts && git commit -m 'Report the observed artifact provenance failure' && echo FOCUSED_MOCK_COMMITTED",
+            "state": "PASS",
+            "testsPassed": 10,
+            "startupError": null,
+            "method": "EXACT"
+          }
+        ],
+        "firstPass": {
+          "callId": "focused_patch",
+          "callSeq": 23,
+          "resultSeq": 26,
+          "step": 2,
+          "offsetMs": 15198,
+          "command": "node -e 'const f=require('\\''node:fs'\\'');const p='\\''src/project_continuity/episode.ts'\\'';const before=f.readFileSync(p,'\\''utf8'\\'');const from=\"warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);\";if(!before.includes(from))process.exit(1);f.writeFileSync(p,before.replace(from,\"if (state.detail === \\\"tracked with uncommitted changes\\\") warnings.push(`artifact ${state.path} is tracked but has uncommitted changes; HEAD does not contain the final bytes`);\\n      else warnings.push(`artifact ${state.path} is tracked but commit provenance could not be confirmed: ${state.detail}`);\"));' && node -e 'const f=require('\\''node:fs'\\'');const p='\\''test/alhs_episode_convergence.test.ts'\\'';const before=f.readFileSync(p,'\\''utf8'\\'');f.writeFileSync(p,'\\''import { episodeArtifactWarnings } from \"../src/project_continuity/episode.js\";\\n'\\''+before+\"\\n\\nit(\\\"reports dirty artifact bytes without confusing an observation failure\\\", () => {\\n  const state = { path: \\\"review.md\\\", present: true, tracked: true, committed: false, commit: null, source: \\\"WORKTREE\\\" as const, digest: null };\\n  expect(episodeArtifactWarnings([{ ...state, detail: \\\"HEAD changed during artifact observation\\\" }]).join(\\\" \\\")).toMatch(/HEAD changed/);\\n  expect(episodeArtifactWarnings([{ ...state, detail: \\\"tracked with uncommitted changes\\\" }]).join(\\\" \\\")).toMatch(/uncommitted changes/);\\n});\\n\");' && node node_modules/vitest/vitest.mjs run --configLoader runner --no-cache --maxWorkers 1 test/alhs_episode_convergence.test.ts && git add -- src/project_continuity/episode.ts test/alhs_episode_convergence.test.ts && git commit -m 'Report the observed artifact provenance failure' && echo FOCUSED_MOCK_COMMITTED",
+          "state": "PASS",
+          "testsPassed": 10,
+          "startupError": null,
+          "method": "EXACT"
+        },
+        "requestsToFirstPass": 2,
+        "usageToFirstPass": {
+          "inputTokens": 153689,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "outputTokens": 2251,
+          "totalTokens": 155940
+        },
+        "startupFailures": 1,
+        "exactInvocations": 1
+      },
+      "conclusion": {
+        "seq": 2,
+        "eventId": "pjer-b350709b291997e923087133a01dffef",
+        "intent": "DELIVER",
+        "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Submit the corrected provenance warnings and their regression.\nArtifacts:\n- src/project_continuity/episode.ts\n- test/alhs_episode_convergence.test.ts\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 0, head 8e1e3098328a8d75758f50b884599206f4b547b7\nArtifact provenance:\n- src/project_continuity/episode.ts: present=true tracked=true committed=true source=WORKTREE digest=ec23bb1d77fc commit=2a96ae0015b0\n- test/alhs_episode_convergence.test.ts: present=true tracked=true committed=true source=WORKTREE digest=e98efc0ad5af commit=2a96ae0015b0\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Submit the corrected provenance warnings and their regression.\",\"artifacts\":[\"src/project_continuity/episode.ts\",\"test/alhs_episode_convergence.test.ts\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T10:09:32.676Z\",\"basis\":{\"projectRevision\":0,\"projectDigest\":\"a3fd498580c6dc06e4ef3b3f961c3e29b3338631aaad871e1e37b920060ad261\",\"headCommit\":\"8e1e3098328a8d75758f50b884599206f4b547b7\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"src/project_continuity/episode.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"ec23bb1d77fc9a5f9bc76c2034f3273b73d871e52285436adb5b490d8aeb3834\",\"source\":\"WORKTREE\",\"commit\":\"2a96ae0015b0c37adc1662133dacc378e03c1af2\",\"detail\":\"committed at HEAD\"},{\"path\":\"test/alhs_episode_convergence.test.ts\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"e98efc0ad5af41d59cff05d9c742e25f01eff22fdaa80fc55145f66efdcd01e6\",\"source\":\"WORKTREE\",\"commit\":\"2a96ae0015b0c37adc1662133dacc378e03c1af2\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-06d02c220ae44596753e7b33\"}"
+      },
+      "candidate": "2a96ae0015b0c37adc1662133dacc378e03c1af2",
+      "status": "",
+      "paths": [
+        "src/project_continuity/episode.ts",
+        "test/alhs_episode_convergence.test.ts"
+      ],
+      "quality": {
+        "exit": 0,
+        "passed": 5,
+        "expected": 5,
+        "publicTests": {
+          "exit": 0,
+          "passed": 10
+        },
+        "typecheck": 0
+      },
+      "delivery": true,
+      "result": "PASS"
+    }
+  ]
+}
