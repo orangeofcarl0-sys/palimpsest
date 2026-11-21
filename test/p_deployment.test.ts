@@ -100,6 +100,13 @@ describe("G10-P deployment profile", () => {
       // override; a semantic/authority field fails closed.
       expect(() => parseDeploymentProfile({ ...valid, reasoning: {} })).not.toThrow();
       expect(() => parseDeploymentProfile({ ...valid, reasoning: { enabled: true } })).toThrow(DeploymentProfileError);
+      const procedure = { procedureId: "prc-focused", revision: 0, digest: "a".repeat(64) };
+      const focusedTesting = { storePath: join(root, "procedures.sqlite"), procedure };
+      expect(parseDeploymentProfile({ ...valid, focusedTesting }).focusedTesting).toEqual(focusedTesting);
+      for (const change of [{ authority: "operator" }, { revision: -1 }, { digest: "a".repeat(63) }]) {
+        expect(() => parseDeploymentProfile({ ...valid, focusedTesting: { ...focusedTesting, procedure: { ...procedure, ...change } } }))
+          .toThrow(DeploymentProfileError);
+      }
       expect(() => parseDeploymentProfile({ ...valid, localPeer: "has space" })).toThrow(DeploymentProfileError);
     } finally {
       rmSync(root, { recursive: true, force: true });

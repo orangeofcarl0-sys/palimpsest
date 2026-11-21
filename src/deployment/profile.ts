@@ -13,9 +13,7 @@
  * authority/role/permission field fails closed instead of being silently ignored.
  */
 
-import { isStableIdentifier } from "../schema/identifier.js";
-import { parseProcedureRef } from "../procedures/index.js";
-import type { FocusedTestingSelection } from "../composition/focused_testing.js";
+import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 
 export const DEPLOYMENT_PROFILE_SCHEMA_VERSION = 1;
 
@@ -230,7 +228,14 @@ export interface ProjectAgentDeploymentProfile {
    * about reasoning changes (never a stub).
    */
   readonly reasoning?: DeploymentReasoningConfig | undefined;
-  readonly focusedTesting?: FocusedTestingSelection | undefined;
+  readonly focusedTesting?: {
+    readonly storePath: string;
+    readonly procedure: {
+      readonly procedureId: string;
+      readonly revision: number;
+      readonly digest: string;
+    };
+  } | undefined;
   /**
    * Trajectory-P2-D2 §10 (additive): the EXPERIMENTAL, DEFAULT-OFF model-visible Trajectory delivery.
    * Present (even `{}`) composes the capability; `mode` selects the arm. Absent ⇒ nothing changes.
@@ -300,6 +305,27 @@ function optionalStableId(object: Record<string, unknown>, key: string, what: st
   const value = object[key];
   if (value === undefined) return undefined;
   return stableId(value, `${what}.${key}`);
+}
+
+function parseFocusedTesting(raw: unknown, what: string): NonNullable<ProjectAgentDeploymentProfile["focusedTesting"]> {
+  const config = asObject(raw, what);
+  exactKeys(config, ["storePath", "procedure"], what);
+  const reference = `${what}.procedure`;
+  const procedure = asObject(config.procedure, reference);
+  exactKeys(procedure, ["procedureId", "revision", "digest"], reference);
+  const procedureId = normalizeStableIdentifier(stableId(procedure.procedureId, `${reference}.procedureId`));
+  const revision = procedure.revision;
+  if (typeof revision !== "number" || !Number.isInteger(revision) || revision < 0) {
+    fail("invalid_value", `${reference}.revision must be a non-negative integer`);
+  }
+  const digest = requiredString(procedure, "digest", reference);
+  if (!/^[0-9a-f]{64}$/u.test(digest)) {
+    fail("invalid_value", `${reference}.digest must be a canonical sha256 digest`);
+  }
+  return Object.freeze({
+    storePath: requiredString(config, "storePath", what),
+    procedure: Object.freeze({ procedureId, revision, digest }),
+  });
 }
 
 function parseDirectory(raw: unknown, what: string): readonly DeploymentDirectoryEntry[] {
@@ -529,8 +555,6 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
   const transportObject = asObject(object.transport, `${what}.transport`);
   exactKeys(transportObject, ["namespace", "databasePath"], `${what}.transport`);
   const databasesObject = asObject(object.databases, `${what}.databases`);
-  const focusedTesting = object.focusedTesting === undefined ? undefined : asObject(object.focusedTesting, `${what}.focusedTesting`);
-  if (focusedTesting !== undefined) exactKeys(focusedTesting, ["storePath", "procedure"], `${what}.focusedTesting`);
   exactKeys(
     databasesObject,
     ["orchestration", "ordarium", "coordination", "transportCursors", "boundaryMemory", "runtimeScope", "attentionMarks", "projectAssociations", "projectJournal", "management"],
@@ -580,10 +604,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       ? {}
       : { projectDirectory: parseProjectDirectory(object.projectDirectory, `${what}.projectDirectory`) }),
     ...(object.reasoning === undefined ? {} : { reasoning: parseReasoning(object.reasoning, `${what}.reasoning`) }),
-    ...(focusedTesting === undefined ? {} : { focusedTesting: Object.freeze({
-      storePath: requiredString(focusedTesting, "storePath", `${what}.focusedTesting`),
-      procedure: parseProcedureRef(focusedTesting.procedure, `${what}.focusedTesting.procedure`),
-    }) }),
+    ...(object.focusedTesting === undefined ? {} : { focusedTesting: parseFocusedTesting(object.focusedTesting, `${what}.focusedTesting`) }),
     ...(object.trajectory === undefined ? {} : { trajectory: parseTrajectory(object.trajectory, `${what}.trajectory`) }),
     ...(object.attention === undefined ? {} : { attention: parseAttention(object.attention, `${what}.attention`) }),
     ...(optionalStableId(object, "boundaryHomeId", what) === undefined ? {} : { boundaryHomeId: optionalStableId(object, "boundaryHomeId", what)! }),
