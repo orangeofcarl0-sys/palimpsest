@@ -102,8 +102,8 @@ export function trajectory(prepared, evidence) {
     lastReply: raw.findLast(e => e.type === "assistant/message")?.seq ?? null };
 }
 
-export function retainCandidate(prepared, world, basis, stage) {
-  assert(sha(basis));
+export function retainCandidate(prepared, world, basis, stage, { bundleBasis = basis } = {}) {
+  assert(sha(basis) && sha(bundleBasis));
   const bundle = join(prepared.run, "candidate.bundle");
   const output = join(prepared.run, "submission");
   mkdirSync(output);
@@ -117,7 +117,8 @@ export function retainCandidate(prepared, world, basis, stage) {
   if (candidate !== basis) {
     const ancestry = offline(world, `git merge-base --is-ancestor ${basis} ${candidate}`);
     if (ancestry.status === 0) {
-      success(offline(world, `git bundle create /evidence/candidate.bundle ${basis}..HEAD && git diff --binary ${basis} ${candidate} > /evidence/candidate.patch`,
+      success(offline(world, `git merge-base --is-ancestor ${bundleBasis} ${basis} && ` +
+        `git bundle create /evidence/candidate.bundle ${bundleBasis}..HEAD && git diff --binary ${basis} ${candidate} > /evidence/candidate.patch`,
         [`${prepared.run}:/evidence`]));
       const allow = stage === "first" ? /^(?:(?:src|host\/dsh|tests?|scripts|docs|maintenance)\/.+|[^/]+\.(?:md|mjs|ts))$/u :
         /^(?:(?:scripts\/pnwf\/software\/continuity-reuse|tests?|docs|maintenance)\/.+|[^/]+\.(?:md|mjs|ts))$/u;

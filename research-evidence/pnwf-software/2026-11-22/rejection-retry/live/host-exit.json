@@ -1,0 +1,14 @@
+{
+  "source": "Observed stderr and exit status of the original launch process",
+  "exitCode": 1,
+  "error": "write EPIPE",
+  "stack": [
+    "Error: write EPIPE",
+    "at afterWriteDispatched (node:internal/stream_base_commons:159:15)",
+    "at writeGeneric (node:internal/stream_base_commons:150:3)",
+    "at send (file:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/container_bridge.mjs:40:69)",
+    "at ClientRequest.<anonymous> (file:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/pnwf/container_bridge.mjs:72:11)",
+    "Emitted 'error' event on Socket instance",
+    "errno: -4047; code: EPIPE; syscall: write"
+  ]
+}

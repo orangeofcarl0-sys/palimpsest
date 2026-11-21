@@ -7,35 +7,39 @@ import { docker } from "../../container_runtime.mjs";
 import { PAID_MODE } from "../../bounded_provider.mjs";
 import { readOpenCodeGoKey, requireOpenCodeGoProbe } from "../../opencode_go.mjs";
 import { digest, git, readJson, writeJson } from "../../energy/contract.mjs";
-import { admitBasis, checkpoint } from "../../energy/product.mjs";
+import { admitBasis, checkpoint, conclusion } from "../../energy/product.mjs";
 import { answer, closeoutChecks, regression, scoreReview, tool } from "./judge.mjs";
 import { prepare, retainCandidate, session, window } from "./session.mjs";
 import { MaintenanceSlot, sealOf } from "./slot.mjs";
 import { checkStopRefusals, prepareDraftInputs, restoreDraft, resumeGoal, resumeWindow, stoppedDraft } from "./draft-resume.mjs";
+import { archivedRejection, prepareRejectionInputs, rejectionGoal, rejectionOf, verifyRejectionSlot } from "./rejection.mjs";
 import { buildCommand, copyDatabases, firstGoal, inspectedSource, makeEvidence, makeSource, makeVolume, manifest, offline, pack,
   projectId, quote, referencePatch, repo, secondGoal, seedSource, source, stateProbe, success, verifyInstallation } from "./workspace.mjs";
 
 const [action, directory, prerequisite, previousRun] = process.argv.slice(2);
-assert(directory && (["qualify", "recover"].includes(action) || (["live", "continue", "resume-qualify"].includes(action) && prerequisite) ||
-  (action === "resume" && prerequisite && previousRun)),
+assert(directory && (["qualify", "recover"].includes(action) || (["live", "continue", "resume-qualify", "reject-qualify"].includes(action) && prerequisite) ||
+  (["resume", "reject"].includes(action) && prerequisite && previousRun)),
   "Usage: self-evolution/run.mjs qualify <new-dir> | live <new-dir> <qualified-dir> | resume-qualify <new-dir> <stopped-dir> | " +
-  "resume <new-dir> <qualified-dir> <stopped-dir> | continue <live-dir> <owner-approval.json> | recover <live-dir>");
+  "resume <new-dir> <qualified-dir> <stopped-dir> | reject-qualify <new-dir> <rejected-dir> [prior-slot-snapshot] | reject <new-dir> <qualified-dir> <rejected-dir> | " +
+  "continue <live-dir> <owner-approval.json> | recover <live-dir>");
 assert(inspectedSource());
 const root = resolve(directory);
 const originFile = join(root, "resume-origin.json");
 const origin = ["continue", "recover"].includes(action) && existsSync(originFile) ? readJson(originFile) : null;
-const isResume = action === "resume" || action === "resume-qualify" || origin !== null;
-const requestWindow = isResume ? resumeWindow : window;
+const isRework = ["reject", "reject-qualify"].includes(action) || origin?.kind === "rejection";
+const isResume = ["resume", "resume-qualify"].includes(action) || (origin !== null && !isRework);
+const requestWindow = isResume || isRework ? resumeWindow : window;
+const goal = isRework ? rejectionGoal : isResume ? resumeGoal : firstGoal;
 const image = docker(["image", "inspect", "palimpsest-cold-handover:local", "--format", "{{.Id}}"]);
 const here = fileURLToPath(new URL(".", import.meta.url));
-const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs", "draft-resume.mjs", "../../container_adapter.mjs",
-  "../../container_runtime.mjs", "../../world_preflight.mjs", "../../mock_provider.mjs", "../../bounded_provider.mjs",
+const code = ["run.mjs", "workspace.mjs", "session.mjs", "slot.mjs", "judge.mjs", "draft-resume.mjs", "rejection.mjs", "../../container_adapter.mjs",
+  "../../container_runtime.mjs", "../../container_bridge.mjs", "../../world_preflight.mjs", "../../mock_provider.mjs", "../../bounded_provider.mjs",
   "../../execution_budget.mjs", "../../opencode_go.mjs", "../../energy/product.mjs", "../../energy/evidence.mjs", "../../analyze_energy_trajectory.mjs"];
-const frozen = { source, projectId, image, window: requestWindow, firstGoalSha256: digest(isResume ? resumeGoal : firstGoal), secondGoalSha256: digest(secondGoal),
+const frozen = { source, projectId, image, window: requestWindow, firstGoalSha256: digest(goal), secondGoalSha256: digest(secondGoal),
   code: Object.fromEntries(code.map(file => [file, digest(readFileSync(join(here, file)))])) };
 const installId = ({ candidate, buildSha256, image }) => ({ candidate, buildSha256, image });
 const resultFile = join(root, "candidate.json");
-const slotPath = origin ? join(origin.previousRun, "slot.sqlite") : join(root, "slot.sqlite");
+const slotPath = origin ? join(origin.slotDirectory ?? origin.previousRun, "slot.sqlite") : join(root, "slot.sqlite");
 const sourceBundle = join(root, "source.bundle");
 const heap = [];
 const volume = () => { const world = makeVolume(image); heap.push(world); return world; };
@@ -49,11 +53,21 @@ function providerConfig() {
 
 const checkpointDigest = state => sealOf(manifest(state).filter(([file]) => file.endsWith(".sqlite")));
 
-function putEvidence(world, runtime, prepared, signal, basis, start) {
+function putEvidence(world, runtime, prepared, signal, basis, start, rejection) {
+  const refs = [{ kind: "sealed_run", id: signal.signalId }, { kind: "git_commit", id: basis }];
+  const entry = rejection ? {
+    kind: "NEGATIVE_RESULT", title: "Independent acceptance rejected the maintenance candidate",
+    body: `Candidate ${rejection.candidate}, build ${rejection.buildSha256}. Independent replay receipts and traces are under evidence/rejection/.`,
+    provenance: "Independent maintenance acceptance",
+    relatedRefs: [...refs, { kind: "sealed_run", id: rejection.signalId },
+      ...rejection.receipts.map(receipt => ({ kind: "verification_receipt", id: receipt.id }))],
+  } : {
+    kind: "REFERENCE_NOTE", title: "Sealed maintenance input", body: `The newly sealed material is available under evidence/. Digest ${signal.reconciliationDigest}.`,
+    provenance: "Maintenance evidence intake", relatedRefs: refs,
+  };
   const info = stateProbe(world, runtime, prepared.state, prepared.deployment, {
     ...(start ? { start: basis, goal: "Maintain Palimpsest from observable project results and keep its decisions and tests available for the next session." } : {}),
-    entry: { kind: "REFERENCE_NOTE", title: "Sealed maintenance input", body: `The newly sealed material is available under evidence/. Digest ${signal.reconciliationDigest}.`,
-      provenance: "Maintenance evidence intake", relatedRefs: [{ kind: "sealed_run", id: signal.signalId }, { kind: "git_commit", id: basis }] },
+    entry,
   });
   assert.equal(info.project, projectId);
   assert(info.journal.some(entry => entry.refs?.some(ref => ref.id === signal.signalId)), "WAKE_EVIDENCE_NOT_IN_PROJECT");
@@ -313,7 +327,8 @@ async function evaluateSubmission({ row, execution, prepared, info, priorRuntime
   try {
     const candidateWorld = volume();
     const imported = seedSource(candidateWorld, root, info, join(root, "first/candidate.bundle"));
-    assert.deepEqual(imported, { basis, head: submission.candidate });
+    const admittedBasis = row.rework ? row.predecessor.candidate : basis;
+    assert.deepEqual(imported, { basis: admittedBasis, head: submission.candidate });
     const release = pack(candidateWorld, submission.candidate, join(root, "accepted-build"));
     const runtime = verifyInstallation(join(root, "accepted-build"), release);
     const probes = await closeoutChecks(join(root, "candidate-probes"), { runtime, image, candidate: true });
@@ -323,7 +338,8 @@ async function evaluateSubmission({ row, execution, prepared, info, priorRuntime
     copyDatabases(prepared.state, newState);
     const old = stateProbe(candidateWorld, priorRuntime, oldState, prepared.deployment, {});
     const readByNew = stateProbe(candidateWorld, runtime, newState, prepared.deployment, {});
-    const readback = JSON.stringify(old) === JSON.stringify(readByNew) && old.project === projectId && old.basis === basis && old.head === submission.candidate;
+    const readback = JSON.stringify(old) === JSON.stringify(readByNew) && old.project === projectId &&
+      old.basis === admittedBasis && old.head === submission.candidate;
     const testsObserved = execution.trajectory?.calls.filter(call => call.testCommand && call.result !== null) ?? [];
     const sourceChanged = submission.changed.some(file => /^(?:src|host\/dsh)\//u.test(file));
     const authoredTest = submission.changed.some(file => /(?:^tests?\/|test|probe|repro|regress)/iu.test(file) && !file.endsWith(".md"));
@@ -332,17 +348,26 @@ async function evaluateSubmission({ row, execution, prepared, info, priorRuntime
       automatedTestObservation: Boolean(execution.trajectory?.calls.some(call => call.testCommand && call.result !== null &&
         /\b(?:pass(?:ed)?|fail(?:ed)?|tests?|assertion|not ok|ok \d)\b/iu.test(call.output))) };
     const independent = probes.pass && tests.exit === 0 && tests.passed > 0 && readback;
-    const pass = independent && sourceChanged && authoredTest && (row.resume || maintainerEvidence.report) &&
+    const pass = independent && sourceChanged && authoredTest && (row.resume || row.rework || maintainerEvidence.report) &&
       (row.mode !== PAID_MODE || maintainerEvidence.automatedTestObservation);
     const verification = { pass, exactSha: submission.candidate, buildSha256: release.buildSha256, tests, probes,
       readback, old, readByNew, maintainerEvidence };
     Object.assign(row, { release, verification, qualification: digest(JSON.stringify(verification)),
       stateCheckpoint: checkpointDigest(prepared.state), passed: pass });
     writeJson(resultFile, row);
+    const rejection = rejectionOf(row, root);
+    if (rejection) enqueueRejection(rejection, row.predecessor);
   } catch (error) {
     writeJson(join(root, "verification-error.json"), { error: error.message });
     throw error;
   }
+}
+
+function enqueueRejection(rejection, predecessor, stem = "rejection") {
+  writeJson(join(root, stem + ".json"), rejection);
+  const wake = slot.publishRejection(rejection, predecessor);
+  writeJson(join(root, stem + "-wake.json"), wake.signal);
+  return wake;
 }
 
 function requestApproval(row) {
@@ -425,6 +450,146 @@ async function resumeFirst(prior, qualified) {
   return row;
 }
 
+function rejectionMock(rejection) {
+  const file = join(root, "mock-source.patch");
+  referencePatch(file, true);
+  const patch = readFileSync(file).toString("base64");
+  const testPath = "maintenance/rejection-intake.test.mjs";
+  const testSource = [
+    "import assert from 'node:assert/strict';",
+    "import {readFileSync} from 'node:fs';",
+    "import test from 'node:test';",
+    "test('both rejected replay receipts are available', () => {",
+    `  const expected = ${JSON.stringify(rejection.receipts.map(receipt => receipt.id))};`,
+    "  const load = arm => JSON.parse(readFileSync('evidence/rejection/' + arm + '/receipt.json'));",
+    "  assert.deepEqual(['without', 'with'].map(arm => load(arm).id), expected);",
+    "});",
+  ].join("\n") + "\n";
+  return (request, ordinal) => {
+    if (ordinal === 0) return tool(ordinal, "palimpsest_project", { action: "journal_entries" });
+    if (ordinal === 1) {
+      const observed = JSON.stringify(request.messages);
+      assert(rejection.receipts.every(receipt => observed.includes(receipt.id)), "BOTH_REJECTIONS_NOT_READ_FROM_JOURNAL");
+      return tool(ordinal, "bash", { description: "Verify receipt intake and submit the Mock candidate", command: [
+        `test "$(git rev-parse HEAD)" = ${rejection.candidate} && test -z "$(git status --porcelain)"`,
+        "! touch evidence/rejection/.write-probe && test -r evidence/rejection/without/session.jsonl && test -r evidence/rejection/with/session.jsonl",
+        `printf %s ${quote(patch)} | base64 -d | git apply`,
+        `mkdir -p maintenance && printf %s ${quote(Buffer.from(testSource).toString("base64"))} | base64 -d > ${testPath}`,
+        `node --test ${testPath}`,
+        "git add -A && git commit -qm 'Submit the scripted rejection continuation' && echo REWORK_SUBMITTED",
+      ].join(" && ") });
+    }
+    if (ordinal === 2) {
+      assert(JSON.stringify(request.messages).includes("REWORK_SUBMITTED"), "MOCK_REWORK_NOT_SUBMITTED");
+      return tool(ordinal, "palimpsest_work", { action: "conclude", intent: "DELIVER",
+        artifacts: [testPath, "host/dsh/lib/runner.js"], statement: "Submit the Mock revision for independent verification." });
+    }
+    return answer("The Mock revision is submitted.");
+  };
+}
+
+async function rehearsalSlot(prior, predecessor) {
+  const originalSlot = previousRun ? resolve(previousRun) : join(prior.draft.directory, "slot.sqlite");
+  assert(existsSync(originalSlot), "ORIGINAL_MAINTENANCE_SLOT_MISSING");
+  copyFileSync(originalSlot, join(root, "predecessor-slot.sqlite"));
+  const persisted = new MaintenanceSlot(join(root, "predecessor-slot.sqlite"));
+  try { verifyRejectionSlot(prior.snapshot, persisted.view(), prior.rejection); }
+  finally { persisted.close(); }
+  slot = new MaintenanceSlot(slotPath, { projectId, mode: "mock", initial: predecessor });
+  const firstWake = slot.publish("first-maintenance", prior.draft.oldRecord.evidence.sha256).signal;
+  assert.equal(firstWake.signalId, prior.draft.proof.signalId);
+  await slot.dispatch(firstWake, predecessor, () => ({ reconciled: true, natural: false, requests: prior.draft.proof.requests }));
+  const parent = slot.publishDraft(prior.draft.proof, prior.row.evidence.sha256, predecessor).signal;
+  assert.equal(parent.signalId, prior.rejection.signalId);
+  await slot.dispatch(parent, predecessor, () => ({ reconciled: true, natural: true, requests: prior.rejection.requests }));
+  const { rejection } = prior;
+  assert.throws(() => slot.publishRejection({ ...rejection, unresolved: 1 }, predecessor), /INVALID_REJECTION_PROOF/u);
+  assert.throws(() => slot.publishRejection({ ...rejection, receipts: [] }, predecessor), /INVALID_REJECTION_PROOF/u);
+  assert.throws(() => slot.publishRejection({ ...rejection, candidate: "0".repeat(40) }, predecessor), /REJECTION_RECEIPT_NOT_BOUND/u);
+  assert.throws(() => slot.publishRejection({ ...rejection, buildSha256: "0".repeat(64) }, predecessor), /REJECTION_RECEIPT_NOT_BOUND/u);
+  assert.throws(() => slot.publishRejection({ ...rejection, signalId: prior.draft.proof.signalId }, predecessor), /REJECTED_RUN_TERMINAL_MISMATCH/u);
+  assert.throws(() => slot.publishRejection({ ...rejection, requests: rejection.requests - 1 }, predecessor), /REJECTED_RUN_TERMINAL_MISMATCH/u);
+  return ["persisted slot matches original", "unresolved usage", "missing receipts", "different candidate", "different build",
+    "non-natural predecessor", "different request count"];
+}
+
+async function resumeRejected(prior, qualified) {
+  const mode = qualified ? PAID_MODE : "mock";
+  const sealed = prepareRejectionInputs(prior, root);
+  if (qualified) assert.deepEqual(sealed, qualified.inputs, "REJECTION_QUALIFIED_INPUT_CHANGED");
+  const { source: info, evidence, nextEvidence } = sealed;
+  const { rejection, row: previous } = prior;
+  const { predecessor } = previous;
+  const { basis, candidate } = rejection;
+  assert.equal(image, predecessor.image, "PREDECESSOR_IMAGE_CHANGED");
+  const priorRuntime = verifyInstallation(join(root, "initial-build"), predecessor);
+  const world = volume();
+  assert.deepEqual(seedSource(world, root, info, join(prior.directory, "first/candidate.bundle")), { basis, head: candidate });
+  const prepared = prepare(join(root, "first"));
+  copyDatabases(join(prior.directory, "first/stages/MAINTAIN/state"), prepared.state);
+  assert.deepEqual(manifest(prepared.state), prior.proof.states, "REJECTED_CHECKPOINT_COPY_CHANGED");
+  writeJson(join(root, "prior-rejection.json"), prior.proof);
+  let faultChecks;
+  if (qualified) {
+    const activeSlotPath = join(prior.draft.directory, "slot.sqlite");
+    assert(existsSync(activeSlotPath), "ORIGINAL_MAINTENANCE_SLOT_MISSING");
+    slot = new MaintenanceSlot(activeSlotPath, { projectId, mode, initial: predecessor });
+    verifyRejectionSlot(prior.snapshot, slot.view(), rejection);
+    writeJson(originFile, { kind: "rejection", previousRun: prior.directory, slotDirectory: prior.draft.directory, prior: sealOf(prior.proof) });
+  } else faultChecks = await rehearsalSlot(prior, predecessor);
+  const beforeWake = slot.view();
+  const wake = enqueueRejection(rejection, predecessor, "incoming");
+  if (!qualified) {
+    assert(wake.inserted);
+    slot.close();
+    slot = new MaintenanceSlot(slotPath);
+    verifyRejectionSlot(beforeWake, slot.view(), rejection);
+    assert.throws(() => slot.publishRejection({ ...rejection, checkpoint: "f".repeat(64) }, predecessor), /EVIDENCE_CHANGED_ON_REPLAY/u);
+    faultChecks.push("restart with pending receipt", "changed seal on redelivery");
+  }
+  const replay = slot.publishRejection(rejection, predecessor);
+  assert(!replay.inserted && replay.signal.signalId === wake.signal.signalId, "DUPLICATE_REJECTION_WAKE");
+
+  const provider = qualified ? providerConfig() : undefined;
+  const inputs = join(root, "input-first");
+  let execution;
+  await slot.dispatch(wake.signal, predecessor, async () => {
+    const intake = putEvidence(world, priorRuntime, prepared, wake.signal, candidate, false, rejection);
+    const item = intake.journal.find(entry => entry.refs?.some(ref => ref.id === wake.signal.signalId));
+    assert(intake.basis === basis && intake.head === candidate &&
+      previous.verification.old.journal.every(entry => intake.journal.some(added => added.id === entry.id)) &&
+      rejection.receipts.every(receipt => item?.refs.some(ref => ref.id === receipt.id)), "REJECTION_NOT_IN_SAME_PROJECT");
+    assert.deepEqual(conclusion(prepared.state), prior.session.conclusion, "PREDECESSOR_DELIVERY_NOT_RETAINED");
+    writeJson(join(prepared.run, "intake.json"), intake);
+    execution = await session(prepared, { world, runtime: priorRuntime, basis: candidate, brief: rejectionGoal, input: inputs, provider,
+      reply: provider ? undefined : rejectionMock(rejection), requestWindow });
+    assert.notEqual(execution.execution.cohortId, rejection.cohortId, "REUSED_REJECTED_COHORT");
+    assert.notEqual(execution.execution.home, prior.session.execution.home, "REUSED_REJECTED_DSH_HOME");
+    return { reconciled: execution.reconciled, natural: execution.execution.natural, requests: execution.accounting.requests };
+  });
+  assert(execution, "REJECTION_ALREADY_DISPATCHED");
+  assert.equal(await slot.dispatch(wake.signal, predecessor, () => { throw Error("duplicate rejection ran"); }), null);
+  assert.deepEqual(manifest(inputs), evidence.entries, "SEALED_INPUT_CHANGED");
+  const submission = retainCandidate(prepared, world, candidate, "first", { bundleBasis: basis });
+  const read = execution.trajectory?.calls.some(call => call.wakeRefs?.includes(wake.signal.signalId)) ?? false;
+  const row = { mode, frozen, predecessor, submission, evidence, nextEvidence, signalId: wake.signal.signalId,
+    rework: { prior: prior.proof, read }, reconciled: execution.reconciled, session: execution.execution,
+    accounting: execution.accounting, passed: false };
+  await evaluateSubmission({ row, execution, prepared, info, priorRuntime });
+  if (!row.passed) return row;
+  if (qualified) requestApproval(row);
+  else {
+    const next = await successor(row, approvalFor(row, mode), mode);
+    const pass = read && next.priorRead && next.reconciliation && next.natural && next.submission.valid && next.paidRequests === 0;
+    writeJson(join(root, "qualification.json"), { pass, frozen, initial: installId(predecessor), inputs: sealed,
+      first: installId(row.release), next: installId(next.loadedRelease), mockPaidRequests: 0,
+      firstWakeId: wake.signal.signalId, nextWakeId: next.signalId, faultChecks: [...faultChecks, "no second dispatch after exit"] });
+    assert(pass, "MOCK_REJECTION_SUCCESSION_FAILED");
+    console.log("QUALIFIED", root);
+  }
+  return row;
+}
+
 try {
   if (action === "recover") {
     assert(existsSync(slotPath), "MAINTENANCE_SLOT_MISSING");
@@ -438,10 +603,18 @@ try {
     const row = readJson(resultFile);
     assert.equal(row.mode, PAID_MODE);
     assert.deepEqual(frozen, row.frozen, "APPROVAL_RUNNER_CHANGED");
+    verifyRecord(row);
     if (row.resume) {
       assert(origin && existsSync(slotPath), "ORIGINAL_MAINTENANCE_SLOT_MISSING");
       assert.equal(origin.stopProof, digest(JSON.stringify(row.resume.prior)), "APPROVED_RESUME_ORIGIN_CHANGED");
       assert.deepEqual(stoppedDraft(origin.previousRun).proof, row.resume.prior, "SEALED_PREDECESSOR_DRIFT");
+    }
+    if (row.rework) {
+      assert(origin?.kind === "rejection" && existsSync(slotPath), "ORIGINAL_MAINTENANCE_SLOT_MISSING");
+      const prior = archivedRejection(origin.previousRun);
+      assert.equal(origin.slotDirectory, prior.draft.directory, "REJECTION_SLOT_ORIGIN_CHANGED");
+      assert.equal(origin.prior, sealOf(prior.proof), "APPROVED_REJECTION_ORIGIN_CHANGED");
+      assert.deepEqual(prior.proof, row.rework.prior, "SEALED_REJECTION_DRIFT");
     }
     const decision = readJson(resolve(prerequisite));
     assert(decision.actor === "owner" && decision.decision === "APPROVE" && typeof decision.recordedAt === "string", "OWNER_DECISION_REQUIRED");
@@ -450,13 +623,15 @@ try {
     writeJson(join(root, "owner-approval.json"), decision);
     await successor(row, decision.approval, PAID_MODE);
   } else {
-    const qualified = ["live", "resume"].includes(action) ? readJson(join(resolve(prerequisite), "qualification.json")) : null;
+    const qualified = ["live", "resume", "reject"].includes(action) ? readJson(join(resolve(prerequisite), "qualification.json")) : null;
     if (qualified) {
       assert(qualified.pass && qualified.mockPaidRequests === 0, "REQUIRE_ZERO_PAID_MOCK");
       assert.deepEqual(qualified.frozen, frozen, "QUALIFIED_RUNNER_CHANGED");
     }
     mkdirSync(root);
-    const row = isResume ? await resumeFirst(stoppedDraft(resolve(qualified ? previousRun : prerequisite)), qualified) : await first(qualified);
+    const priorPath = isResume || isRework ? resolve(qualified ? previousRun : prerequisite) : null;
+    const row = isRework ? await resumeRejected(archivedRejection(priorPath), qualified)
+      : isResume ? await resumeFirst(stoppedDraft(priorPath), qualified) : await first(qualified);
     if (!row.passed) { console.log("STOPPED_WITHOUT_APPROVAL_ADMISSION", root); process.exitCode = 1; }
   }
 } finally {

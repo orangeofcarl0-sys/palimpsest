@@ -35,13 +35,23 @@ export async function startContainerBridge(containerId, gateway, sessionKey, { a
     ...(dispatchWork === undefined ? [] : ["worker-control"]), ...(dispatchDesk === undefined ? [] : ["desk-control"])], { stdio: ["pipe", "pipe", "pipe"] });
   const requests = new Set();
   let ready = false;
+  let closing = false;
+  let writeError;
   let stderr = "";
   child.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-4000); });
-  const send = message => { if (!child.stdin.destroyed) child.stdin.write(JSON.stringify(message) + "\n"); };
+  const closed = new Promise(resolve => child.once("close", resolve));
+  const send = message => {
+    if (!closing && !writeError && !child.stdin.destroyed) child.stdin.write(JSON.stringify(message) + "\n");
+  };
   const lines = createInterface({ input: child.stdout });
   const initialized = new Promise((resolve, reject) => {
     const timeout = setTimeout(() => reject(new Error("CONTAINER_BRIDGE_TIMEOUT")), 10000);
     child.once("error", error => { clearTimeout(timeout); reject(error); });
+    child.stdin.on("error", error => {
+      // docker kill can close this pipe while the gateway still writes its terminal response.
+      writeError ??= error;
+      if (!ready) { clearTimeout(timeout); reject(error); }
+    });
     child.once("close", code => { clearTimeout(timeout); if (!ready) reject(new Error(`CONTAINER_BRIDGE_FAILED ${code}: ${stderr}`)); });
     lines.on("line", line => {
       try {
@@ -84,8 +94,10 @@ export async function startContainerBridge(containerId, gateway, sessionKey, { a
   try { await initialized; }
   catch (error) { child.kill(); throw error; }
   return { close: async () => {
+    closing = true;
     for (const req of requests) req.destroy();
-    child.stdin.end();
-    if (child.exitCode === null) await new Promise(resolve => child.once("close", resolve));
+    if (!child.stdin.destroyed) child.stdin.end();
+    await closed;
+    if (writeError) throw writeError;
   } };
 }
