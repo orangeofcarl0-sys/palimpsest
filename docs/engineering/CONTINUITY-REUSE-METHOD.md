@@ -64,3 +64,50 @@ node scripts/pnwf/software/continuity-reuse/run.mjs live <new-live-directory> <q
 ```sh
 node scripts/pnwf/software/continuity-reuse/recount.mjs research-evidence/pnwf-software/2026-11-22/continuity-reuse
 ```
+
+## 提交后的收尾引导与同基线复跑
+
+从发布主线 `07ab5aad` 检查了两份原始流、候选 Git 和 Work、Journal。无提示组的提交调用 95→98，随后回复 102。带方法组的提交调用 153→156，另读了文件差异、保留区块和干净状态，随后回复 172。两组都没有调用 Work `readiness` 或 `conclude`，也没有新增 Journal 结论。初次 Pulse 发生在修改和提交前。普通 DSH 一次性会话在第一轮模型回复并落盘后关闭，缺少获得提交后状态提示的机会。旧 7/7、5/7 及缺 `DELIVER` 的记录继续按原判保存。
+
+把原候选恢复后的定向探测还发现，两边手动读取 Work `readiness` 都会返回 `CONTINUE_WORK`，理由是没有正式任务。Work 现对无计划、干净、相对项目基线存在净差异的直接提交返回 `SEMANTIC_JUDGEMENT`。它列出条件性的 `DELIVER` 下一步。已有当前交付结论时，它指向该结论。
+
+普通 DSH 一次性 Principal 会话也会在原业务轮落盘后观察 Git 和当前项目状态。只有本轮 HEAD 含可见的新增版本差、工作区干净、提交与启动基线及项目基线相容，且没有当前或本轮新结论、执行任务或交付阻塞时，宿主才给一次收尾提示。提示绑定当时完整 HEAD，将业务是否达标和应记录的结论交给模型。收尾后使用原退出路径。两组的业务提示、复核证据、评分器和资源窗口沿用原样，两组共有这项修复，差别仍是已核准方法是否可见。
+
+离线回归从两条原始流找出成功提交、最终回复和缺失结论，并恢复各自的原 Work、Journal 与确切 Git 候选。两份原现场都触发新提示。未改动、脏文件、开放工作、已有当前结论和观察期间 HEAD 漂移均跳过。Mock 刻意先提交并回复，只有收到绑定 SHA 的宿主提示后才调用 `conclude`，用来区分启动时主动结论与收尾提示的效果。
+
+### 零付费复验
+
+真实配对准入前，两组 Mock 各 7 笔模拟请求、内容 7/7。每组只收到一次提示，在全会话第 6 笔写入绑定候选的 `DELIVER`，第 7 笔回复后自然退出。真实配对沿用同一冻结运行版本。其间补测发现，全新 `OPEN` Episode 会标作 `current`，即使还没有结论。最终代码检查实际结论是否存在，两个历史样本均为已重开的 Episode，此改动不改变它们的触发判断。最终代码又用两组零付费 Mock 验证了一次，成绩仍为各 7/7、均正式交付并自然退出。两版编译和宿主文件的差异限于 readiness 与收尾提示的这项判断。四个 Mock 会话实际付费请求为零。[历史复现](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/closeout-regression.json) · [准入矩阵](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/mock/matrix.json) · [最终代码资格](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/open-episode-qualification/recount.json) · [两版差异](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/open-episode-extension.patch)
+
+### 两条真实轨迹
+
+**无提示组。** 第 3 笔读 Fleet 更正与迁移文档，第 4 笔核对项目档案。第 5 笔主动以接受 SHA `95b83e71…` 向维护复核台查询旧 Episode 和核验记录（69→70），同笔运行公开测试并比对受保护 blob。回执报告同 SHA 上旧 Episode 已可读、状态为 `REOPENED`、开放问题为零。第 7 笔将 HOLD 改为 READY，在现行评审写入回执 ID、Work 事件 8、核验日志 ID、Fleet 更正路径及四份工件摘要。第 10 笔提交 `091996b1703790dc28fd6a8e16467d78ed3667f0`（119→122）。首轮回复后收到收尾提示（133），第 12 笔调用 `conclude DELIVER` 获得 `RECORDED`（136→137），第 13 笔回复后自然退出。[原稿与轨迹](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/live/WITHOUT)
+
+**带方法组。** 第 3 到 4 笔读原评审、Fleet 更正和接受树。第 5 笔主动以同一接受 SHA 查询独立回执（55→56），第 7 笔另行用 `explain` 取得核验日志的 `OBSERVED_SOURCE`（77→78），并运行公开测试。第 8 笔写入 READY，引用完整回执 ID 和 Work 事件 8，说明已重开的旧结论属于历史依据。第 10 笔提交 `008a480efed94d6400a9240498a9d9148072ceaf`（99→102）。首轮回复后收到提示（113），第 12 笔调用 `conclude DELIVER` 获得 `RECORDED`（116→117），第 13 笔回复后自然退出。[原稿与轨迹](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/live/WITH)
+
+两组的变更都限 `MAINTENANCE-REVIEW.md`，18 项公开测试通过。原 Work 接受事件和 Journal 前缀完整，两组各新增一条 `DELIVER`。复算从 Journal 读出完整候选 SHA 和工件摘要，从 Git bundle 读取同一 blob 后重算一致。维护复核者的实测来自会话前的同 SHA 冷重放，真实会话各只有一个模型 Principal，维护复核额外模型请求为零。两组都把回执写进实际提交，因此观察到了主动求证和证据采纳。这个样本尚未验证另一个模型 Worker 自主发现并回传反例。[逐请求与工件复算](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/recount.json)
+
+### 冻结判分和用量对照
+
+| 观测 | 原无提示 | 本轮无提示 | 原带方法 | 本轮带方法 |
+| --- | ---: | ---: | ---: | ---: |
+| 首次有效证据 | 第 5 笔，独立回执与直接查档 | 第 5 笔，独立回执 | 第 5 笔，直接查档 | 第 5 笔，独立回执 |
+| 冻结内容判分 | 7/7 | 6/7 | 5/7 | 5/7 |
+| 新评审 `DELIVER` | 缺失 | 第 12 笔 | 缺失 | 第 12 笔 |
+| 提交与自然退出 | 是 | 是 | 是 | 是 |
+| 已对账请求 | 10 | 13 | 17 | 13 |
+| Fresh input | 31,114 | 40,963 | 44,106 | 34,668 |
+| Cache read | 180,992 | 320,384 | 477,952 | 259,712 |
+| Output | 7,020 | 10,341 | 11,707 | 7,086 |
+| 总用量 | 219,126 | 371,688 | 533,765 | 301,466 |
+| 容器耗时（秒） | 127.071 | 185.829 | 172.256 | 139.021 |
+
+- 无提示组的冻结判分器要求发布授权边界出现在同一行，原稿将 `release authorization` 拆在相邻两行。离线仅合并这一个换行可复算为 7/7，原 Git blob 与冻结 6/7 保留。带方法组明确说明了授权边界，但只在保留区列出 Fleet 更正完整路径，并向保留区追加了两条新证据和一行结论。原保留区仍逐字节存在于该区前缀，冻结规则要求区块整体相等，所以 `oldUnknownPreserved` 与 `verificationTraceable` 两项保留失败。旧样本的 7/7 与 5/7 完全保留，未用新结果覆盖。
+- 两组实际各用两个请求完成提示后的收尾，仅第一个请求调用工具。无提示组收尾用量 78,275 tokens（fresh 3,481，cache read 74,112，output 682），带方法组 65,738（fresh 3,499，cache read 61,568，output 671）。业务轮各 11 笔，分别为 293,413 和 235,728 tokens。四条真实样本的 cache write 均为零。本轮共 26 笔、673,154 tokens，没有 `UNKNOWN`，模型请求与账本按唯一用量四元组和顺序严格配对。[真实矩阵](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/live/matrix.json) · [离线分段归因](../../research-evidence/pnwf-software/2026-11-22/cold-closeout/recount.json)
+- 两条真实轨迹都在收到绑定 SHA 的提示后完成了原本遗漏的动作，证明这次修复接通了该收尾路径。方法组这次主动求证，原方法组只自行查档。当前每格一次，没有理由把这项选路变化或用量差归因于方法提示。两组仍有冻结内容缺项，正式结论和自然退出单独记账。里程碑二继续开放。
+
+```sh
+node scripts/pnwf/software/continuity-reuse/run.mjs mock-closeout <new-mock-directory>
+node scripts/pnwf/software/continuity-reuse/recount.mjs research-evidence/pnwf-software/2026-11-22/cold-closeout
+node scripts/pnwf/software/continuity-reuse/recount.mjs research-evidence/pnwf-software/2026-11-22/cold-closeout/open-episode-qualification
+```

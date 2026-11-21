@@ -62,11 +62,11 @@ function atCommitArtifact(world, artifact) {
   return { path: artifact.path, commit: artifact.commit, sha256: digest(content), matches: digest(content) === artifact.digest };
 }
 
-export async function replay(location, prior) {
+export async function replay(location, prior, runtime = hostSha) {
   assert.equal(git(location.world, "rev-parse", "HEAD"), accepted.acceptedHead);
   const installed = launchDeployment(loadDeploymentProfile(location.profile));
   const workspace = installed.installed.application.projectWorkspace;
-  const receipt = { reviewer: "cold-handover-maintenance-verifier", runtime: hostSha, sha: accepted.acceptedHead,
+  const receipt = { reviewer: "cold-handover-maintenance-verifier", runtime, sha: accepted.acceptedHead,
     prior, kind: "same-sha cold readback" };
   try {
     const pulse = await workspace.pulse();

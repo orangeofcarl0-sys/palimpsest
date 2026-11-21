@@ -1,0 +1,43 @@
+--- a/host/dsh/lib/direct_closeout.js
++++ b/host/dsh/lib/direct_closeout.js
+@@ -39,7 +39,7 @@
+     const pulse = await workspace.pulse();
+     const episode = pulse.episode;
+     const conclusionId = episode.conclusion?.conclusionId ?? null;
+-    if (episode.current || (conclusionId !== null && conclusionId !== initial.conclusionId) ||
++    if ((conclusionId !== null && (episode.current || conclusionId !== initial.conclusionId)) ||
+       episode.readiness.deliveryBlockers.length > 0 || episode.readiness.failedOrBlockedTasks.length > 0 ||
+       episode.readiness.unresolvedQuestions.length > 0 ||
+       pulse.execution.jobs.some(job => job.phase === 'QUEUED' || job.phase === 'RUNNING')) return null;
+--- a/src/application/work_outcome.ts
++++ b/src/application/work_outcome.ts
+@@ -104,7 +104,7 @@
+   if (pulse.episode.current && pulse.episode.state === "DELIVERED") {
+     return { reasons: [reason, "this episode has a current recorded DELIVER conclusion"], next: ["reply using the recorded conclusion"] };
+   }
+-  if (withoutPlan && pulse.episode.current) return null;
++  if (withoutPlan && pulse.episode.current && pulse.episode.conclusion !== null) return null;
+   return {
+     reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"],
+     next: ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
+--- a/scripts/pnwf/software/continuity-reuse/closeout-replay.mjs
++++ b/scripts/pnwf/software/continuity-reuse/closeout-replay.mjs
+@@ -60,6 +60,9 @@
+       assert.equal(await advise(), null, "Dirty changes should receive no advisory");
+       writeFileSync(artifact, bytes);
+       const pulse = await workspace.pulse();
++      assert.equal((await advise({ pulse: async () => ({ ...pulse, episode: { ...pulse.episode,
++        state: "OPEN", current: true, conclusion: null,
++      } }) }))?.head, recorded.candidate, "An OPEN episode without a conclusion should receive advice");
+       assert.equal(await advise({ pulse: async () => ({ ...pulse, episode: { ...pulse.episode, readiness: {
+         ...pulse.episode.readiness, deliveryBlockers: ["open work"],
+       } } }) }), null, "Open work should receive no advisory");
+@@ -72,7 +75,7 @@
+       regressions.push({ arm, originalGrade: grade, originalDelivery: false, streamDigest, initialHead: seed.head,
+         commitCall: call.seq, result: result.seq, candidate: recorded.candidate, assistantFinal: lastAssistant.seq, offer: advice.reason,
+         readiness: { action: readiness.action, next: readiness.next },
+-        controls: ["unchanged", "dirty", "blocked", "recorded", "head drift"] });
++        controls: ["unchanged", "dirty", "open without conclusion", "blocked", "recorded", "head drift"] });
+     } finally { await host.close(); }
+   }
+   return regressions;

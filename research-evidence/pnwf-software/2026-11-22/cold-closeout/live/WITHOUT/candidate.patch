@@ -1,0 +1,56 @@
+diff --git a/MAINTENANCE-REVIEW.md b/MAINTENANCE-REVIEW.md
+index 9def1f5..b275a3d 100644
+--- a/MAINTENANCE-REVIEW.md
++++ b/MAINTENANCE-REVIEW.md
+@@ -1,8 +1,50 @@
+ # Cold handover maintenance review
+ 
+-Readback decision: HOLD
++Readback decision: READY
+ 
+-The previous cold handover returned UNKNOWN for the old Episode and surfaced the release verification entry as a question. Revalidate the release handover on the accepted revision before relying on it.
++Revalidated against the owner-accepted tree
++`95b83e71ee9a37041b9918b5e8b797eebabf69c9`. The earlier HOLD reflected a cold-session lookup that
++returned `UNKNOWN` for Episode `episode-e7050e9ddf64ccebde7f08f6` at this same accepted SHA. A fresh
++same-SHA readback now finds the Episode: state `REOPENED`, former head
++`fbeb8958f4405688b13f37dbdec330157a660ab0`, current head
++`95b83e71ee9a37041b9918b5e8b797eebabf69c9`, acceptance `DIRECT_BASIS` at commit `95b83e7` (event 8;
++approval event 7), with zero open questions. The old Episode is a historical advisory `DELIVER`
++conclusion recorded on revision 1 / head `fbeb8958`; it is not the current acceptance record. Its
++`REOPENED` state records that the project later advanced to `95b83e7`, not that the accepted
++revision was invalidated.
++
++The current accepted version is `95b83e7`. Verification record
++`journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1` is present as a `REFERENCE_NOTE` from the independent
++Fleet release verifier. It reviewed candidate `95b83e7` and records accepted project version
++`95b83e7`, including the before/after observation that zero or omitted limits returned no frames
++before the change and three readings in source order in the accepted tree. The verification is on the
++same SHA as the current acceptance, so it is current for this handover rather than a stale reference.
++The note records no separate contributor decision, and this review does not turn it into one.
++
++## Traceable basis
++
++- Cold-readback receipt `ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4`
++  (`cold-handover-maintenance-verifier`, runtime
++  `3883ae732e31502c98ad904d80a1b1f2d2827a5b`, SHA `95b83e7`): Episode found, state `REOPENED`,
++  `openQuestions: 0`, `workPreserved: true`, `journalPreserved: true`, and all four artifact digests
++  match. The receipt's `unknownControl: true` is a limit on unrecorded control-plane facts; it does
++  not leave the Episode, accepted tree, verification note, or artifacts unresolved.
++- Accepted artifacts at `95b83e7`: `service/grpc_server.js`
++  `c97e5fdfd725113f4364f37a428f2e112971e3e58c36cc7ad9fa01c7001464da`,
++  `test/integration.test.js`
++  `ab27a39846aef3ca2f14d256f7177be0876cb1610955acca3bd75a57093863ff`,
++  `test/server.test.js`
++  `056777719a0795aff17c9306ca007b3b86671069587cad9b4a35ed450a1f2856`, and `MIGRATION.md`
++  `62d76ebf8898a304db9ec8f0b679c956efdbbcf920b6c3680384a445b281f800`. The Fleet source is
++  `updates/2026-11-10/fleet-default-limit.md`, blob
++  `0951003a7d83af8591a151bf560da0f4bebe1150`.
++- The review branch is based on `95b83e7`; commit `1444de6` only carried forward this review, and
++  this revision changes only `MAINTENANCE-REVIEW.md`.
++- Revalidation with `node --test`: 18 tests, 18 pass, 0 fail, including the explicit-zero/omitted
++  default of three and the preserved REST baseline.
++
++This `READY` is limited to maintenance continuation from the readback at `95b83e7`. It is not release
++authorization, does not accept or refresh the old Episode, and does not advance the canonical head.
+ 
+ ## Retained evidence

@@ -16,22 +16,29 @@ import { attribute } from "../../energy/evidence.mjs";
 import { checkpoint, conclusion } from "../../energy/product.mjs";
 import { accepted, admit, brief, correction, episodeId, file, here, hint, historical, hostSha, journalEvents, noteSeed, replay, repo,
   restore, score, workEvents } from "./case.mjs";
+import { originalCase, replayCloseout } from "./closeout-replay.mjs";
 
 const [modeArg, directory, mockDirectory] = process.argv.slice(2);
-assert(directory && ["mock", "live"].includes(modeArg), "Usage: continuity-reuse/run.mjs mock|live <new output dir> [qualified Mock dir]");
-const paid = modeArg === "live";
+assert(directory && ["mock", "live", "mock-closeout", "live-closeout"].includes(modeArg),
+  "Usage: continuity-reuse/run.mjs mock|live|mock-closeout|live-closeout <new output dir> [qualified Mock dir]");
+const closeout = modeArg.endsWith("-closeout");
+const paid = modeArg.startsWith("live");
+const sourceHost = closeout ? "07ab5aad7f77a2fd67f426c80e5215cf3f2bc6de" : hostSha;
 const mode = paid ? PAID_MODE : "mock";
 const root = resolve(directory);
 const image = docker(["image", "inspect", "palimpsest-cold-handover:local", "--format", "{{.Id}}"]);
 const window = { maxRequests: 64, wallClockMs: 30 * 60_000, requestTimeoutMs: 240_000, billingCeiling: null };
 const session = "RESUME";
 const runtime = join(root, "runtime");
-assert.equal(git(repo, "diff", "--name-only", hostSha, "--", "src", "host", "package.json", "pnpm-lock.yaml", "tsconfig.json"), "", "Host source differs from the held revision");
+const changedHostFiles = git(repo, "diff", "--name-only", sourceHost, "--", "src", "host", "package.json", "pnpm-lock.yaml", "tsconfig.json").split("\n").filter(Boolean);
+assert(changedHostFiles.every(path => closeout && ["host/dsh/lib/runner.js", "host/dsh/lib/direct_closeout.js", "src/application/work_outcome.ts"].includes(path)), "Host source differs from the held revision");
 const files = ["case.mjs", "run.mjs", "plugin/index.js", "plugin/package.json", "../../container_adapter.mjs",
   "../../container_runtime.mjs", "../../bounded_provider.mjs", "../../execution_budget.mjs", "../../analyze_energy_trajectory.mjs",
   "../../energy/container-worker.mjs"].map(name => join(here, name));
 for (const name of readdirSync(join(repo, "dist/src"), { recursive: true }).filter(name => name.endsWith(".js")).sort()) files.push(join(repo, "dist/src", name));
-const frozen = { hostSha, accepted: accepted.acceptedHead, image, window, briefSha256: digest(brief), hintSha256: digest(hint),
+if (closeout) files.push(join(here, "closeout-replay.mjs"), join(repo, "host/dsh/lib/direct_closeout.js"), join(repo, "host/dsh/lib/runner.js"));
+const frozen = { hostSha: sourceHost, accepted: accepted.acceptedHead, image, window, briefSha256: digest(brief), hintSha256: digest(hint),
+  ...(closeout ? { closeout: true } : {}),
   codeSha256: digest(JSON.stringify(files.map(path => digest(readFileSync(path))))) };
 let qualified;
 let provider;
@@ -82,8 +89,10 @@ function mockReply(offered, retained) {
     if (ordinal === 2) assert(JSON.stringify(latest).includes(offered ? "ACCEPTED_SHA_REQUIRED" : "REOPENED"));
     if (ordinal === 3) assert(JSON.stringify(latest).includes(offered ? "receiptId" : accepted.note.id));
     if (ordinal === 4) assert(JSON.stringify(latest).includes("HANDOVER_COMMITTED"));
-    if (ordinal === 5) assert(JSON.stringify(latest).includes("RECORDED"));
-    const call = observe[ordinal];
+    if (closeout && ordinal === 4) return [{ type: "text", text: "The scoped maintenance review is committed." }];
+    if (closeout && ordinal === 5) assert(messages.includes("[Project closeout]") && messages.includes("intent=DELIVER"));
+    if (ordinal === (closeout ? 6 : 5)) assert(JSON.stringify(latest).includes("RECORDED"));
+    const call = observe[closeout && ordinal >= 5 ? ordinal - 1 : ordinal];
     return call ? [{ type: "tool_use", id: `handover_${ordinal}`, ...call }]
       : [{ type: "text", text: "The scoped maintenance review is committed." }];
   };
@@ -134,7 +143,12 @@ function analyze(run, out, evidence, receipt, approval, offered) {
   const firstVerify = significant.find(row => row.receipt || (row.action === "inspect-record" && row.found && row.episode === "REOPENED")) ?? null;
   const offer = offered ? approval.ref : null;
   const methodInReplay = rows.some(event => JSON.stringify(event.data ?? {}).includes(hint));
+  const closeoutOffers = readFileSync(join(out, "run.log"), "utf8").split(/\r?\n/u).filter(line => line.startsWith("PALIMPSEST_CLOSEOUT_OFFER "))
+    .map(line => JSON.parse(line.slice("PALIMPSEST_CLOSEOUT_OFFER ".length)));
+  const closeoutMessages = rows.filter(event => event.type === "user/message" && JSON.stringify(event.data).includes("[Project closeout]"))
+    .map(event => event.seq);
   return { offer, methodInReplay, firstVerify, independentReceiptCount: significant.filter(row => row.receipt).length,
+    ...(closeout ? { closeoutOffers, closeoutMessages } : {}),
     stream: path.replaceAll("\\", "/"), significant };
 }
 
@@ -213,6 +227,10 @@ async function arm(name, seed, receipt, approval) {
   if (!paid) row.passed = row.passed && !row.mockErrors && row.trajectory.methodInReplay === offered &&
     (offered ? row.trajectory.firstVerify?.receipt && row.trajectory.significant.some(x => x.reason === "ACCEPTED_SHA_REQUIRED")
       : row.trajectory.firstVerify?.episode === "REOPENED" && row.trajectory.independentReceiptCount === 0);
+  if (!paid && closeout) row.passed = row.passed && row.trajectory.closeoutOffers.length === 1 &&
+    row.trajectory.closeoutOffers[0].head === row.candidate && row.trajectory.closeoutMessages.length === 1 &&
+    row.trajectory.significant.some(event => event.action === "work:conclude" && event.input.intent === "DELIVER" &&
+      event.call > row.trajectory.closeoutMessages[0]);
   row.passed = Boolean(row.passed);
   writeJson(join(run, "result.json"), row);
   console.log("RESULT", name, row.passed, row.candidate, row.accounting, row.grade);
@@ -222,13 +240,20 @@ async function arm(name, seed, receipt, approval) {
 mkdirSync(root);
 const prior = historical();
 const seed = restore(join(root, "restored"));
-const { receipt, tests } = await replay(seed, prior);
+const { receipt: measured, tests } = await replay(seed, prior, sourceHost);
+const receipt = closeout ? readJson(join(originalCase, "independent-review.json")) : measured;
+if (closeout) assert.deepEqual({ ...measured, runtime: receipt.runtime }, receipt, "Independent verifier facts drifted from the prior pair");
 writeJson(join(root, "historical.json"), prior);
 writeJson(join(root, "independent-review.json"), receipt);
 writeFileSync(join(root, "independent-public-tests.log"), tests);
 const approval = await admit(root, prior, receipt);
 writeJson(join(root, "approval.json"), approval);
 Object.assign(seed, noteSeed(seed.world, prior));
+if (closeout) {
+  const regressions = await replayCloseout(root, seed);
+  writeJson(join(root, "closeout-regression.json"), regressions);
+  assert.equal(regressions.length, 2);
+}
 git(seed.world, "bundle", "create", join(root, "inherited.bundle"), "HEAD");
 writeFileSync(join(root, "inherited-review.md"), seed.text);
 assert.equal(score({ text: seed.text, retained: seed.retained }).checks.revisedDecision, false);

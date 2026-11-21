@@ -49,8 +49,8 @@ function taskRowOf(status: unknown, taskId: string | null): { task_id: string; s
   return tasks.find((task) => task.task_id === taskId) ?? null;
 }
 
-/** A clean HEAD alone is ordinary project state. Use the retired plan's declared artifacts. */
-async function retiredDelivery(
+/** A retired plan names its artifacts. Direct work without a plan must show a net Git change. */
+async function directDeliveryGuidance(
   deps: WorkRuntimeDeps,
   status: ReturnType<WorkRuntimeDeps["controller"]["status"]>,
   requested: string | null,
@@ -67,19 +67,22 @@ async function retiredDelivery(
 
   const plannedIds = new Set(controller.work.project().tasks.map((task) => task.task_id));
   const retired = status.tasks.filter((task) => task.state === "STALE" && !plannedIds.has(task.task_id));
-  if (retired.length === 0 || (requested !== null && !retired.some((task) => task.task_id === requested))) return null;
+  if (requested !== null && !retired.some((task) => task.task_id === requested)) return null;
+  const withoutPlan = retired.length === 0;
+  if (withoutPlan && (plannedIds.size !== 0 || direct.relation !== "DIRECT_AHEAD")) return null;
   const artifacts = new Set<string>();
   for (const task of retired) {
     const envelope = controller.taskEnvelopeOrNull(task.task_id);
     if (envelope === null) return null;
     for (const path of envelope.required_artifacts) artifacts.add(path);
   }
-  if (artifacts.size === 0) return null;
+  if (!withoutPlan && artifacts.size === 0) return null;
 
   const pulse = await deliveryPulse.pulse().catch(() => null);
   if (
     pulse === null || pulse.basis.projectRevision !== status.revision || pulse.basis.headCommit !== status.headCommit ||
     pulse.episode.readiness.deliveryBlockers.length > 0 || pulse.episode.readiness.failedOrBlockedTasks.length > 0 ||
+    (withoutPlan && pulse.episode.readiness.unresolvedQuestions.length > 0) ||
     pulse.execution.jobs.some((job) => job.phase === "QUEUED" || job.phase === "RUNNING")
   ) return null;
 
@@ -89,16 +92,19 @@ async function retiredDelivery(
   const git = gitTextRunner(repository);
   const paths = [...artifacts];
   try {
+    if (withoutPlan && !git(["diff", "--name-only", "-z", status.headCommit, head, "--"])) return null;
     if (!paths.every((path) => statSync(join(repository, path), { throwIfNoEntry: false })?.isFile() === true &&
       git(["cat-file", "-t", `${head}:${path}`])?.trim() === "blob")) return null;
   } catch {
     return null;
   }
 
-  const reason = `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
+  const reason = withoutPlan ? `direct work is committed at repository HEAD ${head}, ahead of the project basis ${status.headCommit}`
+    : `the retired plan's declared artifacts (${paths.join(", ")}) are committed at repository HEAD ${head}`;
   if (pulse.episode.current && pulse.episode.state === "DELIVERED") {
     return { reasons: [reason, "this episode has a current recorded DELIVER conclusion"], next: ["reply using the recorded conclusion"] };
   }
+  if (withoutPlan && pulse.episode.current && pulse.episode.conclusion !== null) return null;
   return {
     reasons: [reason, "the episode has no mechanical delivery blockers; decide whether the committed artifacts satisfy the user's goal"],
     next: ["if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"],
@@ -242,7 +248,7 @@ async function snapshot(
   const acknowledged =
     input.acknowledgeInputs === true && inputState === "OBSERVED" && (inputPaths.length > 0 || unreadable.length > 0);
   const delivery = (task === null && requested === null) || task?.state === "STALE"
-    ? await retiredDelivery(deps, status, requested)
+    ? await directDeliveryGuidance(deps, status, requested)
     : null;
   let action: OutcomeAction;
   let settledNext: string[] | undefined;
