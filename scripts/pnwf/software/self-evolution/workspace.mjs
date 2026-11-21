@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { docker } from "../../container_runtime.mjs";
 import { readStream } from "../../analyze_energy_trajectory.mjs";
@@ -46,8 +46,9 @@ export function makeSource(root) {
   return info;
 }
 
-export function referencePatch(path) {
-  writeFileSync(path, commands(["diff", "--binary", source, reference, "--", ...referencePaths]));
+export function referencePatch(path, hostOnly = false) {
+  const paths = hostOnly ? referencePaths.filter(file => file.startsWith("host/dsh/")) : referencePaths;
+  writeFileSync(path, commands(["diff", "--binary", source, reference, "--", ...paths]));
 }
 
 export function makeEvidence(root, phase) {
@@ -86,10 +87,12 @@ export function makeEvidence(root, phase) {
 
 export function copyDatabases(from, to) {
   mkdirSync(to, { recursive: true });
-  for (const name of readdirSync(from).filter(file => file.endsWith(".sqlite"))) {
+  for (const name of readdirSync(from, { recursive: true }).filter(file => file.endsWith(".sqlite"))) {
     const wal = join(from, `${name}-wal`);
     if (existsSync(wal)) assert.equal(readFileSync(wal).length, 0, `Uncheckpointed state: ${name}`);
-    cpSync(join(from, name), join(to, name));
+    const target = join(to, name);
+    mkdirSync(dirname(target), { recursive: true });
+    cpSync(join(from, name), target);
   }
 }
 

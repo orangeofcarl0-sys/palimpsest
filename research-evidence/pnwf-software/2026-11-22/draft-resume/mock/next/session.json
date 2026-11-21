@@ -1,0 +1,233 @@
+{
+  "mode": "mock",
+  "basis": "4dbcc087bf37e029a0554be00f633c68a2717419",
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "maintenance-60fe2d6b-905e-428b-89f9-cc19a2ae442f",
+    "sessionId": "MAINTAIN",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-draft-mock-20261122-044607\\next\\stages\\MAINTAIN\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-draft-mock-20261122-044607\\next\\runtime-MAINTAIN",
+    "principalRuntime": "container",
+    "containerId": "cc47c3566ed8ee9a48afb955d325615d60f684421d6badcec84cb65d34e88788",
+    "qualification": "593a9b17ee066f3d810ec039f4fab46521cc58f4e56677b8417a02682f236da2",
+    "startedAt": "2026-11-21T20:52:23.627Z",
+    "endedAt": "2026-11-21T20:52:51.110Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "maintenance-60fe2d6b-905e-428b-89f9-cc19a2ae442f",
+      "sessionId": "MAINTAIN",
+      "observedAt": "2026-11-21T20:52:51.110Z",
+      "maxTokens": 2000000,
+      "softCeiling": 2000000,
+      "totalTokens": 346245,
+      "confirmedTokens": 346245,
+      "reservedTokens": 0,
+      "unresolvedRequests": 0,
+      "source": "REQUEST_ADMISSION_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "mock",
+    "paidRequestsAdmitted": 0,
+    "paidModelCalls": 0
+  },
+  "accounting": {
+    "requests": 5,
+    "unresolved": 0,
+    "confirmed": 346245
+  },
+  "mockErrors": [],
+  "attribution": {
+    "valid": true,
+    "principalId": "session-7b38e713-b2bc-47f9-8212-3c2fe08d0867",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "mock",
+    "requests": 5,
+    "knownTokens": 346245,
+    "totalTokens": 346245,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 345454,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 791
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 5,
+        "input": 345454,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "output": 791,
+        "total": 346245
+      }
+    },
+    "traceTotal": 346245,
+    "traceRequests": 5,
+    "workerRequests": 0,
+    "elapsedMs": 27483,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-7b38e713-b2bc-47f9-8212-3c2fe08d0867",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "3c07003e2bddb1e18100411edc6428b8b7cb59abcbabc127ebda136b6aa13014",
+        "counts": {
+          "steps": 5,
+          "turns": 2,
+          "toolCalls": 3,
+          "pairedToolResults": 3,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 1,
+          "commits": 0,
+          "jobs": 1
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795294368616,
+            "messageId": "2e171cc8-ebb8-4e5b-b629-a274b6863b0e",
+            "usage": {
+              "inputTokens": 94754,
+              "outputTokens": 107,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 94861
+            }
+          },
+          {
+            "seq": 20,
+            "at": 1795294368703,
+            "messageId": "64039f68-9b2d-419e-be21-01eae99343bc",
+            "usage": {
+              "inputTokens": 61813,
+              "outputTokens": 361,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 62174
+            }
+          },
+          {
+            "seq": 28,
+            "at": 1795294368872,
+            "messageId": "efe49642-6b7d-4906-813f-7619cf9f03f8",
+            "usage": {
+              "inputTokens": 59622,
+              "outputTokens": 63,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 59685
+            }
+          },
+          {
+            "seq": 37,
+            "at": 1795294369478,
+            "messageId": "0297c8dd-b57c-47f8-9d3b-714571e9fab0",
+            "usage": {
+              "inputTokens": 58659,
+              "outputTokens": 197,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 58856
+            }
+          },
+          {
+            "seq": 43,
+            "at": 1795294370438,
+            "messageId": "306ffd48-e76a-4b9d-b5c8-bd9a2842084f",
+            "usage": {
+              "inputTokens": 70606,
+              "outputTokens": 63,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 70669
+            }
+          }
+        ],
+        "byKind": {
+          "project:journal_entries": 1,
+          "bash": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "stream": "--run-stage-world--/session-7b38e713-b2bc-47f9-8212-3c2fe08d0867/session.v4.jsonl.zstd",
+    "sha256": "3c07003e2bddb1e18100411edc6428b8b7cb59abcbabc127ebda136b6aa13014",
+    "calls": [
+      {
+        "callId": "maintenance_0",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "tool": "palimpsest_project",
+        "action": "journal_entries",
+        "ok": true,
+        "query": {
+          "action": "journal_entries"
+        },
+        "observed": "[\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 273c7674fd0982574a573260d7aef5fbccb6b205e52c5a032660b6711cb020b3.\",\n      \"provenance\": \"Maintenance evidence intake\",\n      \"relatedRefs\": [\n        {\n          \"kind\": \"sealed_run\",\n          \"id\": \"campaign-wake-4b0cad805e26bd80c98bb2288e95e701\"\n        },\n        {\n          \"kind\": \"git_commit\",\n          \"id\": \"082f77a9a4602d1eb5a2d9be1260186fa41c4a61\"\n        }\n      ],\n      \"createdAt\": \"2026-11-21T19:52:39.943000Z\",\n      \"entryId\": \"pje-bc04fc309a82b461e4f0f039a0906955\",\n      \"digest\": \"4bb8287ac305727694101d049a2c125f812fa2192a8703b0271716d6e14e73d2\"\n    }\n  },\n  {\n    \"entry\": {\n      \"schemaVersion\": 1,\n      \"projectId\": \"palimpsest-maintenance\",\n      \"kind\": \"REFERENCE_NOTE\",\n      \"title\": \"Sealed maintenance input\",\n      \"body\": \"The newly sealed material is available under evidence/. Digest 0223da49a3a2f0dbff68220033d134f",
+        "wakeRefs": [
+          "campaign-wake-4b0cad805e26bd80c98bb2288e95e701",
+          "campaign-wake-6cf7b4ecfc1a4962eaca793e21f8bc7d",
+          "campaign-wake-c9b026192da0fef2e0835c75568ffa64"
+        ]
+      },
+      {
+        "callId": "maintenance_1",
+        "call": 21,
+        "result": 24,
+        "request": 2,
+        "tool": "bash",
+        "action": null,
+        "ok": true,
+        "command": "test -r evidence/review-committed.md && git log -1 --oneline && printf 'Read the inherited record and the next sealed input.\\n' > maintenance/next.md && git add -- maintenance/next.md && git commit -qm 'Record the successor readback'",
+        "description": "Leave a successor work artifact",
+        "testCommand": false,
+        "output": "4dbcc08 Submit the scripted maintenance candidate\n"
+      },
+      {
+        "callId": "maintenance_3",
+        "call": 38,
+        "result": 39,
+        "request": 4,
+        "tool": "palimpsest_work",
+        "action": "conclude",
+        "ok": true,
+        "intent": "DELIVER",
+        "artifacts": [
+          "maintenance/next.md"
+        ],
+        "recorded": true
+      }
+    ],
+    "modelRequests": 5,
+    "lastReply": 43
+  },
+  "reconciled": true,
+  "conclusion": {
+    "seq": 6,
+    "eventId": "pjer-c74ad9f9384f1195d04c309718069638",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Submit the successor readback.\nArtifacts:\n- maintenance/next.md\nWaiting on: (none)\nNext step: (none)\nEvidence: (none)\nBasis: revision 1, head 4dbcc087bf37e029a0554be00f633c68a2717419\nArtifact provenance:\n- maintenance/next.md: present=true tracked=true committed=true source=WORKTREE digest=f7f9a44452eb commit=11301a42f607\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Submit the successor readback.\",\"artifacts\":[\"maintenance/next.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[],\"recordedAt\":\"2026-11-21T20:52:49.945Z\",\"basis\":{\"projectRevision\":1,\"projectDigest\":\"7005c780e5b584031d83fa60e46b8e45a90968daa1e2654701b27105a4c859c1\",\"headCommit\":\"4dbcc087bf37e029a0554be00f633c68a2717419\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"maintenance/next.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"f7f9a44452eba0520b31b8599a13c11b08f6c2cb974677db71f86d49205e432a\",\"source\":\"WORKTREE\",\"commit\":\"11301a42f607185c0ba4c67cf715ebf8c89cde1a\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-e0ca6296ee81b4d3b1d23652\"}"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "maintenance-5785e2cc-308f-49b2-9c5c-dac2e08450eb",
+  "configDigest": "ad6fd31868488e16a20729a2834b2167db12645ecc05a65a5e0aade49e603505",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 303471,
+  "reserved": 0,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": 2000000,
+  "sessions": [
+    {
+      "id": "MAINTAIN",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": 2000000,
+      "softCeiling": 2000000,
+      "requestCount": 4,
+      "unresolvedRequests": 0,
+      "confirmed": 303471,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "f17ddca0-2ad0-4a8f-bf97-ad5fa9bfc6a5",
+      "session": "MAINTAIN",
+      "digest": "bdc2c4c6d1bb50fdf230208aa642cd61c333052e0f8e230e3340bdeace4df360",
+      "reserved": 350202,
+      "actual": 94302,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "5807bbea-b1de-4007-afef-cea2e2a5f7c3",
+      "session": "MAINTAIN",
+      "digest": "4f5de77c905af1b0717c6c69f72eaa8f1c02323ebe6027744c2309855dcd4dcc",
+      "reserved": 326658,
+      "actual": 70931,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "11d6efe5-3275-4bee-a498-5debfe3567c3",
+      "session": "MAINTAIN",
+      "digest": "109cf044b11b12883194f49d565ba9575b3a052df6a22102b803356ddcb55c2f",
+      "reserved": 319297,
+      "actual": 63532,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "9622cc59-983f-471c-9759-aeeaa35abbbc",
+      "session": "MAINTAIN",
+      "digest": "a3d144b69101ad7fdcb3758f22dfe8d1c0d5cfdaca3f598d9bc5a4887ee1b96f",
+      "reserved": 330641,
+      "actual": 74706,
+      "state": "SETTLED",
+      "reason": null
+    }
+  ],
+  "refusals": []
+}

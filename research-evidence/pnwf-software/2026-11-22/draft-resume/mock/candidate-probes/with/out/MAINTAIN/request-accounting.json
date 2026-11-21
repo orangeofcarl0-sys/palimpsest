@@ -1,0 +1,72 @@
+{
+  "schema": "pnwf-spend-snapshot/v1",
+  "cohortId": "maintenance-d2307ac2-cd9f-4a02-ae29-2150cbcb05e9",
+  "configDigest": "7cf109537df7915278f22f90db44d342b12f6a4c8ea776dcfb5392f67246c49a",
+  "state": "OPEN",
+  "reason": null,
+  "confirmed": 366896,
+  "reserved": 0,
+  "unresolvedRequests": 0,
+  "aggregateCeiling": 2000000,
+  "sessions": [
+    {
+      "id": "MAINTAIN",
+      "ordinal": 0,
+      "state": "ENDED",
+      "ceiling": 2000000,
+      "softCeiling": 2000000,
+      "requestCount": 5,
+      "unresolvedRequests": 0,
+      "confirmed": 366896,
+      "reserved": 0
+    }
+  ],
+  "requests": [
+    {
+      "id": "ef9b81d6-6646-4e71-9484-624ae4310eb9",
+      "session": "MAINTAIN",
+      "digest": "1c4ec300c94aed764f4a371230ed80414c237ae79269a089053fc611437e1d0e",
+      "reserved": 350202,
+      "actual": 94302,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "9ceace5a-17fc-4040-91b0-01a34165a6b5",
+      "session": "MAINTAIN",
+      "digest": "f07c3e4217e748084a88436bf33754454fc33139ea060107373645867a82bfaf",
+      "reserved": 326658,
+      "actual": 70931,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "bf45cf1f-996c-40a6-937c-26a2df16dd36",
+      "session": "MAINTAIN",
+      "digest": "e63c55f64bf2810d474e6bd6851b576a3f387400c1f67ef9a6e7401b429c3a0f",
+      "reserved": 319297,
+      "actual": 63349,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "edf4daae-0565-4a8e-9230-ec9d0f217282",
+      "session": "MAINTAIN",
+      "digest": "20022b1030ea4239d7f717838c00982a1034b1d7f386163405af3b9b978c37ee",
+      "reserved": 318842,
+      "actual": 63077,
+      "state": "SETTLED",
+      "reason": null
+    },
+    {
+      "id": "6f35e16b-8394-4179-b9d7-ee19ecd40f8f",
+      "session": "MAINTAIN",
+      "digest": "2eb669012ffd89a18c0f420369315a4b432a64af08e86a9d2802e99cc7016369",
+      "reserved": 331172,
+      "actual": 75237,
+      "state": "SETTLED",
+      "reason": null
+    }
+  ],
+  "refusals": []
+}
