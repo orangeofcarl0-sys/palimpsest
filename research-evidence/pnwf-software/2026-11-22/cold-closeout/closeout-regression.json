@@ -1,0 +1,52 @@
+[
+  {
+    "arm": "WITHOUT",
+    "originalGrade": 7,
+    "originalDelivery": false,
+    "streamDigest": "cedf3ad63c35a2ddd97fc6f5e5c1f29a3e4f1389a838013cbe8a442b82e93222",
+    "initialHead": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+    "commitCall": 95,
+    "result": 98,
+    "candidate": "d6e5558d8c08fe10ddfbba356f8f5ae8757ab50d",
+    "assistantFinal": 102,
+    "offer": "DIRECT_DELIVERY_UNRECORDED",
+    "readiness": {
+      "action": "SEMANTIC_JUDGEMENT",
+      "next": [
+        "if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"
+      ]
+    },
+    "controls": [
+      "unchanged",
+      "dirty",
+      "blocked",
+      "recorded",
+      "head drift"
+    ]
+  },
+  {
+    "arm": "WITH",
+    "originalGrade": 5,
+    "originalDelivery": false,
+    "streamDigest": "36b670418a5fe25ebaffd56d82afe1cd4b64cc89ff05d63829499f6176d4c8ba",
+    "initialHead": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+    "commitCall": 153,
+    "result": 156,
+    "candidate": "b5835cd22955dd33a96975c634dba4fba01246af",
+    "assistantFinal": 172,
+    "offer": "DIRECT_DELIVERY_UNRECORDED",
+    "readiness": {
+      "action": "SEMANTIC_JUDGEMENT",
+      "next": [
+        "if the committed artifacts satisfy the goal, call palimpsest_work action=conclude intent=DELIVER with your statement and the artifact paths"
+      ]
+    },
+    "controls": [
+      "unchanged",
+      "dirty",
+      "blocked",
+      "recorded",
+      "head drift"
+    ]
+  }
+]

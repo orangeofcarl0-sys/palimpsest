@@ -1,0 +1,1381 @@
+{
+  "summary": {
+    "session": {
+      "id": "session-63fd6c17-7748-454a-b02e-b105cf0272ba",
+      "cwd": "/run/stage/world",
+      "startedAt": "2026-11-21T18:01:10.690Z",
+      "endedAt": "2026-11-21T18:02:54.923Z",
+      "durationMs": 104233
+    },
+    "counts": {
+      "steps": 13,
+      "turns": 2,
+      "toolCalls": 19,
+      "pairedToolResults": 19,
+      "unpairedToolResults": 0,
+      "toolErrors": 0,
+      "jobFailures": 0,
+      "domainRefusals": 0,
+      "repeatedRefusals": 0,
+      "noProgressToolCalls": 0,
+      "stateQueries": 2,
+      "commits": 0,
+      "jobs": 8
+    },
+    "byKind": {
+      "continuity:pulse": 1,
+      "bash": 8,
+      "glob": 1,
+      "read": 4,
+      "handover_readback": 1,
+      "continuity:explain": 1,
+      "project:journal_entries": 1,
+      "write": 1,
+      "work:conclude": 1
+    },
+    "stateQueries": [
+      "8976ms continuity:pulse",
+      "41989ms project:journal_entries"
+    ],
+    "calls": [
+      {
+        "seq": 15,
+        "callId": "call_3ace2a7c56dc48e1b44bf91e",
+        "offsetMs": 8976,
+        "kind": "continuity:pulse",
+        "args": {
+          "action": "pulse"
+        }
+      },
+      {
+        "seq": 21,
+        "callId": "call_de9cb015db544a78aab3672b",
+        "offsetMs": 15492,
+        "kind": "bash pwd && git status --short --branch && git log --oneline -8 && git tag --list",
+        "args": {
+          "command": "pwd && git status --short --branch && git log --oneline -8 && git tag --list",
+          "description": "Inspect repository status and history"
+        }
+      },
+      {
+        "seq": 25,
+        "callId": "call_538fa01ae29b41d79ff5cab9",
+        "offsetMs": 16008,
+        "kind": "glob",
+        "args": {
+          "pattern": "**/*"
+        }
+      },
+      {
+        "seq": 31,
+        "callId": "call_3569aebdcfa04e9b8ae8aa1f",
+        "offsetMs": 18343,
+        "kind": "read /run/stage/world/MAINTENANCE-REVIEW.md",
+        "args": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md"
+        }
+      },
+      {
+        "seq": 32,
+        "callId": "call_bc6ec2ad55a14bdb95fc148a",
+        "offsetMs": 18344,
+        "kind": "read /run/stage/world/TASK.md",
+        "args": {
+          "file_path": "/run/stage/world/TASK.md"
+        }
+      },
+      {
+        "seq": 33,
+        "callId": "call_d5f729f9e5d546498fd06fb4",
+        "offsetMs": 18345,
+        "kind": "read /run/stage/world/MIGRATION.md",
+        "args": {
+          "file_path": "/run/stage/world/MIGRATION.md"
+        }
+      },
+      {
+        "seq": 34,
+        "callId": "call_5399ec7e8a4f4dbebc340015",
+        "offsetMs": 18346,
+        "kind": "read /run/stage/world/updates/2026-11-10/fleet-default-limit.md",
+        "args": {
+          "file_path": "/run/stage/world/updates/2026-11-10/fleet-default-limit.md"
+        }
+      },
+      {
+        "seq": 43,
+        "callId": "call_112d7f99962f4240a8489348",
+        "offsetMs": 22958,
+        "kind": "bash git show --stat --oneline 1444de6 && git show --format=fuller --no-ext-diff 1444de6 -- MAINTENANCE-REVIEW.md && echo '--…",
+        "args": {
+          "command": "git show --stat --oneline 1444de6 && git show --format=fuller --no-ext-diff 1444de6 -- MAINTENANCE-REVIEW.md && echo '--- accepted tree ---' && git ls-tree -r --name-only 95b83e7 && echo '--- branches ---' && git branch -avv && git status --porcelain=v2",
+          "description": "Inspect prior review commit and accepted tree"
+        }
+      },
+      {
+        "seq": 47,
+        "callId": "call_42ba62d5ac27401eb56fdcb9",
+        "offsetMs": 23763,
+        "kind": "bash git log --all --decorate --oneline --graph -12 && echo '--- 95b83e7 ---' && git show --stat --oneline 95b83e7 && echo '-…",
+        "args": {
+          "command": "git log --all --decorate --oneline --graph -12 && echo '--- 95b83e7 ---' && git show --stat --oneline 95b83e7 && echo '--- fbeb895 ---' && git show --stat --oneline fbeb895",
+          "description": "Inspect all branches and key commits"
+        }
+      },
+      {
+        "seq": 55,
+        "callId": "call_10352eee9070464baa918157",
+        "offsetMs": 27663,
+        "kind": "handover_readback",
+        "args": {
+          "sha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+          "question": "Does the owner-accepted revision resolve the prior cold-handover HOLD? Specifically: (1) is the old Episode conclusion episode-e7050e9ddf64ccebde7f08f6 superseded/reopened or otherwise stale on the current basis, (2) is journal reference pje-d0c977aae7bb8bfeca9159f76e14a7d1 an adequate/current release-verification record, and (3) does the committed tree at this SHA implement and verify the Fleet zero/omitted limit default of 3 while preserving positive limits, unary behavior, wire compatibility and REST behavior? Report what is READY versus still HOLD, and whether the retained evidence remains valid."
+        }
+      },
+      {
+        "seq": 61,
+        "callId": "call_f7c943bcb343467780db7f02",
+        "offsetMs": 33033,
+        "kind": "bash git diff --stat 95b83e7..HEAD && git diff --name-status 95b83e7..HEAD && echo '--- working tree ---' && git status --sho…",
+        "args": {
+          "command": "git diff --stat 95b83e7..HEAD && git diff --name-status 95b83e7..HEAD && echo '--- working tree ---' && git status --short && echo '--- package ---' && cat package.json",
+          "description": "Confirm only review differs from accepted tree"
+        }
+      },
+      {
+        "seq": 65,
+        "callId": "call_5949f8d140de47f290e0d0da",
+        "offsetMs": 33568,
+        "kind": "bash git diff --no-ext-diff 95b83e7^..95b83e7 -- service/grpc_server.js test/server.test.js test/integration.test.js MIGRATIO…",
+        "args": {
+          "command": "git diff --no-ext-diff 95b83e7^..95b83e7 -- service/grpc_server.js test/server.test.js test/integration.test.js MIGRATION.md",
+          "description": "Inspect accepted correction diff"
+        }
+      },
+      {
+        "seq": 73,
+        "callId": "call_008169ce55be49bcb00bb025",
+        "offsetMs": 40660,
+        "kind": "bash node --test",
+        "args": {
+          "command": "node --test",
+          "description": "Run full test suite on reviewed tree",
+          "timeoutMs": 120000
+        }
+      },
+      {
+        "seq": 77,
+        "callId": "call_f63907b46639470ab8f95e74",
+        "offsetMs": 41076,
+        "kind": "continuity:explain",
+        "args": {
+          "action": "explain",
+          "subject": "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1"
+        }
+      },
+      {
+        "seq": 79,
+        "callId": "call_9bcd97d55cc74487a1703a2a",
+        "offsetMs": 41989,
+        "kind": "project:journal_entries",
+        "args": {
+          "action": "journal_entries"
+        }
+      },
+      {
+        "seq": 85,
+        "callId": "call_72dadefb7ef643fdb3909a1a",
+        "offsetMs": 65674,
+        "kind": "write /run/stage/world/MAINTENANCE-REVIEW.md",
+        "args": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md",
+          "content": "# Cold handover maintenance review\n\nReadback decision: READY\n\nThe earlier HOLD was based on an UNKNOWN cold-session lookup and an unresolved release-verification question. A fresh same-SHA readback at the owner-accepted revision `95b83e71ee9a37041b9918b5e8b797eebabf69c9` (receipt `ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4`) now finds the old Episode with no open questions and binds its verification note to that accepted tree. The prior blocker is therefore stale for maintenance handover. This is a handover-readiness decision only, not release authorization.\n\n## Basis and reconciliation\n\n- **Current accepted revision:** `95b83e71ee9a37041b9918b5e8b797eebabf69c9`, accepted through Work `DIRECT_BASIS` event 8 (approval event 7). The tree at this SHA is the version reviewed here.\n- **Old record:** Episode `episode-e7050e9ddf64ccebde7f08f6` remains a historical DELIVER conclusion recorded at project revision 1 and former head `fbeb8958f4405688b13f37dbdec330157a660ab0`. The new readback finds it as `REOPENED`, not `UNKNOWN`: later project and head movement reopened it, so it is not itself the current acceptance. Its old outcome and artifacts remain preserved; it is not being rewritten or treated as fresh authority.\n- **Relationship to the accepted version:** the accepted revision is the later direct correction commit. The old Episode describes the earlier basis, while the owner's current `DIRECT_BASIS` acceptance is bound to `95b83e7`. The readback reports `workPreserved: true` and `journalPreserved: true`.\n- **Verification record status:** `journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1` (\"Fleet rollout verification\") is present with standing `OBSERVED_SOURCE` and is returned by the readback as its `verificationNote`. It records the independent release verifier's observation that explicit zero and omitted limits returned zero frames before the change and three readings in source order in the accepted tree. It is bound to commit `95b83e7` and has no reopen conditions.\n- **Current evidence:** the same-SHA readback reports the Episode found, 0 open questions, all four artifact digests matching `95b83e7` (`service/grpc_server.js`, `test/integration.test.js`, `test/server.test.js`, `MIGRATION.md`), `publicTests: 18`, `workPreserved: true`, and `journalPreserved: true`. I reran `node --test` on the reviewed tree: 18/18 tests passed. `git diff --stat 95b83e7..HEAD` is limited to this review file.\n- **Scope caveat:** `proto/energy.proto` remains byte-for-byte unchanged; its released comment is stale by design, as documented in `MIGRATION.md`. The effective accepted behavior is the dated Fleet correction. READY means the maintenance handover can proceed on this evidence; it does not approve a release or broaden the accepted scope.\n\n## Retained evidence\n\n- Archived cold-session lookup: episode-e7050e9ddf64ccebde7f08f6, UNKNOWN, call call_ccfc97275a064338a47c1acb.\n- Owner-accepted tree: 95b83e71ee9a37041b9918b5e8b797eebabf69c9, Work DIRECT_BASIS event 8.\n- Original release verification reference: pje-d0c977aae7bb8bfeca9159f76e14a7d1.\n- Fleet source: updates/2026-11-10/fleet-default-limit.md.\n- Retained verification: zero or omitted limit returns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.\n- Fresh same-SHA readback: receipt ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4, found=true, state=REOPENED, openQuestions=0, publicTests=18, workPreserved=true, journalPreserved=true.\n- Independent re-run: `node --test` 18/18 passed on the reviewed tree; only `MAINTENANCE-REVIEW.md` differs from `95b83e7`.\n\nThis review is for maintenance handover; it is not release authorization.\n"
+        }
+      },
+      {
+        "seq": 91,
+        "callId": "call_287adb37e7dc4c0fb887c2b5",
+        "offsetMs": 69049,
+        "kind": "bash git diff --check && git diff -- MAINTENANCE-REVIEW.md && git status --short",
+        "args": {
+          "command": "git diff --check && git diff -- MAINTENANCE-REVIEW.md && git status --short",
+          "description": "Review the maintenance-review diff"
+        }
+      },
+      {
+        "seq": 99,
+        "callId": "call_13b8d1a997e6451da4585a1a",
+        "offsetMs": 71670,
+        "kind": "bash git add -- MAINTENANCE-REVIEW.md && git commit -m \"Mark maintenance readback READY after same-SHA revalidation\" && git s…",
+        "args": {
+          "command": "git add -- MAINTENANCE-REVIEW.md && git commit -m \"Mark maintenance readback READY after same-SHA revalidation\" && git status --short --branch && git log -1 --format=fuller --stat",
+          "description": "Commit the revised maintenance review"
+        }
+      },
+      {
+        "seq": 116,
+        "callId": "call_fe3ff75b1cfe4df3b7ace192",
+        "offsetMs": 92273,
+        "kind": "work:conclude",
+        "args": {
+          "action": "conclude",
+          "intent": "DELIVER",
+          "statement": "Completed the cold-handover maintenance review and committed it as 008a480. The active Readback decision is READY: the prior HOLD blocker is stale because a fresh same-SHA readback at owner-accepted revision 95b83e7 finds the old Episode (state REOPENED, not UNKNOWN) with 0 open questions and binds journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1 as verificationNote to that accepted tree. The review records that the old DELIVER record remains historical at its former basis/head, while current acceptance is DIRECT_BASIS event 8 at 95b83e7; all four artifact digests match, work and journal are preserved, and node --test passed 18/18. Only MAINTENANCE-REVIEW.md differs from the accepted tree. The retained evidence block is preserved and extended. This is a maintenance-handover readiness decision, not release authorization.",
+          "artifacts": [
+            "MAINTENANCE-REVIEW.md"
+          ],
+          "evidenceRefs": [
+            "commit:008a480",
+            "commit:95b83e7",
+            "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1",
+            "episode:episode-e7050e9ddf64ccebde7f08f6"
+          ]
+        }
+      }
+    ],
+    "results": [
+      {
+        "seq": 16,
+        "callId": "call_3ace2a7c56dc48e1b44bf91e",
+        "callSeq": 15,
+        "offsetMs": 13115,
+        "callKind": "continuity:pulse",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 24,
+        "callId": "call_de9cb015db544a78aab3672b",
+        "callSeq": 21,
+        "offsetMs": 16007,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 26,
+        "callId": "call_538fa01ae29b41d79ff5cab9",
+        "callSeq": 25,
+        "offsetMs": 16085,
+        "callKind": "glob",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 35,
+        "callId": "call_3569aebdcfa04e9b8ae8aa1f",
+        "callSeq": 31,
+        "offsetMs": 18385,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 36,
+        "callId": "call_bc6ec2ad55a14bdb95fc148a",
+        "callSeq": 32,
+        "offsetMs": 18389,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 37,
+        "callId": "call_d5f729f9e5d546498fd06fb4",
+        "callSeq": 33,
+        "offsetMs": 18398,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 38,
+        "callId": "call_5399ec7e8a4f4dbebc340015",
+        "callSeq": 34,
+        "offsetMs": 18411,
+        "callKind": "read",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 46,
+        "callId": "call_112d7f99962f4240a8489348",
+        "callSeq": 43,
+        "offsetMs": 23762,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 50,
+        "callId": "call_42ba62d5ac27401eb56fdcb9",
+        "callSeq": 47,
+        "offsetMs": 24156,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 56,
+        "callId": "call_10352eee9070464baa918157",
+        "callSeq": 55,
+        "offsetMs": 27695,
+        "callKind": "handover_readback",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 64,
+        "callId": "call_f7c943bcb343467780db7f02",
+        "callSeq": 61,
+        "offsetMs": 33567,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 68,
+        "callId": "call_5949f8d140de47f290e0d0da",
+        "callSeq": 65,
+        "offsetMs": 33706,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 76,
+        "callId": "call_008169ce55be49bcb00bb025",
+        "callSeq": 73,
+        "offsetMs": 41075,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 78,
+        "callId": "call_f63907b46639470ab8f95e74",
+        "callSeq": 77,
+        "offsetMs": 41988,
+        "callKind": "continuity:explain",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 80,
+        "callId": "call_9bcd97d55cc74487a1703a2a",
+        "callSeq": 79,
+        "offsetMs": 42001,
+        "callKind": "project:journal_entries",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 86,
+        "callId": "call_72dadefb7ef643fdb3909a1a",
+        "callSeq": 85,
+        "offsetMs": 65954,
+        "callKind": "write",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 94,
+        "callId": "call_287adb37e7dc4c0fb887c2b5",
+        "callSeq": 91,
+        "offsetMs": 69559,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 102,
+        "callId": "call_13b8d1a997e6451da4585a1a",
+        "callSeq": 99,
+        "offsetMs": 72678,
+        "callKind": "bash",
+        "ok": true,
+        "state": null,
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {}
+      },
+      {
+        "seq": 117,
+        "callId": "call_fe3ff75b1cfe4df3b7ace192",
+        "callSeq": 116,
+        "offsetMs": 100114,
+        "callKind": "work:conclude",
+        "ok": true,
+        "state": "RECORDED",
+        "refusal": null,
+        "refusalReason": null,
+        "refusalDetail": null,
+        "facts": {
+          "state": "RECORDED"
+        }
+      }
+    ],
+    "failedJobs": [],
+    "modelSteps": [
+      {
+        "seq": 14,
+        "at": 1795284079663,
+        "messageId": "1282833c-d35a-48d9-9e8f-7c1da173f562",
+        "usage": {
+          "inputTokens": 10815,
+          "outputTokens": 67,
+          "cacheReadTokens": 0,
+          "cacheWriteTokens": 0,
+          "totalTokens": 10882
+        }
+      },
+      {
+        "seq": 20,
+        "at": 1795284086180,
+        "messageId": "1ce9f5f4-70f5-4398-a8f8-1e2063e190e2",
+        "usage": {
+          "inputTokens": 2670,
+          "outputTokens": 129,
+          "cacheReadTokens": 10752,
+          "cacheWriteTokens": 0,
+          "totalTokens": 13551
+        }
+      },
+      {
+        "seq": 30,
+        "at": 1795284089032,
+        "messageId": "4087de64-264a-46d3-87d8-9eea339caca4",
+        "usage": {
+          "inputTokens": 430,
+          "outputTokens": 200,
+          "cacheReadTokens": 13312,
+          "cacheWriteTokens": 0,
+          "totalTokens": 13942
+        }
+      },
+      {
+        "seq": 42,
+        "at": 1795284093646,
+        "messageId": "025e0ba6-506f-4168-8bd0-22130c80a8c7",
+        "usage": {
+          "inputTokens": 3178,
+          "outputTokens": 433,
+          "cacheReadTokens": 13696,
+          "cacheWriteTokens": 0,
+          "totalTokens": 17307
+        }
+      },
+      {
+        "seq": 54,
+        "at": 1795284098352,
+        "messageId": "1bb9e828-3af1-48d3-b305-bc000c78ceb5",
+        "usage": {
+          "inputTokens": 1338,
+          "outputTokens": 280,
+          "cacheReadTokens": 16768,
+          "cacheWriteTokens": 0,
+          "totalTokens": 18386
+        }
+      },
+      {
+        "seq": 60,
+        "at": 1795284103720,
+        "messageId": "a19f5ea5-892e-4f2d-96d5-125f4db04680",
+        "usage": {
+          "inputTokens": 1164,
+          "outputTokens": 576,
+          "cacheReadTokens": 18048,
+          "cacheWriteTokens": 0,
+          "totalTokens": 19788
+        }
+      },
+      {
+        "seq": 72,
+        "at": 1795284111349,
+        "messageId": "b658408b-429c-4c4a-9848-59b7ad997683",
+        "usage": {
+          "inputTokens": 2931,
+          "outputTokens": 704,
+          "cacheReadTokens": 19200,
+          "cacheWriteTokens": 0,
+          "totalTokens": 22835
+        }
+      },
+      {
+        "seq": 84,
+        "at": 1795284136361,
+        "messageId": "2fa503ae-fe17-4380-9c79-4164849c55bb",
+        "usage": {
+          "inputTokens": 3746,
+          "outputTokens": 2987,
+          "cacheReadTokens": 22016,
+          "cacheWriteTokens": 0,
+          "totalTokens": 28749
+        }
+      },
+      {
+        "seq": 90,
+        "at": 1795284139737,
+        "messageId": "e383c490-4c17-4c2c-be90-820459825f99",
+        "usage": {
+          "inputTokens": 3066,
+          "outputTokens": 139,
+          "cacheReadTokens": 25728,
+          "cacheWriteTokens": 0,
+          "totalTokens": 28933
+        }
+      },
+      {
+        "seq": 98,
+        "at": 1795284142359,
+        "messageId": "dc3f50a4-1e3e-4bb3-8001-e066aec4b08d",
+        "usage": {
+          "inputTokens": 1395,
+          "outputTokens": 129,
+          "cacheReadTokens": 28672,
+          "cacheWriteTokens": 0,
+          "totalTokens": 30196
+        }
+      },
+      {
+        "seq": 106,
+        "at": 1795284151425,
+        "messageId": "94055aea-cc42-4e3d-8ddb-2382fb53ff97",
+        "usage": {
+          "inputTokens": 436,
+          "outputTokens": 771,
+          "cacheReadTokens": 29952,
+          "cacheWriteTokens": 0,
+          "totalTokens": 31159
+        }
+      },
+      {
+        "seq": 115,
+        "at": 1795284162962,
+        "messageId": "960387f1-0a95-4e6e-ade3-7e0aace0a588",
+        "usage": {
+          "inputTokens": 919,
+          "outputTokens": 471,
+          "cacheReadTokens": 30336,
+          "cacheWriteTokens": 0,
+          "totalTokens": 31726
+        }
+      },
+      {
+        "seq": 121,
+        "at": 1795284174922,
+        "messageId": "f4cb6b73-ee2b-4bcc-8491-3b30ed113d7a",
+        "usage": {
+          "inputTokens": 2580,
+          "outputTokens": 200,
+          "cacheReadTokens": 31232,
+          "cacheWriteTokens": 0,
+          "totalTokens": 34012
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seq": 8,
+      "at": 1795284077314,
+      "offsetMs": 6624,
+      "kind": "USER",
+      "detail": "This is an ongoing project: earlier work, current commitments and any unconsumed contributions are recorded. Call palimpsest_continuity action=pulse before deciding what to do next; it is a derived read, not an instruction. 接手这份 gRPC 迁移的冷交接维护评审。上一班留下了 HOLD，交付团队现在需要知道接续是否可用。请根据当前证据将 Readback decision 标为 READY 或 HOLD，说明旧记录与当前接受版本的关系和核验记录的状态。保留评审末尾的 Retained evidence 区块。把决定和可追溯的依据写入并提交 MAINTENANCE-RE…"
+    },
+    {
+      "seq": 9,
+      "at": 1795284077316,
+      "offsetMs": 6626,
+      "kind": "USER",
+      "detail": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots. Current working directory: \"/run/stage/world\". Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/run/stage/world\". Some platform temporary areas may also be writable. Approval prompts are disabled in this session: acti…"
+    },
+    {
+      "seq": 14,
+      "at": 1795284079663,
+      "offsetMs": 8973,
+      "kind": "DECISION",
+      "detail": "I’ll start with the continuity pulse, then inspect the review and repository evidence before choosing READY or HOLD."
+    },
+    {
+      "seq": 15,
+      "at": 1795284079666,
+      "offsetMs": 8976,
+      "kind": "CALL",
+      "detail": "continuity:pulse",
+      "callId": "call_3ace2a7c56dc48e1b44bf91e",
+      "tool": "palimpsest_continuity",
+      "args": {
+        "action": "pulse"
+      }
+    },
+    {
+      "seq": 16,
+      "at": 1795284083805,
+      "offsetMs": 13115,
+      "kind": "RESULT",
+      "detail": "ok { \"schema\": \"pc1-project-pulse/v1\", \"projectId\": \"grpc-migration-continuation\", \"goal\": \"Deliver and maintain a compatible migration of the site readings service.\", \"basis\": { \"projectRevision\": 2, \"projectDigest\": \"f370…",
+      "callId": "call_3ace2a7c56dc48e1b44bf91e",
+      "callSeq": 15,
+      "callKind": "continuity:pulse",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 21,
+      "at": 1795284086182,
+      "offsetMs": 15492,
+      "kind": "CALL",
+      "detail": "bash pwd && git status --short --branch && git log --oneline -8 && git tag --list",
+      "callId": "call_de9cb015db544a78aab3672b",
+      "tool": "bash",
+      "args": {
+        "command": "pwd && git status --short --branch && git log --oneline -8 && git tag --list",
+        "description": "Inspect repository status and history"
+      }
+    },
+    {
+      "seq": 22,
+      "at": 1795284086197,
+      "offsetMs": 15507,
+      "kind": "JOB",
+      "detail": "start bash pwd && git status --short --branch && git log --oneline -8 && git tag --list"
+    },
+    {
+      "seq": 23,
+      "at": 1795284086694,
+      "offsetMs": 16004,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) pwd && git status --short --branch && git log --oneline -8 && git tag --list"
+    },
+    {
+      "seq": 24,
+      "at": 1795284086697,
+      "offsetMs": 16007,
+      "kind": "RESULT",
+      "detail": "ok /run/stage/world ## maintenance-review 1444de6 Carry forward the cold-handover investigation 95b83e7 Apply Fleet StreamReadings default limit fbeb895 Record Fleet default limit correction 3dadc3a Migrate site readings se…",
+      "callId": "call_de9cb015db544a78aab3672b",
+      "callSeq": 21,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 25,
+      "at": 1795284086698,
+      "offsetMs": 16008,
+      "kind": "CALL",
+      "detail": "glob",
+      "callId": "call_538fa01ae29b41d79ff5cab9",
+      "tool": "glob",
+      "args": {
+        "pattern": "**/*"
+      }
+    },
+    {
+      "seq": 26,
+      "at": 1795284086775,
+      "offsetMs": 16085,
+      "kind": "RESULT",
+      "detail": "ok .gitignore MIGRATION.md README.md TASK.md package.json proto/energy.proto service/data.js service/grpc_client.js service/grpc_server.js service/rest_client.js service/rest_server.js service/wire.js test/integration.test.…",
+      "callId": "call_538fa01ae29b41d79ff5cab9",
+      "callSeq": 25,
+      "callKind": "glob",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 31,
+      "at": 1795284089033,
+      "offsetMs": 18343,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/MAINTENANCE-REVIEW.md",
+      "callId": "call_3569aebdcfa04e9b8ae8aa1f",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md"
+      }
+    },
+    {
+      "seq": 32,
+      "at": 1795284089034,
+      "offsetMs": 18344,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/TASK.md",
+      "callId": "call_bc6ec2ad55a14bdb95fc148a",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/TASK.md"
+      }
+    },
+    {
+      "seq": 33,
+      "at": 1795284089035,
+      "offsetMs": 18345,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/MIGRATION.md",
+      "callId": "call_d5f729f9e5d546498fd06fb4",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/MIGRATION.md"
+      }
+    },
+    {
+      "seq": 34,
+      "at": 1795284089036,
+      "offsetMs": 18346,
+      "kind": "CALL",
+      "detail": "read /run/stage/world/updates/2026-11-10/fleet-default-limit.md",
+      "callId": "call_5399ec7e8a4f4dbebc340015",
+      "tool": "read",
+      "args": {
+        "file_path": "/run/stage/world/updates/2026-11-10/fleet-default-limit.md"
+      }
+    },
+    {
+      "seq": 35,
+      "at": 1795284089075,
+      "offsetMs": 18385,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/MAINTENANCE-REVIEW.md</path> <type>file</type> <content> 1: # Cold handover maintenance review 2: 3: Readback decision: HOLD 4: 5: The previous cold handover returned UNKNOWN for the old Episode an…",
+      "callId": "call_3569aebdcfa04e9b8ae8aa1f",
+      "callSeq": 31,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 36,
+      "at": 1795284089079,
+      "offsetMs": 18389,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/TASK.md</path> <type>file</type> <content> 1: # Task — migrate the site readings service to gRPC 2: 3: The dispatch console still speaks REST. The fleet client is moving to gRPC, and the service mu…",
+      "callId": "call_bc6ec2ad55a14bdb95fc148a",
+      "callSeq": 32,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 37,
+      "at": 1795284089088,
+      "offsetMs": 18398,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/MIGRATION.md</path> <type>file</type> <content> 1: # Migration to gRPC 2: 3: The site readings service now exposes `energy.v1.EnergyService` over gRPC while the existing REST API 4: remains in plac…",
+      "callId": "call_d5f729f9e5d546498fd06fb4",
+      "callSeq": 33,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 38,
+      "at": 1795284089101,
+      "offsetMs": 18411,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/updates/2026-11-10/fleet-default-limit.md</path> <type>file</type> <content> 1: # Fleet compatibility correction 2: 3: The Fleet consumer now uses a zero or omitted StreamReadings limit to request …",
+      "callId": "call_5399ec7e8a4f4dbebc340015",
+      "callSeq": 34,
+      "callKind": "read",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 43,
+      "at": 1795284093648,
+      "offsetMs": 22958,
+      "kind": "CALL",
+      "detail": "bash git show --stat --oneline 1444de6 && git show --format=fuller --no-ext-diff 1444de6 -- MAINTENANCE-REVIEW.md && echo '--…",
+      "callId": "call_112d7f99962f4240a8489348",
+      "tool": "bash",
+      "args": {
+        "command": "git show --stat --oneline 1444de6 && git show --format=fuller --no-ext-diff 1444de6 -- MAINTENANCE-REVIEW.md && echo '--- accepted tree ---' && git ls-tree -r --name-only 95b83e7 && echo '--- branches ---' && git branch -avv && git status --porcelain=v2",
+        "description": "Inspect prior review commit and accepted tree"
+      }
+    },
+    {
+      "seq": 44,
+      "at": 1795284093659,
+      "offsetMs": 22969,
+      "kind": "JOB",
+      "detail": "start bash git show --stat --oneline 1444de6 && git show --format=fuller --no-ext-diff 1444de6 -- MAINTENANCE-R…"
+    },
+    {
+      "seq": 45,
+      "at": 1795284094450,
+      "offsetMs": 23760,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git show --stat --oneline 1444de6 && git show --format=fuller --no-ext-diff 1444de6 -- MAINTENANCE-R…"
+    },
+    {
+      "seq": 46,
+      "at": 1795284094452,
+      "offsetMs": 23762,
+      "kind": "RESULT",
+      "detail": "ok 1444de6 Carry forward the cold-handover investigation MAINTENANCE-REVIEW.md | 13 +++++++++++++ 1 file changed, 13 insertions(+) commit 1444de6ce289197a1d12b0b04d2caa36c1d79355 Author: Maintenance review pilot <maintenanc…",
+      "callId": "call_112d7f99962f4240a8489348",
+      "callSeq": 43,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 47,
+      "at": 1795284094453,
+      "offsetMs": 23763,
+      "kind": "CALL",
+      "detail": "bash git log --all --decorate --oneline --graph -12 && echo '--- 95b83e7 ---' && git show --stat --oneline 95b83e7 && echo '-…",
+      "callId": "call_42ba62d5ac27401eb56fdcb9",
+      "tool": "bash",
+      "args": {
+        "command": "git log --all --decorate --oneline --graph -12 && echo '--- 95b83e7 ---' && git show --stat --oneline 95b83e7 && echo '--- fbeb895 ---' && git show --stat --oneline fbeb895",
+        "description": "Inspect all branches and key commits"
+      }
+    },
+    {
+      "seq": 48,
+      "at": 1795284094464,
+      "offsetMs": 23774,
+      "kind": "JOB",
+      "detail": "start bash git log --all --decorate --oneline --graph -12 && echo '--- 95b83e7 ---' && git show --stat --onelin…"
+    },
+    {
+      "seq": 49,
+      "at": 1795284094844,
+      "offsetMs": 24154,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git log --all --decorate --oneline --graph -12 && echo '--- 95b83e7 ---' && git show --stat --onelin…"
+    },
+    {
+      "seq": 50,
+      "at": 1795284094846,
+      "offsetMs": 24156,
+      "kind": "RESULT",
+      "detail": "ok * 1444de6 (HEAD -> maintenance-review) Carry forward the cold-handover investigation * 95b83e7 Apply Fleet StreamReadings default limit * fbeb895 Record Fleet default limit correction * 3dadc3a Migrate site readings serv…",
+      "callId": "call_42ba62d5ac27401eb56fdcb9",
+      "callSeq": 47,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 55,
+      "at": 1795284098353,
+      "offsetMs": 27663,
+      "kind": "CALL",
+      "detail": "handover_readback",
+      "callId": "call_10352eee9070464baa918157",
+      "tool": "handover_readback",
+      "args": {
+        "sha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+        "question": "Does the owner-accepted revision resolve the prior cold-handover HOLD? Specifically: (1) is the old Episode conclusion episode-e7050e9ddf64ccebde7f08f6 superseded/reopened or otherwise stale on the current basis, (2) is journal reference pje-d0c977aae7bb8bfeca9159f76e14a7d1 an adequate/current release-verification record, and (3) does the committed tree at this SHA implement and verify the Fleet zero/omitted limit default of 3 while preserving positive limits, unary behavior, wire compatibility and REST behavior? Report what is READY versus still HOLD, and whether the retained evidence remains valid."
+      }
+    },
+    {
+      "seq": 56,
+      "at": 1795284098385,
+      "offsetMs": 27695,
+      "kind": "RESULT",
+      "detail": "ok {\"ok\":true,\"receiptId\":\"ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4\",\"reviewer\":\"cold-handover-maintenance-verifier\",\"runtime\":\"3883ae732e31502c98ad904d80a1b1f2d2827a5b\",\"sha\":\"95b83e71ee9a37041b9918…",
+      "callId": "call_10352eee9070464baa918157",
+      "callSeq": 55,
+      "callKind": "handover_readback",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 61,
+      "at": 1795284103723,
+      "offsetMs": 33033,
+      "kind": "CALL",
+      "detail": "bash git diff --stat 95b83e7..HEAD && git diff --name-status 95b83e7..HEAD && echo '--- working tree ---' && git status --sho…",
+      "callId": "call_f7c943bcb343467780db7f02",
+      "tool": "bash",
+      "args": {
+        "command": "git diff --stat 95b83e7..HEAD && git diff --name-status 95b83e7..HEAD && echo '--- working tree ---' && git status --short && echo '--- package ---' && cat package.json",
+        "description": "Confirm only review differs from accepted tree"
+      }
+    },
+    {
+      "seq": 62,
+      "at": 1795284103738,
+      "offsetMs": 33048,
+      "kind": "JOB",
+      "detail": "start bash git diff --stat 95b83e7..HEAD && git diff --name-status 95b83e7..HEAD && echo '--- working tree ---'…"
+    },
+    {
+      "seq": 63,
+      "at": 1795284104255,
+      "offsetMs": 33565,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git diff --stat 95b83e7..HEAD && git diff --name-status 95b83e7..HEAD && echo '--- working tree ---'…"
+    },
+    {
+      "seq": 64,
+      "at": 1795284104257,
+      "offsetMs": 33567,
+      "kind": "RESULT",
+      "detail": "ok MAINTENANCE-REVIEW.md | 13 +++++++++++++ 1 file changed, 13 insertions(+) A MAINTENANCE-REVIEW.md --- working tree --- --- package --- { \"name\": \"energy-service\", \"private\": true, \"version\": \"1.4.0\", \"description\": \"Site…",
+      "callId": "call_f7c943bcb343467780db7f02",
+      "callSeq": 61,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 65,
+      "at": 1795284104258,
+      "offsetMs": 33568,
+      "kind": "CALL",
+      "detail": "bash git diff --no-ext-diff 95b83e7^..95b83e7 -- service/grpc_server.js test/server.test.js test/integration.test.js MIGRATIO…",
+      "callId": "call_5949f8d140de47f290e0d0da",
+      "tool": "bash",
+      "args": {
+        "command": "git diff --no-ext-diff 95b83e7^..95b83e7 -- service/grpc_server.js test/server.test.js test/integration.test.js MIGRATION.md",
+        "description": "Inspect accepted correction diff"
+      }
+    },
+    {
+      "seq": 66,
+      "at": 1795284104270,
+      "offsetMs": 33580,
+      "kind": "JOB",
+      "detail": "start bash git diff --no-ext-diff 95b83e7^..95b83e7 -- service/grpc_server.js test/server.test.js test/integrat…"
+    },
+    {
+      "seq": 67,
+      "at": 1795284104394,
+      "offsetMs": 33704,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git diff --no-ext-diff 95b83e7^..95b83e7 -- service/grpc_server.js test/server.test.js test/integrat…"
+    },
+    {
+      "seq": 68,
+      "at": 1795284104396,
+      "offsetMs": 33706,
+      "kind": "RESULT",
+      "detail": "ok diff --git a/MIGRATION.md b/MIGRATION.md index 0c5146e..1f18088 100644 --- a/MIGRATION.md +++ b/MIGRATION.md @@ -35,6 +35,23 @@ The field numbers above are part of the committed wire contract and must not be is an epoch-…",
+      "callId": "call_5949f8d140de47f290e0d0da",
+      "callSeq": 65,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 72,
+      "at": 1795284111349,
+      "offsetMs": 40659,
+      "kind": "DECISION",
+      "detail": "The same-SHA readback now resolves the prior UNKNOWN and binds the release verification note to the accepted tree. I’m checking that tree’s tests and the journal record before revising the decision."
+    },
+    {
+      "seq": 73,
+      "at": 1795284111350,
+      "offsetMs": 40660,
+      "kind": "CALL",
+      "detail": "bash node --test",
+      "callId": "call_008169ce55be49bcb00bb025",
+      "tool": "bash",
+      "args": {
+        "command": "node --test",
+        "description": "Run full test suite on reviewed tree",
+        "timeoutMs": 120000
+      }
+    },
+    {
+      "seq": 74,
+      "at": 1795284111362,
+      "offsetMs": 40672,
+      "kind": "JOB",
+      "detail": "start bash node --test"
+    },
+    {
+      "seq": 75,
+      "at": 1795284111763,
+      "offsetMs": 41073,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) node --test"
+    },
+    {
+      "seq": 76,
+      "at": 1795284111765,
+      "offsetMs": 41075,
+      "kind": "RESULT",
+      "detail": "ok ✔ GetReading is unary and returns the current sample (19.492789ms) ✔ StreamReadings honours the limit and preserves source order (8.660461ms) ✔ StreamReadings with zero limit returns the first three readings (5.832848ms)…",
+      "callId": "call_008169ce55be49bcb00bb025",
+      "callSeq": 73,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 77,
+      "at": 1795284111766,
+      "offsetMs": 41076,
+      "kind": "CALL",
+      "detail": "continuity:explain",
+      "callId": "call_f63907b46639470ab8f95e74",
+      "tool": "palimpsest_continuity",
+      "args": {
+        "action": "explain",
+        "subject": "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1"
+      }
+    },
+    {
+      "seq": 78,
+      "at": 1795284112678,
+      "offsetMs": 41988,
+      "kind": "RESULT",
+      "detail": "ok { \"schema\": \"pc1-project-explain/v1\", \"subject\": \"journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\", \"found\": true, \"standing\": \"OBSERVED_SOURCE\", \"item\": { \"id\": \"journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\", \"standing\": \"…",
+      "callId": "call_f63907b46639470ab8f95e74",
+      "callSeq": 77,
+      "callKind": "continuity:explain",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 79,
+      "at": 1795284112679,
+      "offsetMs": 41989,
+      "kind": "CALL",
+      "detail": "project:journal_entries",
+      "callId": "call_9bcd97d55cc74487a1703a2a",
+      "tool": "palimpsest_project",
+      "args": {
+        "action": "journal_entries"
+      }
+    },
+    {
+      "seq": 80,
+      "at": 1795284112691,
+      "offsetMs": 42001,
+      "kind": "RESULT",
+      "detail": "ok [ { \"entry\": { \"schemaVersion\": 1, \"projectId\": \"grpc-migration-continuation\", \"kind\": \"REFERENCE_NOTE\", \"title\": \"Episode conclusion: DELIVER\", \"body\": \"## Episode conclusion (advisory, not acceptance)\\n\\nIntent: DELIVE…",
+      "callId": "call_9bcd97d55cc74487a1703a2a",
+      "callSeq": 79,
+      "callKind": "project:journal_entries",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 85,
+      "at": 1795284136364,
+      "offsetMs": 65674,
+      "kind": "CALL",
+      "detail": "write /run/stage/world/MAINTENANCE-REVIEW.md",
+      "callId": "call_72dadefb7ef643fdb3909a1a",
+      "tool": "write",
+      "args": {
+        "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md",
+        "content": "# Cold handover maintenance review\n\nReadback decision: READY\n\nThe earlier HOLD was based on an UNKNOWN cold-session lookup and an unresolved release-verification question. A fresh same-SHA readback at the owner-accepted revision `95b83e71ee9a37041b9918b5e8b797eebabf69c9` (receipt `ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4`) now finds the old Episode with no open questions and binds its verification note to that accepted tree. The prior blocker is therefore stale for maintenance handover. This is a handover-readiness decision only, not release authorization.\n\n## Basis and reconciliation\n\n- **Current accepted revision:** `95b83e71ee9a37041b9918b5e8b797eebabf69c9`, accepted through Work `DIRECT_BASIS` event 8 (approval event 7). The tree at this SHA is the version reviewed here.\n- **Old record:** Episode `episode-e7050e9ddf64ccebde7f08f6` remains a historical DELIVER conclusion recorded at project revision 1 and former head `fbeb8958f4405688b13f37dbdec330157a660ab0`. The new readback finds it as `REOPENED`, not `UNKNOWN`: later project and head movement reopened it, so it is not itself the current acceptance. Its old outcome and artifacts remain preserved; it is not being rewritten or treated as fresh authority.\n- **Relationship to the accepted version:** the accepted revision is the later direct correction commit. The old Episode describes the earlier basis, while the owner's current `DIRECT_BASIS` acceptance is bound to `95b83e7`. The readback reports `workPreserved: true` and `journalPreserved: true`.\n- **Verification record status:** `journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1` (\"Fleet rollout verification\") is present with standing `OBSERVED_SOURCE` and is returned by the readback as its `verificationNote`. It records the independent release verifier's observation that explicit zero and omitted limits returned zero frames before the change and three readings in source order in the accepted tree. It is bound to commit `95b83e7` and has no reopen conditions.\n- **Current evidence:** the same-SHA readback reports the Episode found, 0 open questions, all four artifact digests matching `95b83e7` (`service/grpc_server.js`, `test/integration.test.js`, `test/server.test.js`, `MIGRATION.md`), `publicTests: 18`, `workPreserved: true`, and `journalPreserved: true`. I reran `node --test` on the reviewed tree: 18/18 tests passed. `git diff --stat 95b83e7..HEAD` is limited to this review file.\n- **Scope caveat:** `proto/energy.proto` remains byte-for-byte unchanged; its released comment is stale by design, as documented in `MIGRATION.md`. The effective accepted behavior is the dated Fleet correction. READY means the maintenance handover can proceed on this evidence; it does not approve a release or broaden the accepted scope.\n\n## Retained evidence\n\n- Archived cold-session lookup: episode-e7050e9ddf64ccebde7f08f6, UNKNOWN, call call_ccfc97275a064338a47c1acb.\n- Owner-accepted tree: 95b83e71ee9a37041b9918b5e8b797eebabf69c9, Work DIRECT_BASIS event 8.\n- Original release verification reference: pje-d0c977aae7bb8bfeca9159f76e14a7d1.\n- Fleet source: updates/2026-11-10/fleet-default-limit.md.\n- Retained verification: zero or omitted limit returns the first three available readings. Positive limits, unary, wire compatibility and REST remain in scope for preservation.\n- Fresh same-SHA readback: receipt ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4, found=true, state=REOPENED, openQuestions=0, publicTests=18, workPreserved=true, journalPreserved=true.\n- Independent re-run: `node --test` 18/18 passed on the reviewed tree; only `MAINTENANCE-REVIEW.md` differs from `95b83e7`.\n\nThis review is for maintenance handover; it is not release authorization.\n"
+      }
+    },
+    {
+      "seq": 86,
+      "at": 1795284136644,
+      "offsetMs": 65954,
+      "kind": "RESULT",
+      "detail": "ok <path>/run/stage/world/MAINTENANCE-REVIEW.md</path> <type>file</type> <content> Updated file </content>",
+      "callId": "call_72dadefb7ef643fdb3909a1a",
+      "callSeq": 85,
+      "callKind": "write",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 91,
+      "at": 1795284139739,
+      "offsetMs": 69049,
+      "kind": "CALL",
+      "detail": "bash git diff --check && git diff -- MAINTENANCE-REVIEW.md && git status --short",
+      "callId": "call_287adb37e7dc4c0fb887c2b5",
+      "tool": "bash",
+      "args": {
+        "command": "git diff --check && git diff -- MAINTENANCE-REVIEW.md && git status --short",
+        "description": "Review the maintenance-review diff"
+      }
+    },
+    {
+      "seq": 92,
+      "at": 1795284139752,
+      "offsetMs": 69062,
+      "kind": "JOB",
+      "detail": "start bash git diff --check && git diff -- MAINTENANCE-REVIEW.md && git status --short"
+    },
+    {
+      "seq": 93,
+      "at": 1795284140247,
+      "offsetMs": 69557,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git diff --check && git diff -- MAINTENANCE-REVIEW.md && git status --short"
+    },
+    {
+      "seq": 94,
+      "at": 1795284140249,
+      "offsetMs": 69559,
+      "kind": "RESULT",
+      "detail": "ok diff --git a/MAINTENANCE-REVIEW.md b/MAINTENANCE-REVIEW.md index 9def1f5..c95b4f6 100644 --- a/MAINTENANCE-REVIEW.md +++ b/MAINTENANCE-REVIEW.md @@ -1,8 +1,17 @@ # Cold handover maintenance review -Readback decision: HOL…",
+      "callId": "call_287adb37e7dc4c0fb887c2b5",
+      "callSeq": 91,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 99,
+      "at": 1795284142360,
+      "offsetMs": 71670,
+      "kind": "CALL",
+      "detail": "bash git add -- MAINTENANCE-REVIEW.md && git commit -m \"Mark maintenance readback READY after same-SHA revalidation\" && git s…",
+      "callId": "call_13b8d1a997e6451da4585a1a",
+      "tool": "bash",
+      "args": {
+        "command": "git add -- MAINTENANCE-REVIEW.md && git commit -m \"Mark maintenance readback READY after same-SHA revalidation\" && git status --short --branch && git log -1 --format=fuller --stat",
+        "description": "Commit the revised maintenance review"
+      }
+    },
+    {
+      "seq": 100,
+      "at": 1795284142372,
+      "offsetMs": 71682,
+      "kind": "JOB",
+      "detail": "start bash git add -- MAINTENANCE-REVIEW.md && git commit -m \"Mark maintenance readback READY after same-SHA re…"
+    },
+    {
+      "seq": 101,
+      "at": 1795284143366,
+      "offsetMs": 72676,
+      "kind": "JOB",
+      "detail": "end bash completed (exit code: 0) git add -- MAINTENANCE-REVIEW.md && git commit -m \"Mark maintenance readback READY after same-SHA re…"
+    },
+    {
+      "seq": 102,
+      "at": 1795284143368,
+      "offsetMs": 72678,
+      "kind": "RESULT",
+      "detail": "ok [maintenance-review 008a480] Mark maintenance readback READY after same-SHA revalidation 1 file changed, 15 insertions(+), 2 deletions(-) ## maintenance-review commit 008a480efed94d6400a9240498a9d9148072ceaf Author: Main…",
+      "callId": "call_13b8d1a997e6451da4585a1a",
+      "callSeq": 99,
+      "callKind": "bash",
+      "ok": true,
+      "facts": {},
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 106,
+      "at": 1795284151425,
+      "offsetMs": 80735,
+      "kind": "DECISION",
+      "detail": "已完成并提交维护交接评审。 **决定：READY** 关键依据： - 原先的 HOLD 基于旧 Episode 的 UNKNOWN 查询和未解决的发布核验问题。 - 在 owner 接受版本 `95b83e71ee9a37041b9918b5e8b797eebabf69c9` 上重新执行同 SHA 冷读回，receipt：`ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4`。 - 旧 Episode `episode-e7050e9ddf64ccebde7f08f6` 现为 `REOPENED`，不再是 `UNKNOWN`；它是 revision 1 / 旧 head `fbeb895` 上的历史 DELIVER 记录，旧结果和制品均被保留，但不作为当前接受版本本身。 - 当前接受版本由 `DIRECT_BAS…"
+    },
+    {
+      "seq": 108,
+      "at": 1795284151430,
+      "offsetMs": 80740,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    },
+    {
+      "seq": 113,
+      "at": 1795284157251,
+      "offsetMs": 86561,
+      "kind": "USER",
+      "detail": "[Project closeout] This turn left a clean committed change at 008a480efed94d6400a9240498a9d9148072ceaf and no new episode conclusion. If the committed work satisfies the current request, call palimpsest_work action=conclude intent=DELIVER with your statement and the committed artifact paths, then reply and end the session. If a blocker remains, report it or choose the applicable conclusion."
+    },
+    {
+      "seq": 116,
+      "at": 1795284162963,
+      "offsetMs": 92273,
+      "kind": "CALL",
+      "detail": "work:conclude",
+      "callId": "call_fe3ff75b1cfe4df3b7ace192",
+      "tool": "palimpsest_work",
+      "args": {
+        "action": "conclude",
+        "intent": "DELIVER",
+        "statement": "Completed the cold-handover maintenance review and committed it as 008a480. The active Readback decision is READY: the prior HOLD blocker is stale because a fresh same-SHA readback at owner-accepted revision 95b83e7 finds the old Episode (state REOPENED, not UNKNOWN) with 0 open questions and binds journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1 as verificationNote to that accepted tree. The review records that the old DELIVER record remains historical at its former basis/head, while current acceptance is DIRECT_BASIS event 8 at 95b83e7; all four artifact digests match, work and journal are preserved, and node --test passed 18/18. Only MAINTENANCE-REVIEW.md differs from the accepted tree. The retained evidence block is preserved and extended. This is a maintenance-handover readiness decision, not release authorization.",
+        "artifacts": [
+          "MAINTENANCE-REVIEW.md"
+        ],
+        "evidenceRefs": [
+          "commit:008a480",
+          "commit:95b83e7",
+          "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1",
+          "episode:episode-e7050e9ddf64ccebde7f08f6"
+        ]
+      }
+    },
+    {
+      "seq": 117,
+      "at": 1795284170804,
+      "offsetMs": 100114,
+      "kind": "RESULT",
+      "detail": "ok state=RECORDED { \"state\": \"RECORDED\", \"conclusion\": { \"schema\": \"pc1-episode-conclusion/v1\", \"intent\": \"DELIVER\", \"statement\": \"Completed the cold-handover maintenance review and committed it as 008a480. The active Readback decision is…",
+      "callId": "call_fe3ff75b1cfe4df3b7ace192",
+      "callSeq": 116,
+      "callKind": "work:conclude",
+      "ok": true,
+      "facts": {
+        "state": "RECORDED"
+      },
+      "refusal": null,
+      "refusalReason": null,
+      "refusalDetail": null,
+      "stderrException": null
+    },
+    {
+      "seq": 121,
+      "at": 1795284174922,
+      "offsetMs": 104232,
+      "kind": "DECISION",
+      "detail": "DELIVER conclusion recorded. - Decision: **READY** - Commit: `008a480efed94d6400a9240498a9d9148072ceaf` - Artifact: `MAINTENANCE-REVIEW.md` - Conclusion: `episode-02fd309efa3de571b3869454` The prior HOLD blocker was resolved by the same-SHA readback at accepted revision `95b83e7`: the old Episode is now found (`REOPENED`, not `UNKNOWN`), verification note `journal:pje-d0c977...` is bound to the ac…"
+    },
+    {
+      "seq": 123,
+      "at": 1795284174923,
+      "offsetMs": 104233,
+      "kind": "END",
+      "detail": "turn completed: completed"
+    }
+  ]
+}

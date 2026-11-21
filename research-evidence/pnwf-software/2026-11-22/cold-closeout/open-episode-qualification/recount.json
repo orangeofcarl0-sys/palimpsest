@@ -1,0 +1,123 @@
+{
+  "receiptId": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4",
+  "unknownPrior": "UNKNOWN",
+  "newPaidRequests": 0,
+  "rows": [
+    {
+      "phase": "mock",
+      "name": "WITHOUT",
+      "candidate": "02ec2a99e64fba8e07cb2b4db78c87168d3f5444",
+      "grade": 7,
+      "natural": true,
+      "delivery": true,
+      "observed": {
+        "offered": false,
+        "firstVerify": {
+          "id": "handover_1",
+          "call": 21,
+          "result": 22,
+          "request": 2,
+          "kind": "continuity:explain",
+          "ok": true,
+          "action": "inspect-record",
+          "subject": "episode:episode-e7050e9ddf64ccebde7f08f6",
+          "found": true,
+          "episode": "REOPENED",
+          "acceptance": 8
+        },
+        "requestedReceipts": 0,
+        "receivedReceipts": 0,
+        "closeout": {
+          "offers": [
+            {
+              "initialHead": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+              "head": "02ec2a99e64fba8e07cb2b4db78c87168d3f5444",
+              "reason": "DIRECT_DELIVERY_UNRECORDED"
+            }
+          ],
+          "messages": [
+            47
+          ],
+          "deliveries": [
+            {
+              "call": 50,
+              "result": 51,
+              "request": 6,
+              "turnStep": 1,
+              "recorded": true,
+              "afterOffer": true
+            }
+          ],
+          "requestsAfterOffer": 2
+        }
+      },
+      "boundRequests": null,
+      "requests": 7,
+      "confirmed": 564169,
+      "unresolved": 0,
+      "deliveryBinding": {
+        "journalSeq": 4,
+        "candidate": "02ec2a99e64fba8e07cb2b4db78c87168d3f5444",
+        "digest": "69718b2e8715ceb32878befc9ef40acc1fd1d0fe39f4dffffeee7b012851f34e"
+      }
+    },
+    {
+      "phase": "mock",
+      "name": "WITH",
+      "candidate": "3efa0aaa5ab37d58febd8b370f1936f4a74cdd8f",
+      "grade": 7,
+      "natural": true,
+      "delivery": true,
+      "observed": {
+        "offered": true,
+        "firstVerify": {
+          "id": "handover_2",
+          "call": 27,
+          "result": 28,
+          "request": 3,
+          "kind": "handover_readback",
+          "ok": true,
+          "action": "request-independent-made-measurement",
+          "sha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+          "question": "Is the historic handover blocker still reproducible?",
+          "receipt": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4",
+          "reason": null
+        },
+        "requestedReceipts": 2,
+        "receivedReceipts": 1,
+        "closeout": {
+          "offers": [
+            {
+              "initialHead": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+              "head": "3efa0aaa5ab37d58febd8b370f1936f4a74cdd8f",
+              "reason": "DIRECT_DELIVERY_UNRECORDED"
+            }
+          ],
+          "messages": [
+            47
+          ],
+          "deliveries": [
+            {
+              "call": 50,
+              "result": 51,
+              "request": 6,
+              "turnStep": 1,
+              "recorded": true,
+              "afterOffer": true
+            }
+          ],
+          "requestsAfterOffer": 2
+        }
+      },
+      "boundRequests": null,
+      "requests": 7,
+      "confirmed": 528194,
+      "unresolved": 0,
+      "deliveryBinding": {
+        "journalSeq": 4,
+        "candidate": "3efa0aaa5ab37d58febd8b370f1936f4a74cdd8f",
+        "digest": "69718b2e8715ceb32878befc9ef40acc1fd1d0fe39f4dffffeee7b012851f34e"
+      }
+    }
+  ]
+}

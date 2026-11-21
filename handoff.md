@@ -7,6 +7,8 @@
 
 ## 0. 30 秒版本
 
+- 冷交接收尾修复从主线 `07ab5aad` 开始。原两组提交后直接回复，未调用 Work `readiness` 或 `conclude`。普通 DSH 一次性会话会在干净的新直接提交且无交付阻塞时提示一次，Work `readiness` 对同类无计划现场提示模型判断并记录 `DELIVER`。真实复跑两组均在第 5 笔主动取得并采纳同一独立冷重放回执，第 12 笔记录绑定候选的 `DELIVER`，第 13 笔自然退出。内容冻结判分为 6/7、5/7，历史 7/7、5/7 和缺结论保留。本轮 26 笔全对账，里程碑二继续开放。[复跑报告](docs/engineering/CONTINUITY-REUSE-METHOD.md#提交后的收尾引导与同基线复跑)
+
 - 两轮受控自改进的实现、路线图、Mock、真实轨迹及评审原稿已随 [PR #293](https://github.com/orangeofcarl0-sys/palimpsest/pull/293) 合入主线 `1b476032`。首轮 CI 发现部署配置引入 Procedure 实现，已改为只校验引用字段。修复后的送审 `008c55b3` 通过 16/16 项检查，合入后三个提交的文件树逐一一致。两份离线复算与原归档逐字节一致，普通 DSH 与打包 SDK 补验通过，新增付费请求 0。冷交接仍为 7/7 与 5/7，两组缺新评审 `DELIVER`，里程碑二继续开放。[发布检查](https://github.com/orangeofcarl0-sys/palimpsest/pull/293/checks) · [定向测试方法](docs/engineering/PALIMPSEST-FOCUSED-METHOD.md) · [冷交接对照](docs/engineering/CONTINUITY-REUSE-METHOD.md)
 
 - 自改进回到里程碑二。两条真实普通 DSH 会话从同一 gRPC 冷交接评审基线 `1444de6c` 把 HOLD 改为 READY。无提示组第 5 笔主动取同一接受 SHA 的独立冷重放回执并直接查档，在提交中引用回执，冻结 7/7。带方法组第 5 笔自行查档，全程未索取回执，冻结 5/7。两组只改一份评审并自然退出，原工件、接受事件及旧 Episode `UNKNOWN` 保留，两组都缺新评审的 `DELIVER`。27 笔全对账，新用量 UNKNOWN 为零。里程碑二继续开放。[路线图](docs/product/PROJECT-ROADMAP.md#自改进回到真实项目) · [原稿与复算](docs/engineering/CONTINUITY-REUSE-METHOD.md)
@@ -135,6 +137,8 @@ Palimpsest 是“可信项目资产 + 自发性 agent 协作”的 DSH Host 产�
 ---
 
 ## 2. 当前 Git / 分支状态（2026-11-22，最近同步）
+
+本轮工作分支 `codex/cold-handover-closeout` 从主线 `07ab5aad7f77a2fd67f426c80e5215cf3f2bc6de` 接续。真实配对保持同一评审基线 `1444de6ce289197a1d12b0b04d2caa36c1d79355` 和已接受版本 `95b83e71ee9a37041b9918b5e8b797eebabf69c9`。两组候选 `091996b1703790dc28fd6a8e16467d78ed3667f0`、`008a480efed94d6400a9240498a9d9148072ceaf` 都只改一份评审，各自保存 Git bundle 与正式结论工件摘要。[归档](research-evidence/pnwf-software/2026-11-22/cold-closeout)
 
 自改进发布提交为 `1b47603263ec46ac248b47eb21fdcf167dbb8728`。原发送审的 `3883ae73`、`af0b91cc`、`008c55b3` 依次对应主线的 `1db38264`、`0232bf76`、`1b476032`。送审与主线完整树同为 `1f99af87dcb3d4b9d90f5b9c6e9611457e533762`。需要恢复实验当时的宿主与脚本时，可用 `git fetch origin refs/pull/293/head` 取得原始提交链，再从 `af0b91cc` 查看冷交接环境。主线可直接运行归因复算。[发布 PR](https://github.com/orangeofcarl0-sys/palimpsest/pull/293)
 
@@ -373,6 +377,8 @@ CI 通过后，GitHub 贡献图与具名 Contributors API 均只列出 `orangeof
 
 ## 5. 验证命令与当前基线
 
+收尾回归恢复两条历史真实流和原候选，核对提交、最终回复、缺记录和新建议。真实准入 Mock、最终代码复验各两会话，每会话 7 笔模拟、7/7、一次收尾提示，绑定候选 `DELIVER` 后自然退出，新增付费请求为零。最终代码将无结论的 `OPEN/current` 与已有结论的状态区分。复算 `node scripts/pnwf/software/continuity-reuse/recount.mjs research-evidence/pnwf-software/2026-11-22/cold-closeout` 核对账本、调用 ID、Git blob、Journal，并区分 DSH 每轮 step 与会话全局请求号。[回归复算](research-evidence/pnwf-software/2026-11-22/cold-closeout/recount.json) · [最终代码复验](research-evidence/pnwf-software/2026-11-22/cold-closeout/open-episode-qualification/recount.json)
+
 冷交接放行复核从同一原归档实测 `UNKNOWN` 反例及修复后的读回。四个工件摘要一致，公开测试 18/18。两组零付费 Mock 各 7/7、共 12 笔，分别覆盖直接查档及错 SHA 拒绝后从独立维护者取回执。离线复算从原始流配对工具调用、从 Git bundle 读评审、逐行核对 Work 与 Journal。[资格与证据](docs/engineering/CONTINUITY-REUSE-METHOD.md#零付费资格)
 
 交接实跑资格两组均通过 15/15，基线只通过 5/15，显示验收能复现两处已知产品症状。原稿独立构建通过，定向测试 P 21 项、F 27 项。宿主资格与归因 34 项通过。[资格](research-evidence/pnwf-software/2026-11-21/cold-handover/mock/matrix.json)
@@ -584,6 +590,8 @@ PNWF_DSH_BIN=... PNWF_DSH_MODULES=... bash ...
 
 ## 6. 付费模型实验状态（重要）
 
+2026-11-22 冷交接收尾复跑沿用 OpenCode Go `deepseek-v4.1-flash`、DSH `0.2.1-rc.5`、每会话 64 笔和 30 分钟、单请求 240 秒、按量且无金额或总 token 上限。无提示 13 笔、371,688 tokens、185.829 秒，带方法 13 笔、301,466 tokens、139.021 秒。两组各有后续 2 笔收尾，分别 78,275 与 65,738 tokens，维护复核本身新增模型请求 0。共 26 笔完全配对，无新 `UNKNOWN`。[分段用量](research-evidence/pnwf-software/2026-11-22/cold-closeout/recount.json)
+
 2026-11-22 冷交接方法配对沿用 OpenCode Go `deepseek-v4.1-flash`，每会话 64 笔、30 分钟，单请求 240 秒，按量且无金额和总 token 上限。无提示 10 笔、219,126 tokens，带方法 17 笔、533,765 tokens。27 笔全部重绑终态。独立维护者为宿主冷重放，额外模型请求 0。[账本与归因](research-evidence/pnwf-software/2026-11-22/continuity-reuse/recount.json)
 
 2026-11-21 交接工单使用 OpenCode Go `deepseek-v4.1-flash`，每组 64 笔 / 30 分钟 / 单笔 240 秒，按量。P/F 各结算 64 笔，分别 8,652,014 和 11,687,736 tokens，无子任务与未知用量。F 的 `REQUEST_LIMIT` 与终态 usage 由停止容器和原账本离线证明。[对账与用量](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#用量选路与停止现场)
@@ -721,7 +729,7 @@ Owner 授权从两份已退役、交付尚未记录的状态各跑一条真实�
 
 ## 7. 已知未解决问题 / 建议下一步
 
-冷交接方法配对已观察到无提示 Principal 主动求证、引用独立实测并提交修订，同时直接核对项目档案。带方法组由 Principal 自行复验，本样本无方法提示收益。两组均缺新评审 `DELIVER`，里程碑二继续开放。结论保留宿主预先实测与模型现场发现的角色区别。[真实配对结论](docs/engineering/CONTINUITY-REUSE-METHOD.md#对照结论)
+冷交接原配对保留缺 `DELIVER` 的 7/7 与 5/7。本次两组均主动求证、引用独立实测并提交修订，随后正式交付并自然退出。无提示组 6/7 是授权边界跨行触发的判分缺项，带方法组 5/7 仍有当前来源路径与保留区约束两项缺失。复核证据由宿主预先冷重放，同伴模型的自主发现和反馈闭环仍待验证。每格一次，方法提示对选路和用量的收益仍不明确，里程碑二继续开放。[真实配对结论](docs/engineering/CONTINUITY-REUSE-METHOD.md#冻结判分和用量对照)
 
 真实交接样本显示长期调查和测试环境开销可以耗完整个请求窗口，P/F 首次改源码分别已用到第 44/36 笔。两组初次启动 Vitest 都遇到只读依赖目录的配置缓存写入。F 找到 runner 加载器，P 在排查中耗尽。另有原生容器停止后桥接 `EPIPE` 导致常规终态文件缺失。原稿与停止现场独立封存，均未形成已提交的可发布候选。[原稿与停止点](docs/engineering/CONTINUITY-HANDOVER-DOGFOOD.md#用量选路与停止现场)
 
@@ -828,6 +836,7 @@ R7 首次配对两边都签发了超限班表，各 6/10；修复后两边均主
 ```markdown
 | 日期 | 变更 | 证据/PR | 备注 |
 |---|---|---|---|
+| 2026-11-22 | 修复冷交接提交后的 DSH 收尾与直接交付 readiness | [报告](docs/engineering/CONTINUITY-REUSE-METHOD.md#提交后的收尾引导与同基线复跑) | 两条原轨迹回归，两轮零付费 Mock。真实复跑均主动取得并采纳回执、第 12 笔记录 `DELIVER`、第 13 笔自然退出，6/7 和 5/7，26 笔全对账 |
 | 2026-11-20 | 任务选路试点与 R7 签发契约发布到主线 `f1c1424a` | [PR #281](https://github.com/orangeofcarl0-sys/palimpsest/pull/281) | 16/16 项检查通过，12 对提交文件树一致，历史 UNKNOWN 与 R7 两份 6/10 保留，本轮两组均 10/10 |
 | 2026-11-07 | PR #227 merged: PNWF-CQ + basis admission | 1766a79 | 容器 cohort INVALID/over budget |
 ```

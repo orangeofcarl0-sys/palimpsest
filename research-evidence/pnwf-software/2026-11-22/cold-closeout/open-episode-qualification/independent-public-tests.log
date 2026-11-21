@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: GetReading is unary and returns the current sample
+ok 1 - GetReading is unary and returns the current sample
+  ---
+  duration_ms: 30.0011
+  type: 'test'
+  ...
+# Subtest: StreamReadings honours the limit and preserves source order
+ok 2 - StreamReadings honours the limit and preserves source order
+  ---
+  duration_ms: 10.2179
+  type: 'test'
+  ...
+# Subtest: StreamReadings with zero limit returns the first three readings
+ok 3 - StreamReadings with zero limit returns the first three readings
+  ---
+  duration_ms: 6.6085
+  type: 'test'
+  ...
+# Subtest: StreamReadings with an omitted limit returns the first three readings
+ok 4 - StreamReadings with an omitted limit returns the first three readings
+  ---
+  duration_ms: 7.0684
+  type: 'test'
+  ...
+# Subtest: an unknown site is a NOT_FOUND error on both gRPC methods
+ok 5 - an unknown site is a NOT_FOUND error on both gRPC methods
+  ---
+  duration_ms: 8.5557
+  type: 'test'
+  ...
+# Subtest: gRPC readings match the preserved REST baseline
+ok 6 - gRPC readings match the preserved REST baseline
+  ---
+  duration_ms: 23.0708
+  type: 'test'
+  ...
+# Subtest: GET one reading returns the current sample
+ok 7 - GET one reading returns the current sample
+  ---
+  duration_ms: 18.2536
+  type: 'test'
+  ...
+# Subtest: GET readings honours the limit and preserves order
+ok 8 - GET readings honours the limit and preserves order
+  ---
+  duration_ms: 3.7936
+  type: 'test'
+  ...
+# Subtest: an unknown site is an error, not an empty list
+ok 9 - an unknown site is an error, not an empty list
+  ---
+  duration_ms: 4.8582
+  type: 'test'
+  ...
+# Subtest: wire frame is a compressed flag plus a big-endian length and the protobuf bytes
+ok 10 - wire frame is a compressed flag plus a big-endian length and the protobuf bytes
+  ---
+  duration_ms: 1.9665
+  type: 'test'
+  ...
+# Subtest: wire decoder handles frames split across chunks and preserves order
+ok 11 - wire decoder handles frames split across chunks and preserves order
+  ---
+  duration_ms: 1.2987
+  type: 'test'
+  ...
+# Subtest: wire request messages round-trip with omitted and zero limits
+ok 12 - wire request messages round-trip with omitted and zero limits
+  ---
+  duration_ms: 0.5424
+  type: 'test'
+  ...
+# Subtest: GetReading is one unary frame with grpc-status 0 in trailers
+ok 13 - GetReading is one unary frame with grpc-status 0 in trailers
+  ---
+  duration_ms: 19.8965
+  type: 'test'
+  ...
+# Subtest: StreamReadings sends one frame per reading in source order
+ok 14 - StreamReadings sends one frame per reading in source order
+  ---
+  duration_ms: 6.4783
+  type: 'test'
+  ...
+# Subtest: StreamReadings with a zero limit sends the first three readings
+ok 15 - StreamReadings with a zero limit sends the first three readings
+  ---
+  duration_ms: 4.7621
+  type: 'test'
+  ...
+# Subtest: StreamReadings with an omitted limit sends the first three readings
+ok 16 - StreamReadings with an omitted limit sends the first three readings
+  ---
+  duration_ms: 4.9715
+  type: 'test'
+  ...
+# Subtest: server reports NOT_FOUND for an unknown site instead of an empty stream
+ok 17 - server reports NOT_FOUND for an unknown site instead of an empty stream
+  ---
+  duration_ms: 8.5949
+  type: 'test'
+  ...
+# Subtest: server reports UNIMPLEMENTED for an unknown method
+ok 18 - server reports UNIMPLEMENTED for an unknown method
+  ---
+  duration_ms: 3.3347
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 342.9586

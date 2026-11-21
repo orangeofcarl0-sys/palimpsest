@@ -274,10 +274,14 @@ describe("ALHS-A episode conclusion", () => {
     const { repo, head, stateDir } = workspace("committed");
     const installed = install(repo, stateDir);
     await start(installed, head, []);
+    const readiness = () => installed.application.work.outcomeReadiness();
+    expect((await readiness()).next.join(" ")).not.toContain("intent=DELIVER");
     mkdirSync(join(repo, "deliverables"), { recursive: true });
     writeFileSync(join(repo, "deliverables", "package.md"), "# Package\n\nA committed deployment package.\n");
+    expect((await readiness()).next.join(" ")).not.toContain("intent=DELIVER");
     execFileSync("git", ["add", "-A"], { cwd: repo });
     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "package"], { cwd: repo });
+    expect(await readiness()).toMatchObject({ action: "SEMANTIC_JUDGEMENT", next: [expect.stringContaining("intent=DELIVER")] });
 
     const delivered = (await call(installed, "palimpsest_work", {
       action: "conclude",
@@ -293,6 +297,7 @@ describe("ALHS-A episode conclusion", () => {
       tracked: true,
       committed: true,
     });
+    expect((await readiness()).next).toEqual(["reply using the recorded conclusion"]);
   });
 
   it("reads an older conclusion and separates verification records from open questions after restart", async () => {

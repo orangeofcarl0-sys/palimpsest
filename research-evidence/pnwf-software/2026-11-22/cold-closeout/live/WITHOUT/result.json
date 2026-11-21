@@ -1,0 +1,777 @@
+{
+  "name": "WITHOUT",
+  "basis": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+  "accepted": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+  "mode": "paid-usage-only",
+  "passed": false,
+  "execution": {
+    "schema": "alhs-core-session-run/v1",
+    "cohortId": "continuity-reuse-8239ec53-51d4-4e60-959e-3d036188b930",
+    "sessionId": "RESUME",
+    "condition": "P",
+    "world": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-cold-closeout-live-20261122-015636\\WITHOUT\\stages\\RESUME\\world",
+    "home": "C:\\Users\\66494\\AppData\\Local\\Temp\\pnwf-cold-closeout-live-20261122-015636\\WITHOUT\\runtime-RESUME",
+    "principalRuntime": "container",
+    "containerId": "22e9a8e2275708c2d4ae87c0133dedf19e3f6138a2b58526df9a8bc64eeb2ae8",
+    "qualification": "a19165426fcbd1f6a66e5c4995bdf2e2299b759357c79bdaed354c9c04e2306d",
+    "startedAt": "2026-11-21T17:57:29.260Z",
+    "endedAt": "2026-11-21T18:00:35.089Z",
+    "exitCode": 0,
+    "error": null,
+    "killedBy": null,
+    "stopped": false,
+    "natural": true,
+    "usage": {
+      "schema": "aps-budget-ledger/v1",
+      "cohortId": "continuity-reuse-8239ec53-51d4-4e60-959e-3d036188b930",
+      "sessionId": "RESUME",
+      "observedAt": "2026-11-21T18:00:35.089Z",
+      "maxTokens": null,
+      "softCeiling": null,
+      "totalTokens": 371688,
+      "confirmedTokens": 371688,
+      "reservedTokens": null,
+      "unresolvedRequests": 0,
+      "source": "PROVIDER_TERMINAL_USAGE_LEDGER",
+      "state": "ENDED"
+    },
+    "mode": "paid-usage-only",
+    "paidRequestsAdmitted": 13,
+    "paidModelCalls": 13
+  },
+  "accounting": {
+    "requests": 13,
+    "confirmed": 371688,
+    "unresolved": 0
+  },
+  "evidence": {
+    "valid": true,
+    "principalId": "session-2ece2de3-09c5-4580-9dce-858ce26f33b4",
+    "usageQualified": true,
+    "requestIdsBound": true,
+    "tupleMatch": true,
+    "mode": "paid-usage-only",
+    "requests": 13,
+    "knownTokens": 371688,
+    "totalTokens": 371688,
+    "unresolvedRequests": 0,
+    "usage": {
+      "input_tokens": 40963,
+      "cache_read_input_tokens": 320384,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 10341
+    },
+    "usageByRole": {
+      "principal": {
+        "requests": 13,
+        "input": 40963,
+        "cacheRead": 320384,
+        "cacheWrite": 0,
+        "output": 10341,
+        "total": 371688
+      }
+    },
+    "traceTotal": 371688,
+    "traceRequests": 13,
+    "workerRequests": 0,
+    "elapsedMs": 185829,
+    "natural": true,
+    "stop": null,
+    "error": null,
+    "workerReceipts": [],
+    "traces": [
+      {
+        "id": "session-2ece2de3-09c5-4580-9dce-858ce26f33b4",
+        "cwd": "/run/stage/world",
+        "role": "principal",
+        "digest": "308429ea3aeaaf501ca8a3195a8ce56af29e2727fffe4c323f96dda2a62d4ffe",
+        "counts": {
+          "steps": 13,
+          "turns": 2,
+          "toolCalls": 26,
+          "pairedToolResults": 26,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 3,
+          "commits": 0,
+          "jobs": 11
+        },
+        "refs": [],
+        "failedJobs": [],
+        "modelSteps": [
+          {
+            "seq": 14,
+            "at": 1795283897480,
+            "messageId": "5f201179-07c1-455e-b17d-1533e3818dcb",
+            "usage": {
+              "inputTokens": 10752,
+              "outputTokens": 115,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0,
+              "totalTokens": 10867
+            }
+          },
+          {
+            "seq": 24,
+            "at": 1795283905169,
+            "messageId": "52a00ddd-13cf-4b9f-88dd-07926a1f2467",
+            "usage": {
+              "inputTokens": 3109,
+              "outputTokens": 319,
+              "cacheReadTokens": 10624,
+              "cacheWriteTokens": 0,
+              "totalTokens": 14052
+            }
+          },
+          {
+            "seq": 40,
+            "at": 1795283910443,
+            "messageId": "0c61c9d8-6c8a-4abc-94df-1f390d9c9a4f",
+            "usage": {
+              "inputTokens": 1366,
+              "outputTokens": 451,
+              "cacheReadTokens": 13696,
+              "cacheWriteTokens": 0,
+              "totalTokens": 15513
+            }
+          },
+          {
+            "seq": 56,
+            "at": 1795283914884,
+            "messageId": "4166445b-6796-4dd3-a91a-92b388dadadb",
+            "usage": {
+              "inputTokens": 5814,
+              "outputTokens": 225,
+              "cacheReadTokens": 14976,
+              "cacheWriteTokens": 0,
+              "totalTokens": 21015
+            }
+          },
+          {
+            "seq": 68,
+            "at": 1795283923582,
+            "messageId": "1c4c9b1c-bb67-4cfa-9051-889270650324",
+            "usage": {
+              "inputTokens": 2962,
+              "outputTokens": 782,
+              "cacheReadTokens": 20736,
+              "cacheWriteTokens": 0,
+              "totalTokens": 24480
+            }
+          },
+          {
+            "seq": 82,
+            "at": 1795283973463,
+            "messageId": "2b6cb7f2-7258-4779-9872-808cffacc261",
+            "usage": {
+              "inputTokens": 2507,
+              "outputTokens": 4896,
+              "cacheReadTokens": 23680,
+              "cacheWriteTokens": 0,
+              "totalTokens": 31083
+            }
+          },
+          {
+            "seq": 92,
+            "at": 1795283986457,
+            "messageId": "280b6db2-54d6-4969-9b9d-eaef22657ede",
+            "usage": {
+              "inputTokens": 5516,
+              "outputTokens": 1440,
+              "cacheReadTokens": 26112,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33068
+            }
+          },
+          {
+            "seq": 98,
+            "at": 1795283989586,
+            "messageId": "f0276859-6ca1-41ff-8e7c-67fdefc4eee4",
+            "usage": {
+              "inputTokens": 1483,
+              "outputTokens": 166,
+              "cacheReadTokens": 31616,
+              "cacheWriteTokens": 0,
+              "totalTokens": 33265
+            }
+          },
+          {
+            "seq": 108,
+            "at": 1795283994744,
+            "messageId": "192a2666-f319-4e32-ad0f-a2eb45e04538",
+            "usage": {
+              "inputTokens": 2763,
+              "outputTokens": 327,
+              "cacheReadTokens": 33024,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36114
+            }
+          },
+          {
+            "seq": 118,
+            "at": 1795284001047,
+            "messageId": "52a505dd-84be-4b28-8477-01b1080297d1",
+            "usage": {
+              "inputTokens": 507,
+              "outputTokens": 423,
+              "cacheReadTokens": 35712,
+              "cacheWriteTokens": 0,
+              "totalTokens": 36642
+            }
+          },
+          {
+            "seq": 126,
+            "at": 1795284008648,
+            "messageId": "e3566891-4788-4dd3-bd9f-ef02e4d0f065",
+            "usage": {
+              "inputTokens": 703,
+              "outputTokens": 515,
+              "cacheReadTokens": 36096,
+              "cacheWriteTokens": 0,
+              "totalTokens": 37314
+            }
+          },
+          {
+            "seq": 135,
+            "at": 1795284021325,
+            "messageId": "f35f8b40-6f10-41df-ab51-5d0445980db5",
+            "usage": {
+              "inputTokens": 675,
+              "outputTokens": 543,
+              "cacheReadTokens": 36736,
+              "cacheWriteTokens": 0,
+              "totalTokens": 37954
+            }
+          },
+          {
+            "seq": 141,
+            "at": 1795284033252,
+            "messageId": "fbd75c0f-90f5-4043-a372-135c5c881884",
+            "usage": {
+              "inputTokens": 2806,
+              "outputTokens": 139,
+              "cacheReadTokens": 37376,
+              "cacheWriteTokens": 0,
+              "totalTokens": 40321
+            }
+          }
+        ],
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 11,
+          "read": 6,
+          "project:overview": 1,
+          "project:assets": 1,
+          "project:journal_entries": 1,
+          "project:history": 1,
+          "handover_readback": 1,
+          "edit": 1,
+          "grep": 1,
+          "work:conclude": 1
+        }
+      }
+    ]
+  },
+  "trajectory": {
+    "offer": null,
+    "methodInReplay": false,
+    "firstVerify": {
+      "id": "call_b6c030a827d54d55a4c9bf57",
+      "call": 69,
+      "result": 70,
+      "request": 5,
+      "kind": "handover_readback",
+      "ok": true,
+      "action": "request-independent-made-measurement",
+      "sha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+      "question": "Is the release handover on this accepted revision supported by the recorded Fleet rollout verification and current evidence? Report the state of the old Episode record and verification record, and whether a cold-handover maintenance readback should be READY or HOLD.",
+      "receipt": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4",
+      "reason": null
+    },
+    "independentReceiptCount": 1,
+    "closeoutOffers": [
+      {
+        "initialHead": "1444de6ce289197a1d12b0b04d2caa36c1d79355",
+        "head": "091996b1703790dc28fd6a8e16467d78ed3667f0",
+        "reason": "DIRECT_DELIVERY_UNRECORDED"
+      }
+    ],
+    "closeoutMessages": [
+      133
+    ],
+    "stream": "--run-stage-world--/session-2ece2de3-09c5-4580-9dce-858ce26f33b4/session.v4.jsonl.zstd",
+    "significant": [
+      {
+        "id": "call_c8a5eb3dc6ef4121b3e02274",
+        "call": 15,
+        "result": 16,
+        "request": 1,
+        "kind": "continuity:pulse",
+        "ok": true,
+        "action": "pulse",
+        "reachedAccepted": true,
+        "containsReopen": true
+      },
+      {
+        "id": "call_a391bc7152a14bf3be35778d",
+        "call": 25,
+        "result": 27,
+        "request": 2,
+        "kind": "read",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md"
+        }
+      },
+      {
+        "id": "call_e40906ca3e944c8791effa4e",
+        "call": 41,
+        "result": 44,
+        "request": 3,
+        "kind": "bash",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "command": "git show --stat --oneline --decorate 1444de6 && echo '---FULL---' && git show --format=fuller --no-ext-diff 1444de6 -- MAINTENANCE-REVIEW.md",
+          "description": "Inspect the cold-handover commit"
+        }
+      },
+      {
+        "id": "call_b6c030a827d54d55a4c9bf57",
+        "call": 69,
+        "result": 70,
+        "request": 5,
+        "kind": "handover_readback",
+        "ok": true,
+        "action": "request-independent-made-measurement",
+        "sha": "95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+        "question": "Is the release handover on this accepted revision supported by the recorded Fleet rollout verification and current evidence? Report the state of the old Episode record and verification record, and whether a cold-handover maintenance readback should be READY or HOLD.",
+        "receipt": "ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4",
+        "reason": null
+      },
+      {
+        "id": "call_ebddc16a73ab4aa5a21f2f81",
+        "call": 93,
+        "result": 94,
+        "request": 7,
+        "kind": "edit",
+        "ok": true,
+        "action": "revise-review",
+        "input": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md",
+          "old_string": "# Cold handover maintenance review\n\nReadback decision: HOLD\n\nThe previous cold handover returned UNKNOWN for the old Episode and surfaced the release verification entry as a question. Revalidate the release handover on the accepted revision before relying on it.\n\n## Retained evidence",
+          "new_string": "# Cold handover maintenance review\n\nReadback decision: READY\n\nRevalidated against the owner-accepted tree\n`95b83e71ee9a37041b9918b5e8b797eebabf69c9`. The earlier HOLD reflected a cold-session lookup that\nreturned `UNKNOWN` for Episode `episode-e7050e9ddf64ccebde7f08f6` at this same accepted SHA. A fresh\nsame-SHA readback now finds the Episode: state `REOPENED`, former head\n`fbeb8958f4405688b13f37dbdec330157a660ab0`, current head\n`95b83e71ee9a37041b9918b5e8b797eebabf69c9`, acceptance `DIRECT_BASIS` at commit `95b83e7` (event 8;\napproval event 7), with zero open questions. The old Episode is a historical advisory `DELIVER`\nconclusion recorded on revision 1 / head `fbeb8958`; it is not the current acceptance record. Its\n`REOPENED` state records that the project later advanced to `95b83e7`, not that the accepted\nrevision was invalidated.\n\nThe current accepted version is `95b83e7`. Verification record\n`journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1` is present as a `REFERENCE_NOTE` from the independent\nFleet release verifier. It reviewed candidate `95b83e7` and records accepted project version\n`95b83e7`, including the before/after observation that zero or omitted limits returned no frames\nbefore the change and three readings in source order in the accepted tree. The verification is on the\nsame SHA as the current acceptance, so it is current for this handover rather than a stale reference.\nThe note records no separate contributor decision, and this review does not turn it into one.\n\n## Traceable basis\n\n- Cold-readback receipt `ddb78305f10c5822f69b0c0ac2e7b94ef3921b0c6ebd308b28f56d1b39245fc4`\n  (`cold-handover-maintenance-verifier`, runtime\n  `3883ae732e31502c98ad904d80a1b1f2d2827a5b`, SHA `95b83e7`): Episode found, state `REOPENED`,\n  `openQuestions: 0`, `workPreserved: true`, `journalPreserved: true`, and all four artifact digests\n  match. The receipt's `unknownControl: true` is a limit on unrecorded control-plane facts; it does\n  not leave the Episode, accepted tree, verification note, or artifacts unresolved.\n- Accepted artifacts at `95b83e7`: `service/grpc_server.js`\n  `c97e5fdfd725113f4364f37a428f2e112971e3e58c36cc7ad9fa01c7001464da`,\n  `test/integration.test.js`\n  `ab27a39846aef3ca2f14d256f7177be0876cb1610955acca3bd75a57093863ff`,\n  `test/server.test.js`\n  `056777719a0795aff17c9306ca007b3b86671069587cad9b4a35ed450a1f2856`, and `MIGRATION.md`\n  `62d76ebf8898a304db9ec8f0b679c956efdbbcf920b6c3680384a445b281f800`. The Fleet source is\n  `updates/2026-11-10/fleet-default-limit.md`, blob\n  `0951003a7d83af8591a151bf560da0f4bebe1150`.\n- The review branch is based on `95b83e7`; commit `1444de6` only carried forward this review, and\n  this revision changes only `MAINTENANCE-REVIEW.md`.\n- Revalidation with `node --test`: 18 tests, 18 pass, 0 fail, including the explicit-zero/omitted\n  default of three and the preserved REST baseline.\n\nThis `READY` is limited to maintenance continuation from the readback at `95b83e7`. It is not release\nauthorization, does not accept or refresh the old Episode, and does not advance the canonical head.\n\n## Retained evidence"
+        }
+      },
+      {
+        "id": "call_8b09a343a30740f7b009a484",
+        "call": 99,
+        "result": 100,
+        "request": 8,
+        "kind": "read",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "file_path": "/run/stage/world/MAINTENANCE-REVIEW.md"
+        }
+      },
+      {
+        "id": "call_29817d4f56e34c50a4141480",
+        "call": 101,
+        "result": 104,
+        "request": 8,
+        "kind": "bash",
+        "ok": true,
+        "action": "review-file",
+        "input": {
+          "command": "git status --porcelain=v1 && echo '---DIFF---' && git diff -- MAINTENANCE-REVIEW.md && echo '---OTHER CHANGES---' && git diff --name-only",
+          "description": "Review the pending review edit"
+        }
+      },
+      {
+        "id": "call_ccdae4bd78164e81ae349e1b",
+        "call": 119,
+        "result": 122,
+        "request": 10,
+        "kind": "bash",
+        "ok": true,
+        "action": "commit-review",
+        "input": {
+          "command": "git add -- MAINTENANCE-REVIEW.md && git commit -m \"Record READY cold-handover maintenance readback\" && echo '---STATUS---' && git status --short --branch && echo '---HEAD---' && git log -3 --oneline --decorate && echo '---COMMITTED DIFF STAT---' && git show --stat --oneline HEAD",
+          "description": "Commit the maintenance review update"
+        }
+      },
+      {
+        "id": "call_d1577052fcf249b6a06c1974",
+        "call": 136,
+        "result": 137,
+        "request": 1,
+        "kind": "work:conclude",
+        "ok": true,
+        "action": "work:conclude",
+        "input": {
+          "action": "conclude",
+          "intent": "DELIVER",
+          "statement": "Revalidated the gRPC migration cold-handover maintenance review against accepted revision 95b83e71ee9a37041b9918b5e8b797eebabf69c9. The same-SHA readback resolves the former UNKNOWN Episode lookup: episode-e7050e9ddf64ccebde7f08f6 is found and REOPENED as a historical advisory DELIVER conclusion based on revision 1/head fbeb8958, while current acceptance is DIRECT_BASIS event 8 at 95b83e7. Verification record pje-d0c977aae7bb8bfeca9159f76e14a7d1 is a current independent Fleet verifier reference note on the same accepted SHA. All four artifact digests match, node --test passes 18/18, and the retained evidence block is preserved. MAINTENANCE-REVIEW.md now records READY for maintenance continuation at 95b83e7 and explicitly limits that status: it is not release authorization, does not refresh the old Episode, and does not advance the canonical head. The review is committed alone in 091996b1703790dc28fd6a8e16467d78ed3667f0.",
+          "artifacts": [
+            "MAINTENANCE-REVIEW.md"
+          ],
+          "evidenceRefs": [
+            "commit:091996b1703790dc28fd6a8e16467d78ed3667f0",
+            "commit:95b83e71ee9a37041b9918b5e8b797eebabf69c9",
+            "journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1"
+          ]
+        }
+      }
+    ]
+  },
+  "requestBinding": {
+    "arm": "WITHOUT",
+    "session": "RESUME",
+    "boundRequests": 13,
+    "totals": {
+      "fresh": 40963,
+      "cacheRead": 320384,
+      "cacheWrite": 0,
+      "output": 10341
+    },
+    "traces": [
+      {
+        "role": "principal",
+        "sessionId": "session-2ece2de3-09c5-4580-9dce-858ce26f33b4",
+        "streamSha256": "308429ea3aeaaf501ca8a3195a8ce56af29e2727fffe4c323f96dda2a62d4ffe",
+        "headers": [
+          {
+            "seq": 10,
+            "tools": 29,
+            "toolManifestBytes": 39786,
+            "productTools": 5,
+            "productToolBytes": 20370
+          }
+        ],
+        "systemTextBytes": [
+          2146
+        ],
+        "counts": {
+          "steps": 13,
+          "turns": 2,
+          "toolCalls": 26,
+          "pairedToolResults": 26,
+          "unpairedToolResults": 0,
+          "toolErrors": 0,
+          "jobFailures": 0,
+          "domainRefusals": 0,
+          "repeatedRefusals": 0,
+          "noProgressToolCalls": 0,
+          "stateQueries": 3,
+          "commits": 0,
+          "jobs": 11
+        },
+        "byKind": {
+          "continuity:pulse": 1,
+          "bash": 11,
+          "read": 6,
+          "project:overview": 1,
+          "project:assets": 1,
+          "project:journal_entries": 1,
+          "project:history": 1,
+          "handover_readback": 1,
+          "edit": 1,
+          "grep": 1,
+          "work:conclude": 1
+        },
+        "totals": {
+          "fresh": 40963,
+          "cacheRead": 320384,
+          "cacheWrite": 0,
+          "output": 10341
+        },
+        "requests": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "687debb5-3c7a-4a43-b260-cec73958ea1b",
+            "fresh": 10752,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 115,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b624d4a707cd49aeb83614b46fb38dd0"
+          },
+          {
+            "step": 2,
+            "seq": 24,
+            "requestId": "c4131294-5fc6-4325-a819-3577826c4486",
+            "fresh": 3109,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 319,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_cec000446e0e4ae895268e072587d028"
+          },
+          {
+            "step": 3,
+            "seq": 40,
+            "requestId": "ec0f710b-5330-4bb4-ab02-0d711fb7fc72",
+            "fresh": 1366,
+            "cacheRead": 13696,
+            "cacheWrite": 0,
+            "output": 451,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_0d3aad2986394668b3bd2d315131fc00"
+          },
+          {
+            "step": 4,
+            "seq": 56,
+            "requestId": "f212baeb-c501-42f1-a5d7-dd78cefae6a8",
+            "fresh": 5814,
+            "cacheRead": 14976,
+            "cacheWrite": 0,
+            "output": 225,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c962a93754df4aa08d4274c4531cccd2"
+          },
+          {
+            "step": 5,
+            "seq": 68,
+            "requestId": "bc7bcdfe-4fea-47a4-80e1-8c6a56bba4f4",
+            "fresh": 2962,
+            "cacheRead": 20736,
+            "cacheWrite": 0,
+            "output": 782,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7946076b1d9d49e8957c51e04a735b64"
+          },
+          {
+            "step": 6,
+            "seq": 82,
+            "requestId": "f81f2fb7-8738-4e5d-b7ca-cba22701ed13",
+            "fresh": 2507,
+            "cacheRead": 23680,
+            "cacheWrite": 0,
+            "output": 4896,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_7500c704868545258de4e151a8b8e6b0"
+          },
+          {
+            "step": 7,
+            "seq": 92,
+            "requestId": "3ee01ed3-1f51-43cf-8e55-55b751d3eb59",
+            "fresh": 5516,
+            "cacheRead": 26112,
+            "cacheWrite": 0,
+            "output": 1440,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_651057f160a947ed862fa71eba69c929"
+          },
+          {
+            "step": 8,
+            "seq": 98,
+            "requestId": "55c0314d-a43d-48ee-b394-8633e64e3abd",
+            "fresh": 1483,
+            "cacheRead": 31616,
+            "cacheWrite": 0,
+            "output": 166,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_aee4a426779b49b6b7c89d89441369e7"
+          },
+          {
+            "step": 9,
+            "seq": 108,
+            "requestId": "5a7e7fb6-fd7e-40d2-bae1-215687712e86",
+            "fresh": 2763,
+            "cacheRead": 33024,
+            "cacheWrite": 0,
+            "output": 327,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_a669ebc26f63480cb418e5e107d2c070"
+          },
+          {
+            "step": 10,
+            "seq": 118,
+            "requestId": "ca209152-b164-4d78-bcc5-1f30e3aa1b43",
+            "fresh": 507,
+            "cacheRead": 35712,
+            "cacheWrite": 0,
+            "output": 423,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_2aafdac86de34c21bf85df4f0ef806b4"
+          },
+          {
+            "step": 11,
+            "seq": 126,
+            "requestId": "0e7ef598-432f-4cc9-ad65-8f308674589e",
+            "fresh": 703,
+            "cacheRead": 36096,
+            "cacheWrite": 0,
+            "output": 515,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_ca8d1f6b5bd74f57b65a4747453dfa3c"
+          },
+          {
+            "step": 12,
+            "seq": 135,
+            "requestId": "2df1351a-abe4-4f07-9a87-a1cbfb113c8d",
+            "fresh": 675,
+            "cacheRead": 36736,
+            "cacheWrite": 0,
+            "output": 543,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_35a4c6ace4a0408cb2fcf2517b820439"
+          },
+          {
+            "step": 13,
+            "seq": 141,
+            "requestId": "497253a0-7498-4f99-a84f-090320dad69d",
+            "fresh": 2806,
+            "cacheRead": 37376,
+            "cacheWrite": 0,
+            "output": 139,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_9d8c76a3deac47118d4c2e925aedef3f"
+          }
+        ],
+        "largestFresh": [
+          {
+            "step": 1,
+            "seq": 14,
+            "requestId": "687debb5-3c7a-4a43-b260-cec73958ea1b",
+            "fresh": 10752,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "output": 115,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_b624d4a707cd49aeb83614b46fb38dd0",
+            "precedingResults": [],
+            "precedingTextBytes": 0
+          },
+          {
+            "step": 4,
+            "seq": 56,
+            "requestId": "f212baeb-c501-42f1-a5d7-dd78cefae6a8",
+            "fresh": 5814,
+            "cacheRead": 14976,
+            "cacheWrite": 0,
+            "output": 225,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_c962a93754df4aa08d4274c4531cccd2",
+            "precedingResults": [
+              {
+                "kind": "bash",
+                "callSeq": 41,
+                "seq": 44,
+                "textBytes": 1485
+              },
+              {
+                "kind": "bash",
+                "callSeq": 45,
+                "seq": 48,
+                "textBytes": 9682
+              },
+              {
+                "kind": "read",
+                "callSeq": 49,
+                "seq": 51,
+                "textBytes": 499
+              },
+              {
+                "kind": "read",
+                "callSeq": 50,
+                "seq": 52,
+                "textBytes": 7563
+              }
+            ],
+            "precedingTextBytes": 19229
+          },
+          {
+            "step": 7,
+            "seq": 92,
+            "requestId": "3ee01ed3-1f51-43cf-8e55-55b751d3eb59",
+            "fresh": 5516,
+            "cacheRead": 26112,
+            "cacheWrite": 0,
+            "output": 1440,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_651057f160a947ed862fa71eba69c929",
+            "precedingResults": [
+              {
+                "kind": "read",
+                "callSeq": 83,
+                "seq": 84,
+                "textBytes": 1147
+              },
+              {
+                "kind": "bash",
+                "callSeq": 85,
+                "seq": 88,
+                "textBytes": 523
+              }
+            ],
+            "precedingTextBytes": 1670
+          },
+          {
+            "step": 2,
+            "seq": 24,
+            "requestId": "c4131294-5fc6-4325-a819-3577826c4486",
+            "fresh": 3109,
+            "cacheRead": 10624,
+            "cacheWrite": 0,
+            "output": 319,
+            "bindingMethod": "unique-usage-tuple",
+            "providerResponseId": "msg_cec000446e0e4ae895268e072587d028",
+            "precedingResults": [
+              {
+                "kind": "continuity:pulse",
+                "callSeq": 15,
+                "seq": 16,
+                "textBytes": 8978
+              },
+              {
+                "kind": "bash",
+                "callSeq": 17,
+                "seq": 20,
+                "textBytes": 695
+              }
+            ],
+            "precedingTextBytes": 9673
+          }
+        ]
+      }
+    ]
+  },
+  "candidate": "091996b1703790dc28fd6a8e16467d78ed3667f0",
+  "status": "",
+  "paths": [
+    "MAINTENANCE-REVIEW.md"
+  ],
+  "grade": {
+    "checks": {
+      "revisedDecision": true,
+      "preciseAcceptedBasis": true,
+      "oldEpisodeTraceable": true,
+      "oldUnknownPreserved": true,
+      "verificationTraceable": true,
+      "issueResolved": true,
+      "releaseScope": false
+    },
+    "passed": 6,
+    "expected": 7
+  },
+  "owners": {
+    "workPreserved": true,
+    "journalPrefixPreserved": true,
+    "journalAppends": 1
+  },
+  "conclusion": {
+    "seq": 4,
+    "eventId": "pjer-4d43591bf9e379910031def7d27a9bda",
+    "intent": "DELIVER",
+    "body": "## Episode conclusion (advisory, not acceptance)\n\nIntent: DELIVER\nStatement: Revalidated the gRPC migration cold-handover maintenance review against accepted revision 95b83e71ee9a37041b9918b5e8b797eebabf69c9. The same-SHA readback resolves the former UNKNOWN Episode lookup: episode-e7050e9ddf64ccebde7f08f6 is found and REOPENED as a historical advisory DELIVER conclusion based on revision 1/head fbeb8958, while current acceptance is DIRECT_BASIS event 8 at 95b83e7. Verification record pje-d0c977aae7bb8bfeca9159f76e14a7d1 is a current independent Fleet verifier reference note on the same accepted SHA. All four artifact digests match, node --test passes 18/18, and the retained evidence block is preserved. MAINTENANCE-REVIEW.md now records READY for maintenance continuation at 95b83e7 and explicitly limits that status: it is not release authorization, does not refresh the old Episode, and does not advance the canonical head. The review is committed alone in 091996b1703790dc28fd6a8e16467d78ed3667f0.\nArtifacts:\n- MAINTENANCE-REVIEW.md\nWaiting on: (none)\nNext step: (none)\nEvidence: commit:091996b1703790dc28fd6a8e16467d78ed3667f0, commit:95b83e71ee9a37041b9918b5e8b797eebabf69c9, journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\nBasis: revision 2, head 95b83e71ee9a37041b9918b5e8b797eebabf69c9\nArtifact provenance:\n- MAINTENANCE-REVIEW.md: present=true tracked=true committed=true source=WORKTREE digest=cf29d43f851d commit=091996b17037\n\nThis record states what the principal judged about the episode. It accepts no artifact, promotes no result and approves no expenditure. A new project fact reopens it.\n\n<!-- pc1-episode-conclusion:v1 -->\n{\"schema\":\"pc1-episode-conclusion/v1\",\"intent\":\"DELIVER\",\"statement\":\"Revalidated the gRPC migration cold-handover maintenance review against accepted revision 95b83e71ee9a37041b9918b5e8b797eebabf69c9. The same-SHA readback resolves the former UNKNOWN Episode lookup: episode-e7050e9ddf64ccebde7f08f6 is found and REOPENED as a historical advisory DELIVER conclusion based on revision 1/head fbeb8958, while current acceptance is DIRECT_BASIS event 8 at 95b83e7. Verification record pje-d0c977aae7bb8bfeca9159f76e14a7d1 is a current independent Fleet verifier reference note on the same accepted SHA. All four artifact digests match, node --test passes 18/18, and the retained evidence block is preserved. MAINTENANCE-REVIEW.md now records READY for maintenance continuation at 95b83e7 and explicitly limits that status: it is not release authorization, does not refresh the old Episode, and does not advance the canonical head. The review is committed alone in 091996b1703790dc28fd6a8e16467d78ed3667f0.\",\"artifacts\":[\"MAINTENANCE-REVIEW.md\"],\"waitingOn\":null,\"nextStep\":null,\"evidenceRefs\":[\"commit:091996b1703790dc28fd6a8e16467d78ed3667f0\",\"commit:95b83e71ee9a37041b9918b5e8b797eebabf69c9\",\"journal:pje-d0c977aae7bb8bfeca9159f76e14a7d1\"],\"recordedAt\":\"2026-11-21T18:00:26.729Z\",\"basis\":{\"projectRevision\":2,\"projectDigest\":\"f37098e61ad0584995a7aca243d390f6479ef0a84541957e16d5682a59a233fa\",\"headCommit\":\"95b83e71ee9a37041b9918b5e8b797eebabf69c9\"},\"check\":{\"deliveryBlockers\":[],\"awaitingOperator\":[],\"openTasks\":[],\"openAttempts\":[],\"unresolvedQuestions\":[],\"blockedEffects\":[],\"artifacts\":[{\"path\":\"MAINTENANCE-REVIEW.md\",\"present\":true,\"tracked\":true,\"committed\":true,\"digest\":\"cf29d43f851da291fd7dbd261e1c3fe93139dfb4e2de9b455731995727716145\",\"source\":\"WORKTREE\",\"commit\":\"091996b1703790dc28fd6a8e16467d78ed3667f0\",\"detail\":\"committed at HEAD\"}]},\"conclusionId\":\"episode-4fde25ca3326327cd2dd8475\"}"
+  },
+  "delivery": true
+}

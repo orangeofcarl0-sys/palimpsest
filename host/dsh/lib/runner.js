@@ -33,6 +33,7 @@ import { installModelSelection } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 
 import { composeLaunchMessage } from './project_hint.js';
+import { captureDirectCloseout, directCloseoutAdvice } from './direct_closeout.js';
 
 /**
  * R2-U §7: the EXPERIMENTAL presentation seam. Loaded statically because it has no imports of its own and
@@ -1410,16 +1411,25 @@ async function run(ctx, deps) {
     // COG-2 §15: a cold principal is told that recorded project work exists, in one sentence and
     // without any entry content. Measured: without it, a later principal discovered nothing; with
     // it, it read the journal and used it. Absence/empty/failure composes the message unchanged.
-    const launchMessage = await composeLaunchMessage(
-      host.deployment?.installed?.application?.projectWorkspace,
-      startup.message,
-    );
+    const installed = host.deployment?.installed;
+    const workspace = installed?.application?.projectWorkspace;
+    const repository = host.profile?.repository;
+    const initial = startup.once === true && host.toolNames?.includes('palimpsest_work')
+      ? await captureDirectCloseout(repository, workspace)
+      : null;
+    const launchMessage = await composeLaunchMessage(workspace, startup.message);
     const method = await host.deployment?.focusedTesting?.read();
     if (method) process.stdout.write(`PALIMPSEST_FOCUSED_TEST_OFFER ${JSON.stringify(method)}\n`);
     const testHint = method
       ? `\n\n[Project verification method] In this read-only dependency environment, for targeted Vitest checks run \`${method.argv.join(' ')} --maxWorkers 1 <test paths>\` from the repository root. Read the test assertions and use the actual exit status. This is optional advice for selecting a test command.`
       : '';
     await deliver(launchMessage + testHint);
+    const closeout = await directCloseoutAdvice(repository, initial, workspace, installed?.controller);
+    if (closeout) {
+      const { message, ...facts } = closeout;
+      process.stdout.write(`PALIMPSEST_CLOSEOUT_OFFER ${JSON.stringify(facts)}\n`);
+      await deliver(message);
+    }
   }
 
   if (startup.once === true) {
